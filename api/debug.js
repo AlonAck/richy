@@ -1,6 +1,8 @@
 module.exports = function handler(req, res) {
-  var keys = Object.keys(process.env).filter(function(k) {
-    return k.indexOf("ANTHROPIC") !== -1 || k.indexOf("NODE") !== -1 || k.indexOf("VERCEL") !== -1;
+  res.status(200).json({
+    hasKey: !!process.env.ANTHROPIC_API_KEY,
+    projectName: process.env.VERCEL_PROJECT_NAME,
+    projectUrl: process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    env: process.env.VERCEL_ENV
   });
-  res.status(200).json({ envKeys: keys, hasKey: !!process.env.ANTHROPIC_API_KEY });
 };
