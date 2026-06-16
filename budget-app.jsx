@@ -1674,11 +1674,28 @@ function Advisor(props) {
       { quote: "Do not save what is left after spending, but spend what is left after saving.", author: "Warren Buffett" },
       { quote: "It is not about how much money you make, but how much money you keep.", author: "Robert Kiyosaki" },
       { quote: "Wealth is not about having a lot of money. It is about having a lot of options.", author: "Chris Rock" },
-      { quote: "The key to financial freedom is learning to do more with less.", author: "Dave Ramsey" },
       { quote: "An investment in knowledge pays the best interest.", author: "Benjamin Franklin" },
       { quote: "Compound interest is the eighth wonder of the world. He who understands it earns it.", author: "Albert Einstein" },
       { quote: "A part of all you earn is yours to keep. Pay yourself first.", author: "George Clason" },
-      { quote: "The secret to getting rich is saving before you spend.", author: "Tony Robbins" }
+      { quote: "Someone is sitting in the shade today because someone planted a tree a long time ago.", author: "Warren Buffett" },
+      { quote: "The goal is not to be rich. The goal is to be free.", author: "T. Harv Eker" },
+      { quote: "Financial peace is not the acquisition of stuff. It is learning to live on less than you make.", author: "Dave Ramsey" },
+      { quote: "You must gain control over your money or the lack of it will forever control you.", author: "Dave Ramsey" },
+      { quote: "The stock market is a device for transferring money from the impatient to the patient.", author: "Warren Buffett" },
+      { quote: "Wealth is the ability to fully experience life.", author: "Henry David Thoreau" },
+      { quote: "It is not the man who has too little, but the man who craves more, who is poor.", author: "Seneca" },
+      { quote: "Price is what you pay. Value is what you get.", author: "Warren Buffett" },
+      { quote: "Savings without a mission is garbage. Your money must have a purpose.", author: "Clarissa Explains It All" },
+      { quote: "A wise man should have money in his head, but not in his heart.", author: "Jonathan Swift" },
+      { quote: "The more you learn, the more you earn.", author: "Warren Buffett" },
+      { quote: "Never spend your money before you have earned it.", author: "Thomas Jefferson" },
+      { quote: "Wealth is not his who has it, but his who enjoys it.", author: "Benjamin Franklin" },
+      { quote: "Do what you can, with what you have, where you are.", author: "Theodore Roosevelt" },
+      { quote: "The habit of saving is itself an education; it fosters every virtue.", author: "T.T. Munger" },
+      { quote: "Time is your most valuable asset. Invest it wisely.", author: "Morgan Housel" },
+      { quote: "Spend less than you make, save the difference, and be patient.", author: "Morgan Housel" },
+      { quote: "Risk is what is left over when you think you have thought of everything.", author: "Carl Richards" },
+      { quote: "The best time to invest was yesterday. The second best time is today.", author: "Proverb" }
     ];
     var tips = [
       { title: "The 50/30/20 Rule", body: "Put 50% of income toward needs, 30% toward wants, 20% toward savings. Morgan Housel says savings rate matters more than investment returns early on." },
@@ -1687,8 +1704,8 @@ function Advisor(props) {
       { title: "Avoid Lifestyle Inflation", body: "The Millionaire Next Door found most millionaires kept lifestyle flat when income rose, investing the difference instead." },
       { title: "Build Your Emergency Fund First", body: "Dave Ramsey and Ramit Sethi both say: 3-6 months expenses in cash before any investing. This prevents derailing long-term plans." }
     ];
-    var q = quotes[Math.floor((income + expense) % quotes.length)];
-    var tip = tips[Math.floor((income + expense) % tips.length)];
+    var q = quotes[Math.floor(Math.random() * quotes.length)];
+    var tip = tips[Math.floor(Math.random() * tips.length)];
     return {
       score: score,
       scoreLabel: label,
