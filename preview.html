@@ -42,7 +42,8 @@ var RC = (function(){
   function Cell(){ return null; }
   return { ResponsiveContainer: ResponsiveContainer, PieChart: PieChart, Pie: Pie, Cell: Cell };
 })();
-fetch("http://localhost:3000/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).then(function(src){
+var APP_SRC = (location.protocol === "http:" || location.protocol === "https:") ? ("budget-app.jsx?t=" + Date.now()) : ("http://localhost:3000/budget-app.jsx?t=" + Date.now());
+fetch(APP_SRC).then(function(r){ return r.text(); }).then(function(src){
   var code = src
     .replace(/^\s*import[^\n]*\n/gm, "")
     .replace(/export default function App/, "function App");
