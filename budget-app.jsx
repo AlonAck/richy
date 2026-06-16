@@ -1965,7 +1965,8 @@ function Advisor(props) {
   }
 
   function callClaude(messages, system, maxTokens, callback) {
-    fetch("/api/chat", {
+    var apiUrl = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "data:" || location.protocol === "file:") ? "https://richy-mgkl.vercel.app/api/chat" : "/api/chat";
+    fetch(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
