@@ -105,14 +105,34 @@ var DEFAULT_BUDGETS = [];
 function freshCategories() { return DEFAULT_CATEGORIES.map(function(c) { return { id: c.id, name: c.name, color: c.color, icon: c.icon, folderId: c.folderId }; }); }
 function freshFolders() { return DEFAULT_FOLDERS.map(function(f) { return { id: f.id, name: f.name }; }); }
 
-// In-memory store (localStorage is blocked in the artifact sandbox).
-// Accounts persist for the current session. window-level so it survives re-renders.
+// Persistent store backed by localStorage so accounts and the active session
+// survive refreshes and restarts. Falls back to an in-memory window object if
+// localStorage is unavailable (e.g. a sandboxed artifact context).
+var _DB_KEY = "richy_db_v1";
+function _loadDb() {
+  var fresh = { index: {}, users: {}, session: null };
+  if (typeof window === "undefined") return fresh;
+  try {
+    var raw = window.localStorage.getItem(_DB_KEY);
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") {
+        return { index: parsed.index || {}, users: parsed.users || {}, session: parsed.session || null };
+      }
+    }
+  } catch (e) {}
+  return fresh;
+}
 if (typeof window !== "undefined" && !window.__CB_DB) {
-  window.__CB_DB = { index: {}, users: {}, session: null };
+  window.__CB_DB = _loadDb();
 }
 function _db() {
   if (typeof window !== "undefined") return window.__CB_DB;
   return { index: {}, users: {}, session: null };
+}
+function _persist() {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.setItem(_DB_KEY, JSON.stringify(window.__CB_DB)); } catch (e) {}
 }
 
 var STORE = {
@@ -121,21 +141,25 @@ var STORE = {
   },
   saveIndex: function(v) {
     _db().index = v;
+    _persist();
   },
   getUser: function(u) {
     return _db().users[u] || null;
   },
   saveUser: function(u, d) {
     _db().users[u] = d;
+    _persist();
   },
   getSession: function() {
     return _db().session || null;
   },
   saveSession: function(u) {
     _db().session = u;
+    _persist();
   },
   clearSession: function() {
     _db().session = null;
+    _persist();
   },
 };
 
@@ -2253,6 +2277,9 @@ function Advisor(props) {
           </button>
         </div>
       </Card>
+      <div style={{ textAlign: "center", fontSize: 11, color: T.ink3, lineHeight: 1.55, padding: "0 10px 6px", letterSpacing: "0.01em" }}>
+        Richard is an AI assistant, not a licensed financial advisor. His guidance is general information only, not personalized professional advice. Always do your own research before making money decisions.
+      </div>
     </div>
   );
 }
