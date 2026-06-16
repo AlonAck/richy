@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Richy - Preview</title>
+<style>
+  html,body{margin:0;background:#F7F3EE;}
+  #err{white-space:pre-wrap;font-family:monospace;color:#b00;padding:16px;font-size:13px;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="err"></div>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+<script>
+// Lightweight Recharts stand-in so the preview runs without the CDN bundle.
+// The real Recharts is used in the artifact build; this only powers the donut here.
+var RC = (function(){
+  function ResponsiveContainer(props){ return React.createElement("div", { style: { width: props.width, height: props.height } }, props.children); }
+  function PieChart(props){ return React.createElement("svg", { viewBox: "0 0 100 100", width: "100%", height: "100%" }, props.children); }
+  function Pie(props){
+    var data = props.data || [];
+    var total = data.reduce(function(s,d){ return s + (d.value||0); }, 0) || 1;
+    var R = 42, r = 24, cx = 50, cy = 50, ang = -90;
+    var arcs = data.map(function(d, i){
+      var frac = (d.value||0)/total, a0 = ang, a1 = ang + frac*360; ang = a1;
+      var rad = function(a){ return (a*Math.PI)/180; };
+      var x0 = cx + R*Math.cos(rad(a0)), y0 = cy + R*Math.sin(rad(a0));
+      var x1 = cx + R*Math.cos(rad(a1)), y1 = cy + R*Math.sin(rad(a1));
+      var xi1 = cx + r*Math.cos(rad(a1)), yi1 = cy + r*Math.sin(rad(a1));
+      var xi0 = cx + r*Math.cos(rad(a0)), yi0 = cy + r*Math.sin(rad(a0));
+      var large = frac > 0.5 ? 1 : 0;
+      var dd = "M"+x0+" "+y0+" A"+R+" "+R+" 0 "+large+" 1 "+x1+" "+y1+" L"+xi1+" "+yi1+" A"+r+" "+r+" 0 "+large+" 0 "+xi0+" "+yi0+" Z";
+      var fill = (props.children && props.children[i] && props.children[i].props.fill) || (data[i] && data[i].color) || "#ccc";
+      return React.createElement("path", { key: i, d: dd, fill: fill });
+    });
+    return React.createElement("g", null, arcs);
+  }
+  function Cell(){ return null; }
+  return { ResponsiveContainer: ResponsiveContainer, PieChart: PieChart, Pie: Pie, Cell: Cell };
+})();
+fetch("http://localhost:3000/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).then(function(src){
+  var code = src
+    .replace(/^\s*import[^\n]*\n/gm, "")
+    .replace(/export default function App/, "function App");
+  var out = Babel.transform(code, { presets: ["react"] }).code;
+  var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
+  var PieChart = RC.PieChart, Pie = RC.Pie, Cell = RC.Cell, ResponsiveContainer = RC.ResponsiveContainer;
+  eval(out);
+  ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+}).catch(function(e){
+  document.getElementById("err").textContent = "Preview error:\n" + (e && e.stack ? e.stack : e);
+});
+</script>
+</body>
+</html>

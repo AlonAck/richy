@@ -24,23 +24,72 @@ const T = {
   goldDim:   "rgba(200,152,58,0.15)",
 };
 
-const CATS = ["Housing","Food","Transport","Health","Entertainment","Shopping","Other"];
-const CAT_COLOR = {
-  Housing: "#8B6CEF",
-  Food: "#34C759",
-  Transport: "#D97941",
-  Health: "#FF3B30",
-  Entertainment: "#2799C8",
-  Shopping: "#AF52DE",
-  Other: "#888888",
-};
+// Curated icon set for category "banners" - line icons in the app's style.
+// Each id maps to an SVG path in SVGIcon.
+var ICON_BANK = [
+  "home", "food", "car", "heart", "film", "cart", "plane", "briefcase",
+  "chart", "coins", "gift", "box", "coffee", "book", "dumbbell", "phone",
+  "music", "leaf", "laptop", "spark",
+];
+
+// Refined, wealth-adjacent palette. Warm tones first, then jewel tones.
+var COLOR_BANK = [
+  "#C8673A", "#C8983A", "#8B6CEF", "#2799C8", "#27A85F", "#00B4A0",
+  "#D97941", "#AF52DE", "#E0556E", "#5A7D9A", "#B0894E", "#6B5C4E",
+];
+
+var DEFAULT_FOLDERS = [
+  { id: "f1", name: "Essentials" },
+  { id: "f2", name: "Lifestyle" },
+  { id: "f3", name: "Income & Wealth" },
+];
+
+var DEFAULT_CATEGORIES = [
+  { id: "c1",  name: "Housing",       color: "#8B6CEF", icon: "home",      folderId: "f1" },
+  { id: "c2",  name: "Food",          color: "#27A85F", icon: "food",      folderId: "f1" },
+  { id: "c3",  name: "Transport",     color: "#D97941", icon: "car",       folderId: "f1" },
+  { id: "c4",  name: "Health",        color: "#E0556E", icon: "heart",     folderId: "f1" },
+  { id: "c5",  name: "Entertainment", color: "#2799C8", icon: "film",      folderId: "f2" },
+  { id: "c6",  name: "Shopping",      color: "#AF52DE", icon: "cart",      folderId: "f2" },
+  { id: "c7",  name: "Travel",        color: "#00B4A0", icon: "plane",     folderId: "f2" },
+  { id: "c8",  name: "Salary",        color: "#27A85F", icon: "briefcase", folderId: "f3" },
+  { id: "c9",  name: "Investments",   color: "#C8983A", icon: "chart",     folderId: "f3" },
+  { id: "c10", name: "Savings",       color: "#C8673A", icon: "coins",     folderId: "f3" },
+  { id: "c11", name: "Other",         color: "#6B5C4E", icon: "box",       folderId: "f2" },
+];
+
+// Category lookups. Transactions/budgets reference a catId; fall back to name
+// for any legacy data or deleted categories.
+function catById(cats, id) {
+  for (var i = 0; i < cats.length; i++) {
+    if (cats[i].id === id) return cats[i];
+  }
+  return null;
+}
+function catByName(cats, name) {
+  for (var i = 0; i < cats.length; i++) {
+    if (cats[i].name === name) return cats[i];
+  }
+  return null;
+}
+function resolveCat(cats, t) {
+  return catById(cats, t.catId) || catByName(cats, t.category) || { id: "", name: t.category || "Other", color: "#6B5C4E", icon: "box" };
+}
 
 const UI = "-apple-system, system-ui, sans-serif";
 const DISP = "-apple-system, system-ui, sans-serif";
 
+var _currency = { sym: "$" };
+var CURRENCY_OPTIONS = [
+  { sym: "$",       label: "USD  $" },
+  { sym: "€",  label: "EUR  €" },
+  { sym: "£",  label: "GBP  £" },
+  { sym: "₪",  label: "ILS  ₪" },
+  { sym: "¥",  label: "JPY  ¥" },
+];
 function dollars(n) {
   var abs = Math.abs(n);
-  return "$" + abs.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return _currency.sym + abs.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function hashPass(pw) {
@@ -51,14 +100,10 @@ function hashPass(pw) {
   return (h >>> 0).toString(36);
 }
 
-var DEFAULT_BUDGETS = [
-  { category: "Housing", limit: 0 },
-  { category: "Food", limit: 0 },
-  { category: "Transport", limit: 0 },
-  { category: "Health", limit: 0 },
-  { category: "Entertainment", limit: 0 },
-  { category: "Shopping", limit: 0 },
-];
+// New accounts start with no budgets - the user adds them with the + button.
+var DEFAULT_BUDGETS = [];
+function freshCategories() { return DEFAULT_CATEGORIES.map(function(c) { return { id: c.id, name: c.name, color: c.color, icon: c.icon, folderId: c.folderId }; }); }
+function freshFolders() { return DEFAULT_FOLDERS.map(function(f) { return { id: f.id, name: f.name }; }); }
 
 // In-memory store (localStorage is blocked in the artifact sandbox).
 // Accounts persist for the current session. window-level so it survives re-renders.
@@ -133,6 +178,34 @@ function SVGIcon(props) {
     spark:    "M13 2L3 14h9l-1 8 10-12h-9l1-8z",
     search:   "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z",
     flag:     "M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7",
+    folder:   "M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z",
+    tag:      "M3 12l9-9 9 9-9 9-9-9zM7.5 7.5h.01",
+    categories:"M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L2.5 12.5V3.5h9l8.6 8.6a2 2 0 010 2.8zM7 7.5h.01",
+    chevron:  "M9 6l6 6-6 6",
+    edit:     "M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z",
+    mail:     "M3 5h18a1 1 0 011 1v12a1 1 0 01-1 1H3a1 1 0 01-1-1V6a1 1 0 011-1zM3 7l9 6 9-6",
+    calendar: "M3 5h18v16H3zM3 9h18M8 3v4M16 3v4",
+    shield:   "M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z",
+    // Category banner icons
+    home:     "M3 10.5L12 3l9 7.5M5 9.2V20h14V9.2",
+    food:     "M7 3v8a2 2 0 01-4 0V3M5 11v10M17 3c-1.6 0-2.5 2.4-2.5 5s.9 4 2.5 4v9",
+    car:      "M5 11l1.6-4.4A2 2 0 018.5 5h7a2 2 0 011.9 1.6L19 11M4.5 11h15v5h-15zM8 16v2M16 16v2",
+    heart:    "M12 20.5S3.5 15 3.5 9.2A4.2 4.2 0 0112 6a4.2 4.2 0 018.5 3.2C20.5 15 12 20.5 12 20.5z",
+    film:     "M3 4h18v16H3zM7 4v16M17 4v16M3 9h4M17 9h4M3 15h4M17 15h4",
+    cart:     "M2.5 4h2l2.3 11h10l1.9-8H6M9.5 19a1 1 0 100 2 1 1 0 000-2M16.5 19a1 1 0 100 2 1 1 0 000-2",
+    plane:    "M21 15.5l-8.5-4.5V4.5a1.5 1.5 0 00-3 0V11L1 15.5v2l8.5-2.4V19l-2.2 1.6V22l3.7-1 3.7 1v-1.4L12.5 19v-3.9l8.5 2.4z",
+    briefcase:"M3 8h18v12H3zM8 8V6a2 2 0 012-2h4a2 2 0 012 2v2M3 13h18",
+    chart:    "M3 3v18h18M7 14l3.5-4.5 3 2.5L21 7",
+    coins:    "M4 7c0-1.4 2.7-2.5 6-2.5S16 5.6 16 7s-2.7 2.5-6 2.5S4 8.4 4 7zM4 7v5c0 1.4 2.7 2.5 6 2.5M8 13.5c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5M8 13.5C8 12.1 10.7 11 14 11s6 1.1 6 2.5v5c0 1.4-2.7 2.5-6 2.5s-6-1.1-6-2.5z",
+    gift:     "M20 12v8.5H4V12M2.5 7.5h19V12h-19zM12 21V7.5M12 7.5H7.8a2.4 2.4 0 010-4.7C11 2.8 12 7.5 12 7.5zM12 7.5h4.2a2.4 2.4 0 000-4.7C13 2.8 12 7.5 12 7.5z",
+    box:      "M21 8l-9-5-9 5 9 5 9-5zM3 8v8.5l9 5 9-5V8M12 13v8.5",
+    coffee:   "M3 8h14v4a5 5 0 01-5 5H8a5 5 0 01-5-5zM17 9h2.5a2.5 2.5 0 010 5H17M7 3.5V5M10 3.5V5M13 3.5V5",
+    book:     "M4 4.5A1.5 1.5 0 015.5 3H19a1 1 0 011 1v14.5M5.5 18H20a1 1 0 010 2H5.5A1.5 1.5 0 014 18.5v-14",
+    dumbbell: "M6.5 6.5v11M4 8.5v7M17.5 6.5v11M20 8.5v7M6.5 12h11",
+    phone:    "M7 2.5h10a1 1 0 011 1v17a1 1 0 01-1 1H7a1 1 0 01-1-1v-17a1 1 0 011-1zM10.5 18.5h3",
+    music:    "M9 18V5l11-2v12M9 18a3 3 0 11-6 0 3 3 0 016 0zM20 15a3 3 0 11-6 0 3 3 0 016 0z",
+    leaf:     "M11 20.5A7.5 7.5 0 013.5 13C3.5 6.5 11.5 3.5 20.5 3.5c0 8.5-3 17-9.5 17zM11 20.5c0-5.5 2.5-9.5 6.5-12.5",
+    laptop:   "M4 6h16v10H4zM2 19h20M9.5 19l.7-3h3.6l.7 3",
   };
   var d = icons[props.id] || "";
   return (
@@ -191,25 +264,33 @@ function IconBadge(props) {
 function Overlay(props) {
   if (!props.open) return null;
   return (
-    <div style={{
-      position: "fixed", bottom: 0, left: "50%",
-      transform: "translateX(-50%)",
-      width: "100%", maxWidth: 430, zIndex: 90,
-      background: "#F8F8FC",
-      borderRadius: "24px 24px 0 0",
-      boxShadow: "0 -4px 40px rgba(0,0,0,0.16)",
-      paddingBottom: 44,
-    }}>
-      <div style={{ width: 36, height: 5, borderRadius: 3, background: "rgba(0,0,0,0.13)", margin: "10px auto 0" }} />
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 20px 10px" }}>
-        <span style={{ fontSize: 18, fontWeight: 700, fontFamily: DISP, color: T.ink }}>{props.title}</span>
-        <button onClick={props.onClose} style={{
-          background: "rgba(0,0,0,0.07)", border: "none", borderRadius: "50%",
-          width: 30, height: 30, cursor: "pointer", fontSize: 18, color: T.ink2,
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}>x</button>
+    <div style={{ position: "fixed", inset: 0, zIndex: 90 }}>
+      <div onClick={props.onClose} style={{
+        position: "absolute", inset: 0,
+        background: "rgba(20,18,16,0.32)",
+        backdropFilter: "blur(2px)", WebkitBackdropFilter: "blur(2px)",
+      }} />
+      <div style={{
+        position: "absolute", bottom: 0, left: "50%",
+        transform: "translateX(-50%)",
+        width: "100%", maxWidth: 430,
+        maxHeight: "88vh", overflowY: "auto",
+        background: "#F8F6F1",
+        borderRadius: "24px 24px 0 0",
+        boxShadow: "0 -4px 40px rgba(20,18,16,0.22)",
+        paddingBottom: 44,
+      }}>
+        <div style={{ width: 38, height: 5, borderRadius: 3, background: "rgba(0,0,0,0.13)", margin: "10px auto 0" }} />
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 20px 10px" }}>
+          <span style={{ fontSize: 18, fontWeight: 700, fontFamily: DISP, color: T.ink, letterSpacing: "-0.02em" }}>{props.title}</span>
+          <button onClick={props.onClose} style={{
+            background: "rgba(0,0,0,0.07)", border: "none", borderRadius: "50%",
+            width: 30, height: 30, cursor: "pointer", fontSize: 18, color: T.ink2,
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>x</button>
+        </div>
+        <div style={{ padding: "2px 20px 0" }}>{props.children}</div>
       </div>
-      <div style={{ padding: "2px 20px 0" }}>{props.children}</div>
     </div>
   );
 }
@@ -250,51 +331,228 @@ function BigBtn(props) {
   );
 }
 
+function CatBadge(props) {
+  var size = props.size || 38;
+  var r = Math.round(size * 0.28);
+  var soft = props.soft;
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: r,
+      background: soft ? (props.color + "1F") : props.color, flexShrink: 0,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      boxShadow: soft ? "none" : "0 2px 8px " + props.color + "55",
+    }}>
+      <SVGIcon id={props.icon || "box"} size={Math.round(size * 0.5)} color={soft ? props.color : "#fff"} />
+    </div>
+  );
+}
+
+function CatPicker(props) {
+  return (
+    <div style={{ background: "rgba(0,0,0,0.04)", borderRadius: 14, padding: "12px 15px", marginBottom: props.last ? 0 : 9 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, marginBottom: 9 }}>
+        {props.label || "Category"}
+      </div>
+      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 2 }}>
+        {props.categories.map(function(c) {
+          var active = c.id === props.value;
+          return (
+            <button key={c.id} onClick={function() { props.onChange(c.id); }}
+              style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: 0, width: 58 }}>
+              <div style={{ borderRadius: 16, padding: 2, border: active ? "2px solid " + c.color : "2px solid transparent" }}>
+                <CatBadge icon={c.icon} color={c.color} size={42} />
+              </div>
+              <span style={{ fontSize: 10.5, fontWeight: active ? 700 : 500, color: active ? T.ink : T.ink3, textAlign: "center", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 56 }}>{c.name}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// EmailJS - sends the real verification code to the user's inbox from the browser.
+// Public key only; safe to ship client-side. The 6-digit check happens in-app.
+var EMAILJS = { service: "service_rl7nf3i", template: "template_q6oxfcp", publicKey: "uqJTHn1oiuh_eKsEs" };
+
+function genCode() {
+  var s = "";
+  for (var i = 0; i < 6; i++) { s += Math.floor(Math.random() * 10); }
+  return s;
+}
+
+function sendVerificationEmail(email, code) {
+  return fetch("https://api.emailjs.com/api/v1.0/email/send", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      service_id: EMAILJS.service,
+      template_id: EMAILJS.template,
+      user_id: EMAILJS.publicKey,
+      template_params: {
+        code: code,
+        email: email,
+        to_email: email,
+        user_email: email,
+        to: email,
+        recipient: email,
+        reply_to: email,
+      },
+    }),
+  });
+}
+
+function isEmail(s) {
+  var t = (s || "").trim();
+  return t.indexOf("@") > 0 && t.indexOf(".", t.indexOf("@")) > t.indexOf("@") + 1 && t.length >= 6;
+}
+
 function AuthScreen(props) {
   var _s = useState("login");
-  var mode = _s[0]; var setMode = _s[1];
-  var _u = useState("");
-  var username = _u[0]; var setUN = _u[1];
+  var step = _s[0]; var setStep = _s[1];
+  var _e = useState("");
+  var email = _e[0]; var setEmail = _e[1];
   var _p = useState("");
   var password = _p[0]; var setPW = _p[1];
-  var _e = useState("");
-  var error = _e[0]; var setError = _e[1];
+  var _p2 = useState("");
+  var password2 = _p2[0]; var setPW2 = _p2[1];
+  var _fn = useState("");
+  var fullName = _fn[0]; var setFullName = _fn[1];
+  var _dob = useState("");
+  var dob = _dob[0]; var setDob = _dob[1];
+  var _ci = useState("");
+  var codeInput = _ci[0]; var setCodeInput = _ci[1];
+  var _sc = useState("");
+  var sentCode = _sc[0]; var setSentCode = _sc[1];
+  var _er = useState("");
+  var error = _er[0]; var setError = _er[1];
+  var _nt = useState("");
+  var notice = _nt[0]; var setNotice = _nt[1];
   var _b = useState(false);
   var busy = _b[0]; var setBusy = _b[1];
   var _sp = useState(false);
   var showPw = _sp[0]; var setShowPw = _sp[1];
+  var _ri = useState(0);
+  var resendIn = _ri[0]; var setResendIn = _ri[1];
   var _ss = useState(null);
   var ssoProvider = _ss[0]; var setSsoProvider = _ss[1];
   var _sn = useState("");
   var ssoName = _sn[0]; var setSsoName = _sn[1];
+  var _pl = useState(null);
+  var pendingLogin = _pl[0]; var setPendingLogin = _pl[1];
 
-  function submit() {
+  useEffect(function() {
+    if (resendIn <= 0) return;
+    var t = setTimeout(function() { setResendIn(function(v) { return v - 1; }); }, 1000);
+    return function() { clearTimeout(t); };
+  }, [resendIn]);
+
+  function login() {
     setError("");
-    var u = username.trim().toLowerCase();
-    if (!u || !password) { setError("Please fill in all fields."); return; }
-    if (u.length < 3) { setError("Username must be at least 3 characters."); return; }
-    if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
+    var em = email.trim().toLowerCase();
+    if (!isEmail(em) || !password) { setError("Enter your email and password."); return; }
     setBusy(true);
     setTimeout(function() {
-      try {
-        var idx = STORE.getIndex();
-        if (mode === "register") {
-          if (idx[u]) { setError("Username already taken."); setBusy(false); return; }
-          idx[u] = hashPass(password);
-          STORE.saveIndex(idx);
-          STORE.saveUser(u, { tx: [], budgets: DEFAULT_BUDGETS, goals: [] });
-          STORE.saveSession(u);
-          props.onLogin(u, { tx: [], budgets: DEFAULT_BUDGETS, goals: [] });
+      var idx = STORE.getIndex();
+      if (!idx[em]) { setError("No account found. Create one first."); setBusy(false); return; }
+      if (idx[em] !== hashPass(password)) { setError("Wrong password."); setBusy(false); return; }
+      var data = STORE.getUser(em) || { tx: [], budgets: [], goals: [], folders: freshFolders(), categories: freshCategories() };
+      var code = genCode();
+      setSentCode(code);
+      setPendingLogin({ em: em, data: data });
+      sendVerificationEmail(em, code).then(function(res) {
+        setBusy(false);
+        if (res.ok) {
+          setStep("login_verify");
+          setCodeInput("");
+          setResendIn(30);
+          setNotice("Code sent to " + em);
         } else {
-          if (!idx[u]) { setError("No account found. Sign up first."); setBusy(false); return; }
-          if (idx[u] !== hashPass(password)) { setError("Wrong password."); setBusy(false); return; }
-          var data = STORE.getUser(u) || { tx: [], budgets: DEFAULT_BUDGETS, goals: [] };
-          STORE.saveSession(u);
-          props.onLogin(u, data);
+          setError("Could not send the verification code. Try again.");
         }
-      } catch(err) {
-        setError("Something went wrong. Try again."); setBusy(false);
+      }).catch(function() {
+        setBusy(false);
+        setError("Network error reaching the email service. Try again.");
+      });
+    }, 50);
+  }
+
+  function sendCode() {
+    setError(""); setNotice("");
+    var em = email.trim().toLowerCase();
+    if (!isEmail(em)) { setError("Enter a valid email address."); return; }
+    var idx = STORE.getIndex();
+    if (idx[em]) { setError("An account already uses this email. Sign in instead."); return; }
+    var code = genCode();
+    setSentCode(code);
+    setBusy(true);
+    sendVerificationEmail(em, code).then(function(res) {
+      setBusy(false);
+      if (res.ok) {
+        setStep("signup_verify");
+        setCodeInput("");
+        setResendIn(30);
+        setNotice("Code sent to " + em);
+      } else {
+        return res.text().then(function(txt) {
+          setError("Could not send the code. " + (txt || "Check the EmailJS template's To field is set to {{email}}."));
+        });
       }
+    }).catch(function() {
+      setBusy(false);
+      setError("Network error reaching the email service. Try again.");
+    });
+  }
+
+  function resend() {
+    if (resendIn > 0 || busy) return;
+    var em = email.trim().toLowerCase();
+    var code = genCode();
+    setSentCode(code);
+    setError(""); setNotice("");
+    setBusy(true);
+    sendVerificationEmail(em, code).then(function(res) {
+      setBusy(false);
+      if (res.ok) { setResendIn(30); setNotice("New code sent to " + em); }
+      else { setError("Could not resend. Try again in a moment."); }
+    }).catch(function() {
+      setBusy(false);
+      setError("Network error. Try again.");
+    });
+  }
+
+  function verify() {
+    setError("");
+    if (codeInput.trim() === sentCode && sentCode) {
+      if (step === "login_verify") {
+        var pl = pendingLogin;
+        STORE.saveSession(pl.em);
+        props.onLogin(pl.data.displayName || pl.em, pl.data, pl.em);
+      } else {
+        setStep("signup_details");
+        setNotice("");
+      }
+    } else {
+      setError("That code doesn't match. Check your email and try again.");
+    }
+  }
+
+  function finishSignup() {
+    setError("");
+    if (!fullName.trim()) { setError("Enter your full name."); return; }
+    if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
+    if (password !== password2) { setError("Those passwords don't match."); return; }
+    if (!dob) { setError("Enter your date of birth."); return; }
+    var em = email.trim().toLowerCase();
+    setBusy(true);
+    setTimeout(function() {
+      var idx = STORE.getIndex();
+      idx[em] = hashPass(password);
+      STORE.saveIndex(idx);
+      var blob = { tx: [], budgets: [], goals: [], folders: freshFolders(), categories: freshCategories(), displayName: fullName.trim(), email: em, dob: dob };
+      STORE.saveUser(em, blob);
+      STORE.saveSession(em);
+      props.onLogin(fullName.trim(), blob, em);
     }, 50);
   }
 
@@ -308,20 +566,67 @@ function AuthScreen(props) {
       if (!idx[handle]) {
         idx[handle] = "sso";
         STORE.saveIndex(idx);
-        STORE.saveUser(handle, { tx: [], budgets: DEFAULT_BUDGETS, goals: [], displayName: clean });
+        STORE.saveUser(handle, { tx: [], budgets: [], goals: [], folders: freshFolders(), categories: freshCategories(), displayName: clean });
       }
       STORE.saveSession(handle);
-      var data = STORE.getUser(handle) || { tx: [], budgets: DEFAULT_BUDGETS, goals: [], displayName: clean };
-      props.onLogin(clean, data);
+      var data = STORE.getUser(handle) || { tx: [], budgets: [], goals: [], folders: freshFolders(), categories: freshCategories(), displayName: clean };
+      props.onLogin(clean, data, handle);
     }, 300);
   }
 
-  var inputStyle = {
-    width: "100%", background: "rgba(0,0,0,0.04)",
-    border: "1.5px solid rgba(0,0,0,0.08)", borderRadius: 14,
-    padding: "14px 14px 14px 44px", fontSize: 16, fontFamily: UI,
-    color: T.ink, outline: "none", boxSizing: "border-box",
+  function goTo(s) {
+    setStep(s); setError(""); setNotice(""); setSsoProvider(null);
+  }
+
+  var titles = {
+    login:          { t: "Welcome back",   s: "Sign in to your account" },
+    login_verify:   { t: "Check your email", s: "We sent a 6-digit code to " + email },
+    signup_email:   { t: "Get started",    s: "Enter your email to begin" },
+    signup_verify:  { t: "Check your email", s: "We sent a 6-digit code to " + email },
+    signup_details: { t: "Almost there",   s: "A few details to finish your account" },
   };
+  var head = titles[step] || titles.login;
+
+  function fieldWrap(iconId, child, mb) {
+    return (
+      <div style={{ position: "relative", marginBottom: mb }}>
+        <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)" }}>
+          <SVGIcon id={iconId} size={17} color={T.ink3} />
+        </div>
+        {child}
+      </div>
+    );
+  }
+  var fieldStyle = { width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 15px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" };
+
+  var ssoBlock = (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0 16px" }}>
+        <div style={{ flex: 1, height: "0.5px", background: "rgba(0,0,0,0.12)" }} />
+        <span style={{ fontSize: 12, color: T.ink3, fontWeight: 500 }}>or continue with</span>
+        <div style={{ flex: 1, height: "0.5px", background: "rgba(0,0,0,0.12)" }} />
+      </div>
+      <div style={{ display: "flex", gap: 10 }}>
+        <button onClick={function() { setSsoProvider("google"); setSsoName(""); setError(""); }} disabled={busy}
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "#fff", border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 14, padding: "13px 0", cursor: busy ? "default" : "pointer", fontSize: 15, fontFamily: UI, fontWeight: 600, color: T.ink, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0012 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 010-4.2V7.06H2.18a11 11 0 000 9.88l3.66-2.84z"/>
+            <path fill="#EA4335" d="M12 4.75c1.62 0 3.06.56 4.21 1.64l3.15-3.15A10.5 10.5 0 0012 1a11 11 0 00-9.82 6.06l3.66 2.84C6.71 7.3 9.14 4.75 12 4.75z"/>
+          </svg>
+          Google
+        </button>
+        <button onClick={function() { setSsoProvider("apple"); setSsoName(""); setError(""); }} disabled={busy}
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "#000", border: "1.5px solid #000", borderRadius: 14, padding: "13px 0", cursor: busy ? "default" : "pointer", fontSize: 15, fontFamily: UI, fontWeight: 600, color: "#fff", boxShadow: "0 2px 8px rgba(0,0,0,0.12)" }}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="#fff">
+            <path d="M17.05 12.04c-.03-2.85 2.33-4.22 2.44-4.29-1.33-1.95-3.4-2.22-4.14-2.25-1.76-.18-3.44 1.04-4.34 1.04-.89 0-2.27-1.02-3.74-.99-1.92.03-3.7 1.12-4.69 2.84-2 3.47-.51 8.6 1.44 11.42.95 1.38 2.08 2.93 3.56 2.87 1.43-.06 1.97-.92 3.7-.92 1.72 0 2.21.92 3.72.89 1.54-.03 2.51-1.4 3.45-2.79 1.09-1.6 1.54-3.15 1.56-3.23-.03-.02-2.99-1.15-3.02-4.56zM14.2 3.78c.79-.96 1.32-2.29 1.18-3.62-1.14.05-2.52.76-3.34 1.72-.73.85-1.37 2.21-1.2 3.51 1.27.1 2.57-.65 3.36-1.61z"/>
+          </svg>
+          Apple
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)", display: "flex", flexDirection: "column", fontFamily: UI, position: "relative", overflow: "hidden" }}>
@@ -335,80 +640,129 @@ function AuthScreen(props) {
           <div style={{ width: 80, height: 80, borderRadius: 24, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px", boxShadow: "0 12px 32px " + T.orangeGlow + ", 0 4px 12px rgba(0,0,0,0.12)" }}>
             <SVGIcon id="spark" size={36} color="#fff" />
           </div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: T.orange, letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 8 }}>Claude Budget</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: T.orange, letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 8 }}>Richy</div>
           <div style={{ fontSize: 30, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.15 }}>
-            {mode === "login" ? "Welcome back" : "Get started"}
+            {head.t}
           </div>
-          <div style={{ fontSize: 15, color: T.ink2, marginTop: 6 }}>
-            {mode === "login" ? "Sign in to your account" : "Create your free account"}
+          <div style={{ fontSize: 15, color: T.ink2, marginTop: 6, wordBreak: "break-word" }}>
+            {head.s}
           </div>
         </div>
 
         <div style={{ width: "100%", maxWidth: 380 }}>
-          <div style={{ position: "relative", marginBottom: 12 }}>
-            <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)" }}>
-              <SVGIcon id="user" size={17} color={T.ink3} />
+          {step === "login" && (
+            <div>
+              {fieldWrap("mail",
+                <input value={email} onChange={function(e) { setEmail(e.target.value); }}
+                  placeholder="Email" type="email" autoComplete="email"
+                  onKeyDown={function(e) { if (e.key === "Enter") login(); }}
+                  style={fieldStyle} />, 12)}
+              <div style={{ position: "relative", marginBottom: 0 }}>
+                <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)" }}>
+                  <SVGIcon id="lock" size={17} color={T.ink3} />
+                </div>
+                <input value={password} onChange={function(e) { setPW(e.target.value); }}
+                  type={showPw ? "text" : "password"} placeholder="Password" autoComplete="current-password"
+                  onKeyDown={function(e) { if (e.key === "Enter") login(); }}
+                  style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 46px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
+                <button onClick={function() { setShowPw(function(v) { return !v; }); }}
+                  style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                  <SVGIcon id={showPw ? "eyeoff" : "eye"} size={17} color={T.ink3} />
+                </button>
+              </div>
             </div>
-            <input value={username} onChange={function(e) { setUN(e.target.value); }}
-              placeholder="Username" autoComplete="username"
-              onKeyDown={function(e) { if (e.key === "Enter") submit(); }}
-              style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 15px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
-          </div>
+          )}
 
-          <div style={{ position: "relative", marginBottom: error ? 12 : 0 }}>
-            <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)" }}>
-              <SVGIcon id="lock" size={17} color={T.ink3} />
+          {step === "signup_email" && (
+            <div>
+              {fieldWrap("mail",
+                <input value={email} onChange={function(e) { setEmail(e.target.value); }}
+                  placeholder="Email" type="email" autoComplete="email" autoFocus
+                  onKeyDown={function(e) { if (e.key === "Enter") sendCode(); }}
+                  style={fieldStyle} />, 0)}
+              <div style={{ fontSize: 12.5, color: T.ink3, padding: "10px 4px 0", lineHeight: 1.5 }}>
+                We'll send a 6-digit code to confirm it's really you.
+              </div>
             </div>
-            <input value={password} onChange={function(e) { setPW(e.target.value); }}
-              type={showPw ? "text" : "password"} placeholder="Password"
-              autoComplete={mode === "register" ? "new-password" : "current-password"}
-              onKeyDown={function(e) { if (e.key === "Enter") submit(); }}
-              style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 46px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
-            <button onClick={function() { setShowPw(function(v) { return !v; }); }}
-              style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-              <SVGIcon id={showPw ? "eyeoff" : "eye"} size={17} color={T.ink3} />
-            </button>
-          </div>
+          )}
+
+          {(step === "signup_verify" || step === "login_verify") && (
+            <div>
+              <input value={codeInput} onChange={function(e) { setCodeInput(e.target.value.replace(/[^0-9]/g, "").slice(0, 6)); }}
+                placeholder="000000" type="tel" inputMode="numeric" autoFocus
+                onKeyDown={function(e) { if (e.key === "Enter") verify(); }}
+                style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "16px 0", fontSize: 30, fontFamily: UI, fontWeight: 700, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", textAlign: "center", letterSpacing: "0.5em", textIndent: "0.5em" }} />
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 4px 0" }}>
+                <button onClick={function() { goTo(step === "login_verify" ? "login" : "signup_email"); }}
+                  style={{ background: "none", border: "none", color: T.ink2, fontSize: 13, fontFamily: UI, fontWeight: 600, cursor: "pointer", padding: 0 }}>
+                  Change email
+                </button>
+                <button onClick={resend} disabled={resendIn > 0 || busy}
+                  style={{ background: "none", border: "none", color: resendIn > 0 ? T.ink3 : T.orange, fontSize: 13, fontFamily: UI, fontWeight: 700, cursor: resendIn > 0 ? "default" : "pointer", padding: 0 }}>
+                  {resendIn > 0 ? "Resend in " + resendIn + "s" : "Resend code"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === "signup_details" && (
+            <div>
+              {fieldWrap("user",
+                <input value={fullName} onChange={function(e) { setFullName(e.target.value); }}
+                  placeholder="Full name" autoComplete="name" autoFocus
+                  style={fieldStyle} />, 12)}
+              <div style={{ position: "relative", marginBottom: 12 }}>
+                <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)" }}>
+                  <SVGIcon id="lock" size={17} color={T.ink3} />
+                </div>
+                <input value={password} onChange={function(e) { setPW(e.target.value); }}
+                  type={showPw ? "text" : "password"} placeholder="Set a password" autoComplete="new-password"
+                  style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 46px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
+                <button onClick={function() { setShowPw(function(v) { return !v; }); }}
+                  style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                  <SVGIcon id={showPw ? "eyeoff" : "eye"} size={17} color={T.ink3} />
+                </button>
+              </div>
+              {fieldWrap("lock",
+                <input value={password2} onChange={function(e) { setPW2(e.target.value); }}
+                  type={showPw ? "text" : "password"} placeholder="Repeat password" autoComplete="new-password"
+                  style={fieldStyle} />, 12)}
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", padding: "2px 4px 7px" }}>Date of birth</div>
+              {fieldWrap("calendar",
+                <input value={dob} onChange={function(e) { setDob(e.target.value); }}
+                  type="date"
+                  onKeyDown={function(e) { if (e.key === "Enter") finishSignup(); }}
+                  style={fieldStyle} />, 0)}
+            </div>
+          )}
+
+          {notice && !error && (
+            <div style={{ fontSize: 13, color: T.green, padding: "10px 4px 0", display: "flex", alignItems: "center", gap: 6 }}>
+              <SVGIcon id="check" size={14} color={T.green} />
+              {notice}
+            </div>
+          )}
 
           {error && (
-            <div style={{ fontSize: 13, color: T.red, padding: "6px 4px 4px", display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ fontSize: 13, color: T.red, padding: "10px 4px 4px", lineHeight: 1.45 }}>
               {error}
             </div>
           )}
 
-          <button onClick={submit} disabled={busy}
-            style={{ width: "100%", background: busy ? "rgba(0,0,0,0.08)" : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: busy ? T.ink3 : "#fff", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: busy ? "default" : "pointer", marginTop: 16, boxShadow: busy ? "none" : "0 6px 20px " + T.orangeGlow + ", 0 2px 6px rgba(0,0,0,0.1)", letterSpacing: "-0.01em" }}>
-            {busy ? "Please wait..." : mode === "login" ? "Sign In" : "Create Account"}
-          </button>
-
           {!ssoProvider && (
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0 16px" }}>
-                <div style={{ flex: 1, height: "0.5px", background: "rgba(0,0,0,0.12)" }} />
-                <span style={{ fontSize: 12, color: T.ink3, fontWeight: 500 }}>or continue with</span>
-                <div style={{ flex: 1, height: "0.5px", background: "rgba(0,0,0,0.12)" }} />
-              </div>
-              <div style={{ display: "flex", gap: 10 }}>
-                <button onClick={function() { setSsoProvider("google"); setSsoName(""); setError(""); }} disabled={busy}
-                  style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "#fff", border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 14, padding: "13px 0", cursor: busy ? "default" : "pointer", fontSize: 15, fontFamily: UI, fontWeight: 600, color: T.ink, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0012 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 010-4.2V7.06H2.18a11 11 0 000 9.88l3.66-2.84z"/>
-                    <path fill="#EA4335" d="M12 4.75c1.62 0 3.06.56 4.21 1.64l3.15-3.15A10.5 10.5 0 0012 1a11 11 0 00-9.82 6.06l3.66 2.84C6.71 7.3 9.14 4.75 12 4.75z"/>
-                  </svg>
-                  Google
-                </button>
-                <button onClick={function() { setSsoProvider("apple"); setSsoName(""); setError(""); }} disabled={busy}
-                  style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "#000", border: "1.5px solid #000", borderRadius: 14, padding: "13px 0", cursor: busy ? "default" : "pointer", fontSize: 15, fontFamily: UI, fontWeight: 600, color: "#fff", boxShadow: "0 2px 8px rgba(0,0,0,0.12)" }}>
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="#fff">
-                    <path d="M17.05 12.04c-.03-2.85 2.33-4.22 2.44-4.29-1.33-1.95-3.4-2.22-4.14-2.25-1.76-.18-3.44 1.04-4.34 1.04-.89 0-2.27-1.02-3.74-.99-1.92.03-3.7 1.12-4.69 2.84-2 3.47-.51 8.6 1.44 11.42.95 1.38 2.08 2.93 3.56 2.87 1.43-.06 1.97-.92 3.7-.92 1.72 0 2.21.92 3.72.89 1.54-.03 2.51-1.4 3.45-2.79 1.09-1.6 1.54-3.15 1.56-3.23-.03-.02-2.99-1.15-3.02-4.56zM14.2 3.78c.79-.96 1.32-2.29 1.18-3.62-1.14.05-2.52.76-3.34 1.72-.73.85-1.37 2.21-1.2 3.51 1.27.1 2.57-.65 3.36-1.61z"/>
-                  </svg>
-                  Apple
-                </button>
-              </div>
-            </div>
+            <button
+              onClick={step === "login" ? login : step === "signup_email" ? sendCode : (step === "signup_verify" || step === "login_verify") ? verify : finishSignup}
+              disabled={busy}
+              style={{ width: "100%", background: busy ? "rgba(0,0,0,0.08)" : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: busy ? T.ink3 : "#fff", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: busy ? "default" : "pointer", marginTop: 16, boxShadow: busy ? "none" : "0 6px 20px " + T.orangeGlow + ", 0 2px 6px rgba(0,0,0,0.1)", letterSpacing: "-0.01em" }}>
+              {busy ? "Please wait..."
+                : step === "login" ? "Sign In"
+                : step === "signup_email" ? "Send Code"
+                : (step === "signup_verify" || step === "login_verify") ? "Verify"
+                : "Create Account"}
+            </button>
           )}
+
+          {!ssoProvider && (step === "login" || step === "signup_email") && ssoBlock}
 
           {ssoProvider && (
             <div style={{ marginTop: 18, padding: "16px", background: "rgba(0,0,0,0.03)", borderRadius: 16, border: "1px solid rgba(0,0,0,0.06)" }}>
@@ -438,10 +792,10 @@ function AuthScreen(props) {
           )}
 
           <div style={{ textAlign: "center", marginTop: 20, fontSize: 14, color: T.ink2 }}>
-            {mode === "login" ? "New here? " : "Have an account? "}
-            <button onClick={function() { setMode(function(m) { return m === "login" ? "register" : "login"; }); setError(""); }}
+            {step === "login" ? "New here? " : "Have an account? "}
+            <button onClick={function() { goTo(step === "login" ? "signup_email" : "login"); }}
               style={{ background: "none", border: "none", color: T.orange, fontWeight: 700, fontSize: 14, fontFamily: UI, cursor: "pointer" }}>
-              {mode === "login" ? "Create account" : "Sign in"}
+              {step === "login" ? "Create account" : "Sign in"}
             </button>
           </div>
         </div>
@@ -455,64 +809,83 @@ function AuthScreen(props) {
 function Overview(props) {
   var tx       = props.tx;
   var goals    = props.goals;
+  var budgets  = props.budgets || [];
+  var cats     = props.categories || [];
   var username = props.username || "";
   var name     = username.charAt(0).toUpperCase() + username.slice(1);
 
   var h    = new Date().getHours();
   var mins = new Date().getMinutes();
+  var day  = new Date().getDay();
   var period = h < 12 ? "morning" : h < 17 ? "afternoon" : "evening";
-
   var tod = period === "morning" ? "Good morning" : period === "afternoon" ? "Good afternoon" : "Good evening";
-  var greetings = [
-    tod + ", " + name + ".",
-    "How are you saving today, " + name + "?",
-    "Getting productive, " + name + "?",
-    "Hey, " + name + ".",
-    "Coffee and Claude, " + name + ".",
-    tod + ", " + name + ".",
-    "Hi " + name + ".",
-    "How are you saving today, " + name + "?",
-    "Getting productive, " + name + "?",
-    tod + ", " + name + ".",
+
+  var pairs = [
+    { g: tod + ", " + name + ".",                      s: "Here's where you stand." },
+    { g: "How are you saving today, " + name + "?",    s: "Your numbers for today." },
+    { g: "Getting productive, " + name + "?",          s: "Let's see how you're doing." },
+    { g: "Hey, " + name + ".",                         s: "Quick look at your finances." },
+    { g: "Coffee and wealth, " + name + ".",           s: "Here's your overview." },
+    { g: "Hi " + name + ".",                           s: "Everything in one place." },
+    { g: "Are we rich yet, " + name + "?",             s: "Let's check the numbers." },
+    { g: "Another day, another dollar, " + name + ".", s: "Your financial snapshot." },
+    { g: "What are we building today, " + name + "?",  s: "Here's the latest." },
+    { g: "Wealth is a habit, " + name + ".",           s: "A clear view of your money." },
+    { g: "Still at it, " + name + "?",                 s: "Today at a glance." },
+    { g: "The grind continues, " + name + ".",         s: "Here's where things stand." },
+    { g: "Money doesn't sleep, " + name + ".",         s: "Neither do your numbers." },
+    { g: tod + ", " + name + ".",                      s: "Your financial snapshot." },
+    { g: "Sharp eye on the numbers, " + name + ".",    s: "Your overview." },
+    { g: "Eyes on the prize, " + name + ".",           s: "Here's the full picture." },
   ];
-  var subtitles = [
-    "Here's where you stand.",
-    "Your numbers for today.",
-    "Let's see how you're doing.",
-    "Quick look at your finances.",
-    "Here's your overview.",
-    "Everything in one place.",
-    "Your financial snapshot.",
-    "Here's the latest.",
-    "A clear view of your money.",
-    "Today at a glance.",
-  ];
-  var idx      = mins % greetings.length;
-  var greeting = greetings[idx];
-  var subtitle = subtitles[idx];
+
+  if (h < 14) {
+    if (day === 5) pairs.push({ g: "Happy Friday, " + name + ".",   s: "End the week strong." });
+    if (day === 6) pairs.push({ g: "Happy Saturday, " + name + ".", s: "Your weekend overview." });
+    if (day === 0) pairs.push({ g: "Happy Sunday, " + name + ".",   s: "Rest, review, repeat." });
+    if (day === 1) pairs.push({ g: "New week, " + name + ".",       s: "Fresh start, clean slate." });
+  }
+
+  var idx      = mins % pairs.length;
+  var greeting = pairs[idx].g;
+  var subtitle = pairs[idx].s;
 
   var income  = tx.filter(function(t) { return t.type === "income"; }).reduce(function(s,t) { return s+t.amount; }, 0);
   var expense = tx.filter(function(t) { return t.type === "expense"; }).reduce(function(s,t) { return s+t.amount; }, 0);
   var balance = income - expense;
   var savRate = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
-  var topCat  = CATS.map(function(c) {
-    return { name: c, color: CAT_COLOR[c], val: tx.filter(function(t) { return t.type==="expense" && t.category===c; }).reduce(function(s,t){return s+t.amount;},0) };
-  }).sort(function(a,b){ return b.val-a.val; })[0];
-  var pie = CATS.map(function(c) {
-    return { name: c, color: CAT_COLOR[c], value: tx.filter(function(t) { return t.type==="expense" && t.category===c; }).reduce(function(s,t){return s+t.amount;},0) };
-  }).filter(function(c) { return c.value > 0; });
+  function spentInCat(c) {
+    return tx.filter(function(t) { return t.type === "expense" && (t.catId === c.id || t.category === c.name); }).reduce(function(s,t){return s+t.amount;}, 0);
+  }
+  var byCat = cats.map(function(c) {
+    return { id: c.id, name: c.name, color: c.color, icon: c.icon, val: spentInCat(c) };
+  }).sort(function(a,b){ return b.val - a.val; });
+  var topCat = byCat[0];
+  var pie = byCat.filter(function(c) { return c.val > 0; }).map(function(c) { return { name: c.name, color: c.color, value: c.val }; });
   var recent = tx.slice().sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,4);
+
+  var budgetRows = budgets.map(function(b) {
+    var c = catById(cats, b.catId) || catByName(cats, b.category) || { id: b.catId, name: b.category || "Budget", color: T.orange, icon: "box" };
+    var s = spentInCat(c);
+    var pct = b.limit > 0 ? Math.round((s / b.limit) * 100) : 0;
+    return { cat: c, spent: s, limit: b.limit, pct: pct, over: s > b.limit && b.limit > 0 };
+  }).sort(function(a,b){ return b.pct - a.pct; });
 
   return (
     <div>
 
-      <div style={{ padding: "6px 2px 22px" }}>
-        <div style={{ fontSize: 28, fontWeight: 700, color: T.ink, letterSpacing: "-0.03em", lineHeight: 1.18 }}>
-          {greeting}
+      <div style={{ padding: "6px 2px 22px", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: T.ink, letterSpacing: "-0.03em", lineHeight: 1.18 }}>
+            {greeting}
+          </div>
+          <div style={{ fontSize: 14, color: T.ink3, marginTop: 5, fontStyle: "italic" }}>
+            {subtitle}
+          </div>
         </div>
-        <div style={{ fontSize: 14, color: T.ink3, marginTop: 5, fontStyle: "italic" }}>
-          {subtitle}
-        </div>
+        <button onClick={props.onCategories} style={{ flexShrink: 0, marginTop: 4, marginLeft: 18, width: 42, height: 42, borderRadius: 14, background: T.orange, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(200,103,58,0.32)" }}>
+          <SVGIcon id="categories" size={20} color="#fff" />
+        </button>
       </div>
 
       <div style={{ borderRadius: 22, overflow: "hidden", marginBottom: 16, background: "linear-gradient(145deg," + T.dark + " 0%," + T.darkCard + " 50%," + T.darkCard2 + " 100%)", boxShadow: "0 12px 40px rgba(20,18,16,0.28), 0 2px 8px rgba(0,0,0,0.14)", position: "relative" }}>
@@ -618,6 +991,33 @@ function Overview(props) {
         </div>
       )}
 
+      {budgetRows.length > 0 && (
+        <div>
+          <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Budgets</span>
+            <span style={{ fontSize: 12, color: T.ink3 }}>{budgetRows.filter(function(b){return b.over;}).length > 0 ? budgetRows.filter(function(b){return b.over;}).length + " over limit" : "On track"}</span>
+          </div>
+          <Card style={{ marginBottom: 20, overflow: "hidden" }}>
+            {budgetRows.map(function(b, i) {
+              return (
+                <div key={b.cat.id || i} style={{ padding: "13px 16px", borderBottom: i < budgetRows.length-1 ? "0.5px solid " + T.sep : "none" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 8 }}>
+                    <CatBadge icon={b.cat.icon} color={b.cat.color} size={32} soft={true} />
+                    <span style={{ flex: 1, fontSize: 14.5, color: T.ink, fontWeight: 600 }}>{b.cat.name}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: b.over ? T.red : T.ink2 }}>{b.pct}%</span>
+                  </div>
+                  <ProgressBar value={b.spent} max={b.limit} color={b.over ? T.red : b.cat.color} h={6} />
+                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
+                    <span style={{ fontSize: 11, color: b.over ? T.red : T.ink3 }}>{dollars(b.spent)} spent</span>
+                    <span style={{ fontSize: 11, color: T.ink3 }}>of {dollars(b.limit)}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </Card>
+        </div>
+      )}
+
       {goals.length > 0 && (
         <div>
           <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -656,12 +1056,13 @@ function Overview(props) {
           </div>
           <Card style={{ overflow: "hidden", marginBottom: 8 }}>
             {recent.map(function(t, i) {
+              var c = resolveCat(cats, t);
               return (
                 <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 18px", borderBottom: i < recent.length-1 ? "0.5px solid " + T.sep : "none" }}>
-                  <IconBadge bg={t.type === "income" ? T.green : (CAT_COLOR[t.category] || T.ink3)} icon={t.type === "income" ? "up" : "down"} size={36} />
+                  <CatBadge icon={t.type === "income" ? "up" : c.icon} color={t.type === "income" ? T.green : c.color} size={36} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 15, color: T.ink, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
-                    <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{t.category} {"  "}{t.date}</div>
+                    <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{t.type === "income" ? "Income" : c.name} {"  "}{t.date}</div>
                   </div>
                   <span style={{ fontSize: 15, fontWeight: 700, color: t.type === "income" ? T.green : T.ink, flexShrink: 0 }}>
                     {t.type === "income" ? "+" : "-"}{dollars(t.amount)}
@@ -677,9 +1078,24 @@ function Overview(props) {
   );
 }
 
+function dateLabel(date) {
+  var today = new Date().toISOString().slice(0, 10);
+  var yest = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  if (date === today) return "Today";
+  if (date === yest) return "Yesterday";
+  var d = new Date(date + "T12:00:00");
+  return d.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+}
+
 function Activity(props) {
-  var _f = useState({ type: "expense", amount: "", label: "", category: "Food", date: new Date().toISOString().slice(0, 10) });
+  var cats = props.categories || [];
+  var blankForm = { type: "expense", amount: "", label: "", catId: (cats[0] || {}).id || "", date: new Date().toISOString().slice(0, 10), repeat: "none", pending: false };
+  var _f = useState(blankForm);
   var form = _f[0]; var setForm = _f[1];
+  var _et = useState(null);
+  var editTx = _et[0]; var setEditTx = _et[1];
+  var _ef = useState(blankForm);
+  var editForm = _ef[0]; var setEditForm = _ef[1];
 
   function setField(key, val) {
     setForm(function(prev) {
@@ -689,14 +1105,31 @@ function Activity(props) {
       return next;
     });
   }
+  function setEditField(key, val) {
+    setEditForm(function(prev) {
+      var next = {};
+      for (var k in prev) next[k] = prev[k];
+      next[key] = val;
+      return next;
+    });
+  }
 
   function add() {
     if (!form.amount || !form.label) return;
-    var newTx = props.tx.concat([{ type: form.type, amount: parseFloat(form.amount), label: form.label, category: form.category, date: form.date, id: Date.now() }]);
+    var c = catById(cats, form.catId) || cats[0] || { id: "", name: "Other" };
+    var newTx = props.tx.concat([{ type: form.type, amount: parseFloat(form.amount), label: form.label, catId: c.id, category: c.name, date: form.date, id: Date.now(), repeat: form.repeat, pending: form.pending }]);
     props.onSaveTx(newTx);
-    setField("amount", "");
-    setField("label", "");
+    setForm(blankForm);
     props.setSheetOpen(false);
+  }
+
+  function saveEdit() {
+    if (!editForm.amount || !editForm.label || !editTx) return;
+    var c = catById(cats, editForm.catId) || cats[0] || { id: "", name: "Other" };
+    props.onSaveTx(props.tx.map(function(t) {
+      return t.id === editTx.id ? { id: t.id, type: editForm.type, amount: parseFloat(editForm.amount), label: editForm.label, catId: c.id, category: c.name, date: editForm.date, repeat: editForm.repeat, pending: editForm.pending } : t;
+    }));
+    setEditTx(null);
   }
 
   var sorted = props.tx.slice().sort(function(a, b) { return b.date.localeCompare(a.date); });
@@ -707,45 +1140,161 @@ function Activity(props) {
   });
   var dates = Object.keys(groups).sort(function(a, b) { return b.localeCompare(a); });
 
+  var totalIn  = props.tx.filter(function(t){return t.type==="income";}).reduce(function(s,t){return s+t.amount;},0);
+  var totalOut = props.tx.filter(function(t){return t.type==="expense";}).reduce(function(s,t){return s+t.amount;},0);
+
   return (
     <div>
       <Overlay open={props.sheetOpen} onClose={function() { props.setSheetOpen(false); }} title="New Transaction">
-        <FormRow label="Type" value={form.type} onChange={function(e) { setField("type", e.target.value); }} opts={["expense","income"]} />
+        <div style={{ display: "flex", gap: 8, marginBottom: 9 }}>
+          {["expense","income"].map(function(opt) {
+            var on = form.type === opt;
+            return (
+              <button key={opt} onClick={function() { setField("type", opt); }}
+                style={{ flex: 1, padding: "11px 0", borderRadius: 12, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 700, fontFamily: UI,
+                  background: on ? (opt === "income" ? T.greenDim : T.orangeDim) : "rgba(0,0,0,0.04)",
+                  color: on ? (opt === "income" ? T.green : T.orange) : T.ink3 }}>
+                {opt === "income" ? "Income" : "Expense"}
+              </button>
+            );
+          })}
+        </div>
         <FormRow label="Amount" value={form.amount} onChange={function(e) { setField("amount", e.target.value); }} type="number" />
         <FormRow label="Label" value={form.label} onChange={function(e) { setField("label", e.target.value); }} />
-        <FormRow label="Category" value={form.category} onChange={function(e) { setField("category", e.target.value); }} opts={CATS} />
-        <FormRow label="Date" value={form.date} onChange={function(e) { setField("date", e.target.value); }} type="date" last={true} />
+        <CatPicker label="Category" categories={cats} value={form.catId} onChange={function(id) { setField("catId", id); }} />
+        <FormRow label="Date" value={form.date} onChange={function(e) { setField("date", e.target.value); }} type="date" />
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 7 }}>Repeat</div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {["none","weekly","monthly"].map(function(opt) {
+              var on = form.repeat === opt;
+              return (
+                <button key={opt} onClick={function() { setField("repeat", opt); }}
+                  style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: UI,
+                    background: on ? T.orangeDim : "rgba(0,0,0,0.04)",
+                    color: on ? T.orange : T.ink3 }}>
+                  {opt === "none" ? "Once" : opt === "weekly" ? "Weekly" : "Monthly"}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <button onClick={function() { setField("pending", !form.pending); }}
+          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, border: "none", cursor: "pointer", marginBottom: 12,
+            background: form.pending ? T.goldDim : "rgba(0,0,0,0.04)", fontFamily: UI }}>
+          <span style={{ fontSize: 14, fontWeight: 500, color: form.pending ? T.gold : T.ink2 }}>Mark as pending</span>
+          <div style={{ width: 20, height: 20, borderRadius: 6, border: "2px solid " + (form.pending ? T.gold : T.ink3), background: form.pending ? T.gold : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {form.pending && <SVGIcon id="check" size={11} color="#fff" />}
+          </div>
+        </button>
         <BigBtn label="Add Transaction" onPress={add} disabled={!form.amount || !form.label} />
       </Overlay>
 
+      <Overlay open={!!editTx} onClose={function() { setEditTx(null); }} title="Edit Transaction">
+        <div style={{ display: "flex", gap: 8, marginBottom: 9 }}>
+          {["expense","income"].map(function(opt) {
+            var on = editForm.type === opt;
+            return (
+              <button key={opt} onClick={function() { setEditField("type", opt); }}
+                style={{ flex: 1, padding: "11px 0", borderRadius: 12, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 700, fontFamily: UI,
+                  background: on ? (opt === "income" ? T.greenDim : T.orangeDim) : "rgba(0,0,0,0.04)",
+                  color: on ? (opt === "income" ? T.green : T.orange) : T.ink3 }}>
+                {opt === "income" ? "Income" : "Expense"}
+              </button>
+            );
+          })}
+        </div>
+        <FormRow label="Amount" value={editForm.amount} onChange={function(e) { setEditField("amount", e.target.value); }} type="number" />
+        <FormRow label="Label" value={editForm.label} onChange={function(e) { setEditField("label", e.target.value); }} />
+        <CatPicker label="Category" categories={cats} value={editForm.catId} onChange={function(id) { setEditField("catId", id); }} />
+        <FormRow label="Date" value={editForm.date} onChange={function(e) { setEditField("date", e.target.value); }} type="date" />
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 7 }}>Repeat</div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {["none","weekly","monthly"].map(function(opt) {
+              var on = editForm.repeat === opt;
+              return (
+                <button key={opt} onClick={function() { setEditField("repeat", opt); }}
+                  style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: UI,
+                    background: on ? T.orangeDim : "rgba(0,0,0,0.04)",
+                    color: on ? T.orange : T.ink3 }}>
+                  {opt === "none" ? "Once" : opt === "weekly" ? "Weekly" : "Monthly"}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <button onClick={function() { setEditField("pending", !editForm.pending); }}
+          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, border: "none", cursor: "pointer", marginBottom: 12,
+            background: editForm.pending ? T.goldDim : "rgba(0,0,0,0.04)", fontFamily: UI }}>
+          <span style={{ fontSize: 14, fontWeight: 500, color: editForm.pending ? T.gold : T.ink2 }}>Mark as pending</span>
+          <div style={{ width: 20, height: 20, borderRadius: 6, border: "2px solid " + (editForm.pending ? T.gold : T.ink3), background: editForm.pending ? T.gold : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {editForm.pending && <SVGIcon id="check" size={11} color="#fff" />}
+          </div>
+        </button>
+        <BigBtn label="Save Changes" onPress={saveEdit} disabled={!editForm.amount || !editForm.label} />
+        <button onClick={function() { props.onSaveTx(props.tx.filter(function(x) { return x.id !== editTx.id; })); setEditTx(null); }}
+          style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 12, padding: "6px 0" }}>
+          Delete transaction
+        </button>
+      </Overlay>
+
       {props.tx.length === 0 && (
-        <Card style={{ padding: "48px 24px", textAlign: "center" }}>
-          <div style={{ fontSize: 44, marginBottom: 12, color: T.ink3 }}>$</div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink2, marginBottom: 4 }}>No transactions yet</div>
-          <div style={{ fontSize: 13, color: T.ink3 }}>Tap + to add your first one.</div>
+        <Card style={{ padding: "46px 24px", textAlign: "center" }}>
+          <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+            <SVGIcon id="activity" size={24} color={T.orange} />
+          </div>
+          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>No transactions yet</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>Tap + to log your first one. Awareness is the first step to wealth.</div>
         </Card>
       )}
 
+      {props.tx.length > 0 && (
+        <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
+          <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "14px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Money In</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: T.green, letterSpacing: "-0.02em" }}>{dollars(totalIn)}</div>
+          </div>
+          <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "14px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Money Out</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(totalOut)}</div>
+          </div>
+        </div>
+      )}
+
       {dates.map(function(date) {
+        var dayItems = groups[date];
+        var dayNet = dayItems.reduce(function(s,t){ return t.type === "income" ? s + t.amount : s - t.amount; }, 0);
         return (
           <div key={date} style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: T.ink2, padding: "0 4px 8px" }}>{date}</div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 4px 8px" }}>
+              <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dateLabel(date)}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: dayNet >= 0 ? T.green : T.ink2 }}>{dayNet >= 0 ? "+" : "-"}{dollars(dayNet)}</span>
+            </div>
             <Card style={{ overflow: "hidden" }}>
-              {groups[date].map(function(t, i) {
+              {dayItems.map(function(t, i) {
+                var c = resolveCat(cats, t);
                 return (
-                  <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 13, padding: "12px 18px", borderBottom: i < groups[date].length - 1 ? "0.5px solid " + T.sep : "none" }}>
-                    <IconBadge bg={t.type === "income" ? T.green : (CAT_COLOR[t.category] || T.ink3)} label={t.type === "income" ? "+" : "-"} size={38} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 15, color: T.ink, fontWeight: 500 }}>{t.label}</div>
-                      <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>{t.category}</div>
+                  <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 16px", borderBottom: i < dayItems.length - 1 ? "0.5px solid " + T.sep : "none", opacity: t.pending ? 0.62 : 1 }}>
+                    <CatBadge icon={t.type === "income" ? "up" : c.icon} color={t.type === "income" ? T.green : c.color} size={40} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 15, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
+                      <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                          <span style={{ width: 6, height: 6, borderRadius: "50%", background: t.type === "income" ? T.green : c.color, display: "inline-block" }} />
+                          {t.type === "income" ? "Income" : c.name}
+                        </span>
+                        {t.pending && <span style={{ fontSize: 10, fontWeight: 700, color: T.gold, background: T.goldDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.04em" }}>PENDING</span>}
+                        {t.repeat && t.repeat !== "none" && <span style={{ fontSize: 10, fontWeight: 600, color: T.ink3, background: "rgba(0,0,0,0.05)", borderRadius: 5, padding: "1px 6px" }}>{t.repeat === "weekly" ? "Weekly" : "Monthly"}</span>}
+                      </div>
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-                      <span style={{ fontSize: 15, fontWeight: 700, color: t.type === "income" ? T.green : T.ink }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 5 }}>
+                      <span style={{ fontSize: 15.5, fontWeight: 700, color: t.type === "income" ? T.green : T.ink, letterSpacing: "-0.02em" }}>
                         {t.type === "income" ? "+" : "-"}{dollars(t.amount)}
                       </span>
-                      <button onClick={function() { props.onSaveTx(props.tx.filter(function(x) { return x.id !== t.id; })); }}
-                        style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: T.ink3, fontSize: 12 }}>
-                        del
+                      <button onClick={function() { setEditTx(t); setEditForm({ type: t.type, amount: String(t.amount), label: t.label, catId: t.catId || "", date: t.date, repeat: t.repeat || "none", pending: t.pending || false }); }}
+                        style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: T.orange, fontSize: 11, fontWeight: 600 }}>
+                        Edit
                       </button>
                     </div>
                   </div>
@@ -760,78 +1309,155 @@ function Activity(props) {
 }
 
 function Budgets(props) {
+  var cats = props.categories || [];
   var _s = useState(null);
-  var sheet = _s[0]; var setSheet = _s[1];
+  var editId = _s[0]; var setEditId = _s[1];
   var _v = useState("");
   var val = _v[0]; var setVal = _v[1];
+  var _nb = useState({ catId: "", limit: "" });
+  var nb = _nb[0]; var setNb = _nb[1];
 
-  function spent(cat) {
-    return props.tx.filter(function(t) { return t.type === "expense" && t.category === cat; }).reduce(function(s, t) { return s + t.amount; }, 0);
+  function spentForCat(c) {
+    return props.tx.filter(function(t) { return t.type === "expense" && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
   }
 
-  var totalSpent = props.budgets.reduce(function(s, b) { return s + spent(b.category); }, 0);
-  var totalLimit = props.budgets.reduce(function(s, b) { return s + b.limit; }, 0);
+  var rows = props.budgets.map(function(b) {
+    var c = catById(cats, b.catId) || catByName(cats, b.category) || { id: b.catId, name: b.category || "Budget", color: T.orange, icon: "box" };
+    var s = spentForCat(c);
+    return { catId: b.catId, cat: c, limit: b.limit, spent: s, over: s > b.limit && b.limit > 0 };
+  });
+
+  var totalSpent = rows.reduce(function(s, r) { return s + r.spent; }, 0);
+  var totalLimit = rows.reduce(function(s, r) { return s + r.limit; }, 0);
+  var totalPct = totalLimit > 0 ? Math.round((totalSpent / totalLimit) * 100) : 0;
+
+  // Storage-style segmented bar: each category's share of total spend.
+  var segs = rows.slice().filter(function(r){ return r.spent > 0; }).sort(function(a,b){ return b.spent - a.spent; });
+  var segTotal = segs.reduce(function(s, r){ return s + r.spent; }, 0);
+
+  var used = {};
+  props.budgets.forEach(function(b) { used[b.catId] = true; });
+  var avail = cats.filter(function(c) { return !used[c.id]; });
 
   return (
     <div>
-      <Overlay open={!!sheet} onClose={function() { setSheet(null); }} title={sheet ? "Edit " + sheet : ""}>
+      <Overlay open={props.sheetOpen} onClose={function() { props.setSheetOpen(false); }} title="New Budget">
+        {avail.length === 0 ? (
+          <div style={{ padding: "20px 4px 8px", textAlign: "center", color: T.ink3, fontSize: 14 }}>Every category already has a budget. Add a new category first.</div>
+        ) : (
+          <div>
+            <CatPicker label="Category" categories={avail} value={nb.catId || (avail[0] || {}).id} onChange={function(id) { setNb(function(p){ return { catId: id, limit: p.limit }; }); }} />
+            <FormRow label="Monthly limit ($)" value={nb.limit} onChange={function(e) { setNb(function(p){ return { catId: p.catId || (avail[0]||{}).id, limit: e.target.value }; }); }} type="number" last={true} />
+            <BigBtn label="Add Budget" disabled={!nb.limit} onPress={function() {
+              var n = parseFloat(nb.limit);
+              var cid = nb.catId || (avail[0] || {}).id;
+              if (n > 0 && cid) {
+                var c = catById(cats, cid);
+                props.onSaveBudgets(props.budgets.concat([{ catId: cid, category: c ? c.name : "", limit: n }]));
+              }
+              setNb({ catId: "", limit: "" });
+              props.setSheetOpen(false);
+            }} />
+          </div>
+        )}
+      </Overlay>
+
+      <Overlay open={!!editId} onClose={function() { setEditId(null); }} title="Edit Limit">
         <FormRow label="Monthly limit ($)" value={val} onChange={function(e) { setVal(e.target.value); }} type="number" last={true} />
         <BigBtn label="Save" onPress={function() {
           var n = parseFloat(val);
-          if (n) props.onSaveBudgets(props.budgets.map(function(b) { return b.category === sheet ? { category: b.category, limit: n } : b; }));
-          setSheet(null);
+          if (n > 0) props.onSaveBudgets(props.budgets.map(function(b) { return b.catId === editId ? { catId: b.catId, category: b.category, limit: n } : b; }));
+          setEditId(null);
         }} />
+        <button onClick={function() { props.onSaveBudgets(props.budgets.filter(function(b){ return b.catId !== editId; })); setEditId(null); }}
+          style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 12, padding: "6px 0" }}>
+          Remove this budget
+        </button>
       </Overlay>
 
-      <Card style={{ padding: "20px", marginBottom: 20 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <div style={{ fontSize: 13, color: T.ink2, fontWeight: 500 }}>Total Spent</div>
-            <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: "-0.03em", color: totalSpent > totalLimit ? T.red : T.ink, lineHeight: 1.1, marginTop: 2 }}>
-              {dollars(totalSpent)}
-            </div>
-            <div style={{ fontSize: 13, color: T.ink3, marginTop: 2 }}>of {dollars(totalLimit)}</div>
+      {props.budgets.length === 0 && (
+        <Card style={{ padding: "46px 24px", textAlign: "center" }}>
+          <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+            <SVGIcon id="budgets" size={24} color={T.orange} />
           </div>
-          <div style={{ position: "relative" }}>
-            <RingChart value={totalSpent} max={totalLimit} size={72} color={totalSpent / totalLimit > 0.85 ? T.red : T.orange} stroke={6} />
-            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: T.ink2 }}>
-              {totalLimit > 0 ? Math.round((totalSpent / totalLimit) * 100) : 0}%
-            </div>
-          </div>
-        </div>
-        <div style={{ marginTop: 14 }}>
-          <ProgressBar value={totalSpent} max={totalLimit} h={6} />
-        </div>
-      </Card>
+          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>No budgets yet</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>Tap + to set a limit for a category. A budget is just telling your money where to go.</div>
+        </Card>
+      )}
 
-      <div style={{ padding: "0 4px 10px" }}>
-        <span style={{ fontSize: 20, fontWeight: 700, color: T.ink, fontFamily: DISP }}>By Category</span>
-      </div>
-      <Card style={{ overflow: "hidden" }}>
-        {props.budgets.map(function(b, i) {
-          var s = spent(b.category);
-          var over = s > b.limit;
-          return (
-            <div key={b.category} style={{ padding: "13px 18px", borderBottom: i < props.budgets.length - 1 ? "0.5px solid " + T.sep : "none" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 9 }}>
-                <div style={{ width: 10, height: 10, borderRadius: "50%", background: CAT_COLOR[b.category], flexShrink: 0 }} />
-                <span style={{ flex: 1, fontSize: 15, color: T.ink, fontWeight: 500 }}>{b.category}</span>
-                {over && <span style={{ fontSize: 11, fontWeight: 700, color: T.red, background: "rgba(255,59,48,0.1)", borderRadius: 7, padding: "2px 8px" }}>Over</span>}
-                <button onClick={function() { setSheet(b.category); setVal(b.limit); }}
-                  style={{ background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 14, fontWeight: 600 }}>
-                  {dollars(b.limit)}
-                </button>
+      {props.budgets.length > 0 && (
+        <Card style={{ padding: "20px", marginBottom: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>Total Spent</div>
+              <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: "-0.03em", color: totalSpent > totalLimit ? T.red : T.ink, lineHeight: 1.1, marginTop: 4 }}>
+                {dollars(totalSpent)}
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ flex: 1 }}>
-                  <ProgressBar value={s} max={b.limit} color={over ? T.red : CAT_COLOR[b.category]} h={5} />
-                </div>
-                <span style={{ fontSize: 12, minWidth: 40, textAlign: "right", color: over ? T.red : T.ink3 }}>{dollars(s)}</span>
+              <div style={{ fontSize: 13, color: T.ink3, marginTop: 2 }}>of {dollars(totalLimit)} budgeted</div>
+            </div>
+            <div style={{ position: "relative" }}>
+              <RingChart value={totalSpent} max={totalLimit} size={72} color={totalPct > 85 ? T.red : T.orange} stroke={6} />
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: totalPct > 85 ? T.red : T.ink2 }}>
+                {totalPct}%
               </div>
             </div>
-          );
-        })}
-      </Card>
+          </div>
+
+          <div style={{ marginTop: 18 }}>
+            <div style={{ display: "flex", height: 12, borderRadius: 8, overflow: "hidden", gap: 2, background: "rgba(0,0,0,0.05)" }}>
+              {segTotal > 0 ? segs.map(function(r) {
+                return <div key={r.cat.id} title={r.cat.name} style={{ width: (r.spent / segTotal * 100) + "%", background: r.over ? T.red : r.cat.color, height: "100%" }} />;
+              }) : <div style={{ width: "100%" }} />}
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", marginTop: 12 }}>
+              {segs.slice(0, 6).map(function(r) {
+                var pct = Math.round(r.spent / segTotal * 100);
+                return (
+                  <div key={r.cat.id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: 3, background: r.cat.color, display: "inline-block" }} />
+                    <span style={{ fontSize: 12, color: T.ink2, fontWeight: 500 }}>{r.cat.name}</span>
+                    <span style={{ fontSize: 12, color: T.ink3 }}>{pct}%</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {props.budgets.length > 0 && (
+        <div>
+          <div style={{ padding: "0 4px 10px" }}>
+            <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>By Category</span>
+          </div>
+          <Card style={{ overflow: "hidden" }}>
+            {rows.map(function(r, i) {
+              var pct = r.limit > 0 ? Math.round((r.spent / r.limit) * 100) : 0;
+              return (
+                <div key={r.catId || i} style={{ padding: "14px 16px", borderBottom: i < rows.length - 1 ? "0.5px solid " + T.sep : "none" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 9 }}>
+                    <CatBadge icon={r.cat.icon} color={r.cat.color} size={34} soft={true} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ fontSize: 15, color: T.ink, fontWeight: 600 }}>{r.cat.name}</span>
+                    </div>
+                    {r.over && <span style={{ fontSize: 10, fontWeight: 700, color: T.red, background: "rgba(224,48,48,0.1)", borderRadius: 7, padding: "2px 8px" }}>OVER</span>}
+                    <button onClick={function() { setEditId(r.catId); setVal(r.limit); }}
+                      style={{ background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 14, fontWeight: 700 }}>
+                      {dollars(r.limit)}
+                    </button>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ flex: 1 }}>
+                      <ProgressBar value={r.spent} max={r.limit} color={r.over ? T.red : r.cat.color} h={6} />
+                    </div>
+                    <span style={{ fontSize: 12, minWidth: 70, textAlign: "right", color: r.over ? T.red : T.ink3, fontWeight: 500 }}>{dollars(r.spent)} ({pct}%)</span>
+                  </div>
+                </div>
+              );
+            })}
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
@@ -843,6 +1469,10 @@ function Goals(props) {
   var addSheet = _a[0]; var setAddSheet = _a[1];
   var _am = useState("");
   var addAmt = _am[0]; var setAddAmt = _am[1];
+  var _eg = useState(null);
+  var editGoal = _eg[0]; var setEditGoal = _eg[1];
+  var _ef = useState({ name: "", target: "" });
+  var editForm = _ef[0]; var setEditForm = _ef[1];
 
   function setField(key, val) {
     setForm(function(prev) {
@@ -852,23 +1482,49 @@ function Goals(props) {
       return next;
     });
   }
+  function setEditField(key, val) {
+    setEditForm(function(prev) {
+      var next = {};
+      for (var k in prev) next[k] = prev[k];
+      next[key] = val;
+      return next;
+    });
+  }
 
   return (
     <div>
-      <Overlay open={props.sheetOpen} onClose={function() { props.setSheetOpen(false); }} title="New Goal">
-        <FormRow label="Goal name" value={form.name} onChange={function(e) { setField("name", e.target.value); }} />
-        <FormRow label="Target ($)" value={form.target} onChange={function(e) { setField("target", e.target.value); }} type="number" />
+      <Overlay open={props.sheetOpen} onClose={function() { props.setSheetOpen(false); }} title="New Budget Book">
+        <FormRow label="Name" value={form.name} onChange={function(e) { setField("name", e.target.value); }} />
+        <FormRow label="Target" value={form.target} onChange={function(e) { setField("target", e.target.value); }} type="number" />
         <FormRow label="Already saved" value={form.saved} onChange={function(e) { setField("saved", e.target.value); }} type="number" last={true} />
-        <BigBtn label="Create Goal" disabled={!form.name || !form.target} onPress={function() {
+        <BigBtn label="Create Budget Book" disabled={!form.name || !form.target} onPress={function() {
           props.onSaveGoals(props.goals.concat([{ id: Date.now(), name: form.name, target: parseFloat(form.target), saved: parseFloat(form.saved) || 0 }]));
           setForm({ name: "", target: "", saved: "" });
           props.setSheetOpen(false);
         }} />
       </Overlay>
 
-      <Overlay open={!!addSheet} onClose={function() { setAddSheet(null); }} title={addSheet ? "Add to " + addSheet.name : ""}>
-        <FormRow label="Amount ($)" value={addAmt} onChange={function(e) { setAddAmt(e.target.value); }} type="number" last={true} />
-        <BigBtn label="Add Savings" disabled={!addAmt} onPress={function() {
+      <Overlay open={!!editGoal} onClose={function() { setEditGoal(null); }} title="Edit Budget Book">
+        <FormRow label="Name" value={editForm.name} onChange={function(e) { setEditField("name", e.target.value); }} />
+        <FormRow label="Target" value={editForm.target} onChange={function(e) { setEditField("target", e.target.value); }} type="number" last={true} />
+        <BigBtn label="Save Changes" disabled={!editForm.name || !editForm.target} onPress={function() {
+          var n = parseFloat(editForm.target);
+          if (editGoal && editForm.name && n > 0) {
+            props.onSaveGoals(props.goals.map(function(g) {
+              return g.id === editGoal.id ? { id: g.id, name: editForm.name, target: n, saved: g.saved } : g;
+            }));
+          }
+          setEditGoal(null);
+        }} />
+        <button onClick={function() { props.onSaveGoals(props.goals.filter(function(x) { return x.id !== editGoal.id; })); setEditGoal(null); }}
+          style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 12, padding: "6px 0" }}>
+          Delete budget book
+        </button>
+      </Overlay>
+
+      <Overlay open={!!addSheet} onClose={function() { setAddSheet(null); }} title={addSheet ? addSheet.name : ""}>
+        <FormRow label="Amount" value={addAmt} onChange={function(e) { setAddAmt(e.target.value); }} type="number" last={true} />
+        <BigBtn label="Add to Budget Book" disabled={!addAmt} onPress={function() {
           var n = parseFloat(addAmt);
           if (n && addSheet) {
             props.onSaveGoals(props.goals.map(function(g) {
@@ -880,11 +1536,13 @@ function Goals(props) {
         }} />
       </Overlay>
 
-      {props.goals.length === 0 && !props.sheetOpen && (
-        <Card style={{ padding: "56px 24px", textAlign: "center" }}>
-          <div style={{ fontSize: 44, color: T.ink3, marginBottom: 12 }}>*</div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink2, marginBottom: 4 }}>No Goals Yet</div>
-          <div style={{ fontSize: 13, color: T.ink3 }}>Tap + to add your first goal.</div>
+      {props.goals.length === 0 && (
+        <Card style={{ padding: "46px 24px", textAlign: "center" }}>
+          <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+            <SVGIcon id="goals" size={24} color={T.orange} />
+          </div>
+          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>No budget books yet</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>Tap + to create your first budget book. A goal with a deadline is a plan, not a wish.</div>
         </Card>
       )}
 
@@ -918,9 +1576,13 @@ function Goals(props) {
               {!done && (
                 <button onClick={function() { setAddSheet(g); setAddAmt(""); }}
                   style={{ flex: 1, background: "none", border: "none", borderRight: "0.5px solid " + T.sep, padding: "13px 0", color: T.orange, fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
-                  + Add Savings
+                  + Add
                 </button>
               )}
+              <button onClick={function() { setEditGoal(g); setEditForm({ name: g.name, target: String(g.target) }); }}
+                style={{ flex: 1, background: "none", border: "none", padding: "13px 0", color: T.ink2, fontSize: 15, cursor: "pointer", borderRight: "0.5px solid " + T.sep }}>
+                Edit
+              </button>
               <button onClick={function() { props.onSaveGoals(props.goals.filter(function(x) { return x.id !== g.id; })); }}
                 style={{ flex: 1, background: "none", border: "none", padding: "13px 0", color: T.red, fontSize: 15, cursor: "pointer" }}>
                 Delete
@@ -949,17 +1611,22 @@ function Advisor(props) {
   var _pa = useState(null);
   var pendingAction = _pa[0]; var setPendingAction = _pa[1];
 
+  var cats = props.categories || [];
   var income = props.tx.filter(function(t) { return t.type === "income"; }).reduce(function(s, t) { return s + t.amount; }, 0);
   var expense = props.tx.filter(function(t) { return t.type === "expense"; }).reduce(function(s, t) { return s + t.amount; }, 0);
   var savings = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
   var ctx = "Income $" + income + ", expenses $" + expense + ", savings rate " + savings + "%, goals: " + (props.goals.map(function(g) { return g.name + " $" + g.saved + "/$" + g.target; }).join(", ") || "none");
 
+  function catSpend(c) {
+    return props.tx.filter(function(t) { return t.type === "expense" && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  }
+
   function localAnalysis() {
     var topName = "Other";
     var topVal = 0;
-    for (var ci = 0; ci < CATS.length; ci++) {
-      var cv = props.tx.filter(function(t) { return t.type === "expense" && t.category === CATS[ci]; }).reduce(function(s, t) { return s + t.amount; }, 0);
-      if (cv > topVal) { topVal = cv; topName = CATS[ci]; }
+    for (var ci = 0; ci < cats.length; ci++) {
+      var cv = catSpend(cats[ci]);
+      if (cv > topVal) { topVal = cv; topName = cats[ci].name; }
     }
     var score = 50;
     if (savings >= 20) score = 85;
@@ -1010,8 +1677,8 @@ function Advisor(props) {
 
   function Richard(question) {
     var q = question.toLowerCase().trim();
-    var topCat = CATS.map(function(c) {
-      return { name: c, val: props.tx.filter(function(t) { return t.type === "expense" && t.category === c; }).reduce(function(s, t) { return s + t.amount; }, 0) };
+    var topCat = cats.map(function(c) {
+      return { name: c.name, val: catSpend(c) };
     }).sort(function(a, b) { return b.val - a.val; })[0];
     var monthlySpend = expense;
     var surplus = income - expense;
@@ -1298,16 +1965,15 @@ function Advisor(props) {
   }
 
   function callClaude(messages, system, maxTokens, callback) {
-    fetch("https://api.anthropic.com/v1/messages", {
+    fetch("/api/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        max_tokens: maxTokens || 800,
-        system: system,
         messages: messages,
+        system: system,
+        maxTokens: maxTokens || 800,
       }),
     }).then(function(res) {
       return res.text().then(function(raw) {
@@ -1537,30 +2203,28 @@ function Advisor(props) {
               <button onClick={function() {
                 if (pendingAction.type === "action") {
                   if (pendingAction.fn === "apply50/30/20") {
-                    var need = Math.round((income || 3000) * 0.5);
-                    var want = Math.round((income || 3000) * 0.3);
-                    var save = Math.round((income || 3000) * 0.2);
-                    props.onSaveBudgets([
-                      { category: "Housing", limit: need * 0.4 },
-                      { category: "Food", limit: need * 0.3 },
-                      { category: "Transport", limit: need * 0.15 },
-                      { category: "Health", limit: need * 0.08 },
-                      { category: "Entertainment", limit: want * 0.6 },
-                      { category: "Shopping", limit: want * 0.4 },
-                    ]);
-                    setChat(function(p) { return p.concat([{ role: "assistant", text: "Done! I've updated your budgets to follow the 50/30/20 rule. Check the Budgets tab to fine-tune." }]); });
+                    var pool = (income || 3000) * 0.8;
+                    var weights = { Housing: 0.34, Food: 0.18, Transport: 0.12, Health: 0.06, Entertainment: 0.12, Shopping: 0.10, Travel: 0.04, Other: 0.04 };
+                    var newB = cats.map(function(c) {
+                      var w = weights[c.name];
+                      if (!w) return null;
+                      return { catId: c.id, category: c.name, limit: Math.round(pool * w) };
+                    }).filter(Boolean);
+                    if (newB.length) props.onSaveBudgets(newB);
+                    setChat(function(p) { return p.concat([{ role: "assistant", text: "Done. I've set budgets across your categories along the 50/30/20 lines. Open Budgets to fine-tune." }]); });
                   } else if (pendingAction.label.indexOf("emergency fund") !== -1) {
                     var efTarget = Math.round((expense || 1000) * 3);
                     props.onSaveGoals(props.goals.concat([{ id: Date.now(), name: "Emergency Fund", target: efTarget, saved: 0 }]));
                     setChat(function(p) { return p.concat([{ role: "assistant", text: "Goal created: Emergency Fund of " + dollars(efTarget) + ". Start small and build it up." }]); });
                   } else if (pendingAction.label.indexOf("20%") !== -1) {
-                    var topCat = CATS.map(function(c) {
-                      return { name: c, val: props.tx.filter(function(t) { return t.type === "expense" && t.category === c; }).reduce(function(s, t) { return s + t.amount; }, 0) };
-                    }).sort(function(a, b) { return b.val - a.val; })[0];
-                    if (topCat) {
-                      var newLimit = Math.round(topCat.val * 0.8);
-                      props.onSaveBudgets(props.budgets.map(function(b) { return b.category === topCat.name ? { category: b.category, limit: newLimit } : b; }));
-                      setChat(function(p) { return p.concat([{ role: "assistant", text: "Done! I've cut your " + topCat.name + " budget by 20% to " + dollars(newLimit) + ". You've got this." }]); });
+                    var topC = cats.map(function(c) { return { c: c, val: catSpend(c) }; }).sort(function(a, b) { return b.val - a.val; })[0];
+                    if (topC && topC.val > 0) {
+                      var newLimit = Math.round(topC.val * 0.8);
+                      var exists = false;
+                      var updated = props.budgets.map(function(b) { if (b.catId === topC.c.id) { exists = true; return { catId: b.catId, category: b.category, limit: newLimit }; } return b; });
+                      if (!exists) updated = updated.concat([{ catId: topC.c.id, category: topC.c.name, limit: newLimit }]);
+                      props.onSaveBudgets(updated);
+                      setChat(function(p) { return p.concat([{ role: "assistant", text: "Done. I've set your " + topC.c.name + " budget to " + dollars(newLimit) + ", a 20% trim. You've got this." }]); });
                     }
                   }
                 }
@@ -1592,16 +2256,220 @@ function Advisor(props) {
   );
 }
 
-function Profile(props) {
+function IconGrid(props) {
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 9 }}>
+      {ICON_BANK.map(function(ic) {
+        var on = ic === props.value;
+        return (
+          <button key={ic} onClick={function() { props.onChange(ic); }}
+            style={{ width: 44, height: 44, borderRadius: 13, cursor: "pointer",
+              background: on ? props.color + "22" : "rgba(0,0,0,0.04)",
+              border: on ? "2px solid " + props.color : "2px solid transparent",
+              display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <SVGIcon id={ic} size={22} color={on ? props.color : T.ink2} />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ColorGrid(props) {
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 9 }}>
+      {COLOR_BANK.map(function(col) {
+        var on = col === props.value;
+        return (
+          <button key={col} onClick={function() { props.onChange(col); }}
+            style={{ width: 30, height: 30, borderRadius: "50%", background: col, cursor: "pointer",
+              border: on ? "3px solid rgba(0,0,0,0.28)" : "3px solid transparent",
+              boxShadow: on ? "0 2px 8px " + col + "77" : "none" }} />
+        );
+      })}
+    </div>
+  );
+}
+
+function CategoryForm(props) {
+  var init = props.initial;
+  var _n = useState(init.name || "");
+  var nm = _n[0]; var setNm = _n[1];
+  var _i = useState(init.icon || ICON_BANK[0]);
+  var ic = _i[0]; var setIc = _i[1];
+  var _c = useState(init.color || COLOR_BANK[0]);
+  var col = _c[0]; var setCol = _c[1];
+  var _fd = useState(init.folderId || (props.folders[0] || {}).id || "");
+  var fid = _fd[0]; var setFid = _fd[1];
+
   return (
     <div>
-      <Card style={{ padding: "28px 22px", marginBottom: 20, textAlign: "center" }}>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+        <CatBadge icon={ic} color={col} size={64} />
+      </div>
+      <FormRow label="Name" value={nm} onChange={function(e) { setNm(e.target.value); }} />
+      <div style={{ background: "rgba(0,0,0,0.04)", borderRadius: 14, padding: "12px 15px", marginBottom: 9 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 9 }}>Icon</div>
+        <IconGrid value={ic} color={col} onChange={setIc} />
+      </div>
+      <div style={{ background: "rgba(0,0,0,0.04)", borderRadius: 14, padding: "12px 15px", marginBottom: 9 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 9 }}>Color</div>
+        <ColorGrid value={col} onChange={setCol} />
+      </div>
+      {props.folders.length > 0 && (
+        <FolderSelectRow value={fid} folders={props.folders} onChange={setFid} />
+      )}
+      <BigBtn label={props.submitLabel} disabled={!nm.trim()} onPress={function() {
+        props.onSubmit({ name: nm.trim(), icon: ic, color: col, folderId: fid });
+      }} />
+      {props.onDelete && (
+        <button onClick={props.onDelete}
+          style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 12, padding: "6px 0" }}>
+          Delete category
+        </button>
+      )}
+    </div>
+  );
+}
+
+function FolderSelectRow(props) {
+  return (
+    <div style={{ background: "rgba(0,0,0,0.04)", borderRadius: 14, padding: "12px 15px", marginBottom: 9 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 5 }}>Folder</div>
+      <select value={props.value} onChange={function(e) { props.onChange(e.target.value); }}
+        style={{ width: "100%", border: "none", background: "none", fontSize: 16, color: T.ink, fontFamily: UI, outline: "none", padding: 0 }}>
+        {props.folders.map(function(f) { return <option key={f.id} value={f.id}>{f.name}</option>; })}
+      </select>
+    </div>
+  );
+}
+
+function Categories(props) {
+  var cats = props.categories || [];
+  var folders = props.folders || [];
+  var _nf = useState(false);
+  var newFolder = _nf[0]; var setNewFolder = _nf[1];
+  var _fn = useState("");
+  var folderName = _fn[0]; var setFolderName = _fn[1];
+  var _ec = useState(null);
+  var editCat = _ec[0]; var setEditCat = _ec[1];
+
+  function txCount(c) {
+    return props.tx.filter(function(t) { return t.catId === c.id || t.category === c.name; }).length;
+  }
+
+  // Group categories by folder, preserving folder order, with a trailing "Unfiled".
+  var groups = folders.map(function(f) {
+    return { folder: f, items: cats.filter(function(c) { return c.folderId === f.id; }) };
+  });
+  var unfiled = cats.filter(function(c) { return !folders.some(function(f) { return f.id === c.folderId; }); });
+  if (unfiled.length) groups.push({ folder: { id: "_unfiled", name: "Unfiled" }, items: unfiled });
+
+  return (
+    <div>
+      <Overlay open={props.sheetOpen} onClose={function() { props.setSheetOpen(false); }} title="New Category">
+        <CategoryForm initial={{}} folders={folders} submitLabel="Create Category"
+          onSubmit={function(data) {
+            props.onSaveCategories(cats.concat([{ id: "c" + Date.now(), name: data.name, icon: data.icon, color: data.color, folderId: data.folderId }]));
+            props.setSheetOpen(false);
+          }} />
+      </Overlay>
+
+      <Overlay open={!!editCat} onClose={function() { setEditCat(null); }} title="Edit Category">
+        {editCat && (
+          <CategoryForm initial={editCat} folders={folders} submitLabel="Save Changes"
+            onSubmit={function(data) {
+              props.onSaveCategories(cats.map(function(c) { return c.id === editCat.id ? { id: c.id, name: data.name, icon: data.icon, color: data.color, folderId: data.folderId } : c; }));
+              setEditCat(null);
+            }}
+            onDelete={function() {
+              props.onSaveCategories(cats.filter(function(c) { return c.id !== editCat.id; }));
+              setEditCat(null);
+            }} />
+        )}
+      </Overlay>
+
+      <Overlay open={newFolder} onClose={function() { setNewFolder(false); setFolderName(""); }} title="New Folder">
+        <FormRow label="Folder name" value={folderName} onChange={function(e) { setFolderName(e.target.value); }} last={true} />
+        <BigBtn label="Create Folder" disabled={!folderName.trim()} onPress={function() {
+          props.onSaveFolders(folders.concat([{ id: "f" + Date.now(), name: folderName.trim() }]));
+          setFolderName("");
+          setNewFolder(false);
+        }} />
+      </Overlay>
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 4px 12px" }}>
+        <span style={{ fontSize: 14, color: T.ink3 }}>{cats.length} categories in {folders.length} folders</span>
+        <button onClick={function() { setNewFolder(true); }}
+          style={{ display: "flex", alignItems: "center", gap: 5, background: T.orangeDim, border: "none", borderRadius: 20, padding: "7px 13px", cursor: "pointer", color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI }}>
+          <SVGIcon id="folder" size={14} color={T.orange} /> New Folder
+        </button>
+      </div>
+
+      {groups.map(function(grp) {
+        return (
+          <div key={grp.folder.id} style={{ marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 6px 8px" }}>
+              <SVGIcon id="folder" size={15} color={T.ink3} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em" }}>{grp.folder.name}</span>
+              <span style={{ fontSize: 12, color: T.ink3 }}>{grp.items.length}</span>
+            </div>
+            {grp.items.length === 0 ? (
+              <Card style={{ padding: "16px 18px" }}>
+                <span style={{ fontSize: 13, color: T.ink3 }}>No categories here yet.</span>
+              </Card>
+            ) : (
+              <Card style={{ overflow: "hidden" }}>
+                {grp.items.map(function(c, i) {
+                  return (
+                    <button key={c.id} onClick={function() { setEditCat(c); }}
+                      style={{ display: "flex", alignItems: "center", gap: 13, padding: "12px 16px", width: "100%", background: "none", border: "none", borderBottom: i < grp.items.length - 1 ? "0.5px solid " + T.sep : "none", cursor: "pointer", textAlign: "left", fontFamily: UI }}>
+                      <CatBadge icon={c.icon} color={c.color} size={38} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 15, color: T.ink, fontWeight: 600 }}>{c.name}</div>
+                        <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>{txCount(c)} {txCount(c) === 1 ? "transaction" : "transactions"}</div>
+                      </div>
+                      <SVGIcon id="chevron" size={16} color={T.ink3} />
+                    </button>
+                  );
+                })}
+              </Card>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function Profile(props) {
+  var cur = props.currency || "$";
+  return (
+    <div>
+      <Card style={{ padding: "28px 22px", marginBottom: 16, textAlign: "center" }}>
         <div style={{ width: 72, height: 72, borderRadius: 22, background: T.orange, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", boxShadow: "0 4px 16px rgba(217,121,65,0.4)", fontSize: 32, color: "#fff" }}>
           @
         </div>
         <div style={{ fontSize: 22, fontWeight: 700, color: T.ink }}>{props.user}</div>
-        <div style={{ fontSize: 13, color: T.ink3, marginTop: 4 }}>Claude Budget member</div>
+        <div style={{ fontSize: 13, color: T.ink3, marginTop: 4 }}>Richy member</div>
       </Card>
+
+      <Card style={{ padding: "18px 18px 10px", marginBottom: 16 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>Currency</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {CURRENCY_OPTIONS.map(function(opt) {
+            var on = cur === opt.sym;
+            return (
+              <button key={opt.sym} onClick={function() { props.onCurrencyChange(opt.sym); }}
+                style={{ padding: "8px 14px", borderRadius: 10, border: on ? "1.5px solid " + T.orange : "1.5px solid rgba(0,0,0,0.08)", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: on ? 700 : 500,
+                  background: on ? T.orangeDim : "rgba(0,0,0,0.03)", color: on ? T.orange : T.ink2 }}>
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </Card>
+
       <button onClick={props.onLogout}
         style={{ width: "100%", background: "rgba(255,59,48,0.08)", color: T.red, border: "none", borderRadius: 16, padding: "16px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: "pointer" }}>
         Sign Out
@@ -1618,7 +2486,7 @@ var TABS = [
   { id: "advisor", label: "Advisor" },
 ];
 
-var HAS_FAB = ["activity", "goals"];
+var HAS_FAB = ["activity", "goals", "budgets", "categories"];
 
 export default function App() {
   var _user = useState(null);
@@ -1631,48 +2499,75 @@ export default function App() {
   var budgets = _bud[0]; var setBudgets = _bud[1];
   var _gls = useState([]);
   var goals = _gls[0]; var setGoals = _gls[1];
+  var _fld = useState([]);
+  var folders = _fld[0]; var setFolders = _fld[1];
+  var _cat = useState([]);
+  var categories = _cat[0]; var setCategories = _cat[1];
   var _sh = useState(false);
   var sheet = _sh[0]; var setSheet = _sh[1];
+  var _cur = useState("$");
+  var currency = _cur[0]; var setCurrency = _cur[1];
+  var _ak = useState(null);
+  var accountKey = _ak[0]; var setAccountKey = _ak[1];
+
+  function loadData(data) {
+    setTx(data.tx || []);
+    setBudgets(data.budgets || []);
+    setGoals(data.goals || []);
+    setFolders((data.folders && data.folders.length) ? data.folders : freshFolders());
+    setCategories((data.categories && data.categories.length) ? data.categories : freshCategories());
+    var sym = data.currency || "$";
+    setCurrency(sym);
+    _currency.sym = sym;
+  }
 
   useEffect(function() {
     var u = STORE.getSession();
     if (u) {
       var data = STORE.getUser(u);
       if (data) {
-        setTx(data.tx || []);
-        setBudgets(data.budgets || DEFAULT_BUDGETS);
-        setGoals(data.goals || []);
+        loadData(data);
         setUser(data.displayName || u);
+        setAccountKey(u);
       } else {
         STORE.clearSession();
       }
     }
   }, []);
 
-  function handleLogin(u, data) {
-    setTx(data.tx || []);
-    setBudgets(data.budgets || DEFAULT_BUDGETS);
-    setGoals(data.goals || []);
-    setUser(u);
+  function handleLogin(displayName, data, key) {
+    loadData(data);
+    setUser(displayName);
+    setAccountKey(key || displayName);
   }
 
   function handleLogout() {
     STORE.clearSession();
-    setUser(null); setTab("overview");
-    setTx([]); setBudgets([]); setGoals([]);
+    setUser(null); setAccountKey(null); setTab("overview");
+    setTx([]); setBudgets([]); setGoals([]); setFolders([]); setCategories([]);
   }
 
-  function save(newTx, newBudgets, newGoals) {
-    if (user) STORE.saveUser(user, { tx: newTx, budgets: newBudgets, goals: newGoals });
+  function save(next) {
+    if (!accountKey) return;
+    var existing = STORE.getUser(accountKey) || {};
+    var blob = {};
+    for (var ek in existing) blob[ek] = existing[ek];
+    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.folders = folders; blob.categories = categories; blob.currency = currency;
+    for (var k in next) blob[k] = next[k];
+    STORE.saveUser(accountKey, blob);
   }
 
-  function onSaveTx(next) { setTx(next); save(next, budgets, goals); }
-  function onSaveBudgets(next) { setBudgets(next); save(tx, next, goals); }
-  function onSaveGoals(next) { setGoals(next); save(tx, budgets, next); }
+  function onSaveTx(next) { setTx(next); save({ tx: next }); }
+  function onSaveBudgets(next) { setBudgets(next); save({ budgets: next }); }
+  function onSaveGoals(next) { setGoals(next); save({ goals: next }); }
+  function onSaveFolders(next) { setFolders(next); save({ folders: next }); }
+  function onSaveCategories(next) { setCategories(next); save({ categories: next }); }
+  function onSaveCurrency(sym) { _currency.sym = sym; setCurrency(sym); save({ currency: sym }); }
 
   if (!user) return <AuthScreen onLogin={handleLogin} />;
 
   var currentTab = tab;
+  var monthLabel = new Date().toLocaleString("en-US", { month: "short" }) + " " + new Date().getFullYear();
 
   return (
     <div style={{ background: T.bg, minHeight: "100vh", maxWidth: 430, margin: "0 auto", fontFamily: UI, paddingBottom: 100 }}>
@@ -1680,15 +2575,15 @@ export default function App() {
       <div style={{ position: "sticky", top: 0, zIndex: 40, background: "rgba(250,247,242,0.92)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", borderBottom: "0.5px solid rgba(0,0,0,0.06)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", padding: "14px 20px 0", alignItems: "center" }}>
           <span style={{ fontSize: 15, fontWeight: 600, color: T.ink }}>{new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-          <span style={{ fontSize: 11, fontWeight: 700, color: T.orange, letterSpacing: "0.13em", textTransform: "uppercase" }}>Claude Budget</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: T.orange, letterSpacing: "0.13em", textTransform: "uppercase" }}>Richy</span>
           <button onClick={function() { setTab("profile"); }} style={{ background: "none", border: "none", cursor: "pointer", width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: tab === "profile" ? T.orange : "rgba(0,0,0,0.06)" }}>
             <SVGIcon id="user" size={16} color={tab === "profile" ? "#fff" : T.ink2} />
           </button>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 20px 14px", gap: 8 }}>
-          <div style={{ background: "#fff", borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.ink2, boxShadow: "0 1px 4px rgba(0,0,0,0.08)", border: "0.5px solid rgba(0,0,0,0.06)" }}>Jun 2026</div>
+          <div style={{ background: "#fff", borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.ink2, boxShadow: "0 1px 4px rgba(0,0,0,0.08)", border: "0.5px solid rgba(0,0,0,0.06)" }}>{monthLabel}</div>
           <span style={{ fontSize: 20, fontWeight: 700, color: T.ink, flex: 1, textAlign: "center", letterSpacing: "-0.02em" }}>
-            {currentTab === "profile" ? "Profile" : (TABS.find(function(t) { return t.id === currentTab; }) || {}).label}
+            {currentTab === "profile" ? "Profile" : currentTab === "categories" ? "Categories" : (TABS.find(function(t) { return t.id === currentTab; }) || {}).label}
           </span>
           {HAS_FAB.indexOf(currentTab) !== -1 ? (
             <button onClick={function() { setSheet(function(v) { return !v; }); }}
@@ -1702,12 +2597,13 @@ export default function App() {
       </div>
 
       <div style={{ padding: "8px 16px 0" }}>
-        {currentTab === "overview" && <Overview tx={tx} goals={goals} username={user} />}
-        {currentTab === "activity" && <Activity tx={tx} onSaveTx={onSaveTx} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} onSaveBudgets={onSaveBudgets} />}
+        {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} username={user} onCategories={function() { setTab("categories"); setSheet(false); }} />}
+        {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} sheetOpen={sheet} setSheetOpen={setSheet} />}
+        {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "goals" && <Goals goals={goals} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} />}
-        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} />}
+        {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
+        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} username={user} />}
+        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} onCurrencyChange={onSaveCurrency} />}
       </div>
 
       <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, zIndex: 30, background: "rgba(250,246,240,0.95)", backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)", borderTop: "0.5px solid rgba(0,0,0,0.08)" }}>
@@ -1716,11 +2612,11 @@ export default function App() {
             var active = currentTab === t.id;
             return (
               <button key={t.id} onClick={function() { setTab(t.id); setSheet(false); }}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "4px 12px" }}>
-                <div style={{ background: active ? T.ink : "none", borderRadius: 16, padding: active ? "7px 12px" : "7px 10px", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s", boxShadow: active ? "0 2px 8px rgba(0,0,0,0.18)" : "none" }}>
-                  <SVGIcon id={t.id} size={22} color={active ? "#fff" : T.ink3} />
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "4px 4px", flex: 1, minWidth: 0 }}>
+                <div style={{ background: active ? T.ink : "none", borderRadius: 14, padding: active ? "6px 11px" : "6px 9px", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s", boxShadow: active ? "0 2px 8px rgba(0,0,0,0.18)" : "none" }}>
+                  <SVGIcon id={t.id} size={21} color={active ? "#fff" : T.ink3} />
                 </div>
-                <span style={{ fontSize: 10, fontWeight: active ? 700 : 400, color: active ? T.orange : T.ink3, letterSpacing: "0.01em" }}>
+                <span style={{ fontSize: 9.5, fontWeight: active ? 700 : 400, color: active ? T.orange : T.ink3, letterSpacing: "0.005em", whiteSpace: "nowrap" }}>
                   {t.label}
                 </span>
               </button>
