@@ -1293,7 +1293,7 @@ function Activity(props) {
           </div>
           <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "14px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Money Out</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: T.red, letterSpacing: "-0.02em" }}>{dollars(totalOut)}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(totalOut)}</div>
           </div>
         </div>
       )}
