@@ -938,7 +938,7 @@ function Overview(props) {
             </div>
             <div style={{ flex: 1, paddingLeft: 18 }}>
               <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4 }}>Spent</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: "rgba(255,255,255,0.85)", letterSpacing: "-0.02em" }}>{dollars(expense)}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "#FF6B6B", letterSpacing: "-0.02em" }}>{dollars(expense)}</div>
             </div>
           </div>
         </div>
@@ -1458,23 +1458,32 @@ function Budgets(props) {
             {rows.map(function(r, i) {
               var pct = r.limit > 0 ? Math.round((r.spent / r.limit) * 100) : 0;
               return (
-                <div key={r.catId || i} style={{ padding: "14px 16px", borderBottom: i < rows.length - 1 ? "0.5px solid " + T.sep : "none" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 9 }}>
-                    <CatBadge icon={r.cat.icon} color={r.cat.color} size={34} soft={true} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ fontSize: 15, color: T.ink, fontWeight: 600 }}>{r.cat.name}</span>
+                <div key={r.catId || i} style={{ borderBottom: i < rows.length - 1 ? "0.5px solid " + T.sep : "none" }}>
+                  <div style={{ padding: "14px 16px 12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 9 }}>
+                      <CatBadge icon={r.cat.icon} color={r.cat.color} size={34} soft={true} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ fontSize: 15, color: T.ink, fontWeight: 600 }}>{r.cat.name}</span>
+                      </div>
+                      {r.over && <span style={{ fontSize: 10, fontWeight: 700, color: T.red, background: "rgba(224,48,48,0.1)", borderRadius: 7, padding: "2px 8px" }}>OVER</span>}
+                      <span style={{ color: T.orange, fontSize: 14, fontWeight: 700 }}>{dollars(r.limit)}</span>
                     </div>
-                    {r.over && <span style={{ fontSize: 10, fontWeight: 700, color: T.red, background: "rgba(224,48,48,0.1)", borderRadius: 7, padding: "2px 8px" }}>OVER</span>}
-                    <button onClick={function() { setEditId(r.catId); setVal(r.limit); }}
-                      style={{ background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 14, fontWeight: 700 }}>
-                      {dollars(r.limit)}
-                    </button>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{ flex: 1 }}>
+                        <ProgressBar value={r.spent} max={r.limit} color={r.over ? T.red : r.cat.color} h={6} />
+                      </div>
+                      <span style={{ fontSize: 12, minWidth: 70, textAlign: "right", color: r.over ? T.red : T.ink3, fontWeight: 500 }}>{dollars(r.spent)} ({pct}%)</span>
+                    </div>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ flex: 1 }}>
-                      <ProgressBar value={r.spent} max={r.limit} color={r.over ? T.red : r.cat.color} h={6} />
-                    </div>
-                    <span style={{ fontSize: 12, minWidth: 70, textAlign: "right", color: r.over ? T.red : T.ink3, fontWeight: 500 }}>{dollars(r.spent)} ({pct}%)</span>
+                  <div style={{ display: "flex", borderTop: "0.5px solid " + T.sep }}>
+                    <button onClick={function() { setEditId(r.catId); setVal(String(r.limit)); }}
+                      style={{ flex: 1, background: "none", border: "none", borderRight: "0.5px solid " + T.sep, padding: "11px 0", color: T.orange, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
+                      Edit
+                    </button>
+                    <button onClick={function() { props.onSaveBudgets(props.budgets.filter(function(b) { return b.catId !== r.catId; })); }}
+                      style={{ flex: 1, background: "none", border: "none", padding: "11px 0", color: T.red, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
+                      Delete
+                    </button>
                   </div>
                 </div>
               );
