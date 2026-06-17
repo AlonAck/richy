@@ -485,6 +485,8 @@ function AuthScreen(props) {
   var ssoName = _sn[0]; var setSsoName = _sn[1];
   var _pl = useState(null);
   var pendingLogin = _pl[0]; var setPendingLogin = _pl[1];
+  var _sb = useState("");
+  var startBal = _sb[0]; var setStartBal = _sb[1];
 
   useEffect(function() {
     if (resendIn <= 0) return;
@@ -594,7 +596,12 @@ function AuthScreen(props) {
       var idx = STORE.getIndex();
       idx[em] = hashPass(password);
       STORE.saveIndex(idx);
-      var blob = { tx: [], budgets: [], goals: [], folders: freshFolders(), categories: freshCategories(), displayName: fullName.trim(), email: em, dob: dob };
+      var initTx = [];
+      var sb = parseFloat(startBal);
+      if (sb > 0) {
+        initTx = [{ type: "income", amount: sb, label: "Starting balance", catId: "c8", category: "Salary", date: new Date().toISOString().slice(0, 10), id: Date.now(), repeat: "none", pending: false }];
+      }
+      var blob = { tx: initTx, budgets: [], goals: [], folders: freshFolders(), categories: freshCategories(), displayName: fullName.trim(), email: em, dob: dob };
       STORE.saveUser(em, blob);
       STORE.saveSession(em);
       props.onLogin(fullName.trim(), blob, em);
@@ -776,6 +783,11 @@ function AuthScreen(props) {
               {fieldWrap("calendar",
                 <input value={dob} onChange={function(e) { setDob(e.target.value); }}
                   type="date"
+                  onKeyDown={function(e) { if (e.key === "Enter") finishSignup(); }}
+                  style={fieldStyle} />, 12)}
+              {fieldWrap("coins",
+                <input value={startBal} onChange={function(e) { setStartBal(e.target.value); }}
+                  type="number" placeholder="Starting balance (optional)"
                   onKeyDown={function(e) { if (e.key === "Enter") finishSignup(); }}
                   style={fieldStyle} />, 0)}
             </div>
@@ -1683,7 +1695,13 @@ function Advisor(props) {
   var income = props.tx.filter(function(t) { return t.type === "income"; }).reduce(function(s, t) { return s + t.amount; }, 0);
   var expense = props.tx.filter(function(t) { return t.type === "expense"; }).reduce(function(s, t) { return s + t.amount; }, 0);
   var savings = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
-  var ctx = "Income $" + income + ", expenses $" + expense + ", savings rate " + savings + "%, goals: " + (props.goals.map(function(g) { return g.name + " $" + g.saved + "/$" + g.target; }).join(", ") || "none");
+  var topCats = cats.map(function(c) { return { name: c.name, spent: catSpend(c) }; }).filter(function(c) { return c.spent > 0; }).sort(function(a, b) { return b.spent - a.spent; }).slice(0, 5);
+  var budgetLines = props.budgets.map(function(b) {
+    var c = catById(cats, b.catId) || catByName(cats, b.category) || { name: b.category || "?" };
+    var sp = catSpend(c);
+    return c.name + " $" + sp + "/$" + b.limit;
+  });
+  var ctx = "User: " + props.username + ". Income: $" + income + ". Expenses: $" + expense + ". Net balance: $" + (income - expense) + ". Savings rate: " + savings + "%. Top spending categories: " + (topCats.map(function(c) { return c.name + " $" + c.spent; }).join(", ") || "none") + ". Budgets: " + (budgetLines.join(", ") || "none set") + ". Goals: " + (props.goals.map(function(g) { return g.name + " $" + g.saved + "/$" + g.target; }).join(", ") || "none") + ".";
 
   function catSpend(c) {
     return props.tx.filter(function(t) { return t.type === "expense" && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
@@ -2140,7 +2158,7 @@ function Advisor(props) {
     setChatLoading(true);
     callClaude(
       nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }),
-      "You are Richard, a personal finance advisor inside the Richy app. You are calm, warm, direct, and knowledgeable. You feel like a smart friend who happens to be an expert in money, not a corporate bot and not a cheerleader. You have deep knowledge from books like The Psychology of Money, Rich Dad Poor Dad, The Millionaire Next Door, I Will Teach You To Be Rich, The Total Money Makeover, Think and Grow Rich, The Richest Man in Babylon, and interviews with Warren Buffett, Charlie Munger, Ray Dalio, Naval Ravikant, Mark Cuban, Grant Cardone and other wealth builders. User financial snapshot: " + ctx + ". Give personalized, specific, actionable advice grounded in proven wealth-building principles. Reference relevant expert wisdom when helpful. Be concise and direct. Plain text only. Never use markdown formatting: no asterisks, no hash headers, no bullet symbols. Never use emojis or any non-text symbols under any circumstance.",
+      "You are Richard, a smart assistant inside the Richy personal finance app. You are calm, warm, direct, and knowledgeable - a trusted friend who is an expert in money and can help with anything the user asks. You have deep knowledge from The Psychology of Money, Rich Dad Poor Dad, The Millionaire Next Door, I Will Teach You To Be Rich, The Total Money Makeover, Think and Grow Rich, The Richest Man in Babylon, and wisdom from Warren Buffett, Charlie Munger, Ray Dalio, Naval Ravikant, Mark Cuban, Grant Cardone and other wealth builders. You can answer questions about personal finance, investments, budgeting, debt, taxes, and wealth-building. You can also answer questions about how to use the Richy app (it has tabs: Overview, Activity for transactions, Budgets for spending limits, Goals for savings targets, and Advisor which is where we are now; categories are managed via the tag icon on Overview or the Manage link in pickers). You can answer general knowledge and technical questions too - if someone asks about math, technology, or anything else, answer helpfully. Always refer back to the user's real financial data when relevant. Current user financial data: " + ctx + ". Be concise and direct. Plain text only. Never use markdown formatting: no asterisks, no hash headers, no bullet symbols. Never use emojis or any non-text symbols under any circumstance.",
       500,
       function(err, text) {
         setChatLoading(false);
