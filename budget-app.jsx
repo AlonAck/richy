@@ -30,12 +30,15 @@ var ICON_BANK = [
   "home", "food", "car", "heart", "film", "cart", "plane", "briefcase",
   "chart", "coins", "gift", "box", "coffee", "book", "dumbbell", "phone",
   "music", "leaf", "laptop", "spark",
+  "sun", "star", "droplet", "tool", "credit", "building", "bike", "shirt", "wifi", "tv", "umbrella",
 ];
 
 // Refined, wealth-adjacent palette. Warm tones first, then jewel tones.
 var COLOR_BANK = [
   "#C8673A", "#C8983A", "#8B6CEF", "#2799C8", "#27A85F", "#00B4A0",
   "#D97941", "#AF52DE", "#E0556E", "#5A7D9A", "#B0894E", "#6B5C4E",
+  "#FF6B6B", "#FF9F1C", "#FFCB47", "#06D6A0", "#118AB2", "#9B5DE5",
+  "#F72585", "#3A86FF", "#8AC926", "#F4A261", "#E76F51", "#264653",
 ];
 
 var DEFAULT_FOLDERS = [
@@ -230,6 +233,17 @@ function SVGIcon(props) {
     music:    "M9 18V5l11-2v12M9 18a3 3 0 11-6 0 3 3 0 016 0zM20 15a3 3 0 11-6 0 3 3 0 016 0z",
     leaf:     "M11 20.5A7.5 7.5 0 013.5 13C3.5 6.5 11.5 3.5 20.5 3.5c0 8.5-3 17-9.5 17zM11 20.5c0-5.5 2.5-9.5 6.5-12.5",
     laptop:   "M4 6h16v10H4zM2 19h20M9.5 19l.7-3h3.6l.7 3",
+    sun:      "M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42M12 6a6 6 0 100 12A6 6 0 0012 6z",
+    star:     "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z",
+    droplet:  "M12 3S6 10.5 6 15a6 6 0 0012 0c0-4.5-6-12-6-12z",
+    tool:     "M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94z",
+    credit:   "M2 5h20v14H2zM2 10h20M6 15h4",
+    building: "M3 22h18M3 7l9-5 9 5v15H3V7zM9 22v-8h6v8",
+    bike:     "M5.5 17.5a3 3 0 100-6 3 3 0 000 6zM18.5 17.5a3 3 0 100-6 3 3 0 000 6zM9 14.5l3-6 2.5 3.5h4M14.5 11.5l-6.5 3",
+    shirt:    "M20 5.6L17 3h-4l-1 1.5L11 3H7L4 5.6 2 9l4 1v10h16V10l4-1-2-3.4z",
+    wifi:     "M5.2 13.8a9.5 9.5 0 0113.6 0M1.4 9.4a15 15 0 0121.2 0M8.8 17.2a5 5 0 016.4 0M12 21h.01",
+    tv:       "M2 7h20v13H2zM8 3l4 4 4-4",
+    umbrella: "M23 12a11 11 0 00-22 0M12 12v8a2 2 0 004 0",
   };
   var d = icons[props.id] || "";
   return (
@@ -374,8 +388,15 @@ function CatBadge(props) {
 function CatPicker(props) {
   return (
     <div style={{ background: "rgba(0,0,0,0.04)", borderRadius: 14, padding: "12px 15px", marginBottom: props.last ? 0 : 9 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, marginBottom: 9 }}>
-        {props.label || "Category"}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 9 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI }}>
+          {props.label || "Category"}
+        </div>
+        {props.onManage && (
+          <button onClick={props.onManage} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontSize: 11, fontWeight: 600, color: T.orange, fontFamily: UI }}>
+            Manage
+          </button>
+        )}
       </div>
       <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 2 }}>
         {props.categories.map(function(c) {
@@ -1197,7 +1218,7 @@ function Activity(props) {
         </div>
         <FormRow label="Amount" value={form.amount} onChange={function(e) { setField("amount", e.target.value); }} type="number" />
         <FormRow label="Label" value={form.label} onChange={function(e) { setField("label", e.target.value); }} />
-        <CatPicker label="Category" categories={cats} value={form.catId} onChange={function(id) { setField("catId", id); }} />
+        <CatPicker label="Category" categories={cats} value={form.catId} onChange={function(id) { setField("catId", id); }} onManage={props.onManageCategories} />
         <FormRow label="Date" value={form.date} onChange={function(e) { setField("date", e.target.value); }} type="date" />
         <div style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 7 }}>Repeat</div>
@@ -1242,7 +1263,7 @@ function Activity(props) {
         </div>
         <FormRow label="Amount" value={editForm.amount} onChange={function(e) { setEditField("amount", e.target.value); }} type="number" />
         <FormRow label="Label" value={editForm.label} onChange={function(e) { setEditField("label", e.target.value); }} />
-        <CatPicker label="Category" categories={cats} value={editForm.catId} onChange={function(id) { setEditField("catId", id); }} />
+        <CatPicker label="Category" categories={cats} value={editForm.catId} onChange={function(id) { setEditField("catId", id); }} onManage={props.onManageCategories} />
         <FormRow label="Date" value={editForm.date} onChange={function(e) { setEditField("date", e.target.value); }} type="date" />
         <div style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 7 }}>Repeat</div>
@@ -1384,7 +1405,7 @@ function Budgets(props) {
           <div style={{ padding: "20px 4px 8px", textAlign: "center", color: T.ink3, fontSize: 14 }}>Every category already has a budget. Add a new category first.</div>
         ) : (
           <div>
-            <CatPicker label="Category" categories={avail} value={nb.catId || (avail[0] || {}).id} onChange={function(id) { setNb(function(p){ return { catId: id, limit: p.limit }; }); }} />
+            <CatPicker label="Category" categories={avail} value={nb.catId || (avail[0] || {}).id} onChange={function(id) { setNb(function(p){ return { catId: id, limit: p.limit }; }); }} onManage={props.onManageCategories} />
             <FormRow label="Monthly limit ($)" value={nb.limit} onChange={function(e) { setNb(function(p){ return { catId: p.catId || (avail[0]||{}).id, limit: e.target.value }; }); }} type="number" last={true} />
             <BigBtn label="Add Budget" disabled={!nb.limit} onPress={function() {
               var n = parseFloat(nb.limit);
@@ -2666,8 +2687,8 @@ export default function App() {
 
       <div style={{ padding: "8px 16px 0" }}>
         {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} username={user} onCategories={function() { setTab("categories"); setSheet(false); }} />}
-        {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} />}
+        {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
+        {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "goals" && <Goals goals={goals} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} username={user} />}
