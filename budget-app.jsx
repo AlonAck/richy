@@ -667,14 +667,7 @@ function AuthScreen(props) {
             <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 010-4.2V7.06H2.18a11 11 0 000 9.88l3.66-2.84z"/>
             <path fill="#EA4335" d="M12 4.75c1.62 0 3.06.56 4.21 1.64l3.15-3.15A10.5 10.5 0 0012 1a11 11 0 00-9.82 6.06l3.66 2.84C6.71 7.3 9.14 4.75 12 4.75z"/>
           </svg>
-          Google
-        </button>
-        <button onClick={function() { setSsoProvider("apple"); setSsoName(""); setError(""); }} disabled={busy}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "#000", border: "1.5px solid #000", borderRadius: 14, padding: "13px 0", cursor: busy ? "default" : "pointer", fontSize: 15, fontFamily: UI, fontWeight: 600, color: "#fff", boxShadow: "0 2px 8px rgba(0,0,0,0.12)" }}>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="#fff">
-            <path d="M17.05 12.04c-.03-2.85 2.33-4.22 2.44-4.29-1.33-1.95-3.4-2.22-4.14-2.25-1.76-.18-3.44 1.04-4.34 1.04-.89 0-2.27-1.02-3.74-.99-1.92.03-3.7 1.12-4.69 2.84-2 3.47-.51 8.6 1.44 11.42.95 1.38 2.08 2.93 3.56 2.87 1.43-.06 1.97-.92 3.7-.92 1.72 0 2.21.92 3.72.89 1.54-.03 2.51-1.4 3.45-2.79 1.09-1.6 1.54-3.15 1.56-3.23-.03-.02-2.99-1.15-3.02-4.56zM14.2 3.78c.79-.96 1.32-2.29 1.18-3.62-1.14.05-2.52.76-3.34 1.72-.73.85-1.37 2.21-1.2 3.51 1.27.1 2.57-.65 3.36-1.61z"/>
-          </svg>
-          Apple
+          Continue with Google
         </button>
       </div>
     </div>
