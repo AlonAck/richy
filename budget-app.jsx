@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
 const T = {
@@ -938,7 +938,7 @@ function Overview(props) {
             </div>
             <div style={{ flex: 1, paddingLeft: 18 }}>
               <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4 }}>Spent</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: "#FF6B6B", letterSpacing: "-0.02em" }}>{dollars(expense)}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "rgba(255,255,255,0.85)", letterSpacing: "-0.02em" }}>{dollars(expense)}</div>
             </div>
           </div>
         </div>
@@ -1138,6 +1138,18 @@ function Activity(props) {
     });
   }
 
+  var pressTimer = useRef(null);
+  function startLongPress(t) {
+    pressTimer.current = setTimeout(function() {
+      setEditTx(t);
+      setEditForm({ type: t.type, amount: String(t.amount), label: t.label, catId: t.catId || "", date: t.date, repeat: t.repeat || "none", pending: t.pending || false });
+      pressTimer.current = null;
+    }, 500);
+  }
+  function cancelLongPress() {
+    if (pressTimer.current) { clearTimeout(pressTimer.current); pressTimer.current = null; }
+  }
+
   function add() {
     if (!form.amount || !form.label) return;
     var c = catById(cats, form.catId) || cats[0] || { id: "", name: "Other" };
@@ -1281,7 +1293,7 @@ function Activity(props) {
           </div>
           <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "14px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Money Out</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(totalOut)}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: T.red, letterSpacing: "-0.02em" }}>{dollars(totalOut)}</div>
           </div>
         </div>
       )}
@@ -1299,7 +1311,15 @@ function Activity(props) {
               {dayItems.map(function(t, i) {
                 var c = resolveCat(cats, t);
                 return (
-                  <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 16px", borderBottom: i < dayItems.length - 1 ? "0.5px solid " + T.sep : "none", opacity: t.pending ? 0.62 : 1 }}>
+                  <div key={t.id}
+                    onMouseDown={function() { startLongPress(t); }}
+                    onMouseUp={cancelLongPress}
+                    onMouseLeave={cancelLongPress}
+                    onTouchStart={function() { startLongPress(t); }}
+                    onTouchEnd={cancelLongPress}
+                    onTouchMove={cancelLongPress}
+                    onContextMenu={function(e) { e.preventDefault(); }}
+                    style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 16px", borderBottom: i < dayItems.length - 1 ? "0.5px solid " + T.sep : "none", opacity: t.pending ? 0.62 : 1, cursor: "pointer", userSelect: "none", WebkitUserSelect: "none" }}>
                     <CatBadge icon={t.type === "income" ? "up" : c.icon} color={t.type === "income" ? T.green : c.color} size={40} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 15, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
@@ -1312,15 +1332,9 @@ function Activity(props) {
                         {t.repeat && t.repeat !== "none" && <span style={{ fontSize: 10, fontWeight: 600, color: T.ink3, background: "rgba(0,0,0,0.05)", borderRadius: 5, padding: "1px 6px" }}>{t.repeat === "weekly" ? "Weekly" : "Monthly"}</span>}
                       </div>
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 5 }}>
-                      <span style={{ fontSize: 15.5, fontWeight: 700, color: t.type === "income" ? T.green : T.ink, letterSpacing: "-0.02em" }}>
-                        {t.type === "income" ? "+" : "-"}{dollars(t.amount)}
-                      </span>
-                      <button onClick={function() { setEditTx(t); setEditForm({ type: t.type, amount: String(t.amount), label: t.label, catId: t.catId || "", date: t.date, repeat: t.repeat || "none", pending: t.pending || false }); }}
-                        style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: T.orange, fontSize: 11, fontWeight: 600 }}>
-                        Edit
-                      </button>
-                    </div>
+                    <span style={{ fontSize: 15.5, fontWeight: 700, color: t.type === "income" ? T.green : T.red, letterSpacing: "-0.02em" }}>
+                      {t.type === "income" ? "+" : "-"}{dollars(t.amount)}
+                    </span>
                   </div>
                 );
               })}
