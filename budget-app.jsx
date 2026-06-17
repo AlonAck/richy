@@ -420,6 +420,26 @@ function CatPicker(props) {
 // Public key only; safe to ship client-side. The 6-digit check happens in-app.
 var EMAILJS = { service: "service_rl7nf3i", template: "template_q6oxfcp", publicKey: "uqJTHn1oiuh_eKsEs" };
 
+// Real Google Sign-In via Google Identity Services. The Client ID is public by
+// design (safe to ship). Authorized origins are set in Google Cloud Console.
+var GOOGLE_CLIENT_ID = "40841723141-jl627i43bq6vts956hd9gntlk6v50i53.apps.googleusercontent.com";
+
+// Decode the payload of a Google ID token (JWT) to read email and name.
+// We trust the token because GIS handed it to us directly in-browser.
+function decodeJwt(token) {
+  try {
+    var parts = token.split(".");
+    if (parts.length < 2) return null;
+    var b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    while (b64.length % 4) { b64 += "="; }
+    var bin = atob(b64);
+    var json = decodeURIComponent(bin.split("").map(function(c) {
+      return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(""));
+    return JSON.parse(json);
+  } catch (e) { return null; }
+}
+
 function genCode() {
   var s = "";
   for (var i = 0; i < 6; i++) { s += Math.floor(Math.random() * 10); }
@@ -487,12 +507,33 @@ function AuthScreen(props) {
   var pendingLogin = _pl[0]; var setPendingLogin = _pl[1];
   var _sb = useState("");
   var startBal = _sb[0]; var setStartBal = _sb[1];
+  var googleBtnRef = useRef(null);
 
   useEffect(function() {
     if (resendIn <= 0) return;
     var t = setTimeout(function() { setResendIn(function(v) { return v - 1; }); }, 1000);
     return function() { clearTimeout(t); };
   }, [resendIn]);
+
+  // Render the real Google button once the GIS script has loaded. It loads
+  // asynchronously, so we poll briefly until window.google is available.
+  useEffect(function() {
+    if (step !== "login" && step !== "signup_email") return;
+    var tries = 0;
+    var timer = setInterval(function() {
+      tries++;
+      if (tries > 50) { clearInterval(timer); return; }
+      var g = (typeof window !== "undefined") ? window.google : null;
+      if (!g || !g.accounts || !g.accounts.id || !googleBtnRef.current) return;
+      clearInterval(timer);
+      try {
+        g.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: googleSignIn });
+        googleBtnRef.current.innerHTML = "";
+        g.accounts.id.renderButton(googleBtnRef.current, { theme: "outline", size: "large", text: "continue_with", shape: "pill", width: 300, logo_alignment: "center" });
+      } catch (e) {}
+    }, 150);
+    return function() { clearInterval(timer); };
+  }, [step]);
 
   function login() {
     setError("");
@@ -608,22 +649,25 @@ function AuthScreen(props) {
     }, 50);
   }
 
-  function confirmSso() {
-    var clean = ssoName.trim();
-    if (!clean) { return; }
-    var handle = clean.toLowerCase().replace(/[^a-z0-9]/g, "") + "." + ssoProvider;
-    setBusy(true);
-    setTimeout(function() {
-      var idx = STORE.getIndex();
-      if (!idx[handle]) {
-        idx[handle] = "sso";
-        STORE.saveIndex(idx);
-        STORE.saveUser(handle, { tx: [], budgets: [], goals: [], folders: freshFolders(), categories: freshCategories(), displayName: clean });
-      }
-      STORE.saveSession(handle);
-      var data = STORE.getUser(handle) || { tx: [], budgets: [], goals: [], folders: freshFolders(), categories: freshCategories(), displayName: clean };
-      props.onLogin(clean, data, handle);
-    }, 300);
+  // Real Google Sign-In callback. GIS passes a signed credential (JWT); we read
+  // the user's email and name from it, then create or load their account keyed
+  // by their real Google email.
+  function googleSignIn(resp) {
+    var token = resp && resp.credential;
+    if (!token) { setError("Google sign-in did not complete. Please try again."); return; }
+    var payload = decodeJwt(token);
+    if (!payload || !payload.email) { setError("Could not read your Google account. Please try again."); return; }
+    var em = String(payload.email).trim().toLowerCase();
+    var name = payload.name || payload.given_name || em.split("@")[0];
+    var idx = STORE.getIndex();
+    if (!idx[em]) {
+      idx[em] = "google";
+      STORE.saveIndex(idx);
+      STORE.saveUser(em, { tx: [], budgets: [], goals: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: em });
+    }
+    STORE.saveSession(em);
+    var data = STORE.getUser(em) || { tx: [], budgets: [], goals: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: em };
+    props.onLogin(data.displayName || name, data, em);
   }
 
   function goTo(s) {
@@ -658,17 +702,8 @@ function AuthScreen(props) {
         <span style={{ fontSize: 12, color: T.ink3, fontWeight: 500 }}>or continue with</span>
         <div style={{ flex: 1, height: "0.5px", background: "rgba(0,0,0,0.12)" }} />
       </div>
-      <div style={{ display: "flex", gap: 10 }}>
-        <button onClick={function() { setSsoProvider("google"); setSsoName(""); setError(""); }} disabled={busy}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "#fff", border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 14, padding: "13px 0", cursor: busy ? "default" : "pointer", fontSize: 15, fontFamily: UI, fontWeight: 600, color: T.ink, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-          <svg width="18" height="18" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0012 23z"/>
-            <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 010-4.2V7.06H2.18a11 11 0 000 9.88l3.66-2.84z"/>
-            <path fill="#EA4335" d="M12 4.75c1.62 0 3.06.56 4.21 1.64l3.15-3.15A10.5 10.5 0 0012 1a11 11 0 00-9.82 6.06l3.66 2.84C6.71 7.3 9.14 4.75 12 4.75z"/>
-          </svg>
-          Continue with Google
-        </button>
+      <div style={{ display: "flex", justifyContent: "center", minHeight: 44 }}>
+        <div ref={googleBtnRef}></div>
       </div>
     </div>
   );
@@ -812,34 +847,7 @@ function AuthScreen(props) {
             </button>
           )}
 
-          {!ssoProvider && (step === "login" || step === "signup_email") && ssoBlock}
-
-          {ssoProvider && (
-            <div style={{ marginTop: 18, padding: "16px", background: "rgba(0,0,0,0.03)", borderRadius: 16, border: "1px solid rgba(0,0,0,0.06)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                {ssoProvider === "google" ? (
-                  <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0012 23z"/><path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 010-4.2V7.06H2.18a11 11 0 000 9.88l3.66-2.84z"/><path fill="#EA4335" d="M12 4.75c1.62 0 3.06.56 4.21 1.64l3.15-3.15A10.5 10.5 0 0012 1a11 11 0 00-9.82 6.06l3.66 2.84C6.71 7.3 9.14 4.75 12 4.75z"/></svg>
-                ) : (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="#000"><path d="M17.05 12.04c-.03-2.85 2.33-4.22 2.44-4.29-1.33-1.95-3.4-2.22-4.14-2.25-1.76-.18-3.44 1.04-4.34 1.04-.89 0-2.27-1.02-3.74-.99-1.92.03-3.7 1.12-4.69 2.84-2 3.47-.51 8.6 1.44 11.42.95 1.38 2.08 2.93 3.56 2.87 1.43-.06 1.97-.92 3.7-.92 1.72 0 2.21.92 3.72.89 1.54-.03 2.51-1.4 3.45-2.79 1.09-1.6 1.54-3.15 1.56-3.23-.03-.02-2.99-1.15-3.02-4.56zM14.2 3.78c.79-.96 1.32-2.29 1.18-3.62-1.14.05-2.52.76-3.34 1.72-.73.85-1.37 2.21-1.2 3.51 1.27.1 2.57-.65 3.36-1.61z"/></svg>
-                )}
-                <span style={{ fontSize: 14, fontWeight: 600, color: T.ink }}>Continue with {ssoProvider === "google" ? "Google" : "Apple"}</span>
-              </div>
-              <input value={ssoName} onChange={function(e) { setSsoName(e.target.value); }}
-                placeholder="What's your name?" autoFocus
-                onKeyDown={function(e) { if (e.key === "Enter") confirmSso(); }}
-                style={{ width: "100%", background: "#fff", border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 12, padding: "13px 14px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", marginBottom: 10 }} />
-              <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={function() { setSsoProvider(null); }}
-                  style={{ flex: 1, background: "rgba(0,0,0,0.05)", border: "none", borderRadius: 12, padding: "12px 0", fontSize: 15, fontFamily: UI, fontWeight: 600, color: T.ink2, cursor: "pointer" }}>
-                  Cancel
-                </button>
-                <button onClick={confirmSso} disabled={!ssoName.trim() || busy}
-                  style={{ flex: 2, background: (!ssoName.trim() || busy) ? "rgba(0,0,0,0.1)" : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: (!ssoName.trim() || busy) ? T.ink3 : "#fff", border: "none", borderRadius: 12, padding: "12px 0", fontSize: 15, fontFamily: UI, fontWeight: 700, cursor: (!ssoName.trim() || busy) ? "default" : "pointer" }}>
-                  {busy ? "..." : "Continue"}
-                </button>
-              </div>
-            </div>
-          )}
+          {(step === "login" || step === "signup_email") && ssoBlock}
 
           <div style={{ textAlign: "center", marginTop: 20, fontSize: 14, color: T.ink2 }}>
             {step === "login" ? "New here? " : "Have an account? "}
