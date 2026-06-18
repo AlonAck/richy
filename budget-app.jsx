@@ -3959,11 +3959,14 @@ export default function App() {
             <SVGIcon id="user" size={16} color={tab === "profile" ? "#fff" : T.ink2} />
           </button>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 20px 14px", gap: 8 }}>
-          <div style={{ background: T.orangeDim, borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em" }}>{monthLabel}</div>
-          <span style={{ fontSize: 20, fontWeight: 700, color: T.ink, flex: 1, textAlign: "center", letterSpacing: "-0.02em" }}>
+        <div style={{ display: "flex", alignItems: "center", padding: "10px 20px 14px" }}>
+          <div style={{ width: 80, display: "flex", alignItems: "center" }}>
+            <div style={{ background: T.orangeDim, borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em" }}>{monthLabel}</div>
+          </div>
+          <span style={{ flex: 1, fontSize: 20, fontWeight: 700, color: T.ink, textAlign: "center", letterSpacing: "-0.02em" }}>
             {tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
+          <div style={{ width: 80, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
           {HAS_FAB.indexOf(currentTab) !== -1 ? (
             <button onClick={function() { setSheet(function(v) { return !v; }); }}
               style={{ background: sheet ? T.ink : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", border: "none", borderRadius: 40, width: 36, height: 36, cursor: "pointer", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: sheet ? "none" : "0 4px 12px " + T.orangeGlow, transition: "all 0.2s" }}>
@@ -3972,6 +3975,7 @@ export default function App() {
           ) : (
             <div style={{ width: 36 }} />
           )}
+          </div>
         </div>
       </div>
 
