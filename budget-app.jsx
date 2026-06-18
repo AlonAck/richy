@@ -265,6 +265,16 @@ function Card(props) {
   );
 }
 
+function RichyLogo(props) {
+  var size = props.size || 40;
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style={props.style || {}}>
+      <rect width="100" height="100" rx={22} fill="#141210" />
+      <text x="50" y="76" textAnchor="middle" fontFamily={"Georgia, 'Times New Roman', serif"} fontSize="72" fontWeight="700" fill="#C9A234">R</text>
+    </svg>
+  );
+}
+
 function SVGIcon(props) {
   var size = props.size || 22;
   var color = props.color || T.ink2;
@@ -818,10 +828,7 @@ function AuthScreen(props) {
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px 24px" }}>
 
         <div style={{ textAlign: "center", marginBottom: 36 }}>
-          <div style={{ width: 80, height: 80, borderRadius: 24, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px", boxShadow: "0 12px 32px " + T.orangeGlow + ", 0 4px 12px rgba(0,0,0,0.12)" }}>
-            <SVGIcon id="spark" size={36} color="#fff" />
-          </div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: T.orange, letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 8 }}>Richy</div>
+          <RichyLogo size={80} style={{ display: "block", margin: "0 auto 18px", borderRadius: 22, boxShadow: "0 12px 32px rgba(0,0,0,0.22), 0 4px 12px rgba(0,0,0,0.14)" }} />
           <div style={{ fontSize: 30, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.15 }}>
             {head.t}
           </div>
@@ -3947,7 +3954,7 @@ export default function App() {
       <div style={{ position: "sticky", top: 0, zIndex: 40, background: "rgba(250,247,242,0.92)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", borderBottom: "0.5px solid rgba(0,0,0,0.06)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", padding: "14px 20px 0", alignItems: "center" }}>
           <span style={{ fontSize: 15, fontWeight: 600, color: T.ink }}>{new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-          <span style={{ fontSize: 11, fontWeight: 700, color: T.orange, letterSpacing: "0.13em", textTransform: "uppercase" }}>Richy</span>
+          <RichyLogo size={26} style={{ display: "block", borderRadius: 7, boxShadow: "0 2px 8px rgba(0,0,0,0.18)" }} />
           <button onClick={function() { setTab("profile"); }} style={{ background: "none", border: "none", cursor: "pointer", width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: tab === "profile" ? T.orange : "rgba(0,0,0,0.06)" }}>
             <SVGIcon id="user" size={16} color={tab === "profile" ? "#fff" : T.ink2} />
           </button>
