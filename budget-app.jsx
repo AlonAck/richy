@@ -270,7 +270,7 @@ function RichyLogo(props) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style={props.style || {}}>
       <rect width="100" height="100" rx={22} fill="#141210" />
-      <text x="50" y="74" textAnchor="middle" fontFamily={"'Segoe UI', Arial, sans-serif"} fontSize="70" fontWeight="700" fill="#C9A234">R</text>
+      <text x="50" y="76" textAnchor="middle" fontFamily={"David, 'Times New Roman', serif"} fontSize="72" fontWeight="700" fill="#C9A234">R</text>
     </svg>
   );
 }
