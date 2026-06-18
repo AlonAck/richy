@@ -269,8 +269,8 @@ function RichyLogo(props) {
   var size = props.size || 40;
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style={props.style || {}}>
-      <rect width="100" height="100" rx={22} fill="#141210" />
-      <text x="50" y="75" textAnchor="middle" fontFamily={"'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif"} fontSize="70" fontWeight="700" fill="#C9A234">R</text>
+      <rect width="100" height="100" rx={22} fill="#0D0C18" />
+      <text x="50" y="78" textAnchor="middle" fontFamily={"Georgia, 'Times New Roman', serif"} fontSize="82" fontWeight="700" fill="#C8973A">R</text>
     </svg>
   );
 }
