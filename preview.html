@@ -4,6 +4,11 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Richy - Preview</title>
+<link rel="manifest" href="/manifest.webmanifest"/>
+<meta name="theme-color" content="#C8673A"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Richy"/>
 <style>
   html,body{margin:0;background:#F7F3EE;}
   #err{white-space:pre-wrap;font-family:monospace;color:#b00;padding:16px;font-size:13px;}
@@ -12,7 +17,20 @@
 <body>
 <div id="root"></div>
 <div id="err"></div>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+// Register the service worker so reminder notifications can be shown via the SW
+// (more reliable than a page Notification, and the basis for future background push).
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function() {
+    navigator.serviceWorker.register("/sw.js").catch(function(){});
+  });
+}
+</script>
+<!-- Firebase (compat build exposes a global "firebase" the app uses for auth + Firestore). -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="/firebase-init.js"></script>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>

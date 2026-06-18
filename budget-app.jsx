@@ -19,9 +19,17 @@ const T = {
   orangeGlow:"rgba(200,103,58,0.30)",
   green:     "#27A85F",
   greenDim:  "rgba(39,168,95,0.15)",
+  greenGlow: "rgba(39,168,95,0.25)",
   red:       "#E03030",
+  redDim:    "rgba(224,48,48,0.13)",
   gold:      "#C8983A",
   goldDim:   "rgba(200,152,58,0.15)",
+  goldGlow:  "rgba(200,152,58,0.25)",
+  blue:      "#2E7DD6",
+  blueDim:   "rgba(46,125,214,0.15)",
+  blueGlow:  "rgba(46,125,214,0.25)",
+  purple:    "#9B6DB5",
+  purpleDim: "rgba(155,109,181,0.15)",
 };
 
 // Curated icon set for category "banners" - line icons in the app's style.
@@ -33,12 +41,16 @@ var ICON_BANK = [
   "sun", "star", "droplet", "tool", "credit", "building", "bike", "shirt", "wifi", "tv", "umbrella",
 ];
 
-// Refined, wealth-adjacent palette. Warm tones first, then jewel tones.
+// Refined, wealth-adjacent palette. Warm tones first, then jewel tones, then pastels/darks.
 var COLOR_BANK = [
   "#C8673A", "#C8983A", "#8B6CEF", "#2799C8", "#27A85F", "#00B4A0",
   "#D97941", "#AF52DE", "#E0556E", "#5A7D9A", "#B0894E", "#6B5C4E",
   "#FF6B6B", "#FF9F1C", "#FFCB47", "#06D6A0", "#118AB2", "#9B5DE5",
   "#F72585", "#3A86FF", "#8AC926", "#F4A261", "#E76F51", "#264653",
+  "#E91E8C", "#7C3AED", "#0891B2", "#059669", "#DC2626", "#D97706",
+  "#7C2D12", "#1E3A5F", "#14532D", "#4A044E", "#134E4A", "#78350F",
+  "#FDA4AF", "#FCD34D", "#6EE7B7", "#93C5FD", "#C4B5FD", "#FCA5A5",
+  "#86EFAC", "#67E8F9", "#F9A8D4", "#FDE68A", "#A5B4FC", "#BAE6FD",
 ];
 
 var DEFAULT_FOLDERS = [
@@ -121,7 +133,7 @@ var LANGUAGE_OPTIONS = [
 var LANGUAGE_NAMES = { en: "English", he: "Hebrew", es: "Spanish", fr: "French", ar: "Arabic", ru: "Russian", de: "German", pt: "Portuguese" };
 
 var TRANSLATIONS = {
-  en: { overview:"Overview", activity:"Activity", budgets:"Budgets", goals:"Goals", advisor:"Advisor", profile:"Profile", language:"Language", currency:"Currency", yourPlan:"Your Plan", categories:"Categories", signOut:"Sign Out", richyMember:"Richy member", richyRefersTo:"Richy refers to you as", seeYourPlan:"See your plan by Richard", netBalance:"Net Balance", income:"Income", spent:"Spent", topSpend:"Top spend", morning:"Good morning", afternoon:"Good afternoon", evening:"Good evening", savedThisPeriod:"saved this period", redoQuestionnaire:"Redo Questionnaire", yourPlanByRichard:"Your Plan by Richard", noTransactions:"No transactions yet", noTransactionsSub:"Tap + to log your first one. Awareness is the first step to wealth.", overviewEmptySub:"The Richest Man in Babylon started by tracking every coin. Start yours in Activity.", savingsRate:"Savings Rate", excellent:"Excellent", onTrack:"On track", buildItUp:"Build it up", overspending:"Overspending", thisPeriod:"this period", transactions:"Transactions", whereItWent:"Where it went", overLimit:"over limit", complete:"complete", savedLabel:"saved", spentLabel:"spent", toGo:"to go", recent:"Recent", activeGoal:"active goal", activeGoals:"active goals", today:"Today", yesterday:"Yesterday", moneyIn:"Money In", moneyOut:"Money Out", newTransaction:"New Transaction", editTransaction:"Edit Transaction", addTransaction:"Add Transaction", saveChanges:"Save Changes", deleteTx:"Delete transaction", amount:"Amount", txLabel:"Label", category:"Category", date:"Date", repeat:"Repeat", once:"Once", weekly:"Weekly", monthly:"Monthly", markPending:"Mark as pending", expense:"Expense", noBudgets:"No budgets yet", noBudgetsSub:"Tap + to set a limit for a category. A budget is just telling your money where to go.", newBudget:"New Budget", editLimit:"Edit Limit", addBudget:"Add Budget", removeBudget:"Remove this budget", totalSpent:"Total Spent", byCategory:"By Category", edit:"Edit", delete:"Delete", save:"Save", budgeted:"budgeted", monthlyLimit:"Monthly limit", allCatsHaveBudget:"Every category already has a budget. Add a new category first.", noGoals:"No budget books yet", noGoalsSub:"Tap + to create your first budget book. A goal with a deadline is a plan, not a wish.", newBudgetBook:"New Budget Book", editBudgetBook:"Edit Budget Book", createBudgetBook:"Create Budget Book", deleteBudgetBook:"Delete budget book", addToBudgetBook:"Add to Budget Book", alreadySaved:"Already saved", target:"Target", name:"Name", goalComplete:"Goal complete!", remaining:"remaining", add:"Add", richySuggests:"Richard suggests", implement:"Implement", dismiss:"Dismiss", aiAdvisor:"AI Financial Advisor", aiAdvisorSub:"Personalized advice based on your real spending and expert financial wisdom.", analyzeMyFinances:"Analyze My Finances", analyzingFinances:"Analyzing your finances...", fewSeconds:"This takes a few seconds", refresh:"Refresh", insights:"Insights", analysisFailed:"Analysis failed", tryAgain:"Try Again", askYourAdvisor:"Ask Your Advisor", advisorQ1:"How can I save more?", advisorQ2:"Is my savings rate healthy?", advisorQ3:"What to do with my surplus?", thinking:"Thinking...", yesDo:"Yes, do it", notNow:"Not now", askRichard:"Ask Richard anything...", giveFeedback:"Give Richard feedback...", advisorDisclaimer:"Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.", translate:"Translate plan", noPlanYet:"No plan yet. Complete the onboarding questionnaire to get your personalized plan from Richard." },
+  en: { overview:"Overview", activity:"Activity", budgets:"Budgets", goals:"Goals", advisor:"Advisor", profile:"Profile", language:"Language", currency:"Currency", yourPlan:"Your Plan", categories:"Categories", signOut:"Sign Out", richyMember:"Richy member", richyRefersTo:"Richy refers to you as", seeYourPlan:"See your plan by Richard", netBalance:"Net Balance", income:"Income", spent:"Spent", topSpend:"Top spend", morning:"Good morning", afternoon:"Good afternoon", evening:"Good evening", savedThisPeriod:"saved this period", redoQuestionnaire:"Redo Questionnaire", yourPlanByRichard:"Your Plan by Richard", noTransactions:"No transactions yet", noTransactionsSub:"Tap + to log your first one. Awareness is the first step to wealth.", overviewEmptySub:"The Richest Man in Babylon started by tracking every coin. Start yours in Activity.", savingsRate:"Savings Rate", excellent:"Excellent", onTrack:"On track", buildItUp:"Build it up", overspending:"Overspending", thisPeriod:"this period", transactions:"Transactions", whereItWent:"Where it went", overLimit:"over limit", complete:"complete", savedLabel:"saved", spentLabel:"spent", toGo:"to go", recent:"Recent", activeGoal:"active goal", activeGoals:"active goals", today:"Today", yesterday:"Yesterday", moneyIn:"Money In", moneyOut:"Money Out", newTransaction:"New Transaction", editTransaction:"Edit Transaction", addTransaction:"Add Transaction", saveChanges:"Save Changes", deleteTx:"Delete transaction", amount:"Amount", txLabel:"Label", category:"Category", date:"Date", repeat:"Repeat", once:"Once", weekly:"Weekly", monthly:"Monthly", markPending:"Mark as pending", expense:"Expense", noBudgets:"No budgets yet", noBudgetsSub:"Tap + to set a limit for a category. A budget is just telling your money where to go.", newBudget:"New Budget", editLimit:"Edit Limit", addBudget:"Add Budget", removeBudget:"Remove this budget", totalSpent:"Total Spent", byCategory:"By Category", edit:"Edit", delete:"Delete", save:"Save", budgeted:"budgeted", monthlyLimit:"Monthly limit", allCatsHaveBudget:"Every category already has a budget. Add a new category first.", noGoals:"No budget books yet", noGoalsSub:"Tap + to create your first budget book. A goal with a deadline is a plan, not a wish.", newBudgetBook:"New Budget Book", editBudgetBook:"Edit Budget Book", createBudgetBook:"Create Budget Book", deleteBudgetBook:"Delete budget book", addToBudgetBook:"Add to Budget Book", alreadySaved:"Already saved", target:"Target", name:"Name", goalComplete:"Goal complete!", remaining:"remaining", add:"Add", richySuggests:"Richard suggests", implement:"Implement", dismiss:"Dismiss", aiAdvisor:"AI Financial Advisor", aiAdvisorSub:"Personalized advice based on your real spending and expert financial wisdom.", analyzeMyFinances:"Analyze My Finances", analyzingFinances:"Analyzing your finances...", fewSeconds:"This takes a few seconds", refresh:"Refresh", insights:"Insights", analysisFailed:"Analysis failed", tryAgain:"Try Again", askYourAdvisor:"Ask Your Advisor", advisorQ1:"How can I save more?", advisorQ2:"Is my savings rate healthy?", advisorQ3:"What to do with my surplus?", thinking:"Thinking...", yesDo:"Yes, do it", notNow:"Not now", askRichard:"Ask Richard anything...", giveFeedback:"Give Richard feedback...", advisorDisclaimer:"Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.", translate:"Translate plan", noPlanYet:"No plan yet. Complete the onboarding questionnaire to get your personalized plan from Richard.", notes:"Notes", notesEmpty:"No notes yet", notesEmptySub:"Track who owes you and who you owe. Tap + to add your first one.", theyOweMe:"They owe me", iOwe:"I owe", newNote:"New Note", addNote:"Add Note", editNote:"Edit Note", saveNote:"Save Note", settle:"Settle", settleTitle:"Settle note", settleAddBalance:"Add to my balance", reminder:"Reminder", reminderTitle:"Set a reminder", setReminder:"Set reminder", clearReminder:"Clear reminder", reminderWhen:"Remind me on", reminderDenied:"Notifications are blocked. The note will still show a due badge.", due:"Due", overdue:"Overdue", deleteNote:"Delete note" },
   he: { overview:"סקירה", activity:"פעילות", budgets:"תקציבים", goals:"יעדים", advisor:"יועץ", profile:"פרופיל", language:"שפה", currency:"מטבע", yourPlan:"התוכנית שלך", categories:"קטגוריות", signOut:"התנתק", richyMember:"חבר Richy", richyRefersTo:"ריצ'י מכנה אותך", seeYourPlan:"ראה את התוכנית שלך", netBalance:"יתרה נטו", income:"הכנסות", spent:"הוצאות", topSpend:"הוצאה עיקרית", morning:"בוקר טוב", afternoon:"צהריים טובים", evening:"ערב טוב", savedThisPeriod:"נחסך בתקופה זו", redoQuestionnaire:"מלא שאלון מחדש", yourPlanByRichard:"התוכנית שלך", noTransactions:"אין עסקאות עדיין", noTransactionsSub:"לחץ + כדי לרשום. מודעות היא הצעד הראשון לעושר.", overviewEmptySub:"עשיר בבבל התחיל בלעקוב אחרי כל מטבע. התחל גם אתה בפעילות.", savingsRate:"שיעור חיסכון", excellent:"מצוין", onTrack:"במסלול", buildItUp:"שפר את זה", overspending:"הוצאה יתרה", thisPeriod:"בתקופה זו", transactions:"עסקאות", whereItWent:"לאן הלך", overLimit:"מעל המגבלה", complete:"הושלם", savedLabel:"נחסך", spentLabel:"הוצא", toGo:"לסיום", recent:"אחרון", activeGoal:"יעד פעיל", activeGoals:"יעדים פעילים", today:"היום", yesterday:"אתמול", moneyIn:"כסף נכנס", moneyOut:"כסף יוצא", newTransaction:"עסקה חדשה", editTransaction:"ערוך עסקה", addTransaction:"הוסף עסקה", saveChanges:"שמור שינויים", deleteTx:"מחק עסקה", amount:"סכום", txLabel:"תיאור", category:"קטגוריה", date:"תאריך", repeat:"חזרה", once:"פעם אחת", weekly:"שבועי", monthly:"חודשי", markPending:"סמן כממתין", expense:"הוצאה", noBudgets:"אין תקציבים עדיין", noBudgetsSub:"לחץ + להגדרת מגבלה לקטגוריה. תקציב הוא פשוט להגיד לכסף לאן ללכת.", newBudget:"תקציב חדש", editLimit:"ערוך מגבלה", addBudget:"הוסף תקציב", removeBudget:"הסר תקציב זה", totalSpent:"סך הוצאות", byCategory:"לפי קטגוריה", edit:"ערוך", delete:"מחק", save:"שמור", budgeted:"מתוקצב", monthlyLimit:"מגבלה חודשית", allCatsHaveBudget:"לכל הקטגוריות יש תקציב. הוסף קטגוריה חדשה תחילה.", noGoals:"אין ספרי תקציב עדיין", noGoalsSub:"לחץ + ליצירת ספר תקציב ראשון. יעד עם מועד הוא תוכנית, לא משאלה.", newBudgetBook:"ספר תקציב חדש", editBudgetBook:"ערוך ספר תקציב", createBudgetBook:"צור ספר תקציב", deleteBudgetBook:"מחק ספר תקציב", addToBudgetBook:"הוסף לספר תקציב", alreadySaved:"כבר נחסך", target:"יעד", name:"שם", goalComplete:"היעד הושג!", remaining:"נותר", add:"הוסף", richySuggests:"ריצ'י מציע", implement:"יישם", dismiss:"דחה", aiAdvisor:"יועץ פיננסי AI", aiAdvisorSub:"ייעוץ מותאם אישית בהתבסס על ההוצאות שלך.", analyzeMyFinances:"נתח את הכספים שלי", analyzingFinances:"מנתח את הכספים שלך...", fewSeconds:"זה לוקח כמה שניות", refresh:"רענן", insights:"תובנות", analysisFailed:"הניתוח נכשל", tryAgain:"נסה שוב", askYourAdvisor:"שאל את היועץ שלך", advisorQ1:"איך אוכל לחסוך יותר?", advisorQ2:"האם שיעור החיסכון שלי בריא?", advisorQ3:"מה לעשות עם העודף שלי?", thinking:"חושב...", yesDo:"כן, עשה זאת", notNow:"לא עכשיו", askRichard:"שאל את ריצ'רד כל דבר...", giveFeedback:"תן ל-ריצ'רד משוב...", advisorDisclaimer:"ריצ'רד הוא עוזר AI ולא יועץ פיננסי מורשה. תמיד ערוך מחקר עצמאי לפני קבלת החלטות כלכליות.", translate:"תרגם תוכנית", noPlanYet:"אין תוכנית עדיין. מלא את השאלון כדי לקבל את התוכנית האישית שלך מריצ'רד." },
   es: { overview:"Resumen", activity:"Actividad", budgets:"Presupuestos", goals:"Metas", advisor:"Asesor", profile:"Perfil", language:"Idioma", currency:"Moneda", yourPlan:"Tu Plan", categories:"Categorias", signOut:"Cerrar sesion", richyMember:"Miembro Richy", richyRefersTo:"Richy te llama", seeYourPlan:"Ver tu plan de Richard", netBalance:"Saldo Neto", income:"Ingresos", spent:"Gastado", topSpend:"Mas gastado", morning:"Buenos dias", afternoon:"Buenas tardes", evening:"Buenas noches", savedThisPeriod:"ahorrado este periodo", redoQuestionnaire:"Rehacer cuestionario", yourPlanByRichard:"Tu plan de Richard", noTransactions:"Sin transacciones aun", noTransactionsSub:"Toca + para registrar la primera. La conciencia es el primer paso a la riqueza.", overviewEmptySub:"El hombre mas rico de Babilonia empezo rastreando cada moneda. Empieza en Actividad.", savingsRate:"Tasa de ahorro", excellent:"Excelente", onTrack:"En camino", buildItUp:"Mejoralo", overspending:"Exceso de gasto", thisPeriod:"este periodo", transactions:"Transacciones", whereItWent:"A donde fue", overLimit:"sobre el limite", complete:"completo", savedLabel:"ahorrado", spentLabel:"gastado", toGo:"restante", recent:"Reciente", activeGoal:"meta activa", activeGoals:"metas activas", today:"Hoy", yesterday:"Ayer", moneyIn:"Dinero Entrada", moneyOut:"Dinero Salida", newTransaction:"Nueva Transaccion", editTransaction:"Editar Transaccion", addTransaction:"Agregar Transaccion", saveChanges:"Guardar Cambios", deleteTx:"Eliminar transaccion", amount:"Monto", txLabel:"Etiqueta", category:"Categoria", date:"Fecha", repeat:"Repetir", once:"Una vez", weekly:"Semanal", monthly:"Mensual", markPending:"Marcar como pendiente", expense:"Gasto", noBudgets:"Sin presupuestos aun", noBudgetsSub:"Toca + para establecer un limite. Un presupuesto le dice a tu dinero donde ir.", newBudget:"Nuevo Presupuesto", editLimit:"Editar Limite", addBudget:"Agregar Presupuesto", removeBudget:"Eliminar este presupuesto", totalSpent:"Total Gastado", byCategory:"Por Categoria", edit:"Editar", delete:"Eliminar", save:"Guardar", budgeted:"presupuestado", monthlyLimit:"Limite mensual", allCatsHaveBudget:"Cada categoria ya tiene presupuesto. Agrega una nueva categoria primero.", noGoals:"Sin libros de metas aun", noGoalsSub:"Toca + para crear tu primer libro de metas. Una meta con fecha limite es un plan.", newBudgetBook:"Nuevo Libro de Metas", editBudgetBook:"Editar Libro de Metas", createBudgetBook:"Crear Libro de Metas", deleteBudgetBook:"Eliminar libro de metas", addToBudgetBook:"Agregar al Libro de Metas", alreadySaved:"Ya ahorrado", target:"Objetivo", name:"Nombre", goalComplete:"Meta completada!", remaining:"restante", add:"Agregar", richySuggests:"Richard sugiere", implement:"Implementar", dismiss:"Descartar", aiAdvisor:"Asesor Financiero IA", aiAdvisorSub:"Consejos personalizados basados en tus gastos reales.", analyzeMyFinances:"Analizar Mis Finanzas", analyzingFinances:"Analizando tus finanzas...", fewSeconds:"Esto tarda unos segundos", refresh:"Actualizar", insights:"Perspectivas", analysisFailed:"Analisis fallido", tryAgain:"Intentar de nuevo", askYourAdvisor:"Pregunta a tu Asesor", advisorQ1:"Como puedo ahorrar mas?", advisorQ2:"Es saludable mi tasa de ahorro?", advisorQ3:"Que hacer con mi excedente?", thinking:"Pensando...", yesDo:"Si, hazlo", notNow:"Ahora no", askRichard:"Pregunta a Richard cualquier cosa...", giveFeedback:"Da retroalimentacion a Richard...", advisorDisclaimer:"Richard es un asistente de IA, no un asesor financiero certificado. Investiga siempre antes de tomar decisiones financieras.", translate:"Traducir plan", noPlanYet:"Aun no hay plan. Completa el cuestionario para obtener tu plan personalizado de Richard." },
   fr: { overview:"Apercu", activity:"Activite", budgets:"Budgets", goals:"Objectifs", advisor:"Conseiller", profile:"Profil", language:"Langue", currency:"Devise", yourPlan:"Votre Plan", categories:"Categories", signOut:"Deconnexion", richyMember:"Membre Richy", richyRefersTo:"Richy vous appelle", seeYourPlan:"Voir votre plan de Richard", netBalance:"Solde Net", income:"Revenus", spent:"Depenses", topSpend:"Top depenses", morning:"Bonjour", afternoon:"Bon apres-midi", evening:"Bonsoir", savedThisPeriod:"epargne cette periode", redoQuestionnaire:"Refaire le questionnaire", yourPlanByRichard:"Votre plan de Richard", noTransactions:"Aucune transaction", noTransactionsSub:"Appuyez + pour enregistrer la premiere. La conscience est le premier pas vers la richesse.", overviewEmptySub:"L homme le plus riche de Babylone commencat par suivre chaque piece. Commencez dans Activite.", savingsRate:"Taux d epargne", excellent:"Excellent", onTrack:"En bonne voie", buildItUp:"Ameliorez-le", overspending:"Depassement", thisPeriod:"cette periode", transactions:"Transactions", whereItWent:"Ou est alle", overLimit:"au-dessus de la limite", complete:"complete", savedLabel:"epargne", spentLabel:"depense", toGo:"restant", recent:"Recent", activeGoal:"objectif actif", activeGoals:"objectifs actifs", today:"Aujourd hui", yesterday:"Hier", moneyIn:"Argent entrant", moneyOut:"Argent sortant", newTransaction:"Nouvelle Transaction", editTransaction:"Modifier Transaction", addTransaction:"Ajouter Transaction", saveChanges:"Enregistrer les modifications", deleteTx:"Supprimer la transaction", amount:"Montant", txLabel:"Libelle", category:"Categorie", date:"Date", repeat:"Repetition", once:"Une fois", weekly:"Hebdomadaire", monthly:"Mensuel", markPending:"Marquer comme en attente", expense:"Depense", noBudgets:"Aucun budget", noBudgetsSub:"Appuyez + pour fixer une limite. Un budget dit a votre argent ou aller.", newBudget:"Nouveau Budget", editLimit:"Modifier Limite", addBudget:"Ajouter Budget", removeBudget:"Supprimer ce budget", totalSpent:"Total Depense", byCategory:"Par Categorie", edit:"Modifier", delete:"Supprimer", save:"Enregistrer", budgeted:"budgete", monthlyLimit:"Limite mensuelle", allCatsHaveBudget:"Chaque categorie a deja un budget. Ajoutez d abord une nouvelle categorie.", noGoals:"Aucun livret d epargne", noGoalsSub:"Appuyez + pour creer votre premier livret. Un objectif avec une echeance est un plan.", newBudgetBook:"Nouveau Livret", editBudgetBook:"Modifier Livret", createBudgetBook:"Creer Livret", deleteBudgetBook:"Supprimer le livret", addToBudgetBook:"Ajouter au Livret", alreadySaved:"Deja epargne", target:"Objectif", name:"Nom", goalComplete:"Objectif atteint!", remaining:"restant", add:"Ajouter", richySuggests:"Richard suggere", implement:"Implementer", dismiss:"Ignorer", aiAdvisor:"Conseiller Financier IA", aiAdvisorSub:"Conseils personnalises bases sur vos depenses reelles.", analyzeMyFinances:"Analyser mes Finances", analyzingFinances:"Analyse de vos finances...", fewSeconds:"Cela prend quelques secondes", refresh:"Actualiser", insights:"Perspectives", analysisFailed:"Analyse echouee", tryAgain:"Reessayer", askYourAdvisor:"Demandez a votre Conseiller", advisorQ1:"Comment puis-je economiser davantage?", advisorQ2:"Mon taux d epargne est-il sain?", advisorQ3:"Que faire avec mon surplus?", thinking:"Je reflechis...", yesDo:"Oui, fais-le", notNow:"Pas maintenant", askRichard:"Demandez a Richard n importe quoi...", giveFeedback:"Donnez vos retours a Richard...", advisorDisclaimer:"Richard est un assistant IA, pas un conseiller financier agree. Faites toujours vos propres recherches.", translate:"Traduire le plan", noPlanYet:"Pas encore de plan. Completez le questionnaire pour obtenir votre plan personnalise de Richard." },
@@ -190,61 +202,50 @@ var DEFAULT_BUDGETS = [];
 function freshCategories() { return DEFAULT_CATEGORIES.map(function(c) { return { id: c.id, name: c.name, color: c.color, icon: c.icon, folderId: c.folderId }; }); }
 function freshFolders() { return DEFAULT_FOLDERS.map(function(f) { return { id: f.id, name: f.name }; }); }
 
-// Persistent store backed by localStorage so accounts and the active session
-// survive refreshes and restarts. Falls back to an in-memory window object if
-// localStorage is unavailable (e.g. a sandboxed artifact context).
-var _DB_KEY = "richy_db_v1";
-function _loadDb() {
-  var fresh = { index: {}, users: {}, session: null };
-  if (typeof window === "undefined") return fresh;
-  try {
-    var raw = window.localStorage.getItem(_DB_KEY);
-    if (raw) {
-      var parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === "object") {
-        return { index: parsed.index || {}, users: parsed.users || {}, session: parsed.session || null };
-      }
-    }
-  } catch (e) {}
-  return fresh;
+// Cloud backend: Firebase Authentication owns identity + sessions, and Cloud
+// Firestore stores one document per user (collection "users", keyed by the
+// Firebase uid) holding their whole data blob. The web config lives in
+// firebase-init.js and is loaded by preview.html before this app runs; security
+// is enforced by Firestore rules, not by hiding the config. cloudReady() guards
+// every call so the app can still boot and explain itself before setup is done.
+function _fb() {
+  return (typeof window !== "undefined" && window.firebase) ? window.firebase : null;
 }
-if (typeof window !== "undefined" && !window.__CB_DB) {
-  window.__CB_DB = _loadDb();
+function cloudReady() {
+  var f = _fb();
+  return !!(f && f.apps && f.apps.length);
 }
-function _db() {
-  if (typeof window !== "undefined") return window.__CB_DB;
-  return { index: {}, users: {}, session: null };
-}
-function _persist() {
-  if (typeof window === "undefined") return;
-  try { window.localStorage.setItem(_DB_KEY, JSON.stringify(window.__CB_DB)); } catch (e) {}
-}
+function _auth() { return _fb().auth(); }
+function _fsdb() { return _fb().firestore(); }
 
-var STORE = {
-  getIndex: function() {
-    return _db().index || {};
+var CLOUD = {
+  // Subscribe to sign-in state. cb receives the Firebase user (or null). Returns
+  // an unsubscribe function. Fires once immediately with the restored session.
+  onAuth: function(cb) {
+    if (!cloudReady()) { cb(null); return function () {}; }
+    return _auth().onAuthStateChanged(cb);
   },
-  saveIndex: function(v) {
-    _db().index = v;
-    _persist();
+  signUp: function(email, password) {
+    return _auth().createUserWithEmailAndPassword(email, password);
   },
-  getUser: function(u) {
-    return _db().users[u] || null;
+  signIn: function(email, password) {
+    return _auth().signInWithEmailAndPassword(email, password);
   },
-  saveUser: function(u, d) {
-    _db().users[u] = d;
-    _persist();
+  signInGoogle: function() {
+    var provider = new (_fb().auth.GoogleAuthProvider)();
+    return _auth().signInWithPopup(provider);
   },
-  getSession: function() {
-    return _db().session || null;
+  signOut: function() {
+    return cloudReady() ? _auth().signOut() : Promise.resolve();
   },
-  saveSession: function(u) {
-    _db().session = u;
-    _persist();
+  loadUser: function(uid) {
+    return _fsdb().collection("users").doc(uid).get().then(function (snap) {
+      return snap.exists ? snap.data() : null;
+    });
   },
-  clearSession: function() {
-    _db().session = null;
-    _persist();
+  saveUser: function(uid, data) {
+    if (!cloudReady() || !uid) return Promise.resolve();
+    return _fsdb().collection("users").doc(uid).set(data);
   },
 };
 
@@ -294,6 +295,7 @@ function SVGIcon(props) {
     edit:     "M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z",
     mail:     "M3 5h18a1 1 0 011 1v12a1 1 0 01-1 1H3a1 1 0 01-1-1V6a1 1 0 011-1zM3 7l9 6 9-6",
     calendar: "M3 5h18v16H3zM3 9h18M8 3v4M16 3v4",
+    note:     "M6 2h9l5 5v15H6zM14 2v5h5M9 13h6M9 17h4",
     shield:   "M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z",
     // Category banner icons
     home:     "M3 10.5L12 3l9 7.5M5 9.2V20h14V9.2",
@@ -621,6 +623,23 @@ function isEmail(s) {
   return t.indexOf("@") > 0 && t.indexOf(".", t.indexOf("@")) > t.indexOf("@") + 1 && t.length >= 6;
 }
 
+var CLOUD_SETUP_MSG = "Cloud sign-in is not configured yet. Add your Firebase keys in firebase-init.js.";
+
+// Turn a Firebase auth error into a short, human message.
+function authMsg(err) {
+  var c = (err && err.code) ? err.code : "";
+  if (c === "auth/wrong-password" || c === "auth/invalid-credential") return "Wrong email or password.";
+  if (c === "auth/user-not-found") return "No account found with that email. Create one first.";
+  if (c === "auth/invalid-email") return "That email doesn't look right.";
+  if (c === "auth/email-already-in-use") return "An account already uses this email. Sign in instead.";
+  if (c === "auth/weak-password") return "Password must be at least 6 characters.";
+  if (c === "auth/too-many-requests") return "Too many attempts. Wait a moment and try again.";
+  if (c === "auth/network-request-failed") return "Network error. Check your connection and try again.";
+  if (c === "auth/popup-blocked") return "Your browser blocked the Google popup. Allow popups and retry.";
+  if (c === "auth/operation-not-allowed") return "This sign-in method isn't enabled in Firebase yet.";
+  return (err && err.message) ? err.message : "Something went wrong. Please try again.";
+}
+
 function AuthScreen(props) {
   var _s = useState("login");
   var step = _s[0]; var setStep = _s[1];
@@ -664,114 +683,29 @@ function AuthScreen(props) {
     return function() { clearTimeout(t); };
   }, [resendIn]);
 
-  // Render the real Google button once the GIS script has loaded. It loads
-  // asynchronously, so we poll briefly until window.google is available.
-  useEffect(function() {
-    if (step !== "login" && step !== "signup_email") return;
-    var tries = 0;
-    var timer = setInterval(function() {
-      tries++;
-      if (tries > 50) { clearInterval(timer); return; }
-      var g = (typeof window !== "undefined") ? window.google : null;
-      if (!g || !g.accounts || !g.accounts.id || !googleBtnRef.current) return;
-      clearInterval(timer);
-      try {
-        g.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: googleSignIn });
-        googleBtnRef.current.innerHTML = "";
-        g.accounts.id.renderButton(googleBtnRef.current, { theme: "outline", size: "large", text: "continue_with", shape: "pill", width: 300, logo_alignment: "center" });
-      } catch (e) {}
-    }, 150);
-    return function() { clearInterval(timer); };
-  }, [step]);
-
   function login() {
     setError("");
     var em = email.trim().toLowerCase();
     if (!isEmail(em) || !password) { setError("Enter your email and password."); return; }
+    if (!cloudReady()) { setError(CLOUD_SETUP_MSG); return; }
     setBusy(true);
-    setTimeout(function() {
-      var idx = STORE.getIndex();
-      if (!idx[em]) { setError("No account found. Create one first."); setBusy(false); return; }
-      if (idx[em] !== hashPass(password)) { setError("Wrong password."); setBusy(false); return; }
-      var data = STORE.getUser(em) || { tx: [], budgets: [], goals: [], folders: freshFolders(), categories: freshCategories() };
-      var code = genCode();
-      setSentCode(code);
-      setPendingLogin({ em: em, data: data });
-      sendVerificationEmail(em, code).then(function(res) {
-        setBusy(false);
-        if (res.ok) {
-          setStep("login_verify");
-          setCodeInput("");
-          setResendIn(30);
-          setNotice("Code sent to " + em);
-        } else {
-          setError("Could not send the verification code. Try again.");
-        }
-      }).catch(function() {
-        setBusy(false);
-        setError("Network error reaching the email service. Try again.");
-      });
-    }, 50);
+    CLOUD.signIn(em, password).then(function() {
+      // The App's auth listener detects the new session and loads the account.
+      setBusy(false);
+    }).catch(function(err) {
+      setBusy(false);
+      setError(authMsg(err));
+    });
   }
 
+  // Signup is two screens: enter email, then the rest of the details. The first
+  // screen only validates the address locally; Firebase tells us at create time
+  // if the email is already taken.
   function sendCode() {
     setError(""); setNotice("");
     var em = email.trim().toLowerCase();
     if (!isEmail(em)) { setError("Enter a valid email address."); return; }
-    var idx = STORE.getIndex();
-    if (idx[em]) { setError("An account already uses this email. Sign in instead."); return; }
-    var code = genCode();
-    setSentCode(code);
-    setBusy(true);
-    sendVerificationEmail(em, code).then(function(res) {
-      setBusy(false);
-      if (res.ok) {
-        setStep("signup_verify");
-        setCodeInput("");
-        setResendIn(30);
-        setNotice("Code sent to " + em);
-      } else {
-        return res.text().then(function(txt) {
-          setError("Could not send the code. " + (txt || "Check the EmailJS template's To field is set to {{email}}."));
-        });
-      }
-    }).catch(function() {
-      setBusy(false);
-      setError("Network error reaching the email service. Try again.");
-    });
-  }
-
-  function resend() {
-    if (resendIn > 0 || busy) return;
-    var em = email.trim().toLowerCase();
-    var code = genCode();
-    setSentCode(code);
-    setError(""); setNotice("");
-    setBusy(true);
-    sendVerificationEmail(em, code).then(function(res) {
-      setBusy(false);
-      if (res.ok) { setResendIn(30); setNotice("New code sent to " + em); }
-      else { setError("Could not resend. Try again in a moment."); }
-    }).catch(function() {
-      setBusy(false);
-      setError("Network error. Try again.");
-    });
-  }
-
-  function verify() {
-    setError("");
-    if (codeInput.trim() === sentCode && sentCode) {
-      if (step === "login_verify") {
-        var pl = pendingLogin;
-        STORE.saveSession(pl.em);
-        props.onLogin(pl.data.displayName || pl.em, pl.data, pl.em);
-      } else {
-        setStep("signup_details");
-        setNotice("");
-      }
-    } else {
-      setError("That code doesn't match. Check your email and try again.");
-    }
+    setStep("signup_details");
   }
 
   function finishSignup() {
@@ -780,43 +714,54 @@ function AuthScreen(props) {
     if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
     if (password !== password2) { setError("Those passwords don't match."); return; }
     if (!dob) { setError("Enter your date of birth."); return; }
+    if (!cloudReady()) { setError(CLOUD_SETUP_MSG); return; }
     var em = email.trim().toLowerCase();
     setBusy(true);
-    setTimeout(function() {
-      var idx = STORE.getIndex();
-      idx[em] = hashPass(password);
-      STORE.saveIndex(idx);
+    // Tell the App's auth listener to stand down while we create the user's
+    // document ourselves, so it doesn't race in a blank default.
+    window.__cbSignup = true;
+    CLOUD.signUp(em, password).then(function(cred) {
+      var uid = cred.user.uid;
       var initTx = [];
       var sb = parseFloat(startBal);
       if (sb > 0) {
         initTx = [{ type: "income", amount: sb, label: "Starting balance", catId: "c8", category: "Salary", date: new Date().toISOString().slice(0, 10), id: Date.now(), repeat: "none", pending: false }];
       }
-      var blob = { tx: initTx, budgets: [], goals: [], folders: freshFolders(), categories: freshCategories(), displayName: fullName.trim(), email: em, dob: dob };
-      STORE.saveUser(em, blob);
-      STORE.saveSession(em);
-      props.onLogin(fullName.trim(), blob, em);
-    }, 50);
+      var blob = { tx: initTx, budgets: [], goals: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: fullName.trim(), email: em, dob: dob };
+      return CLOUD.saveUser(uid, blob).then(function() {
+        window.__cbSignup = false;
+        setBusy(false);
+        props.onLogin(fullName.trim(), blob, uid);
+      });
+    }).catch(function(err) {
+      window.__cbSignup = false;
+      setBusy(false);
+      // This email already has an account. Block the signup (creating one would
+      // wipe their saved data) and send them to Sign In with the email kept, so
+      // they pick up their existing account instead of making a duplicate.
+      if (err && err.code === "auth/email-already-in-use") {
+        setPW(""); setPW2("");
+        setStep("login");
+        setError("You already have an account with this email. Sign in below.");
+        return;
+      }
+      setError(authMsg(err));
+    });
   }
 
-  // Real Google Sign-In callback. GIS passes a signed credential (JWT); we read
-  // the user's email and name from it, then create or load their account keyed
-  // by their real Google email.
-  function googleSignIn(resp) {
-    var token = resp && resp.credential;
-    if (!token) { setError("Google sign-in did not complete. Please try again."); return; }
-    var payload = decodeJwt(token);
-    if (!payload || !payload.email) { setError("Could not read your Google account. Please try again."); return; }
-    var em = String(payload.email).trim().toLowerCase();
-    var name = payload.name || payload.given_name || em.split("@")[0];
-    var idx = STORE.getIndex();
-    if (!idx[em]) {
-      idx[em] = "google";
-      STORE.saveIndex(idx);
-      STORE.saveUser(em, { tx: [], budgets: [], goals: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: em });
-    }
-    STORE.saveSession(em);
-    var data = STORE.getUser(em) || { tx: [], budgets: [], goals: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: em };
-    props.onLogin(data.displayName || name, data, em);
+  // Google sign-in via Firebase popup. First-time Google users get a default
+  // document created by the App's auth listener.
+  function googleSignIn() {
+    setError("");
+    if (!cloudReady()) { setError(CLOUD_SETUP_MSG); return; }
+    setBusy(true);
+    CLOUD.signInGoogle().then(function() {
+      setBusy(false);
+    }).catch(function(err) {
+      setBusy(false);
+      if (err && err.code === "auth/popup-closed-by-user") return;
+      setError(authMsg(err));
+    });
   }
 
   function goTo(s) {
@@ -851,9 +796,16 @@ function AuthScreen(props) {
         <span style={{ fontSize: 12, color: T.ink3, fontWeight: 500 }}>or continue with</span>
         <div style={{ flex: 1, height: "0.5px", background: "rgba(0,0,0,0.12)" }} />
       </div>
-      <div style={{ display: "flex", justifyContent: "center", minHeight: 44 }}>
-        <div ref={googleBtnRef}></div>
-      </div>
+      <button onClick={googleSignIn} disabled={busy}
+        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, background: "#fff", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 16, padding: "14px 0", fontSize: 15, fontFamily: UI, fontWeight: 600, color: T.ink, cursor: busy ? "default" : "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
+        <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z" />
+          <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z" />
+          <path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33z" />
+          <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z" />
+        </svg>
+        Continue with Google
+      </button>
     </div>
   );
 
@@ -910,26 +862,7 @@ function AuthScreen(props) {
                   onKeyDown={function(e) { if (e.key === "Enter") sendCode(); }}
                   style={fieldStyle} />, 0)}
               <div style={{ fontSize: 12.5, color: T.ink3, padding: "10px 4px 0", lineHeight: 1.5 }}>
-                We'll send a 6-digit code to confirm it's really you.
-              </div>
-            </div>
-          )}
-
-          {(step === "signup_verify" || step === "login_verify") && (
-            <div>
-              <input value={codeInput} onChange={function(e) { setCodeInput(e.target.value.replace(/[^0-9]/g, "").slice(0, 6)); }}
-                placeholder="000000" type="tel" inputMode="numeric" autoFocus
-                onKeyDown={function(e) { if (e.key === "Enter") verify(); }}
-                style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "16px 0", fontSize: 30, fontFamily: UI, fontWeight: 700, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", textAlign: "center", letterSpacing: "0.5em", textIndent: "0.5em" }} />
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 4px 0" }}>
-                <button onClick={function() { goTo(step === "login_verify" ? "login" : "signup_email"); }}
-                  style={{ background: "none", border: "none", color: T.ink2, fontSize: 13, fontFamily: UI, fontWeight: 600, cursor: "pointer", padding: 0 }}>
-                  Change email
-                </button>
-                <button onClick={resend} disabled={resendIn > 0 || busy}
-                  style={{ background: "none", border: "none", color: resendIn > 0 ? T.ink3 : T.orange, fontSize: 13, fontFamily: UI, fontWeight: 700, cursor: resendIn > 0 ? "default" : "pointer", padding: 0 }}>
-                  {resendIn > 0 ? "Resend in " + resendIn + "s" : "Resend code"}
-                </button>
+                Next you'll set a password and a few details.
               </div>
             </div>
           )}
@@ -985,13 +918,12 @@ function AuthScreen(props) {
 
           {!ssoProvider && (
             <button
-              onClick={step === "login" ? login : step === "signup_email" ? sendCode : (step === "signup_verify" || step === "login_verify") ? verify : finishSignup}
+              onClick={step === "login" ? login : step === "signup_email" ? sendCode : finishSignup}
               disabled={busy}
               style={{ width: "100%", background: busy ? "rgba(0,0,0,0.08)" : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: busy ? T.ink3 : "#fff", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: busy ? "default" : "pointer", marginTop: 16, boxShadow: busy ? "none" : "0 6px 20px " + T.orangeGlow + ", 0 2px 6px rgba(0,0,0,0.1)", letterSpacing: "-0.01em" }}>
               {busy ? "Please wait..."
                 : step === "login" ? "Sign In"
-                : step === "signup_email" ? "Send Code"
-                : (step === "signup_verify" || step === "login_verify") ? "Verify"
+                : step === "signup_email" ? "Continue"
                 : "Create Account"}
             </button>
           )}
@@ -1008,7 +940,7 @@ function AuthScreen(props) {
         </div>
       </div>
 
-      <div style={{ textAlign: "center", padding: "0 0 32px", fontSize: 12, color: T.ink3 }}>Saved securely on this device</div>
+      <div style={{ textAlign: "center", padding: "0 0 32px", fontSize: 12, color: T.ink3 }}>Synced securely to your account</div>
     </div>
   );
 }
@@ -1707,6 +1639,12 @@ function Activity(props) {
 
   return (
     <div>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+        <button onClick={props.onOpenNotes} title={tr("notes")}
+          style={{ flexShrink: 0, width: 42, height: 42, borderRadius: 14, background: T.orange, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(200,103,58,0.32)" }}>
+          <SVGIcon id="note" size={20} color="#fff" />
+        </button>
+      </div>
       <Overlay open={props.sheetOpen} onClose={function() { props.setSheetOpen(false); }} title={tr("newTransaction")}>
         <div style={{ display: "flex", gap: 7, marginBottom: 7 }}>
           {["expense","income"].map(function(opt) {
@@ -1862,6 +1800,398 @@ function Activity(props) {
                     <span style={{ fontSize: 15.5, fontWeight: 700, color: t.type === "income" ? T.green : T.red, letterSpacing: "-0.02em" }}>
                       {t.type === "income" ? "+" : "-"}{dollars(t.amount)}
                     </span>
+                  </div>
+                );
+              })}
+            </Card>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// Convert an absolute epoch-ms instant to the value a datetime-local input wants
+// ("YYYY-MM-DDTHH:MM" in local time).
+function toLocalInput(ms) {
+  var d = new Date(ms);
+  function p(x) { return (x < 10 ? "0" : "") + x; }
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + "T" + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+
+// Ask for notification permission lazily (only when a reminder is first set).
+// Calls cb(granted). Never throws on browsers without the API.
+function ensureNotifyPermission(cb) {
+  if (typeof window === "undefined" || !("Notification" in window)) { cb(false); return; }
+  if (Notification.permission === "granted") { cb(true); return; }
+  if (Notification.permission === "denied") { cb(false); return; }
+  try {
+    Notification.requestPermission().then(function(p) { cb(p === "granted"); });
+  } catch (e) { cb(false); }
+}
+
+// Fire a reminder notification for a note. Prefers the service worker (so it
+// survives the page and supports mobile), falling back to a plain Notification.
+function fireReminder(n) {
+  if (typeof window === "undefined" || !("Notification" in window) || Notification.permission !== "granted") return;
+  var body = (n.dir === "owed" ? "They owe you " : "You owe ") + dollars(n.amount) + " - " + n.label;
+  function plain() { try { new Notification("Richy", { body: body }); } catch (e) {} }
+  if ("serviceWorker" in navigator && navigator.serviceWorker.getRegistration) {
+    navigator.serviceWorker.getRegistration().then(function(reg) {
+      if (reg && reg.showNotification) { reg.showNotification("Richy", { body: body, tag: "note-" + n.id }); }
+      else { plain(); }
+    }).catch(plain);
+  } else { plain(); }
+}
+
+// Notes / "who owes whom". A note looks like an Activity row but the amount is
+// neutral (it is not real money yet) and carries a direction tag. Settling a note
+// optionally converts it into a real transaction and removes it from the list.
+function Notes(props) {
+  var cats = props.categories || [];
+  var mainSym = _currency.sym;
+  var blankForm = { dir: "owed", amount: "", label: "", catId: (cats[0] || {}).id || "", date: new Date().toISOString().slice(0, 10), cur: mainSym, rate: 1, rateLoading: false, rateFallback: false };
+  var _f = useState(blankForm);
+  var form = _f[0]; var setForm = _f[1];
+  var _en = useState(null);
+  var editNote = _en[0]; var setEditNote = _en[1];
+  var _ef = useState(blankForm);
+  var editForm = _ef[0]; var setEditForm = _ef[1];
+  var _sn = useState(null);
+  var settleNote = _sn[0]; var setSettleNote = _sn[1];
+  var _ab = useState(true);
+  var addToBalance = _ab[0]; var setAddToBalance = _ab[1];
+  var _an = useState(null);
+  var actNote = _an[0]; var setActNote = _an[1];
+  var _rw = useState("");
+  var remWhen = _rw[0]; var setRemWhen = _rw[1];
+  var _rn = useState("");
+  var remNotice = _rn[0]; var setRemNotice = _rn[1];
+
+  function setField(key, val) {
+    setForm(function(prev) {
+      var next = {};
+      for (var k in prev) next[k] = prev[k];
+      next[key] = val;
+      return next;
+    });
+  }
+  function setEditField(key, val) {
+    setEditForm(function(prev) {
+      var next = {};
+      for (var k in prev) next[k] = prev[k];
+      next[key] = val;
+      return next;
+    });
+  }
+
+  function pickCur(sym) {
+    setForm(function(prev) {
+      var next = {}; for (var k in prev) next[k] = prev[k];
+      next.cur = sym; next.rateLoading = sym !== mainSym; next.rateFallback = false;
+      if (sym === mainSym) next.rate = 1;
+      return next;
+    });
+    if (sym === mainSym) return;
+    fetchRate(sym, mainSym, function(rate, fb) {
+      setForm(function(prev) {
+        if (prev.cur !== sym) return prev;
+        var next = {}; for (var k in prev) next[k] = prev[k];
+        next.rate = rate; next.rateLoading = false; next.rateFallback = fb;
+        return next;
+      });
+    });
+  }
+  function pickEditCur(sym) {
+    setEditForm(function(prev) {
+      var next = {}; for (var k in prev) next[k] = prev[k];
+      next.cur = sym; next.rateLoading = sym !== mainSym; next.rateFallback = false;
+      if (sym === mainSym) next.rate = 1;
+      return next;
+    });
+    if (sym === mainSym) return;
+    fetchRate(sym, mainSym, function(rate, fb) {
+      setEditForm(function(prev) {
+        if (prev.cur !== sym) return prev;
+        var next = {}; for (var k in prev) next[k] = prev[k];
+        next.rate = rate; next.rateLoading = false; next.rateFallback = fb;
+        return next;
+      });
+    });
+  }
+
+  var pressTimer = useRef(null);
+  var longFired = useRef(false);
+  function startLongPress(n) {
+    longFired.current = false;
+    pressTimer.current = setTimeout(function() {
+      longFired.current = true;
+      setActNote(n);
+      setRemWhen(n.reminder ? toLocalInput(n.reminder.due) : "");
+      setRemNotice("");
+      pressTimer.current = null;
+    }, 500);
+  }
+  function cancelLongPress() {
+    if (pressTimer.current) { clearTimeout(pressTimer.current); pressTimer.current = null; }
+  }
+  function rowClick(n) {
+    if (longFired.current) { longFired.current = false; return; }
+    openEdit(n);
+  }
+
+  function openEdit(n) {
+    setEditNote(n);
+    var hasForeign = n.origCur && n.origCur !== mainSym;
+    setEditForm({ dir: n.dir, amount: String(hasForeign ? n.origAmount : n.amount), label: n.label, catId: n.catId || "", date: n.date,
+      cur: hasForeign ? n.origCur : mainSym, rate: hasForeign ? (n.rate || fxStaticRate(n.origCur, mainSym)) : 1, rateLoading: false, rateFallback: false });
+  }
+
+  function add() {
+    if (!form.amount || !form.label) return;
+    var c = catById(cats, form.catId) || cats[0] || { id: "", name: "Other" };
+    var entered = parseFloat(form.amount);
+    var foreign = form.cur && form.cur !== mainSym;
+    var rate = foreign ? (form.rate || fxStaticRate(form.cur, mainSym)) : 1;
+    var mainAmount = round2(entered * rate);
+    var note = { id: Date.now(), dir: form.dir, amount: mainAmount, label: form.label, catId: c.id, category: c.name, date: form.date, reminder: null };
+    if (foreign) { note.origAmount = entered; note.origCur = form.cur; note.rate = rate; }
+    props.onSaveNotes(props.notes.concat([note]));
+    setForm(blankForm);
+    props.setSheetOpen(false);
+  }
+
+  function saveEdit() {
+    if (!editForm.amount || !editForm.label || !editNote) return;
+    var c = catById(cats, editForm.catId) || cats[0] || { id: "", name: "Other" };
+    var entered = parseFloat(editForm.amount);
+    var foreign = editForm.cur && editForm.cur !== mainSym;
+    var rate = foreign ? (editForm.rate || fxStaticRate(editForm.cur, mainSym)) : 1;
+    var mainAmount = round2(entered * rate);
+    props.onSaveNotes(props.notes.map(function(n) {
+      if (n.id !== editNote.id) return n;
+      var nn = { id: n.id, dir: editForm.dir, amount: mainAmount, label: editForm.label, catId: c.id, category: c.name, date: editForm.date, reminder: n.reminder || null };
+      if (foreign) { nn.origAmount = entered; nn.origCur = editForm.cur; nn.rate = rate; }
+      return nn;
+    }));
+    setEditNote(null);
+  }
+
+  function deleteNote() {
+    if (!editNote) return;
+    props.onSaveNotes(props.notes.filter(function(x) { return x.id !== editNote.id; }));
+    setEditNote(null);
+  }
+
+  function doSettle() {
+    var n = settleNote;
+    if (!n) return;
+    setSettleNote(null);
+    var nextNotes = props.notes.filter(function(x) { return x.id !== n.id; });
+    if (addToBalance) {
+      var t = { id: n.id, type: n.dir === "owed" ? "income" : "expense", amount: n.amount, label: n.label, catId: n.catId || "", category: n.category || "", date: new Date().toISOString().slice(0, 10), repeat: "none", pending: false };
+      if (n.origCur) { t.origAmount = n.origAmount; t.origCur = n.origCur; t.rate = n.rate; }
+      props.onSettleNote(props.tx.concat([t]), nextNotes);
+    } else {
+      props.onSaveNotes(nextNotes);
+    }
+  }
+
+  function applyReminder() {
+    var n = actNote;
+    if (!n || !remWhen) return;
+    var due = new Date(remWhen).getTime();
+    if (isNaN(due)) return;
+    var updated = props.notes.map(function(x) {
+      if (x.id !== n.id) return x;
+      var nn = {}; for (var k in x) nn[k] = x[k];
+      nn.reminder = { due: due, fired: false };
+      return nn;
+    });
+    ensureNotifyPermission(function(granted) {
+      props.onSaveNotes(updated);
+      if (granted) { setActNote(null); }
+      else { setRemNotice(tr("reminderDenied")); }
+    });
+  }
+  function clearReminder() {
+    var n = actNote;
+    if (!n) return;
+    props.onSaveNotes(props.notes.map(function(x) {
+      if (x.id !== n.id) return x;
+      var nn = {}; for (var k in x) nn[k] = x[k];
+      nn.reminder = null;
+      return nn;
+    }));
+    setActNote(null);
+  }
+
+  var sorted = props.notes.slice().sort(function(a, b) { return b.date.localeCompare(a.date); });
+  var groups = {};
+  sorted.forEach(function(n) {
+    if (!groups[n.date]) groups[n.date] = [];
+    groups[n.date].push(n);
+  });
+  var dates = Object.keys(groups).sort(function(a, b) { return b.localeCompare(a); });
+  var owedToMe = props.notes.reduce(function(s, n) { return n.dir === "owed" ? s + n.amount : s; }, 0);
+  var iOwe = props.notes.reduce(function(s, n) { return n.dir === "owe" ? s + n.amount : s; }, 0);
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} label={tr("activity")} />
+
+      <Overlay open={props.sheetOpen} onClose={function() { props.setSheetOpen(false); }} title={tr("newNote")}>
+        <div style={{ display: "flex", gap: 7, marginBottom: 7 }}>
+          {["owed","owe"].map(function(opt) {
+            var on = form.dir === opt;
+            return (
+              <button key={opt} onClick={function() { setField("dir", opt); }}
+                style={{ flex: 1, padding: "9px 0", borderRadius: 11, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700, fontFamily: UI,
+                  background: on ? (opt === "owed" ? T.greenDim : T.orangeDim) : "rgba(0,0,0,0.04)",
+                  color: on ? (opt === "owed" ? T.green : T.orange) : T.ink3 }}>
+                {opt === "owed" ? tr("theyOweMe") : tr("iOwe")}
+              </button>
+            );
+          })}
+        </div>
+        <AmountField value={form.amount} onAmount={function(e) { setField("amount", e.target.value); }} cur={form.cur} onCur={pickCur} mainSym={mainSym} rate={form.rate} rateLoading={form.rateLoading} rateFallback={form.rateFallback} />
+        <FormRow label={tr("txLabel")} value={form.label} onChange={function(e) { setField("label", e.target.value); }} placeholder="Dinner, loan, ticket..." />
+        <CatPicker label={tr("category")} categories={cats} value={form.catId} onChange={function(id) { setField("catId", id); }} onManage={props.onManageCategories} />
+        <FormRow label={tr("date")} value={form.date} onChange={function(e) { setField("date", e.target.value); }} type="date" last={true} />
+        <BigBtn label={tr("addNote")} onPress={add} disabled={!form.amount || !form.label} />
+      </Overlay>
+
+      <Overlay open={!!editNote} onClose={function() { setEditNote(null); }} title={tr("editNote")}>
+        <div style={{ display: "flex", gap: 7, marginBottom: 7 }}>
+          {["owed","owe"].map(function(opt) {
+            var on = editForm.dir === opt;
+            return (
+              <button key={opt} onClick={function() { setEditField("dir", opt); }}
+                style={{ flex: 1, padding: "9px 0", borderRadius: 11, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700, fontFamily: UI,
+                  background: on ? (opt === "owed" ? T.greenDim : T.orangeDim) : "rgba(0,0,0,0.04)",
+                  color: on ? (opt === "owed" ? T.green : T.orange) : T.ink3 }}>
+                {opt === "owed" ? tr("theyOweMe") : tr("iOwe")}
+              </button>
+            );
+          })}
+        </div>
+        <AmountField value={editForm.amount} onAmount={function(e) { setEditField("amount", e.target.value); }} cur={editForm.cur} onCur={pickEditCur} mainSym={mainSym} rate={editForm.rate} rateLoading={editForm.rateLoading} rateFallback={editForm.rateFallback} />
+        <FormRow label={tr("txLabel")} value={editForm.label} onChange={function(e) { setEditField("label", e.target.value); }} placeholder="Dinner, loan, ticket..." />
+        <CatPicker label={tr("category")} categories={cats} value={editForm.catId} onChange={function(id) { setEditField("catId", id); }} onManage={props.onManageCategories} />
+        <FormRow label={tr("date")} value={editForm.date} onChange={function(e) { setEditField("date", e.target.value); }} type="date" last={true} />
+        <BigBtn label={tr("saveNote")} onPress={saveEdit} disabled={!editForm.amount || !editForm.label} />
+        <button onClick={deleteNote}
+          style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>
+          {tr("deleteNote")}
+        </button>
+      </Overlay>
+
+      <Overlay open={!!settleNote} onClose={function() { setSettleNote(null); }} title={tr("settleTitle")}>
+        {settleNote && (
+          <div style={{ display: "flex", alignItems: "center", gap: 11, background: "rgba(0,0,0,0.04)", borderRadius: 13, padding: "12px 14px", marginBottom: 9 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, borderRadius: 5, padding: "2px 7px", letterSpacing: "0.02em", color: settleNote.dir === "owed" ? T.green : T.orange, background: settleNote.dir === "owed" ? T.greenGlow : T.orangeGlow }}>
+              {settleNote.dir === "owed" ? tr("theyOweMe") : tr("iOwe")}
+            </span>
+            <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 600, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{settleNote.label}</span>
+            <span style={{ fontSize: 16, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(settleNote.amount)}</span>
+          </div>
+        )}
+        <button onClick={function() { setAddToBalance(!addToBalance); }}
+          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 13px", borderRadius: 11, border: "none", cursor: "pointer", marginBottom: 8,
+            background: addToBalance ? T.greenDim : "rgba(0,0,0,0.04)", fontFamily: UI }}>
+          <span style={{ fontSize: 13, fontWeight: 500, color: addToBalance ? T.green : T.ink2 }}>{tr("settleAddBalance")}</span>
+          <div style={{ width: 18, height: 18, borderRadius: 6, border: "2px solid " + (addToBalance ? T.green : T.ink3), background: addToBalance ? T.green : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {addToBalance && <SVGIcon id="check" size={10} color="#fff" />}
+          </div>
+        </button>
+        <BigBtn label={tr("settle")} onPress={doSettle} />
+      </Overlay>
+
+      <Overlay open={!!actNote} onClose={function() { setActNote(null); }} title={tr("reminderTitle")}>
+        {actNote && (
+          <div style={{ display: "flex", alignItems: "center", gap: 11, background: "rgba(0,0,0,0.04)", borderRadius: 13, padding: "12px 14px", marginBottom: 9 }}>
+            <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 600, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{actNote.label}</span>
+            <span style={{ fontSize: 16, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(actNote.amount)}</span>
+          </div>
+        )}
+        <FormRow label={tr("reminderWhen")} value={remWhen} onChange={function(e) { setRemWhen(e.target.value); }} type="datetime-local" last={true} />
+        {remNotice && (
+          <div style={{ fontSize: 12, color: T.ink2, background: T.goldDim, borderRadius: 9, padding: "8px 12px", marginTop: 8, lineHeight: 1.4 }}>{remNotice}</div>
+        )}
+        <BigBtn label={tr("setReminder")} onPress={applyReminder} disabled={!remWhen} />
+        {actNote && actNote.reminder && (
+          <button onClick={clearReminder}
+            style={{ width: "100%", background: "none", border: "none", color: T.ink2, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>
+            {tr("clearReminder")}
+          </button>
+        )}
+      </Overlay>
+
+      {props.notes.length > 0 && (
+        <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
+          <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "14px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.green, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>{tr("theyOweMe")}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(owedToMe)}</div>
+          </div>
+          <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "14px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>{tr("iOwe")}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(iOwe)}</div>
+          </div>
+        </div>
+      )}
+
+      {props.notes.length === 0 && (
+        <Card style={{ padding: "46px 24px", textAlign: "center" }}>
+          <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+            <SVGIcon id="note" size={24} color={T.orange} />
+          </div>
+          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{tr("notesEmpty")}</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{tr("notesEmptySub")}</div>
+        </Card>
+      )}
+
+      {dates.map(function(date) {
+        var dayItems = groups[date];
+        return (
+          <div key={date} style={{ marginBottom: 20 }}>
+            <div style={{ padding: "0 4px 8px" }}>
+              <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dateLabel(date)}</span>
+            </div>
+            <Card style={{ overflow: "hidden" }}>
+              {dayItems.map(function(n, i) {
+                var c = resolveCat(cats, n);
+                var owed = n.dir === "owed";
+                var overdue = n.reminder && !n.reminder.fired && n.reminder.due < Date.now();
+                return (
+                  <div key={n.id}
+                    onMouseDown={function() { startLongPress(n); }}
+                    onMouseUp={cancelLongPress}
+                    onMouseLeave={cancelLongPress}
+                    onTouchStart={function() { startLongPress(n); }}
+                    onTouchEnd={cancelLongPress}
+                    onTouchMove={cancelLongPress}
+                    onContextMenu={function(e) { e.preventDefault(); }}
+                    onClick={function() { rowClick(n); }}
+                    style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 16px", borderBottom: i < dayItems.length - 1 ? "0.5px solid " + T.sep : "none", cursor: "pointer", userSelect: "none", WebkitUserSelect: "none" }}>
+                    <button onClick={function(e) { e.stopPropagation(); setSettleNote(n); setAddToBalance(true); }}
+                      onMouseDown={function(e) { e.stopPropagation(); }} onTouchStart={function(e) { e.stopPropagation(); }} title={tr("settle")}
+                      style={{ flexShrink: 0, width: 22, height: 22, borderRadius: "50%", border: "2px solid " + T.ink3, background: "transparent", cursor: "pointer", padding: 0 }} />
+                    <CatBadge icon={c.icon} color={c.color} size={40} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 15, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.label}</div>
+                      <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                          <span style={{ width: 6, height: 6, borderRadius: "50%", background: c.color, display: "inline-block" }} />
+                          {c.name}
+                        </span>
+                        <span style={{ fontSize: 10, fontWeight: 700, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.02em", color: owed ? T.green : T.orange, background: owed ? T.greenGlow : T.orangeGlow }}>
+                          {owed ? tr("theyOweMe") : tr("iOwe")}
+                        </span>
+                        {n.origCur && n.origCur !== _currency.sym && <span style={{ fontSize: 10, fontWeight: 700, color: T.gold, background: T.goldGlow, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.02em" }}>{fmtCur(n.origCur, n.origAmount)}</span>}
+                        {n.reminder && <span style={{ fontSize: 10, fontWeight: 700, borderRadius: 5, padding: "1px 6px", color: overdue ? T.red : T.gold, background: overdue ? T.redDim : T.goldGlow }}>{overdue ? tr("overdue") : tr("due")}</span>}
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 15.5, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(n.amount)}</span>
                   </div>
                 );
               })}
@@ -3048,7 +3378,7 @@ function SubViewBack(props) {
     <button onClick={props.onBack}
       style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: T.orange, fontSize: 14, fontWeight: 600, fontFamily: UI, marginBottom: 20 }}>
       <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={T.orange} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
-      Profile
+      {props.label || "Profile"}
     </button>
   );
 }
@@ -3363,7 +3693,7 @@ var TABS = [
   { id: "advisor", label: "Advisor" },
 ];
 
-var HAS_FAB = ["activity", "goals", "budgets", "categories"];
+var HAS_FAB = ["activity", "goals", "budgets", "categories", "notes"];
 
 export default function App() {
   var _user = useState(null);
@@ -3376,6 +3706,8 @@ export default function App() {
   var budgets = _bud[0]; var setBudgets = _bud[1];
   var _gls = useState([]);
   var goals = _gls[0]; var setGoals = _gls[1];
+  var _nts = useState([]);
+  var notes = _nts[0]; var setNotes = _nts[1];
   var _fld = useState([]);
   var folders = _fld[0]; var setFolders = _fld[1];
   var _cat = useState([]);
@@ -3396,11 +3728,17 @@ export default function App() {
   var planJustCreated = _pjc[0]; var setPlanJustCreated = _pjc[1];
   var _lg = useState("en");
   var lang = _lg[0]; var setLang = _lg[1];
+  var _ack = useState(false);
+  var authChecked = _ack[0]; var setAuthChecked = _ack[1];
+  // In-memory mirror of the signed-in user's full Firestore document, so writes
+  // can merge against it without an async read-before-write each time.
+  var blobRef = useRef({});
 
   function loadData(data) {
     setTx(data.tx || []);
     setBudgets(data.budgets || []);
     setGoals(data.goals || []);
+    setNotes(data.notes || []);
     setFolders((data.folders && data.folders.length) ? data.folders : freshFolders());
     setCategories((data.categories && data.categories.length) ? data.categories : freshCategories());
     var sym = data.currency || "$";
@@ -3416,46 +3754,124 @@ export default function App() {
     if (tab !== "overview") setPlanJustCreated(false);
   }, [tab]);
 
+  // Build the starting document for a brand-new account (e.g. first Google sign-in).
+  function defaultBlob(name, email) {
+    return { tx: [], budgets: [], goals: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: email };
+  }
+
+  // Firebase Auth is the single source of truth for the session. It restores the
+  // signed-in user on reload and fires whenever they sign in or out.
   useEffect(function() {
-    var u = STORE.getSession();
-    if (u) {
-      var data = STORE.getUser(u);
-      if (data) {
+    if (!cloudReady()) { setAuthChecked(true); return function () {}; }
+    var unsub = CLOUD.onAuth(function(fbUser) {
+      setAuthChecked(true);
+      if (!fbUser) { return; }                 // signed out -> AuthScreen shows
+      if (window.__cbSignup) { return; }       // email signup creates the doc itself
+      CLOUD.loadUser(fbUser.uid).then(function(data) {
+        if (!data) {
+          var nm = fbUser.displayName || (fbUser.email ? fbUser.email.split("@")[0] : "there");
+          data = defaultBlob(nm, fbUser.email || "");
+          CLOUD.saveUser(fbUser.uid, data);
+        }
+        blobRef.current = data;
         loadData(data);
-        setUser(data.displayName || u);
-        setAccountKey(u);
-      } else {
-        STORE.clearSession();
-      }
-    }
+        setUser(data.displayName || fbUser.email || "there");
+        setAccountKey(fbUser.uid);
+      }).catch(function() {});
+    });
+    return function() { if (typeof unsub === "function") unsub(); };
   }, []);
 
   function handleLogin(displayName, data, key) {
-    loadData(data);
+    blobRef.current = data || {};
+    loadData(data || {});
     setUser(displayName);
     setAccountKey(key || displayName);
   }
 
   function handleLogout() {
-    STORE.clearSession();
+    CLOUD.signOut();
+    blobRef.current = {};
     setUser(null); setAccountKey(null); setTab("overview");
-    setTx([]); setBudgets([]); setGoals([]); setFolders([]); setCategories([]);
+    setTx([]); setBudgets([]); setGoals([]); setNotes([]); setFolders([]); setCategories([]);
     _lang.code = "en"; setOnboardingDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang("en");
   }
 
   function save(next) {
     if (!accountKey) return;
-    var existing = STORE.getUser(accountKey) || {};
+    var existing = blobRef.current || {};
     var blob = {};
     for (var ek in existing) blob[ek] = existing[ek];
-    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang;
+    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang;
     for (var k in next) blob[k] = next[k];
-    STORE.saveUser(accountKey, blob);
+    blobRef.current = blob;
+    CLOUD.saveUser(accountKey, blob);
   }
 
   function onSaveTx(next) { setTx(next); save({ tx: next }); }
   function onSaveBudgets(next) { setBudgets(next); save({ budgets: next }); }
   function onSaveGoals(next) { setGoals(next); save({ goals: next }); }
+  function onSaveNotes(next) { setNotes(next); save({ notes: next }); }
+  function onSettleNote(nextTx, nextNotes) { setTx(nextTx); setNotes(nextNotes); save({ tx: nextTx, notes: nextNotes }); }
+
+  // Reminder scheduling. Timers don't survive reload, so we re-derive them from
+  // each note's durable `reminder.due` whenever notes change, firing any that are
+  // already overdue (a catch-up when the app reopens). Marking a reminder fired
+  // persists notes only (reading the freshest blob) so it can't clobber other
+  // arrays that may have changed since this render.
+  var notesRef = useRef(notes);
+  notesRef.current = notes;
+  function persistNotesOnly(nextNotes) {
+    setNotes(nextNotes);
+    if (!accountKey) return;
+    var existing = blobRef.current || {};
+    var blob = {};
+    for (var k in existing) blob[k] = existing[k];
+    blob.notes = nextNotes;
+    blobRef.current = blob;
+    CLOUD.saveUser(accountKey, blob);
+  }
+  // Fire one or more due reminders and mark them all fired in a SINGLE state
+  // update, computed from the freshest notes. Doing all due notes in one pass
+  // avoids the stale-ref clobber (and duplicate fire) that per-note updates cause
+  // when several reminders come due at once (e.g. a catch-up after the app reopens).
+  function fireDue(ids) {
+    var want = {};
+    for (var a = 0; a < ids.length; a++) { want[ids[a]] = true; }
+    var cur = notesRef.current;
+    var fired = false;
+    var next = cur.map(function(n) {
+      if (want[n.id] && n.reminder && !n.reminder.fired) {
+        fireReminder(n);
+        fired = true;
+        var nn = {}; for (var k in n) nn[k] = n[k];
+        nn.reminder = { due: n.reminder.due, fired: true };
+        return nn;
+      }
+      return n;
+    });
+    if (fired) { persistNotesOnly(next); }
+  }
+  var remTimers = useRef({});
+  useEffect(function() {
+    for (var old in remTimers.current) { clearTimeout(remTimers.current[old]); }
+    remTimers.current = {};
+    var now = Date.now();
+    var dueNow = [];
+    notes.forEach(function(n) {
+      if (!n.reminder || n.reminder.fired) return;
+      var delay = n.reminder.due - now;
+      if (delay <= 0) { dueNow.push(n.id); return; }
+      if (delay < 2147483647) {
+        (function(id) {
+          remTimers.current[id] = setTimeout(function() { fireDue([id]); }, delay);
+        })(n.id);
+      }
+    });
+    if (dueNow.length) { fireDue(dueNow); }
+    return function() { for (var k in remTimers.current) { clearTimeout(remTimers.current[k]); } };
+  }, [notes]);
+
   function onSaveFolders(next) { setFolders(next); save({ folders: next }); }
   function onSaveCategories(next) { setCategories(next); save({ categories: next }); }
   function onSaveCurrency(sym) { _currency.sym = sym; setCurrency(sym); save({ currency: sym }); }
@@ -3479,7 +3895,7 @@ export default function App() {
     setRichPlan(plan);
     setOnboardingDone(true);
     setPlanJustCreated(true);
-    var current = STORE.getUser(accountKey) || {};
+    var current = blobRef.current || {};
     var merged = {};
     for (var k in current) merged[k] = current[k];
     merged.onboardingDone = true;
@@ -3489,7 +3905,18 @@ export default function App() {
       setBudgets(suggestedBudgets);
       merged.budgets = suggestedBudgets;
     }
-    STORE.saveUser(accountKey, merged);
+    blobRef.current = merged;
+    CLOUD.saveUser(accountKey, merged);
+  }
+
+  if (cloudReady() && !authChecked) {
+    return (
+      <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI }}>
+        <div style={{ width: 64, height: 64, borderRadius: 20, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 12px 32px " + T.orangeGlow }}>
+          <SVGIcon id="spark" size={30} color="#fff" />
+        </div>
+      </div>
+    );
   }
 
   if (!user) return <AuthScreen onLogin={handleLogin} />;
@@ -3501,11 +3928,12 @@ export default function App() {
   function handleRetakePlan() {
     setOnboardingDone(false);
     setPlanJustCreated(false);
-    var current = STORE.getUser(accountKey) || {};
+    var current = blobRef.current || {};
     var merged = {};
     for (var k in current) merged[k] = current[k];
     merged.onboardingDone = false;
-    STORE.saveUser(accountKey, merged);
+    blobRef.current = merged;
+    CLOUD.saveUser(accountKey, merged);
   }
 
   var currentTab = tab;
@@ -3527,7 +3955,7 @@ export default function App() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 20px 14px", gap: 8 }}>
           <div style={{ background: T.orangeDim, borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em" }}>{monthLabel}</div>
           <span style={{ fontSize: 20, fontWeight: 700, color: T.ink, flex: 1, textAlign: "center", letterSpacing: "-0.02em" }}>
-            {tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab)}
+            {tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
           {HAS_FAB.indexOf(currentTab) !== -1 ? (
             <button onClick={function() { setSheet(function(v) { return !v; }); }}
@@ -3542,7 +3970,8 @@ export default function App() {
 
       <div style={{ padding: "8px 16px 0" }}>
         {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} username={user} plan={planJustCreated ? richPlan : ""} onCategories={function() { setTab("categories"); setSheet(false); }} />}
-        {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
+        {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} />}
+        {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "goals" && <Goals goals={goals} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
