@@ -63,6 +63,18 @@ var DEFAULT_CATEGORIES = [
 
 // Category lookups. Transactions/budgets reference a catId; fall back to name
 // for any legacy data or deleted categories.
+function computeAge(dob) {
+  if (!dob) return null;
+  try {
+    var birth = new Date(dob);
+    var now = new Date();
+    var age = now.getFullYear() - birth.getFullYear();
+    var m = now.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+    return age;
+  } catch(e) { return null; }
+}
+
 function catById(cats, id) {
   for (var i = 0; i < cats.length; i++) {
     if (cats[i].id === id) return cats[i];
@@ -83,16 +95,86 @@ const UI = "-apple-system, system-ui, sans-serif";
 const DISP = "-apple-system, system-ui, sans-serif";
 
 var _currency = { sym: "$" };
+var _lang = { code: "en" };
 var CURRENCY_OPTIONS = [
-  { sym: "$",       label: "USD  $" },
-  { sym: "€",  label: "EUR  €" },
-  { sym: "£",  label: "GBP  £" },
-  { sym: "₪",  label: "ILS  ₪" },
-  { sym: "¥",  label: "JPY  ¥" },
+  { sym: "$", code: "USD", label: "USD  $" },
+  { sym: "€", code: "EUR", label: "EUR  €" },
+  { sym: "£", code: "GBP", label: "GBP  £" },
+  { sym: "₪", code: "ILS", label: "ILS  ₪" },
+  { sym: "¥", code: "JPY", label: "JPY  ¥" },
 ];
+var SYM_TO_CODE = (function() {
+  var m = {};
+  CURRENCY_OPTIONS.forEach(function(o) { m[o.sym] = o.code; });
+  return m;
+})();
+var LANGUAGE_OPTIONS = [
+  { code: "en", label: "English" },
+  { code: "he", label: "עברית" },
+  { code: "es", label: "Español" },
+  { code: "fr", label: "Français" },
+  { code: "ar", label: "عربية" },
+  { code: "ru", label: "Русский" },
+  { code: "de", label: "Deutsch" },
+  { code: "pt", label: "Português" },
+];
+var LANGUAGE_NAMES = { en: "English", he: "Hebrew", es: "Spanish", fr: "French", ar: "Arabic", ru: "Russian", de: "German", pt: "Portuguese" };
+
+var TRANSLATIONS = {
+  en: { overview:"Overview", activity:"Activity", budgets:"Budgets", goals:"Goals", advisor:"Advisor", profile:"Profile", language:"Language", currency:"Currency", yourPlan:"Your Plan", categories:"Categories", signOut:"Sign Out", richyMember:"Richy member", richyRefersTo:"Richy refers to you as", seeYourPlan:"See your plan by Richard", netBalance:"Net Balance", income:"Income", spent:"Spent", topSpend:"Top spend", morning:"Good morning", afternoon:"Good afternoon", evening:"Good evening", savedThisPeriod:"saved this period", redoQuestionnaire:"Redo Questionnaire", yourPlanByRichard:"Your Plan by Richard", noTransactions:"No transactions yet", noTransactionsSub:"Tap + to log your first one. Awareness is the first step to wealth.", overviewEmptySub:"The Richest Man in Babylon started by tracking every coin. Start yours in Activity.", savingsRate:"Savings Rate", excellent:"Excellent", onTrack:"On track", buildItUp:"Build it up", overspending:"Overspending", thisPeriod:"this period", transactions:"Transactions", whereItWent:"Where it went", overLimit:"over limit", complete:"complete", savedLabel:"saved", spentLabel:"spent", toGo:"to go", recent:"Recent", activeGoal:"active goal", activeGoals:"active goals", today:"Today", yesterday:"Yesterday", moneyIn:"Money In", moneyOut:"Money Out", newTransaction:"New Transaction", editTransaction:"Edit Transaction", addTransaction:"Add Transaction", saveChanges:"Save Changes", deleteTx:"Delete transaction", amount:"Amount", txLabel:"Label", category:"Category", date:"Date", repeat:"Repeat", once:"Once", weekly:"Weekly", monthly:"Monthly", markPending:"Mark as pending", expense:"Expense", noBudgets:"No budgets yet", noBudgetsSub:"Tap + to set a limit for a category. A budget is just telling your money where to go.", newBudget:"New Budget", editLimit:"Edit Limit", addBudget:"Add Budget", removeBudget:"Remove this budget", totalSpent:"Total Spent", byCategory:"By Category", edit:"Edit", delete:"Delete", save:"Save", budgeted:"budgeted", monthlyLimit:"Monthly limit", allCatsHaveBudget:"Every category already has a budget. Add a new category first.", noGoals:"No budget books yet", noGoalsSub:"Tap + to create your first budget book. A goal with a deadline is a plan, not a wish.", newBudgetBook:"New Budget Book", editBudgetBook:"Edit Budget Book", createBudgetBook:"Create Budget Book", deleteBudgetBook:"Delete budget book", addToBudgetBook:"Add to Budget Book", alreadySaved:"Already saved", target:"Target", name:"Name", goalComplete:"Goal complete!", remaining:"remaining", add:"Add", richySuggests:"Richard suggests", implement:"Implement", dismiss:"Dismiss", aiAdvisor:"AI Financial Advisor", aiAdvisorSub:"Personalized advice based on your real spending and expert financial wisdom.", analyzeMyFinances:"Analyze My Finances", analyzingFinances:"Analyzing your finances...", fewSeconds:"This takes a few seconds", refresh:"Refresh", insights:"Insights", analysisFailed:"Analysis failed", tryAgain:"Try Again", askYourAdvisor:"Ask Your Advisor", advisorQ1:"How can I save more?", advisorQ2:"Is my savings rate healthy?", advisorQ3:"What to do with my surplus?", thinking:"Thinking...", yesDo:"Yes, do it", notNow:"Not now", askRichard:"Ask Richard anything...", giveFeedback:"Give Richard feedback...", advisorDisclaimer:"Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.", translate:"Translate plan", noPlanYet:"No plan yet. Complete the onboarding questionnaire to get your personalized plan from Richard." },
+  he: { overview:"סקירה", activity:"פעילות", budgets:"תקציבים", goals:"יעדים", advisor:"יועץ", profile:"פרופיל", language:"שפה", currency:"מטבע", yourPlan:"התוכנית שלך", categories:"קטגוריות", signOut:"התנתק", richyMember:"חבר Richy", richyRefersTo:"ריצ'י מכנה אותך", seeYourPlan:"ראה את התוכנית שלך", netBalance:"יתרה נטו", income:"הכנסות", spent:"הוצאות", topSpend:"הוצאה עיקרית", morning:"בוקר טוב", afternoon:"צהריים טובים", evening:"ערב טוב", savedThisPeriod:"נחסך בתקופה זו", redoQuestionnaire:"מלא שאלון מחדש", yourPlanByRichard:"התוכנית שלך", noTransactions:"אין עסקאות עדיין", noTransactionsSub:"לחץ + כדי לרשום. מודעות היא הצעד הראשון לעושר.", overviewEmptySub:"עשיר בבבל התחיל בלעקוב אחרי כל מטבע. התחל גם אתה בפעילות.", savingsRate:"שיעור חיסכון", excellent:"מצוין", onTrack:"במסלול", buildItUp:"שפר את זה", overspending:"הוצאה יתרה", thisPeriod:"בתקופה זו", transactions:"עסקאות", whereItWent:"לאן הלך", overLimit:"מעל המגבלה", complete:"הושלם", savedLabel:"נחסך", spentLabel:"הוצא", toGo:"לסיום", recent:"אחרון", activeGoal:"יעד פעיל", activeGoals:"יעדים פעילים", today:"היום", yesterday:"אתמול", moneyIn:"כסף נכנס", moneyOut:"כסף יוצא", newTransaction:"עסקה חדשה", editTransaction:"ערוך עסקה", addTransaction:"הוסף עסקה", saveChanges:"שמור שינויים", deleteTx:"מחק עסקה", amount:"סכום", txLabel:"תיאור", category:"קטגוריה", date:"תאריך", repeat:"חזרה", once:"פעם אחת", weekly:"שבועי", monthly:"חודשי", markPending:"סמן כממתין", expense:"הוצאה", noBudgets:"אין תקציבים עדיין", noBudgetsSub:"לחץ + להגדרת מגבלה לקטגוריה. תקציב הוא פשוט להגיד לכסף לאן ללכת.", newBudget:"תקציב חדש", editLimit:"ערוך מגבלה", addBudget:"הוסף תקציב", removeBudget:"הסר תקציב זה", totalSpent:"סך הוצאות", byCategory:"לפי קטגוריה", edit:"ערוך", delete:"מחק", save:"שמור", budgeted:"מתוקצב", monthlyLimit:"מגבלה חודשית", allCatsHaveBudget:"לכל הקטגוריות יש תקציב. הוסף קטגוריה חדשה תחילה.", noGoals:"אין ספרי תקציב עדיין", noGoalsSub:"לחץ + ליצירת ספר תקציב ראשון. יעד עם מועד הוא תוכנית, לא משאלה.", newBudgetBook:"ספר תקציב חדש", editBudgetBook:"ערוך ספר תקציב", createBudgetBook:"צור ספר תקציב", deleteBudgetBook:"מחק ספר תקציב", addToBudgetBook:"הוסף לספר תקציב", alreadySaved:"כבר נחסך", target:"יעד", name:"שם", goalComplete:"היעד הושג!", remaining:"נותר", add:"הוסף", richySuggests:"ריצ'י מציע", implement:"יישם", dismiss:"דחה", aiAdvisor:"יועץ פיננסי AI", aiAdvisorSub:"ייעוץ מותאם אישית בהתבסס על ההוצאות שלך.", analyzeMyFinances:"נתח את הכספים שלי", analyzingFinances:"מנתח את הכספים שלך...", fewSeconds:"זה לוקח כמה שניות", refresh:"רענן", insights:"תובנות", analysisFailed:"הניתוח נכשל", tryAgain:"נסה שוב", askYourAdvisor:"שאל את היועץ שלך", advisorQ1:"איך אוכל לחסוך יותר?", advisorQ2:"האם שיעור החיסכון שלי בריא?", advisorQ3:"מה לעשות עם העודף שלי?", thinking:"חושב...", yesDo:"כן, עשה זאת", notNow:"לא עכשיו", askRichard:"שאל את ריצ'רד כל דבר...", giveFeedback:"תן ל-ריצ'רד משוב...", advisorDisclaimer:"ריצ'רד הוא עוזר AI ולא יועץ פיננסי מורשה. תמיד ערוך מחקר עצמאי לפני קבלת החלטות כלכליות.", translate:"תרגם תוכנית", noPlanYet:"אין תוכנית עדיין. מלא את השאלון כדי לקבל את התוכנית האישית שלך מריצ'רד." },
+  es: { overview:"Resumen", activity:"Actividad", budgets:"Presupuestos", goals:"Metas", advisor:"Asesor", profile:"Perfil", language:"Idioma", currency:"Moneda", yourPlan:"Tu Plan", categories:"Categorias", signOut:"Cerrar sesion", richyMember:"Miembro Richy", richyRefersTo:"Richy te llama", seeYourPlan:"Ver tu plan de Richard", netBalance:"Saldo Neto", income:"Ingresos", spent:"Gastado", topSpend:"Mas gastado", morning:"Buenos dias", afternoon:"Buenas tardes", evening:"Buenas noches", savedThisPeriod:"ahorrado este periodo", redoQuestionnaire:"Rehacer cuestionario", yourPlanByRichard:"Tu plan de Richard", noTransactions:"Sin transacciones aun", noTransactionsSub:"Toca + para registrar la primera. La conciencia es el primer paso a la riqueza.", overviewEmptySub:"El hombre mas rico de Babilonia empezo rastreando cada moneda. Empieza en Actividad.", savingsRate:"Tasa de ahorro", excellent:"Excelente", onTrack:"En camino", buildItUp:"Mejoralo", overspending:"Exceso de gasto", thisPeriod:"este periodo", transactions:"Transacciones", whereItWent:"A donde fue", overLimit:"sobre el limite", complete:"completo", savedLabel:"ahorrado", spentLabel:"gastado", toGo:"restante", recent:"Reciente", activeGoal:"meta activa", activeGoals:"metas activas", today:"Hoy", yesterday:"Ayer", moneyIn:"Dinero Entrada", moneyOut:"Dinero Salida", newTransaction:"Nueva Transaccion", editTransaction:"Editar Transaccion", addTransaction:"Agregar Transaccion", saveChanges:"Guardar Cambios", deleteTx:"Eliminar transaccion", amount:"Monto", txLabel:"Etiqueta", category:"Categoria", date:"Fecha", repeat:"Repetir", once:"Una vez", weekly:"Semanal", monthly:"Mensual", markPending:"Marcar como pendiente", expense:"Gasto", noBudgets:"Sin presupuestos aun", noBudgetsSub:"Toca + para establecer un limite. Un presupuesto le dice a tu dinero donde ir.", newBudget:"Nuevo Presupuesto", editLimit:"Editar Limite", addBudget:"Agregar Presupuesto", removeBudget:"Eliminar este presupuesto", totalSpent:"Total Gastado", byCategory:"Por Categoria", edit:"Editar", delete:"Eliminar", save:"Guardar", budgeted:"presupuestado", monthlyLimit:"Limite mensual", allCatsHaveBudget:"Cada categoria ya tiene presupuesto. Agrega una nueva categoria primero.", noGoals:"Sin libros de metas aun", noGoalsSub:"Toca + para crear tu primer libro de metas. Una meta con fecha limite es un plan.", newBudgetBook:"Nuevo Libro de Metas", editBudgetBook:"Editar Libro de Metas", createBudgetBook:"Crear Libro de Metas", deleteBudgetBook:"Eliminar libro de metas", addToBudgetBook:"Agregar al Libro de Metas", alreadySaved:"Ya ahorrado", target:"Objetivo", name:"Nombre", goalComplete:"Meta completada!", remaining:"restante", add:"Agregar", richySuggests:"Richard sugiere", implement:"Implementar", dismiss:"Descartar", aiAdvisor:"Asesor Financiero IA", aiAdvisorSub:"Consejos personalizados basados en tus gastos reales.", analyzeMyFinances:"Analizar Mis Finanzas", analyzingFinances:"Analizando tus finanzas...", fewSeconds:"Esto tarda unos segundos", refresh:"Actualizar", insights:"Perspectivas", analysisFailed:"Analisis fallido", tryAgain:"Intentar de nuevo", askYourAdvisor:"Pregunta a tu Asesor", advisorQ1:"Como puedo ahorrar mas?", advisorQ2:"Es saludable mi tasa de ahorro?", advisorQ3:"Que hacer con mi excedente?", thinking:"Pensando...", yesDo:"Si, hazlo", notNow:"Ahora no", askRichard:"Pregunta a Richard cualquier cosa...", giveFeedback:"Da retroalimentacion a Richard...", advisorDisclaimer:"Richard es un asistente de IA, no un asesor financiero certificado. Investiga siempre antes de tomar decisiones financieras.", translate:"Traducir plan", noPlanYet:"Aun no hay plan. Completa el cuestionario para obtener tu plan personalizado de Richard." },
+  fr: { overview:"Apercu", activity:"Activite", budgets:"Budgets", goals:"Objectifs", advisor:"Conseiller", profile:"Profil", language:"Langue", currency:"Devise", yourPlan:"Votre Plan", categories:"Categories", signOut:"Deconnexion", richyMember:"Membre Richy", richyRefersTo:"Richy vous appelle", seeYourPlan:"Voir votre plan de Richard", netBalance:"Solde Net", income:"Revenus", spent:"Depenses", topSpend:"Top depenses", morning:"Bonjour", afternoon:"Bon apres-midi", evening:"Bonsoir", savedThisPeriod:"epargne cette periode", redoQuestionnaire:"Refaire le questionnaire", yourPlanByRichard:"Votre plan de Richard", noTransactions:"Aucune transaction", noTransactionsSub:"Appuyez + pour enregistrer la premiere. La conscience est le premier pas vers la richesse.", overviewEmptySub:"L homme le plus riche de Babylone commencat par suivre chaque piece. Commencez dans Activite.", savingsRate:"Taux d epargne", excellent:"Excellent", onTrack:"En bonne voie", buildItUp:"Ameliorez-le", overspending:"Depassement", thisPeriod:"cette periode", transactions:"Transactions", whereItWent:"Ou est alle", overLimit:"au-dessus de la limite", complete:"complete", savedLabel:"epargne", spentLabel:"depense", toGo:"restant", recent:"Recent", activeGoal:"objectif actif", activeGoals:"objectifs actifs", today:"Aujourd hui", yesterday:"Hier", moneyIn:"Argent entrant", moneyOut:"Argent sortant", newTransaction:"Nouvelle Transaction", editTransaction:"Modifier Transaction", addTransaction:"Ajouter Transaction", saveChanges:"Enregistrer les modifications", deleteTx:"Supprimer la transaction", amount:"Montant", txLabel:"Libelle", category:"Categorie", date:"Date", repeat:"Repetition", once:"Une fois", weekly:"Hebdomadaire", monthly:"Mensuel", markPending:"Marquer comme en attente", expense:"Depense", noBudgets:"Aucun budget", noBudgetsSub:"Appuyez + pour fixer une limite. Un budget dit a votre argent ou aller.", newBudget:"Nouveau Budget", editLimit:"Modifier Limite", addBudget:"Ajouter Budget", removeBudget:"Supprimer ce budget", totalSpent:"Total Depense", byCategory:"Par Categorie", edit:"Modifier", delete:"Supprimer", save:"Enregistrer", budgeted:"budgete", monthlyLimit:"Limite mensuelle", allCatsHaveBudget:"Chaque categorie a deja un budget. Ajoutez d abord une nouvelle categorie.", noGoals:"Aucun livret d epargne", noGoalsSub:"Appuyez + pour creer votre premier livret. Un objectif avec une echeance est un plan.", newBudgetBook:"Nouveau Livret", editBudgetBook:"Modifier Livret", createBudgetBook:"Creer Livret", deleteBudgetBook:"Supprimer le livret", addToBudgetBook:"Ajouter au Livret", alreadySaved:"Deja epargne", target:"Objectif", name:"Nom", goalComplete:"Objectif atteint!", remaining:"restant", add:"Ajouter", richySuggests:"Richard suggere", implement:"Implementer", dismiss:"Ignorer", aiAdvisor:"Conseiller Financier IA", aiAdvisorSub:"Conseils personnalises bases sur vos depenses reelles.", analyzeMyFinances:"Analyser mes Finances", analyzingFinances:"Analyse de vos finances...", fewSeconds:"Cela prend quelques secondes", refresh:"Actualiser", insights:"Perspectives", analysisFailed:"Analyse echouee", tryAgain:"Reessayer", askYourAdvisor:"Demandez a votre Conseiller", advisorQ1:"Comment puis-je economiser davantage?", advisorQ2:"Mon taux d epargne est-il sain?", advisorQ3:"Que faire avec mon surplus?", thinking:"Je reflechis...", yesDo:"Oui, fais-le", notNow:"Pas maintenant", askRichard:"Demandez a Richard n importe quoi...", giveFeedback:"Donnez vos retours a Richard...", advisorDisclaimer:"Richard est un assistant IA, pas un conseiller financier agree. Faites toujours vos propres recherches.", translate:"Traduire le plan", noPlanYet:"Pas encore de plan. Completez le questionnaire pour obtenir votre plan personnalise de Richard." },
+  ar: { overview:"نظرة عامة", activity:"النشاط", budgets:"الميزانيات", goals:"الاهداف", advisor:"المستشار", profile:"الملف الشخصي", language:"اللغة", currency:"العملة", yourPlan:"خطتك", categories:"الفئات", signOut:"تسجيل الخروج", richyMember:"عضو Richy", richyRefersTo:"ريتشي يناديك", seeYourPlan:"انظر خطتك من ريتشارد", netBalance:"الرصيد الصافي", income:"الدخل", spent:"المنفق", topSpend:"اعلى انفاق", morning:"صباح الخير", afternoon:"مساء الخير", evening:"مساء الخير", savedThisPeriod:"تم توفيره", redoQuestionnaire:"اعادة الاستبيان", yourPlanByRichard:"خطتك من ريتشارد", noTransactions:"لا توجد معاملات بعد", noTransactionsSub:"اضغط + لتسجيل اول معاملة. الوعي هو الخطوة الاولى نحو الثروة.", overviewEmptySub:"اغنى رجل في بابل بدا بتتبع كل عملة. ابدا في النشاط.", savingsRate:"معدل الادخار", excellent:"ممتاز", onTrack:"في المسار", buildItUp:"طوره", overspending:"انفاق زائد", thisPeriod:"هذه الفترة", transactions:"المعاملات", whereItWent:"اين ذهب", overLimit:"فوق الحد", complete:"مكتمل", savedLabel:"مدخر", spentLabel:"انفق", toGo:"متبقي", recent:"الاخير", activeGoal:"هدف نشط", activeGoals:"اهداف نشطة", today:"اليوم", yesterday:"امس", moneyIn:"المال الداخل", moneyOut:"المال الخارج", newTransaction:"معاملة جديدة", editTransaction:"تعديل المعاملة", addTransaction:"اضافة معاملة", saveChanges:"حفظ التغييرات", deleteTx:"حذف المعاملة", amount:"المبلغ", txLabel:"التسمية", category:"الفئة", date:"التاريخ", repeat:"تكرار", once:"مرة واحدة", weekly:"اسبوعي", monthly:"شهري", markPending:"وضع علامة معلقة", expense:"مصروف", noBudgets:"لا توجد ميزانيات بعد", noBudgetsSub:"اضغط + لتعيين حد للفئة. الميزانية هي توجيه المال.", newBudget:"ميزانية جديدة", editLimit:"تعديل الحد", addBudget:"اضافة ميزانية", removeBudget:"حذف هذه الميزانية", totalSpent:"اجمالي الانفاق", byCategory:"حسب الفئة", edit:"تعديل", delete:"حذف", save:"حفظ", budgeted:"مخصص", monthlyLimit:"الحد الشهري", allCatsHaveBudget:"كل الفئات لديها ميزانية. اضف فئة جديدة اولا.", noGoals:"لا توجد دفاتر بعد", noGoalsSub:"اضغط + لانشاء اول دفتر. الهدف بموعد خطة وليس امنية.", newBudgetBook:"دفتر جديد", editBudgetBook:"تعديل الدفتر", createBudgetBook:"انشاء دفتر", deleteBudgetBook:"حذف الدفتر", addToBudgetBook:"اضافة الى الدفتر", alreadySaved:"تم الادخار مسبقا", target:"الهدف", name:"الاسم", goalComplete:"تم تحقيق الهدف!", remaining:"متبقي", add:"اضافة", richySuggests:"اقتراح ريتشارد", implement:"تطبيق", dismiss:"تجاهل", aiAdvisor:"مستشار مالي AI", aiAdvisorSub:"نصائح مخصصة بناء على انفاقك الفعلي.", analyzeMyFinances:"تحليل ماليتي", analyzingFinances:"جاري تحليل ماليتك...", fewSeconds:"هذا يستغرق بضع ثوان", refresh:"تحديث", insights:"رؤى", analysisFailed:"فشل التحليل", tryAgain:"حاول مجددا", askYourAdvisor:"اسال مستشارك", advisorQ1:"كيف يمكنني توفير المزيد؟", advisorQ2:"هل معدل توفيري صحي؟", advisorQ3:"ماذا افعل بالفائض؟", thinking:"افكر...", yesDo:"نعم افعل ذلك", notNow:"ليس الان", askRichard:"اسال ريتشارد اي شيء...", giveFeedback:"اعطِ ريتشارد ملاحظاتك...", advisorDisclaimer:"ريتشارد مساعد ذكاء اصطناعي وليس مستشارا ماليا معتمدا. دائما ابحث قبل اتخاذ قرارات مالية.", translate:"ترجمة الخطة", noPlanYet:"لا توجد خطة بعد. اكمل الاستبيان للحصول على خطتك الشخصية من ريتشارد." },
+  ru: { overview:"Обзор", activity:"Активность", budgets:"Бюджеты", goals:"Цели", advisor:"Советник", profile:"Профиль", language:"Язык", currency:"Валюта", yourPlan:"Ваш план", categories:"Категории", signOut:"Выйти", richyMember:"Участник Richy", richyRefersTo:"Richy называет тебя", seeYourPlan:"Посмотреть план от Ричарда", netBalance:"Чистый баланс", income:"Доходы", spent:"Расходы", topSpend:"Главная трата", morning:"Доброе утро", afternoon:"Добрый день", evening:"Добрый вечер", savedThisPeriod:"сохранено за период", redoQuestionnaire:"Пройти снова", yourPlanByRichard:"Ваш план от Ричарда", noTransactions:"Нет транзакций", noTransactionsSub:"Нажмите + чтобы добавить первую. Осознанность - первый шаг к богатству.", overviewEmptySub:"Богатейший человек Вавилона начал с учёта каждой монеты. Начните в Активности.", savingsRate:"Уровень сбережений", excellent:"Отлично", onTrack:"В норме", buildItUp:"Улучшайте", overspending:"Перерасход", thisPeriod:"за период", transactions:"Транзакции", whereItWent:"Куда ушло", overLimit:"сверх лимита", complete:"завершено", savedLabel:"накоплено", spentLabel:"потрачено", toGo:"осталось", recent:"Последние", activeGoal:"активная цель", activeGoals:"активных целей", today:"Сегодня", yesterday:"Вчера", moneyIn:"Доходы", moneyOut:"Расходы", newTransaction:"Новая транзакция", editTransaction:"Редактировать", addTransaction:"Добавить транзакцию", saveChanges:"Сохранить изменения", deleteTx:"Удалить транзакцию", amount:"Сумма", txLabel:"Описание", category:"Категория", date:"Дата", repeat:"Повтор", once:"Однократно", weekly:"Еженедельно", monthly:"Ежемесячно", markPending:"Отметить как ожидающее", expense:"Расход", noBudgets:"Нет бюджетов", noBudgetsSub:"Нажмите + чтобы задать лимит. Бюджет говорит деньгам куда идти.", newBudget:"Новый бюджет", editLimit:"Изменить лимит", addBudget:"Добавить бюджет", removeBudget:"Удалить этот бюджет", totalSpent:"Всего потрачено", byCategory:"По категориям", edit:"Редактировать", delete:"Удалить", save:"Сохранить", budgeted:"запланировано", monthlyLimit:"Месячный лимит", allCatsHaveBudget:"Все категории уже имеют бюджет. Сначала добавьте новую категорию.", noGoals:"Нет книг целей", noGoalsSub:"Нажмите + чтобы создать первую. Цель с датой - это план, а не мечта.", newBudgetBook:"Новая книга целей", editBudgetBook:"Редактировать книгу целей", createBudgetBook:"Создать книгу целей", deleteBudgetBook:"Удалить книгу целей", addToBudgetBook:"Добавить в книгу целей", alreadySaved:"Уже накоплено", target:"Цель", name:"Название", goalComplete:"Цель достигнута!", remaining:"осталось", add:"Добавить", richySuggests:"Ричард предлагает", implement:"Применить", dismiss:"Отклонить", aiAdvisor:"Финансовый советник ИИ", aiAdvisorSub:"Персональные советы на основе ваших расходов.", analyzeMyFinances:"Анализировать мои финансы", analyzingFinances:"Анализируем ваши финансы...", fewSeconds:"Это займет несколько секунд", refresh:"Обновить", insights:"Инсайты", analysisFailed:"Анализ не удался", tryAgain:"Попробовать снова", askYourAdvisor:"Спросите вашего советника", advisorQ1:"Как сэкономить больше?", advisorQ2:"Мой уровень сбережений здоровый?", advisorQ3:"Что делать с излишком?", thinking:"Думаю...", yesDo:"Да, сделай это", notNow:"Не сейчас", askRichard:"Спросите Ричарда что угодно...", giveFeedback:"Дайте обратную связь Ричарду...", advisorDisclaimer:"Ричард является ИИ-помощником, а не лицензированным финансовым советником. Всегда проводите собственное исследование.", translate:"Перевести план", noPlanYet:"Noch kein Plan. Fullen Sie den Fragebogen aus, um Ihren personlichen Plan von Richard zu erhalten." },
+  de: { overview:"Ubersicht", activity:"Aktivitat", budgets:"Budgets", goals:"Ziele", advisor:"Berater", profile:"Profil", language:"Sprache", currency:"Wahrung", yourPlan:"Ihr Plan", categories:"Kategorien", signOut:"Abmelden", richyMember:"Richy-Mitglied", richyRefersTo:"Richy nennt dich", seeYourPlan:"Sehen Sie Ihren Plan von Richard", netBalance:"Nettosaldo", income:"Einnahmen", spent:"Ausgaben", topSpend:"Ausgabe", morning:"Guten Morgen", afternoon:"Guten Tag", evening:"Guten Abend", savedThisPeriod:"gespart in dieser Periode", redoQuestionnaire:"Fragebogen wiederholen", yourPlanByRichard:"Ihr Plan von Richard", noTransactions:"Noch keine Transaktionen", noTransactionsSub:"Tippe + um die erste zu erfassen. Bewusstsein ist der erste Schritt zum Reichtum.", overviewEmptySub:"Der reichste Mann Babylons begann damit, jede Muenze zu verfolgen. Starte in Aktivitat.", savingsRate:"Sparrate", excellent:"Ausgezeichnet", onTrack:"Auf Kurs", buildItUp:"Verbessern", overspending:"Mehrausgaben", thisPeriod:"diese Periode", transactions:"Transaktionen", whereItWent:"Wo es hinging", overLimit:"uber dem Limit", complete:"abgeschlossen", savedLabel:"gespart", spentLabel:"ausgegeben", toGo:"verbleibend", recent:"Aktuell", activeGoal:"aktives Ziel", activeGoals:"aktive Ziele", today:"Heute", yesterday:"Gestern", moneyIn:"Einnahmen", moneyOut:"Ausgaben", newTransaction:"Neue Transaktion", editTransaction:"Transaktion bearbeiten", addTransaction:"Transaktion hinzufugen", saveChanges:"Anderungen speichern", deleteTx:"Transaktion loschen", amount:"Betrag", txLabel:"Bezeichnung", category:"Kategorie", date:"Datum", repeat:"Wiederholung", once:"Einmalig", weekly:"Wochentlich", monthly:"Monatlich", markPending:"Als ausstehend markieren", expense:"Ausgabe", noBudgets:"Noch keine Budgets", noBudgetsSub:"Tippe + um ein Limit festzulegen. Ein Budget sagt deinem Geld wo es hingehen soll.", newBudget:"Neues Budget", editLimit:"Limit bearbeiten", addBudget:"Budget hinzufugen", removeBudget:"Dieses Budget entfernen", totalSpent:"Gesamt ausgegeben", byCategory:"Nach Kategorie", edit:"Bearbeiten", delete:"Loschen", save:"Speichern", budgeted:"budgetiert", monthlyLimit:"Monatliches Limit", allCatsHaveBudget:"Alle Kategorien haben bereits ein Budget. Zuerst neue Kategorie hinzufugen.", noGoals:"Noch keine Sparbuecher", noGoalsSub:"Tippe + um dein erstes Sparbuch zu erstellen. Ein Ziel mit Termin ist ein Plan, kein Wunsch.", newBudgetBook:"Neues Sparbuch", editBudgetBook:"Sparbuch bearbeiten", createBudgetBook:"Sparbuch erstellen", deleteBudgetBook:"Sparbuch loschen", addToBudgetBook:"Zum Sparbuch hinzufugen", alreadySaved:"Bereits gespart", target:"Ziel", name:"Name", goalComplete:"Ziel erreicht!", remaining:"verbleibend", add:"Hinzufugen", richySuggests:"Richard schlagt vor", implement:"Umsetzen", dismiss:"Ablehnen", aiAdvisor:"KI-Finanzberater", aiAdvisorSub:"Personalisierte Ratschlage basierend auf Ihren Ausgaben.", analyzeMyFinances:"Meine Finanzen analysieren", analyzingFinances:"Ihre Finanzen werden analysiert...", fewSeconds:"Dies dauert einige Sekunden", refresh:"Aktualisieren", insights:"Einblicke", analysisFailed:"Analyse fehlgeschlagen", tryAgain:"Erneut versuchen", askYourAdvisor:"Fragen Sie Ihren Berater", advisorQ1:"Wie kann ich mehr sparen?", advisorQ2:"Ist meine Sparrate gesund?", advisorQ3:"Was tun mit meinem Uberschuss?", thinking:"Denke nach...", yesDo:"Ja, mach es", notNow:"Nicht jetzt", askRichard:"Fragen Sie Richard alles...", giveFeedback:"Geben Sie Richard Feedback...", advisorDisclaimer:"Richard ist ein KI-Assistent, kein lizenzierter Finanzberater. Recherchieren Sie stets selbst vor Finanzentscheidungen.", translate:"Plan ubersetzen", noPlanYet:"Noch kein Plan. Fullen Sie den Fragebogen aus um Ihren personlichen Plan von Richard zu erhalten." },
+  pt: { overview:"Visao Geral", activity:"Atividade", budgets:"Orcamentos", goals:"Metas", advisor:"Consultor", profile:"Perfil", language:"Idioma", currency:"Moeda", yourPlan:"Seu Plano", categories:"Categorias", signOut:"Sair", richyMember:"Membro Richy", richyRefersTo:"Richy te chama", seeYourPlan:"Ver seu plano de Richard", netBalance:"Saldo Liquido", income:"Receita", spent:"Gasto", topSpend:"Principal gasto", morning:"Bom dia", afternoon:"Boa tarde", evening:"Boa noite", savedThisPeriod:"economizado neste periodo", redoQuestionnaire:"Refazer questionario", yourPlanByRichard:"Seu plano de Richard", noTransactions:"Nenhuma transacao ainda", noTransactionsSub:"Toque + para registrar a primeira. Consciencia e o primeiro passo para a riqueza.", overviewEmptySub:"O homem mais rico da Babilonia comecou rastreando cada moeda. Comece em Atividade.", savingsRate:"Taxa de Poupanca", excellent:"Excelente", onTrack:"No caminho", buildItUp:"Melhore", overspending:"Excesso de gastos", thisPeriod:"este periodo", transactions:"Transacoes", whereItWent:"Para onde foi", overLimit:"acima do limite", complete:"concluido", savedLabel:"economizado", spentLabel:"gasto", toGo:"restante", recent:"Recente", activeGoal:"meta ativa", activeGoals:"metas ativas", today:"Hoje", yesterday:"Ontem", moneyIn:"Entrada", moneyOut:"Saida", newTransaction:"Nova Transacao", editTransaction:"Editar Transacao", addTransaction:"Adicionar Transacao", saveChanges:"Salvar Alteracoes", deleteTx:"Excluir transacao", amount:"Valor", txLabel:"Rotulo", category:"Categoria", date:"Data", repeat:"Repeticao", once:"Uma vez", weekly:"Semanal", monthly:"Mensal", markPending:"Marcar como pendente", expense:"Despesa", noBudgets:"Nenhum orcamento ainda", noBudgetsSub:"Toque + para definir um limite. Um orcamento e dizer ao seu dinheiro para onde ir.", newBudget:"Novo Orcamento", editLimit:"Editar Limite", addBudget:"Adicionar Orcamento", removeBudget:"Remover este orcamento", totalSpent:"Total Gasto", byCategory:"Por Categoria", edit:"Editar", delete:"Excluir", save:"Salvar", budgeted:"orcado", monthlyLimit:"Limite mensal", allCatsHaveBudget:"Cada categoria ja tem um orcamento. Adicione uma nova categoria primeiro.", noGoals:"Nenhum caderno de metas ainda", noGoalsSub:"Toque + para criar seu primeiro caderno. Uma meta com prazo e um plano.", newBudgetBook:"Novo Caderno de Metas", editBudgetBook:"Editar Caderno de Metas", createBudgetBook:"Criar Caderno de Metas", deleteBudgetBook:"Excluir caderno de metas", addToBudgetBook:"Adicionar ao Caderno de Metas", alreadySaved:"Ja economizado", target:"Meta", name:"Nome", goalComplete:"Meta concluida!", remaining:"restante", add:"Adicionar", richySuggests:"Richard sugere", implement:"Implementar", dismiss:"Dispensar", aiAdvisor:"Consultor Financeiro IA", aiAdvisorSub:"Conselhos personalizados com base nos seus gastos reais.", analyzeMyFinances:"Analisar Minhas Financas", analyzingFinances:"Analisando suas financas...", fewSeconds:"Isso leva alguns segundos", refresh:"Atualizar", insights:"Perspectivas", analysisFailed:"Analise falhou", tryAgain:"Tentar novamente", askYourAdvisor:"Pergunte ao seu Consultor", advisorQ1:"Como posso economizar mais?", advisorQ2:"Minha taxa de poupanca e saudavel?", advisorQ3:"O que fazer com meu excedente?", thinking:"Pensando...", yesDo:"Sim, faca isso", notNow:"Agora nao", askRichard:"Pergunte a Richard qualquer coisa...", giveFeedback:"Dar feedback a Richard...", advisorDisclaimer:"Richard e um assistente de IA, nao um consultor financeiro licenciado. Sempre pesquise antes de tomar decisoes financeiras.", translate:"Traduzir plano", noPlanYet:"Ainda sem plano. Complete o questionario para obter seu plano personalizado de Richard." }
+};
+function tr(key) {
+  var code = _lang.code || "en";
+  return (TRANSLATIONS[code] && TRANSLATIONS[code][key]) || (TRANSLATIONS.en[key]) || key;
+}
+
+function fmtCur(sym, n) {
+  var abs = Math.abs(n || 0);
+  return (sym || "$") + abs.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 function dollars(n) {
-  var abs = Math.abs(n);
-  return _currency.sym + abs.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return fmtCur(_currency.sym, n);
+}
+
+function round2(n) {
+  return Math.round((n + Number.EPSILON) * 100) / 100;
+}
+
+// Offline fallback rates, expressed as units of each currency per 1 USD.
+// Only used when the live FX request fails (no network). rate(from -> to) = USD[to] / USD[from].
+var FX_FALLBACK = { USD: 1, EUR: 0.92, GBP: 0.79, ILS: 3.70, JPY: 150 };
+var _fxCache = {};
+
+function fxStaticRate(fromSym, toSym) {
+  var f = SYM_TO_CODE[fromSym], t = SYM_TO_CODE[toSym];
+  var fu = FX_FALLBACK[f], tu = FX_FALLBACK[t];
+  if (!fu || !tu) return 1;
+  return tu / fu;
+}
+
+// Resolve how many units of toSym equal one fromSym. Calls cb(rate, usedFallback).
+// Live rates come from frankfurter (ECB-based, no key, CORS-friendly); cached per session.
+function fetchRate(fromSym, toSym, cb) {
+  if (fromSym === toSym) { cb(1, false); return; }
+  var from = SYM_TO_CODE[fromSym], to = SYM_TO_CODE[toSym];
+  if (!from || !to) { cb(fxStaticRate(fromSym, toSym), true); return; }
+  var key = from + "_" + to;
+  if (_fxCache[key]) { cb(_fxCache[key], false); return; }
+  fetch("https://api.frankfurter.dev/v1/latest?base=" + from + "&symbols=" + to)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var rate = d && d.rates && d.rates[to];
+      if (typeof rate === "number" && rate > 0) { _fxCache[key] = rate; cb(rate, false); }
+      else { cb(fxStaticRate(fromSym, toSym), true); }
+    })
+    .catch(function() { cb(fxStaticRate(fromSym, toSym), true); });
 }
 
 function hashPass(pw) {
@@ -316,14 +398,14 @@ function Overlay(props) {
         background: "#F8F6F1",
         borderRadius: "24px 24px 0 0",
         boxShadow: "0 -4px 40px rgba(20,18,16,0.22)",
-        paddingBottom: 44,
+        paddingBottom: 30,
       }}>
-        <div style={{ width: 38, height: 5, borderRadius: 3, background: "rgba(0,0,0,0.13)", margin: "10px auto 0" }} />
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 20px 10px" }}>
+        <div style={{ width: 38, height: 5, borderRadius: 3, background: T.orangeDim, margin: "9px auto 0" }} />
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px 8px" }}>
           <span style={{ fontSize: 18, fontWeight: 700, fontFamily: DISP, color: T.ink, letterSpacing: "-0.02em" }}>{props.title}</span>
           <button onClick={props.onClose} style={{
-            background: "rgba(0,0,0,0.07)", border: "none", borderRadius: "50%",
-            width: 30, height: 30, cursor: "pointer", fontSize: 18, color: T.ink2,
+            background: T.orangeDim, border: "none", borderRadius: "50%",
+            width: 30, height: 30, cursor: "pointer", fontSize: 18, color: T.orange,
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>x</button>
         </div>
@@ -335,17 +417,17 @@ function Overlay(props) {
 
 function FormRow(props) {
   return (
-    <div style={{ background: "rgba(0,0,0,0.04)", borderRadius: 14, padding: "12px 15px", marginBottom: props.last ? 0 : 9 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, marginBottom: 5 }}>
+    <div style={{ background: "rgba(0,0,0,0.04)", borderRadius: 13, padding: "9px 14px", marginBottom: props.last ? 0 : 7 }}>
+      <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, marginBottom: 3 }}>
         {props.label}
       </div>
       {props.opts ? (
-        <select value={props.value} onChange={props.onChange} style={{ width: "100%", border: "none", background: "none", fontSize: 16, color: T.ink, fontFamily: UI, outline: "none", padding: 0 }}>
+        <select value={props.value} onChange={props.onChange} style={{ width: "100%", border: "none", background: "none", fontSize: 15, color: T.ink, fontFamily: UI, outline: "none", padding: 0 }}>
           {props.opts.map(function(o) { return <option key={o}>{o}</option>; })}
         </select>
       ) : (
-        <input type={props.type || "text"} value={props.value} onChange={props.onChange}
-          style={{ width: "100%", border: "none", background: "none", fontSize: 16, color: T.ink, fontFamily: UI, outline: "none", padding: 0, boxSizing: "border-box" }} />
+        <input type={props.type || "text"} value={props.value} onChange={props.onChange} placeholder={props.placeholder || ""}
+          style={{ width: "100%", border: "none", background: "none", fontSize: 15, color: T.ink, fontFamily: UI, outline: "none", padding: 0, boxSizing: "border-box" }} />
       )}
     </div>
   );
@@ -358,10 +440,10 @@ function BigBtn(props) {
         width: "100%",
         background: props.disabled ? "rgba(0,0,0,0.10)" : (props.color || T.orange),
         color: props.disabled ? T.ink3 : "#fff",
-        border: "none", borderRadius: 16, padding: "16px 0",
-        fontSize: 17, fontFamily: UI, fontWeight: 700,
+        border: "none", borderRadius: 14, padding: "13px 0",
+        fontSize: 16, fontFamily: UI, fontWeight: 700,
         cursor: props.disabled ? "default" : "pointer",
-        marginTop: 14,
+        marginTop: 10,
         boxShadow: props.disabled ? "none" : "0 4px 14px rgba(217,121,65,0.4)",
       }}>
       {props.label}
@@ -385,33 +467,100 @@ function CatBadge(props) {
   );
 }
 
+// Progressive-disclosure category picker. Collapsed by default to a single calm
+// row showing the selected category; tap to reveal a calm wrap grid of all of
+// them; picking one collapses it back. Lighter and less overwhelming than a strip
+// of saturated badges. Shared by the transaction add/edit forms and the budget form.
 function CatPicker(props) {
+  var _o = useState(false);
+  var open = _o[0]; var setOpen = _o[1];
+  var cats = props.categories || [];
+  var sel = null;
+  cats.forEach(function(c) { if (c.id === props.value) sel = c; });
+  if (!sel) sel = cats[0] || null;
   return (
-    <div style={{ background: "rgba(0,0,0,0.04)", borderRadius: 14, padding: "12px 15px", marginBottom: props.last ? 0 : 9 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 9 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI }}>
+    <div style={{ background: "rgba(0,0,0,0.04)", borderRadius: 13, padding: "9px 14px", marginBottom: props.last ? 0 : 7 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
+        <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI }}>
           {props.label || "Category"}
         </div>
         {props.onManage && (
-          <button onClick={props.onManage} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontSize: 11, fontWeight: 600, color: T.orange, fontFamily: UI }}>
+          <button onClick={props.onManage} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontSize: 10.5, fontWeight: 600, color: T.orange, fontFamily: UI }}>
             Manage
           </button>
         )}
       </div>
-      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 2 }}>
-        {props.categories.map(function(c) {
-          var active = c.id === props.value;
+      {!sel ? (
+        <div style={{ fontSize: 13, color: T.ink3, fontFamily: UI, padding: "4px 0" }}>No categories</div>
+      ) : !open ? (
+        <button onClick={function() { setOpen(true); }}
+          style={{ width: "100%", display: "flex", alignItems: "center", gap: 11, background: "none", border: "none", cursor: "pointer", padding: "2px 0", fontFamily: UI }}>
+          <CatBadge icon={sel.icon} color={sel.color} size={30} soft={true} />
+          <span style={{ flex: 1, minWidth: 0, textAlign: "left", fontSize: 15, fontWeight: 600, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sel.name}</span>
+          <span style={{ flexShrink: 0, transform: "rotate(90deg)", display: "flex", color: T.ink3 }}>
+            <SVGIcon id="chevron" size={14} color={T.ink3} />
+          </span>
+        </button>
+      ) : (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 7, paddingTop: 1 }}>
+          {cats.map(function(c) {
+            var active = c.id === props.value;
+            return (
+              <button key={c.id} onClick={function() { props.onChange(c.id); setOpen(false); }}
+                style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 11px 5px 6px", borderRadius: 11, cursor: "pointer", fontFamily: UI,
+                  background: active ? (c.color + "1F") : "rgba(0,0,0,0.04)",
+                  border: active ? "1.5px solid " + c.color : "1.5px solid transparent" }}>
+                <CatBadge icon={c.icon} color={c.color} size={22} soft={true} />
+                <span style={{ fontSize: 12.5, fontWeight: active ? 700 : 500, color: active ? T.ink : T.ink2, whiteSpace: "nowrap" }}>{c.name}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Hero amount entry: the focal point of the transaction form. Combines the amount,
+// the currency symbol prefix, the currency picker, and the live-converted total into
+// one rich block so the form has hierarchy instead of a stack of equal gray boxes.
+function AmountField(props) {
+  var foreign = props.cur && props.cur !== props.mainSym;
+  var amtNum = parseFloat(props.value) || 0;
+  var conv = amtNum * (props.rate || 1);
+  return (
+    <div style={{ background: "rgba(0,0,0,0.04)", borderRadius: 14, padding: "11px 15px 12px", marginBottom: 7 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3, minHeight: 14 }}>
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI }}>{tr("amount")}</span>
+        {foreign && (
+          <span style={{ fontSize: 12, fontWeight: 700, color: T.ink2, fontFamily: UI, letterSpacing: "-0.01em" }}>
+            {props.rateLoading ? "..." : ("= " + fmtCur(props.mainSym, conv))}
+          </span>
+        )}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+        <span style={{ fontSize: 26, fontWeight: 700, color: amtNum > 0 ? T.ink2 : T.ink3, fontFamily: UI, lineHeight: 1 }}>{props.cur}</span>
+        <input type="number" value={props.value} onChange={props.onAmount} placeholder="0.00"
+          style={{ flex: 1, minWidth: 0, border: "none", background: "none", fontSize: 26, fontWeight: 700, color: T.ink, fontFamily: UI, outline: "none", padding: 0, letterSpacing: "-0.03em" }} />
+      </div>
+      <div style={{ display: "flex", gap: 5, marginTop: 11 }}>
+        {CURRENCY_OPTIONS.map(function(o) {
+          var on = o.sym === props.cur;
           return (
-            <button key={c.id} onClick={function() { props.onChange(c.id); }}
-              style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: 0, width: 58 }}>
-              <div style={{ borderRadius: 16, padding: 2, border: active ? "2px solid " + c.color : "2px solid transparent" }}>
-                <CatBadge icon={c.icon} color={c.color} size={42} />
-              </div>
-              <span style={{ fontSize: 10.5, fontWeight: active ? 700 : 500, color: active ? T.ink : T.ink3, textAlign: "center", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 56 }}>{c.name}</span>
+            <button key={o.sym} onClick={function() { props.onCur(o.sym); }}
+              style={{ flex: 1, padding: "6px 0", borderRadius: 9, border: "none", cursor: "pointer", fontFamily: UI,
+                background: on ? T.orangeDim : "rgba(0,0,0,0.05)", color: on ? T.orange : T.ink3 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1 }}>{o.sym}</div>
+              <div style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.04em", marginTop: 2 }}>{o.code}</div>
             </button>
           );
         })}
       </div>
+      {foreign && !props.rateLoading && (
+        <div style={{ fontSize: 11, color: T.ink3, fontWeight: 500, fontFamily: UI, marginTop: 8 }}>
+          {"1 " + props.cur + " = " + props.mainSym + (props.rate || 1).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: (props.rate || 1) < 1 ? 4 : 2 }) + (props.rateFallback ? "   (offline rate)" : "")}
+        </div>
+      )}
     </div>
   );
 }
@@ -864,6 +1013,275 @@ function AuthScreen(props) {
   );
 }
 
+function OnboardingScreen(props) {
+  var _s = useState(1); var step = _s[0]; var setStep = _s[1];
+  var _ls = useState(""); var lifeStage = _ls[0]; var setLifeStage = _ls[1];
+  var _inc = useState(""); var income = _inc[0]; var setIncome = _inc[1];
+  var _ess = useState(""); var essentials = _ess[0]; var setEssentials = _ess[1];
+  var _sav = useState(""); var savings = _sav[0]; var setSavings = _sav[1];
+  var _dbt = useState(""); var debt = _dbt[0]; var setDebt = _dbt[1];
+  var _gn = useState(""); var goalName = _gn[0]; var setGoalName = _gn[1];
+  var _ga = useState(""); var goalAmt = _ga[0]; var setGoalAmt = _ga[1];
+  var _tl = useState(""); var timeline = _tl[0]; var setTimeline = _tl[1];
+  var _ld = useState(false); var loading = _ld[0]; var setLoading = _ld[1];
+  var _er = useState(""); var err = _er[0]; var setErr = _er[1];
+  var _gp = useState(""); var genPlan = _gp[0]; var setGenPlan = _gp[1];
+  var _god = useState(null); var genOData = _god[0]; var setGenOData = _god[1];
+
+  var age = computeAge(props.dob);
+
+  function buildPlan() {
+    setLoading(true);
+    setErr("");
+    var ageStr = age !== null ? String(age) : "not provided";
+    var langName = LANGUAGE_NAMES[props.lang] || "English";
+    var langInstruction = langName !== "English" ? " Respond entirely in " + langName + "." : "";
+    var system = "You are Richard, a personal finance advisor inside the Richy app. A new user has just answered their onboarding questions. Generate a concise, direct, personalized financial plan for them. Base it on proven frameworks: the 50/30/20 rule, Pay Yourself First, emergency fund before investing, debt avalanche, compound growth. For teenagers: focus on building saving habits, tracking spending, and earning more - no investment jargon. Keep the plan under 250 words. No bullet lists - write in short paragraphs like a knowledgeable friend talking to them directly. No emojis. No markdown headers." + langInstruction;
+    var userMsg = "Name: " + props.username + ". Age: " + ageStr + ". Life stage: " + lifeStage + ". Monthly income: $" + (income || "0") + ". Monthly essentials (rent, food, bills): $" + (essentials || "0") + ". Current savings: $" + (savings || "0") + ". Total debt: $" + (debt || "0") + ". Top goal: " + (goalName || "financial freedom") + ", target $" + (goalAmt || "unknown") + ", timeline: " + (timeline || "unspecified") + ". Write my personalized financial plan.";
+    callClaude(
+      [{ role: "user", content: userMsg }],
+      system,
+      400,
+      function(planErr, text) {
+        setLoading(false);
+        var plan = (planErr || !text)
+          ? ("Start here, " + props.username + ". Track every dollar you spend this month - awareness is step one. Set aside 10% of whatever you earn before you touch anything else. Build one month of essential expenses as a buffer. Then pour your focus into your goal: " + (goalName || "financial freedom") + ". Small consistent actions, repeated every month, compound into real wealth.")
+          : text;
+        var oData = { lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: ageStr };
+        setGenPlan(plan);
+        setGenOData(oData);
+        setStep(5);
+      }
+    );
+  }
+
+  var STAGES = [
+    { label: "Teenager",   icon: "star" },
+    { label: "Student",    icon: "book" },
+    { label: "Working",    icon: "briefcase" },
+    { label: "Parent",     icon: "home" },
+  ];
+  var TIMELINES = ["6 months", "1 year", "2 years", "5+ years"];
+
+  var fieldStyle = { width: "100%", background: "rgba(255,255,255,0.88)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 16px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", marginBottom: 12, display: "block" };
+  var labelStyle = { fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8, display: "block" };
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI }}>
+        <div style={{ textAlign: "center", padding: "0 32px" }}>
+          <div style={{ width: 64, height: 64, borderRadius: 22, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 22px", boxShadow: "0 12px 32px " + T.orangeGlow }}>
+            <SVGIcon id="spark" size={30} color="#fff" />
+          </div>
+          <div style={{ fontSize: 21, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.3 }}>
+            Richard is building your plan...
+          </div>
+          <div style={{ fontSize: 14, color: T.ink3, marginTop: 10 }}>This takes just a moment.</div>
+        </div>
+      </div>
+    );
+  }
+
+  function suggestBudgets() {
+    var inc = parseFloat(income) || 0;
+    var ess = parseFloat(essentials) || 0;
+    var disc = Math.max(0, inc - ess);
+    var result = [];
+    if (ess > 0) {
+      result.push({ catId: "c1", category: "Housing",   limit: Math.round(ess * 0.50) });
+      result.push({ catId: "c2", category: "Food",      limit: Math.round(ess * 0.25) });
+      result.push({ catId: "c3", category: "Transport", limit: Math.round(ess * 0.15) });
+      result.push({ catId: "c4", category: "Health",    limit: Math.round(ess * 0.10) });
+    }
+    if (disc > 0) {
+      result.push({ catId: "c5", category: "Entertainment", limit: Math.round(disc * 0.35) });
+      result.push({ catId: "c6", category: "Shopping",      limit: Math.round(disc * 0.35) });
+      result.push({ catId: "c7", category: "Travel",        limit: Math.round(disc * 0.20) });
+      result.push({ catId: "c11",category: "Other",         limit: Math.round(disc * 0.10) });
+    }
+    return result.filter(function(b) { return b.limit > 0; });
+  }
+
+  if (step === 5) {
+    var proposed = suggestBudgets();
+    return (
+      <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)", fontFamily: UI, overflowY: "auto" }}>
+        <div style={{ padding: "56px 24px 52px" }}>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 28 }}>
+            <div style={{ width: 48, height: 48, borderRadius: 16, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 8px 24px " + T.orangeGlow }}>
+              <SVGIcon id="spark" size={22} color="#fff" />
+            </div>
+            <div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Your plan is ready.</div>
+              <div style={{ fontSize: 13, color: T.ink3, marginTop: 2 }}>Richard built this just for you.</div>
+            </div>
+          </div>
+
+          <div style={{ background: "#fff", borderRadius: 18, padding: "20px 20px", marginBottom: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>Your Plan by Richard</div>
+            <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.7 }}>{genPlan}</div>
+          </div>
+
+          {proposed.length > 0 && (
+            <div style={{ background: "#fff", borderRadius: 18, padding: "20px 20px", marginBottom: 16, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, marginBottom: 6 }}>Set up your budgets automatically?</div>
+              <div style={{ fontSize: 13, color: T.ink3, marginBottom: 18, lineHeight: 1.55 }}>Based on your numbers, Richard suggests these monthly limits:</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+                {proposed.map(function(b) {
+                  return (
+                    <div key={b.catId} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: 14, color: T.ink2 }}>{b.category}</span>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>${b.limit}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <button onClick={function() { props.onComplete(genPlan, genOData, proposed); }}
+                style={{ width: "100%", background: "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: "#fff", border: "none", borderRadius: 14, padding: "15px 0", fontSize: 16, fontFamily: UI, fontWeight: 700, cursor: "pointer", marginBottom: 10, boxShadow: "0 4px 16px " + T.orangeGlow }}>
+                Yes, set them up
+              </button>
+              <button onClick={function() { props.onComplete(genPlan, genOData, null); }}
+                style={{ width: "100%", background: "none", border: "none", fontSize: 14, color: T.ink3, cursor: "pointer", fontFamily: UI, padding: "8px 0" }}>
+                I'll set them up myself
+              </button>
+            </div>
+          )}
+
+          {proposed.length === 0 && (
+            <button onClick={function() { props.onComplete(genPlan, genOData, null); }}
+              style={{ width: "100%", background: "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: "#fff", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 6px 20px " + T.orangeGlow }}>
+              Get Started
+            </button>
+          )}
+
+        </div>
+      </div>
+    );
+  }
+
+  var questions = [
+    { q: "How would you describe yourself?",      s: "This helps Richard tailor your plan to your life." },
+    { q: "What is your monthly money situation?",  s: "Approximate numbers are completely fine." },
+    { q: "Where do you stand right now?",          s: "Honest numbers lead to a better plan." },
+    { q: "What is your most important goal?",      s: "Something specific you want to reach." },
+  ];
+  var current = questions[step - 1];
+
+  function nextStep() {
+    if (step === 1 && !lifeStage) { setErr("Pick the option that fits you best."); return; }
+    setErr("");
+    if (step < 4) { setStep(step + 1); return; }
+    buildPlan();
+  }
+
+  return (
+    <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)", fontFamily: UI, display: "flex", flexDirection: "column" }}>
+
+      <div style={{ padding: "64px 24px 0", flex: 1 }}>
+
+        <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 44 }}>
+          {[1, 2, 3, 4].map(function(n) {
+            return (
+              <div key={n} style={{ width: 8, height: 8, borderRadius: "50%", background: n <= step ? T.orange : "rgba(200,103,58,0.22)", transition: "background 0.25s" }} />
+            );
+          })}
+        </div>
+
+        <div style={{ fontSize: 25, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.25, marginBottom: 8 }}>
+          {current.q}
+        </div>
+        <div style={{ fontSize: 14, color: T.ink3, marginBottom: 28, lineHeight: 1.55 }}>
+          {current.s}
+        </div>
+
+        {step === 1 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
+            {STAGES.map(function(st) {
+              var sel = lifeStage === st.label;
+              return (
+                <button key={st.label} onClick={function() { setLifeStage(st.label); setErr(""); }}
+                  style={{ background: sel ? "rgba(200,103,58,0.07)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "16px 20px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI }}>
+                  <div style={{ width: 38, height: 38, borderRadius: 11, background: sel ? T.orangeDim : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <SVGIcon id={st.icon} size={18} color={sel ? T.orange : T.ink3} />
+                  </div>
+                  <span style={{ fontSize: 17, fontWeight: sel ? 700 : 500, color: sel ? T.ink : T.ink2 }}>{st.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {step === 2 && (
+          <div>
+            <span style={labelStyle}>Monthly Income</span>
+            <input value={income} onChange={function(e) { setIncome(e.target.value); }} type="number" placeholder="e.g. 3000" style={fieldStyle} />
+            <span style={Object.assign({}, labelStyle, { marginTop: 4 })}>Monthly Essentials</span>
+            <div style={{ fontSize: 12, color: T.ink3, marginBottom: 8 }}>Rent, food, utilities, transport</div>
+            <input value={essentials} onChange={function(e) { setEssentials(e.target.value); }} type="number" placeholder="e.g. 1800" style={fieldStyle} />
+          </div>
+        )}
+
+        {step === 3 && (
+          <div>
+            <span style={labelStyle}>Current Savings</span>
+            <input value={savings} onChange={function(e) { setSavings(e.target.value); }} type="number" placeholder="e.g. 500" style={fieldStyle} />
+            <span style={Object.assign({}, labelStyle, { marginTop: 4 })}>Total Debt</span>
+            <div style={{ fontSize: 12, color: T.ink3, marginBottom: 8 }}>Credit cards, loans - enter 0 if none</div>
+            <input value={debt} onChange={function(e) { setDebt(e.target.value); }} type="number" placeholder="e.g. 0" style={fieldStyle} />
+          </div>
+        )}
+
+        {step === 4 && (
+          <div>
+            <span style={labelStyle}>Goal Name</span>
+            <input value={goalName} onChange={function(e) { setGoalName(e.target.value); }} type="text" placeholder="e.g. Emergency fund, New laptop" style={fieldStyle} />
+            <span style={Object.assign({}, labelStyle, { marginTop: 4 })}>Target Amount</span>
+            <input value={goalAmt} onChange={function(e) { setGoalAmt(e.target.value); }} type="number" placeholder="e.g. 5000" style={fieldStyle} />
+            <span style={Object.assign({}, labelStyle, { marginTop: 4 })}>Timeline</span>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 4 }}>
+              {TIMELINES.map(function(t) {
+                var sel = timeline === t;
+                return (
+                  <button key={t} onClick={function() { setTimeline(t); }}
+                    style={{ background: sel ? T.orange : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.09)"), borderRadius: 30, padding: "9px 18px", fontSize: 14, fontWeight: sel ? 700 : 500, color: sel ? "#fff" : T.ink2, cursor: "pointer", fontFamily: UI }}>
+                    {t}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {err && (
+          <div style={{ fontSize: 13, color: T.red, marginTop: 14, lineHeight: 1.45 }}>{err}</div>
+        )}
+
+      </div>
+
+      <div style={{ padding: "20px 24px 52px" }}>
+        {step > 1 && (
+          <button onClick={function() { setStep(step - 1); setErr(""); }}
+            style={{ background: "none", border: "none", fontSize: 14, color: T.ink3, cursor: "pointer", fontFamily: UI, marginBottom: 10, padding: 0 }}>
+            Back
+          </button>
+        )}
+        <button onClick={nextStep}
+          style={{ width: "100%", background: "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: "#fff", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 6px 20px " + T.orangeGlow + ", 0 2px 6px rgba(0,0,0,0.1)", letterSpacing: "-0.01em" }}>
+          {step < 4 ? "Next" : "Build My Plan"}
+        </button>
+        {step > 1 && step < 4 && (
+          <button onClick={function() { setErr(""); setStep(step + 1); }}
+            style={{ background: "none", border: "none", fontSize: 13, color: T.ink3, cursor: "pointer", fontFamily: UI, marginTop: 14, padding: 0, display: "block", width: "100%", textAlign: "center" }}>
+            Skip this step
+          </button>
+        )}
+      </div>
+
+    </div>
+  );
+}
+
 function Overview(props) {
   var tx       = props.tx;
   var goals    = props.goals;
@@ -876,7 +1294,7 @@ function Overview(props) {
   var mins = new Date().getMinutes();
   var day  = new Date().getDay();
   var period = h < 12 ? "morning" : h < 17 ? "afternoon" : "evening";
-  var tod = period === "morning" ? "Good morning" : period === "afternoon" ? "Good afternoon" : "Good evening";
+  var tod = tr(period);
 
   var pairs = [
     { g: tod + ", " + name + ".",                      s: "Here's where you stand." },
@@ -903,6 +1321,7 @@ function Overview(props) {
     if (day === 0) pairs.push({ g: "Happy Sunday, " + name + ".",   s: "Rest, review, repeat." });
     if (day === 1) pairs.push({ g: "New week, " + name + ".",       s: "Fresh start, clean slate." });
   }
+  if (_lang.code !== "en") { pairs = [{ g: tod + ", " + name + ".", s: "" }]; }
 
   var idx      = mins % pairs.length;
   var greeting = pairs[idx].g;
@@ -951,27 +1370,27 @@ function Overview(props) {
         <div style={{ position: "absolute", bottom: -20, left: -20, width: 140, height: 140, borderRadius: "50%", background: "radial-gradient(circle,rgba(200,152,58,0.14) 0%,transparent 70%)", pointerEvents: "none" }} />
         <div style={{ padding: "26px 24px 22px", position: "relative" }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: 6 }}>
-            NET BALANCE
+            {tr("netBalance")}
           </div>
-          <div style={{ fontSize: 44, fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.04em", lineHeight: 1, marginBottom: 4 }}>
+          <div style={{ fontSize: 40, fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.04em", lineHeight: 1, marginBottom: 4 }}>
             {dollars(balance)}
           </div>
           {income > 0 && (
             <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: savRate >= 20 ? "rgba(39,168,95,0.2)" : "rgba(200,103,58,0.2)", borderRadius: 30, padding: "3px 10px", marginBottom: 20 }}>
               <div style={{ width: 6, height: 6, borderRadius: "50%", background: savRate >= 20 ? T.green : T.orange }} />
               <span style={{ fontSize: 12, fontWeight: 700, color: savRate >= 20 ? "#4ADE80" : T.orangeHi }}>
-                {savRate}{"% saved this period"}
+                {savRate}{"% "}{tr("savedThisPeriod")}
               </span>
             </div>
           )}
           <div style={{ height: "0.5px", background: "rgba(255,255,255,0.08)", marginBottom: 18 }} />
           <div style={{ display: "flex", gap: 0 }}>
             <div style={{ flex: 1, paddingRight: 18, borderRight: "0.5px solid rgba(255,255,255,0.08)" }}>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4 }}>Income</div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4 }}>{tr("income")}</div>
               <div style={{ fontSize: 20, fontWeight: 700, color: "#4ADE80", letterSpacing: "-0.02em" }}>{dollars(income)}</div>
             </div>
             <div style={{ flex: 1, paddingLeft: 18 }}>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4 }}>Spent</div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4 }}>{tr("spent")}</div>
               <div style={{ fontSize: 20, fontWeight: 700, color: "rgba(255,255,255,0.85)", letterSpacing: "-0.02em" }}>{dollars(expense)}</div>
             </div>
           </div>
@@ -980,39 +1399,50 @@ function Overview(props) {
           <div style={{ padding: "12px 24px 16px", borderTop: "0.5px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 8, height: 8, borderRadius: "50%", background: topCat.color }} />
-              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontWeight: 500 }}>Top spend</span>
+              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontWeight: 500 }}>{tr("topSpend")}</span>
             </div>
             <span style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)" }}>{topCat.name} {" -  "}{dollars(topCat.val)}</span>
           </div>
         )}
       </div>
 
+      {props.plan && (
+        <div style={{ background: "rgba(200,103,58,0.04)", borderRadius: 18, padding: "20px 22px", marginBottom: 16, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.04)", borderLeft: "3px solid " + T.orange }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: UI, marginBottom: 10 }}>
+            {tr("yourPlanByRichard")}
+          </div>
+          <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.65, fontFamily: UI }}>
+            {props.plan}
+          </div>
+        </div>
+      )}
+
       {tx.length === 0 && (
         <Card style={{ padding: "36px 24px", textAlign: "center", marginBottom: 20 }}>
           <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
             <SVGIcon id="activity" size={24} color={T.orange} />
           </div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: T.ink, marginBottom: 5 }}>No transactions yet</div>
-          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>The Richest Man in Babylon started by tracking every coin. Start yours in Activity.</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: T.ink, marginBottom: 5 }}>{tr("noTransactions")}</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{tr("overviewEmptySub")}</div>
         </Card>
       )}
 
       {income > 0 && (
         <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
-          <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Savings Rate</div>
+          <div style={{ flex: 1, background: savRate >= 20 ? T.greenDim : savRate > 0 ? T.orangeDim : "rgba(224,48,48,0.07)", borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{tr("savingsRate")}</div>
             <div style={{ fontSize: 26, fontWeight: 700, color: savRate >= 20 ? T.green : savRate > 0 ? T.orange : T.red, letterSpacing: "-0.02em" }}>{savRate}%</div>
-            <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>{savRate >= 20 ? "Excellent" : savRate >= 10 ? "On track" : savRate > 0 ? "Build it up" : "Overspending"}</div>
+            <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>{savRate >= 20 ? tr("excellent") : savRate >= 10 ? tr("onTrack") : savRate > 0 ? tr("buildItUp") : tr("overspending")}</div>
           </div>
           <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Transactions</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{tr("transactions")}</div>
             <div style={{ fontSize: 26, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tx.length}</div>
-            <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>this period</div>
+            <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>{tr("thisPeriod")}</div>
           </div>
           <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Goals</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{tr("goals")}</div>
             <div style={{ fontSize: 26, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{goals.length}</div>
-            <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>{goals.length === 1 ? "active goal" : "active goals"}</div>
+            <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>{goals.length === 1 ? tr("activeGoal") : tr("activeGoals")}</div>
           </div>
         </div>
       )}
@@ -1020,7 +1450,10 @@ function Overview(props) {
       {pie.length > 0 && (
         <div>
           <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Where it went</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+              <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("whereItWent")}</span>
+            </div>
             <span style={{ fontSize: 12, color: T.ink3 }}>{dollars(expense)} total</span>
           </div>
           <Card style={{ padding: "18px 18px 14px", marginBottom: 20 }}>
@@ -1052,8 +1485,11 @@ function Overview(props) {
       {budgetRows.length > 0 && (
         <div>
           <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Budgets</span>
-            <span style={{ fontSize: 12, color: T.ink3 }}>{budgetRows.filter(function(b){return b.over;}).length > 0 ? budgetRows.filter(function(b){return b.over;}).length + " over limit" : "On track"}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+              <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("budgets")}</span>
+            </div>
+            <span style={{ fontSize: 12, color: T.ink3 }}>{budgetRows.filter(function(b){return b.over;}).length > 0 ? budgetRows.filter(function(b){return b.over;}).length + " " + tr("overLimit") : tr("onTrack")}</span>
           </div>
           <Card style={{ marginBottom: 20, overflow: "hidden" }}>
             {budgetRows.map(function(b, i) {
@@ -1066,8 +1502,8 @@ function Overview(props) {
                   </div>
                   <ProgressBar value={b.spent} max={b.limit} color={b.over ? T.red : b.cat.color} h={6} />
                   <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
-                    <span style={{ fontSize: 11, color: b.over ? T.red : T.ink3 }}>{dollars(b.spent)} spent</span>
-                    <span style={{ fontSize: 11, color: T.ink3 }}>of {dollars(b.limit)}</span>
+                    <span style={{ fontSize: 11, color: b.over ? T.red : T.ink3 }}>{dollars(b.spent) + " " + tr("spentLabel")}</span>
+                    <span style={{ fontSize: 11, color: T.ink3 }}>{"of " + dollars(b.limit)}</span>
                   </div>
                 </div>
               );
@@ -1079,8 +1515,11 @@ function Overview(props) {
       {goals.length > 0 && (
         <div>
           <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Goals</span>
-            <span style={{ fontSize: 12, color: T.ink3 }}>{goals.filter(function(g){return g.saved>=g.target;}).length}/{goals.length} complete</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+              <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("goals")}</span>
+            </div>
+            <span style={{ fontSize: 12, color: T.ink3 }}>{goals.filter(function(g){return g.saved>=g.target;}).length + "/" + goals.length + " " + tr("complete")}</span>
           </div>
           <Card style={{ marginBottom: 20, overflow: "hidden" }}>
             {goals.map(function(g, i) {
@@ -1097,8 +1536,8 @@ function Overview(props) {
                   </div>
                   <ProgressBar value={g.saved} max={g.target} color={done ? T.green : T.orange} h={5} />
                   <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
-                    <span style={{ fontSize: 11, color: T.ink3 }}>{dollars(g.saved)} saved</span>
-                    <span style={{ fontSize: 11, color: T.ink3, fontWeight: 500 }}>{dollars(g.target - g.saved)} to go</span>
+                    <span style={{ fontSize: 11, color: T.ink3 }}>{dollars(g.saved) + " " + tr("savedLabel")}</span>
+                    <span style={{ fontSize: 11, color: T.ink3, fontWeight: 500 }}>{dollars(g.target - g.saved) + " " + tr("toGo")}</span>
                   </div>
                 </div>
               );
@@ -1109,8 +1548,9 @@ function Overview(props) {
 
       {recent.length > 0 && (
         <div>
-          <div style={{ padding: "0 2px 10px" }}>
-            <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Recent</span>
+          <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+            <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("recent")}</span>
           </div>
           <Card style={{ overflow: "hidden", marginBottom: 8 }}>
             {recent.map(function(t, i) {
@@ -1120,7 +1560,7 @@ function Overview(props) {
                   <CatBadge icon={t.type === "income" ? "up" : c.icon} color={t.type === "income" ? T.green : c.color} size={36} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 15, color: T.ink, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
-                    <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{t.type === "income" ? "Income" : c.name} {"  "}{t.date}</div>
+                    <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{t.type === "income" ? tr("income") : c.name} {"  "}{t.date}{t.origCur && t.origCur !== _currency.sym ? "  -  " + fmtCur(t.origCur, t.origAmount) : ""}</div>
                   </div>
                   <span style={{ fontSize: 15, fontWeight: 700, color: t.type === "income" ? T.green : T.ink, flexShrink: 0 }}>
                     {t.type === "income" ? "+" : "-"}{dollars(t.amount)}
@@ -1139,15 +1579,18 @@ function Overview(props) {
 function dateLabel(date) {
   var today = new Date().toISOString().slice(0, 10);
   var yest = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-  if (date === today) return "Today";
-  if (date === yest) return "Yesterday";
+  if (date === today) return tr("today");
+  if (date === yest) return tr("yesterday");
+  var localeMap = { en: "en-US", he: "he-IL", es: "es-ES", fr: "fr-FR", ar: "ar-SA", ru: "ru-RU", de: "de-DE", pt: "pt-BR" };
+  var locale = localeMap[_lang.code] || "en-US";
   var d = new Date(date + "T12:00:00");
-  return d.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+  return d.toLocaleDateString(locale, { weekday: "long", month: "short", day: "numeric" });
 }
 
 function Activity(props) {
   var cats = props.categories || [];
-  var blankForm = { type: "expense", amount: "", label: "", catId: (cats[0] || {}).id || "", date: new Date().toISOString().slice(0, 10), repeat: "none", pending: false };
+  var mainSym = _currency.sym;
+  var blankForm = { type: "expense", amount: "", label: "", catId: (cats[0] || {}).id || "", date: new Date().toISOString().slice(0, 10), repeat: "none", pending: false, cur: mainSym, rate: 1, rateLoading: false, rateFallback: false };
   var _f = useState(blankForm);
   var form = _f[0]; var setForm = _f[1];
   var _et = useState(null);
@@ -1172,11 +1615,48 @@ function Activity(props) {
     });
   }
 
+  function pickCur(sym) {
+    setForm(function(prev) {
+      var next = {}; for (var k in prev) next[k] = prev[k];
+      next.cur = sym; next.rateLoading = sym !== mainSym; next.rateFallback = false;
+      if (sym === mainSym) next.rate = 1;
+      return next;
+    });
+    if (sym === mainSym) return;
+    fetchRate(sym, mainSym, function(rate, fb) {
+      setForm(function(prev) {
+        if (prev.cur !== sym) return prev;
+        var next = {}; for (var k in prev) next[k] = prev[k];
+        next.rate = rate; next.rateLoading = false; next.rateFallback = fb;
+        return next;
+      });
+    });
+  }
+  function pickEditCur(sym) {
+    setEditForm(function(prev) {
+      var next = {}; for (var k in prev) next[k] = prev[k];
+      next.cur = sym; next.rateLoading = sym !== mainSym; next.rateFallback = false;
+      if (sym === mainSym) next.rate = 1;
+      return next;
+    });
+    if (sym === mainSym) return;
+    fetchRate(sym, mainSym, function(rate, fb) {
+      setEditForm(function(prev) {
+        if (prev.cur !== sym) return prev;
+        var next = {}; for (var k in prev) next[k] = prev[k];
+        next.rate = rate; next.rateLoading = false; next.rateFallback = fb;
+        return next;
+      });
+    });
+  }
+
   var pressTimer = useRef(null);
   function startLongPress(t) {
     pressTimer.current = setTimeout(function() {
       setEditTx(t);
-      setEditForm({ type: t.type, amount: String(t.amount), label: t.label, catId: t.catId || "", date: t.date, repeat: t.repeat || "none", pending: t.pending || false });
+      var hasForeign = t.origCur && t.origCur !== mainSym;
+      setEditForm({ type: t.type, amount: String(hasForeign ? t.origAmount : t.amount), label: t.label, catId: t.catId || "", date: t.date, repeat: t.repeat || "none", pending: t.pending || false,
+        cur: hasForeign ? t.origCur : mainSym, rate: hasForeign ? (t.rate || fxStaticRate(t.origCur, mainSym)) : 1, rateLoading: false, rateFallback: false });
       pressTimer.current = null;
     }, 500);
   }
@@ -1187,8 +1667,13 @@ function Activity(props) {
   function add() {
     if (!form.amount || !form.label) return;
     var c = catById(cats, form.catId) || cats[0] || { id: "", name: "Other" };
-    var newTx = props.tx.concat([{ type: form.type, amount: parseFloat(form.amount), label: form.label, catId: c.id, category: c.name, date: form.date, id: Date.now(), repeat: form.repeat, pending: form.pending }]);
-    props.onSaveTx(newTx);
+    var entered = parseFloat(form.amount);
+    var foreign = form.cur && form.cur !== mainSym;
+    var rate = foreign ? (form.rate || fxStaticRate(form.cur, mainSym)) : 1;
+    var mainAmount = round2(entered * rate);
+    var tx = { type: form.type, amount: mainAmount, label: form.label, catId: c.id, category: c.name, date: form.date, id: Date.now(), repeat: form.repeat, pending: form.pending };
+    if (foreign) { tx.origAmount = entered; tx.origCur = form.cur; tx.rate = rate; }
+    props.onSaveTx(props.tx.concat([tx]));
     setForm(blankForm);
     props.setSheetOpen(false);
   }
@@ -1196,8 +1681,15 @@ function Activity(props) {
   function saveEdit() {
     if (!editForm.amount || !editForm.label || !editTx) return;
     var c = catById(cats, editForm.catId) || cats[0] || { id: "", name: "Other" };
+    var entered = parseFloat(editForm.amount);
+    var foreign = editForm.cur && editForm.cur !== mainSym;
+    var rate = foreign ? (editForm.rate || fxStaticRate(editForm.cur, mainSym)) : 1;
+    var mainAmount = round2(entered * rate);
     props.onSaveTx(props.tx.map(function(t) {
-      return t.id === editTx.id ? { id: t.id, type: editForm.type, amount: parseFloat(editForm.amount), label: editForm.label, catId: c.id, category: c.name, date: editForm.date, repeat: editForm.repeat, pending: editForm.pending } : t;
+      if (t.id !== editTx.id) return t;
+      var nt = { id: t.id, type: editForm.type, amount: mainAmount, label: editForm.label, catId: c.id, category: c.name, date: editForm.date, repeat: editForm.repeat, pending: editForm.pending };
+      if (foreign) { nt.origAmount = entered; nt.origCur = editForm.cur; nt.rate = rate; }
+      return nt;
     }));
     setEditTx(null);
   }
@@ -1215,97 +1707,97 @@ function Activity(props) {
 
   return (
     <div>
-      <Overlay open={props.sheetOpen} onClose={function() { props.setSheetOpen(false); }} title="New Transaction">
-        <div style={{ display: "flex", gap: 8, marginBottom: 9 }}>
+      <Overlay open={props.sheetOpen} onClose={function() { props.setSheetOpen(false); }} title={tr("newTransaction")}>
+        <div style={{ display: "flex", gap: 7, marginBottom: 7 }}>
           {["expense","income"].map(function(opt) {
             var on = form.type === opt;
             return (
               <button key={opt} onClick={function() { setField("type", opt); }}
-                style={{ flex: 1, padding: "11px 0", borderRadius: 12, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 700, fontFamily: UI,
+                style={{ flex: 1, padding: "9px 0", borderRadius: 11, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700, fontFamily: UI,
                   background: on ? (opt === "income" ? T.greenDim : T.orangeDim) : "rgba(0,0,0,0.04)",
                   color: on ? (opt === "income" ? T.green : T.orange) : T.ink3 }}>
-                {opt === "income" ? "Income" : "Expense"}
+                {opt === "income" ? tr("income") : tr("expense")}
               </button>
             );
           })}
         </div>
-        <FormRow label="Amount" value={form.amount} onChange={function(e) { setField("amount", e.target.value); }} type="number" />
-        <FormRow label="Label" value={form.label} onChange={function(e) { setField("label", e.target.value); }} />
-        <CatPicker label="Category" categories={cats} value={form.catId} onChange={function(id) { setField("catId", id); }} onManage={props.onManageCategories} />
-        <FormRow label="Date" value={form.date} onChange={function(e) { setField("date", e.target.value); }} type="date" />
-        <div style={{ marginBottom: 10 }}>
-          <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 7 }}>Repeat</div>
+        <AmountField value={form.amount} onAmount={function(e) { setField("amount", e.target.value); }} cur={form.cur} onCur={pickCur} mainSym={mainSym} rate={form.rate} rateLoading={form.rateLoading} rateFallback={form.rateFallback} />
+        <FormRow label={tr("txLabel")} value={form.label} onChange={function(e) { setField("label", e.target.value); }} placeholder={form.type === "income" ? "Salary, freelance, gift..." : "Groceries, rent, coffee..."} />
+        <CatPicker label={tr("category")} categories={cats} value={form.catId} onChange={function(id) { setField("catId", id); }} onManage={props.onManageCategories} />
+        <FormRow label={tr("date")} value={form.date} onChange={function(e) { setField("date", e.target.value); }} type="date" />
+        <div style={{ marginBottom: 7 }}>
+          <div style={{ fontSize: 10.5, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 5 }}>{tr("repeat")}</div>
           <div style={{ display: "flex", gap: 6 }}>
             {["none","weekly","monthly"].map(function(opt) {
               var on = form.repeat === opt;
               return (
                 <button key={opt} onClick={function() { setField("repeat", opt); }}
-                  style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: UI,
+                  style={{ flex: 1, padding: "8px 0", borderRadius: 9, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: 600, fontFamily: UI,
                     background: on ? T.orangeDim : "rgba(0,0,0,0.04)",
                     color: on ? T.orange : T.ink3 }}>
-                  {opt === "none" ? "Once" : opt === "weekly" ? "Weekly" : "Monthly"}
+                  {opt === "none" ? tr("once") : opt === "weekly" ? tr("weekly") : tr("monthly")}
                 </button>
               );
             })}
           </div>
         </div>
         <button onClick={function() { setField("pending", !form.pending); }}
-          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, border: "none", cursor: "pointer", marginBottom: 12,
+          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 13px", borderRadius: 11, border: "none", cursor: "pointer", marginBottom: 8,
             background: form.pending ? T.goldDim : "rgba(0,0,0,0.04)", fontFamily: UI }}>
-          <span style={{ fontSize: 14, fontWeight: 500, color: form.pending ? T.gold : T.ink2 }}>Mark as pending</span>
-          <div style={{ width: 20, height: 20, borderRadius: 6, border: "2px solid " + (form.pending ? T.gold : T.ink3), background: form.pending ? T.gold : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            {form.pending && <SVGIcon id="check" size={11} color="#fff" />}
+          <span style={{ fontSize: 13, fontWeight: 500, color: form.pending ? T.gold : T.ink2 }}>{tr("markPending")}</span>
+          <div style={{ width: 18, height: 18, borderRadius: 6, border: "2px solid " + (form.pending ? T.gold : T.ink3), background: form.pending ? T.gold : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {form.pending && <SVGIcon id="check" size={10} color="#fff" />}
           </div>
         </button>
-        <BigBtn label="Add Transaction" onPress={add} disabled={!form.amount || !form.label} />
+        <BigBtn label={tr("addTransaction")} onPress={add} disabled={!form.amount || !form.label} />
       </Overlay>
 
-      <Overlay open={!!editTx} onClose={function() { setEditTx(null); }} title="Edit Transaction">
-        <div style={{ display: "flex", gap: 8, marginBottom: 9 }}>
+      <Overlay open={!!editTx} onClose={function() { setEditTx(null); }} title={tr("editTransaction")}>
+        <div style={{ display: "flex", gap: 7, marginBottom: 7 }}>
           {["expense","income"].map(function(opt) {
             var on = editForm.type === opt;
             return (
               <button key={opt} onClick={function() { setEditField("type", opt); }}
-                style={{ flex: 1, padding: "11px 0", borderRadius: 12, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 700, fontFamily: UI,
+                style={{ flex: 1, padding: "9px 0", borderRadius: 11, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700, fontFamily: UI,
                   background: on ? (opt === "income" ? T.greenDim : T.orangeDim) : "rgba(0,0,0,0.04)",
                   color: on ? (opt === "income" ? T.green : T.orange) : T.ink3 }}>
-                {opt === "income" ? "Income" : "Expense"}
+                {opt === "income" ? tr("income") : tr("expense")}
               </button>
             );
           })}
         </div>
-        <FormRow label="Amount" value={editForm.amount} onChange={function(e) { setEditField("amount", e.target.value); }} type="number" />
-        <FormRow label="Label" value={editForm.label} onChange={function(e) { setEditField("label", e.target.value); }} />
-        <CatPicker label="Category" categories={cats} value={editForm.catId} onChange={function(id) { setEditField("catId", id); }} onManage={props.onManageCategories} />
-        <FormRow label="Date" value={editForm.date} onChange={function(e) { setEditField("date", e.target.value); }} type="date" />
-        <div style={{ marginBottom: 10 }}>
-          <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 7 }}>Repeat</div>
+        <AmountField value={editForm.amount} onAmount={function(e) { setEditField("amount", e.target.value); }} cur={editForm.cur} onCur={pickEditCur} mainSym={mainSym} rate={editForm.rate} rateLoading={editForm.rateLoading} rateFallback={editForm.rateFallback} />
+        <FormRow label={tr("txLabel")} value={editForm.label} onChange={function(e) { setEditField("label", e.target.value); }} placeholder={editForm.type === "income" ? "Salary, freelance, gift..." : "Groceries, rent, coffee..."} />
+        <CatPicker label={tr("category")} categories={cats} value={editForm.catId} onChange={function(id) { setEditField("catId", id); }} onManage={props.onManageCategories} />
+        <FormRow label={tr("date")} value={editForm.date} onChange={function(e) { setEditField("date", e.target.value); }} type="date" />
+        <div style={{ marginBottom: 7 }}>
+          <div style={{ fontSize: 10.5, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 5 }}>{tr("repeat")}</div>
           <div style={{ display: "flex", gap: 6 }}>
             {["none","weekly","monthly"].map(function(opt) {
               var on = editForm.repeat === opt;
               return (
                 <button key={opt} onClick={function() { setEditField("repeat", opt); }}
-                  style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: UI,
+                  style={{ flex: 1, padding: "8px 0", borderRadius: 9, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: 600, fontFamily: UI,
                     background: on ? T.orangeDim : "rgba(0,0,0,0.04)",
                     color: on ? T.orange : T.ink3 }}>
-                  {opt === "none" ? "Once" : opt === "weekly" ? "Weekly" : "Monthly"}
+                  {opt === "none" ? tr("once") : opt === "weekly" ? tr("weekly") : tr("monthly")}
                 </button>
               );
             })}
           </div>
         </div>
         <button onClick={function() { setEditField("pending", !editForm.pending); }}
-          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, border: "none", cursor: "pointer", marginBottom: 12,
+          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 13px", borderRadius: 11, border: "none", cursor: "pointer", marginBottom: 8,
             background: editForm.pending ? T.goldDim : "rgba(0,0,0,0.04)", fontFamily: UI }}>
-          <span style={{ fontSize: 14, fontWeight: 500, color: editForm.pending ? T.gold : T.ink2 }}>Mark as pending</span>
-          <div style={{ width: 20, height: 20, borderRadius: 6, border: "2px solid " + (editForm.pending ? T.gold : T.ink3), background: editForm.pending ? T.gold : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            {editForm.pending && <SVGIcon id="check" size={11} color="#fff" />}
+          <span style={{ fontSize: 13, fontWeight: 500, color: editForm.pending ? T.gold : T.ink2 }}>{tr("markPending")}</span>
+          <div style={{ width: 18, height: 18, borderRadius: 6, border: "2px solid " + (editForm.pending ? T.gold : T.ink3), background: editForm.pending ? T.gold : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {editForm.pending && <SVGIcon id="check" size={10} color="#fff" />}
           </div>
         </button>
-        <BigBtn label="Save Changes" onPress={saveEdit} disabled={!editForm.amount || !editForm.label} />
+        <BigBtn label={tr("saveChanges")} onPress={saveEdit} disabled={!editForm.amount || !editForm.label} />
         <button onClick={function() { props.onSaveTx(props.tx.filter(function(x) { return x.id !== editTx.id; })); setEditTx(null); }}
-          style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 12, padding: "6px 0" }}>
-          Delete transaction
+          style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>
+          {tr("deleteTx")}
         </button>
       </Overlay>
 
@@ -1314,19 +1806,19 @@ function Activity(props) {
           <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
             <SVGIcon id="activity" size={24} color={T.orange} />
           </div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>No transactions yet</div>
-          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>Tap + to log your first one. Awareness is the first step to wealth.</div>
+          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{tr("noTransactions")}</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{tr("noTransactionsSub")}</div>
         </Card>
       )}
 
       {props.tx.length > 0 && (
         <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
           <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "14px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Money In</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{tr("moneyIn")}</div>
             <div style={{ fontSize: 20, fontWeight: 700, color: T.green, letterSpacing: "-0.02em" }}>{dollars(totalIn)}</div>
           </div>
           <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "14px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Money Out</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{tr("moneyOut")}</div>
             <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(totalOut)}</div>
           </div>
         </div>
@@ -1360,10 +1852,11 @@ function Activity(props) {
                       <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, display: "flex", alignItems: "center", gap: 6 }}>
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                           <span style={{ width: 6, height: 6, borderRadius: "50%", background: t.type === "income" ? T.green : c.color, display: "inline-block" }} />
-                          {t.type === "income" ? "Income" : c.name}
+                          {t.type === "income" ? tr("income") : c.name}
                         </span>
+                        {t.origCur && t.origCur !== _currency.sym && <span style={{ fontSize: 10, fontWeight: 700, color: T.gold, background: T.goldDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.02em" }}>{fmtCur(t.origCur, t.origAmount)}</span>}
                         {t.pending && <span style={{ fontSize: 10, fontWeight: 700, color: T.gold, background: T.goldDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.04em" }}>PENDING</span>}
-                        {t.repeat && t.repeat !== "none" && <span style={{ fontSize: 10, fontWeight: 600, color: T.ink3, background: "rgba(0,0,0,0.05)", borderRadius: 5, padding: "1px 6px" }}>{t.repeat === "weekly" ? "Weekly" : "Monthly"}</span>}
+                        {t.repeat && t.repeat !== "none" && <span style={{ fontSize: 10, fontWeight: 600, color: T.ink2, background: T.orangeDim, borderRadius: 5, padding: "1px 6px" }}>{t.repeat === "weekly" ? tr("weekly") : tr("monthly")}</span>}
                       </div>
                     </div>
                     <span style={{ fontSize: 15.5, fontWeight: 700, color: t.type === "income" ? T.green : T.red, letterSpacing: "-0.02em" }}>
@@ -1413,14 +1906,14 @@ function Budgets(props) {
 
   return (
     <div>
-      <Overlay open={props.sheetOpen} onClose={function() { props.setSheetOpen(false); }} title="New Budget">
+      <Overlay open={props.sheetOpen} onClose={function() { props.setSheetOpen(false); }} title={tr("newBudget")}>
         {avail.length === 0 ? (
-          <div style={{ padding: "20px 4px 8px", textAlign: "center", color: T.ink3, fontSize: 14 }}>Every category already has a budget. Add a new category first.</div>
+          <div style={{ padding: "20px 4px 8px", textAlign: "center", color: T.ink3, fontSize: 14 }}>{tr("allCatsHaveBudget")}</div>
         ) : (
           <div>
-            <CatPicker label="Category" categories={avail} value={nb.catId || (avail[0] || {}).id} onChange={function(id) { setNb(function(p){ return { catId: id, limit: p.limit }; }); }} onManage={props.onManageCategories} />
-            <FormRow label="Monthly limit ($)" value={nb.limit} onChange={function(e) { setNb(function(p){ return { catId: p.catId || (avail[0]||{}).id, limit: e.target.value }; }); }} type="number" last={true} />
-            <BigBtn label="Add Budget" disabled={!nb.limit} onPress={function() {
+            <CatPicker label={tr("category")} categories={avail} value={nb.catId || (avail[0] || {}).id} onChange={function(id) { setNb(function(p){ return { catId: id, limit: p.limit }; }); }} onManage={props.onManageCategories} />
+            <FormRow label={tr("monthlyLimit")} value={nb.limit} onChange={function(e) { setNb(function(p){ return { catId: p.catId || (avail[0]||{}).id, limit: e.target.value }; }); }} type="number" last={true} />
+            <BigBtn label={tr("addBudget")} disabled={!nb.limit} onPress={function() {
               var n = parseFloat(nb.limit);
               var cid = nb.catId || (avail[0] || {}).id;
               if (n > 0 && cid) {
@@ -1434,16 +1927,16 @@ function Budgets(props) {
         )}
       </Overlay>
 
-      <Overlay open={!!editId} onClose={function() { setEditId(null); }} title="Edit Limit">
-        <FormRow label="Monthly limit ($)" value={val} onChange={function(e) { setVal(e.target.value); }} type="number" last={true} />
-        <BigBtn label="Save" onPress={function() {
+      <Overlay open={!!editId} onClose={function() { setEditId(null); }} title={tr("editLimit")}>
+        <FormRow label={tr("monthlyLimit")} value={val} onChange={function(e) { setVal(e.target.value); }} type="number" last={true} />
+        <BigBtn label={tr("save")} onPress={function() {
           var n = parseFloat(val);
           if (n > 0) props.onSaveBudgets(props.budgets.map(function(b) { return b.catId === editId ? { catId: b.catId, category: b.category, limit: n } : b; }));
           setEditId(null);
         }} />
         <button onClick={function() { props.onSaveBudgets(props.budgets.filter(function(b){ return b.catId !== editId; })); setEditId(null); }}
           style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 12, padding: "6px 0" }}>
-          Remove this budget
+          {tr("removeBudget")}
         </button>
       </Overlay>
 
@@ -1452,8 +1945,8 @@ function Budgets(props) {
           <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
             <SVGIcon id="budgets" size={24} color={T.orange} />
           </div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>No budgets yet</div>
-          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>Tap + to set a limit for a category. A budget is just telling your money where to go.</div>
+          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{tr("noBudgets")}</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{tr("noBudgetsSub")}</div>
         </Card>
       )}
 
@@ -1461,11 +1954,11 @@ function Budgets(props) {
         <Card style={{ padding: "20px", marginBottom: 20 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>Total Spent</div>
+              <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>{tr("totalSpent")}</div>
               <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: "-0.03em", color: totalSpent > totalLimit ? T.red : T.ink, lineHeight: 1.1, marginTop: 4 }}>
                 {dollars(totalSpent)}
               </div>
-              <div style={{ fontSize: 13, color: T.ink3, marginTop: 2 }}>of {dollars(totalLimit)} budgeted</div>
+              <div style={{ fontSize: 13, color: T.ink3, marginTop: 2 }}>{"of " + dollars(totalLimit) + " " + tr("budgeted")}</div>
             </div>
             <div style={{ position: "relative" }}>
               <RingChart value={totalSpent} max={totalLimit} size={72} color={totalPct > 85 ? T.red : T.orange} stroke={6} />
@@ -1500,7 +1993,7 @@ function Budgets(props) {
       {props.budgets.length > 0 && (
         <div>
           <div style={{ padding: "0 4px 10px" }}>
-            <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>By Category</span>
+            <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("byCategory")}</span>
           </div>
           <Card style={{ overflow: "hidden" }}>
             {rows.map(function(r, i) {
@@ -1513,7 +2006,7 @@ function Budgets(props) {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <span style={{ fontSize: 15, color: T.ink, fontWeight: 600 }}>{r.cat.name}</span>
                       </div>
-                      {r.over && <span style={{ fontSize: 10, fontWeight: 700, color: T.red, background: "rgba(224,48,48,0.1)", borderRadius: 7, padding: "2px 8px" }}>OVER</span>}
+                      {r.over && <span style={{ fontSize: 10, fontWeight: 700, color: T.red, background: T.red + "1A", borderRadius: 7, padding: "2px 8px", letterSpacing: "0.02em" }}>OVER</span>}
                       <span style={{ color: T.orange, fontSize: 14, fontWeight: 700 }}>{dollars(r.limit)}</span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -1526,11 +2019,11 @@ function Budgets(props) {
                   <div style={{ display: "flex", borderTop: "0.5px solid " + T.sep }}>
                     <button onClick={function() { setEditId(r.catId); setVal(String(r.limit)); }}
                       style={{ flex: 1, background: "none", border: "none", borderRight: "0.5px solid " + T.sep, padding: "11px 0", color: T.orange, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
-                      Edit
+                      {tr("edit")}
                     </button>
                     <button onClick={function() { props.onSaveBudgets(props.budgets.filter(function(b) { return b.catId !== r.catId; })); }}
                       style={{ flex: 1, background: "none", border: "none", padding: "11px 0", color: T.red, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
-                      Delete
+                      {tr("delete")}
                     </button>
                   </div>
                 </div>
@@ -1574,21 +2067,21 @@ function Goals(props) {
 
   return (
     <div>
-      <Overlay open={props.sheetOpen} onClose={function() { props.setSheetOpen(false); }} title="New Budget Book">
-        <FormRow label="Name" value={form.name} onChange={function(e) { setField("name", e.target.value); }} />
-        <FormRow label="Target" value={form.target} onChange={function(e) { setField("target", e.target.value); }} type="number" />
-        <FormRow label="Already saved" value={form.saved} onChange={function(e) { setField("saved", e.target.value); }} type="number" last={true} />
-        <BigBtn label="Create Budget Book" disabled={!form.name || !form.target} onPress={function() {
+      <Overlay open={props.sheetOpen} onClose={function() { props.setSheetOpen(false); }} title={tr("newBudgetBook")}>
+        <FormRow label={tr("name")} value={form.name} onChange={function(e) { setField("name", e.target.value); }} />
+        <FormRow label={tr("target")} value={form.target} onChange={function(e) { setField("target", e.target.value); }} type="number" />
+        <FormRow label={tr("alreadySaved")} value={form.saved} onChange={function(e) { setField("saved", e.target.value); }} type="number" last={true} />
+        <BigBtn label={tr("createBudgetBook")} disabled={!form.name || !form.target} onPress={function() {
           props.onSaveGoals(props.goals.concat([{ id: Date.now(), name: form.name, target: parseFloat(form.target), saved: parseFloat(form.saved) || 0 }]));
           setForm({ name: "", target: "", saved: "" });
           props.setSheetOpen(false);
         }} />
       </Overlay>
 
-      <Overlay open={!!editGoal} onClose={function() { setEditGoal(null); }} title="Edit Budget Book">
-        <FormRow label="Name" value={editForm.name} onChange={function(e) { setEditField("name", e.target.value); }} />
-        <FormRow label="Target" value={editForm.target} onChange={function(e) { setEditField("target", e.target.value); }} type="number" last={true} />
-        <BigBtn label="Save Changes" disabled={!editForm.name || !editForm.target} onPress={function() {
+      <Overlay open={!!editGoal} onClose={function() { setEditGoal(null); }} title={tr("editBudgetBook")}>
+        <FormRow label={tr("name")} value={editForm.name} onChange={function(e) { setEditField("name", e.target.value); }} />
+        <FormRow label={tr("target")} value={editForm.target} onChange={function(e) { setEditField("target", e.target.value); }} type="number" last={true} />
+        <BigBtn label={tr("saveChanges")} disabled={!editForm.name || !editForm.target} onPress={function() {
           var n = parseFloat(editForm.target);
           if (editGoal && editForm.name && n > 0) {
             props.onSaveGoals(props.goals.map(function(g) {
@@ -1599,13 +2092,13 @@ function Goals(props) {
         }} />
         <button onClick={function() { props.onSaveGoals(props.goals.filter(function(x) { return x.id !== editGoal.id; })); setEditGoal(null); }}
           style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 12, padding: "6px 0" }}>
-          Delete budget book
+          {tr("deleteBudgetBook")}
         </button>
       </Overlay>
 
       <Overlay open={!!addSheet} onClose={function() { setAddSheet(null); }} title={addSheet ? addSheet.name : ""}>
-        <FormRow label="Amount" value={addAmt} onChange={function(e) { setAddAmt(e.target.value); }} type="number" last={true} />
-        <BigBtn label="Add to Budget Book" disabled={!addAmt} onPress={function() {
+        <FormRow label={tr("amount")} value={addAmt} onChange={function(e) { setAddAmt(e.target.value); }} type="number" last={true} />
+        <BigBtn label={tr("addToBudgetBook")} disabled={!addAmt} onPress={function() {
           var n = parseFloat(addAmt);
           if (n && addSheet) {
             props.onSaveGoals(props.goals.map(function(g) {
@@ -1622,8 +2115,8 @@ function Goals(props) {
           <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
             <SVGIcon id="goals" size={24} color={T.orange} />
           </div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>No budget books yet</div>
-          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>Tap + to create your first budget book. A goal with a deadline is a plan, not a wish.</div>
+          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{tr("noGoals")}</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{tr("noGoalsSub")}</div>
         </Card>
       )}
 
@@ -1637,7 +2130,7 @@ function Goals(props) {
                 <div>
                   <div style={{ fontSize: 17, fontWeight: 700, color: T.ink }}>{g.name}</div>
                   <div style={{ fontSize: 13, color: T.ink3, marginTop: 2 }}>
-                    {done ? "Goal complete!" : dollars(g.target - g.saved) + " remaining"}
+                    {done ? tr("goalComplete") : dollars(g.target - g.saved) + " " + tr("remaining")}
                   </div>
                 </div>
                 <div style={{ position: "relative" }}>
@@ -1657,16 +2150,16 @@ function Goals(props) {
               {!done && (
                 <button onClick={function() { setAddSheet(g); setAddAmt(""); }}
                   style={{ flex: 1, background: "none", border: "none", borderRight: "0.5px solid " + T.sep, padding: "13px 0", color: T.orange, fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
-                  + Add
+                  {"+ " + tr("add")}
                 </button>
               )}
               <button onClick={function() { setEditGoal(g); setEditForm({ name: g.name, target: String(g.target) }); }}
                 style={{ flex: 1, background: "none", border: "none", padding: "13px 0", color: T.ink2, fontSize: 15, cursor: "pointer", borderRight: "0.5px solid " + T.sep }}>
-                Edit
+                {tr("edit")}
               </button>
               <button onClick={function() { props.onSaveGoals(props.goals.filter(function(x) { return x.id !== g.id; })); }}
                 style={{ flex: 1, background: "none", border: "none", padding: "13px 0", color: T.red, fontSize: 15, cursor: "pointer" }}>
-                Delete
+                {tr("delete")}
               </button>
             </div>
           </Card>
@@ -1674,6 +2167,39 @@ function Goals(props) {
       })}
     </div>
   );
+}
+
+function callClaude(messages, system, maxTokens, callback) {
+  var apiUrl = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "data:" || location.protocol === "file:") ? "https://richy-mgkl.vercel.app/api/chat" : "/api/chat";
+  fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      messages: messages,
+      system: system,
+      maxTokens: maxTokens || 800,
+    }),
+  }).then(function(res) {
+    return res.text().then(function(raw) {
+      var data;
+      try { data = JSON.parse(raw); } catch(e) {
+        callback(new Error("Bad JSON from server: " + raw.slice(0, 100)), null); return;
+      }
+      if (data.error) {
+        callback(new Error(data.error.type + ": " + data.error.message), null); return;
+      }
+      if (!data.content || !Array.isArray(data.content)) {
+        callback(new Error("Unexpected response: " + JSON.stringify(data).slice(0, 100)), null); return;
+      }
+      var text = "";
+      for (var i = 0; i < data.content.length; i++) {
+        if (data.content[i].type === "text") text += data.content[i].text;
+      }
+      callback(null, text.trim());
+    });
+  }).catch(function(err) { callback(new Error("Fetch failed: " + err.message), null); });
 }
 
 function Advisor(props) {
@@ -1702,7 +2228,7 @@ function Advisor(props) {
     var sp = catSpend(c);
     return c.name + " $" + sp + "/$" + b.limit;
   });
-  var ctx = "User: " + props.username + ". Income: $" + income + ". Expenses: $" + expense + ". Net balance: $" + (income - expense) + ". Savings rate: " + savings + "%. Top spending categories: " + (topCats.map(function(c) { return c.name + " $" + c.spent; }).join(", ") || "none") + ". Budgets: " + (budgetLines.join(", ") || "none set") + ". Goals: " + (props.goals.map(function(g) { return g.name + " $" + g.saved + "/$" + g.target; }).join(", ") || "none") + ".";
+  var ctx = "User: " + props.username + ". Income: $" + income + ". Expenses: $" + expense + ". Net balance: $" + (income - expense) + ". Savings rate: " + savings + "%. Top spending categories: " + (topCats.map(function(c) { return c.name + " $" + c.spent; }).join(", ") || "none") + ". Budgets: " + (budgetLines.join(", ") || "none set") + ". Goals: " + (props.goals.map(function(g) { return g.name + " $" + g.saved + "/$" + g.target; }).join(", ") || "none") + ". Personalized plan: " + (props.plan ? props.plan.slice(0, 300) + "..." : "not yet created") + ".";
 
   function catSpend(c) {
     return props.tx.filter(function(t) { return t.type === "expense" && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
@@ -2068,39 +2594,6 @@ function Advisor(props) {
     return parts.join(" ");
   }
 
-  function callClaude(messages, system, maxTokens, callback) {
-    var apiUrl = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "data:" || location.protocol === "file:") ? "https://richy-mgkl.vercel.app/api/chat" : "/api/chat";
-    fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        messages: messages,
-        system: system,
-        maxTokens: maxTokens || 800,
-      }),
-    }).then(function(res) {
-      return res.text().then(function(raw) {
-        var data;
-        try { data = JSON.parse(raw); } catch(e) {
-          callback(new Error("Bad JSON from server: " + raw.slice(0, 100)), null); return;
-        }
-        if (data.error) {
-          callback(new Error(data.error.type + ": " + data.error.message), null); return;
-        }
-        if (!data.content || !Array.isArray(data.content)) {
-          callback(new Error("Unexpected response: " + JSON.stringify(data).slice(0, 100)), null); return;
-        }
-        var text = "";
-        for (var i = 0; i < data.content.length; i++) {
-          if (data.content[i].type === "text") text += data.content[i].text;
-        }
-        callback(null, text.trim());
-      });
-    }).catch(function(err) { callback(new Error("Fetch failed: " + err.message), null); });
-  }
-
   function getAdvice() {
     setLoading(true); setAdvice(null); setErrMsg("");
     var system = "You are an elite personal finance advisor trained on the wisdom of the world's greatest wealth builders. You have deep knowledge from:\n\nBOOKS & AUTHORS:\n- The Psychology of Money (Morgan Housel): wealth is about behavior not intelligence; saving is about the gap between ego and income; reasonable beats rational\n- Rich Dad Poor Dad (Robert Kiyosaki): assets put money in pocket, liabilities take it out; buy assets first, luxuries last; make money work for you\n- The Millionaire Next Door (Stanley & Danko): most millionaires live below their means, drive used cars, avoid lifestyle inflation\n- I Will Teach You To Be Rich (Ramit Sethi): automate savings, negotiate bills, spend extravagantly on things you love but cut mercilessly elsewhere\n- The Total Money Makeover (Dave Ramsey): debt snowball, emergency fund first, live on less than you earn\n- Think and Grow Rich (Napoleon Hill): definiteness of purpose, the mastermind principle, persistence\n- The Richest Man in Babylon (George Clason): pay yourself first 10%, let savings work, live on 70%, give 20% to debts\n- Money Master the Game (Tony Robbins): asset allocation drives 90% of returns, fees kill wealth, asymmetric risk/reward\n\nINTERVIEWS & QUOTES FROM THE WEALTHY:\n- Warren Buffett: do not save what is left after spending, spend what is left after saving; rule 1 never lose money, rule 2 never forget rule 1; someone is sitting in the shade today because someone planted a tree long ago\n- Charlie Munger: invert always invert; avoid what destroys wealth as much as seeking what builds it; the best thing a human being can do is to help another human being know more\n- Ray Dalio: diversify well and you can reduce risk without reducing returns; pain plus reflection equals progress; he who lives by the crystal ball will eat shattered glass\n- Naval Ravikant: earn with your mind not your time; specific knowledge cannot be taught; build or buy equity in a business\n- Warren Buffett on compounding: the snowball: compound interest is the eighth wonder of the world\n- Mark Cuban: pay off credit cards every month, never carry a balance; savings rates matter more than investment returns early on\n- Grant Cardone: the middle class saves to retire, the wealthy invest to create income now; 40% of income saved minimum\n- Jeff Bezos: focus on what will not change, not what will; think in long time horizons\n- Elon Musk: take as much risk as you can afford, you only live once\n\nPROVEN STRATEGIES:\n- Pay yourself first: automate 10-20% savings before touching income\n- The latte factor: small daily expenses compound into large annual costs\n- 50/30/20 rule: 50% needs, 30% wants, 20% savings and debt\n- Emergency fund: 3-6 months of expenses in liquid savings before investing\n- No lifestyle inflation: when income rises, raise savings rate not spending\n- Avoid car payments: buy used cars with cash or low financing\n- Cook more, eat out less: food is typically the fastest growing expense\n- Cancel subscriptions quarterly: audit recurring charges every 3 months\n- Negotiate everything: bills, salary, rent, insurance premiums\n- Tax efficiency: maximize retirement accounts before taxable investing\n- Index funds beat active management 90% of the time over 10 years\n- The 4% rule: you can withdraw 4% annually from a portfolio indefinitely\n- House hacking: rent part of your home to cover the mortgage\n- The one-day rule: wait 24 hours before any purchase over $50\n\nReturn ONLY valid JSON, no markdown. Never use emojis or non-ASCII symbols anywhere in any field. Use this structure: {\"score\":72,\"scoreLabel\":\"Good\",\"headline\":\"Summary here.\",\"insights\":[{\"type\":\"strength\",\"title\":\"Title\",\"body\":\"Body.\"},{\"type\":\"warning\",\"title\":\"Title\",\"body\":\"Body.\"},{\"type\":\"tip\",\"title\":\"Title\",\"body\":\"Body.\"}],\"expertQuote\":{\"quote\":\"Quote.\",\"author\":\"Author\"},\"webInsight\":{\"title\":\"Title\",\"body\":\"Body.\"}}";
@@ -2159,7 +2652,7 @@ function Advisor(props) {
     setChatLoading(true);
     callClaude(
       nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }),
-      "You are Richard, a smart assistant inside the Richy personal finance app. You are calm, warm, direct, and knowledgeable - a trusted friend who is an expert in money and can help with anything the user asks. You have deep knowledge from The Psychology of Money, Rich Dad Poor Dad, The Millionaire Next Door, I Will Teach You To Be Rich, The Total Money Makeover, Think and Grow Rich, The Richest Man in Babylon, and wisdom from Warren Buffett, Charlie Munger, Ray Dalio, Naval Ravikant, Mark Cuban, Grant Cardone and other wealth builders. You can answer questions about personal finance, investments, budgeting, debt, taxes, and wealth-building. You can also answer questions about how to use the Richy app (it has tabs: Overview, Activity for transactions, Budgets for spending limits, Goals for savings targets, and Advisor which is where we are now; categories are managed via the tag icon on Overview or the Manage link in pickers). You can answer general knowledge and technical questions too - if someone asks about math, technology, or anything else, answer helpfully. Always refer back to the user's real financial data when relevant. Current user financial data: " + ctx + ". Be concise and direct. Plain text only. Never use markdown formatting: no asterisks, no hash headers, no bullet symbols. Never use emojis or any non-text symbols under any circumstance.",
+      "You are Richard, a smart assistant inside the Richy personal finance app. You are calm, warm, direct, and knowledgeable - a trusted friend who is an expert in money and can help with anything the user asks. You have deep knowledge from The Psychology of Money, Rich Dad Poor Dad, The Millionaire Next Door, I Will Teach You To Be Rich, The Total Money Makeover, Think and Grow Rich, The Richest Man in Babylon, and wisdom from Warren Buffett, Charlie Munger, Ray Dalio, Naval Ravikant, Mark Cuban, Grant Cardone and other wealth builders. You can answer questions about personal finance, investments, budgeting, debt, taxes, and wealth-building. You can also answer questions about how to use the Richy app (it has tabs: Overview, Activity for transactions, Budgets for spending limits, Goals for savings targets, and Advisor which is where we are now; categories are managed via the tag icon on Overview or the Manage link in pickers). You can answer general knowledge and technical questions too - if someone asks about math, technology, or anything else, answer helpfully. Always refer back to the user's real financial data when relevant. Current user financial data: " + ctx + ". Be concise and direct. Plain text only. Never use markdown formatting: no asterisks, no hash headers, no bullet symbols. Never use emojis or any non-text symbols under any circumstance." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : ""),
       500,
       function(err, text) {
         setChatLoading(false);
@@ -2182,9 +2675,9 @@ function Advisor(props) {
       {!advice && !loading && (
         <Card style={{ padding: "28px 22px", marginBottom: 20, textAlign: "center" }}>
           <div style={{ fontSize: 48, marginBottom: 14 }}>$</div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, marginBottom: 8 }}>AI Financial Advisor</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, marginBottom: 8 }}>{tr("aiAdvisor")}</div>
           <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.55, marginBottom: 22 }}>
-            Personalized advice from Claude based on your real spending and expert financial wisdom.
+            {tr("aiAdvisorSub")}
           </div>
           {errMsg && (
             <div style={{ fontSize: 12, color: T.red, background: "rgba(255,59,48,0.08)", borderRadius: 10, padding: "8px 12px", marginBottom: 14, textAlign: "left" }}>
@@ -2193,15 +2686,15 @@ function Advisor(props) {
           )}
           <button onClick={getAdvice}
             style={{ background: T.orange, color: "#fff", border: "none", borderRadius: 16, padding: "16px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: "pointer", width: "100%", boxShadow: "0 4px 14px rgba(217,121,65,0.4)" }}>
-            Analyze My Finances
+            {tr("analyzeMyFinances")}
           </button>
         </Card>
       )}
 
       {loading && (
         <Card style={{ padding: "44px 22px", marginBottom: 20, textAlign: "center" }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: T.ink2 }}>Analyzing your finances...</div>
-          <div style={{ fontSize: 13, color: T.ink3, marginTop: 4 }}>This takes a few seconds</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: T.ink2 }}>{tr("analyzingFinances")}</div>
+          <div style={{ fontSize: 13, color: T.ink3, marginTop: 4 }}>{tr("fewSeconds")}</div>
         </Card>
       )}
 
@@ -2222,12 +2715,12 @@ function Advisor(props) {
             </div>
             <button onClick={function() { setAdvice(null); getAdvice(); }}
               style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "1px solid " + T.sep, borderRadius: 10, padding: "7px 12px", marginTop: 14, cursor: "pointer", color: T.ink2, fontSize: 13 }}>
-              Refresh
+              {tr("refresh")}
             </button>
           </Card>
 
           <div style={{ padding: "0 4px 10px" }}>
-            <span style={{ fontSize: 20, fontWeight: 700, color: T.ink }}>Insights</span>
+            <span style={{ fontSize: 20, fontWeight: 700, color: T.ink }}>{tr("insights")}</span>
           </div>
           {(advice.insights || []).map(function(ins, i) {
             var st = iStyle[ins.type] || iStyle.tip;
@@ -2255,22 +2748,22 @@ function Advisor(props) {
 
       {advice && advice.error && (
         <Card style={{ padding: "24px", textAlign: "center", marginBottom: 16 }}>
-          <div style={{ fontSize: 14, color: T.red, marginBottom: 6 }}>Analysis failed</div>
+          <div style={{ fontSize: 14, color: T.red, marginBottom: 6 }}>{tr("analysisFailed")}</div>
           {errMsg && <div style={{ fontSize: 12, color: T.ink3, marginBottom: 14, background: "rgba(0,0,0,0.04)", borderRadius: 8, padding: "8px 12px", textAlign: "left" }}>{errMsg}</div>}
           <button onClick={function() { setAdvice(null); setErrMsg(""); }}
             style={{ background: T.orange, color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
-            Try Again
+            {tr("tryAgain")}
           </button>
         </Card>
       )}
 
       <div style={{ padding: "0 4px 10px" }}>
-        <span style={{ fontSize: 20, fontWeight: 700, color: T.ink }}>Ask Your Advisor</span>
+        <span style={{ fontSize: 20, fontWeight: 700, color: T.ink }}>{tr("askYourAdvisor")}</span>
       </div>
       <Card style={{ overflow: "hidden", marginBottom: 24 }}>
         {chat.length === 0 && (
           <div style={{ padding: "14px 16px 6px" }}>
-            {["How can I save more?", "Is my savings rate healthy?", "What to do with my surplus?"].map(function(q) {
+            {[tr("advisorQ1"), tr("advisorQ2"), tr("advisorQ3")].map(function(q) {
               return (
                 <button key={q} onClick={function() { setInput(q); }}
                   style={{ display: "block", width: "100%", textAlign: "left", background: "rgba(0,0,0,0.03)", border: "1px solid " + T.sep, borderRadius: 12, padding: "10px 14px", marginBottom: 8, fontSize: 14, color: T.ink2, fontFamily: UI, cursor: "pointer" }}>
@@ -2293,7 +2786,7 @@ function Advisor(props) {
             })}
             {chatLoading && (
               <div style={{ padding: "10px 14px", background: "rgba(0,0,0,0.05)", borderRadius: 16, width: "fit-content", fontSize: 14, color: T.ink3 }}>
-                Thinking...
+                {tr("thinking")}
               </div>
             )}
           </div>
@@ -2302,7 +2795,7 @@ function Advisor(props) {
           <div style={{ padding: "12px 12px 4px", borderTop: "0.5px solid " + T.sep, background: T.orangeDim, marginTop: 10, borderRadius: 10 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: T.orange, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ fontSize: 18 }}>*</span>
-              Richard suggests: {pendingAction.label}
+              {tr("richySuggests")}: {pendingAction.label}
             </div>
             <div style={{ display: "flex", gap: 6 }}>
               <button onClick={function() {
@@ -2336,11 +2829,11 @@ function Advisor(props) {
                 setPendingAction(null);
               }}
                 style={{ flex: 1, background: T.orange, color: "#fff", border: "none", borderRadius: 10, padding: "8px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                Yes, do it
+                {tr("yesDo")}
               </button>
               <button onClick={function() { setPendingAction(null); }}
                 style={{ flex: 1, background: "rgba(0,0,0,0.1)", color: T.ink2, border: "none", borderRadius: 10, padding: "8px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                Not now
+                {tr("notNow")}
               </button>
             </div>
           </div>
@@ -2349,7 +2842,7 @@ function Advisor(props) {
         <div style={{ display: "flex", gap: 8, padding: "10px 12px", borderTop: chat.length > 0 ? "0.5px solid " + T.sep : "none" }}>
           <input value={input} onChange={function(e) { setInput(e.target.value); }}
             onKeyDown={function(e) { if (e.key === "Enter" && !chatLoading) sendChat(); }}
-            placeholder="Ask Richard anything..."
+            placeholder={tr("askRichard")}
             style={{ flex: 1, border: "none", background: "rgba(0,0,0,0.04)", borderRadius: 12, padding: "10px 14px", fontSize: 14, fontFamily: UI, outline: "none", color: T.ink }} />
           <button onClick={sendChat} disabled={!input.trim() || chatLoading}
             style={{ background: input.trim() && !chatLoading ? T.orange : "rgba(0,0,0,0.1)", border: "none", borderRadius: 12, width: 40, height: 40, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 18 }}>
@@ -2358,7 +2851,7 @@ function Advisor(props) {
         </div>
       </Card>
       <div style={{ textAlign: "center", fontSize: 11, color: T.ink3, lineHeight: 1.55, padding: "0 10px 6px", letterSpacing: "0.01em" }}>
-        Richard is an AI assistant, not a licensed financial advisor. His guidance is general information only, not personalized professional advice. Always do your own research before making money decisions.
+        {tr("advisorDisclaimer")}
       </div>
     </div>
   );
@@ -2550,8 +3043,293 @@ function Categories(props) {
   );
 }
 
+function SubViewBack(props) {
+  return (
+    <button onClick={props.onBack}
+      style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: T.orange, fontSize: 14, fontWeight: 600, fontFamily: UI, marginBottom: 20 }}>
+      <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={T.orange} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+      Profile
+    </button>
+  );
+}
+
+function NicknameView(props) {
+  var _v = useState(props.value || "");
+  var val = _v[0]; var setVal = _v[1];
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+      <Card style={{ padding: "22px 20px", marginBottom: 16 }}>
+        <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 10 }}>{tr("richyRefersTo")}</div>
+        <input
+          value={val}
+          onChange={function(e) { setVal(e.target.value); }}
+          style={{ width: "100%", fontSize: 24, fontWeight: 700, color: T.ink, background: "none", border: "none", outline: "none", fontFamily: UI, padding: 0, boxSizing: "border-box" }}
+          autoFocus={true}
+        />
+      </Card>
+      <BigBtn label={tr("save")} onPress={function() { if (val.trim()) { props.onSave(val.trim()); } }} disabled={!val.trim()} />
+    </div>
+  );
+}
+
+function LanguageView(props) {
+  var _sel = useState(props.lang || "en");
+  var selected = _sel[0]; var setSelected = _sel[1];
+  function pick(code) { setSelected(code); props.onLangChange(code); }
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+      <Card style={{ overflow: "hidden", marginBottom: 16 }}>
+        {LANGUAGE_OPTIONS.map(function(opt, i) {
+          var sel = selected === opt.code;
+          return (
+            <button key={opt.code} onClick={function() { pick(opt.code); }}
+              style={{ width: "100%", background: sel ? "rgba(200,103,58,0.05)" : "none", border: "none", borderBottom: i < LANGUAGE_OPTIONS.length - 1 ? "0.5px solid " + T.sep : "none", padding: "17px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", fontFamily: UI }}>
+              <span style={{ fontSize: 16, fontWeight: sel ? 700 : 500, color: sel ? T.ink : T.ink2 }}>{opt.label}</span>
+              {sel && (
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <SVGIcon id="check" size={12} color="#fff" />
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </Card>
+    </div>
+  );
+}
+
+function CurrencyView(props) {
+  var cur = props.currency || "$";
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+      <Card style={{ overflow: "hidden", marginBottom: 16 }}>
+        {CURRENCY_OPTIONS.map(function(opt, i) {
+          var sel = cur === opt.sym;
+          return (
+            <button key={opt.sym} onClick={function() { props.onCurrencyChange(opt.sym); }}
+              style={{ width: "100%", background: sel ? "rgba(200,103,58,0.05)" : "none", border: "none", borderBottom: i < CURRENCY_OPTIONS.length - 1 ? "0.5px solid " + T.sep : "none", padding: "17px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", fontFamily: UI }}>
+              <span style={{ fontSize: 16, fontWeight: sel ? 700 : 500, color: sel ? T.ink : T.ink2 }}>{opt.label}</span>
+              {sel && (
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <SVGIcon id="check" size={12} color="#fff" />
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </Card>
+    </div>
+  );
+}
+
+function PlanView(props) {
+  var _msgs = useState([]); var msgs = _msgs[0]; var setMsgs = _msgs[1];
+  var _inp = useState(""); var input = _inp[0]; var setInput = _inp[1];
+  var _load = useState(false); var loading = _load[0]; var setLoading = _load[1];
+  var _pa = useState(null); var pendingAction = _pa[0]; var setPendingAction = _pa[1];
+  var _tp = useState(false); var translatingPlan = _tp[0]; var setTranslatingPlan = _tp[1];
+
+  function planNeedsTranslation() {
+    if (!props.plan || !props.lang || props.lang === "en") return false;
+    for (var i = 0; i < props.plan.length; i++) {
+      if (props.plan.charCodeAt(i) > 127) return false;
+    }
+    return true;
+  }
+
+  function translatePlan() {
+    if (translatingPlan || !props.plan || !props.lang || props.lang === "en") return;
+    var langName = LANGUAGE_NAMES[props.lang] || props.lang;
+    setTranslatingPlan(true);
+    callClaude(
+      [{ role: "user", content: "Translate this financial plan to " + langName + ". Keep the same warm tone, structure, and personal advice. Output only the translated plan, nothing else:\n\n" + props.plan }],
+      "You are Richard, a personal finance advisor. Translate the given financial plan faithfully to the requested language. Preserve the warm, direct, personal tone.",
+      400,
+      function(err, translated) { setTranslatingPlan(false); if (!err && translated && props.onUpdatePlan) props.onUpdatePlan(translated); }
+    );
+  }
+
+  useEffect(function() {
+    if (planNeedsTranslation()) translatePlan();
+  }, []);
+
+  function parseAction(text) {
+    var m = text.match(/\[ACTION:\{([^}]*)\}\]/);
+    if (!m) return null;
+    try { return JSON.parse("{" + m[1] + "}"); } catch(e) { return null; }
+  }
+
+  function cleanText(text) {
+    return text.replace(/\[ACTION:\{[^}]*\}\]/g, "").trim();
+  }
+
+  function sendMessage() {
+    if (!input.trim() || loading) return;
+    var userMsg = input.trim();
+    setInput("");
+    var newMsgs = msgs.concat([{ role: "user", text: userMsg }]);
+    setMsgs(newMsgs);
+    setLoading(true);
+    var apiMsgs = newMsgs.map(function(m) {
+      return { role: m.role === "user" ? "user" : "assistant", content: m.text };
+    });
+    var sys = "You are Richard, a warm and knowledgeable personal finance advisor inside the Richy app. "
+      + "The user's name is " + (props.username || "there") + ". "
+      + "Their current financial plan is: " + (props.plan || "not yet created") + ". "
+      + "The user is giving you feedback and asking questions about their plan. "
+      + "Reply concisely, under 100 words. No markdown. No bullet lists. "
+      + "If you want to suggest a specific concrete change, append exactly one action tag at the very end: "
+      + "[ACTION:{\"type\":\"budget\",\"category\":\"Food\",\"limit\":500}] to set a budget, or "
+      + "[ACTION:{\"type\":\"goal\",\"name\":\"Emergency Fund\",\"target\":3000}] to create a goal. "
+      + "Only include an action tag when making a specific recommendation with real numbers.";
+    callClaude(apiMsgs, sys, 250, function(err, reply) {
+      var text = err || !reply ? "Sorry, I could not connect. Try again." : reply;
+      var action = parseAction(text);
+      var clean = cleanText(text);
+      setMsgs(function(prev) { return prev.concat([{ role: "richard", text: clean }]); });
+      if (action) setPendingAction(action);
+      setLoading(false);
+    });
+  }
+
+  function implementAction() {
+    if (!pendingAction) return;
+    if (pendingAction.type === "budget") {
+      var catName = (pendingAction.category || "").toLowerCase();
+      var cat = (props.categories || []).filter(function(c) { return c.name.toLowerCase() === catName; })[0];
+      if (cat && props.onSaveBudgets) {
+        var rest = (props.budgets || []).filter(function(b) { return b.catId !== cat.id; });
+        props.onSaveBudgets(rest.concat([{ catId: cat.id, limit: pendingAction.limit || 0 }]));
+      }
+    } else if (pendingAction.type === "goal") {
+      if (props.onSaveGoals) {
+        var ng = { id: Date.now(), name: pendingAction.name || "New Goal", target: pendingAction.target || 1000, saved: 0 };
+        props.onSaveGoals((props.goals || []).concat([ng]));
+      }
+    }
+    setPendingAction(null);
+  }
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+
+      {props.plan ? (
+        <Card style={{ padding: "22px 22px", marginBottom: 16 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: UI }}>
+              {tr("yourPlanByRichard")}
+            </div>
+            {props.lang && props.lang !== "en" && (
+              <button onClick={translatePlan}
+                style={{ fontSize: 11, color: T.orange, background: "none", border: "none", cursor: "pointer", fontFamily: UI, fontWeight: 600, padding: 0, opacity: translatingPlan ? 0.5 : 1 }}>
+                {translatingPlan ? "..." : tr("translate")}
+              </button>
+            )}
+          </div>
+          <div style={{ fontSize: 15, color: T.ink, lineHeight: 1.7, fontFamily: UI }}>
+            {props.plan}
+          </div>
+        </Card>
+      ) : (
+        <Card style={{ padding: "36px 22px", textAlign: "center", marginBottom: 16 }}>
+          <div style={{ fontSize: 15, color: T.ink3, lineHeight: 1.6 }}>{tr("noPlanYet")}</div>
+        </Card>
+      )}
+
+      {msgs.length > 0 && (
+        <Card style={{ padding: "16px 18px", marginBottom: 16 }}>
+          {msgs.map(function(m, i) {
+            var isUser = m.role === "user";
+            return (
+              <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start", marginBottom: i < msgs.length - 1 ? 10 : 0 }}>
+                <div style={{ maxWidth: "82%", background: isUser ? T.orange : "rgba(0,0,0,0.05)", borderRadius: 14, padding: "9px 13px", fontSize: 14, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
+                  {m.text}
+                </div>
+              </div>
+            );
+          })}
+          {loading && (
+            <div style={{ display: "flex", justifyContent: "flex-start", marginTop: 10 }}>
+              <div style={{ background: "rgba(0,0,0,0.05)", borderRadius: 14, padding: "9px 13px", fontSize: 14, color: T.ink3, fontFamily: UI }}>...</div>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {pendingAction && (
+        <Card style={{ padding: "18px 18px", marginBottom: 16, border: "1.5px solid " + T.orange }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8, fontFamily: UI }}>
+            {tr("richySuggests")}
+          </div>
+          <div style={{ fontSize: 14, color: T.ink, marginBottom: 14, fontFamily: UI, lineHeight: 1.5 }}>
+            {pendingAction.type === "budget"
+              ? "Set a " + dollars(pendingAction.limit || 0) + " budget for " + (pendingAction.category || "")
+              : "Create goal: " + (pendingAction.name || "") + " (" + dollars(pendingAction.target || 0) + ")"}
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={implementAction}
+              style={{ flex: 1, background: T.orange, color: "#fff", border: "none", borderRadius: 10, padding: "9px 0", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI }}>
+              {tr("implement")}
+            </button>
+            <button onClick={function() { setPendingAction(null); }}
+              style={{ flex: 1, background: "rgba(0,0,0,0.08)", color: T.ink2, border: "none", borderRadius: 10, padding: "9px 0", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI }}>
+              {tr("dismiss")}
+            </button>
+          </div>
+        </Card>
+      )}
+
+      <Card style={{ padding: 0, overflow: "hidden", marginBottom: 16 }}>
+        <div style={{ display: "flex", gap: 8, padding: "10px 12px" }}>
+          <input value={input} onChange={function(e) { setInput(e.target.value); }}
+            onKeyDown={function(e) { if (e.key === "Enter" && !loading) sendMessage(); }}
+            placeholder={tr("giveFeedback")}
+            style={{ flex: 1, border: "none", background: "rgba(0,0,0,0.04)", borderRadius: 12, padding: "10px 14px", fontSize: 14, fontFamily: UI, outline: "none", color: T.ink }} />
+          <button onClick={sendMessage} disabled={!input.trim() || loading}
+            style={{ background: input.trim() && !loading ? T.orange : "rgba(0,0,0,0.1)", border: "none", borderRadius: 12, width: 40, height: 40, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 18 }}>
+            ^
+          </button>
+        </div>
+      </Card>
+
+      <button onClick={props.onRetake}
+        style={{ width: "100%", background: T.orangeDim, color: T.orange, border: "1.5px solid rgba(200,103,58,0.2)", borderRadius: 16, padding: "16px 0", fontSize: 16, fontFamily: UI, fontWeight: 700, cursor: "pointer", marginBottom: 10 }}>
+        {tr("redoQuestionnaire")}
+      </button>
+    </div>
+  );
+}
+
+function ProfileRow(props) {
+  var curLabel = props.value ? (
+    <span style={{ fontSize: 13, color: T.ink3, fontFamily: UI }}>{props.value}</span>
+  ) : null;
+  return (
+    <button onClick={props.onClick}
+      style={{ width: "100%", background: "none", border: "none", borderBottom: props.last ? "none" : "0.5px solid " + T.sep, padding: "17px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", fontFamily: UI }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ width: 36, height: 36, borderRadius: 10, background: props.iconBg || T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <SVGIcon id={props.icon} size={17} color={props.iconColor || T.orange} />
+        </div>
+        <span style={{ fontSize: 15, fontWeight: 600, color: T.ink }}>{props.label}</span>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        {curLabel}
+        <SVGIcon id="chevron" size={16} color={T.ink3} />
+      </div>
+    </button>
+  );
+}
+
 function Profile(props) {
   var cur = props.currency || "$";
+  var lang = props.lang || "en";
+  var langLabel = (LANGUAGE_OPTIONS.filter(function(o) { return o.code === lang; })[0] || {}).label || "English";
+  var curLabel = (CURRENCY_OPTIONS.filter(function(o) { return o.sym === cur; })[0] || {}).label || cur;
   return (
     <div>
       <Card style={{ padding: "28px 22px", marginBottom: 16, textAlign: "center" }}>
@@ -2559,28 +3337,19 @@ function Profile(props) {
           @
         </div>
         <div style={{ fontSize: 22, fontWeight: 700, color: T.ink }}>{props.user}</div>
-        <div style={{ fontSize: 13, color: T.ink3, marginTop: 4 }}>Richy member</div>
+        <div style={{ fontSize: 13, color: T.ink3, marginTop: 4 }}>{tr("richyMember")}</div>
       </Card>
 
-      <Card style={{ padding: "18px 18px 10px", marginBottom: 16 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>Currency</div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {CURRENCY_OPTIONS.map(function(opt) {
-            var on = cur === opt.sym;
-            return (
-              <button key={opt.sym} onClick={function() { props.onCurrencyChange(opt.sym); }}
-                style={{ padding: "8px 14px", borderRadius: 10, border: on ? "1.5px solid " + T.orange : "1.5px solid rgba(0,0,0,0.08)", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: on ? 700 : 500,
-                  background: on ? T.orangeDim : "rgba(0,0,0,0.03)", color: on ? T.orange : T.ink2 }}>
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
+      <Card style={{ overflow: "hidden", marginBottom: 16 }}>
+        <ProfileRow icon="spark" label={tr("seeYourPlan")} onClick={props.onViewPlan} />
+        <ProfileRow icon="person" label={tr("richyRefersTo")} value={props.user} onClick={props.onViewNickname} />
+        <ProfileRow icon="coins" label={tr("currency")} value={curLabel} onClick={props.onViewCurrency} />
+        <ProfileRow icon="book" label={tr("language")} value={langLabel} onClick={props.onViewLanguage} last={true} />
       </Card>
 
       <button onClick={props.onLogout}
         style={{ width: "100%", background: "rgba(255,59,48,0.08)", color: T.red, border: "none", borderRadius: 16, padding: "16px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: "pointer" }}>
-        Sign Out
+        {tr("signOut")}
       </button>
     </div>
   );
@@ -2617,6 +3386,16 @@ export default function App() {
   var currency = _cur[0]; var setCurrency = _cur[1];
   var _ak = useState(null);
   var accountKey = _ak[0]; var setAccountKey = _ak[1];
+  var _od = useState(false);
+  var onboardingDone = _od[0]; var setOnboardingDone = _od[1];
+  var _rp = useState("");
+  var richPlan = _rp[0]; var setRichPlan = _rp[1];
+  var _ud = useState("");
+  var userDob = _ud[0]; var setUserDob = _ud[1];
+  var _pjc = useState(false);
+  var planJustCreated = _pjc[0]; var setPlanJustCreated = _pjc[1];
+  var _lg = useState("en");
+  var lang = _lg[0]; var setLang = _lg[1];
 
   function loadData(data) {
     setTx(data.tx || []);
@@ -2627,7 +3406,15 @@ export default function App() {
     var sym = data.currency || "$";
     setCurrency(sym);
     _currency.sym = sym;
+    setOnboardingDone(data.onboardingDone === true);
+    setRichPlan(data.plan || "");
+    setUserDob(data.dob || "");
+    _lang.code = data.lang || "en"; setLang(data.lang || "en");
   }
+
+  useEffect(function() {
+    if (tab !== "overview") setPlanJustCreated(false);
+  }, [tab]);
 
   useEffect(function() {
     var u = STORE.getSession();
@@ -2653,6 +3440,7 @@ export default function App() {
     STORE.clearSession();
     setUser(null); setAccountKey(null); setTab("overview");
     setTx([]); setBudgets([]); setGoals([]); setFolders([]); setCategories([]);
+    _lang.code = "en"; setOnboardingDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang("en");
   }
 
   function save(next) {
@@ -2660,7 +3448,7 @@ export default function App() {
     var existing = STORE.getUser(accountKey) || {};
     var blob = {};
     for (var ek in existing) blob[ek] = existing[ek];
-    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.folders = folders; blob.categories = categories; blob.currency = currency;
+    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang;
     for (var k in next) blob[k] = next[k];
     STORE.saveUser(accountKey, blob);
   }
@@ -2671,11 +3459,59 @@ export default function App() {
   function onSaveFolders(next) { setFolders(next); save({ folders: next }); }
   function onSaveCategories(next) { setCategories(next); save({ categories: next }); }
   function onSaveCurrency(sym) { _currency.sym = sym; setCurrency(sym); save({ currency: sym }); }
+  function onSaveLang(code) {
+    _lang.code = code;
+    setLang(code);
+    save({ lang: code });
+    if (richPlan) {
+      var langName = (LANGUAGE_OPTIONS.filter(function(o) { return o.code === code; })[0] || {}).label || code;
+      callClaude(
+        [{ role: "user", content: "Translate this financial plan to " + langName + ". Keep the same warm tone, structure, and personal advice. Output only the translated plan, nothing else:\n\n" + richPlan }],
+        "You are Richard, a personal finance advisor. Translate the given financial plan faithfully to the requested language. Preserve the warm, direct, personal tone.",
+        400,
+        function(err, translated) { if (!err && translated) { setRichPlan(translated); save({ plan: translated }); } }
+      );
+    }
+  }
+  function onSaveNickname(name) { setUser(name); save({ displayName: name }); }
+
+  function handleOnboardingComplete(plan, oData, suggestedBudgets) {
+    setRichPlan(plan);
+    setOnboardingDone(true);
+    setPlanJustCreated(true);
+    var current = STORE.getUser(accountKey) || {};
+    var merged = {};
+    for (var k in current) merged[k] = current[k];
+    merged.onboardingDone = true;
+    merged.plan = plan;
+    merged.onboardingData = oData;
+    if (suggestedBudgets && suggestedBudgets.length) {
+      setBudgets(suggestedBudgets);
+      merged.budgets = suggestedBudgets;
+    }
+    STORE.saveUser(accountKey, merged);
+  }
 
   if (!user) return <AuthScreen onLogin={handleLogin} />;
 
+  if (!onboardingDone) {
+    return <OnboardingScreen username={user} dob={userDob} lang={lang} onComplete={handleOnboardingComplete} />;
+  }
+
+  function handleRetakePlan() {
+    setOnboardingDone(false);
+    setPlanJustCreated(false);
+    var current = STORE.getUser(accountKey) || {};
+    var merged = {};
+    for (var k in current) merged[k] = current[k];
+    merged.onboardingDone = false;
+    STORE.saveUser(accountKey, merged);
+  }
+
   var currentTab = tab;
-  var monthLabel = new Date().toLocaleString("en-US", { month: "short" }) + " " + new Date().getFullYear();
+  var _localeMap = { en: "en-US", he: "he-IL", es: "es-ES", fr: "fr-FR", ar: "ar-SA", ru: "ru-RU", de: "de-DE", pt: "pt-BR" };
+  var _locale = _localeMap[lang] || "en-US";
+  var monthLabel = new Date().toLocaleString(_locale, { month: "short" }) + " " + new Date().getFullYear();
 
   return (
     <div style={{ background: T.bg, minHeight: "100vh", maxWidth: 430, margin: "0 auto", fontFamily: UI, paddingBottom: 100 }}>
@@ -2689,9 +3525,9 @@ export default function App() {
           </button>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 20px 14px", gap: 8 }}>
-          <div style={{ background: "#fff", borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.ink2, boxShadow: "0 1px 4px rgba(0,0,0,0.08)", border: "0.5px solid rgba(0,0,0,0.06)" }}>{monthLabel}</div>
+          <div style={{ background: T.orangeDim, borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em" }}>{monthLabel}</div>
           <span style={{ fontSize: 20, fontWeight: 700, color: T.ink, flex: 1, textAlign: "center", letterSpacing: "-0.02em" }}>
-            {currentTab === "profile" ? "Profile" : currentTab === "categories" ? "Categories" : (TABS.find(function(t) { return t.id === currentTab; }) || {}).label}
+            {tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab)}
           </span>
           {HAS_FAB.indexOf(currentTab) !== -1 ? (
             <button onClick={function() { setSheet(function(v) { return !v; }); }}
@@ -2705,27 +3541,31 @@ export default function App() {
       </div>
 
       <div style={{ padding: "8px 16px 0" }}>
-        {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} username={user} onCategories={function() { setTab("categories"); setSheet(false); }} />}
+        {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} username={user} plan={planJustCreated ? richPlan : ""} onCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "goals" && <Goals goals={goals} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} username={user} />}
-        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} onCurrencyChange={onSaveCurrency} />}
+        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} username={user} plan={richPlan} lang={lang} />}
+        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} onViewPlan={function() { setTab("plan"); }} onViewCurrency={function() { setTab("currency"); }} onViewLanguage={function() { setTab("language"); }} onViewNickname={function() { setTab("nickname"); }} />}
+        {currentTab === "plan" && <PlanView plan={richPlan} onBack={function() { setTab("profile"); }} onRetake={handleRetakePlan} username={user} lang={lang} categories={categories} budgets={budgets} goals={goals} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onUpdatePlan={function(t) { setRichPlan(t); save({ plan: t }); }} />}
+        {currentTab === "language" && <LanguageView lang={lang} onLangChange={onSaveLang} onBack={function() { setTab("profile"); }} />}
+        {currentTab === "currency" && <CurrencyView currency={currency} onCurrencyChange={onSaveCurrency} onBack={function() { setTab("profile"); }} />}
+        {currentTab === "nickname" && <NicknameView value={user} onSave={function(name) { onSaveNickname(name); setTab("profile"); }} onBack={function() { setTab("profile"); }} />}
       </div>
 
       <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, zIndex: 30, background: "rgba(250,246,240,0.95)", backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)", borderTop: "0.5px solid rgba(0,0,0,0.08)" }}>
         <div style={{ display: "flex", justifyContent: "space-around", padding: "8px 0 28px" }}>
-          {TABS.map(function(t) {
-            var active = currentTab === t.id;
+          {TABS.map(function(tab) {
+            var active = currentTab === tab.id;
             return (
-              <button key={t.id} onClick={function() { setTab(t.id); setSheet(false); }}
+              <button key={tab.id} onClick={function() { setTab(tab.id); setSheet(false); }}
                 style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "4px 4px", flex: 1, minWidth: 0 }}>
                 <div style={{ background: active ? T.ink : "none", borderRadius: 14, padding: active ? "6px 11px" : "6px 9px", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s", boxShadow: active ? "0 2px 8px rgba(0,0,0,0.18)" : "none" }}>
-                  <SVGIcon id={t.id} size={21} color={active ? "#fff" : T.ink3} />
+                  <SVGIcon id={tab.id} size={21} color={active ? "#fff" : T.ink3} />
                 </div>
                 <span style={{ fontSize: 9.5, fontWeight: active ? 700 : 400, color: active ? T.orange : T.ink3, letterSpacing: "0.005em", whiteSpace: "nowrap" }}>
-                  {t.label}
+                  {tr(tab.id)}
                 </span>
               </button>
             );
