@@ -377,9 +377,9 @@ function RingChart(props) {
   var pct = Math.min(1, props.value / (props.max || 1));
   return (
     <svg width={size} height={size} style={{ transform: "rotate(-90deg)", flexShrink: 0 }}>
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(0,0,0,0.07)" strokeWidth={stroke} />
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={props.track || "rgba(0,0,0,0.07)"} strokeWidth={stroke} />
       <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={props.color || T.orange} strokeWidth={stroke}
-        strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} strokeLinecap="round" />
+        strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} strokeLinecap="round" style={{ transition: "stroke-dashoffset 0.9s ease" }} />
     </svg>
   );
 }
@@ -3122,32 +3122,85 @@ function Advisor(props) {
     );
   }
 
-  var scoreColor = advice && !advice.error ? (advice.score >= 80 ? T.green : advice.score >= 60 ? T.orange : T.red) : T.orange;
-  var iStyle = { strength: { bg: "rgba(52,199,89,0.1)", dot: T.green }, warning: { bg: "rgba(255,59,48,0.1)", dot: T.red }, tip: { bg: T.orangeDim, dot: T.orange } };
+  // Brighter green reads better on the dark hero card than the standard T.green.
+  var GREEN_ON_DARK = "#4ADE80";
+  var ringColor = advice && advice.score >= 80 ? GREEN_ON_DARK : advice && advice.score >= 60 ? T.gold : T.orangeHi;
+  var name = (props.username || "").trim() || "there";
+
+  // Three real signals for the dark card's bottom row.
+  var bufferMonths = expense > 0 ? (netWorth / expense) : (netWorth > 0 ? 12 : 0);
+  var savingStat = savings >= 20 ? { label: "Strong", dot: GREEN_ON_DARK } : savings >= 10 ? { label: "Building", dot: T.gold } : savings >= 0 ? { label: "Low", dot: T.gold } : { label: "Negative", dot: T.red };
+  var totalLimit = (props.budgets || []).reduce(function(s, b) { return s + (b.limit || 0); }, 0);
+  var spendStat = totalLimit <= 0 ? { label: "Not set", dot: T.ink3 } : expense <= totalLimit ? { label: "On track", dot: GREEN_ON_DARK } : { label: "Over", dot: T.red };
+  var bufferStat = bufferMonths >= 3 ? GREEN_ON_DARK : bufferMonths >= 1 ? T.gold : T.red;
+  var bufferTxt = bufferMonths >= 12 ? "12+ mo" : bufferMonths > 0 ? (Math.round(bufferMonths * 10) / 10) + " mo" : "0 mo";
+
+  var greeting = advice ? (advice.score >= 80 ? "You're in good shape, " + name + "." : advice.score >= 60 ? "You're on the right track, " + name + "." : "Let's tighten things up, " + name + ".") : "";
+  var subGreeting = "Here's what I'm seeing across your month.";
+  // Insight type -> badge icon + accent, matching the synced design's CatBadge rows.
+  var insMeta = { strength: { icon: "chart", color: T.green, tag: "Strength" }, warning: { icon: "credit", color: T.red, tag: "Watch" }, tip: { icon: "coins", color: T.gold, tag: "Tip" } };
+
+  // Shared bits used across states.
+  var richardHead = (
+    <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "6px 2px 0" }}>
+      <div style={{ position: "relative", width: 52, height: 52, flexShrink: 0 }}>
+        <div style={{ position: "absolute", inset: -7, borderRadius: 20, background: "radial-gradient(circle, rgba(200,152,58,0.42), transparent 70%)", filter: "blur(7px)" }} />
+        <div style={{ position: "relative", width: 52, height: 52, borderRadius: 16, background: "#0D0C18", boxShadow: "0 7px 18px rgba(13,12,24,0.32)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 27, fontWeight: 700, color: "#C8973A", lineHeight: 1 }}>R</span>
+        </div>
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 19, fontWeight: 700, letterSpacing: "-0.02em", color: T.ink }}>Richard</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.green }} />
+          <span style={{ fontSize: 12, color: T.ink3 }}>{advice ? "Analyzed your month - just now" : "Ready to analyze your month"}</span>
+        </div>
+      </div>
+      {advice && !advice.error && (
+        <button onClick={function() { setAdvice(null); getAdvice(); }}
+          style={{ width: 40, height: 40, border: "none", borderRadius: 13, background: "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
+          <SVGIcon id="refresh" size={18} color={T.ink2} />
+        </button>
+      )}
+    </div>
+  );
+
+  function sectionHead(title, meta) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 2px 11px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+          <span style={{ width: 3, height: 15, borderRadius: 2, background: T.orange }} />
+          <span style={{ fontSize: 16, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>{title}</span>
+        </div>
+        {meta && <span style={{ fontSize: 12, color: T.ink3 }}>{meta}</span>}
+      </div>
+    );
+  }
 
   return (
     <div>
+      {richardHead}
+
       {!advice && !loading && (
-        <Card style={{ padding: "28px 22px", marginBottom: 20, textAlign: "center" }}>
-          <div style={{ fontSize: 48, marginBottom: 14 }}>$</div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, marginBottom: 8 }}>{tr("aiAdvisor")}</div>
-          <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.55, marginBottom: 22 }}>
-            {tr("aiAdvisorSub")}
+        <div>
+          <div style={{ padding: "16px 4px 0" }}>
+            <h1 style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.12, color: T.ink }}>{"Let's look at your month, " + name + "."}</h1>
+            <p style={{ margin: "7px 0 0", fontSize: 14.5, lineHeight: 1.45, color: T.ink2 }}>{tr("aiAdvisorSub")}</p>
           </div>
           {errMsg && (
-            <div style={{ fontSize: 12, color: T.red, background: "rgba(255,59,48,0.08)", borderRadius: 10, padding: "8px 12px", marginBottom: 14, textAlign: "left" }}>
+            <div style={{ fontSize: 12, color: T.red, background: "rgba(255,59,48,0.08)", borderRadius: 10, padding: "8px 12px", margin: "14px 4px 0", textAlign: "left" }}>
               {errMsg}
             </div>
           )}
           <button onClick={getAdvice}
-            style={{ background: T.orange, color: "#fff", border: "none", borderRadius: 16, padding: "16px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: "pointer", width: "100%", boxShadow: "0 4px 14px rgba(217,121,65,0.4)" }}>
+            style={{ width: "100%", background: "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: "#fff", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: "pointer", marginTop: 18, boxShadow: "0 6px 20px " + T.orangeGlow, letterSpacing: "-0.01em" }}>
             {tr("analyzeMyFinances")}
           </button>
-        </Card>
+        </div>
       )}
 
       {loading && (
-        <Card style={{ padding: "44px 22px", marginBottom: 20, textAlign: "center" }}>
+        <Card style={{ padding: "44px 22px", margin: "16px 0 20px", textAlign: "center" }}>
           <div style={{ fontSize: 14, fontWeight: 600, color: T.ink2 }}>{tr("analyzingFinances")}</div>
           <div style={{ fontSize: 13, color: T.ink3, marginTop: 4 }}>{tr("fewSeconds")}</div>
         </Card>
@@ -3155,48 +3208,84 @@ function Advisor(props) {
 
       {advice && !advice.error && (
         <div>
-          <Card style={{ padding: "20px", marginBottom: 14 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <div style={{ position: "relative", flexShrink: 0 }}>
-                <RingChart value={advice.score} max={100} size={68} color={scoreColor} stroke={6} />
-                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 800, color: scoreColor }}>
-                  {advice.score}
+          <div style={{ padding: "16px 4px 0" }}>
+            <h1 style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.12, color: T.ink }}>{greeting}</h1>
+            <p style={{ margin: "7px 0 0", fontSize: 14.5, lineHeight: 1.45, color: T.ink2 }}>{subGreeting}</p>
+          </div>
+
+          <div style={{ marginTop: 16, position: "relative", overflow: "hidden", borderRadius: 20, padding: 22, background: "linear-gradient(165deg,#211C17 0%,#15120E 100%)", boxShadow: "0 12px 30px rgba(13,12,24,0.28)" }}>
+            <div style={{ position: "absolute", top: -60, right: -44, width: 210, height: 210, background: "radial-gradient(circle, rgba(200,152,58,0.30), transparent 70%)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", bottom: -56, left: -44, width: 190, height: 190, background: "radial-gradient(circle, rgba(200,103,58,0.22), transparent 70%)", pointerEvents: "none" }} />
+            <div style={{ position: "relative" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>Financial Health</span>
+                <span style={{ background: ringColor + "24", color: ringColor, fontSize: 11, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 8 }}>{advice.scoreLabel}</span>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "center", marginTop: 20, position: "relative" }}>
+                <RingChart value={advice.score} max={100} size={172} stroke={11} color={ringColor} track="rgba(255,255,255,0.09)" />
+                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
+                  <span style={{ fontSize: 52, fontWeight: 700, letterSpacing: "-0.03em", color: "#fff" }}>{advice.score}</span>
+                  <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginTop: 5 }}>out of 100</span>
                 </div>
               </div>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: scoreColor, textTransform: "uppercase", letterSpacing: "0.07em" }}>{advice.scoreLabel}</div>
-                <div style={{ fontSize: 15, fontWeight: 600, color: T.ink, lineHeight: 1.35, marginTop: 3 }}>{advice.headline}</div>
+
+              <div style={{ textAlign: "center", marginTop: 18 }}>
+                <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.01em", color: "#fff" }}>{advice.headline}</div>
+              </div>
+
+              <div style={{ height: 0.5, background: "rgba(255,255,255,0.1)", margin: "20px 0" }} />
+
+              <div style={{ display: "flex" }}>
+                {[{ k: "Saving", v: savingStat.label, d: savingStat.dot }, { k: "Spending", v: spendStat.label, d: spendStat.dot }, { k: "Buffer", v: bufferTxt, d: bufferStat }].map(function(col, ci) {
+                  return (
+                    <div key={col.k} style={{ flex: 1, textAlign: "center", borderRight: ci < 2 ? "0.5px solid rgba(255,255,255,0.1)" : "none" }}>
+                      <div style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>{col.k}</div>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: col.d }} />
+                        <span style={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>{col.v}</span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
-            <button onClick={function() { setAdvice(null); getAdvice(); }}
-              style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "1px solid " + T.sep, borderRadius: 10, padding: "7px 12px", marginTop: 14, cursor: "pointer", color: T.ink2, fontSize: 13 }}>
-              {tr("refresh")}
-            </button>
-          </Card>
-
-          <div style={{ padding: "0 4px 10px" }}>
-            <span style={{ fontSize: 20, fontWeight: 700, color: T.ink }}>{tr("insights")}</span>
           </div>
-          {(advice.insights || []).map(function(ins, i) {
-            var st = iStyle[ins.type] || iStyle.tip;
-            return (
-              <Card key={i} style={{ padding: "14px 16px", marginBottom: 10 }}>
-                <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: st.dot, flexShrink: 0, marginTop: 5 }} />
-                  <div style={{ background: st.bg, borderRadius: 10, padding: "10px 14px", flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{ins.title}</div>
-                    <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5 }}>{ins.body}</div>
+
+          <div style={{ marginTop: 26 }}>
+            {sectionHead("What Richard sees", (advice.insights || []).length + " notes")}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {(advice.insights || []).map(function(ins, i) {
+              var m = insMeta[ins.type] || insMeta.tip;
+              return (
+                <Card key={i} style={{ padding: 16 }}>
+                  <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                    <CatBadge icon={m.icon} color={m.color} size={44} soft={true} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 5 }}>
+                        <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.01em", color: T.ink }}>{ins.title}</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.02em", padding: "3px 8px", borderRadius: 7, whiteSpace: "nowrap", color: m.color, background: m.color + "1F" }}>{m.tag}</span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: T.ink2 }}>{ins.body}</p>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            );
-          })}
+                </Card>
+              );
+            })}
+          </div>
 
           {advice.expertQuote && (
-            <Card style={{ padding: "18px 20px", marginBottom: 10 }}>
-              <div style={{ fontSize: 14, fontStyle: "italic", color: T.ink, lineHeight: 1.6, marginBottom: 8 }}>"{advice.expertQuote.quote}"</div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase" }}>- {advice.expertQuote.author}</div>
-            </Card>
+            <div style={{ marginTop: 14 }}>
+              <Card style={{ position: "relative", overflow: "hidden", padding: "24px 22px" }}>
+                <span style={{ position: "absolute", top: -26, left: 8, fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 130, lineHeight: 1, color: T.gold, opacity: 0.12, pointerEvents: "none" }}>{'”'}</span>
+                <p style={{ position: "relative", margin: 0, fontSize: 17, lineHeight: 1.5, fontWeight: 600, letterSpacing: "-0.01em", color: T.ink }}>{advice.expertQuote.quote}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14 }}>
+                  <div style={{ width: 18, height: 2, borderRadius: 2, background: T.gold }} />
+                  <span style={{ fontSize: 12.5, fontWeight: 600, letterSpacing: "0.02em", color: T.ink3 }}>{advice.expertQuote.author}</span>
+                </div>
+              </Card>
+            </div>
           )}
         </div>
       )}
@@ -3212,38 +3301,39 @@ function Advisor(props) {
         </Card>
       )}
 
-      <div style={{ padding: "0 4px 10px" }}>
-        <span style={{ fontSize: 20, fontWeight: 700, color: T.ink }}>{tr("askYourAdvisor")}</span>
+      <div style={{ marginTop: 26 }}>
+        {sectionHead(tr("askYourAdvisor"))}
       </div>
       <Card style={{ overflow: "hidden", marginBottom: 24 }}>
-        {chat.length === 0 && (
-          <div style={{ padding: "14px 16px 6px" }}>
-            {[tr("advisorQ1"), tr("advisorQ2"), tr("advisorQ3")].map(function(q) {
-              return (
-                <button key={q} onClick={function() { setInput(q); }}
-                  style={{ display: "block", width: "100%", textAlign: "left", background: "rgba(0,0,0,0.03)", border: "1px solid " + T.sep, borderRadius: 12, padding: "10px 14px", marginBottom: 8, fontSize: 14, color: T.ink2, fontFamily: UI, cursor: "pointer" }}>
-                  {q}
-                </button>
-              );
-            })}
-          </div>
-        )}
         {chat.length > 0 && (
-          <div style={{ maxHeight: 280, overflowY: "auto", padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ maxHeight: 300, overflowY: "auto", padding: "16px 14px 4px", display: "flex", flexDirection: "column", gap: 10 }}>
             {chat.map(function(m, i) {
+              var u = m.role === "user";
               return (
-                <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
-                  <div style={{ maxWidth: "82%", borderRadius: 16, padding: "10px 14px", background: m.role === "user" ? T.orange : "rgba(0,0,0,0.05)", color: m.role === "user" ? "#fff" : T.ink, fontSize: 14, lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
+                <div key={i} style={{ display: "flex", justifyContent: u ? "flex-end" : "flex-start" }}>
+                  <div style={{ maxWidth: "84%", padding: "11px 14px", fontSize: 13.5, lineHeight: 1.5, whiteSpace: "pre-wrap", borderRadius: u ? "16px 16px 4px 16px" : "4px 16px 16px 16px", background: u ? "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.045)", color: u ? "#fff" : T.ink, boxShadow: u ? "0 4px 14px rgba(200,103,58,0.22)" : "none" }}>
                     {m.text}
                   </div>
                 </div>
               );
             })}
             {chatLoading && (
-              <div style={{ padding: "10px 14px", background: "rgba(0,0,0,0.05)", borderRadius: 16, width: "fit-content", fontSize: 14, color: T.ink3 }}>
+              <div style={{ padding: "11px 14px", background: "rgba(0,0,0,0.045)", borderRadius: "4px 16px 16px 16px", width: "fit-content", fontSize: 13.5, color: T.ink3 }}>
                 {tr("thinking")}
               </div>
             )}
+          </div>
+        )}
+        {chat.length === 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "16px 16px 6px" }}>
+            {[tr("advisorQ1"), tr("advisorQ2"), tr("advisorQ3")].map(function(q) {
+              return (
+                <button key={q} onClick={function() { setInput(q); }}
+                  style={{ border: "none", background: T.orangeDim, color: T.orange, fontSize: 12.5, fontWeight: 600, fontFamily: UI, padding: "8px 13px", borderRadius: 9, cursor: "pointer" }}>
+                  {q}
+                </button>
+              );
+            })}
           </div>
         )}
         {pendingAction && (
@@ -3294,14 +3384,16 @@ function Advisor(props) {
           </div>
         )}
 
-        <div style={{ display: "flex", gap: 8, padding: "10px 12px", borderTop: chat.length > 0 ? "0.5px solid " + T.sep : "none" }}>
-          <input value={input} onChange={function(e) { setInput(e.target.value); }}
-            onKeyDown={function(e) { if (e.key === "Enter" && !chatLoading) sendChat(); }}
-            placeholder={tr("askRichard")}
-            style={{ flex: 1, border: "none", background: "rgba(0,0,0,0.04)", borderRadius: 12, padding: "10px 14px", fontSize: 14, fontFamily: UI, outline: "none", color: T.ink }} />
+        <div style={{ display: "flex", gap: 10, alignItems: "center", padding: "12px 12px", borderTop: chat.length > 0 ? "0.5px solid " + T.sep : "none" }}>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", background: "rgba(0,0,0,0.045)", borderRadius: 14, padding: "0 4px 0 14px" }}>
+            <input value={input} onChange={function(e) { setInput(e.target.value); }}
+              onKeyDown={function(e) { if (e.key === "Enter" && !chatLoading) sendChat(); }}
+              placeholder={tr("askRichard")}
+              style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 14, fontFamily: UI, color: T.ink, padding: "13px 0" }} />
+          </div>
           <button onClick={sendChat} disabled={!input.trim() || chatLoading}
-            style={{ background: input.trim() && !chatLoading ? T.orange : "rgba(0,0,0,0.1)", border: "none", borderRadius: 12, width: 40, height: 40, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 18 }}>
-            ^
+            style={{ width: 44, height: 44, border: "none", borderRadius: 14, background: input.trim() && !chatLoading ? "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.1)", boxShadow: input.trim() && !chatLoading ? "0 6px 18px rgba(200,103,58,0.32)" : "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: input.trim() && !chatLoading ? "pointer" : "default", flexShrink: 0 }}>
+            <SVGIcon id="up" size={20} color="#fff" />
           </button>
         </div>
       </Card>
