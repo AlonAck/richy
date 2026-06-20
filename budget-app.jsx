@@ -4182,29 +4182,24 @@ export default function App() {
     <div style={{ background: T.bg, minHeight: "100vh", maxWidth: 430, margin: "0 auto", fontFamily: UI, paddingBottom: 100 }}>
 
       <div style={{ position: "sticky", top: 0, zIndex: 40, background: "rgba(250,247,242,0.92)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", borderBottom: "0.5px solid rgba(0,0,0,0.06)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", padding: "14px 20px 0", alignItems: "center" }}>
-          <span style={{ fontSize: 15, fontWeight: 600, color: T.ink }}>{new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-          <RichyLogo size={26} style={{ display: "block", borderRadius: 7, boxShadow: "0 2px 8px rgba(0,0,0,0.18)" }} />
-          <button onClick={function() { setTab("profile"); }} style={{ background: "none", border: "none", cursor: "pointer", width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: tab === "profile" ? T.orange : "rgba(0,0,0,0.06)" }}>
-            <SVGIcon id="user" size={16} color={tab === "profile" ? "#fff" : T.ink2} />
-          </button>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", padding: "10px 20px 14px" }}>
-          <div style={{ width: 80, display: "flex", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", padding: "14px 20px 14px" }}>
+          <div style={{ width: 86, display: "flex", alignItems: "center" }}>
             <div style={{ background: T.orangeDim, borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em" }}>{monthLabel}</div>
           </div>
           <span style={{ flex: 1, fontSize: 20, fontWeight: 700, color: T.ink, textAlign: "center", letterSpacing: "-0.02em" }}>
             {tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
-          <div style={{ width: 80, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
-          {HAS_FAB.indexOf(currentTab) !== -1 ? (
-            <button onClick={function() { setSheet(function(v) { return !v; }); }}
-              style={{ background: sheet ? T.ink : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", border: "none", borderRadius: 40, width: 36, height: 36, cursor: "pointer", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: sheet ? "none" : "0 4px 12px " + T.orangeGlow, transition: "all 0.2s" }}>
-              <SVGIcon id={sheet ? "plus" : "plus"} size={16} color="#fff" />
+          <div style={{ width: 86, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
+            {HAS_FAB.indexOf(currentTab) !== -1 && (
+              <button onClick={function() { setSheet(function(v) { return !v; }); }}
+                style={{ background: sheet ? T.ink : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", border: "none", borderRadius: 40, width: 36, height: 36, cursor: "pointer", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: sheet ? "none" : "0 4px 12px " + T.orangeGlow, transition: "all 0.2s" }}>
+                <SVGIcon id="plus" size={16} color="#fff" />
+              </button>
+            )}
+            <button onClick={function() { setTab("profile"); }}
+              style={{ border: "none", cursor: "pointer", width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: tab === "profile" ? T.orange : "rgba(0,0,0,0.06)" }}>
+              <SVGIcon id="user" size={16} color={tab === "profile" ? "#fff" : T.ink2} />
             </button>
-          ) : (
-            <div style={{ width: 36 }} />
-          )}
           </div>
         </div>
       </div>
