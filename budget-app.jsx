@@ -4197,7 +4197,7 @@ export default function App() {
               </button>
             )}
             <button onClick={function() { setTab("profile"); }}
-              style={{ border: "none", cursor: "pointer", width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: tab === "profile" ? T.orange : "rgba(0,0,0,0.06)" }}>
+              style={{ border: "none", cursor: "pointer", width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: tab === "profile" ? T.orange : "rgba(0,0,0,0.06)" }}>
               <SVGIcon id="user" size={16} color={tab === "profile" ? "#fff" : T.ink2} />
             </button>
           </div>
