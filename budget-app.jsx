@@ -1386,11 +1386,6 @@ function Overview(props) {
   function spentInCat(c) {
     return tx.filter(function(t) { return t.type === "expense" && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s,t){return s+t.amount;}, 0);
   }
-  var byCat = cats.map(function(c) {
-    return { id: c.id, name: c.name, color: c.color, icon: c.icon, val: spentInCat(c) };
-  }).sort(function(a,b){ return b.val - a.val; });
-  var topCat = byCat[0];
-  var pie = byCat.filter(function(c) { return c.val > 0; }).map(function(c) { return { name: c.name, color: c.color, value: c.val }; });
   var recent = tx.slice().sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,4);
   var monthTxCount = tx.filter(function(t) { return inMonth(t, ym); }).length;
 
@@ -1400,6 +1395,212 @@ function Overview(props) {
     var pct = b.limit > 0 ? Math.round((s / b.limit) * 100) : 0;
     return { cat: c, spent: s, limit: b.limit, pct: pct, over: s > b.limit && b.limit > 0 };
   }).sort(function(a,b){ return b.pct - a.pct; });
+
+  // ===== Hero carousel: swipeable state + draw animation =====
+  var _pg = useState(0);    var page = _pg[0];     var setPage = _pg[1];
+  var _rg = useState("1M"); var range = _rg[0];    var setRange = _rg[1];
+  var _dx = useState(0);    var dragX = _dx[0];    var setDragX = _dx[1];
+  var _dg = useState(false); var dragging = _dg[0]; var setDragging = _dg[1];
+  var _hd = useState(false); var hidden = _hd[0];   var setHidden = _hd[1];
+  var _dp = useState(0);    var dp = _dp[0];       var setDp = _dp[1];
+  var rafRef = useRef(null);
+  var dragRef = useRef({ active: false, startX: 0, vw: 366 });
+
+  // Inject the entrance keyframe once.
+  useEffect(function() {
+    if (document.getElementById("rc-ov-anim")) return;
+    var st = document.createElement("style");
+    st.id = "rc-ov-anim";
+    st.textContent = "@keyframes rcFadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}";
+    document.head.appendChild(st);
+  }, []);
+
+  // Re-run the 0->1 draw progress on mount and whenever the panel or range changes.
+  useEffect(function() {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    var startT = 0;
+    function tick(now) {
+      if (!startT) startT = now;
+      var t = Math.min(1, (now - startT) / 850);
+      setDp(1 - Math.pow(1 - t, 3));
+      if (t < 1) rafRef.current = requestAnimationFrame(tick);
+    }
+    setDp(0);
+    rafRef.current = requestAnimationFrame(tick);
+    return function() { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [page, range]);
+
+  function goPage(i) { setDragX(0); setDragging(false); setPage(i); }
+  function pickRange(r) { if (r !== range) setRange(r); }
+  function stopDrag(e) { e.stopPropagation(); }
+  function onDown(e) {
+    dragRef.current.active = true;
+    dragRef.current.startX = e.clientX;
+    dragRef.current.dx = 0;
+    dragRef.current.vw = e.currentTarget.offsetWidth || 366;
+    setDragging(true);
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+  }
+  function onMove(e) {
+    if (!dragRef.current.active) return;
+    var dx = e.clientX - dragRef.current.startX;
+    if ((page === 0 && dx > 0) || (page === 4 && dx < 0)) dx = dx * 0.35;
+    dragRef.current.dx = dx;
+    setDragX(dx);
+  }
+  function onUp() {
+    if (!dragRef.current.active) return;
+    dragRef.current.active = false;
+    var w = dragRef.current.vw || 366;
+    var dx = dragRef.current.dx || 0;
+    var np = page;
+    if (dx < -w * 0.2 && page < 4) np = page + 1;
+    else if (dx > w * 0.2 && page > 0) np = page - 1;
+    dragRef.current.dx = 0;
+    setDragX(0);
+    setDragging(false);
+    setPage(np);
+  }
+
+  // ===== Carousel data, scoped to the selected range =====
+  var rangeDays = { "7D": 7, "1M": 30, "3M": 91, "1Y": 365 };
+  var rangePts  = { "7D": 7, "1M": 15, "3M": 13, "1Y": 12 };
+  var rangeLong = { "7D": "past 7 days", "1M": "past 30 days", "3M": "past 3 months", "1Y": "past 12 months" };
+  var rangeOpts = ["7D", "1M", "3M", "1Y"];
+  function isoAgo(d) { return new Date(Date.now() - d * 86400000).toISOString().slice(0, 10); }
+  var todayISO = new Date().toISOString().slice(0, 10);
+  var winStart = isoAgo(rangeDays[range]);
+  var monthNet = income - expense;
+
+  function winExpenseInCat(c) {
+    return tx.filter(function(t) { return t.type === "expense" && t.date >= winStart && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  }
+  var winExpenseTot = tx.filter(function(t) { return t.type === "expense" && t.date >= winStart; }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var winIncomeTot  = tx.filter(function(t) { return t.type === "income" && !t.opening && t.date >= winStart; }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var winSav = winIncomeTot > 0 ? Math.round(((winIncomeTot - winExpenseTot) / winIncomeTot) * 100) : 0;
+  var winKept = Math.max(0, winIncomeTot - winExpenseTot);
+  var winCats = cats.map(function(c) { return { name: c.name, color: c.color, val: winExpenseInCat(c) }; })
+    .filter(function(c) { return c.val > 0; })
+    .sort(function(a, b) { return b.val - a.val; })
+    .slice(0, 6);
+
+  var labelTotals = {};
+  tx.filter(function(t) { return t.type === "expense" && t.date >= winStart; }).forEach(function(t) {
+    var k = t.label || "Other";
+    labelTotals[k] = (labelTotals[k] || 0) + t.amount;
+  });
+  var merchants = Object.keys(labelTotals).map(function(k) { return { name: k, amt: labelTotals[k] }; })
+    .sort(function(a, b) { return b.amt - a.amt; }).slice(0, 4);
+  var merchMax = merchants.length ? merchants[0].amt : 1;
+
+  function balanceAt(dISO) {
+    return tx.filter(function(t) { return t.date <= dISO; }).reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0);
+  }
+  var nPts = rangePts[range];
+  var series = [];
+  for (var si = 0; si < nPts; si++) {
+    var db = Math.round(rangeDays[range] * (1 - si / (nPts - 1)));
+    series.push(balanceAt(isoAgo(db)));
+  }
+  var trendNet = series[series.length - 1] - series[0];
+  var trendUp = trendNet >= 0;
+  function shortDate(dISO) {
+    var dd = new Date(dISO + "T12:00:00");
+    return (dd.getMonth() + 1) + "/" + dd.getDate();
+  }
+
+  function smoothPath(pts) {
+    if (pts.length < 3) {
+      return pts.map(function(p, i) { return (i ? "L" : "M") + p.x.toFixed(1) + " " + p.y.toFixed(1); }).join(" ");
+    }
+    var d = "M" + pts[0].x.toFixed(1) + " " + pts[0].y.toFixed(1);
+    for (var i = 0; i < pts.length - 1; i++) {
+      var p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+      var c1x = p1.x + (p2.x - p0.x) / 6, c1y = p1.y + (p2.y - p0.y) / 6;
+      var c2x = p2.x - (p3.x - p1.x) / 6, c2y = p2.y - (p3.y - p1.y) / 6;
+      d += " C " + c1x.toFixed(1) + " " + c1y.toFixed(1) + " " + c2x.toFixed(1) + " " + c2y.toFixed(1) + " " + p2.x.toFixed(1) + " " + p2.y.toFixed(1);
+    }
+    return d;
+  }
+  function trendChart() {
+    var W = 318, H = 92, topY = 14, botY = 78;
+    var mn = Math.min.apply(null, series), mx = Math.max.apply(null, series);
+    var pad = (mx - mn) * 0.22 || 1;
+    var lo = mn - pad, hi = mx + pad;
+    var pts = series.map(function(v, i) { return { x: nPts > 1 ? (i / (nPts - 1)) * W : 0, y: botY - ((v - lo) / (hi - lo)) * (botY - topY) }; });
+    var line = smoothPath(pts);
+    var area = line + " L " + W + " " + H + " L 0 " + H + " Z";
+    var last = pts[pts.length - 1];
+    return (
+      <svg width={W} height={H} viewBox={"0 0 " + W + " " + H} style={{ display: "block", overflow: "visible" }}>
+        <defs>
+          <linearGradient id="rcArea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={T.orangeHi} stopOpacity={0.34} />
+            <stop offset="100%" stopColor={T.orangeHi} stopOpacity={0} />
+          </linearGradient>
+          <linearGradient id="rcLine" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor={T.orangeHi} />
+            <stop offset="100%" stopColor="#F0AE80" />
+          </linearGradient>
+        </defs>
+        <path d={area} fill="url(#rcArea)" opacity={dp} />
+        <path d={line} fill="none" stroke="url(#rcLine)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" pathLength={1} strokeDasharray={1} strokeDashoffset={1 - dp} />
+        <circle cx={last.x} cy={last.y} r={6} fill={T.orangeHi} opacity={0.22 * dp} />
+        <circle cx={last.x} cy={last.y} r={3.4} fill="#F3B488" stroke={T.darkCard} strokeWidth={2} opacity={dp} />
+      </svg>
+    );
+  }
+  function donutChart() {
+    var C = 2 * Math.PI * 56;
+    var gap = 0.016;
+    var s = 0;
+    var total = winExpenseTot || 1;
+    var segs = winCats.map(function(c, i) {
+      var frac = c.val / total;
+      var start = s;
+      var len = Math.max(frac - gap, 0.004);
+      var vis = len * dp;
+      s += frac;
+      return <circle key={i} cx={66} cy={66} r={56} fill="none" stroke={c.color} strokeWidth={18} strokeLinecap="butt" strokeDasharray={(vis * C).toFixed(2) + " " + (C + 2).toFixed(2)} strokeDashoffset={(-start * C).toFixed(2)} />;
+    });
+    return (
+      <svg width={132} height={132} viewBox="0 0 132 132" style={{ transform: "rotate(-90deg)" }}>
+        <circle cx={66} cy={66} r={56} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={18} />
+        {segs}
+      </svg>
+    );
+  }
+  function ringChart() {
+    var C = 2 * Math.PI * 54;
+    var frac = (Math.max(0, winSav) / 100) * dp;
+    return (
+      <svg width={120} height={120} viewBox="0 0 120 120" style={{ transform: "rotate(-90deg)" }}>
+        <defs>
+          <linearGradient id="rcRing" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor={T.orangeHi} />
+            <stop offset="100%" stopColor={T.gold} />
+          </linearGradient>
+        </defs>
+        <circle cx={60} cy={60} r={54} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={12} />
+        <circle cx={60} cy={60} r={54} fill="none" stroke="url(#rcRing)" strokeWidth={12} strokeLinecap="round" strokeDasharray={(frac * C).toFixed(2) + " " + C.toFixed(2)} />
+      </svg>
+    );
+  }
+  function rangeRow() {
+    return (
+      <div onPointerDown={stopDrag} style={{ display: "flex", gap: 2, background: "rgba(255,255,255,0.08)", borderRadius: 9, padding: 3 }}>
+        {rangeOpts.map(function(r) {
+          var on = r === range;
+          return (
+            <div key={r} onPointerDown={stopDrag} onClick={function() { pickRange(r); }}
+              style={{ padding: "4px 9px", borderRadius: 7, fontSize: 11, fontWeight: 600, letterSpacing: "0.02em", cursor: "pointer", transition: "all 0.2s", background: on ? "rgba(255,255,255,0.92)" : "transparent", color: on ? T.dark : "rgba(255,255,255,0.5)" }}>
+              {r}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -1418,49 +1619,149 @@ function Overview(props) {
         </button>
       </div>
 
-      <div style={{ borderRadius: 22, overflow: "hidden", marginBottom: 16, background: "linear-gradient(145deg," + T.dark + " 0%," + T.darkCard + " 50%," + T.darkCard2 + " 100%)", boxShadow: "0 12px 40px rgba(20,18,16,0.28), 0 2px 8px rgba(0,0,0,0.14)", position: "relative" }}>
-        <div style={{ position: "absolute", top: -40, right: -30, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle,rgba(200,103,58,0.22) 0%,transparent 65%)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: -20, left: -20, width: 140, height: 140, borderRadius: "50%", background: "radial-gradient(circle,rgba(200,152,58,0.14) 0%,transparent 70%)", pointerEvents: "none" }} />
-        <div style={{ padding: "26px 24px 22px", position: "relative" }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: 6 }}>
-            {tr("netBalance")}
-          </div>
-          <div style={{ fontSize: 40, fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.04em", lineHeight: 1, marginBottom: 4 }}>
-            {dollars(balance)}
-          </div>
-          {income > 0 && (
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: savRate >= 20 ? "rgba(39,168,95,0.2)" : "rgba(200,103,58,0.2)", borderRadius: 30, padding: "3px 10px", marginBottom: 20 }}>
-              <div style={{ width: 6, height: 6, borderRadius: "50%", background: savRate >= 20 ? T.green : T.orange }} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: savRate >= 20 ? "#4ADE80" : T.orangeHi }}>
-                {savRate}{"% "}{tr("savedThisPeriod")}
-              </span>
+      <div style={{ marginBottom: 16, animation: "rcFadeUp 0.6s ease both" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: 7, padding: "0 0 11px" }}>
+          {[0,1,2,3,4].map(function(i) {
+            return <div key={i} onClick={function() { goPage(i); }} style={{ width: i === page ? 18 : 6, height: 6, borderRadius: 3, cursor: "pointer", transition: "all 0.3s cubic-bezier(0.22,1,0.36,1)", background: i === page ? T.orange : "rgba(0,0,0,0.16)" }} />;
+          })}
+        </div>
+        <div onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerLeave={onUp}
+          style={{ position: "relative", height: 242, borderRadius: 24, overflow: "hidden", background: "linear-gradient(155deg,#272118 0%," + T.darkCard + " 52%,#131110 100%)", boxShadow: "0 1px 1px rgba(0,0,0,0.06), 0 14px 34px rgba(40,28,16,0.34)", touchAction: "pan-y", cursor: "grab", userSelect: "none" }}>
+          <div style={{ position: "absolute", top: -60, right: -50, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle,rgba(224,120,72,0.30),transparent 65%)", pointerEvents: "none" }} />
+          <div style={{ position: "absolute", bottom: -70, left: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle,rgba(200,152,58,0.16),transparent 65%)", pointerEvents: "none" }} />
+          <div style={{ display: "flex", height: "100%", width: "100%", transform: "translateX(calc(" + (-page * 100) + "% + " + dragX + "px))", transition: dragging ? "none" : "transform 0.55s cubic-bezier(0.22,1,0.36,1)" }}>
+
+            {/* Panel 0 - Balance */}
+            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", overflow: "hidden",padding: "22px 24px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)" }}>{tr("netBalance")}</span>
+                <div onPointerDown={stopDrag} onClick={function() { setHidden(function(v) { return !v; }); }} style={{ cursor: "pointer", padding: 4, display: "flex" }}>
+                  <SVGIcon id={hidden ? "eyeoff" : "eye"} size={20} color="rgba(255,255,255,0.55)" />
+                </div>
+              </div>
+              <div>
+                <div style={{ filter: hidden ? "blur(11px)" : "none", userSelect: "none" }}>
+                  <span style={{ fontSize: 42, fontWeight: 700, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1 }}>{dollars(balance * dp)}</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 9 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: monthNet >= 0 ? "#4ADE80" : "#FF7A6B" }}>{(monthNet >= 0 ? "+" : "-") + dollars(Math.abs(monthNet))}</span>
+                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>this month</span>
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 14, borderTop: "0.5px solid rgba(255,255,255,0.1)", paddingTop: 14 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)" }}>{tr("income")}</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: "#4ADE80", letterSpacing: "-0.02em", marginTop: 3 }}>{"+" + dollars(income)}</div>
+                </div>
+                <div style={{ width: "0.5px", background: "rgba(255,255,255,0.1)" }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)" }}>{tr("spent")}</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: "#FF7A6B", letterSpacing: "-0.02em", marginTop: 3 }}>{"-" + dollars(expense)}</div>
+                </div>
+              </div>
             </div>
-          )}
-          <div style={{ height: "0.5px", background: "rgba(255,255,255,0.08)", marginBottom: 18 }} />
-          <div style={{ display: "flex", gap: 0 }}>
-            <div style={{ flex: 1, paddingRight: 18, borderRight: "0.5px solid rgba(255,255,255,0.08)" }}>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4 }}>{tr("income")}</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: "#4ADE80", letterSpacing: "-0.02em" }}>{dollars(income)}</div>
+
+            {/* Panel 1 - Trend */}
+            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: "rgba(255,255,255,0.5)" }}>BALANCE TREND</span>
+                {rangeRow()}
+              </div>
+              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>{trendChart()}</div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: trendUp ? "#4ADE80" : "#FF7A6B" }}>{(trendUp ? "+" : "-") + dollars(Math.abs(trendNet))}</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>{"net change - " + rangeLong[range]}</div>
+                </div>
+                <div style={{ display: "flex", gap: 18 }}>
+                  <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)" }}>{shortDate(winStart)}</span>
+                  <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)" }}>{shortDate(todayISO)}</span>
+                </div>
+              </div>
             </div>
-            <div style={{ flex: 1, paddingLeft: 18 }}>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4 }}>{tr("spent")}</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: "rgba(255,255,255,0.85)", letterSpacing: "-0.02em" }}>{dollars(expense)}</div>
+
+            {/* Panel 2 - Categories */}
+            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: "rgba(255,255,255,0.5)" }}>WHERE IT GOES</span>
+                {rangeRow()}
+              </div>
+              {winCats.length === 0 ? (
+                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "rgba(255,255,255,0.5)" }}>No spending in this period.</div>
+              ) : (
+                <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 18, marginTop: 6 }}>
+                  <div style={{ position: "relative", width: 132, height: 132, flexShrink: 0 }}>
+                    {donutChart()}
+                    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                      <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.1em", color: "rgba(255,255,255,0.4)" }}>SPENT</div>
+                      <div style={{ fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-0.03em" }}>{dollars(winExpenseTot)}</div>
+                    </div>
+                  </div>
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+                    {winCats.map(function(c, i) {
+                      return (
+                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ width: 9, height: 9, borderRadius: 3, background: c.color, flexShrink: 0 }} />
+                          <span style={{ flex: 1, fontSize: 12, color: "rgba(255,255,255,0.82)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.95)" }}>{Math.round((c.val / winExpenseTot) * 100) + "%"}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Panel 3 - Savings rate */}
+            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", overflow: "hidden",padding: "22px 24px", display: "flex", alignItems: "center", gap: 22 }}>
+              <div style={{ position: "relative", width: 120, height: 120, flexShrink: 0 }}>
+                {ringChart()}
+                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{ fontSize: 30, fontWeight: 700, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1 }}>{Math.round(Math.max(0, winSav) * dp)}<span style={{ fontSize: 16 }}>%</span></div>
+                  <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.1em", color: "rgba(255,255,255,0.4)", marginTop: 2 }}>SAVED</div>
+                </div>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: "rgba(255,255,255,0.5)" }}>SAVINGS RATE</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: "#fff", lineHeight: 1.35, marginTop: 8, letterSpacing: "-0.01em" }}>{winIncomeTot > 0 ? "You kept " + dollars(winKept) + " of what you earned." : "No income recorded in this period."}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 10 }}>
+                  <SVGIcon id={winSav >= 0 ? "up" : "down"} size={14} color={winSav >= 0 ? "#4ADE80" : "#FF7A6B"} />
+                  <span style={{ fontSize: 12, fontWeight: 600, color: winSav >= 0 ? "#4ADE80" : "#FF7A6B" }}>{winSav >= 20 ? "Excellent pace" : winSav >= 10 ? "On track" : winSav >= 0 ? "Building up" : "Overspending"}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Panel 4 - Top merchants */}
+            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: "rgba(255,255,255,0.5)" }}>TOP MERCHANTS</span>
+                {rangeRow()}
+              </div>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 13 }}>
+                {merchants.length === 0 ? (
+                  <div style={{ textAlign: "center", fontSize: 13, color: "rgba(255,255,255,0.5)" }}>No expenses in this period.</div>
+                ) : merchants.map(function(m, i) {
+                  return (
+                    <div key={i}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+                        <span style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.9)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "62%" }}>{m.name}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em" }}>{dollars(m.amt)}</span>
+                      </div>
+                      <div style={{ height: 6, borderRadius: 4, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: ((m.amt / merchMax) * 100 * dp).toFixed(1) + "%", background: "linear-gradient(90deg," + T.orange + "99," + T.orangeHi + ")", borderRadius: 4 }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
           </div>
         </div>
-        {topCat && topCat.val > 0 && (
-          <div style={{ padding: "12px 24px 16px", borderTop: "0.5px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: topCat.color }} />
-              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontWeight: 500 }}>{tr("topSpend")}</span>
-            </div>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)" }}>{topCat.name} {" -  "}{dollars(topCat.val)}</span>
-          </div>
-        )}
       </div>
 
       {props.plan && (
-        <div style={{ background: "rgba(200,103,58,0.04)", borderRadius: 18, padding: "20px 22px", marginBottom: 16, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.04)", borderLeft: "3px solid " + T.orange }}>
+        <div style={{ background: "rgba(200,103,58,0.04)", borderRadius: 18, padding: "20px 22px", marginBottom: 16, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.04)", borderLeft: "3px solid " + T.orange, animation: "rcFadeUp 0.6s ease 0.09s both" }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: UI, marginBottom: 10 }}>
             {tr("yourPlanByRichard")}
           </div>
@@ -1481,7 +1782,7 @@ function Overview(props) {
       )}
 
       {(income > 0 || expense > 0) && (
-        <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+        <div style={{ display: "flex", gap: 10, marginBottom: 20, animation: "rcFadeUp 0.6s ease 0.06s both" }}>
           <div style={{ flex: 1, background: !hasIncome ? T.card : (savRate >= 20 ? T.greenDim : savRate > 0 ? T.orangeDim : "rgba(224,48,48,0.07)"), borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{tr("savingsRate")}</div>
             <div style={{ fontSize: 26, fontWeight: 700, color: !hasIncome ? T.ink3 : (savRate >= 20 ? T.green : savRate > 0 ? T.orange : T.red), letterSpacing: "-0.02em" }}>{!hasIncome ? "-" : savRate + "%"}</div>
@@ -1500,43 +1801,8 @@ function Overview(props) {
         </div>
       )}
 
-      {pie.length > 0 && (
-        <div>
-          <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-              <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("whereItWent")}</span>
-            </div>
-            <span style={{ fontSize: 12, color: T.ink3 }}>{dollars(expense)} total</span>
-          </div>
-          <Card style={{ padding: "18px 18px 14px", marginBottom: 20 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-              <ResponsiveContainer width={96} height={96}>
-                <PieChart>
-                  <Pie data={pie} cx="50%" cy="50%" innerRadius={26} outerRadius={46} dataKey="value" paddingAngle={3} strokeWidth={0}>
-                    {pie.map(function(c, i) { return <Cell key={i} fill={c.color} />; })}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div style={{ flex: 1 }}>
-                {pie.slice(0,5).map(function(c) {
-                  var pct = Math.round((c.value / expense) * 100);
-                  return (
-                    <div key={c.name} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
-                      <div style={{ width: 7, height: 7, borderRadius: "50%", background: c.color, flexShrink: 0 }} />
-                      <span style={{ flex: 1, fontSize: 13, color: T.ink, fontWeight: 500 }}>{c.name}</span>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: T.ink2 }}>{pct}%</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
-
       {budgetRows.length > 0 && (
-        <div>
+        <div style={{ animation: "rcFadeUp 0.6s ease 0.12s both" }}>
           <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
@@ -1566,7 +1832,7 @@ function Overview(props) {
       )}
 
       {goals.length > 0 && (
-        <div>
+        <div style={{ animation: "rcFadeUp 0.6s ease 0.15s both" }}>
           <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
@@ -1600,7 +1866,7 @@ function Overview(props) {
       )}
 
       {recent.length > 0 && (
-        <div>
+        <div style={{ animation: "rcFadeUp 0.6s ease 0.18s both" }}>
           <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
             <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("recent")}</span>
