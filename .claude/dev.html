@@ -74,20 +74,28 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).t
     advisorTips: ["Book the Shinkansen pass before you fly - cheaper from abroad.", "Eat at depachika food halls for high quality at low cost."],
     allocations: [
       { key: "flights",    label: "Flights",    icon: "plane",    color: "#8970C6", planned: 1250, spent: 1250, entries: [{ id: 1, label: "ANA round-trip", amount: 1250, date: "2026-06-01" }] },
-      { key: "lodging",    label: "Lodging",    icon: "building", color: "#2799C8", planned: 1600, spent: 900,  entries: [{ id: 2, label: "Hotel 3 nights", amount: 900, date: "2026-06-02" }] },
+      { key: "lodging",    label: "Housing",    icon: "building", color: "#2799C8", planned: 1600, spent: 900,  entries: [{ id: 2, label: "Hotel 3 nights", amount: 900, date: "2026-06-02" }] },
       { key: "food",       label: "Food",       icon: "food",     color: "#27A85F", planned: 900,  spent: 0, entries: [] },
       { key: "activities", label: "Activities", icon: "star",     color: "#E0556E", planned: 650,  spent: 0, entries: [] },
       { key: "shopping",   label: "Shopping",   icon: "cart",     color: "#C8983A", planned: 350,  spent: 420, entries: [{ id: 3, label: "Gifts", amount: 420, date: "2026-06-03" }] },
+      { key: "transport",  label: "Transport",  icon: "car",      color: "#3B82B8", planned: 150,  spent: 0, entries: [] },
+      { key: "other",      label: "Other",      icon: "box",      color: "#8B8B8B", planned: 0,    spent: 0, entries: [] },
       { key: "buffer",     label: "Buffer",     icon: "shield",   color: "#6B5C4E", planned: 250,  spent: 0, entries: [] }
     ]
   }] : [];
   var el;
   if (view === "trips") {
-    el = React.createElement(Trips, {
-      trips: mockTrips, tx: mockTx, categories: mockCats, goals: mockGoals,
-      onSaveTrips: function(){}, onTripReserve: function(){}, onBack: function(){},
-      sheetOpen: false, setSheetOpen: function(){}
-    });
+    function TripsWrapper(p) {
+      var _t = React.useState(p.initialTrips); var trips = _t[0]; var setTrips = _t[1];
+      var _tx = React.useState(p.initialTx); var tx = _tx[0]; var setTx = _tx[1];
+      return React.createElement(Trips, {
+        trips: trips, tx: tx, categories: p.cats, goals: p.goals,
+        onSaveTrips: function(next) { setTrips(next); },
+        onTripReserve: function(nextTx, nextTrips) { setTx(nextTx); setTrips(nextTrips); },
+        onBack: function(){}, sheetOpen: false, setSheetOpen: function(){}
+      });
+    }
+    el = React.createElement(TripsWrapper, { initialTrips: mockTrips, initialTx: mockTx, cats: mockCats, goals: mockGoals });
   } else if (view === "appearance") {
     el = React.createElement(AppearanceView, { theme: qs.get("theme") || "purple", onThemeChange: function(){}, onBack: function(){} });
   } else if (view === "advisor") {

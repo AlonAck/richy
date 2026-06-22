@@ -128,11 +128,13 @@ var DEFAULT_CATEGORIES = [
 // local fallback split per travel style when the AI call is unavailable.
 var TRIP_CATEGORIES = [
   { key: "flights",    label: "Flights",    icon: "plane",    color: "#8970C6", pct: { budget: 0.30, comfort: 0.25, luxury: 0.22 } },
-  { key: "lodging",    label: "Lodging",    icon: "building", color: "#2799C8", pct: { budget: 0.25, comfort: 0.32, luxury: 0.38 } },
-  { key: "food",       label: "Food",       icon: "food",     color: "#27A85F", pct: { budget: 0.20, comfort: 0.18, luxury: 0.16 } },
-  { key: "activities", label: "Activities", icon: "star",     color: "#E0556E", pct: { budget: 0.12, comfort: 0.13, luxury: 0.12 } },
+  { key: "lodging",    label: "Housing",    icon: "building", color: "#2799C8", pct: { budget: 0.25, comfort: 0.32, luxury: 0.38 } },
+  { key: "food",       label: "Food",       icon: "food",     color: "#27A85F", pct: { budget: 0.17, comfort: 0.15, luxury: 0.14 } },
+  { key: "activities", label: "Activities", icon: "star",     color: "#E0556E", pct: { budget: 0.10, comfort: 0.12, luxury: 0.12 } },
   { key: "shopping",   label: "Shopping",   icon: "cart",     color: "#C8983A", pct: { budget: 0.05, comfort: 0.07, luxury: 0.08 } },
-  { key: "buffer",     label: "Buffer",     icon: "shield",   color: "#6B5C4E", pct: { budget: 0.08, comfort: 0.05, luxury: 0.04 } },
+  { key: "transport",  label: "Transport",  icon: "car",      color: "#3B82B8", pct: { budget: 0.05, comfort: 0.05, luxury: 0.04 } },
+  { key: "other",      label: "Other",      icon: "box",      color: "#8B8B8B", pct: { budget: 0, comfort: 0, luxury: 0 } },
+  { key: "buffer",     label: "Buffer",     icon: "shield",   color: "#6B5C4E", pct: { budget: 0.08, comfort: 0.04, luxury: 0.02 } },
 ];
 
 // Category lookups. Transactions/budgets reference a catId; fall back to name
@@ -3038,16 +3040,35 @@ function Trips(props) {
   var _tp = useState([]); var tips = _tp[0]; var setTips = _tp[1];
   var _lf = useState(null); var logFor = _lf[0]; var setLogFor = _lf[1];
   var _lfm = useState({ label: "", amount: "" }); var logForm = _lfm[0]; var setLogForm = _lfm[1];
+  var _de = useState({}); var detailEdits = _de[0]; var setDetailEdits = _de[1];
 
   function setField(k, val) { setForm(function(p) { var n = {}; for (var key in p) n[key] = p[key]; n[k] = val; return n; }); }
   function setLogField(k, val) { setLogForm(function(p) { var n = {}; for (var key in p) n[key] = p[key]; n[k] = val; return n; }); }
+  function setDetailEdit(tripId, field, val) { setDetailEdits(function(prev) { var n = {}; for (var k in prev) n[k] = prev[k]; n[tripId + "_" + field] = val; return n; }); }
+  function clearDetailEdit(tripId, field) { setDetailEdits(function(prev) { var n = {}; for (var k in prev) n[k] = prev[k]; delete n[tripId + "_" + field]; return n; }); }
+  function getDetailEdit(tripId, field, fallback) { var k = tripId + "_" + field; return detailEdits.hasOwnProperty(k) ? detailEdits[k] : String(fallback); }
+  function updateTripAllocPlanned(tripId, key, rawVal) {
+    var n = rawVal === "" ? 0 : Math.max(0, parseFloat(rawVal) || 0);
+    var nextTrips = props.trips.map(function(t) {
+      if (t.id !== tripId) return t;
+      var allocs = t.allocations.map(function(a) { return a.key === key ? Object.assign({}, a, { planned: n }) : a; });
+      return Object.assign({}, t, { allocations: allocs });
+    });
+    props.onSaveTrips(nextTrips);
+  }
+  function updateTripTotal(tripId, rawVal) {
+    var n = Math.max(0, parseFloat(rawVal) || 0);
+    var nextTrips = props.trips.map(function(t) { return t.id === tripId ? Object.assign({}, t, { total: n }) : t; });
+    props.onSaveTrips(nextTrips);
+  }
 
   function allocSum(list) { return list.reduce(function(s, a) { return s + (a.planned || 0); }, 0); }
   function tripSpent(t) { return t.allocations.reduce(function(s, a) { return s + (a.spent || 0); }, 0); }
 
   function localTripSplit(total, style) {
     return TRIP_CATEGORIES.map(function(c) {
-      return { key: c.key, label: c.label, icon: c.icon, color: c.color, planned: Math.round(total * (c.pct[style] || 0)), spent: 0, entries: [] };
+      var n = Math.round(total * (c.pct[style] || 0));
+      return { key: c.key, label: c.label, icon: c.icon, color: c.color, planned: n, plannedRaw: String(n), spent: 0, entries: [] };
     });
   }
   function defaultTips() {
@@ -3059,13 +3080,15 @@ function Trips(props) {
   }
   // Match Richard's free-form category names back onto our fixed buckets.
   function mapAllocations(arr, total) {
-    var base = TRIP_CATEGORIES.map(function(c) { return { key: c.key, label: c.label, icon: c.icon, color: c.color, planned: 0, spent: 0, entries: [] }; });
+    var base = TRIP_CATEGORIES.map(function(c) { return { key: c.key, label: c.label, icon: c.icon, color: c.color, planned: 0, plannedRaw: "0", spent: 0, entries: [] }; });
     if (Array.isArray(arr)) {
       arr.forEach(function(a) {
         var nm = String(a.category || "").toLowerCase();
         for (var i = 0; i < base.length; i++) {
           if (nm.indexOf(base[i].key) !== -1 || nm.indexOf(base[i].label.toLowerCase()) !== -1) {
-            base[i].planned = Math.max(0, Math.round(parseFloat(a.amount) || 0));
+            var n = Math.max(0, Math.round(parseFloat(a.amount) || 0));
+            base[i].planned = n;
+            base[i].plannedRaw = String(n);
             break;
           }
         }
@@ -3082,7 +3105,7 @@ function Trips(props) {
   function planWithRichard() {
     setPlanning(true);
     var total = parseFloat(form.total) || 0;
-    var sys = "You are Richard, a warm, expert travel-budget planner inside the Claude Budget app. Split a trip budget across exactly these buckets: Flights, Lodging, Food, Activities, Shopping, Buffer. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"allocations\":[{\"category\":\"Flights\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"\"],\"summary\":\"\"}. The amounts are whole numbers that sum to the total budget.";
+    var sys = "You are Richard, a warm, expert travel-budget planner inside the Claude Budget app. Split a trip budget across exactly these buckets: Flights, Housing, Food, Activities, Shopping, Transport, Other, Buffer. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"allocations\":[{\"category\":\"Flights\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"\"],\"summary\":\"\"}. The amounts are whole numbers that sum to the total budget. Use Other for any spending that does not fit the main buckets.";
     var usr = "Plan a " + (form.style || "comfort") + " trip to " + (form.destination || "somewhere") + " for " + (form.days || "a few") + " days, total budget " + dollars(total) + ". Split it across the six buckets and give 3 short, practical tips.";
     callClaude([{ role: "user", content: usr }], sys, 700, function(e, text) {
       if (e || !text) { applyLocalSplit(); return; }
@@ -3096,8 +3119,8 @@ function Trips(props) {
     });
   }
   function setAllocPlanned(key, val) {
-    var n = Math.max(0, parseFloat(val) || 0);
-    setAlloc(function(list) { return list.map(function(a) { return a.key === key ? Object.assign({}, a, { planned: n }) : a; }); });
+    var n = val === "" ? 0 : Math.max(0, parseFloat(val) || 0);
+    setAlloc(function(list) { return list.map(function(a) { return a.key === key ? Object.assign({}, a, { planned: n, plannedRaw: val }) : a; }); });
   }
   function startWizard() {
     setForm({ name: "", destination: "", total: "", days: "", style: "comfort" });
@@ -3252,7 +3275,15 @@ function Trips(props) {
             ) : (
               <div>
                 <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, marginBottom: 4, fontFamily: DISP, letterSpacing: "-0.02em" }}>{tr("tripSplit")}</div>
-                <div style={{ fontSize: 13, marginBottom: 14, color: sum > total ? T.red : T.ink3 }}>{tr("allocated") + " " + dollars(sum) + " / " + dollars(total) + (sum > total ? (" (" + tr("overBy") + " " + dollars(sum - total) + ")") : "")}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                  <div style={{ flex: 1, fontSize: 13, color: sum > total ? T.red : T.ink3 }}>{tr("allocated") + " " + dollars(sum) + " / " + dollars(total) + (sum > total ? (" (" + tr("overBy") + " " + dollars(sum - total) + ")") : "")}</div>
+                  <div style={{ display: "flex", alignItems: "center", background: "rgba(0,0,0,0.04)", borderRadius: 10, padding: "5px 10px", gap: 2 }}>
+                    <span style={{ fontSize: 12, color: T.ink3 }}>{_currency.sym}</span>
+                    <input type="number" value={form.total} onChange={function(e) { setField("total", e.target.value); }}
+                      style={{ width: 72, border: "none", background: "none", outline: "none", fontSize: 14, fontWeight: 600, color: T.ink, fontFamily: UI, textAlign: "right", padding: 0 }} />
+                  </div>
+                  <button onClick={applyLocalSplit} style={{ background: T.orangeDim, border: "none", borderRadius: 10, padding: "6px 12px", fontSize: 12, fontWeight: 700, color: T.orange, cursor: "pointer", fontFamily: UI, whiteSpace: "nowrap" }}>Resplit</button>
+                </div>
                 {alloc.map(function(a, idx) {
                   return (
                     <div key={a.key} style={{ display: "flex", alignItems: "center", gap: 11, padding: "9px 0", borderBottom: idx < alloc.length - 1 ? ("0.5px solid " + T.sep) : "none" }}>
@@ -3262,7 +3293,7 @@ function Trips(props) {
                       <span style={{ flex: 1, fontSize: 14, color: T.ink, fontWeight: 500 }}>{a.label}</span>
                       <div style={{ display: "flex", alignItems: "center", background: "rgba(0,0,0,0.04)", borderRadius: 10, padding: "6px 10px" }}>
                         <span style={{ fontSize: 13, color: T.ink3, marginRight: 2 }}>{_currency.sym}</span>
-                        <input type="number" value={a.planned} onChange={function(e) { setAllocPlanned(a.key, e.target.value); }}
+                        <input type="number" value={a.plannedRaw !== undefined ? a.plannedRaw : String(a.planned)} onChange={function(e) { setAllocPlanned(a.key, e.target.value); }}
                           style={{ width: 64, border: "none", background: "none", outline: "none", fontSize: 14, fontWeight: 600, color: T.ink, fontFamily: UI, textAlign: "right", padding: 0 }} />
                       </div>
                     </div>
@@ -3300,7 +3331,13 @@ function Trips(props) {
           <div style={{ position: "relative" }}>
             <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut }}>{(trip.destination || "Trip") + (trip.days ? (" - " + trip.days + "d") : "")}</div>
             <div style={{ fontSize: 26, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.02em", marginTop: 4 }}>{trip.name}</div>
-            <div style={{ fontSize: 34, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.03em", marginTop: 10 }}>{dollars(trip.total)}</div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginTop: 10 }}>
+              <span style={{ fontSize: 22, fontWeight: 700, color: T.heroInk }}>{_currency.sym}</span>
+              <input type="number" value={getDetailEdit(trip.id, "total", trip.total)}
+                onChange={function(e) { setDetailEdit(trip.id, "total", e.target.value); }}
+                onBlur={function(e) { updateTripTotal(trip.id, e.target.value); clearDetailEdit(trip.id, "total"); }}
+                style={{ fontSize: 34, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.03em", background: "none", border: "none", outline: "none", fontFamily: UI, width: "100%", padding: 0, boxSizing: "border-box" }} />
+            </div>
             <div style={{ display: "flex", gap: 16, marginTop: 12, borderTop: "0.5px solid " + T.heroSep, paddingTop: 12 }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>{tr("spent")}</div>
@@ -3342,7 +3379,13 @@ function Trips(props) {
                     <SVGIcon id={a.icon} size={18} color={a.color} />
                   </div>
                   <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: T.ink }}>{a.label}</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: over ? T.red : T.ink2 }}>{dollars(a.spent) + " / " + dollars(a.planned)}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: over ? T.red : T.ink2 }}>{dollars(a.spent) + " / " + _currency.sym}</span>
+                    <input type="number" value={getDetailEdit(trip.id, "alloc_" + a.key, a.planned)}
+                      onChange={function(e) { setDetailEdit(trip.id, "alloc_" + a.key, e.target.value); }}
+                      onBlur={function(e) { updateTripAllocPlanned(trip.id, a.key, e.target.value); clearDetailEdit(trip.id, "alloc_" + a.key); }}
+                      style={{ width: 58, border: "none", background: "rgba(0,0,0,0.05)", borderRadius: 7, outline: "none", fontSize: 13, fontWeight: 600, color: T.ink, fontFamily: UI, textAlign: "right", padding: "3px 6px", boxSizing: "border-box" }} />
+                  </div>
                 </div>
                 <ProgressBar value={a.spent} max={a.planned || 1} color={over ? T.red : a.color} h={6} />
                 {a.entries.length > 0 && (
