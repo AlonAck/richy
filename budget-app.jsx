@@ -4465,8 +4465,8 @@ function CurrencyView(props) {
 
 function AppearanceView(props) {
   var opts = [
-    { id: "purple",  label: "Purple",         sub: "Lavender hero, violet accents",     a: "#9D78E8", b: "#C8B1FF" },
-    { id: "classic", label: "Orange & Black", sub: "Dark hero, warm orange accents",     a: "#1E1A16", b: "#C8673A" }
+    { id: "purple",  label: "Iris",   sub: "Lavender hero, violet accents",  a: "#9D78E8", b: "#C8B1FF" },
+    { id: "classic", label: "Ember",  sub: "Dark hero, warm amber accents",  a: "#1E1A16", b: "#C8673A" }
   ];
   return (
     <div>
@@ -4700,7 +4700,7 @@ function Profile(props) {
   var lang = props.lang || "en";
   var langLabel = (LANGUAGE_OPTIONS.filter(function(o) { return o.code === lang; })[0] || {}).label || "English";
   var curLabel = (CURRENCY_OPTIONS.filter(function(o) { return o.sym === cur; })[0] || {}).label || cur;
-  var themeLabel = props.theme === "classic" ? "Orange & Black" : "Purple";
+  var themeLabel = props.theme === "classic" ? "Ember" : "Iris";
   return (
     <div>
       <Card style={{ padding: "28px 22px", marginBottom: 16, textAlign: "center" }}>

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Richy - Dev Harness</title>
+<style>
+  html,body{margin:0;background:#F7F3EE;}
+  #err{white-space:pre-wrap;font-family:monospace;color:#b00;padding:16px;font-size:13px;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="err"></div>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+<script>
+// Firebase-free harness: render a single component with mock data, no auth wall.
+var RC = (function(){
+  function ResponsiveContainer(props){ return React.createElement("div", { style: { width: props.width, height: props.height } }, props.children); }
+  function PieChart(props){ return React.createElement("svg", { viewBox: "0 0 100 100", width: "100%", height: "100%" }, props.children); }
+  function Pie(props){
+    var data = props.data || [];
+    var total = data.reduce(function(s,d){ return s + (d.value||0); }, 0) || 1;
+    var R = 42, r = 24, cx = 50, cy = 50, ang = -90;
+    var arcs = data.map(function(d, i){
+      var frac = (d.value||0)/total, a0 = ang, a1 = ang + frac*360; ang = a1;
+      var rad = function(a){ return (a*Math.PI)/180; };
+      var x0 = cx + R*Math.cos(rad(a0)), y0 = cy + R*Math.sin(rad(a0));
+      var x1 = cx + R*Math.cos(rad(a1)), y1 = cy + R*Math.sin(rad(a1));
+      var xi1 = cx + r*Math.cos(rad(a1)), yi1 = cy + r*Math.sin(rad(a1));
+      var xi0 = cx + r*Math.cos(rad(a0)), yi0 = cy + r*Math.sin(rad(a0));
+      var large = frac > 0.5 ? 1 : 0;
+      var dd = "M"+x0+" "+y0+" A"+R+" "+R+" 0 "+large+" 1 "+x1+" "+y1+" L"+xi1+" "+yi1+" A"+r+" "+r+" 0 "+large+" 0 "+xi0+" "+yi0+" Z";
+      var fill = (props.children && props.children[i] && props.children[i].props.fill) || (data[i] && data[i].color) || "#ccc";
+      return React.createElement("path", { key: i, d: dd, fill: fill });
+    });
+    return React.createElement("g", null, arcs);
+  }
+  function Cell(){ return null; }
+  return { ResponsiveContainer: ResponsiveContainer, PieChart: PieChart, Pie: Pie, Cell: Cell };
+})();
+
+fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).then(function(src){
+  var code = src
+    .replace(/^\s*import[^\n]*\n/gm, "")
+    .replace(/export default function App/, "function App");
+  var out = Babel.transform(code, { presets: ["react"] }).code;
+  var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
+  var PieChart = RC.PieChart, Pie = RC.Pie, Cell = RC.Cell, ResponsiveContainer = RC.ResponsiveContainer;
+  eval(out);
+
+  function iso(d){ return new Date(Date.now() - d*86400000).toISOString().slice(0,10); }
+  var mockCats = freshCategories();
+  var mockTx = [
+    { id: 1, type: "income",  amount: 6000, label: "Salary",          catId: "c8", category: "Salary",        date: iso(40), opening: false },
+    { id: 2, type: "income",  amount: 6000, label: "Salary",          catId: "c8", category: "Salary",        date: iso(10) },
+    { id: 3, type: "expense", amount: 1800, label: "Rent",            catId: "c1", category: "Housing",       date: iso(9) },
+    { id: 4, type: "expense", amount: 420,  label: "Whole Foods",     catId: "c2", category: "Food",          date: iso(7) },
+    { id: 5, type: "expense", amount: 95,   label: "Uber",            catId: "c3", category: "Transport",     date: iso(5) },
+    { id: 6, type: "expense", amount: 260,  label: "Dinner",          catId: "c2", category: "Food",          date: iso(3) },
+    { id: 7, type: "expense", amount: 140,  label: "Netflix",         catId: "c5", category: "Entertainment", date: iso(2) },
+    { id: 8, type: "expense", amount: 600,  label: "Flights",         catId: "c7", category: "Travel",        date: iso(1) }
+  ];
+  var mockGoals = [{ id: 1, name: "Emergency Fund", target: 10000, saved: 3500 }];
+
+  var qs = new URLSearchParams(location.search);
+  if (typeof applyTheme === "function") { applyTheme(qs.get("theme") || "purple"); }
+  var view = qs.get("view") || "overview";
+  var mockTrips = qs.get("seed") ? [{
+    id: 99, name: "Tokyo Spring", destination: "Tokyo", days: 8, style: "comfort", total: 5000,
+    reserved: false, reserveTxId: null,
+    advisorTips: ["Book the Shinkansen pass before you fly - cheaper from abroad.", "Eat at depachika food halls for high quality at low cost."],
+    allocations: [
+      { key: "flights",    label: "Flights",    icon: "plane",    color: "#8970C6", planned: 1250, spent: 1250, entries: [{ id: 1, label: "ANA round-trip", amount: 1250, date: "2026-06-01" }] },
+      { key: "lodging",    label: "Lodging",    icon: "building", color: "#2799C8", planned: 1600, spent: 900,  entries: [{ id: 2, label: "Hotel 3 nights", amount: 900, date: "2026-06-02" }] },
+      { key: "food",       label: "Food",       icon: "food",     color: "#27A85F", planned: 900,  spent: 0, entries: [] },
+      { key: "activities", label: "Activities", icon: "star",     color: "#E0556E", planned: 650,  spent: 0, entries: [] },
+      { key: "shopping",   label: "Shopping",   icon: "cart",     color: "#C8983A", planned: 350,  spent: 420, entries: [{ id: 3, label: "Gifts", amount: 420, date: "2026-06-03" }] },
+      { key: "buffer",     label: "Buffer",     icon: "shield",   color: "#6B5C4E", planned: 250,  spent: 0, entries: [] }
+    ]
+  }] : [];
+  var el;
+  if (view === "trips") {
+    el = React.createElement(Trips, {
+      trips: mockTrips, tx: mockTx, categories: mockCats, goals: mockGoals,
+      onSaveTrips: function(){}, onTripReserve: function(){}, onBack: function(){},
+      sheetOpen: false, setSheetOpen: function(){}
+    });
+  } else if (view === "appearance") {
+    el = React.createElement(AppearanceView, { theme: qs.get("theme") || "purple", onThemeChange: function(){}, onBack: function(){} });
+  } else if (view === "advisor") {
+    el = React.createElement(Advisor, { tx: mockTx, budgets: [], goals: mockGoals, categories: mockCats, username: "Alon", plan: "", lang: "en" });
+  } else {
+    el = React.createElement(Overview, { tx: mockTx, goals: mockGoals, budgets: [], categories: mockCats, username: "Alon", plan: "", onCategories: function(){} });
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(
+    React.createElement("div", { style: { maxWidth: 420, margin: "0 auto", padding: 16, minHeight: "100vh" } }, el)
+  );
+}).catch(function(e){
+  document.getElementById("err").textContent = "Dev harness error:\n" + (e && e.stack ? e.stack : e);
+});
+</script>
+</body>
+</html>
