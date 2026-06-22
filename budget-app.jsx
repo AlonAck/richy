@@ -1464,7 +1464,6 @@ function Overview(props) {
 
   // ===== Carousel data, scoped to the selected range =====
   var rangeDays = { "7D": 7, "1M": 30, "3M": 91, "1Y": 365 };
-  var rangePts  = { "7D": 7, "1M": 15, "3M": 13, "1Y": 12 };
   var rangeLong = { "7D": "past 7 days", "1M": "past 30 days", "3M": "past 3 months", "1Y": "past 12 months" };
   var rangeOpts = ["7D", "1M", "3M", "1Y"];
   function isoAgo(d) { return new Date(Date.now() - d * 86400000).toISOString().slice(0, 10); }
@@ -1493,49 +1492,63 @@ function Overview(props) {
     .sort(function(a, b) { return b.amt - a.amt; }).slice(0, 4);
   var merchMax = merchants.length ? merchants[0].amt : 1;
 
-  function balanceAt(dISO) {
-    return tx.filter(function(t) { return t.date <= dISO; }).reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0);
-  }
-  var nPts = rangePts[range];
+  // Daily running-balance series across the window - one true point per day, no
+  // sampling gaps and no smoothing overshoot, so the line reflects real balances.
+  var winDays = rangeDays[range];
+  var startBal = tx.filter(function(t) { return t.date < winStart; }).reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0);
+  var dayDelta = {};
+  tx.forEach(function(t) {
+    if (t.date >= winStart && t.date <= todayISO) {
+      dayDelta[t.date] = (dayDelta[t.date] || 0) + (t.type === "income" ? t.amount : -t.amount);
+    }
+  });
   var series = [];
-  for (var si = 0; si < nPts; si++) {
-    var db = Math.round(rangeDays[range] * (1 - si / (nPts - 1)));
-    series.push(balanceAt(isoAgo(db)));
+  var run = startBal;
+  for (var di = 0; di <= winDays; di++) {
+    run += (dayDelta[isoAgo(winDays - di)] || 0);
+    series.push(run);
   }
-  var trendNet = series[series.length - 1] - series[0];
+  var nPts = series.length;
+  var trendNet = series[series.length - 1] - startBal;
   var trendUp = trendNet >= 0;
-  function shortDate(dISO) {
+
+  var MONTHS3 = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  function compactMoney(v) {
+    var a = Math.abs(v), sign = v < 0 ? "-" : "";
+    if (a >= 1000) { var k = a / 1000; return sign + "$" + (k >= 10 ? Math.round(k) : k.toFixed(1)) + "k"; }
+    return sign + "$" + Math.round(a);
+  }
+  function axisLabel(dISO) {
     var dd = new Date(dISO + "T12:00:00");
+    if (range === "3M" || range === "1Y") return MONTHS3[dd.getMonth()];
     return (dd.getMonth() + 1) + "/" + dd.getDate();
   }
-
-  function smoothPath(pts) {
-    if (pts.length < 3) {
-      return pts.map(function(p, i) { return (i ? "L" : "M") + p.x.toFixed(1) + " " + p.y.toFixed(1); }).join(" ");
+  function buildTicks() {
+    var n = range === "1Y" ? 5 : 4, out = [];
+    for (var k = 0; k < n; k++) {
+      var frac = n > 1 ? k / (n - 1) : 0;
+      out.push({ frac: frac, label: axisLabel(isoAgo(Math.round(winDays * (1 - frac)))) });
     }
-    var d = "M" + pts[0].x.toFixed(1) + " " + pts[0].y.toFixed(1);
-    for (var i = 0; i < pts.length - 1; i++) {
-      var p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
-      var c1x = p1.x + (p2.x - p0.x) / 6, c1y = p1.y + (p2.y - p0.y) / 6;
-      var c2x = p2.x - (p3.x - p1.x) / 6, c2y = p2.y - (p3.y - p1.y) / 6;
-      d += " C " + c1x.toFixed(1) + " " + c1y.toFixed(1) + " " + c2x.toFixed(1) + " " + c2y.toFixed(1) + " " + p2.x.toFixed(1) + " " + p2.y.toFixed(1);
-    }
-    return d;
+    return out;
   }
   function trendChart() {
-    var W = 318, H = 92, topY = 14, botY = 78;
+    var W = 318, H = 108, topY = 12, botY = 74;
     var mn = Math.min.apply(null, series), mx = Math.max.apply(null, series);
-    var pad = (mx - mn) * 0.22 || 1;
-    var lo = mn - pad, hi = mx + pad;
-    var pts = series.map(function(v, i) { return { x: nPts > 1 ? (i / (nPts - 1)) * W : 0, y: botY - ((v - lo) / (hi - lo)) * (botY - topY) }; });
-    var line = smoothPath(pts);
-    var area = line + " L " + W + " " + H + " L 0 " + H + " Z";
+    var span = (mx - mn) || 1;
+    var lo = mn - span * 0.16, hi = mx + span * 0.16;
+    function yOf(v) { return botY - ((v - lo) / (hi - lo)) * (botY - topY); }
+    function xOf(i) { return nPts > 1 ? (i / (nPts - 1)) * W : 0; }
+    var pts = series.map(function(v, i) { return { x: xOf(i), y: yOf(v) }; });
+    var line = pts.map(function(p, i) { return (i ? "L" : "M") + p.x.toFixed(1) + " " + p.y.toFixed(1); }).join(" ");
+    var area = line + " L " + W + " " + botY + " L 0 " + botY + " Z";
     var last = pts[pts.length - 1];
+    var ticks = buildTicks();
+    var yMid = (mx + mn) / 2;
     return (
       <svg width={W} height={H} viewBox={"0 0 " + W + " " + H} style={{ display: "block", overflow: "visible" }}>
         <defs>
           <linearGradient id="rcArea" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={T.orangeHi} stopOpacity={0.34} />
+            <stop offset="0%" stopColor={T.orangeHi} stopOpacity={0.32} />
             <stop offset="100%" stopColor={T.orangeHi} stopOpacity={0} />
           </linearGradient>
           <linearGradient id="rcLine" x1="0" y1="0" x2="1" y2="0">
@@ -1543,10 +1556,23 @@ function Overview(props) {
             <stop offset="100%" stopColor="#F0AE80" />
           </linearGradient>
         </defs>
+        <line x1={0} y1={yOf(mx)} x2={W} y2={yOf(mx)} stroke="rgba(255,255,255,0.07)" strokeWidth={1} />
+        <line x1={0} y1={yOf(yMid)} x2={W} y2={yOf(yMid)} stroke="rgba(255,255,255,0.05)" strokeWidth={1} strokeDasharray="2 4" />
+        <line x1={0} y1={yOf(mn)} x2={W} y2={yOf(mn)} stroke="rgba(255,255,255,0.07)" strokeWidth={1} />
+        {ticks.map(function(tk, i) {
+          return <line key={"v" + i} x1={(tk.frac * W).toFixed(1)} y1={topY} x2={(tk.frac * W).toFixed(1)} y2={botY} stroke="rgba(255,255,255,0.04)" strokeWidth={1} />;
+        })}
         <path d={area} fill="url(#rcArea)" opacity={dp} />
         <path d={line} fill="none" stroke="url(#rcLine)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" pathLength={1} strokeDasharray={1} strokeDashoffset={1 - dp} />
         <circle cx={last.x} cy={last.y} r={6} fill={T.orangeHi} opacity={0.22 * dp} />
         <circle cx={last.x} cy={last.y} r={3.4} fill="#F3B488" stroke={T.darkCard} strokeWidth={2} opacity={dp} />
+        <text x={3} y={yOf(mx) - 4} fontSize={9} fontFamily={UI} fill="rgba(255,255,255,0.4)">{compactMoney(mx)}</text>
+        <text x={3} y={yOf(mn) - 4} fontSize={9} fontFamily={UI} fill="rgba(255,255,255,0.4)">{compactMoney(mn)}</text>
+        {ticks.map(function(tk, i) {
+          var anchor = i === 0 ? "start" : (i === ticks.length - 1 ? "end" : "middle");
+          var lx = i === 0 ? 0 : (i === ticks.length - 1 ? W : tk.frac * W);
+          return <text key={"t" + i} x={lx.toFixed(1)} y={botY + 18} fontSize={9.5} fontFamily={UI} fill="rgba(255,255,255,0.42)" textAnchor={anchor}>{tk.label}</text>;
+        })}
       </svg>
     );
   }
@@ -1668,14 +1694,14 @@ function Overview(props) {
                 {rangeRow()}
               </div>
               <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>{trendChart()}</div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: 4 }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 600, color: trendUp ? "#4ADE80" : "#FF7A6B" }}>{(trendUp ? "+" : "-") + dollars(Math.abs(trendNet))}</div>
                   <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>{"net change - " + rangeLong[range]}</div>
                 </div>
-                <div style={{ display: "flex", gap: 18 }}>
-                  <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)" }}>{shortDate(winStart)}</span>
-                  <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)" }}>{shortDate(todayISO)}</span>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em" }}>{dollars(series[series.length - 1])}</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>balance now</div>
                 </div>
               </div>
             </div>
