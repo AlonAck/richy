@@ -2986,6 +2986,15 @@ function Advisor(props) {
   var chatLoading = _cl[0]; var setChatLoading = _cl[1];
   var _pa = useState(null);
   var pendingAction = _pa[0]; var setPendingAction = _pa[1];
+  var inputRef = useRef(null);
+
+  // Grow the ask box to fit wrapped text (capped), and snap it back when cleared.
+  function autoGrow(el) {
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 132) + "px";
+  }
+  useEffect(function() { autoGrow(inputRef.current); }, [input]);
 
   var cats = props.categories || [];
   var ymA = curMonth();
@@ -3701,13 +3710,12 @@ function Advisor(props) {
           </div>
         )}
 
-        <div style={{ display: "flex", gap: 10, alignItems: "center", padding: "12px 12px", borderTop: chat.length > 0 ? "0.5px solid " + T.sep : "none" }}>
-          <div style={{ flex: 1, display: "flex", alignItems: "center", background: "rgba(0,0,0,0.045)", borderRadius: 14, padding: "0 4px 0 14px" }}>
-            <input value={input} onChange={function(e) { setInput(e.target.value); }}
-              onKeyDown={function(e) { if (e.key === "Enter" && !chatLoading) sendChat(); }}
-              placeholder={tr("askRichard")}
-              style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 14, fontFamily: UI, color: T.ink, padding: "13px 0" }} />
-          </div>
+        <div style={{ display: "flex", gap: 10, alignItems: "flex-end", padding: "12px 12px", borderTop: chat.length > 0 ? "0.5px solid " + T.sep : "none" }}>
+          <textarea ref={inputRef} value={input} rows={1}
+            onChange={function(e) { setInput(e.target.value); }}
+            onKeyDown={function(e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (!chatLoading) sendChat(); } }}
+            placeholder={tr("askRichard")}
+            style={{ flex: 1, border: "none", background: "rgba(0,0,0,0.045)", borderRadius: 14, outline: "none", fontSize: 14, fontFamily: UI, color: T.ink, padding: "13px 14px", resize: "none", lineHeight: 1.4, maxHeight: 132, overflowY: "auto", boxSizing: "border-box", display: "block" }} />
           <button onClick={sendChat} disabled={!input.trim() || chatLoading}
             style={{ width: 44, height: 44, border: "none", borderRadius: 14, background: input.trim() && !chatLoading ? "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.1)", boxShadow: input.trim() && !chatLoading ? "0 6px 18px rgba(200,103,58,0.32)" : "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: input.trim() && !chatLoading ? "pointer" : "default", flexShrink: 0 }}>
             <SVGIcon id="up" size={20} color="#fff" />
