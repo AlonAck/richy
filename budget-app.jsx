@@ -1531,6 +1531,31 @@ function Overview(props) {
     }
     return out;
   }
+  // Monotone cubic spline (Fritsch-Carlson): rounds the corners smoothly but
+  // never overshoots the real points, so the curve stays truthful to the data.
+  function smoothLine(pts) {
+    var n = pts.length;
+    if (n < 3) { return pts.map(function(p, i) { return (i ? "L" : "M") + p.x.toFixed(1) + " " + p.y.toFixed(1); }).join(" "); }
+    var dx = [], dy = [], m = [], i;
+    for (i = 0; i < n - 1; i++) { dx[i] = pts[i + 1].x - pts[i].x; dy[i] = pts[i + 1].y - pts[i].y; m[i] = dx[i] !== 0 ? dy[i] / dx[i] : 0; }
+    var t = [m[0]];
+    for (i = 1; i < n - 1; i++) { t[i] = (m[i - 1] * m[i] <= 0) ? 0 : (m[i - 1] + m[i]) / 2; }
+    t[n - 1] = m[n - 2];
+    for (i = 0; i < n - 1; i++) {
+      if (m[i] === 0) { t[i] = 0; t[i + 1] = 0; }
+      else {
+        var a = t[i] / m[i], b = t[i + 1] / m[i], h = Math.sqrt(a * a + b * b);
+        if (h > 3) { var s = 3 / h; t[i] = s * a * m[i]; t[i + 1] = s * b * m[i]; }
+      }
+    }
+    var d = "M" + pts[0].x.toFixed(1) + " " + pts[0].y.toFixed(1);
+    for (i = 0; i < n - 1; i++) {
+      var c1x = pts[i].x + dx[i] / 3, c1y = pts[i].y + t[i] * dx[i] / 3;
+      var c2x = pts[i + 1].x - dx[i] / 3, c2y = pts[i + 1].y - t[i + 1] * dx[i] / 3;
+      d += " C " + c1x.toFixed(1) + " " + c1y.toFixed(1) + " " + c2x.toFixed(1) + " " + c2y.toFixed(1) + " " + pts[i + 1].x.toFixed(1) + " " + pts[i + 1].y.toFixed(1);
+    }
+    return d;
+  }
   function trendChart() {
     var W = 318, H = 108, topY = 12, botY = 74;
     var mn = Math.min.apply(null, series), mx = Math.max.apply(null, series);
@@ -1539,7 +1564,7 @@ function Overview(props) {
     function yOf(v) { return botY - ((v - lo) / (hi - lo)) * (botY - topY); }
     function xOf(i) { return nPts > 1 ? (i / (nPts - 1)) * W : 0; }
     var pts = series.map(function(v, i) { return { x: xOf(i), y: yOf(v) }; });
-    var line = pts.map(function(p, i) { return (i ? "L" : "M") + p.x.toFixed(1) + " " + p.y.toFixed(1); }).join(" ");
+    var line = smoothLine(pts);
     var area = line + " L " + W + " " + botY + " L 0 " + botY + " Z";
     var last = pts[pts.length - 1];
     var ticks = buildTicks();
