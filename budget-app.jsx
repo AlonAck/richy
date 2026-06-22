@@ -13,10 +13,11 @@ const T = {
   ink3:      "#B0A396",
   sep:       "rgba(0,0,0,0.06)",
   sepDark:   "rgba(255,255,255,0.08)",
-  orange:    "#C8673A",
-  orangeHi:  "#E07848",
-  orangeDim: "rgba(200,103,58,0.13)",
-  orangeGlow:"rgba(200,103,58,0.30)",
+  orange:    "#8970C6",
+  orangeHi:  "#C8B1FF",
+  orangeDim: "rgba(137,112,198,0.13)",
+  orangeGlow:"rgba(137,112,198,0.30)",
+  heroInk:   "#2A1F4D",
   green:     "#27A85F",
   greenDim:  "rgba(39,168,95,0.15)",
   greenGlow: "rgba(39,168,95,0.25)",
@@ -31,6 +32,56 @@ const T = {
   purple:    "#9B6DB5",
   purpleDim: "rgba(155,109,181,0.15)",
 };
+
+// Two switchable palettes. "purple" is the lavender-hero design; "classic" is the
+// original orange-on-dark-hero look. Each defines the accent tokens plus every
+// hero/trend value that differs between the two. applyTheme() copies the chosen
+// palette onto the live T object (mutated in place) so all render-time T.* reads
+// pick it up; App re-applies on every render from the persisted `theme` setting.
+var THEMES = {
+  purple: {
+    orange: "#8970C6", orangeHi: "#C8B1FF", orangeDim: "rgba(137,112,198,0.13)", orangeGlow: "rgba(137,112,198,0.30)",
+    heroBg: "linear-gradient(160deg,#9D78E8 0%,#B493F2 50%,#CBB6FA 100%)",
+    heroBg2: "linear-gradient(135deg,#9D78E8 0%,#B493F2 55%,#CBB6FA 100%)",
+    heroShadow: "0 12px 40px rgba(137,112,198,0.32), 0 2px 8px rgba(137,112,198,0.16)",
+    heroGlow1: "rgba(255,255,255,0.34)", heroGlow2: "rgba(255,255,255,0.16)",
+    heroText: "#2A1F4D", heroMut: "rgba(42,31,77,0.6)", heroFaint: "rgba(42,31,77,0.45)",
+    heroSep: "rgba(42,31,77,0.12)", heroTrack: "rgba(42,31,77,0.09)",
+    heroPos: "#188A4A", heroNeg: "#C73A36",
+    heroPillBg: "#FFFFFF", heroPillText: "#1A1410", heroRangeBg: "rgba(42,31,77,0.08)",
+    trendLineA: "#5E44A8", trendLineB: "#8E73D6", trendArea: "#6A4FB5",
+    trendDot: "#5E44A8", trendDotStroke: "#CFBBFF", trendGlow: "#6A4FB5",
+    gridStrong: "rgba(42,31,77,0.12)", gridMid: "rgba(42,31,77,0.08)", gridFaint: "rgba(42,31,77,0.06)",
+    ringA: "#5E44A8",
+    advGreen: "#188A4A", advRingLow: "#E03030",
+    catNameHero: "rgba(42,31,77,0.82)", merchNameHero: "rgba(42,31,77,0.85)", merchBar: "linear-gradient(90deg,#6A4FB5,#9277D6)",
+  },
+  classic: {
+    orange: "#C8673A", orangeHi: "#E07848", orangeDim: "rgba(200,103,58,0.13)", orangeGlow: "rgba(200,103,58,0.30)",
+    heroBg: "linear-gradient(155deg,#272118 0%,#1E1A16 52%,#131110 100%)",
+    heroBg2: "linear-gradient(135deg,#E07848,#C8673A)",
+    heroShadow: "0 1px 1px rgba(0,0,0,0.06), 0 14px 34px rgba(40,28,16,0.34)",
+    heroGlow1: "rgba(224,120,72,0.30)", heroGlow2: "rgba(200,152,58,0.16)",
+    heroText: "#FFFFFF", heroMut: "rgba(255,255,255,0.5)", heroFaint: "rgba(255,255,255,0.4)",
+    heroSep: "rgba(255,255,255,0.1)", heroTrack: "rgba(255,255,255,0.08)",
+    heroPos: "#4ADE80", heroNeg: "#FF7A6B",
+    heroPillBg: "rgba(255,255,255,0.92)", heroPillText: "#141210", heroRangeBg: "rgba(255,255,255,0.08)",
+    trendLineA: "#E07848", trendLineB: "#F0AE80", trendArea: "#E07848",
+    trendDot: "#F3B488", trendDotStroke: "#1E1A16", trendGlow: "#E07848",
+    gridStrong: "rgba(255,255,255,0.07)", gridMid: "rgba(255,255,255,0.05)", gridFaint: "rgba(255,255,255,0.04)",
+    ringA: "#E07848",
+    advGreen: "#4ADE80", advRingLow: "#E07848",
+    catNameHero: "rgba(255,255,255,0.82)", merchNameHero: "rgba(255,255,255,0.9)", merchBar: "linear-gradient(90deg,#C8673A99,#E07848)",
+  },
+};
+var _theme = { name: "purple" };
+function applyTheme(name) {
+  var p = THEMES[name] || THEMES.purple;
+  for (var k in p) { T[k] = p[k]; }
+  T.heroInk = p.heroText;
+  _theme.name = THEMES[name] ? name : "purple";
+}
+applyTheme("purple");
 
 // Curated icon set for category "banners" - line icons in the app's style.
 // Each id maps to an SVG path in SVGIcon.
@@ -71,6 +122,17 @@ var DEFAULT_CATEGORIES = [
   { id: "c9",  name: "Investments",   color: "#C8983A", icon: "chart",     folderId: "f3" },
   { id: "c10", name: "Savings",       color: "#C8673A", icon: "coins",     folderId: "f3" },
   { id: "c11", name: "Other",         color: "#6B5C4E", icon: "box",       folderId: "f2" },
+];
+
+// Trip budget buckets. Richard splits the total across these; the pct map is the
+// local fallback split per travel style when the AI call is unavailable.
+var TRIP_CATEGORIES = [
+  { key: "flights",    label: "Flights",    icon: "plane",    color: "#8970C6", pct: { budget: 0.30, comfort: 0.25, luxury: 0.22 } },
+  { key: "lodging",    label: "Lodging",    icon: "building", color: "#2799C8", pct: { budget: 0.25, comfort: 0.32, luxury: 0.38 } },
+  { key: "food",       label: "Food",       icon: "food",     color: "#27A85F", pct: { budget: 0.20, comfort: 0.18, luxury: 0.16 } },
+  { key: "activities", label: "Activities", icon: "star",     color: "#E0556E", pct: { budget: 0.12, comfort: 0.13, luxury: 0.12 } },
+  { key: "shopping",   label: "Shopping",   icon: "cart",     color: "#C8983A", pct: { budget: 0.05, comfort: 0.07, luxury: 0.08 } },
+  { key: "buffer",     label: "Buffer",     icon: "shield",   color: "#6B5C4E", pct: { budget: 0.08, comfort: 0.05, luxury: 0.04 } },
 ];
 
 // Category lookups. Transactions/budgets reference a catId; fall back to name
@@ -133,7 +195,7 @@ var LANGUAGE_OPTIONS = [
 var LANGUAGE_NAMES = { en: "English", he: "Hebrew", es: "Spanish", fr: "French", ar: "Arabic", ru: "Russian", de: "German", pt: "Portuguese" };
 
 var TRANSLATIONS = {
-  en: { overview:"Overview", activity:"Activity", budgets:"Budgets", goals:"Goals", advisor:"Advisor", profile:"Profile", language:"Language", currency:"Currency", yourPlan:"Your Plan", categories:"Categories", signOut:"Sign Out", richyMember:"Richy member", richyRefersTo:"Richy refers to you as", seeYourPlan:"See your plan by Richard", netBalance:"Net Balance", income:"Income", spent:"Spent", topSpend:"Top spend", morning:"Good morning", afternoon:"Good afternoon", evening:"Good evening", savedThisPeriod:"saved this period", redoQuestionnaire:"Redo Questionnaire", yourPlanByRichard:"Your Plan by Richard", noTransactions:"No transactions yet", noTransactionsSub:"Tap + to log your first one. Awareness is the first step to wealth.", overviewEmptySub:"The Richest Man in Babylon started by tracking every coin. Start yours in Activity.", savingsRate:"Savings Rate", excellent:"Excellent", onTrack:"On track", buildItUp:"Build it up", overspending:"Overspending", noIncomeYet:"No income logged yet", thisPeriod:"this period", transactions:"Transactions", whereItWent:"Where it went", overLimit:"over limit", complete:"complete", savedLabel:"saved", spentLabel:"spent", toGo:"to go", recent:"Recent", activeGoal:"active goal", activeGoals:"active goals", today:"Today", yesterday:"Yesterday", moneyIn:"Money In", moneyOut:"Money Out", newTransaction:"New Transaction", editTransaction:"Edit Transaction", addTransaction:"Add Transaction", saveChanges:"Save Changes", deleteTx:"Delete transaction", amount:"Amount", txLabel:"Label", category:"Category", date:"Date", repeat:"Repeat", once:"Once", weekly:"Weekly", monthly:"Monthly", markPending:"Mark as pending", expense:"Expense", noBudgets:"No budgets yet", noBudgetsSub:"Tap + to set a limit for a category. A budget is just telling your money where to go.", newBudget:"New Budget", editLimit:"Edit Limit", addBudget:"Add Budget", removeBudget:"Remove this budget", totalSpent:"Total Spent", byCategory:"By Category", edit:"Edit", delete:"Delete", save:"Save", budgeted:"budgeted", monthlyLimit:"Monthly limit", allCatsHaveBudget:"Every category already has a budget. Add a new category first.", noGoals:"No budget books yet", noGoalsSub:"Tap + to create your first budget book. A goal with a deadline is a plan, not a wish.", newBudgetBook:"New Budget Book", editBudgetBook:"Edit Budget Book", createBudgetBook:"Create Budget Book", deleteBudgetBook:"Delete budget book", addToBudgetBook:"Add to Budget Book", alreadySaved:"Already saved", target:"Target", name:"Name", goalComplete:"Goal complete!", remaining:"remaining", add:"Add", richySuggests:"Richard suggests", implement:"Implement", dismiss:"Dismiss", aiAdvisor:"AI Financial Advisor", aiAdvisorSub:"Personalized advice based on your real spending and expert financial wisdom.", analyzeMyFinances:"Analyze My Finances", analyzingFinances:"Analyzing your finances...", fewSeconds:"This takes a few seconds", refresh:"Refresh", insights:"Insights", analysisFailed:"Analysis failed", tryAgain:"Try Again", askYourAdvisor:"Ask Your Advisor", advisorQ1:"How can I save more?", advisorQ2:"Is my savings rate healthy?", advisorQ3:"What to do with my surplus?", thinking:"Thinking...", yesDo:"Yes, do it", notNow:"Not now", askRichard:"Ask Richard anything...", giveFeedback:"Give Richard feedback...", advisorDisclaimer:"Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.", translate:"Translate plan", noPlanYet:"No plan yet. Complete the onboarding questionnaire to get your personalized plan from Richard.", notes:"Notes", notesEmpty:"No notes yet", notesEmptySub:"Track who owes you and who you owe. Tap + to add your first one.", theyOweMe:"They owe me", iOwe:"I owe", newNote:"New Note", addNote:"Add Note", editNote:"Edit Note", saveNote:"Save Note", settle:"Settle", settleTitle:"Settle note", settleAddBalance:"Add to my balance", reminder:"Reminder", reminderTitle:"Set a reminder", setReminder:"Set reminder", clearReminder:"Clear reminder", reminderWhen:"Remind me on", reminderDenied:"Notifications are blocked. The note will still show a due badge.", due:"Due", overdue:"Overdue", deleteNote:"Delete note" },
+  en: { overview:"Overview", activity:"Activity", budgets:"Budgets", goals:"Goals", advisor:"Advisor", profile:"Profile", language:"Language", currency:"Currency", yourPlan:"Your Plan", categories:"Categories", signOut:"Sign Out", richyMember:"Richy member", richyRefersTo:"Richy refers to you as", seeYourPlan:"See your plan by Richard", netBalance:"Net Balance", income:"Income", spent:"Spent", topSpend:"Top spend", morning:"Good morning", afternoon:"Good afternoon", evening:"Good evening", savedThisPeriod:"saved this period", redoQuestionnaire:"Redo Questionnaire", yourPlanByRichard:"Your Plan by Richard", noTransactions:"No transactions yet", noTransactionsSub:"Tap + to log your first one. Awareness is the first step to wealth.", overviewEmptySub:"The Richest Man in Babylon started by tracking every coin. Start yours in Activity.", savingsRate:"Savings Rate", excellent:"Excellent", onTrack:"On track", buildItUp:"Build it up", overspending:"Overspending", noIncomeYet:"No income logged yet", thisPeriod:"this period", transactions:"Transactions", whereItWent:"Where it went", overLimit:"over limit", complete:"complete", savedLabel:"saved", spentLabel:"spent", toGo:"to go", recent:"Recent", activeGoal:"active goal", activeGoals:"active goals", today:"Today", yesterday:"Yesterday", moneyIn:"Money In", moneyOut:"Money Out", newTransaction:"New Transaction", editTransaction:"Edit Transaction", addTransaction:"Add Transaction", saveChanges:"Save Changes", deleteTx:"Delete transaction", amount:"Amount", txLabel:"Label", category:"Category", date:"Date", repeat:"Repeat", once:"Once", weekly:"Weekly", monthly:"Monthly", markPending:"Mark as pending", expense:"Expense", noBudgets:"No budgets yet", noBudgetsSub:"Tap + to set a limit for a category. A budget is just telling your money where to go.", newBudget:"New Budget", editLimit:"Edit Limit", addBudget:"Add Budget", removeBudget:"Remove this budget", totalSpent:"Total Spent", byCategory:"By Category", edit:"Edit", delete:"Delete", save:"Save", budgeted:"budgeted", monthlyLimit:"Monthly limit", allCatsHaveBudget:"Every category already has a budget. Add a new category first.", noGoals:"No budget books yet", noGoalsSub:"Tap + to create your first budget book. A goal with a deadline is a plan, not a wish.", newBudgetBook:"New Budget Book", editBudgetBook:"Edit Budget Book", createBudgetBook:"Create Budget Book", deleteBudgetBook:"Delete budget book", addToBudgetBook:"Add to Budget Book", alreadySaved:"Already saved", target:"Target", name:"Name", goalComplete:"Goal complete!", remaining:"remaining", add:"Add", richySuggests:"Richard suggests", implement:"Implement", dismiss:"Dismiss", aiAdvisor:"AI Financial Advisor", aiAdvisorSub:"Personalized advice based on your real spending and expert financial wisdom.", analyzeMyFinances:"Analyze My Finances", analyzingFinances:"Analyzing your finances...", fewSeconds:"This takes a few seconds", refresh:"Refresh", insights:"Insights", analysisFailed:"Analysis failed", tryAgain:"Try Again", askYourAdvisor:"Ask Your Advisor", advisorQ1:"How can I save more?", advisorQ2:"Is my savings rate healthy?", advisorQ3:"What to do with my surplus?", thinking:"Thinking...", yesDo:"Yes, do it", notNow:"Not now", askRichard:"Ask Richard anything...", giveFeedback:"Give Richard feedback...", advisorDisclaimer:"Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.", translate:"Translate plan", noPlanYet:"No plan yet. Complete the onboarding questionnaire to get your personalized plan from Richard.", notes:"Notes", notesEmpty:"No notes yet", notesEmptySub:"Track who owes you and who you owe. Tap + to add your first one.", theyOweMe:"They owe me", iOwe:"I owe", newNote:"New Note", addNote:"Add Note", editNote:"Edit Note", saveNote:"Save Note", settle:"Settle", settleTitle:"Settle note", settleAddBalance:"Add to my balance", reminder:"Reminder", reminderTitle:"Set a reminder", setReminder:"Set reminder", clearReminder:"Clear reminder", reminderWhen:"Remind me on", reminderDenied:"Notifications are blocked. The note will still show a due badge.", due:"Due", overdue:"Overdue", deleteNote:"Delete note", trips:"Trips", planATrip:"Plan a Trip", planATripSub:"Budget a getaway without touching your balance.", planNewTrip:"Plan a New Trip", noTrips:"No trips yet", noTripsSub:"Plan a getaway and Richard will split your budget across the essentials.", tripName:"Trip name", destination:"Destination", tripBudget:"Total budget", tripDays:"Days", travelStyle:"Travel style", styleBudget:"Budget", styleComfort:"Comfort", styleLuxury:"Luxury", next:"Next", back:"Back", richardPlanning:"Richard is planning your trip", richardPlanningSub:"Splitting your budget across the essentials.", tripSplit:"Your budget split", allocated:"Allocated", overBy:"over by", saveTrip:"Save Trip", addCategory:"Add category", deductFromBalance:"Deduct from balance", deductExplain:"This logs the full trip budget as one expense, so your balance reflects the money set aside. You can undo it anytime.", reserved:"Reserved from balance", undoReserve:"Undo deduction", logExpense:"Log expense", logExpenseTitle:"Log a trip expense", tripTips:"Richard's tips", deleteTrip:"Delete trip", deleteTripConfirm:"Delete this trip? This cannot be undone.", spentOf:"spent of", leftToSpend:"left to spend", planning:"Planning", tripSummary:"Trip summary", appearance:"Appearance" },
   he: { overview:"סקירה", activity:"פעילות", budgets:"תקציבים", goals:"יעדים", advisor:"יועץ", profile:"פרופיל", language:"שפה", currency:"מטבע", yourPlan:"התוכנית שלך", categories:"קטגוריות", signOut:"התנתק", richyMember:"חבר Richy", richyRefersTo:"ריצ'י מכנה אותך", seeYourPlan:"ראה את התוכנית שלך", netBalance:"יתרה נטו", income:"הכנסות", spent:"הוצאות", topSpend:"הוצאה עיקרית", morning:"בוקר טוב", afternoon:"צהריים טובים", evening:"ערב טוב", savedThisPeriod:"נחסך בתקופה זו", redoQuestionnaire:"מלא שאלון מחדש", yourPlanByRichard:"התוכנית שלך", noTransactions:"אין עסקאות עדיין", noTransactionsSub:"לחץ + כדי לרשום. מודעות היא הצעד הראשון לעושר.", overviewEmptySub:"עשיר בבבל התחיל בלעקוב אחרי כל מטבע. התחל גם אתה בפעילות.", savingsRate:"שיעור חיסכון", excellent:"מצוין", onTrack:"במסלול", buildItUp:"שפר את זה", overspending:"הוצאה יתרה", thisPeriod:"בתקופה זו", transactions:"עסקאות", whereItWent:"לאן הלך", overLimit:"מעל המגבלה", complete:"הושלם", savedLabel:"נחסך", spentLabel:"הוצא", toGo:"לסיום", recent:"אחרון", activeGoal:"יעד פעיל", activeGoals:"יעדים פעילים", today:"היום", yesterday:"אתמול", moneyIn:"כסף נכנס", moneyOut:"כסף יוצא", newTransaction:"עסקה חדשה", editTransaction:"ערוך עסקה", addTransaction:"הוסף עסקה", saveChanges:"שמור שינויים", deleteTx:"מחק עסקה", amount:"סכום", txLabel:"תיאור", category:"קטגוריה", date:"תאריך", repeat:"חזרה", once:"פעם אחת", weekly:"שבועי", monthly:"חודשי", markPending:"סמן כממתין", expense:"הוצאה", noBudgets:"אין תקציבים עדיין", noBudgetsSub:"לחץ + להגדרת מגבלה לקטגוריה. תקציב הוא פשוט להגיד לכסף לאן ללכת.", newBudget:"תקציב חדש", editLimit:"ערוך מגבלה", addBudget:"הוסף תקציב", removeBudget:"הסר תקציב זה", totalSpent:"סך הוצאות", byCategory:"לפי קטגוריה", edit:"ערוך", delete:"מחק", save:"שמור", budgeted:"מתוקצב", monthlyLimit:"מגבלה חודשית", allCatsHaveBudget:"לכל הקטגוריות יש תקציב. הוסף קטגוריה חדשה תחילה.", noGoals:"אין ספרי תקציב עדיין", noGoalsSub:"לחץ + ליצירת ספר תקציב ראשון. יעד עם מועד הוא תוכנית, לא משאלה.", newBudgetBook:"ספר תקציב חדש", editBudgetBook:"ערוך ספר תקציב", createBudgetBook:"צור ספר תקציב", deleteBudgetBook:"מחק ספר תקציב", addToBudgetBook:"הוסף לספר תקציב", alreadySaved:"כבר נחסך", target:"יעד", name:"שם", goalComplete:"היעד הושג!", remaining:"נותר", add:"הוסף", richySuggests:"ריצ'י מציע", implement:"יישם", dismiss:"דחה", aiAdvisor:"יועץ פיננסי AI", aiAdvisorSub:"ייעוץ מותאם אישית בהתבסס על ההוצאות שלך.", analyzeMyFinances:"נתח את הכספים שלי", analyzingFinances:"מנתח את הכספים שלך...", fewSeconds:"זה לוקח כמה שניות", refresh:"רענן", insights:"תובנות", analysisFailed:"הניתוח נכשל", tryAgain:"נסה שוב", askYourAdvisor:"שאל את היועץ שלך", advisorQ1:"איך אוכל לחסוך יותר?", advisorQ2:"האם שיעור החיסכון שלי בריא?", advisorQ3:"מה לעשות עם העודף שלי?", thinking:"חושב...", yesDo:"כן, עשה זאת", notNow:"לא עכשיו", askRichard:"שאל את ריצ'רד כל דבר...", giveFeedback:"תן ל-ריצ'רד משוב...", advisorDisclaimer:"ריצ'רד הוא עוזר AI ולא יועץ פיננסי מורשה. תמיד ערוך מחקר עצמאי לפני קבלת החלטות כלכליות.", translate:"תרגם תוכנית", noPlanYet:"אין תוכנית עדיין. מלא את השאלון כדי לקבל את התוכנית האישית שלך מריצ'רד." },
   es: { overview:"Resumen", activity:"Actividad", budgets:"Presupuestos", goals:"Metas", advisor:"Asesor", profile:"Perfil", language:"Idioma", currency:"Moneda", yourPlan:"Tu Plan", categories:"Categorias", signOut:"Cerrar sesion", richyMember:"Miembro Richy", richyRefersTo:"Richy te llama", seeYourPlan:"Ver tu plan de Richard", netBalance:"Saldo Neto", income:"Ingresos", spent:"Gastado", topSpend:"Mas gastado", morning:"Buenos dias", afternoon:"Buenas tardes", evening:"Buenas noches", savedThisPeriod:"ahorrado este periodo", redoQuestionnaire:"Rehacer cuestionario", yourPlanByRichard:"Tu plan de Richard", noTransactions:"Sin transacciones aun", noTransactionsSub:"Toca + para registrar la primera. La conciencia es el primer paso a la riqueza.", overviewEmptySub:"El hombre mas rico de Babilonia empezo rastreando cada moneda. Empieza en Actividad.", savingsRate:"Tasa de ahorro", excellent:"Excelente", onTrack:"En camino", buildItUp:"Mejoralo", overspending:"Exceso de gasto", thisPeriod:"este periodo", transactions:"Transacciones", whereItWent:"A donde fue", overLimit:"sobre el limite", complete:"completo", savedLabel:"ahorrado", spentLabel:"gastado", toGo:"restante", recent:"Reciente", activeGoal:"meta activa", activeGoals:"metas activas", today:"Hoy", yesterday:"Ayer", moneyIn:"Dinero Entrada", moneyOut:"Dinero Salida", newTransaction:"Nueva Transaccion", editTransaction:"Editar Transaccion", addTransaction:"Agregar Transaccion", saveChanges:"Guardar Cambios", deleteTx:"Eliminar transaccion", amount:"Monto", txLabel:"Etiqueta", category:"Categoria", date:"Fecha", repeat:"Repetir", once:"Una vez", weekly:"Semanal", monthly:"Mensual", markPending:"Marcar como pendiente", expense:"Gasto", noBudgets:"Sin presupuestos aun", noBudgetsSub:"Toca + para establecer un limite. Un presupuesto le dice a tu dinero donde ir.", newBudget:"Nuevo Presupuesto", editLimit:"Editar Limite", addBudget:"Agregar Presupuesto", removeBudget:"Eliminar este presupuesto", totalSpent:"Total Gastado", byCategory:"Por Categoria", edit:"Editar", delete:"Eliminar", save:"Guardar", budgeted:"presupuestado", monthlyLimit:"Limite mensual", allCatsHaveBudget:"Cada categoria ya tiene presupuesto. Agrega una nueva categoria primero.", noGoals:"Sin libros de metas aun", noGoalsSub:"Toca + para crear tu primer libro de metas. Una meta con fecha limite es un plan.", newBudgetBook:"Nuevo Libro de Metas", editBudgetBook:"Editar Libro de Metas", createBudgetBook:"Crear Libro de Metas", deleteBudgetBook:"Eliminar libro de metas", addToBudgetBook:"Agregar al Libro de Metas", alreadySaved:"Ya ahorrado", target:"Objetivo", name:"Nombre", goalComplete:"Meta completada!", remaining:"restante", add:"Agregar", richySuggests:"Richard sugiere", implement:"Implementar", dismiss:"Descartar", aiAdvisor:"Asesor Financiero IA", aiAdvisorSub:"Consejos personalizados basados en tus gastos reales.", analyzeMyFinances:"Analizar Mis Finanzas", analyzingFinances:"Analizando tus finanzas...", fewSeconds:"Esto tarda unos segundos", refresh:"Actualizar", insights:"Perspectivas", analysisFailed:"Analisis fallido", tryAgain:"Intentar de nuevo", askYourAdvisor:"Pregunta a tu Asesor", advisorQ1:"Como puedo ahorrar mas?", advisorQ2:"Es saludable mi tasa de ahorro?", advisorQ3:"Que hacer con mi excedente?", thinking:"Pensando...", yesDo:"Si, hazlo", notNow:"Ahora no", askRichard:"Pregunta a Richard cualquier cosa...", giveFeedback:"Da retroalimentacion a Richard...", advisorDisclaimer:"Richard es un asistente de IA, no un asesor financiero certificado. Investiga siempre antes de tomar decisiones financieras.", translate:"Traducir plan", noPlanYet:"Aun no hay plan. Completa el cuestionario para obtener tu plan personalizado de Richard." },
   fr: { overview:"Apercu", activity:"Activite", budgets:"Budgets", goals:"Objectifs", advisor:"Conseiller", profile:"Profil", language:"Langue", currency:"Devise", yourPlan:"Votre Plan", categories:"Categories", signOut:"Deconnexion", richyMember:"Membre Richy", richyRefersTo:"Richy vous appelle", seeYourPlan:"Voir votre plan de Richard", netBalance:"Solde Net", income:"Revenus", spent:"Depenses", topSpend:"Top depenses", morning:"Bonjour", afternoon:"Bon apres-midi", evening:"Bonsoir", savedThisPeriod:"epargne cette periode", redoQuestionnaire:"Refaire le questionnaire", yourPlanByRichard:"Votre plan de Richard", noTransactions:"Aucune transaction", noTransactionsSub:"Appuyez + pour enregistrer la premiere. La conscience est le premier pas vers la richesse.", overviewEmptySub:"L homme le plus riche de Babylone commencat par suivre chaque piece. Commencez dans Activite.", savingsRate:"Taux d epargne", excellent:"Excellent", onTrack:"En bonne voie", buildItUp:"Ameliorez-le", overspending:"Depassement", thisPeriod:"cette periode", transactions:"Transactions", whereItWent:"Ou est alle", overLimit:"au-dessus de la limite", complete:"complete", savedLabel:"epargne", spentLabel:"depense", toGo:"restant", recent:"Recent", activeGoal:"objectif actif", activeGoals:"objectifs actifs", today:"Aujourd hui", yesterday:"Hier", moneyIn:"Argent entrant", moneyOut:"Argent sortant", newTransaction:"Nouvelle Transaction", editTransaction:"Modifier Transaction", addTransaction:"Ajouter Transaction", saveChanges:"Enregistrer les modifications", deleteTx:"Supprimer la transaction", amount:"Montant", txLabel:"Libelle", category:"Categorie", date:"Date", repeat:"Repetition", once:"Une fois", weekly:"Hebdomadaire", monthly:"Mensuel", markPending:"Marquer comme en attente", expense:"Depense", noBudgets:"Aucun budget", noBudgetsSub:"Appuyez + pour fixer une limite. Un budget dit a votre argent ou aller.", newBudget:"Nouveau Budget", editLimit:"Modifier Limite", addBudget:"Ajouter Budget", removeBudget:"Supprimer ce budget", totalSpent:"Total Depense", byCategory:"Par Categorie", edit:"Modifier", delete:"Supprimer", save:"Enregistrer", budgeted:"budgete", monthlyLimit:"Limite mensuelle", allCatsHaveBudget:"Chaque categorie a deja un budget. Ajoutez d abord une nouvelle categorie.", noGoals:"Aucun livret d epargne", noGoalsSub:"Appuyez + pour creer votre premier livret. Un objectif avec une echeance est un plan.", newBudgetBook:"Nouveau Livret", editBudgetBook:"Modifier Livret", createBudgetBook:"Creer Livret", deleteBudgetBook:"Supprimer le livret", addToBudgetBook:"Ajouter au Livret", alreadySaved:"Deja epargne", target:"Objectif", name:"Nom", goalComplete:"Objectif atteint!", remaining:"restant", add:"Ajouter", richySuggests:"Richard suggere", implement:"Implementer", dismiss:"Ignorer", aiAdvisor:"Conseiller Financier IA", aiAdvisorSub:"Conseils personnalises bases sur vos depenses reelles.", analyzeMyFinances:"Analyser mes Finances", analyzingFinances:"Analyse de vos finances...", fewSeconds:"Cela prend quelques secondes", refresh:"Actualiser", insights:"Perspectives", analysisFailed:"Analyse echouee", tryAgain:"Reessayer", askYourAdvisor:"Demandez a votre Conseiller", advisorQ1:"Comment puis-je economiser davantage?", advisorQ2:"Mon taux d epargne est-il sain?", advisorQ3:"Que faire avec mon surplus?", thinking:"Je reflechis...", yesDo:"Oui, fais-le", notNow:"Pas maintenant", askRichard:"Demandez a Richard n importe quoi...", giveFeedback:"Donnez vos retours a Richard...", advisorDisclaimer:"Richard est un assistant IA, pas un conseiller financier agree. Faites toujours vos propres recherches.", translate:"Traduire le plan", noPlanYet:"Pas encore de plan. Completez le questionnaire pour obtenir votre plan personnalise de Richard." },
@@ -828,7 +890,7 @@ function AuthScreen(props) {
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)", display: "flex", flexDirection: "column", fontFamily: UI, position: "relative", overflow: "hidden" }}>
 
-      <div style={{ position: "absolute", top: -80, right: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(200,103,58,0.15) 0%,transparent 70%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: -80, right: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(137,112,198,0.15) 0%,transparent 70%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", bottom: 60, left: -80, width: 240, height: 240, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,154,60,0.12) 0%,transparent 70%)", pointerEvents: "none" }} />
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px 24px" }}>
@@ -1227,7 +1289,7 @@ function OnboardingScreen(props) {
         <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 44 }}>
           {[1, 2, 3, 4].map(function(n) {
             return (
-              <div key={n} style={{ width: 8, height: 8, borderRadius: "50%", background: n <= step ? T.orange : "rgba(200,103,58,0.22)", transition: "background 0.25s" }} />
+              <div key={n} style={{ width: 8, height: 8, borderRadius: "50%", background: n <= step ? T.orange : "rgba(137,112,198,0.22)", transition: "background 0.25s" }} />
             );
           })}
         </div>
@@ -1245,7 +1307,7 @@ function OnboardingScreen(props) {
               var sel = lifeStage === st.label;
               return (
                 <button key={st.label} onClick={function() { setLifeStage(st.label); setErr(""); }}
-                  style={{ background: sel ? "rgba(200,103,58,0.07)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "16px 20px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI }}>
+                  style={{ background: sel ? "rgba(137,112,198,0.07)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "16px 20px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI }}>
                   <div style={{ width: 38, height: 38, borderRadius: 11, background: sel ? T.orangeDim : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <SVGIcon id={st.icon} size={18} color={sel ? T.orange : T.ink3} />
                   </div>
@@ -1531,6 +1593,16 @@ function Overview(props) {
     }
     return out;
   }
+  // Light-purple hero palette: dark ink on a soft lavender card (replaces the old
+  // dark hero). Every carousel + chart color below is tuned to read on lavender.
+  var HINK = T.heroText;                 // primary text / numbers (theme-driven)
+  var HMUT = T.heroMut;                  // labels
+  var HFNT = T.heroFaint;                // faint captions
+  var HSEP = T.heroSep;                  // hairline separators
+  var HTRACK = T.heroTrack;              // track / bar backgrounds
+  var HPOS = T.heroPos;                  // positive
+  var HNEG = T.heroNeg;                  // negative
+
   // Monotone cubic spline (Fritsch-Carlson): rounds the corners smoothly but
   // never overshoots the real points, so the curve stays truthful to the data.
   function smoothLine(pts) {
@@ -1573,30 +1645,30 @@ function Overview(props) {
       <svg width={W} height={H} viewBox={"0 0 " + W + " " + H} style={{ display: "block", overflow: "visible" }}>
         <defs>
           <linearGradient id="rcArea" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={T.orangeHi} stopOpacity={0.32} />
-            <stop offset="100%" stopColor={T.orangeHi} stopOpacity={0} />
+            <stop offset="0%" stopColor={T.trendArea} stopOpacity={0.30} />
+            <stop offset="100%" stopColor={T.trendArea} stopOpacity={0} />
           </linearGradient>
           <linearGradient id="rcLine" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor={T.orangeHi} />
-            <stop offset="100%" stopColor="#F0AE80" />
+            <stop offset="0%" stopColor={T.trendLineA} />
+            <stop offset="100%" stopColor={T.trendLineB} />
           </linearGradient>
         </defs>
-        <line x1={0} y1={yOf(mx)} x2={W} y2={yOf(mx)} stroke="rgba(255,255,255,0.07)" strokeWidth={1} />
-        <line x1={0} y1={yOf(yMid)} x2={W} y2={yOf(yMid)} stroke="rgba(255,255,255,0.05)" strokeWidth={1} strokeDasharray="2 4" />
-        <line x1={0} y1={yOf(mn)} x2={W} y2={yOf(mn)} stroke="rgba(255,255,255,0.07)" strokeWidth={1} />
+        <line x1={0} y1={yOf(mx)} x2={W} y2={yOf(mx)} stroke={T.gridStrong} strokeWidth={1} />
+        <line x1={0} y1={yOf(yMid)} x2={W} y2={yOf(yMid)} stroke={T.gridMid} strokeWidth={1} strokeDasharray="2 4" />
+        <line x1={0} y1={yOf(mn)} x2={W} y2={yOf(mn)} stroke={T.gridStrong} strokeWidth={1} />
         {ticks.map(function(tk, i) {
-          return <line key={"v" + i} x1={(tk.frac * W).toFixed(1)} y1={topY} x2={(tk.frac * W).toFixed(1)} y2={botY} stroke="rgba(255,255,255,0.04)" strokeWidth={1} />;
+          return <line key={"v" + i} x1={(tk.frac * W).toFixed(1)} y1={topY} x2={(tk.frac * W).toFixed(1)} y2={botY} stroke={T.gridFaint} strokeWidth={1} />;
         })}
         <path d={area} fill="url(#rcArea)" opacity={dp} />
         <path d={line} fill="none" stroke="url(#rcLine)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" pathLength={1} strokeDasharray={1} strokeDashoffset={1 - dp} />
-        <circle cx={last.x} cy={last.y} r={6} fill={T.orangeHi} opacity={0.22 * dp} />
-        <circle cx={last.x} cy={last.y} r={3.4} fill="#F3B488" stroke={T.darkCard} strokeWidth={2} opacity={dp} />
-        <text x={3} y={yOf(mx) - 4} fontSize={9} fontFamily={UI} fill="rgba(255,255,255,0.4)">{compactMoney(mx)}</text>
-        <text x={3} y={yOf(mn) - 4} fontSize={9} fontFamily={UI} fill="rgba(255,255,255,0.4)">{compactMoney(mn)}</text>
+        <circle cx={last.x} cy={last.y} r={6} fill={T.trendGlow} opacity={0.20 * dp} />
+        <circle cx={last.x} cy={last.y} r={3.4} fill={T.trendDot} stroke={T.trendDotStroke} strokeWidth={2} opacity={dp} />
+        <text x={3} y={yOf(mx) - 4} fontSize={9} fontFamily={UI} fill={HMUT}>{compactMoney(mx)}</text>
+        <text x={3} y={yOf(mn) - 4} fontSize={9} fontFamily={UI} fill={HMUT}>{compactMoney(mn)}</text>
         {ticks.map(function(tk, i) {
           var anchor = i === 0 ? "start" : (i === ticks.length - 1 ? "end" : "middle");
           var lx = i === 0 ? 0 : (i === ticks.length - 1 ? W : tk.frac * W);
-          return <text key={"t" + i} x={lx.toFixed(1)} y={botY + 18} fontSize={9.5} fontFamily={UI} fill="rgba(255,255,255,0.42)" textAnchor={anchor}>{tk.label}</text>;
+          return <text key={"t" + i} x={lx.toFixed(1)} y={botY + 18} fontSize={9.5} fontFamily={UI} fill={HMUT} textAnchor={anchor}>{tk.label}</text>;
         })}
       </svg>
     );
@@ -1616,7 +1688,7 @@ function Overview(props) {
     });
     return (
       <svg width={132} height={132} viewBox="0 0 132 132" style={{ transform: "rotate(-90deg)" }}>
-        <circle cx={66} cy={66} r={56} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={18} />
+        <circle cx={66} cy={66} r={56} fill="none" stroke={HTRACK} strokeWidth={18} />
         {segs}
       </svg>
     );
@@ -1628,23 +1700,23 @@ function Overview(props) {
       <svg width={120} height={120} viewBox="0 0 120 120" style={{ transform: "rotate(-90deg)" }}>
         <defs>
           <linearGradient id="rcRing" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor={T.orangeHi} />
+            <stop offset="0%" stopColor={T.ringA} />
             <stop offset="100%" stopColor={T.gold} />
           </linearGradient>
         </defs>
-        <circle cx={60} cy={60} r={54} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={12} />
+        <circle cx={60} cy={60} r={54} fill="none" stroke={HTRACK} strokeWidth={12} />
         <circle cx={60} cy={60} r={54} fill="none" stroke="url(#rcRing)" strokeWidth={12} strokeLinecap="round" strokeDasharray={(frac * C).toFixed(2) + " " + C.toFixed(2)} />
       </svg>
     );
   }
   function rangeRow() {
     return (
-      <div onPointerDown={stopDrag} style={{ display: "flex", gap: 2, background: "rgba(255,255,255,0.08)", borderRadius: 9, padding: 3 }}>
+      <div onPointerDown={stopDrag} style={{ display: "flex", gap: 2, background: T.heroRangeBg, borderRadius: 9, padding: 3 }}>
         {rangeOpts.map(function(r) {
           var on = r === range;
           return (
             <div key={r} onPointerDown={stopDrag} onClick={function() { pickRange(r); }}
-              style={{ padding: "4px 9px", borderRadius: 7, fontSize: 11, fontWeight: 600, letterSpacing: "0.02em", cursor: "pointer", transition: "all 0.2s", background: on ? "rgba(255,255,255,0.92)" : "transparent", color: on ? T.dark : "rgba(255,255,255,0.5)" }}>
+              style={{ padding: "4px 9px", borderRadius: 7, fontSize: 11, fontWeight: 600, letterSpacing: "0.02em", cursor: "pointer", transition: "all 0.2s", background: on ? T.heroPillBg : "transparent", color: on ? T.heroPillText : HMUT }}>
               {r}
             </div>
           );
@@ -1665,7 +1737,7 @@ function Overview(props) {
             {subtitle}
           </div>
         </div>
-        <button onClick={props.onCategories} style={{ flexShrink: 0, marginTop: 4, marginLeft: 18, width: 42, height: 42, borderRadius: 14, background: T.orange, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(200,103,58,0.32)" }}>
+        <button onClick={props.onCategories} style={{ flexShrink: 0, marginTop: 4, marginLeft: 18, width: 42, height: 42, borderRadius: 14, background: T.orange, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(137,112,198,0.32)" }}>
           <SVGIcon id="categories" size={20} color="#fff" />
         </button>
       </div>
@@ -1677,37 +1749,37 @@ function Overview(props) {
           })}
         </div>
         <div onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerLeave={onUp}
-          style={{ position: "relative", height: 242, borderRadius: 24, overflow: "hidden", background: "linear-gradient(155deg,#272118 0%," + T.darkCard + " 52%,#131110 100%)", boxShadow: "0 1px 1px rgba(0,0,0,0.06), 0 14px 34px rgba(40,28,16,0.34)", touchAction: "pan-y", cursor: "grab", userSelect: "none" }}>
-          <div style={{ position: "absolute", top: -60, right: -50, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle,rgba(224,120,72,0.30),transparent 65%)", pointerEvents: "none" }} />
-          <div style={{ position: "absolute", bottom: -70, left: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle,rgba(200,152,58,0.16),transparent 65%)", pointerEvents: "none" }} />
+          style={{ position: "relative", height: 242, borderRadius: 24, overflow: "hidden", background: T.heroBg, boxShadow: T.heroShadow, touchAction: "pan-y", cursor: "grab", userSelect: "none" }}>
+          <div style={{ position: "absolute", top: -70, right: -60, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
+          <div style={{ position: "absolute", bottom: -70, left: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow2 + ",transparent 65%)", pointerEvents: "none" }} />
           <div style={{ display: "flex", height: "100%", width: "100%", transform: "translateX(calc(" + (-page * 100) + "% + " + dragX + "px))", transition: dragging ? "none" : "transform 0.55s cubic-bezier(0.22,1,0.36,1)" }}>
 
             {/* Panel 0 - Balance */}
             <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", overflow: "hidden",padding: "22px 24px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)" }}>{tr("netBalance")}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>{tr("netBalance")}</span>
                 <div onPointerDown={stopDrag} onClick={function() { setHidden(function(v) { return !v; }); }} style={{ cursor: "pointer", padding: 4, display: "flex" }}>
-                  <SVGIcon id={hidden ? "eyeoff" : "eye"} size={20} color="rgba(255,255,255,0.55)" />
+                  <SVGIcon id={hidden ? "eyeoff" : "eye"} size={20} color={HMUT} />
                 </div>
               </div>
               <div>
                 <div style={{ filter: hidden ? "blur(11px)" : "none", userSelect: "none" }}>
-                  <span style={{ fontSize: 42, fontWeight: 700, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1 }}>{dollars(balance * dp)}</span>
+                  <span style={{ fontSize: 42, fontWeight: 700, color: HINK, letterSpacing: "-0.03em", lineHeight: 1 }}>{dollars(balance * dp)}</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 9 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: monthNet >= 0 ? "#4ADE80" : "#FF7A6B" }}>{(monthNet >= 0 ? "+" : "-") + dollars(Math.abs(monthNet))}</span>
-                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>this month</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: monthNet >= 0 ? HPOS : HNEG }}>{(monthNet >= 0 ? "+" : "-") + dollars(Math.abs(monthNet))}</span>
+                  <span style={{ fontSize: 12, color: HFNT }}>this month</span>
                 </div>
               </div>
-              <div style={{ display: "flex", gap: 14, borderTop: "0.5px solid rgba(255,255,255,0.1)", paddingTop: 14 }}>
+              <div style={{ display: "flex", gap: 14, borderTop: "0.5px solid " + HSEP, paddingTop: 14 }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)" }}>{tr("income")}</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: "#4ADE80", letterSpacing: "-0.02em", marginTop: 3 }}>{"+" + dollars(income)}</div>
+                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>{tr("income")}</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: HPOS, letterSpacing: "-0.02em", marginTop: 3 }}>{"+" + dollars(income)}</div>
                 </div>
-                <div style={{ width: "0.5px", background: "rgba(255,255,255,0.1)" }} />
+                <div style={{ width: "0.5px", background: HSEP }} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)" }}>{tr("spent")}</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: "#FF7A6B", letterSpacing: "-0.02em", marginTop: 3 }}>{"-" + dollars(expense)}</div>
+                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>{tr("spent")}</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: HNEG, letterSpacing: "-0.02em", marginTop: 3 }}>{"-" + dollars(expense)}</div>
                 </div>
               </div>
             </div>
@@ -1715,18 +1787,18 @@ function Overview(props) {
             {/* Panel 1 - Trend */}
             <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: "rgba(255,255,255,0.5)" }}>BALANCE TREND</span>
+                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>BALANCE TREND</span>
                 {rangeRow()}
               </div>
               <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>{trendChart()}</div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: 4 }}>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: trendUp ? "#4ADE80" : "#FF7A6B" }}>{(trendUp ? "+" : "-") + dollars(Math.abs(trendNet))}</div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>{"net change - " + rangeLong[range]}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: trendUp ? HPOS : HNEG }}>{(trendUp ? "+" : "-") + dollars(Math.abs(trendNet))}</div>
+                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>{"net change - " + rangeLong[range]}</div>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em" }}>{dollars(series[series.length - 1])}</div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>balance now</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: HINK, letterSpacing: "-0.02em" }}>{dollars(series[series.length - 1])}</div>
+                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>balance now</div>
                 </div>
               </div>
             </div>
@@ -1734,18 +1806,18 @@ function Overview(props) {
             {/* Panel 2 - Categories */}
             <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: "rgba(255,255,255,0.5)" }}>WHERE IT GOES</span>
+                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>WHERE IT GOES</span>
                 {rangeRow()}
               </div>
               {winCats.length === 0 ? (
-                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "rgba(255,255,255,0.5)" }}>No spending in this period.</div>
+                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: HMUT }}>No spending in this period.</div>
               ) : (
                 <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 18, marginTop: 6 }}>
                   <div style={{ position: "relative", width: 132, height: 132, flexShrink: 0 }}>
                     {donutChart()}
                     <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                      <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.1em", color: "rgba(255,255,255,0.4)" }}>SPENT</div>
-                      <div style={{ fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-0.03em" }}>{dollars(winExpenseTot)}</div>
+                      <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.1em", color: HFNT }}>SPENT</div>
+                      <div style={{ fontSize: 20, fontWeight: 700, color: HINK, letterSpacing: "-0.03em" }}>{dollars(winExpenseTot)}</div>
                     </div>
                   </div>
                   <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
@@ -1753,8 +1825,8 @@ function Overview(props) {
                       return (
                         <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <span style={{ width: 9, height: 9, borderRadius: 3, background: c.color, flexShrink: 0 }} />
-                          <span style={{ flex: 1, fontSize: 12, color: "rgba(255,255,255,0.82)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.95)" }}>{Math.round((c.val / winExpenseTot) * 100) + "%"}</span>
+                          <span style={{ flex: 1, fontSize: 12, color: T.catNameHero, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: HINK }}>{Math.round((c.val / winExpenseTot) * 100) + "%"}</span>
                         </div>
                       );
                     })}
@@ -1768,16 +1840,16 @@ function Overview(props) {
               <div style={{ position: "relative", width: 120, height: 120, flexShrink: 0 }}>
                 {ringChart()}
                 <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                  <div style={{ fontSize: 30, fontWeight: 700, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1 }}>{Math.round(Math.max(0, winSav) * dp)}<span style={{ fontSize: 16 }}>%</span></div>
-                  <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.1em", color: "rgba(255,255,255,0.4)", marginTop: 2 }}>SAVED</div>
+                  <div style={{ fontSize: 30, fontWeight: 700, color: HINK, letterSpacing: "-0.03em", lineHeight: 1 }}>{Math.round(Math.max(0, winSav) * dp)}<span style={{ fontSize: 16 }}>%</span></div>
+                  <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.1em", color: HFNT, marginTop: 2 }}>SAVED</div>
                 </div>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: "rgba(255,255,255,0.5)" }}>SAVINGS RATE</div>
-                <div style={{ fontSize: 16, fontWeight: 600, color: "#fff", lineHeight: 1.35, marginTop: 8, letterSpacing: "-0.01em" }}>{winIncomeTot > 0 ? "You kept " + dollars(winKept) + " of what you earned." : "No income recorded in this period."}</div>
+                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>SAVINGS RATE</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: HINK, lineHeight: 1.35, marginTop: 8, letterSpacing: "-0.01em" }}>{winIncomeTot > 0 ? "You kept " + dollars(winKept) + " of what you earned." : "No income recorded in this period."}</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 10 }}>
-                  <SVGIcon id={winSav >= 0 ? "up" : "down"} size={14} color={winSav >= 0 ? "#4ADE80" : "#FF7A6B"} />
-                  <span style={{ fontSize: 12, fontWeight: 600, color: winSav >= 0 ? "#4ADE80" : "#FF7A6B" }}>{winSav >= 20 ? "Excellent pace" : winSav >= 10 ? "On track" : winSav >= 0 ? "Building up" : "Overspending"}</span>
+                  <SVGIcon id={winSav >= 0 ? "up" : "down"} size={14} color={winSav >= 0 ? HPOS : HNEG} />
+                  <span style={{ fontSize: 12, fontWeight: 600, color: winSav >= 0 ? HPOS : HNEG }}>{winSav >= 20 ? "Excellent pace" : winSav >= 10 ? "On track" : winSav >= 0 ? "Building up" : "Overspending"}</span>
                 </div>
               </div>
             </div>
@@ -1785,21 +1857,21 @@ function Overview(props) {
             {/* Panel 4 - Top merchants */}
             <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: "rgba(255,255,255,0.5)" }}>TOP MERCHANTS</span>
+                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>TOP MERCHANTS</span>
                 {rangeRow()}
               </div>
               <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 13 }}>
                 {merchants.length === 0 ? (
-                  <div style={{ textAlign: "center", fontSize: 13, color: "rgba(255,255,255,0.5)" }}>No expenses in this period.</div>
+                  <div style={{ textAlign: "center", fontSize: 13, color: HMUT }}>No expenses in this period.</div>
                 ) : merchants.map(function(m, i) {
                   return (
                     <div key={i}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
-                        <span style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.9)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "62%" }}>{m.name}</span>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em" }}>{dollars(m.amt)}</span>
+                        <span style={{ fontSize: 13, fontWeight: 500, color: T.merchNameHero, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "62%" }}>{m.name}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: HINK, letterSpacing: "-0.02em" }}>{dollars(m.amt)}</span>
                       </div>
-                      <div style={{ height: 6, borderRadius: 4, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
-                        <div style={{ height: "100%", width: ((m.amt / merchMax) * 100 * dp).toFixed(1) + "%", background: "linear-gradient(90deg," + T.orange + "99," + T.orangeHi + ")", borderRadius: 4 }} />
+                      <div style={{ height: 6, borderRadius: 4, background: HTRACK, overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: ((m.amt / merchMax) * 100 * dp).toFixed(1) + "%", background: T.merchBar, borderRadius: 4 }} />
                       </div>
                     </div>
                   );
@@ -1812,7 +1884,7 @@ function Overview(props) {
       </div>
 
       {props.plan && (
-        <div style={{ background: "rgba(200,103,58,0.04)", borderRadius: 18, padding: "20px 22px", marginBottom: 16, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.04)", borderLeft: "3px solid " + T.orange, animation: "rcFadeUp 0.6s ease 0.09s both" }}>
+        <div style={{ background: "rgba(137,112,198,0.04)", borderRadius: 18, padding: "20px 22px", marginBottom: 16, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.04)", borderLeft: "3px solid " + T.orange, animation: "rcFadeUp 0.6s ease 0.09s both" }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: UI, marginBottom: 10 }}>
             {tr("yourPlanByRichard")}
           </div>
@@ -2079,7 +2151,7 @@ function Activity(props) {
     <div>
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
         <button onClick={props.onOpenNotes} title={tr("notes")}
-          style={{ flexShrink: 0, width: 42, height: 42, borderRadius: 14, background: T.orange, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(200,103,58,0.32)" }}>
+          style={{ flexShrink: 0, width: 42, height: 42, borderRadius: 14, background: T.orange, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(137,112,198,0.32)" }}>
           <SVGIcon id="note" size={20} color="#fff" />
         </button>
       </div>
@@ -2879,6 +2951,20 @@ function Goals(props) {
         }} />
       </Overlay>
 
+      {props.onPlanTrip && (
+        <button onClick={props.onPlanTrip}
+          style={{ width: "100%", border: "none", cursor: "pointer", textAlign: "left", marginBottom: 16, borderRadius: 20, padding: "16px 18px", background: T.heroBg2, boxShadow: "0 8px 24px " + T.orangeGlow, display: "flex", alignItems: "center", gap: 14, fontFamily: UI }}>
+          <div style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(255,255,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <SVGIcon id="plane" size={22} color={T.heroInk} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.01em" }}>{tr("planATrip")}</div>
+            <div style={{ fontSize: 12, color: T.heroMut, marginTop: 2, lineHeight: 1.35 }}>{tr("planATripSub")}</div>
+          </div>
+          <SVGIcon id="chevron" size={18} color={T.heroInk} />
+        </button>
+      )}
+
       {props.goals.length === 0 && (
         <Card style={{ padding: "46px 24px", textAlign: "center" }}>
           <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
@@ -2936,6 +3022,385 @@ function Goals(props) {
       })}
     </div>
   );
+}
+
+// Plan a Trip. A fully isolated trip budget: it never touches the main balance
+// until the user explicitly reserves it (a single reversible expense tx). Richard
+// splits the budget across TRIP_CATEGORIES; logged expenses live on the trip only.
+function Trips(props) {
+  var _v = useState("list"); var view = _v[0]; var setView = _v[1];
+  var _aid = useState(null); var activeId = _aid[0]; var setActiveId = _aid[1];
+  var _st = useState(1); var step = _st[0]; var setStep = _st[1];
+  var _fm = useState({ name: "", destination: "", total: "", days: "", style: "comfort" });
+  var form = _fm[0]; var setForm = _fm[1];
+  var _pl = useState(false); var planning = _pl[0]; var setPlanning = _pl[1];
+  var _al = useState([]); var alloc = _al[0]; var setAlloc = _al[1];
+  var _tp = useState([]); var tips = _tp[0]; var setTips = _tp[1];
+  var _lf = useState(null); var logFor = _lf[0]; var setLogFor = _lf[1];
+  var _lfm = useState({ label: "", amount: "" }); var logForm = _lfm[0]; var setLogForm = _lfm[1];
+
+  function setField(k, val) { setForm(function(p) { var n = {}; for (var key in p) n[key] = p[key]; n[k] = val; return n; }); }
+  function setLogField(k, val) { setLogForm(function(p) { var n = {}; for (var key in p) n[key] = p[key]; n[k] = val; return n; }); }
+
+  function allocSum(list) { return list.reduce(function(s, a) { return s + (a.planned || 0); }, 0); }
+  function tripSpent(t) { return t.allocations.reduce(function(s, a) { return s + (a.spent || 0); }, 0); }
+
+  function localTripSplit(total, style) {
+    return TRIP_CATEGORIES.map(function(c) {
+      return { key: c.key, label: c.label, icon: c.icon, color: c.color, planned: Math.round(total * (c.pct[style] || 0)), spent: 0, entries: [] };
+    });
+  }
+  function defaultTips() {
+    return [
+      "Book flights and lodging early - prices climb closer to the date.",
+      "Keep the buffer untouched; it is your safety net for the unexpected.",
+      "Pay in local currency to dodge dynamic-conversion fees."
+    ];
+  }
+  // Match Richard's free-form category names back onto our fixed buckets.
+  function mapAllocations(arr, total) {
+    var base = TRIP_CATEGORIES.map(function(c) { return { key: c.key, label: c.label, icon: c.icon, color: c.color, planned: 0, spent: 0, entries: [] }; });
+    if (Array.isArray(arr)) {
+      arr.forEach(function(a) {
+        var nm = String(a.category || "").toLowerCase();
+        for (var i = 0; i < base.length; i++) {
+          if (nm.indexOf(base[i].key) !== -1 || nm.indexOf(base[i].label.toLowerCase()) !== -1) {
+            base[i].planned = Math.max(0, Math.round(parseFloat(a.amount) || 0));
+            break;
+          }
+        }
+      });
+    }
+    if (allocSum(base) === 0) return localTripSplit(total, form.style || "comfort");
+    return base;
+  }
+  function applyLocalSplit() {
+    setAlloc(localTripSplit(parseFloat(form.total) || 0, form.style || "comfort"));
+    setTips(defaultTips());
+    setPlanning(false);
+  }
+  function planWithRichard() {
+    setPlanning(true);
+    var total = parseFloat(form.total) || 0;
+    var sys = "You are Richard, a warm, expert travel-budget planner inside the Claude Budget app. Split a trip budget across exactly these buckets: Flights, Lodging, Food, Activities, Shopping, Buffer. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"allocations\":[{\"category\":\"Flights\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"\"],\"summary\":\"\"}. The amounts are whole numbers that sum to the total budget.";
+    var usr = "Plan a " + (form.style || "comfort") + " trip to " + (form.destination || "somewhere") + " for " + (form.days || "a few") + " days, total budget " + dollars(total) + ". Split it across the six buckets and give 3 short, practical tips.";
+    callClaude([{ role: "user", content: usr }], sys, 700, function(e, text) {
+      if (e || !text) { applyLocalSplit(); return; }
+      try {
+        var jsonStr = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
+        var parsed = JSON.parse(jsonStr);
+        setAlloc(mapAllocations(parsed.allocations, total));
+        setTips(Array.isArray(parsed.tips) && parsed.tips.length ? parsed.tips.slice(0, 4) : defaultTips());
+        setPlanning(false);
+      } catch (err) { applyLocalSplit(); }
+    });
+  }
+  function setAllocPlanned(key, val) {
+    var n = Math.max(0, parseFloat(val) || 0);
+    setAlloc(function(list) { return list.map(function(a) { return a.key === key ? Object.assign({}, a, { planned: n }) : a; }); });
+  }
+  function startWizard() {
+    setForm({ name: "", destination: "", total: "", days: "", style: "comfort" });
+    setAlloc([]); setTips([]); setStep(1); setView("wizard");
+  }
+  function saveTrip() {
+    var total = parseFloat(form.total) || 0;
+    var trip = {
+      id: Date.now(), name: form.name || "My Trip", destination: form.destination || "",
+      days: parseInt(form.days, 10) || 0, style: form.style || "comfort", total: total,
+      reserved: false, reserveTxId: null, advisorTips: tips, allocations: alloc
+    };
+    props.onSaveTrips(props.trips.concat([trip]));
+    setActiveId(trip.id); setView("detail");
+  }
+  function reserveTrip(trip) {
+    var t = { id: Date.now(), type: "expense", amount: trip.total, label: "Trip: " + trip.name, catId: "c7", category: "Travel", date: new Date().toISOString().slice(0, 10) };
+    var nextTrips = props.trips.map(function(x) { return x.id === trip.id ? Object.assign({}, x, { reserved: true, reserveTxId: t.id }) : x; });
+    props.onTripReserve(props.tx.concat([t]), nextTrips);
+  }
+  function undoReserve(trip) {
+    var nextTx = props.tx.filter(function(x) { return x.id !== trip.reserveTxId; });
+    var nextTrips = props.trips.map(function(x) { return x.id === trip.id ? Object.assign({}, x, { reserved: false, reserveTxId: null }) : x; });
+    props.onTripReserve(nextTx, nextTrips);
+  }
+  function logExpense(tripId, key) {
+    var amt = parseFloat(logForm.amount) || 0;
+    if (amt <= 0) { setLogFor(null); return; }
+    var entry = { id: Date.now(), label: logForm.label || tr("expense"), amount: amt, date: new Date().toISOString().slice(0, 10) };
+    var nextTrips = props.trips.map(function(t) {
+      if (t.id !== tripId) return t;
+      var allocs = t.allocations.map(function(a) {
+        return a.key === key ? Object.assign({}, a, { spent: round2(a.spent + amt), entries: a.entries.concat([entry]) }) : a;
+      });
+      return Object.assign({}, t, { allocations: allocs });
+    });
+    props.onSaveTrips(nextTrips);
+    setLogFor(null); setLogForm({ label: "", amount: "" });
+  }
+  function deleteEntry(tripId, key, entryId) {
+    var nextTrips = props.trips.map(function(t) {
+      if (t.id !== tripId) return t;
+      var allocs = t.allocations.map(function(a) {
+        if (a.key !== key) return a;
+        var removed = a.entries.filter(function(e) { return e.id === entryId; })[0];
+        var dec = removed ? removed.amount : 0;
+        return Object.assign({}, a, { spent: Math.max(0, round2(a.spent - dec)), entries: a.entries.filter(function(e) { return e.id !== entryId; }) });
+      });
+      return Object.assign({}, t, { allocations: allocs });
+    });
+    props.onSaveTrips(nextTrips);
+  }
+  function removeTrip(trip) {
+    if (trip.reserved && trip.reserveTxId) {
+      props.onTripReserve(props.tx.filter(function(x) { return x.id !== trip.reserveTxId; }), props.trips.filter(function(x) { return x.id !== trip.id; }));
+    } else {
+      props.onSaveTrips(props.trips.filter(function(x) { return x.id !== trip.id; }));
+    }
+    setView("list"); setActiveId(null);
+  }
+
+  var backBtnStyle = { display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", color: T.ink2, fontSize: 14, fontFamily: UI, padding: "2px 2px 14px" };
+  function backRow(label, onPress) {
+    return (
+      <button onClick={onPress} style={backBtnStyle}>
+        <span style={{ transform: "rotate(180deg)", display: "flex" }}><SVGIcon id="chevron" size={18} color={T.ink2} /></span>
+        {label}
+      </button>
+    );
+  }
+
+  function listView() {
+    return (
+      <div>
+        {backRow(tr("goals"), props.onBack)}
+        <button onClick={startWizard}
+          style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 16, padding: "15px 0", marginBottom: 18, background: T.orange, color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: UI, boxShadow: "0 6px 18px " + T.orangeGlow }}>
+          {"+ " + tr("planNewTrip")}
+        </button>
+        {props.trips.length === 0 ? (
+          <Card style={{ padding: "46px 24px", textAlign: "center" }}>
+            <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+              <SVGIcon id="plane" size={24} color={T.orange} />
+            </div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{tr("noTrips")}</div>
+            <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{tr("noTripsSub")}</div>
+          </Card>
+        ) : props.trips.map(function(t) {
+          var spent = tripSpent(t);
+          var pct = t.total > 0 ? Math.min(100, Math.round((spent / t.total) * 100)) : 0;
+          return (
+            <Card key={t.id} style={{ marginBottom: 14, overflow: "hidden" }}>
+              <div onClick={function() { setActiveId(t.id); setView("detail"); }} style={{ padding: "18px 18px", cursor: "pointer" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 17, fontWeight: 700, color: T.ink }}>{t.name}</div>
+                    <div style={{ fontSize: 13, color: T.ink3, marginTop: 2 }}>{(t.destination || "") + (t.days ? (" - " + t.days + "d") : "")}</div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(t.total)}</div>
+                    {t.reserved && <div style={{ fontSize: 11, fontWeight: 600, color: T.orange, marginTop: 2 }}>{tr("reserved")}</div>}
+                  </div>
+                </div>
+                <ProgressBar value={spent} max={t.total || 1} color={spent > t.total ? T.red : T.orange} h={6} />
+                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
+                  <span style={{ fontSize: 11, color: T.ink3 }}>{dollars(spent) + " " + tr("spentOf") + " " + dollars(t.total)}</span>
+                  <span style={{ fontSize: 11, color: T.ink3 }}>{pct + "%"}</span>
+                </div>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+    );
+  }
+
+  function wizardView() {
+    var total = parseFloat(form.total) || 0;
+    var sum = allocSum(alloc);
+    var styleOpts = [{ k: "budget", l: tr("styleBudget") }, { k: "comfort", l: tr("styleComfort") }, { k: "luxury", l: tr("styleLuxury") }];
+    return (
+      <div>
+        {backRow(step === 2 ? tr("planning") : tr("trips"), function() { if (step === 2) { setStep(1); } else { setView("list"); } })}
+        {step === 1 ? (
+          <Card style={{ padding: "18px 18px 20px" }}>
+            <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, marginBottom: 14, fontFamily: DISP, letterSpacing: "-0.02em" }}>{tr("planNewTrip")}</div>
+            <FormRow label={tr("tripName")} value={form.name} onChange={function(e) { setField("name", e.target.value); }} />
+            <FormRow label={tr("destination")} value={form.destination} onChange={function(e) { setField("destination", e.target.value); }} />
+            <FormRow label={tr("tripBudget")} value={form.total} onChange={function(e) { setField("total", e.target.value); }} type="number" />
+            <FormRow label={tr("tripDays")} value={form.days} onChange={function(e) { setField("days", e.target.value); }} type="number" last={true} />
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, margin: "14px 0 8px" }}>{tr("travelStyle")}</div>
+            <div style={{ display: "flex", gap: 8 }}>
+              {styleOpts.map(function(s) {
+                var on = form.style === s.k;
+                return (
+                  <button key={s.k} onClick={function() { setField("style", s.k); }}
+                    style={{ flex: 1, border: on ? ("2px solid " + T.orange) : "2px solid rgba(0,0,0,0.08)", background: on ? T.orangeDim : "#fff", color: on ? T.orange : T.ink2, borderRadius: 13, padding: "11px 0", fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
+                    {s.l}
+                  </button>
+                );
+              })}
+            </div>
+            <BigBtn label={tr("next")} disabled={!form.name || total <= 0} onPress={function() { setStep(2); planWithRichard(); }} />
+          </Card>
+        ) : (
+          <Card style={{ padding: "18px 18px 20px" }}>
+            {planning ? (
+              <div style={{ padding: "34px 10px", textAlign: "center" }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>{tr("richardPlanning")}</div>
+                <div style={{ fontSize: 13, color: T.ink3, marginTop: 5 }}>{tr("richardPlanningSub")}</div>
+              </div>
+            ) : (
+              <div>
+                <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, marginBottom: 4, fontFamily: DISP, letterSpacing: "-0.02em" }}>{tr("tripSplit")}</div>
+                <div style={{ fontSize: 13, marginBottom: 14, color: sum > total ? T.red : T.ink3 }}>{tr("allocated") + " " + dollars(sum) + " / " + dollars(total) + (sum > total ? (" (" + tr("overBy") + " " + dollars(sum - total) + ")") : "")}</div>
+                {alloc.map(function(a, idx) {
+                  return (
+                    <div key={a.key} style={{ display: "flex", alignItems: "center", gap: 11, padding: "9px 0", borderBottom: idx < alloc.length - 1 ? ("0.5px solid " + T.sep) : "none" }}>
+                      <div style={{ width: 34, height: 34, borderRadius: 10, background: a.color + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <SVGIcon id={a.icon} size={18} color={a.color} />
+                      </div>
+                      <span style={{ flex: 1, fontSize: 14, color: T.ink, fontWeight: 500 }}>{a.label}</span>
+                      <div style={{ display: "flex", alignItems: "center", background: "rgba(0,0,0,0.04)", borderRadius: 10, padding: "6px 10px" }}>
+                        <span style={{ fontSize: 13, color: T.ink3, marginRight: 2 }}>{_currency.sym}</span>
+                        <input type="number" value={a.planned} onChange={function(e) { setAllocPlanned(a.key, e.target.value); }}
+                          style={{ width: 64, border: "none", background: "none", outline: "none", fontSize: 14, fontWeight: 600, color: T.ink, fontFamily: UI, textAlign: "right", padding: 0 }} />
+                      </div>
+                    </div>
+                  );
+                })}
+                {tips.length > 0 && (
+                  <div style={{ marginTop: 16, background: T.orangeDim, borderRadius: 14, padding: "14px 16px" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8, fontFamily: UI }}>{tr("tripTips")}</div>
+                    {tips.map(function(tp, i) {
+                      return (
+                        <div key={i} style={{ fontSize: 13, color: T.ink, lineHeight: 1.5, marginBottom: i < tips.length - 1 ? 7 : 0, display: "flex", gap: 8 }}>
+                          <span style={{ color: T.orange, fontWeight: 700 }}>-</span><span>{tp}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <BigBtn label={tr("saveTrip")} disabled={total <= 0} onPress={saveTrip} />
+              </div>
+            )}
+          </Card>
+        )}
+      </div>
+    );
+  }
+
+  function detailView(trip) {
+    var spent = tripSpent(trip);
+    var left = trip.total - spent;
+    return (
+      <div>
+        {backRow(tr("trips"), function() { setView("list"); setActiveId(null); })}
+        <div style={{ position: "relative", overflow: "hidden", borderRadius: 22, padding: "22px 22px", background: T.heroBg, boxShadow: T.heroShadow, marginBottom: 16 }}>
+          <div style={{ position: "absolute", top: -70, right: -60, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
+          <div style={{ position: "relative" }}>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut }}>{(trip.destination || "Trip") + (trip.days ? (" - " + trip.days + "d") : "")}</div>
+            <div style={{ fontSize: 26, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.02em", marginTop: 4 }}>{trip.name}</div>
+            <div style={{ fontSize: 34, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.03em", marginTop: 10 }}>{dollars(trip.total)}</div>
+            <div style={{ display: "flex", gap: 16, marginTop: 12, borderTop: "0.5px solid " + T.heroSep, paddingTop: 12 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>{tr("spent")}</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: T.heroInk, marginTop: 3 }}>{dollars(spent)}</div>
+              </div>
+              <div style={{ width: "0.5px", background: T.heroSep }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>{tr("leftToSpend")}</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: left < 0 ? T.heroNeg : T.heroInk, marginTop: 3 }}>{dollars(left)}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {trip.reserved ? (
+          <Card style={{ padding: "14px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 11, background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <SVGIcon id="check" size={18} color={T.green} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: T.ink }}>{tr("reserved")}</div>
+              <button onClick={function() { undoReserve(trip); }} style={{ background: "none", border: "none", padding: 0, marginTop: 2, color: T.orange, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>{tr("undoReserve")}</button>
+            </div>
+          </Card>
+        ) : (
+          <Card style={{ padding: "16px 16px", marginBottom: 16 }}>
+            <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginBottom: 12 }}>{tr("deductExplain")}</div>
+            <BigBtn label={tr("deductFromBalance")} onPress={function() { reserveTrip(trip); }} />
+          </Card>
+        )}
+
+        {trip.allocations.map(function(a) {
+          var over = a.spent > a.planned && a.planned > 0;
+          return (
+            <Card key={a.key} style={{ marginBottom: 12, overflow: "hidden" }}>
+              <div style={{ padding: "15px 16px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 10 }}>
+                  <div style={{ width: 34, height: 34, borderRadius: 10, background: a.color + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <SVGIcon id={a.icon} size={18} color={a.color} />
+                  </div>
+                  <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: T.ink }}>{a.label}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: over ? T.red : T.ink2 }}>{dollars(a.spent) + " / " + dollars(a.planned)}</span>
+                </div>
+                <ProgressBar value={a.spent} max={a.planned || 1} color={over ? T.red : a.color} h={6} />
+                {a.entries.length > 0 && (
+                  <div style={{ marginTop: 10 }}>
+                    {a.entries.map(function(e) {
+                      return (
+                        <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0" }}>
+                          <span style={{ fontSize: 13, color: T.ink2 }}>{e.label}</span>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: T.ink }}>{dollars(e.amount)}</span>
+                            <button onClick={function() { deleteEntry(trip.id, a.key, e.id); }} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex" }}><SVGIcon id="trash" size={14} color={T.ink3} /></button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <button onClick={function() { setLogFor({ tripId: trip.id, key: a.key, label: a.label }); setLogForm({ label: "", amount: "" }); }}
+                  style={{ width: "100%", marginTop: 10, background: T.orangeDim, border: "none", borderRadius: 10, padding: "9px 0", color: T.orange, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
+                  {"+ " + tr("logExpense")}
+                </button>
+              </div>
+            </Card>
+          );
+        })}
+
+        {trip.advisorTips && trip.advisorTips.length > 0 && (
+          <Card style={{ padding: "16px 18px", marginBottom: 16 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10, fontFamily: UI }}>{tr("tripTips")}</div>
+            {trip.advisorTips.map(function(tp, i) {
+              return (
+                <div key={i} style={{ fontSize: 13, color: T.ink, lineHeight: 1.55, marginBottom: i < trip.advisorTips.length - 1 ? 8 : 0, display: "flex", gap: 8 }}>
+                  <span style={{ color: T.orange, fontWeight: 700 }}>-</span><span>{tp}</span>
+                </div>
+              );
+            })}
+          </Card>
+        )}
+
+        <button onClick={function() { removeTrip(trip); }}
+          style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "8px 0 4px" }}>
+          {tr("deleteTrip")}
+        </button>
+
+        <Overlay open={!!logFor} onClose={function() { setLogFor(null); }} title={logFor ? (tr("logExpenseTitle") + " - " + logFor.label) : tr("logExpenseTitle")}>
+          <FormRow label={tr("txLabel")} value={logForm.label} onChange={function(e) { setLogField("label", e.target.value); }} />
+          <FormRow label={tr("amount")} value={logForm.amount} onChange={function(e) { setLogField("amount", e.target.value); }} type="number" last={true} />
+          <BigBtn label={tr("logExpense")} disabled={!logForm.amount} onPress={function() { if (logFor) logExpense(logFor.tripId, logFor.key); }} />
+        </Overlay>
+      </div>
+    );
+  }
+
+  var activeTrip = null;
+  for (var ti = 0; ti < props.trips.length; ti++) { if (props.trips[ti].id === activeId) { activeTrip = props.trips[ti]; break; } }
+  if (view === "detail" && activeTrip) return detailView(activeTrip);
+  if (view === "wizard") return wizardView();
+  return listView();
 }
 
 function callClaude(messages, system, maxTokens, callback) {
@@ -3448,17 +3913,18 @@ function Advisor(props) {
     );
   }
 
-  // Brighter green reads better on the dark hero card than the standard T.green.
-  var GREEN_ON_DARK = "#4ADE80";
-  var ringColor = advice && advice.score >= 80 ? GREEN_ON_DARK : advice && advice.score >= 60 ? T.gold : T.orangeHi;
+  // Hero cards are now light lavender, so use a deeper green/red that reads on it
+  // (the old bright #4ADE80 and light orangeHi washed out on the pale background).
+  var GREEN_HERO = T.advGreen;
+  var ringColor = advice && advice.score >= 80 ? GREEN_HERO : advice && advice.score >= 60 ? T.gold : T.advRingLow;
   var name = (props.username || "").trim() || "there";
 
   // Three real signals for the dark card's bottom row.
   var bufferMonths = expense > 0 ? (netWorth / expense) : (netWorth > 0 ? 12 : 0);
-  var savingStat = savings >= 20 ? { label: "Strong", dot: GREEN_ON_DARK } : savings >= 10 ? { label: "Building", dot: T.gold } : savings >= 0 ? { label: "Low", dot: T.gold } : { label: "Negative", dot: T.red };
+  var savingStat = savings >= 20 ? { label: "Strong", dot: GREEN_HERO } : savings >= 10 ? { label: "Building", dot: T.gold } : savings >= 0 ? { label: "Low", dot: T.gold } : { label: "Negative", dot: T.red };
   var totalLimit = (props.budgets || []).reduce(function(s, b) { return s + (b.limit || 0); }, 0);
-  var spendStat = totalLimit <= 0 ? { label: "Not set", dot: T.ink3 } : expense <= totalLimit ? { label: "On track", dot: GREEN_ON_DARK } : { label: "Over", dot: T.red };
-  var bufferStat = bufferMonths >= 3 ? GREEN_ON_DARK : bufferMonths >= 1 ? T.gold : T.red;
+  var spendStat = totalLimit <= 0 ? { label: "Not set", dot: T.ink3 } : expense <= totalLimit ? { label: "On track", dot: GREEN_HERO } : { label: "Over", dot: T.red };
+  var bufferStat = bufferMonths >= 3 ? GREEN_HERO : bufferMonths >= 1 ? T.gold : T.red;
   var bufferTxt = bufferMonths >= 12 ? "12+ mo" : bufferMonths > 0 ? (Math.round(bufferMonths * 10) / 10) + " mo" : "0 mo";
 
   var greeting = advice ? (advice.score >= 80 ? "You're in good shape, " + name + "." : advice.score >= 60 ? "You're on the right track, " + name + "." : "Let's tighten things up, " + name + ".") : "";
@@ -3539,37 +4005,37 @@ function Advisor(props) {
             <p style={{ margin: "7px 0 0", fontSize: 14.5, lineHeight: 1.45, color: T.ink2 }}>{subGreeting}</p>
           </div>
 
-          <div style={{ marginTop: 16, position: "relative", overflow: "hidden", borderRadius: 20, padding: 22, background: "linear-gradient(165deg,#211C17 0%,#15120E 100%)", boxShadow: "0 12px 30px rgba(13,12,24,0.28)" }}>
-            <div style={{ position: "absolute", top: -60, right: -44, width: 210, height: 210, background: "radial-gradient(circle, rgba(200,152,58,0.30), transparent 70%)", pointerEvents: "none" }} />
-            <div style={{ position: "absolute", bottom: -56, left: -44, width: 190, height: 190, background: "radial-gradient(circle, rgba(200,103,58,0.22), transparent 70%)", pointerEvents: "none" }} />
+          <div style={{ marginTop: 16, position: "relative", overflow: "hidden", borderRadius: 20, padding: 22, background: T.heroBg, boxShadow: T.heroShadow }}>
+            <div style={{ position: "absolute", top: -60, right: -44, width: 210, height: 210, background: "radial-gradient(circle, " + T.heroGlow1 + ", transparent 70%)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", bottom: -56, left: -44, width: 190, height: 190, background: "radial-gradient(circle, " + T.heroGlow2 + ", transparent 70%)", pointerEvents: "none" }} />
             <div style={{ position: "relative" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>Financial Health</span>
-                <span style={{ background: ringColor + "24", color: ringColor, fontSize: 11, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 8 }}>{advice.scoreLabel}</span>
+                <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, color: T.heroMut }}>Financial Health</span>
+                <span style={{ background: ringColor + "26", color: ringColor, fontSize: 11, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 8 }}>{advice.scoreLabel}</span>
               </div>
 
               <div style={{ display: "flex", justifyContent: "center", marginTop: 20, position: "relative" }}>
-                <RingChart value={advice.score} max={100} size={172} stroke={11} color={ringColor} track="rgba(255,255,255,0.09)" />
+                <RingChart value={advice.score} max={100} size={172} stroke={11} color={ringColor} track={T.heroTrack} />
                 <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
-                  <span style={{ fontSize: 52, fontWeight: 700, letterSpacing: "-0.03em", color: "#fff" }}>{advice.score}</span>
-                  <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginTop: 5 }}>out of 100</span>
+                  <span style={{ fontSize: 52, fontWeight: 700, letterSpacing: "-0.03em", color: T.heroInk }}>{advice.score}</span>
+                  <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: T.heroFaint, marginTop: 5 }}>out of 100</span>
                 </div>
               </div>
 
               <div style={{ textAlign: "center", marginTop: 18 }}>
-                <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.01em", color: "#fff" }}>{advice.headline}</div>
+                <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.01em", color: T.heroInk }}>{advice.headline}</div>
               </div>
 
-              <div style={{ height: 0.5, background: "rgba(255,255,255,0.1)", margin: "20px 0" }} />
+              <div style={{ height: 0.5, background: T.heroSep, margin: "20px 0" }} />
 
               <div style={{ display: "flex" }}>
                 {[{ k: "Saving", v: savingStat.label, d: savingStat.dot }, { k: "Spending", v: spendStat.label, d: spendStat.dot }, { k: "Buffer", v: bufferTxt, d: bufferStat }].map(function(col, ci) {
                   return (
-                    <div key={col.k} style={{ flex: 1, textAlign: "center", borderRight: ci < 2 ? "0.5px solid rgba(255,255,255,0.1)" : "none" }}>
-                      <div style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>{col.k}</div>
+                    <div key={col.k} style={{ flex: 1, textAlign: "center", borderRight: ci < 2 ? "0.5px solid " + T.heroSep : "none" }}>
+                      <div style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut, marginBottom: 6 }}>{col.k}</div>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                         <span style={{ width: 6, height: 6, borderRadius: "50%", background: col.d }} />
-                        <span style={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>{col.v}</span>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: T.heroInk }}>{col.v}</span>
                       </div>
                     </div>
                   );
@@ -3637,7 +4103,7 @@ function Advisor(props) {
               var u = m.role === "user";
               return (
                 <div key={i} style={{ display: "flex", justifyContent: u ? "flex-end" : "flex-start" }}>
-                  <div style={{ maxWidth: "84%", padding: "11px 14px", fontSize: 13.5, lineHeight: 1.5, whiteSpace: "pre-wrap", borderRadius: u ? "16px 16px 4px 16px" : "4px 16px 16px 16px", background: u ? "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.045)", color: u ? "#fff" : T.ink, boxShadow: u ? "0 4px 14px rgba(200,103,58,0.22)" : "none" }}>
+                  <div style={{ maxWidth: "84%", padding: "11px 14px", fontSize: 13.5, lineHeight: 1.5, whiteSpace: "pre-wrap", borderRadius: u ? "16px 16px 4px 16px" : "4px 16px 16px 16px", background: u ? "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.045)", color: u ? "#fff" : T.ink, boxShadow: u ? "0 4px 14px rgba(137,112,198,0.22)" : "none" }}>
                     {m.text}
                   </div>
                 </div>
@@ -3717,7 +4183,7 @@ function Advisor(props) {
             placeholder={tr("askRichard")}
             style={{ flex: 1, border: "none", background: "rgba(0,0,0,0.045)", borderRadius: 14, outline: "none", fontSize: 14, fontFamily: UI, color: T.ink, padding: "13px 14px", resize: "none", lineHeight: 1.4, maxHeight: 132, overflowY: "auto", boxSizing: "border-box", display: "block" }} />
           <button onClick={sendChat} disabled={!input.trim() || chatLoading}
-            style={{ width: 44, height: 44, border: "none", borderRadius: 14, background: input.trim() && !chatLoading ? "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.1)", boxShadow: input.trim() && !chatLoading ? "0 6px 18px rgba(200,103,58,0.32)" : "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: input.trim() && !chatLoading ? "pointer" : "default", flexShrink: 0 }}>
+            style={{ width: 44, height: 44, border: "none", borderRadius: 14, background: input.trim() && !chatLoading ? "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.1)", boxShadow: input.trim() && !chatLoading ? "0 6px 18px rgba(137,112,198,0.32)" : "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: input.trim() && !chatLoading ? "pointer" : "default", flexShrink: 0 }}>
             <SVGIcon id="up" size={20} color="#fff" />
           </button>
         </div>
@@ -3957,7 +4423,7 @@ function LanguageView(props) {
           var sel = selected === opt.code;
           return (
             <button key={opt.code} onClick={function() { pick(opt.code); }}
-              style={{ width: "100%", background: sel ? "rgba(200,103,58,0.05)" : "none", border: "none", borderBottom: i < LANGUAGE_OPTIONS.length - 1 ? "0.5px solid " + T.sep : "none", padding: "17px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", fontFamily: UI }}>
+              style={{ width: "100%", background: sel ? "rgba(137,112,198,0.05)" : "none", border: "none", borderBottom: i < LANGUAGE_OPTIONS.length - 1 ? "0.5px solid " + T.sep : "none", padding: "17px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", fontFamily: UI }}>
               <span style={{ fontSize: 16, fontWeight: sel ? 700 : 500, color: sel ? T.ink : T.ink2 }}>{opt.label}</span>
               {sel && (
                 <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -3982,10 +4448,42 @@ function CurrencyView(props) {
           var sel = cur === opt.sym;
           return (
             <button key={opt.sym} onClick={function() { props.onCurrencyChange(opt.sym); }}
-              style={{ width: "100%", background: sel ? "rgba(200,103,58,0.05)" : "none", border: "none", borderBottom: i < CURRENCY_OPTIONS.length - 1 ? "0.5px solid " + T.sep : "none", padding: "17px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", fontFamily: UI }}>
+              style={{ width: "100%", background: sel ? "rgba(137,112,198,0.05)" : "none", border: "none", borderBottom: i < CURRENCY_OPTIONS.length - 1 ? "0.5px solid " + T.sep : "none", padding: "17px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", fontFamily: UI }}>
               <span style={{ fontSize: 16, fontWeight: sel ? 700 : 500, color: sel ? T.ink : T.ink2 }}>{opt.label}</span>
               {sel && (
                 <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <SVGIcon id="check" size={12} color="#fff" />
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </Card>
+    </div>
+  );
+}
+
+function AppearanceView(props) {
+  var opts = [
+    { id: "purple",  label: "Purple",         sub: "Lavender hero, violet accents",     a: "#9D78E8", b: "#C8B1FF" },
+    { id: "classic", label: "Orange & Black", sub: "Dark hero, warm orange accents",     a: "#1E1A16", b: "#C8673A" }
+  ];
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+      <Card style={{ overflow: "hidden", marginBottom: 16 }}>
+        {opts.map(function(opt, i) {
+          var sel = props.theme === opt.id;
+          return (
+            <button key={opt.id} onClick={function() { props.onThemeChange(opt.id); }}
+              style={{ width: "100%", background: sel ? T.orangeDim : "none", border: "none", borderBottom: i < opts.length - 1 ? "0.5px solid " + T.sep : "none", padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", fontFamily: UI }}>
+              <div style={{ width: 46, height: 46, borderRadius: 13, background: "linear-gradient(135deg," + opt.a + "," + opt.b + ")", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.14)" }} />
+              <div style={{ flex: 1, textAlign: "left" }}>
+                <div style={{ fontSize: 16, fontWeight: sel ? 700 : 600, color: T.ink }}>{opt.label}</div>
+                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{opt.sub}</div>
+              </div>
+              {sel && (
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <SVGIcon id="check" size={12} color="#fff" />
                 </div>
               )}
@@ -4169,7 +4667,7 @@ function PlanView(props) {
       </Card>
 
       <button onClick={props.onRetake}
-        style={{ width: "100%", background: T.orangeDim, color: T.orange, border: "1.5px solid rgba(200,103,58,0.2)", borderRadius: 16, padding: "16px 0", fontSize: 16, fontFamily: UI, fontWeight: 700, cursor: "pointer", marginBottom: 10 }}>
+        style={{ width: "100%", background: T.orangeDim, color: T.orange, border: "1.5px solid rgba(137,112,198,0.2)", borderRadius: 16, padding: "16px 0", fontSize: 16, fontFamily: UI, fontWeight: 700, cursor: "pointer", marginBottom: 10 }}>
         {tr("redoQuestionnaire")}
       </button>
     </div>
@@ -4202,6 +4700,7 @@ function Profile(props) {
   var lang = props.lang || "en";
   var langLabel = (LANGUAGE_OPTIONS.filter(function(o) { return o.code === lang; })[0] || {}).label || "English";
   var curLabel = (CURRENCY_OPTIONS.filter(function(o) { return o.sym === cur; })[0] || {}).label || cur;
+  var themeLabel = props.theme === "classic" ? "Orange & Black" : "Purple";
   return (
     <div>
       <Card style={{ padding: "28px 22px", marginBottom: 16, textAlign: "center" }}>
@@ -4216,7 +4715,8 @@ function Profile(props) {
         <ProfileRow icon="spark" label={tr("seeYourPlan")} onClick={props.onViewPlan} />
         <ProfileRow icon="person" label={tr("richyRefersTo")} value={props.user} onClick={props.onViewNickname} />
         <ProfileRow icon="coins" label={tr("currency")} value={curLabel} onClick={props.onViewCurrency} />
-        <ProfileRow icon="book" label={tr("language")} value={langLabel} onClick={props.onViewLanguage} last={true} />
+        <ProfileRow icon="book" label={tr("language")} value={langLabel} onClick={props.onViewLanguage} />
+        <ProfileRow icon="star" label={tr("appearance")} value={themeLabel} onClick={props.onViewAppearance} last={true} />
       </Card>
 
       <button onClick={props.onLogout}
@@ -4248,6 +4748,8 @@ export default function App() {
   var budgets = _bud[0]; var setBudgets = _bud[1];
   var _gls = useState([]);
   var goals = _gls[0]; var setGoals = _gls[1];
+  var _trp = useState([]);
+  var trips = _trp[0]; var setTrips = _trp[1];
   var _nts = useState([]);
   var notes = _nts[0]; var setNotes = _nts[1];
   var _fld = useState([]);
@@ -4272,6 +4774,8 @@ export default function App() {
   var planJustCreated = _pjc[0]; var setPlanJustCreated = _pjc[1];
   var _lg = useState("en");
   var lang = _lg[0]; var setLang = _lg[1];
+  var _th = useState("purple");
+  var theme = _th[0]; var setTheme = _th[1];
   var _ack = useState(false);
   var authChecked = _ack[0]; var setAuthChecked = _ack[1];
   // In-memory mirror of the signed-in user's full Firestore document, so writes
@@ -4282,6 +4786,7 @@ export default function App() {
     setTx(data.tx || []);
     setBudgets(data.budgets || []);
     setGoals(data.goals || []);
+    setTrips(data.trips || []);
     setNotes(data.notes || []);
     setFolders((data.folders && data.folders.length) ? data.folders : freshFolders());
     setCategories((data.categories && data.categories.length) ? data.categories : freshCategories());
@@ -4297,6 +4802,7 @@ export default function App() {
     setRichPlan(data.plan || "");
     setUserDob(data.dob || "");
     _lang.code = data.lang || "en"; setLang(data.lang || "en");
+    var th = data.theme || "purple"; applyTheme(th); setTheme(th);
   }
 
   useEffect(function() {
@@ -4305,7 +4811,7 @@ export default function App() {
 
   // Build the starting document for a brand-new account (e.g. first Google sign-in).
   function defaultBlob(name, email) {
-    return { tx: [], budgets: [], goals: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: email };
+    return { tx: [], budgets: [], goals: [], trips: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: email, theme: "purple" };
   }
 
   // Firebase Auth is the single source of truth for the session. It restores the
@@ -4342,8 +4848,8 @@ export default function App() {
     CLOUD.signOut();
     blobRef.current = {};
     setUser(null); setAccountKey(null); setTab("overview");
-    setTx([]); setBudgets([]); setGoals([]); setNotes([]); setFolders([]); setCategories([]);
-    _lang.code = "en"; setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang("en");
+    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setNotes([]); setFolders([]); setCategories([]);
+    _lang.code = "en"; setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang("en"); applyTheme("purple"); setTheme("purple");
   }
 
   function save(next) {
@@ -4351,7 +4857,7 @@ export default function App() {
     var existing = blobRef.current || {};
     var blob = {};
     for (var ek in existing) blob[ek] = existing[ek];
-    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang;
+    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme;
     for (var k in next) blob[k] = next[k];
     blobRef.current = blob;
     CLOUD.saveUser(accountKey, blob);
@@ -4362,6 +4868,9 @@ export default function App() {
   function onSaveGoals(next) { setGoals(next); save({ goals: next }); }
   function onSaveNotes(next) { setNotes(next); save({ notes: next }); }
   function onSettleNote(nextTx, nextNotes) { setTx(nextTx); setNotes(nextNotes); save({ tx: nextTx, notes: nextNotes }); }
+  function onSaveTrips(next) { setTrips(next); save({ trips: next }); }
+  // Atomic two-array write (mirrors onSettleNote) so reserving a trip can't clobber tx.
+  function onTripReserve(nextTx, nextTrips) { setTx(nextTx); setTrips(nextTrips); save({ tx: nextTx, trips: nextTrips }); }
 
   // Reminder scheduling. Timers don't survive reload, so we re-derive them from
   // each note's durable `reminder.due` whenever notes change, firing any that are
@@ -4438,6 +4947,7 @@ export default function App() {
       );
     }
   }
+  function onSaveTheme(name) { applyTheme(name); setTheme(name); save({ theme: name }); }
   function onSaveNickname(name) { setUser(name); save({ displayName: name }); }
 
   function handleOnboardingComplete(plan, oData, suggestedBudgets) {
@@ -4499,6 +5009,7 @@ export default function App() {
   }
 
   var currentTab = tab;
+  applyTheme(theme);   // keep the live T palette in sync with the chosen design every render
   var _localeMap = { en: "en-US", he: "he-IL", es: "es-ES", fr: "fr-FR", ar: "ar-SA", ru: "ru-RU", de: "de-DE", pt: "pt-BR" };
   var _locale = _localeMap[lang] || "en-US";
   var monthLabel = new Date().toLocaleString(_locale, { month: "short" }) + " " + new Date().getFullYear();
@@ -4534,12 +5045,14 @@ export default function App() {
         {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} />}
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
-        {currentTab === "goals" && <Goals goals={goals} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} />}
+        {currentTab === "goals" && <Goals goals={goals} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { setTab("trips"); setSheet(false); }} />}
+        {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab("goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} username={user} plan={richPlan} lang={lang} />}
-        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} onViewPlan={function() { setTab("plan"); }} onViewCurrency={function() { setTab("currency"); }} onViewLanguage={function() { setTab("language"); }} onViewNickname={function() { setTab("nickname"); }} />}
+        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} onViewPlan={function() { setTab("plan"); }} onViewCurrency={function() { setTab("currency"); }} onViewLanguage={function() { setTab("language"); }} onViewNickname={function() { setTab("nickname"); }} onViewAppearance={function() { setTab("appearance"); }} />}
         {currentTab === "plan" && <PlanView plan={richPlan} onBack={function() { setTab("profile"); }} onRetake={handleRetakePlan} username={user} lang={lang} categories={categories} budgets={budgets} goals={goals} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onUpdatePlan={function(t) { setRichPlan(t); save({ plan: t }); }} />}
         {currentTab === "language" && <LanguageView lang={lang} onLangChange={onSaveLang} onBack={function() { setTab("profile"); }} />}
+        {currentTab === "appearance" && <AppearanceView theme={theme} onThemeChange={onSaveTheme} onBack={function() { setTab("profile"); }} />}
         {currentTab === "currency" && <CurrencyView currency={currency} onCurrencyChange={onSaveCurrency} onBack={function() { setTab("profile"); }} />}
         {currentTab === "nickname" && <NicknameView value={user} onSave={function(name) { onSaveNickname(name); setTab("profile"); }} onBack={function() { setTab("profile"); }} />}
       </div>
