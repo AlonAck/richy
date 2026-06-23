@@ -1758,15 +1758,17 @@ function Overview(props) {
   var ym = curMonth();
   // Net Balance is net worth: ALL income (incl. opening balance) minus ALL
   // expense, all-time. It must carry over month to month, so it is NOT scoped.
-  // Pending transactions haven't happened yet — exclude from all balance and
-  // cash-flow calculations until the user marks them as settled.
-  var allIncome  = tx.filter(function(t) { return t.type === "income" && !t.catchUp && !t.pending; }).reduce(function(s,t) { return s+t.amount; }, 0);
-  var allExpense = tx.filter(function(t) { return t.type === "expense" && !t.catchUp && !t.pending; }).reduce(function(s,t) { return s+t.amount; }, 0);
+  // Transactions with a future date or marked pending haven't happened yet —
+  // exclude them from all balance and cash-flow calculations.
+  var today = new Date().toISOString().slice(0, 10);
+  function isSettled(t) { return !t.pending && t.date <= today; }
+  var allIncome  = tx.filter(function(t) { return t.type === "income" && !t.catchUp && isSettled(t); }).reduce(function(s,t) { return s+t.amount; }, 0);
+  var allExpense = tx.filter(function(t) { return t.type === "expense" && !t.catchUp && isSettled(t); }).reduce(function(s,t) { return s+t.amount; }, 0);
   var balance = allIncome - allExpense;
   // Cash-flow stats are THIS MONTH only. Opening balance is net worth, not income,
   // so it is excluded here (else the savings rate reads 100%).
-  var income  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !t.pending && inMonth(t, ym); }).reduce(function(s,t) { return s+t.amount; }, 0);
-  var expense = tx.filter(function(t) { return t.type === "expense" && !t.pending && inMonth(t, ym); }).reduce(function(s,t) { return s+t.amount; }, 0);
+  var income  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && isSettled(t) && inMonth(t, ym); }).reduce(function(s,t) { return s+t.amount; }, 0);
+  var expense = tx.filter(function(t) { return t.type === "expense" && isSettled(t) && inMonth(t, ym); }).reduce(function(s,t) { return s+t.amount; }, 0);
   var hasIncome = income > 0;
   var savRate = hasIncome ? Math.round(((income - expense) / income) * 100) : 0;
   function spentInCat(c) {
