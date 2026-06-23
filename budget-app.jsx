@@ -341,6 +341,9 @@ var CLOUD = {
     var cred = _fb().auth.EmailAuthProvider.credential(email, pw);
     return cu.linkWithCredential(cred);
   },
+  sendPasswordReset: function(email) {
+    return _auth().sendPasswordResetEmail(email);
+  },
 };
 
 function Card(props) {
@@ -872,12 +875,28 @@ function AuthScreen(props) {
     setStep(s); setError(""); setNotice(""); setSsoProvider(null);
   }
 
+  function sendPasswordReset() {
+    setError(""); setNotice("");
+    var em = email.trim().toLowerCase();
+    if (!isEmail(em)) { setError("Enter your email address."); return; }
+    if (!cloudReady()) { setError(CLOUD_SETUP_MSG); return; }
+    setBusy(true);
+    CLOUD.sendPasswordReset(em).then(function() {
+      setBusy(false);
+      setNotice("Check your email for a reset link.");
+    }).catch(function(err) {
+      setBusy(false);
+      setError(authMsg(err));
+    });
+  }
+
   var titles = {
-    login:          { t: "Welcome back",   s: "Sign in to your account" },
-    login_verify:   { t: "Check your email", s: "We sent a 6-digit code to " + email },
-    signup_email:   { t: "Get started",    s: "Enter your email to begin" },
-    signup_verify:  { t: "Check your email", s: "We sent a 6-digit code to " + email },
-    signup_details: { t: "Almost there",   s: "A few details to finish your account" },
+    login:            { t: "Welcome back",    s: "Sign in to your account" },
+    login_verify:     { t: "Check your email", s: "We sent a 6-digit code to " + email },
+    signup_email:     { t: "Get started",     s: "Enter your email to begin" },
+    signup_verify:    { t: "Check your email", s: "We sent a 6-digit code to " + email },
+    signup_details:   { t: "Almost there",    s: "A few details to finish your account" },
+    forgot_password:  { t: "Reset password",  s: "Enter your email and we'll send a reset link" },
   };
   var head = titles[step] || titles.login;
 
@@ -952,6 +971,22 @@ function AuthScreen(props) {
                   <SVGIcon id={showPw ? "eyeoff" : "eye"} size={17} color={T.ink3} />
                 </button>
               </div>
+              <div style={{ textAlign: "right", marginTop: 8 }}>
+                <button onClick={function() { goTo("forgot_password"); }}
+                  style={{ background: "none", border: "none", color: T.orange, fontSize: 13, fontFamily: UI, cursor: "pointer", padding: 0 }}>
+                  Forgot password?
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === "forgot_password" && (
+            <div>
+              {fieldWrap("mail",
+                <input value={email} onChange={function(e) { setEmail(e.target.value); }}
+                  placeholder="Your email address" type="email" autoComplete="email" autoFocus={true}
+                  onKeyDown={function(e) { if (e.key === "Enter") sendPasswordReset(); }}
+                  style={fieldStyle} />, 0)}
             </div>
           )}
 
@@ -1019,12 +1054,13 @@ function AuthScreen(props) {
 
           {!ssoProvider && (
             <button
-              onClick={step === "login" ? login : step === "signup_email" ? sendCode : finishSignup}
+              onClick={step === "login" ? login : step === "signup_email" ? sendCode : step === "forgot_password" ? sendPasswordReset : finishSignup}
               disabled={busy}
               style={{ width: "100%", background: busy ? "rgba(0,0,0,0.08)" : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: busy ? T.ink3 : "#fff", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: busy ? "default" : "pointer", marginTop: 16, boxShadow: busy ? "none" : "0 6px 20px " + T.orangeGlow + ", 0 2px 6px rgba(0,0,0,0.1)", letterSpacing: "-0.01em" }}>
               {busy ? "Please wait..."
                 : step === "login" ? "Sign In"
                 : step === "signup_email" ? "Continue"
+                : step === "forgot_password" ? "Send reset link"
                 : "Create Account"}
             </button>
           )}
@@ -1032,10 +1068,10 @@ function AuthScreen(props) {
           {(step === "login" || step === "signup_email") && ssoBlock}
 
           <div style={{ textAlign: "center", marginTop: 20, fontSize: 14, color: T.ink2 }}>
-            {step === "login" ? "New here? " : "Have an account? "}
+            {step === "forgot_password" ? "Remember it? " : step === "login" ? "New here? " : "Have an account? "}
             <button onClick={function() { goTo(step === "login" ? "signup_email" : "login"); }}
               style={{ background: "none", border: "none", color: T.orange, fontWeight: 700, fontSize: 14, fontFamily: UI, cursor: "pointer" }}>
-              {step === "login" ? "Create account" : "Sign in"}
+              {step === "forgot_password" ? "Back to sign in" : step === "login" ? "Create account" : "Sign in"}
             </button>
           </div>
         </div>
