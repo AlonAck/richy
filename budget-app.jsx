@@ -1770,6 +1770,7 @@ function Overview(props) {
   function onDown(e) {
     dragRef.current.active = true;
     dragRef.current.startX = (e.touches ? e.touches[0].clientX : e.clientX);
+    dragRef.current.startY = (e.touches ? e.touches[0].clientY : e.clientY);
     dragRef.current.dx = 0;
     dragRef.current.vw = e.currentTarget.offsetWidth || 366;
     setDragging(true);
@@ -1778,7 +1779,11 @@ function Overview(props) {
   function onMove(e) {
     if (!dragRef.current.active) return;
     var clientX = (e.touches ? e.touches[0].clientX : e.clientX);
+    var clientY = (e.touches ? e.touches[0].clientY : e.clientY);
     var dx = clientX - dragRef.current.startX;
+    var dy = clientY - dragRef.current.startY;
+    // Only respond to horizontal movement; ignore if vertical movement is larger
+    if (Math.abs(dy) > Math.abs(dx)) return;
     if ((page === 0 && dx > 0) || (page === 4 && dx < 0)) dx = dx * 0.35;
     dragRef.current.dx = dx;
     setDragX(dx);
