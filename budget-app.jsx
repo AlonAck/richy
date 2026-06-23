@@ -344,6 +344,9 @@ var CLOUD = {
   sendPasswordReset: function(email) {
     return _auth().sendPasswordResetEmail(email);
   },
+  updateEmail: function(newEmail) {
+    return _auth().currentUser.updateEmail(newEmail);
+  },
 };
 
 function Card(props) {
@@ -1181,6 +1184,14 @@ function CatchUpScreen(props) {
   );
 }
 
+var STAGES = [
+  { label: "Teenager",  icon: "star" },
+  { label: "Student",   icon: "book" },
+  { label: "Working",   icon: "briefcase" },
+  { label: "Parent",    icon: "home" },
+];
+var TIMELINES = ["6 months", "1 year", "2 years", "5+ years"];
+
 function OnboardingScreen(props) {
   var _s = useState(1); var step = _s[0]; var setStep = _s[1];
   var _ls = useState(""); var lifeStage = _ls[0]; var setLifeStage = _ls[1];
@@ -1223,13 +1234,6 @@ function OnboardingScreen(props) {
     );
   }
 
-  var STAGES = [
-    { label: "Teenager",   icon: "star" },
-    { label: "Student",    icon: "book" },
-    { label: "Working",    icon: "briefcase" },
-    { label: "Parent",     icon: "home" },
-  ];
-  var TIMELINES = ["6 months", "1 year", "2 years", "5+ years"];
 
   var fieldStyle = { width: "100%", background: "rgba(255,255,255,0.88)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 16px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", marginBottom: 12, display: "block" };
   var labelStyle = { fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8, display: "block" };
@@ -4647,12 +4651,23 @@ function AppearanceView(props) {
 }
 
 function InfoRow(props) {
-  return (
-    <div style={{ padding: "13px 20px", borderBottom: props.last ? "none" : "0.5px solid " + T.sep, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-      <span style={{ fontSize: 14, color: T.ink3, fontFamily: UI, flexShrink: 0 }}>{props.label}</span>
-      <span style={{ fontSize: 14, fontWeight: 600, color: T.ink, fontFamily: UI, textAlign: "right" }}>{props.value}</span>
+  var rowStyle = { width: "100%", padding: "13px 20px", borderBottom: props.last ? "none" : "0.5px solid " + T.sep, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 };
+  var label = <span style={{ fontSize: 14, color: T.ink3, fontFamily: UI, flexShrink: 0 }}>{props.label}</span>;
+  var valText = (props.value !== undefined && props.value !== null && props.value !== "") ? props.value : "--";
+  var right = (
+    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <span style={{ fontSize: 14, fontWeight: 600, color: T.ink, fontFamily: UI, textAlign: "right" }}>{valText}</span>
+      {props.onClick ? <SVGIcon id="chevron" size={14} color={T.ink3} /> : null}
     </div>
   );
+  if (props.onClick) {
+    return (
+      <button onClick={props.onClick} style={Object.assign({}, rowStyle, { background: "none", border: "none", cursor: "pointer", fontFamily: UI })}>
+        {label}{right}
+      </button>
+    );
+  }
+  return <div style={rowStyle}>{label}{right}</div>;
 }
 
 function PrivacyView(props) {
@@ -4665,17 +4680,17 @@ function PrivacyView(props) {
   var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", padding: "18px 4px 8px", fontFamily: UI };
 
   var rows = [];
-  rows.push({ label: "Name", value: blob.displayName || "" });
-  if (blob.dob) rows.push({ label: "Date of birth", value: blob.dob });
-  rows.push({ label: "Language", value: langLabel });
-  rows.push({ label: "Currency", value: curLabel });
-  rows.push({ label: "Theme", value: themeLabel });
-  if (oData.lifeStage) rows.push({ label: "Life stage", value: oData.lifeStage });
-  if (oData.income) rows.push({ label: "Monthly income", value: "$" + oData.income });
-  if (oData.essentials) rows.push({ label: "Monthly essentials", value: "$" + oData.essentials });
-  if (oData.savings) rows.push({ label: "Savings", value: "$" + oData.savings });
-  if (oData.debt) rows.push({ label: "Total debt", value: "$" + oData.debt });
-  if (oData.goalName) rows.push({ label: "Top goal", value: oData.goalName + (oData.goalAmt ? "  ($" + oData.goalAmt + ")" : "") + (oData.timeline ? "  " + oData.timeline : "") });
+  rows.push({ label: "Name",              value: blob.displayName || "",   onClick: props.onEditName });
+  rows.push({ label: "Date of birth",     value: blob.dob || "",           onClick: props.onEditDob });
+  rows.push({ label: "Language",          value: langLabel,                onClick: props.onEditLanguage });
+  rows.push({ label: "Currency",          value: curLabel,                 onClick: props.onEditCurrency });
+  rows.push({ label: "Theme",             value: themeLabel,               onClick: props.onEditTheme });
+  rows.push({ label: "Life stage",        value: oData.lifeStage || "",    onClick: props.onEditFinancial });
+  rows.push({ label: "Monthly income",    value: oData.income ? "$" + oData.income : "",    onClick: props.onEditFinancial });
+  rows.push({ label: "Monthly essentials",value: oData.essentials ? "$" + oData.essentials : "", onClick: props.onEditFinancial });
+  rows.push({ label: "Savings",           value: oData.savings ? "$" + oData.savings : "",  onClick: props.onEditFinancial });
+  rows.push({ label: "Total debt",        value: oData.debt ? "$" + oData.debt : "",        onClick: props.onEditFinancial });
+  rows.push({ label: "Top goal",          value: oData.goalName || "",     onClick: props.onEditFinancial });
 
   return (
     <div>
@@ -4683,13 +4698,13 @@ function PrivacyView(props) {
 
       <div style={secLabel}>Account</div>
       <Card style={{ overflow: "hidden", marginBottom: 4 }}>
-        <InfoRow label="Email" value={email} last={true} />
+        <InfoRow label="Email" value={email} onClick={props.onEditEmail} last={true} />
       </Card>
 
       <div style={secLabel}>What Richy knows</div>
       <Card style={{ overflow: "hidden", marginBottom: 4 }}>
         {rows.map(function(row, i) {
-          return <InfoRow key={i} label={row.label} value={row.value} last={i === rows.length - 1} />;
+          return <InfoRow key={i} label={row.label} value={row.value} onClick={row.onClick} last={i === rows.length - 1} />;
         })}
       </Card>
 
@@ -4697,6 +4712,175 @@ function PrivacyView(props) {
       <Card style={{ overflow: "hidden", marginBottom: 16 }}>
         <ProfileRow icon="lock" label={props.hasPw ? "Change password" : "Add password"} onClick={props.onViewPassword} last={true} />
       </Card>
+    </div>
+  );
+}
+
+function EditEmailView(props) {
+  var _em = useState(props.currentEmail || ""); var newEmail = _em[0]; var setNewEmail = _em[1];
+  var _op = useState(""); var oldPw = _op[0]; var setOldPw = _op[1];
+  var _err = useState(""); var err = _err[0]; var setErr = _err[1];
+  var _ld = useState(false); var loading = _ld[0]; var setLoading = _ld[1];
+  var _sh = useState(false); var showPw = _sh[0]; var setShowPw = _sh[1];
+  var hasPw = props.hasPw;
+
+  function doUpdate(em) {
+    CLOUD.updateEmail(em).then(function() {
+      setLoading(false);
+      props.onSave(em);
+    }).catch(function(e) {
+      setLoading(false);
+      var code = e && e.code;
+      if (code === "auth/requires-recent-login") {
+        setErr("Please sign out and sign back in, then try again.");
+      } else if (code === "auth/email-already-in-use") {
+        setErr("That email is already in use.");
+      } else if (code === "auth/invalid-email") {
+        setErr("That doesn't look like a valid email.");
+      } else {
+        setErr("Something went wrong. Please try again.");
+      }
+    });
+  }
+
+  function handleSubmit() {
+    setErr("");
+    var em = newEmail.trim().toLowerCase();
+    if (!isEmail(em)) { setErr("Enter a valid email address."); return; }
+    if (em === (props.currentEmail || "").toLowerCase()) { props.onBack(); return; }
+    if (hasPw && !oldPw) { setErr("Enter your current password to confirm."); return; }
+    setLoading(true);
+    if (hasPw) {
+      CLOUD.reauthenticate(props.currentEmail, oldPw).then(function() {
+        doUpdate(em);
+      }).catch(function(e) {
+        setLoading(false);
+        var code = e && e.code;
+        if (code === "auth/wrong-password" || code === "auth/invalid-credential") {
+          setErr("Current password is incorrect.");
+        } else {
+          setErr("Something went wrong. Please try again.");
+        }
+      });
+    } else {
+      doUpdate(em);
+    }
+  }
+
+  var inputStyle = { width: "100%", fontSize: 16, color: T.ink, background: "none", border: "none", outline: "none", fontFamily: UI, padding: 0, boxSizing: "border-box" };
+  var fieldLabelStyle = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 8 };
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} label="Privacy & Data" />
+      <Card style={{ padding: "22px 20px", marginBottom: 12 }}>
+        <div style={{ borderBottom: hasPw ? "0.5px solid " + T.sep : "none", paddingBottom: hasPw ? 14 : 0, marginBottom: hasPw ? 14 : 0 }}>
+          <div style={fieldLabelStyle}>New email</div>
+          <input value={newEmail} onChange={function(e) { setNewEmail(e.target.value); }}
+            type="email" placeholder="Enter new email"
+            style={inputStyle} autoFocus={true} autoComplete="email" />
+        </div>
+        {hasPw ? (
+          <div>
+            <div style={fieldLabelStyle}>Current password</div>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <input value={oldPw} onChange={function(e) { setOldPw(e.target.value); }}
+                type={showPw ? "text" : "password"} placeholder="Confirm your password"
+                style={Object.assign({}, inputStyle, { flex: 1 })} autoComplete="current-password" />
+              <button onClick={function() { setShowPw(function(v) { return !v; }); }}
+                style={{ background: "none", border: "none", cursor: "pointer", padding: "0 0 0 8px" }}>
+                <SVGIcon id={showPw ? "eyeoff" : "eye"} size={16} color={T.ink3} />
+              </button>
+            </div>
+          </div>
+        ) : null}
+        {err ? <div style={{ color: T.red, fontSize: 13, marginTop: 14 }}>{err}</div> : null}
+      </Card>
+      <BigBtn label={loading ? "Saving..." : "Save email"} onPress={handleSubmit} disabled={loading || !newEmail.trim()} />
+    </div>
+  );
+}
+
+function EditDobView(props) {
+  var _dob = useState(props.currentDob || ""); var dob = _dob[0]; var setDob = _dob[1];
+  var flStyle = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 10 };
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} label="Privacy & Data" />
+      <Card style={{ padding: "22px 20px", marginBottom: 16 }}>
+        <div style={flStyle}>Date of birth</div>
+        <input value={dob} onChange={function(e) { setDob(e.target.value); }}
+          type="date"
+          style={{ width: "100%", fontSize: 16, color: T.ink, background: "none", border: "none", outline: "none", fontFamily: UI, padding: 0, boxSizing: "border-box" }}
+          autoFocus={true} />
+      </Card>
+      <BigBtn label="Save" onPress={function() { if (dob) props.onSave(dob); }} disabled={!dob} />
+    </div>
+  );
+}
+
+function EditFinancialView(props) {
+  var oData = props.oData || {};
+  var _ls = useState(oData.lifeStage || ""); var lifeStage = _ls[0]; var setLifeStage = _ls[1];
+  var _inc = useState(oData.income || ""); var income = _inc[0]; var setIncome = _inc[1];
+  var _ess = useState(oData.essentials || ""); var essentials = _ess[0]; var setEssentials = _ess[1];
+  var _sav = useState(oData.savings || ""); var savings = _sav[0]; var setSavings = _sav[1];
+  var _dbt = useState(oData.debt || ""); var debt = _dbt[0]; var setDebt = _dbt[1];
+  var _gn = useState(oData.goalName || ""); var goalName = _gn[0]; var setGoalName = _gn[1];
+  var _ga = useState(oData.goalAmt || ""); var goalAmt = _ga[0]; var setGoalAmt = _ga[1];
+  var _tl = useState(oData.timeline || ""); var timeline = _tl[0]; var setTimeline = _tl[1];
+
+  function handleSave() {
+    props.onSave({ lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: oData.age || "" });
+  }
+
+  var flStyle = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 8, display: "block" };
+  var numInput = { width: "100%", fontSize: 15, color: T.ink, background: "none", border: "none", outline: "none", fontFamily: UI, padding: "11px 0", borderBottom: "0.5px solid " + T.sep, boxSizing: "border-box", display: "block" };
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} label="Privacy & Data" />
+      <Card style={{ padding: "22px 20px", marginBottom: 12 }}>
+        <span style={flStyle}>Life stage</span>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18, paddingBottom: 18, borderBottom: "0.5px solid " + T.sep }}>
+          {STAGES.map(function(st) {
+            var sel = lifeStage === st.label;
+            return (
+              <button key={st.label} onClick={function() { setLifeStage(st.label); }}
+                style={{ background: sel ? T.orange : "rgba(0,0,0,0.06)", border: "none", borderRadius: 30, padding: "9px 16px", fontSize: 14, fontWeight: sel ? 700 : 500, color: sel ? "#fff" : T.ink2, cursor: "pointer", fontFamily: UI }}>
+                {st.label}
+              </button>
+            );
+          })}
+        </div>
+        <span style={flStyle}>Monthly income</span>
+        <input value={income} onChange={function(e) { setIncome(e.target.value); }} type="number" placeholder="0" style={numInput} />
+        <span style={Object.assign({}, flStyle, { marginTop: 14 })}>Monthly essentials</span>
+        <input value={essentials} onChange={function(e) { setEssentials(e.target.value); }} type="number" placeholder="0" style={numInput} />
+        <span style={Object.assign({}, flStyle, { marginTop: 14 })}>Current savings</span>
+        <input value={savings} onChange={function(e) { setSavings(e.target.value); }} type="number" placeholder="0" style={numInput} />
+        <span style={Object.assign({}, flStyle, { marginTop: 14 })}>Total debt</span>
+        <input value={debt} onChange={function(e) { setDebt(e.target.value); }} type="number" placeholder="0" style={Object.assign({}, numInput, { borderBottom: "none" })} />
+      </Card>
+      <Card style={{ padding: "22px 20px", marginBottom: 12 }}>
+        <span style={flStyle}>Top goal</span>
+        <input value={goalName} onChange={function(e) { setGoalName(e.target.value); }} placeholder="e.g. Emergency fund" style={numInput} />
+        <span style={Object.assign({}, flStyle, { marginTop: 14 })}>Target amount</span>
+        <input value={goalAmt} onChange={function(e) { setGoalAmt(e.target.value); }} type="number" placeholder="0" style={numInput} />
+        <span style={Object.assign({}, flStyle, { marginTop: 14 })}>Timeline</span>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, paddingTop: 8 }}>
+          {TIMELINES.map(function(t) {
+            var sel = timeline === t;
+            return (
+              <button key={t} onClick={function() { setTimeline(t); }}
+                style={{ background: sel ? T.orange : "rgba(0,0,0,0.06)", border: "none", borderRadius: 30, padding: "9px 16px", fontSize: 14, fontWeight: sel ? 700 : 500, color: sel ? "#fff" : T.ink2, cursor: "pointer", fontFamily: UI }}>
+                {t}
+              </button>
+            );
+          })}
+        </div>
+      </Card>
+      <BigBtn label="Save" onPress={handleSave} disabled={false} />
     </div>
   );
 }
@@ -5095,6 +5279,7 @@ export default function App() {
   // In-memory mirror of the signed-in user's full Firestore document, so writes
   // can merge against it without an async read-before-write each time.
   var blobRef = useRef({});
+  var prevTabRef = useRef("profile");
   var _hp = useState(false); var hasPw = _hp[0]; var setHasPw = _hp[1];
 
   function loadData(data) {
@@ -5271,6 +5456,9 @@ export default function App() {
   }
   function onSaveTheme(name) { applyTheme(name); setTheme(name); save({ theme: name }); }
   function onSaveNickname(name) { setUser(name); save({ displayName: name }); }
+  function onSaveDob(dob) { setUserDob(dob); save({ dob: dob }); }
+  function onSaveEmail(email) { save({ email: email }); }
+  function onSaveFinancial(oData) { save({ onboardingData: oData }); }
 
   function handleOnboardingComplete(plan, oData, suggestedBudgets) {
     setRichPlan(plan);
@@ -5345,7 +5533,7 @@ export default function App() {
             <div style={{ background: T.orangeDim, borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em" }}>{monthLabel}</div>
           </div>
           <span style={{ flex: 1, fontSize: 20, fontWeight: 700, color: T.ink, textAlign: "center", letterSpacing: "-0.02em" }}>
-            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
+            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
           <div style={{ width: 86, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
             {HAS_FAB.indexOf(currentTab) !== -1 && (
@@ -5371,14 +5559,17 @@ export default function App() {
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab("goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} username={user} plan={richPlan} lang={lang} />}
-        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} onViewPlan={function() { setTab("plan"); }} onViewCurrency={function() { setTab("currency"); }} onViewLanguage={function() { setTab("language"); }} onViewNickname={function() { setTab("nickname"); }} onViewAppearance={function() { setTab("appearance"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
-        {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} />}
+        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} onViewPlan={function() { setTab("plan"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
+        {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
+        {currentTab === "editEmail" && <EditEmailView currentEmail={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onSave={function(email) { onSaveEmail(email); setTab("privacy"); }} />}
+        {currentTab === "editDob" && <EditDobView currentDob={userDob} onBack={function() { setTab("privacy"); }} onSave={function(dob) { onSaveDob(dob); setTab("privacy"); }} />}
+        {currentTab === "editFinancial" && <EditFinancialView oData={blobRef.current.onboardingData || {}} onBack={function() { setTab("privacy"); }} onSave={function(oData) { onSaveFinancial(oData); setTab("privacy"); }} />}
         {currentTab === "plan" && <PlanView plan={richPlan} onBack={function() { setTab("profile"); }} onRetake={handleRetakePlan} username={user} lang={lang} categories={categories} budgets={budgets} goals={goals} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onUpdatePlan={function(t) { setRichPlan(t); save({ plan: t }); }} />}
-        {currentTab === "language" && <LanguageView lang={lang} onLangChange={onSaveLang} onBack={function() { setTab("profile"); }} />}
-        {currentTab === "appearance" && <AppearanceView theme={theme} onThemeChange={onSaveTheme} onBack={function() { setTab("profile"); }} />}
-        {currentTab === "currency" && <CurrencyView currency={currency} onCurrencyChange={onSaveCurrency} onBack={function() { setTab("profile"); }} />}
-        {currentTab === "nickname" && <NicknameView value={user} onSave={function(name) { onSaveNickname(name); setTab("profile"); }} onBack={function() { setTab("profile"); }} />}
+        {currentTab === "language" && <LanguageView lang={lang} onLangChange={onSaveLang} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "appearance" && <AppearanceView theme={theme} onThemeChange={onSaveTheme} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "currency" && <CurrencyView currency={currency} onCurrencyChange={onSaveCurrency} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "nickname" && <NicknameView value={user} onSave={function(name) { onSaveNickname(name); setTab(prevTabRef.current || "profile"); }} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
       </div>
 
       <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, zIndex: 30, background: "rgba(250,246,240,0.95)", backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)", borderTop: "0.5px solid rgba(0,0,0,0.08)" }}>

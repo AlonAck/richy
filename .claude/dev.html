@@ -125,9 +125,16 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).t
     el = React.createElement(Advisor, { tx: mockTx, budgets: [], goals: mockGoals, categories: mockCats, username: "Alon", plan: "", lang: "en" });
   } else if (view === "privacy") {
     var mockBlob = { displayName: "Alon", email: "alon@example.com", dob: "1995-03-14", lang: "en", currency: "$", theme: "purple", onboardingData: { lifeStage: "Early Career", income: "6000", essentials: "2200", savings: "5000", debt: "0", goalName: "Emergency Fund", goalAmt: "10000", timeline: "12 months" } };
-    el = React.createElement(PrivacyView, { blob: mockBlob, hasPw: qs.get("haspw") === "1", onBack: function(){}, onViewPassword: function(){} });
+    el = React.createElement(PrivacyView, { blob: mockBlob, hasPw: qs.get("haspw") === "1", onBack: function(){}, onViewPassword: function(){}, onEditEmail: function(){}, onEditName: function(){}, onEditDob: function(){}, onEditLanguage: function(){}, onEditCurrency: function(){}, onEditTheme: function(){}, onEditFinancial: function(){} });
   } else if (view === "password") {
     el = React.createElement(PasswordView, { email: "alon@example.com", hasPw: qs.get("haspw") === "1", onBack: function(){}, onDone: function(){} });
+  } else if (view === "editFinancial") {
+    var mockOData = { lifeStage: "Working", income: "6000", essentials: "2200", savings: "5000", debt: "0", goalName: "Emergency Fund", goalAmt: "10000", timeline: "1 year" };
+    el = React.createElement(EditFinancialView, { oData: mockOData, onBack: function(){}, onSave: function(){} });
+  } else if (view === "editDob") {
+    el = React.createElement(EditDobView, { currentDob: "1995-03-14", onBack: function(){}, onSave: function(){} });
+  } else if (view === "editEmail") {
+    el = React.createElement(EditEmailView, { currentEmail: "alon@example.com", hasPw: qs.get("haspw") === "1", onBack: function(){}, onSave: function(){} });
   } else {
     el = React.createElement(Overview, { tx: mockTx, goals: mockGoals, budgets: [], categories: mockCats, username: "Alon", plan: "", onCategories: function(){} });
   }
