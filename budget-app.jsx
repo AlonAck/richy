@@ -174,16 +174,77 @@ const DISP = "-apple-system, system-ui, sans-serif";
 
 var _currency = { sym: "$" };
 var _lang = { code: "en" };
-var CURRENCY_OPTIONS = [
-  { sym: "$", code: "USD", label: "USD  $" },
-  { sym: "€", code: "EUR", label: "EUR  €" },
-  { sym: "£", code: "GBP", label: "GBP  £" },
-  { sym: "₪", code: "ILS", label: "ILS  ₪" },
-  { sym: "¥", code: "JPY", label: "JPY  ¥" },
-];
+// Full currency list. Symbols MUST be unique because the app keys the active
+// currency by its symbol (SYM_TO_CODE / _currency.sym), so dollar- and
+// yen-family currencies use distinct marks (A$, C$, CN¥, ...). dec = minor-unit
+// digits (most are 2; yen/won/dong/etc. are 0; Gulf dinars are 3). label is
+// derived as "CODE  sym" for existing call sites.
+var CURRENCY_OPTIONS = (function() {
+  var raw = [
+    // [code, sym, name, dec]
+    ["USD", "$",    "US Dollar",          2],
+    ["EUR", "€",    "Euro",               2],
+    ["GBP", "£",    "British Pound",      2],
+    ["JPY", "¥",    "Japanese Yen",       0],
+    ["ILS", "₪",    "Israeli Shekel",     2],
+    ["INR", "₹",    "Indian Rupee",       2],
+    ["BRL", "R$",   "Brazilian Real",     2],
+    ["TRY", "₺",    "Turkish Lira",       2],
+    ["GHS", "₵",    "Ghanaian Cedi",      2],
+    ["COP", "Col$", "Colombian Peso",     0],
+    ["VND", "₫",    "Vietnamese Dong",    0],
+    ["AUD", "A$",   "Australian Dollar",  2],
+    ["CAD", "C$",   "Canadian Dollar",    2],
+    ["NZD", "NZ$",  "New Zealand Dollar", 2],
+    ["HKD", "HK$",  "Hong Kong Dollar",   2],
+    ["SGD", "S$",   "Singapore Dollar",   2],
+    ["MXN", "Mex$", "Mexican Peso",       2],
+    ["CHF", "Fr",   "Swiss Franc",        2],
+    ["CNY", "CN¥",  "Chinese Yuan",       2],
+    ["KRW", "₩",    "South Korean Won",   0],
+    ["THB", "฿",    "Thai Baht",          2],
+    ["PHP", "₱",    "Philippine Peso",    2],
+    ["IDR", "Rp",   "Indonesian Rupiah",  0],
+    ["MYR", "RM",   "Malaysian Ringgit",  2],
+    ["PLN", "zł",   "Polish Zloty",       2],
+    ["CZK", "Kč",   "Czech Koruna",       2],
+    ["HUF", "Ft",   "Hungarian Forint",   0],
+    ["RON", "lei",  "Romanian Leu",       2],
+    ["SEK", "kr",   "Swedish Krona",      2],
+    ["NOK", "Nkr",  "Norwegian Krone",    2],
+    ["DKK", "Dkr",  "Danish Krone",       2],
+    ["ISK", "Íkr",  "Icelandic Krona",    0],
+    ["RUB", "₽",    "Russian Ruble",      2],
+    ["UAH", "₴",    "Ukrainian Hryvnia",  2],
+    ["ZAR", "R",    "South African Rand", 2],
+    ["NGN", "₦",    "Nigerian Naira",     2],
+    ["KES", "KSh",  "Kenyan Shilling",    2],
+    ["EGP", "E£",   "Egyptian Pound",     2],
+    ["MAD", "DH",   "Moroccan Dirham",    2],
+    ["AED", "د.إ",  "UAE Dirham",         2],
+    ["SAR", "ر.س",  "Saudi Riyal",        2],
+    ["QAR", "QR",   "Qatari Riyal",       2],
+    ["KWD", "KD",   "Kuwaiti Dinar",      3],
+    ["BHD", "BD",   "Bahraini Dinar",     3],
+    ["PKR", "₨",    "Pakistani Rupee",    2],
+    ["BDT", "৳",    "Bangladeshi Taka",   2],
+    ["LKR", "SLRs", "Sri Lankan Rupee",   2],
+    ["NPR", "NRs",  "Nepalese Rupee",     2],
+    ["CLP", "CLP$", "Chilean Peso",       0],
+    ["ARS", "ARS$", "Argentine Peso",     2]
+  ];
+  return raw.map(function(r) {
+    return { code: r[0], sym: r[1], name: r[2], dec: r[3], label: r[0] + "  " + r[1] };
+  });
+})();
 var SYM_TO_CODE = (function() {
   var m = {};
   CURRENCY_OPTIONS.forEach(function(o) { m[o.sym] = o.code; });
+  return m;
+})();
+var SYM_TO_DEC = (function() {
+  var m = {};
+  CURRENCY_OPTIONS.forEach(function(o) { m[o.sym] = o.dec; });
   return m;
 })();
 var LANGUAGE_OPTIONS = [
@@ -215,7 +276,8 @@ function tr(key) {
 
 function fmtCur(sym, n) {
   var abs = Math.abs(n || 0);
-  return (sym || "$") + abs.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  var d = SYM_TO_DEC[sym]; if (d == null) d = 2;
+  return (sym || "$") + abs.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
 }
 function dollars(n) {
   return fmtCur(_currency.sym, n);
@@ -231,9 +293,18 @@ function round2(n) {
 function curMonth() { return new Date().toISOString().slice(0, 7); }   // "2026-06"
 function inMonth(t, ym) { return !!(t && t.date) && t.date.slice(0, 7) === ym; }
 
-// Offline fallback rates, expressed as units of each currency per 1 USD.
-// Only used when the live FX request fails (no network). rate(from -> to) = USD[to] / USD[from].
-var FX_FALLBACK = { USD: 1, EUR: 0.92, GBP: 0.79, ILS: 3.70, JPY: 150 };
+// Offline fallback rates, expressed as approximate units of each currency per 1 USD.
+// Used when the live FX request fails (no network) OR when the currency is outside
+// frankfurter's ECB set (COP, GHS, VND, NGN, etc.). rate(from -> to) = USD[to] / USD[from].
+var FX_FALLBACK = {
+  USD: 1, EUR: 0.92, GBP: 0.79, JPY: 150, ILS: 3.70, INR: 83, BRL: 5.0, TRY: 32,
+  GHS: 15, COP: 4000, VND: 25000, AUD: 1.52, CAD: 1.36, NZD: 1.64, HKD: 7.8,
+  SGD: 1.34, MXN: 17, CHF: 0.88, CNY: 7.2, KRW: 1340, THB: 36, PHP: 57,
+  IDR: 15800, MYR: 4.7, PLN: 4.0, CZK: 23, HUF: 360, RON: 4.6, SEK: 10.6,
+  NOK: 10.7, DKK: 6.9, ISK: 138, RUB: 92, UAH: 39, ZAR: 18.5, NGN: 1500,
+  KES: 130, EGP: 48, MAD: 10, AED: 3.67, SAR: 3.75, QAR: 3.64, KWD: 0.31,
+  BHD: 0.38, PKR: 278, BDT: 110, LKR: 300, NPR: 133, CLP: 950, ARS: 950
+};
 var _fxCache = {};
 
 function fxStaticRate(fromSym, toSym) {
@@ -347,6 +418,81 @@ var CLOUD = {
   updateEmail: function(newEmail) {
     return _auth().currentUser.updateEmail(newEmail);
   },
+
+  // ---- Households (Collab / couples mode) ------------------------------------
+  // A household is a shared document at households/{hid}. SHARED data (budgets,
+  // goals, categories, shared transactions) lives here; PRIVATE transactions and
+  // personal settings stay in each member's users/{uid} doc and never enter here.
+  // Membership is enforced by Firestore rules: only listed memberUids (or an
+  // invited email in pendingEmails, who can accept) may touch the doc.
+  createHousehold: function(member, name) {
+    var ref = _fsdb().collection("households").doc();
+    var data = {
+      name: name || "Our Household",
+      createdBy: member.uid,
+      memberUids: [member.uid],
+      members: [{ uid: member.uid, name: member.name || "", email: (member.email || "").toLowerCase() }],
+      pendingEmails: [],
+      createdAt: Date.now()
+    };
+    return ref.set(data).then(function() { return ref.id; });
+  },
+  loadHousehold: function(hid) {
+    return _fsdb().collection("households").doc(hid).get().then(function(snap) {
+      return snap.exists ? Object.assign({ id: snap.id }, snap.data()) : null;
+    });
+  },
+  // Live updates so a partner's membership/invite changes appear without reload.
+  subscribeHousehold: function(hid, cb) {
+    if (!cloudReady() || !hid) { cb(null); return function() {}; }
+    return _fsdb().collection("households").doc(hid).onSnapshot(
+      function(snap) { cb(snap.exists ? Object.assign({ id: snap.id }, snap.data()) : null); },
+      function() { cb(null); }
+    );
+  },
+  // Find households this email has been invited to but not yet joined. The query
+  // is constrained to pendingEmails array-contains email so every match satisfies
+  // the read rule.
+  findInvites: function(email) {
+    if (!cloudReady() || !email) return Promise.resolve([]);
+    return _fsdb().collection("households").where("pendingEmails", "array-contains", email.toLowerCase()).get()
+      .then(function(qs) {
+        var out = [];
+        qs.forEach(function(d) { out.push(Object.assign({ id: d.id }, d.data())); });
+        return out;
+      });
+  },
+  inviteToHousehold: function(hid, email) {
+    var FV = _fb().firestore.FieldValue;
+    return _fsdb().collection("households").doc(hid).update({
+      pendingEmails: FV.arrayUnion((email || "").toLowerCase())
+    });
+  },
+  cancelInvite: function(hid, email) {
+    var FV = _fb().firestore.FieldValue;
+    return _fsdb().collection("households").doc(hid).update({
+      pendingEmails: FV.arrayRemove((email || "").toLowerCase())
+    });
+  },
+  acceptInvite: function(hid, member) {
+    var FV = _fb().firestore.FieldValue;
+    return _fsdb().collection("households").doc(hid).update({
+      memberUids: FV.arrayUnion(member.uid),
+      members: FV.arrayUnion({ uid: member.uid, name: member.name || "", email: (member.email || "").toLowerCase() }),
+      pendingEmails: FV.arrayRemove((member.email || "").toLowerCase())
+    });
+  },
+  leaveHousehold: function(hid, member) {
+    var FV = _fb().firestore.FieldValue;
+    return _fsdb().collection("households").doc(hid).update({
+      memberUids: FV.arrayRemove(member.uid),
+      members: FV.arrayRemove({ uid: member.uid, name: member.name || "", email: (member.email || "").toLowerCase() })
+    });
+  },
+  saveHousehold: function(hid, data) {
+    if (!cloudReady() || !hid) return Promise.resolve();
+    return _fsdb().collection("households").doc(hid).set(data, { merge: true });
+  }
 };
 
 function Card(props) {
@@ -655,18 +801,29 @@ function AmountField(props) {
         <input type="number" value={props.value} onChange={props.onAmount} placeholder="0.00"
           style={{ flex: 1, minWidth: 0, border: "none", background: "none", fontSize: 26, fontWeight: 700, color: T.ink, fontFamily: UI, outline: "none", padding: 0, letterSpacing: "-0.03em" }} />
       </div>
-      <div style={{ display: "flex", gap: 5, marginTop: 11 }}>
-        {CURRENCY_OPTIONS.map(function(o) {
-          var on = o.sym === props.cur;
-          return (
-            <button key={o.sym} onClick={function() { props.onCur(o.sym); }}
-              style={{ flex: 1, padding: "6px 0", borderRadius: 9, border: "none", cursor: "pointer", fontFamily: UI,
-                background: on ? T.orangeDim : "rgba(0,0,0,0.05)", color: on ? T.orange : T.ink3 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1 }}>{o.sym}</div>
-              <div style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.04em", marginTop: 2 }}>{o.code}</div>
-            </button>
-          );
-        })}
+      <div style={{ display: "flex", gap: 5, marginTop: 11, overflowX: "auto", paddingBottom: 2 }}>
+        {(function() {
+          // Curated common set, but always include the user's main currency and the
+          // currently-selected one so any choice from the full list stays reachable.
+          var common = ["$", "€", "£", "¥", "₹", "A$", "C$", "CN¥", "R$", "₺"];
+          var syms = [];
+          [props.mainSym, props.cur].concat(common).forEach(function(s) {
+            if (s && syms.indexOf(s) === -1) syms.push(s);
+          });
+          return syms.map(function(sym) {
+            var o = CURRENCY_OPTIONS.filter(function(c) { return c.sym === sym; })[0];
+            if (!o) return null;
+            var on = sym === props.cur;
+            return (
+              <button key={sym} onClick={function() { props.onCur(sym); }}
+                style={{ flex: "0 0 auto", minWidth: 46, padding: "6px 8px", borderRadius: 9, border: "none", cursor: "pointer", fontFamily: UI,
+                  background: on ? T.orangeDim : "rgba(0,0,0,0.05)", color: on ? T.orange : T.ink3 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1 }}>{o.sym}</div>
+                <div style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.04em", marginTop: 2 }}>{o.code}</div>
+              </button>
+            );
+          });
+        })()}
       </div>
       {foreign && !props.rateLoading && (
         <div style={{ fontSize: 11, color: T.ink3, fontWeight: 500, fontFamily: UI, marginTop: 8 }}>
@@ -1194,6 +1351,7 @@ var TIMELINES = ["6 months", "1 year", "2 years", "5+ years"];
 
 function OnboardingScreen(props) {
   var _s = useState(1); var step = _s[0]; var setStep = _s[1];
+  var _cp = useState(""); var coreProblem = _cp[0]; var setCoreProblem = _cp[1];
   var _ls = useState(""); var lifeStage = _ls[0]; var setLifeStage = _ls[1];
   var _inc = useState(""); var income = _inc[0]; var setIncome = _inc[1];
   var _ess = useState(""); var essentials = _ess[0]; var setEssentials = _ess[1];
@@ -1206,6 +1364,7 @@ function OnboardingScreen(props) {
   var _er = useState(""); var err = _er[0]; var setErr = _er[1];
   var _gp = useState(""); var genPlan = _gp[0]; var setGenPlan = _gp[1];
   var _god = useState(null); var genOData = _god[0]; var setGenOData = _god[1];
+  var _em = useState("manual"); var entryMethod = _em[0]; var setEntryMethod = _em[1];
 
   var age = computeAge(props.dob);
 
@@ -1215,8 +1374,8 @@ function OnboardingScreen(props) {
     var ageStr = age !== null ? String(age) : "not provided";
     var langName = LANGUAGE_NAMES[props.lang] || "English";
     var langInstruction = langName !== "English" ? " Respond entirely in " + langName + "." : "";
-    var system = "You are Richard, a personal finance advisor inside the Richy app. A new user has just answered their onboarding questions. Generate a concise, direct, personalized financial plan for them. Base it on proven frameworks: the 50/30/20 rule, Pay Yourself First, emergency fund before investing, debt avalanche, compound growth. For teenagers: focus on building saving habits, tracking spending, and earning more - no investment jargon. Keep the plan under 250 words. No bullet lists - write in short paragraphs like a knowledgeable friend talking to them directly. No emojis. No markdown headers." + langInstruction;
-    var userMsg = "Name: " + props.username + ". Age: " + ageStr + ". Life stage: " + lifeStage + ". Monthly income: $" + (income || "0") + ". Monthly essentials (rent, food, bills): $" + (essentials || "0") + ". Current savings: $" + (savings || "0") + ". Total debt: $" + (debt || "0") + ". Top goal: " + (goalName || "financial freedom") + ", target $" + (goalAmt || "unknown") + ", timeline: " + (timeline || "unspecified") + ". Write my personalized financial plan.";
+    var system = "You are Richard, a warm and knowledgeable personal finance advisor inside the Richy app. A new user has just answered their onboarding questions. Their primary financial challenge is: " + (coreProblem || "general budgeting") + ". Generate a concise, personalized financial plan that directly addresses THEIR SPECIFIC PROBLEM, not generic advice. Base it on proven frameworks but tailor it to their situation. Keep the plan under 250 words. No bullet lists - write in short paragraphs like a knowledgeable friend. No emojis. No markdown headers. IMPORTANT: If their problem involves features Richy doesn't have yet (couples mode, debt payoff tracking, business accounting), be honest about that and suggest practical workarounds." + langInstruction;
+    var userMsg = "Name: " + props.username + ". Age: " + ageStr + ". Life stage: " + lifeStage + ". PRIMARY CHALLENGE: " + (coreProblem || "building a financial plan") + ". Monthly income: $" + (income || "0") + ". Monthly essentials: $" + (essentials || "0") + ". Current savings: $" + (savings || "0") + ". Total debt: $" + (debt || "0") + ". Top goal: " + (goalName || "financial freedom") + ", target $" + (goalAmt || "unknown") + ", timeline: " + (timeline || "unspecified") + ". Write a plan that directly addresses my primary challenge.";
     callClaude(
       [{ role: "user", content: userMsg }],
       system,
@@ -1224,12 +1383,12 @@ function OnboardingScreen(props) {
       function(planErr, text) {
         setLoading(false);
         var plan = (planErr || !text)
-          ? ("Start here, " + props.username + ". Track every dollar you spend this month - awareness is step one. Set aside 10% of whatever you earn before you touch anything else. Build one month of essential expenses as a buffer. Then pour your focus into your goal: " + (goalName || "financial freedom") + ". Small consistent actions, repeated every month, compound into real wealth.")
+          ? ("Start here, " + props.username + ". For your challenge of " + (coreProblem || "managing your money") + ": Track every dollar you spend this month - awareness is step one. Set aside 10% of whatever you earn before you touch anything else. Build one month of essential expenses as a buffer. Then pour your focus into your goal: " + (goalName || "financial freedom") + ". Small consistent actions, repeated every month, compound into real wealth.")
           : text;
-        var oData = { lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: ageStr };
+        var oData = { lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: ageStr, coreProblem: coreProblem };
         setGenPlan(plan);
         setGenOData(oData);
-        setStep(5);
+        setStep(6);
       }
     );
   }
@@ -1274,7 +1433,7 @@ function OnboardingScreen(props) {
     return result.filter(function(b) { return b.limit > 0; });
   }
 
-  if (step === 5) {
+  if (step === 6) {
     var proposed = suggestBudgets();
     return (
       <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)", fontFamily: UI, overflowY: "auto" }}>
@@ -1295,6 +1454,27 @@ function OnboardingScreen(props) {
             <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.7 }}>{genPlan}</div>
           </div>
 
+          <div style={{ background: "#fff", borderRadius: 18, padding: "20px 20px", marginBottom: 16, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, marginBottom: 6 }}>How do you want to add transactions?</div>
+            <div style={{ fontSize: 13, color: T.ink3, marginBottom: 16, lineHeight: 1.55 }}>You can change this anytime in Profile.</div>
+            {[
+              { id: "manual", label: "Enter them manually", sub: "Log each transaction yourself - full control" },
+              { id: "import", label: "Import from a CSV file", sub: "Upload a bank or card statement to fill them in" }
+            ].map(function(opt) {
+              var sel = entryMethod === opt.id;
+              return (
+                <button key={opt.id} onClick={function() { setEntryMethod(opt.id); }}
+                  style={{ width: "100%", textAlign: "left", marginBottom: 10, background: sel ? "rgba(137,112,198,0.07)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 14, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, fontFamily: UI }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 15, fontWeight: sel ? 700 : 600, color: T.ink }}>{opt.label}</div>
+                    <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{opt.sub}</div>
+                  </div>
+                  {sel && <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><SVGIcon id="check" size={12} color="#fff" /></div>}
+                </button>
+              );
+            })}
+          </div>
+
           {proposed.length > 0 && (
             <div style={{ background: "#fff", borderRadius: 18, padding: "20px 20px", marginBottom: 16, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, marginBottom: 6 }}>Set up your budgets automatically?</div>
@@ -1309,11 +1489,11 @@ function OnboardingScreen(props) {
                   );
                 })}
               </div>
-              <button onClick={function() { props.onComplete(genPlan, genOData, proposed); }}
+              <button onClick={function() { props.onComplete(genPlan, genOData, proposed, entryMethod); }}
                 style={{ width: "100%", background: "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: "#fff", border: "none", borderRadius: 14, padding: "15px 0", fontSize: 16, fontFamily: UI, fontWeight: 700, cursor: "pointer", marginBottom: 10, boxShadow: "0 4px 16px " + T.orangeGlow }}>
                 Yes, set them up
               </button>
-              <button onClick={function() { props.onComplete(genPlan, genOData, null); }}
+              <button onClick={function() { props.onComplete(genPlan, genOData, null, entryMethod); }}
                 style={{ width: "100%", background: "none", border: "none", fontSize: 14, color: T.ink3, cursor: "pointer", fontFamily: UI, padding: "8px 0" }}>
                 I'll set them up myself
               </button>
@@ -1321,7 +1501,7 @@ function OnboardingScreen(props) {
           )}
 
           {proposed.length === 0 && (
-            <button onClick={function() { props.onComplete(genPlan, genOData, null); }}
+            <button onClick={function() { props.onComplete(genPlan, genOData, null, entryMethod); }}
               style={{ width: "100%", background: "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: "#fff", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 6px 20px " + T.orangeGlow }}>
               Get Started
             </button>
@@ -1332,18 +1512,30 @@ function OnboardingScreen(props) {
     );
   }
 
+  var coreProblemOptions = [
+    "Saving for a specific goal",
+    "Managing irregular or variable income",
+    "Paying off debt",
+    "Understanding where my money goes",
+    "Planning finances with a partner",
+    "Building financial confidence",
+    "Just getting started with budgeting",
+  ];
+
   var questions = [
-    { q: "How would you describe yourself?",      s: "This helps Richard tailor your plan to your life." },
-    { q: "What is your monthly money situation?",  s: "Approximate numbers are completely fine." },
-    { q: "Where do you stand right now?",          s: "Honest numbers lead to a better plan." },
-    { q: "What is your most important goal?",      s: "Something specific you want to reach." },
+    { q: "What's your biggest financial challenge?",      s: "This helps Richard build a plan that actually addresses what matters to you." },
+    { q: "How would you describe yourself?",              s: "This helps Richard tailor your plan to your life." },
+    { q: "What is your monthly money situation?",         s: "Approximate numbers are completely fine." },
+    { q: "Where do you stand right now?",                 s: "Honest numbers lead to a better plan." },
+    { q: "What is your most important goal?",             s: "Something specific you want to reach." },
   ];
   var current = questions[step - 1];
 
   function nextStep() {
-    if (step === 1 && !lifeStage) { setErr("Pick the option that fits you best."); return; }
+    if (step === 1 && !coreProblem) { setErr("Pick the challenge that resonates most."); return; }
+    if (step === 2 && !lifeStage) { setErr("Pick the option that fits you best."); return; }
     setErr("");
-    if (step < 4) { setStep(step + 1); return; }
+    if (step < 5) { setStep(step + 1); return; }
     buildPlan();
   }
 
@@ -1353,7 +1545,7 @@ function OnboardingScreen(props) {
       <div style={{ padding: "64px 24px 0", flex: 1 }}>
 
         <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 44 }}>
-          {[1, 2, 3, 4].map(function(n) {
+          {[1, 2, 3, 4, 5].map(function(n) {
             return (
               <div key={n} style={{ width: 8, height: 8, borderRadius: "50%", background: n <= step ? T.orange : "rgba(137,112,198,0.22)", transition: "background 0.25s" }} />
             );
@@ -1368,6 +1560,20 @@ function OnboardingScreen(props) {
         </div>
 
         {step === 1 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
+            {coreProblemOptions.map(function(opt) {
+              var sel = coreProblem === opt;
+              return (
+                <button key={opt} onClick={function() { setCoreProblem(opt); setErr(""); }}
+                  style={{ background: sel ? "rgba(137,112,198,0.07)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "16px 20px", textAlign: "left", cursor: "pointer", fontSize: 16, fontWeight: sel ? 600 : 500, color: sel ? T.ink : T.ink2, boxShadow: "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI }}>
+                  {opt}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {step === 2 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
             {STAGES.map(function(st) {
               var sel = lifeStage === st.label;
@@ -1384,7 +1590,7 @@ function OnboardingScreen(props) {
           </div>
         )}
 
-        {step === 2 && (
+        {step === 3 && (
           <div>
             <span style={labelStyle}>Monthly Income</span>
             <input value={income} onChange={function(e) { setIncome(e.target.value); }} type="number" placeholder="e.g. 3000" style={fieldStyle} />
@@ -1394,7 +1600,7 @@ function OnboardingScreen(props) {
           </div>
         )}
 
-        {step === 3 && (
+        {step === 4 && (
           <div>
             <span style={labelStyle}>Current Savings</span>
             <input value={savings} onChange={function(e) { setSavings(e.target.value); }} type="number" placeholder="e.g. 500" style={fieldStyle} />
@@ -1404,7 +1610,7 @@ function OnboardingScreen(props) {
           </div>
         )}
 
-        {step === 4 && (
+        {step === 5 && (
           <div>
             <span style={labelStyle}>Goal Name</span>
             <input value={goalName} onChange={function(e) { setGoalName(e.target.value); }} type="text" placeholder="e.g. Emergency fund, New laptop" style={fieldStyle} />
@@ -2095,10 +2301,328 @@ function dateLabel(date) {
   return d.toLocaleDateString(locale, { weekday: "long", month: "short", day: "numeric" });
 }
 
+// ===== CSV IMPORT =====
+// Stepping stone toward bank sync: let users upload a bank/card statement
+// (CSV) instead of hand-logging. No credentials, no third party - the user
+// hands us a file they already downloaded. See ROADMAP.md Tier 1 #3.
+
+function pad2(n) { n = String(n); return n.length < 2 ? "0" + n : n; }
+
+// Split CSV text into rows of cells. Auto-detects the delimiter (comma,
+// semicolon, or tab) and respects double-quoted fields with escaped quotes.
+function parseCSV(text) {
+  text = (text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  var firstLine = text.split("\n")[0] || "";
+  var counts = { ",": (firstLine.match(/,/g) || []).length, ";": (firstLine.match(/;/g) || []).length, "\t": (firstLine.match(/\t/g) || []).length };
+  var delim = ","; var best = -1;
+  for (var d in counts) { if (counts[d] > best) { best = counts[d]; delim = d; } }
+  var rows = [];
+  var lines = text.split("\n").filter(function(l) { return l.trim() !== ""; });
+  lines.forEach(function(line) {
+    var cells = [], cur = "", inQ = false;
+    for (var i = 0; i < line.length; i++) {
+      var ch = line[i];
+      if (inQ) {
+        if (ch === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else inQ = false; }
+        else cur += ch;
+      } else {
+        if (ch === '"') inQ = true;
+        else if (ch === delim) { cells.push(cur); cur = ""; }
+        else cur += ch;
+      }
+    }
+    cells.push(cur);
+    rows.push(cells.map(function(c) { return c.trim(); }));
+  });
+  return rows;
+}
+
+// Guess which columns hold the date, amount, and description.
+function sniffMap(rows, hasHeader) {
+  var map = { date: -1, amount: -1, desc: -1 };
+  if (!rows.length) return map;
+  if (hasHeader) {
+    rows[0].forEach(function(hRaw, i) {
+      var h = (hRaw || "").toLowerCase();
+      if (map.date < 0 && /date|time|posted/.test(h)) map.date = i;
+      if (map.amount < 0 && /amount|debit|credit|value|sum|total|paid/.test(h)) map.amount = i;
+      if (map.desc < 0 && /desc|payee|name|memo|detail|narration|merchant|reference|transaction/.test(h)) map.desc = i;
+    });
+  }
+  var sample = rows.slice(hasHeader ? 1 : 0).slice(0, 6);
+  var ncol = rows[0].length;
+  for (var c = 0; c < ncol; c++) {
+    if (c === map.date || c === map.amount || c === map.desc) continue;
+    var vals = sample.map(function(r) { return r[c] || ""; });
+    var nonEmpty = vals.filter(function(v) { return v !== ""; });
+    if (!nonEmpty.length) continue;
+    var dateHits = nonEmpty.filter(function(v) { return !isNaN(Date.parse(v)) || /\d{1,4}[\/\-.]\d{1,2}[\/\-.]\d{1,4}/.test(v); }).length;
+    var numHits = nonEmpty.filter(function(v) { return !isNaN(parseFloat(v.replace(/[^0-9.\-]/g, ""))) && /\d/.test(v); }).length;
+    if (map.date < 0 && dateHits >= Math.ceil(nonEmpty.length / 2)) { map.date = c; continue; }
+    if (map.amount < 0 && numHits >= Math.ceil(nonEmpty.length / 2)) { map.amount = c; continue; }
+  }
+  if (map.desc < 0) {
+    var bestLen = 0, bestCol = -1;
+    for (var c2 = 0; c2 < ncol; c2++) {
+      if (c2 === map.date || c2 === map.amount) continue;
+      var avg = sample.reduce(function(s, r) { return s + ((r[c2] || "").length); }, 0) / (sample.length || 1);
+      if (avg > bestLen) { bestLen = avg; bestCol = c2; }
+    }
+    map.desc = bestCol;
+  }
+  return map;
+}
+
+// Parse a date cell to ISO yyyy-mm-dd. preferDMY decides ambiguous d/m vs m/d.
+function parseImportDate(s, preferDMY) {
+  s = (s || "").trim();
+  if (!s) return "";
+  var iso = s.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
+  if (iso) return iso[1] + "-" + pad2(iso[2]) + "-" + pad2(iso[3]);
+  var parts = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+  if (parts) {
+    var a = parseInt(parts[1], 10), b = parseInt(parts[2], 10), y = parseInt(parts[3], 10);
+    if (y < 100) y += 2000;
+    var day, mon;
+    if (a > 12) { day = a; mon = b; }
+    else if (b > 12) { mon = a; day = b; }
+    else if (preferDMY) { day = a; mon = b; }
+    else { mon = a; day = b; }
+    if (mon >= 1 && mon <= 12 && day >= 1 && day <= 31) return y + "-" + pad2(mon) + "-" + pad2(day);
+  }
+  var t = Date.parse(s);
+  if (!isNaN(t)) { var dt = new Date(t); return dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate()); }
+  return "";
+}
+
+// Parse an amount cell to a signed number. Handles currency symbols, thousands
+// separators, decimal commas (European), and parentheses-for-negative.
+function parseImportAmount(s) {
+  s = (s || "").trim();
+  if (!s) return NaN;
+  var neg = /^\(.*\)$/.test(s) || s.indexOf("-") !== -1;
+  var cleaned = s.replace(/[^0-9.,]/g, "");
+  var lastComma = cleaned.lastIndexOf(",");
+  var lastDot = cleaned.lastIndexOf(".");
+  if (lastComma !== -1 && lastDot !== -1) {
+    // Both present - the LATER separator is the decimal one.
+    if (lastComma > lastDot) cleaned = cleaned.replace(/\./g, "").replace(",", ".");
+    else cleaned = cleaned.replace(/,/g, "");
+  } else if (lastComma !== -1) {
+    // Only commas: decimal comma if 1-2 trailing digits, else thousands.
+    cleaned = /,(\d{1,2})$/.test(cleaned) ? cleaned.replace(/\./g, "").replace(",", ".") : cleaned.replace(/,/g, "");
+  }
+  var n = parseFloat(cleaned);
+  if (isNaN(n)) return NaN;
+  return neg ? -Math.abs(n) : Math.abs(n);
+}
+
+var IMPORT_CAT_KEYWORDS = {
+  Food: ["grocer", "restaurant", "cafe", "coffee", "starbuck", "mcdonald", "uber eats", "doordash", "grubhub", "food", "pizza", "supermarket", "deli", "bakery", "kfc", "subway", "chipotle"],
+  Transport: ["uber", "lyft", "gas ", "fuel", "shell", "chevron", "exxon", "transit", "metro", "train", "parking", "taxi", " bus", "toll", "petrol"],
+  Housing: ["rent", "mortgage", "landlord", "hoa", "property", "electric", "water bill", "internet", "comcast", "verizon", "utility", "power co"],
+  Health: ["pharmacy", "cvs", "walgreen", "doctor", "clinic", "hospital", "dental", "gym", "fitness", "medical"],
+  Entertainment: ["netflix", "spotify", "hulu", "disney", "cinema", "movie", "steam", "game", "concert", "theater", "hbo", "youtube"],
+  Shopping: ["amazon", "walmart", "target", "store", "mall", "clothing", "nike", "apple.com", "ikea", "ebay", "etsy", "best buy"],
+  Travel: ["airline", "flight", "hotel", "airbnb", "booking", "expedia", "delta", "marriott", "hilton"],
+  Investments: ["vanguard", "fidelity", "schwab", "robinhood", "coinbase", "brokerage", "invest"],
+  Salary: ["payroll", "salary", "direct deposit", "paycheck", "wages"]
+};
+
+function guessImportCatId(desc, cats) {
+  var d = (desc || "").toLowerCase();
+  for (var name in IMPORT_CAT_KEYWORDS) {
+    var kws = IMPORT_CAT_KEYWORDS[name];
+    for (var i = 0; i < kws.length; i++) {
+      if (d.indexOf(kws[i]) !== -1) { var c = catByName(cats, name); if (c) return c.id; }
+    }
+  }
+  var other = catByName(cats, "Other") || cats[0];
+  return other ? other.id : "";
+}
+
+function ImportSheet(props) {
+  var cats = props.categories || [];
+  var _raw = useState(""); var raw = _raw[0]; var setRaw = _raw[1];
+  var _step = useState("paste"); var step = _step[0]; var setStep = _step[1];
+  var _rows = useState([]); var rows = _rows[0]; var setRows = _rows[1];
+  var _hdr = useState(true); var hasHeader = _hdr[0]; var setHasHeader = _hdr[1];
+  var _map = useState({ date: -1, amount: -1, desc: -1 }); var map = _map[0]; var setMap = _map[1];
+  var _dmy = useState(true); var preferDMY = _dmy[0]; var setPreferDMY = _dmy[1];
+  var _allExp = useState(false); var allExpenses = _allExp[0]; var setAllExpenses = _allExp[1];
+  var _built = useState([]); var built = _built[0]; var setBuilt = _built[1];
+  var _err = useState(""); var err = _err[0]; var setErr = _err[1];
+
+  function reset() {
+    setRaw(""); setStep("paste"); setRows([]); setHasHeader(true);
+    setMap({ date: -1, amount: -1, desc: -1 }); setPreferDMY(true); setAllExpenses(false); setBuilt([]); setErr("");
+  }
+  function close() { reset(); props.onClose(); }
+
+  function handleFile(e) {
+    var f = e.target.files && e.target.files[0];
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) { setRaw((ev.target && ev.target.result) || ""); };
+    reader.readAsText(f);
+  }
+
+  function goMap() {
+    setErr("");
+    var parsed = parseCSV(raw);
+    if (parsed.length < 1 || parsed[0].length < 2) { setErr("Could not read any rows. Paste CSV text or choose a .csv file."); return; }
+    var detected = sniffMap(parsed, true);
+    setRows(parsed); setMap(detected); setStep("map");
+  }
+
+  function buildTxs() {
+    var dataRows = hasHeader ? rows.slice(1) : rows;
+    var out = [];
+    var base = Date.now();
+    var today = new Date().toISOString().slice(0, 10);
+    dataRows.forEach(function(r, i) {
+      var amt = parseImportAmount(map.amount >= 0 ? r[map.amount] : "");
+      if (isNaN(amt) || amt === 0) return;
+      var desc = (map.desc >= 0 ? r[map.desc] : "") || "Imported";
+      var dateStr = parseImportDate(map.date >= 0 ? r[map.date] : "", preferDMY) || today;
+      var type = allExpenses ? "expense" : (amt < 0 ? "expense" : "income");
+      var catId = type === "income" ? ((catByName(cats, "Salary") || {}).id || guessImportCatId(desc, cats)) : guessImportCatId(desc, cats);
+      var c = catById(cats, catId) || { id: "", name: "Other" };
+      out.push({ type: type, amount: round2(Math.abs(amt)), label: desc.slice(0, 60), catId: c.id, category: c.name, date: dateStr, id: base + i, repeat: "none", pending: false });
+    });
+    return out;
+  }
+
+  function goPreview() {
+    setErr("");
+    if (map.amount < 0) { setErr("Pick which column holds the amount."); return; }
+    var txs = buildTxs();
+    if (!txs.length) { setErr("No valid transactions found. Check your column choices."); return; }
+    setBuilt(txs); setStep("preview");
+  }
+
+  function doImport() {
+    props.onImport(built);
+    close();
+  }
+
+  var selStyle = { width: "100%", padding: "9px 11px", borderRadius: 11, border: "1.5px solid rgba(0,0,0,0.1)", background: "#fff", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", marginTop: 4 };
+  var lblStyle = { fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em" };
+  var colOptions = rows.length ? rows[0].map(function(h, i) { return { i: i, name: hasHeader ? (h || ("Column " + (i + 1))) : ("Column " + (i + 1)) }; }) : [];
+
+  function colSelect(field, label) {
+    return (
+      <div style={{ marginBottom: 9 }}>
+        <span style={lblStyle}>{label}</span>
+        <select value={map[field]} onChange={function(e) { var v = parseInt(e.target.value, 10); setMap(function(p) { var n = {}; for (var k in p) n[k] = p[k]; n[field] = v; return n; }); }} style={selStyle}>
+          <option value={-1}>{field === "desc" ? "(none)" : "Choose column..."}</option>
+          {colOptions.map(function(o) { return <option key={o.i} value={o.i}>{o.name}</option>; })}
+        </select>
+      </div>
+    );
+  }
+
+  var totalIn = built.filter(function(t) { return t.type === "income"; }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var totalOut = built.filter(function(t) { return t.type === "expense"; }).reduce(function(s, t) { return s + t.amount; }, 0);
+
+  return (
+    <Overlay open={props.open} onClose={close} title="Import from CSV">
+      {step === "paste" && (
+        <div>
+          <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginBottom: 12 }}>
+            Export a statement from your bank or card as CSV, then drop it here. Your data stays on your device - nothing is sent to your bank.
+          </div>
+          <label style={{ display: "block", width: "100%", textAlign: "center", padding: "13px 0", borderRadius: 13, border: "1.5px dashed " + T.orange, background: T.orangeDim, color: T.orange, fontSize: 14, fontWeight: 700, fontFamily: UI, cursor: "pointer", marginBottom: 10 }}>
+            Choose a .csv file
+            <input type="file" accept=".csv,text/csv,text/plain" onChange={handleFile} style={{ display: "none" }} />
+          </label>
+          <div style={{ fontSize: 11, color: T.ink3, textAlign: "center", marginBottom: 10 }}>or paste the CSV text below</div>
+          <textarea value={raw} onChange={function(e) { setRaw(e.target.value); }} rows={6}
+            placeholder={"Date,Description,Amount\n2026-06-01,Grocery Store,-54.20\n2026-06-02,Salary,3000"}
+            style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 13, padding: "11px 13px", fontSize: 13, fontFamily: "monospace", color: T.ink, outline: "none", resize: "vertical", marginBottom: 10 }} />
+          {err && <div style={{ fontSize: 13, color: T.red, marginBottom: 10 }}>{err}</div>}
+          <BigBtn label="Next: map columns" onPress={goMap} disabled={!raw.trim()} />
+        </div>
+      )}
+
+      {step === "map" && (
+        <div>
+          <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginBottom: 12 }}>
+            We guessed your columns - check them below.
+          </div>
+          <button onClick={function() { setHasHeader(!hasHeader); setMap(sniffMap(rows, !hasHeader)); }}
+            style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 13px", borderRadius: 11, border: "none", cursor: "pointer", marginBottom: 10, background: hasHeader ? T.orangeDim : "rgba(0,0,0,0.04)", fontFamily: UI }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: hasHeader ? T.orange : T.ink2 }}>First row is a header</span>
+            <div style={{ width: 18, height: 18, borderRadius: 6, border: "2px solid " + (hasHeader ? T.orange : T.ink3), background: hasHeader ? T.orange : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {hasHeader && <SVGIcon id="check" size={10} color="#fff" />}
+            </div>
+          </button>
+          {colSelect("date", "Date column")}
+          {colSelect("amount", "Amount column")}
+          {colSelect("desc", "Description column")}
+          <div style={{ marginBottom: 9 }}>
+            <span style={lblStyle}>Date format</span>
+            <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+              {[{ k: true, l: "Day first (DD/MM)" }, { k: false, l: "Month first (MM/DD)" }].map(function(o) {
+                var on = preferDMY === o.k;
+                return <button key={String(o.k)} onClick={function() { setPreferDMY(o.k); }} style={{ flex: 1, padding: "8px 0", borderRadius: 9, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, fontFamily: UI, background: on ? T.orangeDim : "rgba(0,0,0,0.04)", color: on ? T.orange : T.ink3 }}>{o.l}</button>;
+              })}
+            </div>
+          </div>
+          <button onClick={function() { setAllExpenses(!allExpenses); }}
+            style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 13px", borderRadius: 11, border: "none", cursor: "pointer", marginBottom: 10, background: allExpenses ? T.goldDim : "rgba(0,0,0,0.04)", fontFamily: UI }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: allExpenses ? T.gold : T.ink2, textAlign: "left", lineHeight: 1.4 }}>Treat every row as an expense<br /><span style={{ fontSize: 11, color: T.ink3 }}>Turn on if your file lists only spending</span></span>
+            <div style={{ width: 18, height: 18, borderRadius: 6, flexShrink: 0, border: "2px solid " + (allExpenses ? T.gold : T.ink3), background: allExpenses ? T.gold : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {allExpenses && <SVGIcon id="check" size={10} color="#fff" />}
+            </div>
+          </button>
+          {err && <div style={{ fontSize: 13, color: T.red, marginBottom: 10 }}>{err}</div>}
+          <BigBtn label="Preview import" onPress={goPreview} />
+          <button onClick={function() { setStep("paste"); }} style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>Back</button>
+        </div>
+      )}
+
+      {step === "preview" && (
+        <div>
+          <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
+            <div style={{ flex: 1, background: T.greenDim, borderRadius: 13, padding: "11px 13px" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: T.green, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Money In</div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: T.green }}>{dollars(totalIn)}</div>
+            </div>
+            <div style={{ flex: 1, background: T.orangeDim, borderRadius: 13, padding: "11px 13px" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Money Out</div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: T.ink }}>{dollars(totalOut)}</div>
+            </div>
+          </div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: T.ink2, marginBottom: 8 }}>{built.length} transactions ready - first few shown:</div>
+          <div style={{ background: "#fff", borderRadius: 13, overflow: "hidden", marginBottom: 12, border: "1px solid rgba(0,0,0,0.06)" }}>
+            {built.slice(0, 8).map(function(t, i) {
+              return (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderBottom: i < Math.min(built.length, 8) - 1 ? "0.5px solid " + T.sep : "none" }}>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.label}</span>
+                  <span style={{ fontSize: 11, color: T.ink3, flexShrink: 0 }}>{t.category}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, flexShrink: 0, color: t.type === "income" ? T.green : T.ink }}>{(t.type === "income" ? "+" : "-") + dollars(t.amount)}</span>
+                </div>
+              );
+            })}
+          </div>
+          {err && <div style={{ fontSize: 13, color: T.red, marginBottom: 10 }}>{err}</div>}
+          <BigBtn label={"Import " + built.length + " transaction" + (built.length > 1 ? "s" : "")} onPress={doImport} />
+          <button onClick={function() { setStep("map"); }} style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>Back</button>
+        </div>
+      )}
+    </Overlay>
+  );
+}
+
 function Activity(props) {
   var cats = props.categories || [];
   var mainSym = _currency.sym;
-  var blankForm = { type: "expense", amount: "", label: "", catId: (cats[0] || {}).id || "", date: new Date().toISOString().slice(0, 10), repeat: "none", pending: false, cur: mainSym, rate: 1, rateLoading: false, rateFallback: false };
+  var _imp = useState(false); var importOpen = _imp[0]; var setImportOpen = _imp[1];
+  var importPrimary = props.entryMethod === "import";
+  var blankForm = { type: "expense", amount: "", label: "", catId: (cats[0] || {}).id || "", date: new Date().toISOString().slice(0, 10), repeat: "none", pending: false, cur: mainSym, rate: 1, rateLoading: false, rateFallback: false, shared: false, owner: props.accountKey };
+  // shared=true means this goes to the household doc; shared=false stays in user doc
+  // owner is the uid of who paid (only relevant on shared txs)
   var _f = useState(blankForm);
   var form = _f[0]; var setForm = _f[1];
   var _et = useState(null);
@@ -2164,7 +2688,7 @@ function Activity(props) {
       setEditTx(t);
       var hasForeign = t.origCur && t.origCur !== mainSym;
       setEditForm({ type: t.type, amount: String(hasForeign ? t.origAmount : t.amount), label: t.label, catId: t.catId || "", date: t.date, repeat: t.repeat || "none", pending: t.pending || false,
-        cur: hasForeign ? t.origCur : mainSym, rate: hasForeign ? (t.rate || fxStaticRate(t.origCur, mainSym)) : 1, rateLoading: false, rateFallback: false });
+        cur: hasForeign ? t.origCur : mainSym, rate: hasForeign ? (t.rate || fxStaticRate(t.origCur, mainSym)) : 1, rateLoading: false, rateFallback: false, shared: t.shared || false, owner: t.owner || props.accountKey });
       pressTimer.current = null;
     }, 500);
   }
@@ -2179,7 +2703,7 @@ function Activity(props) {
     var foreign = form.cur && form.cur !== mainSym;
     var rate = foreign ? (form.rate || fxStaticRate(form.cur, mainSym)) : 1;
     var mainAmount = round2(entered * rate);
-    var tx = { type: form.type, amount: mainAmount, label: form.label, catId: c.id, category: c.name, date: form.date, id: Date.now(), repeat: form.repeat, pending: form.pending };
+    var tx = { type: form.type, amount: mainAmount, label: form.label, catId: c.id, category: c.name, date: form.date, id: Date.now(), repeat: form.repeat, pending: form.pending, shared: form.shared, owner: form.owner };
     if (foreign) { tx.origAmount = entered; tx.origCur = form.cur; tx.rate = rate; }
     props.onSaveTx(props.tx.concat([tx]));
     setForm(blankForm);
@@ -2195,7 +2719,7 @@ function Activity(props) {
     var mainAmount = round2(entered * rate);
     props.onSaveTx(props.tx.map(function(t) {
       if (t.id !== editTx.id) return t;
-      var nt = { id: t.id, type: editForm.type, amount: mainAmount, label: editForm.label, catId: c.id, category: c.name, date: editForm.date, repeat: editForm.repeat, pending: editForm.pending };
+      var nt = { id: t.id, type: editForm.type, amount: mainAmount, label: editForm.label, catId: c.id, category: c.name, date: editForm.date, repeat: editForm.repeat, pending: editForm.pending, shared: editForm.shared || false, owner: editForm.owner || t.owner || props.accountKey };
       if (foreign) { nt.origAmount = entered; nt.origCur = editForm.cur; nt.rate = rate; }
       return nt;
     }));
@@ -2215,12 +2739,18 @@ function Activity(props) {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginBottom: 12 }}>
+        <button onClick={function() { setImportOpen(true); }} title="Import from CSV"
+          style={{ flexShrink: 0, width: 42, height: 42, borderRadius: 14, background: importPrimary ? T.orange : T.card, border: importPrimary ? "none" : "1.5px solid " + T.orangeDim, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: importPrimary ? "0 4px 14px rgba(137,112,198,0.32)" : "0 2px 10px rgba(0,0,0,0.05)" }}>
+          <SVGIcon id="down" size={20} color={importPrimary ? "#fff" : T.orange} />
+        </button>
         <button onClick={props.onOpenNotes} title={tr("notes")}
           style={{ flexShrink: 0, width: 42, height: 42, borderRadius: 14, background: T.orange, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(137,112,198,0.32)" }}>
           <SVGIcon id="note" size={20} color="#fff" />
         </button>
       </div>
+      <ImportSheet open={importOpen} onClose={function() { setImportOpen(false); }} categories={cats}
+        onImport={function(txs) { props.onSaveTx(props.tx.concat(txs)); }} />
       <Overlay open={props.sheetOpen} onClose={function() { props.setSheetOpen(false); }} title={tr("newTransaction")}>
         <div style={{ display: "flex", gap: 7, marginBottom: 7 }}>
           {["expense","income"].map(function(opt) {
@@ -2263,6 +2793,34 @@ function Activity(props) {
             {form.pending && <SVGIcon id="check" size={10} color="#fff" />}
           </div>
         </button>
+        {props.householdId && (
+          <div style={{ marginBottom: 14 }}>
+            <button onClick={function() { setField("shared", !form.shared); }}
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 13px", borderRadius: 11, border: "none", cursor: "pointer", marginBottom: 7,
+                background: form.shared ? T.orangeDim : "rgba(0,0,0,0.04)", fontFamily: UI }}>
+              <span style={{ fontSize: 13, fontWeight: 500, color: form.shared ? T.orange : T.ink2 }}>Share with partner</span>
+              <div style={{ width: 18, height: 18, borderRadius: 6, border: "2px solid " + (form.shared ? T.orange : T.ink3), background: form.shared ? T.orange : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {form.shared && <SVGIcon id="check" size={10} color="#fff" />}
+              </div>
+            </button>
+            {form.shared && props.household && props.household.members && props.household.members.length > 0 && (
+              <div style={{ display: "flex", gap: 6, paddingLeft: 0 }}>
+                {props.household.members.map(function(m) {
+                  var isMe = m.uid === props.accountKey;
+                  var sel = form.owner === m.uid;
+                  return (
+                    <button key={m.uid} onClick={function() { setField("owner", m.uid); }}
+                      style={{ flex: 1, padding: "7px 8px", borderRadius: 9, border: "none", cursor: "pointer", fontSize: 11, fontWeight: sel ? 700 : 500, fontFamily: UI,
+                        background: sel ? T.orangeDim : "rgba(0,0,0,0.04)",
+                        color: sel ? T.orange : T.ink3, textAlign: "center" }}>
+                      {isMe ? "Me" : (m.name || m.email).split("@")[0]}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
         <BigBtn label={tr("addTransaction")} onPress={add} disabled={!form.amount || !form.label} />
       </Overlay>
 
@@ -2321,7 +2879,15 @@ function Activity(props) {
             <SVGIcon id="activity" size={24} color={T.orange} />
           </div>
           <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{tr("noTransactions")}</div>
-          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{tr("noTransactionsSub")}</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 18 }}>{importPrimary ? "Import a CSV statement to fill in your transactions, or add them by hand." : tr("noTransactionsSub")}</div>
+          <button onClick={function() { if (importPrimary) setImportOpen(true); else props.setSheetOpen(true); }}
+            style={{ background: "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: "#fff", border: "none", borderRadius: 13, padding: "12px 22px", fontSize: 14, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px " + T.orangeGlow }}>
+            {importPrimary ? "Import from CSV" : "Add your first transaction"}
+          </button>
+          <button onClick={function() { if (importPrimary) props.setSheetOpen(true); else setImportOpen(true); }}
+            style={{ display: "block", margin: "12px auto 0", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
+            {importPrimary ? "or add one manually" : "or import from a CSV file"}
+          </button>
         </Card>
       )}
 
@@ -3606,6 +4172,8 @@ function Advisor(props) {
   var chatLoading = _cl[0]; var setChatLoading = _cl[1];
   var _pa = useState(null);
   var pendingAction = _pa[0]; var setPendingAction = _pa[1];
+  var _pu = useState(null);
+  var pendingUpdates = _pu[0]; var setPendingUpdates = _pu[1];
   var inputRef = useRef(null);
 
   // Grow the ask box to fit wrapped text (capped), and snap it back when cleared.
@@ -3629,7 +4197,59 @@ function Advisor(props) {
     var sp = catSpend(c);
     return c.name + " $" + sp + "/$" + b.limit;
   });
-  var ctx = "User: " + props.username + ". Income this month: $" + income + ". Spent this month: $" + expense + ". Net worth (all-time): $" + netWorth + ". Savings rate this month: " + savings + "%. Top spending categories this month: " + (topCats.map(function(c) { return c.name + " $" + c.spent; }).join(", ") || "none") + ". Budgets: " + (budgetLines.join(", ") || "none set") + ". Goals: " + (props.goals.map(function(g) { return g.name + " $" + g.saved + "/$" + g.target; }).join(", ") || "none") + ". Personalized plan: " + (props.plan ? props.plan.slice(0, 300) + "..." : "not yet created") + ".";
+  var coreProblem = (props.onboardingData && props.onboardingData.coreProblem) || "";
+
+  // Build detailed budget analysis
+  var budgetAnalysis = [];
+  var totalBudgeted = 0;
+  var totalActual = 0;
+  var budgetsOnTrack = 0;
+  var budgetsOver = 0;
+  (props.budgets || []).forEach(function(b) {
+    var c = catById(cats, b.catId) || catByName(cats, b.category) || { name: b.category || "?" };
+    var spent = catSpend(c);
+    var limit = b.limit || 0;
+    totalBudgeted += limit;
+    totalActual += spent;
+    var status = spent > limit ? "OVER by $" + Math.round(spent - limit) : "on track, $" + Math.round(limit - spent) + " left";
+    budgetAnalysis.push(c.name + ": $" + Math.round(spent) + "/$" + limit + " (" + status + ")");
+    if (spent <= limit) budgetsOnTrack++; else budgetsOver++;
+  });
+
+  // All spending categories
+  var allCats = cats.map(function(c) {
+    return { name: c.name, spent: catSpend(c) };
+  }).filter(function(c) { return c.spent > 0; }).sort(function(a, b) { return b.spent - a.spent; });
+
+  // Goal progress
+  var goalProgress = (props.goals || []).map(function(g) {
+    var pct = g.target > 0 ? Math.round((g.saved / g.target) * 100) : 0;
+    return g.name + ": $" + Math.round(g.saved) + "/$" + g.target + " (" + pct + "%)";
+  });
+
+  var ctx = "=== USER FINANCIAL DATA ===\n"
+    + "Name: " + props.username + "\n"
+    + "Primary challenge: " + (coreProblem || "general budgeting") + "\n\n"
+    + "=== THIS MONTH'S CASH FLOW ===\n"
+    + "Income: $" + Math.round(income) + "\n"
+    + "Total Spent: $" + Math.round(expense) + "\n"
+    + "Savings Rate: " + savings + "%\n"
+    + "Net this month: $" + Math.round(income - expense) + "\n\n"
+    + "=== BUDGETS (Total: $" + totalBudgeted + " budgeted, $" + Math.round(totalActual) + " spent) ===\n"
+    + (budgetAnalysis.length > 0
+      ? budgetAnalysis.join("\n") + "\nBudgets on track: " + budgetsOnTrack + "/" + (props.budgets || []).length + ", over budget: " + budgetsOver
+      : "No budgets set") + "\n\n"
+    + "=== SPENDING BY CATEGORY (All time this month) ===\n"
+    + (allCats.length > 0
+      ? allCats.map(function(c) { return c.name + ": $" + Math.round(c.spent); }).join("\n")
+      : "No spending yet") + "\n\n"
+    + "=== FINANCIAL GOALS ===\n"
+    + (goalProgress.length > 0
+      ? goalProgress.join("\n")
+      : "No goals set") + "\n\n"
+    + "=== ALL-TIME STATS ===\n"
+    + "Net Worth (all-time): $" + Math.round(netWorth) + "\n"
+    + "Personalized Plan: " + (props.plan ? props.plan.slice(0, 200) + "..." : "not yet created");
 
   function catSpend(c) {
     return props.tx.filter(function(t) { return t.type === "expense" && inMonth(t, ymA) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
@@ -3998,7 +4618,10 @@ function Advisor(props) {
   function getAdvice() {
     setLoading(true); setAdvice(null); setErrMsg("");
     var system = "You are an elite personal finance advisor trained on the wisdom of the world's greatest wealth builders. You have deep knowledge from:\n\nBOOKS & AUTHORS:\n- The Psychology of Money (Morgan Housel): wealth is about behavior not intelligence; saving is about the gap between ego and income; reasonable beats rational\n- Rich Dad Poor Dad (Robert Kiyosaki): assets put money in pocket, liabilities take it out; buy assets first, luxuries last; make money work for you\n- The Millionaire Next Door (Stanley & Danko): most millionaires live below their means, drive used cars, avoid lifestyle inflation\n- I Will Teach You To Be Rich (Ramit Sethi): automate savings, negotiate bills, spend extravagantly on things you love but cut mercilessly elsewhere\n- The Total Money Makeover (Dave Ramsey): debt snowball, emergency fund first, live on less than you earn\n- Think and Grow Rich (Napoleon Hill): definiteness of purpose, the mastermind principle, persistence\n- The Richest Man in Babylon (George Clason): pay yourself first 10%, let savings work, live on 70%, give 20% to debts\n- Money Master the Game (Tony Robbins): asset allocation drives 90% of returns, fees kill wealth, asymmetric risk/reward\n\nINTERVIEWS & QUOTES FROM THE WEALTHY:\n- Warren Buffett: do not save what is left after spending, spend what is left after saving; rule 1 never lose money, rule 2 never forget rule 1; someone is sitting in the shade today because someone planted a tree long ago\n- Charlie Munger: invert always invert; avoid what destroys wealth as much as seeking what builds it; the best thing a human being can do is to help another human being know more\n- Ray Dalio: diversify well and you can reduce risk without reducing returns; pain plus reflection equals progress; he who lives by the crystal ball will eat shattered glass\n- Naval Ravikant: earn with your mind not your time; specific knowledge cannot be taught; build or buy equity in a business\n- Warren Buffett on compounding: the snowball: compound interest is the eighth wonder of the world\n- Mark Cuban: pay off credit cards every month, never carry a balance; savings rates matter more than investment returns early on\n- Grant Cardone: the middle class saves to retire, the wealthy invest to create income now; 40% of income saved minimum\n- Jeff Bezos: focus on what will not change, not what will; think in long time horizons\n- Elon Musk: take as much risk as you can afford, you only live once\n\nPROVEN STRATEGIES:\n- Pay yourself first: automate 10-20% savings before touching income\n- The latte factor: small daily expenses compound into large annual costs\n- 50/30/20 rule: 50% needs, 30% wants, 20% savings and debt\n- Emergency fund: 3-6 months of expenses in liquid savings before investing\n- No lifestyle inflation: when income rises, raise savings rate not spending\n- Avoid car payments: buy used cars with cash or low financing\n- Cook more, eat out less: food is typically the fastest growing expense\n- Cancel subscriptions quarterly: audit recurring charges every 3 months\n- Negotiate everything: bills, salary, rent, insurance premiums\n- Tax efficiency: maximize retirement accounts before taxable investing\n- Index funds beat active management 90% of the time over 10 years\n- The 4% rule: you can withdraw 4% annually from a portfolio indefinitely\n- House hacking: rent part of your home to cover the mortgage\n- The one-day rule: wait 24 hours before any purchase over $50\n\nReturn ONLY valid JSON, no markdown. Never use emojis or non-ASCII symbols anywhere in any field. Use this structure: {\"score\":72,\"scoreLabel\":\"Good\",\"headline\":\"Summary here.\",\"insights\":[{\"type\":\"strength\",\"title\":\"Title\",\"body\":\"Body.\"},{\"type\":\"warning\",\"title\":\"Title\",\"body\":\"Body.\"},{\"type\":\"tip\",\"title\":\"Title\",\"body\":\"Body.\"}],\"expertQuote\":{\"quote\":\"Quote.\",\"author\":\"Author\"},\"webInsight\":{\"title\":\"Title\",\"body\":\"Body.\"}}";
-    callClaude([{ role: "user", content: "Analyze these finances and give personalized advice: " + ctx }], system, 900, function(err, text) {
+    var analysisPrompt = coreProblem
+      ? "Analyze these finances. The user's primary challenge is: " + coreProblem + ". Tailor your insights specifically to this challenge — don't give generic advice. Context: " + ctx
+      : "Analyze these finances and give personalized advice: " + ctx;
+    callClaude([{ role: "user", content: analysisPrompt }], system, 900, function(err, text) {
       setLoading(false);
       if (err) {
         // API unreachable in this environment - use built-in analysis
@@ -4044,6 +4667,62 @@ function Advisor(props) {
     return null;
   }
 
+  // Parse [ACTION:{...}] tags Richard emits when the user reports a real money
+  // event (spent money, new job, paid a bill, hit a goal). Supports multiple tags.
+  function parseUpdates(text) {
+    var out = [];
+    var re = /\[ACTION:(\{.*?\})\]/g;
+    var m;
+    while ((m = re.exec(text)) !== null) {
+      try { out.push(JSON.parse(m[1])); } catch (e) {}
+    }
+    return out;
+  }
+  function stripUpdates(text) {
+    return text.replace(/\[ACTION:\{.*?\}\]/g, "").trim();
+  }
+  function updateLabel(a) {
+    if (a.kind === "expense") return "Log expense: " + dollars(parseFloat(a.amount) || 0) + " - " + (a.label || a.category || "expense") + (a.category ? " (" + a.category + ")" : "");
+    if (a.kind === "income") return "Log income: " + dollars(parseFloat(a.amount) || 0) + (a.label ? " - " + a.label : "");
+    if (a.kind === "budget") return "Set " + (a.category || "?") + " budget to " + dollars(parseFloat(a.limit) || 0);
+    if (a.kind === "goal") return "Create goal: " + (a.name || "New Goal") + " (" + dollars(parseFloat(a.target) || 0) + ")";
+    if (a.kind === "goalAdd") return "Add " + dollars(parseFloat(a.amount) || 0) + " to " + (a.name || "goal");
+    return "Update your data";
+  }
+  // Apply every confirmed action at once. Batches each data type into a single
+  // save so synchronous updates don't overwrite each other with stale state.
+  function applyUpdates(actions) {
+    var today = new Date().toISOString().slice(0, 10);
+    var base = Date.now();
+    var newTx = [];
+    var nextBudgets = (props.budgets || []).slice();
+    var nextGoals = (props.goals || []).slice();
+    var txChanged = false, budChanged = false, goalChanged = false;
+    actions.forEach(function(a, i) {
+      if (a.kind === "expense" || a.kind === "income") {
+        var wantName = a.category || (a.kind === "income" ? "Salary" : "Other");
+        var c = catByName(cats, wantName) || catById(cats, a.category) || cats.filter(function(x) { return x.name === "Other"; })[0] || cats[0] || { id: "", name: wantName };
+        newTx.push({ type: a.kind, amount: round2(parseFloat(a.amount) || 0), label: a.label || c.name, catId: c.id, category: c.name, date: a.date || today, id: base + i, repeat: "none", pending: false });
+        txChanged = true;
+      } else if (a.kind === "budget") {
+        var bc = catByName(cats, a.category) || catById(cats, a.category);
+        if (bc) {
+          nextBudgets = nextBudgets.filter(function(b) { return b.catId !== bc.id; }).concat([{ catId: bc.id, category: bc.name, limit: parseFloat(a.limit) || 0 }]);
+          budChanged = true;
+        }
+      } else if (a.kind === "goal") {
+        nextGoals = nextGoals.concat([{ id: base + 1000 + i, name: a.name || "New Goal", target: parseFloat(a.target) || 1000, saved: 0 }]);
+        goalChanged = true;
+      } else if (a.kind === "goalAdd") {
+        nextGoals = nextGoals.map(function(g) { return g.name.toLowerCase() === (a.name || "").toLowerCase() ? Object.assign({}, g, { saved: round2((g.saved || 0) + (parseFloat(a.amount) || 0)) }) : g; });
+        goalChanged = true;
+      }
+    });
+    if (txChanged && props.onSaveTx) props.onSaveTx((props.tx || []).concat(newTx));
+    if (budChanged && props.onSaveBudgets) props.onSaveBudgets(nextBudgets);
+    if (goalChanged && props.onSaveGoals) props.onSaveGoals(nextGoals);
+  }
+
   function sendChat() {
     if (!input.trim() || chatLoading) return;
     var msg = input.trim();
@@ -4053,16 +4732,41 @@ function Advisor(props) {
     setChatLoading(true);
     callClaude(
       nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }),
-      "You are Richard, a smart assistant inside the Richy personal finance app. You are calm, warm, direct, and knowledgeable - a trusted friend who is an expert in money and can help with anything the user asks. You have deep knowledge from The Psychology of Money, Rich Dad Poor Dad, The Millionaire Next Door, I Will Teach You To Be Rich, The Total Money Makeover, Think and Grow Rich, The Richest Man in Babylon, and wisdom from Warren Buffett, Charlie Munger, Ray Dalio, Naval Ravikant, Mark Cuban, Grant Cardone and other wealth builders. You can answer questions about personal finance, investments, budgeting, debt, taxes, and wealth-building. You can also answer questions about how to use the Richy app (it has tabs: Overview, Activity for transactions, Budgets for spending limits, Goals for savings targets, and Advisor which is where we are now; categories are managed via the tag icon on Overview or the Manage link in pickers). You can answer general knowledge and technical questions too - if someone asks about math, technology, or anything else, answer helpfully. Always refer back to the user's real financial data when relevant. Current user financial data: " + ctx + ". Be concise and direct. Plain text only. Never use markdown formatting: no asterisks, no hash headers, no bullet symbols. Never use emojis or any non-text symbols under any circumstance." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : ""),
+      "You are Richard, a smart assistant inside the Richy personal finance app. You are calm, warm, direct, and knowledgeable - a trusted friend who is an expert in money and can help with anything the user asks. You have deep knowledge from The Psychology of Money, Rich Dad Poor Dad, The Millionaire Next Door, I Will Teach You To Be Rich, The Total Money Makeover, Think and Grow Rich, The Richest Man in Babylon, and wisdom from Warren Buffett, Charlie Munger, Ray Dalio, Naval Ravikant, Mark Cuban, Grant Cardone and other wealth builders. You can answer questions about personal finance, investments, budgeting, debt, taxes, and wealth-building. You can also answer questions about how to use the Richy app (it has tabs: Overview, Activity for transactions, Budgets for spending limits, Goals for savings targets, and Advisor which is where we are now; categories are managed via the tag icon on Overview or the Manage link in pickers). You can answer general knowledge and technical questions too - if someone asks about math, technology, or anything else, answer helpfully. Always refer back to the user's real financial data when relevant. Current user financial data: " + ctx + "." + (coreProblem ? " The user's primary financial challenge is: " + coreProblem + ". Connect your advice to this when relevant." : "")
+      + " IMPORTANT - YOU CAN UPDATE THE APP FOR THE USER. When the user tells you about a real money event - they spent money, got paid, started a new job, got a raise, paid a bill, or saved toward a goal - acknowledge it warmly in words AND append one or more action tags at the very END of your reply (after your sentence, on their own). The app will show the user a confirmation card to apply them. Action formats (use valid JSON, no spaces in keys): "
+      + "[ACTION:{\"kind\":\"expense\",\"amount\":50,\"category\":\"Food\",\"label\":\"groceries\"}] logs a purchase; "
+      + "[ACTION:{\"kind\":\"income\",\"amount\":4000,\"label\":\"new job salary\"}] logs income received; "
+      + "[ACTION:{\"kind\":\"budget\",\"category\":\"Food\",\"limit\":500}] sets a monthly budget; "
+      + "[ACTION:{\"kind\":\"goal\",\"name\":\"Emergency Fund\",\"target\":3000}] creates a savings goal; "
+      + "[ACTION:{\"kind\":\"goalAdd\",\"name\":\"Emergency Fund\",\"amount\":200}] adds money to an existing goal. "
+      + "Use the EXACT category name from this list when logging expenses or budgets: " + (cats.map(function(c) { return c.name; }).join(", ") || "Other") + ". "
+      + "If the user mentions several things at once, emit several tags. Only emit a tag for a concrete event with a real number that the user actually states - never for hypotheticals, plans, or general advice. Do not mention the word ACTION or the tag syntax in your spoken reply; just speak naturally and let the tags do the work."
+      + " Be honest about what Richy currently does not support: no bank or card sync, no CSV import, no shared couples mode, no interest-based debt payoff calculator, no business accounting. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct. Plain text only. Never use markdown formatting: no asterisks, no hash headers, no bullet symbols. Never use emojis or any non-text symbol except inside the action tags described above." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : ""),
       500,
       function(err, text) {
         setChatLoading(false);
         var response = err || !text ? Richard(msg) : text;
-        setChat(function(p) { return p.concat([{ role: "assistant", text: response }]); });
-        // Check if Richard's response suggests an action
-        var action = suggestAction(response);
-        if (action && Math.random() > 0.7) {
-          setPendingAction(action);
+        var updates = parseUpdates(response);
+        var display = stripUpdates(response);
+        if (updates.length > 0) {
+          // Always tell the user, in the chat, that a change is being proposed -
+          // so the confirmation card below never appears out of nowhere.
+          var cue = updates.length > 1
+            ? "I'd like to make " + updates.length + " changes to your app - review and confirm them below."
+            : "I'd like to make a change to your app - review and confirm it below.";
+          display = display ? display + "\n\n" + cue : cue;
+        }
+        if (!display) display = "Got it - I've noted that below. Tap Apply to update your app.";
+        setChat(function(p) { return p.concat([{ role: "assistant", text: display }]); });
+        if (updates.length > 0) {
+          setPendingUpdates(updates);
+          setPendingAction(null);
+        } else {
+          // Fall back to the legacy advice-based suggestion when no concrete update.
+          var action = suggestAction(display);
+          if (action && Math.random() > 0.7) {
+            setPendingAction(action);
+          }
         }
       }
     );
@@ -4281,6 +4985,38 @@ function Advisor(props) {
                 </button>
               );
             })}
+          </div>
+        )}
+        {pendingUpdates && pendingUpdates.length > 0 && (
+          <div style={{ padding: "13px 13px 11px", borderTop: "0.5px solid " + T.sep, background: T.orangeDim, marginTop: 10, borderRadius: 10 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.orange, marginBottom: 9, display: "flex", alignItems: "center", gap: 6 }}>
+              <SVGIcon id="spark" size={15} color={T.orange} />
+              Richard wants to update your app
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 11 }}>
+              {pendingUpdates.map(function(a, i) {
+                return (
+                  <div key={i} style={{ fontSize: 13, color: T.ink, background: "rgba(255,255,255,0.55)", borderRadius: 8, padding: "8px 11px", lineHeight: 1.4 }}>
+                    {updateLabel(a)}
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ display: "flex", gap: 6 }}>
+              <button onClick={function() {
+                applyUpdates(pendingUpdates);
+                var n = pendingUpdates.length;
+                setChat(function(p) { return p.concat([{ role: "assistant", text: "Done - I've updated your app with " + n + " change" + (n > 1 ? "s" : "") + ". You'll see it reflected across Overview, Activity, Budgets and Goals." }]); });
+                setPendingUpdates(null);
+              }}
+                style={{ flex: 1, background: T.orange, color: "#fff", border: "none", borderRadius: 10, padding: "9px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                Apply {pendingUpdates.length > 1 ? "all" : ""}
+              </button>
+              <button onClick={function() { setPendingUpdates(null); }}
+                style={{ flex: 1, background: "rgba(0,0,0,0.1)", color: T.ink2, border: "none", borderRadius: 10, padding: "9px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                Not now
+              </button>
+            </div>
           </div>
         )}
         {pendingAction && (
@@ -4546,6 +5282,140 @@ function SubViewBack(props) {
   );
 }
 
+function CollabView(props) {
+  var hh = props.household;
+  var invites = props.invites || [];
+  var _name = useState(""); var name = _name[0]; var setName = _name[1];
+  var _email = useState(""); var email = _email[0]; var setEmail = _email[1];
+  var _busy = useState(false); var busy = _busy[0]; var setBusy = _busy[1];
+  var _err = useState(""); var err = _err[0]; var setErr = _err[1];
+
+  function run(p) {
+    setErr(""); setBusy(true);
+    Promise.resolve(p).then(function() { setBusy(false); })
+      .catch(function(e) { setBusy(false); setErr((e && e.message) || "Something went wrong. Check the security rules are published."); });
+  }
+  function validEmail(s) { return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((s || "").trim()); }
+
+  var inHousehold = !!(props.householdId && hh);
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+
+      {/* Pending invitations addressed to me (only when not already in one) */}
+      {!inHousehold && invites.length > 0 && invites.map(function(inv) {
+        return (
+          <Card key={inv.id} style={{ padding: "18px 20px", marginBottom: 14, border: "1.5px solid " + T.orangeDim }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <SVGIcon id="mail" size={20} color={T.orange} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>You're invited to join</div>
+                <div style={{ fontSize: 13, color: T.ink3, marginTop: 1 }}>"{inv.name}"</div>
+              </div>
+            </div>
+            <BigBtn label={busy ? "Joining..." : "Accept & join"} disabled={busy} onPress={function() { run(props.onAccept(inv.id)); }} />
+          </Card>
+        );
+      })}
+
+      {!inHousehold && (
+        <div>
+          <Card style={{ padding: "24px 22px", marginBottom: 16, textAlign: "center" }}>
+            <div style={{ width: 54, height: 54, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+              <SVGIcon id="home" size={26} color={T.orange} />
+            </div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: T.ink, marginBottom: 6 }}>Share a budget together</div>
+            <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55 }}>
+              Create a household and invite your partner. You'll share budgets, goals, and a combined balance - while each of you can still keep individual transactions private.
+            </div>
+          </Card>
+          <Card style={{ padding: "20px", marginBottom: 16 }}>
+            <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 10 }}>Household name</div>
+            <input value={name} onChange={function(e) { setName(e.target.value); }} placeholder="Our Home"
+              style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid " + T.sep, background: T.card, borderRadius: 12, padding: "12px 14px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none" }} />
+            <BigBtn label={busy ? "Creating..." : "Create household"} disabled={busy || !name.trim()} onPress={function() { run(props.onCreate(name.trim())); }} />
+          </Card>
+          {err && <div style={{ fontSize: 13, color: T.red, fontFamily: UI, padding: "0 6px" }}>{err}</div>}
+        </div>
+      )}
+
+      {inHousehold && (
+        <div>
+          <Card style={{ padding: "22px", marginBottom: 16, textAlign: "center" }}>
+            <div style={{ width: 54, height: 54, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
+              <SVGIcon id="home" size={26} color={T.orange} />
+            </div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: T.ink }}>{hh.name}</div>
+            <div style={{ fontSize: 13, color: T.ink3, marginTop: 3 }}>{(hh.members || []).length} member{(hh.members || []).length === 1 ? "" : "s"}</div>
+          </Card>
+
+          <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 6px 8px" }}>Members</div>
+          <Card style={{ overflow: "hidden", marginBottom: 16 }}>
+            {(hh.members || []).map(function(m, i) {
+              var isMe = m.uid === props.myUid;
+              return (
+                <div key={m.uid} style={{ padding: "14px 18px", borderBottom: i < (hh.members.length - 1) ? "0.5px solid " + T.sep : "none", display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 38, height: 38, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <SVGIcon id="user" size={18} color="#fff" />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: T.ink }}>{m.name || m.email}{isMe ? "  (you)" : ""}</div>
+                    <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>{m.email}</div>
+                  </div>
+                  {m.uid === hh.createdBy && <span style={{ fontSize: 10, fontWeight: 700, color: T.orange, background: T.orangeDim, borderRadius: 6, padding: "3px 8px", letterSpacing: "0.03em" }}>OWNER</span>}
+                </div>
+              );
+            })}
+          </Card>
+
+          {(hh.pendingEmails || []).length > 0 && (
+            <div>
+              <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 6px 8px" }}>Invited</div>
+              <Card style={{ overflow: "hidden", marginBottom: 16 }}>
+                {hh.pendingEmails.map(function(pe, i) {
+                  return (
+                    <div key={pe} style={{ padding: "13px 18px", borderBottom: i < (hh.pendingEmails.length - 1) ? "0.5px solid " + T.sep : "none", display: "flex", alignItems: "center", gap: 12 }}>
+                      <SVGIcon id="mail" size={17} color={T.ink3} />
+                      <div style={{ flex: 1, fontSize: 14, color: T.ink2 }}>{pe}</div>
+                      <span style={{ fontSize: 11, color: T.ink3, marginRight: 4 }}>pending</span>
+                      <button onClick={function() { run(props.onCancelInvite(pe)); }} disabled={busy}
+                        style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex" }}>
+                        <SVGIcon id="trash" size={16} color={T.red} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </Card>
+            </div>
+          )}
+
+          <Card style={{ padding: "20px", marginBottom: 16 }}>
+            <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 10 }}>Invite by email</div>
+            <input value={email} onChange={function(e) { setEmail(e.target.value); }} placeholder="partner@email.com" type="email"
+              style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid " + T.sep, background: T.card, borderRadius: 12, padding: "12px 14px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none" }} />
+            <BigBtn label={busy ? "Sending..." : "Send invite"} disabled={busy || !validEmail(email)} onPress={function() {
+              run(Promise.resolve(props.onInvite(email.trim())).then(function() { setEmail(""); }));
+            }} />
+            <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, marginTop: 10 }}>
+              They'll see the invite here next time they open Richy and signed in with this exact email address.
+            </div>
+          </Card>
+
+          {err && <div style={{ fontSize: 13, color: T.red, fontFamily: UI, padding: "0 6px 12px" }}>{err}</div>}
+
+          <button onClick={function() { run(props.onLeave()); }} disabled={busy}
+            style={{ width: "100%", background: "rgba(255,59,48,0.08)", color: T.red, border: "none", borderRadius: 16, padding: "15px 0", fontSize: 15, fontFamily: UI, fontWeight: 700, cursor: "pointer" }}>
+            Leave household
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function NicknameView(props) {
   var _v = useState(props.value || "");
   var val = _v[0]; var setVal = _v[1];
@@ -4595,18 +5465,35 @@ function LanguageView(props) {
 
 function CurrencyView(props) {
   var cur = props.currency || "$";
+  var _q = useState(""); var q = _q[0]; var setQ = _q[1];
+  var needle = q.trim().toLowerCase();
+  var list = CURRENCY_OPTIONS.filter(function(o) {
+    if (!needle) return true;
+    return o.code.toLowerCase().indexOf(needle) !== -1 || o.name.toLowerCase().indexOf(needle) !== -1 || o.sym.toLowerCase().indexOf(needle) !== -1;
+  });
   return (
     <div>
       <SubViewBack onBack={props.onBack} />
+      <div style={{ position: "relative", marginBottom: 12 }}>
+        <input value={q} onChange={function(e) { setQ(e.target.value); }} placeholder="Search currency or country..."
+          style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid " + T.sep, background: T.card, borderRadius: 13, padding: "13px 16px", fontSize: 15, fontFamily: UI, color: T.ink, outline: "none" }} />
+      </div>
       <Card style={{ overflow: "hidden", marginBottom: 16 }}>
-        {CURRENCY_OPTIONS.map(function(opt, i) {
+        {list.length === 0 && (
+          <div style={{ padding: "28px 20px", textAlign: "center", fontSize: 14, color: T.ink3, fontFamily: UI }}>No match for "{q}"</div>
+        )}
+        {list.map(function(opt, i) {
           var sel = cur === opt.sym;
           return (
-            <button key={opt.sym} onClick={function() { props.onCurrencyChange(opt.sym); }}
-              style={{ width: "100%", background: sel ? "rgba(137,112,198,0.05)" : "none", border: "none", borderBottom: i < CURRENCY_OPTIONS.length - 1 ? "0.5px solid " + T.sep : "none", padding: "17px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", fontFamily: UI }}>
-              <span style={{ fontSize: 16, fontWeight: sel ? 700 : 500, color: sel ? T.ink : T.ink2 }}>{opt.label}</span>
+            <button key={opt.code} onClick={function() { props.onCurrencyChange(opt.sym); }}
+              style={{ width: "100%", background: sel ? "rgba(137,112,198,0.05)" : "none", border: "none", borderBottom: i < list.length - 1 ? "0.5px solid " + T.sep : "none", padding: "15px 20px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", fontFamily: UI }}>
+              <div style={{ width: 44, textAlign: "center", fontSize: 17, fontWeight: 700, color: sel ? T.orange : T.ink2, flexShrink: 0 }}>{opt.sym}</div>
+              <div style={{ flex: 1, textAlign: "left" }}>
+                <div style={{ fontSize: 15.5, fontWeight: sel ? 700 : 600, color: sel ? T.ink : T.ink2 }}>{opt.code}</div>
+                <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>{opt.name}</div>
+              </div>
               {sel && (
-                <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <SVGIcon id="check" size={12} color="#fff" />
                 </div>
               )}
@@ -4646,6 +5533,43 @@ function AppearanceView(props) {
           );
         })}
       </Card>
+    </div>
+  );
+}
+
+function EntryMethodView(props) {
+  var opts = [
+    { id: "manual", label: "Enter manually", sub: "Log each transaction yourself - full control", icon: "edit" },
+    { id: "import", label: "Import from CSV", sub: "Upload a bank or card statement to fill them in", icon: "down" }
+  ];
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+      <Card style={{ overflow: "hidden", marginBottom: 16 }}>
+        {opts.map(function(opt, i) {
+          var sel = props.entryMethod === opt.id;
+          return (
+            <button key={opt.id} onClick={function() { props.onEntryMethodChange(opt.id); }}
+              style={{ width: "100%", background: sel ? T.orangeDim : "none", border: "none", borderBottom: i < opts.length - 1 ? "0.5px solid " + T.sep : "none", padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", fontFamily: UI }}>
+              <div style={{ width: 46, height: 46, borderRadius: 13, background: sel ? T.orange : "rgba(0,0,0,0.05)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <SVGIcon id={opt.icon} size={20} color={sel ? "#fff" : T.ink3} />
+              </div>
+              <div style={{ flex: 1, textAlign: "left" }}>
+                <div style={{ fontSize: 16, fontWeight: sel ? 700 : 600, color: T.ink }}>{opt.label}</div>
+                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{opt.sub}</div>
+              </div>
+              {sel && (
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <SVGIcon id="check" size={12} color="#fff" />
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </Card>
+      <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.55, padding: "0 6px" }}>
+        This sets your default. Both options stay available anytime in the Activity tab - the + button adds one by hand, the import button brings in a CSV.
+      </div>
     </div>
   );
 }
@@ -5041,10 +5965,13 @@ function PlanView(props) {
     var apiMsgs = newMsgs.map(function(m) {
       return { role: m.role === "user" ? "user" : "assistant", content: m.text };
     });
+    var planChallenge = (props.onboardingData && props.onboardingData.coreProblem) || "";
     var sys = "You are Richard, a warm and knowledgeable personal finance advisor inside the Richy app. "
       + "The user's name is " + (props.username || "there") + ". "
+      + (planChallenge ? "Their primary financial challenge is: " + planChallenge + ". " : "")
       + "Their current financial plan is: " + (props.plan || "not yet created") + ". "
-      + "The user is giving you feedback and asking questions about their plan. "
+      + "Address their specific challenge directly — don't give generic advice. "
+      + "Be honest about what Richy doesn't support yet: no bank sync, no couples mode, no interest-based debt calculator. Suggest workarounds if asked. "
       + "Reply concisely, under 100 words. No markdown. No bullet lists. "
       + "If you want to suggest a specific concrete change, append exactly one action tag at the very end: "
       + "[ACTION:{\"type\":\"budget\",\"category\":\"Food\",\"limit\":500}] to set a budget, or "
@@ -5212,6 +6139,8 @@ function Profile(props) {
         <ProfileRow icon="coins" label={tr("currency")} value={curLabel} onClick={props.onViewCurrency} />
         <ProfileRow icon="book" label={tr("language")} value={langLabel} onClick={props.onViewLanguage} />
         <ProfileRow icon="star" label={tr("appearance")} value={themeLabel} onClick={props.onViewAppearance} last={false} />
+        <ProfileRow icon="activity" label="Adding transactions" value={props.entryMethod === "import" ? "CSV import" : "Manual"} onClick={props.onViewEntryMethod} last={false} />
+        <ProfileRow icon="home" label="Collab" value={props.householdName || (props.inviteCount ? props.inviteCount + " invite" + (props.inviteCount === 1 ? "" : "s") : "Off")} onClick={props.onViewCollab} last={false} />
         <ProfileRow icon="shield" label="Privacy & Data" onClick={props.onViewPrivacy} last={true} />
       </Card>
 
@@ -5276,20 +6205,40 @@ export default function App() {
   var theme = _th[0]; var setTheme = _th[1];
   var _ack = useState(false);
   var authChecked = _ack[0]; var setAuthChecked = _ack[1];
+  var _oda = useState({});
+  var onboardingData = _oda[0]; var setOnboardingData = _oda[1];
+  var _em = useState("manual");
+  var entryMethod = _em[0]; var setEntryMethod = _em[1];
+  // Collab / couples mode. householdId points at the shared households/{hid} doc;
+  // household is the live mirror of it (members + invites); sharedData is the
+  // live mirror of shared budgets/goals/categories/tx for efficient delta-sync.
+  var _hid = useState(null); var householdId = _hid[0]; var setHouseholdId = _hid[1];
+  var _hh = useState(null); var household = _hh[0]; var setHousehold = _hh[1];
+  var _shd = useState(null); var sharedData = _shd[0]; var setSharedData = _shd[1];
+  var _inv = useState([]); var invites = _inv[0]; var setInvites = _inv[1];
   // In-memory mirror of the signed-in user's full Firestore document, so writes
   // can merge against it without an async read-before-write each time.
   var blobRef = useRef({});
   var prevTabRef = useRef("profile");
   var _hp = useState(false); var hasPw = _hp[0]; var setHasPw = _hp[1];
 
-  function loadData(data) {
-    setTx(data.tx || []);
-    setBudgets(data.budgets || []);
-    setGoals(data.goals || []);
+  // When in a household, merge shared data (budgets, goals, categories, shared txs)
+  // with personal data (all txs, notes, trips, folders). Personal txs tagged
+  // private=true stay only in the user doc.
+  function loadData(data, sharedData) {
+    var allBudgets = (sharedData && sharedData.budgets) || [];
+    var allGoals = (sharedData && sharedData.goals) || [];
+    var allCategories = (sharedData && sharedData.categories) || [];
+    var allTx = (sharedData && sharedData.tx) || [];
+    // Merge personal txs (including private ones) on top of shared txs.
+    allTx = allTx.concat((data.tx || []).filter(function(t) { return !t.shared; }));
+    setTx(allTx);
+    setBudgets(allBudgets.length ? allBudgets : (data.budgets || []));
+    setGoals(allGoals.length ? allGoals : (data.goals || []));
     setTrips(data.trips || []);
     setNotes(data.notes || []);
     setFolders((data.folders && data.folders.length) ? data.folders : freshFolders());
-    setCategories((data.categories && data.categories.length) ? data.categories : freshCategories());
+    setCategories(allCategories.length ? allCategories : ((data.categories && data.categories.length) ? data.categories : freshCategories()));
     var sym = data.currency || "$";
     setCurrency(sym);
     _currency.sym = sym;
@@ -5300,6 +6249,9 @@ export default function App() {
     var hasRealActivity = (data.tx || []).some(function(t) { return !t.opening; });
     setCatchUpDone(data.catchUpDone === true || hasRealActivity);
     setRichPlan(data.plan || "");
+    setOnboardingData(data.onboardingData || {});
+    setEntryMethod(data.entryMethod === "import" ? "import" : "manual");
+    setHouseholdId(data.householdId || null);
     setUserDob(data.dob || "");
     _lang.code = data.lang || "en"; setLang(data.lang || "en");
     var th = data.theme || "purple"; applyTheme(th); setTheme(th);
@@ -5329,7 +6281,14 @@ export default function App() {
           CLOUD.saveUser(fbUser.uid, data);
         }
         blobRef.current = data;
-        loadData(data);
+        // If user is in a household, load and merge shared data.
+        if (data.householdId) {
+          CLOUD.loadHousehold(data.householdId).then(function(hh) {
+            loadData(data, hh);
+          }).catch(function() { loadData(data); });
+        } else {
+          loadData(data);
+        }
         setUser(data.displayName || fbUser.email || "there");
         setAccountKey(fbUser.uid);
         var _pd = fbUser.providerData || [];
@@ -5343,6 +6302,94 @@ export default function App() {
     return function() { if (typeof unsub === "function") unsub(); };
   }, []);
 
+  // Keep a live mirror of the household doc's members and invites. Phase 3 (below)
+  // handles the actual data sync.
+  useEffect(function() {
+    if (!cloudReady() || !householdId) { setHousehold(null); return function() {}; }
+    var unsub = CLOUD.subscribeHousehold(householdId, function(hh) {
+      setHousehold(hh);
+      // If we were removed (or the household was deleted), drop the link locally.
+      if (hh && accountKey && hh.memberUids && hh.memberUids.indexOf(accountKey) === -1) {
+        setHouseholdId(null);
+        save({ householdId: null });
+      }
+    });
+    return function() { if (typeof unsub === "function") unsub(); };
+  }, [householdId, accountKey]);
+
+  // Phase 3: live sync. Subscribe to shared data (budgets, goals, categories, tx)
+  // so partner's edits appear without reload. When shared data changes, update
+  // the app's state immediately.
+  useEffect(function() {
+    if (!cloudReady() || !householdId) { setSharedData(null); return function() {}; }
+    var unsub = CLOUD.subscribeHousehold(householdId, function(hh) {
+      if (hh) {
+        setSharedData({ budgets: hh.budgets || [], goals: hh.goals || [], categories: hh.categories || [], tx: hh.tx || [] });
+        // Update app state to reflect partner's edits live.
+        setBudgets(hh.budgets || []);
+        setGoals(hh.goals || []);
+        setCategories(hh.categories || []);
+        // Re-merge tx: replace shared txs, keep personal txs.
+        var personalTx = tx.filter(function(t) { return !t.shared; });
+        setTx((hh.tx || []).concat(personalTx));
+      }
+    });
+    return function() { if (typeof unsub === "function") unsub(); };
+  }, [householdId]);
+
+  // Look for pending invitations addressed to this user's email once signed in.
+  useEffect(function() {
+    if (!cloudReady() || !accountKey || householdId) { setInvites([]); return; }
+    var email = myEmail();
+    if (!email) { setInvites([]); return; }
+    CLOUD.findInvites(email).then(function(list) { setInvites(list || []); }).catch(function() {});
+  }, [accountKey, householdId]);
+
+  function myEmail() {
+    var cu = cloudReady() ? _auth().currentUser : null;
+    return ((cu && cu.email) || (blobRef.current && blobRef.current.email) || "").toLowerCase();
+  }
+  function meAsMember() {
+    return { uid: accountKey, name: user || "", email: myEmail() };
+  }
+
+  function onCreateHousehold(name) {
+    if (!accountKey) return Promise.resolve();
+    return CLOUD.createHousehold(meAsMember(), name).then(function(hid) {
+      setHouseholdId(hid);
+      save({ householdId: hid });
+      return hid;
+    });
+  }
+  function onInviteMember(email) {
+    if (!householdId || !email) return Promise.resolve();
+    return CLOUD.inviteToHousehold(householdId, email);
+  }
+  function onCancelInvite(email) {
+    if (!householdId) return Promise.resolve();
+    return CLOUD.cancelInvite(householdId, email);
+  }
+  function onAcceptInvite(hid) {
+    if (!hid) return Promise.resolve();
+    return CLOUD.acceptInvite(hid, meAsMember()).then(function() {
+      setHouseholdId(hid);
+      setInvites([]);
+      save({ householdId: hid });
+    });
+  }
+  function onLeaveHousehold() {
+    if (!householdId) return Promise.resolve();
+    // Pass the exact member object from the loaded doc so arrayRemove matches.
+    var mine = null;
+    if (household && household.members) {
+      mine = household.members.filter(function(m) { return m.uid === accountKey; })[0];
+    }
+    var leaving = householdId;
+    setHouseholdId(null); setHousehold(null);
+    save({ householdId: null });
+    return CLOUD.leaveHousehold(leaving, mine || meAsMember());
+  }
+
   function handleLogin(displayName, data, key) {
     blobRef.current = data || {};
     loadData(data || {});
@@ -5355,6 +6402,7 @@ export default function App() {
     CLOUD.signOut();
     blobRef.current = {};
     setUser(null); setAccountKey(null); setTab("overview");
+    setHouseholdId(null); setHousehold(null); setInvites([]);
     setTx([]); setBudgets([]); setGoals([]); setTrips([]); setNotes([]); setFolders([]); setCategories([]);
     _lang.code = "en"; setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang("en"); applyTheme("purple"); setTheme("purple");
   }
@@ -5368,6 +6416,18 @@ export default function App() {
     for (var k in next) blob[k] = next[k];
     blobRef.current = blob;
     CLOUD.saveUser(accountKey, blob);
+
+    // If in a household, also split and save shared data to the household doc.
+    if (householdId && household) {
+      var sharedTx = tx.filter(function(t) { return t.shared; });
+      var sharedBlob = {
+        budgets: budgets,
+        goals: goals,
+        categories: categories,
+        tx: sharedTx
+      };
+      CLOUD.saveHousehold(householdId, sharedBlob);
+    }
   }
 
   function onSaveTx(next) { setTx(next); save({ tx: next }); }
@@ -5459,8 +6519,9 @@ export default function App() {
   function onSaveDob(dob) { setUserDob(dob); save({ dob: dob }); }
   function onSaveEmail(email) { save({ email: email }); }
   function onSaveFinancial(oData) { save({ onboardingData: oData }); }
+  function onSaveEntryMethod(m) { var v = m === "import" ? "import" : "manual"; setEntryMethod(v); save({ entryMethod: v }); }
 
-  function handleOnboardingComplete(plan, oData, suggestedBudgets) {
+  function handleOnboardingComplete(plan, oData, suggestedBudgets, chosenEntryMethod) {
     setRichPlan(plan);
     setOnboardingDone(true);
     setPlanJustCreated(true);
@@ -5468,8 +6529,12 @@ export default function App() {
     var merged = {};
     for (var k in current) merged[k] = current[k];
     merged.onboardingDone = true;
+    var em = chosenEntryMethod === "import" ? "import" : "manual";
+    merged.entryMethod = em;
+    setEntryMethod(em);
     merged.plan = plan;
     merged.onboardingData = oData;
+    setOnboardingData(oData);
     if (suggestedBudgets && suggestedBudgets.length) {
       setBudgets(suggestedBudgets);
       merged.budgets = suggestedBudgets;
@@ -5533,7 +6598,7 @@ export default function App() {
             <div style={{ background: T.orangeDim, borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em" }}>{monthLabel}</div>
           </div>
           <span style={{ flex: 1, fontSize: 20, fontWeight: 700, color: T.ink, textAlign: "center", letterSpacing: "-0.02em" }}>
-            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
+            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
           <div style={{ width: 86, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
             {HAS_FAB.indexOf(currentTab) !== -1 && (
@@ -5552,22 +6617,24 @@ export default function App() {
 
       <div style={{ padding: "8px 16px 0" }}>
         {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} username={user} plan={planJustCreated ? richPlan : ""} onCategories={function() { setTab("categories"); setSheet(false); }} />}
-        {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} />}
+        {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} />}
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "goals" && <Goals goals={goals} trips={trips} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab("goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} username={user} plan={richPlan} lang={lang} />}
-        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} onViewPlan={function() { setTab("plan"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
+        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} username={user} plan={richPlan} lang={lang} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} />}
+        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} onViewPlan={function() { setTab("plan"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
         {currentTab === "editEmail" && <EditEmailView currentEmail={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onSave={function(email) { onSaveEmail(email); setTab("privacy"); }} />}
         {currentTab === "editDob" && <EditDobView currentDob={userDob} onBack={function() { setTab("privacy"); }} onSave={function(dob) { onSaveDob(dob); setTab("privacy"); }} />}
         {currentTab === "editFinancial" && <EditFinancialView oData={blobRef.current.onboardingData || {}} onBack={function() { setTab("privacy"); }} onSave={function(oData) { onSaveFinancial(oData); setTab("privacy"); }} />}
-        {currentTab === "plan" && <PlanView plan={richPlan} onBack={function() { setTab("profile"); }} onRetake={handleRetakePlan} username={user} lang={lang} categories={categories} budgets={budgets} goals={goals} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onUpdatePlan={function(t) { setRichPlan(t); save({ plan: t }); }} />}
+        {currentTab === "plan" && <PlanView plan={richPlan} onBack={function() { setTab("profile"); }} onRetake={handleRetakePlan} username={user} lang={lang} categories={categories} budgets={budgets} goals={goals} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onUpdatePlan={function(t) { setRichPlan(t); save({ plan: t }); }} onboardingData={onboardingData} />}
         {currentTab === "language" && <LanguageView lang={lang} onLangChange={onSaveLang} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "appearance" && <AppearanceView theme={theme} onThemeChange={onSaveTheme} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "collab" && <CollabView household={household} householdId={householdId} invites={invites} myUid={accountKey} onCreate={onCreateHousehold} onInvite={onInviteMember} onCancelInvite={onCancelInvite} onAccept={onAcceptInvite} onLeave={onLeaveHousehold} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "currency" && <CurrencyView currency={currency} onCurrencyChange={onSaveCurrency} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "nickname" && <NicknameView value={user} onSave={function(name) { onSaveNickname(name); setTab(prevTabRef.current || "profile"); }} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
       </div>
