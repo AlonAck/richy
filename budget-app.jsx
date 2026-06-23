@@ -293,6 +293,14 @@ function round2(n) {
 function curMonth() { return new Date().toISOString().slice(0, 7); }   // "2026-06"
 function inMonth(t, ym) { return !!(t && t.date) && t.date.slice(0, 7) === ym; }
 
+// The starting/opening balance is NET WORTH the user already had, not money
+// earned this month - so it must be excluded from income and savings-rate math
+// (otherwise the savings rate reads ~100%). We detect it defensively: the boolean
+// flag OR the opening category/id, so legacy rows missing the flag are still caught.
+function isOpening(t) {
+  return !!(t && (t.opening === true || t.catId === "opening" || t.category === "Opening balance"));
+}
+
 // Offline fallback rates, expressed as approximate units of each currency per 1 USD.
 // Used when the live FX request fails (no network) OR when the currency is outside
 // frankfurter's ECB set (COP, GHS, VND, NGN, etc.). rate(from -> to) = USD[to] / USD[from].
@@ -1713,7 +1721,7 @@ function Overview(props) {
   var balance = allIncome - allExpense;
   // Cash-flow stats are THIS MONTH only. Opening balance is net worth, not income,
   // so it is excluded here (else the savings rate reads 100%).
-  var income  = tx.filter(function(t) { return t.type === "income" && !t.opening && inMonth(t, ym); }).reduce(function(s,t) { return s+t.amount; }, 0);
+  var income  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && inMonth(t, ym); }).reduce(function(s,t) { return s+t.amount; }, 0);
   var expense = tx.filter(function(t) { return t.type === "expense" && inMonth(t, ym); }).reduce(function(s,t) { return s+t.amount; }, 0);
   var hasIncome = income > 0;
   var savRate = hasIncome ? Math.round(((income - expense) / income) * 100) : 0;
@@ -1847,7 +1855,7 @@ function Overview(props) {
     return tx.filter(function(t) { return t.type === "expense" && t.date >= winStart && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
   }
   var winExpenseTot = tx.filter(function(t) { return t.type === "expense" && t.date >= winStart; }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var winIncomeTot  = tx.filter(function(t) { return t.type === "income" && !t.opening && t.date >= winStart; }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var winIncomeTot  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && t.date >= winStart; }).reduce(function(s, t) { return s + t.amount; }, 0);
   var winSav = winIncomeTot > 0 ? Math.round(((winIncomeTot - winExpenseTot) / winIncomeTot) * 100) : 0;
   var winKept = Math.max(0, winIncomeTot - winExpenseTot);
   var winCats = cats.map(function(c) { return { name: c.name, color: c.color, val: winExpenseInCat(c) }; })
@@ -4225,7 +4233,7 @@ function Advisor(props) {
   var cats = props.categories || [];
   var ymA = curMonth();
   // Cash-flow is this month (matches the dashboard); net worth is all-time.
-  var income = props.tx.filter(function(t) { return t.type === "income" && !t.opening && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var income = props.tx.filter(function(t) { return t.type === "income" && !isOpening(t) && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
   var expense = props.tx.filter(function(t) { return t.type === "expense" && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
   var netWorth = props.tx.reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0);
   var savings = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
