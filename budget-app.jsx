@@ -5462,6 +5462,54 @@ function CollabView(props) {
   );
 }
 
+// Edit the opening balance (starting money). It's stored as an income tx
+// with opening=true and is excluded from monthly income/savings-rate calcs.
+function EditOpeningBalanceView(props) {
+  var allTx = props.tx || [];
+  var openingTx = allTx.filter(function(t) { return isOpening(t); })[0];
+  var current = openingTx ? openingTx.amount : 0;
+  var _v = useState(String(current));
+  var val = _v[0]; var setVal = _v[1];
+  var sym = _currency.sym;
+
+  function save() {
+    var newAmount = parseFloat(val);
+    if (isNaN(newAmount) || newAmount < 0) return;
+    var updated = allTx.map(function(t) {
+      if (!isOpening(t)) return t;
+      return { id: t.id, type: "income", amount: round2(newAmount), label: "Opening balance", catId: "opening", category: "Opening balance", date: t.date, opening: true, repeat: "none", pending: false };
+    });
+    // If no opening tx exists, create one
+    if (!openingTx && newAmount > 0) {
+      var today = new Date().toISOString().slice(0, 10);
+      updated = [{ type: "income", amount: round2(newAmount), label: "Opening balance", catId: "opening", category: "Opening balance", date: today, id: Date.now(), opening: true, repeat: "none", pending: false }].concat(updated);
+    }
+    props.onComplete(updated);
+    props.onBack();
+  }
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+      <div style={{ fontSize: 14, color: T.ink3, lineHeight: 1.55, marginBottom: 16, padding: "0 2px" }}>
+        Your opening balance is the money you already had when you started using Richy. It's not counted as income earned this month.
+      </div>
+
+      <Card style={{ padding: "18px 22px", marginBottom: 20 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Opening balance</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ fontSize: 22, color: T.ink3, fontWeight: 600 }}>{sym}</span>
+          <input value={val} onChange={function(e) { setVal(e.target.value); }} type="number" inputMode="decimal" placeholder="0"
+            style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 28, fontFamily: UI, color: T.ink, fontWeight: 700 }} />
+        </div>
+        {openingTx && <div style={{ fontSize: 12, color: T.ink3, marginTop: 8 }}>Current: {fmtCur(sym, current)}</div>}
+      </Card>
+
+      <BigBtn label="Save" onPress={save} />
+    </div>
+  );
+}
+
 // Profile-accessible version of the mid-month CatchUpScreen: log income earned
 // and spending per category for the current month. Appends them as real
 // transactions dated today.
@@ -6277,6 +6325,7 @@ function Profile(props) {
         <ProfileRow icon="coins" label={tr("currency")} value={curLabel} onClick={props.onViewCurrency} />
         <ProfileRow icon="book" label={tr("language")} value={langLabel} onClick={props.onViewLanguage} />
         <ProfileRow icon="star" label={tr("appearance")} value={themeLabel} onClick={props.onViewAppearance} last={false} />
+        <ProfileRow icon="briefcase" label="Opening balance" onClick={props.onViewEditOpeningBalance} last={false} />
         <ProfileRow icon="coins" label="Log this month" onClick={props.onViewLogMonth} last={false} />
         <ProfileRow icon="activity" label="Adding transactions" value={props.entryMethod === "import" ? "CSV import" : "Manual"} onClick={props.onViewEntryMethod} last={false} />
         <ProfileRow icon="home" label="Collab" value={props.householdName || (props.inviteCount ? props.inviteCount + " invite" + (props.inviteCount === 1 ? "" : "s") : "Off")} onClick={props.onViewCollab} last={false} />
@@ -6699,6 +6748,12 @@ export default function App() {
     save({ tx: merged });
   }
 
+  // Update the opening balance from Profile.
+  function handleEditOpeningBalance(updatedTx) {
+    setTx(updatedTx);
+    save({ tx: updatedTx });
+  }
+
   if (cloudReady() && !authChecked) {
     return (
       <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI }}>
@@ -6745,7 +6800,7 @@ export default function App() {
             <div style={{ background: T.orangeDim, borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em" }}>{monthLabel}</div>
           </div>
           <span style={{ flex: 1, fontSize: 20, fontWeight: 700, color: T.ink, textAlign: "center", letterSpacing: "-0.02em" }}>
-            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "logMonth" ? "Log this month" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
+            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
           <div style={{ width: 86, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
             {HAS_FAB.indexOf(currentTab) !== -1 && (
@@ -6771,7 +6826,7 @@ export default function App() {
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab("goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} username={user} plan={richPlan} lang={lang} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} />}
-        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} onViewPlan={function() { setTab("plan"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
+        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} onViewPlan={function() { setTab("plan"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
         {currentTab === "editEmail" && <EditEmailView currentEmail={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onSave={function(email) { onSaveEmail(email); setTab("privacy"); }} />}
@@ -6781,6 +6836,7 @@ export default function App() {
         {currentTab === "language" && <LanguageView lang={lang} onLangChange={onSaveLang} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "appearance" && <AppearanceView theme={theme} onThemeChange={onSaveTheme} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "editOpeningBalance" && <EditOpeningBalanceView tx={tx} onComplete={handleEditOpeningBalance} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "logMonth" && <LogMonthView categories={categories} tx={tx} budgets={budgets} onComplete={handleLogMonth} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "collab" && <CollabView household={household} householdId={householdId} invites={invites} myUid={accountKey} onCreate={onCreateHousehold} onInvite={onInviteMember} onCancelInvite={onCancelInvite} onAccept={onAcceptInvite} onLeave={onLeaveHousehold} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "currency" && <CurrencyView currency={currency} onCurrencyChange={onSaveCurrency} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
