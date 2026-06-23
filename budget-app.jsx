@@ -319,6 +319,28 @@ var CLOUD = {
     if (!cloudReady() || !uid) return Promise.resolve();
     return _fsdb().collection("users").doc(uid).set(data);
   },
+  hasPasswordProvider: function() {
+    var cu = cloudReady() ? _auth().currentUser : null;
+    if (!cu) return false;
+    var pd = cu.providerData || [];
+    for (var i = 0; i < pd.length; i++) {
+      if (pd[i].providerId === "password") return true;
+    }
+    return false;
+  },
+  reauthenticate: function(email, oldPw) {
+    var cu = _auth().currentUser;
+    var cred = _fb().auth.EmailAuthProvider.credential(email, oldPw);
+    return cu.reauthenticateWithCredential(cred);
+  },
+  updatePassword: function(newPw) {
+    return _auth().currentUser.updatePassword(newPw);
+  },
+  linkPassword: function(email, pw) {
+    var cu = _auth().currentUser;
+    var cred = _fb().auth.EmailAuthProvider.credential(email, pw);
+    return cu.linkWithCredential(cred);
+  },
 };
 
 function Card(props) {
@@ -4588,6 +4610,166 @@ function AppearanceView(props) {
   );
 }
 
+function InfoRow(props) {
+  return (
+    <div style={{ padding: "13px 20px", borderBottom: props.last ? "none" : "0.5px solid " + T.sep, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+      <span style={{ fontSize: 14, color: T.ink3, fontFamily: UI, flexShrink: 0 }}>{props.label}</span>
+      <span style={{ fontSize: 14, fontWeight: 600, color: T.ink, fontFamily: UI, textAlign: "right" }}>{props.value}</span>
+    </div>
+  );
+}
+
+function PrivacyView(props) {
+  var blob = props.blob || {};
+  var oData = blob.onboardingData || {};
+  var email = blob.email || "";
+  var langLabel = (LANGUAGE_OPTIONS.filter(function(o) { return o.code === (blob.lang || "en"); })[0] || {}).label || "English";
+  var curLabel = (CURRENCY_OPTIONS.filter(function(o) { return o.sym === (blob.currency || "$"); })[0] || {}).label || (blob.currency || "$");
+  var themeLabel = blob.theme === "classic" ? "Ember" : "Mika's Violet";
+  var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", padding: "18px 4px 8px", fontFamily: UI };
+
+  var rows = [];
+  rows.push({ label: "Name", value: blob.displayName || "" });
+  if (blob.dob) rows.push({ label: "Date of birth", value: blob.dob });
+  rows.push({ label: "Language", value: langLabel });
+  rows.push({ label: "Currency", value: curLabel });
+  rows.push({ label: "Theme", value: themeLabel });
+  if (oData.lifeStage) rows.push({ label: "Life stage", value: oData.lifeStage });
+  if (oData.income) rows.push({ label: "Monthly income", value: "$" + oData.income });
+  if (oData.essentials) rows.push({ label: "Monthly essentials", value: "$" + oData.essentials });
+  if (oData.savings) rows.push({ label: "Savings", value: "$" + oData.savings });
+  if (oData.debt) rows.push({ label: "Total debt", value: "$" + oData.debt });
+  if (oData.goalName) rows.push({ label: "Top goal", value: oData.goalName + (oData.goalAmt ? "  ($" + oData.goalAmt + ")" : "") + (oData.timeline ? "  " + oData.timeline : "") });
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} label="Profile" />
+
+      <div style={secLabel}>Account</div>
+      <Card style={{ overflow: "hidden", marginBottom: 4 }}>
+        <InfoRow label="Email" value={email} last={true} />
+      </Card>
+
+      <div style={secLabel}>What Richy knows</div>
+      <Card style={{ overflow: "hidden", marginBottom: 4 }}>
+        {rows.map(function(row, i) {
+          return <InfoRow key={i} label={row.label} value={row.value} last={i === rows.length - 1} />;
+        })}
+      </Card>
+
+      <div style={secLabel}>Password</div>
+      <Card style={{ overflow: "hidden", marginBottom: 16 }}>
+        <ProfileRow icon="lock" label={props.hasPw ? "Change password" : "Add password"} onClick={props.onViewPassword} last={true} />
+      </Card>
+    </div>
+  );
+}
+
+function PasswordView(props) {
+  var _op = useState(""); var oldPw = _op[0]; var setOldPw = _op[1];
+  var _np = useState(""); var newPw = _np[0]; var setNewPw = _np[1];
+  var _cp = useState(""); var confirmPw = _cp[0]; var setConfirmPw = _cp[1];
+  var _err = useState(""); var err = _err[0]; var setErr = _err[1];
+  var _ld = useState(false); var loading = _ld[0]; var setLoading = _ld[1];
+  var _sh = useState(false); var showPw = _sh[0]; var setShowPw = _sh[1];
+  var hasPw = props.hasPw;
+
+  function handleSubmit() {
+    setErr("");
+    if (!newPw || newPw.length < 6) { setErr("Password must be at least 6 characters."); return; }
+    if (newPw !== confirmPw) { setErr("Passwords don't match."); return; }
+    if (hasPw && !oldPw) { setErr("Enter your current password."); return; }
+    setLoading(true);
+    if (hasPw) {
+      CLOUD.reauthenticate(props.email, oldPw).then(function() {
+        return CLOUD.updatePassword(newPw);
+      }).then(function() {
+        setLoading(false);
+        props.onDone(false);
+      }).catch(function(e) {
+        setLoading(false);
+        var code = e && e.code;
+        if (code === "auth/wrong-password" || code === "auth/invalid-credential") {
+          setErr("Current password is incorrect.");
+        } else {
+          setErr("Something went wrong. Please try again.");
+        }
+      });
+    } else {
+      CLOUD.linkPassword(props.email, newPw).then(function() {
+        setLoading(false);
+        props.onDone(true);
+      }).catch(function(e) {
+        setLoading(false);
+        var code = e && e.code;
+        if (code === "auth/requires-recent-login") {
+          setErr("Please sign out and sign back in first.");
+        } else {
+          setErr("Something went wrong. Please try again.");
+        }
+      });
+    }
+  }
+
+  var inputStyle = { width: "100%", fontSize: 16, color: T.ink, background: "none", border: "none", outline: "none", fontFamily: UI, padding: 0, boxSizing: "border-box" };
+  var fieldStyle = { borderBottom: "0.5px solid " + T.sep, paddingBottom: 14, marginBottom: 14 };
+  var fieldLabelStyle = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 8 };
+  var canSubmit = !loading && newPw.length >= 6 && confirmPw.length > 0 && (!hasPw || oldPw.length > 0);
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} label="Privacy & Data" />
+      <Card style={{ padding: "22px 20px", marginBottom: 12 }}>
+        {hasPw ? (
+          <div style={fieldStyle}>
+            <div style={fieldLabelStyle}>Current password</div>
+            <input
+              value={oldPw}
+              onChange={function(e) { setOldPw(e.target.value); }}
+              type={showPw ? "text" : "password"}
+              placeholder="Enter current password"
+              style={inputStyle}
+              autoFocus={true}
+              autoComplete="current-password"
+            />
+          </div>
+        ) : null}
+        <div style={fieldStyle}>
+          <div style={fieldLabelStyle}>New password</div>
+          <input
+            value={newPw}
+            onChange={function(e) { setNewPw(e.target.value); }}
+            type={showPw ? "text" : "password"}
+            placeholder="At least 6 characters"
+            style={inputStyle}
+            autoFocus={!hasPw}
+            autoComplete="new-password"
+          />
+        </div>
+        <div>
+          <div style={fieldLabelStyle}>Confirm new password</div>
+          <input
+            value={confirmPw}
+            onChange={function(e) { setConfirmPw(e.target.value); }}
+            type={showPw ? "text" : "password"}
+            placeholder="Repeat new password"
+            style={inputStyle}
+            autoComplete="new-password"
+          />
+        </div>
+        {err ? <div style={{ color: T.red, fontSize: 13, marginTop: 14 }}>{err}</div> : null}
+      </Card>
+      <button
+        onClick={function() { setShowPw(function(v) { return !v; }); }}
+        style={{ background: "none", border: "none", color: T.ink3, fontSize: 13, fontFamily: UI, padding: "4px 2px", marginBottom: 4, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+        <SVGIcon id={showPw ? "eyeoff" : "eye"} size={14} color={T.ink3} />
+        {showPw ? "Hide passwords" : "Show passwords"}
+      </button>
+      <BigBtn label={loading ? "Saving..." : (hasPw ? "Change password" : "Set password")} onPress={handleSubmit} disabled={!canSubmit} />
+    </div>
+  );
+}
+
 function PlanView(props) {
   var _msgs = useState([]); var msgs = _msgs[0]; var setMsgs = _msgs[1];
   var _inp = useState(""); var input = _inp[0]; var setInput = _inp[1];
@@ -4809,7 +4991,8 @@ function Profile(props) {
         <ProfileRow icon="person" label={tr("richyRefersTo")} value={props.user} onClick={props.onViewNickname} />
         <ProfileRow icon="coins" label={tr("currency")} value={curLabel} onClick={props.onViewCurrency} />
         <ProfileRow icon="book" label={tr("language")} value={langLabel} onClick={props.onViewLanguage} />
-        <ProfileRow icon="star" label={tr("appearance")} value={themeLabel} onClick={props.onViewAppearance} last={true} />
+        <ProfileRow icon="star" label={tr("appearance")} value={themeLabel} onClick={props.onViewAppearance} last={false} />
+        <ProfileRow icon="shield" label="Privacy & Data" onClick={props.onViewPrivacy} last={true} />
       </Card>
 
       <button onClick={props.onLogout}
@@ -4876,6 +5059,7 @@ export default function App() {
   // In-memory mirror of the signed-in user's full Firestore document, so writes
   // can merge against it without an async read-before-write each time.
   var blobRef = useRef({});
+  var _hp = useState(false); var hasPw = _hp[0]; var setHasPw = _hp[1];
 
   function loadData(data) {
     setTx(data.tx || []);
@@ -4927,6 +5111,12 @@ export default function App() {
         loadData(data);
         setUser(data.displayName || fbUser.email || "there");
         setAccountKey(fbUser.uid);
+        var _pd = fbUser.providerData || [];
+        var _hasPwProv = false;
+        for (var _pi = 0; _pi < _pd.length; _pi++) {
+          if (_pd[_pi].providerId === "password") { _hasPwProv = true; break; }
+        }
+        setHasPw(_hasPwProv);
       }).catch(function() {});
     });
     return function() { if (typeof unsub === "function") unsub(); };
@@ -4937,6 +5127,7 @@ export default function App() {
     loadData(data || {});
     setUser(displayName);
     setAccountKey(key || displayName);
+    setHasPw(true);
   }
 
   function handleLogout() {
@@ -5118,7 +5309,7 @@ export default function App() {
             <div style={{ background: T.orangeDim, borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em" }}>{monthLabel}</div>
           </div>
           <span style={{ flex: 1, fontSize: 20, fontWeight: 700, color: T.ink, textAlign: "center", letterSpacing: "-0.02em" }}>
-            {tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
+            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
           <div style={{ width: 86, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
             {HAS_FAB.indexOf(currentTab) !== -1 && (
@@ -5144,7 +5335,9 @@ export default function App() {
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab("goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} username={user} plan={richPlan} lang={lang} />}
-        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} onViewPlan={function() { setTab("plan"); }} onViewCurrency={function() { setTab("currency"); }} onViewLanguage={function() { setTab("language"); }} onViewNickname={function() { setTab("nickname"); }} onViewAppearance={function() { setTab("appearance"); }} />}
+        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} onViewPlan={function() { setTab("plan"); }} onViewCurrency={function() { setTab("currency"); }} onViewLanguage={function() { setTab("language"); }} onViewNickname={function() { setTab("nickname"); }} onViewAppearance={function() { setTab("appearance"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
+        {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} />}
+        {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
         {currentTab === "plan" && <PlanView plan={richPlan} onBack={function() { setTab("profile"); }} onRetake={handleRetakePlan} username={user} lang={lang} categories={categories} budgets={budgets} goals={goals} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onUpdatePlan={function(t) { setRichPlan(t); save({ plan: t }); }} />}
         {currentTab === "language" && <LanguageView lang={lang} onLangChange={onSaveLang} onBack={function() { setTab("profile"); }} />}
         {currentTab === "appearance" && <AppearanceView theme={theme} onThemeChange={onSaveTheme} onBack={function() { setTab("profile"); }} />}
