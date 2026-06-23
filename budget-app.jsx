@@ -117,7 +117,6 @@ var DEFAULT_CATEGORIES = [
   { id: "c4",  name: "Health",        color: "#E0556E", icon: "heart",     folderId: "f1" },
   { id: "c5",  name: "Entertainment", color: "#2799C8", icon: "film",      folderId: "f2" },
   { id: "c6",  name: "Shopping",      color: "#AF52DE", icon: "cart",      folderId: "f2" },
-  { id: "c7",  name: "Travel",        color: "#00B4A0", icon: "plane",     folderId: "f2" },
   { id: "c8",  name: "Salary",        color: "#27A85F", icon: "briefcase", folderId: "f3" },
   { id: "c9",  name: "Investments",   color: "#C8983A", icon: "chart",     folderId: "f3" },
   { id: "c10", name: "Savings",       color: "#C8673A", icon: "coins",     folderId: "f3" },
@@ -1435,7 +1434,7 @@ function OnboardingScreen(props) {
     if (disc > 0) {
       result.push({ catId: "c5", category: "Entertainment", limit: Math.round(disc * 0.35) });
       result.push({ catId: "c6", category: "Shopping",      limit: Math.round(disc * 0.35) });
-      result.push({ catId: "c7", category: "Travel",        limit: Math.round(disc * 0.20) });
+
       result.push({ catId: "c11",category: "Other",         limit: Math.round(disc * 0.10) });
     }
     return result.filter(function(b) { return b.limit > 0; });
