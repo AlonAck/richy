@@ -1739,13 +1739,15 @@ function Overview(props) {
   var _dp = useState(0);    var dp = _dp[0];       var setDp = _dp[1];
   var rafRef = useRef(null);
   var dragRef = useRef({ active: false, startX: 0, vw: 366 });
+  var scrollRef = useRef(null);
 
   // Inject the entrance keyframe once.
   useEffect(function() {
     if (document.getElementById("rc-ov-anim")) return;
     var st = document.createElement("style");
     st.id = "rc-ov-anim";
-    st.textContent = "@keyframes rcFadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}";
+    st.textContent = "@keyframes rcFadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}"
+      + ".rc-hero-scroll{scrollbar-width:none;-ms-overflow-style:none;}.rc-hero-scroll::-webkit-scrollbar{display:none;width:0;height:0;}";
     document.head.appendChild(st);
   }, []);
 
@@ -1764,7 +1766,19 @@ function Overview(props) {
     return function() { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
   }, [page, range]);
 
-  function goPage(i) { setDragX(0); setDragging(false); setPage(i); }
+  function goPage(i) {
+    setPage(i);
+    var el = scrollRef.current;
+    if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+  }
+  // Native scroll-snap drives the carousel; this keeps the dots + chart animation
+  // in sync with whichever panel the browser has snapped to.
+  function onScroll(e) {
+    var el = e.currentTarget;
+    var w = el.clientWidth || 1;
+    var i = Math.round(el.scrollLeft / w);
+    if (i !== page) setPage(i);
+  }
   function pickRange(r) { if (r !== range) setRange(r); }
   function stopDrag(e) { e.stopPropagation(); }
   function onDown(e) {
@@ -2044,14 +2058,14 @@ function Overview(props) {
             return <div key={i} onClick={function() { goPage(i); }} style={{ width: i === page ? 18 : 6, height: 6, borderRadius: 3, cursor: "pointer", transition: "all 0.3s cubic-bezier(0.22,1,0.36,1)", background: i === page ? T.orange : "rgba(0,0,0,0.16)" }} />;
           })}
         </div>
-        <div onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onPointerLeave={onUp}
-          style={{ position: "relative", height: 242, borderRadius: 24, overflow: "hidden", background: T.heroBg, boxShadow: T.heroShadow, touchAction: "pan-y", cursor: "grab", userSelect: "none" }}>
-          <div style={{ position: "absolute", top: -70, right: -60, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
-          <div style={{ position: "absolute", bottom: -70, left: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow2 + ",transparent 65%)", pointerEvents: "none" }} />
-          <div style={{ display: "flex", height: "100%", width: "100%", transform: "translateX(calc(" + (-page * 100) + "% + " + dragX + "px))", transition: dragging ? "none" : "transform 0.55s cubic-bezier(0.22,1,0.36,1)" }}>
+        <div style={{ position: "relative", height: 242, borderRadius: 24, overflow: "hidden", background: T.heroBg, boxShadow: T.heroShadow }}>
+          <div style={{ position: "absolute", top: -70, right: -60, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none", zIndex: 0 }} />
+          <div style={{ position: "absolute", bottom: -70, left: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow2 + ",transparent 65%)", pointerEvents: "none", zIndex: 0 }} />
+          <div ref={scrollRef} onScroll={onScroll} className="rc-hero-scroll"
+            style={{ position: "relative", zIndex: 1, display: "flex", height: "100%", width: "100%", overflowX: "auto", overflowY: "hidden", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
 
             {/* Panel 0 - Balance */}
-            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", overflow: "hidden",padding: "22px 24px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative" }}>
+            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden",padding: "22px 24px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>{tr("netBalance")}</span>
                 <div onPointerDown={stopDrag} onClick={function() { setHidden(function(v) { return !v; }); }} style={{ cursor: "pointer", padding: 4, display: "flex" }}>
@@ -2081,7 +2095,7 @@ function Overview(props) {
             </div>
 
             {/* Panel 1 - Trend */}
-            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
+            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>BALANCE TREND</span>
                 {rangeRow()}
@@ -2100,7 +2114,7 @@ function Overview(props) {
             </div>
 
             {/* Panel 2 - Categories */}
-            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
+            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>WHERE IT GOES</span>
                 {rangeRow()}
@@ -2132,7 +2146,7 @@ function Overview(props) {
             </div>
 
             {/* Panel 3 - Savings rate */}
-            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", overflow: "hidden",padding: "22px 24px", display: "flex", alignItems: "center", gap: 22 }}>
+            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden",padding: "22px 24px", display: "flex", alignItems: "center", gap: 22 }}>
               <div style={{ position: "relative", width: 120, height: 120, flexShrink: 0 }}>
                 {ringChart()}
                 <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
@@ -2151,7 +2165,7 @@ function Overview(props) {
             </div>
 
             {/* Panel 4 - Top merchants */}
-            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
+            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>TOP MERCHANTS</span>
                 {rangeRow()}
