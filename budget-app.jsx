@@ -1716,8 +1716,8 @@ function Overview(props) {
   var ym = curMonth();
   // Net Balance is net worth: ALL income (incl. opening balance) minus ALL
   // expense, all-time. It must carry over month to month, so it is NOT scoped.
-  var allIncome  = tx.filter(function(t) { return t.type === "income"; }).reduce(function(s,t) { return s+t.amount; }, 0);
-  var allExpense = tx.filter(function(t) { return t.type === "expense"; }).reduce(function(s,t) { return s+t.amount; }, 0);
+  var allIncome  = tx.filter(function(t) { return t.type === "income" && !t.catchUp; }).reduce(function(s,t) { return s+t.amount; }, 0);
+  var allExpense = tx.filter(function(t) { return t.type === "expense" && !t.catchUp; }).reduce(function(s,t) { return s+t.amount; }, 0);
   var balance = allIncome - allExpense;
   // Cash-flow stats are THIS MONTH only. Opening balance is net worth, not income,
   // so it is excluded here (else the savings rate reads 100%).
@@ -5546,10 +5546,10 @@ function LogMonthView(props) {
     var i = 0;
     cats.forEach(function(c) {
       var v = parseFloat(amts[c.id]);
-      if (v > 0) out.push({ type: "expense", amount: round2(v), label: c.name, catId: c.id, category: c.name, date: today, id: base + (i++), repeat: "none", pending: false });
+      if (v > 0) out.push({ type: "expense", amount: round2(v), label: c.name, catId: c.id, category: c.name, date: today, id: base + (i++), repeat: "none", pending: false, catchUp: true });
     });
     var iv = parseFloat(inc);
-    if (iv > 0) out.push({ type: "income", amount: round2(iv), label: monthName + " income", catId: "c8", category: "Salary", date: today, id: base + (i++), repeat: "none", pending: false });
+    if (iv > 0) out.push({ type: "income", amount: round2(iv), label: monthName + " income", catId: "c8", category: "Salary", date: today, id: base + (i++), repeat: "none", pending: false, catchUp: true });
     return out;
   }
   var anything = parseFloat(inc) > 0 || cats.some(function(c) { return parseFloat(amts[c.id]) > 0; });
