@@ -1782,8 +1782,9 @@ function Overview(props) {
     var clientY = (e.touches ? e.touches[0].clientY : e.clientY);
     var dx = clientX - dragRef.current.startX;
     var dy = clientY - dragRef.current.startY;
-    // Only respond to horizontal movement; ignore if vertical movement is larger
-    if (Math.abs(dy) > Math.abs(dx)) return;
+    // Require horizontal movement to be significant and much larger than vertical
+    if (Math.abs(dy) > Math.abs(dx) * 0.5) return; // Vertical movement > 50% of horizontal = ignore
+    if (Math.abs(dx) < 5) return; // Require at least 5px horizontal movement to start
     if ((page === 0 && dx > 0) || (page === 4 && dx < 0)) dx = dx * 0.35;
     dragRef.current.dx = dx;
     setDragX(dx);
