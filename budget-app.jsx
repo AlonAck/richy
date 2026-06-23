@@ -5454,6 +5454,98 @@ function CollabView(props) {
   );
 }
 
+// Profile-accessible version of the mid-month CatchUpScreen: log income earned
+// and spending per category for the current month. Appends them as real
+// transactions dated today.
+function LogMonthView(props) {
+  var allCats = props.categories || [];
+  var cats = allCats.filter(function(c) { return c.folderId !== "f3" && c.id !== "opening"; });
+  var allTx = props.tx || [];
+  var allBudgets = props.budgets || [];
+  var _am = useState({}); var amts = _am[0]; var setAmts = _am[1];
+  var _in = useState(""); var inc = _in[0]; var setInc = _in[1];
+
+  var localeMap = { en: "en-US", he: "he-IL", es: "es-ES", fr: "fr-FR", ar: "ar-SA", ru: "ru-RU", de: "de-DE", pt: "pt-BR" };
+  var locale = localeMap[_lang.code] || "en-US";
+  var monthName = new Date().toLocaleString(locale, { month: "long" });
+  var sym = _currency.sym;
+  var ym = curMonth();
+
+  // What's already logged this month per category, and the budget limit if set.
+  function spentThisMonth(c) {
+    return allTx.filter(function(t) { return t.type === "expense" && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  }
+  function limitFor(c) {
+    var b = allBudgets.filter(function(x) { return x.catId === c.id || x.category === c.name; })[0];
+    return b ? b.limit : 0;
+  }
+
+  function setAmt(id, v) {
+    setAmts(function(prev) { var n = {}; for (var k in prev) n[k] = prev[k]; n[id] = v; return n; });
+  }
+  function buildTxs() {
+    var today = new Date().toISOString().slice(0, 10);
+    var out = [];
+    var base = Date.now();
+    var i = 0;
+    cats.forEach(function(c) {
+      var v = parseFloat(amts[c.id]);
+      if (v > 0) out.push({ type: "expense", amount: round2(v), label: c.name, catId: c.id, category: c.name, date: today, id: base + (i++), repeat: "none", pending: false });
+    });
+    var iv = parseFloat(inc);
+    if (iv > 0) out.push({ type: "income", amount: round2(iv), label: monthName + " income", catId: "c8", category: "Salary", date: today, id: base + (i++), repeat: "none", pending: false });
+    return out;
+  }
+  var anything = parseFloat(inc) > 0 || cats.some(function(c) { return parseFloat(amts[c.id]) > 0; });
+  var fieldBox = { display: "flex", alignItems: "center", gap: 3, background: "rgba(0,0,0,0.05)", borderRadius: 10, padding: "7px 10px", minWidth: 96 };
+  var amtInput = { width: 58, border: "none", background: "none", outline: "none", fontSize: 15, fontFamily: UI, color: T.ink, fontWeight: 600, textAlign: "right" };
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+      <div style={{ fontSize: 14, color: T.ink3, lineHeight: 1.55, marginBottom: 16, padding: "0 2px" }}>
+        Log what you earned and spent so far this {monthName}. These add as transactions dated today - edit or delete any of them later in Activity.
+      </div>
+
+      <Card style={{ padding: "16px 18px", marginBottom: 14 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Income received this {monthName}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ fontSize: 22, color: T.ink3, fontWeight: 600 }}>{sym}</span>
+          <input value={inc} onChange={function(e) { setInc(e.target.value); }} type="number" inputMode="decimal" placeholder="0"
+            style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 22, fontFamily: UI, color: T.ink, fontWeight: 700 }} />
+        </div>
+      </Card>
+
+      <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "4px 4px 8px" }}>Spent so far this {monthName}</div>
+      <Card style={{ overflow: "hidden", marginBottom: 16 }}>
+        {cats.map(function(c, i) {
+          var already = spentThisMonth(c);
+          var lim = limitFor(c);
+          var sub = "";
+          if (lim > 0) sub = fmtCur(sym, already) + " of " + fmtCur(sym, lim) + " budget";
+          else if (already > 0) sub = fmtCur(sym, already) + " logged so far";
+          var over = lim > 0 && already > lim;
+          return (
+            <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderBottom: i < cats.length - 1 ? "0.5px solid " + T.sep : "none" }}>
+              <CatBadge icon={c.icon} color={c.color} size={34} soft={true} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, color: T.ink, fontWeight: 500 }}>{c.name}</div>
+                {sub && <div style={{ fontSize: 11.5, color: over ? T.red : T.ink3, marginTop: 1 }}>{sub}</div>}
+              </div>
+              <div style={fieldBox}>
+                <span style={{ fontSize: 14, color: T.ink3, fontWeight: 600 }}>{sym}</span>
+                <input value={amts[c.id] || ""} onChange={function(e) { setAmt(c.id, e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={amtInput} />
+              </div>
+            </div>
+          );
+        })}
+      </Card>
+
+      <BigBtn label="Add to my month" disabled={!anything} onPress={function() { props.onComplete(buildTxs()); props.onBack(); }} />
+    </div>
+  );
+}
+
 function NicknameView(props) {
   var _v = useState(props.value || "");
   var val = _v[0]; var setVal = _v[1];
@@ -6177,6 +6269,7 @@ function Profile(props) {
         <ProfileRow icon="coins" label={tr("currency")} value={curLabel} onClick={props.onViewCurrency} />
         <ProfileRow icon="book" label={tr("language")} value={langLabel} onClick={props.onViewLanguage} />
         <ProfileRow icon="star" label={tr("appearance")} value={themeLabel} onClick={props.onViewAppearance} last={false} />
+        <ProfileRow icon="coins" label="Log this month" onClick={props.onViewLogMonth} last={false} />
         <ProfileRow icon="activity" label="Adding transactions" value={props.entryMethod === "import" ? "CSV import" : "Manual"} onClick={props.onViewEntryMethod} last={false} />
         <ProfileRow icon="home" label="Collab" value={props.householdName || (props.inviteCount ? props.inviteCount + " invite" + (props.inviteCount === 1 ? "" : "s") : "Off")} onClick={props.onViewCollab} last={false} />
         <ProfileRow icon="shield" label="Privacy & Data" onClick={props.onViewPrivacy} last={true} />
@@ -6590,6 +6683,14 @@ export default function App() {
     save({ tx: merged, catchUpDone: true });
   }
 
+  // Re-run the "log this month" flow on demand from Profile.
+  function handleLogMonth(newTxs) {
+    if (!newTxs || !newTxs.length) return;
+    var merged = tx.concat(newTxs);
+    setTx(merged);
+    save({ tx: merged });
+  }
+
   if (cloudReady() && !authChecked) {
     return (
       <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI }}>
@@ -6636,7 +6737,7 @@ export default function App() {
             <div style={{ background: T.orangeDim, borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em" }}>{monthLabel}</div>
           </div>
           <span style={{ flex: 1, fontSize: 20, fontWeight: 700, color: T.ink, textAlign: "center", letterSpacing: "-0.02em" }}>
-            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
+            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "logMonth" ? "Log this month" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
           <div style={{ width: 86, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
             {HAS_FAB.indexOf(currentTab) !== -1 && (
@@ -6662,7 +6763,7 @@ export default function App() {
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab("goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} username={user} plan={richPlan} lang={lang} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} />}
-        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} onViewPlan={function() { setTab("plan"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
+        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} onViewPlan={function() { setTab("plan"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
         {currentTab === "editEmail" && <EditEmailView currentEmail={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onSave={function(email) { onSaveEmail(email); setTab("privacy"); }} />}
@@ -6672,6 +6773,7 @@ export default function App() {
         {currentTab === "language" && <LanguageView lang={lang} onLangChange={onSaveLang} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "appearance" && <AppearanceView theme={theme} onThemeChange={onSaveTheme} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "logMonth" && <LogMonthView categories={categories} tx={tx} budgets={budgets} onComplete={handleLogMonth} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "collab" && <CollabView household={household} householdId={householdId} invites={invites} myUid={accountKey} onCreate={onCreateHousehold} onInvite={onInviteMember} onCancelInvite={onCancelInvite} onAccept={onAcceptInvite} onLeave={onLeaveHousehold} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "currency" && <CurrencyView currency={currency} onCurrencyChange={onSaveCurrency} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "nickname" && <NicknameView value={user} onSave={function(name) { onSaveNickname(name); setTab(prevTabRef.current || "profile"); }} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
