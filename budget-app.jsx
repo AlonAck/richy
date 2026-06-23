@@ -1769,7 +1769,7 @@ function Overview(props) {
   function stopDrag(e) { e.stopPropagation(); }
   function onDown(e) {
     dragRef.current.active = true;
-    dragRef.current.startX = e.clientX;
+    dragRef.current.startX = (e.touches ? e.touches[0].clientX : e.clientX);
     dragRef.current.dx = 0;
     dragRef.current.vw = e.currentTarget.offsetWidth || 366;
     setDragging(true);
@@ -1777,7 +1777,8 @@ function Overview(props) {
   }
   function onMove(e) {
     if (!dragRef.current.active) return;
-    var dx = e.clientX - dragRef.current.startX;
+    var clientX = (e.touches ? e.touches[0].clientX : e.clientX);
+    var dx = clientX - dragRef.current.startX;
     if ((page === 0 && dx > 0) || (page === 4 && dx < 0)) dx = dx * 0.35;
     dragRef.current.dx = dx;
     setDragX(dx);
