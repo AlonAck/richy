@@ -1780,11 +1780,17 @@ function Overview(props) {
   }
   // Native scroll-snap drives the carousel; this keeps the dots + chart animation
   // in sync with whichever panel the browser has snapped to.
+  var scrollTimer = useRef(null);
   function onScroll(e) {
     var el = e.currentTarget;
-    var w = el.clientWidth || 1;
-    var i = Math.round(el.scrollLeft / w);
-    if (i !== page) setPage(i);
+    // Throttle: only commit the new page after scrolling settles (100ms),
+    // not on every pixel — avoids hammering setPage during the swipe animation.
+    if (scrollTimer.current) clearTimeout(scrollTimer.current);
+    scrollTimer.current = setTimeout(function() {
+      var w = el.clientWidth || 1;
+      var i = Math.round(el.scrollLeft / w);
+      if (i !== page) setPage(i);
+    }, 100);
   }
   function pickRange(r) { if (r !== range) setRange(r); }
   function stopDrag(e) { e.stopPropagation(); }
@@ -6406,6 +6412,7 @@ export default function App() {
   // In-memory mirror of the signed-in user's full Firestore document, so writes
   // can merge against it without an async read-before-write each time.
   var blobRef = useRef({});
+  var saveTimerRef = useRef(null);
   var prevTabRef = useRef("profile");
   var _hp = useState(false); var hasPw = _hp[0]; var setHasPw = _hp[1];
 
@@ -6489,40 +6496,30 @@ export default function App() {
     return function() { if (typeof unsub === "function") unsub(); };
   }, []);
 
-  // Keep a live mirror of the household doc's members and invites. Phase 3 (below)
-  // handles the actual data sync.
+  // Single subscription for all household live updates: members, invites, and
+  // shared data (budgets, goals, categories, tx). Two separate subscriptions
+  // were causing double Firestore reads and double re-renders on every snapshot.
   useEffect(function() {
-    if (!cloudReady() || !householdId) { setHousehold(null); return function() {}; }
+    if (!cloudReady() || !householdId) { setHousehold(null); setSharedData(null); return function() {}; }
     var unsub = CLOUD.subscribeHousehold(householdId, function(hh) {
       setHousehold(hh);
-      // If we were removed (or the household was deleted), drop the link locally.
-      if (hh && accountKey && hh.memberUids && hh.memberUids.indexOf(accountKey) === -1) {
+      if (!hh) { setSharedData(null); return; }
+      // Membership check: if we were removed, drop the link.
+      if (accountKey && hh.memberUids && hh.memberUids.indexOf(accountKey) === -1) {
         setHouseholdId(null);
         save({ householdId: null });
+        return;
       }
+      // Live-sync shared data.
+      setSharedData({ budgets: hh.budgets || [], goals: hh.goals || [], categories: hh.categories || [], tx: hh.tx || [] });
+      setBudgets(hh.budgets || []);
+      setGoals(hh.goals || []);
+      setCategories(hh.categories || []);
+      var personalTx = tx.filter(function(t) { return !t.shared; });
+      setTx((hh.tx || []).concat(personalTx));
     });
     return function() { if (typeof unsub === "function") unsub(); };
   }, [householdId, accountKey]);
-
-  // Phase 3: live sync. Subscribe to shared data (budgets, goals, categories, tx)
-  // so partner's edits appear without reload. When shared data changes, update
-  // the app's state immediately.
-  useEffect(function() {
-    if (!cloudReady() || !householdId) { setSharedData(null); return function() {}; }
-    var unsub = CLOUD.subscribeHousehold(householdId, function(hh) {
-      if (hh) {
-        setSharedData({ budgets: hh.budgets || [], goals: hh.goals || [], categories: hh.categories || [], tx: hh.tx || [] });
-        // Update app state to reflect partner's edits live.
-        setBudgets(hh.budgets || []);
-        setGoals(hh.goals || []);
-        setCategories(hh.categories || []);
-        // Re-merge tx: replace shared txs, keep personal txs.
-        var personalTx = tx.filter(function(t) { return !t.shared; });
-        setTx((hh.tx || []).concat(personalTx));
-      }
-    });
-    return function() { if (typeof unsub === "function") unsub(); };
-  }, [householdId]);
 
   // Look for pending invitations addressed to this user's email once signed in.
   useEffect(function() {
@@ -6602,19 +6599,18 @@ export default function App() {
     blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme;
     for (var k in next) blob[k] = next[k];
     blobRef.current = blob;
-    CLOUD.saveUser(accountKey, blob);
-
-    // If in a household, also split and save shared data to the household doc.
-    if (householdId && household) {
-      var sharedTx = tx.filter(function(t) { return t.shared; });
-      var sharedBlob = {
-        budgets: budgets,
-        goals: goals,
-        categories: categories,
-        tx: sharedTx
-      };
-      CLOUD.saveHousehold(householdId, sharedBlob);
-    }
+    // Debounce Firestore writes: coalesce rapid successive saves (e.g. typing)
+    // into a single write 800ms after the last call. The blob is captured by
+    // reference (blobRef) so the final write always has the latest data.
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(function() {
+      saveTimerRef.current = null;
+      CLOUD.saveUser(accountKey, blobRef.current);
+      if (householdId && household) {
+        var sharedTx = blobRef.current.tx ? blobRef.current.tx.filter(function(t) { return t.shared; }) : [];
+        CLOUD.saveHousehold(householdId, { budgets: blobRef.current.budgets, goals: blobRef.current.goals, categories: blobRef.current.categories, tx: sharedTx });
+      }
+    }, 800);
   }
 
   function onSaveTx(next) { setTx(next); save({ tx: next }); }
