@@ -1795,8 +1795,10 @@ function Overview(props) {
     var w = dragRef.current.vw || 366;
     var dx = dragRef.current.dx || 0;
     var np = page;
-    if (dx < -w * 0.2 && page < 4) np = page + 1;
-    else if (dx > w * 0.2 && page > 0) np = page - 1;
+    // DEBUG: Log the drag distance to see what's happening
+    console.log("onUp: dx=" + dx + ", w=" + w + ", page=" + page);
+    if (dx < -w * 0.2 && page < 4) { console.log("-> next page"); np = page + 1; }
+    else if (dx > w * 0.2 && page > 0) { console.log("-> prev page"); np = page - 1; }
     dragRef.current.dx = 0;
     setDragX(0);
     setDragging(false);
