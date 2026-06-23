@@ -1768,38 +1768,53 @@ function Overview(props) {
   function pickRange(r) { if (r !== range) setRange(r); }
   function stopDrag(e) { e.stopPropagation(); }
   function onDown(e) {
-    dragRef.current.active = true;
-    dragRef.current.startX = (e.touches ? e.touches[0].clientX : e.clientX);
-    dragRef.current.startY = (e.touches ? e.touches[0].clientY : e.clientY);
-    dragRef.current.dx = 0;
-    dragRef.current.vw = e.currentTarget.offsetWidth || 366;
-    setDragging(true);
-    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+    var d = dragRef.current;
+    d.active = true;
+    d.axis = null;                 // undecided -> 'x' (carousel) or 'y' (ignore)
+    d.startX = e.clientX;
+    d.startY = e.clientY;
+    d.dx = 0;
+    d.pid = e.pointerId;
+    d.vw = e.currentTarget.offsetWidth || 366;
+    // Don't capture the pointer yet: wait until we know it's a horizontal drag,
+    // otherwise we'd swallow vertical scrolls.
   }
   function onMove(e) {
-    if (!dragRef.current.active) return;
-    var clientX = (e.touches ? e.touches[0].clientX : e.clientX);
-    var clientY = (e.touches ? e.touches[0].clientY : e.clientY);
-    var dx = clientX - dragRef.current.startX;
-    var dy = clientY - dragRef.current.startY;
-    // Require horizontal movement to be significant and much larger than vertical
-    if (Math.abs(dy) > Math.abs(dx) * 0.5) return; // Vertical movement > 50% of horizontal = ignore
-    if (Math.abs(dx) < 5) return; // Require at least 5px horizontal movement to start
+    var d = dragRef.current;
+    if (!d.active) return;
+    var dx = e.clientX - d.startX;
+    var dy = e.clientY - d.startY;
+    // Decide the axis once, on the first meaningful movement, then commit to it.
+    if (d.axis === null) {
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;   // wait for clear intent
+      if (Math.abs(dy) >= Math.abs(dx)) {
+        // Vertical gesture: this is a scroll, never a page change. Give up entirely.
+        d.axis = "y";
+        d.active = false;
+        return;
+      }
+      // Horizontal gesture: lock to the carousel and capture the pointer.
+      d.axis = "x";
+      setDragging(true);
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+    }
+    if (d.axis !== "x") return;
     if ((page === 0 && dx > 0) || (page === 4 && dx < 0)) dx = dx * 0.35;
-    dragRef.current.dx = dx;
+    d.dx = dx;
     setDragX(dx);
   }
   function onUp() {
-    if (!dragRef.current.active) return;
-    dragRef.current.active = false;
-    var w = dragRef.current.vw || 366;
-    var dx = dragRef.current.dx || 0;
+    var d = dragRef.current;
+    // Only a committed horizontal drag can change the page.
+    if (!d.active || d.axis !== "x") { d.active = false; d.axis = null; d.dx = 0; setDragX(0); setDragging(false); return; }
+    d.active = false;
+    var w = d.vw || 366;
+    var dx = d.dx || 0;
     var np = page;
-    // DEBUG: Log the drag distance to see what's happening
-    console.log("onUp: dx=" + dx + ", w=" + w + ", page=" + page);
-    if (dx < -w * 0.2 && page < 4) { console.log("-> next page"); np = page + 1; }
-    else if (dx > w * 0.2 && page > 0) { console.log("-> prev page"); np = page - 1; }
-    dragRef.current.dx = 0;
+    if (dx < -w * 0.2 && page < 4) np = page + 1;
+    else if (dx > w * 0.2 && page > 0) np = page - 1;
+    d.dx = 0;
+    d.axis = null;
     setDragX(0);
     setDragging(false);
     setPage(np);
@@ -2029,8 +2044,8 @@ function Overview(props) {
             return <div key={i} onClick={function() { goPage(i); }} style={{ width: i === page ? 18 : 6, height: 6, borderRadius: 3, cursor: "pointer", transition: "all 0.3s cubic-bezier(0.22,1,0.36,1)", background: i === page ? T.orange : "rgba(0,0,0,0.16)" }} />;
           })}
         </div>
-        <div onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerLeave={onUp}
-          style={{ position: "relative", height: 242, borderRadius: 24, overflow: "hidden", background: T.heroBg, boxShadow: T.heroShadow, touchAction: "none", cursor: "grab", userSelect: "none" }}>
+        <div onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onPointerLeave={onUp}
+          style={{ position: "relative", height: 242, borderRadius: 24, overflow: "hidden", background: T.heroBg, boxShadow: T.heroShadow, touchAction: "pan-y", cursor: "grab", userSelect: "none" }}>
           <div style={{ position: "absolute", top: -70, right: -60, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
           <div style={{ position: "absolute", bottom: -70, left: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow2 + ",transparent 65%)", pointerEvents: "none" }} />
           <div style={{ display: "flex", height: "100%", width: "100%", transform: "translateX(calc(" + (-page * 100) + "% + " + dragX + "px))", transition: dragging ? "none" : "transform 0.55s cubic-bezier(0.22,1,0.36,1)" }}>
