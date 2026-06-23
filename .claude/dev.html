@@ -69,7 +69,7 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).t
   if (typeof applyTheme === "function") { applyTheme(qs.get("theme") || "purple"); }
   var view = qs.get("view") || "overview";
   var mockTrips = qs.get("seed") ? [{
-    id: 99, name: "Tokyo Spring", destination: "Tokyo", days: 8, style: "comfort", total: 5000,
+    id: 99, name: "Tokyo Spring", destination: "Tokyo", days: 8, style: "comfort", total: 5000, icon: "umbrella",
     reserved: false, reserveTxId: null,
     advisorTips: ["Book the Shinkansen pass before you fly - cheaper from abroad.", "Eat at depachika food halls for high quality at low cost."],
     allocations: [
@@ -96,6 +96,29 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).t
       });
     }
     el = React.createElement(TripsWrapper, { initialTrips: mockTrips, initialTx: mockTx, cats: mockCats, goals: mockGoals });
+  } else if (view === "goals") {
+    function GoalsTripsWrapper() {
+      var _tab = React.useState("goals"); var tab = _tab[0]; var setTab = _tab[1];
+      var _ot = React.useState(null); var openTrip = _ot[0]; var setOpenTrip = _ot[1];
+      var _t = React.useState(mockTrips); var trips = _t[0]; var setTrips = _t[1];
+      var _tx = React.useState(mockTx); var tx = _tx[0]; var setTx = _tx[1];
+      var _sh = React.useState(true); var sheet = _sh[0]; var setSheet = _sh[1];
+      if (tab === "trips") {
+        return React.createElement(Trips, {
+          trips: trips, tx: tx, categories: mockCats, openTripId: openTrip,
+          onSaveTrips: function(n){ setTrips(n); },
+          onTripReserve: function(ntx, nt){ setTx(ntx); setTrips(nt); },
+          onBack: function(){ setTab("goals"); }, sheetOpen: false, setSheetOpen: function(){}
+        });
+      }
+      return React.createElement(Goals, {
+        goals: mockGoals, trips: trips, onSaveGoals: function(){},
+        sheetOpen: sheet, setSheetOpen: setSheet,
+        onPlanTrip: function(){ setOpenTrip(null); setTab("trips"); },
+        onOpenTrip: function(id){ setOpenTrip(id); setTab("trips"); }
+      });
+    }
+    el = React.createElement(GoalsTripsWrapper, {});
   } else if (view === "appearance") {
     el = React.createElement(AppearanceView, { theme: qs.get("theme") || "purple", onThemeChange: function(){}, onBack: function(){} });
   } else if (view === "advisor") {
