@@ -2022,7 +2022,7 @@ function Overview(props) {
           })}
         </div>
         <div onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerLeave={onUp}
-          style={{ position: "relative", height: 242, borderRadius: 24, overflow: "hidden", background: T.heroBg, boxShadow: T.heroShadow, touchAction: "pan-y", cursor: "grab", userSelect: "none" }}>
+          style={{ position: "relative", height: 242, borderRadius: 24, overflow: "hidden", background: T.heroBg, boxShadow: T.heroShadow, touchAction: "none", cursor: "grab", userSelect: "none" }}>
           <div style={{ position: "absolute", top: -70, right: -60, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
           <div style={{ position: "absolute", bottom: -70, left: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow2 + ",transparent 65%)", pointerEvents: "none" }} />
           <div style={{ display: "flex", height: "100%", width: "100%", transform: "translateX(calc(" + (-page * 100) + "% + " + dragX + "px))", transition: dragging ? "none" : "transform 0.55s cubic-bezier(0.22,1,0.36,1)" }}>
