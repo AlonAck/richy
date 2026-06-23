@@ -949,6 +949,10 @@ function AuthScreen(props) {
   var pendingLogin = _pl[0]; var setPendingLogin = _pl[1];
   var _sb = useState("");
   var startBal = _sb[0]; var setStartBal = _sb[1];
+  var _sl = useState("en");
+  var signupLang = _sl[0]; var setSignupLang = _sl[1];
+  var _sc2 = useState("$");
+  var signupCur = _sc2[0]; var setSignupCur = _sc2[1];
   var googleBtnRef = useRef(null);
 
   useEffect(function() {
@@ -982,12 +986,17 @@ function AuthScreen(props) {
     setStep("signup_details");
   }
 
-  function finishSignup() {
+  function goToPrefs() {
     setError("");
     if (!fullName.trim()) { setError("Enter your full name."); return; }
     if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
     if (password !== password2) { setError("Those passwords don't match."); return; }
     if (!dob) { setError("Enter your date of birth."); return; }
+    setStep("signup_prefs");
+  }
+
+  function finishSignup() {
+    setError("");
     if (!cloudReady()) { setError(CLOUD_SETUP_MSG); return; }
     var em = email.trim().toLowerCase();
     setBusy(true);
@@ -1001,7 +1010,7 @@ function AuthScreen(props) {
       if (sb > 0) {
         initTx = [{ type: "income", amount: sb, label: "Opening balance", catId: "opening", category: "Opening balance", opening: true, date: new Date().toISOString().slice(0, 10), id: Date.now(), repeat: "none", pending: false }];
       }
-      var blob = { tx: initTx, budgets: [], goals: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: fullName.trim(), email: em, dob: dob };
+      var blob = { tx: initTx, budgets: [], goals: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: fullName.trim(), email: em, dob: dob, lang: signupLang, currency: signupCur };
       return CLOUD.saveUser(uid, blob).then(function() {
         window.__cbSignup = false;
         setBusy(false);
@@ -1063,6 +1072,7 @@ function AuthScreen(props) {
     signup_email:     { t: "Get started",     s: "Enter your email to begin" },
     signup_verify:    { t: "Check your email", s: "We sent a 6-digit code to " + email },
     signup_details:   { t: "Almost there",    s: "A few details to finish your account" },
+    signup_prefs:     { t: "One last step",   s: "Set your language and currency" },
     forgot_password:  { t: "Reset password",  s: "Enter your email and we'll send a reset link" },
   };
   var head = titles[step] || titles.login;
@@ -1206,6 +1216,36 @@ function AuthScreen(props) {
             </div>
           )}
 
+          {step === "signup_prefs" && (
+            <div>
+              <div style={{ fontSize: 13, color: T.ink3, marginBottom: 14, lineHeight: 1.5 }}>Almost there — pick your language and currency so the app feels right from day one.</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Language</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+                {LANGUAGE_OPTIONS.map(function(o) {
+                  var sel = signupLang === o.code;
+                  return (
+                    <button key={o.code} onClick={function() { setSignupLang(o.code); }}
+                      style={{ padding: "9px 16px", borderRadius: 12, border: sel ? "2px solid " + T.orange : "1.5px solid rgba(0,0,0,0.1)", background: sel ? T.orangeDim : "rgba(255,255,255,0.8)", color: sel ? T.orange : T.ink2, fontSize: 13, fontWeight: sel ? 700 : 500, fontFamily: UI, cursor: "pointer" }}>
+                      {o.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Currency</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {CURRENCY_OPTIONS.slice(0, 16).map(function(c) {
+                  var sel = signupCur === c.sym;
+                  return (
+                    <button key={c.sym} onClick={function() { setSignupCur(c.sym); }}
+                      style={{ padding: "9px 14px", borderRadius: 12, border: sel ? "2px solid " + T.orange : "1.5px solid rgba(0,0,0,0.1)", background: sel ? T.orangeDim : "rgba(255,255,255,0.8)", color: sel ? T.orange : T.ink2, fontSize: 13, fontWeight: sel ? 700 : 500, fontFamily: UI, cursor: "pointer" }}>
+                      {c.sym} {c.code}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {notice && !error && (
             <div style={{ fontSize: 13, color: T.green, padding: "10px 4px 0", display: "flex", alignItems: "center", gap: 6 }}>
               <SVGIcon id="check" size={14} color={T.green} />
@@ -1221,12 +1261,13 @@ function AuthScreen(props) {
 
           {!ssoProvider && (
             <button
-              onClick={step === "login" ? login : step === "signup_email" ? sendCode : step === "forgot_password" ? sendPasswordReset : finishSignup}
+              onClick={step === "login" ? login : step === "signup_email" ? sendCode : step === "signup_details" ? goToPrefs : step === "forgot_password" ? sendPasswordReset : finishSignup}
               disabled={busy}
               style={{ width: "100%", background: busy ? "rgba(0,0,0,0.08)" : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: busy ? T.ink3 : "#fff", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: busy ? "default" : "pointer", marginTop: 16, boxShadow: busy ? "none" : "0 6px 20px " + T.orangeGlow + ", 0 2px 6px rgba(0,0,0,0.1)", letterSpacing: "-0.01em" }}>
               {busy ? "Please wait..."
                 : step === "login" ? "Sign In"
                 : step === "signup_email" ? "Continue"
+                : step === "signup_details" ? "Continue"
                 : step === "forgot_password" ? "Send reset link"
                 : "Create Account"}
             </button>
@@ -1234,13 +1275,15 @@ function AuthScreen(props) {
 
           {(step === "login" || step === "signup_email") && ssoBlock}
 
-          <div style={{ textAlign: "center", marginTop: 20, fontSize: 14, color: T.ink2 }}>
-            {step === "forgot_password" ? "Remember it? " : step === "login" ? "New here? " : "Have an account? "}
-            <button onClick={function() { goTo(step === "login" ? "signup_email" : "login"); }}
-              style={{ background: "none", border: "none", color: T.orange, fontWeight: 700, fontSize: 14, fontFamily: UI, cursor: "pointer" }}>
-              {step === "forgot_password" ? "Back to sign in" : step === "login" ? "Create account" : "Sign in"}
-            </button>
-          </div>
+          {step !== "signup_prefs" && (
+            <div style={{ textAlign: "center", marginTop: 20, fontSize: 14, color: T.ink2 }}>
+              {step === "forgot_password" ? "Remember it? " : step === "login" ? "New here? " : "Have an account? "}
+              <button onClick={function() { goTo(step === "login" ? "signup_email" : "login"); }}
+                style={{ background: "none", border: "none", color: T.orange, fontWeight: 700, fontSize: 14, fontFamily: UI, cursor: "pointer" }}>
+                {step === "forgot_password" ? "Back to sign in" : step === "login" ? "Create account" : "Sign in"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
