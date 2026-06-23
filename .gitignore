@@ -2,3 +2,8 @@
 .env.local
 .vercel
 node_modules
+
+# Firebase admin service-account keys — never commit
+service-account.json
+**/service-account.json
+*-firebase-adminsdk-*.json

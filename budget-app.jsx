@@ -259,7 +259,7 @@ var LANGUAGE_OPTIONS = [
 var LANGUAGE_NAMES = { en: "English", he: "Hebrew", es: "Spanish", fr: "French", ar: "Arabic", ru: "Russian", de: "German", pt: "Portuguese" };
 
 var TRANSLATIONS = {
-  en: { overview:"Overview", activity:"Activity", budgets:"Budgets", goals:"Goals", advisor:"Advisor", profile:"Profile", language:"Language", currency:"Currency", yourPlan:"Your Plan", categories:"Categories", signOut:"Sign Out", richyMember:"Richy member", richyRefersTo:"Richy refers to you as", seeYourPlan:"See your plan by Richard", netBalance:"Net Balance", income:"Income", spent:"Spent", topSpend:"Top spend", morning:"Good morning", afternoon:"Good afternoon", evening:"Good evening", savedThisPeriod:"saved this period", redoQuestionnaire:"Redo Questionnaire", yourPlanByRichard:"Your Plan by Richard", noTransactions:"No transactions yet", noTransactionsSub:"Tap + to log your first one. Awareness is the first step to wealth.", overviewEmptySub:"The Richest Man in Babylon started by tracking every coin. Start yours in Activity.", savingsRate:"Savings Rate", excellent:"Excellent", onTrack:"On track", buildItUp:"Build it up", overspending:"Overspending", noIncomeYet:"No income logged yet", thisPeriod:"this period", transactions:"Transactions", whereItWent:"Where it went", overLimit:"over limit", complete:"complete", savedLabel:"saved", spentLabel:"spent", toGo:"to go", recent:"Recent", activeGoal:"active goal", activeGoals:"active goals", today:"Today", yesterday:"Yesterday", moneyIn:"Money In", moneyOut:"Money Out", newTransaction:"New Transaction", editTransaction:"Edit Transaction", addTransaction:"Add Transaction", saveChanges:"Save Changes", deleteTx:"Delete transaction", amount:"Amount", txLabel:"Label", category:"Category", date:"Date", repeat:"Repeat", once:"Once", weekly:"Weekly", monthly:"Monthly", markPending:"Mark as pending", expense:"Expense", noBudgets:"No budgets yet", noBudgetsSub:"Tap + to set a limit for a category. A budget is just telling your money where to go.", newBudget:"New Budget", editLimit:"Edit Limit", addBudget:"Add Budget", removeBudget:"Remove this budget", totalSpent:"Total Spent", byCategory:"By Category", edit:"Edit", delete:"Delete", save:"Save", budgeted:"budgeted", monthlyLimit:"Monthly limit", allCatsHaveBudget:"Every category already has a budget. Add a new category first.", noGoals:"No budget books yet", noGoalsSub:"Tap + to create your first budget book. A goal with a deadline is a plan, not a wish.", newBudgetBook:"New Budget Book", editBudgetBook:"Edit Budget Book", createBudgetBook:"Create Budget Book", deleteBudgetBook:"Delete budget book", addToBudgetBook:"Add to Budget Book", alreadySaved:"Already saved", target:"Target", name:"Name", goalComplete:"Goal complete!", remaining:"remaining", add:"Add", richySuggests:"Richard suggests", implement:"Implement", dismiss:"Dismiss", aiAdvisor:"AI Financial Advisor", aiAdvisorSub:"Personalized advice based on your real spending and expert financial wisdom.", analyzeMyFinances:"Analyze My Finances", analyzingFinances:"Analyzing your finances...", fewSeconds:"This takes a few seconds", refresh:"Refresh", insights:"Insights", analysisFailed:"Analysis failed", tryAgain:"Try Again", askYourAdvisor:"Ask Your Advisor", advisorQ1:"How can I save more?", advisorQ2:"Is my savings rate healthy?", advisorQ3:"What to do with my surplus?", thinking:"Thinking...", yesDo:"Yes, do it", notNow:"Not now", askRichard:"Ask Richard anything...", giveFeedback:"Give Richard feedback...", advisorDisclaimer:"Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.", translate:"Translate plan", noPlanYet:"No plan yet. Complete the onboarding questionnaire to get your personalized plan from Richard.", notes:"Notes", notesEmpty:"No notes yet", notesEmptySub:"Track who owes you and who you owe. Tap + to add your first one.", theyOweMe:"They owe me", iOwe:"I owe", newNote:"New Note", addNote:"Add Note", editNote:"Edit Note", saveNote:"Save Note", settle:"Settle", settleTitle:"Settle note", settleAddBalance:"Add to my balance", reminder:"Reminder", reminderTitle:"Set a reminder", setReminder:"Set reminder", clearReminder:"Clear reminder", reminderWhen:"Remind me on", reminderDenied:"Notifications are blocked. The note will still show a due badge.", due:"Due", overdue:"Overdue", deleteNote:"Delete note", trips:"Trips", planATrip:"Plan a Trip", planATripSub:"Budget a getaway without touching your balance.", planNewTrip:"Plan a New Trip", noTrips:"No trips yet", noTripsSub:"Plan a getaway and Richard will split your budget across the essentials.", tripName:"Trip name", destination:"Destination", tripBudget:"Total budget", tripDays:"Days", travelStyle:"Travel style", styleBudget:"Budget", styleComfort:"Comfort", styleLuxury:"Luxury", next:"Next", back:"Back", richardPlanning:"Richard is planning your trip", richardPlanningSub:"Splitting your budget across the essentials.", tripSplit:"Your budget split", allocated:"Allocated", overBy:"over by", saveTrip:"Save Trip", addCategory:"Add category", deductFromBalance:"Deduct from balance", deductExplain:"This logs the full trip budget as one expense, so your balance reflects the money set aside. You can undo it anytime.", reserved:"Reserved from balance", undoReserve:"Undo deduction", logExpense:"Log expense", logExpenseTitle:"Log a trip expense", tripTips:"Richard's tips", deleteTrip:"Delete trip", deleteTripConfirm:"Delete this trip? This cannot be undone.", spentOf:"spent of", leftToSpend:"left to spend", planning:"Planning", tripSummary:"Trip summary", appearance:"Appearance", leftAfterBudgets:"Left after budgets", tripIcon:"Trip icon" },
+  en: { overview:"Overview", activity:"Activity", budgets:"Budgets", goals:"Goals", advisor:"Advisor", profile:"Profile", language:"Language", currency:"Currency", yourPlan:"Your Plan", categories:"Categories", signOut:"Sign Out", richyMember:"Richy member", richyRefersTo:"Richy refers to you as", seeYourPlan:"See your plan by Richard", netBalance:"Net Balance", income:"Income", spent:"Spent", topSpend:"Top spend", morning:"Good morning", afternoon:"Good afternoon", evening:"Good evening", savedThisPeriod:"saved this period", redoQuestionnaire:"Redo Questionnaire", yourPlanByRichard:"Your Plan by Richard", noTransactions:"No transactions yet", noTransactionsSub:"Tap + to log your first one. Awareness is the first step to wealth.", overviewEmptySub:"The Richest Man in Babylon started by tracking every coin. Start yours in Activity.", savingsRate:"Savings Rate", excellent:"Excellent", onTrack:"On track", buildItUp:"Build it up", overspending:"Overspending", noIncomeYet:"No income logged yet", thisPeriod:"this period", transactions:"Transactions", whereItWent:"Where it went", overLimit:"over limit", complete:"complete", savedLabel:"saved", spentLabel:"spent", toGo:"to go", recent:"Recent", activeGoal:"active goal", activeGoals:"active goals", today:"Today", yesterday:"Yesterday", moneyIn:"Money In", moneyOut:"Money Out", newTransaction:"New Transaction", editTransaction:"Edit Transaction", addTransaction:"Add Transaction", saveChanges:"Save Changes", deleteTx:"Delete transaction", amount:"Amount", txLabel:"Label", category:"Category", date:"Date", repeat:"Repeat", once:"Once", weekly:"Weekly", monthly:"Monthly", markPending:"Mark as pending", expense:"Expense", noBudgets:"No budgets yet", noBudgetsSub:"Tap + to set a limit for a category. A budget is just telling your money where to go.", newBudget:"New Budget", editLimit:"Edit Limit", addBudget:"Add Budget", removeBudget:"Remove this budget", totalSpent:"Total Spent", byCategory:"By Category", edit:"Edit", delete:"Delete", save:"Save", budgeted:"budgeted", monthlyLimit:"Monthly limit", allCatsHaveBudget:"Every category already has a budget. Add a new category first.", noGoals:"No budget books yet", noGoalsSub:"Tap + to create your first budget book. A goal with a deadline is a plan, not a wish.", newBudgetBook:"New Budget Book", editBudgetBook:"Edit Budget Book", createBudgetBook:"Create Budget Book", deleteBudgetBook:"Delete budget book", addToBudgetBook:"Add to Budget Book", alreadySaved:"Already saved", target:"Target", name:"Name", goalComplete:"Goal complete!", remaining:"remaining", add:"Add", richySuggests:"Richard suggests", implement:"Implement", dismiss:"Dismiss", aiAdvisor:"AI Financial Advisor", aiAdvisorSub:"Personalized advice based on your real spending and expert financial wisdom.", analyzeMyFinances:"Analyze My Finances", analyzingFinances:"Analyzing your finances...", fewSeconds:"This takes a few seconds", refresh:"Refresh", insights:"Insights", analysisFailed:"Analysis failed", tryAgain:"Try Again", askYourAdvisor:"Ask Your Advisor", advisorQ1:"How can I save more?", advisorQ2:"Is my savings rate healthy?", advisorQ3:"What to do with my surplus?", thinking:"Thinking...", yesDo:"Yes, do it", notNow:"Not now", askRichard:"Ask Richard anything...", giveFeedback:"Give Richard feedback...", advisorDisclaimer:"Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.", translate:"Translate plan", noPlanYet:"No plan yet. Complete the onboarding questionnaire to get your personalized plan from Richard.", notes:"Notes", notesEmpty:"No notes yet", notesEmptySub:"Track who owes you and who you owe. Tap + to add your first one.", theyOweMe:"They owe me", iOwe:"I owe", newNote:"New Note", addNote:"Add Note", editNote:"Edit Note", saveNote:"Save Note", settle:"Settle", settleTitle:"Settle note", settleAddBalance:"Add to my balance", reminder:"Reminder", reminderTitle:"Set a reminder", setReminder:"Set reminder", clearReminder:"Clear reminder", reminderWhen:"Remind me on", reminderDenied:"Notifications are blocked. The note will still show a due badge.", due:"Due", overdue:"Overdue", deleteNote:"Delete note", trips:"Trips", planATrip:"Plan a Trip", planATripSub:"Budget a getaway without touching your balance.", planNewTrip:"Plan a New Trip", noTrips:"No trips yet", noTripsSub:"Plan a getaway and Richard will split your budget across the essentials.", tripName:"Trip name", destination:"Destination", tripBudget:"Total budget", tripDays:"Days", travelStyle:"Travel style", styleBudget:"Budget", styleComfort:"Comfort", styleLuxury:"Luxury", next:"Next", back:"Back", richardPlanning:"Richard is planning your trip", richardPlanningSub:"Splitting your budget across the essentials.", tripSplit:"Your budget split", allocated:"Allocated", overBy:"over by", saveTrip:"Save Trip", addCategory:"Add category", deductFromBalance:"Deduct from balance", deductExplain:"This logs the full trip budget as one expense, so your balance reflects the money set aside. You can undo it anytime.", reserved:"Reserved from balance", undoReserve:"Undo deduction", logExpense:"Log expense", logExpenseTitle:"Log a trip expense", tripTips:"Richard's tips", deleteTrip:"Delete trip", deleteTripConfirm:"Delete this trip? This cannot be undone.", spentOf:"spent of", leftToSpend:"left to spend", planning:"Planning", tripSummary:"Trip summary", appearance:"Appearance", leftAfterBudgets:"Left after budgets", tripIcon:"Trip icon", savings:"Savings", netWorth:"Net Worth", balance:"Balance", manage:"Manage", totalSavings:"Total saved", savingsIntro:"Money you keep separate from your spending balance - an emergency fund, a sinking fund, anything you don't want to accidentally spend. It counts toward your net worth, never your balance.", newSavingsAccount:"New savings account", savingsAccountName:"Account name", addMoney:"Add money", withdraw:"Withdraw", fromBalance:"From my balance", externalMoney:"Money I already have", toBalance:"To my balance", removeFromNet:"Spend or remove", startingAmount:"Starting amount (optional)", createAccount:"Create account", closeAccount:"Close account", rename:"Rename", emptySavingsSub:"Keep an emergency fund or a sinking fund separate from your spending balance.", addSavingsAccount:"Add a savings account", history:"History", balanceUntouched:"Your spending balance stays untouched", movesFromBalance:"Moves money out of your spending balance", addsToBalance:"Adds the money back to your spending balance", leavesNetWorth:"Leaves your accounts - lowers your net worth", pickIcon:"Icon", emergencyFund:"Emergency Fund", noMovesYet:"No moves yet" },
   he: { overview:"סקירה", activity:"פעילות", budgets:"תקציבים", goals:"יעדים", advisor:"יועץ", profile:"פרופיל", language:"שפה", currency:"מטבע", yourPlan:"התוכנית שלך", categories:"קטגוריות", signOut:"התנתק", richyMember:"חבר Richy", richyRefersTo:"ריצ'י מכנה אותך", seeYourPlan:"ראה את התוכנית שלך", netBalance:"יתרה נטו", income:"הכנסות", spent:"הוצאות", topSpend:"הוצאה עיקרית", morning:"בוקר טוב", afternoon:"צהריים טובים", evening:"ערב טוב", savedThisPeriod:"נחסך בתקופה זו", redoQuestionnaire:"מלא שאלון מחדש", yourPlanByRichard:"התוכנית שלך", noTransactions:"אין עסקאות עדיין", noTransactionsSub:"לחץ + כדי לרשום. מודעות היא הצעד הראשון לעושר.", overviewEmptySub:"עשיר בבבל התחיל בלעקוב אחרי כל מטבע. התחל גם אתה בפעילות.", savingsRate:"שיעור חיסכון", excellent:"מצוין", onTrack:"במסלול", buildItUp:"שפר את זה", overspending:"הוצאה יתרה", thisPeriod:"בתקופה זו", transactions:"עסקאות", whereItWent:"לאן הלך", overLimit:"מעל המגבלה", complete:"הושלם", savedLabel:"נחסך", spentLabel:"הוצא", toGo:"לסיום", recent:"אחרון", activeGoal:"יעד פעיל", activeGoals:"יעדים פעילים", today:"היום", yesterday:"אתמול", moneyIn:"כסף נכנס", moneyOut:"כסף יוצא", newTransaction:"עסקה חדשה", editTransaction:"ערוך עסקה", addTransaction:"הוסף עסקה", saveChanges:"שמור שינויים", deleteTx:"מחק עסקה", amount:"סכום", txLabel:"תיאור", category:"קטגוריה", date:"תאריך", repeat:"חזרה", once:"פעם אחת", weekly:"שבועי", monthly:"חודשי", markPending:"סמן כממתין", expense:"הוצאה", noBudgets:"אין תקציבים עדיין", noBudgetsSub:"לחץ + להגדרת מגבלה לקטגוריה. תקציב הוא פשוט להגיד לכסף לאן ללכת.", newBudget:"תקציב חדש", editLimit:"ערוך מגבלה", addBudget:"הוסף תקציב", removeBudget:"הסר תקציב זה", totalSpent:"סך הוצאות", byCategory:"לפי קטגוריה", edit:"ערוך", delete:"מחק", save:"שמור", budgeted:"מתוקצב", monthlyLimit:"מגבלה חודשית", allCatsHaveBudget:"לכל הקטגוריות יש תקציב. הוסף קטגוריה חדשה תחילה.", noGoals:"אין ספרי תקציב עדיין", noGoalsSub:"לחץ + ליצירת ספר תקציב ראשון. יעד עם מועד הוא תוכנית, לא משאלה.", newBudgetBook:"ספר תקציב חדש", editBudgetBook:"ערוך ספר תקציב", createBudgetBook:"צור ספר תקציב", deleteBudgetBook:"מחק ספר תקציב", addToBudgetBook:"הוסף לספר תקציב", alreadySaved:"כבר נחסך", target:"יעד", name:"שם", goalComplete:"היעד הושג!", remaining:"נותר", add:"הוסף", richySuggests:"ריצ'י מציע", implement:"יישם", dismiss:"דחה", aiAdvisor:"יועץ פיננסי AI", aiAdvisorSub:"ייעוץ מותאם אישית בהתבסס על ההוצאות שלך.", analyzeMyFinances:"נתח את הכספים שלי", analyzingFinances:"מנתח את הכספים שלך...", fewSeconds:"זה לוקח כמה שניות", refresh:"רענן", insights:"תובנות", analysisFailed:"הניתוח נכשל", tryAgain:"נסה שוב", askYourAdvisor:"שאל את היועץ שלך", advisorQ1:"איך אוכל לחסוך יותר?", advisorQ2:"האם שיעור החיסכון שלי בריא?", advisorQ3:"מה לעשות עם העודף שלי?", thinking:"חושב...", yesDo:"כן, עשה זאת", notNow:"לא עכשיו", askRichard:"שאל את ריצ'רד כל דבר...", giveFeedback:"תן ל-ריצ'רד משוב...", advisorDisclaimer:"ריצ'רד הוא עוזר AI ולא יועץ פיננסי מורשה. תמיד ערוך מחקר עצמאי לפני קבלת החלטות כלכליות.", translate:"תרגם תוכנית", noPlanYet:"אין תוכנית עדיין. מלא את השאלון כדי לקבל את התוכנית האישית שלך מריצ'רד." },
   es: { overview:"Resumen", activity:"Actividad", budgets:"Presupuestos", goals:"Metas", advisor:"Asesor", profile:"Perfil", language:"Idioma", currency:"Moneda", yourPlan:"Tu Plan", categories:"Categorias", signOut:"Cerrar sesion", richyMember:"Miembro Richy", richyRefersTo:"Richy te llama", seeYourPlan:"Ver tu plan de Richard", netBalance:"Saldo Neto", income:"Ingresos", spent:"Gastado", topSpend:"Mas gastado", morning:"Buenos dias", afternoon:"Buenas tardes", evening:"Buenas noches", savedThisPeriod:"ahorrado este periodo", redoQuestionnaire:"Rehacer cuestionario", yourPlanByRichard:"Tu plan de Richard", noTransactions:"Sin transacciones aun", noTransactionsSub:"Toca + para registrar la primera. La conciencia es el primer paso a la riqueza.", overviewEmptySub:"El hombre mas rico de Babilonia empezo rastreando cada moneda. Empieza en Actividad.", savingsRate:"Tasa de ahorro", excellent:"Excelente", onTrack:"En camino", buildItUp:"Mejoralo", overspending:"Exceso de gasto", thisPeriod:"este periodo", transactions:"Transacciones", whereItWent:"A donde fue", overLimit:"sobre el limite", complete:"completo", savedLabel:"ahorrado", spentLabel:"gastado", toGo:"restante", recent:"Reciente", activeGoal:"meta activa", activeGoals:"metas activas", today:"Hoy", yesterday:"Ayer", moneyIn:"Dinero Entrada", moneyOut:"Dinero Salida", newTransaction:"Nueva Transaccion", editTransaction:"Editar Transaccion", addTransaction:"Agregar Transaccion", saveChanges:"Guardar Cambios", deleteTx:"Eliminar transaccion", amount:"Monto", txLabel:"Etiqueta", category:"Categoria", date:"Fecha", repeat:"Repetir", once:"Una vez", weekly:"Semanal", monthly:"Mensual", markPending:"Marcar como pendiente", expense:"Gasto", noBudgets:"Sin presupuestos aun", noBudgetsSub:"Toca + para establecer un limite. Un presupuesto le dice a tu dinero donde ir.", newBudget:"Nuevo Presupuesto", editLimit:"Editar Limite", addBudget:"Agregar Presupuesto", removeBudget:"Eliminar este presupuesto", totalSpent:"Total Gastado", byCategory:"Por Categoria", edit:"Editar", delete:"Eliminar", save:"Guardar", budgeted:"presupuestado", monthlyLimit:"Limite mensual", allCatsHaveBudget:"Cada categoria ya tiene presupuesto. Agrega una nueva categoria primero.", noGoals:"Sin libros de metas aun", noGoalsSub:"Toca + para crear tu primer libro de metas. Una meta con fecha limite es un plan.", newBudgetBook:"Nuevo Libro de Metas", editBudgetBook:"Editar Libro de Metas", createBudgetBook:"Crear Libro de Metas", deleteBudgetBook:"Eliminar libro de metas", addToBudgetBook:"Agregar al Libro de Metas", alreadySaved:"Ya ahorrado", target:"Objetivo", name:"Nombre", goalComplete:"Meta completada!", remaining:"restante", add:"Agregar", richySuggests:"Richard sugiere", implement:"Implementar", dismiss:"Descartar", aiAdvisor:"Asesor Financiero IA", aiAdvisorSub:"Consejos personalizados basados en tus gastos reales.", analyzeMyFinances:"Analizar Mis Finanzas", analyzingFinances:"Analizando tus finanzas...", fewSeconds:"Esto tarda unos segundos", refresh:"Actualizar", insights:"Perspectivas", analysisFailed:"Analisis fallido", tryAgain:"Intentar de nuevo", askYourAdvisor:"Pregunta a tu Asesor", advisorQ1:"Como puedo ahorrar mas?", advisorQ2:"Es saludable mi tasa de ahorro?", advisorQ3:"Que hacer con mi excedente?", thinking:"Pensando...", yesDo:"Si, hazlo", notNow:"Ahora no", askRichard:"Pregunta a Richard cualquier cosa...", giveFeedback:"Da retroalimentacion a Richard...", advisorDisclaimer:"Richard es un asistente de IA, no un asesor financiero certificado. Investiga siempre antes de tomar decisiones financieras.", translate:"Traducir plan", noPlanYet:"Aun no hay plan. Completa el cuestionario para obtener tu plan personalizado de Richard." },
   fr: { overview:"Apercu", activity:"Activite", budgets:"Budgets", goals:"Objectifs", advisor:"Conseiller", profile:"Profil", language:"Langue", currency:"Devise", yourPlan:"Votre Plan", categories:"Categories", signOut:"Deconnexion", richyMember:"Membre Richy", richyRefersTo:"Richy vous appelle", seeYourPlan:"Voir votre plan de Richard", netBalance:"Solde Net", income:"Revenus", spent:"Depenses", topSpend:"Top depenses", morning:"Bonjour", afternoon:"Bon apres-midi", evening:"Bonsoir", savedThisPeriod:"epargne cette periode", redoQuestionnaire:"Refaire le questionnaire", yourPlanByRichard:"Votre plan de Richard", noTransactions:"Aucune transaction", noTransactionsSub:"Appuyez + pour enregistrer la premiere. La conscience est le premier pas vers la richesse.", overviewEmptySub:"L homme le plus riche de Babylone commencat par suivre chaque piece. Commencez dans Activite.", savingsRate:"Taux d epargne", excellent:"Excellent", onTrack:"En bonne voie", buildItUp:"Ameliorez-le", overspending:"Depassement", thisPeriod:"cette periode", transactions:"Transactions", whereItWent:"Ou est alle", overLimit:"au-dessus de la limite", complete:"complete", savedLabel:"epargne", spentLabel:"depense", toGo:"restant", recent:"Recent", activeGoal:"objectif actif", activeGoals:"objectifs actifs", today:"Aujourd hui", yesterday:"Hier", moneyIn:"Argent entrant", moneyOut:"Argent sortant", newTransaction:"Nouvelle Transaction", editTransaction:"Modifier Transaction", addTransaction:"Ajouter Transaction", saveChanges:"Enregistrer les modifications", deleteTx:"Supprimer la transaction", amount:"Montant", txLabel:"Libelle", category:"Categorie", date:"Date", repeat:"Repetition", once:"Une fois", weekly:"Hebdomadaire", monthly:"Mensuel", markPending:"Marquer comme en attente", expense:"Depense", noBudgets:"Aucun budget", noBudgetsSub:"Appuyez + pour fixer une limite. Un budget dit a votre argent ou aller.", newBudget:"Nouveau Budget", editLimit:"Modifier Limite", addBudget:"Ajouter Budget", removeBudget:"Supprimer ce budget", totalSpent:"Total Depense", byCategory:"Par Categorie", edit:"Modifier", delete:"Supprimer", save:"Enregistrer", budgeted:"budgete", monthlyLimit:"Limite mensuelle", allCatsHaveBudget:"Chaque categorie a deja un budget. Ajoutez d abord une nouvelle categorie.", noGoals:"Aucun livret d epargne", noGoalsSub:"Appuyez + pour creer votre premier livret. Un objectif avec une echeance est un plan.", newBudgetBook:"Nouveau Livret", editBudgetBook:"Modifier Livret", createBudgetBook:"Creer Livret", deleteBudgetBook:"Supprimer le livret", addToBudgetBook:"Ajouter au Livret", alreadySaved:"Deja epargne", target:"Objectif", name:"Nom", goalComplete:"Objectif atteint!", remaining:"restant", add:"Ajouter", richySuggests:"Richard suggere", implement:"Implementer", dismiss:"Ignorer", aiAdvisor:"Conseiller Financier IA", aiAdvisorSub:"Conseils personnalises bases sur vos depenses reelles.", analyzeMyFinances:"Analyser mes Finances", analyzingFinances:"Analyse de vos finances...", fewSeconds:"Cela prend quelques secondes", refresh:"Actualiser", insights:"Perspectives", analysisFailed:"Analyse echouee", tryAgain:"Reessayer", askYourAdvisor:"Demandez a votre Conseiller", advisorQ1:"Comment puis-je economiser davantage?", advisorQ2:"Mon taux d epargne est-il sain?", advisorQ3:"Que faire avec mon surplus?", thinking:"Je reflechis...", yesDo:"Oui, fais-le", notNow:"Pas maintenant", askRichard:"Demandez a Richard n importe quoi...", giveFeedback:"Donnez vos retours a Richard...", advisorDisclaimer:"Richard est un assistant IA, pas un conseiller financier agree. Faites toujours vos propres recherches.", translate:"Traduire le plan", noPlanYet:"Pas encore de plan. Completez le questionnaire pour obtenir votre plan personnalise de Richard." },
@@ -298,6 +298,32 @@ function inMonth(t, ym) { return !!(t && t.date) && t.date.slice(0, 7) === ym; }
 // flag OR the opening category/id, so legacy rows missing the flag are still caught.
 function isOpening(t) {
   return !!(t && (t.opening === true || t.catId === "opening" || t.category === "Opening balance"));
+}
+
+// === SAVINGS ACCOUNTS ===
+// Savings accounts are separate balances ("pots") that sit OUTSIDE the main
+// spending balance, so money the user already had (e.g. an emergency fund) never
+// inflates their spendable balance. Each pot keeps its own ledger of moves.
+// Adding money is either a TRANSFER from the main balance (logs an offsetting
+// main-ledger tx so net worth stays the same) or EXTERNAL money the user already
+// holds (no main tx; net worth rises, main balance untouched - this is the
+// emergency-fund-on-signup case). Net worth = main balance + every pot.
+function savingsBalance(acct) {
+  if (!acct || !acct.entries) return 0;
+  return round2(acct.entries.reduce(function(s, e) {
+    return s + (e.kind === "withdraw" ? -(e.amount || 0) : (e.amount || 0));
+  }, 0));
+}
+function savingsTotal(list) {
+  if (!list || !list.length) return 0;
+  return round2(list.reduce(function(s, a) { return s + savingsBalance(a); }, 0));
+}
+// Internal moves between the main balance and a pot are logged on the main ledger
+// (so the balance and its trend move correctly) but are NOT real income/spending,
+// so they're excluded from monthly cash-flow, savings-rate and category math -
+// exactly like the opening balance.
+function isTransfer(t) {
+  return !!(t && (t.transfer === true || t.catId === "savings-transfer"));
 }
 
 // Offline fallback rates, expressed as approximate units of each currency per 1 USD.
@@ -1765,17 +1791,23 @@ function Overview(props) {
   var allIncome  = tx.filter(function(t) { return t.type === "income" && !t.catchUp && isSettled(t); }).reduce(function(s,t) { return s+t.amount; }, 0);
   var allExpense = tx.filter(function(t) { return t.type === "expense" && !t.catchUp && isSettled(t); }).reduce(function(s,t) { return s+t.amount; }, 0);
   var balance = allIncome - allExpense;
+  // Savings pots sit outside the main balance. Net worth = main balance + pots.
+  var savAccts = props.savings || [];
+  var savTotal = savingsTotal(savAccts);
+  var netWorth = balance + savTotal;
   // Cash-flow stats are THIS MONTH only. Opening balance is net worth, not income,
-  // so it is excluded here (else the savings rate reads 100%).
-  var income  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && isSettled(t) && inMonth(t, ym); }).reduce(function(s,t) { return s+t.amount; }, 0);
-  var expense = tx.filter(function(t) { return t.type === "expense" && isSettled(t) && inMonth(t, ym); }).reduce(function(s,t) { return s+t.amount; }, 0);
+  // so it is excluded here (else the savings rate reads 100%). Internal transfers
+  // to/from savings pots are excluded too - moving your own money isn't earning or
+  // spending it.
+  var income  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && isSettled(t) && inMonth(t, ym); }).reduce(function(s,t) { return s+t.amount; }, 0);
+  var expense = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && isSettled(t) && inMonth(t, ym); }).reduce(function(s,t) { return s+t.amount; }, 0);
   var hasIncome = income > 0;
   var savRate = hasIncome ? Math.round(((income - expense) / income) * 100) : 0;
   function spentInCat(c) {
     return tx.filter(function(t) { return t.type === "expense" && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s,t){return s+t.amount;}, 0);
   }
-  var recent = tx.slice().sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,4);
-  var monthTxCount = tx.filter(function(t) { return inMonth(t, ym); }).length;
+  var recent = tx.filter(function(t) { return !isTransfer(t); }).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,4);
+  var monthTxCount = tx.filter(function(t) { return inMonth(t, ym) && !isTransfer(t); }).length;
 
   var budgetRows = budgets.map(function(b) {
     var c = catById(cats, b.catId) || catByName(cats, b.category) || { id: b.catId, name: b.category || "Budget", color: T.orange, icon: "box" };
@@ -1791,6 +1823,7 @@ function Overview(props) {
   var _dg = useState(false); var dragging = _dg[0]; var setDragging = _dg[1];
   var _hd = useState(false); var hidden = _hd[0];   var setHidden = _hd[1];
   var _dp = useState(0);    var dp = _dp[0];       var setDp = _dp[1];
+  var _nw = useState(false); var showNet = _nw[0];  var setShowNet = _nw[1];
   var rafRef = useRef(null);
   var dragRef = useRef({ active: false, startX: 0, vw: 366 });
   var scrollRef = useRef(null);
@@ -1906,8 +1939,8 @@ function Overview(props) {
   function winExpenseInCat(c) {
     return tx.filter(function(t) { return t.type === "expense" && t.date >= winStart && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
   }
-  var winExpenseTot = tx.filter(function(t) { return t.type === "expense" && t.date >= winStart; }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var winIncomeTot  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && t.date >= winStart; }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var winExpenseTot = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && t.date >= winStart; }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var winIncomeTot  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && t.date >= winStart; }).reduce(function(s, t) { return s + t.amount; }, 0);
   var winSav = winIncomeTot > 0 ? Math.round(((winIncomeTot - winExpenseTot) / winIncomeTot) * 100) : 0;
   var winKept = Math.max(0, winIncomeTot - winExpenseTot);
   var winCats = cats.map(function(c) { return { name: c.name, color: c.color, val: winExpenseInCat(c) }; })
@@ -1916,7 +1949,7 @@ function Overview(props) {
     .slice(0, 6);
 
   var labelTotals = {};
-  tx.filter(function(t) { return t.type === "expense" && t.date >= winStart; }).forEach(function(t) {
+  tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && t.date >= winStart; }).forEach(function(t) {
     var k = t.label || "Other";
     labelTotals[k] = (labelTotals[k] || 0) + t.amount;
   });
@@ -2127,19 +2160,39 @@ function Overview(props) {
             {/* Panel 0 - Balance */}
             <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden",padding: "22px 24px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>{tr("netBalance")}</span>
+                {savAccts.length > 0 ? (
+                  <div onPointerDown={stopDrag} style={{ display: "flex", gap: 2, background: T.heroRangeBg, borderRadius: 9, padding: 3 }}>
+                    {[["bal", tr("balance")], ["net", tr("netWorth")]].map(function(opt) {
+                      var on = (opt[0] === "net") === showNet;
+                      return (
+                        <div key={opt[0]} onPointerDown={stopDrag} onClick={function() { setShowNet(opt[0] === "net"); }}
+                          style={{ padding: "4px 10px", borderRadius: 7, fontSize: 11, fontWeight: 700, letterSpacing: "0.02em", cursor: "pointer", transition: "all 0.2s", background: on ? T.heroPillBg : "transparent", color: on ? T.heroPillText : HMUT }}>
+                          {opt[1]}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>{tr("netBalance")}</span>
+                )}
                 <div onPointerDown={stopDrag} onClick={function() { setHidden(function(v) { return !v; }); }} style={{ cursor: "pointer", padding: 4, display: "flex" }}>
                   <SVGIcon id={hidden ? "eyeoff" : "eye"} size={20} color={HMUT} />
                 </div>
               </div>
               <div>
                 <div style={{ filter: hidden ? "blur(11px)" : "none", userSelect: "none" }}>
-                  <span style={{ fontSize: 42, fontWeight: 700, color: HINK, letterSpacing: "-0.03em", lineHeight: 1 }}>{dollars(balance * dp)}</span>
+                  <span style={{ fontSize: 42, fontWeight: 700, color: HINK, letterSpacing: "-0.03em", lineHeight: 1 }}>{dollars((showNet ? netWorth : balance) * dp)}</span>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 9 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: monthNet >= 0 ? HPOS : HNEG }}>{(monthNet >= 0 ? "+" : "-") + dollars(Math.abs(monthNet))}</span>
-                  <span style={{ fontSize: 12, color: HFNT }}>this month</span>
-                </div>
+                {showNet ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 9 }}>
+                    <span style={{ fontSize: 12, color: HFNT }}>{dollars(balance) + " " + tr("balance").toLowerCase() + " + " + dollars(savTotal) + " " + tr("savings").toLowerCase()}</span>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 9 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: monthNet >= 0 ? HPOS : HNEG }}>{(monthNet >= 0 ? "+" : "-") + dollars(Math.abs(monthNet))}</span>
+                    <span style={{ fontSize: 12, color: HFNT }}>this month</span>
+                  </div>
+                )}
               </div>
               <div style={{ display: "flex", gap: 14, borderTop: "0.5px solid " + HSEP, paddingTop: 14 }}>
                 <div style={{ flex: 1 }}>
@@ -2293,6 +2346,46 @@ function Overview(props) {
           </div>
         </div>
       )}
+
+      <div style={{ animation: "rcFadeUp 0.6s ease 0.09s both" }}>
+        <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+            <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("savings")}</span>
+          </div>
+          {savAccts.length > 0 && (
+            <button onClick={props.onOpenSavings} style={{ background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI, display: "flex", alignItems: "center", gap: 2 }}>
+              {tr("manage")}<SVGIcon id="chevron" size={15} color={T.orange} />
+            </button>
+          )}
+        </div>
+        {savAccts.length === 0 ? (
+          <button onClick={props.onOpenSavings} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, marginBottom: 20, padding: "15px 16px", borderRadius: 18, background: T.card, border: "1px dashed " + T.orange + "66", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)" }}>
+            <CatBadge icon="coins" color={T.orange} size={38} soft={true} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>{tr("addSavingsAccount")}</div>
+              <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>{tr("emptySavingsSub")}</div>
+            </div>
+            <SVGIcon id="plus" size={20} color={T.orange} />
+          </button>
+        ) : (
+          <Card style={{ overflow: "hidden", marginBottom: 20 }}>
+            {savAccts.map(function(a) {
+              return (
+                <button key={a.id} onClick={props.onOpenSavings} style={{ width: "100%", textAlign: "left", background: "none", border: "none", borderBottom: "0.5px solid " + T.sep, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
+                  <CatBadge icon={a.icon || "coins"} color={a.color || T.orange} size={36} soft={true} />
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 15, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.name}</span>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(savingsBalance(a))}</span>
+                </button>
+              );
+            })}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: T.orangeDim }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: T.ink2, textTransform: "uppercase", letterSpacing: "0.08em" }}>{tr("totalSavings")}</span>
+              <span style={{ fontSize: 16, fontWeight: 800, color: T.orange, letterSpacing: "-0.02em" }}>{dollars(savTotal)}</span>
+            </div>
+          </Card>
+        )}
+      </div>
 
       {budgetRows.length > 0 && (
         <div style={{ animation: "rcFadeUp 0.6s ease 0.12s both" }}>
@@ -2824,7 +2917,9 @@ function Activity(props) {
     setEditTx(null);
   }
 
-  var sorted = props.tx.slice().sort(function(a, b) { return b.date.localeCompare(a.date); });
+  // Internal savings transfers are managed in the Savings screen, not here - keep
+  // them out of the ledger so they can't be edited into a desync with their pot.
+  var sorted = props.tx.filter(function(t) { return !isTransfer(t); }).sort(function(a, b) { return b.date.localeCompare(a.date); });
   var groups = {};
   sorted.forEach(function(t) {
     if (!groups[t.date]) groups[t.date] = [];
@@ -2832,8 +2927,8 @@ function Activity(props) {
   });
   var dates = Object.keys(groups).sort(function(a, b) { return b.localeCompare(a); });
 
-  var totalIn  = props.tx.filter(function(t){return t.type==="income";}).reduce(function(s,t){return s+t.amount;},0);
-  var totalOut = props.tx.filter(function(t){return t.type==="expense";}).reduce(function(s,t){return s+t.amount;},0);
+  var totalIn  = props.tx.filter(function(t){return t.type==="income" && !isTransfer(t);}).reduce(function(s,t){return s+t.amount;},0);
+  var totalOut = props.tx.filter(function(t){return t.type==="expense" && !isTransfer(t);}).reduce(function(s,t){return s+t.amount;},0);
 
   return (
     <div>
@@ -4285,9 +4380,10 @@ function Advisor(props) {
   var cats = props.categories || [];
   var ymA = curMonth();
   // Cash-flow is this month (matches the dashboard); net worth is all-time.
-  var income = props.tx.filter(function(t) { return t.type === "income" && !isOpening(t) && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var expense = props.tx.filter(function(t) { return t.type === "expense" && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var netWorth = props.tx.reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0);
+  var income = props.tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var expense = props.tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  // Net worth = main balance (all-time tx) + every savings pot.
+  var netWorth = props.tx.reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0) + savingsTotal(props.savings || []);
   var savings = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
   var topCats = cats.map(function(c) { return { name: c.name, spent: catSpend(c) }; }).filter(function(c) { return c.spent > 0; }).sort(function(a, b) { return b.spent - a.spent; }).slice(0, 5);
   var budgetLines = props.budgets.map(function(b) {
@@ -5562,6 +5658,278 @@ function EditOpeningBalanceView(props) {
   );
 }
 
+// === SAVINGS ACCOUNTS SCREEN ===
+// Manage separate savings pots. Adding money is either a TRANSFER from the main
+// balance (logs an offsetting expense so net worth is unchanged) or EXTERNAL money
+// the user already has (no main tx; balance untouched). Withdrawals either return
+// to the balance (income tx) or leave entirely (lowering net worth). Closing an
+// account returns any remaining balance to the main balance so no money vanishes.
+var SAVINGS_ICONS = ["coins", "shield", "home", "car", "plane", "heart", "gift", "umbrella", "star", "leaf"];
+var SAVINGS_COLORS = ["#8970C6", "#C8673A", "#27A85F", "#C8983A", "#4A90D9", "#D9546B", "#5BB8A8", "#9B6DB5"];
+
+function SavingsView(props) {
+  var accts = props.savings || [];
+  var tx = props.tx || [];
+  var sym = _currency.sym;
+  var today = new Date().toISOString().slice(0, 10);
+
+  var _cr = useState(false); var creating = _cr[0]; var setCreating = _cr[1];
+  var _cn = useState(""); var cName = _cn[0]; var setCName = _cn[1];
+  var _cic = useState("coins"); var cIcon = _cic[0]; var setCIcon = _cic[1];
+  var _ccl = useState(SAVINGS_COLORS[0]); var cColor = _ccl[0]; var setCColor = _ccl[1];
+  var _cam = useState(""); var cAmt = _cam[0]; var setCAmt = _cam[1];
+  var _csr = useState("external"); var cSrc = _csr[0]; var setCSrc = _csr[1];
+
+  var _act = useState(null); var act = _act[0]; var setAct = _act[1];
+  var _amt = useState(""); var amt = _amt[0]; var setAmt = _amt[1];
+  var _src = useState(""); var src = _src[0]; var setSrc = _src[1];
+  var _exp = useState(null); var expanded = _exp[0]; var setExpanded = _exp[1];
+  var _ren = useState(""); var renameVal = _ren[0]; var setRenameVal = _ren[1];
+
+  var total = savingsTotal(accts);
+  var actAcct = act ? accts.filter(function(a) { return a.id === act.id; })[0] : null;
+
+  function withEntry(id, entry) {
+    return accts.map(function(a) {
+      if (a.id !== id) return a;
+      var n = {}; for (var k in a) n[k] = a[k];
+      n.entries = (a.entries || []).concat([entry]);
+      return n;
+    });
+  }
+  function transferTx(type, amount, accName, suffix) {
+    return { id: Date.now() + 1, type: type, amount: round2(amount), label: (type === "expense" ? "→ " : "← ") + accName + (suffix || ""), catId: "savings-transfer", category: "Savings transfer", transfer: true, date: today, repeat: "none", pending: false };
+  }
+
+  function openAction(id, kind) {
+    setAct({ id: id, kind: kind });
+    setAmt("");
+    setSrc(kind === "add" ? "external" : "balance");
+  }
+  function submitAction() {
+    if (!actAcct) { setAct(null); return; }
+    var v = parseFloat(amt);
+    if (isNaN(v) || v <= 0) return;
+    if (act.kind === "add") {
+      var fromMain = src === "balance";
+      var entry = { id: Date.now(), kind: "deposit", amount: round2(v), date: today, fromMain: fromMain, label: fromMain ? tr("fromBalance") : tr("externalMoney") };
+      var nextSav = withEntry(actAcct.id, entry);
+      if (fromMain) props.onMove(tx.concat([transferTx("expense", v, actAcct.name)]), nextSav);
+      else props.onSaveSavings(nextSav);
+    } else {
+      var bal = savingsBalance(actAcct);
+      var w = Math.min(round2(v), bal);
+      if (w <= 0) { setAct(null); return; }
+      var toMain = src === "balance";
+      var entry2 = { id: Date.now(), kind: "withdraw", amount: w, date: today, fromMain: toMain, label: toMain ? tr("toBalance") : tr("removeFromNet") };
+      var nextSav2 = withEntry(actAcct.id, entry2);
+      if (toMain) props.onMove(tx.concat([transferTx("income", w, actAcct.name)]), nextSav2);
+      else props.onSaveSavings(nextSav2);
+    }
+    setAct(null);
+  }
+
+  function doCreate() {
+    var name = cName.trim(); if (!name) return;
+    var acct = { id: "sav_" + Date.now(), name: name, color: cColor, icon: cIcon, createdAt: today, entries: [] };
+    var startAmt = parseFloat(cAmt);
+    var fromMain = cSrc === "balance";
+    if (startAmt > 0) {
+      acct.entries = [{ id: Date.now(), kind: "deposit", amount: round2(startAmt), date: today, fromMain: fromMain, label: fromMain ? tr("fromBalance") : tr("externalMoney") }];
+    }
+    var nextSav = accts.concat([acct]);
+    if (startAmt > 0 && fromMain) props.onMove(tx.concat([transferTx("expense", startAmt, name)]), nextSav);
+    else props.onSaveSavings(nextSav);
+    setCreating(false); setCName(""); setCAmt(""); setCSrc("external"); setCIcon("coins"); setCColor(SAVINGS_COLORS[0]);
+  }
+  function doRename(acct) {
+    var name = renameVal.trim(); if (!name) return;
+    props.onSaveSavings(accts.map(function(a) { if (a.id !== acct.id) return a; var n = {}; for (var k in a) n[k] = a[k]; n.name = name; return n; }));
+  }
+  function doClose(acct) {
+    var bal = savingsBalance(acct);
+    var nextSav = accts.filter(function(a) { return a.id !== acct.id; });
+    if (bal > 0) props.onMove(tx.concat([transferTx("income", bal, acct.name, " (" + tr("closeAccount").toLowerCase() + ")")]), nextSav);
+    else props.onSaveSavings(nextSav);
+    setExpanded(null);
+  }
+
+  function seg(value, setter, options) {
+    return (
+      <div style={{ display: "flex", gap: 4, background: "rgba(0,0,0,0.05)", borderRadius: 11, padding: 3 }}>
+        {options.map(function(o) {
+          var on = value === o.v;
+          return (
+            <button key={o.v} onClick={function() { setter(o.v); }}
+              style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "9px 6px", borderRadius: 8, background: on ? T.orange : "transparent", color: on ? "#fff" : T.ink2 }}>
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+  var fieldCard = { padding: "16px 18px", marginBottom: 12 };
+  var amtRow = { display: "flex", alignItems: "center", gap: 4 };
+  var amtSym = { fontSize: 22, color: T.ink3, fontWeight: 600 };
+  var amtInput = { flex: 1, border: "none", background: "none", outline: "none", fontSize: 28, fontFamily: UI, color: T.ink, fontWeight: 700, padding: 0, boxSizing: "border-box", width: "100%" };
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} label={tr("overview")} />
+
+      <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, marginBottom: 18, padding: "0 2px" }}>{tr("savingsIntro")}</div>
+
+      {accts.length > 0 && (
+        <Card style={{ padding: "18px 20px", marginBottom: 16, background: T.heroBg, boxShadow: T.heroShadow }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: T.heroMut, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{tr("totalSavings")}</div>
+          <div style={{ fontSize: 36, fontWeight: 800, color: T.heroText, letterSpacing: "-0.03em", lineHeight: 1 }}>{dollars(total)}</div>
+          <div style={{ fontSize: 12.5, color: T.heroFaint, marginTop: 7 }}>{accts.length + " " + (accts.length === 1 ? "account" : "accounts") + " · " + tr("balanceUntouched").toLowerCase()}</div>
+        </Card>
+      )}
+
+      {accts.map(function(a) {
+        var bal = savingsBalance(a);
+        var entries = (a.entries || []).slice().sort(function(x, y) { return (y.id || 0) - (x.id || 0); }).slice(0, 6);
+        var open = expanded === a.id;
+        return (
+          <Card key={a.id} style={{ marginBottom: 12, overflow: "hidden" }}>
+            <div style={{ padding: "15px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+              <CatBadge icon={a.icon || "coins"} color={a.color || T.orange} size={42} soft={true} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15.5, fontWeight: 700, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.name}</div>
+                <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>{(a.entries || []).length + " " + tr("history").toLowerCase()}</div>
+              </div>
+              <div style={{ fontSize: 19, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(bal)}</div>
+            </div>
+            <div style={{ display: "flex", gap: 8, padding: "0 16px 14px", alignItems: "center" }}>
+              <button onClick={function() { openAction(a.id, "add"); }}
+                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 11, background: T.orange, color: "#fff", boxShadow: "0 3px 10px " + T.orangeGlow }}>{tr("addMoney")}</button>
+              <button onClick={function() { openAction(a.id, "withdraw"); }} disabled={bal <= 0}
+                style={{ flex: 1, border: "1.5px solid " + (bal <= 0 ? "rgba(0,0,0,0.08)" : T.orange), cursor: bal <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 11, background: "none", color: bal <= 0 ? T.ink3 : T.orange }}>{tr("withdraw")}</button>
+              <button onClick={function() { if (open) { setExpanded(null); } else { setExpanded(a.id); setRenameVal(a.name); } }}
+                style={{ width: 42, flexShrink: 0, border: "none", cursor: "pointer", background: "rgba(0,0,0,0.04)", borderRadius: 11, padding: "10px 0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ transform: open ? "rotate(90deg)" : "none", transition: "transform 0.2s", display: "flex" }}><SVGIcon id="chevron" size={16} color={T.ink2} /></div>
+              </button>
+            </div>
+            {open && (
+              <div style={{ borderTop: "0.5px solid " + T.sep, padding: "14px 16px", background: "rgba(0,0,0,0.015)" }}>
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>{tr("history")}</div>
+                {entries.length === 0 ? (
+                  <div style={{ fontSize: 13, color: T.ink3, marginBottom: 12 }}>{tr("noMovesYet")}</div>
+                ) : (
+                  <div style={{ marginBottom: 12 }}>
+                    {entries.map(function(e) {
+                      var dep = e.kind !== "withdraw";
+                      return (
+                        <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", borderBottom: "0.5px solid " + T.sep }}>
+                          <div style={{ width: 26, height: 26, borderRadius: 8, background: (dep ? T.green : T.ink3) + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <SVGIcon id={dep ? "down" : "up"} size={13} color={dep ? T.green : T.ink2} />
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13, color: T.ink, fontWeight: 500 }}>{e.label || (dep ? tr("addMoney") : tr("withdraw"))}</div>
+                            <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{e.date}</div>
+                          </div>
+                          <span style={{ fontSize: 13.5, fontWeight: 700, color: dep ? T.green : T.ink2, flexShrink: 0 }}>{(dep ? "+" : "-") + dollars(e.amount)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>{tr("rename")}</div>
+                <div style={{ display: "flex", gap: 8, marginBottom: 4 }}>
+                  <input value={renameVal} onChange={function(ev) { setRenameVal(ev.target.value); }}
+                    style={{ flex: 1, background: T.card, border: "1px solid " + T.sep, borderRadius: 10, padding: "9px 12px", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box" }} />
+                  <button onClick={function() { doRename(a); }} disabled={!renameVal.trim() || renameVal.trim() === a.name}
+                    style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "0 16px", borderRadius: 10, background: (!renameVal.trim() || renameVal.trim() === a.name) ? "rgba(0,0,0,0.08)" : T.orange, color: (!renameVal.trim() || renameVal.trim() === a.name) ? T.ink3 : "#fff" }}>{tr("save")}</button>
+                </div>
+                <button onClick={function() { doClose(a); }}
+                  style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 10, padding: "6px 0", textAlign: "left" }}>
+                  {tr("closeAccount")}{bal > 0 ? " · " + dollars(bal) + " → " + tr("balance").toLowerCase() : ""}
+                </button>
+              </div>
+            )}
+          </Card>
+        );
+      })}
+
+      {creating ? (
+        <Card style={{ padding: "18px 18px", marginTop: 4, marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>{tr("newSavingsAccount")}</div>
+          <input value={cName} onChange={function(e) { setCName(e.target.value); }} placeholder={tr("savingsAccountName")} autoFocus={true}
+            style={{ width: "100%", background: "rgba(0,0,0,0.04)", border: "none", borderRadius: 12, padding: "12px 14px", fontSize: 16, fontFamily: UI, color: T.ink, fontWeight: 600, outline: "none", boxSizing: "border-box", marginBottom: 12 }} />
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>{tr("pickIcon")}</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+            {SAVINGS_ICONS.map(function(ic) {
+              var on = ic === cIcon;
+              return (
+                <button key={ic} onClick={function() { setCIcon(ic); }}
+                  style={{ width: 40, height: 40, borderRadius: 12, border: on ? "2px solid " + cColor : "1px solid " + T.sep, background: on ? cColor + "1F" : T.card, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <SVGIcon id={ic} size={19} color={on ? cColor : T.ink3} />
+                </button>
+              );
+            })}
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 9, marginBottom: 14 }}>
+            {SAVINGS_COLORS.map(function(col) {
+              var on = col === cColor;
+              return (
+                <button key={col} onClick={function() { setCColor(col); }}
+                  style={{ width: 28, height: 28, borderRadius: "50%", border: on ? "3px solid " + T.ink : "1px solid rgba(0,0,0,0.1)", background: col, cursor: "pointer", padding: 0 }} />
+              );
+            })}
+          </div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>{tr("startingAmount")}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(0,0,0,0.04)", borderRadius: 12, padding: "10px 14px", marginBottom: 10 }}>
+            <span style={{ fontSize: 18, color: T.ink3, fontWeight: 600 }}>{sym}</span>
+            <input value={cAmt} onChange={function(e) { setCAmt(e.target.value); }} type="number" inputMode="decimal" placeholder="0"
+              style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 18, fontFamily: UI, color: T.ink, fontWeight: 700, padding: 0, boxSizing: "border-box", width: "100%" }} />
+          </div>
+          {parseFloat(cAmt) > 0 && (
+            <div style={{ marginBottom: 6 }}>
+              {seg(cSrc, setCSrc, [{ v: "external", label: tr("externalMoney") }, { v: "balance", label: tr("fromBalance") }])}
+              <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 7, lineHeight: 1.45 }}>{cSrc === "external" ? tr("balanceUntouched") : tr("movesFromBalance")}</div>
+            </div>
+          )}
+          <BigBtn label={tr("createAccount")} onPress={doCreate} disabled={!cName.trim()} />
+          <button onClick={function() { setCreating(false); }}
+            style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>{tr("dismiss")}</button>
+        </Card>
+      ) : (
+        <button onClick={function() { setCreating(true); }}
+          style={{ width: "100%", marginTop: 4, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "14px 0", borderRadius: 14, background: "none", border: "1.5px dashed " + T.orange + "88", color: T.orange, fontSize: 14.5, fontWeight: 700 }}>
+          <SVGIcon id="plus" size={18} color={T.orange} />{tr("newSavingsAccount")}
+        </button>
+      )}
+
+      <Overlay open={!!act} onClose={function() { setAct(null); }} title={(act && act.kind === "add" ? tr("addMoney") : tr("withdraw")) + (actAcct ? " · " + actAcct.name : "")}>
+        {actAcct && (
+          <div>
+            {act.kind === "withdraw" && (
+              <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 10 }}>{tr("balance") + ": " + dollars(savingsBalance(actAcct))}</div>
+            )}
+            <div style={Object.assign({}, fieldCard, { background: "rgba(0,0,0,0.04)", borderRadius: 14 })}>
+              <div style={amtRow}>
+                <span style={amtSym}>{sym}</span>
+                <input value={amt} onChange={function(e) { setAmt(e.target.value); }} type="number" inputMode="decimal" placeholder="0" autoFocus={true} style={amtInput} />
+              </div>
+            </div>
+            {act.kind === "add"
+              ? seg(src, setSrc, [{ v: "external", label: tr("externalMoney") }, { v: "balance", label: tr("fromBalance") }])
+              : seg(src, setSrc, [{ v: "balance", label: tr("toBalance") }, { v: "remove", label: tr("removeFromNet") }])}
+            <div style={{ fontSize: 12, color: T.ink3, marginTop: 9, lineHeight: 1.45, padding: "0 2px" }}>
+              {act.kind === "add"
+                ? (src === "external" ? tr("balanceUntouched") : tr("movesFromBalance"))
+                : (src === "balance" ? tr("addsToBalance") : tr("leavesNetWorth"))}
+            </div>
+            <BigBtn label={act.kind === "add" ? tr("addMoney") : tr("withdraw")} onPress={submitAction} disabled={!(parseFloat(amt) > 0)} />
+          </div>
+        )}
+      </Overlay>
+    </div>
+  );
+}
+
 // Profile-accessible version of the mid-month CatchUpScreen: log income earned
 // and spending per category for the current month. Appends them as real
 // transactions dated today.
@@ -6415,6 +6783,8 @@ export default function App() {
   var goals = _gls[0]; var setGoals = _gls[1];
   var _trp = useState([]);
   var trips = _trp[0]; var setTrips = _trp[1];
+  var _sav = useState([]);
+  var savings = _sav[0]; var setSavings = _sav[1];
   var _otr = useState(null);
   var openTrip = _otr[0]; var setOpenTrip = _otr[1];
   var _nts = useState([]);
@@ -6477,6 +6847,9 @@ export default function App() {
     setBudgets(allBudgets.length ? allBudgets : (data.budgets || []));
     setGoals(allGoals.length ? allGoals : (data.goals || []));
     setTrips(data.trips || []);
+    // Savings pots are always personal - they live in the user doc, never the
+    // shared household doc (an emergency fund isn't joint money).
+    setSavings(data.savings || []);
     setNotes(data.notes || []);
     setFolders((data.folders && data.folders.length) ? data.folders : freshFolders());
     setCategories(allCategories.length ? allCategories : ((data.categories && data.categories.length) ? data.categories : freshCategories()));
@@ -6634,7 +7007,7 @@ export default function App() {
     blobRef.current = {};
     setUser(null); setAccountKey(null); setTab("overview");
     setHouseholdId(null); setHousehold(null); setInvites([]);
-    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setNotes([]); setFolders([]); setCategories([]);
+    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setNotes([]); setFolders([]); setCategories([]);
     _lang.code = "en"; setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang("en"); applyTheme("purple"); setTheme("purple");
   }
 
@@ -6643,7 +7016,7 @@ export default function App() {
     var existing = blobRef.current || {};
     var blob = {};
     for (var ek in existing) blob[ek] = existing[ek];
-    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme;
+    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.savings = savings; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme;
     for (var k in next) blob[k] = next[k];
     blobRef.current = blob;
     // Debounce Firestore writes: coalesce rapid successive saves (e.g. typing)
@@ -6668,6 +7041,11 @@ export default function App() {
   function onSaveTrips(next) { setTrips(next); save({ trips: next }); }
   // Atomic two-array write (mirrors onSettleNote) so reserving a trip can't clobber tx.
   function onTripReserve(nextTx, nextTrips) { setTx(nextTx); setTrips(nextTrips); save({ tx: nextTx, trips: nextTrips }); }
+  // Savings: pot-only moves (external deposits, withdrawals out, rename, close with
+  // zero balance) write savings alone. Transfers that touch the main balance write
+  // both arrays atomically so the offsetting tx and the pot entry can't desync.
+  function onSaveSavings(next) { setSavings(next); save({ savings: next }); }
+  function onSavingsMove(nextTx, nextSavings) { setTx(nextTx); setSavings(nextSavings); save({ tx: nextTx, savings: nextSavings }); }
 
   // Reminder scheduling. Timers don't survive reload, so we re-derive them from
   // each note's durable `reminder.due` whenever notes change, firing any that are
@@ -6769,6 +7147,17 @@ export default function App() {
       setBudgets(suggestedBudgets);
       merged.budgets = suggestedBudgets;
     }
+    // Money the user already had (the "current savings" they entered) goes into a
+    // separate Emergency Fund pot, NOT their spending balance - so an existing
+    // emergency fund is never forced onto the main balance. It counts toward net
+    // worth from day one but leaves the balance clean.
+    var savAmt = parseFloat(oData && oData.savings);
+    if (savAmt > 0 && !(savings && savings.length)) {
+      var sToday = new Date().toISOString().slice(0, 10);
+      var ef = { id: "sav_" + Date.now(), name: tr("emergencyFund"), color: "#27A85F", icon: "shield", createdAt: sToday, entries: [{ id: Date.now() + 1, kind: "deposit", amount: round2(savAmt), date: sToday, fromMain: false, label: tr("externalMoney") }] };
+      setSavings([ef]);
+      merged.savings = [ef];
+    }
     blobRef.current = merged;
     CLOUD.saveUser(accountKey, merged);
   }
@@ -6860,14 +7249,14 @@ export default function App() {
       </div>
 
       <div style={{ padding: "8px 16px 0" }}>
-        {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} username={user} plan={planJustCreated ? richPlan : ""} onCategories={function() { setTab("categories"); setSheet(false); }} />}
+        {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} username={user} plan={planJustCreated ? richPlan : ""} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} />}
         {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} />}
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "goals" && <Goals goals={goals} trips={trips} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab("goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} username={user} plan={richPlan} lang={lang} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} />}
+        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} savings={savings} username={user} plan={richPlan} lang={lang} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} />}
         {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} onViewPlan={function() { setTab("plan"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
@@ -6878,6 +7267,7 @@ export default function App() {
         {currentTab === "language" && <LanguageView lang={lang} onLangChange={onSaveLang} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "appearance" && <AppearanceView theme={theme} onThemeChange={onSaveTheme} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "savings" && <SavingsView savings={savings} tx={tx} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} />}
         {currentTab === "editOpeningBalance" && <EditOpeningBalanceView tx={tx} onComplete={handleEditOpeningBalance} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "logMonth" && <LogMonthView categories={categories} tx={tx} budgets={budgets} onComplete={handleLogMonth} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "collab" && <CollabView household={household} householdId={householdId} invites={invites} myUid={accountKey} onCreate={onCreateHousehold} onInvite={onInviteMember} onCancelInvite={onCancelInvite} onAccept={onAcceptInvite} onLeave={onLeaveHousehold} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
