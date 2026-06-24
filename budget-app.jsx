@@ -3884,6 +3884,9 @@ function Trips(props) {
   var _tnc = useState({}); var tripNoteChats = _tnc[0]; var setTripNoteChats = _tnc[1];
   var _tni = useState(""); var tripNoteInput = _tni[0]; var setTripNoteInput = _tni[1];
   var _tnl = useState(false); var tripNoteLoading = _tnl[0]; var setTripNoteLoading = _tnl[1];
+  var _wnc = useState([]); var wizardNoteChat = _wnc[0]; var setWizardNoteChat = _wnc[1];
+  var _wni = useState(""); var wizardNoteInput = _wni[0]; var setWizardNoteInput = _wni[1];
+  var _wnl = useState(false); var wizardNoteLoading = _wnl[0]; var setWizardNoteLoading = _wnl[1];
 
   function setField(k, val) { setForm(function(p) { var n = {}; for (var key in p) n[key] = p[key]; n[k] = val; return n; }); }
   function setLogField(k, val) { setLogForm(function(p) { var n = {}; for (var key in p) n[key] = p[key]; n[k] = val; return n; }); }
@@ -3903,6 +3906,33 @@ function Trips(props) {
     var n = Math.max(0, parseFloat(rawVal) || 0);
     var nextTrips = props.trips.map(function(t) { return t.id === tripId ? Object.assign({}, t, { total: n }) : t; });
     props.onSaveTrips(nextTrips);
+  }
+
+  function sendWizardNote() {
+    if (!wizardNoteInput.trim() || wizardNoteLoading) return;
+    var msg = wizardNoteInput.trim();
+    setWizardNoteInput("");
+    var nc = wizardNoteChat.concat([{ role: "user", text: msg }]);
+    setWizardNoteChat(nc);
+    setWizardNoteLoading(true);
+    var total = parseFloat(form.total) || 0;
+    var allocSummary = alloc.map(function(a) { return a.label + ": " + dollars(a.planned || 0); }).join("; ");
+    var sys = "You are Richard, a warm and knowledgeable personal finance and travel advisor inside the Richy app. "
+      + "The user is setting up a trip budget: " + (form.name || "a trip") + " to " + (form.destination || "an unspecified destination") + ". "
+      + "Trip details: " + (form.days || 0) + " days, " + (form.style || "comfort") + " style, total budget " + dollars(total) + ". "
+      + "Current budget split: " + (allocSummary || "not yet set") + ". "
+      + "The user has comments or suggestions about how this budget is split. Listen to their feedback and help them adjust the allocation to fit their priorities. "
+      + "If they want to change a specific category amount, suggest a concrete number and explain the trade-off. "
+      + "Be concise, warm, and practical. Plain text only. No markdown, no bullet symbols, no emojis.";
+    callClaude(
+      nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }),
+      sys, 300,
+      function(err, reply) {
+        setWizardNoteLoading(false);
+        var text = err || !reply ? "Sorry, I could not connect. Try again." : reply;
+        setWizardNoteChat(function(p) { return p.concat([{ role: "richard", text: text }]); });
+      }
+    );
   }
 
   function allocSum(list) { return list.reduce(function(s, a) { return s + (a.planned || 0); }, 0); }
@@ -4197,6 +4227,42 @@ function Trips(props) {
                     })}
                   </div>
                 )}
+                <div style={{ marginTop: 20, borderTop: "0.5px solid " + T.sep, paddingTop: 16 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4, fontFamily: UI }}>Notes for Richard</div>
+                  <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 10, fontFamily: UI }}>Comments or suggestions about this budget split</div>
+                  {wizardNoteChat.length > 0 && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
+                      {wizardNoteChat.map(function(m, i) {
+                        var isUser = m.role === "user";
+                        return (
+                          <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
+                            <div style={{ maxWidth: "82%", background: isUser ? T.orange : "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
+                              {m.text}
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {wizardNoteLoading && (
+                        <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                          <div style={{ background: "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13, color: T.ink3, fontFamily: UI }}>...</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <input
+                      value={wizardNoteInput}
+                      onChange={function(e) { setWizardNoteInput(e.target.value); }}
+                      onKeyDown={function(e) { if (e.key === "Enter" && !wizardNoteLoading) sendWizardNote(); }}
+                      placeholder="e.g., Can we spend more on food?"
+                      style={{ flex: 1, border: "none", background: "rgba(0,0,0,0.04)", borderRadius: 10, padding: "9px 12px", fontSize: 13.5, fontFamily: UI, outline: "none", color: T.ink }}
+                    />
+                    <button onClick={sendWizardNote} disabled={!wizardNoteInput.trim() || wizardNoteLoading}
+                      style={{ background: wizardNoteInput.trim() && !wizardNoteLoading ? T.orange : "rgba(0,0,0,0.1)", border: "none", borderRadius: 10, width: 38, height: 38, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 17 }}>
+                      ^
+                    </button>
+                  </div>
+                </div>
                 <BigBtn label={tr("saveTrip")} disabled={total <= 0} onPress={saveTrip} />
               </div>
             )}
