@@ -6769,7 +6769,7 @@ function Profile(props) {
 
       <Card style={{ overflow: "hidden", marginBottom: 16 }}>
         <ProfileRow icon="spark" label={tr("seeYourPlan")} onClick={props.onViewPlan} last={false} />
-        <ProfileRow icon="lightbulb" label="Richard's Instructions" value={props.richardInstructions ? "Custom" : "Default"} onClick={props.onViewInstructions} last={false} />
+        <ProfileRow icon="note" label="Richard's Instructions" value={props.richardInstructions ? "Custom" : "Default"} onClick={props.onViewInstructions} last={false} />
         <ProfileRow icon="person" label={tr("richyRefersTo")} value={props.user} onClick={props.onViewNickname} last={false} />
         <ProfileRow icon="coins" label={tr("currency")} value={curLabel} onClick={props.onViewCurrency} last={false} />
         <ProfileRow icon="book" label={tr("language")} value={langLabel} onClick={props.onViewLanguage} last={false} />
