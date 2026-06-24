@@ -86,6 +86,19 @@ function applyTheme(name) {
 }
 applyTheme("purple");
 
+var LIGHT_BG = "#F7F3EE";
+var LIGHT_CARD = "#FFFFFF";
+var DARK_BG = "#131110";
+var DARK_CARD = "#1C1915";
+function applyDarkMode(dark) {
+  T.bg   = dark ? DARK_BG   : LIGHT_BG;
+  T.card = dark ? DARK_CARD : LIGHT_CARD;
+  T.sep  = dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
+  T.ink  = dark ? "#EDE8E2" : "#1A1410";
+  T.ink2 = dark ? "#A09080" : "#6B5C4E";
+  T.ink3 = dark ? "#6B5C4E" : "#B0A396";
+}
+
 // Curated icon set for category "banners" - line icons in the app's style.
 // Each id maps to an SVG path in SVGIcon.
 var ICON_BANK = [
@@ -2971,7 +2984,7 @@ function Activity(props) {
   var mainSym = _currency.sym;
   var _imp = useState(false); var importOpen = _imp[0]; var setImportOpen = _imp[1];
   var importPrimary = props.entryMethod === "import";
-  var blankForm = { type: "expense", amount: "", label: "", catId: (cats[0] || {}).id || "", date: new Date().toISOString().slice(0, 10), repeat: "none", pending: false, cur: mainSym, rate: 1, rateLoading: false, rateFallback: false, shared: false, owner: props.accountKey };
+  var blankForm = { type: "expense", amount: "", label: "", catId: (cats[0] || {}).id || "", date: new Date().toISOString().slice(0, 10), repeat: "none", pending: false, cur: mainSym, rate: 1, rateLoading: false, rateFallback: false, shared: false, owner: props.accountKey, savingsDest: "" };
   // shared=true means this goes to the household doc; shared=false stays in user doc
   // owner is the uid of who paid (only relevant on shared txs)
   var _f = useState(blankForm);
@@ -3054,9 +3067,26 @@ function Activity(props) {
     var foreign = form.cur && form.cur !== mainSym;
     var rate = foreign ? (form.rate || fxStaticRate(form.cur, mainSym)) : 1;
     var mainAmount = round2(entered * rate);
-    var tx = { type: form.type, amount: mainAmount, label: form.label, catId: c.id, category: c.name, date: form.date, id: Date.now(), repeat: form.repeat, pending: form.pending, shared: form.shared, owner: form.owner };
-    if (foreign) { tx.origAmount = entered; tx.origCur = form.cur; tx.rate = rate; }
-    props.onSaveTx(props.tx.concat([tx]));
+
+    var savAcct = form.savingsDest ? (props.savings || []).filter(function(a) { return a.id === form.savingsDest; })[0] : null;
+    if (savAcct) {
+      var entryKind = form.type === "income" ? "deposit" : "withdraw";
+      var entry = { id: Date.now(), kind: entryKind, amount: mainAmount, date: form.date, fromMain: false, label: form.label };
+      var nextSav = (props.savings || []).map(function(a) {
+        if (a.id !== savAcct.id) return a;
+        var n = {}; for (var k in a) n[k] = a[k];
+        n.entries = (a.entries || []).concat([entry]);
+        return n;
+      });
+      var transferType = form.type === "income" ? "income" : "expense";
+      var transferLabel = (form.type === "income" ? "← " : "→ ") + savAcct.name;
+      var transferTx = { id: Date.now() + 1, type: transferType, amount: mainAmount, label: transferLabel, catId: "savings-transfer", category: "Savings transfer", transfer: true, date: form.date, repeat: "none", pending: false };
+      props.onSavingsMove(props.tx.concat([transferTx]), nextSav);
+    } else {
+      var tx = { type: form.type, amount: mainAmount, label: form.label, catId: c.id, category: c.name, date: form.date, id: Date.now(), repeat: form.repeat, pending: form.pending, shared: form.shared, owner: form.owner };
+      if (foreign) { tx.origAmount = entered; tx.origCur = form.cur; tx.rate = rate; }
+      props.onSaveTx(props.tx.concat([tx]));
+    }
     setForm(blankForm);
     props.setSheetOpen(false);
   }
@@ -3162,6 +3192,25 @@ function Activity(props) {
             {form.pending && <SVGIcon id="check" size={10} color="#fff" />}
           </div>
         </button>
+        {(props.savings || []).length > 0 && (
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ fontSize: 10.5, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 5 }}>Add to</div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {[{ id: "", name: "Balance" }].concat(props.savings || []).map(function(opt) {
+                var sel = form.savingsDest === opt.id;
+                var col = opt.color || T.orange;
+                return (
+                  <button key={opt.id || "bal"} onClick={function() { setField("savingsDest", opt.id); }}
+                    style={{ padding: "7px 13px", borderRadius: 9, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: sel ? 700 : 500, fontFamily: UI,
+                      background: sel ? (opt.id ? col + "22" : T.orangeDim) : "rgba(0,0,0,0.04)",
+                      color: sel ? (opt.id ? col : T.orange) : T.ink3 }}>
+                    {opt.id ? opt.name : "Balance"}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
         {props.householdId && (
           <div style={{ marginBottom: 14 }}>
             <button onClick={function() { setField("shared", !form.shared); }}
@@ -6608,11 +6657,17 @@ function CurrencyView(props) {
 function AppearanceView(props) {
   var opts = [
     { id: "purple",  label: "Mika's Violet",   sub: "Lavender hero, violet accents",  a: "#9D78E8", b: "#C8B1FF" },
-    { id: "classic", label: "Ember",  sub: "Dark hero, warm amber accents",  a: "#1E1A16", b: "#C8673A" }
+    { id: "classic", label: "Dark Ember",  sub: "Dark hero, warm amber accents",  a: "#1E1A16", b: "#C8673A" }
   ];
+  var modeOpts = [
+    { id: false, label: "Light", sub: "Warm off-white background", a: "#F7F3EE", b: "#FFFFFF" },
+    { id: true,  label: "Dark",  sub: "Deep dark background",      a: "#131110", b: "#1C1915" },
+  ];
+  var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", padding: "18px 4px 8px", fontFamily: UI };
   return (
     <div>
       <SubViewBack onBack={props.onBack} />
+      <div style={secLabel}>Theme</div>
       <Card style={{ overflow: "hidden", marginBottom: 16 }}>
         {opts.map(function(opt, i) {
           var sel = props.theme === opt.id;
@@ -6620,6 +6675,27 @@ function AppearanceView(props) {
             <button key={opt.id} onClick={function() { props.onThemeChange(opt.id); }}
               style={{ width: "100%", background: sel ? T.orangeDim : "none", border: "none", borderBottom: i < opts.length - 1 ? "0.5px solid " + T.sep : "none", padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", fontFamily: UI }}>
               <div style={{ width: 46, height: 46, borderRadius: 13, background: "linear-gradient(135deg," + opt.a + "," + opt.b + ")", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.14)" }} />
+              <div style={{ flex: 1, textAlign: "left" }}>
+                <div style={{ fontSize: 16, fontWeight: sel ? 700 : 600, color: T.ink }}>{opt.label}</div>
+                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{opt.sub}</div>
+              </div>
+              {sel && (
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <SVGIcon id="check" size={12} color="#fff" />
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </Card>
+      <div style={secLabel}>Mode</div>
+      <Card style={{ overflow: "hidden", marginBottom: 16 }}>
+        {modeOpts.map(function(opt, i) {
+          var sel = !!props.darkMode === !!opt.id;
+          return (
+            <button key={String(opt.id)} onClick={function() { props.onDarkModeChange(opt.id); }}
+              style={{ width: "100%", background: sel ? T.orangeDim : "none", border: "none", borderBottom: i < modeOpts.length - 1 ? "0.5px solid " + T.sep : "none", padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", fontFamily: UI }}>
+              <div style={{ width: 46, height: 46, borderRadius: 13, background: "linear-gradient(135deg," + opt.a + "," + opt.b + ")", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.14)", border: "1px solid rgba(0,0,0,0.08)" }} />
               <div style={{ flex: 1, textAlign: "left" }}>
                 <div style={{ fontSize: 16, fontWeight: sel ? 700 : 600, color: T.ink }}>{opt.label}</div>
                 <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{opt.sub}</div>
@@ -6700,7 +6776,7 @@ function PrivacyView(props) {
   var email = blob.email || "";
   var langLabel = (LANGUAGE_OPTIONS.filter(function(o) { return o.code === (blob.lang || "en"); })[0] || {}).label || "English";
   var curLabel = (CURRENCY_OPTIONS.filter(function(o) { return o.sym === (blob.currency || "$"); })[0] || {}).label || (blob.currency || "$");
-  var themeLabel = blob.theme === "classic" ? "Ember" : "Mika's Violet";
+  var themeLabel = blob.theme === "classic" ? "Dark Ember" : "Mika's Violet";
   var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", padding: "18px 4px 8px", fontFamily: UI };
 
   var rows = [];
@@ -7228,7 +7304,7 @@ function Profile(props) {
   var lang = props.lang || "en";
   var langLabel = (LANGUAGE_OPTIONS.filter(function(o) { return o.code === lang; })[0] || {}).label || "English";
   var curLabel = (CURRENCY_OPTIONS.filter(function(o) { return o.sym === cur; })[0] || {}).label || cur;
-  var themeLabel = props.theme === "classic" ? "Ember" : "Mika's Violet";
+  var themeLabel = props.theme === "classic" ? "Dark Ember" : "Mika's Violet";
   return (
     <div>
       <Card style={{ padding: "28px 22px", marginBottom: 16, textAlign: "center" }}>
@@ -7316,6 +7392,8 @@ export default function App() {
   var lang = _lg[0]; var setLang = _lg[1];
   var _th = useState("purple");
   var theme = _th[0]; var setTheme = _th[1];
+  var _dm = useState(false);
+  var darkMode = _dm[0]; var setDarkMode = _dm[1];
   var _ack = useState(false);
   var authChecked = _ack[0]; var setAuthChecked = _ack[1];
   var _oda = useState({});
@@ -7373,6 +7451,7 @@ export default function App() {
     setUserDob(data.dob || "");
     _lang.code = data.lang || "en"; setLang(data.lang || "en");
     var th = data.theme || "purple"; applyTheme(th); setTheme(th);
+    var dm = !!data.darkMode; applyDarkMode(dm); setDarkMode(dm);
   }
 
   useEffect(function() {
@@ -7626,7 +7705,8 @@ export default function App() {
       );
     }
   }
-  function onSaveTheme(name) { applyTheme(name); setTheme(name); save({ theme: name }); }
+  function onSaveTheme(name) { applyTheme(name); applyDarkMode(darkMode); setTheme(name); save({ theme: name }); }
+  function onSaveDarkMode(dm) { applyDarkMode(dm); setDarkMode(dm); save({ darkMode: dm }); }
   function onSaveNickname(name) { setUser(name); save({ displayName: name }); }
   function onSaveDob(dob) { setUserDob(dob); save({ dob: dob }); }
   function onSaveEmail(email) { save({ email: email }); }
@@ -7755,7 +7835,7 @@ export default function App() {
 
       <div style={{ padding: "8px 16px 0" }}>
         {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} username={user} plan={planJustCreated ? richPlan : ""} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} />}
-        {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} />}
+        {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} onSavingsMove={onSavingsMove} />}
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "goals" && <Goals goals={goals} trips={trips} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
@@ -7770,7 +7850,7 @@ export default function App() {
         {currentTab === "editFinancial" && <EditFinancialView oData={blobRef.current.onboardingData || {}} onBack={function() { setTab("privacy"); }} onSave={function(oData) { onSaveFinancial(oData); setTab("privacy"); }} />}
         {currentTab === "plan" && <PlanView plan={richPlan} onBack={function() { setTab("profile"); }} onRetake={handleRetakePlan} username={user} lang={lang} richardInstructions={richardInstructions} categories={categories} budgets={budgets} goals={goals} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onUpdatePlan={function(t) { setRichPlan(t); save({ plan: t }); }} onboardingData={onboardingData} />}
         {currentTab === "language" && <LanguageView lang={lang} onLangChange={onSaveLang} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
-        {currentTab === "appearance" && <AppearanceView theme={theme} onThemeChange={onSaveTheme} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "appearance" && <AppearanceView theme={theme} onThemeChange={onSaveTheme} darkMode={darkMode} onDarkModeChange={onSaveDarkMode} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "savings" && <SavingsView savings={savings} tx={tx} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} />}
         {currentTab === "editOpeningBalance" && <EditOpeningBalanceView tx={tx} onComplete={handleEditOpeningBalance} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
