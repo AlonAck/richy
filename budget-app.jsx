@@ -3887,6 +3887,7 @@ function Trips(props) {
   var _wnc = useState([]); var wizardNoteChat = _wnc[0]; var setWizardNoteChat = _wnc[1];
   var _wni = useState(""); var wizardNoteInput = _wni[0]; var setWizardNoteInput = _wni[1];
   var _wnl = useState(false); var wizardNoteLoading = _wnl[0]; var setWizardNoteLoading = _wnl[1];
+  var _ba = useState(null); var budgetAssessment = _ba[0]; var setBudgetAssessment = _ba[1];
 
   function setField(k, val) { setForm(function(p) { var n = {}; for (var key in p) n[key] = p[key]; n[k] = val; return n; }); }
   function setLogField(k, val) { setLogForm(function(p) { var n = {}; for (var key in p) n[key] = p[key]; n[k] = val; return n; }); }
@@ -4003,16 +4004,20 @@ function Trips(props) {
   }
   function planWithRichard() {
     setPlanning(true);
+    setBudgetAssessment(null);
     var total = parseFloat(form.total) || 0;
-    var sys = "You are Richard, a warm, expert travel-budget planner inside the Claude Budget app. Split a trip budget across exactly these buckets: Flights, Housing, Food, Activities, Shopping, Transport, Other, Buffer. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"allocations\":[{\"category\":\"Flights\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"\"],\"summary\":\"\"}. The amounts are whole numbers that sum to the total budget. Use Other for any spending that does not fit the main buckets.";
-    var usr = "Plan a " + (form.style || "comfort") + " trip to " + (form.destination || "somewhere") + " for " + (form.days || "a few") + " days, total budget " + dollars(total) + ". Split it across the six buckets and give 3 short, practical tips.";
-    callClaude([{ role: "user", content: usr }], sys, 700, function(e, text) {
+    var sys = "You are Richard, a warm, expert travel-budget planner inside the Richy app. Split a trip budget across exactly these buckets: Flights, Housing, Food, Activities, Shopping, Transport, Other, Buffer. Also estimate the realistic total cost for that destination, travel style, and number of days, then compare it to the user's budget. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"allocations\":[{\"category\":\"Flights\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"\"],\"budgetAssessment\":{\"estimated\":1200,\"verdict\":\"short\",\"note\":\"One sentence comparing budget to realistic cost.\"}}. verdict must be one of: short (budget is not enough), excess (budget is more than needed), good (budget is reasonable). The amounts are whole numbers that sum to the total budget. Use Other for any spending that does not fit the main buckets.";
+    var usr = "Plan a " + (form.style || "comfort") + " trip to " + (form.destination || "somewhere") + " for " + (form.days || "a few") + " days, total budget " + dollars(total) + ". Split the budget across the buckets, give 3 short practical tips, and assess whether the budget is realistic for this destination.";
+    callClaude([{ role: "user", content: usr }], sys, 800, function(e, text) {
       if (e || !text) { applyLocalSplit(); return; }
       try {
         var jsonStr = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
         var parsed = JSON.parse(jsonStr);
         setAlloc(mapAllocations(parsed.allocations, total));
         setTips(Array.isArray(parsed.tips) && parsed.tips.length ? parsed.tips.slice(0, 4) : defaultTips());
+        if (parsed.budgetAssessment && parsed.budgetAssessment.note) {
+          setBudgetAssessment(parsed.budgetAssessment);
+        }
         setPlanning(false);
       } catch (err) { applyLocalSplit(); }
     });
@@ -4191,6 +4196,19 @@ function Trips(props) {
             ) : (
               <div>
                 <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, marginBottom: 4, fontFamily: DISP, letterSpacing: "-0.02em" }}>{tr("tripSplit")}</div>
+                {budgetAssessment && (function() {
+                  var isShort = budgetAssessment.verdict === "short";
+                  var isExcess = budgetAssessment.verdict === "excess";
+                  var bg = isShort ? "rgba(255,59,48,0.08)" : isExcess ? "rgba(255,149,0,0.10)" : "rgba(52,199,89,0.10)";
+                  var color = isShort ? T.red : isExcess ? "#B87400" : "#1A8C3A";
+                  var label = isShort ? "Not enough" : isExcess ? "More than needed" : "On target";
+                  return (
+                    <div style={{ background: bg, borderRadius: 12, padding: "12px 14px", marginBottom: 14 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: color, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4, fontFamily: UI }}>{label + (budgetAssessment.estimated ? " — Richard estimates " + dollars(budgetAssessment.estimated) : "")}</div>
+                      <div style={{ fontSize: 13, color: T.ink, lineHeight: 1.5, fontFamily: UI }}>{budgetAssessment.note}</div>
+                    </div>
+                  );
+                })()}
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
                   <div style={{ flex: 1, fontSize: 13, color: sum > total ? T.red : T.ink3 }}>{tr("allocated") + " " + dollars(sum) + " / " + dollars(total) + (sum > total ? (" (" + tr("overBy") + " " + dollars(sum - total) + ")") : "")}</div>
                   <div style={{ display: "flex", alignItems: "center", background: "rgba(0,0,0,0.04)", borderRadius: 10, padding: "5px 10px", gap: 2 }}>
