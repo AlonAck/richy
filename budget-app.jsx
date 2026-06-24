@@ -2109,26 +2109,40 @@ function Overview(props) {
   function trendChart() {
     var W = 318, H = 108, topY = 12, botY = 74;
     var mn = Math.min.apply(null, series), mx = Math.max.apply(null, series);
+    // Always anchor to zero: negative balances sit below the zero line,
+    // positive sit above. Prevents -2000 from visually mapping to the same
+    // position as +2000 in a different session.
+    mn = Math.min(mn, 0);
+    mx = Math.max(mx, 0);
     var span = (mx - mn) || 1;
-    var lo = mn - span * 0.16, hi = mx + span * 0.16;
+    var lo = mn - span * 0.12, hi = mx + span * 0.12;
     function yOf(v) { return botY - ((v - lo) / (hi - lo)) * (botY - topY); }
     function xOf(i) { return nPts > 1 ? (i / (nPts - 1)) * W : 0; }
     var pts = series.map(function(v, i) { return { x: xOf(i), y: yOf(v) }; });
     var line = smoothLine(pts);
-    var area = line + " L " + W + " " + botY + " L 0 " + botY + " Z";
+    var zeroY = yOf(0);
+    // Fill from the balance line to the zero baseline so the area honestly
+    // reflects the signed balance (positive fills downward, negative fills upward).
+    var area = line + " L " + W + " " + zeroY.toFixed(1) + " L 0 " + zeroY.toFixed(1) + " Z";
     var last = pts[pts.length - 1];
     var ticks = buildTicks();
     var yMid = (mx + mn) / 2;
+    var hasNeg = series.some(function(v) { return v < 0; });
+    var areaColor = hasNeg ? HNEG : T.trendArea;
+    var lineA = hasNeg ? HNEG : T.trendLineA;
+    var lineB = hasNeg ? HNEG : T.trendLineB;
+    // Show $0 label at the zero line only when it's not already shown as min/max
+    var zeroIsMin = mn === 0, zeroIsMax = mx === 0;
     return (
       <svg width={W} height={H} viewBox={"0 0 " + W + " " + H} style={{ display: "block", overflow: "visible" }}>
         <defs>
           <linearGradient id="rcArea" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={T.trendArea} stopOpacity={0.30} />
-            <stop offset="100%" stopColor={T.trendArea} stopOpacity={0} />
+            <stop offset="0%" stopColor={areaColor} stopOpacity={0.28} />
+            <stop offset="100%" stopColor={areaColor} stopOpacity={0} />
           </linearGradient>
           <linearGradient id="rcLine" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor={T.trendLineA} />
-            <stop offset="100%" stopColor={T.trendLineB} />
+            <stop offset="0%" stopColor={lineA} />
+            <stop offset="100%" stopColor={lineB} />
           </linearGradient>
         </defs>
         <line x1={0} y1={yOf(mx)} x2={W} y2={yOf(mx)} stroke={T.gridStrong} strokeWidth={1} />
@@ -2137,6 +2151,10 @@ function Overview(props) {
         {ticks.map(function(tk, i) {
           return <line key={"v" + i} x1={(tk.frac * W).toFixed(1)} y1={topY} x2={(tk.frac * W).toFixed(1)} y2={botY} stroke={T.gridFaint} strokeWidth={1} />;
         })}
+        <line x1={0} y1={zeroY.toFixed(1)} x2={W} y2={zeroY.toFixed(1)} stroke={HMUT} strokeWidth={1} strokeDasharray="4 4" opacity={0.6} />
+        {!zeroIsMin && !zeroIsMax && (
+          <text x={3} y={zeroY - 3} fontSize={9} fontFamily={UI} fill={HMUT} opacity={0.7}>$0</text>
+        )}
         <path d={area} fill="url(#rcArea)" opacity={dp} />
         <path d={line} fill="none" stroke="url(#rcLine)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" pathLength={1} strokeDasharray={1} strokeDashoffset={1 - dp} />
         <circle cx={last.x} cy={last.y} r={6} fill={T.trendGlow} opacity={0.20 * dp} />
