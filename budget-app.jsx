@@ -812,6 +812,64 @@ function CatPicker(props) {
   );
 }
 
+// Appended to every Richard system prompt so his replies come back lightly
+// structured (a short lead line, "- " bullets, **bold** emphasis) instead of a
+// wall of text. RichardText below renders that structure. No emojis (house style).
+var RICHARD_FORMAT = " Format your answer so it is easy to scan instead of a wall of text: open with one short, warm sentence that gives the main point, then when you have more than a couple of points put each on its own line starting with \"- \" (one idea per line, keep it short). You may bold a key term or a short label with **double asterisks**. For a quick reply a sentence or two is fine. Do not use emojis.";
+
+// Render Richard's lightly-structured text: **bold** inline, "- " bullets, and
+// short paragraphs. Deliberately tiny - no markdown engine, just the few marks
+// we ask Richard to use.
+function renderRichInline(text, keyBase) {
+  var out = [];
+  var re = /\*\*([^*]+)\*\*/g;
+  var last = 0, m, n = 0;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) out.push(text.slice(last, m.index));
+    out.push(<strong key={keyBase + "b" + (n++)} style={{ fontWeight: 700 }}>{m[1]}</strong>);
+    last = re.lastIndex;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
+
+function RichardText(props) {
+  var text = (props.text || "").replace(/\r/g, "");
+  var color = props.color || T.ink;
+  var size = props.size || 14;
+  var lines = text.split("\n");
+  var blocks = [];
+  var bullets = [];
+  function flush() {
+    if (!bullets.length) return;
+    var items = bullets; bullets = [];
+    blocks.push(
+      <div key={"ul" + blocks.length} style={{ display: "flex", flexDirection: "column", gap: 5, margin: "7px 0" }}>
+        {items.map(function(it, i) {
+          return (
+            <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+              <span style={{ color: T.orange, fontWeight: 700, flexShrink: 0 }}>-</span>
+              <span style={{ flex: 1 }}>{renderRichInline(it, "li" + i)}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+  lines.forEach(function(raw, i) {
+    var line = raw.trim();
+    if (!line) { flush(); return; }
+    var b = line.match(/^[-•]\s+(.*)/);
+    if (b) { bullets.push(b[1]); return; }
+    flush();
+    var h = line.match(/^\*\*(.+?)\*\*:?$/);
+    if (h) { blocks.push(<div key={"h" + i} style={{ fontWeight: 700, color: color, margin: "9px 0 1px" }}>{h[1]}</div>); return; }
+    blocks.push(<div key={"p" + i} style={{ margin: "5px 0" }}>{renderRichInline(line, "p" + i)}</div>);
+  });
+  flush();
+  return <div style={{ fontSize: size, color: color, lineHeight: 1.6, fontFamily: UI, whiteSpace: "normal" }}>{blocks}</div>;
+}
+
 // Hero amount entry: the focal point of the transaction form. Combines the amount,
 // the currency symbol prefix, the currency picker, and the live-converted total into
 // one rich block so the form has hierarchy instead of a stack of equal gray boxes.
@@ -1450,7 +1508,7 @@ function OnboardingScreen(props) {
     var ageStr = age !== null ? String(age) : "not provided";
     var langName = LANGUAGE_NAMES[props.lang] || "English";
     var langInstruction = langName !== "English" ? " Respond entirely in " + langName + "." : "";
-    var system = "You are Richard, a warm and knowledgeable personal finance advisor inside the Richy app. A new user has just answered their onboarding questions. Their primary financial challenge is: " + (coreProblem || "general budgeting") + ". Generate a concise, personalized financial plan that directly addresses THEIR SPECIFIC PROBLEM, not generic advice. Base it on proven frameworks but tailor it to their situation. Keep the plan under 250 words. No bullet lists - write in short paragraphs like a knowledgeable friend. No emojis. No markdown headers. IMPORTANT: If their problem involves features Richy doesn't have yet (couples mode, debt payoff tracking, business accounting), be honest about that and suggest practical workarounds." + langInstruction;
+    var system = "You are Richard, a warm and knowledgeable personal finance advisor inside the Richy app. A new user has just answered their onboarding questions. Their primary financial challenge is: " + (coreProblem || "general budgeting") + ". Generate a concise, personalized financial plan that directly addresses THEIR SPECIFIC PROBLEM, not generic advice. Base it on proven frameworks but tailor it to their situation. Keep the plan under 230 words." + RICHARD_FORMAT + " IMPORTANT: If their problem involves features Richy doesn't have yet (couples mode, debt payoff tracking, business accounting), be honest about that and suggest practical workarounds." + langInstruction;
     var userMsg = "Name: " + props.username + ". Age: " + ageStr + ". Life stage: " + lifeStage + ". PRIMARY CHALLENGE: " + (coreProblem || "building a financial plan") + ". Monthly income: $" + (income || "0") + ". Monthly essentials: $" + (essentials || "0") + ". Current savings: $" + (savings || "0") + ". Total debt: $" + (debt || "0") + ". Top goal: " + (goalName || "financial freedom") + ", target $" + (goalAmt || "unknown") + ", timeline: " + (timeline || "unspecified") + ". Write a plan that directly addresses my primary challenge.";
     callClaude(
       [{ role: "user", content: userMsg }],
@@ -2312,7 +2370,7 @@ function Overview(props) {
             {tr("yourPlanByRichard")}
           </div>
           <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.65, fontFamily: UI }}>
-            {props.plan}
+            <RichardText text={props.plan} size={14} />
           </div>
         </div>
       )}
@@ -4098,8 +4156,8 @@ function Trips(props) {
       + "The user has comments or suggestions about how this budget is split. Listen to their feedback and adjust the allocation to fit their priorities. "
       + "You can DIRECTLY change the budget, not just describe it. When the user wants a change, give one short plain-text sentence explaining what you did, then on a new line append a directive in EXACTLY this form: @@ALLOC[{\"category\":\"Food\",\"amount\":600},{\"category\":\"Buffer\",\"amount\":150}] "
       + "Only list the buckets you are changing, using whole numbers. Keep the overall total close to " + dollars(total) + " by also adjusting Buffer or Other when needed. Categories must be from: Flights, Housing, Food, Activities, Shopping, Transport, Other, Buffer. "
-      + "Only include the @@ALLOC directive when you actually intend to change the split; for general questions just answer in plain text. "
-      + "Be concise, warm, and practical. Plain text only. No markdown, no bullet symbols, no emojis (the @@ALLOC directive is the one exception).";
+      + "Only include the @@ALLOC directive when you actually intend to change the split; for general questions just answer normally. "
+      + "Be concise, warm, and practical." + RICHARD_FORMAT + " The @@ALLOC directive, when you use it, must be the very last thing in your reply.";
     callClaude(
       nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }),
       sys, 400,
@@ -4140,8 +4198,8 @@ function Trips(props) {
       + "The user has notes, suggestions, or comments about this trip plan. Listen carefully and adjust the budget to their feedback. "
       + "You can DIRECTLY change the budget, not just describe it. When the user wants a change, give one short plain-text sentence explaining what you did, then on a new line append a directive in EXACTLY this form: @@ALLOC[{\"category\":\"Housing\",\"amount\":400},{\"category\":\"Food\",\"amount\":300}] "
       + "Only list the buckets you are changing, using whole numbers. Do not set any bucket below what is already spent there. Keep the overall total close to " + dollars(trip.total || 0) + " by also adjusting Buffer or Other when needed. Categories must be from: Flights, Housing, Food, Activities, Shopping, Transport, Other, Buffer. "
-      + "Only include the @@ALLOC directive when you actually intend to change the split; for general questions just answer in plain text. "
-      + "Be concise, warm, and practical. Plain text only. No markdown, no bullet symbols, no emojis (the @@ALLOC directive is the one exception).";
+      + "Only include the @@ALLOC directive when you actually intend to change the split; for general questions just answer normally. "
+      + "Be concise, warm, and practical." + RICHARD_FORMAT + " The @@ALLOC directive, when you use it, must be the very last thing in your reply.";
     callClaude(
       nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }),
       sys, 400,
@@ -4503,7 +4561,7 @@ function Trips(props) {
                         return (
                           <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
                             <div style={{ maxWidth: "82%", background: isUser ? T.orange : "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
-                              {m.text}
+                              {isUser ? m.text : <RichardText text={m.text} size={13} />}
                             </div>
                           </div>
                         );
@@ -4678,7 +4736,7 @@ function Trips(props) {
                 return (
                   <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
                     <div style={{ maxWidth: "82%", background: isUser ? T.orange : "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13.5, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
-                      {m.text}
+                      {isUser ? m.text : <RichardText text={m.text} size={13.5} />}
                     </div>
                   </div>
                 );
@@ -5346,7 +5404,7 @@ function Advisor(props) {
       + "[ACTION:{\"kind\":\"goalAdd\",\"name\":\"Emergency Fund\",\"amount\":200}] adds money to an existing goal. "
       + "Use the EXACT category name from this list when logging expenses or budgets: " + (cats.map(function(c) { return c.name; }).join(", ") || "Other") + ". "
       + "If the user mentions several things at once, emit several tags. Only emit a tag for a concrete event with a real number that the user actually states - never for hypotheticals, plans, or general advice. Do not mention the word ACTION or the tag syntax in your spoken reply; just speak naturally and let the tags do the work."
-      + " Be honest about what Richy currently does not support: no bank or card sync, no CSV import, no shared couples mode, no interest-based debt payoff calculator, no business accounting. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct. Plain text only. Never use markdown formatting: no asterisks, no hash headers, no bullet symbols. Never use emojis or any non-text symbol except inside the action tags described above." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : ""),
+      + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Be honest about what Richy currently does not support: no live bank or card sync, no shared couples mode, no interest-based debt payoff calculator, no business accounting. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : ""),
       500,
       function(err, text) {
         setChatLoading(false);
@@ -5568,7 +5626,7 @@ function Advisor(props) {
               return (
                 <div key={i} style={{ display: "flex", justifyContent: u ? "flex-end" : "flex-start" }}>
                   <div style={{ maxWidth: "84%", padding: "11px 14px", fontSize: 13.5, lineHeight: 1.5, whiteSpace: "pre-wrap", borderRadius: u ? "16px 16px 4px 16px" : "4px 16px 16px 16px", background: u ? "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.045)", color: u ? "#fff" : T.ink, boxShadow: u ? "0 4px 14px rgba(137,112,198,0.22)" : "none" }}>
-                    {m.text}
+                    {u ? m.text : <RichardText text={m.text} size={13.5} />}
                   </div>
                 </div>
               );
@@ -7015,7 +7073,7 @@ function PlanView(props) {
       + "You know the Richy app deeply: it has tabs for Overview (balance, cash flow, net worth), Activity (all transactions), Budgets (monthly spending limits by category), Goals (savings targets), and Advisor (full AI analysis). Categories are managed via the tag icon on Overview or the Manage link in transaction pickers. "
       + "Richy CAN import a CSV statement: the Activity tab has an import button that reads a bank or card CSV export entirely on-device (it maps columns, handles separate money-in/money-out columns, auto-categorizes from the user's history, and skips duplicates). If someone is tired of manual entry, point them there. "
       + "Be honest about what Richy currently does not support: no live bank or card sync (CSV import is the workaround), no shared couples mode, no interest-based debt payoff calculator, no business accounting. If asked about these, acknowledge the gap and offer the best workaround available inside Richy. "
-      + "Be concise and direct — reply in 2-4 sentences unless the user asks for more depth. Plain text only. No markdown, no asterisks, no hash headers, no bullet symbols. No emojis or non-text symbols except inside action tags. "
+      + "Be concise and direct — keep it short unless the user asks for more depth." + RICHARD_FORMAT + " The only bracketed syntax you may use is the action tag described next. "
       + "If you want to suggest a specific concrete change to the user's app, append exactly one action tag at the very end of your reply: "
       + "[ACTION:{\"type\":\"budget\",\"category\":\"Food\",\"limit\":500}] to set a monthly budget limit, or "
       + "[ACTION:{\"type\":\"goal\",\"name\":\"Emergency Fund\",\"target\":3000}] to create a savings goal. "
@@ -7067,7 +7125,7 @@ function PlanView(props) {
             )}
           </div>
           <div style={{ fontSize: 15, color: T.ink, lineHeight: 1.7, fontFamily: UI }}>
-            {props.plan}
+            <RichardText text={props.plan} size={15} />
           </div>
         </Card>
       ) : (
@@ -7083,7 +7141,7 @@ function PlanView(props) {
             return (
               <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start", marginBottom: i < msgs.length - 1 ? 10 : 0 }}>
                 <div style={{ maxWidth: "82%", background: isUser ? T.orange : "rgba(0,0,0,0.05)", borderRadius: 14, padding: "9px 13px", fontSize: 14, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
-                  {m.text}
+                  {isUser ? m.text : <RichardText text={m.text} size={14} />}
                 </div>
               </div>
             );
