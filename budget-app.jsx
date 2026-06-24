@@ -2530,27 +2530,32 @@ function parseCSV(text) {
 
 // Guess which columns hold the date, amount, and description.
 function sniffMap(rows, hasHeader) {
-  var map = { date: -1, amount: -1, desc: -1 };
+  var map = { date: -1, amount: -1, desc: -1, debit: -1, credit: -1 };
   if (!rows.length) return map;
   if (hasHeader) {
     rows[0].forEach(function(hRaw, i) {
       var h = (hRaw || "").toLowerCase();
       if (map.date < 0 && /date|time|posted/.test(h)) map.date = i;
-      if (map.amount < 0 && /amount|debit|credit|value|sum|total|paid/.test(h)) map.amount = i;
+      // Separate money-out / money-in columns (common in real bank exports).
+      if (map.debit < 0 && /(debit|withdraw|paid out|money out|spent|outflow)/.test(h) && !/credit|deposit/.test(h)) map.debit = i;
+      if (map.credit < 0 && /(credit|deposit|paid in|money in|received|inflow)/.test(h) && !/debit|withdraw/.test(h)) map.credit = i;
+      // Single signed-amount column - only if it isn't a debit/credit column.
+      if (map.amount < 0 && /(amount|value|sum|total|paid)/.test(h) && !/(debit|credit|deposit|withdraw)/.test(h)) map.amount = i;
       if (map.desc < 0 && /desc|payee|name|memo|detail|narration|merchant|reference|transaction/.test(h)) map.desc = i;
     });
   }
+  var hasSplit = map.debit >= 0 || map.credit >= 0;
   var sample = rows.slice(hasHeader ? 1 : 0).slice(0, 6);
   var ncol = rows[0].length;
   for (var c = 0; c < ncol; c++) {
-    if (c === map.date || c === map.amount || c === map.desc) continue;
+    if (c === map.date || c === map.amount || c === map.desc || c === map.debit || c === map.credit) continue;
     var vals = sample.map(function(r) { return r[c] || ""; });
     var nonEmpty = vals.filter(function(v) { return v !== ""; });
     if (!nonEmpty.length) continue;
     var dateHits = nonEmpty.filter(function(v) { return !isNaN(Date.parse(v)) || /\d{1,4}[\/\-.]\d{1,2}[\/\-.]\d{1,4}/.test(v); }).length;
     var numHits = nonEmpty.filter(function(v) { return !isNaN(parseFloat(v.replace(/[^0-9.\-]/g, ""))) && /\d/.test(v); }).length;
     if (map.date < 0 && dateHits >= Math.ceil(nonEmpty.length / 2)) { map.date = c; continue; }
-    if (map.amount < 0 && numHits >= Math.ceil(nonEmpty.length / 2)) { map.amount = c; continue; }
+    if (!hasSplit && map.amount < 0 && numHits >= Math.ceil(nonEmpty.length / 2)) { map.amount = c; continue; }
   }
   if (map.desc < 0) {
     var bestLen = 0, bestCol = -1;
@@ -2609,27 +2614,78 @@ function parseImportAmount(s) {
 }
 
 var IMPORT_CAT_KEYWORDS = {
-  Food: ["grocer", "restaurant", "cafe", "coffee", "starbuck", "mcdonald", "uber eats", "doordash", "grubhub", "food", "pizza", "supermarket", "deli", "bakery", "kfc", "subway", "chipotle"],
-  Transport: ["uber", "lyft", "gas ", "fuel", "shell", "chevron", "exxon", "transit", "metro", "train", "parking", "taxi", " bus", "toll", "petrol"],
-  Housing: ["rent", "mortgage", "landlord", "hoa", "property", "electric", "water bill", "internet", "comcast", "verizon", "utility", "power co"],
-  Health: ["pharmacy", "cvs", "walgreen", "doctor", "clinic", "hospital", "dental", "gym", "fitness", "medical"],
-  Entertainment: ["netflix", "spotify", "hulu", "disney", "cinema", "movie", "steam", "game", "concert", "theater", "hbo", "youtube"],
-  Shopping: ["amazon", "walmart", "target", "store", "mall", "clothing", "nike", "apple.com", "ikea", "ebay", "etsy", "best buy"],
+  Food: ["grocer", "restaurant", "cafe", "coffee", "tea", "lunch", "dinner", "breakfast", "brunch", "snack", "starbuck", "mcdonald", "uber eats", "doordash", "grubhub", "food", "pizza", "burger", "supermarket", "deli", "bakery", "kfc", "subway", "chipotle"],
+  Transport: ["uber", "lyft", "bolt", "grab", "ola", "cab", "gas ", "fuel", "shell", "chevron", "exxon", "transit", "metro", "train", "parking", "taxi", " bus", "toll", "petrol", "diesel"],
+  Housing: ["rent", "mortgage", "landlord", "hoa", "property", "electric", "water bill", "internet", "comcast", "verizon", "utility", "power co", "heating", "gas bill"],
+  Health: ["pharmacy", "cvs", "walgreen", "doctor", "clinic", "hospital", "dental", "gym", "fitness", "medical", "chemist", "drug"],
+  Entertainment: ["netflix", "spotify", "hulu", "disney", "cinema", "movie", "steam", "game", "concert", "theater", "hbo", "youtube", "playstation", "xbox", "prime video"],
+  Shopping: ["amazon", "walmart", "target", "store", "mall", "clothing", "nike", "apple.com", "ikea", "ebay", "etsy", "best buy", "aliexpress", "shein", "zara", "h&m"],
   Travel: ["airline", "flight", "hotel", "airbnb", "booking", "expedia", "delta", "marriott", "hilton"],
   Investments: ["vanguard", "fidelity", "schwab", "robinhood", "coinbase", "brokerage", "invest"],
   Salary: ["payroll", "salary", "direct deposit", "paycheck", "wages"]
 };
 
-function guessImportCatId(desc, cats) {
+// Match a label/description against the built-in keyword map. Returns the
+// category NAME (e.g. "Food") or "" when nothing fits - no "Other" fallback,
+// so callers can decide whether an empty result is worth showing.
+function keywordCatName(desc) {
   var d = (desc || "").toLowerCase();
   for (var name in IMPORT_CAT_KEYWORDS) {
     var kws = IMPORT_CAT_KEYWORDS[name];
     for (var i = 0; i < kws.length; i++) {
-      if (d.indexOf(kws[i]) !== -1) { var c = catByName(cats, name); if (c) return c.id; }
+      if (d.indexOf(kws[i]) !== -1) return name;
     }
   }
+  return "";
+}
+
+function guessImportCatId(desc, cats) {
+  var name = keywordCatName(desc);
+  if (name) { var c = catByName(cats, name); if (c) return c.id; }
   var other = catByName(cats, "Other") || cats[0];
   return other ? other.id : "";
+}
+
+// Return the highest-count key from a {key: count} tally, or "".
+function topKey(tally) {
+  var best = "", bestN = 0;
+  for (var k in tally) { if (tally[k] > bestN) { bestN = tally[k]; best = k; } }
+  return best;
+}
+
+// Suggest the best-fitting category for a freshly typed label. Learns from the
+// user's OWN history first (which category they previously used for the same /
+// a similar label), then falls back to the popular keyword map. Returns a catId
+// or "" when there's nothing confident to suggest.
+function suggestCatId(label, txList, cats) {
+  var q = (label || "").trim().toLowerCase();
+  if (q.length < 2) return "";
+  var list = txList || [];
+  var exact = {}, partial = {};
+  var qWords = q.split(/\s+/).filter(function(w) { return w.length >= 3; });
+  for (var i = 0; i < list.length; i++) {
+    var t = list[i];
+    if (!t || !t.catId || t.opening || t.transfer) continue;
+    var tl = (t.label || "").trim().toLowerCase();
+    if (!tl) continue;
+    if (tl === q) { exact[t.catId] = (exact[t.catId] || 0) + 1; continue; }
+    var hit = tl.indexOf(q) !== -1;
+    if (!hit) {
+      for (var w = 0; w < qWords.length; w++) { if (tl.indexOf(qWords[w]) !== -1) { hit = true; break; } }
+    }
+    if (hit) partial[t.catId] = (partial[t.catId] || 0) + 1;
+  }
+  var best = topKey(exact) || topKey(partial);
+  if (best && catById(cats, best)) return best;
+  var name = keywordCatName(q);
+  if (name) { var c = catByName(cats, name); if (c) return c.id; }
+  return "";
+}
+
+// Identity key for a transaction, used to skip rows already in the app and
+// duplicates within the same file. type + date + abs amount + first chars of label.
+function dupKey(type, date, amount, label) {
+  return (type || "") + "|" + (date || "") + "|" + Number(amount || 0).toFixed(2) + "|" + (label || "").toLowerCase().trim().slice(0, 40);
 }
 
 function ImportSheet(props) {
@@ -2638,15 +2694,17 @@ function ImportSheet(props) {
   var _step = useState("paste"); var step = _step[0]; var setStep = _step[1];
   var _rows = useState([]); var rows = _rows[0]; var setRows = _rows[1];
   var _hdr = useState(true); var hasHeader = _hdr[0]; var setHasHeader = _hdr[1];
-  var _map = useState({ date: -1, amount: -1, desc: -1 }); var map = _map[0]; var setMap = _map[1];
+  var _map = useState({ date: -1, amount: -1, desc: -1, debit: -1, credit: -1 }); var map = _map[0]; var setMap = _map[1];
+  var _split = useState(false); var splitAmt = _split[0]; var setSplitAmt = _split[1];
   var _dmy = useState(true); var preferDMY = _dmy[0]; var setPreferDMY = _dmy[1];
   var _allExp = useState(false); var allExpenses = _allExp[0]; var setAllExpenses = _allExp[1];
   var _built = useState([]); var built = _built[0]; var setBuilt = _built[1];
+  var _dup = useState(0); var dupes = _dup[0]; var setDupes = _dup[1];
   var _err = useState(""); var err = _err[0]; var setErr = _err[1];
 
   function reset() {
     setRaw(""); setStep("paste"); setRows([]); setHasHeader(true);
-    setMap({ date: -1, amount: -1, desc: -1 }); setPreferDMY(true); setAllExpenses(false); setBuilt([]); setErr("");
+    setMap({ date: -1, amount: -1, desc: -1, debit: -1, credit: -1 }); setSplitAmt(false); setPreferDMY(true); setAllExpenses(false); setBuilt([]); setDupes(0); setErr("");
   }
   function close() { reset(); props.onClose(); }
 
@@ -2663,33 +2721,63 @@ function ImportSheet(props) {
     var parsed = parseCSV(raw);
     if (parsed.length < 1 || parsed[0].length < 2) { setErr("Could not read any rows. Paste CSV text or choose a .csv file."); return; }
     var detected = sniffMap(parsed, true);
-    setRows(parsed); setMap(detected); setStep("map");
+    setRows(parsed); setMap(detected); setSplitAmt(detected.debit >= 0 || detected.credit >= 0); setStep("map");
   }
 
   function buildTxs() {
     var dataRows = hasHeader ? rows.slice(1) : rows;
-    var out = [];
+    var out = []; var skipped = 0;
     var base = Date.now();
     var today = new Date().toISOString().slice(0, 10);
+    // Seed the seen-set with what's already in the app so re-importing the same
+    // statement doesn't double-count, then keep deduping within the file itself.
+    var seen = {};
+    (props.tx || []).forEach(function(t) { seen[dupKey(t.type, t.date, t.amount, t.label)] = true; });
     dataRows.forEach(function(r, i) {
-      var amt = parseImportAmount(map.amount >= 0 ? r[map.amount] : "");
+      var amt;
+      if (splitAmt) {
+        var dv = map.debit >= 0 ? parseImportAmount(r[map.debit]) : NaN;
+        var cv = map.credit >= 0 ? parseImportAmount(r[map.credit]) : NaN;
+        if (!isNaN(dv) && dv !== 0) amt = -Math.abs(dv);
+        else if (!isNaN(cv) && cv !== 0) amt = Math.abs(cv);
+        else return;
+      } else {
+        amt = parseImportAmount(map.amount >= 0 ? r[map.amount] : "");
+      }
       if (isNaN(amt) || amt === 0) return;
       var desc = (map.desc >= 0 ? r[map.desc] : "") || "Imported";
       var dateStr = parseImportDate(map.date >= 0 ? r[map.date] : "", preferDMY) || today;
       var type = allExpenses ? "expense" : (amt < 0 ? "expense" : "income");
-      var catId = type === "income" ? ((catByName(cats, "Salary") || {}).id || guessImportCatId(desc, cats)) : guessImportCatId(desc, cats);
+      var label = desc.slice(0, 60);
+      var amount = round2(Math.abs(amt));
+      var key = dupKey(type, dateStr, amount, label);
+      if (seen[key]) { skipped++; return; }
+      seen[key] = true;
+      // Learn from the user's own history first, then keyword map; income still
+      // prefers Salary when present.
+      var catId = type === "income"
+        ? ((catByName(cats, "Salary") || {}).id || suggestCatId(desc, props.tx, cats) || guessImportCatId(desc, cats))
+        : (suggestCatId(desc, props.tx, cats) || guessImportCatId(desc, cats));
       var c = catById(cats, catId) || { id: "", name: "Other" };
-      out.push({ type: type, amount: round2(Math.abs(amt)), label: desc.slice(0, 60), catId: c.id, category: c.name, date: dateStr, id: base + i, repeat: "none", pending: false });
+      out.push({ type: type, amount: amount, label: label, catId: c.id, category: c.name, date: dateStr, id: base + i, repeat: "none", pending: false });
     });
-    return out;
+    return { txs: out, skipped: skipped };
   }
 
   function goPreview() {
     setErr("");
-    if (map.amount < 0) { setErr("Pick which column holds the amount."); return; }
-    var txs = buildTxs();
-    if (!txs.length) { setErr("No valid transactions found. Check your column choices."); return; }
-    setBuilt(txs); setStep("preview");
+    if (splitAmt) {
+      if (map.debit < 0 && map.credit < 0) { setErr("Pick your money-in and/or money-out column."); return; }
+    } else if (map.amount < 0) {
+      setErr("Pick which column holds the amount.");
+      return;
+    }
+    var res = buildTxs();
+    if (!res.txs.length) {
+      setErr(res.skipped ? "Every row is already in your transactions - nothing new to import." : "No valid transactions found. Check your column choices.");
+      return;
+    }
+    setBuilt(res.txs); setDupes(res.skipped); setStep("preview");
   }
 
   function doImport() {
@@ -2706,7 +2794,7 @@ function ImportSheet(props) {
       <div style={{ marginBottom: 9 }}>
         <span style={lblStyle}>{label}</span>
         <select value={map[field]} onChange={function(e) { var v = parseInt(e.target.value, 10); setMap(function(p) { var n = {}; for (var k in p) n[k] = p[k]; n[field] = v; return n; }); }} style={selStyle}>
-          <option value={-1}>{field === "desc" ? "(none)" : "Choose column..."}</option>
+          <option value={-1}>{(field === "desc" || field === "debit" || field === "credit") ? "(none)" : "Choose column..."}</option>
           {colOptions.map(function(o) { return <option key={o.i} value={o.i}>{o.name}</option>; })}
         </select>
       </div>
@@ -2749,7 +2837,16 @@ function ImportSheet(props) {
             </div>
           </button>
           {colSelect("date", "Date column")}
-          {colSelect("amount", "Amount column")}
+          <button onClick={function() { setSplitAmt(!splitAmt); }}
+            style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 13px", borderRadius: 11, border: "none", cursor: "pointer", marginBottom: 9, background: splitAmt ? T.orangeDim : "rgba(0,0,0,0.04)", fontFamily: UI }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: splitAmt ? T.orange : T.ink2, textAlign: "left", lineHeight: 1.4 }}>Separate money-in / money-out columns<br /><span style={{ fontSize: 11, color: T.ink3 }}>Turn on if your file has two amount columns</span></span>
+            <div style={{ width: 18, height: 18, borderRadius: 6, flexShrink: 0, border: "2px solid " + (splitAmt ? T.orange : T.ink3), background: splitAmt ? T.orange : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {splitAmt && <SVGIcon id="check" size={10} color="#fff" />}
+            </div>
+          </button>
+          {!splitAmt && colSelect("amount", "Amount column")}
+          {splitAmt && colSelect("credit", "Money in column")}
+          {splitAmt && colSelect("debit", "Money out column")}
           {colSelect("desc", "Description column")}
           <div style={{ marginBottom: 9 }}>
             <span style={lblStyle}>Date format</span>
@@ -2786,6 +2883,7 @@ function ImportSheet(props) {
             </div>
           </div>
           <div style={{ fontSize: 13, fontWeight: 600, color: T.ink2, marginBottom: 8 }}>{built.length} transactions ready - first few shown:</div>
+          {dupes > 0 && <div style={{ fontSize: 12, color: T.ink3, marginTop: -4, marginBottom: 8 }}>{dupes} duplicate{dupes > 1 ? "s" : ""} already in your app {dupes > 1 ? "were" : "was"} skipped.</div>}
           <div style={{ background: "#fff", borderRadius: 13, overflow: "hidden", marginBottom: 12, border: "1px solid rgba(0,0,0,0.06)" }}>
             {built.slice(0, 8).map(function(t, i) {
               return (
@@ -2942,7 +3040,7 @@ function Activity(props) {
           <SVGIcon id="note" size={20} color="#fff" />
         </button>
       </div>
-      <ImportSheet open={importOpen} onClose={function() { setImportOpen(false); }} categories={cats}
+      <ImportSheet open={importOpen} onClose={function() { setImportOpen(false); }} categories={cats} tx={props.tx}
         onImport={function(txs) { props.onSaveTx(props.tx.concat(txs)); }} />
       <Overlay open={props.sheetOpen} onClose={function() { props.setSheetOpen(false); }} title={tr("newTransaction")}>
         <div style={{ display: "flex", gap: 7, marginBottom: 7 }}>
@@ -2961,6 +3059,22 @@ function Activity(props) {
         <AmountField value={form.amount} onAmount={function(e) { setField("amount", e.target.value); }} cur={form.cur} onCur={pickCur} mainSym={mainSym} rate={form.rate} rateLoading={form.rateLoading} rateFallback={form.rateFallback} />
         <FormRow label={tr("txLabel")} value={form.label} onChange={function(e) { setField("label", e.target.value); }} placeholder={form.type === "income" ? "Salary, freelance, gift..." : "Groceries, rent, coffee..."} />
         <CatPicker label={tr("category")} categories={cats} value={form.catId} onChange={function(id) { setField("catId", id); }} onManage={props.onManageCategories} />
+        {(function() {
+          var sid = suggestCatId(form.label, props.tx, cats);
+          if (!sid || sid === form.catId) return null;
+          var sc = catById(cats, sid);
+          if (!sc) return null;
+          return (
+            <button onClick={function() { setField("catId", sid); }}
+              style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "8px 12px", borderRadius: 11, border: "1.5px dashed " + sc.color, background: sc.color + "12", cursor: "pointer", fontFamily: UI, marginTop: -1, marginBottom: 7 }}>
+              <CatBadge icon={sc.icon} color={sc.color} size={22} soft={true} />
+              <span style={{ flex: 1, minWidth: 0, textAlign: "left", fontSize: 12.5, color: T.ink2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                Suggested: <span style={{ fontWeight: 700, color: T.ink }}>{sc.name}</span>
+              </span>
+              <span style={{ flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: sc.color }}>Use</span>
+            </button>
+          );
+        })()}
         <FormRow label={tr("date")} value={form.date} onChange={function(e) { setField("date", e.target.value); }} type="date" />
         <div style={{ marginBottom: 7 }}>
           <div style={{ fontSize: 10.5, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 5 }}>{tr("repeat")}</div>
@@ -3869,6 +3983,52 @@ function Goals(props) {
 // Plan a Trip. A fully isolated trip budget: it never touches the main balance
 // until the user explicitly reserves it (a single reversible expense tx). Richard
 // splits the budget across TRIP_CATEGORIES; logged expenses live on the trip only.
+// Slice out a complete bracketed JSON array starting at `from` (which must point
+// at a "["), respecting nesting. Returns "" if unbalanced.
+function sliceJsonArray(text, from) {
+  var depth = 0;
+  for (var i = from; i < text.length; i++) {
+    if (text[i] === "[") depth++;
+    else if (text[i] === "]") { depth--; if (depth === 0) return text.slice(from, i + 1); }
+  }
+  return "";
+}
+
+// Richard can act on the budget, not just talk: when he wants to change the
+// split he appends "@@ALLOC[{category,amount},...]" to his reply. This pulls
+// that directive out and returns the human-facing text separately.
+function extractAllocDirective(text) {
+  text = text || "";
+  var idx = text.indexOf("@@ALLOC");
+  if (idx === -1) return { text: text.trim(), allocations: null };
+  var allocations = null;
+  var jstart = text.indexOf("[", idx);
+  if (jstart !== -1) {
+    var jsonStr = sliceJsonArray(text, jstart);
+    if (jsonStr) { try { var arr = JSON.parse(jsonStr); if (Array.isArray(arr)) allocations = arr; } catch (e) {} }
+  }
+  var clean = text.slice(0, idx).trim();
+  if (!clean) clean = "Done — I updated the budget split for you.";
+  return { text: clean, allocations: allocations };
+}
+
+// Turn Richard's free-form {category, amount} list into a {bucketKey: amount}
+// map keyed to our fixed TRIP_CATEGORIES buckets.
+function allocDirectiveToMap(arr) {
+  var byKey = {};
+  (arr || []).forEach(function(a) {
+    var nm = String(a.category || "").toLowerCase();
+    for (var i = 0; i < TRIP_CATEGORIES.length; i++) {
+      var c = TRIP_CATEGORIES[i];
+      if (nm.indexOf(c.key) !== -1 || nm.indexOf(c.label.toLowerCase()) !== -1) {
+        byKey[c.key] = Math.max(0, Math.round(parseFloat(a.amount) || 0));
+        break;
+      }
+    }
+  });
+  return byKey;
+}
+
 function Trips(props) {
   var _v = useState(props.openTripId ? "detail" : "list"); var view = _v[0]; var setView = _v[1];
   var _aid = useState(props.openTripId || null); var activeId = _aid[0]; var setActiveId = _aid[1];
@@ -3908,6 +4068,19 @@ function Trips(props) {
     var nextTrips = props.trips.map(function(t) { return t.id === tripId ? Object.assign({}, t, { total: n }) : t; });
     props.onSaveTrips(nextTrips);
   }
+  // Apply a Richard directive to a saved trip, changing only the planned amounts
+  // of the buckets he named and preserving everything already spent. Returns
+  // true if anything changed.
+  function applyAllocToTrip(trip, arr) {
+    var byKey = allocDirectiveToMap(arr);
+    if (!Object.keys(byKey).length) return false;
+    var allocs = trip.allocations.map(function(a) {
+      return byKey.hasOwnProperty(a.key) ? Object.assign({}, a, { planned: byKey[a.key] }) : a;
+    });
+    var nextTrips = props.trips.map(function(t) { return t.id === trip.id ? Object.assign({}, t, { allocations: allocs }) : t; });
+    props.onSaveTrips(nextTrips);
+    return true;
+  }
 
   function sendWizardNote() {
     if (!wizardNoteInput.trim() || wizardNoteLoading) return;
@@ -3922,16 +4095,28 @@ function Trips(props) {
       + "The user is setting up a trip budget: " + (form.name || "a trip") + " to " + (form.destination || "an unspecified destination") + ". "
       + "Trip details: " + (form.days || 0) + " days, " + (form.style || "comfort") + " style, total budget " + dollars(total) + ". "
       + "Current budget split: " + (allocSummary || "not yet set") + ". "
-      + "The user has comments or suggestions about how this budget is split. Listen to their feedback and help them adjust the allocation to fit their priorities. "
-      + "If they want to change a specific category amount, suggest a concrete number and explain the trade-off. "
-      + "Be concise, warm, and practical. Plain text only. No markdown, no bullet symbols, no emojis.";
+      + "The user has comments or suggestions about how this budget is split. Listen to their feedback and adjust the allocation to fit their priorities. "
+      + "You can DIRECTLY change the budget, not just describe it. When the user wants a change, give one short plain-text sentence explaining what you did, then on a new line append a directive in EXACTLY this form: @@ALLOC[{\"category\":\"Food\",\"amount\":600},{\"category\":\"Buffer\",\"amount\":150}] "
+      + "Only list the buckets you are changing, using whole numbers. Keep the overall total close to " + dollars(total) + " by also adjusting Buffer or Other when needed. Categories must be from: Flights, Housing, Food, Activities, Shopping, Transport, Other, Buffer. "
+      + "Only include the @@ALLOC directive when you actually intend to change the split; for general questions just answer in plain text. "
+      + "Be concise, warm, and practical. Plain text only. No markdown, no bullet symbols, no emojis (the @@ALLOC directive is the one exception).";
     callClaude(
       nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }),
-      sys, 300,
+      sys, 400,
       function(err, reply) {
         setWizardNoteLoading(false);
-        var text = err || !reply ? "Sorry, I could not connect. Try again." : reply;
-        setWizardNoteChat(function(p) { return p.concat([{ role: "richard", text: text }]); });
+        if (err || !reply) {
+          setWizardNoteChat(function(p) { return p.concat([{ role: "richard", text: "Sorry, I could not connect. Try again." }]); });
+          return;
+        }
+        var parsed = extractAllocDirective(reply);
+        var applied = false;
+        if (parsed.allocations) { applied = applyAllocToWizard(parsed.allocations); }
+        setWizardNoteChat(function(p) {
+          var next = p.concat([{ role: "richard", text: parsed.text }]);
+          if (applied) next = next.concat([{ role: "system", text: "Budget split updated" }]);
+          return next;
+        });
       }
     );
   }
@@ -3952,15 +4137,30 @@ function Trips(props) {
       + "The user is planning a trip: " + (trip.name || "a trip") + " to " + (trip.destination || "an unspecified destination") + ". "
       + "Trip details: " + (trip.days || 0) + " days, " + (trip.style || "comfort") + " style, total budget " + dollars(trip.total || 0) + ". "
       + "Budget allocation: " + allocSummary + ". "
-      + "The user has notes, suggestions, or comments about this trip plan. Listen carefully, adjust your advice to their feedback, and help them get the most out of their budget. "
-      + "Be concise, warm, and practical. Plain text only. No markdown, no bullet symbols, no emojis.";
+      + "The user has notes, suggestions, or comments about this trip plan. Listen carefully and adjust the budget to their feedback. "
+      + "You can DIRECTLY change the budget, not just describe it. When the user wants a change, give one short plain-text sentence explaining what you did, then on a new line append a directive in EXACTLY this form: @@ALLOC[{\"category\":\"Housing\",\"amount\":400},{\"category\":\"Food\",\"amount\":300}] "
+      + "Only list the buckets you are changing, using whole numbers. Do not set any bucket below what is already spent there. Keep the overall total close to " + dollars(trip.total || 0) + " by also adjusting Buffer or Other when needed. Categories must be from: Flights, Housing, Food, Activities, Shopping, Transport, Other, Buffer. "
+      + "Only include the @@ALLOC directive when you actually intend to change the split; for general questions just answer in plain text. "
+      + "Be concise, warm, and practical. Plain text only. No markdown, no bullet symbols, no emojis (the @@ALLOC directive is the one exception).";
     callClaude(
       nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }),
-      sys, 300,
+      sys, 400,
       function(err, reply) {
         setTripNoteLoading(false);
-        var text = err || !reply ? "Sorry, I could not connect. Try again." : reply;
-        setTripNoteChats(function(p) { var n = {}; for (var k in p) n[k] = p[k]; n[trip.id] = (p[trip.id] || []).concat([{ role: "richard", text: text }]); return n; });
+        if (err || !reply) {
+          setTripNoteChats(function(p) { var n = {}; for (var k in p) n[k] = p[k]; n[trip.id] = (p[trip.id] || []).concat([{ role: "richard", text: "Sorry, I could not connect. Try again." }]); return n; });
+          return;
+        }
+        var parsed = extractAllocDirective(reply);
+        var applied = false;
+        if (parsed.allocations) { applied = applyAllocToTrip(trip, parsed.allocations); }
+        setTripNoteChats(function(p) {
+          var n = {}; for (var k in p) n[k] = p[k];
+          var thread = (p[trip.id] || []).concat([{ role: "richard", text: parsed.text }]);
+          if (applied) thread = thread.concat([{ role: "system", text: "Budget split updated" }]);
+          n[trip.id] = thread;
+          return n;
+        });
       }
     );
   }
@@ -4001,6 +4201,45 @@ function Trips(props) {
     setAlloc(localTripSplit(parseFloat(form.total) || 0, form.style || "comfort"));
     setTips(defaultTips());
     setPlanning(false);
+  }
+  // Merge a Richard directive onto the wizard's current split, preserving any
+  // buckets he didn't mention. Returns true if anything actually changed.
+  function applyAllocToWizard(arr) {
+    var byKey = allocDirectiveToMap(arr);
+    if (!Object.keys(byKey).length) return false;
+    setAlloc(function(list) {
+      var base = list && list.length ? list : localTripSplit(parseFloat(form.total) || 0, form.style || "comfort");
+      return base.map(function(a) {
+        return byKey.hasOwnProperty(a.key) ? Object.assign({}, a, { planned: byKey[a.key], plannedRaw: String(byKey[a.key]) }) : a;
+      });
+    });
+    return true;
+  }
+  // The Resplit button: re-plan the whole split with Richard, feeding him the
+  // conversation so the result reflects what the user actually asked for. Falls
+  // back to the local percentage split if the call fails.
+  function resplitWithRichard() {
+    setPlanning(true);
+    setBudgetAssessment(null);
+    var total = parseFloat(form.total) || 0;
+    var sys = "You are Richard, a warm, expert travel-budget planner inside the Richy app. Re-split a trip budget across exactly these buckets: Flights, Housing, Food, Activities, Shopping, Transport, Other, Buffer. Honor the user's stated priorities from the conversation. Also estimate the realistic total cost for that destination, travel style, and number of days, then compare it to the user's budget. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"allocations\":[{\"category\":\"Flights\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"\"],\"budgetAssessment\":{\"estimated\":1200,\"verdict\":\"short\",\"note\":\"One sentence comparing budget to realistic cost.\"}}. verdict must be one of: short, excess, good. The amounts are whole numbers that sum to the total budget. Use Other for any spending that does not fit the main buckets.";
+    var currentSplit = alloc.map(function(a) { return a.label + " " + dollars(a.planned || 0); }).join(", ");
+    var convo = wizardNoteChat.map(function(m) { return (m.role === "user" ? "User" : m.role === "system" ? "System" : "Richard") + ": " + m.text; }).join("\n");
+    var usr = "Re-split a " + (form.style || "comfort") + " trip to " + (form.destination || "somewhere") + " for " + (form.days || "a few") + " days, total budget " + dollars(total) + ". "
+      + (currentSplit ? "Current split: " + currentSplit + ". " : "")
+      + (convo ? "Take this conversation with the user about their priorities into account:\n" + convo + "\n" : "")
+      + "Produce an updated split across the buckets that reflects those priorities, 3 short practical tips, and a budget assessment.";
+    callClaude([{ role: "user", content: usr }], sys, 800, function(e, text) {
+      if (e || !text) { applyLocalSplit(); return; }
+      try {
+        var jsonStr = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
+        var parsed = JSON.parse(jsonStr);
+        setAlloc(mapAllocations(parsed.allocations, total));
+        setTips(Array.isArray(parsed.tips) && parsed.tips.length ? parsed.tips.slice(0, 4) : defaultTips());
+        if (parsed.budgetAssessment && parsed.budgetAssessment.note) { setBudgetAssessment(parsed.budgetAssessment); }
+        setPlanning(false);
+      } catch (err) { applyLocalSplit(); }
+    });
   }
   function planWithRichard() {
     setPlanning(true);
@@ -4216,7 +4455,7 @@ function Trips(props) {
                     <input type="number" value={form.total} onChange={function(e) { setField("total", e.target.value); }}
                       style={{ width: 72, border: "none", background: "none", outline: "none", fontSize: 14, fontWeight: 600, color: T.ink, fontFamily: UI, textAlign: "right", padding: 0 }} />
                   </div>
-                  <button onClick={applyLocalSplit} style={{ background: T.orangeDim, border: "none", borderRadius: 10, padding: "6px 12px", fontSize: 12, fontWeight: 700, color: T.orange, cursor: "pointer", fontFamily: UI, whiteSpace: "nowrap" }}>Resplit</button>
+                  <button onClick={resplitWithRichard} title="Re-split with Richard, using your conversation below" style={{ background: T.orangeDim, border: "none", borderRadius: 10, padding: "6px 12px", fontSize: 12, fontWeight: 700, color: T.orange, cursor: "pointer", fontFamily: UI, whiteSpace: "nowrap" }}>Resplit</button>
                 </div>
                 {alloc.map(function(a, idx) {
                   return (
@@ -4251,6 +4490,15 @@ function Trips(props) {
                   {wizardNoteChat.length > 0 && (
                     <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
                       {wizardNoteChat.map(function(m, i) {
+                        if (m.role === "system") {
+                          return (
+                            <div key={i} style={{ display: "flex", justifyContent: "center" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 5, background: T.greenDim, color: T.green, borderRadius: 999, padding: "4px 11px", fontSize: 11.5, fontWeight: 700, fontFamily: UI }}>
+                                <SVGIcon id="check" size={11} color={T.green} />{m.text}
+                              </div>
+                            </div>
+                          );
+                        }
                         var isUser = m.role === "user";
                         return (
                           <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
@@ -4417,6 +4665,15 @@ function Trips(props) {
           {(tripNoteChats[trip.id] || []).length > 0 && (
             <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
               {(tripNoteChats[trip.id] || []).map(function(m, i) {
+                if (m.role === "system") {
+                  return (
+                    <div key={i} style={{ display: "flex", justifyContent: "center" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 5, background: T.greenDim, color: T.green, borderRadius: 999, padding: "4px 11px", fontSize: 11.5, fontWeight: 700, fontFamily: UI }}>
+                        <SVGIcon id="check" size={11} color={T.green} />{m.text}
+                      </div>
+                    </div>
+                  );
+                }
                 var isUser = m.role === "user";
                 return (
                   <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
@@ -6756,7 +7013,8 @@ function PlanView(props) {
       + "You have deep knowledge from the world's best financial books and thinkers: The Psychology of Money (Morgan Housel — wealth is about behavior, not intelligence; saving is the gap between ego and income); Rich Dad Poor Dad (Kiyosaki — assets put money in your pocket, liabilities take it out; buy assets first); The Millionaire Next Door (Stanley and Danko — most millionaires live below their means, drive used cars, avoid lifestyle inflation); I Will Teach You To Be Rich (Ramit Sethi — automate savings, spend extravagantly on what you love, cut mercilessly elsewhere); The Total Money Makeover (Dave Ramsey — debt snowball, emergency fund first, live on less than you earn); The Richest Man in Babylon (Clason — pay yourself first 10%, live on 70%, give 20% to debts); Money Master the Game (Robbins — asset allocation drives 90% of returns, fees kill wealth). "
       + "You carry the wisdom of Warren Buffett (do not save what is left after spending — spend what is left after saving; rule one: never lose money), Charlie Munger (invert, always invert; avoid what destroys wealth as much as seeking what builds it), Ray Dalio (diversify well and you can reduce risk without reducing returns; pain plus reflection equals progress), Naval Ravikant (earn with your mind not your time; build or buy equity), and Mark Cuban (pay off credit cards every month; savings rates matter more than investment returns early on). "
       + "You know the Richy app deeply: it has tabs for Overview (balance, cash flow, net worth), Activity (all transactions), Budgets (monthly spending limits by category), Goals (savings targets), and Advisor (full AI analysis). Categories are managed via the tag icon on Overview or the Manage link in transaction pickers. "
-      + "Be honest about what Richy currently does not support: no bank or card sync, no CSV import, no shared couples mode, no interest-based debt payoff calculator, no business accounting. If asked about these, acknowledge the gap and offer the best workaround available inside Richy. "
+      + "Richy CAN import a CSV statement: the Activity tab has an import button that reads a bank or card CSV export entirely on-device (it maps columns, handles separate money-in/money-out columns, auto-categorizes from the user's history, and skips duplicates). If someone is tired of manual entry, point them there. "
+      + "Be honest about what Richy currently does not support: no live bank or card sync (CSV import is the workaround), no shared couples mode, no interest-based debt payoff calculator, no business accounting. If asked about these, acknowledge the gap and offer the best workaround available inside Richy. "
       + "Be concise and direct — reply in 2-4 sentences unless the user asks for more depth. Plain text only. No markdown, no asterisks, no hash headers, no bullet symbols. No emojis or non-text symbols except inside action tags. "
       + "If you want to suggest a specific concrete change to the user's app, append exactly one action tag at the very end of your reply: "
       + "[ACTION:{\"type\":\"budget\",\"category\":\"Food\",\"limit\":500}] to set a monthly budget limit, or "
