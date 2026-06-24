@@ -3881,6 +3881,9 @@ function Trips(props) {
   var _lf = useState(null); var logFor = _lf[0]; var setLogFor = _lf[1];
   var _lfm = useState({ label: "", amount: "" }); var logForm = _lfm[0]; var setLogForm = _lfm[1];
   var _de = useState({}); var detailEdits = _de[0]; var setDetailEdits = _de[1];
+  var _tnc = useState({}); var tripNoteChats = _tnc[0]; var setTripNoteChats = _tnc[1];
+  var _tni = useState(""); var tripNoteInput = _tni[0]; var setTripNoteInput = _tni[1];
+  var _tnl = useState(false); var tripNoteLoading = _tnl[0]; var setTripNoteLoading = _tnl[1];
 
   function setField(k, val) { setForm(function(p) { var n = {}; for (var key in p) n[key] = p[key]; n[k] = val; return n; }); }
   function setLogField(k, val) { setLogForm(function(p) { var n = {}; for (var key in p) n[key] = p[key]; n[k] = val; return n; }); }
@@ -3904,6 +3907,32 @@ function Trips(props) {
 
   function allocSum(list) { return list.reduce(function(s, a) { return s + (a.planned || 0); }, 0); }
   function tripSpent(t) { return t.allocations.reduce(function(s, a) { return s + (a.spent || 0); }, 0); }
+
+  function sendTripNote(trip) {
+    if (!tripNoteInput.trim() || tripNoteLoading) return;
+    var msg = tripNoteInput.trim();
+    setTripNoteInput("");
+    var prevMsgs = tripNoteChats[trip.id] || [];
+    var nc = prevMsgs.concat([{ role: "user", text: msg }]);
+    setTripNoteChats(function(p) { var n = {}; for (var k in p) n[k] = p[k]; n[trip.id] = nc; return n; });
+    setTripNoteLoading(true);
+    var allocSummary = (trip.allocations || []).map(function(a) { return a.label + ": " + dollars(a.planned || 0) + " budgeted, " + dollars(a.spent || 0) + " spent"; }).join("; ");
+    var sys = "You are Richard, a warm and knowledgeable personal finance and travel advisor inside the Richy app. "
+      + "The user is planning a trip: " + (trip.name || "a trip") + " to " + (trip.destination || "an unspecified destination") + ". "
+      + "Trip details: " + (trip.days || 0) + " days, " + (trip.style || "comfort") + " style, total budget " + dollars(trip.total || 0) + ". "
+      + "Budget allocation: " + allocSummary + ". "
+      + "The user has notes, suggestions, or comments about this trip plan. Listen carefully, adjust your advice to their feedback, and help them get the most out of their budget. "
+      + "Be concise, warm, and practical. Plain text only. No markdown, no bullet symbols, no emojis.";
+    callClaude(
+      nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }),
+      sys, 300,
+      function(err, reply) {
+        setTripNoteLoading(false);
+        var text = err || !reply ? "Sorry, I could not connect. Try again." : reply;
+        setTripNoteChats(function(p) { var n = {}; for (var k in p) n[k] = p[k]; n[trip.id] = (p[trip.id] || []).concat([{ role: "richard", text: text }]); return n; });
+      }
+    );
+  }
 
   function localTripSplit(total, style) {
     return TRIP_CATEGORIES.map(function(c) {
@@ -4295,6 +4324,45 @@ function Trips(props) {
             })}
           </Card>
         )}
+
+        <Card style={{ overflow: "hidden", marginBottom: 12 }}>
+          <div style={{ padding: "14px 16px 10px", borderBottom: "0.5px solid " + T.sep }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Notes for Richard</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3, fontFamily: UI }}>Comments or suggestions about this trip plan</div>
+          </div>
+          {(tripNoteChats[trip.id] || []).length > 0 && (
+            <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+              {(tripNoteChats[trip.id] || []).map(function(m, i) {
+                var isUser = m.role === "user";
+                return (
+                  <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
+                    <div style={{ maxWidth: "82%", background: isUser ? T.orange : "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13.5, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
+                      {m.text}
+                    </div>
+                  </div>
+                );
+              })}
+              {tripNoteLoading && (
+                <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                  <div style={{ background: "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13.5, color: T.ink3, fontFamily: UI }}>...</div>
+                </div>
+              )}
+            </div>
+          )}
+          <div style={{ display: "flex", gap: 8, padding: "10px 12px" }}>
+            <input
+              value={tripNoteInput}
+              onChange={function(e) { setTripNoteInput(e.target.value); }}
+              onKeyDown={function(e) { if (e.key === "Enter" && !tripNoteLoading) sendTripNote(trip); }}
+              placeholder="e.g., Can we cut the hotel budget?"
+              style={{ flex: 1, border: "none", background: "rgba(0,0,0,0.04)", borderRadius: 10, padding: "9px 12px", fontSize: 13.5, fontFamily: UI, outline: "none", color: T.ink }}
+            />
+            <button onClick={function() { sendTripNote(trip); }} disabled={!tripNoteInput.trim() || tripNoteLoading}
+              style={{ background: tripNoteInput.trim() && !tripNoteLoading ? T.orange : "rgba(0,0,0,0.1)", border: "none", borderRadius: 10, width: 38, height: 38, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 17 }}>
+              ^
+            </button>
+          </div>
+        </Card>
 
         <button onClick={function() { removeTrip(trip); }}
           style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "8px 0 4px" }}>
