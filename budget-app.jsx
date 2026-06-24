@@ -17,6 +17,7 @@ const T = {
   orangeHi:  "#C8B1FF",
   orangeDim: "rgba(137,112,198,0.13)",
   orangeGlow:"rgba(137,112,198,0.30)",
+  btn:       "linear-gradient(135deg,#9D78E8 0%,#B493F2 55%,#CBB6FA 100%)",
   heroInk:   "#2A1F4D",
   green:     "#27A85F",
   greenDim:  "rgba(39,168,95,0.15)",
@@ -43,6 +44,7 @@ var THEMES = {
     orange: "#8970C6", orangeHi: "#C8B1FF", orangeDim: "rgba(137,112,198,0.13)", orangeGlow: "rgba(137,112,198,0.30)",
     heroBg: "linear-gradient(160deg,#9D78E8 0%,#B493F2 50%,#CBB6FA 100%)",
     heroBg2: "linear-gradient(135deg,#9D78E8 0%,#B493F2 55%,#CBB6FA 100%)",
+    btn: "linear-gradient(135deg,#9D78E8 0%,#B493F2 55%,#CBB6FA 100%)",
     heroShadow: "0 12px 40px rgba(137,112,198,0.32), 0 2px 8px rgba(137,112,198,0.16)",
     heroGlow1: "rgba(255,255,255,0.34)", heroGlow2: "rgba(255,255,255,0.16)",
     heroText: "#2A1F4D", heroMut: "rgba(42,31,77,0.6)", heroFaint: "rgba(42,31,77,0.45)",
@@ -60,6 +62,7 @@ var THEMES = {
     orange: "#C8673A", orangeHi: "#E07848", orangeDim: "rgba(200,103,58,0.13)", orangeGlow: "rgba(200,103,58,0.30)",
     heroBg: "linear-gradient(155deg,#272118 0%,#1E1A16 52%,#131110 100%)",
     heroBg2: "linear-gradient(135deg,#E07848,#C8673A)",
+    btn: "linear-gradient(135deg,#E07848,#C8673A)",
     heroShadow: "0 1px 1px rgba(0,0,0,0.06), 0 14px 34px rgba(40,28,16,0.34)",
     heroGlow1: "rgba(224,120,72,0.30)", heroGlow2: "rgba(200,152,58,0.16)",
     heroText: "#FFFFFF", heroMut: "rgba(255,255,255,0.5)", heroFaint: "rgba(255,255,255,0.4)",
@@ -729,8 +732,9 @@ function BigBtn(props) {
     <button onClick={props.disabled ? undefined : props.onPress}
       style={{
         width: "100%",
-        background: props.disabled ? "rgba(0,0,0,0.10)" : (props.color || T.orange),
+        background: props.disabled ? "rgba(0,0,0,0.10)" : (props.color || T.btn),
         color: props.disabled ? T.ink3 : "#fff",
+        textShadow: props.disabled ? "none" : "0 1px 2px rgba(42,31,77,0.35)",
         border: "none", borderRadius: 14, padding: "13px 0",
         fontSize: 16, fontFamily: UI, fontWeight: 700,
         cursor: props.disabled ? "default" : "pointer",
@@ -2198,7 +2202,7 @@ function Overview(props) {
             {subtitle}
           </div>
         </div>
-        <button onClick={props.onCategories} style={{ flexShrink: 0, marginTop: 4, marginLeft: 18, width: 42, height: 42, borderRadius: 14, background: T.orange, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(137,112,198,0.32)" }}>
+        <button onClick={props.onCategories} style={{ flexShrink: 0, marginTop: 4, marginLeft: 18, width: 42, height: 42, borderRadius: 14, background: T.btn, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(137,112,198,0.32)" }}>
           <SVGIcon id="categories" size={20} color="#fff" />
         </button>
       </div>
@@ -3090,11 +3094,11 @@ function Activity(props) {
     <div>
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginBottom: 12 }}>
         <button onClick={function() { setImportOpen(true); }} title="Import from CSV"
-          style={{ flexShrink: 0, width: 42, height: 42, borderRadius: 14, background: importPrimary ? T.orange : T.card, border: importPrimary ? "none" : "1.5px solid " + T.orangeDim, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: importPrimary ? "0 4px 14px rgba(137,112,198,0.32)" : "0 2px 10px rgba(0,0,0,0.05)" }}>
+          style={{ flexShrink: 0, width: 42, height: 42, borderRadius: 14, background: importPrimary ? T.btn : T.card, border: importPrimary ? "none" : "1.5px solid " + T.orangeDim, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: importPrimary ? "0 4px 14px rgba(137,112,198,0.32)" : "0 2px 10px rgba(0,0,0,0.05)" }}>
           <SVGIcon id="down" size={20} color={importPrimary ? "#fff" : T.orange} />
         </button>
         <button onClick={props.onOpenNotes} title={tr("notes")}
-          style={{ flexShrink: 0, width: 42, height: 42, borderRadius: 14, background: T.orange, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(137,112,198,0.32)" }}>
+          style={{ flexShrink: 0, width: 42, height: 42, borderRadius: 14, background: T.btn, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(137,112,198,0.32)" }}>
           <SVGIcon id="note" size={20} color="#fff" />
         </button>
       </div>
@@ -3246,7 +3250,7 @@ function Activity(props) {
           <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{tr("noTransactions")}</div>
           <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 18 }}>{importPrimary ? "Import a CSV statement to fill in your transactions, or add them by hand." : tr("noTransactionsSub")}</div>
           <button onClick={function() { if (importPrimary) setImportOpen(true); else props.setSheetOpen(true); }}
-            style={{ background: "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: "#fff", border: "none", borderRadius: 13, padding: "12px 22px", fontSize: 14, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px " + T.orangeGlow }}>
+            style={{ background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 13, padding: "12px 22px", fontSize: 14, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px " + T.orangeGlow }}>
             {importPrimary ? "Import from CSV" : "Add your first transaction"}
           </button>
           <button onClick={function() { if (importPrimary) props.setSheetOpen(true); else setImportOpen(true); }}
@@ -4398,7 +4402,7 @@ function Trips(props) {
       <div>
         {backRow(tr("goals"), props.onBack)}
         <button onClick={startWizard}
-          style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 16, padding: "15px 0", marginBottom: 18, background: T.orange, color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: UI, boxShadow: "0 6px 18px " + T.orangeGlow }}>
+          style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 16, padding: "15px 0", marginBottom: 18, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", fontSize: 16, fontWeight: 700, fontFamily: UI, boxShadow: "0 6px 18px " + T.orangeGlow }}>
           {"+ " + tr("planNewTrip")}
         </button>
         {props.trips.length === 0 ? (
@@ -4582,7 +4586,7 @@ function Trips(props) {
                       style={{ flex: 1, border: "none", background: "rgba(0,0,0,0.04)", borderRadius: 10, padding: "9px 12px", fontSize: 13.5, fontFamily: UI, outline: "none", color: T.ink }}
                     />
                     <button onClick={sendWizardNote} disabled={!wizardNoteInput.trim() || wizardNoteLoading}
-                      style={{ background: wizardNoteInput.trim() && !wizardNoteLoading ? T.orange : "rgba(0,0,0,0.1)", border: "none", borderRadius: 10, width: 38, height: 38, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 17 }}>
+                      style={{ background: wizardNoteInput.trim() && !wizardNoteLoading ? T.btn : "rgba(0,0,0,0.1)", border: "none", borderRadius: 10, width: 38, height: 38, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 17 }}>
                       ^
                     </button>
                   </div>
@@ -4757,7 +4761,7 @@ function Trips(props) {
               style={{ flex: 1, border: "none", background: "rgba(0,0,0,0.04)", borderRadius: 10, padding: "9px 12px", fontSize: 13.5, fontFamily: UI, outline: "none", color: T.ink }}
             />
             <button onClick={function() { sendTripNote(trip); }} disabled={!tripNoteInput.trim() || tripNoteLoading}
-              style={{ background: tripNoteInput.trim() && !tripNoteLoading ? T.orange : "rgba(0,0,0,0.1)", border: "none", borderRadius: 10, width: 38, height: 38, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 17 }}>
+              style={{ background: tripNoteInput.trim() && !tripNoteLoading ? T.btn : "rgba(0,0,0,0.1)", border: "none", borderRadius: 10, width: 38, height: 38, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 17 }}>
               ^
             </button>
           </div>
@@ -5507,7 +5511,7 @@ function Advisor(props) {
             </div>
           )}
           <button onClick={getAdvice}
-            style={{ width: "100%", background: "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: "#fff", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: "pointer", marginTop: 18, boxShadow: "0 6px 20px " + T.orangeGlow, letterSpacing: "-0.01em" }}>
+            style={{ width: "100%", background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: "pointer", marginTop: 18, boxShadow: "0 6px 20px " + T.orangeGlow, letterSpacing: "-0.01em" }}>
             {tr("analyzeMyFinances")}
           </button>
         </div>
@@ -5609,7 +5613,7 @@ function Advisor(props) {
           <div style={{ fontSize: 14, color: T.red, marginBottom: 6 }}>{tr("analysisFailed")}</div>
           {errMsg && <div style={{ fontSize: 12, color: T.ink3, marginBottom: 14, background: "rgba(0,0,0,0.04)", borderRadius: 8, padding: "8px 12px", textAlign: "left" }}>{errMsg}</div>}
           <button onClick={function() { setAdvice(null); setErrMsg(""); }}
-            style={{ background: T.orange, color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
+            style={{ background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 12, padding: "12px 24px", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
             {tr("tryAgain")}
           </button>
         </Card>
@@ -5672,7 +5676,7 @@ function Advisor(props) {
                 setChat(function(p) { return p.concat([{ role: "assistant", text: "Done - I've updated your app with " + n + " change" + (n > 1 ? "s" : "") + ". You'll see it reflected across Overview, Activity, Budgets and Goals." }]); });
                 setPendingUpdates(null);
               }}
-                style={{ flex: 1, background: T.orange, color: "#fff", border: "none", borderRadius: 10, padding: "9px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                style={{ flex: 1, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 10, padding: "9px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                 Apply {pendingUpdates.length > 1 ? "all" : ""}
               </button>
               <button onClick={function() { setPendingUpdates(null); }}
@@ -5719,7 +5723,7 @@ function Advisor(props) {
                 }
                 setPendingAction(null);
               }}
-                style={{ flex: 1, background: T.orange, color: "#fff", border: "none", borderRadius: 10, padding: "8px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                style={{ flex: 1, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 10, padding: "8px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                 {tr("yesDo")}
               </button>
               <button onClick={function() { setPendingAction(null); }}
@@ -5737,7 +5741,7 @@ function Advisor(props) {
             placeholder={tr("askRichard")}
             style={{ flex: 1, border: "none", background: "rgba(0,0,0,0.045)", borderRadius: 14, outline: "none", fontSize: 14, fontFamily: UI, color: T.ink, padding: "13px 14px", resize: "none", lineHeight: 1.4, maxHeight: 132, overflowY: "auto", boxSizing: "border-box", display: "block" }} />
           <button onClick={sendChat} disabled={!input.trim() || chatLoading}
-            style={{ width: 44, height: 44, border: "none", borderRadius: 14, background: input.trim() && !chatLoading ? "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.1)", boxShadow: input.trim() && !chatLoading ? "0 6px 18px rgba(137,112,198,0.32)" : "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: input.trim() && !chatLoading ? "pointer" : "default", flexShrink: 0 }}>
+            style={{ width: 44, height: 44, border: "none", borderRadius: 14, background: input.trim() && !chatLoading ? T.btn : "rgba(0,0,0,0.1)", boxShadow: input.trim() && !chatLoading ? "0 6px 18px rgba(137,112,198,0.32)" : "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: input.trim() && !chatLoading ? "pointer" : "default", flexShrink: 0 }}>
             <SVGIcon id="up" size={20} color="#fff" />
           </button>
         </div>
@@ -6230,7 +6234,7 @@ function SavingsView(props) {
           var on = value === o.v;
           return (
             <button key={o.v} onClick={function() { setter(o.v); }}
-              style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "9px 6px", borderRadius: 8, background: on ? T.orange : "transparent", color: on ? "#fff" : T.ink2 }}>
+              style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "9px 6px", borderRadius: 8, background: on ? T.btn : "transparent", color: on ? "#fff" : T.ink2, textShadow: on ? "0 1px 2px rgba(42,31,77,0.35)" : "none" }}>
               {o.label}
             </button>
           );
@@ -6273,7 +6277,7 @@ function SavingsView(props) {
             </div>
             <div style={{ display: "flex", gap: 8, padding: "0 16px 14px", alignItems: "center" }}>
               <button onClick={function() { openAction(a.id, "add"); }}
-                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 11, background: T.orange, color: "#fff", boxShadow: "0 3px 10px " + T.orangeGlow }}>{tr("addMoney")}</button>
+                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 11, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow }}>{tr("addMoney")}</button>
               <button onClick={function() { openAction(a.id, "withdraw"); }} disabled={bal <= 0}
                 style={{ flex: 1, border: "1.5px solid " + (bal <= 0 ? "rgba(0,0,0,0.08)" : T.orange), cursor: bal <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 11, background: "none", color: bal <= 0 ? T.ink3 : T.orange }}>{tr("withdraw")}</button>
               <button onClick={function() { if (open) { setExpanded(null); } else { setExpanded(a.id); setRenameVal(a.name); } }}
@@ -7166,7 +7170,7 @@ function PlanView(props) {
           </div>
           <div style={{ display: "flex", gap: 10 }}>
             <button onClick={implementAction}
-              style={{ flex: 1, background: T.orange, color: "#fff", border: "none", borderRadius: 10, padding: "9px 0", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI }}>
+              style={{ flex: 1, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 10, padding: "9px 0", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI }}>
               {tr("implement")}
             </button>
             <button onClick={function() { setPendingAction(null); }}
@@ -7184,7 +7188,7 @@ function PlanView(props) {
             placeholder={tr("giveFeedback")}
             style={{ flex: 1, border: "none", background: "rgba(0,0,0,0.04)", borderRadius: 12, padding: "10px 14px", fontSize: 14, fontFamily: UI, outline: "none", color: T.ink }} />
           <button onClick={sendMessage} disabled={!input.trim() || loading}
-            style={{ background: input.trim() && !loading ? T.orange : "rgba(0,0,0,0.1)", border: "none", borderRadius: 12, width: 40, height: 40, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 18 }}>
+            style={{ background: input.trim() && !loading ? T.btn : "rgba(0,0,0,0.1)", border: "none", borderRadius: 12, width: 40, height: 40, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 18 }}>
             ^
           </button>
         </div>
