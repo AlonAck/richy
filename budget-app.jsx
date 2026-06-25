@@ -5325,6 +5325,195 @@ function callClaude(messages, system, maxTokens, callback) {
   }).catch(function(err) { callback(new Error("Fetch failed: " + err.message), null); });
 }
 
+// Big-Decision CFO: the user poses a high-stakes money question ("can I afford
+// this?", "debt vs invest?") and Richard returns a structured VERDICT run against
+// their REAL numbers (the same ctx the advisor uses) - the call, the key figure,
+// the tradeoff, and what would make it a yes. Decisions can be tracked and
+// revisited. A parse/API failure shows a graceful retry rather than fake numbers.
+function BigDecisions(props) {
+  var _open = useState(false);     var open = _open[0];        var setOpen = _open[1];
+  var _q = useState("");           var q = _q[0];              var setQ = _q[1];
+  var _loading = useState(false);  var loading = _loading[0];  var setLoading = _loading[1];
+  var _verdict = useState(null);   var verdict = _verdict[0];  var setVerdict = _verdict[1];
+  var _active = useState(null);    var active = _active[0];    var setActive = _active[1];   // tracked decision being viewed
+  var _err = useState("");         var err = _err[0];          var setErr = _err[1];
+  var inputRef = useRef(null);
+
+  var decisions = props.decisions || [];
+
+  function verdictStyle(v) {
+    if (v === "yes") return { color: T.green, bg: T.greenDim, label: "YES" };
+    if (v === "no") return { color: T.red, bg: "rgba(224,48,48,0.10)", label: "NO" };
+    if (v === "stretch") return { color: T.gold, bg: T.goldGlow, label: "STRETCH" };
+    return { color: T.orange, bg: T.orangeDim, label: "WAIT" };
+  }
+
+  function reset() { setQ(""); setVerdict(null); setErr(""); setActive(null); }
+  function openNew() { reset(); setOpen(true); }
+  function openTracked(d) { setErr(""); setActive(d); setVerdict(d.verdict); setQ(d.question); setOpen(true); }
+
+  function ask(question) {
+    var text = (question || q || "").trim();
+    if (!text || loading) return;
+    setQ(text); setErr(""); setLoading(true); setVerdict(null); setActive(null);
+    var custom = (props.richardInstructions && props.richardInstructions.trim()) ? ("FOLLOW THESE CUSTOM INSTRUCTIONS FROM THE USER:\n" + props.richardInstructions + "\n\n") : "";
+    var langLine = (props.lang && props.lang !== "en") ? (" Every string value must be written entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + ".") : "";
+    var system = custom + "You are Richard, a calm, sharp, honest personal finance advisor inside the Richy app. The user faces a real, specific money decision. Using their ACTUAL financial data, give a clear PERSONAL verdict run against their real cash flow, savings, goals and net worth - never generic advice. If it is a no or only a stretch, say so plainly and kindly. Return ONLY valid JSON, no markdown, no emojis, exactly this shape: {\"verdict\":\"yes|no|stretch|wait\",\"verdictLabel\":\"short label e.g. Yes, you can afford it\",\"headline\":\"one warm sentence with the core reason\",\"keyNumber\":\"the single most important figure e.g. $340/mo or 4 months\",\"keyNumberLabel\":\"what that figure means in 2 to 4 words\",\"reasoning\":[\"2 to 4 short bullets, each tied to a real number\"],\"tradeoff\":\"one sentence on what they give up or risk\",\"toMakeYes\":\"the single most impactful change that would make it work; empty string if already a clear yes\",\"confidence\":\"high|medium|low\"}." + langLine;
+    var content = "Decision: " + text + "\n\nMy financial data:\n" + (props.ctx || "(no data provided)") + (props.coreProblem ? ("\n\nMy main financial challenge: " + props.coreProblem) : "");
+    callClaude([{ role: "user", content: content }], system, 650, function(e, raw) {
+      setLoading(false);
+      if (e || !raw) { setErr("I couldn't run that just now - check your connection and try again."); return; }
+      try {
+        var s = raw.indexOf("{"), en = raw.lastIndexOf("}");
+        var obj = JSON.parse(s !== -1 && en !== -1 ? raw.slice(s, en + 1) : raw);
+        if (!obj.verdict) throw new Error("no verdict");
+        setVerdict(obj);
+      } catch (e2) { setErr("Richard's answer came back garbled - try rephrasing the decision."); }
+    });
+  }
+
+  function track() {
+    if (!verdict) return;
+    var d = { id: Date.now(), question: q, verdict: verdict, createdDate: new Date().toISOString().slice(0, 10), status: "open" };
+    if (props.onSaveDecisions) props.onSaveDecisions(decisions.concat([d]));
+    setActive(d);
+  }
+  function untrack(d) {
+    if (props.onSaveDecisions) props.onSaveDecisions(decisions.filter(function(x) { return x.id !== d.id; }));
+    setOpen(false);
+  }
+  function setStatus(d, status) {
+    if (props.onSaveDecisions) props.onSaveDecisions(decisions.map(function(x) { return x.id === d.id ? Object.assign({}, x, { status: status }) : x; }));
+    setActive(Object.assign({}, d, { status: status }));
+  }
+
+  var isTracked = !!(active && decisions.some(function(x) { return x.id === active.id; }));
+  var pillBase = { fontFamily: UI, fontSize: 12.5, fontWeight: 700, borderRadius: 9, padding: "7px 12px", cursor: "pointer", border: "none" };
+  var primaryBtn = Object.assign({}, pillBase, { background: T.orange, color: "#fff" });
+  var ghostBtn = Object.assign({}, pillBase, { background: "rgba(0,0,0,0.05)", color: T.ink2 });
+  var cardShadow = "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)";
+  var templates = [
+    { label: "Can I afford...?", seed: "Can I afford " },
+    { label: "Debt vs invest?", seed: "Should I pay off my debt or invest my extra money?" },
+    { label: "Is this a good deal?", seed: "Is this a good deal: " },
+    { label: "Worth taking?", seed: "I have an offer on the table - is it worth taking? " }
+  ];
+
+  function verdictCard(vd) {
+    var vs = verdictStyle(vd.verdict);
+    return (
+      <div style={{ background: T.card, borderRadius: 16, padding: "16px 16px 18px", boxShadow: cardShadow, marginTop: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.06em", color: vs.color, background: vs.bg, padding: "5px 11px", borderRadius: 9 }}>{vs.label}</span>
+          <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, flex: 1 }}>{vd.verdictLabel}</span>
+        </div>
+        <div style={{ fontSize: 14.5, color: T.ink, lineHeight: 1.5, marginTop: 12 }}>{vd.headline}</div>
+        {vd.keyNumber && (
+          <div style={{ display: "flex", alignItems: "baseline", gap: 9, marginTop: 14, padding: "12px 14px", background: vs.bg, borderRadius: 13 }}>
+            <span style={{ fontSize: 24, fontWeight: 800, color: vs.color, letterSpacing: "-0.02em" }}>{vd.keyNumber}</span>
+            <span style={{ fontSize: 12.5, color: T.ink3, fontWeight: 600 }}>{vd.keyNumberLabel || ""}</span>
+          </div>
+        )}
+        {(vd.reasoning || []).length > 0 && (
+          <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 7 }}>
+            {vd.reasoning.map(function(r, i) {
+              return (
+                <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                  <span style={{ color: vs.color, fontWeight: 700, flexShrink: 0 }}>-</span>
+                  <span style={{ flex: 1, fontSize: 13, color: T.ink2, lineHeight: 1.45 }}>{r}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {vd.tradeoff && (
+          <div style={{ marginTop: 13 }}>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>The tradeoff</div>
+            <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.45 }}>{vd.tradeoff}</div>
+          </div>
+        )}
+        {vd.toMakeYes && (
+          <div style={{ marginTop: 13, padding: "11px 13px", borderRadius: 12, background: "rgba(200,103,58,0.06)" }}>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>To make it a yes</div>
+            <div style={{ fontSize: 13, color: T.ink, lineHeight: 1.45 }}>{vd.toMakeYes}</div>
+          </div>
+        )}
+        {vd.confidence && (
+          <div style={{ fontSize: 11, color: T.ink3, marginTop: 12, textTransform: "capitalize" }}>{"Confidence: " + vd.confidence}</div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ marginTop: 18 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 2px 11px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+          <span style={{ width: 3, height: 15, borderRadius: 2, background: T.orange }} />
+          <span style={{ fontSize: 16, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>Big Decisions</span>
+        </div>
+        {decisions.length > 0 && <span style={{ fontSize: 12, color: T.ink3 }}>{decisions.length + " tracked"}</span>}
+      </div>
+
+      <button onClick={openNew} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 18, background: T.card, border: "none", boxShadow: cardShadow }}>
+        <CatBadge icon="goals" color={T.orange} size={40} soft={true} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>Facing a big money call?</div>
+          <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>Get Richard's verdict against your real numbers</div>
+        </div>
+        <SVGIcon id="chevron" size={18} color={T.ink3} />
+      </button>
+
+      {decisions.length > 0 && (
+        <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+          {decisions.slice().reverse().map(function(d) {
+            var vs = verdictStyle(d.verdict && d.verdict.verdict);
+            return (
+              <button key={d.id} onClick={function() { openTracked(d); }} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 11, padding: "12px 14px", borderRadius: 14, background: T.card, border: "none", boxShadow: cardShadow, opacity: d.status === "resolved" ? 0.6 : 1 }}>
+                <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.05em", color: vs.color, background: vs.bg, padding: "4px 8px", borderRadius: 7, flexShrink: 0 }}>{vs.label}</span>
+                <span style={{ flex: 1, fontSize: 13, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.question}</span>
+                {d.status === "resolved" && <span style={{ fontSize: 11, color: T.ink3, flexShrink: 0 }}>done</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      <Overlay open={open} onClose={function() { setOpen(false); }} title="Big Decisions">
+        <textarea ref={inputRef} value={q} onChange={function(e) { setQ(e.target.value); }} placeholder="Describe the decision - e.g. Can I afford a $1,500/mo apartment?"
+          style={{ width: "100%", boxSizing: "border-box", minHeight: 70, resize: "none", border: "none", borderRadius: 13, padding: "12px 14px", fontSize: 14.5, fontFamily: UI, color: T.ink, background: "rgba(0,0,0,0.04)", outline: "none", lineHeight: 1.45 }} />
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 10 }}>
+          {templates.map(function(t) {
+            return <button key={t.label} onClick={function() { setQ(t.seed); if (inputRef.current) inputRef.current.focus(); }} style={Object.assign({}, ghostBtn, { fontSize: 12 })}>{t.label}</button>;
+          })}
+        </div>
+
+        <button onClick={function() { ask(); }} disabled={loading || !q.trim()} style={{ width: "100%", marginTop: 12, background: (loading || !q.trim()) ? "rgba(0,0,0,0.10)" : T.btn, color: (loading || !q.trim()) ? T.ink3 : "#fff", border: "none", borderRadius: 14, padding: "14px 0", fontSize: 15.5, fontFamily: UI, fontWeight: 700, cursor: (loading || !q.trim()) ? "default" : "pointer", boxShadow: (loading || !q.trim()) ? "none" : "0 6px 20px " + T.orangeGlow }}>
+          {loading ? "Richard is weighing it..." : "Get Richard's verdict"}
+        </button>
+
+        {err && <div style={{ fontSize: 12.5, color: T.red, background: "rgba(224,48,48,0.08)", borderRadius: 10, padding: "9px 12px", marginTop: 12 }}>{err}</div>}
+
+        {verdict && verdictCard(verdict)}
+
+        {verdict && !loading && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 14 }}>
+            {!isTracked && <button onClick={track} style={primaryBtn}>Track this decision</button>}
+            {isTracked && active && active.status !== "resolved" && <button onClick={function() { setStatus(active, "resolved"); }} style={primaryBtn}>Mark resolved</button>}
+            {isTracked && active && active.status === "resolved" && <button onClick={function() { setStatus(active, "open"); }} style={ghostBtn}>Reopen</button>}
+            {isTracked && active && <button onClick={function() { untrack(active); }} style={ghostBtn}>Remove</button>}
+          </div>
+        )}
+
+        <div style={{ fontSize: 11, color: T.ink3, lineHeight: 1.5, margin: "14px 2px 0", textAlign: "center" }}>
+          Richard weighs this against your real numbers, but it's guidance, not a guarantee - you make the call.
+        </div>
+      </Overlay>
+    </div>
+  );
+}
+
 function Advisor(props) {
   var _a = useState(null);
   var advice = _a[0]; var setAdvice = _a[1];
@@ -6002,6 +6191,8 @@ function Advisor(props) {
   return (
     <div>
       {richardHead}
+
+      <BigDecisions ctx={ctx} coreProblem={coreProblem} username={props.username} lang={props.lang} richardInstructions={props.richardInstructions} decisions={props.decisions} onSaveDecisions={props.onSaveDecisions} />
 
       {!advice && !loading && (
         <div>
@@ -7860,6 +8051,9 @@ export default function App() {
   // from tx each session by findMoney().
   var _fm = useState({ tally: 0, dismissed: [], acted: [] });
   var foundMoney = _fm[0]; var setFoundMoney = _fm[1];
+  // Big-Decision CFO: tracked decisions [{id, question, verdict, createdDate, status}].
+  var _dec = useState([]);
+  var decisions = _dec[0]; var setDecisions = _dec[1];
   // Collab / couples mode. householdId points at the shared households/{hid} doc;
   // household is the live mirror of it (members + invites); sharedData is the
   // live mirror of shared budgets/goals/categories/tx for efficient delta-sync.
@@ -7893,6 +8087,7 @@ export default function App() {
     setSavings(data.savings || []);
     setNotes(data.notes || []);
     setFoundMoney(data.foundMoney || { tally: 0, dismissed: [], acted: [] });
+    setDecisions(data.decisions || []);
     setFolders((data.folders && data.folders.length) ? data.folders : freshFolders());
     setCategories(allCategories.length ? allCategories : ((data.categories && data.categories.length) ? data.categories : freshCategories()));
     var sym = data.currency || "$";
@@ -8051,7 +8246,7 @@ export default function App() {
     blobRef.current = {};
     setUser(null); setAccountKey(null); setTab("overview");
     setHouseholdId(null); setHousehold(null); setInvites([]);
-    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] });
+    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]);
     _lang.code = "en"; setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang("en"); applyTheme("purple"); setTheme("purple");
   }
 
@@ -8060,7 +8255,7 @@ export default function App() {
     var existing = blobRef.current || {};
     var blob = {};
     for (var ek in existing) blob[ek] = existing[ek];
-    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.savings = savings; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme; blob.foundMoney = foundMoney;
+    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.savings = savings; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme; blob.foundMoney = foundMoney; blob.decisions = decisions;
     for (var k in next) blob[k] = next[k];
     blobRef.current = blob;
     // Debounce Firestore writes: coalesce rapid successive saves (e.g. typing)
@@ -8081,6 +8276,7 @@ export default function App() {
   function onSaveBudgets(next) { setBudgets(next); save({ budgets: next }); }
   function onSaveGoals(next) { setGoals(next); save({ goals: next }); }
   function onSaveFoundMoney(next) { setFoundMoney(next); save({ foundMoney: next }); }
+  function onSaveDecisions(next) { setDecisions(next); save({ decisions: next }); }
   function onSaveNotes(next) { setNotes(next); save({ notes: next }); }
   function onSettleNote(nextTx, nextNotes) { setTx(nextTx); setNotes(nextNotes); save({ tx: nextTx, notes: nextNotes }); }
   function onSaveTrips(next) { setTrips(next); save({ trips: next }); }
@@ -8303,7 +8499,7 @@ export default function App() {
         {currentTab === "goals" && <Goals goals={goals} trips={trips} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab("goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} savings={savings} username={user} plan={richPlan} lang={lang} richardInstructions={richardInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} />}
+        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} savings={savings} username={user} plan={richPlan} lang={lang} richardInstructions={richardInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} decisions={decisions} onSaveDecisions={onSaveDecisions} />}
         {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} richardInstructions={richardInstructions} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "profile"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
