@@ -1811,6 +1811,224 @@ function OnboardingScreen(props) {
   );
 }
 
+// Found Money surface: the Overview entry card (scoreboard + leak count) plus the
+// detail overlay where Richard narrates the audit and drafts the message that
+// recovers the money. Detection is deterministic (findMoney); Richard only
+// phrases and drafts. Self-contained so Overview drops it in with one tag.
+function FoundMoney(props) {
+  var _open = useState(false);   var open = _open[0];        var setOpen = _open[1];
+  var _narr = useState("");      var narr = _narr[0];        var setNarr = _narr[1];
+  var _nl = useState(false);     var narrLoading = _nl[0];   var setNarrLoading = _nl[1];
+  var _draft = useState(null);   var draft = _draft[0];      var setDraft = _draft[1];   // { id, text, loading }
+  var _copied = useState(false); var copied = _copied[0];    var setCopied = _copied[1];
+
+  var tx = props.tx || [];
+  var cats = props.categories || [];
+  var fm = props.foundMoney || { tally: 0, dismissed: [], acted: [] };
+  var dismissed = fm.dismissed || [];
+  var tally = fm.tally || 0;
+
+  // Recompute findings from real tx each render, drop ones already resolved.
+  var findings = findMoney(tx, cats).filter(function(f) { return dismissed.indexOf(f.id) === -1; });
+  var leakCount = findings.length;
+  var recoverable = findings.reduce(function(s, f) { return s + (f.annual || 0); }, 0);
+
+  function richardSystem(extra) {
+    var custom = (props.richardInstructions && props.richardInstructions.trim()) ? ("FOLLOW THESE CUSTOM INSTRUCTIONS FROM THE USER:\n" + props.richardInstructions + "\n\n") : "";
+    var langLine = (props.lang && props.lang !== "en") ? (" Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + ".") : "";
+    return custom + extra + langLine;
+  }
+
+  // Fetch Richard's warm intro once, the first time the sheet opens. Numbers come
+  // from the engine - the model only frames them. Falls back to template copy so
+  // the surface never depends on the API being reachable (mirrors localAnalysis).
+  useEffect(function() {
+    if (!open || narr || narrLoading || findings.length === 0) return;
+    setNarrLoading(true);
+    var lines = findings.slice(0, 8).map(function(f) { return "- " + f.title + " (" + f.subtitle + ")"; }).join("\n");
+    var totalLine = recoverable > 0 ? ("\nTotal recoverable if acted on: " + dollars(recoverable) + " per year.") : "";
+    var system = richardSystem("You are Richard, the warm, sharp money guide inside the Richy app. The app has ALREADY audited the user's transactions and found the potential leaks listed below (forgotten subscriptions, price hikes, double charges, category spikes). The figures are exact - never invent or change a number. In 2-3 short sentences speak directly to the user: frame what was found and the single highest-impact move to make first. Do not re-list every item - they see the list below your note." + RICHARD_FORMAT);
+    callClaude([{ role: "user", content: "The audit found:\n" + lines + totalLine + "\n\nWrite the short intro." }], system, 220, function(err, text) {
+      setNarrLoading(false);
+      if (err || !text) {
+        setNarr(leakCount === 1
+          ? "I went through your spending and found one charge worth a second look."
+          : "I went through your spending and found " + leakCount + " things worth a look" + (recoverable > 0 ? " - around " + dollars(recoverable) + " a year if you act on them." : "."));
+      } else { setNarr(text); }
+    });
+  }, [open]);
+
+  // Resolve a finding: append its id to dismissed and, when the user confirms they
+  // acted, add the recovered amount to the running tally. Persists immediately.
+  function resolve(f, recovered) {
+    var credit = recovered || 0;
+    if (props.onSaveFoundMoney) {
+      props.onSaveFoundMoney({
+        tally: round2(tally + credit),
+        dismissed: dismissed.concat([f.id]),
+        acted: credit > 0 ? (fm.acted || []).concat([{ id: f.id, title: f.title, amount: credit, date: new Date().toISOString().slice(0, 10) }]) : (fm.acted || [])
+      });
+    }
+    if (draft && draft.id === f.id) setDraft(null);
+  }
+  function creditOf(f) { return f.annual > 0 ? f.annual : f.amount; }
+
+  function makeDraft(f) {
+    setCopied(false);
+    setDraft({ id: f.id, text: "", loading: true });
+    var m = f.meta || {};
+    var isHike = f.type === "hike";
+    var system = richardSystem("You are Richard helping the user write a short, polite, effective " + (isHike ? "price-match / loyalty-discount" : "cancellation") + " message to a company. Output ONLY the message body - no preamble, no subject line, no bracketed placeholders except a trailing [Your Name]. Three to four firm-but-friendly sentences. No emojis.");
+    var ask = isHike
+      ? ("Write a message to " + f.merchant + " noting my price rose from " + dollars(m.oldAmt) + " to " + dollars(m.newAmt) + " and asking them to match my old rate or I will cancel.")
+      : ("Write a message to cancel my " + f.merchant + " subscription of " + dollars(f.amount) + " per " + ((m.cadence === "weekly") ? "week" : "month") + ", effective immediately, and request written confirmation that no further charges will occur.");
+    callClaude([{ role: "user", content: ask }], system, 260, function(err, text) {
+      if (err || !text) {
+        setDraft({ id: f.id, loading: false, text: isHike
+          ? ("Hello, I've been a customer for a while and noticed my price recently rose to " + dollars(m.newAmt) + ". I'd like to keep my previous rate of " + dollars(m.oldAmt) + " - can you match it? If not, please treat this as notice that I'll be cancelling. Thank you, [Your Name]")
+          : ("Hello, I'd like to cancel my " + f.merchant + " subscription effective immediately. Please confirm in writing that the cancellation is processed and that no further charges will be made. Thank you, [Your Name]") });
+      } else { setDraft({ id: f.id, text: text, loading: false }); }
+    });
+  }
+
+  function copyDraft() {
+    if (!draft || !draft.text) return;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(draft.text);
+        setCopied(true);
+        setTimeout(function() { setCopied(false); }, 1800);
+      }
+    } catch (e) {}
+  }
+
+  function typeStyle(t) {
+    if (t === "recurring") return { icon: "refresh", color: T.orange };
+    if (t === "hike") return { icon: "up", color: T.red };
+    if (t === "duplicate") return { icon: "credit", color: T.gold };
+    return { icon: "chart", color: T.btn };   // jump
+  }
+  function dismissLabel(t) {
+    if (t === "recurring") return "Keep it";
+    if (t === "duplicate") return "Looks fine";
+    if (t === "jump") return "Got it";
+    return "Dismiss";
+  }
+
+  // Nothing to show and nothing ever found -> stay out of the way entirely.
+  if (leakCount === 0 && tally <= 0) return null;
+
+  var pillBase = { fontFamily: UI, fontSize: 12.5, fontWeight: 700, borderRadius: 9, padding: "7px 12px", cursor: "pointer", border: "none" };
+  var primaryBtn = Object.assign({}, pillBase, { background: T.orange, color: "#fff" });
+  var ghostBtn = Object.assign({}, pillBase, { background: "rgba(0,0,0,0.05)", color: T.ink2 });
+  var cardShadow = "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)";
+
+  return (
+    <div style={{ animation: "rcFadeUp 0.6s ease 0.12s both", marginBottom: 20 }}>
+      <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+          <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Found Money</span>
+        </div>
+        {tally > 0 && (
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: T.green }}>{"Recovered " + dollars(tally)}</span>
+        )}
+      </div>
+
+      {leakCount > 0 ? (
+        <button onClick={function() { setOpen(true); }} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 18, background: T.card, border: "none", boxShadow: cardShadow }}>
+          <CatBadge icon="search" color={T.orange} size={40} soft={true} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>{"Richard spotted " + leakCount + " possible " + (leakCount === 1 ? "leak" : "leaks")}</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{recoverable > 0 ? ("About " + dollars(recoverable) + " a year to recover") : "Tap to review what he found"}</div>
+          </div>
+          <SVGIcon id="chevron" size={18} color={T.ink3} />
+        </button>
+      ) : (
+        <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 18, background: T.card, boxShadow: cardShadow }}>
+          <CatBadge icon="check" color={T.green} size={40} soft={true} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>All clear for now</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>No new leaks. Richard keeps watching.</div>
+          </div>
+        </div>
+      )}
+
+      <Overlay open={open} onClose={function() { setOpen(false); }} title="Found Money">
+        <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+          <div style={{ flex: 1, background: T.greenDim, borderRadius: 14, padding: "12px 14px" }}>
+            <div style={{ fontSize: 9.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em" }}>Recoverable / year</div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: T.green, letterSpacing: "-0.02em", marginTop: 3 }}>{dollars(recoverable)}</div>
+          </div>
+          <div style={{ flex: 1, background: "rgba(0,0,0,0.04)", borderRadius: 14, padding: "12px 14px" }}>
+            <div style={{ fontSize: 9.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em" }}>Recovered so far</div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", marginTop: 3 }}>{dollars(tally)}</div>
+          </div>
+        </div>
+
+        {findings.length > 0 && (
+          <div style={{ background: "rgba(200,103,58,0.06)", borderRadius: 14, padding: "12px 14px", marginBottom: 14 }}>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Richard</div>
+            {narrLoading
+              ? <div style={{ fontSize: 13.5, color: T.ink3, fontStyle: "italic" }}>Reviewing your spending...</div>
+              : <RichardText text={narr} size={13.5} />}
+          </div>
+        )}
+
+        {findings.map(function(f) {
+          var st = typeStyle(f.type);
+          var canDraft = f.type === "recurring" || f.type === "hike";
+          return (
+            <div key={f.id} style={{ background: T.card, borderRadius: 16, padding: "13px 14px", marginBottom: 10, boxShadow: cardShadow }}>
+              <div style={{ display: "flex", gap: 11, alignItems: "flex-start" }}>
+                <IconBadge icon={st.icon} bg={st.color} size={34} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>{f.title}</span>
+                    {f.annual > 0 && <span style={{ fontSize: 13, fontWeight: 700, color: T.green, flexShrink: 0 }}>{dollars(f.annual) + "/yr"}</span>}
+                  </div>
+                  <div style={{ fontSize: 12, color: T.ink3, marginTop: 3, lineHeight: 1.45 }}>{f.subtitle}</div>
+
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 10 }}>
+                    {canDraft && <button onClick={function() { makeDraft(f); }} style={primaryBtn}>{f.type === "hike" ? "Draft price-match" : "Draft cancellation"}</button>}
+                    {f.type === "duplicate" && <button onClick={function() { resolve(f, f.amount); }} style={primaryBtn}>Count as recovered</button>}
+                    <button onClick={function() { resolve(f, 0); }} style={ghostBtn}>{dismissLabel(f.type)}</button>
+                  </div>
+
+                  {draft && draft.id === f.id && (
+                    <div style={{ marginTop: 11, background: "rgba(0,0,0,0.035)", borderRadius: 12, padding: "11px 13px" }}>
+                      {draft.loading
+                        ? <div style={{ fontSize: 13, color: T.ink3, fontStyle: "italic" }}>Richard is writing it...</div>
+                        : <div>
+                            <div style={{ fontSize: 13, color: T.ink, lineHeight: 1.55, whiteSpace: "pre-wrap" }}>{draft.text}</div>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 10 }}>
+                              <button onClick={copyDraft} style={primaryBtn}>{copied ? "Copied" : "Copy message"}</button>
+                              <button onClick={function() { resolve(f, creditOf(f)); }} style={ghostBtn}>{"I did it (+" + dollars(creditOf(f)) + ")"}</button>
+                            </div>
+                          </div>}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {findings.length === 0 && (
+          <div style={{ textAlign: "center", padding: "24px 10px", color: T.ink3 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, marginBottom: 4 }}>You've reviewed everything</div>
+            <div style={{ fontSize: 13 }}>Richard keeps watching as new spending comes in.</div>
+          </div>
+        )}
+
+        <div style={{ fontSize: 11, color: T.ink3, lineHeight: 1.5, margin: "6px 2px 0", textAlign: "center" }}>
+          Spotted from your logged spending - always confirm before you cancel. Richard drafts the message; you send it.
+        </div>
+      </Overlay>
+    </div>
+  );
+}
+
 function Overview(props) {
   var tx       = props.tx;
   var goals    = props.goals;
@@ -2440,6 +2658,8 @@ function Overview(props) {
         </div>
       )}
 
+      <FoundMoney tx={tx} categories={cats} foundMoney={props.foundMoney} onSaveFoundMoney={props.onSaveFoundMoney} richardInstructions={props.richardInstructions} lang={props.lang} />
+
       <div style={{ animation: "rcFadeUp 0.6s ease 0.09s both" }}>
         <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -2779,6 +2999,223 @@ function suggestCatId(label, txList, cats) {
 // duplicates within the same file. type + date + abs amount + first chars of label.
 function dupKey(type, date, amount, label) {
   return (type || "") + "|" + (date || "") + "|" + Number(amount || 0).toFixed(2) + "|" + (label || "").toLowerCase().trim().slice(0, 40);
+}
+
+// ===== FOUND MONEY ============================================================
+// A deterministic audit of the user's OWN transactions. Every figure here is
+// computed from real tx data (never invented by the model), so the numbers can
+// be trusted - Richard only narrates and drafts on top of these findings.
+
+// Merchant fragments that are almost always recurring subscriptions/memberships.
+// A strong recurring hint even from a single charge. Kept deliberately specific
+// to avoid flagging ordinary retail (e.g. "amazon prime" not bare "amazon").
+var SUBSCRIPTION_HINTS = ["netflix", "spotify", "hulu", "disney", "hbo", "youtube premium", "playstation plus", "xbox game", "icloud", "dropbox", "adobe", "patreon", "audible", "amazon prime", "prime video", "paramount", "peacock", "crunchyroll", "canva", "chatgpt", "midjourney", "membership", "gym", "fitness", "planet fitness"];
+
+// Collapse a label to a stable merchant key so "NETFLIX #1123", "Netflix.com"
+// and "NETFLIX" group together.
+function normalizeMerchant(label) {
+  var s = (label || "").toLowerCase();
+  s = s.replace(/[#*].*$/, " ");                 // drop store/ref after # or *
+  s = s.replace(/\d{2,}/g, " ");                 // drop long digit runs (ids/dates)
+  s = s.replace(/[^a-z0-9&]+/g, " ");            // punctuation -> space
+  s = s.replace(/\b(inc|llc|ltd|co|com|www|the|payment|pmt|recurring|autopay|pos|purchase|debit|card)\b/g, " ");
+  return s.replace(/\s+/g, " ").trim();
+}
+
+function looksLikeSubscription(label) {
+  var s = (label || "").toLowerCase();
+  for (var i = 0; i < SUBSCRIPTION_HINTS.length; i++) { if (s.indexOf(SUBSCRIPTION_HINTS[i]) !== -1) return true; }
+  return false;
+}
+
+// A real outflow worth auditing: not opening balance, internal transfer, future
+// dated, or pending.
+function isAuditableExpense(t, todayISO) {
+  return !!(t && t.type === "expense" && !isOpening(t) && !isTransfer(t) && !t.pending && (!t.date || t.date <= todayISO));
+}
+
+function fmDaysBetween(a, b) {
+  return Math.abs((new Date(a + "T12:00:00") - new Date(b + "T12:00:00")) / 86400000);
+}
+function fmMedian(nums) {
+  if (!nums.length) return 0;
+  var s = nums.slice().sort(function(a, b) { return a - b; });
+  var mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+}
+
+// Group auditable expenses by normalized merchant, newest charge first.
+function groupByMerchant(tx, todayISO) {
+  var groups = {};
+  (tx || []).forEach(function(t) {
+    if (!isAuditableExpense(t, todayISO)) return;
+    var key = normalizeMerchant(t.label);
+    if (!key) return;
+    (groups[key] = groups[key] || []).push(t);
+  });
+  Object.keys(groups).forEach(function(k) {
+    groups[k].sort(function(a, b) { return (b.date || "").localeCompare(a.date || ""); });
+  });
+  return groups;
+}
+
+// A merchant is "recurring" when its charges land on a roughly monthly cadence,
+// repeat the same amount across months, are user-flagged repeat, or the name is
+// a known subscription brand.
+function detectRecurring(tx, cats) {
+  var todayISO = new Date().toISOString().slice(0, 10);
+  var groups = groupByMerchant(tx, todayISO);
+  var out = [];
+  Object.keys(groups).forEach(function(key) {
+    var items = groups[key];
+    var label = items[0].label || key;
+    var amounts = items.map(function(t) { return t.amount; });
+    var monthlyAmt = fmMedian(amounts);
+    if (monthlyAmt <= 0) return;
+
+    var gaps = [];
+    for (var i = 0; i < items.length - 1; i++) gaps.push(fmDaysBetween(items[i].date, items[i + 1].date));
+    var medGap = fmMedian(gaps);
+    var monthlyCadence = items.length >= 3 && medGap >= 24 && medGap <= 35;
+
+    var months = {};
+    items.forEach(function(t) { months[(t.date || "").slice(0, 7)] = true; });
+    var nearMedian = items.filter(function(t) { return Math.abs(t.amount - monthlyAmt) <= monthlyAmt * 0.05 + 0.01; }).length;
+    var sameAmtAcrossMonths = Object.keys(months).length >= 2 && nearMedian >= 2;
+
+    var flaggedMonthly = items.some(function(t) { return t.repeat === "monthly"; });
+    var flaggedWeekly = items.some(function(t) { return t.repeat === "weekly"; });
+    var brand = looksLikeSubscription(label);
+    var consistent = nearMedian === items.length;   // every charge ~the same
+
+    var isRecurring = monthlyCadence || sameAmtAcrossMonths || flaggedMonthly || flaggedWeekly || (brand && consistent);
+    if (!isRecurring) return;
+
+    var cadence = flaggedWeekly ? "weekly" : "monthly";
+    var perMonth = cadence === "weekly" ? monthlyAmt * 4.33 : monthlyAmt;
+    var c = catById(cats, items[0].catId);
+    out.push({
+      key: key, merchant: label, amount: round2(monthlyAmt), cadence: cadence,
+      count: items.length, lastDate: items[0].date, catId: items[0].catId,
+      categoryName: (c && c.name) || items[0].category || "", annual: round2(perMonth * 12),
+      items: items
+    });
+  });
+  out.sort(function(a, b) { return b.annual - a.annual; });
+  return out;
+}
+
+// Within a recurring group, a sustained jump in the charge amount.
+function detectPriceHikes(recurringGroups) {
+  var out = [];
+  (recurringGroups || []).forEach(function(g) {
+    var items = g.items;
+    if (!items || items.length < 3) return;
+    var newest = items[0].amount;
+    var base = fmMedian(items.slice(1).map(function(t) { return t.amount; }));
+    if (base <= 0) return;
+    if (newest >= base * 1.1 && (newest - base) >= 0.5) {
+      out.push({
+        key: "hike-" + g.key, merchant: g.merchant, oldAmt: round2(base), newAmt: round2(newest),
+        deltaPct: Math.round(((newest - base) / base) * 100), annualImpact: round2((newest - base) * 12),
+        catId: g.catId, categoryName: g.categoryName
+      });
+    }
+  });
+  return out;
+}
+
+// Same merchant + same amount within 3 days => possible double charge.
+function detectDuplicates(tx) {
+  var todayISO = new Date().toISOString().slice(0, 10);
+  var byKey = {};
+  (tx || []).forEach(function(t) {
+    if (!isAuditableExpense(t, todayISO)) return;
+    var k = normalizeMerchant(t.label) + "|" + Math.round(t.amount * 100);
+    (byKey[k] = byKey[k] || []).push(t);
+  });
+  var out = [];
+  Object.keys(byKey).forEach(function(k) {
+    var arr = byKey[k].sort(function(a, b) { return (a.date || "").localeCompare(b.date || ""); });
+    for (var i = 0; i < arr.length - 1; i++) {
+      if (fmDaysBetween(arr[i].date, arr[i + 1].date) <= 3) {
+        out.push({
+          key: "dup-" + dupKey(arr[i + 1].type, arr[i + 1].date, arr[i + 1].amount, arr[i + 1].label),
+          merchant: arr[i].label, amount: round2(arr[i + 1].amount), dates: [arr[i].date, arr[i + 1].date],
+          catId: arr[i + 1].catId, categoryName: arr[i + 1].category || ""
+        });
+      }
+    }
+  });
+  return out;
+}
+
+// A category whose spend this month is well above its trailing average.
+function detectCategoryJumps(tx, cats) {
+  var todayISO = new Date().toISOString().slice(0, 10);
+  var ym = todayISO.slice(0, 7);
+  function monthKey(offset) { var d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - offset); return d.toISOString().slice(0, 7); }
+  var priorMonths = [monthKey(1), monthKey(2), monthKey(3)];
+  var out = [];
+  (cats || []).forEach(function(c) {
+    function catMonth(m) {
+      return (tx || []).filter(function(t) { return isAuditableExpense(t, todayISO) && (t.date || "").slice(0, 7) === m && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    }
+    var thisM = catMonth(ym);
+    if (thisM < 1) return;
+    var priors = priorMonths.map(catMonth).filter(function(v) { return v > 0; });
+    if (priors.length < 2) return;
+    var avg = priors.reduce(function(s, v) { return s + v; }, 0) / priors.length;
+    if (avg <= 0 || thisM < avg * 1.4 || (thisM - avg) < 1) return;
+    out.push({
+      key: "jump-" + c.id + "-" + ym, category: c.name, catId: c.id,
+      thisMonth: round2(thisM), avg: round2(avg), pct: Math.round(((thisM - avg) / avg) * 100), extra: round2(thisM - avg)
+    });
+  });
+  out.sort(function(a, b) { return b.extra - a.extra; });
+  return out;
+}
+
+// Unify all detectors into one ranked list. Each finding has a STABLE id (so a
+// user's dismiss/keep persists across sessions) and an `annual` figure used for
+// ranking and the "found you $X" math.
+function findMoney(tx, cats) {
+  var findings = [];
+  var recurring = detectRecurring(tx, cats);
+  recurring.forEach(function(g) {
+    findings.push({
+      id: "rec:" + g.key, type: "recurring", title: g.merchant,
+      subtitle: dollars(g.amount) + "/" + (g.cadence === "weekly" ? "wk" : "mo") + " - " + g.count + " charge" + (g.count === 1 ? "" : "s") + ", last " + g.lastDate,
+      amount: g.amount, annual: g.annual, merchant: g.merchant, catId: g.catId, categoryName: g.categoryName, meta: g
+    });
+  });
+  detectPriceHikes(recurring).forEach(function(h) {
+    findings.push({
+      id: h.key, type: "hike", title: h.merchant + " went up " + h.deltaPct + "%",
+      subtitle: dollars(h.oldAmt) + " to " + dollars(h.newAmt) + " - " + dollars(h.annualImpact) + "/yr more",
+      amount: round2(h.newAmt - h.oldAmt), annual: h.annualImpact, merchant: h.merchant, catId: h.catId, categoryName: h.categoryName, meta: h
+    });
+  });
+  detectDuplicates(tx).forEach(function(d) {
+    findings.push({
+      id: d.key, type: "duplicate", title: "Possible double charge - " + d.merchant,
+      subtitle: dollars(d.amount) + " twice (" + d.dates[0] + " and " + d.dates[1] + ")",
+      amount: d.amount, annual: 0, merchant: d.merchant, catId: d.catId, categoryName: d.categoryName, meta: d
+    });
+  });
+  detectCategoryJumps(tx, cats).forEach(function(j) {
+    findings.push({
+      id: j.key, type: "jump", title: j.category + " jumped " + j.pct + "% this month",
+      subtitle: dollars(j.thisMonth) + " vs " + dollars(j.avg) + " avg - " + dollars(j.extra) + " over",
+      amount: j.extra, annual: 0, merchant: "", catId: j.catId, categoryName: j.category, meta: j
+    });
+  });
+  // Annualized recoverable (recurring + hikes) first, then one-off informational.
+  findings.sort(function(a, b) {
+    if ((b.annual || 0) !== (a.annual || 0)) return (b.annual || 0) - (a.annual || 0);
+    return (b.amount || 0) - (a.amount || 0);
+  });
+  return findings;
 }
 
 function ImportSheet(props) {
@@ -7418,6 +7855,11 @@ export default function App() {
   var onboardingData = _oda[0]; var setOnboardingData = _oda[1];
   var _em = useState("manual");
   var entryMethod = _em[0]; var setEntryMethod = _em[1];
+  // Found Money: only the user's DECISIONS persist (the running tally, dismissed
+  // finding ids, and a log of acted items). Findings themselves are recomputed
+  // from tx each session by findMoney().
+  var _fm = useState({ tally: 0, dismissed: [], acted: [] });
+  var foundMoney = _fm[0]; var setFoundMoney = _fm[1];
   // Collab / couples mode. householdId points at the shared households/{hid} doc;
   // household is the live mirror of it (members + invites); sharedData is the
   // live mirror of shared budgets/goals/categories/tx for efficient delta-sync.
@@ -7450,6 +7892,7 @@ export default function App() {
     // shared household doc (an emergency fund isn't joint money).
     setSavings(data.savings || []);
     setNotes(data.notes || []);
+    setFoundMoney(data.foundMoney || { tally: 0, dismissed: [], acted: [] });
     setFolders((data.folders && data.folders.length) ? data.folders : freshFolders());
     setCategories(allCategories.length ? allCategories : ((data.categories && data.categories.length) ? data.categories : freshCategories()));
     var sym = data.currency || "$";
@@ -7608,7 +8051,7 @@ export default function App() {
     blobRef.current = {};
     setUser(null); setAccountKey(null); setTab("overview");
     setHouseholdId(null); setHousehold(null); setInvites([]);
-    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setNotes([]); setFolders([]); setCategories([]);
+    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] });
     _lang.code = "en"; setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang("en"); applyTheme("purple"); setTheme("purple");
   }
 
@@ -7617,7 +8060,7 @@ export default function App() {
     var existing = blobRef.current || {};
     var blob = {};
     for (var ek in existing) blob[ek] = existing[ek];
-    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.savings = savings; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme;
+    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.savings = savings; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme; blob.foundMoney = foundMoney;
     for (var k in next) blob[k] = next[k];
     blobRef.current = blob;
     // Debounce Firestore writes: coalesce rapid successive saves (e.g. typing)
@@ -7637,6 +8080,7 @@ export default function App() {
   function onSaveTx(next) { setTx(next); save({ tx: next }); }
   function onSaveBudgets(next) { setBudgets(next); save({ budgets: next }); }
   function onSaveGoals(next) { setGoals(next); save({ goals: next }); }
+  function onSaveFoundMoney(next) { setFoundMoney(next); save({ foundMoney: next }); }
   function onSaveNotes(next) { setNotes(next); save({ notes: next }); }
   function onSettleNote(nextTx, nextNotes) { setTx(nextTx); setNotes(nextNotes); save({ tx: nextTx, notes: nextNotes }); }
   function onSaveTrips(next) { setTrips(next); save({ trips: next }); }
@@ -7852,7 +8296,7 @@ export default function App() {
       </div>
 
       <div style={{ padding: "8px 16px 0" }}>
-        {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} username={user} plan={planJustCreated ? richPlan : ""} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} />}
+        {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardInstructions} lang={lang} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} />}
         {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} onSavingsMove={onSavingsMove} />}
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}

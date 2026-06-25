@@ -60,8 +60,21 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).t
     { id: 4, type: "expense", amount: 420,  label: "Whole Foods",     catId: "c2", category: "Food",          date: iso(7) },
     { id: 5, type: "expense", amount: 95,   label: "Uber",            catId: "c3", category: "Transport",     date: iso(5) },
     { id: 6, type: "expense", amount: 260,  label: "Dinner",          catId: "c2", category: "Food",          date: iso(3) },
-    { id: 7, type: "expense", amount: 140,  label: "Netflix",         catId: "c5", category: "Entertainment", date: iso(2) },
-    { id: 8, type: "expense", amount: 600,  label: "Flights",         catId: "c7", category: "Travel",        date: iso(1) }
+    { id: 8, type: "expense", amount: 600,  label: "Flights",         catId: "c7", category: "Travel",        date: iso(1) },
+    // Spotify - clean monthly subscription (3 charges, ~30d apart, same amount).
+    { id: 10, type: "expense", amount: 10.99, label: "Spotify",       catId: "c5", category: "Entertainment", date: iso(66) },
+    { id: 11, type: "expense", amount: 10.99, label: "Spotify",       catId: "c5", category: "Entertainment", date: iso(36) },
+    { id: 12, type: "expense", amount: 10.99, label: "Spotify",       catId: "c5", category: "Entertainment", date: iso(6) },
+    // Netflix - monthly subscription WITH a price hike (15.49 -> 17.99).
+    { id: 13, type: "expense", amount: 15.49, label: "Netflix",       catId: "c5", category: "Entertainment", date: iso(70) },
+    { id: 14, type: "expense", amount: 15.49, label: "Netflix",       catId: "c5", category: "Entertainment", date: iso(40) },
+    { id: 15, type: "expense", amount: 17.99, label: "Netflix",       catId: "c5", category: "Entertainment", date: iso(8) },
+    // Adobe - higher-value subscription across two months.
+    { id: 16, type: "expense", amount: 52.99, label: "Adobe",         catId: "c6", category: "Shopping",      date: iso(34) },
+    { id: 17, type: "expense", amount: 52.99, label: "Adobe",         catId: "c6", category: "Shopping",      date: iso(4) },
+    // Best Buy - a possible double charge (same amount, one day apart).
+    { id: 18, type: "expense", amount: 89.99, label: "Best Buy",      catId: "c6", category: "Shopping",      date: iso(6) },
+    { id: 19, type: "expense", amount: 89.99, label: "Best Buy",      catId: "c6", category: "Shopping",      date: iso(5) }
   ];
   var mockGoals = [{ id: 1, name: "Emergency Fund", target: 10000, saved: 3500 }];
 
