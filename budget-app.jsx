@@ -8573,7 +8573,7 @@ export default function App() {
             return (
               <button key={tab.id} onClick={function() { setTab(tab.id); setSheet(false); }}
                 style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "4px 4px", flex: 1, minWidth: 0 }}>
-                <div style={{ background: active ? T.ink : "none", borderRadius: 14, padding: active ? "6px 11px" : "6px 9px", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s", boxShadow: active ? "0 2px 8px rgba(0,0,0,0.18)" : "none" }}>
+                <div style={{ background: active ? T.orange : "none", borderRadius: 14, padding: active ? "6px 11px" : "6px 9px", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s", boxShadow: active ? "0 2px 8px " + T.orangeGlow : "none" }}>
                   <SVGIcon id={tab.id} size={21} color={active ? "#fff" : T.ink3} />
                 </div>
                 <span style={{ fontSize: 9.5, fontWeight: active ? 700 : 400, color: active ? T.orange : T.ink3, letterSpacing: "0.005em", whiteSpace: "nowrap" }}>
