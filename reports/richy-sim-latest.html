@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Richy · User Simulation Report</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root{
+    --bg:#141210; --card:#1E1B18; --cardDark:#252218; --accent:#C8673A; --accentLight:#E07848;
+    --text:#F0EBE3; --muted:#9E9690; --green:#27A85F; --red:#E03030; --gold:#C8983A; --purple:#9B6DB5;
+    --border:rgba(255,255,255,0.06);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,system-ui,sans-serif;}
+  .wrap{max-width:1200px;margin:0 auto;padding:28px 20px 60px;}
+  h1{font-size:30px;font-weight:800;margin:0 0 4px;letter-spacing:-0.02em;}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:24px;}
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:32px;}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;}
+  .stat .label{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:8px;}
+  .stat .val{font-size:24px;font-weight:800;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;}
+  .chartcard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;}
+  .chartcard .label{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:12px;}
+  .canvas-wrap{height:260px;position:relative;}
+  table{width:100%;border-collapse:collapse;background:var(--card);border-radius:16px;overflow:hidden;font-size:13px;}
+  th{text-align:left;padding:12px 10px;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid var(--border);}
+  td{padding:11px 10px;border-bottom:1px solid var(--border);}
+  tr:nth-child(even) td{background:rgba(255,255,255,0.015);}
+  .cell-red{background:rgba(224,48,48,0.18)!important;font-weight:700;}
+  .cell-gold{background:rgba(200,152,58,0.18)!important;font-weight:700;}
+  .cell-green{background:rgba(39,168,95,0.18)!important;font-weight:700;}
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
+  .pill-kept{background:rgba(39,168,95,0.2);color:#5fd991;}
+  .pill-gave{background:rgba(224,48,48,0.2);color:#ff7a6b;}
+  h2{font-size:16px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin:36px 0 14px;}
+  .acc{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;}
+  .acc-head{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;}
+  .acc-head .nm{font-weight:700;flex:1;}
+  .acc-head .arch{color:var(--muted);font-size:12px;}
+  .badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;background:var(--cardDark);}
+  .chev{transition:transform .25s;color:var(--muted);}
+  .acc.open .chev{transform:rotate(90deg);}
+  .acc-body{max-height:0;overflow:hidden;transition:max-height .3s ease;}
+  .acc.open .acc-body{max-height:1200px;}
+  .acc-inner{padding:0 16px 16px;}
+  .acc-inner p{color:var(--muted);line-height:1.65;font-size:14px;margin:10px 0;}
+  .fav{color:var(--text);font-size:13px;margin-top:10px;}
+  .fav b,.gave b{color:var(--muted);font-weight:600;}
+  .gave{color:#ff9b8f;font-size:13px;margin-top:8px;}
+  .tags{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;}
+  .tag{background:rgba(200,103,58,0.18);color:var(--accentLight);font-size:11px;padding:4px 9px;border-radius:999px;}
+  @media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr);}.grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Richy · User Simulation Report</h1>
+  <div class="sub">June 23, 2026 — Cohort: 10 personas</div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="grid">
+    <div class="chartcard"><div class="label">First Impression Scores</div><div class="canvas-wrap"><canvas id="c1"></canvas></div></div>
+    <div class="chartcard"><div class="label">AI Advisor Usefulness</div><div class="canvas-wrap"><canvas id="c2"></canvas></div></div>
+    <div class="chartcard"><div class="label">Impression vs. Time to Decide</div><div class="canvas-wrap"><canvas id="c3"></canvas></div></div>
+    <div class="chartcard"><div class="label">Kept vs. Gave Up</div><div class="canvas-wrap"><canvas id="c4"></canvas></div></div>
+    <div class="chartcard"><div class="label">NPS Scores</div><div class="canvas-wrap"><canvas id="c5"></canvas></div></div>
+    <div class="chartcard"><div class="label">Missing Feature Frequency</div><div class="canvas-wrap"><canvas id="c6"></canvas></div></div>
+    <div class="chartcard"><div class="label">Max Willingness to Pay ($/mo)</div><div class="canvas-wrap"><canvas id="c7"></canvas></div></div>
+    <div class="chartcard"><div class="label">Likelihood to Buy at $5/mo (%)</div><div class="canvas-wrap"><canvas id="c8"></canvas></div></div>
+  </div>
+
+  <h2>Summary</h2>
+  <table id="tbl">
+    <thead><tr><th>Persona</th><th>Archetype</th><th>Country</th><th>Impr.</th><th>AI</th><th>NPS</th><th>WTP</th><th>Buy@$5</th><th>Decision</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Full Opinions</h2>
+  <div id="acc"></div>
+</div>
+
+<script>
+const REPORT_DATE = "June 23, 2026";
+const data = [
+{persona:"Tunde Adebayo (21, College student)",short:"Tunde",archetype:"College student",country:"Nigeria",firstImpressionScore:7,aiUsefulnessScore:7,wouldGiveUp:false,giveUpReason:"",minutesBeforeDecision:13,missingFeatures:["Sync/import from Nigerian mobile money (Opay, Kuda, Palmpay) or bank app","Quick-add or shortcut so manual logging isn't so tedious","Allowance/budget-period framing rather than just income","A way to import without a formal CSV bank statement","Roommate/shared-bill splitting"],favoriteThing:"That ₦ is a real, properly formatted currency and Richard actually understood my allowance problem instead of giving generic American advice",fullOpinion:"Okay, first relief: it actually supports Naira. Properly formatted, ₦ symbol, real Nigerian currency in the list — I half expected to be stuck choosing dollars and doing mental math forever, so that alone made me keep going at 2am. The onboarding questionnaire was longer than I wanted but it was 1am-me's own fault for being curious, and the questions were the right ones: biggest challenge, income, goal. When Richard spat out the plan it actually spoke to MY thing — allowance running out before the semester — not some generic 'cut your latte' nonsense. That's the moment I thought, yeah, I can show my dad this. The hero carousel and the donut and savings-rate ring are genuinely slick; for a free app the design embarrasses some paid ones.\n\nThe wall I hit, and the one that'll decide whether I'm still here in three weeks: everything is manual. I don't keep a bank statement to export — my money lives in Opay and Kuda and cash for the generator fuel — and the CSV import basically assumes I have a tidy statement I'd download, which I don't. So 'import' is theoretically there but useless to me, and that leaves typing in every transaction by hand. At 2am that's fine, I logged a few and it felt productive. But I already know future-me, mid-semester, debugging at 3am, is not going to remember to log a ₦1,500 suya. That's the real risk. I'll keep it because the point I'm trying to prove to my dad is worth the effort for now, and Richard plus the Naira support are genuinely good — but if they don't make logging faster or connect to mobile money, I'll quietly stop opening it.",npsScore:6,maxWTPPerMonth:0,likelihoodToBuyAt5:8},
+{persona:"Mai Linh Pham (27, Young professional)",short:"Mai",archetype:"Young professional",country:"Vietnam",firstImpressionScore:8,aiUsefulnessScore:6,wouldGiveUp:false,giveUpReason:"",minutesBeforeDecision:11,missingFeatures:["A remittance / family-support category so money sent to parents isn't counted as plain spending","Bank/e-wallet sync (Momo, bank) so I'm not hand-entering every transaction","Ability to mark a recurring transfer as a 'commitment' separate from discretionary spend so the savings rate is honest"],favoriteThing:"The craft of the UI — lavender hero, the animated savings-rate ring, and ₫ formatted with zero decimals instead of fake cents",fullOpinion:"Honestly, as a designer this is the most polished budgeting app I've opened in a while, and that's most of why I'm keeping it. The onboarding had real care: 8 languages, 50 currencies, ₫ rendered with no decimal places (so many 'global' apps slap .00 on dong and out themselves instantly), live FX conversion right in the add-transaction sheet, the bottom-sheet overlays, the rings that actually animate. The questionnaire was longer than I'd like for a lunch break but it felt like it was building toward something, and Richard's plan did speak to lifestyle creep specifically, which is exactly the fear that made me download it. The fact that the AI openly admitted it can't sync my bank instead of pretending bought it a lot of trust.\n\nThe thing gnawing at me is the remittance blind spot. The chunk I send my parents every month gets logged as ordinary 'spending,' so my savings rate ring flashed something like 'Overspending' and Richard's verdict felt subtly wrong — it's reading a non-negotiable family commitment as me being undisciplined. That's the one number I came here to get right, and it's the one the app frames worst. There's no concept of family support or a way to flag a transfer as a fixed obligation, so every month I'd have to mentally discount the headline judgment. Combine that with no bank sync meaning I hand-key everything, and I can already feel the friction that kills these apps by week three.\n\nSo: I'm keeping it, leaning impressed, but on probation. If they shipped a remittance/commitments concept I'd happily pay — I work at a fintech, I know good design is worth money. Right now I'd pay a little for the polish and the AI, but not full price while the core verdict misreads my actual life.",npsScore:7,maxWTPPerMonth:4,likelihoodToBuyAt5:45},
+{persona:"Diego Marenco (38, Working parent)",short:"Diego",archetype:"Working parent",country:"Costa Rica",firstImpressionScore:6,aiUsefulnessScore:6,wouldGiveUp:false,giveUpReason:"",minutesBeforeDecision:11,missingFeatures:["Shared/couples mode so my wife's part-time income and spending can be in the app without me retyping it","Bank sync or auto-import so I don't log every transaction by hand","An interest-aware debt/payment calculator instead of just a 'who owes who' note","Multi-earner household income setup","A way to import the family spreadsheet I already keep"],favoriteThing:"The Goals ring for a Braces savings target with a clear amount and timeline",fullOpinion:"I came in tonight with the orthodontist's number still burning in my phone, and honestly the first thing that helped was small but real: Richard asked what my biggest challenge was, I said unexpected costs, and the plan he wrote actually talked about building a cushion for things like braces instead of generic 'spend less on coffee' advice. Then I made a Goal called Braces, put the target in colones, set a timeline, and watching that ring fill in gave me a concrete reason to come back. That's the part that landed. The app reads my currency right, the colon symbol shows up, the screens are clean and not intimidating for someone like me who is not a finance person.\n\nWhat frustrated me is that this is built for one person. My wife earns part-time, she does half the shopping, and there's no way to put her in here. So either the picture is wrong or I sit here every night retyping her spending from memory, and I already failed at keeping our shared spreadsheet. The CatchUp screen wanted me to remember a month of category spending from my head, which is exactly the thing I'm bad at. And there's no bank connection, so every coffee and grocery run is a manual entry. For a tired teacher at 9pm, that's a lot of friction for an app that's supposed to find the leak.\n\nI'll keep it for now, mostly because of the braces goal, but I'm not confident it survives a busy week. If logging stays this manual and my wife can't be part of it, I'll drift back to the spreadsheet I already ignore.",npsScore:3,maxWTPPerMonth:2,likelihoodToBuyAt5:15},
+{persona:"Priya Nair (33, Freelancer)",short:"Priya",archetype:"Freelancer",country:"India",firstImpressionScore:3,aiUsefulnessScore:2,wouldGiveUp:true,giveUpReason:"Richy asks for one fixed 'monthly income' — the exact wrong assumption for irregular freelance earnings — and has no income-smoothing or ring-fenced tax bucket, which is the only reason I downloaded it.",minutesBeforeDecision:6,missingFeatures:["Irregular-income smoothing (turn lumpy income into a steady 'salary')","Ring-fenced tax set-aside bucket separate from spendable balance","Income-forecasting / runway buffer for slow months","Invoice/client tracking for freelancers","Tax-rate logic per region (Indian advance tax)"],favoriteThing:"nothing",fullOpinion:"I came here for one specific thing the forum promised: a way to turn my lumpy, heart-monitor freelance income into a steady fake 'salary' and ring-fence my tax money so I stop spending it. The very first onboarding step asked me for my 'monthly income' as if I get a clean salary on the 1st. I don't. Some months it's two lakh, some months a client ghosts me on an eighty-five-thousand-rupee invoice and it's nothing. Putting one number there is a lie, and the whole app is built on that lie.\n\nI poked at the savings pots hoping that was the tax bucket I needed, but they count toward net worth and can't smooth a dead month — so they don't ring-fence anything, they just relabel money I might still spend. Richard's plan told me to 'save 10% first,' which is laughably useless to someone who just got stiffed on an invoice and doesn't know if rent is covered next month. Nice donut charts, sure, but they're decorating the wrong problem. This isn't built for freelancers, it's built for people with payslips. I'm out.",npsScore:-8,maxWTPPerMonth:0,likelihoodToBuyAt5:2},
+{persona:"Halina Kovalenko (67, Retiree)",short:"Halina",archetype:"Retiree",country:"Poland",firstImpressionScore:3,aiUsefulnessScore:1,wouldGiveUp:true,giveUpReason:"The CatchUp screen asked her to recall and type a month's worth of spending across many small category boxes from memory, which overwhelmed and embarrassed her, so she set the phone down.",minutesBeforeDecision:6,missingFeatures:["A simple way to start without recalling past spending from memory","Larger text and buttons for older eyes and nervous fingers","A guided, one-thing-at-a-time setup instead of a dense form","Option to just track groceries without filling everything in","Ability to ask her daughter for help or have it pre-filled"],favoriteThing:"nothing",fullOpinion:"My daughter set this up for me on Sunday and promised it would help me see where the grocery money goes. But when she left, I got to a screen asking me to remember how much I spent this month on so many things, all in these tiny little boxes. I don't remember what I spent last week, let alone the whole month. I sat there feeling foolish, afraid I would type the wrong number in the wrong place and ruin it. My hands aren't steady on these little screens and the writing is so small.\n\nI didn't want all this. I only wanted to understand my groceries against my pension, because the heating has gone up and I worry about leaning on my daughter. Instead it made me feel like I was failing a test. I put the phone down and made tea. Maybe when my daughter visits she can do it for me, but on my own, no. It was too much.",npsScore:-8,maxWTPPerMonth:0,likelihoodToBuyAt5:2},
+{persona:"Yonas Tesfaye (31, Recent immigrant)",short:"Yonas",archetype:"Recent immigrant",country:"Canada",firstImpressionScore:6,aiUsefulnessScore:5,wouldGiveUp:false,giveUpReason:"",minutesBeforeDecision:11,missingFeatures:["A remittance or family-support category that isn't treated as plain overspending","Showing two currencies at once (CAD life and ETB obligations together)","Bank sync so I don't enter every transaction by hand","A way to plan for my wife arriving (household size change)","Interest-aware budgeting for the credit I'm carrying"],favoriteThing:"The savings pot for my wife's flight, sitting outside my spendable balance",fullOpinion:"I downloaded this the night my balance scared me before payday, so I came in tense. Onboarding was longer than I wanted, but the questions felt like they were actually listening, and when Richard wrote back a plan that named my exact situation, supporting family back home while saving for my wife to arrive, I slowed down. It didn't pretend everything was fine, which I respected. Then I made a savings pot for the flight and watched it sit apart from my spendable money, and that is the thing that made me keep the app. That pot is the wall between my fear and my rent money. I can see it growing without it being something I can casually spend, and for the first time the flight feels like a real number instead of a knot in my chest.\n\nWhat frustrated me is that the most important money in my life, the remittance to Addis, just shows up as a giant expense that drags my savings rate down and makes Richard's encouraging tone feel a little hollow. That money isn't waste, it's an obligation, and the app has no idea what it means. And I live in two currencies, my paycheck in CAD and my responsibilities in ETB, but the app only shows me one at a time, so the two halves of my life never sit on the same screen. Having to type in every transaction by hand with no bank connection also means I'll probably get lazy about it once the fear wears off.\n\nSo I'm keeping it, mostly for the pot and because Richard felt honest. But it understands the saving-for-my-wife half of me and is blind to the supporting-my-family half, and that blind spot is exactly the part that keeps me up at night.",npsScore:3,maxWTPPerMonth:3,likelihoodToBuyAt5:25},
+{persona:"Brett Halloran (36, High earner / low saver)",short:"Brett",archetype:"High earner / low saver",country:"Australia",firstImpressionScore:5,aiUsefulnessScore:3,wouldGiveUp:true,giveUpReason:"The whole point was to find out where my money goes without doing accounting, but Richy has no bank sync and no auto-categorization — the only way to get an answer is to type a month of spending from memory.",minutesBeforeDecision:7,missingFeatures:["Bank and credit-card sync","Automatic transaction categorization","Statement auto-import without manual cleanup","Spending insights that work with zero manual data entry"],favoriteThing:"The animated trend line chart looked slick",fullOpinion:"Downloaded this in the Uber home after a mate asked where all my money's going. The onboarding was fine, Richard had a bit of personality, and the charts genuinely look good — I caught myself watching that trend line animate in. For about three minutes I thought this might actually tell me something.\n\nThen I hit the catch-up screen and it wanted me to sit there and type out roughly what I'd spent on restaurants, golf, the card, all of it, from memory. That's the whole problem — I don't KNOW where it went, that's why I'm here, and if I'm honest I'm not going to hand-enter every coffee and bar tab forever either. No bank sync, no card connection, nothing automatic. It's a slick-looking spreadsheet I have to feed by hand. On 165k I don't have the patience or the time for data entry. I bailed two categories in. If it ever connected to my bank and just showed me the damage, I'd pay for it tomorrow — but as it stands it can't answer the one question I came with.",npsScore:-6,maxWTPPerMonth:12,likelihoodToBuyAt5:8},
+{persona:"Ana Lucía Quispe (29, Debt-focused)",short:"Ana",archetype:"Debt-focused",country:"Peru",firstImpressionScore:4,aiUsefulnessScore:2,wouldGiveUp:true,giveUpReason:"She came to map three loans, a credit card, and a junta by interest and due date, and Richy has no interest-based payoff tracker, no due-date reminders, and a Notes section that only tracks owe/owed totals.",minutesBeforeDecision:10,missingFeatures:["Interest-based debt payoff tracker (avalanche/snowball ordering of multiple loans)","Due-date reminders for loans and credit card payments","Amortizing loan tracker with balances and payoff dates","Junta / savings-circle tracking","Late-fee alerts"],favoriteThing:"nothing",fullOpinion:"I came here at midnight with one job: get my three loans, the credit card, and the junta in one place so I finally know which due date is coming and which loan is eating me alive with interest. The setup even asked about my debt, so I thought, finally, an app that gets it. Then I went looking for the actual tool and it isn't there. The Notes section just lets me write who owes me and who I owe, like a list of favors. It doesn't know interest, it doesn't track a balance going down, it can't tell me a payoff date, and worst of all it won't remind me when a payment is due. The late fee that started all this would happen again exactly the same way.\n\nWhen I asked Richard, he told me to build an emergency fund and save first. Save with what? Every sol I have is already spent on these loans. That answer told me he doesn't understand the hole I'm in. The app is pretty and it even showed my soles correctly, but pretty rings and budget bars don't pay my highest-interest loan. I needed the one thing it can't do, so I'm closing it and going back to my notebook.",npsScore:-8,maxWTPPerMonth:0,likelihoodToBuyAt5:2},
+{persona:"Stefan Novak (44, Small business owner)",short:"Stefan",archetype:"Small business owner",country:"Czech Republic",firstImpressionScore:5,aiUsefulnessScore:6,wouldGiveUp:false,giveUpReason:"",minutesBeforeDecision:11,missingFeatures:["Proper business/personal separation (separate ledgers)","Supplier invoice tracking and due-date alerts","Bank sync so I'm not entering brewery cash by hand","A real cash-flow view for the business","Tax/VAT-aware categories for the brewery"],favoriteThing:"That Richard flat-out admitted Richy can't do business accounting and pointed me to using a savings pot as a 'brewery' bucket instead of pretending it could",fullOpinion:"I came in with one job for this app: draw a line between the brewery's money and my family's money, because mixing them nearly bounced a supplier invoice and my accountant is losing patience with me. Richy is clearly built for personal budgeting, not for a business, and within a few minutes that was obvious. The onboarding questionnaire and the auto budgets are aimed at someone tracking groceries and dining out, not someone who needs to keep brewery cash from leaking into the household. So my first reaction was mild disappointment.\n\nWhat saved it was Richard. When I asked straight out whether it could handle the business side, it didn't try to sell me. It said Richy doesn't do business accounting and suggested I set up a Savings Pot as a 'brewery' bucket that stays out of my spendable balance but still counts toward net worth. That's actually clever as a band-aid, and I respect being told the truth instead of being strung along. I set the pot up and it does give me a cleaner number for what's really 'mine' to spend. It's crude, though. There's no invoice tracking, no due dates, no bank sync, so I'm still typing things in by hand, and a single pot is not the separate ledger my accountant wants.\n\nI'll keep it, but honestly more as a personal budgeting nudge than a fix for my real problem. It takes the edge off the panic of not knowing what's safe to spend, and that's worth something. It is not the tool that gets my accountant off my back, so I'm lukewarm.",npsScore:3,maxWTPPerMonth:3,likelihoodToBuyAt5:25},
+{persona:"Sofía Berisha (30, Newly married)",short:"Sofía",archetype:"Newly married",country:"Albania",firstImpressionScore:4,aiUsefulnessScore:3,wouldGiveUp:true,giveUpReason:"We downloaded it together to share money as a couple, and Richy has no couples mode, no second user, and no shared account — the one thing we needed doesn't exist.",minutesBeforeDecision:9,missingFeatures:["Couples/partner mode with a second user","Shared account or joint pot both people can see","Two-person spending sync across devices","Ability for Marco to log his own transactions","Neutral shared system not tied to one profile"],favoriteThing:"The euro currency worked and the rings looked nice",fullOpinion:"We sat down on the couch together to set this up, and within a few minutes it was clear Richy is built for one person on one phone. There is no way for Marco to log in, no shared pot we can both see, no couples mode at all. When I asked the AI directly, it admitted it can't do partner planning — which I appreciate as honesty, but it just confirmed this is the wrong tool for us.\n\nThe whole point was a neutral shared system so the money conversation doesn't turn into a marriage conversation. Instead this would just become my app, with me guessing at Marco's spending — which recreates exactly the imbalance we're trying to avoid. The euro working and the pretty design don't fix that. We're not going to use it.",npsScore:-7,maxWTPPerMonth:0,likelihoodToBuyAt5:2}
+];
+
+const themes = [
+  {name:"Bank sync / auto-import",count:6},
+  {name:"Remittance / family support",count:2},
+  {name:"Couples / shared account",count:2},
+  {name:"Debt payoff tracker (interest/due-dates)",count:2},
+  {name:"Irregular income / freelance",count:1},
+  {name:"Tax set-aside bucket",count:1},
+  {name:"Business vs personal separation",count:1},
+  {name:"Simpler onboarding / CatchUp",count:1},
+  {name:"Multi-currency simultaneous view",count:1}
+];
+
+const mean=(a)=>a.reduce((s,x)=>s+x,0)/a.length;
+const avgFirst=mean(data.map(d=>d.firstImpressionScore));
+const kept=data.filter(d=>!d.wouldGiveUp).length;
+const avgNPS=mean(data.map(d=>d.npsScore));
+const avgWTP=mean(data.map(d=>d.maxWTPPerMonth));
+const avgBuy=mean(data.map(d=>d.likelihoodToBuyAt5));
+
+function buildStats(){
+  const c={green:"var(--green)",red:"var(--red)",muted:"var(--muted)",accent:"var(--accent)"};
+  const cards=[
+    {label:"Avg First Impression",val:avgFirst.toFixed(1)+" / 10",color:avgFirst>=6?c.accent:c.red},
+    {label:"Users Kept",val:kept+" / 10 · "+(kept*10)+"%",color:kept>0?c.green:c.red},
+    {label:"Avg NPS",val:(avgNPS>=0?"+":"")+avgNPS.toFixed(1),color:avgNPS>=0?c.green:c.red},
+    {label:"Avg Max WTP",val:"$"+avgWTP.toFixed(2)+" / mo",color:c.muted},
+    {label:"Buy @ $5",val:avgBuy.toFixed(1)+"%",color:avgBuy>=50?c.green:c.red}
+  ];
+  document.getElementById("stats").innerHTML=cards.map(x=>
+    `<div class="stat"><div class="label">${x.label}</div><div class="val" style="color:${x.color}">${x.val}</div></div>`).join("");
+}
+
+function buildTable(){
+  const tb=document.querySelector("#tbl tbody");
+  tb.innerHTML=data.map(d=>{
+    const imp=d.firstImpressionScore;
+    const cls=imp<=4?"cell-red":imp<=6?"cell-gold":"cell-green";
+    const pill=d.wouldGiveUp?'<span class="pill pill-gave">Gave Up</span>':'<span class="pill pill-kept">Kept</span>';
+    const nm=d.persona.split(" (")[0];
+    return `<tr><td>${nm}</td><td>${d.archetype}</td><td>${d.country}</td>
+      <td class="${cls}">${imp}</td><td>${d.aiUsefulnessScore}</td>
+      <td style="color:${d.npsScore>=0?'#5fd991':'#ff7a6b'}">${d.npsScore>=0?'+':''}${d.npsScore}</td>
+      <td>$${d.maxWTPPerMonth}</td><td>${d.likelihoodToBuyAt5}%</td><td>${pill}</td></tr>`;
+  }).join("");
+}
+
+function buildAccordion(){
+  const wrap=document.getElementById("acc");
+  wrap.innerHTML=data.map((d,i)=>{
+    const nm=d.persona.split(" (")[0];
+    const paras=d.fullOpinion.split("\n\n").map(p=>`<p>${p}</p>`).join("");
+    const tags=d.missingFeatures.map(f=>`<span class="tag">${f}</span>`).join("");
+    const gave=d.wouldGiveUp?`<div class="gave"><b>Gave up because:</b> ${d.giveUpReason}</div>`:"";
+    return `<div class="acc" data-i="${i}">
+      <div class="acc-head" onclick="this.parentNode.classList.toggle('open')">
+        <span class="chev">&#9654;</span>
+        <span class="nm">${nm}</span><span class="arch">${d.archetype}</span>
+        <span class="badge" style="color:var(--accentLight)">Impr ${d.firstImpressionScore}</span>
+        <span class="badge" style="color:var(--accent)">AI ${d.aiUsefulnessScore}</span>
+        <span class="badge" style="color:${d.npsScore>=0?'#5fd991':'#ff7a6b'}">NPS ${d.npsScore>=0?'+':''}${d.npsScore}</span>
+      </div>
+      <div class="acc-body"><div class="acc-inner">
+        ${paras}
+        <div class="fav"><b>Favorite thing:</b> ${d.favoriteThing}</div>
+        ${gave}
+        <div class="tags">${tags}</div>
+      </div></div>
+    </div>`;
+  }).join("");
+}
+
+const FONT="#9E9690", GRID="rgba(255,255,255,0.06)";
+Chart.defaults.color=FONT; Chart.defaults.font.family="-apple-system,system-ui,sans-serif";
+const shorts=data.map(d=>d.short);
+
+function buildCharts(){
+  new Chart(document.getElementById("c1"),{type:"bar",data:{labels:shorts,datasets:[{data:data.map(d=>d.firstImpressionScore),backgroundColor:"#C8673A"}]},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{min:0,max:10,grid:{color:GRID}},y:{grid:{display:false}}}}});
+
+  new Chart(document.getElementById("c2"),{type:"bar",data:{labels:shorts,datasets:[{data:data.map(d=>d.aiUsefulnessScore),backgroundColor:"#E07848"}]},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{min:0,max:10,grid:{color:GRID}},y:{grid:{display:false}}}}});
+
+  new Chart(document.getElementById("c3"),{type:"scatter",data:{datasets:data.map(d=>({label:d.short,
+    data:[{x:d.minutesBeforeDecision,y:d.firstImpressionScore}],backgroundColor:d.wouldGiveUp?"#E03030":"#27A85F",pointRadius:6}))},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>c.dataset.label+" ("+c.parsed.x+"m, "+c.parsed.y+")"}}},
+      scales:{x:{min:0,max:30,title:{display:true,text:"Minutes"},grid:{color:GRID}},y:{min:0,max:10,title:{display:true,text:"First Impression"},grid:{color:GRID}}}}});
+
+  new Chart(document.getElementById("c4"),{type:"doughnut",data:{labels:["Kept ("+kept+" · "+(kept*10)+"%)","Gave Up ("+(10-kept)+" · "+((10-kept)*10)+"%)"],
+    datasets:[{data:[kept,10-kept],backgroundColor:["#27A85F","#E03030"],borderColor:"#1E1B18",borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"}}}});
+
+  new Chart(document.getElementById("c5"),{type:"bar",data:{labels:shorts,datasets:[{data:data.map(d=>d.npsScore),
+    backgroundColor:data.map(d=>d.npsScore>=0?"#27A85F":"#E03030")}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      annotation:{}},scales:{y:{min:-10,max:10,grid:{color:(ctx)=>ctx.tick.value===0?"#9E9690":GRID}},x:{grid:{display:false}}}}});
+
+  new Chart(document.getElementById("c6"),{type:"bar",data:{labels:themes.map(t=>t.name),datasets:[{data:themes.map(t=>t.count),backgroundColor:"#9B6DB5"}]},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{min:0,max:7,ticks:{stepSize:1},grid:{color:GRID}},y:{grid:{display:false}}}}});
+
+  const maxW=Math.max(...data.map(d=>d.maxWTPPerMonth))+2;
+  new Chart(document.getElementById("c7"),{type:"bar",data:{labels:shorts,datasets:[{data:data.map(d=>d.maxWTPPerMonth),backgroundColor:"#C8673A"}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:maxW,grid:{color:GRID}},x:{grid:{display:false}}}}});
+
+  new Chart(document.getElementById("c8"),{type:"bar",data:{labels:shorts,datasets:[{data:data.map(d=>d.likelihoodToBuyAt5),
+    backgroundColor:data.map(d=>d.likelihoodToBuyAt5>=50?"#27A85F":d.likelihoodToBuyAt5>=25?"#C8983A":"#E03030")}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{min:0,max:100,grid:{color:(ctx)=>ctx.tick.value===50?"#9E9690":GRID}},x:{grid:{display:false}}}}});
+}
+
+document.addEventListener("DOMContentLoaded",function(){
+  buildStats();buildTable();buildAccordion();buildCharts();
+});
+</script>
+</body>
+</html>

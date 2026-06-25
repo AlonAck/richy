@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Richy · User Simulation Report</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #141210;
+    color: #F0EBE3;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .container { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+
+  /* HEADER */
+  .header { margin-bottom: 40px; }
+  .header h1 { font-size: 2rem; font-weight: 700; color: #C8673A; letter-spacing: -0.5px; }
+  .header p { color: #9E9690; margin-top: 6px; font-size: 0.95rem; }
+
+  /* STAT CARDS */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 48px; }
+  .stat-card {
+    background: #1E1B18;
+    border-radius: 12px;
+    padding: 20px 22px;
+    border: 1px solid #2A2520;
+  }
+  .stat-card .label { font-size: 0.78rem; color: #9E9690; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .stat-card .value { font-size: 1.65rem; font-weight: 700; }
+  .stat-card .sub { font-size: 0.8rem; color: #9E9690; margin-top: 4px; }
+  .color-orange { color: #C8673A; }
+  .color-red { color: #E03030; }
+  .color-green { color: #27A85F; }
+  .color-gold { color: #C8983A; }
+  .color-muted { color: #9E9690; }
+
+  /* CHARTS */
+  .section-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #F0EBE3;
+    margin-bottom: 24px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #2A2520;
+  }
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 48px; }
+  .chart-card {
+    background: #1E1B18;
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid #2A2520;
+  }
+  .chart-card h3 { font-size: 0.9rem; color: #9E9690; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 18px; }
+  .chart-container { position: relative; }
+  .chart-container.tall { height: 320px; }
+  .chart-container.medium { height: 260px; }
+  .chart-container.small { height: 220px; }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; margin-bottom: 48px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+  thead th {
+    background: #1E1B18;
+    color: #9E9690;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-size: 0.75rem;
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid #2A2520;
+  }
+  tbody tr { border-bottom: 1px solid #2A2520; }
+  tbody tr:hover { background: #1E1B18; }
+  tbody td { padding: 11px 14px; color: #F0EBE3; vertical-align: middle; }
+  .pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+  .pill-red { background: rgba(224,48,48,0.18); color: #E03030; }
+  .pill-green { background: rgba(39,168,95,0.18); color: #27A85F; }
+  .pill-gold { background: rgba(200,152,58,0.18); color: #C8983A; }
+  .imp-red { color: #E03030; font-weight: 700; }
+  .imp-gold { color: #C8983A; font-weight: 700; }
+  .imp-green { color: #27A85F; font-weight: 700; }
+
+  /* ACCORDION */
+  .accordion-title { font-size: 1.15rem; font-weight: 600; color: #F0EBE3; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #2A2520; }
+  .accordion-item {
+    background: #1E1B18;
+    border-radius: 10px;
+    border: 1px solid #2A2520;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .accordion-header:hover { background: #252219; }
+  .accordion-header-left h4 { font-size: 0.95rem; font-weight: 600; color: #F0EBE3; }
+  .accordion-header-left p { font-size: 0.8rem; color: #9E9690; margin-top: 2px; }
+  .accordion-header-right { display: flex; gap: 12px; align-items: center; }
+  .score-badge {
+    font-size: 0.78rem;
+    color: #9E9690;
+    background: #141210;
+    border-radius: 6px;
+    padding: 3px 9px;
+  }
+  .chevron { color: #9E9690; font-size: 1rem; transition: transform 0.2s; }
+  .accordion-item.open .chevron { transform: rotate(180deg); }
+  .accordion-body {
+    display: none;
+    padding: 0 20px 20px;
+    border-top: 1px solid #2A2520;
+  }
+  .accordion-item.open .accordion-body { display: block; }
+  .opinion-text {
+    color: #C8C1B8;
+    font-size: 0.875rem;
+    line-height: 1.75;
+    white-space: pre-line;
+    margin: 16px 0;
+    padding: 14px 16px;
+    background: #141210;
+    border-radius: 8px;
+    border-left: 3px solid #C8673A;
+  }
+  .fav-label { font-size: 0.78rem; color: #9E9690; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; margin-top: 14px; }
+  .fav-text { font-size: 0.875rem; color: #F0EBE3; }
+  .missing-label { font-size: 0.78rem; color: #9E9690; text-transform: uppercase; letter-spacing: 0.07em; margin: 14px 0 8px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag {
+    background: rgba(200,103,58,0.15);
+    color: #C8673A;
+    border: 1px solid rgba(200,103,58,0.3);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.8rem;
+  }
+
+  @media (max-width: 768px) {
+    .charts-grid { grid-template-columns: 1fr; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>Richy &middot; User Simulation Report</h1>
+    <p>June 19, 2026 &mdash; Cohort: 10 personas &nbsp;&middot;&nbsp; Harsh/Realistic Re-run</p>
+  </div>
+
+  <!-- STAT CARDS -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="label">Avg First Impression</div>
+      <div class="value color-orange">5.2 <span style="font-size:1rem;color:#9E9690">/ 10</span></div>
+      <div class="sub">Across 10 personas</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Users Kept</div>
+      <div class="value color-red">0 <span style="font-size:1rem;color:#9E9690">/ 10</span></div>
+      <div class="sub">0% retention</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Avg NPS</div>
+      <div class="value color-red">&minus;3.5</div>
+      <div class="sub">All 10 gave up</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Avg Max WTP</div>
+      <div class="value color-muted">$0.40<span style="font-size:1rem"> / mo</span></div>
+      <div class="sub">Effectively $0</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Buy @ $5/mo</div>
+      <div class="value color-red">3.9%</div>
+      <div class="sub">Avg likelihood</div>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="section-title">Charts &amp; Analytics</div>
+  <div class="charts-grid">
+
+    <!-- Chart 1: First Impression -->
+    <div class="chart-card">
+      <h3>First Impression Scores</h3>
+      <div class="chart-container tall">
+        <canvas id="chart1"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 2: AI Usefulness -->
+    <div class="chart-card">
+      <h3>AI Advisor Usefulness</h3>
+      <div class="chart-container tall">
+        <canvas id="chart2"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 3: Scatter -->
+    <div class="chart-card">
+      <h3>Impression vs. Time to Decide</h3>
+      <div class="chart-container tall">
+        <canvas id="chart3"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 4: Doughnut -->
+    <div class="chart-card">
+      <h3>Kept vs. Gave Up</h3>
+      <div class="chart-container medium" style="display:flex;align-items:center;justify-content:center;">
+        <canvas id="chart4" style="max-height:220px;max-width:220px;"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 5: NPS -->
+    <div class="chart-card">
+      <h3>NPS Scores</h3>
+      <div class="chart-container tall">
+        <canvas id="chart5"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 6: Missing Features -->
+    <div class="chart-card">
+      <h3>Missing Feature Frequency</h3>
+      <div class="chart-container tall">
+        <canvas id="chart6"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 7: WTP -->
+    <div class="chart-card">
+      <h3>Max Willingness to Pay ($/mo)</h3>
+      <div class="chart-container tall">
+        <canvas id="chart7"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 8: Buy@$5 -->
+    <div class="chart-card">
+      <h3>Likelihood to Buy at $5/mo (%)</h3>
+      <div class="chart-container tall">
+        <canvas id="chart8"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SUMMARY TABLE -->
+  <div class="section-title">Summary Table</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Persona</th>
+          <th>Archetype</th>
+          <th>Country</th>
+          <th>Impression</th>
+          <th>AI Score</th>
+          <th>NPS</th>
+          <th>WTP</th>
+          <th>Buy@$5</th>
+          <th>Decision</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Priya Venkataraman (20)</td>
+          <td>College Student</td>
+          <td>India</td>
+          <td><span class="imp-gold">5</span></td>
+          <td>3</td>
+          <td style="color:#E03030">-4</td>
+          <td>$0</td>
+          <td>2%</td>
+          <td><span class="pill pill-red">Gave Up</span></td>
+        </tr>
+        <tr>
+          <td>Marcus Osei (27)</td>
+          <td>Young Professional</td>
+          <td>Ghana</td>
+          <td><span class="imp-gold">6</span></td>
+          <td>4</td>
+          <td style="color:#E03030">-6</td>
+          <td>$0</td>
+          <td>2%</td>
+          <td><span class="pill pill-red">Gave Up</span></td>
+        </tr>
+        <tr>
+          <td>Sof&iacute;a Reyes-Montoya (38)</td>
+          <td>Working Parent</td>
+          <td>Mexico</td>
+          <td><span class="imp-gold">5</span></td>
+          <td>3</td>
+          <td style="color:#E03030">-4</td>
+          <td>$0</td>
+          <td>3%</td>
+          <td><span class="pill pill-red">Gave Up</span></td>
+        </tr>
+        <tr>
+          <td>Tomasz Wierzbicki (34)</td>
+          <td>Freelancer</td>
+          <td>Poland</td>
+          <td><span class="imp-gold">5</span></td>
+          <td>2</td>
+          <td style="color:#E03030">-7</td>
+          <td>$0</td>
+          <td>3%</td>
+          <td><span class="pill pill-red">Gave Up</span></td>
+        </tr>
+        <tr>
+          <td>Hiroko Taniguchi (68)</td>
+          <td>Retiree</td>
+          <td>Japan</td>
+          <td><span class="imp-red">2</span></td>
+          <td>0</td>
+          <td style="color:#E03030">-6</td>
+          <td>$0</td>
+          <td>2%</td>
+          <td><span class="pill pill-red">Gave Up</span></td>
+        </tr>
+        <tr>
+          <td>Amara Diallo (31)</td>
+          <td>Recent Immigrant</td>
+          <td>Canada</td>
+          <td><span class="imp-gold">5</span></td>
+          <td>2</td>
+          <td style="color:#E03030">-4</td>
+          <td>$0</td>
+          <td>3%</td>
+          <td><span class="pill pill-red">Gave Up</span></td>
+        </tr>
+        <tr>
+          <td>Declan Fitzgerald (41)</td>
+          <td>High Earner / Low Saver</td>
+          <td>Ireland</td>
+          <td><span class="imp-gold">6</span></td>
+          <td>2</td>
+          <td style="color:#27A85F">+1</td>
+          <td>$4</td>
+          <td>12%</td>
+          <td><span class="pill pill-red">Gave Up</span></td>
+        </tr>
+        <tr>
+          <td>Yuna Park (29)</td>
+          <td>Debt-Focused</td>
+          <td>South Korea</td>
+          <td><span class="imp-gold">6</span></td>
+          <td>3</td>
+          <td style="color:#E03030">-2</td>
+          <td>$0</td>
+          <td>4%</td>
+          <td><span class="pill pill-red">Gave Up</span></td>
+        </tr>
+        <tr>
+          <td>Benedikt Gruber (45)</td>
+          <td>Small Business Owner</td>
+          <td>Austria</td>
+          <td><span class="imp-gold">5</span></td>
+          <td>2</td>
+          <td style="color:#E03030">-4</td>
+          <td>$0</td>
+          <td>4%</td>
+          <td><span class="pill pill-red">Gave Up</span></td>
+        </tr>
+        <tr>
+          <td>Leila &amp; Rami Azoulay (28)</td>
+          <td>Newly Married</td>
+          <td>France</td>
+          <td><span class="imp-green">7</span></td>
+          <td>3</td>
+          <td style="color:#27A85F">+1</td>
+          <td>$0</td>
+          <td>4%</td>
+          <td><span class="pill pill-red">Gave Up</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ACCORDION -->
+  <div class="accordion-title">Persona Deep Dives</div>
+
+  <div class="accordion-item" id="acc-0">
+    <div class="accordion-header" onclick="toggleAcc('acc-0')">
+      <div class="accordion-header-left">
+        <h4>Priya Venkataraman &mdash; 20 &middot; India</h4>
+        <p>College Student</p>
+      </div>
+      <div class="accordion-header-right">
+        <span class="score-badge">Impression: 5</span>
+        <span class="score-badge">NPS: -4</span>
+        <span class="score-badge" style="color:#E03030">Gave Up</span>
+        <span class="chevron">&#8964;</span>
+      </div>
+    </div>
+    <div class="accordion-body">
+      <div class="opinion-text">Okay the app looks good, I&#39;ll give it that. But I got to the transaction screen and there&#39;s USD, EUR, GBP, some others &mdash; no rupees. I live in India. I spend in rupees. I&#39;m not doing mental math every single time I buy a samosa.
+
+And the onboarding had me entering income and savings goals like I&#39;m some salaried adult. I&#39;m 20, I get pocket money from my parents. Richard the AI told me to put 20% into savings which is just... bro. I barely have money for dinner after the 15th. Uninstalled.</div>
+      <div class="fav-label">Favorite Thing</div>
+      <div class="fav-text">The colors. Doesn&#39;t look like a boring Excel sheet.</div>
+      <div class="missing-label">Top Missing Features</div>
+      <div class="tags">
+        <span class="tag">INR currency support</span>
+        <span class="tag">Bank/UPI auto-sync (GPay, PhonePe)</span>
+        <span class="tag">Simple mode &mdash; less overwhelming dashboard</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion-item" id="acc-1">
+    <div class="accordion-header" onclick="toggleAcc('acc-1')">
+      <div class="accordion-header-left">
+        <h4>Marcus Osei &mdash; 27 &middot; Ghana</h4>
+        <p>Young Professional</p>
+      </div>
+      <div class="accordion-header-right">
+        <span class="score-badge">Impression: 6</span>
+        <span class="score-badge">NPS: -6</span>
+        <span class="score-badge" style="color:#E03030">Gave Up</span>
+        <span class="chevron">&#8964;</span>
+      </div>
+    </div>
+    <div class="accordion-body">
+      <div class="opinion-text">Looked good at first. Onboarding was slick, Richard actually gave me a plan that sounded somewhat personalized. I was cautiously optimistic for about ten minutes.
+
+Then I went to log my rent payment and realized there&#39;s no GHS. USD, EUR, GBP, ILS, JPY &mdash; who chose ILS over cedis? I earn in cedis, my landlord wants cedis, my MoMo sends cedis. Converting to USD every single time defeats the entire purpose. I closed the app.</div>
+      <div class="fav-label">Favorite Thing</div>
+      <div class="fav-text" style="color:#9E9690;font-style:italic;">Nothing noted</div>
+      <div class="missing-label">Top Missing Features</div>
+      <div class="tags">
+        <span class="tag">GHS currency support</span>
+        <span class="tag">Mobile Money (MTN MoMo) category</span>
+        <span class="tag">Bank sync or CSV import</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion-item" id="acc-2">
+    <div class="accordion-header" onclick="toggleAcc('acc-2')">
+      <div class="accordion-header-left">
+        <h4>Sof&iacute;a Reyes-Montoya &mdash; 38 &middot; Mexico</h4>
+        <p>Working Parent</p>
+      </div>
+      <div class="accordion-header-right">
+        <span class="score-badge">Impression: 5</span>
+        <span class="score-badge">NPS: -4</span>
+        <span class="score-badge" style="color:#E03030">Gave Up</span>
+        <span class="chevron">&#8964;</span>
+      </div>
+    </div>
+    <div class="accordion-body">
+      <div class="opinion-text">My neighbor said this would help me get organized after the washing machine disaster. It looked nice when it opened, kind of warm and pretty. But then it asked me for my income and I didn&#39;t know if I should put pesos or dollars and there was no peso option. I just put in dollars and guessed at the conversion and the whole thing already felt wrong.
+
+Then one of my kids called me and when I came back I had to start over. There was a screen asking what I spent this month on food, transport, all these categories &mdash; I don&#39;t know, I don&#39;t track that, that&#39;s why I downloaded the app. I closed it. Maybe another time but probably not.</div>
+      <div class="fav-label">Favorite Thing</div>
+      <div class="fav-text" style="color:#9E9690;font-style:italic;">Nothing noted</div>
+      <div class="missing-label">Top Missing Features</div>
+      <div class="tags">
+        <span class="tag">MXN currency support</span>
+        <span class="tag">Bank sync &mdash; manual entry not realistic</span>
+        <span class="tag">Save-and-resume onboarding</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion-item" id="acc-3">
+    <div class="accordion-header" onclick="toggleAcc('acc-3')">
+      <div class="accordion-header-left">
+        <h4>Tomasz Wierzbicki &mdash; 34 &middot; Poland</h4>
+        <p>Freelancer</p>
+      </div>
+      <div class="accordion-header-right">
+        <span class="score-badge">Impression: 5</span>
+        <span class="score-badge">NPS: -7</span>
+        <span class="score-badge" style="color:#E03030">Gave Up</span>
+        <span class="chevron">&#8964;</span>
+      </div>
+    </div>
+    <div class="accordion-body">
+      <div class="opinion-text">Opened it, went through onboarding, typed in an average monthly income because there was no other option. Already annoyed. No field for &#39;income varies wildly,&#39; no acknowledgment that freelancers exist. Just a box that says monthly income and assumes that number lands in my account every 30 days like clockwork.
+
+Then Richard hit me with a 50/30/20 plan. I&#39;m sitting here with maybe 19 days before I need to panic and this AI is telling me to put 20% in savings. Based on what? My fictional stable income? I closed it. The YouTube guy said it handles irregular income &mdash; it absolutely does not. This is just another app built for salaried people with a prettier coat of paint.</div>
+      <div class="fav-label">Favorite Thing</div>
+      <div class="fav-text">The design is actually nice. Clean, warm, doesn&#39;t look cheap.</div>
+      <div class="missing-label">Top Missing Features</div>
+      <div class="tags">
+        <span class="tag">Irregular/variable income mode</span>
+        <span class="tag">PLN currency support</span>
+        <span class="tag">Cash runway projection</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion-item" id="acc-4">
+    <div class="accordion-header" onclick="toggleAcc('acc-4')">
+      <div class="accordion-header-left">
+        <h4>Hiroko Taniguchi &mdash; 68 &middot; Japan</h4>
+        <p>Retiree</p>
+      </div>
+      <div class="accordion-header-right">
+        <span class="score-badge">Impression: 2</span>
+        <span class="score-badge">NPS: -6</span>
+        <span class="score-badge" style="color:#E03030">Gave Up</span>
+        <span class="chevron">&#8964;</span>
+      </div>
+    </div>
+    <div class="accordion-body">
+      <div class="opinion-text">She looked at the screen for a long time. There were many colors and numbers. She did not know what the big number in the middle meant. She thought maybe it was her bank account but she did not put her bank account in. She was confused.
+
+She tried to press one of the round pictures. Something opened. She did not know what it was. She pressed the back arrow and it went to a different screen. She pressed back again and it went somewhere else. She felt her heart beating faster.
+
+She wanted to write down that she spent 800 yen on vegetables at the market. She did not find where to do that. After about eleven minutes she set the phone face-down on the table. She thought she would try again when Kenji calls on Sunday. She did not want to break anything.</div>
+      <div class="fav-label">Favorite Thing</div>
+      <div class="fav-text" style="color:#9E9690;font-style:italic;">Nothing noted</div>
+      <div class="missing-label">Top Missing Features</div>
+      <div class="tags">
+        <span class="tag">Japanese language support</span>
+        <span class="tag">Larger text / accessibility settings</span>
+        <span class="tag">Simple getting-started guide</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion-item" id="acc-5">
+    <div class="accordion-header" onclick="toggleAcc('acc-5')">
+      <div class="accordion-header-left">
+        <h4>Amara Diallo &mdash; 31 &middot; Canada</h4>
+        <p>Recent Immigrant</p>
+      </div>
+      <div class="accordion-header-right">
+        <span class="score-badge">Impression: 5</span>
+        <span class="score-badge">NPS: -4</span>
+        <span class="score-badge" style="color:#E03030">Gave Up</span>
+        <span class="chevron">&#8964;</span>
+      </div>
+    </div>
+    <div class="accordion-body">
+      <div class="opinion-text">She downloaded this at 9pm after the kids were in bed, tired, needing to know whether the family can handle $180 more per month in daycare. That was the whole point.
+
+Onboarding asked for her monthly income and she typed $3,000 &mdash; which is roughly right but doesn&#39;t include the savings circle inflows or the $250 she sends home every month. No way to say any of that. Richard gave her a plan. Fifty percent for essentials. Her essentials alone are already like 70 percent of her income.
+
+She put her remittance under &#39;Other.&#39; That bothered her more than it probably should have. It&#39;s not &#39;other&#39; &mdash; it&#39;s how she takes care of her family in Senegal. The app made it invisible. She tapped the advisor, hunted for the button, got a savings score and generic advice. It did not answer whether she could absorb $180 more per month. It couldn&#39;t, because it didn&#39;t have her real data. She closed it.</div>
+      <div class="fav-label">Favorite Thing</div>
+      <div class="fav-text">Looks nice and not overwhelming at first glance.</div>
+      <div class="missing-label">Top Missing Features</div>
+      <div class="tags">
+        <span class="tag">Multiple income sources tracking</span>
+        <span class="tag">Remittance category</span>
+        <span class="tag">What-if scenario tool</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion-item" id="acc-6">
+    <div class="accordion-header" onclick="toggleAcc('acc-6')">
+      <div class="accordion-header-left">
+        <h4>Declan Fitzgerald &mdash; 41 &middot; Ireland</h4>
+        <p>High Earner / Low Saver</p>
+      </div>
+      <div class="accordion-header-right">
+        <span class="score-badge">Impression: 6</span>
+        <span class="score-badge">NPS: +1</span>
+        <span class="score-badge" style="color:#E03030">Gave Up</span>
+        <span class="chevron">&#8964;</span>
+      </div>
+    </div>
+    <div class="accordion-body">
+      <div class="opinion-text">Opened it at midnight, half a glass of Jameson in. Design looked clean. Thought, right, let&#39;s do this. Onboarding was fine. Entered his &euro;148k, didn&#39;t bother with his wife&#39;s because where would that even go.
+
+Richard came back with a 50/30/20 plan based on his income alone. He asked the AI advisor something specific &mdash; whether to prioritise pension AVCs or mortgage overpayments. Richard gave him a generic answer about having three to six months of expenses saved. He actually laughed out loud. Three to six months. He&#39;s spending &euro;14k a month and Richard&#39;s suggesting a rainy day fund like he&#39;s a grad on a first job.
+
+Activity tab: manual entry only. No Revolut sync, no AIB. He&#39;s not typing in transactions. That&#39;s the whole problem &mdash; he avoids the numbers, and this app requires him to manually feed it the numbers he&#39;s been avoiding. Closed it at 14 minutes. Said something like &#39;it&#39;s a Revolut savings jar with a chatbot.&#39;</div>
+      <div class="fav-label">Favorite Thing</div>
+      <div class="fav-text">Visual design &mdash; warm, premium. First 90 seconds had him thinking maybe this was different.</div>
+      <div class="missing-label">Top Missing Features</div>
+      <div class="tags">
+        <span class="tag">Bank/credit card sync</span>
+        <span class="tag">Household / multi-user view</span>
+        <span class="tag">Net worth + investment tracking</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion-item" id="acc-7">
+    <div class="accordion-header" onclick="toggleAcc('acc-7')">
+      <div class="accordion-header-left">
+        <h4>Yuna Park &mdash; 29 &middot; South Korea</h4>
+        <p>Debt-Focused</p>
+      </div>
+      <div class="accordion-header-right">
+        <span class="score-badge">Impression: 6</span>
+        <span class="score-badge">NPS: -2</span>
+        <span class="score-badge" style="color:#E03030">Gave Up</span>
+        <span class="chevron">&#8964;</span>
+      </div>
+    </div>
+    <div class="accordion-body">
+      <div class="opinion-text">I downloaded this to replace my Sunday spreadsheet. Onboarding was fine &mdash; it asked about my debt, which felt promising. I put in my numbers and made a goal called &#39;Student Loan Payoff.&#39; Except there&#39;s no KRW so I had to estimate in USD. Annoying but not a dealbreaker yet.
+
+Then I got the Goals screen. A ring chart. Twelve percent filled. No date. No projection. No &#39;at your current rate you&#39;ll finish in X years.&#39; Just a ring.
+
+I asked Richard directly: if I pay an extra $200 a month toward my student loan using avalanche, when will I be debt free? He explained what the avalanche method is. I know what the avalanche method is. I wanted a date.
+
+The app is beautiful. If it had a debt payoff calculator I would probably pay for it. But it doesn&#39;t, and I can&#39;t justify paying for a prettier version of something that does less than what I already have. My spreadsheet stays.</div>
+      <div class="fav-label">Favorite Thing</div>
+      <div class="fav-text">The visual design. If it did what she needed it would feel good to open every day.</div>
+      <div class="missing-label">Top Missing Features</div>
+      <div class="tags">
+        <span class="tag">Debt payoff date projection</span>
+        <span class="tag">KRW currency support</span>
+        <span class="tag">What-if extra payment modeling</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion-item" id="acc-8">
+    <div class="accordion-header" onclick="toggleAcc('acc-8')">
+      <div class="accordion-header-left">
+        <h4>Benedikt Gruber &mdash; 45 &middot; Austria</h4>
+        <p>Small Business Owner</p>
+      </div>
+      <div class="accordion-header-right">
+        <span class="score-badge">Impression: 5</span>
+        <span class="score-badge">NPS: -4</span>
+        <span class="score-badge" style="color:#E03030">Gave Up</span>
+        <span class="chevron">&#8964;</span>
+      </div>
+    </div>
+    <div class="accordion-body">
+      <div class="opinion-text">It immediately asks me for my monthly income and I stop. What do I put here? Last month I drew &euro;3,200. Month before that, &euro;5,800. Two months ago, almost nothing. I sit there for ninety seconds genuinely unsure what to type. I put &euro;5,500 and I already know it&#39;s a lie.
+
+Then I try to log my first real transaction. Coffee sample bags from a supplier &mdash; &euro;180. Is that personal? No, it&#39;s my business. I look at the categories: Housing, Food, Transport, Health, Entertainment, Shopping, Travel, Other. I click Other and feel vaguely insulted. No way to mark something as a business expense.
+
+That&#39;s when I close it. Not angry. Just tired. I came here genuinely willing to try. But if I can&#39;t separate business from personal and can&#39;t export anything to show my accountant, this app makes my records worse, not better. It&#39;s made for someone with a job. I have a Betrieb.</div>
+      <div class="fav-label">Favorite Thing</div>
+      <div class="fav-text">The euro currency option worked without hassle.</div>
+      <div class="missing-label">Top Missing Features</div>
+      <div class="tags">
+        <span class="tag">Business vs personal tagging</span>
+        <span class="tag">Variable/irregular income support</span>
+        <span class="tag">CSV/PDF export for accountant</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion-item" id="acc-9">
+    <div class="accordion-header" onclick="toggleAcc('acc-9')">
+      <div class="accordion-header-left">
+        <h4>Leila &amp; Rami Azoulay &mdash; 28 &middot; France</h4>
+        <p>Newly Married</p>
+      </div>
+      <div class="accordion-header-right">
+        <span class="score-badge">Impression: 7</span>
+        <span class="score-badge">NPS: +1</span>
+        <span class="score-badge" style="color:#E03030">Gave Up</span>
+        <span class="chevron">&#8964;</span>
+      </div>
+    </div>
+    <div class="accordion-body">
+      <div class="opinion-text">Okay the app is gorgeous. The colors, the card layout &mdash; first 90 seconds I&#39;m thinking maybe this was the right call.
+
+Then onboarding asks for my income. Do I put mine or ours? No household option, no &#39;add a partner.&#39; Just me. I type &euro;71,000 &mdash; our combined income &mdash; and immediately know that&#39;s wrong.
+
+I keep going because the design is keeping me. I look for a sharing feature. Invite button. Household tab. Something. I go through every tab. It&#39;s all &#39;your balance,&#39; &#39;your spending,&#39; &#39;your goals.&#39; There is no &#39;our.&#39;
+
+I asked Richard if there was a couples mode. It gave me budgeting tips. I don&#39;t need budgeting tips. I needed &#39;here&#39;s how to invite your partner.&#39; Rami hasn&#39;t even opened the link I sent him. So now the scenario is I track everything alone, he never sees it, and I become the household CFO who resents doing it. Closed the app at minute nine.</div>
+      <div class="fav-label">Favorite Thing</div>
+      <div class="fav-text">The visual design &mdash; warm, premium, actually feels like something worth paying for.</div>
+      <div class="missing-label">Top Missing Features</div>
+      <div class="tags">
+        <span class="tag">Invite partner / shared household account</span>
+        <span class="tag">Shared transaction feed</span>
+        <span class="tag">Couples savings goals</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="height:48px;"></div>
+</div>
+
+<script>
+Chart.defaults.color = '#9E9690';
+Chart.defaults.borderColor = '#2A2520';
+Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+Chart.defaults.font.size = 12;
+
+const shortNames = ['Priya','Marcus','Sofía','Tomasz','Hiroko','Amara','Declan','Yuna','Benedikt','Leila & Rami'];
+
+// Chart 1 — First Impression (horizontal bar)
+new Chart(document.getElementById('chart1'), {
+  type: 'bar',
+  data: {
+    labels: shortNames,
+    datasets: [{
+      data: [5, 6, 5, 5, 2, 5, 6, 6, 5, 7],
+      backgroundColor: '#C8673A',
+      borderRadius: 4,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { min: 0, max: 10, grid: { color: '#2A2520' }, ticks: { color: '#9E9690' } },
+      y: { grid: { display: false }, ticks: { color: '#F0EBE3', font: { size: 11 } } }
+    }
+  }
+});
+
+// Chart 2 — AI Usefulness (horizontal bar)
+new Chart(document.getElementById('chart2'), {
+  type: 'bar',
+  data: {
+    labels: shortNames,
+    datasets: [{
+      data: [3, 4, 3, 2, 0, 2, 2, 3, 2, 3],
+      backgroundColor: '#E07848',
+      borderRadius: 4,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { min: 0, max: 10, grid: { color: '#2A2520' }, ticks: { color: '#9E9690' } },
+      y: { grid: { display: false }, ticks: { color: '#F0EBE3', font: { size: 11 } } }
+    }
+  }
+});
+
+// Chart 3 — Scatter: Impression vs Time
+const scatterData = [
+  {x:11,y:5,name:'Priya'},
+  {x:22,y:6,name:'Marcus'},
+  {x:11,y:5,name:'Sofía'},
+  {x:7,y:5,name:'Tomasz'},
+  {x:11,y:2,name:'Hiroko'},
+  {x:8,y:5,name:'Amara'},
+  {x:14,y:6,name:'Declan'},
+  {x:18,y:6,name:'Yuna'},
+  {x:11,y:5,name:'Benedikt'},
+  {x:9,y:7,name:'Leila & Rami'},
+];
+
+const scatterPlugin = {
+  id: 'scatterLabels',
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    chart.data.datasets[0].data.forEach((point, i) => {
+      const meta = chart.getDatasetMeta(0);
+      const el = meta.data[i];
+      if (!el) return;
+      const { x, y } = el.getProps(['x', 'y'], true);
+      ctx.save();
+      ctx.font = '11px -apple-system, sans-serif';
+      ctx.fillStyle = '#F0EBE3';
+      ctx.textAlign = 'center';
+      ctx.fillText(point.name, x, y - 10);
+      ctx.restore();
+    });
+  }
+};
+
+new Chart(document.getElementById('chart3'), {
+  type: 'scatter',
+  data: {
+    datasets: [{
+      data: scatterData,
+      backgroundColor: '#E03030',
+      pointRadius: 7,
+      pointHoverRadius: 9,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => {
+            const p = ctx.raw;
+            return `${p.name}: ${p.x} min, Impression ${p.y}`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        min: 0, max: 25,
+        title: { display: true, text: 'Minutes before quitting', color: '#9E9690' },
+        grid: { color: '#2A2520' }, ticks: { color: '#9E9690' }
+      },
+      y: {
+        min: 0, max: 10,
+        title: { display: true, text: 'First Impression', color: '#9E9690' },
+        grid: { color: '#2A2520' }, ticks: { color: '#9E9690' }
+      }
+    }
+  },
+  plugins: [scatterPlugin]
+});
+
+// Chart 4 — Doughnut
+new Chart(document.getElementById('chart4'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Kept', 'Gave Up'],
+    datasets: [{
+      data: [0, 10],
+      backgroundColor: ['#27A85F', '#E03030'],
+      borderColor: '#141210',
+      borderWidth: 3,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { color: '#F0EBE3', padding: 16, font: { size: 13 } } }
+    },
+    cutout: '60%',
+  }
+});
+
+// Chart 5 — NPS (vertical bar)
+const npsData = [-4, -6, -4, -7, -6, -4, 1, -2, -4, 1];
+const npsColors = npsData.map(v => v >= 0 ? '#27A85F' : '#E03030');
+
+const npsZeroLine = {
+  id: 'npsZeroLine',
+  afterDatasetsDraw(chart) {
+    const { ctx, scales: { y } } = chart;
+    const yPos = y.getPixelForValue(0);
+    ctx.save();
+    ctx.strokeStyle = '#9E9690';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(chart.chartArea.left, yPos);
+    ctx.lineTo(chart.chartArea.right, yPos);
+    ctx.stroke();
+    ctx.restore();
+  }
+};
+
+new Chart(document.getElementById('chart5'), {
+  type: 'bar',
+  data: {
+    labels: shortNames,
+    datasets: [{
+      data: npsData,
+      backgroundColor: npsColors,
+      borderRadius: 4,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: '#F0EBE3', font: { size: 10 } } },
+      y: { min: -10, max: 10, grid: { color: '#2A2520' }, ticks: { color: '#9E9690' } }
+    }
+  },
+  plugins: [npsZeroLine]
+});
+
+// Chart 6 — Missing Features (horizontal bar)
+new Chart(document.getElementById('chart6'), {
+  type: 'bar',
+  data: {
+    labels: ['Bank sync / auto-import','Non-Western currency','Multi-user / couples mode','Irregular income support','Debt payoff projection','Business/personal separation','Accessibility / localization','Remittance tracking'],
+    datasets: [{
+      data: [6, 5, 3, 2, 1, 1, 1, 1],
+      backgroundColor: '#9B6DB5',
+      borderRadius: 4,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { min: 0, max: 7, ticks: { stepSize: 1, color: '#9E9690' }, grid: { color: '#2A2520' } },
+      y: { grid: { display: false }, ticks: { color: '#F0EBE3', font: { size: 10 } } }
+    }
+  }
+});
+
+// Chart 7 — WTP (vertical bar with labels)
+const wtpPlugin = {
+  id: 'wtpLabels',
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    chart.data.datasets[0].data.forEach((val, i) => {
+      const meta = chart.getDatasetMeta(0);
+      const el = meta.data[i];
+      if (!el) return;
+      const { x, y } = el.getProps(['x', 'y'], true);
+      ctx.save();
+      ctx.font = 'bold 11px -apple-system, sans-serif';
+      ctx.fillStyle = '#F0EBE3';
+      ctx.textAlign = 'center';
+      ctx.fillText('$' + val, x, y - 6);
+      ctx.restore();
+    });
+  }
+};
+
+new Chart(document.getElementById('chart7'), {
+  type: 'bar',
+  data: {
+    labels: shortNames,
+    datasets: [{
+      data: [0, 0, 0, 0, 0, 0, 4, 0, 0, 0],
+      backgroundColor: '#C8673A',
+      borderRadius: 4,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: '#F0EBE3', font: { size: 10 } } },
+      y: { min: 0, max: 15, grid: { color: '#2A2520' }, ticks: { color: '#9E9690', callback: v => '$'+v } }
+    }
+  },
+  plugins: [wtpPlugin]
+});
+
+// Chart 8 — Buy@$5 (vertical bar, all red, threshold at 50)
+const buy5Plugin = {
+  id: 'thresholdLine',
+  afterDatasetsDraw(chart) {
+    const { ctx, scales: { y } } = chart;
+    const yPos = y.getPixelForValue(50);
+    ctx.save();
+    ctx.strokeStyle = '#C8983A';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(chart.chartArea.left, yPos);
+    ctx.lineTo(chart.chartArea.right, yPos);
+    ctx.stroke();
+    ctx.font = '11px -apple-system, sans-serif';
+    ctx.fillStyle = '#C8983A';
+    ctx.fillText('50% threshold', chart.chartArea.right - 90, yPos - 6);
+    ctx.restore();
+  }
+};
+
+new Chart(document.getElementById('chart8'), {
+  type: 'bar',
+  data: {
+    labels: shortNames,
+    datasets: [{
+      data: [2, 2, 3, 3, 2, 3, 12, 4, 4, 4],
+      backgroundColor: '#E03030',
+      borderRadius: 4,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: '#F0EBE3', font: { size: 10 } } },
+      y: { min: 0, max: 100, grid: { color: '#2A2520' }, ticks: { color: '#9E9690', callback: v => v+'%' } }
+    }
+  },
+  plugins: [buy5Plugin]
+});
+
+// Accordion toggle
+function toggleAcc(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+</script>
+</body>
+</html>

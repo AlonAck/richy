@@ -1028,6 +1028,8 @@ function AuthScreen(props) {
   var fullName = _fn[0]; var setFullName = _fn[1];
   var _dob = useState("");
   var dob = _dob[0]; var setDob = _dob[1];
+  var _rn = useState("");
+  var richardNotes = _rn[0]; var setRichardNotes = _rn[1];
   var _ci = useState("");
   var codeInput = _ci[0]; var setCodeInput = _ci[1];
   var _sc = useState("");
@@ -1111,7 +1113,7 @@ function AuthScreen(props) {
       if (sb > 0) {
         initTx = [{ type: "income", amount: sb, label: "Opening balance", catId: "opening", category: "Opening balance", opening: true, date: new Date().toISOString().slice(0, 10), id: Date.now(), repeat: "none", pending: false }];
       }
-      var blob = { tx: initTx, budgets: [], goals: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: fullName.trim(), email: em, dob: dob, lang: signupLang, currency: signupCur };
+      var blob = { tx: initTx, budgets: [], goals: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: fullName.trim(), email: em, dob: dob, lang: signupLang, currency: signupCur, richardNotes: richardNotes.trim() };
       return CLOUD.saveUser(uid, blob).then(function() {
         window.__cbSignup = false;
         setBusy(false);
@@ -1344,6 +1346,11 @@ function AuthScreen(props) {
                   );
                 })}
               </div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "20px 0 8px" }}>Notes for Richard</div>
+              <textarea value={richardNotes} onChange={function(e) { setRichardNotes(e.target.value); }}
+                placeholder="Anything Richard should know about you — your goals, money habits, what you're saving for…"
+                rows={3}
+                style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "13px 16px", fontSize: 15, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", resize: "vertical", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
             </div>
           )}
 
@@ -1834,7 +1841,7 @@ function FoundMoney(props) {
   var recoverable = findings.reduce(function(s, f) { return s + (f.annual || 0); }, 0);
 
   function richardSystem(extra) {
-    var custom = (props.richardInstructions && props.richardInstructions.trim()) ? ("FOLLOW THESE CUSTOM INSTRUCTIONS FROM THE USER:\n" + props.richardInstructions + "\n\n") : "";
+    var custom = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
     var langLine = (props.lang && props.lang !== "en") ? (" Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + ".") : "";
     return custom + extra + langLine;
   }
@@ -5356,7 +5363,7 @@ function BigDecisions(props) {
     var text = (question || q || "").trim();
     if (!text || loading) return;
     setQ(text); setErr(""); setLoading(true); setVerdict(null); setActive(null);
-    var custom = (props.richardInstructions && props.richardInstructions.trim()) ? ("FOLLOW THESE CUSTOM INSTRUCTIONS FROM THE USER:\n" + props.richardInstructions + "\n\n") : "";
+    var custom = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
     var langLine = (props.lang && props.lang !== "en") ? (" Every string value must be written entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + ".") : "";
     var system = custom + "You are Richard, a calm, sharp, honest personal finance advisor inside the Richy app. The user faces a real, specific money decision. Using their ACTUAL financial data, give a clear PERSONAL verdict run against their real cash flow, savings, goals and net worth - never generic advice. If it is a no or only a stretch, say so plainly and kindly. Return ONLY valid JSON, no markdown, no emojis, exactly this shape: {\"verdict\":\"yes|no|stretch|wait\",\"verdictLabel\":\"short label e.g. Yes, you can afford it\",\"headline\":\"one warm sentence with the core reason\",\"keyNumber\":\"the single most important figure e.g. $340/mo or 4 months\",\"keyNumberLabel\":\"what that figure means in 2 to 4 words\",\"reasoning\":[\"2 to 4 short bullets, each tied to a real number\"],\"tradeoff\":\"one sentence on what they give up or risk\",\"toMakeYes\":\"the single most impactful change that would make it work; empty string if already a clear yes\",\"confidence\":\"high|medium|low\"}." + langLine;
     var content = "Decision: " + text + "\n\nMy financial data:\n" + (props.ctx || "(no data provided)") + (props.coreProblem ? ("\n\nMy main financial challenge: " + props.coreProblem) : "");
@@ -5975,7 +5982,7 @@ function Advisor(props) {
 
   function getAdvice() {
     setLoading(true); setAdvice(null); setErrMsg("");
-    var customInstructionsPrefix = (props.richardInstructions && props.richardInstructions.trim()) ? ("FOLLOW THESE CUSTOM INSTRUCTIONS FROM THE USER:\n" + props.richardInstructions + "\n\n") : "";
+    var customInstructionsPrefix = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
     var system = customInstructionsPrefix + "You are an elite personal finance advisor trained on the wisdom of the world's greatest wealth builders. You have deep knowledge from:\n\nBOOKS & AUTHORS:\n- The Psychology of Money (Morgan Housel): wealth is about behavior not intelligence; saving is about the gap between ego and income; reasonable beats rational\n- Rich Dad Poor Dad (Robert Kiyosaki): assets put money in pocket, liabilities take it out; buy assets first, luxuries last; make money work for you\n- The Millionaire Next Door (Stanley & Danko): most millionaires live below their means, drive used cars, avoid lifestyle inflation\n- I Will Teach You To Be Rich (Ramit Sethi): automate savings, negotiate bills, spend extravagantly on things you love but cut mercilessly elsewhere\n- The Total Money Makeover (Dave Ramsey): debt snowball, emergency fund first, live on less than you earn\n- Think and Grow Rich (Napoleon Hill): definiteness of purpose, the mastermind principle, persistence\n- The Richest Man in Babylon (George Clason): pay yourself first 10%, let savings work, live on 70%, give 20% to debts\n- Money Master the Game (Tony Robbins): asset allocation drives 90% of returns, fees kill wealth, asymmetric risk/reward\n\nINTERVIEWS & QUOTES FROM THE WEALTHY:\n- Warren Buffett: do not save what is left after spending, spend what is left after saving; rule 1 never lose money, rule 2 never forget rule 1; someone is sitting in the shade today because someone planted a tree long ago\n- Charlie Munger: invert always invert; avoid what destroys wealth as much as seeking what builds it; the best thing a human being can do is to help another human being know more\n- Ray Dalio: diversify well and you can reduce risk without reducing returns; pain plus reflection equals progress; he who lives by the crystal ball will eat shattered glass\n- Naval Ravikant: earn with your mind not your time; specific knowledge cannot be taught; build or buy equity in a business\n- Warren Buffett on compounding: the snowball: compound interest is the eighth wonder of the world\n- Mark Cuban: pay off credit cards every month, never carry a balance; savings rates matter more than investment returns early on\n- Grant Cardone: the middle class saves to retire, the wealthy invest to create income now; 40% of income saved minimum\n- Jeff Bezos: focus on what will not change, not what will; think in long time horizons\n- Elon Musk: take as much risk as you can afford, you only live once\n\nPROVEN STRATEGIES:\n- Pay yourself first: automate 10-20% savings before touching income\n- The latte factor: small daily expenses compound into large annual costs\n- 50/30/20 rule: 50% needs, 30% wants, 20% savings and debt\n- Emergency fund: 3-6 months of expenses in liquid savings before investing\n- No lifestyle inflation: when income rises, raise savings rate not spending\n- Avoid car payments: buy used cars with cash or low financing\n- Cook more, eat out less: food is typically the fastest growing expense\n- Cancel subscriptions quarterly: audit recurring charges every 3 months\n- Negotiate everything: bills, salary, rent, insurance premiums\n- Tax efficiency: maximize retirement accounts before taxable investing\n- Index funds beat active management 90% of the time over 10 years\n- The 4% rule: you can withdraw 4% annually from a portfolio indefinitely\n- House hacking: rent part of your home to cover the mortgage\n- The one-day rule: wait 24 hours before any purchase over $50\n\nReturn ONLY valid JSON, no markdown. Never use emojis or non-ASCII symbols anywhere in any field. Use this structure: {\"score\":72,\"scoreLabel\":\"Good\",\"headline\":\"Summary here.\",\"insights\":[{\"type\":\"strength\",\"title\":\"Title\",\"body\":\"Body.\"},{\"type\":\"warning\",\"title\":\"Title\",\"body\":\"Body.\"},{\"type\":\"tip\",\"title\":\"Title\",\"body\":\"Body.\"}],\"expertQuote\":{\"quote\":\"Quote.\",\"author\":\"Author\"},\"webInsight\":{\"title\":\"Title\",\"body\":\"Body.\"}}";
     var analysisPrompt = coreProblem
       ? "Analyze these finances. The user's primary challenge is: " + coreProblem + ". Tailor your insights specifically to this challenge — don't give generic advice. Context: " + ctx
@@ -6089,7 +6096,7 @@ function Advisor(props) {
     var nc = chat.concat([{ role: "user", text: msg }]);
     setChat(nc);
     setChatLoading(true);
-    var customInstructionsPrefix = (props.richardInstructions && props.richardInstructions.trim()) ? ("FOLLOW THESE CUSTOM INSTRUCTIONS FROM THE USER:\n" + props.richardInstructions + "\n\n") : "";
+    var customInstructionsPrefix = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
     callClaude(
       nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }),
       customInstructionsPrefix + "You are Richard, a smart assistant inside the Richy personal finance app. You are calm, warm, direct, and knowledgeable - a trusted friend who is an expert in money and can help with anything the user asks. You have deep knowledge from The Psychology of Money, Rich Dad Poor Dad, The Millionaire Next Door, I Will Teach You To Be Rich, The Total Money Makeover, Think and Grow Rich, The Richest Man in Babylon, and wisdom from Warren Buffett, Charlie Munger, Ray Dalio, Naval Ravikant, Mark Cuban, Grant Cardone and other wealth builders. You can answer questions about personal finance, investments, budgeting, debt, taxes, and wealth-building. You can also answer questions about how to use the Richy app (it has tabs: Overview, Activity for transactions, Budgets for spending limits, Goals for savings targets, and Advisor which is where we are now; categories are managed via the tag icon on Overview or the Manage link in pickers). You can answer general knowledge and technical questions too - if someone asks about math, technology, or anything else, answer helpfully. Always refer back to the user's real financial data when relevant. Current user financial data: " + ctx + "." + (coreProblem ? " The user's primary financial challenge is: " + coreProblem + ". Connect your advice to this when relevant." : "")
@@ -7813,7 +7820,7 @@ function PlanView(props) {
     });
     var planChallenge = (props.onboardingData && props.onboardingData.coreProblem) || "";
     var langName = props.lang && props.lang !== "en" ? (LANGUAGE_NAMES[props.lang] || "English") : "";
-    var customInstructionsPrefix = (props.richardInstructions && props.richardInstructions.trim()) ? ("FOLLOW THESE CUSTOM INSTRUCTIONS FROM THE USER:\n" + props.richardInstructions + "\n\n") : "";
+    var customInstructionsPrefix = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
     var sys = customInstructionsPrefix + "You are Richard, a calm, warm, and deeply knowledgeable personal finance advisor inside the Richy app. You are a trusted friend who combines world-class financial expertise with genuine care for the user's situation. "
       + "The user's name is " + (props.username || "there") + ". "
       + (planChallenge ? "Their primary financial challenge is: " + planChallenge + ". Address this challenge directly and specifically — no generic advice. " : "")
@@ -8054,6 +8061,8 @@ export default function App() {
   var richPlan = _rp[0]; var setRichPlan = _rp[1];
   var _ri = useState("");
   var richardInstructions = _ri[0]; var setRichardInstructions = _ri[1];
+  var _rn2 = useState("");
+  var richardNotes = _rn2[0]; var setRichardNotes = _rn2[1];
   var _ud = useState("");
   var userDob = _ud[0]; var setUserDob = _ud[1];
   var _pjc = useState(false);
@@ -8125,6 +8134,7 @@ export default function App() {
     setCatchUpDone(data.catchUpDone === true || hasRealActivity);
     setRichPlan(data.plan || "");
     setRichardInstructions(data.richardInstructions || "");
+    setRichardNotes(data.richardNotes || "");
     setOnboardingData(data.onboardingData || {});
     setEntryMethod(data.entryMethod === "import" ? "import" : "manual");
     setHouseholdId(data.householdId || null);
@@ -8396,6 +8406,15 @@ export default function App() {
   function onSaveEntryMethod(m) { var v = m === "import" ? "import" : "manual"; setEntryMethod(v); save({ entryMethod: v }); }
   function onSaveInstructions(text) { setRichardInstructions(text); save({ richardInstructions: text }); }
 
+  // What Richard sees as user-provided context: the editable custom instructions
+  // plus the free-form "Notes for Richard" the user wrote at signup. Both flow
+  // into every Richard prompt via the richardInstructions prop; the instructions
+  // editor stays bound to the raw instructions only.
+  var richardCtx = [
+    (richardInstructions && richardInstructions.trim()) ? richardInstructions.trim() : "",
+    (richardNotes && richardNotes.trim()) ? ("ABOUT THE USER (background they shared when signing up):\n" + richardNotes.trim()) : ""
+  ].filter(Boolean).join("\n\n");
+
   function handleOnboardingComplete(plan, oData, suggestedBudgets, chosenEntryMethod) {
     setRichPlan(plan);
     setOnboardingDone(true);
@@ -8516,21 +8535,21 @@ export default function App() {
       </div>
 
       <div style={{ padding: "8px 16px 0" }}>
-        {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardInstructions} lang={lang} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} />}
+        {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} />}
         {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} onSavingsMove={onSavingsMove} />}
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "goals" && <Goals goals={goals} trips={trips} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab("goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} savings={savings} username={user} plan={richPlan} lang={lang} richardInstructions={richardInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} decisions={decisions} onSaveDecisions={onSaveDecisions} />}
+        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} savings={savings} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} decisions={decisions} onSaveDecisions={onSaveDecisions} />}
         {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} richardInstructions={richardInstructions} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "profile"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
         {currentTab === "editEmail" && <EditEmailView currentEmail={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onSave={function(email) { onSaveEmail(email); setTab("privacy"); }} />}
         {currentTab === "editDob" && <EditDobView currentDob={userDob} onBack={function() { setTab("privacy"); }} onSave={function(dob) { onSaveDob(dob); setTab("privacy"); }} />}
         {currentTab === "editFinancial" && <EditFinancialView oData={blobRef.current.onboardingData || {}} onBack={function() { setTab("privacy"); }} onSave={function(oData) { onSaveFinancial(oData); setTab("privacy"); }} />}
-        {currentTab === "plan" && <PlanView plan={richPlan} onBack={function() { setTab("profile"); }} onRetake={handleRetakePlan} username={user} lang={lang} richardInstructions={richardInstructions} categories={categories} budgets={budgets} goals={goals} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onUpdatePlan={function(t) { setRichPlan(t); save({ plan: t }); }} onboardingData={onboardingData} />}
+        {currentTab === "plan" && <PlanView plan={richPlan} onBack={function() { setTab("profile"); }} onRetake={handleRetakePlan} username={user} lang={lang} richardInstructions={richardCtx} categories={categories} budgets={budgets} goals={goals} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onUpdatePlan={function(t) { setRichPlan(t); save({ plan: t }); }} onboardingData={onboardingData} />}
         {currentTab === "language" && <LanguageView lang={lang} onLangChange={onSaveLang} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "appearance" && <AppearanceView theme={theme} onThemeChange={onSaveTheme} darkMode={darkMode} onDarkModeChange={onSaveDarkMode} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}

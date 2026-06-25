@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Richy · User Simulation Report</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root{
+    --bg:#141210; --card:#1E1B18; --card-dark:#252218; --accent:#C8673A; --accent-light:#E07848;
+    --text:#F0EBE3; --muted:#9E9690; --green:#27A85F; --red:#E03030; --gold:#C8983A; --purple:#9B6DB5;
+    --border:rgba(255,255,255,0.06);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system, system-ui, sans-serif; line-height:1.5;
+  }
+  .wrap{max-width:1200px; margin:0 auto; padding:24px 16px 80px;}
+  h1{font-size:2rem; font-weight:800; margin:0 0 6px;}
+  .subtitle{color:var(--muted); margin:0 0 28px; font-size:1rem;}
+  h2{font-size:1.25rem; font-weight:700; margin:40px 0 16px;}
+  .card{background:var(--card); border:1px solid var(--border); border-radius:16px;}
+  /* stat cards */
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px;}
+  .stat{padding:16px;}
+  .stat .label{font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:8px;}
+  .stat .value{font-size:1.5rem; font-weight:800;}
+  .stat .sub{font-size:.8rem; color:var(--muted); margin-top:4px;}
+  .v-green{color:var(--green);} .v-red{color:var(--red);} .v-orange{color:var(--accent-light);} .v-muted{color:var(--text);}
+  /* charts grid */
+  .charts{display:grid; grid-template-columns:repeat(2,1fr); gap:16px;}
+  .chart-card{padding:16px;}
+  .chart-card .label{font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:10px;}
+  .canvas-box{height:260px; position:relative;}
+  /* table */
+  .table-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:16px;}
+  table{border-collapse:collapse; width:100%; min-width:760px; font-size:.85rem;}
+  th,td{padding:10px 12px; text-align:left; border-bottom:1px solid var(--border);}
+  th{font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); background:var(--card-dark);}
+  tbody tr:nth-child(even){background:rgba(255,255,255,0.02);}
+  .imp-red{background:rgba(224,48,48,.22);} .imp-gold{background:rgba(200,152,58,.22);} .imp-green{background:rgba(39,168,95,.22);}
+  .pill{display:inline-block; padding:3px 10px; border-radius:999px; font-size:.75rem; font-weight:600;}
+  .pill-green{background:rgba(39,168,95,.18); color:var(--green);}
+  .pill-red{background:rgba(224,48,48,.18); color:var(--red);}
+  /* accordion */
+  .accordion{display:flex; flex-direction:column; gap:10px;}
+  .acc-item{background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden;}
+  .acc-head{display:flex; align-items:center; gap:12px; padding:14px 16px; cursor:pointer; user-select:none; flex-wrap:wrap;}
+  .acc-head .name{font-weight:700;}
+  .acc-head .arch{color:var(--muted); font-size:.82rem;}
+  .acc-badges{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap;}
+  .badge{font-size:.7rem; padding:3px 8px; border-radius:8px; background:var(--card-dark); color:var(--text); white-space:nowrap;}
+  .badge b{color:var(--accent-light);}
+  .chev{margin-left:8px; transition:transform .25s ease; color:var(--muted); flex-shrink:0;}
+  .acc-item.open .chev{transform:rotate(90deg);}
+  .acc-body{max-height:0; overflow:hidden; transition:max-height .35s ease; }
+  .acc-item.open .acc-body{max-height:2000px;}
+  .acc-inner{padding:0 16px 18px; border-top:1px solid var(--border);}
+  .acc-inner .opinion{color:var(--muted); white-space:pre-wrap; margin:14px 0;}
+  .acc-inner .fav,.acc-inner .gaveup{margin:8px 0; font-size:.9rem;}
+  .acc-inner .lbl{color:var(--accent-light); font-weight:600;}
+  .tags{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;}
+  .tag{font-size:.72rem; padding:4px 10px; border-radius:999px; background:rgba(200,103,58,.16); color:var(--accent-light);}
+  @media(max-width:760px){
+    .charts{grid-template-columns:1fr;}
+    h1{font-size:1.5rem;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- SECTION 1 -->
+  <header>
+    <h1>Richy · User Simulation Report</h1>
+    <p class="subtitle">June 24, 2026 — Cohort: 10 personas</p>
+  </header>
+  <div class="stats">
+    <div class="stat card">
+      <div class="label">Avg First Impression</div>
+      <div class="value v-red">5.2 / 10</div>
+    </div>
+    <div class="stat card">
+      <div class="label">Users Kept</div>
+      <div class="value v-green">5 / 10</div>
+      <div class="sub">50%</div>
+    </div>
+    <div class="stat card">
+      <div class="label">Avg NPS</div>
+      <div class="value v-green">+0.5</div>
+    </div>
+    <div class="stat card">
+      <div class="label">Avg Max WTP</div>
+      <div class="value v-muted">$2.60 / mo</div>
+    </div>
+    <div class="stat card">
+      <div class="label">Buy @ $5</div>
+      <div class="value v-red">15.0%</div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <h2>Charts</h2>
+  <div class="charts">
+    <div class="chart-card card"><div class="label">First Impression Scores</div><div class="canvas-box"><canvas id="c1"></canvas></div></div>
+    <div class="chart-card card"><div class="label">AI Advisor Usefulness</div><div class="canvas-box"><canvas id="c2"></canvas></div></div>
+    <div class="chart-card card"><div class="label">Impression vs. Time to Decide</div><div class="canvas-box"><canvas id="c3"></canvas></div></div>
+    <div class="chart-card card"><div class="label">Kept vs. Gave Up</div><div class="canvas-box"><canvas id="c4"></canvas></div></div>
+    <div class="chart-card card"><div class="label">NPS Scores</div><div class="canvas-box"><canvas id="c5"></canvas></div></div>
+    <div class="chart-card card"><div class="label">Missing Feature Frequency</div><div class="canvas-box"><canvas id="c6"></canvas></div></div>
+    <div class="chart-card card"><div class="label">Max Willingness to Pay ($/mo)</div><div class="canvas-box"><canvas id="c7"></canvas></div></div>
+    <div class="chart-card card"><div class="label">Likelihood to Buy at $5/mo (%)</div><div class="canvas-box"><canvas id="c8"></canvas></div></div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <h2>Summary</h2>
+  <div class="table-wrap card">
+    <table>
+      <thead>
+        <tr><th>Persona</th><th>Archetype</th><th>Country</th><th>Impression</th><th>AI Score</th><th>NPS</th><th>WTP</th><th>Buy@$5</th><th>Decision</th></tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 4 -->
+  <h2>Persona Details</h2>
+  <div class="accordion" id="accordion"></div>
+
+</div>
+
+<script>
+const DATA = [
+{"persona":"Maya Adeyemi (20, College student)","short":"Maya","archetype":"College student","country":"Nigeria","firstImpressionScore":4,"aiUsefulnessScore":5,"wouldGiveUp":true,"giveUpReason":"Defaulted to USD at signup with no Naira in the grid felt like it wasn't built for me, and the thought of manually typing in every ₦200 data bundle at 2am with no bank or mobile-money sync was exhausting.","minutesBeforeDecision":9,"missingFeatures":["Naira (₦) in the signup currency grid + search at signup","Mobile money / Nigerian bank sync","₦ in the quick-currency buttons","Fast logging for tiny recurring micro-expenses","Realistic free tier — $5/mo is impossible on a student stipend"],"favoriteThing":"Richard's plan actually mentioned not running out before the end of the month, which is literally my whole problem","fullOpinion":"I downloaded this at 2am because my data money was gone by the 12th again and I'm done asking my brother. The signup looked clean and the questions felt like they got my situation. But then the currency grid had dollar, euro, pound, even rupee and rand — no Naira. It just put me on USD. I dug into Profile and found a search and switched to ₦, fine, but the very first thing the app did was assume I'm not someone it was made for. At 2am, tired, with a coursework deadline open in another tab, that stings more than it should.\n\nThe real wall is the entry. There's no way to connect my bank or mobile money — which I get, Nigerian banks won't plug in — so to actually use this I'd have to hand-type every ₦150 snack and ₦200 data top-up myself. The add screen doesn't even have ₦ in the quick buttons. Richard's little plan was the one bright spot; it actually talked about stretching cash to the end of the month. But chatting with an AI doesn't put my spending into the app, and I'm not doing manual data entry every day for a $5/month tool when my whole stipend is basically that. I closed it and went back to my assignment.","npsScore":-3,"maxWTPPerMonth":0,"likelihoodToBuyAt5":1},
+{"persona":"Tomás Herrera (27, Young professional)","short":"Tomás","archetype":"Young professional","country":"Mexico","firstImpressionScore":6,"aiUsefulnessScore":7,"wouldGiveUp":false,"giveUpReason":"","minutesBeforeDecision":11,"missingFeatures":["Mexican peso (MXN) missing from the signup currency grid","Bank sync / automatic transaction import","A real spending breakdown requires weeks of logging first","Couples/shared mode for living with my girlfriend","Recurring expense auto-detection"],"favoriteThing":"Richard nailing the lifestyle-inflation worry — the advice about banking half of every raise felt aimed straight at me","fullOpinion":"I'll keep it, barely, and mostly because the bones are good and Richard surprised me. The aesthetic is genuinely nice — that cream background, the soft white cards, the SF type, the ring and bar animations all feel considered. As a designer I respect the restraint; it doesn't look like the usual neon fintech sludge. The onboarding 5-dot flow is clean and the challenge question ('Understanding where my money goes') was exactly my situation.\n\nBut the first real interaction soured me. At signup it offered me a wall of currency chips — dollars, euros, even Colombian pesos — and no Mexican peso, no search box, just defaulted me to USD. I live in Guadalajara. That's a basic localization miss. Then I hit the bigger problem: I came here to see where my raise is going, and the answer is 'log everything by hand for a month, then we'll tell you.'\n\nWhat saved it was going to the Advisor tab. I asked about lifestyle creep and Richard actually gave a specific, sharp answer — bank half of every raise before adjusting your spending, the gap is the wealth. That's the exact anxiety I walked in with. Right now it's a promising tool I have to do a lot of homework to benefit from.","npsScore":3,"maxWTPPerMonth":3,"likelihoodToBuyAt5":25},
+{"persona":"Priya Nair (36, Working parent)","short":"Priya","archetype":"Working parent","country":"India","firstImpressionScore":6,"aiUsefulnessScore":6,"wouldGiveUp":false,"giveUpReason":"","minutesBeforeDecision":11,"missingFeatures":["A shared/couples view that's obvious from the start","A real sinking-fund or 'irregular expenses' bucket","Faster, lower-effort logging — auto-import from bank/UPI","A simpler way to enter only the money I actually control"],"favoriteThing":"It speaks rupees right out of the box, and the onboarding actually asked about my biggest worry and built a plan around it","fullOpinion":"I downloaded this at 3am with the baby on my arm, half expecting another app that wants my bank login and a tutorial. It surprised me a little. The first questions felt like someone actually listening — it asked what my biggest financial challenge was, and there was even a 'planning finances with a partner' option, which is exactly me. When I typed my numbers the symbol was ₹, not some dollar sign. Small thing, but it made me feel like the app was built for someone like me. The plan it wrote was sensible — build a buffer, set aside a little before spending — and it didn't lecture me for 1,000 words.\n\nWhere it started to wobble was the part right after, where it asked me to log everything I'd already spent this month. I don't see everything. My husband pays the big bills; I run the daily household money. So which income do I put? And entering expenses one by one, by hand, with a baby in the other arm — I did two and my thumb was tired. I picked 'partner' but never found anywhere obvious to actually link with my husband.\n\nI'm keeping it, tentatively, mostly because that uniform invoice still stings and the idea of a buffer fund spoke to me. But it's keeping it the way you keep an app you mean to set up properly 'this weekend.' If logging stays this manual, it'll drift to the bottom of the screen.","npsScore":3,"maxWTPPerMonth":2,"likelihoodToBuyAt5":15},
+{"persona":"Lukas Varga (42, Freelancer)","short":"Lukas","archetype":"Freelancer","country":"Hungary","firstImpressionScore":6,"aiUsefulnessScore":7,"wouldGiveUp":false,"giveUpReason":"","minutesBeforeDecision":11,"missingFeatures":["Cash-flow forecasting / 'will I survive a dry month' projection","Invoice tracking for late-paying clients","Onboarding that asks for income range instead of one 'monthly income'","Tax set-aside bucket for freelance income","Forint as a first-class currency"],"favoriteThing":"Richard's irregular-income advice - baseline on your bare-minimum month, build a buffer, pay yourself a steady 'salary'","fullOpinion":"I almost closed it on the third screen. It asks for my \"monthly income\" like I'm some guy with a payslip - I'm a freelancer, my income is 11 million one month and nearly zero the next, that's the entire reason I'm here. I typed a number, felt like I was lying to the app. It also defaulted to dollars, which annoyed me until I dug through the currency list and found Forint - good, but it should not have made me hunt for it.\n\nWhat saved it was two things. First, \"Managing irregular or variable income\" was right there in the list of challenges - the first app I've tried that even admits that's a thing. Second, when I found the Advisor and asked Richard about irregular income, the answer was real: budget on your bare-minimum month, don't spend the surplus, park it and pay yourself a steady salary, set aside money for tax. That is genuinely the advice I needed.\n\nBut it stops short of what would actually fix my problem. There's no way to forecast a dry month. The whole thing is still built around a salary I don't have. I'll keep it for now - mostly for Richard - but it's on probation.","npsScore":3,"maxWTPPerMonth":3,"likelihoodToBuyAt5":25},
+{"persona":"Eleanor Whitfield (68, Retiree)","short":"Eleanor","archetype":"Retiree","country":"United Kingdom","firstImpressionScore":4,"aiUsefulnessScore":3,"wouldGiveUp":true,"giveUpReason":"The CatchUp screen asked me to remember what I'd spent on each category this month and I simply couldn't — Geoff always did this, and being made to type everything in by hand felt like more than I could manage.","minutesBeforeDecision":11,"missingFeatures":["A way to connect my bank so it fills things in for me","Bigger, clearer text and buttons","A simple 'start here, do this next' guide","Someone to set it all up for me the first time","Plain-English help instead of so many tabs and symbols"],"favoriteThing":"Seeing the pound sign (£) there straight away — at least it understood I'm in England.","fullOpinion":"My granddaughter sat with me and promised this would be simpler than Geoff's spreadsheets, and the very first screens weren't too frightening. It asked me kind questions about what worries me most about money, and I'll admit it touched a nerve — outliving my savings is exactly the thing that keeps me up. The colours are gentle and it does show pounds, which was a small relief. So I went in wanting to like it.\n\nBut then it asked me to put in what I'd spent this month on different things — from memory. I haven't the faintest idea. Geoff handled all of that, and asking me to conjure those numbers up made me feel rather foolish and panicked. After that there were tabs along the bottom and little symbols and a plus button and forms with boxes I wasn't sure about. I never did find this 'Richard' adviser everyone's meant to talk to.\n\nI think this app is built for younger people who already know what they spend. I came for reassurance and a bit of hand-holding, and instead I felt like I was being given homework.","npsScore":-4,"maxWTPPerMonth":3,"likelihoodToBuyAt5":8},
+{"persona":"Daniyar Toktarov (31, Recent immigrant)","short":"Daniyar","archetype":"Recent immigrant","country":"Canada","firstImpressionScore":7,"aiUsefulnessScore":6,"wouldGiveUp":false,"giveUpReason":"","minutesBeforeDecision":11,"missingFeatures":["A dedicated remittance/send-money-home tracker with live CAD-to-tenge conversion","Tenge (₸/KZT) as a quick currency button","A way to model two incomes / supporting people outside the household","An always-visible 'safe to spend right now' number","Reminder before a recurring transfer or low balance"],"favoriteThing":"The Net Balance hero plus C$ being right there in the quick-currency buttons — it finally felt like an app built for someone living between two currencies.","fullOpinion":"I downloaded this the same night a terminal declined my card in line at the grocery store, with people waiting behind me. So the first thing I cared about was: can this app tell me, at a glance, how much I actually have before I tap to pay. And mostly, yes. The Net Balance on the home screen is the first thing I see, big and clear. That alone is most of why I'm keeping it. When I saw 'C$' sitting right in the quick currency buttons I actually felt a little seen.\n\nOnboarding was fine, and Richard giving me a written plan felt thoughtful even if it was a bit generic — 'save 10%, build a buffer.' Easy to say when you're not wiring money to Almaty every month. None of the 'biggest challenge' options were really mine. I logged my monthly transfer home as a repeating expense, which works, but I had to fudge it — there's no real concept of remittances, and tenge isn't one of the quick buttons even though Canadian dollar is.\n\nThe manual entry is going to be the test. I'm motivated right now, but if I have to type every coffee, I know how that ends in three weeks. I'll try the CSV import. I'm keeping it, but on probation. It's well aimed at my anxiety; it just doesn't yet understand that my money has to stretch across an ocean.","npsScore":6,"maxWTPPerMonth":3,"likelihoodToBuyAt5":25},
+{"persona":"Chloe Beaumont (33, High earner / low saver)","short":"Chloe","archetype":"High earner / low saver","country":"United States","firstImpressionScore":6,"aiUsefulnessScore":7,"wouldGiveUp":true,"giveUpReason":"No bank sync — every transaction is manual entry or a CSV I'd have to export myself. I'm not hand-logging my coffees and Ubers in 2026 when Copilot and Rocket Money just do it for me.","minutesBeforeDecision":11,"missingFeatures":["Automatic bank/card sync (Plaid-style)","Auto-import recurring subscriptions","Spending alerts / push notifications","Real net worth aggregation across accounts","Auto-categorization without typing labels"],"favoriteThing":"The Savings Rate metric with the 'Overspending' label and the pie chart breakdown — plus Richard actually saying 'pay yourself first.'","fullOpinion":"Okay, the onboarding genuinely got me. It asked what my biggest financial challenge was and I picked the spending-everything-I-earn one, and when I plugged in my income and essentials it spat back this Savings Rate thing that just said 'Overspending' in red. That's the TikTok feeling all over again. The pie chart and the 'Top spend' card are exactly the wake-up call I wanted, and Richard the AI advisor is better than I expected — 'pay yourself first, automate a payday transfer, attack your largest expense' resonated more than I want to admit.\n\nBut here's where it fell apart: it wants me to type in every transaction by hand. The CSV path means I have to log into my bank, export a statement, and upload it myself. There's no bank connection, nothing automatic. I've been on Copilot and Rocket Money — they just pull everything in while I sleep. The idea that I'd be manually logging a $6 latte is a non-starter; I'll do it for three days and then never open the app again.\n\nSo it's frustrating, because the brain of this thing is pointed right at my exact problem. If it synced my accounts I'd probably pay for it without blinking. But a budgeting app that depends on me being diligent about data entry is solving the wrong half of my problem.","npsScore":3,"maxWTPPerMonth":8,"likelihoodToBuyAt5":20},
+{"persona":"Marcus Okafor (29, Debt-focused)","short":"Marcus","archetype":"Debt-focused","country":"United States","firstImpressionScore":4,"aiUsefulnessScore":5,"wouldGiveUp":true,"giveUpReason":"I came for an aggressive student-loan payoff plan with a payoff date and an avalanche schedule, and the app flat-out admits it has no debt-payoff tool. The one thing I needed isn't here.","minutesBeforeDecision":9,"missingFeatures":["Dedicated debt/loan tracker with interest rate, balance, payoff date","Avalanche/snowball repayment schedule (not just the concept)","Extra-payment 'what-if' calculator","Ability to make my $94k loan an actual tracked target","Amortization / payoff timeline projection"],"favoriteThing":"Richard being honest that it can't do debt payoff instead of faking it","fullOpinion":"The onboarding actually got my hopes up. First question was 'biggest financial challenge' and 'Paying off debt' was right there. Then it asked for my total debt and I typed 94000 with my stomach in knots, thinking okay, this thing gets me. I hit 'Build My Plan' expecting a payoff date and a strategy.\n\nWhat I got was a decent generic plan and then Richard straight-up telling me Richy has no interest-based debt payoff calculator and that CSV import is the workaround. I went to the Advisor tab and asked about avalanche vs snowball, and the answer was genuinely solid finance advice — pay the highest-interest first — but it's a paragraph, not a tool. I went hunting in the Goals tab hoping I could rig my loan as a target, but it's all savings framing. My $94k just sits there as a number on a settings row.\n\nI respect that it didn't lie to me. But respect doesn't pay down student loans. I needed to see a payoff date, watch what an extra $300 a month does to my timeline. This is a spending tracker with a chatty advisor, and a good one probably, but it's not what I drove home from a night shift to find. I'm deleting it and going to find an actual debt payoff app.","npsScore":-2,"maxWTPPerMonth":0,"likelihoodToBuyAt5":3},
+{"persona":"Beatriz Santos (45, Small business owner)","short":"Beatriz","archetype":"Small business owner","country":"Brazil","firstImpressionScore":3,"aiUsefulnessScore":3,"wouldGiveUp":true,"giveUpReason":"The app has no way to separate my bakery money from my family money, which is the only reason I downloaded it, and even the AI advisor admitted it can't do business accounting.","minutesBeforeDecision":9,"missingFeatures":["Separation of business and personal accounts","Profit and loss / business reporting","Tax and business expense categorization","Invoicing","Simpler, less overwhelming interface for non-technical users"],"favoriteThing":"It already had Real (R$) as a currency option","fullOpinion":"I downloaded this because my accountant told me I don't know which money is the bakery's and which is my family's, and a tax bill almost took everything I saved. So the first thing I went looking for was a way to keep the bakery separate from my home. It is not there. You put in your income and your bills like it is all one pile, the same pile that is already causing fights in my house. I even asked the little advisor, Richard, and he was polite but he told me himself he cannot do business accounting. If the app tells me it cannot do the one thing I need, why would I keep it?\n\nAnd honestly it was a lot. Buttons that slide up from the bottom, holding my finger on things to change them, a chat that wants me to ask it questions. I am not good with these things and I was already tired and stressed. The one nice surprise was that it knew Real, R$. But that is a very small thing. I came for help untangling my life from my bakery, and instead I got a pretty app for someone who only has one wallet.","npsScore":-7,"maxWTPPerMonth":0,"likelihoodToBuyAt5":3},
+{"persona":"Sophie Tan (26, Newly married)","short":"Sophie","archetype":"Newly married","country":"Singapore","firstImpressionScore":6,"aiUsefulnessScore":6,"wouldGiveUp":false,"giveUpReason":"","minutesBeforeDecision":13,"missingFeatures":["Couples mode I can set up in one sitting without my husband present","Onboarding that surfaces the Collab feature when you pick 'planning with a partner'","An AI advisor that knows the app HAS a couples mode","A way for Wei to log his own gaming spending","SGD in the quick-amount currency shortcuts"],"favoriteThing":"Finding the Collab/household feature buried in Profile — shared budgets and goals with private transactions is exactly the 'yours/mine/ours' setup I wanted","fullOpinion":"Okay, so my read is mixed. Setup was smooth and honestly pretty — warm, clean, very SF-app polish, and S$ was right there in the signup currency list so I didn't get stuck with dollars. I picked 'Planning finances with a partner' as my challenge because that's literally why I'm here, and Richard spat out a tidy little plan with a yours/mine/ours idea and a no-questions allowance for Wei's gaming, which made me feel less like the household nag for two minutes.\n\nBut here's the whiplash. I went hunting for a shared mode and almost gave up, then found 'Collab' buried in Profile — and it's a real couples feature, shared budgets and goals, invite your partner, private transactions stay private. That's EXACTLY what I downloaded this for. Then the catch: Wei has to create his own account and accept an email invite, which I can't finish tonight because he's not here. And weirdly, when I asked Richard directly about couples budgeting, he told me Richy doesn't have a shared mode — for a feature that exists three taps away. That contradiction is maddening.\n\nI'm keeping it for now, but only to show Wei this weekend and see if he'll actually sign up. If he won't, I'm the sole person logging both our spending, which is the exact nagging dynamic I was trying to escape. So: tentative, not won over.","npsScore":3,"maxWTPPerMonth":4,"likelihoodToBuyAt5":25}
+];
+
+const MISSING = [
+  {theme:"Bank sync / auto-import", n:6},
+  {theme:"Missing or buried currency", n:5},
+  {theme:"Couples / shared mode", n:3},
+  {theme:"Faster / low-effort logging", n:3},
+  {theme:"Irregular income / cash-flow forecasting", n:2},
+  {theme:"Simpler UX for low-tech users", n:2},
+  {theme:"Debt-payoff tracker (interest/avalanche/payoff date)", n:1},
+  {theme:"Business vs personal separation & P&L", n:1}
+].sort((a,b)=>b.n-a.n);
+
+const C = {bg:'#141210', card:'#1E1B18', cardDark:'#252218', accent:'#C8673A', accentLight:'#E07848',
+  text:'#F0EBE3', muted:'#9E9690', green:'#27A85F', red:'#E03030', gold:'#C8983A', purple:'#9B6DB5', border:'rgba(255,255,255,0.06)'};
+
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ---- Section 3 table ----
+function buildTable(){
+  const tb=document.getElementById('tbody');
+  DATA.forEach(d=>{
+    const imp=d.firstImpressionScore;
+    let impClass = imp<=4 ? 'imp-red' : (imp<=6 ? 'imp-gold' : 'imp-green');
+    const dec = d.wouldGiveUp ? '<span class="pill pill-red">Gave Up</span>' : '<span class="pill pill-green">Kept</span>';
+    const tr=document.createElement('tr');
+    tr.innerHTML =
+      '<td>'+escapeHtml(d.persona)+'</td>'+
+      '<td>'+escapeHtml(d.archetype)+'</td>'+
+      '<td>'+escapeHtml(d.country)+'</td>'+
+      '<td class="'+impClass+'">'+imp+'</td>'+
+      '<td>'+d.aiUsefulnessScore+'</td>'+
+      '<td>'+(d.npsScore>=0?'+':'')+d.npsScore+'</td>'+
+      '<td>$'+d.maxWTPPerMonth+'</td>'+
+      '<td>'+d.likelihoodToBuyAt5+'%</td>'+
+      '<td>'+dec+'</td>';
+    tb.appendChild(tr);
+  });
+}
+
+// ---- Section 4 accordion ----
+function buildAccordion(){
+  const acc=document.getElementById('accordion');
+  DATA.forEach(d=>{
+    const item=document.createElement('div');
+    item.className='acc-item';
+    let body='<div class="acc-inner">'+
+      '<div class="opinion">'+escapeHtml(d.fullOpinion)+'</div>'+
+      '<div class="fav"><span class="lbl">Favorite thing:</span> '+escapeHtml(d.favoriteThing)+'</div>';
+    if(d.wouldGiveUp){
+      body+='<div class="gaveup"><span class="lbl">Gave up because:</span> '+escapeHtml(d.giveUpReason)+'</div>';
+    }
+    body+='<div class="fav"><span class="lbl">Missing features:</span></div><div class="tags">'+
+      d.missingFeatures.map(f=>'<span class="tag">'+escapeHtml(f)+'</span>').join('')+'</div>';
+    body+='</div>';
+    item.innerHTML=
+      '<div class="acc-head">'+
+        '<span class="name">'+escapeHtml(d.persona)+'</span>'+
+        '<span class="arch">'+escapeHtml(d.archetype)+'</span>'+
+        '<span class="acc-badges">'+
+          '<span class="badge">Impression <b>'+d.firstImpressionScore+'</b></span>'+
+          '<span class="badge">AI <b>'+d.aiUsefulnessScore+'</b></span>'+
+          '<span class="badge">NPS <b>'+(d.npsScore>=0?'+':'')+d.npsScore+'</b></span>'+
+        '</span>'+
+        '<span class="chev">&#9656;</span>'+
+      '</div>'+
+      '<div class="acc-body">'+body+'</div>';
+    item.querySelector('.acc-head').addEventListener('click',()=>item.classList.toggle('open'));
+    acc.appendChild(item);
+  });
+}
+
+// ---- Charts ----
+function baseScale(extra){
+  return Object.assign({
+    grid:{color:C.border}, ticks:{color:C.muted}
+  }, extra||{});
+}
+
+function buildCharts(){
+  const shorts = DATA.map(d=>d.short);
+  Chart.defaults.color = C.muted;
+  Chart.defaults.font.family = "-apple-system, system-ui, sans-serif";
+
+  // Chart 1 - First Impression horizontal bar
+  new Chart(document.getElementById('c1'),{
+    type:'bar',
+    data:{labels:shorts, datasets:[{data:DATA.map(d=>d.firstImpressionScore), backgroundColor:C.accent}]},
+    options:{indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:baseScale({min:0,max:10}), y:baseScale()}}
+  });
+
+  // Chart 2 - AI Usefulness horizontal bar
+  new Chart(document.getElementById('c2'),{
+    type:'bar',
+    data:{labels:shorts, datasets:[{data:DATA.map(d=>d.aiUsefulnessScore), backgroundColor:C.accentLight}]},
+    options:{indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:baseScale({min:0,max:10}), y:baseScale()}}
+  });
+
+  // Chart 3 - scatter impression vs time
+  const scatterLabel = {
+    id:'scatterLabel',
+    afterDatasetsDraw(chart){
+      const {ctx}=chart;
+      chart.data.datasets[0].data.forEach((pt,i)=>{
+        const meta=chart.getDatasetMeta(0).data[i];
+        ctx.save();
+        ctx.fillStyle=C.text; ctx.font='10px sans-serif'; ctx.textAlign='center';
+        ctx.fillText(pt.label, meta.x, meta.y-8);
+        ctx.restore();
+      });
+    }
+  };
+  new Chart(document.getElementById('c3'),{
+    type:'scatter',
+    data:{datasets:[{
+      data:DATA.map(d=>({x:d.minutesBeforeDecision, y:d.firstImpressionScore, label:d.short, kept:!d.wouldGiveUp})),
+      pointBackgroundColor:DATA.map(d=>d.wouldGiveUp?C.red:C.green),
+      pointRadius:6, pointHoverRadius:7
+    }]},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:(c)=>c.raw.label+': '+c.raw.x+' min, '+c.raw.y+'/10'}}},
+      scales:{
+        x:baseScale({min:0,max:30, title:{display:true,text:'Minutes',color:C.muted}}),
+        y:baseScale({min:0,max:10, title:{display:true,text:'First Impression',color:C.muted}})
+      }},
+    plugins:[scatterLabel]
+  });
+
+  // Chart 4 - doughnut kept vs gave up
+  const kept=DATA.filter(d=>!d.wouldGiveUp).length;
+  const gave=DATA.length-kept;
+  new Chart(document.getElementById('c4'),{
+    type:'doughnut',
+    data:{labels:['Kept ('+kept+' · '+Math.round(kept/DATA.length*100)+'%)','Gave Up ('+gave+' · '+Math.round(gave/DATA.length*100)+'%)'],
+      datasets:[{data:[kept,gave], backgroundColor:[C.green,C.red], borderColor:C.card, borderWidth:2}]},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom', labels:{color:C.text}}}}
+  });
+
+  // Chart 5 - NPS vertical bar with reference line at 0
+  const zeroLine={
+    id:'zeroLine',
+    afterDraw(chart){
+      const {ctx, chartArea, scales}=chart;
+      const y=scales.y.getPixelForValue(0);
+      ctx.save();
+      ctx.beginPath(); ctx.setLineDash([5,4]); ctx.strokeStyle=C.muted; ctx.lineWidth=1;
+      ctx.moveTo(chartArea.left,y); ctx.lineTo(chartArea.right,y); ctx.stroke();
+      ctx.restore();
+    }
+  };
+  new Chart(document.getElementById('c5'),{
+    type:'bar',
+    data:{labels:shorts, datasets:[{data:DATA.map(d=>d.npsScore),
+      backgroundColor:DATA.map(d=>d.npsScore>=0?C.green:C.red)}]},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:baseScale(), y:baseScale({min:-10,max:10})}},
+    plugins:[zeroLine]
+  });
+
+  // Chart 6 - missing feature frequency horizontal bar
+  new Chart(document.getElementById('c6'),{
+    type:'bar',
+    data:{labels:MISSING.map(m=>m.theme), datasets:[{data:MISSING.map(m=>m.n), backgroundColor:C.purple}]},
+    options:{indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:baseScale({min:0, ticks:{color:C.muted,stepSize:1}}),
+        y:baseScale({ticks:{color:C.muted, font:{size:9}}})}}
+  });
+
+  // Chart 7 - max WTP vertical bar
+  const maxW=Math.max(...DATA.map(d=>d.maxWTPPerMonth));
+  new Chart(document.getElementById('c7'),{
+    type:'bar',
+    data:{labels:shorts, datasets:[{data:DATA.map(d=>d.maxWTPPerMonth), backgroundColor:C.accent}]},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:baseScale(), y:baseScale({min:0,max:maxW+2})}}
+  });
+
+  // Chart 8 - likelihood to buy at $5 with 50% threshold line
+  const threshLine={
+    id:'threshLine',
+    afterDraw(chart){
+      const {ctx, chartArea, scales}=chart;
+      const y=scales.y.getPixelForValue(50);
+      ctx.save();
+      ctx.beginPath(); ctx.setLineDash([5,4]); ctx.strokeStyle=C.gold; ctx.lineWidth=1.5;
+      ctx.moveTo(chartArea.left,y); ctx.lineTo(chartArea.right,y); ctx.stroke();
+      ctx.fillStyle=C.gold; ctx.font='10px sans-serif'; ctx.textAlign='left';
+      ctx.fillText('50% threshold', chartArea.left+4, y-4);
+      ctx.restore();
+    }
+  };
+  new Chart(document.getElementById('c8'),{
+    type:'bar',
+    data:{labels:shorts, datasets:[{data:DATA.map(d=>d.likelihoodToBuyAt5),
+      backgroundColor:DATA.map(d=>d.likelihoodToBuyAt5>=50?C.green:(d.likelihoodToBuyAt5>=25?C.gold:C.red))}]},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:baseScale(), y:baseScale({min:0,max:100})}},
+    plugins:[threshLine]
+  });
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  buildTable();
+  buildAccordion();
+  buildCharts();
+});
+</script>
+</body>
+</html>
