@@ -6853,6 +6853,7 @@ function SavingsView(props) {
   var _src = useState(""); var src = _src[0]; var setSrc = _src[1];
   var _exp = useState(null); var expanded = _exp[0]; var setExpanded = _exp[1];
   var _ren = useState(""); var renameVal = _ren[0]; var setRenameVal = _ren[1];
+  var _del = useState(null); var deleteConfirm = _del[0]; var setDeleteConfirm = _del[1];
 
   var total = savingsTotal(accts);
   var actAcct = act ? accts.filter(function(a) { return a.id === act.id; })[0] : null;
@@ -6920,6 +6921,11 @@ function SavingsView(props) {
     if (bal > 0) props.onMove(tx.concat([transferTx("income", bal, acct.name, " (" + tr("closeAccount").toLowerCase() + ")")]), nextSav);
     else props.onSaveSavings(nextSav);
     setExpanded(null);
+  }
+  function doDelete(acct) {
+    props.onSaveSavings(accts.filter(function(a) { return a.id !== acct.id; }));
+    setExpanded(null);
+    setDeleteConfirm(null);
   }
 
   function seg(value, setter, options) {
@@ -7015,6 +7021,24 @@ function SavingsView(props) {
                   style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 10, padding: "6px 0", textAlign: "left" }}>
                   {tr("closeAccount")}{bal > 0 ? " · " + dollars(bal) + " → " + tr("balance").toLowerCase() : ""}
                 </button>
+                {deleteConfirm === a.id ? (
+                  <div style={{ marginTop: 8, background: "rgba(220,50,50,0.07)", borderRadius: 10, padding: "10px 12px" }}>
+                    <div style={{ fontSize: 12.5, color: T.ink2, marginBottom: 8, lineHeight: 1.45 }}>
+                      {bal > 0 ? dollars(bal) + " will be permanently lost. " : ""}Delete this account?
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button onClick={function() { doDelete(a); }}
+                        style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "8px 0", borderRadius: 9, background: T.red, color: "#fff" }}>Delete</button>
+                      <button onClick={function() { setDeleteConfirm(null); }}
+                        style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "8px 0", borderRadius: 9, background: "rgba(0,0,0,0.07)", color: T.ink2 }}>Cancel</button>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={function() { setDeleteConfirm(a.id); }}
+                    style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 2, padding: "4px 0", textAlign: "left" }}>
+                    Delete account
+                  </button>
+                )}
               </div>
             )}
           </Card>
