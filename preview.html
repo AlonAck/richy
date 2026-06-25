@@ -15,6 +15,23 @@
   html,body{margin:0;background:#F7F3EE;}
   #err{white-space:pre-wrap;font-family:monospace;color:#b00;padding:16px;font-size:13px;}
 </style>
+<script>
+// Paint the saved background BEFORE React (Babel + fetch) mounts, so a returning
+// dark-mode user never sees the default light/cream flash on load. Mirrors the
+// cb_dark key written by rememberLook() in the app.
+(function () {
+  try {
+    if (localStorage.getItem("cb_dark") === "1") {
+      var bg = "#131110";
+      document.documentElement.style.background = bg;
+      var setBody = function () { document.body.style.background = bg; };
+      if (document.body) setBody(); else document.addEventListener("DOMContentLoaded", setBody);
+      var tc = document.querySelector('meta[name="theme-color"]');
+      if (tc) tc.setAttribute("content", bg);
+    }
+  } catch (e) {}
+})();
+</script>
 </head>
 <body>
 <div id="root"></div>
