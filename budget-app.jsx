@@ -102,6 +102,19 @@ function applyDarkMode(dark) {
   T.inputBg = dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)";
 }
 
+// Remember the last-used look across reloads so the very first paint matches
+// the signed-in user's theme + mode, instead of flashing the light/purple
+// default while Firestore loads. Synced to the cloud value on every change.
+function lastLook() {
+  try {
+    return { theme: localStorage.getItem("cb_theme") || "purple", dark: localStorage.getItem("cb_dark") === "1" };
+  } catch (e) { return { theme: "purple", dark: false }; }
+}
+function rememberLook(theme, dark) {
+  try { localStorage.setItem("cb_theme", theme); localStorage.setItem("cb_dark", dark ? "1" : "0"); } catch (e) {}
+}
+(function () { var l = lastLook(); applyTheme(l.theme); applyDarkMode(l.dark); })();
+
 // Curated icon set for category "banners" - line icons in the app's style.
 // Each id maps to an SVG path in SVGIcon.
 var ICON_BANK = [
@@ -8072,9 +8085,9 @@ export default function App() {
   var planJustCreated = _pjc[0]; var setPlanJustCreated = _pjc[1];
   var _lg = useState("en");
   var lang = _lg[0]; var setLang = _lg[1];
-  var _th = useState("purple");
+  var _th = useState(function() { return lastLook().theme; });
   var theme = _th[0]; var setTheme = _th[1];
-  var _dm = useState(false);
+  var _dm = useState(function() { return lastLook().dark; });
   var darkMode = _dm[0]; var setDarkMode = _dm[1];
   var _ack = useState(false);
   var authChecked = _ack[0]; var setAuthChecked = _ack[1];
@@ -8145,6 +8158,7 @@ export default function App() {
     _lang.code = data.lang || "en"; setLang(data.lang || "en");
     var th = data.theme || "purple"; applyTheme(th); setTheme(th);
     var dm = !!data.darkMode; applyDarkMode(dm); setDarkMode(dm);
+    rememberLook(th, dm);
   }
 
   useEffect(function() {
@@ -8161,9 +8175,12 @@ export default function App() {
   useEffect(function() {
     if (!cloudReady()) { setAuthChecked(true); return function () {}; }
     var unsub = CLOUD.onAuth(function(fbUser) {
-      setAuthChecked(true);
-      if (!fbUser) { return; }                 // signed out -> AuthScreen shows
-      if (window.__cbSignup) { return; }       // email signup creates the doc itself
+      // Signed out, or email signup (which builds its own doc): reveal the UI now.
+      if (!fbUser) { setAuthChecked(true); return; }       // -> AuthScreen shows
+      if (window.__cbSignup) { setAuthChecked(true); return; }
+      // A session exists. Keep showing the loading screen (NOT the AuthScreen)
+      // until the user's data + theme are loaded, so we never flash "sign in"
+      // or the default light theme to an already-signed-in user.
       CLOUD.loadUser(fbUser.uid).then(function(data) {
         if (!data) {
           var nm = fbUser.displayName || (fbUser.email ? fbUser.email.split("@")[0] : "there");
@@ -8187,7 +8204,8 @@ export default function App() {
           if (_pd[_pi].providerId === "password") { _hasPwProv = true; break; }
         }
         setHasPw(_hasPwProv);
-      }).catch(function() {});
+        setAuthChecked(true);
+      }).catch(function() { setAuthChecked(true); });
     });
     return function() { if (typeof unsub === "function") unsub(); };
   }, []);
@@ -8400,8 +8418,8 @@ export default function App() {
       );
     }
   }
-  function onSaveTheme(name) { applyTheme(name); applyDarkMode(darkMode); setTheme(name); save({ theme: name }); }
-  function onSaveDarkMode(dm) { applyDarkMode(dm); setDarkMode(dm); save({ darkMode: dm }); }
+  function onSaveTheme(name) { applyTheme(name); applyDarkMode(darkMode); setTheme(name); rememberLook(name, darkMode); save({ theme: name }); }
+  function onSaveDarkMode(dm) { applyDarkMode(dm); setDarkMode(dm); rememberLook(theme, dm); save({ darkMode: dm }); }
   function onSaveNickname(name) { setUser(name); save({ displayName: name }); }
   function onSaveDob(dob) { setUserDob(dob); save({ dob: dob }); }
   function onSaveEmail(email) { save({ email: email }); }
@@ -8476,7 +8494,7 @@ export default function App() {
 
   if (cloudReady() && !authChecked) {
     return (
-      <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI }}>
+      <div style={{ minHeight: "100vh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI }}>
         <div style={{ width: 64, height: 64, borderRadius: 20, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 12px 32px " + T.orangeGlow }}>
           <SVGIcon id="spark" size={30} color="#fff" />
         </div>
