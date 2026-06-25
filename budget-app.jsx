@@ -91,12 +91,15 @@ var LIGHT_CARD = "#FFFFFF";
 var DARK_BG = "#131110";
 var DARK_CARD = "#1C1915";
 function applyDarkMode(dark) {
-  T.bg   = dark ? DARK_BG   : LIGHT_BG;
-  T.card = dark ? DARK_CARD : LIGHT_CARD;
-  T.sep  = dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
-  T.ink  = dark ? "#EDE8E2" : "#1A1410";
-  T.ink2 = dark ? "#A09080" : "#6B5C4E";
-  T.ink3 = dark ? "#6B5C4E" : "#B0A396";
+  T.bg      = dark ? DARK_BG   : LIGHT_BG;
+  T.card    = dark ? DARK_CARD : LIGHT_CARD;
+  T.sep     = dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
+  T.ink     = dark ? "#EDE8E2" : "#1A1410";
+  T.ink2    = dark ? "#A09080" : "#6B5C4E";
+  T.ink3    = dark ? "#6B5C4E" : "#B0A396";
+  T.navBg   = dark ? "rgba(19,17,16,0.94)"   : "rgba(250,247,242,0.92)";
+  T.sheetBg = dark ? "#1C1915" : "#F8F6F1";
+  T.inputBg = dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)";
 }
 
 // Curated icon set for category "banners" - line icons in the app's style.
@@ -702,7 +705,7 @@ function Overlay(props) {
         transform: "translateX(-50%)",
         width: "100%", maxWidth: 430,
         maxHeight: "88vh", overflowY: "auto",
-        background: "#F8F6F1",
+        background: T.sheetBg,
         borderRadius: "24px 24px 0 0",
         boxShadow: "0 -4px 40px rgba(20,18,16,0.22)",
         paddingBottom: 30,
@@ -724,7 +727,7 @@ function Overlay(props) {
 
 function FormRow(props) {
   return (
-    <div style={{ background: "rgba(0,0,0,0.04)", borderRadius: 13, padding: "9px 14px", marginBottom: props.last ? 0 : 7 }}>
+    <div style={{ background: T.inputBg, borderRadius: 13, padding: "9px 14px", marginBottom: props.last ? 0 : 7 }}>
       <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, marginBottom: 3 }}>
         {props.label}
       </div>
@@ -3322,7 +3325,7 @@ function ImportSheet(props) {
     close();
   }
 
-  var selStyle = { width: "100%", padding: "9px 11px", borderRadius: 11, border: "1.5px solid rgba(0,0,0,0.1)", background: "#fff", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", marginTop: 4 };
+  var selStyle = { width: "100%", padding: "9px 11px", borderRadius: 11, border: "1.5px solid " + T.sep, background: T.card, fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", marginTop: 4 };
   var lblStyle = { fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em" };
   var colOptions = rows.length ? rows[0].map(function(h, i) { return { i: i, name: hasHeader ? (h || ("Column " + (i + 1))) : ("Column " + (i + 1)) }; }) : [];
 
@@ -8503,7 +8506,8 @@ export default function App() {
   }
 
   var currentTab = tab;
-  applyTheme(theme);   // keep the live T palette in sync with the chosen design every render
+  applyTheme(theme);      // keep the live T palette in sync with the chosen design every render
+  applyDarkMode(darkMode); // re-apply dark/light mode tokens on every render so T stays consistent
   var _localeMap = { en: "en-US", he: "he-IL", es: "es-ES", fr: "fr-FR", ar: "ar-SA", ru: "ru-RU", de: "de-DE", pt: "pt-BR" };
   var _locale = _localeMap[lang] || "en-US";
   var monthLabel = new Date().toLocaleString(_locale, { month: "short" }) + " " + new Date().getFullYear();
@@ -8511,7 +8515,7 @@ export default function App() {
   return (
     <div style={{ background: T.bg, minHeight: "100vh", maxWidth: 430, margin: "0 auto", fontFamily: UI, paddingBottom: 100 }}>
 
-      <div style={{ position: "sticky", top: 0, zIndex: 40, background: "rgba(250,247,242,0.92)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", borderBottom: "0.5px solid rgba(0,0,0,0.06)" }}>
+      <div style={{ position: "sticky", top: 0, zIndex: 40, background: T.navBg, backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", borderBottom: "0.5px solid " + T.sep }}>
         <div style={{ display: "flex", alignItems: "center", padding: "14px 20px 14px" }}>
           <div style={{ width: 86, display: "flex", alignItems: "center" }}>
             <div style={{ background: T.orangeDim, borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em" }}>{monthLabel}</div>
