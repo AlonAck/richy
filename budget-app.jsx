@@ -108,6 +108,8 @@ function applyDarkMode(dark) {
   T.glassSpec  = dark ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.95)";
   T.glassLiftUp   = dark ? "0 -16px 48px rgba(0,0,0,0.50)" : "0 -16px 48px rgba(40,28,16,0.15)";
   T.glassLiftDown = dark ? "0 16px 48px rgba(0,0,0,0.50)"  : "0 16px 48px rgba(40,28,16,0.14)";
+  T.pillBg     = dark ? "rgba(22,19,17,0.76)" : "rgba(248,246,241,0.76)";
+  T.glassBorder = dark ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.55)";
 }
 
 // Remember the last-used look across reloads so the very first paint matches
@@ -9014,8 +9016,8 @@ export default function App() {
         {currentTab === "instructions" && <RichardInstructionsView value={richardInstructions} onSave={function(text) { onSaveInstructions(text); setTab(prevTabRef.current || "profile"); }} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
       </div>
 
-      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, zIndex: 30, background: T.navBg, backdropFilter: "blur(28px) saturate(180%)", WebkitBackdropFilter: "blur(28px) saturate(180%)", borderTop: "0.5px solid " + T.sep, boxShadow: "inset 0 1px 0 " + T.glassSpec + ", " + T.glassLiftUp }}>
-        <div style={{ display: "flex", justifyContent: "space-around", padding: "8px 0 28px" }}>
+      <div style={{ position: "fixed", bottom: "calc(20px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", width: "calc(100% - 32px)", maxWidth: 398, zIndex: 30, background: T.pillBg, backdropFilter: "blur(40px) saturate(200%) brightness(1.04)", WebkitBackdropFilter: "blur(40px) saturate(200%) brightness(1.04)", borderRadius: 36, border: "1px solid " + T.glassBorder, boxShadow: "0 8px 32px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 " + T.glassSpec }}>
+        <div style={{ display: "flex", justifyContent: "space-around", padding: "10px 4px 12px" }}>
           {TABS.map(function(tab) {
             var active = currentTab === tab.id;
             return (
