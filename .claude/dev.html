@@ -167,8 +167,40 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).t
     el = React.createElement(EditDobView, { currentDob: "1995-03-14", onBack: function(){}, onSave: function(){} });
   } else if (view === "editEmail") {
     el = React.createElement(EditEmailView, { currentEmail: "alon@example.com", hasPw: qs.get("haspw") === "1", onBack: function(){}, onSave: function(){} });
+  } else if (view === "business") {
+    function BusinessHarness() {
+      var seedCats = localBizSplit(1200).map(function(c){ return c.key === "marketing" ? Object.assign({}, c, { spent: 300, entries: [{ id: 50, label: "Logo design", amount: 300, date: "2026-06-05" }] }) : c; });
+      var seedBiz = qs.get("seed") ? [{
+        id: "biz_1", name: "Candle Co", what: "handmade candles", icon: "briefcase", color: "#8970C6", createdAt: "2026-06-01",
+        profile: { structure: "individual", stage: "launching", size: "side", monthly: 1200, revenueGoal: 3000, runway: 6, goal: "quit my job in a year" },
+        plan: { summary: "A lean handmade-candle side business. Start small, prove people will pay, then scale what works.", sections: [{ title: "Positioning", body: "Lean into a signature scent and a story only you can tell." }, { title: "First 90 days", body: "Sell at two local markets and open a simple online shop." }], tips: ["Reinvest early profit into the scents that sell.", "Keep a buffer for slow months."], verdict: { assessment: "Six months of runway is healthy for a side project at this budget.", keyNumber: "6 months", keyNumberLabel: "of runway" }, generatedAt: "2026-06-01" },
+        categories: seedCats,
+        entries: [{ id: 1, kind: "deposit", amount: 2000, date: "2026-06-01", fromMain: true, label: "From balance" }, { id: 50, kind: "withdraw", amount: 300, date: "2026-06-05", fromMain: false, label: "Logo design", bizExpense: true, catKey: "marketing" }]
+      }] : [];
+      var _b = React.useState(seedBiz); var bz = _b[0]; var setBz = _b[1];
+      var _tx = React.useState(mockTx); var tx = _tx[0]; var setTx = _tx[1];
+      return React.createElement(BusinessView, {
+        businesses: bz, tx: tx, openBizId: qs.get("seed") ? "biz_1" : null, username: "Alon", lang: "en", richardInstructions: "",
+        onSaveBusinesses: function(n){ setBz(n); },
+        onBusinessMove: function(ntx, nb){ setTx(ntx); setBz(nb); },
+        onBack: function(){}, backLabel: "Savings"
+      });
+    }
+    el = React.createElement(BusinessHarness, {});
+  } else if (view === "savings") {
+    function SavingsHarness() {
+      var _s = React.useState([]); var sv = _s[0]; var setSv = _s[1];
+      var _b = React.useState([]); var bz = _b[0]; var setBz = _b[1];
+      var _tx = React.useState(mockTx); var tx = _tx[0]; var setTx = _tx[1];
+      return React.createElement(SavingsView, {
+        savings: sv, businesses: bz, tx: tx,
+        onSaveSavings: function(n){ setSv(n); }, onMove: function(ntx, ns){ setTx(ntx); setSv(ns); },
+        onBack: function(){}, onOpenBusiness: function(){}
+      });
+    }
+    el = React.createElement(SavingsHarness, {});
   } else {
-    el = React.createElement(Overview, { tx: mockTx, goals: mockGoals, budgets: [], categories: mockCats, username: "Alon", plan: "", onCategories: function(){} });
+    el = React.createElement(Overview, { tx: mockTx, goals: mockGoals, budgets: [], categories: mockCats, businesses: [], username: "Alon", plan: "", onCategories: function(){}, onOpenBusiness: function(){} });
   }
   ReactDOM.createRoot(document.getElementById("root")).render(
     React.createElement("div", { style: { maxWidth: 420, margin: "0 auto", padding: 16, minHeight: "100vh" } }, el)

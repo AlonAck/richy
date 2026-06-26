@@ -369,6 +369,18 @@ function savingsTotal(list) {
   if (!list || !list.length) return 0;
   return round2(list.reduce(function(s, a) { return s + savingsBalance(a); }, 0));
 }
+// A Business Account is a special kind of savings pot: it keeps its own cash
+// balance (capital in, expenses/revenue out, exactly the savings ledger shape),
+// but also carries business budget categories and a Richard-built plan. Its cash
+// counts toward net worth just like a savings pot, so moving money in from the
+// main balance relocates it without changing net worth.
+function businessCash(biz) { return savingsBalance(biz); }
+function businessTotal(list) { return savingsTotal(list); }
+// Spent so far across a business's budget categories (cumulative, like a trip).
+function businessSpent(biz) {
+  if (!biz || !biz.categories) return 0;
+  return round2(biz.categories.reduce(function(s, c) { return s + (c.spent || 0); }, 0));
+}
 // Internal moves between the main balance and a pot are logged on the main ledger
 // (so the balance and its trend move correctly) but are NOT real income/spending,
 // so they're excluded from monthly cash-flow, savings-rate and category math -
@@ -2149,10 +2161,13 @@ function Overview(props) {
   var allIncome  = tx.filter(function(t) { return t.type === "income" && !t.catchUp && isSettled(t); }).reduce(function(s,t) { return s+t.amount; }, 0);
   var allExpense = tx.filter(function(t) { return t.type === "expense" && !t.catchUp && isSettled(t); }).reduce(function(s,t) { return s+t.amount; }, 0);
   var balance = allIncome - allExpense;
-  // Savings pots sit outside the main balance. Net worth = main balance + pots.
+  // Savings pots sit outside the main balance. Net worth = main balance + pots +
+  // business-account cash (also walled off, but still the user's net worth).
   var savAccts = props.savings || [];
   var savTotal = savingsTotal(savAccts);
-  var netWorth = balance + savTotal;
+  var bizAccts = props.businesses || [];
+  var bizTotal = businessTotal(bizAccts);
+  var netWorth = balance + savTotal + bizTotal;
   // Cash-flow stats are THIS MONTH only. Opening balance is net worth, not income,
   // so it is excluded here (else the savings rate reads 100%). Internal transfers
   // to/from savings pots are excluded too - moving your own money isn't earning or
@@ -2764,6 +2779,48 @@ function Overview(props) {
           </Card>
         )}
       </div>
+
+      {props.onOpenBusiness && (
+        <div style={{ animation: "rcFadeUp 0.6s ease 0.1s both" }}>
+          <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+              <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Business</span>
+            </div>
+            {bizAccts.length > 0 && (
+              <button onClick={function() { props.onOpenBusiness(null); }} style={{ background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI, display: "flex", alignItems: "center", gap: 2 }}>
+                {tr("manage")}<SVGIcon id="chevron" size={15} color={T.orange} />
+              </button>
+            )}
+          </div>
+          {bizAccts.length === 0 ? (
+            <button onClick={function() { props.onOpenBusiness(null); }} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, marginBottom: 20, padding: "15px 16px", borderRadius: 18, background: T.card, border: "1px dashed " + T.orange + "66", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)" }}>
+              <CatBadge icon="briefcase" color={T.orange} size={38} soft={true} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>Open a Business Account</div>
+                <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Separate your business money and let Richard build your plan.</div>
+              </div>
+              <SVGIcon id="plus" size={20} color={T.orange} />
+            </button>
+          ) : (
+            <Card style={{ overflow: "hidden", marginBottom: 20 }}>
+              {bizAccts.map(function(b) {
+                return (
+                  <button key={b.id} onClick={function() { props.onOpenBusiness(b.id); }} style={{ width: "100%", textAlign: "left", background: "none", border: "none", borderBottom: "0.5px solid " + T.sep, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
+                    <CatBadge icon={b.icon || "briefcase"} color={b.color || T.orange} size={36} soft={true} />
+                    <span style={{ flex: 1, minWidth: 0, fontSize: 15, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.name}</span>
+                    <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(businessCash(b))}</span>
+                  </button>
+                );
+              })}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: T.orangeDim }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: T.ink2, textTransform: "uppercase", letterSpacing: "0.08em" }}>Business cash</span>
+                <span style={{ fontSize: 16, fontWeight: 800, color: T.orange, letterSpacing: "-0.02em" }}>{dollars(bizTotal)}</span>
+              </div>
+            </Card>
+          )}
+        </div>
+      )}
 
       {budgetRows.length > 0 && (
         <div style={{ animation: "rcFadeUp 0.6s ease 0.12s both" }}>
@@ -5689,8 +5746,8 @@ function Advisor(props) {
   // Cash-flow is this month (matches the dashboard); net worth is all-time.
   var income = props.tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
   var expense = props.tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  // Net worth = main balance (all-time tx) + every savings pot.
-  var netWorth = props.tx.reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0) + savingsTotal(props.savings || []);
+  // Net worth = main balance (all-time tx) + every savings pot + business cash.
+  var netWorth = props.tx.reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0) + savingsTotal(props.savings || []) + businessTotal(props.businesses || []);
   var savings = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
   var topCats = cats.map(function(c) { return { name: c.name, spent: catSpend(c) }; }).filter(function(c) { return c.spent > 0; }).sort(function(a, b) { return b.spent - a.spent; }).slice(0, 5);
   var budgetLines = props.budgets.map(function(b) {
@@ -7437,6 +7494,70 @@ function EditOpeningBalanceView(props) {
 var SAVINGS_ICONS = ["coins", "shield", "home", "car", "plane", "heart", "gift", "umbrella", "star", "leaf"];
 var SAVINGS_COLORS = ["#8970C6", "#C8673A", "#27A85F", "#C8983A", "#4A90D9", "#D9546B", "#5BB8A8", "#9B6DB5"];
 
+// Business Account look-and-feel banks.
+var BIZ_ICONS = ["briefcase", "chart", "building", "cart", "laptop", "tool", "coins", "coffee", "leaf", "star"];
+var BIZ_COLORS = ["#8970C6", "#2799C8", "#27A85F", "#C8983A", "#3B82B8", "#D9546B", "#5BB8A8", "#C8673A"];
+
+// Default business budget buckets. Richard re-splits a monthly budget across
+// these; the pct map is the local fallback when the AI call is unavailable.
+var BIZ_CATEGORIES = [
+  { key: "marketing",   label: "Marketing",     icon: "chart",     color: "#8970C6", pct: 0.22 },
+  { key: "software",    label: "Software",      icon: "laptop",    color: "#2799C8", pct: 0.12 },
+  { key: "equipment",   label: "Equipment",     icon: "tool",      color: "#27A85F", pct: 0.10 },
+  { key: "inventory",   label: "Inventory",     icon: "cart",      color: "#C8983A", pct: 0.14 },
+  { key: "office",      label: "Office & Rent", icon: "building",  color: "#3B82B8", pct: 0.16 },
+  { key: "people",      label: "People",        icon: "user",      color: "#E0556E", pct: 0.10 },
+  { key: "fees",        label: "Fees & Legal",  icon: "shield",    color: "#D9546B", pct: 0.06 },
+  { key: "other",       label: "Other",         icon: "box",       color: "#8B8B8B", pct: 0.04 },
+  { key: "buffer",      label: "Buffer",        icon: "coins",     color: "#6B5C4E", pct: 0.06 },
+];
+
+// Build a fresh set of business budget categories, optionally split across a
+// monthly budget by the default percentages (used as the offline fallback).
+function localBizSplit(monthly) {
+  var m = parseFloat(monthly) || 0;
+  return BIZ_CATEGORIES.map(function(c) {
+    var n = Math.round(m * (c.pct || 0));
+    return { key: c.key, label: c.label, icon: c.icon, color: c.color, planned: n, plannedRaw: String(n), spent: 0, entries: [] };
+  });
+}
+// Match Richard's free-form {category, amount} list back onto our fixed business
+// buckets and return a {key: amount} map.
+function bizAllocToMap(arr) {
+  var byKey = {};
+  (arr || []).forEach(function(a) {
+    var nm = String(a.category || "").toLowerCase();
+    for (var i = 0; i < BIZ_CATEGORIES.length; i++) {
+      var c = BIZ_CATEGORIES[i];
+      if (nm.indexOf(c.key) !== -1 || nm.indexOf(c.label.toLowerCase()) !== -1) {
+        byKey[c.key] = Math.max(0, Math.round(parseFloat(a.amount) || 0));
+        break;
+      }
+    }
+  });
+  return byKey;
+}
+// Turn Richard's plan categories into our fixed business buckets with planned
+// amounts. Falls back to the local percentage split if nothing matched.
+function mapBizCategories(arr, monthly) {
+  var base = BIZ_CATEGORIES.map(function(c) { return { key: c.key, label: c.label, icon: c.icon, color: c.color, planned: 0, plannedRaw: "0", spent: 0, entries: [] }; });
+  if (Array.isArray(arr)) {
+    arr.forEach(function(a) {
+      var nm = String(a.category || a.label || "").toLowerCase();
+      for (var i = 0; i < base.length; i++) {
+        if (nm.indexOf(base[i].key) !== -1 || nm.indexOf(base[i].label.toLowerCase()) !== -1) {
+          var n = Math.max(0, Math.round(parseFloat(a.amount) || 0));
+          base[i].planned = n; base[i].plannedRaw = String(n);
+          break;
+        }
+      }
+    });
+  }
+  var sum = base.reduce(function(s, c) { return s + (c.planned || 0); }, 0);
+  if (sum === 0) return localBizSplit(monthly);
+  return base;
+}
+
 function SavingsView(props) {
   var accts = props.savings || [];
   var tx = props.tx || [];
@@ -7696,6 +7817,37 @@ function SavingsView(props) {
         </button>
       )}
 
+      {props.onOpenBusiness && (
+        <div style={{ marginTop: 26 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 2px 10px" }}>
+            <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+            <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Business</span>
+          </div>
+          {(props.businesses || []).map(function(b) {
+            return (
+              <Card key={b.id} style={{ marginBottom: 10 }}>
+                <button onClick={function() { props.onOpenBusiness(b.id); }} style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
+                  <CatBadge icon={b.icon || "briefcase"} color={b.color || T.orange} size={38} soft={true} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.name}</div>
+                    <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>{b.what || "Business account"}</div>
+                  </div>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(businessCash(b))}</span>
+                </button>
+              </Card>
+            );
+          })}
+          <button onClick={function() { props.onOpenBusiness(null); }} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 18, background: T.card, border: "1px dashed " + T.orange + "66", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)" }}>
+            <CatBadge icon="briefcase" color={T.orange} size={38} soft={true} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>{(props.businesses || []).length > 0 ? "New Business Account" : "Open a Business Account"}</div>
+              <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Separate your business money and get a plan from Richard.</div>
+            </div>
+            <SVGIcon id="plus" size={20} color={T.orange} />
+          </button>
+        </div>
+      )}
+
       <Overlay open={!!act} onClose={function() { setAct(null); }} title={(act && act.kind === "add" ? tr("addMoney") : tr("withdraw")) + (actAcct ? " · " + actAcct.name : "")}>
         {actAcct && (
           <div>
@@ -7722,6 +7874,777 @@ function SavingsView(props) {
       </Overlay>
     </div>
   );
+}
+
+// A Business Account: part savings pot (a walled-off cash balance separate from
+// personal spending money), part Plan-a-Trip (business budget categories), with
+// Richard acting as a CFO who interviews the owner, drafts a business plan and a
+// monthly operating budget, and keeps tuning it. Capital that moves in from the
+// personal balance is logged as a transfer (so net worth is unchanged); expenses
+// and revenue are pot-only moves that change the business cash and net worth.
+function BusinessView(props) {
+  var bizes = props.businesses || [];
+  var tx = props.tx || [];
+  var sym = _currency.sym;
+  var today = new Date().toISOString().slice(0, 10);
+
+  var _v = useState(props.openBizId ? "detail" : "list"); var view = _v[0]; var setView = _v[1];
+  var _aid = useState(props.openBizId || null); var activeId = _aid[0]; var setActiveId = _aid[1];
+  var _st = useState(1); var step = _st[0]; var setStep = _st[1];
+  var _fm = useState({ name: "", what: "", structure: "individual", stage: "idea", size: "side", monthly: "", revenueGoal: "", runway: "", goal: "", startCap: "", capSrc: "external", icon: "briefcase", color: BIZ_COLORS[0] });
+  var form = _fm[0]; var setForm = _fm[1];
+  var _pl = useState(false); var planning = _pl[0]; var setPlanning = _pl[1];
+  var _pr = useState(null); var planResult = _pr[0]; var setPlanResult = _pr[1];
+  var _err = useState(""); var err = _err[0]; var setErr = _err[1];
+
+  var _act = useState(null); var act = _act[0]; var setAct = _act[1];
+  var _amt = useState(""); var amt = _amt[0]; var setAmt = _amt[1];
+  var _src = useState("external"); var srcc = _src[0]; var setSrc = _src[1];
+  var _lf = useState(null); var logFor = _lf[0]; var setLogFor = _lf[1];
+  var _lfm = useState({ label: "", amount: "" }); var logForm = _lfm[0]; var setLogForm = _lfm[1];
+  var _rv = useState(null); var revFor = _rv[0]; var setRevFor = _rv[1];
+  var _rvm = useState({ label: "", amount: "" }); var revForm = _rvm[0]; var setRevForm = _rvm[1];
+  var _de = useState({}); var detailEdits = _de[0]; var setDetailEdits = _de[1];
+  var _bc = useState({}); var bizChats = _bc[0]; var setBizChats = _bc[1];
+  var _bi = useState(""); var chatInput = _bi[0]; var setChatInput = _bi[1];
+  var _bl = useState(false); var chatLoading = _bl[0]; var setChatLoading = _bl[1];
+  var _rp2 = useState(false); var replanning = _rp2[0]; var setReplanning = _rp2[1];
+  var _del = useState(null); var deleteConfirm = _del[0]; var setDeleteConfirm = _del[1];
+
+  var STRUCTURES = [{ v: "company", l: "Company" }, { v: "individual", l: "Individual" }, { v: "freelancer", l: "Freelancer" }];
+  var STAGES = [{ v: "idea", l: "Just an idea" }, { v: "launching", l: "Launching soon" }, { v: "running", l: "Already running" }];
+  var SIZES = [{ v: "side", l: "Side project" }, { v: "growing", l: "Growing venture" }, { v: "full", l: "Full company" }];
+  function labelOf(list, v) { for (var i = 0; i < list.length; i++) { if (list[i].v === v) return list[i].l; } return v; }
+  function langLine() { return (props.lang && props.lang !== "en") ? (" Every string value must be written entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + ".") : ""; }
+
+  function setField(k, val) { setForm(function(p) { var n = {}; for (var key in p) n[key] = p[key]; n[k] = val; return n; }); }
+  function setLogField(k, val) { setLogForm(function(p) { var n = {}; for (var key in p) n[key] = p[key]; n[k] = val; return n; }); }
+  function setRevField(k, val) { setRevForm(function(p) { var n = {}; for (var key in p) n[key] = p[key]; n[k] = val; return n; }); }
+  function setDetailEdit(id, field, val) { setDetailEdits(function(prev) { var n = {}; for (var k in prev) n[k] = prev[k]; n[id + "_" + field] = val; return n; }); }
+  function clearDetailEdit(id, field) { setDetailEdits(function(prev) { var n = {}; for (var k in prev) n[k] = prev[k]; delete n[id + "_" + field]; return n; }); }
+  function getDetailEdit(id, field, fallback) { var k = id + "_" + field; return detailEdits.hasOwnProperty(k) ? detailEdits[k] : String(fallback); }
+
+  var activeBiz = null;
+  for (var bi = 0; bi < bizes.length; bi++) { if (bizes[bi].id === activeId) { activeBiz = bizes[bi]; break; } }
+
+  function transferTx(type, amount, bizName, suffix) {
+    return { id: Date.now() + 1, type: type, amount: round2(amount), label: (type === "expense" ? "-> " : "<- ") + bizName + (suffix || ""), catId: "savings-transfer", category: "Business transfer", transfer: true, date: today, repeat: "none", pending: false };
+  }
+  function patchBiz(id, patch) {
+    return bizes.map(function(b) { if (b.id !== id) return b; var n = {}; for (var k in b) n[k] = b[k]; for (var k2 in patch) n[k2] = patch[k2]; return n; });
+  }
+
+  // ---- Intake / plan generation -------------------------------------------
+  function defaultBizTips() {
+    return [
+      "Keep business and personal money separate from day one - it makes taxes and decisions far cleaner.",
+      "Watch your runway: know how many months you can operate before revenue has to cover costs.",
+      "Reinvest early profit into whatever directly wins you more customers."
+    ];
+  }
+  function localPlan() {
+    var monthly = parseFloat(form.monthly) || 0;
+    return {
+      summary: "A " + labelOf(SIZES, form.size).toLowerCase() + " " + (form.what || "business") + " run as " + (form.structure === "company" ? "a company" : "an " + labelOf(STRUCTURES, form.structure).toLowerCase()) + ". Start lean, prove people will pay, then scale the spending that works.",
+      sections: [
+        { title: "Positioning", body: "Be clear on who you serve and the one problem you solve better than anyone. A sharp niche beats a broad, generic offer when you are starting out." },
+        { title: "First 90 days", body: "Get to your first paying customers fast. Spend on the one or two channels that reach them directly and ignore everything else for now." },
+        { title: "Money discipline", body: "Fund the account with what you can afford to lose, track every expense against a category, and keep a buffer so a slow month never sinks you." },
+        { title: "Biggest risk", body: "Spending on things that feel productive but do not bring customers. Tie every dollar to growth or survival." }
+      ],
+      categories: localBizSplit(monthly),
+      tips: defaultBizTips(),
+      verdict: { assessment: monthly > 0 ? "A " + dollars(monthly) + "/mo budget is a reasonable starting point - keep it lean until revenue proves the model." : "Set a monthly budget so we can pace your spending and runway.", keyNumber: (parseFloat(form.runway) || 0) > 0 ? (form.runway + " months") : dollars(monthly) + "/mo", keyNumberLabel: (parseFloat(form.runway) || 0) > 0 ? "of runway" : "operating budget" }
+    };
+  }
+  function applyLocalPlan() { setPlanResult(localPlan()); setPlanning(false); }
+  function buildPlan() {
+    setPlanning(true); setErr("");
+    var monthly = parseFloat(form.monthly) || 0;
+    var custom = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
+    var sys = custom + "You are Richard, a sharp, warm, honest business CFO and startup advisor inside the Richy app. Build a practical, realistic, encouraging business plan and a monthly operating budget for the user's business, run against the real numbers they give you. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"summary\":\"2 to 3 sentence plain-English summary of the business and the path to making it work\",\"sections\":[{\"title\":\"short section title\",\"body\":\"2 to 4 sentences of concrete, specific advice\"}],\"categories\":[{\"category\":\"Marketing\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"short actionable tip\"],\"verdict\":{\"assessment\":\"one honest sentence on whether this budget and runway are realistic\",\"keyNumber\":\"the single most important figure e.g. 7 months runway or break-even at $4k/mo\",\"keyNumberLabel\":\"what that figure means in 2 to 4 words\"}}. Provide 4 to 6 sections covering positioning, the first 90 days, pricing and revenue, costs to watch, and the biggest risk. The categories must be chosen only from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer, and the amounts are whole numbers that sum to about the monthly budget. Be honest if the budget or runway looks too thin." + langLine();
+    var usr = "Business name: " + (form.name || "my business") + ". What it does: " + (form.what || "unspecified") + ". "
+      + "Legal structure: " + labelOf(STRUCTURES, form.structure) + ". Stage: " + labelOf(STAGES, form.stage) + ". Scale: " + labelOf(SIZES, form.size) + ". "
+      + "Planned monthly spend: " + dollars(monthly) + ". Monthly revenue goal: " + dollars(parseFloat(form.revenueGoal) || 0) + ". "
+      + "Runway / savings set aside: " + ((parseFloat(form.runway) || 0) > 0 ? (form.runway + " months") : "not specified") + ". "
+      + "What success looks like in 12 months: " + (form.goal || "not specified") + ". "
+      + "Build the plan, split the monthly budget across the buckets, give 4 short practical tips, and give an honest verdict on whether this is realistic.";
+    callClaude([{ role: "user", content: usr }], sys, 1200, function(e, text) {
+      if (e || !text) { applyLocalPlan(); return; }
+      try {
+        var jsonStr = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
+        var parsed = JSON.parse(jsonStr);
+        setPlanResult({
+          summary: parsed.summary || localPlan().summary,
+          sections: (Array.isArray(parsed.sections) && parsed.sections.length) ? parsed.sections.slice(0, 6) : localPlan().sections,
+          categories: mapBizCategories(parsed.categories, monthly),
+          tips: (Array.isArray(parsed.tips) && parsed.tips.length) ? parsed.tips.slice(0, 5) : defaultBizTips(),
+          verdict: (parsed.verdict && parsed.verdict.assessment) ? parsed.verdict : null
+        });
+        setPlanning(false);
+      } catch (e2) { applyLocalPlan(); }
+    });
+  }
+  function startWizard() {
+    setForm({ name: "", what: "", structure: "individual", stage: "idea", size: "side", monthly: "", revenueGoal: "", runway: "", goal: "", startCap: "", capSrc: "external", icon: "briefcase", color: BIZ_COLORS[0] });
+    setPlanResult(null); setErr(""); setStep(1); setView("wizard");
+  }
+  function saveBusiness() {
+    if (!planResult) return;
+    var monthly = parseFloat(form.monthly) || 0;
+    var startCap = parseFloat(form.startCap) || 0;
+    var fromMain = form.capSrc === "balance";
+    var entries = [];
+    if (startCap > 0) {
+      entries = [{ id: Date.now(), kind: "deposit", amount: round2(startCap), date: today, fromMain: fromMain, label: fromMain ? "From balance" : "Starting capital" }];
+    }
+    var biz = {
+      id: "biz_" + Date.now(), name: form.name || "My Business", what: form.what || "",
+      icon: form.icon || "briefcase", color: form.color || BIZ_COLORS[0], createdAt: today,
+      profile: { structure: form.structure, stage: form.stage, size: form.size, monthly: monthly, revenueGoal: parseFloat(form.revenueGoal) || 0, runway: parseFloat(form.runway) || 0, goal: form.goal || "" },
+      plan: { summary: planResult.summary, sections: planResult.sections, tips: planResult.tips, verdict: planResult.verdict, generatedAt: today },
+      categories: planResult.categories, entries: entries
+    };
+    var next = bizes.concat([biz]);
+    if (startCap > 0 && fromMain) props.onBusinessMove(tx.concat([transferTx("expense", startCap, biz.name)]), next);
+    else props.onSaveBusinesses(next);
+    setActiveId(biz.id); setView("detail");
+  }
+
+  // ---- Capital, expenses, revenue -----------------------------------------
+  function openAction(id, kind) { setAct({ id: id, kind: kind }); setAmt(""); setSrc(kind === "add" ? "external" : "balance"); }
+  function submitAction() {
+    if (!activeBiz) { setAct(null); return; }
+    var v = parseFloat(amt);
+    if (isNaN(v) || v <= 0) { setAct(null); return; }
+    if (act.kind === "add") {
+      var fromMain = srcc === "balance";
+      var entry = { id: Date.now(), kind: "deposit", amount: round2(v), date: today, fromMain: fromMain, label: fromMain ? "From balance" : "Capital added" };
+      var next = patchBiz(activeBiz.id, { entries: (activeBiz.entries || []).concat([entry]) });
+      if (fromMain) props.onBusinessMove(tx.concat([transferTx("expense", v, activeBiz.name)]), next);
+      else props.onSaveBusinesses(next);
+    } else {
+      var bal = businessCash(activeBiz);
+      var w = Math.min(round2(v), bal);
+      if (w <= 0) { setAct(null); return; }
+      var toMain = srcc === "balance";
+      var entry2 = { id: Date.now(), kind: "withdraw", amount: w, date: today, fromMain: toMain, label: toMain ? "To balance" : "Taken out" };
+      var next2 = patchBiz(activeBiz.id, { entries: (activeBiz.entries || []).concat([entry2]) });
+      if (toMain) props.onBusinessMove(tx.concat([transferTx("income", w, activeBiz.name)]), next2);
+      else props.onSaveBusinesses(next2);
+    }
+    setAct(null);
+  }
+  function logExpense(bizId, key) {
+    var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
+    if (!biz) { setLogFor(null); return; }
+    var v = parseFloat(logForm.amount) || 0;
+    if (v <= 0) { setLogFor(null); return; }
+    var eid = Date.now();
+    var cat = null; for (var j = 0; j < biz.categories.length; j++) { if (biz.categories[j].key === key) { cat = biz.categories[j]; break; } }
+    var label = logForm.label || ((cat && cat.label) || "Expense");
+    var cats = biz.categories.map(function(c) {
+      return c.key === key ? Object.assign({}, c, { spent: round2((c.spent || 0) + v), entries: (c.entries || []).concat([{ id: eid, label: label, amount: round2(v), date: today }]) }) : c;
+    });
+    var potEntry = { id: eid, kind: "withdraw", amount: round2(v), date: today, fromMain: false, label: label, bizExpense: true, catKey: key };
+    var next = patchBiz(bizId, { categories: cats, entries: (biz.entries || []).concat([potEntry]) });
+    props.onSaveBusinesses(next);
+    setLogFor(null); setLogForm({ label: "", amount: "" });
+  }
+  function deleteExpense(bizId, key, eid) {
+    var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
+    if (!biz) return;
+    var removed = 0;
+    var cats = biz.categories.map(function(c) {
+      if (c.key !== key) return c;
+      var kept = (c.entries || []).filter(function(e) { if (e.id === eid) { removed = e.amount || 0; return false; } return true; });
+      return Object.assign({}, c, { spent: round2(Math.max(0, (c.spent || 0) - removed)), entries: kept });
+    });
+    var ents = (biz.entries || []).filter(function(e) { return e.id !== eid; });
+    props.onSaveBusinesses(patchBiz(bizId, { categories: cats, entries: ents }));
+  }
+  function logRevenue(bizId) {
+    var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
+    if (!biz) { setRevFor(null); return; }
+    var v = parseFloat(revForm.amount) || 0;
+    if (v <= 0) { setRevFor(null); return; }
+    var entry = { id: Date.now(), kind: "deposit", amount: round2(v), date: today, fromMain: false, label: revForm.label ? ("Revenue: " + revForm.label) : "Revenue", revenue: true };
+    props.onSaveBusinesses(patchBiz(bizId, { entries: (biz.entries || []).concat([entry]) }));
+    setRevFor(null); setRevForm({ label: "", amount: "" });
+  }
+  function updatePlanned(bizId, key, rawVal) {
+    var n = rawVal === "" ? 0 : Math.max(0, parseFloat(rawVal) || 0);
+    var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
+    if (!biz) return;
+    var cats = biz.categories.map(function(c) { return c.key === key ? Object.assign({}, c, { planned: n }) : c; });
+    props.onSaveBusinesses(patchBiz(bizId, { categories: cats }));
+  }
+  function closeBusiness(biz) {
+    var bal = businessCash(biz);
+    var next = bizes.filter(function(b) { return b.id !== biz.id; });
+    if (bal > 0) props.onBusinessMove(tx.concat([transferTx("income", bal, biz.name, " (closed)")]), next);
+    else props.onSaveBusinesses(next);
+    setView("list"); setActiveId(null); setDeleteConfirm(null);
+  }
+
+  // ---- Richard CFO chat + replan ------------------------------------------
+  function applyAllocToBiz(biz, arr) {
+    var byKey = bizAllocToMap(arr);
+    if (!Object.keys(byKey).length) return false;
+    var cats = biz.categories.map(function(c) { return byKey.hasOwnProperty(c.key) ? Object.assign({}, c, { planned: byKey[c.key] }) : c; });
+    props.onSaveBusinesses(patchBiz(biz.id, { categories: cats }));
+    return true;
+  }
+  function sendChat(biz) {
+    if (!chatInput.trim() || chatLoading) return;
+    var msg = chatInput.trim();
+    setChatInput("");
+    var prev = bizChats[biz.id] || [];
+    var nc = prev.concat([{ role: "user", text: msg }]);
+    setBizChats(function(p) { var n = {}; for (var k in p) n[k] = p[k]; n[biz.id] = nc; return n; });
+    setChatLoading(true);
+    var pf = biz.profile || {};
+    var split = (biz.categories || []).map(function(c) { return c.label + ": " + dollars(c.planned || 0) + " budgeted, " + dollars(c.spent || 0) + " spent"; }).join("; ");
+    var custom = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
+    var sys = custom + "You are Richard, a warm, sharp, honest business CFO inside the Richy app. You are helping the owner run and budget their business and make it succeed. "
+      + "Business: " + (biz.name || "the business") + " - " + (biz.what || "unspecified") + ". Structure: " + labelOf(STRUCTURES, pf.structure) + ". Stage: " + labelOf(STAGES, pf.stage) + ". Scale: " + labelOf(SIZES, pf.size) + ". "
+      + "Monthly budget " + dollars(pf.monthly || 0) + ", revenue goal " + dollars(pf.revenueGoal || 0) + ", cash on hand " + dollars(businessCash(biz)) + ", spent so far " + dollars(businessSpent(biz)) + ". "
+      + "Current budget split: " + (split || "not set") + ". "
+      + "Answer the owner's question with concrete, practical advice tied to their real numbers. "
+      + "You can DIRECTLY change the monthly budget split, not just describe it. When the owner wants a change, give one short plain-text sentence explaining what you did, then on a new line append a directive in EXACTLY this form: @@ALLOC[{\"category\":\"Marketing\",\"amount\":600},{\"category\":\"Software\",\"amount\":150}] "
+      + "Only list the buckets you are changing, using whole numbers, and keep the overall total close to " + dollars(pf.monthly || 0) + " by also adjusting Buffer or Other when needed. Categories must be from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer. "
+      + "Only include the @@ALLOC directive when you actually intend to change the split; for general questions just answer normally." + RICHARD_FORMAT + " The @@ALLOC directive, when you use it, must be the very last thing in your reply.";
+    callClaude(nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }), sys, 500, function(e, reply) {
+      setChatLoading(false);
+      if (e || !reply) {
+        setBizChats(function(p) { var n = {}; for (var k in p) n[k] = p[k]; n[biz.id] = (p[biz.id] || []).concat([{ role: "richard", text: "Sorry, I could not connect. Try again." }]); return n; });
+        return;
+      }
+      var parsed = extractAllocDirective(reply);
+      var applied = false;
+      if (parsed.allocations) { applied = applyAllocToBiz(biz, parsed.allocations); }
+      setBizChats(function(p) {
+        var n = {}; for (var k in p) n[k] = p[k];
+        var thread = (p[biz.id] || []).concat([{ role: "richard", text: parsed.text }]);
+        if (applied) thread = thread.concat([{ role: "system", text: "Budget updated" }]);
+        n[biz.id] = thread;
+        return n;
+      });
+    });
+  }
+  function replanWithRichard(biz) {
+    setReplanning(true);
+    var pf = biz.profile || {};
+    var custom = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
+    var sys = custom + "You are Richard, a sharp, warm, honest business CFO inside the Richy app. Refresh the business plan and monthly operating budget using the latest numbers. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"summary\":\"2 to 3 sentences\",\"sections\":[{\"title\":\"\",\"body\":\"\"}],\"categories\":[{\"category\":\"Marketing\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"\"],\"verdict\":{\"assessment\":\"\",\"keyNumber\":\"\",\"keyNumberLabel\":\"\"}}. Categories only from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer, whole numbers summing to about the monthly budget. 4 to 6 sections." + langLine();
+    var usr = "Business: " + (biz.name || "my business") + " - " + (biz.what || "unspecified") + ". Structure: " + labelOf(STRUCTURES, pf.structure) + ". Stage: " + labelOf(STAGES, pf.stage) + ". Scale: " + labelOf(SIZES, pf.size) + ". "
+      + "Monthly budget " + dollars(pf.monthly || 0) + ", revenue goal " + dollars(pf.revenueGoal || 0) + ", cash on hand " + dollars(businessCash(biz)) + ", spent so far " + dollars(businessSpent(biz)) + ", runway " + ((pf.runway || 0) > 0 ? (pf.runway + " months") : "unspecified") + ". 12-month goal: " + (pf.goal || "unspecified") + ". Refresh the plan and budget.";
+    callClaude([{ role: "user", content: usr }], sys, 1200, function(e, text) {
+      setReplanning(false);
+      if (e || !text) return;
+      try {
+        var jsonStr = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
+        var parsed = JSON.parse(jsonStr);
+        var newCats = mapBizCategories(parsed.categories, pf.monthly || 0);
+        // Preserve what's already been spent per bucket.
+        var merged = newCats.map(function(nc) {
+          var old = null; for (var i = 0; i < biz.categories.length; i++) { if (biz.categories[i].key === nc.key) { old = biz.categories[i]; break; } }
+          return old ? Object.assign({}, nc, { spent: old.spent || 0, entries: old.entries || [] }) : nc;
+        });
+        var newPlan = {
+          summary: parsed.summary || biz.plan.summary,
+          sections: (Array.isArray(parsed.sections) && parsed.sections.length) ? parsed.sections.slice(0, 6) : biz.plan.sections,
+          tips: (Array.isArray(parsed.tips) && parsed.tips.length) ? parsed.tips.slice(0, 5) : biz.plan.tips,
+          verdict: (parsed.verdict && parsed.verdict.assessment) ? parsed.verdict : biz.plan.verdict,
+          generatedAt: today
+        };
+        props.onSaveBusinesses(patchBiz(biz.id, { plan: newPlan, categories: merged }));
+      } catch (e2) {}
+    });
+  }
+
+  // ---- Shared bits ---------------------------------------------------------
+  function seg(value, setter, options) {
+    return (
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, background: "rgba(0,0,0,0.05)", borderRadius: 11, padding: 3 }}>
+        {options.map(function(o) {
+          var on = value === o.v;
+          return (
+            <button key={o.v} onClick={function() { setter(o.v); }}
+              style={{ flex: "1 1 0", minWidth: 84, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "9px 6px", borderRadius: 8, background: on ? T.btn : "transparent", color: on ? "#fff" : T.ink2, textShadow: on ? "0 1px 2px rgba(42,31,77,0.35)" : "none" }}>
+              {o.l}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+  function backRow(label, onPress) {
+    return (
+      <button onClick={onPress} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: T.orange, fontSize: 14, fontWeight: 600, fontFamily: UI, marginBottom: 18 }}>
+        <span style={{ transform: "rotate(180deg)", display: "flex" }}><SVGIcon id="chevron" size={18} color={T.orange} /></span>
+        {label}
+      </button>
+    );
+  }
+  function fieldLabel(t) {
+    return <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, margin: "16px 0 8px" }}>{t}</div>;
+  }
+  function amtField(label, val, onChange) {
+    return (
+      <div>
+        {fieldLabel(label)}
+        <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(0,0,0,0.04)", borderRadius: 12, padding: "10px 14px" }}>
+          <span style={{ fontSize: 18, color: T.ink3, fontWeight: 600 }}>{sym}</span>
+          <input value={val} onChange={onChange} type="number" inputMode="decimal" placeholder="0"
+            style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 18, fontFamily: UI, color: T.ink, fontWeight: 700, padding: 0, boxSizing: "border-box", width: "100%" }} />
+        </div>
+      </div>
+    );
+  }
+
+  // ---- List view -----------------------------------------------------------
+  function listView() {
+    return (
+      <div>
+        {backRow(props.backLabel || "Savings", props.onBack)}
+        <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, marginBottom: 16, padding: "0 2px" }}>
+          A Business Account walls off money for your venture, gives it its own budget categories, and puts Richard to work as your CFO - building a plan and keeping your spending on track.
+        </div>
+        <button onClick={startWizard}
+          style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 16, padding: "15px 0", marginBottom: 18, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", fontSize: 16, fontWeight: 700, fontFamily: UI, boxShadow: "0 6px 18px " + T.orangeGlow }}>
+          + New Business Account
+        </button>
+        {bizes.length === 0 ? (
+          <Card style={{ padding: "46px 24px", textAlign: "center" }}>
+            <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+              <SVGIcon id="briefcase" size={24} color={T.orange} />
+            </div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>No business accounts yet</div>
+            <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>Every great company started with a first plan. Richard will help you build yours.</div>
+          </Card>
+        ) : bizes.map(function(b) {
+          var bal = businessCash(b);
+          var spent = businessSpent(b);
+          var monthly = (b.profile && b.profile.monthly) || 0;
+          var pct = monthly > 0 ? Math.min(100, Math.round((spent / monthly) * 100)) : 0;
+          return (
+            <Card key={b.id} style={{ marginBottom: 14, overflow: "hidden" }}>
+              <div onClick={function() { setActiveId(b.id); setView("detail"); }} style={{ padding: "18px 18px", cursor: "pointer" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 11, minWidth: 0 }}>
+                    <div style={{ width: 38, height: 38, borderRadius: 12, background: (b.color || T.orange) + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <SVGIcon id={b.icon || "briefcase"} size={20} color={b.color || T.orange} />
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.name}</div>
+                      <div style={{ fontSize: 13, color: T.ink3, marginTop: 2 }}>{b.what || labelOf(STRUCTURES, b.profile && b.profile.structure)}</div>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(bal)}</div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: T.ink3, marginTop: 2 }}>cash on hand</div>
+                  </div>
+                </div>
+                {monthly > 0 && (
+                  <div>
+                    <ProgressBar value={spent} max={monthly || 1} color={spent > monthly ? T.red : (b.color || T.orange)} h={6} />
+                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
+                      <span style={{ fontSize: 11, color: T.ink3 }}>{dollars(spent) + " of " + dollars(monthly) + " budget"}</span>
+                      <span style={{ fontSize: 11, color: T.ink3 }}>{pct + "%"}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // ---- Wizard / intake -----------------------------------------------------
+  function wizardView() {
+    var monthly = parseFloat(form.monthly) || 0;
+    return (
+      <div>
+        {backRow(step > 1 ? "Back" : "Business", function() { if (step > 1) { setStep(step - 1); } else { setView("list"); } })}
+        <Card style={{ padding: "18px 18px 20px" }}>
+          {step === 1 && (
+            <div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, marginBottom: 4, fontFamily: DISP, letterSpacing: "-0.02em" }}>Let's set up your business</div>
+              <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 14 }}>Richard will ask a few questions, then build your plan.</div>
+              <FormRow label="Business name" value={form.name} onChange={function(e) { setField("name", e.target.value); }} />
+              <FormRow label="What does it do?" value={form.what} onChange={function(e) { setField("what", e.target.value); }} placeholder="e.g. handmade candles, web design" last={true} />
+              {fieldLabel("Icon")}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {BIZ_ICONS.map(function(ic) {
+                  var on = (form.icon || "briefcase") === ic;
+                  return (
+                    <button key={ic} onClick={function() { setField("icon", ic); }}
+                      style={{ width: 44, height: 44, border: on ? ("2px solid " + form.color) : "2px solid rgba(0,0,0,0.08)", background: on ? form.color + "1F" : "#fff", borderRadius: 13, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxSizing: "border-box" }}>
+                      <SVGIcon id={ic} size={20} color={on ? form.color : T.ink2} />
+                    </button>
+                  );
+                })}
+              </div>
+              {fieldLabel("Color")}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 9 }}>
+                {BIZ_COLORS.map(function(col) {
+                  var on = col === form.color;
+                  return <button key={col} onClick={function() { setField("color", col); }} style={{ width: 28, height: 28, borderRadius: "50%", border: on ? "3px solid " + T.ink : "1px solid rgba(0,0,0,0.1)", background: col, cursor: "pointer", padding: 0 }} />;
+                })}
+              </div>
+              <BigBtn label="Next" disabled={!form.name.trim()} onPress={function() { setStep(2); }} />
+            </div>
+          )}
+          {step === 2 && (
+            <div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, marginBottom: 14, fontFamily: DISP, letterSpacing: "-0.02em" }}>Tell Richard about it</div>
+              {fieldLabel("Are you a company or an individual?")}
+              {seg(form.structure, function(v) { setField("structure", v); }, STRUCTURES)}
+              {fieldLabel("What stage are you at?")}
+              {seg(form.stage, function(v) { setField("stage", v); }, STAGES)}
+              {fieldLabel("How big is this project?")}
+              {seg(form.size, function(v) { setField("size", v); }, SIZES)}
+              <BigBtn label="Next" onPress={function() { setStep(3); }} />
+            </div>
+          )}
+          {step === 3 && (
+            <div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, marginBottom: 14, fontFamily: DISP, letterSpacing: "-0.02em" }}>The numbers</div>
+              {amtField("How much will you spend per month?", form.monthly, function(e) { setField("monthly", e.target.value); })}
+              {amtField("Monthly revenue goal", form.revenueGoal, function(e) { setField("revenueGoal", e.target.value); })}
+              {fieldLabel("Months of runway / savings set aside")}
+              <input value={form.runway} onChange={function(e) { setField("runway", e.target.value); }} type="number" inputMode="decimal" placeholder="e.g. 6"
+                style={{ width: "100%", background: "rgba(0,0,0,0.04)", border: "none", borderRadius: 12, padding: "11px 14px", fontSize: 16, fontFamily: UI, color: T.ink, fontWeight: 600, outline: "none", boxSizing: "border-box" }} />
+              <FormRow label="What does success look like in 12 months?" value={form.goal} onChange={function(e) { setField("goal", e.target.value); }} placeholder="e.g. quit my job, $5k/mo profit" last={true} />
+              <div style={{ marginTop: 8 }}>{fieldLabel("Money to set aside now (optional)")}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(0,0,0,0.04)", borderRadius: 12, padding: "10px 14px", marginBottom: 10 }}>
+                <span style={{ fontSize: 18, color: T.ink3, fontWeight: 600 }}>{sym}</span>
+                <input value={form.startCap} onChange={function(e) { setField("startCap", e.target.value); }} type="number" inputMode="decimal" placeholder="0"
+                  style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 18, fontFamily: UI, color: T.ink, fontWeight: 700, padding: 0, boxSizing: "border-box", width: "100%" }} />
+              </div>
+              {parseFloat(form.startCap) > 0 && (
+                <div style={{ marginBottom: 6 }}>
+                  {seg(form.capSrc, function(v) { setField("capSrc", v); }, [{ v: "external", l: "New money" }, { v: "balance", l: "From balance" }])}
+                  <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 7, lineHeight: 1.45 }}>{form.capSrc === "external" ? "Outside money you are putting in - your spendable balance is untouched." : "Moves from your spendable balance into the business. Net worth is unchanged."}</div>
+                </div>
+              )}
+              <BigBtn label="Build my plan with Richard" disabled={monthly <= 0} onPress={function() { setStep(4); buildPlan(); }} />
+            </div>
+          )}
+          {step === 4 && (
+            planning ? (
+              <div style={{ padding: "34px 10px", textAlign: "center" }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>Richard is building your plan...</div>
+                <div style={{ fontSize: 13, color: T.ink3, marginTop: 5 }}>Drafting your strategy and operating budget.</div>
+              </div>
+            ) : planResult ? (
+              <div>
+                <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, marginBottom: 8, fontFamily: DISP, letterSpacing: "-0.02em" }}>Your business plan</div>
+                <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.55, marginBottom: 14 }}>{planResult.summary}</div>
+                {planResult.verdict && planResult.verdict.keyNumber && (
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 9, marginBottom: 14, padding: "12px 14px", background: T.orangeDim, borderRadius: 13 }}>
+                    <span style={{ fontSize: 24, fontWeight: 800, color: T.orange, letterSpacing: "-0.02em" }}>{planResult.verdict.keyNumber}</span>
+                    <span style={{ fontSize: 12.5, color: T.ink3, fontWeight: 600 }}>{planResult.verdict.keyNumberLabel || ""}</span>
+                  </div>
+                )}
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Monthly budget</div>
+                {planResult.categories.map(function(a, idx) {
+                  return (
+                    <div key={a.key} style={{ display: "flex", alignItems: "center", gap: 11, padding: "9px 0", borderBottom: idx < planResult.categories.length - 1 ? ("0.5px solid " + T.sep) : "none" }}>
+                      <div style={{ width: 34, height: 34, borderRadius: 10, background: a.color + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <SVGIcon id={a.icon} size={18} color={a.color} />
+                      </div>
+                      <span style={{ flex: 1, fontSize: 14, color: T.ink, fontWeight: 500 }}>{a.label}</span>
+                      <div style={{ display: "flex", alignItems: "center", background: "rgba(0,0,0,0.04)", borderRadius: 10, padding: "6px 10px" }}>
+                        <span style={{ fontSize: 13, color: T.ink3, marginRight: 2 }}>{sym}</span>
+                        <input type="number" value={a.plannedRaw !== undefined ? a.plannedRaw : String(a.planned)}
+                          onChange={function(e) {
+                            var raw = e.target.value; var n = raw === "" ? 0 : Math.max(0, parseFloat(raw) || 0);
+                            setPlanResult(function(pr) { return Object.assign({}, pr, { categories: pr.categories.map(function(c) { return c.key === a.key ? Object.assign({}, c, { planned: n, plannedRaw: raw }) : c; }) }); });
+                          }}
+                          style={{ width: 64, border: "none", background: "none", outline: "none", fontSize: 14, fontWeight: 600, color: T.ink, fontFamily: UI, textAlign: "right", padding: 0 }} />
+                      </div>
+                    </div>
+                  );
+                })}
+                {planResult.tips.length > 0 && (
+                  <div style={{ marginTop: 16, background: T.orangeDim, borderRadius: 14, padding: "14px 16px" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8, fontFamily: UI }}>Richard's tips</div>
+                    {planResult.tips.map(function(tp, i) {
+                      return (
+                        <div key={i} style={{ fontSize: 13, color: T.ink, lineHeight: 1.5, marginBottom: i < planResult.tips.length - 1 ? 7 : 0, display: "flex", gap: 8 }}>
+                          <span style={{ color: T.orange, fontWeight: 700 }}>-</span><span>{tp}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <BigBtn label="Create business account" onPress={saveBusiness} />
+                <button onClick={buildPlan} style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>Redo plan</button>
+              </div>
+            ) : (
+              <div style={{ padding: "20px 10px", textAlign: "center" }}>
+                <div style={{ fontSize: 14, color: T.ink2, marginBottom: 12 }}>Something went wrong building the plan.</div>
+                <BigBtn label="Try again" onPress={buildPlan} />
+              </div>
+            )
+          )}
+        </Card>
+      </div>
+    );
+  }
+
+  // ---- Detail view ---------------------------------------------------------
+  function detailView(biz) {
+    var bal = businessCash(biz);
+    var spent = businessSpent(biz);
+    var monthly = (biz.profile && biz.profile.monthly) || 0;
+    var plannedTotal = biz.categories.reduce(function(s, c) { return s + (c.planned || 0); }, 0);
+    var thread = bizChats[biz.id] || [];
+    var capHistory = (biz.entries || []).filter(function(e) { return !e.bizExpense; }).slice().sort(function(x, y) { return (y.id || 0) - (x.id || 0); }).slice(0, 6);
+    var plan = biz.plan || {};
+    return (
+      <div>
+        {backRow("Business", function() { setView("list"); setActiveId(null); })}
+        <div style={{ position: "relative", overflow: "hidden", borderRadius: 22, padding: "22px 22px", background: T.heroBg, boxShadow: T.heroShadow, marginBottom: 16 }}>
+          <div style={{ position: "absolute", top: -70, right: -60, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
+          <div style={{ position: "absolute", top: 0, right: 0, width: 48, height: 48, borderRadius: 15, background: "rgba(255,255,255,0.28)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <SVGIcon id={biz.icon || "briefcase"} size={24} color={T.heroInk} />
+          </div>
+          <div style={{ position: "relative" }}>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut }}>{labelOf(STRUCTURES, biz.profile && biz.profile.structure) + " - " + labelOf(STAGES, biz.profile && biz.profile.stage)}</div>
+            <div style={{ fontSize: 26, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.02em", marginTop: 4 }}>{biz.name}</div>
+            <div style={{ fontSize: 13, color: T.heroMut, marginTop: 4 }}>{biz.what || ""}</div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 7, marginTop: 12 }}>
+              <span style={{ fontSize: 34, fontWeight: 700, color: bal < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em" }}>{dollars(bal)}</span>
+              <span style={{ fontSize: 12.5, color: T.heroMut }}>cash on hand</span>
+            </div>
+            <div style={{ display: "flex", gap: 16, marginTop: 12, borderTop: "0.5px solid " + T.heroSep, paddingTop: 12 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>Spent</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: T.heroInk, marginTop: 3 }}>{dollars(spent)}</div>
+              </div>
+              <div style={{ width: "0.5px", background: T.heroSep }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>Monthly budget</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: T.heroInk, marginTop: 3 }}>{dollars(monthly)}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+          <button onClick={function() { openAction(biz.id, "add"); }}
+            style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 12, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow }}>Add capital</button>
+          <button onClick={function() { setRevFor(biz.id); setRevForm({ label: "", amount: "" }); }}
+            style={{ flex: 1, border: "1.5px solid " + T.green, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 12, background: "none", color: T.green }}>Record revenue</button>
+          <button onClick={function() { openAction(biz.id, "withdraw"); }} disabled={bal <= 0}
+            style={{ flex: 1, border: "1.5px solid " + (bal <= 0 ? "rgba(0,0,0,0.08)" : T.orange), cursor: bal <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 12, background: "none", color: bal <= 0 ? T.ink3 : T.orange }}>Withdraw</button>
+        </div>
+
+        {(plan.summary || (plan.sections && plan.sections.length)) && (
+          <Card style={{ padding: "16px 18px", marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Business plan</div>
+              <button onClick={function() { replanWithRichard(biz); }} disabled={replanning}
+                style={{ background: T.orangeDim, border: "none", borderRadius: 9, padding: "5px 11px", fontSize: 11.5, fontWeight: 700, color: T.orange, cursor: replanning ? "default" : "pointer", fontFamily: UI }}>{replanning ? "Updating..." : "Replan"}</button>
+            </div>
+            {plan.summary && <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.55, marginBottom: plan.sections && plan.sections.length ? 14 : 0 }}>{plan.summary}</div>}
+            {plan.verdict && plan.verdict.assessment && (
+              <div style={{ background: T.orangeDim, borderRadius: 12, padding: "11px 13px", marginBottom: 14 }}>
+                {plan.verdict.keyNumber && <div style={{ fontSize: 17, fontWeight: 800, color: T.orange, letterSpacing: "-0.02em" }}>{plan.verdict.keyNumber + (plan.verdict.keyNumberLabel ? (" " + plan.verdict.keyNumberLabel) : "")}</div>}
+                <div style={{ fontSize: 13, color: T.ink, lineHeight: 1.5, marginTop: plan.verdict.keyNumber ? 4 : 0 }}>{plan.verdict.assessment}</div>
+              </div>
+            )}
+            {(plan.sections || []).map(function(s, i) {
+              return (
+                <div key={i} style={{ marginBottom: i < plan.sections.length - 1 ? 12 : 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: T.ink, marginBottom: 3 }}>{s.title}</div>
+                  <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5 }}>{s.body}</div>
+                </div>
+              );
+            })}
+            {(plan.tips || []).length > 0 && (
+              <div style={{ marginTop: 14, borderTop: "0.5px solid " + T.sep, paddingTop: 12 }}>
+                {plan.tips.map(function(tp, i) {
+                  return <div key={i} style={{ fontSize: 13, color: T.ink, lineHeight: 1.5, marginBottom: i < plan.tips.length - 1 ? 7 : 0, display: "flex", gap: 8 }}><span style={{ color: T.orange, fontWeight: 700 }}>-</span><span>{tp}</span></div>;
+                })}
+              </div>
+            )}
+          </Card>
+        )}
+
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 2px 10px" }}>Budget categories</div>
+        {biz.categories.map(function(a) {
+          var over = a.spent > a.planned && a.planned > 0;
+          return (
+            <Card key={a.key} style={{ marginBottom: 12, overflow: "hidden" }}>
+              <div style={{ padding: "15px 16px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 10 }}>
+                  <div style={{ width: 34, height: 34, borderRadius: 10, background: a.color + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <SVGIcon id={a.icon} size={18} color={a.color} />
+                  </div>
+                  <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: T.ink }}>{a.label}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: over ? T.red : T.ink2 }}>{dollars(a.spent) + " / " + sym}</span>
+                    <input type="number" value={getDetailEdit(biz.id, "alloc_" + a.key, a.planned)}
+                      onChange={function(e) { setDetailEdit(biz.id, "alloc_" + a.key, e.target.value); }}
+                      onBlur={function(e) { updatePlanned(biz.id, a.key, e.target.value); clearDetailEdit(biz.id, "alloc_" + a.key); }}
+                      style={{ width: 58, border: "none", background: "rgba(0,0,0,0.05)", borderRadius: 7, outline: "none", fontSize: 13, fontWeight: 600, color: T.ink, fontFamily: UI, textAlign: "right", padding: "3px 6px", boxSizing: "border-box" }} />
+                  </div>
+                </div>
+                <ProgressBar value={a.spent} max={a.planned || 1} color={over ? T.red : a.color} h={6} />
+                {(a.entries || []).length > 0 && (
+                  <div style={{ marginTop: 10 }}>
+                    {a.entries.map(function(e) {
+                      return (
+                        <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0" }}>
+                          <span style={{ fontSize: 13, color: T.ink2 }}>{e.label}</span>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: T.ink }}>{dollars(e.amount)}</span>
+                            <button onClick={function() { deleteExpense(biz.id, a.key, e.id); }} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex" }}><SVGIcon id="trash" size={14} color={T.ink3} /></button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <button onClick={function() { setLogFor({ bizId: biz.id, key: a.key, label: a.label }); setLogForm({ label: "", amount: "" }); }}
+                  style={{ width: "100%", marginTop: 10, background: T.orangeDim, border: "none", borderRadius: 10, padding: "9px 0", color: T.orange, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>+ Log expense</button>
+              </div>
+            </Card>
+          );
+        })}
+
+        <div style={{ position: "relative", overflow: "hidden", borderRadius: 22, padding: "20px 22px", background: T.heroBg, boxShadow: T.heroShadow, marginBottom: 16, marginTop: 4 }}>
+          <div style={{ position: "absolute", bottom: -70, left: -50, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
+          <div style={{ position: "relative" }}>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut }}>Unallocated budget</div>
+            <div style={{ fontSize: 34, fontWeight: 700, color: (monthly - plannedTotal) < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em", marginTop: 8 }}>{((monthly - plannedTotal) < 0 ? "-" : "") + dollars(Math.abs(monthly - plannedTotal))}</div>
+            <div style={{ fontSize: 12.5, color: T.heroMut, marginTop: 6, lineHeight: 1.5 }}>{dollars(monthly) + " monthly budget - " + dollars(plannedTotal) + " allocated"}</div>
+          </div>
+        </div>
+
+        {capHistory.length > 0 && (
+          <Card style={{ padding: "14px 16px", marginBottom: 12 }}>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Capital history</div>
+            {capHistory.map(function(e) {
+              var dep = e.kind !== "withdraw";
+              return (
+                <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", borderBottom: "0.5px solid " + T.sep }}>
+                  <div style={{ width: 26, height: 26, borderRadius: 8, background: (dep ? T.green : T.ink3) + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <SVGIcon id={dep ? "down" : "up"} size={13} color={dep ? T.green : T.ink2} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, color: T.ink, fontWeight: 500 }}>{e.label || (dep ? "Capital" : "Withdraw")}</div>
+                    <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{e.date}</div>
+                  </div>
+                  <span style={{ fontSize: 13.5, fontWeight: 700, color: dep ? T.green : T.ink2, flexShrink: 0 }}>{(dep ? "+" : "-") + dollars(e.amount)}</span>
+                </div>
+              );
+            })}
+          </Card>
+        )}
+
+        <Card style={{ overflow: "hidden", marginBottom: 12 }}>
+          <div style={{ padding: "14px 16px 10px", borderBottom: "0.5px solid " + T.sep }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Ask your CFO</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3, fontFamily: UI }}>Richard can answer questions and retune your budget</div>
+          </div>
+          {thread.length > 0 && (
+            <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+              {thread.map(function(m, i) {
+                if (m.role === "system") {
+                  return (
+                    <div key={i} style={{ display: "flex", justifyContent: "center" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 5, background: T.greenDim, color: T.green, borderRadius: 999, padding: "4px 11px", fontSize: 11.5, fontWeight: 700, fontFamily: UI }}>
+                        <SVGIcon id="check" size={11} color={T.green} />{m.text}
+                      </div>
+                    </div>
+                  );
+                }
+                var isUser = m.role === "user";
+                return (
+                  <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
+                    <div style={{ maxWidth: "82%", background: isUser ? T.orange : "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13.5, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
+                      {isUser ? m.text : <RichardText text={m.text} size={13.5} />}
+                    </div>
+                  </div>
+                );
+              })}
+              {chatLoading && (
+                <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                  <div style={{ background: "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13.5, color: T.ink3, fontFamily: UI }}>...</div>
+                </div>
+              )}
+            </div>
+          )}
+          <div style={{ display: "flex", gap: 8, padding: "10px 12px" }}>
+            <input value={chatInput} onChange={function(e) { setChatInput(e.target.value); }}
+              onKeyDown={function(e) { if (e.key === "Enter" && !chatLoading) sendChat(biz); }}
+              placeholder="e.g. Should I spend more on marketing?"
+              style={{ flex: 1, border: "none", background: "rgba(0,0,0,0.04)", borderRadius: 10, padding: "9px 12px", fontSize: 13.5, fontFamily: UI, outline: "none", color: T.ink }} />
+            <button onClick={function() { sendChat(biz); }} disabled={!chatInput.trim() || chatLoading}
+              style={{ background: chatInput.trim() && !chatLoading ? T.btn : "rgba(0,0,0,0.1)", border: "none", borderRadius: 10, width: 38, height: 38, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 17 }}>^</button>
+          </div>
+        </Card>
+
+        {deleteConfirm === biz.id ? (
+          <div style={{ background: "rgba(220,50,50,0.07)", borderRadius: 12, padding: "12px 14px", marginTop: 6 }}>
+            <div style={{ fontSize: 13, color: T.ink2, marginBottom: 10, lineHeight: 1.45 }}>{bal > 0 ? dollars(bal) + " of cash will return to your balance. " : ""}Close this business account?</div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={function() { closeBusiness(biz); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 10, background: T.red, color: "#fff" }}>Close account</button>
+              <button onClick={function() { setDeleteConfirm(null); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "10px 0", borderRadius: 10, background: "rgba(0,0,0,0.07)", color: T.ink2 }}>Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <button onClick={function() { setDeleteConfirm(biz.id); }}
+            style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "8px 0 4px" }}>Close business account</button>
+        )}
+
+        <Overlay open={!!act} onClose={function() { setAct(null); }} title={(act && act.kind === "add" ? "Add capital" : "Withdraw") + (biz ? " - " + biz.name : "")}>
+          <div>
+            {act && act.kind === "withdraw" && <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 10 }}>{"Cash on hand: " + dollars(bal)}</div>}
+            <div style={{ padding: "16px 18px", background: "rgba(0,0,0,0.04)", borderRadius: 14, marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <span style={{ fontSize: 22, color: T.ink3, fontWeight: 600 }}>{sym}</span>
+                <input value={amt} onChange={function(e) { setAmt(e.target.value); }} type="number" inputMode="decimal" placeholder="0" autoFocus={true}
+                  style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 28, fontFamily: UI, color: T.ink, fontWeight: 700, padding: 0, boxSizing: "border-box", width: "100%" }} />
+              </div>
+            </div>
+            {act && act.kind === "add"
+              ? seg(srcc, setSrc, [{ v: "external", l: "New money" }, { v: "balance", l: "From balance" }])
+              : seg(srcc, setSrc, [{ v: "balance", l: "To balance" }, { v: "remove", l: "Take out" }])}
+            <div style={{ fontSize: 12, color: T.ink3, marginTop: 9, lineHeight: 1.45, padding: "0 2px" }}>
+              {act && act.kind === "add"
+                ? (srcc === "external" ? "Outside money - your spendable balance is untouched, net worth rises." : "Moves from your spendable balance. Net worth is unchanged.")
+                : (srcc === "balance" ? "Returns to your spendable balance. Net worth is unchanged." : "Leaves the business for good - net worth falls.")}
+            </div>
+            <BigBtn label={act && act.kind === "add" ? "Add capital" : "Withdraw"} onPress={submitAction} disabled={!(parseFloat(amt) > 0)} />
+          </div>
+        </Overlay>
+
+        <Overlay open={!!logFor} onClose={function() { setLogFor(null); }} title={logFor ? ("Log expense - " + logFor.label) : "Log expense"}>
+          <FormRow label="What was it?" value={logForm.label} onChange={function(e) { setLogField("label", e.target.value); }} />
+          <FormRow label="Amount" value={logForm.amount} onChange={function(e) { setLogField("amount", e.target.value); }} type="number" last={true} />
+          <BigBtn label="Log expense" disabled={!(parseFloat(logForm.amount) > 0)} onPress={function() { if (logFor) logExpense(logFor.bizId, logFor.key); }} />
+        </Overlay>
+
+        <Overlay open={!!revFor} onClose={function() { setRevFor(null); }} title="Record revenue">
+          <FormRow label="Source (optional)" value={revForm.label} onChange={function(e) { setRevField("label", e.target.value); }} />
+          <FormRow label="Amount" value={revForm.amount} onChange={function(e) { setRevField("amount", e.target.value); }} type="number" last={true} />
+          <BigBtn label="Record revenue" disabled={!(parseFloat(revForm.amount) > 0)} onPress={function() { if (revFor) logRevenue(revFor); }} />
+        </Overlay>
+      </div>
+    );
+  }
+
+  if (view === "detail" && activeBiz) return detailView(activeBiz);
+  if (view === "wizard") return wizardView();
+  return listView();
 }
 
 // Profile-accessible version of the mid-month CatchUpScreen: log income earned
@@ -8666,8 +9589,12 @@ export default function App() {
   var trips = _trp[0]; var setTrips = _trp[1];
   var _sav = useState([]);
   var savings = _sav[0]; var setSavings = _sav[1];
+  var _biz = useState([]);
+  var businesses = _biz[0]; var setBusinesses = _biz[1];
   var _otr = useState(null);
   var openTrip = _otr[0]; var setOpenTrip = _otr[1];
+  var _obz = useState(null);
+  var openBiz = _obz[0]; var setOpenBiz = _obz[1];
   var _nts = useState([]);
   var notes = _nts[0]; var setNotes = _nts[1];
   var _fld = useState([]);
@@ -8754,6 +9681,8 @@ export default function App() {
     // Savings pots are always personal - they live in the user doc, never the
     // shared household doc (an emergency fund isn't joint money).
     setSavings(data.savings || []);
+    // Business accounts are personal too (separated business money + plan).
+    setBusinesses(data.businesses || []);
     setNotes(data.notes || []);
     setFoundMoney(data.foundMoney || { tally: 0, dismissed: [], acted: [] });
     setDecisions(data.decisions || []);
@@ -8789,7 +9718,7 @@ export default function App() {
 
   // Build the starting document for a brand-new account (e.g. first Google sign-in).
   function defaultBlob(name, email) {
-    return { tx: [], budgets: [], goals: [], trips: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: email, theme: "purple" };
+    return { tx: [], budgets: [], goals: [], trips: [], savings: [], businesses: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: email, theme: "purple" };
   }
 
   // Firebase Auth is the single source of truth for the session. It restores the
@@ -8923,7 +9852,7 @@ export default function App() {
     blobRef.current = {};
     setUser(null); setAccountKey(null); setTab("overview");
     setHouseholdId(null); setHousehold(null); setInvites([]);
-    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]);
+    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]);
     _lang.code = "en"; setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang("en"); applyTheme("purple"); setTheme("purple");
   }
 
@@ -8932,7 +9861,7 @@ export default function App() {
     var existing = blobRef.current || {};
     var blob = {};
     for (var ek in existing) blob[ek] = existing[ek];
-    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.savings = savings; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme; blob.foundMoney = foundMoney; blob.decisions = decisions; blob.monthAnalysis = monthAnalysis;
+    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.savings = savings; blob.businesses = businesses; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme; blob.foundMoney = foundMoney; blob.decisions = decisions; blob.monthAnalysis = monthAnalysis;
     for (var k in next) blob[k] = next[k];
     blobRef.current = blob;
     // Debounce Firestore writes: coalesce rapid successive saves (e.g. typing)
@@ -8973,6 +9902,11 @@ export default function App() {
   // both arrays atomically so the offsetting tx and the pot entry can't desync.
   function onSaveSavings(next) { setSavings(next); save({ savings: next }); }
   function onSavingsMove(nextTx, nextSavings) { setTx(nextTx); setSavings(nextSavings); save({ tx: nextTx, savings: nextSavings }); }
+  // Business accounts mirror savings: pot-only writes (plan edits, expenses,
+  // revenue, budget tweaks) go through onSaveBusinesses; capital that moves
+  // to/from the main balance writes both arrays atomically via onBusinessMove.
+  function onSaveBusinesses(next) { setBusinesses(next); save({ businesses: next }); }
+  function onBusinessMove(nextTx, nextBusinesses) { setTx(nextTx); setBusinesses(nextBusinesses); save({ tx: nextTx, businesses: nextBusinesses }); }
 
   // Reminder scheduling. Timers don't survive reload, so we re-derive them from
   // each note's durable `reminder.due` whenever notes change, firing any that are
@@ -9206,7 +10140,7 @@ export default function App() {
             <div style={{ background: T.orangeDim, borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em" }}>{monthLabel}</div>
           </div>
           <span style={{ flex: 1, fontSize: 20, fontWeight: 700, color: T.ink, textAlign: "center", letterSpacing: "-0.02em" }}>
-            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
+            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
           <div style={{ width: 86, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
             {HAS_FAB.indexOf(currentTab) !== -1 && (
@@ -9224,14 +10158,14 @@ export default function App() {
       </div>
 
       <div key={animKey} style={{ padding: "8px 16px 16px", animation: animDir === "right" ? "navSlideRight 0.28s cubic-bezier(0.22,1,0.36,1) both" : animDir === "left" ? "navSlideLeft 0.28s cubic-bezier(0.22,1,0.36,1) both" : "navFade 0.20s ease both" }}>
-        {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} />}
+        {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} />}
         {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} onSavingsMove={onSavingsMove} />}
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "goals" && <Goals goals={goals} trips={trips} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab("goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} savings={savings} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={(monthAnalysis && monthAnalysis.sig === txSignature()) ? monthAnalysis.data : null} onSaveAnalysis={onSaveAnalysis} />}
+        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} savings={savings} businesses={businesses} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={(monthAnalysis && monthAnalysis.sig === txSignature()) ? monthAnalysis.data : null} onSaveAnalysis={onSaveAnalysis} />}
         {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} richardInstructions={richardInstructions} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "profile"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
@@ -9242,7 +10176,8 @@ export default function App() {
         {currentTab === "language" && <LanguageView lang={lang} onLangChange={onSaveLang} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "appearance" && <AppearanceView theme={theme} onThemeChange={onSaveTheme} darkMode={darkMode} onDarkModeChange={onSaveDarkMode} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
-        {currentTab === "savings" && <SavingsView savings={savings} tx={tx} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} />}
+        {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} />}
+        {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Overview" : "Savings"} onBack={function() { setTab(prevTabRef.current || "overview"); }} />}
         {currentTab === "editOpeningBalance" && <EditOpeningBalanceView tx={tx} onComplete={handleEditOpeningBalance} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "logMonth" && <LogMonthView categories={categories} tx={tx} budgets={budgets} onComplete={handleLogMonth} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "collab" && <CollabView household={household} householdId={householdId} invites={invites} myUid={accountKey} onCreate={onCreateHousehold} onInvite={onInviteMember} onCancelInvite={onCancelInvite} onAccept={onAcceptInvite} onLeave={onLeaveHousehold} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
