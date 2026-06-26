@@ -670,6 +670,7 @@ function SVGIcon(props) {
     tv:       "M2 7h20v13H2zM8 3l4 4 4-4",
     umbrella: "M23 12a11 11 0 00-22 0M12 12v8a2 2 0 004 0",
     close:    "M18 6L6 18M6 6l12 12",
+    clock:    "M12 7v5l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
   };
   var d = icons[props.id] || "";
   return (
@@ -6851,26 +6852,27 @@ function Advisor(props) {
         </Card>
       )}
 
-      <div style={{ marginTop: 26, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 2px 11px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-          <span style={{ width: 3, height: 15, borderRadius: 2, background: T.orange }} />
-          <span style={{ fontSize: 16, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>{tr("askYourAdvisor")}</span>
+      <div style={{ marginTop: 26, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "0 2px 11px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
+          <span style={{ width: 3, height: 15, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+          <span style={{ fontSize: 16, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{tr("askYourAdvisor")}</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <button onClick={function() { setHistoryOpen(true); }}
-            style={{ display: "flex", alignItems: "center", gap: 7, border: "none", background: T.btn, color: "#fff", fontSize: 13.5, fontWeight: 700, fontFamily: UI, padding: "9px 15px", borderRadius: 12, cursor: "pointer", boxShadow: "0 6px 18px rgba(137,112,198,0.32)", textShadow: "0 1px 2px rgba(42,31,77,0.35)" }}>
-            <SVGIcon id="refresh" size={15} color="#fff" />
-            {tr("pastChats")}
-            {(props.chats && props.chats.length > 0) && (
-              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 18, height: 18, padding: "0 5px", borderRadius: 9, background: "rgba(255,255,255,0.26)", fontSize: 11, fontWeight: 700, lineHeight: 1 }}>{props.chats.length}</span>
-            )}
-          </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 0 }}>
           {chat.length > 0 && (
-            <button onClick={startNewChat}
-              style={{ display: "flex", alignItems: "center", gap: 5, border: "none", background: T.orangeDim, color: T.orange, fontSize: 12.5, fontWeight: 700, fontFamily: UI, padding: "7px 11px", borderRadius: 10, cursor: "pointer" }}>
+            <button onClick={startNewChat} title={tr("newChat")}
+              style={{ display: "flex", alignItems: "center", gap: 5, border: "none", background: "rgba(0,0,0,0.05)", color: T.ink2, fontSize: 13, fontWeight: 600, fontFamily: UI, padding: "8px 12px", borderRadius: 11, cursor: "pointer", whiteSpace: "nowrap" }}>
+              <SVGIcon id="plus" size={15} color={T.ink2} />
               {tr("newChat")}
             </button>
           )}
+          <button onClick={function() { setHistoryOpen(true); }} title={tr("pastChats")}
+            style={{ display: "flex", alignItems: "center", gap: 6, border: "none", background: T.orangeDim, color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI, padding: "8px 12px", borderRadius: 11, cursor: "pointer", whiteSpace: "nowrap" }}>
+            <SVGIcon id="clock" size={15} color={T.orange} />
+            {tr("pastChats")}
+            {(props.chats && props.chats.length > 0) && (
+              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 17, height: 17, padding: "0 4px", borderRadius: 9, background: T.orange, color: "#fff", fontSize: 10.5, fontWeight: 700, lineHeight: 1 }}>{props.chats.length}</span>
+            )}
+          </button>
         </div>
       </div>
       <Card style={{ overflow: "hidden", marginBottom: 24 }}>
@@ -7005,7 +7007,8 @@ function Advisor(props) {
         <div onClick={function() { setHistoryOpen(false); }}
           style={{ position: "fixed", inset: 0, zIndex: 95, background: "rgba(12,10,24,0.42)", backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
           <div onClick={function(e) { e.stopPropagation(); }}
-            style={{ width: "100%", maxWidth: 440, maxHeight: "78vh", background: T.card, borderRadius: "22px 22px 0 0", boxShadow: "0 -12px 40px rgba(12,10,24,0.32)", display: "flex", flexDirection: "column", overflow: "hidden", boxSizing: "border-box" }}>
+            style={{ width: "100%", maxWidth: 440, maxHeight: "82vh", background: T.card, borderRadius: "24px 24px 0 0", boxShadow: "0 -12px 44px rgba(12,10,24,0.34)", display: "flex", flexDirection: "column", overflow: "hidden", boxSizing: "border-box" }}>
+            <div style={{ width: 38, height: 5, borderRadius: 3, background: T.orangeDim, margin: "9px auto 2px", flexShrink: 0 }} />
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 18px 12px", borderBottom: "0.5px solid " + T.sep }}>
               <div>
                 <div style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>{tr("pastChats")}</div>
@@ -7016,7 +7019,7 @@ function Advisor(props) {
                 <SVGIcon id="close" size={16} color={T.ink2} />
               </button>
             </div>
-            <div style={{ overflowY: "auto", padding: "10px 14px 22px", display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ overflowY: "auto", padding: "10px 14px", paddingBottom: "calc(32px + env(safe-area-inset-bottom, 0px))", display: "flex", flexDirection: "column", gap: 8 }}>
               {(props.chats || []).length === 0 && (
                 <div style={{ textAlign: "center", color: T.ink3, fontSize: 13.5, padding: "30px 10px" }}>{tr("noPastChats")}</div>
               )}
