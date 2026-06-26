@@ -6857,14 +6857,14 @@ function Advisor(props) {
           <span style={{ fontSize: 16, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>{tr("askYourAdvisor")}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          {(props.chats && props.chats.length > 0) && (
-            <button onClick={function() { setHistoryOpen(true); }}
-              style={{ display: "flex", alignItems: "center", gap: 7, border: "none", background: T.btn, color: "#fff", fontSize: 13.5, fontWeight: 700, fontFamily: UI, padding: "9px 15px", borderRadius: 12, cursor: "pointer", boxShadow: "0 6px 18px rgba(137,112,198,0.32)", textShadow: "0 1px 2px rgba(42,31,77,0.35)" }}>
-              <SVGIcon id="refresh" size={15} color="#fff" />
-              {tr("pastChats")}
+          <button onClick={function() { setHistoryOpen(true); }}
+            style={{ display: "flex", alignItems: "center", gap: 7, border: "none", background: T.btn, color: "#fff", fontSize: 13.5, fontWeight: 700, fontFamily: UI, padding: "9px 15px", borderRadius: 12, cursor: "pointer", boxShadow: "0 6px 18px rgba(137,112,198,0.32)", textShadow: "0 1px 2px rgba(42,31,77,0.35)" }}>
+            <SVGIcon id="refresh" size={15} color="#fff" />
+            {tr("pastChats")}
+            {(props.chats && props.chats.length > 0) && (
               <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 18, height: 18, padding: "0 5px", borderRadius: 9, background: "rgba(255,255,255,0.26)", fontSize: 11, fontWeight: 700, lineHeight: 1 }}>{props.chats.length}</span>
-            </button>
-          )}
+            )}
+          </button>
           {chat.length > 0 && (
             <button onClick={startNewChat}
               style={{ display: "flex", alignItems: "center", gap: 5, border: "none", background: T.orangeDim, color: T.orange, fontSize: 12.5, fontWeight: 700, fontFamily: UI, padding: "7px 11px", borderRadius: 10, cursor: "pointer" }}>
