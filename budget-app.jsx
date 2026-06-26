@@ -726,7 +726,13 @@ function Overlay(props) {
     }
   }, [props.open]);
   if (!vis) return null;
-  return (
+  // Portal to <body> so the sheet escapes the animated tab-content wrapper. That
+  // wrapper runs a transform-based slide animation, which leaves a persistent
+  // stacking context even after it finishes - trapping this fixed/z-index:90
+  // sheet *below* the root-level floating nav pill (z-index:30) and letting the
+  // pill paint over the sheet's Add/Save button. Rendering into <body> keeps the
+  // sheet truly viewport-relative and above the nav.
+  return ReactDOM.createPortal((
     <div style={{ position: "fixed", inset: 0, zIndex: 90 }}>
       <div onClick={props.onClose} style={{
         position: "absolute", inset: 0,
@@ -758,7 +764,7 @@ function Overlay(props) {
         <div style={{ padding: "2px 20px 0" }}>{props.children}</div>
       </div>
     </div>
-  );
+  ), document.body);
 }
 
 function FormRow(props) {
