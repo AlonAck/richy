@@ -97,19 +97,17 @@ function applyDarkMode(dark) {
   T.ink     = dark ? "#EDE8E2" : "#1A1410";
   T.ink2    = dark ? "#A09080" : "#6B5C4E";
   T.ink3    = dark ? "#6B5C4E" : "#B0A396";
-  T.navBg   = dark ? "rgba(19,17,16,0.94)"   : "rgba(250,247,242,0.92)";
+  T.navBg   = dark ? "rgba(19,17,16,0.88)"   : "rgba(250,247,242,0.82)";
   T.sheetBg = dark ? "#1C1915" : "#F8F6F1";
   T.inputBg = dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)";
-  // Liquid Glass — refined frosted-glass material for the menu chrome (nav bars + slide-up sheets).
-  // The blur+saturate filter lives inline at each surface; these tokens carry the parts that must
-  // adapt to light/dark: a translucent sheet fill, a bright specular top rim (light catching the
-  // glass edge), and a soft lift shadow so the chrome reads as a floating pane above the content.
-  T.sheetGlass = dark ? "rgba(28,25,21,0.75)" : "rgba(248,246,241,0.78)";
-  T.glassSpec  = dark ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.95)";
-  T.glassLiftUp   = dark ? "0 -16px 48px rgba(0,0,0,0.50)" : "0 -16px 48px rgba(40,28,16,0.15)";
-  T.glassLiftDown = dark ? "0 16px 48px rgba(0,0,0,0.50)"  : "0 16px 48px rgba(40,28,16,0.14)";
-  T.pillBg     = dark ? "rgba(22,19,17,0.76)" : "rgba(248,246,241,0.76)";
-  T.glassBorder = dark ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.55)";
+  // Liquid Glass tokens — adapt to light/dark so the glass effect is visible in both modes.
+  // Light: use dark separators/borders (white-on-white is invisible); dark: use bright highlights.
+  T.sheetGlass  = dark ? "rgba(28,25,21,0.75)"  : "rgba(255,255,255,0.78)";
+  T.glassSpec   = dark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.07)";
+  T.glassBorder = dark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.08)";
+  T.glassLiftUp   = dark ? "0 -16px 48px rgba(0,0,0,0.55)" : "0 -12px 36px rgba(40,28,16,0.20), 0 -2px 8px rgba(40,28,16,0.10)";
+  T.glassLiftDown = dark ? "0 16px 48px rgba(0,0,0,0.55)"  : "0 12px 36px rgba(40,28,16,0.18), 0 2px 8px rgba(40,28,16,0.08)";
+  T.pillBg      = dark ? "rgba(22,19,17,0.76)" : "rgba(255,255,255,0.78)";
 }
 
 // Remember the last-used look across reloads so the very first paint matches
@@ -715,17 +713,28 @@ function IconBadge(props) {
 }
 
 function Overlay(props) {
-  if (!props.open) return null;
+  var _vis = useState(false); var vis = _vis[0]; var setVis = _vis[1];
+  var _closing = useState(false); var closing = _closing[0]; var setClosing = _closing[1];
+  useEffect(function() {
+    if (props.open) {
+      setVis(true); setClosing(false);
+    } else if (vis) {
+      setClosing(true);
+      var t = setTimeout(function() { setVis(false); setClosing(false); }, 270);
+      return function() { clearTimeout(t); };
+    }
+  }, [props.open]);
+  if (!vis) return null;
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 90 }}>
       <div onClick={props.onClose} style={{
         position: "absolute", inset: 0,
         background: "rgba(20,18,16,0.32)",
         backdropFilter: "blur(4px) saturate(120%)", WebkitBackdropFilter: "blur(4px) saturate(120%)",
+        animation: closing ? "overlayFadeOut 0.27s ease both" : "overlayFadeIn 0.22s ease both",
       }} />
       <div style={{
         position: "absolute", bottom: 0, left: "50%",
-        transform: "translateX(-50%)",
         width: "100%", maxWidth: 430,
         maxHeight: "88vh", overflowY: "auto",
         background: T.sheetGlass,
@@ -734,6 +743,7 @@ function Overlay(props) {
         borderRadius: "24px 24px 0 0",
         boxShadow: "0 -4px 40px rgba(20,18,16,0.22), inset 0 1px 0 " + T.glassSpec,
         paddingBottom: 30,
+        animation: closing ? "sheetSlideDown 0.27s cubic-bezier(0.4,0,1,1) both" : "sheetSlideUp 0.34s cubic-bezier(0.22,1,0.36,1) both",
       }}>
         <div style={{ width: 38, height: 5, borderRadius: 3, background: T.orangeDim, margin: "9px auto 0" }} />
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px 8px" }}>
@@ -8813,6 +8823,41 @@ export default function App() {
     });
     if (fired) { persistNotesOnly(next); }
   }
+  // Screen-transition animation state
+  var _animKey = useState(0); var animKey = _animKey[0]; var setAnimKey = _animKey[1];
+  var _animDir = useState("fade"); var animDir = _animDir[0]; var setAnimDir = _animDir[1];
+  var prevAnimTabRef = useRef("overview");
+
+  // Inject nav-transition keyframes once on mount
+  useEffect(function() {
+    var id = "richy-nav-css";
+    if (document.getElementById(id)) return;
+    var st = document.createElement("style"); st.id = id;
+    st.textContent = [
+      "@keyframes navFade{from{opacity:0}to{opacity:1}}",
+      "@keyframes navSlideRight{from{opacity:0;transform:translateX(22px)}to{opacity:1;transform:none}}",
+      "@keyframes navSlideLeft{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:none}}",
+      "@keyframes sheetSlideUp{from{opacity:0;transform:translateX(-50%) translateY(56px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}",
+      "@keyframes sheetSlideDown{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(56px)}}",
+      "@keyframes overlayFadeIn{from{opacity:0}to{opacity:1}}",
+      "@keyframes overlayFadeOut{from{opacity:1}to{opacity:0}}",
+    ].join("");
+    document.head.appendChild(st);
+  }, []);
+
+  // Compute slide direction whenever the active tab changes
+  var MAIN_TABS_SET = { overview: 1, activity: 1, budgets: 1, goals: 1, advisor: 1 };
+  useEffect(function() {
+    var prev = prevAnimTabRef.current;
+    var curr = tab;
+    var dir = MAIN_TABS_SET[curr]
+      ? (MAIN_TABS_SET[prev] ? "fade" : "left")
+      : "right";
+    setAnimDir(dir);
+    setAnimKey(function(k) { return k + 1; });
+    prevAnimTabRef.current = curr;
+  }, [tab]);
+
   var remTimers = useRef({});
   useEffect(function() {
     for (var old in remTimers.current) { clearTimeout(remTimers.current[old]); }
@@ -8988,7 +9033,7 @@ export default function App() {
         </div>
       </div>
 
-      <div style={{ padding: "8px 16px 0" }}>
+      <div key={animKey} style={{ padding: "8px 16px 0", animation: animDir === "right" ? "navSlideRight 0.28s cubic-bezier(0.22,1,0.36,1) both" : animDir === "left" ? "navSlideLeft 0.28s cubic-bezier(0.22,1,0.36,1) both" : "navFade 0.20s ease both" }}>
         {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} />}
         {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} onSavingsMove={onSavingsMove} />}
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
