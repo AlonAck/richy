@@ -8400,23 +8400,36 @@ function PlanView(props) {
 }
 
 function ProfileRow(props) {
-  var curLabel = props.value ? (
-    <span style={{ fontSize: 13, color: T.ink3, fontFamily: UI }}>{props.value}</span>
-  ) : null;
   return (
     <button onClick={props.onClick}
-      style={{ width: "100%", background: "none", border: "none", borderBottom: props.last ? "none" : "0.5px solid " + T.sep, padding: "17px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", fontFamily: UI }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ width: 36, height: 36, borderRadius: 10, background: props.iconBg || T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <SVGIcon id={props.icon} size={17} color={props.iconColor || T.orange} />
+      style={{ width: "100%", background: "none", border: "none", borderBottom: props.last ? "none" : "0.5px solid " + T.sep, padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", fontFamily: UI, boxSizing: "border-box" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
+        <div style={{ width: 34, height: 34, borderRadius: 10, background: props.iconBg || T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <SVGIcon id={props.icon} size={16} color={props.iconColor || T.orange} />
         </div>
-        <span style={{ fontSize: 15, fontWeight: 600, color: T.ink }}>{props.label}</span>
+        <span style={{ fontSize: 15, fontWeight: 500, color: T.ink }}>{props.label}</span>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        {curLabel}
-        <SVGIcon id="chevron" size={16} color={T.ink3} />
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        {props.value && <span style={{ fontSize: 13, color: T.ink3, fontFamily: UI }}>{props.value}</span>}
+        <SVGIcon id="chevron" size={15} color={T.ink3} />
       </div>
     </button>
+  );
+}
+
+function ProfileSection(props) {
+  return (
+    <div style={{ marginBottom: 26 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 2, marginBottom: 10 }}>
+        <div style={{ width: 26, height: 26, borderRadius: 8, background: props.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 1px 6px " + props.glow }}>
+          <SVGIcon id={props.icon} size={13} color={props.color} />
+        </div>
+        <span style={{ fontSize: 13, fontWeight: 700, color: T.ink2, letterSpacing: "0.01em", fontFamily: UI }}>{props.title}</span>
+      </div>
+      <Card style={{ overflow: "hidden" }}>
+        {props.children}
+      </Card>
+    </div>
   );
 }
 
@@ -8426,33 +8439,52 @@ function Profile(props) {
   var langLabel = (LANGUAGE_OPTIONS.filter(function(o) { return o.code === lang; })[0] || {}).label || "English";
   var curLabel = (CURRENCY_OPTIONS.filter(function(o) { return o.sym === cur; })[0] || {}).label || cur;
   var themeLabel = props.theme === "classic" ? "Dark Ember" : "Mika's Violet";
+  var initial = (props.user || "?")[0].toUpperCase();
   return (
     <div>
-      <Card style={{ padding: "28px 22px", marginBottom: 16, textAlign: "center" }}>
-        <div style={{ width: 72, height: 72, borderRadius: 22, background: T.orange, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", boxShadow: "0 4px 16px " + T.orangeGlow, fontSize: 32, color: "#fff" }}>
-          @
-        </div>
-        <div style={{ fontSize: 22, fontWeight: 700, color: T.ink }}>{props.user}</div>
-        <div style={{ fontSize: 13, color: T.ink3, marginTop: 4 }}>{tr("richyMember")}</div>
-      </Card>
 
-      <Card style={{ overflow: "hidden", marginBottom: 16 }}>
-        <ProfileRow icon="spark" label={tr("seeYourPlan")} onClick={props.onViewPlan} last={false} />
-        <ProfileRow icon="note" label="Richard's Instructions" value={props.richardInstructions ? "Custom" : "Default"} onClick={props.onViewInstructions} last={false} />
-        <ProfileRow icon="person" label={tr("richyRefersTo")} value={props.user} onClick={props.onViewNickname} last={false} />
-        <ProfileRow icon="coins" label={tr("currency")} value={curLabel} onClick={props.onViewCurrency} last={false} />
-        <ProfileRow icon="book" label={tr("language")} value={langLabel} onClick={props.onViewLanguage} last={false} />
-        <ProfileRow icon="star" label={tr("appearance")} value={themeLabel} onClick={props.onViewAppearance} last={false} />
-        <ProfileRow icon="briefcase" label="Opening balance" onClick={props.onViewEditOpeningBalance} last={false} />
-        <ProfileRow icon="coins" label="Log this month" onClick={props.onViewLogMonth} last={false} />
-        <ProfileRow icon="activity" label="Adding transactions" value={props.entryMethod === "import" ? "CSV import" : "Manual"} onClick={props.onViewEntryMethod} last={false} />
-        <ProfileRow icon="home" label="Collab" value={props.householdName || (props.inviteCount ? props.inviteCount + " invite" + (props.inviteCount === 1 ? "" : "s") : "Off")} onClick={props.onViewCollab} last={false} />
-        <ProfileRow icon="shield" label="Privacy & Data" onClick={props.onViewPrivacy} last={true} />
-      </Card>
+      {/* ── Header ── */}
+      <div style={{ textAlign: "center", padding: "12px 0 30px" }}>
+        <div style={{ width: 82, height: 82, borderRadius: 28, background: T.btn, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", boxShadow: "0 6px 28px " + T.orangeGlow, fontSize: 38, fontWeight: 800, color: "#fff", fontFamily: DISP, letterSpacing: "-0.02em", flexShrink: 0 }}>
+          {initial}
+        </div>
+        <div style={{ fontSize: 24, fontWeight: 700, color: T.ink, letterSpacing: "-0.025em", fontFamily: DISP }}>{props.user}</div>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 9, background: T.orangeDim, borderRadius: 20, padding: "5px 13px" }}>
+          <SVGIcon id="spark" size={11} color={T.orange} />
+          <span style={{ fontSize: 12, fontWeight: 600, color: T.orange, fontFamily: UI }}>Richy Member</span>
+        </div>
+      </div>
+
+      {/* ── AI & Richard ── */}
+      <ProfileSection icon="spark" title="AI & Richard" bg={T.goldDim} color={T.gold} glow={T.goldGlow}>
+        <ProfileRow icon="spark" iconBg={T.goldDim} iconColor={T.gold} label="Your Plan" onClick={props.onViewPlan} />
+        <ProfileRow icon="note" iconBg={T.goldDim} iconColor={T.gold} label="Richard's Instructions" value={props.richardInstructions ? "Custom" : "Default"} onClick={props.onViewInstructions} last />
+      </ProfileSection>
+
+      {/* ── Money ── */}
+      <ProfileSection icon="coins" title="Money" bg={T.greenDim} color={T.green} glow={T.greenGlow}>
+        <ProfileRow icon="credit" iconBg={T.greenDim} iconColor={T.green} label="Currency" value={curLabel} onClick={props.onViewCurrency} />
+        <ProfileRow icon="briefcase" iconBg={T.greenDim} iconColor={T.green} label="Opening Balance" onClick={props.onViewEditOpeningBalance} />
+        <ProfileRow icon="activity" iconBg={T.greenDim} iconColor={T.green} label="Log This Month" onClick={props.onViewLogMonth} />
+        <ProfileRow icon="edit" iconBg={T.greenDim} iconColor={T.green} label="Adding Transactions" value={props.entryMethod === "import" ? "CSV import" : "Manual"} onClick={props.onViewEntryMethod} last />
+      </ProfileSection>
+
+      {/* ── Visual ── */}
+      <ProfileSection icon="sun" title="Visual" bg={T.orangeDim} color={T.orange} glow={T.orangeGlow}>
+        <ProfileRow icon="star" iconBg={T.orangeDim} iconColor={T.orange} label="Appearance" value={themeLabel} onClick={props.onViewAppearance} />
+        <ProfileRow icon="book" iconBg={T.orangeDim} iconColor={T.orange} label="Language" value={langLabel} onClick={props.onViewLanguage} last />
+      </ProfileSection>
+
+      {/* ── Account ── */}
+      <ProfileSection icon="user" title="Account" bg={T.blueDim} color={T.blue} glow={T.blueGlow}>
+        <ProfileRow icon="edit" iconBg={T.blueDim} iconColor={T.blue} label="Your Name" value={props.user} onClick={props.onViewNickname} />
+        <ProfileRow icon="home" iconBg={T.blueDim} iconColor={T.blue} label="Collab" value={props.householdName || (props.inviteCount ? props.inviteCount + " invite" + (props.inviteCount === 1 ? "" : "s") : "Off")} onClick={props.onViewCollab} />
+        <ProfileRow icon="shield" iconBg={T.blueDim} iconColor={T.blue} label="Privacy & Data" onClick={props.onViewPrivacy} last />
+      </ProfileSection>
 
       <button onClick={props.onLogout}
-        style={{ width: "100%", background: "rgba(255,59,48,0.08)", color: T.red, border: "none", borderRadius: 16, padding: "16px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: "pointer" }}>
-        {tr("signOut")}
+        style={{ width: "100%", background: "rgba(224,48,48,0.08)", color: T.red, border: "1px solid rgba(224,48,48,0.14)", borderRadius: 16, padding: "15px 0", fontSize: 16, fontFamily: UI, fontWeight: 600, cursor: "pointer", marginBottom: 8 }}>
+        Sign out
       </button>
     </div>
   );
