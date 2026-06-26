@@ -108,6 +108,17 @@ function applyDarkMode(dark) {
   T.glassLiftUp   = dark ? "0 -16px 48px rgba(0,0,0,0.55)" : "0 -12px 36px rgba(40,28,16,0.20), 0 -2px 8px rgba(40,28,16,0.10)";
   T.glassLiftDown = dark ? "0 16px 48px rgba(0,0,0,0.55)"  : "0 12px 36px rgba(40,28,16,0.18), 0 2px 8px rgba(40,28,16,0.08)";
   T.pillBg      = dark ? "rgba(22,19,17,0.76)" : "rgba(255,255,255,0.78)";
+  // iOS 26 Liquid Glass nav bar: a far more transparent bar so content refracts
+  // through it, a bright top rim + dark bottom shade for the lens curvature, an
+  // overlaid specular sheen, and a clear frosted-glass capsule for the active tab
+  // (the "lens" behind the selected icon) instead of a flat color fill.
+  T.navGlass     = dark ? "rgba(26,23,20,0.52)"    : "rgba(255,255,255,0.50)";
+  T.navRimTop    = dark ? "rgba(255,255,255,0.30)" : "rgba(255,255,255,0.90)";
+  T.navRimBot    = dark ? "rgba(0,0,0,0.35)"       : "rgba(0,0,0,0.05)";
+  T.navSheen     = dark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.65)";
+  T.navPillGlass = dark ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.62)";
+  T.navPillRim   = dark ? "rgba(255,255,255,0.40)" : "rgba(255,255,255,0.95)";
+  T.navPillShade = dark ? "rgba(0,0,0,0.30)"       : "rgba(0,0,0,0.07)";
 }
 
 // Remember the last-used look across reloads so the very first paint matches
@@ -9101,15 +9112,19 @@ export default function App() {
         {currentTab === "instructions" && <RichardInstructionsView value={richardInstructions} onSave={function(text) { onSaveInstructions(text); setTab(prevTabRef.current || "profile"); }} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
       </div>
 
-      <div style={{ position: "fixed", bottom: "calc(20px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", width: "calc(100% - 32px)", maxWidth: 398, zIndex: 30, background: T.pillBg, backdropFilter: "blur(40px) saturate(200%) brightness(1.04)", WebkitBackdropFilter: "blur(40px) saturate(200%) brightness(1.04)", borderRadius: 36, border: "1px solid " + T.glassBorder, boxShadow: "0 8px 32px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 " + T.glassSpec }}>
-        <div style={{ display: "flex", justifyContent: "space-around", padding: "10px 4px 12px" }}>
+      <div style={{ position: "fixed", bottom: "calc(20px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", width: "calc(100% - 32px)", maxWidth: 398, zIndex: 30, background: T.navGlass, backdropFilter: "blur(28px) saturate(190%) brightness(1.08)", WebkitBackdropFilter: "blur(28px) saturate(190%) brightness(1.08)", borderRadius: 34, border: "1px solid " + T.glassBorder, boxShadow: "0 12px 40px rgba(0,0,0,0.18), 0 2px 10px rgba(0,0,0,0.08), inset 0 1px 0.5px " + T.navRimTop + ", inset 0 -1px 0.5px " + T.navRimBot }}>
+        {/* Specular sheen — the curved-glass glare across the top of the bar. Self-clips
+            via its own border radius (no overflow:hidden, so the active lens shadow
+            isn't cropped). Sits below the buttons in paint order. */}
+        <div style={{ position: "absolute", inset: 0, borderRadius: 34, pointerEvents: "none", background: "linear-gradient(180deg, " + T.navSheen + " 0%, rgba(255,255,255,0) 42%, rgba(255,255,255,0) 100%)" }} />
+        <div style={{ position: "relative", display: "flex", justifyContent: "space-around", padding: "10px 4px 12px" }}>
           {TABS.map(function(tab) {
             var active = currentTab === tab.id;
             return (
               <button key={tab.id} onClick={function() { setTab(tab.id); setSheet(false); }}
                 style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "4px 4px", flex: 1, minWidth: 0 }}>
-                <div style={{ background: active ? T.orange : "none", borderRadius: 14, padding: active ? "6px 11px" : "6px 9px", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s", boxShadow: active ? "0 2px 8px " + T.orangeGlow : "none" }}>
-                  <SVGIcon id={tab.id} size={21} color={active ? "#fff" : T.ink3} />
+                <div style={{ background: active ? T.navPillGlass : "none", borderRadius: 22, padding: active ? "6px 12px" : "6px 9px", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.22s cubic-bezier(0.22,1,0.36,1)", backdropFilter: active ? "blur(8px) saturate(200%) brightness(1.18)" : "none", WebkitBackdropFilter: active ? "blur(8px) saturate(200%) brightness(1.18)" : "none", boxShadow: active ? ("inset 0 1px 0.5px " + T.navPillRim + ", inset 0 -1px 1px " + T.navPillShade + ", 0 2px 7px rgba(0,0,0,0.12)") : "none" }}>
+                  <SVGIcon id={tab.id} size={21} color={active ? T.orange : T.ink3} />
                 </div>
                 <span style={{ fontSize: 9.5, fontWeight: active ? 700 : 400, color: active ? T.orange : T.ink3, letterSpacing: "0.005em", whiteSpace: "nowrap" }}>
                   {tr(tab.id)}
