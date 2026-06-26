@@ -8834,6 +8834,7 @@ export default function App() {
     if (document.getElementById(id)) return;
     var st = document.createElement("style"); st.id = id;
     st.textContent = [
+      "button,a,[role=button]{-webkit-tap-highlight-color:transparent;outline:none;}",
       "@keyframes navFade{from{opacity:0}to{opacity:1}}",
       "@keyframes navSlideRight{from{opacity:0;transform:translateX(22px)}to{opacity:1;transform:none}}",
       "@keyframes navSlideLeft{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:none}}",
