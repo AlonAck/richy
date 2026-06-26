@@ -5538,7 +5538,10 @@ function BigDecisions(props) {
 }
 
 function Advisor(props) {
-  var _a = useState(null);
+  // Seed from the App-level cache so re-entering the tab restores the last
+  // analysis without a fresh (token-burning) API call. useState reads the prop
+  // only on mount, which is exactly when the tab opens.
+  var _a = useState(props.cachedAnalysis || null);
   var advice = _a[0]; var setAdvice = _a[1];
   var _l = useState(false);
   var loading = _l[0]; var setLoading = _l[1];
@@ -5555,6 +5558,12 @@ function Advisor(props) {
   var _pu = useState(null);
   var pendingUpdates = _pu[0]; var setPendingUpdates = _pu[1];
   var inputRef = useRef(null);
+  // Swipeable analysis hero: a native scroll-snap carousel that mirrors the
+  // Overview hero banner (dots + throttled onScroll page sync).
+  var _apg = useState(0); var page = _apg[0]; var setPage = _apg[1];
+  var advScrollRef = useRef(null);
+  var advScrollTimer = useRef(null);
+  var advCountRef = useRef(0); // live panel count, set during render of the hero
 
   // Grow the ask box to fit wrapped text (capped), and snap it back when cleared.
   function autoGrow(el) {
@@ -5563,6 +5572,48 @@ function Advisor(props) {
     el.style.height = Math.min(el.scrollHeight, 132) + "px";
   }
   useEffect(function() { autoGrow(inputRef.current); }, [input]);
+
+  // Inject the scrollbar-hide + fade-in CSS once (same .rc-hero-scroll the
+  // Overview uses, re-declared here so the advisor tab works standalone).
+  useEffect(function() {
+    if (document.getElementById("rc-adv-anim")) return;
+    var st = document.createElement("style");
+    st.id = "rc-adv-anim";
+    st.textContent = ".rc-hero-scroll{scrollbar-width:none;-ms-overflow-style:none;}.rc-hero-scroll::-webkit-scrollbar{display:none;width:0;height:0;}@keyframes rcFadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}";
+    document.head.appendChild(st);
+  }, []);
+  // Snap back to the first panel whenever a fresh analysis arrives.
+  useEffect(function() {
+    setPage(0);
+    var el = advScrollRef.current;
+    if (el) el.scrollLeft = 0;
+  }, [advice]);
+  // If the live panel count shrinks below the current page (e.g. a household
+  // partner edits data while you're on a later panel), pull the page back in
+  // range and re-sync the scroll position. Runs every render; only acts when out
+  // of range, so it converges without looping.
+  useEffect(function() {
+    var max = advCountRef.current - 1;
+    if (max >= 0 && page > max) {
+      setPage(max);
+      var el = advScrollRef.current;
+      if (el) el.scrollTo({ left: max * el.clientWidth, behavior: "smooth" });
+    }
+  });
+  function advGoPage(i) {
+    setPage(i);
+    var el = advScrollRef.current;
+    if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+  }
+  function advOnScroll(e) {
+    var el = e.currentTarget;
+    if (advScrollTimer.current) clearTimeout(advScrollTimer.current);
+    advScrollTimer.current = setTimeout(function() {
+      var w = el.clientWidth || 1;
+      var i = Math.round(el.scrollLeft / w);
+      if (i !== page) setPage(i);
+    }, 100);
+  }
 
   var cats = props.categories || [];
   var ymA = curMonth();
@@ -6003,11 +6054,14 @@ function Advisor(props) {
     var analysisPrompt = coreProblem
       ? "Analyze these finances. The user's primary challenge is: " + coreProblem + ". Tailor your insights specifically to this challenge — don't give generic advice. Context: " + ctx
       : "Analyze these finances and give personalized advice: " + ctx;
+    // Apply a freshly-produced analysis to local state and persist it in the App
+    // cache so it survives leaving the tab, until the next transaction.
+    function applyAdvice(val) { setAdvice(val); if (props.onSaveAnalysis) props.onSaveAnalysis(val); }
     callClaude([{ role: "user", content: analysisPrompt }], system, 900, function(err, text) {
       setLoading(false);
       if (err) {
         // API unreachable in this environment - use built-in analysis
-        setAdvice(localAnalysis());
+        applyAdvice(localAnalysis());
         return;
       }
       try {
@@ -6017,10 +6071,10 @@ function Advisor(props) {
         if (start !== -1 && end !== -1) {
           cleaned = text.slice(start, end + 1);
         }
-        setAdvice(JSON.parse(cleaned));
+        applyAdvice(JSON.parse(cleaned));
       } catch(e) {
         // Response not parseable - use built-in analysis
-        setAdvice(localAnalysis());
+        applyAdvice(localAnalysis());
       }
     });
   }
@@ -6211,6 +6265,407 @@ function Advisor(props) {
     );
   }
 
+  // ===== Your Next Big Move =====
+  // Richard's single highest-impact action, derived from REAL data and quantified
+  // in dollars. Priority: cut a real subscription (findMoney recurring) -> review a
+  // price hike -> rein in overspending -> lift the savings rate -> finish an
+  // emergency-fund goal -> put a surplus to work. Numbers come from the user's own
+  // transactions, never the LLM, so they're always accurate.
+  function computeNextMove() {
+    var finds = findMoney(props.tx, cats) || [];
+    var subs = finds.filter(function(f) { return f.type === "recurring"; });
+    var hikes = finds.filter(function(f) { return f.type === "hike"; });
+    var surplus = Math.max(0, Math.round(income - expense));
+
+    if (subs.length > 0) {
+      var top = subs[0];
+      // Per-month figures come from annual/12 so weekly subs (whose `amount` is
+      // the per-charge value) read correctly rather than ~4.3x too low.
+      var topMo = (top.annual || 0) / 12;
+      var totalYr = subs.reduce(function(s, f) { return s + (f.annual || 0); }, 0);
+      var totalMo = totalYr / 12;
+      if (subs.length === 1) {
+        return { icon: "refresh", label: "Cancel what you don't use",
+          title: "You're paying for " + top.merchant,
+          action: "That's " + dollars(topMo) + "/mo on " + top.merchant + ". If you're not getting your money's worth, cancelling puts " + dollars(top.annual) + " back in your pocket this year.",
+          impact: dollars(top.annual), impactLabel: "back per year" };
+      }
+      return { icon: "refresh", label: "Audit your subscriptions",
+        title: "You have " + subs.length + " subscriptions",
+        action: "Together they run " + dollars(totalMo) + "/mo, led by " + top.merchant + " at " + dollars(topMo) + "/mo. Cancel the ones you've stopped using.",
+        impact: dollars(totalYr), impactLabel: "back per year if you cut them" };
+    }
+    if (hikes.length > 0) {
+      var h = hikes[0];
+      return { icon: "up", label: "A price quietly went up",
+        title: h.merchant + " costs more now",
+        action: h.subtitle + ". Worth a look before it becomes the new normal.",
+        impact: dollars(h.annual), impactLabel: "a year at stake" };
+    }
+    if (savings < 0 && allCats.length > 0) {
+      var tc = allCats[0];
+      return { icon: "chart", label: "Spending beat income",
+        title: "Rein in " + tc.name,
+        action: "You spent more than you earned this month, and " + tc.name + " led the way at " + dollars(tc.spent) + ". Trimming it is the fastest route back to positive.",
+        impact: dollars(Math.abs(Math.round(income - expense))), impactLabel: "in the red this month" };
+    }
+    if (savings < 20 && allCats.length > 0) {
+      var tc2 = allCats[0];
+      var cut = Math.round(tc2.spent * 0.15);
+      return { icon: "chart", label: "Lift your savings rate",
+        title: tc2.name + " is your biggest lever",
+        action: tc2.name + " ran " + dollars(tc2.spent) + " this month. Trimming it 15% frees up " + dollars(cut) + " a month to save - without touching the rest of your life.",
+        impact: dollars(cut * 12), impactLabel: "a year from one category" };
+    }
+    var efGoal = (props.goals || []).filter(function(g) { return /emergenc/i.test(g.name || ""); })[0] || (props.goals || [])[0];
+    if (efGoal && (efGoal.target || 0) > (efGoal.saved || 0) && surplus > 0) {
+      var gap = Math.round(efGoal.target - efGoal.saved);
+      var months = Math.max(1, Math.ceil(gap / surplus));
+      return { icon: "shield", label: "Finish what you started",
+        title: "Fund your " + efGoal.name,
+        action: "You're " + dollars(gap) + " from your goal and keeping " + dollars(surplus) + "/mo. Automate that transfer and you're fully funded in about " + months + " month" + (months === 1 ? "" : "s") + ".",
+        impact: dollars(gap), impactLabel: "left to go" };
+    }
+    if (surplus > 0) {
+      return { icon: "coins", label: "Put your surplus to work",
+        title: "You kept " + dollars(surplus) + " this month",
+        action: "Don't let it drift into spending. Automate it into savings or a low-cost index fund on payday - " + dollars(surplus) + "/mo compounds into real wealth.",
+        impact: dollars(surplus * 12), impactLabel: "a year, automated" };
+    }
+    return { icon: "spark", label: "Get the full picture",
+      title: "Log a full month first",
+      action: "Add your income and a few weeks of expenses, and I'll point you straight at the single highest-impact move for your money.",
+      impact: "", impactLabel: "" };
+  }
+
+  // Base style for every carousel panel (merged with per-panel extras). Avoids
+  // Object.assign/spread so it works under the Babel-standalone react preset.
+  function panelStyle(extra) {
+    var b = { flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden", padding: "22px 24px", display: "flex", flexDirection: "column" };
+    if (extra) { for (var k in extra) b[k] = extra[k]; }
+    return b;
+  }
+
+  // Month-key arithmetic for this-vs-last-month comparisons.
+  function ymShift(ym, delta) {
+    var parts = (ym || "").split("-");
+    var d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1 + delta, 1);
+    var mm = d.getMonth() + 1;
+    return d.getFullYear() + "-" + (mm < 10 ? "0" + mm : "" + mm);
+  }
+  function catSpendInMonth(c, ym) {
+    return props.tx.filter(function(t) { return t.type === "expense" && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  }
+
+  // Build the swipeable analysis hero (dots + scroll-snap panels). Every panel is
+  // a distinct, personalized read on the user's real numbers. Only called when a
+  // valid `advice` object exists.
+  function renderAnalysisHero() {
+    var HINK = T.heroInk, HMUT = T.heroMut, HFNT = T.heroFaint, HSEP = T.heroSep, HPOS = T.heroPos, HNEG = T.heroNeg, HTRACK = T.heroTrack, HPB = T.heroPillBg, HPT = T.heroPillText;
+    var HERO_H = 372;
+    var move = computeNextMove();
+
+    // --- Derive the real signals each panel needs ---
+    var finds = findMoney(props.tx, cats) || [];
+    var subs = finds.filter(function(f) { return f.type === "recurring"; });
+    var hike = finds.filter(function(f) { return f.type === "hike"; })[0];
+    var dup = finds.filter(function(f) { return f.type === "duplicate"; })[0];
+
+    var netKept = Math.round(income - expense);
+    var prevYm = ymShift(ymA, -1);
+    var prevExpenseTot = props.tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && inMonth(t, prevYm); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    var spendDelta = Math.round(expense - prevExpenseTot);
+
+    var catTotal = allCats.reduce(function(s, c) { return s + c.spent; }, 0) || 1;
+    var catRows = allCats.slice(0, 5);
+    var catMax = catRows.reduce(function(m, c) { return Math.max(m, c.spent); }, 0) || 1;
+
+    var surplus = Math.max(0, netKept);
+    var savTotal = savingsTotal(props.savings || []);
+    var goals = props.goals || [];
+    var efGoal = goals.filter(function(g) { return /emergenc/i.test(g.name || ""); })[0] || goals[0];
+    var goalPct = efGoal && efGoal.target > 0 ? Math.min(100, Math.round((efGoal.saved / efGoal.target) * 100)) : 0;
+    var goalGap = efGoal ? Math.max(0, Math.round((efGoal.target || 0) - (efGoal.saved || 0))) : 0;
+    var goalMonths = (goalGap > 0 && surplus > 0) ? Math.ceil(goalGap / surplus) : 0;
+
+    var overBudget = (props.budgets || []).map(function(b) {
+      var c = catById(cats, b.catId) || catByName(cats, b.category) || { name: b.category || "?" };
+      var sp = catSpendInMonth(c, ymA);
+      return { name: c.name, spent: sp, limit: b.limit || 0, over: sp - (b.limit || 0) };
+    }).filter(function(x) { return x.limit > 0 && x.over > 0; }).sort(function(a, b) { return b.over - a.over; });
+
+    var topMover = cats.map(function(c) {
+      var now = catSpendInMonth(c, ymA), prev = catSpendInMonth(c, prevYm);
+      return { name: c.name, now: now, prev: prev, delta: now - prev };
+    }).filter(function(m) { return m.now > 0 && m.prev > 0 && m.delta > 0; })
+      .sort(function(a, b) { return b.delta - a.delta; })[0];
+
+    // "Worth a look" flags, most actionable first.
+    var watch = [];
+    if (overBudget[0]) watch.push({ icon: "budgets", color: HNEG, title: overBudget[0].name + " is over budget", sub: dollars(overBudget[0].spent) + " of " + dollars(overBudget[0].limit) + " - " + dollars(overBudget[0].over) + " over" });
+    if (hike) watch.push({ icon: "up", color: T.gold, title: hike.merchant + " costs more now", sub: hike.subtitle });
+    if (topMover && (topMover.delta / Math.max(1, topMover.prev)) >= 0.25) watch.push({ icon: "chart", color: T.gold, title: topMover.name + " is climbing", sub: dollars(topMover.now) + " vs " + dollars(topMover.prev) + " last month - " + dollars(topMover.delta) + " more" });
+    if (dup) watch.push({ icon: "credit", color: HNEG, title: "Possible double charge", sub: dup.subtitle });
+    watch = watch.slice(0, 3);
+
+    var panels = [];
+
+    // Panel - Financial Health
+    panels.push(
+      <div key="health" style={panelStyle({ justifyContent: "space-between" })}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, color: HMUT }}>Financial Health</span>
+          <span style={{ background: ringColor + "26", color: ringColor, fontSize: 11, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 8 }}>{advice.scoreLabel}</span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
+          <RingChart value={advice.score} max={100} size={142} stroke={10} color={ringColor} track={HTRACK} />
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
+            <span style={{ fontSize: 44, fontWeight: 700, letterSpacing: "-0.03em", color: HINK }}>{advice.score}</span>
+            <span style={{ fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: HFNT, marginTop: 4 }}>out of 100</span>
+          </div>
+        </div>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 15.5, fontWeight: 600, letterSpacing: "-0.01em", color: HINK, lineHeight: 1.35 }}>{advice.headline}</div>
+        </div>
+        <div style={{ display: "flex", borderTop: "0.5px solid " + HSEP, paddingTop: 14 }}>
+          {[{ k: "Saving", v: savingStat.label, d: savingStat.dot }, { k: "Spending", v: spendStat.label, d: spendStat.dot }, { k: "Buffer", v: bufferTxt, d: bufferStat }].map(function(col, ci) {
+            return (
+              <div key={col.k} style={{ flex: 1, textAlign: "center", borderRight: ci < 2 ? "0.5px solid " + HSEP : "none" }}>
+                <div style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: HMUT, marginBottom: 6 }}>{col.k}</div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: col.d }} />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: HINK }}>{col.v}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+
+    // Panel - Your Next Big Move
+    panels.push(
+      <div key="move" style={panelStyle({ justifyContent: "center" })}>
+        <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+          <div style={{ width: 38, height: 38, borderRadius: 12, background: HPB, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <SVGIcon id={move.icon} size={19} color={HPT} />
+          </div>
+          <span style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700, color: HMUT }}>Your Next Big Move</span>
+        </div>
+        {move.impact ? (
+          <div style={{ marginTop: 20, display: "flex", alignItems: "baseline", gap: 9 }}>
+            <span style={{ fontSize: 40, fontWeight: 700, letterSpacing: "-0.03em", color: HPOS, lineHeight: 1 }}>{move.impact}</span>
+            <span style={{ fontSize: 13, color: HFNT }}>{move.impactLabel}</span>
+          </div>
+        ) : null}
+        <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.015em", color: HINK, marginTop: move.impact ? 16 : 18 }}>{move.title}</div>
+        <div style={{ fontSize: 14, lineHeight: 1.55, color: HMUT, marginTop: 9 }}>{move.action}</div>
+      </div>
+    );
+
+    // Panel - Cash Flow (this month vs last)
+    if (income > 0 || expense > 0) {
+      panels.push(
+        <div key="flow" style={panelStyle({ justifyContent: "space-between" })}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, color: HMUT }}>Cash Flow</span>
+            <span style={{ fontSize: 11, color: HFNT }}>This month</span>
+          </div>
+          <div>
+            <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: HFNT, marginBottom: 4 }}>{netKept >= 0 ? "You kept" : "You overspent"}</div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+              <span style={{ fontSize: 38, fontWeight: 700, letterSpacing: "-0.03em", color: netKept >= 0 ? HPOS : HNEG, lineHeight: 1 }}>{(netKept < 0 ? "-" : "") + dollars(Math.abs(netKept))}</span>
+              <span style={{ fontSize: 13, color: HFNT }}>{income > 0 ? (savings + "% of income") : "no income logged yet"}</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10 }}>
+              {prevExpenseTot > 0 ? <SVGIcon id={spendDelta <= 0 ? "down" : "up"} size={14} color={spendDelta <= 0 ? HPOS : HNEG} /> : null}
+              <span style={{ fontSize: 12.5, color: HMUT }}>{prevExpenseTot > 0 ? ("Spending is " + (spendDelta <= 0 ? "down " : "up ") + dollars(Math.abs(spendDelta)) + " vs last month") : "Your first month of tracking - good start"}</span>
+            </div>
+          </div>
+          <div style={{ display: "flex", borderTop: "0.5px solid " + HSEP, paddingTop: 14 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 10, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>Income</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: HPOS, letterSpacing: "-0.02em", marginTop: 3 }}>{"+" + dollars(income)}</div>
+            </div>
+            <div style={{ width: "0.5px", background: HSEP }} />
+            <div style={{ flex: 1, paddingLeft: 14 }}>
+              <div style={{ fontSize: 10, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>Spent</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: HNEG, letterSpacing: "-0.02em", marginTop: 3 }}>{"-" + dollars(expense)}</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Panel - Where It Goes (real category breakdown)
+    if (catRows.length > 0) {
+      panels.push(
+        <div key="cats" style={panelStyle()}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, color: HMUT }}>Where It Goes</span>
+            <span style={{ fontSize: 11, color: HFNT }}>{dollars(expense) + " spent"}</span>
+          </div>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 11 }}>
+            {catRows.map(function(c, i) {
+              return (
+                <div key={i}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 5 }}>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: T.catNameHero, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "58%" }}>{c.name}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: HINK, letterSpacing: "-0.02em" }}>{dollars(c.spent) + "  " + Math.round((c.spent / catTotal) * 100) + "%"}</span>
+                  </div>
+                  <div style={{ height: 6, borderRadius: 4, background: HTRACK, overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: ((c.spent / catMax) * 100).toFixed(1) + "%", background: T.merchBar, borderRadius: 4 }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ fontSize: 12, color: HMUT, marginTop: 4 }}>{allCats[0].name + " takes " + Math.round((allCats[0].spent / catTotal) * 100) + "% of your spending."}</div>
+        </div>
+      );
+    }
+
+    // Panel - What You Pay For (subscriptions). Use the annualized cost / 12 for
+    // the per-month figure so weekly subs (whose `amount` is the per-charge value)
+    // aren't shown ~4.3x too low - this keeps it consistent with findMoney's
+    // annual and the Next Big Move panel.
+    if (subs.length > 0) {
+      var subMonthly = function(s) { return (s.annual || 0) / 12; };
+      var subTop = subs.slice(0, 4);
+      var subMax = subTop.reduce(function(m, s) { return Math.max(m, subMonthly(s)); }, 0) || 1;
+      var subYr = subs.reduce(function(s, f) { return s + (f.annual || 0); }, 0);
+      var subMo = subYr / 12;
+      panels.push(
+        <div key="subs" style={panelStyle()}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, color: HMUT }}>What You Pay For</span>
+            <span style={{ fontSize: 11, color: HFNT }}>{subs.length + " subscription" + (subs.length === 1 ? "" : "s")}</span>
+          </div>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 13 }}>
+            {subTop.map(function(s, i) {
+              return (
+                <div key={i}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+                    <span style={{ fontSize: 13.5, fontWeight: 500, color: T.merchNameHero, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "60%" }}>{s.merchant}</span>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: HINK, letterSpacing: "-0.02em" }}>{dollars(subMonthly(s)) + "/mo"}</span>
+                  </div>
+                  <div style={{ height: 6, borderRadius: 4, background: HTRACK, overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: ((subMonthly(s) / subMax) * 100).toFixed(1) + "%", background: T.merchBar, borderRadius: 4 }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ fontSize: 12, color: HMUT, marginTop: 4 }}>{dollars(subMo) + "/mo on subscriptions - " + dollars(subYr) + " a year."}</div>
+        </div>
+      );
+    }
+
+    // Panel - Looking Ahead (savings trajectory + goal)
+    if (income > 0 || surplus > 0 || efGoal || netWorth > 0) {
+      panels.push(
+        <div key="ahead" style={panelStyle({ justifyContent: "space-between" })}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, color: HMUT }}>Looking Ahead</span>
+            <span style={{ fontSize: 11, color: HFNT }}>At your pace</span>
+          </div>
+          <div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 9 }}>
+              <span style={{ fontSize: 36, fontWeight: 700, letterSpacing: "-0.03em", color: surplus > 0 ? HPOS : HINK, lineHeight: 1 }}>{dollars(surplus * 12)}</span>
+              <span style={{ fontSize: 13, color: HFNT }}>saved in a year</span>
+            </div>
+            <div style={{ fontSize: 13, color: HMUT, marginTop: 9, lineHeight: 1.5 }}>
+              {surplus > 0 ? ("You're keeping " + dollars(surplus) + "/mo. Automate it and it compounds.") : "Tighten the gap between income and spending to start building."}
+            </div>
+          </div>
+          {efGoal ? (
+            <div style={{ borderTop: "0.5px solid " + HSEP, paddingTop: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 7 }}>
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: HINK, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "62%" }}>{efGoal.name}</span>
+                <span style={{ fontSize: 12, color: HMUT }}>{dollars(efGoal.saved || 0) + " / " + dollars(efGoal.target || 0)}</span>
+              </div>
+              <div style={{ height: 6, borderRadius: 4, background: HTRACK, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: goalPct + "%", background: T.merchBar, borderRadius: 4 }} />
+              </div>
+              <div style={{ fontSize: 11.5, color: HFNT, marginTop: 7 }}>{goalGap > 0 ? (goalMonths > 0 ? (dollars(goalGap) + " to go - about " + goalMonths + " month" + (goalMonths === 1 ? "" : "s") + " at this pace.") : (dollars(goalGap) + " to go.")) : "Funded. Time for the next goal."}</div>
+            </div>
+          ) : (
+            <div style={{ borderTop: "0.5px solid " + HSEP, paddingTop: 14, fontSize: 12.5, color: HMUT }}>{"Net worth today: " + dollars(netWorth)}</div>
+          )}
+        </div>
+      );
+    }
+
+    // Panel - Worth a Look (real flags only)
+    if (watch.length > 0) {
+      panels.push(
+        <div key="watch" style={panelStyle()}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, color: HMUT }}>Worth a Look</span>
+            <span style={{ fontSize: 11, color: HFNT }}>{watch.length + " flag" + (watch.length === 1 ? "" : "s")}</span>
+          </div>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 14 }}>
+            {watch.map(function(w, i) {
+              return (
+                <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                  <div style={{ width: 34, height: 34, borderRadius: 10, background: HPB, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <SVGIcon id={w.icon} size={16} color={HPT} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: HINK, letterSpacing: "-0.01em" }}>{w.title}</div>
+                    <div style={{ fontSize: 12, color: HMUT, marginTop: 2, lineHeight: 1.4 }}>{w.sub}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    // Panel - Richard's word (expert quote)
+    if (advice.expertQuote && advice.expertQuote.quote) {
+      panels.push(
+        <div key="quote" style={panelStyle({ justifyContent: "center", position: "relative" })}>
+          <span style={{ position: "absolute", top: 4, left: 14, fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 120, lineHeight: 1, color: HINK, opacity: 0.1, pointerEvents: "none" }}>{'”'}</span>
+          <p style={{ position: "relative", margin: 0, fontSize: 18, lineHeight: 1.5, fontWeight: 600, letterSpacing: "-0.01em", color: HINK }}>{advice.expertQuote.quote}</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 16 }}>
+            <div style={{ width: 18, height: 2, borderRadius: 2, background: T.gold }} />
+            <span style={{ fontSize: 12.5, fontWeight: 600, letterSpacing: "0.02em", color: HMUT }}>{advice.expertQuote.author}</span>
+          </div>
+        </div>
+      );
+    }
+
+    // Clamp the active index to the live panel count: panels are built from live
+    // props, so a panel can disappear (e.g. household sync resolves a flag) while
+    // `page` still points past the end. advCountRef + the effect below re-sync the
+    // real page; pageClamped keeps a dot highlighted in the meantime.
+    advCountRef.current = panels.length;
+    var pageClamped = panels.length ? Math.min(page, panels.length - 1) : 0;
+    // Inactive dot must read on the page background in dark mode too (T.bg goes
+    // near-black), so don't hardcode black - pick a tone that contrasts either bg.
+    var dotOff = (T.bg === DARK_BG) ? "rgba(255,255,255,0.26)" : "rgba(0,0,0,0.16)";
+
+    return (
+      <div style={{ marginTop: 16, animation: "rcFadeUp 0.5s ease both" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: 7, padding: "0 0 11px" }}>
+          {panels.map(function(_p, i) {
+            return <div key={i} onClick={function() { advGoPage(i); }} style={{ width: i === pageClamped ? 18 : 6, height: 6, borderRadius: 3, cursor: "pointer", transition: "all 0.3s cubic-bezier(0.22,1,0.36,1)", background: i === pageClamped ? T.orange : dotOff }} />;
+          })}
+        </div>
+        <div style={{ position: "relative", height: HERO_H, borderRadius: 24, overflow: "hidden", background: T.heroBg, boxShadow: T.heroShadow }}>
+          <div style={{ position: "absolute", top: -70, right: -60, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none", zIndex: 0 }} />
+          <div style={{ position: "absolute", bottom: -70, left: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow2 + ",transparent 65%)", pointerEvents: "none", zIndex: 0 }} />
+          <div ref={advScrollRef} onScroll={advOnScroll} className="rc-hero-scroll"
+            style={{ position: "relative", zIndex: 1, display: "flex", height: "100%", width: "100%", overflowX: "auto", overflowY: "hidden", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
+            {panels}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       {richardHead}
@@ -6249,44 +6704,7 @@ function Advisor(props) {
             <p style={{ margin: "7px 0 0", fontSize: 14.5, lineHeight: 1.45, color: T.ink2 }}>{subGreeting}</p>
           </div>
 
-          <div style={{ marginTop: 16, position: "relative", overflow: "hidden", borderRadius: 20, padding: 22, background: T.heroBg, boxShadow: T.heroShadow }}>
-            <div style={{ position: "absolute", top: -60, right: -44, width: 210, height: 210, background: "radial-gradient(circle, " + T.heroGlow1 + ", transparent 70%)", pointerEvents: "none" }} />
-            <div style={{ position: "absolute", bottom: -56, left: -44, width: 190, height: 190, background: "radial-gradient(circle, " + T.heroGlow2 + ", transparent 70%)", pointerEvents: "none" }} />
-            <div style={{ position: "relative" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, color: T.heroMut }}>Financial Health</span>
-                <span style={{ background: ringColor + "26", color: ringColor, fontSize: 11, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 8 }}>{advice.scoreLabel}</span>
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "center", marginTop: 20, position: "relative" }}>
-                <RingChart value={advice.score} max={100} size={172} stroke={11} color={ringColor} track={T.heroTrack} />
-                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
-                  <span style={{ fontSize: 52, fontWeight: 700, letterSpacing: "-0.03em", color: T.heroInk }}>{advice.score}</span>
-                  <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: T.heroFaint, marginTop: 5 }}>out of 100</span>
-                </div>
-              </div>
-
-              <div style={{ textAlign: "center", marginTop: 18 }}>
-                <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.01em", color: T.heroInk }}>{advice.headline}</div>
-              </div>
-
-              <div style={{ height: 0.5, background: T.heroSep, margin: "20px 0" }} />
-
-              <div style={{ display: "flex" }}>
-                {[{ k: "Saving", v: savingStat.label, d: savingStat.dot }, { k: "Spending", v: spendStat.label, d: spendStat.dot }, { k: "Buffer", v: bufferTxt, d: bufferStat }].map(function(col, ci) {
-                  return (
-                    <div key={col.k} style={{ flex: 1, textAlign: "center", borderRight: ci < 2 ? "0.5px solid " + T.heroSep : "none" }}>
-                      <div style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut, marginBottom: 6 }}>{col.k}</div>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: col.d }} />
-                        <span style={{ fontSize: 14, fontWeight: 600, color: T.heroInk }}>{col.v}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
+          {renderAnalysisHero()}
 
           <div style={{ marginTop: 26 }}>
             {sectionHead("What Richard sees", (advice.insights || []).length + " notes")}
@@ -6311,18 +6729,6 @@ function Advisor(props) {
             })}
           </div>
 
-          {advice.expertQuote && (
-            <div style={{ marginTop: 14 }}>
-              <Card style={{ position: "relative", overflow: "hidden", padding: "24px 22px" }}>
-                <span style={{ position: "absolute", top: -26, left: 8, fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 130, lineHeight: 1, color: T.gold, opacity: 0.12, pointerEvents: "none" }}>{'”'}</span>
-                <p style={{ position: "relative", margin: 0, fontSize: 17, lineHeight: 1.5, fontWeight: 600, letterSpacing: "-0.01em", color: T.ink }}>{advice.expertQuote.quote}</p>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14 }}>
-                  <div style={{ width: 18, height: 2, borderRadius: 2, background: T.gold }} />
-                  <span style={{ fontSize: 12.5, fontWeight: 600, letterSpacing: "0.02em", color: T.ink3 }}>{advice.expertQuote.author}</span>
-                </div>
-              </Card>
-            </div>
-          )}
         </div>
       )}
 
@@ -6330,7 +6736,7 @@ function Advisor(props) {
         <Card style={{ padding: "24px", textAlign: "center", marginBottom: 16 }}>
           <div style={{ fontSize: 14, color: T.red, marginBottom: 6 }}>{tr("analysisFailed")}</div>
           {errMsg && <div style={{ fontSize: 12, color: T.ink3, marginBottom: 14, background: "rgba(0,0,0,0.04)", borderRadius: 8, padding: "8px 12px", textAlign: "left" }}>{errMsg}</div>}
-          <button onClick={function() { setAdvice(null); setErrMsg(""); }}
+          <button onClick={function() { setAdvice(null); setErrMsg(""); if (props.onSaveAnalysis) props.onSaveAnalysis(null); }}
             style={{ background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 12, padding: "12px 24px", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
             {tr("tryAgain")}
           </button>
@@ -8091,6 +8497,11 @@ export default function App() {
   var darkMode = _dm[0]; var setDarkMode = _dm[1];
   var _ack = useState(false);
   var authChecked = _ack[0]; var setAuthChecked = _ack[1];
+  // Cached "Analyze your month" result: { data, sig }. Persisted in the user blob
+  // and tagged with a transaction signature so it survives leaving the advisor
+  // tab (and reloads), but is discarded once the user logs a new transaction.
+  var _ma = useState(null);
+  var monthAnalysis = _ma[0]; var setMonthAnalysis = _ma[1];
   var _oda = useState({});
   var onboardingData = _oda[0]; var setOnboardingData = _oda[1];
   var _em = useState("manual");
@@ -8152,6 +8563,7 @@ export default function App() {
     setRichardInstructions(data.richardInstructions || "");
     setRichardNotes(data.richardNotes || "");
     setOnboardingData(data.onboardingData || {});
+    setMonthAnalysis(data.monthAnalysis || null);
     setEntryMethod(data.entryMethod === "import" ? "import" : "manual");
     setHouseholdId(data.householdId || null);
     setUserDob(data.dob || "");
@@ -8310,7 +8722,7 @@ export default function App() {
     var existing = blobRef.current || {};
     var blob = {};
     for (var ek in existing) blob[ek] = existing[ek];
-    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.savings = savings; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme; blob.foundMoney = foundMoney; blob.decisions = decisions;
+    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.savings = savings; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme; blob.foundMoney = foundMoney; blob.decisions = decisions; blob.monthAnalysis = monthAnalysis;
     for (var k in next) blob[k] = next[k];
     blobRef.current = blob;
     // Debounce Firestore writes: coalesce rapid successive saves (e.g. typing)
@@ -8325,6 +8737,14 @@ export default function App() {
         CLOUD.saveHousehold(householdId, { budgets: blobRef.current.budgets, goals: blobRef.current.goals, categories: blobRef.current.categories, tx: sharedTx });
       }
     }, 800);
+  }
+
+  // Signature of the current transactions; any add/remove changes it, which is
+  // how the cached month analysis knows to invalidate itself (see render below).
+  function txSignature() { return tx.length + ":" + ((tx[tx.length - 1] || {}).id || ""); }
+  function onSaveAnalysis(next) {
+    var rec = next ? { data: next, sig: txSignature() } : null;
+    setMonthAnalysis(rec); save({ monthAnalysis: rec });
   }
 
   function onSaveTx(next) { setTx(next); save({ tx: next }); }
@@ -8564,7 +8984,7 @@ export default function App() {
         {currentTab === "goals" && <Goals goals={goals} trips={trips} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab("goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} savings={savings} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} decisions={decisions} onSaveDecisions={onSaveDecisions} />}
+        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} savings={savings} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} decisions={decisions} onSaveDecisions={onSaveDecisions} cachedAnalysis={(monthAnalysis && monthAnalysis.sig === txSignature()) ? monthAnalysis.data : null} onSaveAnalysis={onSaveAnalysis} />}
         {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} richardInstructions={richardInstructions} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "profile"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}

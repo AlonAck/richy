@@ -135,7 +135,26 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).t
   } else if (view === "appearance") {
     el = React.createElement(AppearanceView, { theme: qs.get("theme") || "purple", onThemeChange: function(){}, onBack: function(){} });
   } else if (view === "advisor") {
-    el = React.createElement(Advisor, { tx: mockTx, budgets: [], goals: mockGoals, categories: mockCats, username: "Alon", plan: "", lang: "en" });
+    // Wrapper mirrors the App's cache: holds monthAnalysis { data, sig }, derives a
+    // fresh cache by tx signature, and a "Leave & return" button unmounts/remounts
+    // Advisor to prove the analysis survives leaving the tab.
+    function AdvisorHarness() {
+      var _ma = React.useState(null); var ma = _ma[0]; var setMa = _ma[1];
+      var _tx = React.useState(mockTx); var tx = _tx[0]; var setTx = _tx[1];
+      var _on = React.useState(true); var on = _on[0]; var setOn = _on[1];
+      function sig(){ return tx.length + ":" + ((tx[tx.length-1]||{}).id||""); }
+      function onSaveAnalysis(next){ setMa(next ? { data: next, sig: sig() } : null); }
+      var cached = (ma && ma.sig === sig()) ? ma.data : null;
+      return React.createElement("div", null,
+        React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 12 } },
+          React.createElement("button", { id: "harness-toggle", onClick: function(){ setOn(!on); }, style: { padding: "6px 12px" } }, on ? "Leave tab" : "Return to tab"),
+          React.createElement("button", { id: "harness-addtx", onClick: function(){ setTx(tx.concat([{ id: 999, type: "expense", amount: 5, label: "Coffee", catId: "c2", category: "Food", date: "2026-06-25" }])); }, style: { padding: "6px 12px" } }, "Add transaction"),
+          React.createElement("span", { id: "harness-cache", style: { padding: "6px 0", fontSize: 12 } }, cached ? "CACHE: present" : "CACHE: empty")
+        ),
+        on ? React.createElement(Advisor, { tx: tx, budgets: [], goals: mockGoals, categories: mockCats, username: "Alon", plan: "", lang: "en", cachedAnalysis: cached, onSaveAnalysis: onSaveAnalysis }) : React.createElement("div", { style: { padding: 24, opacity: 0.6 } }, "(advisor tab unmounted)")
+      );
+    }
+    el = React.createElement(AdvisorHarness, {});
   } else if (view === "privacy") {
     var mockBlob = { displayName: "Alon", email: "alon@example.com", dob: "1995-03-14", lang: "en", currency: "$", theme: "purple", onboardingData: { lifeStage: "Early Career", income: "6000", essentials: "2200", savings: "5000", debt: "0", goalName: "Emergency Fund", goalAmt: "10000", timeline: "12 months" } };
     el = React.createElement(PrivacyView, { blob: mockBlob, hasPw: qs.get("haspw") === "1", onBack: function(){}, onViewPassword: function(){}, onEditEmail: function(){}, onEditName: function(){}, onEditDob: function(){}, onEditLanguage: function(){}, onEditCurrency: function(){}, onEditTheme: function(){}, onEditFinancial: function(){} });
