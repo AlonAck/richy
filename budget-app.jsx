@@ -571,13 +571,14 @@ var CLOUD = {
 function Card(props) {
   return (
     <div style={Object.assign({
-      background: props.glass ? T.glass : T.card,
+      background: props.glass ? T.sheetGlass : T.card,
       borderRadius: 20,
+      border: props.glass ? "1px solid " + T.glassBorder : "none",
       boxShadow: props.glass
-        ? "0 2px 16px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9)"
+        ? "0 4px 24px rgba(0,0,0,0.09), inset 0 1px 0 " + T.glassSpec
         : "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.07)",
-      backdropFilter: props.glass ? "blur(20px)" : "none",
-      WebkitBackdropFilter: props.glass ? "blur(20px)" : "none",
+      backdropFilter: props.glass ? "blur(28px) saturate(180%)" : "none",
+      WebkitBackdropFilter: props.glass ? "blur(28px) saturate(180%)" : "none",
     }, props.style)}>
       {props.children}
     </div>
@@ -628,17 +629,17 @@ function SVGIcon(props) {
     shield:   "M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z",
     // Category banner icons
     home:     "M3 10.5L12 3l9 7.5M5 9.2V20h14V9.2",
-    food:     "M7 3v8a2 2 0 01-4 0V3M5 11v10M17 3c-1.6 0-2.5 2.4-2.5 5s.9 4 2.5 4v9",
+    food:     "M7 3v4m-2-4v4a2 2 0 004 0V3M6 8v13M16 3v18M19 8h-6",
     car:      "M5 11l1.6-4.4A2 2 0 018.5 5h7a2 2 0 011.9 1.6L19 11M4.5 11h15v5h-15zM8 16v2M16 16v2",
     heart:    "M12 20.5S3.5 15 3.5 9.2A4.2 4.2 0 0112 6a4.2 4.2 0 018.5 3.2C20.5 15 12 20.5 12 20.5z",
-    film:     "M3 4h18v16H3zM7 4v16M17 4v16M3 9h4M17 9h4M3 15h4M17 15h4",
-    cart:     "M2.5 4h2l2.3 11h10l1.9-8H6M9.5 19a1 1 0 100 2 1 1 0 000-2M16.5 19a1 1 0 100 2 1 1 0 000-2",
+    film:     "M12 2a10 10 0 100 20A10 10 0 0012 2zM10 8l7 4-7 4V8z",
+    cart:     "M16 10V6a4 4 0 00-8 0v4M3 8h18v12a2 2 0 01-2 2H5a2 2 0 01-2-2V8z",
     plane:    "M21 15.5l-8.5-4.5V4.5a1.5 1.5 0 00-3 0V11L1 15.5v2l8.5-2.4V19l-2.2 1.6V22l3.7-1 3.7 1v-1.4L12.5 19v-3.9l8.5 2.4z",
     briefcase:"M3 8h18v12H3zM8 8V6a2 2 0 012-2h4a2 2 0 012 2v2M3 13h18",
     chart:    "M3 3v18h18M7 14l3.5-4.5 3 2.5L21 7",
     coins:    "M4 7c0-1.4 2.7-2.5 6-2.5S16 5.6 16 7s-2.7 2.5-6 2.5S4 8.4 4 7zM4 7v5c0 1.4 2.7 2.5 6 2.5M8 13.5c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5M8 13.5C8 12.1 10.7 11 14 11s6 1.1 6 2.5v5c0 1.4-2.7 2.5-6 2.5s-6-1.1-6-2.5z",
     gift:     "M20 12v8.5H4V12M2.5 7.5h19V12h-19zM12 21V7.5M12 7.5H7.8a2.4 2.4 0 010-4.7C11 2.8 12 7.5 12 7.5zM12 7.5h4.2a2.4 2.4 0 000-4.7C13 2.8 12 7.5 12 7.5z",
-    box:      "M21 8l-9-5-9 5 9 5 9-5zM3 8v8.5l9 5 9-5V8M12 13v8.5",
+    box:      "M12 4v16M4 12h16M6.34 6.34l11.32 11.32M17.66 6.34L6.34 17.66",
     coffee:   "M3 8h14v4a5 5 0 01-5 5H8a5 5 0 01-5-5zM17 9h2.5a2.5 2.5 0 010 5H17M7 3.5V5M10 3.5V5M13 3.5V5",
     book:     "M4 4.5A1.5 1.5 0 015.5 3H19a1 1 0 011 1v14.5M5.5 18H20a1 1 0 010 2H5.5A1.5 1.5 0 014 18.5v-14",
     dumbbell: "M6.5 6.5v11M4 8.5v7M17.5 6.5v11M20 8.5v7M6.5 12h11",
@@ -661,7 +662,7 @@ function SVGIcon(props) {
   var d = icons[props.id] || "";
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-      stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d={d} />
     </svg>
   );
@@ -742,7 +743,7 @@ function Overlay(props) {
         WebkitBackdropFilter: "blur(30px) saturate(180%)",
         borderRadius: "24px 24px 0 0",
         boxShadow: "0 -4px 40px rgba(20,18,16,0.22), inset 0 1px 0 " + T.glassSpec,
-        paddingBottom: 30,
+        paddingBottom: "calc(28px + env(safe-area-inset-bottom, 0px))",
         animation: closing ? "sheetSlideDown 0.27s cubic-bezier(0.4,0,1,1) both" : "sheetSlideUp 0.34s cubic-bezier(0.22,1,0.36,1) both",
       }}>
         <div style={{ width: 38, height: 5, borderRadius: 3, background: T.orangeDim, margin: "9px auto 0" }} />
@@ -9041,7 +9042,7 @@ export default function App() {
   var monthLabel = new Date().toLocaleString(_locale, { month: "short" }) + " " + new Date().getFullYear();
 
   return (
-    <div style={{ background: T.bg, minHeight: "100vh", maxWidth: 430, margin: "0 auto", fontFamily: UI, paddingBottom: 100 }}>
+    <div style={{ background: T.bg, minHeight: "100vh", maxWidth: 430, margin: "0 auto", fontFamily: UI, paddingBottom: "calc(110px + env(safe-area-inset-bottom, 0px))" }}>
 
       <div style={{ position: "sticky", top: 0, zIndex: 40, background: T.navBg, backdropFilter: "blur(24px) saturate(180%)", WebkitBackdropFilter: "blur(24px) saturate(180%)", borderBottom: "0.5px solid " + T.sep, boxShadow: "inset 0 1px 0 " + T.glassSpec + ", " + T.glassLiftDown }}>
         <div style={{ display: "flex", alignItems: "center", padding: "14px 20px 14px" }}>
@@ -9066,7 +9067,7 @@ export default function App() {
         </div>
       </div>
 
-      <div key={animKey} style={{ padding: "8px 16px 0", animation: animDir === "right" ? "navSlideRight 0.28s cubic-bezier(0.22,1,0.36,1) both" : animDir === "left" ? "navSlideLeft 0.28s cubic-bezier(0.22,1,0.36,1) both" : "navFade 0.20s ease both" }}>
+      <div key={animKey} style={{ padding: "8px 16px 16px", animation: animDir === "right" ? "navSlideRight 0.28s cubic-bezier(0.22,1,0.36,1) both" : animDir === "left" ? "navSlideLeft 0.28s cubic-bezier(0.22,1,0.36,1) both" : "navFade 0.20s ease both" }}>
         {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} />}
         {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} onSavingsMove={onSavingsMove} />}
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
