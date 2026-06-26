@@ -7001,9 +7001,9 @@ function Advisor(props) {
         {tr("advisorDisclaimer")}
       </div>
 
-      {historyOpen && (
+      {historyOpen && ReactDOM.createPortal((
         <div onClick={function() { setHistoryOpen(false); }}
-          style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(12,10,24,0.42)", backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+          style={{ position: "fixed", inset: 0, zIndex: 95, background: "rgba(12,10,24,0.42)", backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
           <div onClick={function(e) { e.stopPropagation(); }}
             style={{ width: "100%", maxWidth: 440, maxHeight: "78vh", background: T.card, borderRadius: "22px 22px 0 0", boxShadow: "0 -12px 40px rgba(12,10,24,0.32)", display: "flex", flexDirection: "column", overflow: "hidden", boxSizing: "border-box" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 18px 12px", borderBottom: "0.5px solid " + T.sep }}>
@@ -7042,7 +7042,7 @@ function Advisor(props) {
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
     </div>
   );
 }
