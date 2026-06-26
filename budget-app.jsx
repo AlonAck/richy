@@ -104,10 +104,10 @@ function applyDarkMode(dark) {
   // The blur+saturate filter lives inline at each surface; these tokens carry the parts that must
   // adapt to light/dark: a translucent sheet fill, a bright specular top rim (light catching the
   // glass edge), and a soft lift shadow so the chrome reads as a floating pane above the content.
-  T.sheetGlass = dark ? "rgba(28,25,21,0.80)" : "rgba(248,246,241,0.82)";
-  T.glassSpec  = dark ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.70)";
-  T.glassLiftUp   = dark ? "0 -10px 34px rgba(0,0,0,0.38)" : "0 -10px 34px rgba(40,28,16,0.07)";
-  T.glassLiftDown = dark ? "0 10px 30px rgba(0,0,0,0.38)"  : "0 8px 28px rgba(40,28,16,0.06)";
+  T.sheetGlass = dark ? "rgba(28,25,21,0.75)" : "rgba(248,246,241,0.78)";
+  T.glassSpec  = dark ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.95)";
+  T.glassLiftUp   = dark ? "0 -16px 48px rgba(0,0,0,0.50)" : "0 -16px 48px rgba(40,28,16,0.15)";
+  T.glassLiftDown = dark ? "0 16px 48px rgba(0,0,0,0.50)"  : "0 16px 48px rgba(40,28,16,0.14)";
 }
 
 // Remember the last-used look across reloads so the very first paint matches
