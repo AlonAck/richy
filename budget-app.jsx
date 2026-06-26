@@ -100,6 +100,14 @@ function applyDarkMode(dark) {
   T.navBg   = dark ? "rgba(19,17,16,0.94)"   : "rgba(250,247,242,0.92)";
   T.sheetBg = dark ? "#1C1915" : "#F8F6F1";
   T.inputBg = dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)";
+  // Liquid Glass — refined frosted-glass material for the menu chrome (nav bars + slide-up sheets).
+  // The blur+saturate filter lives inline at each surface; these tokens carry the parts that must
+  // adapt to light/dark: a translucent sheet fill, a bright specular top rim (light catching the
+  // glass edge), and a soft lift shadow so the chrome reads as a floating pane above the content.
+  T.sheetGlass = dark ? "rgba(28,25,21,0.80)" : "rgba(248,246,241,0.82)";
+  T.glassSpec  = dark ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.70)";
+  T.glassLiftUp   = dark ? "0 -10px 34px rgba(0,0,0,0.38)" : "0 -10px 34px rgba(40,28,16,0.07)";
+  T.glassLiftDown = dark ? "0 10px 30px rgba(0,0,0,0.38)"  : "0 8px 28px rgba(40,28,16,0.06)";
 }
 
 // Remember the last-used look across reloads so the very first paint matches
@@ -711,16 +719,18 @@ function Overlay(props) {
       <div onClick={props.onClose} style={{
         position: "absolute", inset: 0,
         background: "rgba(20,18,16,0.32)",
-        backdropFilter: "blur(2px)", WebkitBackdropFilter: "blur(2px)",
+        backdropFilter: "blur(4px) saturate(120%)", WebkitBackdropFilter: "blur(4px) saturate(120%)",
       }} />
       <div style={{
         position: "absolute", bottom: 0, left: "50%",
         transform: "translateX(-50%)",
         width: "100%", maxWidth: 430,
         maxHeight: "88vh", overflowY: "auto",
-        background: T.sheetBg,
+        background: T.sheetGlass,
+        backdropFilter: "blur(30px) saturate(180%)",
+        WebkitBackdropFilter: "blur(30px) saturate(180%)",
         borderRadius: "24px 24px 0 0",
-        boxShadow: "0 -4px 40px rgba(20,18,16,0.22)",
+        boxShadow: "0 -4px 40px rgba(20,18,16,0.22), inset 0 1px 0 " + T.glassSpec,
         paddingBottom: 30,
       }}>
         <div style={{ width: 38, height: 5, borderRadius: 3, background: T.orangeDim, margin: "9px auto 0" }} />
@@ -8953,7 +8963,7 @@ export default function App() {
   return (
     <div style={{ background: T.bg, minHeight: "100vh", maxWidth: 430, margin: "0 auto", fontFamily: UI, paddingBottom: 100 }}>
 
-      <div style={{ position: "sticky", top: 0, zIndex: 40, background: T.navBg, backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", borderBottom: "0.5px solid " + T.sep }}>
+      <div style={{ position: "sticky", top: 0, zIndex: 40, background: T.navBg, backdropFilter: "blur(24px) saturate(180%)", WebkitBackdropFilter: "blur(24px) saturate(180%)", borderBottom: "0.5px solid " + T.sep, boxShadow: "inset 0 1px 0 " + T.glassSpec + ", " + T.glassLiftDown }}>
         <div style={{ display: "flex", alignItems: "center", padding: "14px 20px 14px" }}>
           <div style={{ width: 86, display: "flex", alignItems: "center" }}>
             <div style={{ background: T.orangeDim, borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em" }}>{monthLabel}</div>
@@ -9004,7 +9014,7 @@ export default function App() {
         {currentTab === "instructions" && <RichardInstructionsView value={richardInstructions} onSave={function(text) { onSaveInstructions(text); setTab(prevTabRef.current || "profile"); }} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
       </div>
 
-      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, zIndex: 30, background: T.navBg, backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)", borderTop: "0.5px solid " + T.sep }}>
+      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, zIndex: 30, background: T.navBg, backdropFilter: "blur(28px) saturate(180%)", WebkitBackdropFilter: "blur(28px) saturate(180%)", borderTop: "0.5px solid " + T.sep, boxShadow: "inset 0 1px 0 " + T.glassSpec + ", " + T.glassLiftUp }}>
         <div style={{ display: "flex", justifyContent: "space-around", padding: "8px 0 28px" }}>
           {TABS.map(function(tab) {
             var active = currentTab === tab.id;
