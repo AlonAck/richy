@@ -8307,80 +8307,52 @@ function BusinessView(props) {
   // ---- Wizard / intake -----------------------------------------------------
   function wizardView() {
     var monthly = parseFloat(form.monthly) || 0;
-    return (
-      <div>
-        {backRow(step > 1 ? "Back" : "Business", function() { if (step > 1) { setStep(step - 1); } else { setView("list"); } })}
-        <Card style={{ padding: "18px 18px 20px" }}>
-          {step === 1 && (
-            <div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, marginBottom: 4, fontFamily: DISP, letterSpacing: "-0.02em" }}>Let's set up your business</div>
-              <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 14 }}>{form.wantPlan ? "Richard will ask a few questions, then build your plan." : "We'll create a blank account you can shape yourself."}</div>
-              <FormRow label="Business name" value={form.name} onChange={function(e) { setField("name", e.target.value); }} />
-              <FormRow label="What does it do?" value={form.what} onChange={function(e) { setField("what", e.target.value); }} placeholder="e.g. handmade candles, web design" />
-              <FormRow label="Notes for Richard (optional)" value={form.notes} onChange={function(e) { setField("notes", e.target.value); }} placeholder="anything he should know - goals, constraints, ideas" last={true} />
-              {fieldLabel("Icon")}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {BIZ_ICONS.map(function(ic) {
-                  var on = (form.icon || "briefcase") === ic;
-                  return (
-                    <button key={ic} onClick={function() { setField("icon", ic); }}
-                      style={{ width: 44, height: 44, border: on ? ("2px solid " + form.color) : "2px solid rgba(0,0,0,0.08)", background: on ? form.color + "1F" : "#fff", borderRadius: 13, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxSizing: "border-box" }}>
-                      <SVGIcon id={ic} size={20} color={on ? form.color : T.ink2} />
-                    </button>
-                  );
-                })}
-              </div>
-              {fieldLabel("Color")}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 9 }}>
-                {BIZ_COLORS.map(function(col) {
-                  var on = col === form.color;
-                  return <button key={col} onClick={function() { setField("color", col); }} style={{ width: 28, height: 28, borderRadius: "50%", border: on ? "3px solid " + T.ink : "1px solid rgba(0,0,0,0.1)", background: col, cursor: "pointer", padding: 0 }} />;
-                })}
-              </div>
-              {fieldLabel("Want Richard to build your plan?")}
-              {seg(form.wantPlan ? "yes" : "no", function(v) { setField("wantPlan", v === "yes"); }, [{ v: "yes", l: "Yes, plan it" }, { v: "no", l: "No, just create" }])}
-              <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 7, lineHeight: 1.45 }}>{form.wantPlan ? "Richard interviews you, then drafts a plan and a monthly budget." : "Skip the questions - we'll open a blank account you can budget yourself."}</div>
-              <BigBtn label={form.wantPlan ? "Next" : "Create account"} disabled={!form.name.trim()} onPress={function() { if (form.wantPlan) { setStep(2); } else { createBlank(); } }} />
-            </div>
-          )}
-          {step === 2 && (
-            <div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, marginBottom: 14, fontFamily: DISP, letterSpacing: "-0.02em" }}>Tell Richard about it</div>
-              {fieldLabel("Are you a company or an individual?")}
-              {seg(form.structure, function(v) { setField("structure", v); }, STRUCTURES)}
-              {fieldLabel("What stage are you at?")}
-              {seg(form.stage, function(v) { setField("stage", v); }, STAGES)}
-              {fieldLabel("How big is this project?")}
-              {seg(form.size, function(v) { setField("size", v); }, SIZES)}
-              <BigBtn label="Next" onPress={function() { setStep(3); }} />
-            </div>
-          )}
-          {step === 3 && (
-            <div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, marginBottom: 14, fontFamily: DISP, letterSpacing: "-0.02em" }}>The numbers</div>
-              {amtField("How much will you spend per month?", form.monthly, function(e) { setField("monthly", e.target.value); })}
-              {amtField("Monthly revenue goal", form.revenueGoal, function(e) { setField("revenueGoal", e.target.value); })}
-              {fieldLabel("Months of runway / savings set aside")}
-              <input value={form.runway} onChange={function(e) { setField("runway", e.target.value); }} type="number" inputMode="decimal" placeholder="e.g. 6"
-                style={{ width: "100%", background: "rgba(0,0,0,0.04)", border: "none", borderRadius: 12, padding: "11px 14px", fontSize: 16, fontFamily: UI, color: T.ink, fontWeight: 600, outline: "none", boxSizing: "border-box" }} />
-              <FormRow label="What does success look like in 12 months?" value={form.goal} onChange={function(e) { setField("goal", e.target.value); }} placeholder="e.g. quit my job, $5k/mo profit" last={true} />
-              <div style={{ marginTop: 8 }}>{fieldLabel("Money to set aside now (optional)")}</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(0,0,0,0.04)", borderRadius: 12, padding: "10px 14px", marginBottom: 10 }}>
-                <span style={{ fontSize: 18, color: T.ink3, fontWeight: 600 }}>{sym}</span>
-                <input value={form.startCap} onChange={function(e) { setField("startCap", e.target.value); }} type="number" inputMode="decimal" placeholder="0"
-                  style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 18, fontFamily: UI, color: T.ink, fontWeight: 700, padding: 0, boxSizing: "border-box", width: "100%" }} />
-              </div>
-              {parseFloat(form.startCap) > 0 && (
-                <div style={{ marginBottom: 6 }}>
-                  {seg(form.capSrc, function(v) { setField("capSrc", v); }, [{ v: "external", l: "New money" }, { v: "balance", l: "From balance" }])}
-                  <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 7, lineHeight: 1.45 }}>{form.capSrc === "external" ? "Outside money you are putting in - your spendable balance is untouched." : "Moves from your spendable balance into the business. Net worth is unchanged."}</div>
-                </div>
-              )}
-              <BigBtn label="Build my plan with Richard" disabled={monthly <= 0} onPress={function() { setStep(4); buildPlan(); }} />
-            </div>
-          )}
-          {step === 4 && (
-            planning ? (
+
+    // Helpers used by the full-screen interview (steps 1-3).
+    var iStyle = { width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 15px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" };
+    function iwrap(iconId, child, mb) {
+      return (
+        <div style={{ position: "relative", marginBottom: mb !== undefined ? mb : 12 }}>
+          <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)" }}>
+            <SVGIcon id={iconId} size={17} color={T.ink3} />
+          </div>
+          {child}
+        </div>
+      );
+    }
+    function ipills(value, setter, options) {
+      return (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+          {options.map(function(o) {
+            var sel = value === o.v;
+            return (
+              <button key={o.v} onClick={function() { setter(o.v); }}
+                style={{ padding: "10px 18px", borderRadius: 12, border: sel ? ("2px solid " + T.orange) : "1.5px solid rgba(0,0,0,0.1)", background: sel ? T.orangeDim : "rgba(255,255,255,0.8)", color: sel ? T.orange : T.ink2, fontSize: 14, fontWeight: sel ? 700 : 500, fontFamily: UI, cursor: "pointer" }}>
+                {o.l}
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+    function icta(label, onPress, disabled) {
+      return (
+        <button onClick={onPress} disabled={!!disabled}
+          style={{ width: "100%", background: disabled ? "rgba(0,0,0,0.08)" : ("linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")"), color: disabled ? T.ink3 : "#fff", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: disabled ? "default" : "pointer", marginTop: 16, boxShadow: disabled ? "none" : ("0 6px 20px " + T.orangeGlow + ", 0 2px 6px rgba(0,0,0,0.1)"), letterSpacing: "-0.01em" }}>
+          {label}
+        </button>
+      );
+    }
+    var amtStyleI = { width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 15px 15px 40px", fontSize: 18, fontFamily: UI, color: T.ink, fontWeight: 700, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" };
+    var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 };
+
+    // Step 4 (plan review) stays in the normal card layout.
+    if (step === 4) {
+      return (
+        <div>
+          {backRow("Back", function() { setStep(3); })}
+          <Card style={{ padding: "18px 18px 20px" }}>
+            {planning ? (
               <div style={{ padding: "34px 10px", textAlign: "center" }}>
                 <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>Richard is building your plan...</div>
                 <div style={{ fontSize: 13, color: T.ink3, marginTop: 5 }}>Drafting your strategy and operating budget.</div>
@@ -8475,11 +8447,150 @@ function BusinessView(props) {
                 <div style={{ fontSize: 14, color: T.ink2, marginBottom: 12 }}>Something went wrong building the plan.</div>
                 <BigBtn label="Try again" onPress={buildPlan} />
               </div>
-            )
-          )}
-        </Card>
+            )}
+          </Card>
+        </div>
+      );
+    }
+
+    // Steps 1-3: full-screen immersive interview, styled like the signup AuthScreen.
+    var stepTitles = [
+      null,
+      { t: "Set up your business", s: form.wantPlan ? "Richard will plan your strategy and budget." : "Create a blank account you can shape yourself." },
+      { t: "Tell Richard about it", s: "A few details about your venture." },
+      { t: "The numbers", s: "So Richard can build a realistic plan." }
+    ];
+    var shead = stepTitles[step] || stepTitles[1];
+
+    var dots = (
+      <div style={{ display: "flex", gap: 6 }}>
+        {[1, 2, 3].map(function(n) {
+          return <div key={n} style={{ height: 6, borderRadius: 3, width: n === step ? 20 : 6, background: n <= step ? T.orange : "rgba(0,0,0,0.13)" }} />;
+        })}
       </div>
     );
+
+    var screenContent = (
+      <div style={{ position: "fixed", inset: 0, zIndex: 91, background: "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)", display: "flex", flexDirection: "column", fontFamily: UI }}>
+        <div style={{ position: "absolute", top: -80, right: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(137,112,198,0.15) 0%,transparent 70%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: 60, left: -80, width: 240, height: 240, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,154,60,0.12) 0%,transparent 70%)", pointerEvents: "none" }} />
+
+        <div style={{ display: "flex", alignItems: "center", padding: "20px 20px 0", position: "relative", zIndex: 1 }}>
+          <button onClick={function() { if (step > 1) { setStep(step - 1); } else { setView("list"); } }}
+            style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: T.orange, fontSize: 14, fontWeight: 600, fontFamily: UI, padding: 0 }}>
+            <span style={{ transform: "rotate(180deg)", display: "flex" }}><SVGIcon id="chevron" size={18} color={T.orange} /></span>
+            {step > 1 ? "Back" : "Business"}
+          </button>
+          <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>{dots}</div>
+          <div style={{ width: 70 }} />
+        </div>
+
+        <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px 48px", position: "relative", zIndex: 1 }}>
+          <div style={{ maxWidth: 380, margin: "0 auto" }}>
+
+            <div style={{ textAlign: "center", marginBottom: 28 }}>
+              <div style={{ width: 64, height: 64, borderRadius: 20, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", boxShadow: "0 8px 24px rgba(196,154,60,0.18)" }}>
+                <SVGIcon id={form.icon || "briefcase"} size={30} color={T.orange} />
+              </div>
+              <div style={{ fontSize: 28, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.15 }}>{shead.t}</div>
+              <div style={{ fontSize: 14, color: T.ink2, marginTop: 6 }}>{shead.s}</div>
+            </div>
+
+            {step === 1 && (
+              <div>
+                {iwrap("briefcase",
+                  <input value={form.name} onChange={function(e) { setField("name", e.target.value); }}
+                    placeholder="Business name"
+                    style={iStyle} />, 12)}
+                {iwrap("chat",
+                  <input value={form.what} onChange={function(e) { setField("what", e.target.value); }}
+                    placeholder="What does it do? e.g. handmade candles, web design"
+                    style={iStyle} />, 12)}
+                <textarea value={form.notes} onChange={function(e) { setField("notes", e.target.value); }}
+                  placeholder="Notes for Richard (optional) - goals, constraints, ideas..."
+                  rows={3}
+                  style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "13px 16px", fontSize: 15, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", resize: "vertical", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", marginBottom: 20 }} />
+                <div style={secLabel}>Icon</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
+                  {BIZ_ICONS.map(function(ic) {
+                    var on = (form.icon || "briefcase") === ic;
+                    return (
+                      <button key={ic} onClick={function() { setField("icon", ic); }}
+                        style={{ width: 48, height: 48, border: on ? ("2px solid " + form.color) : "1.5px solid rgba(0,0,0,0.09)", background: on ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.7)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxSizing: "border-box" }}>
+                        <SVGIcon id={ic} size={22} color={on ? form.color : T.ink2} />
+                      </button>
+                    );
+                  })}
+                </div>
+                <div style={secLabel}>Color</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 20 }}>
+                  {BIZ_COLORS.map(function(col) {
+                    var on = col === form.color;
+                    return <button key={col} onClick={function() { setField("color", col); }} style={{ width: 32, height: 32, borderRadius: "50%", border: on ? "3px solid rgba(0,0,0,0.25)" : "2px solid rgba(0,0,0,0.08)", background: col, cursor: "pointer", padding: 0 }} />;
+                  })}
+                </div>
+                <div style={secLabel}>Want Richard to build your plan?</div>
+                {ipills(form.wantPlan ? "yes" : "no", function(v) { setField("wantPlan", v === "yes"); }, [{ v: "yes", l: "Yes, plan it" }, { v: "no", l: "No, just create" }])}
+                <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5 }}>{form.wantPlan ? "Richard interviews you, then drafts a plan and a monthly budget." : "Skip the questions - open a blank account you can budget yourself."}</div>
+                {icta(form.wantPlan ? "Next" : "Create account", function() { if (form.wantPlan) { setStep(2); } else { createBlank(); } }, !form.name.trim())}
+              </div>
+            )}
+
+            {step === 2 && (
+              <div>
+                <div style={secLabel}>Are you a company or an individual?</div>
+                {ipills(form.structure, function(v) { setField("structure", v); }, STRUCTURES)}
+                <div style={secLabel}>What stage are you at?</div>
+                {ipills(form.stage, function(v) { setField("stage", v); }, STAGES)}
+                <div style={secLabel}>How big is this project?</div>
+                {ipills(form.size, function(v) { setField("size", v); }, SIZES)}
+                {icta("Next", function() { setStep(3); }, false)}
+              </div>
+            )}
+
+            {step === 3 && (
+              <div>
+                <div style={secLabel}>How much will you spend per month?</div>
+                <div style={{ position: "relative", marginBottom: 12 }}>
+                  <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", fontSize: 16, fontWeight: 600, color: T.ink3, fontFamily: UI }}>{sym}</div>
+                  <input value={form.monthly} onChange={function(e) { setField("monthly", e.target.value); }} type="number" inputMode="decimal" placeholder="0"
+                    style={amtStyleI} />
+                </div>
+                <div style={secLabel}>Monthly revenue goal</div>
+                <div style={{ position: "relative", marginBottom: 12 }}>
+                  <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", fontSize: 16, fontWeight: 600, color: T.ink3, fontFamily: UI }}>{sym}</div>
+                  <input value={form.revenueGoal} onChange={function(e) { setField("revenueGoal", e.target.value); }} type="number" inputMode="decimal" placeholder="0"
+                    style={amtStyleI} />
+                </div>
+                <div style={secLabel}>Months of runway / savings set aside</div>
+                <input value={form.runway} onChange={function(e) { setField("runway", e.target.value); }} type="number" inputMode="decimal" placeholder="e.g. 6"
+                  style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 16px", fontSize: 16, fontFamily: UI, color: T.ink, fontWeight: 600, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", marginBottom: 12 }} />
+                {iwrap("star",
+                  <input value={form.goal} onChange={function(e) { setField("goal", e.target.value); }}
+                    placeholder="What does success look like in 12 months?"
+                    style={iStyle} />, 12)}
+                <div style={secLabel}>Money to set aside now (optional)</div>
+                <div style={{ position: "relative", marginBottom: 10 }}>
+                  <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", fontSize: 16, fontWeight: 600, color: T.ink3, fontFamily: UI }}>{sym}</div>
+                  <input value={form.startCap} onChange={function(e) { setField("startCap", e.target.value); }} type="number" inputMode="decimal" placeholder="0"
+                    style={amtStyleI} />
+                </div>
+                {parseFloat(form.startCap) > 0 && (
+                  <div style={{ marginBottom: 12 }}>
+                    {ipills(form.capSrc, function(v) { setField("capSrc", v); }, [{ v: "external", l: "New money" }, { v: "balance", l: "From balance" }])}
+                    <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.45 }}>{form.capSrc === "external" ? "Outside money you are putting in - your spendable balance is untouched." : "Moves from your spendable balance into the business. Net worth is unchanged."}</div>
+                  </div>
+                )}
+                {icta("Build my plan with Richard", function() { setStep(4); buildPlan(); }, monthly <= 0)}
+              </div>
+            )}
+
+          </div>
+        </div>
+      </div>
+    );
+
+    return ReactDOM.createPortal(screenContent, document.body);
   }
 
   // ---- Detail view ---------------------------------------------------------
