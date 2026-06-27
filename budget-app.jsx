@@ -2746,18 +2746,18 @@ function Overview(props) {
             <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
             <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("savings")}</span>
           </div>
-          {savAccts.length > 0 && (
+          {(savAccts.length > 0 || bizAccts.length > 0) && (
             <button onClick={props.onOpenSavings} style={{ background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI, display: "flex", alignItems: "center", gap: 2 }}>
               {tr("manage")}<SVGIcon id="chevron" size={15} color={T.orange} />
             </button>
           )}
         </div>
-        {savAccts.length === 0 ? (
+        {(savAccts.length === 0 && bizAccts.length === 0) ? (
           <button onClick={props.onOpenSavings} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, marginBottom: 20, padding: "15px 16px", borderRadius: 18, background: T.card, border: "1px dashed " + T.orange + "66", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)" }}>
             <CatBadge icon="coins" color={T.orange} size={38} soft={true} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>{tr("addSavingsAccount")}</div>
-              <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>{tr("emptySavingsSub")}</div>
+              <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>{props.onOpenBusiness ? "Open an account" : tr("addSavingsAccount")}</div>
+              <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>{props.onOpenBusiness ? "A savings pot, or a business account with Richard." : tr("emptySavingsSub")}</div>
             </div>
             <SVGIcon id="plus" size={20} color={T.orange} />
           </button>
@@ -2772,55 +2772,25 @@ function Overview(props) {
                 </button>
               );
             })}
+            {bizAccts.map(function(b) {
+              return (
+                <button key={b.id} onClick={function() { props.onOpenBusiness(b.id); }} style={{ width: "100%", textAlign: "left", background: "none", border: "none", borderBottom: "0.5px solid " + T.sep, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
+                  <CatBadge icon={b.icon || "briefcase"} color={b.color || "#8970C6"} size={36} soft={true} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 15, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.name}</div>
+                    <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1 }}>Business</div>
+                  </div>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(businessCash(b))}</span>
+                </button>
+              );
+            })}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: T.orangeDim }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: T.ink2, textTransform: "uppercase", letterSpacing: "0.08em" }}>{tr("totalSavings")}</span>
-              <span style={{ fontSize: 16, fontWeight: 800, color: T.orange, letterSpacing: "-0.02em" }}>{dollars(savTotal)}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: T.ink2, textTransform: "uppercase", letterSpacing: "0.08em" }}>{bizAccts.length > 0 ? "Total set aside" : tr("totalSavings")}</span>
+              <span style={{ fontSize: 16, fontWeight: 800, color: T.orange, letterSpacing: "-0.02em" }}>{dollars(savTotal + bizTotal)}</span>
             </div>
           </Card>
         )}
       </div>
-
-      {props.onOpenBusiness && (
-        <div style={{ animation: "rcFadeUp 0.6s ease 0.1s both" }}>
-          <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-              <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Business</span>
-            </div>
-            {bizAccts.length > 0 && (
-              <button onClick={function() { props.onOpenBusiness(null); }} style={{ background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI, display: "flex", alignItems: "center", gap: 2 }}>
-                {tr("manage")}<SVGIcon id="chevron" size={15} color={T.orange} />
-              </button>
-            )}
-          </div>
-          {bizAccts.length === 0 ? (
-            <button onClick={function() { props.onOpenBusiness(null); }} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, marginBottom: 20, padding: "15px 16px", borderRadius: 18, background: T.card, border: "1px dashed " + T.orange + "66", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)" }}>
-              <CatBadge icon="briefcase" color={T.orange} size={38} soft={true} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>Open a Business Account</div>
-                <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Separate your business money and let Richard build your plan.</div>
-              </div>
-              <SVGIcon id="plus" size={20} color={T.orange} />
-            </button>
-          ) : (
-            <Card style={{ overflow: "hidden", marginBottom: 20 }}>
-              {bizAccts.map(function(b) {
-                return (
-                  <button key={b.id} onClick={function() { props.onOpenBusiness(b.id); }} style={{ width: "100%", textAlign: "left", background: "none", border: "none", borderBottom: "0.5px solid " + T.sep, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
-                    <CatBadge icon={b.icon || "briefcase"} color={b.color || T.orange} size={36} soft={true} />
-                    <span style={{ flex: 1, minWidth: 0, fontSize: 15, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.name}</span>
-                    <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(businessCash(b))}</span>
-                  </button>
-                );
-              })}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: T.orangeDim }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: T.ink2, textTransform: "uppercase", letterSpacing: "0.08em" }}>Business cash</span>
-                <span style={{ fontSize: 16, fontWeight: 800, color: T.orange, letterSpacing: "-0.02em" }}>{dollars(bizTotal)}</span>
-              </div>
-            </Card>
-          )}
-        </div>
-      )}
 
       {budgetRows.length > 0 && (
         <div style={{ animation: "rcFadeUp 0.6s ease 0.12s both" }}>
@@ -4721,7 +4691,7 @@ function Trips(props) {
   var _v = useState(props.openTripId ? "detail" : "list"); var view = _v[0]; var setView = _v[1];
   var _aid = useState(props.openTripId || null); var activeId = _aid[0]; var setActiveId = _aid[1];
   var _st = useState(1); var step = _st[0]; var setStep = _st[1];
-  var _fm = useState({ name: "", destination: "", total: "", days: "", style: "comfort", icon: "plane" });
+  var _fm = useState({ name: "", destination: "", total: "", days: "", style: "comfort", icon: "plane", notes: "", wantPlan: true });
   var form = _fm[0]; var setForm = _fm[1];
   var _pl = useState(false); var planning = _pl[0]; var setPlanning = _pl[1];
   var _al = useState([]); var alloc = _al[0]; var setAlloc = _al[1];
@@ -4934,7 +4904,7 @@ function Trips(props) {
     setBudgetAssessment(null);
     var total = parseFloat(form.total) || 0;
     var sys = "You are Richard, a warm, expert travel-budget planner inside the Richy app. Split a trip budget across exactly these buckets: Flights, Housing, Food, Activities, Shopping, Transport, Other, Buffer. Also estimate the realistic total cost for that destination, travel style, and number of days, then compare it to the user's budget. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"allocations\":[{\"category\":\"Flights\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"\"],\"budgetAssessment\":{\"estimated\":1200,\"verdict\":\"short\",\"note\":\"One sentence comparing budget to realistic cost.\"}}. verdict must be one of: short (budget is not enough), excess (budget is more than needed), good (budget is reasonable). The amounts are whole numbers that sum to the total budget. Use Other for any spending that does not fit the main buckets.";
-    var usr = "Plan a " + (form.style || "comfort") + " trip to " + (form.destination || "somewhere") + " for " + (form.days || "a few") + " days, total budget " + dollars(total) + ". Split the budget across the buckets, give 3 short practical tips, and assess whether the budget is realistic for this destination.";
+    var usr = "Plan a " + (form.style || "comfort") + " trip to " + (form.destination || "somewhere") + " for " + (form.days || "a few") + " days, total budget " + dollars(total) + ". " + (form.notes && form.notes.trim() ? ("Notes from the traveler: " + form.notes.trim() + ". ") : "") + "Split the budget across the buckets, give 3 short practical tips, and assess whether the budget is realistic for this destination.";
     callClaude([{ role: "user", content: usr }], sys, 800, function(e, text) {
       if (e || !text) { applyLocalSplit(); return; }
       try {
@@ -4954,7 +4924,7 @@ function Trips(props) {
     setAlloc(function(list) { return list.map(function(a) { return a.key === key ? Object.assign({}, a, { planned: n, plannedRaw: val }) : a; }); });
   }
   function startWizard() {
-    setForm({ name: "", destination: "", total: "", days: "", style: "comfort", icon: "plane" });
+    setForm({ name: "", destination: "", total: "", days: "", style: "comfort", icon: "plane", notes: "", wantPlan: true });
     setAlloc([]); setTips([]); setStep(1); setView("wizard");
   }
   function saveTrip() {
@@ -4962,7 +4932,7 @@ function Trips(props) {
     var trip = {
       id: Date.now(), name: form.name || "My Trip", destination: form.destination || "",
       days: parseInt(form.days, 10) || 0, style: form.style || "comfort", total: total, icon: form.icon || "plane",
-      reserved: false, reserveTxId: null, advisorTips: tips, allocations: alloc
+      reserved: false, reserveTxId: null, advisorTips: tips, allocations: alloc, notes: form.notes || ""
     };
     props.onSaveTrips(props.trips.concat([trip]));
     setActiveId(trip.id); setView("detail");
@@ -5086,7 +5056,8 @@ function Trips(props) {
             <FormRow label={tr("tripName")} value={form.name} onChange={function(e) { setField("name", e.target.value); }} />
             <FormRow label={tr("destination")} value={form.destination} onChange={function(e) { setField("destination", e.target.value); }} />
             <FormRow label={tr("tripBudget")} value={form.total} onChange={function(e) { setField("total", e.target.value); }} type="number" />
-            <FormRow label={tr("tripDays")} value={form.days} onChange={function(e) { setField("days", e.target.value); }} type="number" last={true} />
+            <FormRow label={tr("tripDays")} value={form.days} onChange={function(e) { setField("days", e.target.value); }} type="number" />
+            <FormRow label="Notes for Richard (optional)" value={form.notes} onChange={function(e) { setField("notes", e.target.value); }} placeholder="anything he should know - must-dos, style, who's coming" last={true} />
             <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, margin: "14px 0 8px" }}>{tr("travelStyle")}</div>
             <div style={{ display: "flex", gap: 8 }}>
               {styleOpts.map(function(s) {
@@ -5111,7 +5082,19 @@ function Trips(props) {
                 );
               })}
             </div>
-            <BigBtn label={tr("next")} disabled={!form.name || total <= 0} onPress={function() { setStep(2); planWithRichard(); }} />
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, margin: "16px 0 8px" }}>Want Richard to plan the budget?</div>
+            <div style={{ display: "flex", gap: 8 }}>
+              {[{ v: true, l: "Yes, plan it" }, { v: false, l: "No, I'll do it" }].map(function(o) {
+                var on = form.wantPlan === o.v;
+                return (
+                  <button key={String(o.v)} onClick={function() { setField("wantPlan", o.v); }}
+                    style={{ flex: 1, border: on ? ("2px solid " + T.orange) : "2px solid rgba(0,0,0,0.08)", background: on ? T.orangeDim : "#fff", color: on ? T.orange : T.ink2, borderRadius: 13, padding: "11px 0", fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
+                    {o.l}
+                  </button>
+                );
+              })}
+            </div>
+            <BigBtn label={tr("next")} disabled={!form.name || total <= 0} onPress={function() { setStep(2); if (form.wantPlan) { planWithRichard(); } else { applyLocalSplit(); } }} />
           </Card>
         ) : (
           <Card style={{ padding: "18px 18px 20px" }}>
@@ -7565,6 +7548,7 @@ function SavingsView(props) {
   var today = new Date().toISOString().slice(0, 10);
 
   var _cr = useState(false); var creating = _cr[0]; var setCreating = _cr[1];
+  var _pk = useState(false); var picking = _pk[0]; var setPicking = _pk[1];
   var _cn = useState(""); var cName = _cn[0]; var setCName = _cn[1];
   var _cic = useState("coins"); var cIcon = _cic[0]; var setCIcon = _cic[1];
   var _ccl = useState(SAVINGS_COLORS[0]); var cColor = _ccl[0]; var setCColor = _ccl[1];
@@ -7675,7 +7659,7 @@ function SavingsView(props) {
     <div>
       <SubViewBack onBack={props.onBack} label={tr("overview")} />
 
-      <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, marginBottom: 18, padding: "0 2px" }}>{tr("savingsIntro")}</div>
+      <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, marginBottom: 18, padding: "0 2px" }}>{props.onOpenBusiness ? "Money set aside outside your spendable balance. Open a savings pot, or a business account with its own budget and a plan from Richard." : tr("savingsIntro")}</div>
 
       {accts.length > 0 && (
         <Card style={{ padding: "18px 20px", marginBottom: 16, background: T.heroBg, boxShadow: T.heroShadow }}>
@@ -7768,6 +7752,21 @@ function SavingsView(props) {
         );
       })}
 
+      {props.onOpenBusiness && (props.businesses || []).map(function(b) {
+        return (
+          <Card key={b.id} style={{ marginBottom: 12 }}>
+            <button onClick={function() { props.onOpenBusiness(b.id); }} style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "15px 16px" }}>
+              <CatBadge icon={b.icon || "briefcase"} color={b.color || T.orange} size={42} soft={true} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15.5, fontWeight: 700, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.name}</div>
+                <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>{b.what ? (b.what + " - Business") : "Business"}</div>
+              </div>
+              <div style={{ fontSize: 19, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em", flexShrink: 0 }}>{dollars(businessCash(b))}</div>
+            </button>
+          </Card>
+        );
+      })}
+
       {creating ? (
         <Card style={{ padding: "18px 18px", marginTop: 4, marginBottom: 12 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>{tr("newSavingsAccount")}</div>
@@ -7811,42 +7810,31 @@ function SavingsView(props) {
             style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>{tr("dismiss")}</button>
         </Card>
       ) : (
-        <button onClick={function() { setCreating(true); }}
+        <button onClick={function() { if (props.onOpenBusiness) { setPicking(true); } else { setCreating(true); } }}
           style={{ width: "100%", marginTop: 4, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "14px 0", borderRadius: 14, background: "none", border: "1.5px dashed " + T.orange + "88", color: T.orange, fontSize: 14.5, fontWeight: 700 }}>
-          <SVGIcon id="plus" size={18} color={T.orange} />{tr("newSavingsAccount")}
+          <SVGIcon id="plus" size={18} color={T.orange} />{props.onOpenBusiness ? "New account" : tr("newSavingsAccount")}
         </button>
       )}
 
-      {props.onOpenBusiness && (
-        <div style={{ marginTop: 26 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 2px 10px" }}>
-            <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-            <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Business</span>
+      <Overlay open={picking} onClose={function() { setPicking(false); }} title="New account">
+        <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 14 }}>What kind of account do you want to open?</div>
+        <button onClick={function() { setPicking(false); setCreating(true); }} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 16, background: T.card, border: "1px solid " + T.sep, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)", marginBottom: 10 }}>
+          <CatBadge icon="coins" color={T.orange} size={42} soft={true} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>Savings account</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>A simple pot for money you don't want to spend.</div>
           </div>
-          {(props.businesses || []).map(function(b) {
-            return (
-              <Card key={b.id} style={{ marginBottom: 10 }}>
-                <button onClick={function() { props.onOpenBusiness(b.id); }} style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
-                  <CatBadge icon={b.icon || "briefcase"} color={b.color || T.orange} size={38} soft={true} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.name}</div>
-                    <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>{b.what || "Business account"}</div>
-                  </div>
-                  <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(businessCash(b))}</span>
-                </button>
-              </Card>
-            );
-          })}
-          <button onClick={function() { props.onOpenBusiness(null); }} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 18, background: T.card, border: "1px dashed " + T.orange + "66", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)" }}>
-            <CatBadge icon="briefcase" color={T.orange} size={38} soft={true} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>{(props.businesses || []).length > 0 ? "New Business Account" : "Open a Business Account"}</div>
-              <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Separate your business money and get a plan from Richard.</div>
-            </div>
-            <SVGIcon id="plus" size={20} color={T.orange} />
-          </button>
-        </div>
-      )}
+          <SVGIcon id="chevron" size={18} color={T.ink3} />
+        </button>
+        <button onClick={function() { setPicking(false); props.onOpenBusiness(null); }} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 16, background: T.card, border: "1px solid " + T.sep, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)" }}>
+          <CatBadge icon="briefcase" color="#8970C6" size={42} soft={true} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>Business account</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Business budget categories and a plan from Richard.</div>
+          </div>
+          <SVGIcon id="chevron" size={18} color={T.ink3} />
+        </button>
+      </Overlay>
 
       <Overlay open={!!act} onClose={function() { setAct(null); }} title={(act && act.kind === "add" ? tr("addMoney") : tr("withdraw")) + (actAcct ? " · " + actAcct.name : "")}>
         {actAcct && (
@@ -7891,11 +7879,16 @@ function BusinessView(props) {
   var _v = useState(props.openBizId ? "detail" : "list"); var view = _v[0]; var setView = _v[1];
   var _aid = useState(props.openBizId || null); var activeId = _aid[0]; var setActiveId = _aid[1];
   var _st = useState(1); var step = _st[0]; var setStep = _st[1];
-  var _fm = useState({ name: "", what: "", structure: "individual", stage: "idea", size: "side", monthly: "", revenueGoal: "", runway: "", goal: "", startCap: "", capSrc: "external", icon: "briefcase", color: BIZ_COLORS[0] });
+  var _fm = useState({ name: "", what: "", notes: "", wantPlan: true, structure: "individual", stage: "idea", size: "side", monthly: "", revenueGoal: "", runway: "", goal: "", startCap: "", capSrc: "external", icon: "briefcase", color: BIZ_COLORS[0] });
   var form = _fm[0]; var setForm = _fm[1];
   var _pl = useState(false); var planning = _pl[0]; var setPlanning = _pl[1];
   var _pr = useState(null); var planResult = _pr[0]; var setPlanResult = _pr[1];
   var _err = useState(""); var err = _err[0]; var setErr = _err[1];
+  // Richard chat inside the budget-planning step (ask questions, retune the split
+  // before the account is created).
+  var _wc = useState([]); var wizChat = _wc[0]; var setWizChat = _wc[1];
+  var _wci = useState(""); var wizInput = _wci[0]; var setWizInput = _wci[1];
+  var _wcl = useState(false); var wizLoading = _wcl[0]; var setWizLoading = _wcl[1];
 
   var _act = useState(null); var act = _act[0]; var setAct = _act[1];
   var _amt = useState(""); var amt = _amt[0]; var setAmt = _amt[1];
@@ -7968,6 +7961,7 @@ function BusinessView(props) {
       + "Planned monthly spend: " + dollars(monthly) + ". Monthly revenue goal: " + dollars(parseFloat(form.revenueGoal) || 0) + ". "
       + "Runway / savings set aside: " + ((parseFloat(form.runway) || 0) > 0 ? (form.runway + " months") : "not specified") + ". "
       + "What success looks like in 12 months: " + (form.goal || "not specified") + ". "
+      + (form.notes && form.notes.trim() ? ("Notes for Richard from the owner: " + form.notes.trim() + ". ") : "")
       + "Build the plan, split the monthly budget across the buckets, give 4 short practical tips, and give an honest verdict on whether this is realistic.";
     callClaude([{ role: "user", content: usr }], sys, 1200, function(e, text) {
       if (e || !text) { applyLocalPlan(); return; }
@@ -7986,29 +7980,75 @@ function BusinessView(props) {
     });
   }
   function startWizard() {
-    setForm({ name: "", what: "", structure: "individual", stage: "idea", size: "side", monthly: "", revenueGoal: "", runway: "", goal: "", startCap: "", capSrc: "external", icon: "briefcase", color: BIZ_COLORS[0] });
-    setPlanResult(null); setErr(""); setStep(1); setView("wizard");
+    setForm({ name: "", what: "", notes: "", wantPlan: true, structure: "individual", stage: "idea", size: "side", monthly: "", revenueGoal: "", runway: "", goal: "", startCap: "", capSrc: "external", icon: "briefcase", color: BIZ_COLORS[0] });
+    setPlanResult(null); setErr(""); setStep(1); setWizChat([]); setWizInput(""); setView("wizard");
   }
-  function saveBusiness() {
-    if (!planResult) return;
-    var monthly = parseFloat(form.monthly) || 0;
+  // Create the account from whatever we have. With a plan the categories come from
+  // planResult; without one (the owner skipped Richard) we seed a blank budget they
+  // can fill in themselves later.
+  function commitBusiness(plan, categories, profileExtra) {
     var startCap = parseFloat(form.startCap) || 0;
     var fromMain = form.capSrc === "balance";
     var entries = [];
     if (startCap > 0) {
       entries = [{ id: Date.now(), kind: "deposit", amount: round2(startCap), date: today, fromMain: fromMain, label: fromMain ? "From balance" : "Starting capital" }];
     }
+    var profile = { structure: form.structure, stage: form.stage, size: form.size, monthly: parseFloat(form.monthly) || 0, revenueGoal: parseFloat(form.revenueGoal) || 0, runway: parseFloat(form.runway) || 0, goal: form.goal || "", notes: form.notes || "" };
+    for (var k in (profileExtra || {})) profile[k] = profileExtra[k];
     var biz = {
       id: "biz_" + Date.now(), name: form.name || "My Business", what: form.what || "",
       icon: form.icon || "briefcase", color: form.color || BIZ_COLORS[0], createdAt: today,
-      profile: { structure: form.structure, stage: form.stage, size: form.size, monthly: monthly, revenueGoal: parseFloat(form.revenueGoal) || 0, runway: parseFloat(form.runway) || 0, goal: form.goal || "" },
-      plan: { summary: planResult.summary, sections: planResult.sections, tips: planResult.tips, verdict: planResult.verdict, generatedAt: today },
-      categories: planResult.categories, entries: entries
+      profile: profile, plan: plan, categories: categories, entries: entries
     };
     var next = bizes.concat([biz]);
     if (startCap > 0 && fromMain) props.onBusinessMove(tx.concat([transferTx("expense", startCap, biz.name)]), next);
     else props.onSaveBusinesses(next);
     setActiveId(biz.id); setView("detail");
+  }
+  function saveBusiness() {
+    if (!planResult) return;
+    commitBusiness({ summary: planResult.summary, sections: planResult.sections, tips: planResult.tips, verdict: planResult.verdict, generatedAt: today }, planResult.categories, null);
+  }
+  // Owner declined a plan: skip the questionnaire entirely and create a bare
+  // account with an empty budget they can shape later (or ask Richard from inside).
+  function createBlank() {
+    commitBusiness(null, localBizSplit(0), { structure: "individual", stage: "idea", size: "side", monthly: 0 });
+  }
+  // Richard chat that lives in the plan-review step: ask questions and let him
+  // retune the proposed split via the @@ALLOC directive before saving.
+  function applyAllocToWizard(arr) {
+    var byKey = bizAllocToMap(arr);
+    if (!Object.keys(byKey).length) return false;
+    setPlanResult(function(pr) {
+      if (!pr) return pr;
+      return Object.assign({}, pr, { categories: pr.categories.map(function(c) { return byKey.hasOwnProperty(c.key) ? Object.assign({}, c, { planned: byKey[c.key], plannedRaw: String(byKey[c.key]) }) : c; }) });
+    });
+    return true;
+  }
+  function sendWizNote() {
+    if (!wizInput.trim() || wizLoading || !planResult) return;
+    var msg = wizInput.trim();
+    setWizInput("");
+    var nc = wizChat.concat([{ role: "user", text: msg }]);
+    setWizChat(nc); setWizLoading(true);
+    var monthly = parseFloat(form.monthly) || 0;
+    var split = planResult.categories.map(function(c) { return c.label + ": " + dollars(c.planned || 0); }).join("; ");
+    var custom = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
+    var sys = custom + "You are Richard, a warm, sharp business CFO inside the Richy app, helping set up a new business budget. "
+      + "Business: " + (form.name || "the business") + " - " + (form.what || "unspecified") + ". Structure: " + labelOf(STRUCTURES, form.structure) + ". Stage: " + labelOf(STAGES, form.stage) + ". Scale: " + labelOf(SIZES, form.size) + ". Monthly budget " + dollars(monthly) + ", revenue goal " + dollars(parseFloat(form.revenueGoal) || 0) + ". "
+      + (form.notes && form.notes.trim() ? ("Owner's notes: " + form.notes.trim() + ". ") : "")
+      + "Current proposed budget split: " + (split || "not set") + ". "
+      + "Answer the owner's question with concrete, practical advice. You can DIRECTLY change the split, not just describe it. When the owner wants a change, give one short plain-text sentence explaining what you did, then on a new line append a directive in EXACTLY this form: @@ALLOC[{\"category\":\"Marketing\",\"amount\":600},{\"category\":\"Software\",\"amount\":150}] "
+      + "Only list the buckets you are changing, using whole numbers, and keep the overall total close to " + dollars(monthly) + " by also adjusting Buffer or Other when needed. Categories must be from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer. "
+      + "Only include the @@ALLOC directive when you actually intend to change the split; for general questions just answer normally." + RICHARD_FORMAT + " The @@ALLOC directive, when you use it, must be the very last thing in your reply.";
+    callClaude(nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }), sys, 450, function(e, reply) {
+      setWizLoading(false);
+      if (e || !reply) { setWizChat(function(p) { return p.concat([{ role: "richard", text: "Sorry, I could not connect. Try again." }]); }); return; }
+      var parsed = extractAllocDirective(reply);
+      var applied = false;
+      if (parsed.allocations) { applied = applyAllocToWizard(parsed.allocations); }
+      setWizChat(function(p) { var next = p.concat([{ role: "richard", text: parsed.text }]); if (applied) next = next.concat([{ role: "system", text: "Budget updated" }]); return next; });
+    });
   }
 
   // ---- Capital, expenses, revenue -----------------------------------------
@@ -8151,11 +8191,12 @@ function BusinessView(props) {
           var old = null; for (var i = 0; i < biz.categories.length; i++) { if (biz.categories[i].key === nc.key) { old = biz.categories[i]; break; } }
           return old ? Object.assign({}, nc, { spent: old.spent || 0, entries: old.entries || [] }) : nc;
         });
+        var oldPlan = biz.plan || {};
         var newPlan = {
-          summary: parsed.summary || biz.plan.summary,
-          sections: (Array.isArray(parsed.sections) && parsed.sections.length) ? parsed.sections.slice(0, 6) : biz.plan.sections,
-          tips: (Array.isArray(parsed.tips) && parsed.tips.length) ? parsed.tips.slice(0, 5) : biz.plan.tips,
-          verdict: (parsed.verdict && parsed.verdict.assessment) ? parsed.verdict : biz.plan.verdict,
+          summary: parsed.summary || oldPlan.summary || "",
+          sections: (Array.isArray(parsed.sections) && parsed.sections.length) ? parsed.sections.slice(0, 6) : (oldPlan.sections || []),
+          tips: (Array.isArray(parsed.tips) && parsed.tips.length) ? parsed.tips.slice(0, 5) : (oldPlan.tips || []),
+          verdict: (parsed.verdict && parsed.verdict.assessment) ? parsed.verdict : oldPlan.verdict,
           generatedAt: today
         };
         props.onSaveBusinesses(patchBiz(biz.id, { plan: newPlan, categories: merged }));
@@ -8273,9 +8314,10 @@ function BusinessView(props) {
           {step === 1 && (
             <div>
               <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, marginBottom: 4, fontFamily: DISP, letterSpacing: "-0.02em" }}>Let's set up your business</div>
-              <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 14 }}>Richard will ask a few questions, then build your plan.</div>
+              <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 14 }}>{form.wantPlan ? "Richard will ask a few questions, then build your plan." : "We'll create a blank account you can shape yourself."}</div>
               <FormRow label="Business name" value={form.name} onChange={function(e) { setField("name", e.target.value); }} />
-              <FormRow label="What does it do?" value={form.what} onChange={function(e) { setField("what", e.target.value); }} placeholder="e.g. handmade candles, web design" last={true} />
+              <FormRow label="What does it do?" value={form.what} onChange={function(e) { setField("what", e.target.value); }} placeholder="e.g. handmade candles, web design" />
+              <FormRow label="Notes for Richard (optional)" value={form.notes} onChange={function(e) { setField("notes", e.target.value); }} placeholder="anything he should know - goals, constraints, ideas" last={true} />
               {fieldLabel("Icon")}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {BIZ_ICONS.map(function(ic) {
@@ -8295,7 +8337,10 @@ function BusinessView(props) {
                   return <button key={col} onClick={function() { setField("color", col); }} style={{ width: 28, height: 28, borderRadius: "50%", border: on ? "3px solid " + T.ink : "1px solid rgba(0,0,0,0.1)", background: col, cursor: "pointer", padding: 0 }} />;
                 })}
               </div>
-              <BigBtn label="Next" disabled={!form.name.trim()} onPress={function() { setStep(2); }} />
+              {fieldLabel("Want Richard to build your plan?")}
+              {seg(form.wantPlan ? "yes" : "no", function(v) { setField("wantPlan", v === "yes"); }, [{ v: "yes", l: "Yes, plan it" }, { v: "no", l: "No, just create" }])}
+              <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 7, lineHeight: 1.45 }}>{form.wantPlan ? "Richard interviews you, then drafts a plan and a monthly budget." : "Skip the questions - we'll open a blank account you can budget yourself."}</div>
+              <BigBtn label={form.wantPlan ? "Next" : "Create account"} disabled={!form.name.trim()} onPress={function() { if (form.wantPlan) { setStep(2); } else { createBlank(); } }} />
             </div>
           )}
           {step === 2 && (
@@ -8382,6 +8427,46 @@ function BusinessView(props) {
                     })}
                   </div>
                 )}
+                <div style={{ marginTop: 20, borderTop: "0.5px solid " + T.sep, paddingTop: 16 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4, fontFamily: UI }}>Ask Richard</div>
+                  <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 10, fontFamily: UI }}>Ask about the plan or tell him to change the budget split</div>
+                  {wizChat.length > 0 && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
+                      {wizChat.map(function(m, i) {
+                        if (m.role === "system") {
+                          return (
+                            <div key={i} style={{ display: "flex", justifyContent: "center" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 5, background: T.greenDim, color: T.green, borderRadius: 999, padding: "4px 11px", fontSize: 11.5, fontWeight: 700, fontFamily: UI }}>
+                                <SVGIcon id="check" size={11} color={T.green} />{m.text}
+                              </div>
+                            </div>
+                          );
+                        }
+                        var isUser = m.role === "user";
+                        return (
+                          <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
+                            <div style={{ maxWidth: "82%", background: isUser ? T.orange : "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
+                              {isUser ? m.text : <RichardText text={m.text} size={13} />}
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {wizLoading && (
+                        <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                          <div style={{ background: "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13, color: T.ink3, fontFamily: UI }}>...</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <input value={wizInput} onChange={function(e) { setWizInput(e.target.value); }}
+                      onKeyDown={function(e) { if (e.key === "Enter" && !wizLoading) sendWizNote(); }}
+                      placeholder="e.g. Spend more on marketing"
+                      style={{ flex: 1, border: "none", background: "rgba(0,0,0,0.04)", borderRadius: 10, padding: "9px 12px", fontSize: 13.5, fontFamily: UI, outline: "none", color: T.ink }} />
+                    <button onClick={sendWizNote} disabled={!wizInput.trim() || wizLoading}
+                      style={{ background: wizInput.trim() && !wizLoading ? T.btn : "rgba(0,0,0,0.1)", border: "none", borderRadius: 10, width: 38, height: 38, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 17 }}>^</button>
+                  </div>
+                </div>
                 <BigBtn label="Create business account" onPress={saveBusiness} />
                 <button onClick={buildPlan} style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>Redo plan</button>
               </div>
@@ -8474,6 +8559,18 @@ function BusinessView(props) {
                 })}
               </div>
             )}
+          </Card>
+        )}
+
+        {!(plan.summary || (plan.sections && plan.sections.length)) && (
+          <Card style={{ padding: "16px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
+            <CatBadge icon="briefcase" color={T.orange} size={40} soft={true} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>No plan yet</div>
+              <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Have Richard draft a business plan and budget for you.</div>
+            </div>
+            <button onClick={function() { replanWithRichard(biz); }} disabled={replanning}
+              style={{ background: T.btn, border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: replanning ? "default" : "pointer", fontFamily: UI, flexShrink: 0 }}>{replanning ? "..." : "Ask Richard"}</button>
           </Card>
         )}
 
