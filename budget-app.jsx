@@ -4714,6 +4714,7 @@ function Trips(props) {
   var _acfm = useState({ label: "", icon: "box" }); var addCatForm = _acfm[0]; var setAddCatForm = _acfm[1];
   var _dc = useState(null); var delCat = _dc[0]; var setDelCat = _dc[1];
   var _mvt = useState(""); var moveTarget = _mvt[0]; var setMoveTarget = _mvt[1];
+  var _dec = useState(null); var delEntryConfirm = _dec[0]; var setDelEntryConfirm = _dec[1];
 
   function setField(k, val) { setForm(function(p) { var n = {}; for (var key in p) n[key] = p[key]; n[k] = val; return n; }); }
   function setLogField(k, val) { setLogForm(function(p) { var n = {}; for (var key in p) n[key] = p[key]; n[k] = val; return n; }); }
@@ -5070,7 +5071,6 @@ function Trips(props) {
     setAddCatFor(null); setAddCatForm({ label: "", icon: "box" });
   }
   function requestDeleteCategory(tripId, a) {
-    if ((a.spent || 0) <= 0 && (!a.entries || a.entries.length === 0)) { deleteCategoryOutright(tripId, a.key); return; }
     setDelCat({ tripId: tripId, key: a.key, label: a.label, spentAmt: a.spent || 0 });
     setMoveTarget("");
   }
@@ -5525,13 +5525,30 @@ function Trips(props) {
                 {a.entries.length > 0 && (
                   <div style={{ marginTop: 10 }}>
                     {a.entries.map(function(e) {
+                      var entryConfirmKey = trip.id + "_" + a.key + "_" + e.id;
+                      var confirming = delEntryConfirm === entryConfirmKey;
                       return (
-                        <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0" }}>
-                          <span style={{ fontSize: 13, color: T.ink2 }}>{e.label}</span>
-                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                            <span style={{ fontSize: 13, fontWeight: 600, color: T.ink }}>{dollars(e.amount)}</span>
-                            <button onClick={function() { deleteEntry(trip.id, a.key, e.id); }} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex" }}><SVGIcon id="trash" size={14} color={T.ink3} /></button>
+                        <div key={e.id} style={{ padding: "5px 0" }}>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                            <span style={{ fontSize: 13, color: T.ink2 }}>{e.label}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                              <span style={{ fontSize: 13, fontWeight: 600, color: T.ink }}>{dollars(e.amount)}</span>
+                              <button onClick={function() { setDelEntryConfirm(confirming ? null : entryConfirmKey); }} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex" }}><SVGIcon id="trash" size={14} color={T.ink3} /></button>
+                            </div>
                           </div>
+                          {confirming && (
+                            <div style={{ marginTop: 6, background: "rgba(220,50,50,0.07)", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+                              <span style={{ flex: 1, fontSize: 12, color: T.ink2 }}>{"Delete this expense?"}</span>
+                              <button onClick={function() { deleteEntry(trip.id, a.key, e.id); setDelEntryConfirm(null); }}
+                                style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "6px 12px", borderRadius: 8, background: T.red, color: "#fff" }}>
+                                Delete
+                              </button>
+                              <button onClick={function() { setDelEntryConfirm(null); }}
+                                style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, padding: "6px 12px", borderRadius: 8, background: "rgba(0,0,0,0.07)", color: T.ink2 }}>
+                                Cancel
+                              </button>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -5587,30 +5604,50 @@ function Trips(props) {
         {addCategoryOverlay(function(label, icon) { addCategoryToTrip(trip.id, label, icon); })}
 
         <Overlay open={!!delCat} onClose={function() { setDelCat(null); setMoveTarget(""); }} title={delCat ? ("Delete " + delCat.label) : "Delete budget"}>
-          <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginBottom: 14 }}>
-            {"This budget already has " + (delCat ? dollars(delCat.spentAmt) : "") + " logged against it. Move it into another budget, or delete it outright."}
-          </div>
-          {delCat && trip.allocations.filter(function(a) { return a.key !== delCat.key; }).length > 0 && (
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, marginBottom: 8 }}>Move into</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-                {trip.allocations.filter(function(a) { return a.key !== delCat.key; }).map(function(a) {
-                  var on = moveTarget === a.key;
-                  return (
-                    <button key={a.key} onClick={function() { setMoveTarget(a.key); }}
-                      style={{ border: on ? ("2px solid " + T.orange) : "2px solid rgba(0,0,0,0.08)", background: on ? T.orangeDim : "#fff", color: on ? T.orange : T.ink2, borderRadius: 12, padding: "8px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
-                      {a.label}
-                    </button>
-                  );
-                })}
+          {delCat && delCat.spentAmt > 0 ? (
+            <div>
+              <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginBottom: 14 }}>
+                {"This budget already has " + dollars(delCat.spentAmt) + " logged against it. Move it into another budget, or delete it outright."}
               </div>
-              <BigBtn label="Move" disabled={!moveTarget} onPress={function() { moveCategoryInto(delCat.tripId, delCat.key, moveTarget); }} />
+              {trip.allocations.filter(function(a) { return a.key !== delCat.key; }).length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, marginBottom: 8 }}>Move into</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+                    {trip.allocations.filter(function(a) { return a.key !== delCat.key; }).map(function(a) {
+                      var on = moveTarget === a.key;
+                      return (
+                        <button key={a.key} onClick={function() { setMoveTarget(a.key); }}
+                          style={{ border: on ? ("2px solid " + T.orange) : "2px solid rgba(0,0,0,0.08)", background: on ? T.orangeDim : "#fff", color: on ? T.orange : T.ink2, borderRadius: 12, padding: "8px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
+                          {a.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <BigBtn label="Move" disabled={!moveTarget} onPress={function() { moveCategoryInto(delCat.tripId, delCat.key, moveTarget); }} />
+                </div>
+              )}
+              <button onClick={function() { deleteCategoryOutright(delCat.tripId, delCat.key); }}
+                style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "8px 0 4px" }}>
+                {"Delete outright"}
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.5, marginBottom: 16 }}>
+                {"Are you sure you want to delete " + (delCat ? delCat.label : "this budget") + "? This cannot be undone."}
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={function() { setDelCat(null); }}
+                  style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 14, fontWeight: 600, padding: "11px 0", borderRadius: 12, background: "rgba(0,0,0,0.06)", color: T.ink2 }}>
+                  Cancel
+                </button>
+                <button onClick={function() { if (delCat) deleteCategoryOutright(delCat.tripId, delCat.key); }}
+                  style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 14, fontWeight: 700, padding: "11px 0", borderRadius: 12, background: T.red, color: "#fff" }}>
+                  Delete
+                </button>
+              </div>
             </div>
           )}
-          <button onClick={function() { if (delCat) deleteCategoryOutright(delCat.tripId, delCat.key); }}
-            style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "8px 0 4px" }}>
-            {"Delete outright"}
-          </button>
         </Overlay>
       </div>
     );
