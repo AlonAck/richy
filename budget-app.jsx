@@ -2777,6 +2777,11 @@ function Overview(props) {
                 <div style={{ fontSize: 15, fontWeight: 700, color: left < 0 ? T.heroNeg : T.heroInk, marginTop: 3 }}>{dollars(left)}</div>
               </div>
             </div>
+            {!di && (
+              <div style={{ position: "relative", fontSize: 11.5, color: T.heroMut, marginTop: 12, lineHeight: 1.4 }}>
+                {"No start date set - add one on the trip's page to see day-by-day tracking here."}
+              </div>
+            )}
           </div>
         );
       })}
