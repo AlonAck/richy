@@ -134,6 +134,13 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).t
     el = React.createElement(GoalsTripsWrapper, {});
   } else if (view === "appearance") {
     el = React.createElement(AppearanceView, { theme: qs.get("theme") || "purple", onThemeChange: function(){}, onBack: function(){} });
+  } else if (view === "profile") {
+    var endedTrip = { id: 88, name: "Paris Weekend", destination: "Paris", days: 3, startDate: "2026-06-01", style: "comfort", total: 1200, icon: "umbrella", ended: true, endedAt: "2026-06-05", reserved: false, reserveTxId: null, advisorTips: [], allocations: [{ key: "food", label: "Food", icon: "food", color: "#27A85F", planned: 300, spent: 210, entries: [] }] };
+    var profileTrips = mockTrips.concat(qs.get("seed") ? [endedTrip] : []);
+    el = React.createElement(Profile, { user: "Alon", currency: "$", lang: "en", theme: "purple", entryMethod: "manual", trips: profileTrips, onLogout: function(){}, onViewPlan: function(){}, onViewInstructions: function(){}, onViewCurrency: function(){}, onViewLanguage: function(){}, onViewNickname: function(){}, onViewAppearance: function(){}, onViewEntryMethod: function(){}, onViewLogMonth: function(){}, onViewEditOpeningBalance: function(){}, onViewCollab: function(){}, onViewPrivacy: function(){}, onViewTripHistory: function(){ window.__clicked = "tripHistory"; } });
+  } else if (view === "tripHistory") {
+    var endedTrip2 = { id: 88, name: "Paris Weekend", destination: "Paris", days: 3, startDate: "2026-06-01", style: "comfort", total: 1200, icon: "umbrella", ended: true, endedAt: "2026-06-05", reserved: false, reserveTxId: null, advisorTips: [], allocations: [{ key: "food", label: "Food", icon: "food", color: "#27A85F", planned: 300, spent: 210, entries: [] }] };
+    el = React.createElement(TripHistoryView, { trips: [endedTrip2], onBack: function(){}, onOpenTrip: function(id){ window.__clicked = "trip_" + id; } });
   } else if (view === "advisor") {
     // Wrapper mirrors the App's cache: holds monthAnalysis { data, sig }, derives a
     // fresh cache by tx signature, and a "Leave & return" button unmounts/remounts
@@ -200,7 +207,7 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).t
     }
     el = React.createElement(SavingsHarness, {});
   } else {
-    el = React.createElement(Overview, { tx: mockTx, goals: mockGoals, budgets: [], categories: mockCats, businesses: [], username: "Alon", plan: "", onCategories: function(){}, onOpenBusiness: function(){} });
+    el = React.createElement(Overview, { tx: mockTx, goals: mockGoals, budgets: [], categories: mockCats, businesses: [], trips: mockTrips, username: "Alon", plan: "", onCategories: function(){}, onOpenBusiness: function(){}, onOpenTrip: function(id){ window.__clicked = "trip_" + id; } });
   }
   ReactDOM.createRoot(document.getElementById("root")).render(
     React.createElement("div", { style: { maxWidth: 420, margin: "0 auto", padding: 16, minHeight: "100vh" } }, el)

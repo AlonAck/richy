@@ -2115,6 +2115,8 @@ function Overview(props) {
   var goals    = props.goals;
   var budgets  = props.budgets || [];
   var cats     = props.categories || [];
+  var trips    = props.trips || [];
+  var liveTrips = trips.filter(function(t) { return !t.ended; }).map(function(t) { return { trip: t, dayInfo: tripDayInfo(t) }; }).filter(function(x) { return x.dayInfo && x.dayInfo.status === "live"; });
   var username = props.username || "";
   var name     = username.charAt(0).toUpperCase() + username.slice(1);
 
@@ -2741,6 +2743,39 @@ function Overview(props) {
           </div>
         </div>
       )}
+
+      {liveTrips.map(function(lt) {
+        var t = lt.trip, di = lt.dayInfo;
+        var spent = tripSpent(t);
+        var left = t.total - spent;
+        return (
+          <div key={t.id} onClick={function() { props.onOpenTrip(t.id); }}
+            style={{ position: "relative", overflow: "hidden", borderRadius: 20, padding: "18px 20px", marginBottom: 16, background: T.heroBg, boxShadow: T.heroShadow, cursor: "pointer", animation: "rcFadeUp 0.6s ease 0.03s both" }}>
+            <div style={{ position: "absolute", top: -60, right: -50, width: 180, height: 180, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
+            <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ width: 42, height: 42, borderRadius: 13, background: "rgba(255,255,255,0.28)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <SVGIcon id={t.icon || "plane"} size={20} color={T.heroInk} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>{"Day " + di.dayNum + " of " + t.days + (t.destination ? (" - " + t.destination) : "")}</div>
+                <div style={{ fontSize: 17, fontWeight: 700, color: T.heroInk, marginTop: 2 }}>{t.name}</div>
+              </div>
+              <SVGIcon id="chevron" size={16} color={T.heroInk} />
+            </div>
+            <div style={{ position: "relative", display: "flex", gap: 16, marginTop: 14, borderTop: "0.5px solid " + T.heroSep, paddingTop: 12 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>{tr("spent")}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: T.heroInk, marginTop: 3 }}>{dollars(spent)}</div>
+              </div>
+              <div style={{ width: "0.5px", background: T.heroSep }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>{tr("leftToSpend")}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: left < 0 ? T.heroNeg : T.heroInk, marginTop: 3 }}>{dollars(left)}</div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
 
       <FoundMoney tx={tx} categories={cats} foundMoney={props.foundMoney} onSaveFoundMoney={props.onSaveFoundMoney} richardInstructions={props.richardInstructions} lang={props.lang} />
 
@@ -4691,6 +4726,46 @@ function allocDirectiveToMap(arr) {
   return byKey;
 }
 
+function tripSpent(t) { return t.allocations.reduce(function(s, a) { return s + (a.spent || 0); }, 0); }
+// Where the trip stands relative to today: upcoming (not started), live (in
+// progress - day N of days), or past (already over). null when no start date
+// was set, so the whole live-pace UI just doesn't render.
+function tripDayInfo(trip) {
+  if (!trip.startDate || !trip.days) return null;
+  var start = new Date(trip.startDate + "T00:00:00");
+  if (isNaN(start.getTime())) return null;
+  var now = new Date();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var s = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  var diffDays = Math.round((today - s) / 86400000);
+  if (diffDays < 0) return { status: "upcoming", daysUntil: -diffDays };
+  if (diffDays >= trip.days) return { status: "past" };
+  return { status: "live", dayNum: diffDays + 1 };
+}
+// A deterministic (no AI call) pace read Richard can show the instant you
+// open a live trip: how today's spend compares to today's fair share of the
+// budget, and a same-pace projection for the rest of the trip.
+function livePaceInsight(trip, dayInfo) {
+  var spentSoFar = tripSpent(trip);
+  var perDay = spentSoFar / dayInfo.dayNum;
+  var projected = perDay * trip.days;
+  var diff = projected - trip.total;
+  var overCats = trip.allocations.filter(function(a) { return a.planned > 0 && a.spent > a.planned; });
+  var verdict = diff > trip.total * 0.05 ? "over" : (diff < -trip.total * 0.05 ? "under" : "good");
+  var msg = "Day " + dayInfo.dayNum + " of " + trip.days + " - " + dollars(spentSoFar) + " spent so far, about " + dollars(perDay) + "/day.";
+  if (verdict === "over") {
+    msg += " At this pace you'll land around " + dollars(projected) + ", " + dollars(diff) + " over budget.";
+  } else if (verdict === "under") {
+    msg += " At this pace you'll land around " + dollars(projected) + ", comfortably under budget.";
+  } else {
+    msg += " That pace keeps you on track to finish around " + dollars(projected) + ".";
+  }
+  if (overCats.length > 0) {
+    msg += " " + overCats.map(function(a) { return a.label; }).join(" and ") + (overCats.length > 1 ? " are" : " is") + " already over budget - pull from Buffer or another bucket if you can.";
+  }
+  return { verdict: verdict, text: msg };
+}
+
 function Trips(props) {
   var _v = useState(props.openTripId ? "detail" : "list"); var view = _v[0]; var setView = _v[1];
   var _aid = useState(props.openTripId || null); var activeId = _aid[0]; var setActiveId = _aid[1];
@@ -4789,7 +4864,6 @@ function Trips(props) {
   }
 
   function allocSum(list) { return list.reduce(function(s, a) { return s + (a.planned || 0); }, 0); }
-  function tripSpent(t) { return t.allocations.reduce(function(s, a) { return s + (a.spent || 0); }, 0); }
 
   function sendTripNote(trip) {
     if (!tripNoteInput.trim() || tripNoteLoading) return;
@@ -4972,44 +5046,6 @@ function Trips(props) {
     var nextTrips = props.trips.map(function(t) { return t.id === tripId ? Object.assign({}, t, { startDate: val }) : t; });
     props.onSaveTrips(nextTrips);
   }
-  // Where the trip stands relative to today: upcoming (not started), live (in
-  // progress - day N of days), or past (already over). null when no start date
-  // was set, so the whole live-pace UI just doesn't render.
-  function tripDayInfo(trip) {
-    if (!trip.startDate || !trip.days) return null;
-    var start = new Date(trip.startDate + "T00:00:00");
-    if (isNaN(start.getTime())) return null;
-    var now = new Date();
-    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    var s = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-    var diffDays = Math.round((today - s) / 86400000);
-    if (diffDays < 0) return { status: "upcoming", daysUntil: -diffDays };
-    if (diffDays >= trip.days) return { status: "past" };
-    return { status: "live", dayNum: diffDays + 1 };
-  }
-  // A deterministic (no AI call) pace read Richard can show the instant you
-  // open a live trip: how today's spend compares to today's fair share of the
-  // budget, and a same-pace projection for the rest of the trip.
-  function livePaceInsight(trip, dayInfo) {
-    var spentSoFar = tripSpent(trip);
-    var perDay = spentSoFar / dayInfo.dayNum;
-    var projected = perDay * trip.days;
-    var diff = projected - trip.total;
-    var overCats = trip.allocations.filter(function(a) { return a.planned > 0 && a.spent > a.planned; });
-    var verdict = diff > trip.total * 0.05 ? "over" : (diff < -trip.total * 0.05 ? "under" : "good");
-    var msg = "Day " + dayInfo.dayNum + " of " + trip.days + " - " + dollars(spentSoFar) + " spent so far, about " + dollars(perDay) + "/day.";
-    if (verdict === "over") {
-      msg += " At this pace you'll land around " + dollars(projected) + ", " + dollars(diff) + " over budget.";
-    } else if (verdict === "under") {
-      msg += " At this pace you'll land around " + dollars(projected) + ", comfortably under budget.";
-    } else {
-      msg += " That pace keeps you on track to finish around " + dollars(projected) + ".";
-    }
-    if (overCats.length > 0) {
-      msg += " " + overCats.map(function(a) { return a.label; }).join(" and ") + (overCats.length > 1 ? " are" : " is") + " already over budget - pull from Buffer or another bucket if you can.";
-    }
-    return { verdict: verdict, text: msg };
-  }
   function reserveTrip(trip) {
     var t = { id: Date.now(), type: "expense", amount: tripSpent(trip), label: "Trip: " + trip.name, catId: "c7", category: "Travel", date: new Date().toISOString().slice(0, 10) };
     var nextTrips = props.trips.map(function(x) { return x.id === trip.id ? Object.assign({}, x, { reserved: true, reserveTxId: t.id }) : x; });
@@ -5111,6 +5147,18 @@ function Trips(props) {
     }
     setView("list"); setActiveId(null);
   }
+  // Ending a trip just archives it into Trip History (Profile menu) - it stops
+  // showing in the active trip list, but any balance already tracked against it
+  // (reserved/reserveTxId) is left untouched since that money was really spent.
+  function endTrip(trip) {
+    var nextTrips = props.trips.map(function(t) { return t.id === trip.id ? Object.assign({}, t, { ended: true, endedAt: new Date().toISOString().slice(0, 10) }) : t; });
+    props.onSaveTrips(nextTrips);
+    setView("list"); setActiveId(null);
+  }
+  function reopenTrip(trip) {
+    var nextTrips = props.trips.map(function(t) { return t.id === trip.id ? Object.assign({}, t, { ended: false, endedAt: null }) : t; });
+    props.onSaveTrips(nextTrips);
+  }
 
   var backBtnStyle = { display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", color: T.ink2, fontSize: 14, fontFamily: UI, padding: "2px 2px 14px" };
   function backRow(label, onPress) {
@@ -5123,6 +5171,7 @@ function Trips(props) {
   }
 
   function listView() {
+    var activeTrips = props.trips.filter(function(t) { return !t.ended; });
     return (
       <div>
         {backRow(tr("goals"), props.onBack)}
@@ -5130,7 +5179,7 @@ function Trips(props) {
           style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 16, padding: "15px 0", marginBottom: 18, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", fontSize: 16, fontWeight: 700, fontFamily: UI, boxShadow: "0 6px 18px " + T.orangeGlow }}>
           {"+ " + tr("planNewTrip")}
         </button>
-        {props.trips.length === 0 ? (
+        {activeTrips.length === 0 ? (
           <Card style={{ padding: "46px 24px", textAlign: "center" }}>
             <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
               <SVGIcon id="plane" size={24} color={T.orange} />
@@ -5138,7 +5187,7 @@ function Trips(props) {
             <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{tr("noTrips")}</div>
             <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{tr("noTripsSub")}</div>
           </Card>
-        ) : props.trips.map(function(t) {
+        ) : activeTrips.map(function(t) {
           var spent = tripSpent(t);
           var pct = t.total > 0 ? Math.min(100, Math.round((spent / t.total) * 100)) : 0;
           return (
@@ -5588,6 +5637,18 @@ function Trips(props) {
               );
             })}
           </Card>
+        )}
+
+        {trip.ended ? (
+          <button onClick={function() { reopenTrip(trip); }}
+            style={{ width: "100%", background: "none", border: "1px solid " + T.sep, color: T.ink2, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", borderRadius: 14, padding: "12px 0", marginBottom: 10 }}>
+            {"Reopen trip"}
+          </button>
+        ) : (
+          <button onClick={function() { endTrip(trip); }}
+            style={{ width: "100%", background: "none", border: "1px solid " + T.sep, color: T.ink2, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", borderRadius: 14, padding: "12px 0", marginBottom: 10 }}>
+            {"End trip"}
+          </button>
         )}
 
         <button onClick={function() { removeTrip(trip); }}
@@ -9978,6 +10039,51 @@ function ProfileSection(props) {
   );
 }
 
+// Read-oriented list of ended trips, reached from Profile > Travel > Trip
+// History. Tapping one opens its normal detail view (still has Reopen/Delete).
+function TripHistoryView(props) {
+  var ended = (props.trips || []).filter(function(t) { return t.ended; })
+    .sort(function(a, b) { return (b.endedAt || "").localeCompare(a.endedAt || ""); });
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+      {ended.length === 0 ? (
+        <Card style={{ padding: "46px 24px", textAlign: "center" }}>
+          <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+            <SVGIcon id="plane" size={24} color={T.orange} />
+          </div>
+          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>No trips yet</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{"Trips you end will show up here."}</div>
+        </Card>
+      ) : ended.map(function(t) {
+        var spent = tripSpent(t);
+        return (
+          <Card key={t.id} style={{ marginBottom: 14, overflow: "hidden" }}>
+            <div onClick={function() { props.onOpenTrip(t.id); }} style={{ padding: "18px 18px", cursor: "pointer" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 11, minWidth: 0 }}>
+                  <div style={{ width: 38, height: 38, borderRadius: 12, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <SVGIcon id={t.icon || "plane"} size={20} color={T.orange} />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 17, fontWeight: 700, color: T.ink }}>{t.name}</div>
+                    <div style={{ fontSize: 13, color: T.ink3, marginTop: 2 }}>{(t.destination || "") + (t.days ? (" - " + t.days + "d") : "")}</div>
+                  </div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(spent)}</div>
+                  <div style={{ fontSize: 11, color: T.ink3, marginTop: 2 }}>{"of " + dollars(t.total)}</div>
+                </div>
+              </div>
+              <div style={{ fontSize: 11.5, color: T.ink3 }}>{"Ended " + (t.endedAt || "")}</div>
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
 function Profile(props) {
   var cur = props.currency || "$";
   var lang = props.lang || "en";
@@ -10018,6 +10124,11 @@ function Profile(props) {
       <ProfileSection icon="sun" title="Visual" bg={T.orangeDim} color={T.orange} glow={T.orangeGlow}>
         <ProfileRow icon="star" iconBg={T.orangeDim} iconColor={T.orange} label="Appearance" value={themeLabel} onClick={props.onViewAppearance} />
         <ProfileRow icon="book" iconBg={T.orangeDim} iconColor={T.orange} label="Language" value={langLabel} onClick={props.onViewLanguage} last />
+      </ProfileSection>
+
+      {/* ── Travel ── */}
+      <ProfileSection icon="plane" title="Travel" bg={T.orangeDim} color={T.orange} glow={T.orangeGlow}>
+        <ProfileRow icon="plane" iconBg={T.orangeDim} iconColor={T.orange} label="Trip History" value={(props.trips || []).filter(function(t) { return t.ended; }).length + " ended"} onClick={props.onViewTripHistory} last />
       </ProfileSection>
 
       {/* ── Account ── */}
@@ -10611,7 +10722,7 @@ export default function App() {
             <div style={{ background: T.orangeDim, borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em" }}>{monthLabel}</div>
           </div>
           <span style={{ flex: 1, fontSize: 20, fontWeight: 700, color: T.ink, textAlign: "center", letterSpacing: "-0.02em" }}>
-            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
+            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
           <div style={{ width: 86, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
             {HAS_FAB.indexOf(currentTab) !== -1 && (
@@ -10629,15 +10740,16 @@ export default function App() {
       </div>
 
       <div key={animKey} style={{ padding: "8px 16px 16px", animation: animDir === "right" ? "navSlideRight 0.28s cubic-bezier(0.22,1,0.36,1) both" : animDir === "left" ? "navSlideLeft 0.28s cubic-bezier(0.22,1,0.36,1) both" : "navFade 0.20s ease both" }}>
-        {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} />}
+        {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} trips={trips} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
         {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} onSavingsMove={onSavingsMove} />}
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
-        {currentTab === "goals" && <Goals goals={goals} trips={trips} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
-        {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab("goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
+        {currentTab === "goals" && <Goals goals={goals} trips={trips} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
+        {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
+        {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} savings={savings} businesses={businesses} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={(monthAnalysis && monthAnalysis.sig === txSignature()) ? monthAnalysis.data : null} onSaveAnalysis={onSaveAnalysis} />}
-        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} richardInstructions={richardInstructions} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "profile"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
+        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} richardInstructions={richardInstructions} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "profile"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewPrivacy={function() { setTab("privacy"); }} trips={trips} onViewTripHistory={function() { setTab("tripHistory"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
         {currentTab === "editEmail" && <EditEmailView currentEmail={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onSave={function(email) { onSaveEmail(email); setTab("privacy"); }} />}
