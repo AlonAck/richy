@@ -8236,6 +8236,7 @@ function BusinessView(props) {
   var _bl = useState(false); var chatLoading = _bl[0]; var setChatLoading = _bl[1];
   var _rp2 = useState(false); var replanning = _rp2[0]; var setReplanning = _rp2[1];
   var _del = useState(null); var deleteConfirm = _del[0]; var setDeleteConfirm = _del[1];
+  var _delOut = useState(null); var deleteOutrightConfirm = _delOut[0]; var setDeleteOutrightConfirm = _delOut[1];
 
   var STRUCTURES = [{ v: "company", l: "Company" }, { v: "individual", l: "Individual" }, { v: "freelancer", l: "Freelancer" }];
   var STAGES = [{ v: "idea", l: "Just an idea" }, { v: "launching", l: "Launching soon" }, { v: "running", l: "Already running" }];
@@ -8458,6 +8459,10 @@ function BusinessView(props) {
     if (bal > 0) props.onBusinessMove(tx.concat([transferTx("income", bal, biz.name, " (closed)")]), next);
     else props.onSaveBusinesses(next);
     setView("list"); setActiveId(null); setDeleteConfirm(null);
+  }
+  function deleteBusinessOutright(biz) {
+    props.onSaveBusinesses(bizes.filter(function(b) { return b.id !== biz.id; }));
+    setView("list"); setActiveId(null); setDeleteConfirm(null); setDeleteOutrightConfirm(null);
   }
 
   // ---- Richard CFO chat + replan ------------------------------------------
@@ -9144,6 +9149,19 @@ function BusinessView(props) {
         ) : (
           <button onClick={function() { setDeleteConfirm(biz.id); }}
             style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "8px 0 4px" }}>Close business account</button>
+        )}
+
+        {deleteOutrightConfirm === biz.id ? (
+          <div style={{ background: "rgba(220,50,50,0.07)", borderRadius: 12, padding: "12px 14px", marginTop: 8 }}>
+            <div style={{ fontSize: 13, color: T.ink2, marginBottom: 10, lineHeight: 1.45 }}>{bal > 0 ? dollars(bal) + " will be permanently lost. " : ""}Delete this account and its plan? This cannot be undone.</div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={function() { deleteBusinessOutright(biz); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 10, background: T.red, color: "#fff" }}>Delete</button>
+              <button onClick={function() { setDeleteOutrightConfirm(null); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "10px 0", borderRadius: 10, background: "rgba(0,0,0,0.07)", color: T.ink2 }}>Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <button onClick={function() { setDeleteOutrightConfirm(biz.id); }}
+            style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "4px 0 2px", textAlign: "left" }}>Delete account</button>
         )}
 
         <Overlay open={!!act} onClose={function() { setAct(null); }} title={(act && act.kind === "add" ? "Add capital" : "Withdraw") + (biz ? " - " + biz.name : "")}>
