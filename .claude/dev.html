@@ -82,7 +82,7 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).t
   if (typeof applyTheme === "function") { applyTheme(qs.get("theme") || "purple"); }
   var view = qs.get("view") || "overview";
   var mockTrips = qs.get("seed") ? [{
-    id: 99, name: "Tokyo Spring", destination: "Tokyo", days: 8, style: "comfort", total: 5000, icon: "umbrella",
+    id: 99, name: "Tokyo Spring", destination: "Tokyo", days: 8, startDate: "2026-06-28", style: "comfort", total: 5000, icon: "umbrella",
     reserved: false, reserveTxId: null,
     advisorTips: ["Book the Shinkansen pass before you fly - cheaper from abroad.", "Eat at depachika food halls for high quality at low cost."],
     allocations: [

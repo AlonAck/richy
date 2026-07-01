@@ -189,6 +189,10 @@ var TRIP_CATEGORIES = [
 
 var TRIP_ICONS = ["plane", "car", "building", "umbrella", "sun", "star", "heart", "gift", "coffee", "leaf", "music", "briefcase"];
 
+// Palette cycled through for user-added trip budget categories (TRIP_CATEGORIES
+// only covers the defaults Richard splits against).
+var TRIP_CUSTOM_COLORS = ["#8970C6", "#2799C8", "#27A85F", "#E0556E", "#C8983A", "#3B82B8", "#B8577A", "#4F9D6E"];
+
 // Category lookups. Transactions/budgets reference a catId; fall back to name
 // for any legacy data or deleted categories.
 function computeAge(dob) {
@@ -310,7 +314,7 @@ var LANGUAGE_OPTIONS = [
 var LANGUAGE_NAMES = { en: "English", he: "Hebrew", es: "Spanish", fr: "French", ar: "Arabic", ru: "Russian", de: "German", pt: "Portuguese" };
 
 var TRANSLATIONS = {
-  en: { overview:"Overview", activity:"Activity", budgets:"Budgets", goals:"Goals", advisor:"Advisor", profile:"Profile", language:"Language", currency:"Currency", yourPlan:"Your Plan", categories:"Categories", signOut:"Sign Out", richyMember:"Richy member", richyRefersTo:"Richy refers to you as", seeYourPlan:"See your plan by Richard", netBalance:"Net Balance", income:"Income", spent:"Spent", topSpend:"Top spend", morning:"Good morning", afternoon:"Good afternoon", evening:"Good evening", savedThisPeriod:"saved this period", redoQuestionnaire:"Redo Questionnaire", yourPlanByRichard:"Your Plan by Richard", noTransactions:"No transactions yet", noTransactionsSub:"Tap + to log your first one. Awareness is the first step to wealth.", overviewEmptySub:"The Richest Man in Babylon started by tracking every coin. Start yours in Activity.", savingsRate:"Savings Rate", excellent:"Excellent", onTrack:"On track", buildItUp:"Build it up", overspending:"Overspending", noIncomeYet:"No income logged yet", thisPeriod:"this period", transactions:"Transactions", whereItWent:"Where it went", overLimit:"over limit", complete:"complete", savedLabel:"saved", spentLabel:"spent", toGo:"to go", recent:"Recent", activeGoal:"active goal", activeGoals:"active goals", today:"Today", yesterday:"Yesterday", moneyIn:"Money In", moneyOut:"Money Out", newTransaction:"New Transaction", editTransaction:"Edit Transaction", addTransaction:"Add Transaction", saveChanges:"Save Changes", deleteTx:"Delete transaction", amount:"Amount", txLabel:"Label", category:"Category", date:"Date", repeat:"Repeat", once:"Once", weekly:"Weekly", monthly:"Monthly", markPending:"Mark as pending", expense:"Expense", noBudgets:"No budgets yet", noBudgetsSub:"Tap + to set a limit for a category. A budget is just telling your money where to go.", newBudget:"New Budget", editLimit:"Edit Limit", addBudget:"Add Budget", removeBudget:"Remove this budget", totalSpent:"Total Spent", byCategory:"By Category", edit:"Edit", delete:"Delete", save:"Save", budgeted:"budgeted", monthlyLimit:"Monthly limit", allCatsHaveBudget:"Every category already has a budget. Add a new category first.", noGoals:"No budget books yet", noGoalsSub:"Tap + to create your first budget book. A goal with a deadline is a plan, not a wish.", newBudgetBook:"New Budget Book", editBudgetBook:"Edit Budget Book", createBudgetBook:"Create Budget Book", deleteBudgetBook:"Delete budget book", addToBudgetBook:"Add to Budget Book", alreadySaved:"Already saved", target:"Target", name:"Name", goalComplete:"Goal complete!", remaining:"remaining", add:"Add", richySuggests:"Richard suggests", implement:"Implement", dismiss:"Dismiss", aiAdvisor:"AI Financial Advisor", aiAdvisorSub:"Personalized advice based on your real spending and expert financial wisdom.", analyzeMyFinances:"Analyze My Finances", analyzingFinances:"Analyzing your finances...", fewSeconds:"This takes a few seconds", refresh:"Refresh", insights:"Insights", analysisFailed:"Analysis failed", tryAgain:"Try Again", askYourAdvisor:"Ask Your Advisor", advisorQ1:"How can I save more?", advisorQ2:"Is my savings rate healthy?", advisorQ3:"What to do with my surplus?", thinking:"Thinking...", yesDo:"Yes, do it", notNow:"Not now", askRichard:"Ask Richard anything...", giveFeedback:"Give Richard feedback...", advisorDisclaimer:"Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.", translate:"Translate plan", noPlanYet:"No plan yet. Complete the onboarding questionnaire to get your personalized plan from Richard.", notes:"Notes", notesEmpty:"No notes yet", notesEmptySub:"Track who owes you and who you owe. Tap + to add your first one.", theyOweMe:"They owe me", iOwe:"I owe", newNote:"New Note", addNote:"Add Note", editNote:"Edit Note", saveNote:"Save Note", settle:"Settle", settleTitle:"Settle note", settleAddBalance:"Add to my balance", reminder:"Reminder", reminderTitle:"Set a reminder", setReminder:"Set reminder", clearReminder:"Clear reminder", reminderWhen:"Remind me on", reminderDenied:"Notifications are blocked. The note will still show a due badge.", due:"Due", overdue:"Overdue", deleteNote:"Delete note", trips:"Trips", planATrip:"Plan a Trip", planATripSub:"Budget a getaway without touching your balance.", planNewTrip:"Plan a New Trip", noTrips:"No trips yet", noTripsSub:"Plan a getaway and Richard will split your budget across the essentials.", tripName:"Trip name", destination:"Destination", tripBudget:"Total budget", tripDays:"Days", travelStyle:"Travel style", styleBudget:"Budget", styleComfort:"Comfort", styleLuxury:"Luxury", next:"Next", back:"Back", richardPlanning:"Richard is planning your trip", richardPlanningSub:"Splitting your budget across the essentials.", tripSplit:"Your budget split", allocated:"Allocated", overBy:"over by", saveTrip:"Save Trip", addCategory:"Add category", deductFromBalance:"Deduct from balance", deductExplain:"This logs the full trip budget as one expense, so your balance reflects the money set aside. You can undo it anytime.", reserved:"Reserved from balance", undoReserve:"Undo deduction", logExpense:"Log expense", logExpenseTitle:"Log a trip expense", tripTips:"Richard's tips", deleteTrip:"Delete trip", deleteTripConfirm:"Delete this trip? This cannot be undone.", spentOf:"spent of", leftToSpend:"left to spend", planning:"Planning", tripSummary:"Trip summary", appearance:"Appearance", leftAfterBudgets:"Left after budgets", tripIcon:"Trip icon", savings:"Savings", netWorth:"Net Worth", balance:"Balance", manage:"Manage", totalSavings:"Total saved", savingsIntro:"Money you keep separate from your spending balance - an emergency fund, a sinking fund, anything you don't want to accidentally spend. It counts toward your net worth, never your balance.", newSavingsAccount:"New savings account", savingsAccountName:"Account name", addMoney:"Add money", withdraw:"Withdraw", fromBalance:"From my balance", externalMoney:"Money I already have", toBalance:"To my balance", removeFromNet:"Spend or remove", startingAmount:"Starting amount (optional)", createAccount:"Create account", closeAccount:"Close account", rename:"Rename", emptySavingsSub:"Keep an emergency fund or a sinking fund separate from your spending balance.", addSavingsAccount:"Add a savings account", history:"History", balanceUntouched:"Your spending balance stays untouched", movesFromBalance:"Moves money out of your spending balance", addsToBalance:"Adds the money back to your spending balance", leavesNetWorth:"Leaves your accounts - lowers your net worth", pickIcon:"Icon", emergencyFund:"Emergency Fund", noMovesYet:"No moves yet", pastChats:"Past chats", newChat:"New chat", conversation:"conversation", conversations:"conversations", noPastChats:"No past chats yet", message:"message", messages:"messages" },
+  en: { overview:"Overview", activity:"Activity", budgets:"Budgets", goals:"Goals", advisor:"Advisor", profile:"Profile", language:"Language", currency:"Currency", yourPlan:"Your Plan", categories:"Categories", signOut:"Sign Out", richyMember:"Richy member", richyRefersTo:"Richy refers to you as", seeYourPlan:"See your plan by Richard", netBalance:"Net Balance", income:"Income", spent:"Spent", topSpend:"Top spend", morning:"Good morning", afternoon:"Good afternoon", evening:"Good evening", savedThisPeriod:"saved this period", redoQuestionnaire:"Redo Questionnaire", yourPlanByRichard:"Your Plan by Richard", noTransactions:"No transactions yet", noTransactionsSub:"Tap + to log your first one. Awareness is the first step to wealth.", overviewEmptySub:"The Richest Man in Babylon started by tracking every coin. Start yours in Activity.", savingsRate:"Savings Rate", excellent:"Excellent", onTrack:"On track", buildItUp:"Build it up", overspending:"Overspending", noIncomeYet:"No income logged yet", thisPeriod:"this period", transactions:"Transactions", whereItWent:"Where it went", overLimit:"over limit", complete:"complete", savedLabel:"saved", spentLabel:"spent", toGo:"to go", recent:"Recent", activeGoal:"active goal", activeGoals:"active goals", today:"Today", yesterday:"Yesterday", moneyIn:"Money In", moneyOut:"Money Out", newTransaction:"New Transaction", editTransaction:"Edit Transaction", addTransaction:"Add Transaction", saveChanges:"Save Changes", deleteTx:"Delete transaction", amount:"Amount", txLabel:"Label", category:"Category", date:"Date", repeat:"Repeat", once:"Once", weekly:"Weekly", monthly:"Monthly", markPending:"Mark as pending", expense:"Expense", noBudgets:"No budgets yet", noBudgetsSub:"Tap + to set a limit for a category. A budget is just telling your money where to go.", newBudget:"New Budget", editLimit:"Edit Limit", addBudget:"Add Budget", removeBudget:"Remove this budget", totalSpent:"Total Spent", byCategory:"By Category", edit:"Edit", delete:"Delete", save:"Save", budgeted:"budgeted", monthlyLimit:"Monthly limit", allCatsHaveBudget:"Every category already has a budget. Add a new category first.", noGoals:"No budget books yet", noGoalsSub:"Tap + to create your first budget book. A goal with a deadline is a plan, not a wish.", newBudgetBook:"New Budget Book", editBudgetBook:"Edit Budget Book", createBudgetBook:"Create Budget Book", deleteBudgetBook:"Delete budget book", addToBudgetBook:"Add to Budget Book", alreadySaved:"Already saved", target:"Target", name:"Name", goalComplete:"Goal complete!", remaining:"remaining", add:"Add", richySuggests:"Richard suggests", implement:"Implement", dismiss:"Dismiss", aiAdvisor:"AI Financial Advisor", aiAdvisorSub:"Personalized advice based on your real spending and expert financial wisdom.", analyzeMyFinances:"Analyze My Finances", analyzingFinances:"Analyzing your finances...", fewSeconds:"This takes a few seconds", refresh:"Refresh", insights:"Insights", analysisFailed:"Analysis failed", tryAgain:"Try Again", askYourAdvisor:"Ask Your Advisor", advisorQ1:"How can I save more?", advisorQ2:"Is my savings rate healthy?", advisorQ3:"What to do with my surplus?", thinking:"Thinking...", yesDo:"Yes, do it", notNow:"Not now", askRichard:"Ask Richard anything...", giveFeedback:"Give Richard feedback...", advisorDisclaimer:"Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.", translate:"Translate plan", noPlanYet:"No plan yet. Complete the onboarding questionnaire to get your personalized plan from Richard.", notes:"Notes", notesEmpty:"No notes yet", notesEmptySub:"Track who owes you and who you owe. Tap + to add your first one.", theyOweMe:"They owe me", iOwe:"I owe", newNote:"New Note", addNote:"Add Note", editNote:"Edit Note", saveNote:"Save Note", settle:"Settle", settleTitle:"Settle note", settleAddBalance:"Add to my balance", reminder:"Reminder", reminderTitle:"Set a reminder", setReminder:"Set reminder", clearReminder:"Clear reminder", reminderWhen:"Remind me on", reminderDenied:"Notifications are blocked. The note will still show a due badge.", due:"Due", overdue:"Overdue", deleteNote:"Delete note", trips:"Trips", planATrip:"Plan a Trip", planATripSub:"Budget a getaway without touching your balance.", planNewTrip:"Plan a New Trip", noTrips:"No trips yet", noTripsSub:"Plan a getaway and Richard will split your budget across the essentials.", tripName:"Trip name", destination:"Destination", tripBudget:"Total budget", tripDays:"Days", travelStyle:"Travel style", styleBudget:"Budget", styleComfort:"Comfort", styleLuxury:"Luxury", next:"Next", back:"Back", richardPlanning:"Richard is planning your trip", richardPlanningSub:"Splitting your budget across the essentials.", tripSplit:"Your budget split", allocated:"Allocated", overBy:"over by", saveTrip:"Save Trip", addCategory:"Add category", deductFromBalance:"Deduct from balance", deductExplain:"This tracks what you actually spend on this trip as one live expense, so your balance only drops as you log spending here - not the whole budget up front. You can undo it anytime.", reserved:"Tracking against balance", undoReserve:"Stop tracking", logExpense:"Log expense", logExpenseTitle:"Log a trip expense", tripTips:"Richard's tips", deleteTrip:"Delete trip", deleteTripConfirm:"Delete this trip? This cannot be undone.", spentOf:"spent of", leftToSpend:"left to spend", planning:"Planning", tripSummary:"Trip summary", appearance:"Appearance", leftAfterBudgets:"Left after budgets", tripIcon:"Trip icon", savings:"Savings", netWorth:"Net Worth", balance:"Balance", manage:"Manage", totalSavings:"Total saved", savingsIntro:"Money you keep separate from your spending balance - an emergency fund, a sinking fund, anything you don't want to accidentally spend. It counts toward your net worth, never your balance.", newSavingsAccount:"New savings account", savingsAccountName:"Account name", addMoney:"Add money", withdraw:"Withdraw", fromBalance:"From my balance", externalMoney:"Money I already have", toBalance:"To my balance", removeFromNet:"Spend or remove", startingAmount:"Starting amount (optional)", createAccount:"Create account", closeAccount:"Close account", rename:"Rename", emptySavingsSub:"Keep an emergency fund or a sinking fund separate from your spending balance.", addSavingsAccount:"Add a savings account", history:"History", balanceUntouched:"Your spending balance stays untouched", movesFromBalance:"Moves money out of your spending balance", addsToBalance:"Adds the money back to your spending balance", leavesNetWorth:"Leaves your accounts - lowers your net worth", pickIcon:"Icon", emergencyFund:"Emergency Fund", noMovesYet:"No moves yet", pastChats:"Past chats", newChat:"New chat", conversation:"conversation", conversations:"conversations", noPastChats:"No past chats yet", message:"message", messages:"messages" },
   he: { overview:"סקירה", activity:"פעילות", budgets:"תקציבים", goals:"יעדים", advisor:"יועץ", profile:"פרופיל", language:"שפה", currency:"מטבע", yourPlan:"התוכנית שלך", categories:"קטגוריות", signOut:"התנתק", richyMember:"חבר Richy", richyRefersTo:"ריצ'י מכנה אותך", seeYourPlan:"ראה את התוכנית שלך", netBalance:"יתרה נטו", income:"הכנסות", spent:"הוצאות", topSpend:"הוצאה עיקרית", morning:"בוקר טוב", afternoon:"צהריים טובים", evening:"ערב טוב", savedThisPeriod:"נחסך בתקופה זו", redoQuestionnaire:"מלא שאלון מחדש", yourPlanByRichard:"התוכנית שלך", noTransactions:"אין עסקאות עדיין", noTransactionsSub:"לחץ + כדי לרשום. מודעות היא הצעד הראשון לעושר.", overviewEmptySub:"עשיר בבבל התחיל בלעקוב אחרי כל מטבע. התחל גם אתה בפעילות.", savingsRate:"שיעור חיסכון", excellent:"מצוין", onTrack:"במסלול", buildItUp:"שפר את זה", overspending:"הוצאה יתרה", thisPeriod:"בתקופה זו", transactions:"עסקאות", whereItWent:"לאן הלך", overLimit:"מעל המגבלה", complete:"הושלם", savedLabel:"נחסך", spentLabel:"הוצא", toGo:"לסיום", recent:"אחרון", activeGoal:"יעד פעיל", activeGoals:"יעדים פעילים", today:"היום", yesterday:"אתמול", moneyIn:"כסף נכנס", moneyOut:"כסף יוצא", newTransaction:"עסקה חדשה", editTransaction:"ערוך עסקה", addTransaction:"הוסף עסקה", saveChanges:"שמור שינויים", deleteTx:"מחק עסקה", amount:"סכום", txLabel:"תיאור", category:"קטגוריה", date:"תאריך", repeat:"חזרה", once:"פעם אחת", weekly:"שבועי", monthly:"חודשי", markPending:"סמן כממתין", expense:"הוצאה", noBudgets:"אין תקציבים עדיין", noBudgetsSub:"לחץ + להגדרת מגבלה לקטגוריה. תקציב הוא פשוט להגיד לכסף לאן ללכת.", newBudget:"תקציב חדש", editLimit:"ערוך מגבלה", addBudget:"הוסף תקציב", removeBudget:"הסר תקציב זה", totalSpent:"סך הוצאות", byCategory:"לפי קטגוריה", edit:"ערוך", delete:"מחק", save:"שמור", budgeted:"מתוקצב", monthlyLimit:"מגבלה חודשית", allCatsHaveBudget:"לכל הקטגוריות יש תקציב. הוסף קטגוריה חדשה תחילה.", noGoals:"אין ספרי תקציב עדיין", noGoalsSub:"לחץ + ליצירת ספר תקציב ראשון. יעד עם מועד הוא תוכנית, לא משאלה.", newBudgetBook:"ספר תקציב חדש", editBudgetBook:"ערוך ספר תקציב", createBudgetBook:"צור ספר תקציב", deleteBudgetBook:"מחק ספר תקציב", addToBudgetBook:"הוסף לספר תקציב", alreadySaved:"כבר נחסך", target:"יעד", name:"שם", goalComplete:"היעד הושג!", remaining:"נותר", add:"הוסף", richySuggests:"ריצ'י מציע", implement:"יישם", dismiss:"דחה", aiAdvisor:"יועץ פיננסי AI", aiAdvisorSub:"ייעוץ מותאם אישית בהתבסס על ההוצאות שלך.", analyzeMyFinances:"נתח את הכספים שלי", analyzingFinances:"מנתח את הכספים שלך...", fewSeconds:"זה לוקח כמה שניות", refresh:"רענן", insights:"תובנות", analysisFailed:"הניתוח נכשל", tryAgain:"נסה שוב", askYourAdvisor:"שאל את היועץ שלך", advisorQ1:"איך אוכל לחסוך יותר?", advisorQ2:"האם שיעור החיסכון שלי בריא?", advisorQ3:"מה לעשות עם העודף שלי?", thinking:"חושב...", yesDo:"כן, עשה זאת", notNow:"לא עכשיו", askRichard:"שאל את ריצ'רד כל דבר...", giveFeedback:"תן ל-ריצ'רד משוב...", advisorDisclaimer:"ריצ'רד הוא עוזר AI ולא יועץ פיננסי מורשה. תמיד ערוך מחקר עצמאי לפני קבלת החלטות כלכליות.", translate:"תרגם תוכנית", noPlanYet:"אין תוכנית עדיין. מלא את השאלון כדי לקבל את התוכנית האישית שלך מריצ'רד." },
   es: { overview:"Resumen", activity:"Actividad", budgets:"Presupuestos", goals:"Metas", advisor:"Asesor", profile:"Perfil", language:"Idioma", currency:"Moneda", yourPlan:"Tu Plan", categories:"Categorias", signOut:"Cerrar sesion", richyMember:"Miembro Richy", richyRefersTo:"Richy te llama", seeYourPlan:"Ver tu plan de Richard", netBalance:"Saldo Neto", income:"Ingresos", spent:"Gastado", topSpend:"Mas gastado", morning:"Buenos dias", afternoon:"Buenas tardes", evening:"Buenas noches", savedThisPeriod:"ahorrado este periodo", redoQuestionnaire:"Rehacer cuestionario", yourPlanByRichard:"Tu plan de Richard", noTransactions:"Sin transacciones aun", noTransactionsSub:"Toca + para registrar la primera. La conciencia es el primer paso a la riqueza.", overviewEmptySub:"El hombre mas rico de Babilonia empezo rastreando cada moneda. Empieza en Actividad.", savingsRate:"Tasa de ahorro", excellent:"Excelente", onTrack:"En camino", buildItUp:"Mejoralo", overspending:"Exceso de gasto", thisPeriod:"este periodo", transactions:"Transacciones", whereItWent:"A donde fue", overLimit:"sobre el limite", complete:"completo", savedLabel:"ahorrado", spentLabel:"gastado", toGo:"restante", recent:"Reciente", activeGoal:"meta activa", activeGoals:"metas activas", today:"Hoy", yesterday:"Ayer", moneyIn:"Dinero Entrada", moneyOut:"Dinero Salida", newTransaction:"Nueva Transaccion", editTransaction:"Editar Transaccion", addTransaction:"Agregar Transaccion", saveChanges:"Guardar Cambios", deleteTx:"Eliminar transaccion", amount:"Monto", txLabel:"Etiqueta", category:"Categoria", date:"Fecha", repeat:"Repetir", once:"Una vez", weekly:"Semanal", monthly:"Mensual", markPending:"Marcar como pendiente", expense:"Gasto", noBudgets:"Sin presupuestos aun", noBudgetsSub:"Toca + para establecer un limite. Un presupuesto le dice a tu dinero donde ir.", newBudget:"Nuevo Presupuesto", editLimit:"Editar Limite", addBudget:"Agregar Presupuesto", removeBudget:"Eliminar este presupuesto", totalSpent:"Total Gastado", byCategory:"Por Categoria", edit:"Editar", delete:"Eliminar", save:"Guardar", budgeted:"presupuestado", monthlyLimit:"Limite mensual", allCatsHaveBudget:"Cada categoria ya tiene presupuesto. Agrega una nueva categoria primero.", noGoals:"Sin libros de metas aun", noGoalsSub:"Toca + para crear tu primer libro de metas. Una meta con fecha limite es un plan.", newBudgetBook:"Nuevo Libro de Metas", editBudgetBook:"Editar Libro de Metas", createBudgetBook:"Crear Libro de Metas", deleteBudgetBook:"Eliminar libro de metas", addToBudgetBook:"Agregar al Libro de Metas", alreadySaved:"Ya ahorrado", target:"Objetivo", name:"Nombre", goalComplete:"Meta completada!", remaining:"restante", add:"Agregar", richySuggests:"Richard sugiere", implement:"Implementar", dismiss:"Descartar", aiAdvisor:"Asesor Financiero IA", aiAdvisorSub:"Consejos personalizados basados en tus gastos reales.", analyzeMyFinances:"Analizar Mis Finanzas", analyzingFinances:"Analizando tus finanzas...", fewSeconds:"Esto tarda unos segundos", refresh:"Actualizar", insights:"Perspectivas", analysisFailed:"Analisis fallido", tryAgain:"Intentar de nuevo", askYourAdvisor:"Pregunta a tu Asesor", advisorQ1:"Como puedo ahorrar mas?", advisorQ2:"Es saludable mi tasa de ahorro?", advisorQ3:"Que hacer con mi excedente?", thinking:"Pensando...", yesDo:"Si, hazlo", notNow:"Ahora no", askRichard:"Pregunta a Richard cualquier cosa...", giveFeedback:"Da retroalimentacion a Richard...", advisorDisclaimer:"Richard es un asistente de IA, no un asesor financiero certificado. Investiga siempre antes de tomar decisiones financieras.", translate:"Traducir plan", noPlanYet:"Aun no hay plan. Completa el cuestionario para obtener tu plan personalizado de Richard." },
   fr: { overview:"Apercu", activity:"Activite", budgets:"Budgets", goals:"Objectifs", advisor:"Conseiller", profile:"Profil", language:"Langue", currency:"Devise", yourPlan:"Votre Plan", categories:"Categories", signOut:"Deconnexion", richyMember:"Membre Richy", richyRefersTo:"Richy vous appelle", seeYourPlan:"Voir votre plan de Richard", netBalance:"Solde Net", income:"Revenus", spent:"Depenses", topSpend:"Top depenses", morning:"Bonjour", afternoon:"Bon apres-midi", evening:"Bonsoir", savedThisPeriod:"epargne cette periode", redoQuestionnaire:"Refaire le questionnaire", yourPlanByRichard:"Votre plan de Richard", noTransactions:"Aucune transaction", noTransactionsSub:"Appuyez + pour enregistrer la premiere. La conscience est le premier pas vers la richesse.", overviewEmptySub:"L homme le plus riche de Babylone commencat par suivre chaque piece. Commencez dans Activite.", savingsRate:"Taux d epargne", excellent:"Excellent", onTrack:"En bonne voie", buildItUp:"Ameliorez-le", overspending:"Depassement", thisPeriod:"cette periode", transactions:"Transactions", whereItWent:"Ou est alle", overLimit:"au-dessus de la limite", complete:"complete", savedLabel:"epargne", spentLabel:"depense", toGo:"restant", recent:"Recent", activeGoal:"objectif actif", activeGoals:"objectifs actifs", today:"Aujourd hui", yesterday:"Hier", moneyIn:"Argent entrant", moneyOut:"Argent sortant", newTransaction:"Nouvelle Transaction", editTransaction:"Modifier Transaction", addTransaction:"Ajouter Transaction", saveChanges:"Enregistrer les modifications", deleteTx:"Supprimer la transaction", amount:"Montant", txLabel:"Libelle", category:"Categorie", date:"Date", repeat:"Repetition", once:"Une fois", weekly:"Hebdomadaire", monthly:"Mensuel", markPending:"Marquer comme en attente", expense:"Depense", noBudgets:"Aucun budget", noBudgetsSub:"Appuyez + pour fixer une limite. Un budget dit a votre argent ou aller.", newBudget:"Nouveau Budget", editLimit:"Modifier Limite", addBudget:"Ajouter Budget", removeBudget:"Supprimer ce budget", totalSpent:"Total Depense", byCategory:"Par Categorie", edit:"Modifier", delete:"Supprimer", save:"Enregistrer", budgeted:"budgete", monthlyLimit:"Limite mensuelle", allCatsHaveBudget:"Chaque categorie a deja un budget. Ajoutez d abord une nouvelle categorie.", noGoals:"Aucun livret d epargne", noGoalsSub:"Appuyez + pour creer votre premier livret. Un objectif avec une echeance est un plan.", newBudgetBook:"Nouveau Livret", editBudgetBook:"Modifier Livret", createBudgetBook:"Creer Livret", deleteBudgetBook:"Supprimer le livret", addToBudgetBook:"Ajouter au Livret", alreadySaved:"Deja epargne", target:"Objectif", name:"Nom", goalComplete:"Objectif atteint!", remaining:"restant", add:"Ajouter", richySuggests:"Richard suggere", implement:"Implementer", dismiss:"Ignorer", aiAdvisor:"Conseiller Financier IA", aiAdvisorSub:"Conseils personnalises bases sur vos depenses reelles.", analyzeMyFinances:"Analyser mes Finances", analyzingFinances:"Analyse de vos finances...", fewSeconds:"Cela prend quelques secondes", refresh:"Actualiser", insights:"Perspectives", analysisFailed:"Analyse echouee", tryAgain:"Reessayer", askYourAdvisor:"Demandez a votre Conseiller", advisorQ1:"Comment puis-je economiser davantage?", advisorQ2:"Mon taux d epargne est-il sain?", advisorQ3:"Que faire avec mon surplus?", thinking:"Je reflechis...", yesDo:"Oui, fais-le", notNow:"Pas maintenant", askRichard:"Demandez a Richard n importe quoi...", giveFeedback:"Donnez vos retours a Richard...", advisorDisclaimer:"Richard est un assistant IA, pas un conseiller financier agree. Faites toujours vos propres recherches.", translate:"Traduire le plan", noPlanYet:"Pas encore de plan. Completez le questionnaire pour obtenir votre plan personnalise de Richard." },
@@ -4691,7 +4695,7 @@ function Trips(props) {
   var _v = useState(props.openTripId ? "detail" : "list"); var view = _v[0]; var setView = _v[1];
   var _aid = useState(props.openTripId || null); var activeId = _aid[0]; var setActiveId = _aid[1];
   var _st = useState(1); var step = _st[0]; var setStep = _st[1];
-  var _fm = useState({ name: "", destination: "", total: "", days: "", style: "comfort", icon: "plane", notes: "", wantPlan: true });
+  var _fm = useState({ name: "", destination: "", total: "", days: "", startDate: "", style: "comfort", icon: "plane", notes: "", wantPlan: true });
   var form = _fm[0]; var setForm = _fm[1];
   var _pl = useState(false); var planning = _pl[0]; var setPlanning = _pl[1];
   var _al = useState([]); var alloc = _al[0]; var setAlloc = _al[1];
@@ -4706,6 +4710,10 @@ function Trips(props) {
   var _wni = useState(""); var wizardNoteInput = _wni[0]; var setWizardNoteInput = _wni[1];
   var _wnl = useState(false); var wizardNoteLoading = _wnl[0]; var setWizardNoteLoading = _wnl[1];
   var _ba = useState(null); var budgetAssessment = _ba[0]; var setBudgetAssessment = _ba[1];
+  var _acf = useState(null); var addCatFor = _acf[0]; var setAddCatFor = _acf[1];
+  var _acfm = useState({ label: "", icon: "box" }); var addCatForm = _acfm[0]; var setAddCatForm = _acfm[1];
+  var _dc = useState(null); var delCat = _dc[0]; var setDelCat = _dc[1];
+  var _mvt = useState(""); var moveTarget = _mvt[0]; var setMoveTarget = _mvt[1];
 
   function setField(k, val) { setForm(function(p) { var n = {}; for (var key in p) n[key] = p[key]; n[k] = val; return n; }); }
   function setLogField(k, val) { setLogForm(function(p) { var n = {}; for (var key in p) n[key] = p[key]; n[k] = val; return n; }); }
@@ -4791,15 +4799,25 @@ function Trips(props) {
     setTripNoteChats(function(p) { var n = {}; for (var k in p) n[k] = p[k]; n[trip.id] = nc; return n; });
     setTripNoteLoading(true);
     var allocSummary = (trip.allocations || []).map(function(a) { return a.label + ": " + dollars(a.planned || 0) + " budgeted, " + dollars(a.spent || 0) + " spent"; }).join("; ");
+    var dayInfo = tripDayInfo(trip);
+    var liveContext = "";
+    if (dayInfo && dayInfo.status === "live") {
+      var pace = livePaceInsight(trip, dayInfo);
+      liveContext = "This trip is happening RIGHT NOW - it is day " + dayInfo.dayNum + " of " + trip.days + ". " + pace.text + " Ground your answer in these live numbers and give a concrete, specific action (an exact dollar amount to cut, move, or watch), not generic travel advice. ";
+    } else if (dayInfo && dayInfo.status === "upcoming") {
+      liveContext = "This trip has not started yet - it begins in " + dayInfo.daysUntil + " day(s). ";
+    } else if (dayInfo && dayInfo.status === "past") {
+      liveContext = "This trip has already ended. ";
+    }
     var sys = "You are Richard, a warm and knowledgeable personal finance and travel advisor inside the Richy app. "
       + "The user is planning a trip: " + (trip.name || "a trip") + " to " + (trip.destination || "an unspecified destination") + ". "
       + "Trip details: " + (trip.days || 0) + " days, " + (trip.style || "comfort") + " style, total budget " + dollars(trip.total || 0) + ". "
-      + "Budget allocation: " + allocSummary + ". "
+      + "Budget allocation: " + allocSummary + ". " + liveContext
       + "The user has notes, suggestions, or comments about this trip plan. Listen carefully and adjust the budget to their feedback. "
       + "You can DIRECTLY change the budget, not just describe it. When the user wants a change, give one short plain-text sentence explaining what you did, then on a new line append a directive in EXACTLY this form: @@ALLOC[{\"category\":\"Housing\",\"amount\":400},{\"category\":\"Food\",\"amount\":300}] "
       + "Only list the buckets you are changing, using whole numbers. Do not set any bucket below what is already spent there. Keep the overall total close to " + dollars(trip.total || 0) + " by also adjusting Buffer or Other when needed. Categories must be from: Flights, Housing, Food, Activities, Shopping, Transport, Other, Buffer. "
       + "Only include the @@ALLOC directive when you actually intend to change the split; for general questions just answer normally. "
-      + "Be concise, warm, and practical." + RICHARD_FORMAT + " The @@ALLOC directive, when you use it, must be the very last thing in your reply.";
+      + "Be concise, warm, and practical. Always prefer specific numbers and concrete next steps over general reassurance." + RICHARD_FORMAT + " The @@ALLOC directive, when you use it, must be the very last thing in your reply.";
     callClaude(
       nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }),
       sys, 400,
@@ -4923,28 +4941,92 @@ function Trips(props) {
     var n = val === "" ? 0 : Math.max(0, parseFloat(val) || 0);
     setAlloc(function(list) { return list.map(function(a) { return a.key === key ? Object.assign({}, a, { planned: n, plannedRaw: val }) : a; }); });
   }
+  function removeWizardCategory(key) {
+    setAlloc(function(list) { return list.filter(function(a) { return a.key !== key; }); });
+  }
+  function addWizardCategory(label, icon) {
+    var lbl = (label || "").trim();
+    if (!lbl) return;
+    setAlloc(function(list) {
+      var color = TRIP_CUSTOM_COLORS[list.length % TRIP_CUSTOM_COLORS.length];
+      return list.concat([{ key: "custom_" + Date.now(), label: lbl, icon: icon || "box", color: color, planned: 0, plannedRaw: "0", spent: 0, entries: [] }]);
+    });
+    setAddCatFor(null); setAddCatForm({ label: "", icon: "box" });
+  }
   function startWizard() {
-    setForm({ name: "", destination: "", total: "", days: "", style: "comfort", icon: "plane", notes: "", wantPlan: true });
+    setForm({ name: "", destination: "", total: "", days: "", startDate: "", style: "comfort", icon: "plane", notes: "", wantPlan: true });
     setAlloc([]); setTips([]); setStep(1); setView("wizard");
   }
   function saveTrip() {
     var total = parseFloat(form.total) || 0;
     var trip = {
       id: Date.now(), name: form.name || "My Trip", destination: form.destination || "",
-      days: parseInt(form.days, 10) || 0, style: form.style || "comfort", total: total, icon: form.icon || "plane",
+      days: parseInt(form.days, 10) || 0, startDate: form.startDate || "", style: form.style || "comfort", total: total, icon: form.icon || "plane",
       reserved: false, reserveTxId: null, advisorTips: tips, allocations: alloc, notes: form.notes || ""
     };
     props.onSaveTrips(props.trips.concat([trip]));
     setActiveId(trip.id); setView("detail");
   }
+  function updateTripStartDate(tripId, val) {
+    var nextTrips = props.trips.map(function(t) { return t.id === tripId ? Object.assign({}, t, { startDate: val }) : t; });
+    props.onSaveTrips(nextTrips);
+  }
+  // Where the trip stands relative to today: upcoming (not started), live (in
+  // progress - day N of days), or past (already over). null when no start date
+  // was set, so the whole live-pace UI just doesn't render.
+  function tripDayInfo(trip) {
+    if (!trip.startDate || !trip.days) return null;
+    var start = new Date(trip.startDate + "T00:00:00");
+    if (isNaN(start.getTime())) return null;
+    var now = new Date();
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var s = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    var diffDays = Math.round((today - s) / 86400000);
+    if (diffDays < 0) return { status: "upcoming", daysUntil: -diffDays };
+    if (diffDays >= trip.days) return { status: "past" };
+    return { status: "live", dayNum: diffDays + 1 };
+  }
+  // A deterministic (no AI call) pace read Richard can show the instant you
+  // open a live trip: how today's spend compares to today's fair share of the
+  // budget, and a same-pace projection for the rest of the trip.
+  function livePaceInsight(trip, dayInfo) {
+    var spentSoFar = tripSpent(trip);
+    var perDay = spentSoFar / dayInfo.dayNum;
+    var projected = perDay * trip.days;
+    var diff = projected - trip.total;
+    var overCats = trip.allocations.filter(function(a) { return a.planned > 0 && a.spent > a.planned; });
+    var verdict = diff > trip.total * 0.05 ? "over" : (diff < -trip.total * 0.05 ? "under" : "good");
+    var msg = "Day " + dayInfo.dayNum + " of " + trip.days + " - " + dollars(spentSoFar) + " spent so far, about " + dollars(perDay) + "/day.";
+    if (verdict === "over") {
+      msg += " At this pace you'll land around " + dollars(projected) + ", " + dollars(diff) + " over budget.";
+    } else if (verdict === "under") {
+      msg += " At this pace you'll land around " + dollars(projected) + ", comfortably under budget.";
+    } else {
+      msg += " That pace keeps you on track to finish around " + dollars(projected) + ".";
+    }
+    if (overCats.length > 0) {
+      msg += " " + overCats.map(function(a) { return a.label; }).join(" and ") + (overCats.length > 1 ? " are" : " is") + " already over budget - pull from Buffer or another bucket if you can.";
+    }
+    return { verdict: verdict, text: msg };
+  }
   function reserveTrip(trip) {
-    var t = { id: Date.now(), type: "expense", amount: trip.total, label: "Trip: " + trip.name, catId: "c7", category: "Travel", date: new Date().toISOString().slice(0, 10) };
+    var t = { id: Date.now(), type: "expense", amount: tripSpent(trip), label: "Trip: " + trip.name, catId: "c7", category: "Travel", date: new Date().toISOString().slice(0, 10) };
     var nextTrips = props.trips.map(function(x) { return x.id === trip.id ? Object.assign({}, x, { reserved: true, reserveTxId: t.id }) : x; });
     props.onTripReserve(props.tx.concat([t]), nextTrips);
   }
   function undoReserve(trip) {
     var nextTx = props.tx.filter(function(x) { return x.id !== trip.reserveTxId; });
     var nextTrips = props.trips.map(function(x) { return x.id === trip.id ? Object.assign({}, x, { reserved: false, reserveTxId: null }) : x; });
+    props.onTripReserve(nextTx, nextTrips);
+  }
+  // Once a trip is "tracking against balance", the linked tx must always equal
+  // what's actually been logged so far (not the whole planned budget) - every
+  // mutation that changes total spend routes through here to keep it in sync.
+  function syncTripTx(tripId, nextTrips) {
+    var trip = nextTrips.filter(function(t) { return t.id === tripId; })[0];
+    if (!trip || !trip.reserved || !trip.reserveTxId) { props.onSaveTrips(nextTrips); return; }
+    var newSpent = tripSpent(trip);
+    var nextTx = props.tx.map(function(x) { return x.id === trip.reserveTxId ? Object.assign({}, x, { amount: newSpent }) : x; });
     props.onTripReserve(nextTx, nextTrips);
   }
   function logExpense(tripId, key) {
@@ -4958,7 +5040,7 @@ function Trips(props) {
       });
       return Object.assign({}, t, { allocations: allocs });
     });
-    props.onSaveTrips(nextTrips);
+    syncTripTx(tripId, nextTrips);
     setLogFor(null); setLogForm({ label: "", amount: "" });
   }
   function deleteEntry(tripId, key, entryId) {
@@ -4972,7 +5054,54 @@ function Trips(props) {
       });
       return Object.assign({}, t, { allocations: allocs });
     });
+    syncTripTx(tripId, nextTrips);
+  }
+  // Add a user-defined budget bucket alongside the fixed TRIP_CATEGORIES ones.
+  function addCategoryToTrip(tripId, label, icon) {
+    var lbl = (label || "").trim();
+    if (!lbl) return;
+    var nextTrips = props.trips.map(function(t) {
+      if (t.id !== tripId) return t;
+      var color = TRIP_CUSTOM_COLORS[t.allocations.length % TRIP_CUSTOM_COLORS.length];
+      var newAlloc = { key: "custom_" + Date.now(), label: lbl, icon: icon || "box", color: color, planned: 0, plannedRaw: "0", spent: 0, entries: [] };
+      return Object.assign({}, t, { allocations: t.allocations.concat([newAlloc]) });
+    });
     props.onSaveTrips(nextTrips);
+    setAddCatFor(null); setAddCatForm({ label: "", icon: "box" });
+  }
+  function requestDeleteCategory(tripId, a) {
+    if ((a.spent || 0) <= 0 && (!a.entries || a.entries.length === 0)) { deleteCategoryOutright(tripId, a.key); return; }
+    setDelCat({ tripId: tripId, key: a.key, label: a.label, spentAmt: a.spent || 0 });
+    setMoveTarget("");
+  }
+  function deleteCategoryOutright(tripId, key) {
+    var nextTrips = props.trips.map(function(t) {
+      if (t.id !== tripId) return t;
+      return Object.assign({}, t, { allocations: t.allocations.filter(function(a) { return a.key !== key; }) });
+    });
+    syncTripTx(tripId, nextTrips);
+    setDelCat(null); setMoveTarget("");
+  }
+  // Fold a deleted budget's logged spend/entries into another bucket instead of
+  // losing track of the money.
+  function moveCategoryInto(tripId, fromKey, toKey) {
+    if (!toKey || fromKey === toKey) return;
+    var nextTrips = props.trips.map(function(t) {
+      if (t.id !== tripId) return t;
+      var from = t.allocations.filter(function(a) { return a.key === fromKey; })[0];
+      if (!from) return t;
+      var allocs = t.allocations.filter(function(a) { return a.key !== fromKey; }).map(function(a) {
+        if (a.key !== toKey) return a;
+        return Object.assign({}, a, {
+          planned: (a.planned || 0) + (from.planned || 0),
+          spent: round2((a.spent || 0) + (from.spent || 0)),
+          entries: a.entries.concat(from.entries.map(function(e) { return Object.assign({}, e, { label: e.label + " (" + from.label + ")" }); }))
+        });
+      });
+      return Object.assign({}, t, { allocations: allocs });
+    });
+    syncTripTx(tripId, nextTrips);
+    setDelCat(null); setMoveTarget("");
   }
   function removeTrip(trip) {
     if (trip.reserved && trip.reserveTxId) {
@@ -5057,6 +5186,7 @@ function Trips(props) {
             <FormRow label={tr("destination")} value={form.destination} onChange={function(e) { setField("destination", e.target.value); }} />
             <FormRow label={tr("tripBudget")} value={form.total} onChange={function(e) { setField("total", e.target.value); }} type="number" />
             <FormRow label={tr("tripDays")} value={form.days} onChange={function(e) { setField("days", e.target.value); }} type="number" />
+            <FormRow label="Start date (optional)" value={form.startDate} onChange={function(e) { setField("startDate", e.target.value); }} type="date" />
             <FormRow label="Notes for Richard (optional)" value={form.notes} onChange={function(e) { setField("notes", e.target.value); }} placeholder="anything he should know - must-dos, style, who's coming" last={true} />
             <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, margin: "14px 0 8px" }}>{tr("travelStyle")}</div>
             <div style={{ display: "flex", gap: 8 }}>
@@ -5140,9 +5270,16 @@ function Trips(props) {
                         <input type="number" value={a.plannedRaw !== undefined ? a.plannedRaw : String(a.planned)} onChange={function(e) { setAllocPlanned(a.key, e.target.value); }}
                           style={{ width: 64, border: "none", background: "none", outline: "none", fontSize: 14, fontWeight: 600, color: T.ink, fontFamily: UI, textAlign: "right", padding: 0 }} />
                       </div>
+                      <button onClick={function() { removeWizardCategory(a.key); }} style={{ background: "none", border: "none", padding: 4, cursor: "pointer", display: "flex", flexShrink: 0 }}>
+                        <SVGIcon id="trash" size={14} color={T.ink3} />
+                      </button>
                     </div>
                   );
                 })}
+                <button onClick={function() { setAddCatFor("wizard"); setAddCatForm({ label: "", icon: "box" }); }}
+                  style={{ width: "100%", marginTop: 10, background: "none", border: "1px dashed " + T.sep, borderRadius: 12, padding: "10px 0", color: T.orange, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
+                  {"+ " + tr("addCategory")}
+                </button>
                 {tips.length > 0 && (
                   <div style={{ marginTop: 16, background: T.orangeDim, borderRadius: 14, padding: "14px 16px" }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8, fontFamily: UI }}>{tr("tripTips")}</div>
@@ -5205,7 +5342,31 @@ function Trips(props) {
             )}
           </Card>
         )}
+        {addCategoryOverlay(function(label, icon) { addWizardCategory(label, icon); })}
       </div>
+    );
+  }
+  // Shared "add a budget category" overlay, used by both the wizard split and
+  // the live trip detail view - onAdd differs (wizard mutates local alloc state,
+  // detail mutates the saved trip).
+  function addCategoryOverlay(onAdd) {
+    return (
+      <Overlay open={!!addCatFor} onClose={function() { setAddCatFor(null); }} title={tr("addCategory")}>
+        <FormRow label={tr("name")} value={addCatForm.label} onChange={function(e) { setAddCatForm(function(p) { return Object.assign({}, p, { label: e.target.value }); }); }} last={true} />
+        <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, margin: "14px 0 8px" }}>{tr("tripIcon")}</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+          {TRIP_ICONS.map(function(ic) {
+            var on = addCatForm.icon === ic;
+            return (
+              <button key={ic} onClick={function() { setAddCatForm(function(p) { return Object.assign({}, p, { icon: ic }); }); }}
+                style={{ width: 40, height: 40, border: on ? ("2px solid " + T.orange) : "2px solid rgba(0,0,0,0.08)", background: on ? T.orangeDim : "#fff", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxSizing: "border-box" }}>
+                <SVGIcon id={ic} size={18} color={on ? T.orange : T.ink2} />
+              </button>
+            );
+          })}
+        </div>
+        <BigBtn label={tr("addCategory")} disabled={!addCatForm.label.trim()} onPress={function() { onAdd(addCatForm.label, addCatForm.icon); }} />
+      </Overlay>
     );
   }
 
@@ -5214,6 +5375,8 @@ function Trips(props) {
     var left = trip.total - spent;
     var plannedTotal = trip.allocations.reduce(function(s, a) { return s + (a.planned || 0); }, 0);
     var afterBudgets = trip.total - plannedTotal;
+    var dayInfo = tripDayInfo(trip);
+    var pace = dayInfo && dayInfo.status === "live" ? livePaceInsight(trip, dayInfo) : null;
     return (
       <div>
         {backRow(tr("trips"), function() { setView("list"); setActiveId(null); })}
@@ -5243,8 +5406,22 @@ function Trips(props) {
                 <div style={{ fontSize: 16, fontWeight: 700, color: left < 0 ? T.heroNeg : T.heroInk, marginTop: 3 }}>{dollars(left)}</div>
               </div>
             </div>
+            <div style={{ marginTop: 10 }}>
+              <input type="date" value={trip.startDate || ""} onChange={function(e) { updateTripStartDate(trip.id, e.target.value); }}
+                style={{ fontSize: 12, color: T.heroMut, background: "none", border: "none", outline: "none", fontFamily: UI, padding: 0 }} />
+              {!trip.startDate && <span style={{ fontSize: 11, color: T.heroMut, marginLeft: 6 }}>{"- set a start date for day-by-day pacing"}</span>}
+              {dayInfo && dayInfo.status === "upcoming" && <span style={{ fontSize: 11, color: T.heroMut, marginLeft: 6 }}>{"- starts in " + dayInfo.daysUntil + "d"}</span>}
+              {dayInfo && dayInfo.status === "past" && <span style={{ fontSize: 11, color: T.heroMut, marginLeft: 6 }}>{"- trip ended"}</span>}
+            </div>
           </div>
         </div>
+
+        {pace && (
+          <Card style={{ padding: "14px 16px", marginBottom: 16, borderLeft: "3px solid " + (pace.verdict === "over" ? T.red : pace.verdict === "under" ? T.green : T.orange) }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: pace.verdict === "over" ? T.red : pace.verdict === "under" ? T.green : T.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6, fontFamily: UI }}>{"Richard's live read"}</div>
+            <div style={{ fontSize: 13.5, color: T.ink, lineHeight: 1.5, fontFamily: UI }}>{pace.text}</div>
+          </Card>
+        )}
 
         {trip.reserved ? (
           <Card style={{ padding: "14px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
@@ -5263,76 +5440,23 @@ function Trips(props) {
           </Card>
         )}
 
-        {trip.allocations.map(function(a) {
-          var over = a.spent > a.planned && a.planned > 0;
-          return (
-            <Card key={a.key} style={{ marginBottom: 12, overflow: "hidden" }}>
-              <div style={{ padding: "15px 16px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 10 }}>
-                  <div style={{ width: 34, height: 34, borderRadius: 10, background: a.color + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <SVGIcon id={a.icon} size={18} color={a.color} />
-                  </div>
-                  <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: T.ink }}>{a.label}</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: over ? T.red : T.ink2 }}>{dollars(a.spent) + " / " + _currency.sym}</span>
-                    <input type="number" value={getDetailEdit(trip.id, "alloc_" + a.key, a.planned)}
-                      onChange={function(e) { setDetailEdit(trip.id, "alloc_" + a.key, e.target.value); }}
-                      onBlur={function(e) { updateTripAllocPlanned(trip.id, a.key, e.target.value); clearDetailEdit(trip.id, "alloc_" + a.key); }}
-                      style={{ width: 58, border: "none", background: "rgba(0,0,0,0.05)", borderRadius: 7, outline: "none", fontSize: 13, fontWeight: 600, color: T.ink, fontFamily: UI, textAlign: "right", padding: "3px 6px", boxSizing: "border-box" }} />
-                  </div>
-                </div>
-                <ProgressBar value={a.spent} max={a.planned || 1} color={over ? T.red : a.color} h={6} />
-                {a.entries.length > 0 && (
-                  <div style={{ marginTop: 10 }}>
-                    {a.entries.map(function(e) {
-                      return (
-                        <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0" }}>
-                          <span style={{ fontSize: 13, color: T.ink2 }}>{e.label}</span>
-                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                            <span style={{ fontSize: 13, fontWeight: 600, color: T.ink }}>{dollars(e.amount)}</span>
-                            <button onClick={function() { deleteEntry(trip.id, a.key, e.id); }} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex" }}><SVGIcon id="trash" size={14} color={T.ink3} /></button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-                <button onClick={function() { setLogFor({ tripId: trip.id, key: a.key, label: a.label }); setLogForm({ label: "", amount: "" }); }}
-                  style={{ width: "100%", marginTop: 10, background: T.orangeDim, border: "none", borderRadius: 10, padding: "9px 0", color: T.orange, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
-                  {"+ " + tr("logExpense")}
-                </button>
-              </div>
-            </Card>
-          );
-        })}
-
-        <div style={{ position: "relative", overflow: "hidden", borderRadius: 22, padding: "20px 22px", background: T.heroBg, boxShadow: T.heroShadow, marginBottom: 16 }}>
-          <div style={{ position: "absolute", bottom: -70, left: -50, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
-          <div style={{ position: "relative" }}>
-            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut }}>{tr("leftAfterBudgets")}</div>
-            <div style={{ fontSize: 34, fontWeight: 700, color: afterBudgets < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em", marginTop: 8 }}>{(afterBudgets < 0 ? "-" : "") + dollars(afterBudgets)}</div>
-            <div style={{ fontSize: 12.5, color: T.heroMut, marginTop: 6, lineHeight: 1.5 }}>{dollars(trip.total) + " " + tr("tripBudget").toLowerCase() + " - " + dollars(plannedTotal) + " " + tr("allocated").toLowerCase()}</div>
-          </div>
-        </div>
-
-        {trip.advisorTips && trip.advisorTips.length > 0 && (
-          <Card style={{ padding: "16px 18px", marginBottom: 16 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10, fontFamily: UI }}>{tr("tripTips")}</div>
-            {trip.advisorTips.map(function(tp, i) {
-              return (
-                <div key={i} style={{ fontSize: 13, color: T.ink, lineHeight: 1.55, marginBottom: i < trip.advisorTips.length - 1 ? 8 : 0, display: "flex", gap: 8 }}>
-                  <span style={{ color: T.orange, fontWeight: 700 }}>-</span><span>{tp}</span>
-                </div>
-              );
-            })}
-          </Card>
-        )}
-
-        <Card style={{ overflow: "hidden", marginBottom: 12 }}>
+        <Card style={{ overflow: "hidden", marginBottom: 16 }}>
           <div style={{ padding: "14px 16px 10px", borderBottom: "0.5px solid " + T.sep }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Notes for Richard</div>
-            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3, fontFamily: UI }}>Comments or suggestions about this trip plan</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Ask Richard</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3, fontFamily: UI }}>{pace ? "He can see today's numbers - ask how you're doing." : "Notes, questions, or changes to this trip plan"}</div>
           </div>
+          {(tripNoteChats[trip.id] || []).length === 0 && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "12px 14px 4px" }}>
+              {["How am I doing?", "What should I cut?", "Am I over budget?"].map(function(q) {
+                return (
+                  <button key={q} onClick={function() { setTripNoteInput(q); }}
+                    style={{ background: "rgba(0,0,0,0.04)", border: "none", borderRadius: 999, padding: "7px 12px", fontSize: 12.5, fontWeight: 600, color: T.ink2, cursor: "pointer", fontFamily: UI }}>
+                    {q}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           {(tripNoteChats[trip.id] || []).length > 0 && (
             <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
               {(tripNoteChats[trip.id] || []).map(function(m, i) {
@@ -5376,6 +5500,79 @@ function Trips(props) {
           </div>
         </Card>
 
+        {trip.allocations.map(function(a) {
+          var over = a.spent > a.planned && a.planned > 0;
+          return (
+            <Card key={a.key} style={{ marginBottom: 12, overflow: "hidden" }}>
+              <div style={{ padding: "15px 16px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 10 }}>
+                  <div style={{ width: 34, height: 34, borderRadius: 10, background: a.color + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <SVGIcon id={a.icon} size={18} color={a.color} />
+                  </div>
+                  <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: T.ink }}>{a.label}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: over ? T.red : T.ink2 }}>{dollars(a.spent) + " / " + _currency.sym}</span>
+                    <input type="number" value={getDetailEdit(trip.id, "alloc_" + a.key, a.planned)}
+                      onChange={function(e) { setDetailEdit(trip.id, "alloc_" + a.key, e.target.value); }}
+                      onBlur={function(e) { updateTripAllocPlanned(trip.id, a.key, e.target.value); clearDetailEdit(trip.id, "alloc_" + a.key); }}
+                      style={{ width: 58, border: "none", background: "rgba(0,0,0,0.05)", borderRadius: 7, outline: "none", fontSize: 13, fontWeight: 600, color: T.ink, fontFamily: UI, textAlign: "right", padding: "3px 6px", boxSizing: "border-box" }} />
+                  </div>
+                  <button onClick={function() { requestDeleteCategory(trip.id, a); }} style={{ background: "none", border: "none", padding: 4, cursor: "pointer", display: "flex", flexShrink: 0 }}>
+                    <SVGIcon id="trash" size={14} color={T.ink3} />
+                  </button>
+                </div>
+                <ProgressBar value={a.spent} max={a.planned || 1} color={over ? T.red : a.color} h={6} />
+                {a.entries.length > 0 && (
+                  <div style={{ marginTop: 10 }}>
+                    {a.entries.map(function(e) {
+                      return (
+                        <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0" }}>
+                          <span style={{ fontSize: 13, color: T.ink2 }}>{e.label}</span>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: T.ink }}>{dollars(e.amount)}</span>
+                            <button onClick={function() { deleteEntry(trip.id, a.key, e.id); }} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex" }}><SVGIcon id="trash" size={14} color={T.ink3} /></button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <button onClick={function() { setLogFor({ tripId: trip.id, key: a.key, label: a.label }); setLogForm({ label: "", amount: "" }); }}
+                  style={{ width: "100%", marginTop: 10, background: T.orangeDim, border: "none", borderRadius: 10, padding: "9px 0", color: T.orange, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
+                  {"+ " + tr("logExpense")}
+                </button>
+              </div>
+            </Card>
+          );
+        })}
+
+        <button onClick={function() { setAddCatFor(trip.id); setAddCatForm({ label: "", icon: "box" }); }}
+          style={{ width: "100%", marginBottom: 16, background: "none", border: "1px dashed " + T.sep, borderRadius: 14, padding: "12px 0", color: T.orange, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
+          {"+ " + tr("addCategory")}
+        </button>
+
+        <div style={{ position: "relative", overflow: "hidden", borderRadius: 22, padding: "20px 22px", background: T.heroBg, boxShadow: T.heroShadow, marginBottom: 16 }}>
+          <div style={{ position: "absolute", bottom: -70, left: -50, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
+          <div style={{ position: "relative" }}>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut }}>{tr("leftAfterBudgets")}</div>
+            <div style={{ fontSize: 34, fontWeight: 700, color: afterBudgets < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em", marginTop: 8 }}>{(afterBudgets < 0 ? "-" : "") + dollars(afterBudgets)}</div>
+            <div style={{ fontSize: 12.5, color: T.heroMut, marginTop: 6, lineHeight: 1.5 }}>{dollars(trip.total) + " " + tr("tripBudget").toLowerCase() + " - " + dollars(plannedTotal) + " " + tr("allocated").toLowerCase()}</div>
+          </div>
+        </div>
+
+        {trip.advisorTips && trip.advisorTips.length > 0 && (
+          <Card style={{ padding: "16px 18px", marginBottom: 16 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10, fontFamily: UI }}>{tr("tripTips")}</div>
+            {trip.advisorTips.map(function(tp, i) {
+              return (
+                <div key={i} style={{ fontSize: 13, color: T.ink, lineHeight: 1.55, marginBottom: i < trip.advisorTips.length - 1 ? 8 : 0, display: "flex", gap: 8 }}>
+                  <span style={{ color: T.orange, fontWeight: 700 }}>-</span><span>{tp}</span>
+                </div>
+              );
+            })}
+          </Card>
+        )}
+
         <button onClick={function() { removeTrip(trip); }}
           style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "8px 0 4px" }}>
           {tr("deleteTrip")}
@@ -5385,6 +5582,35 @@ function Trips(props) {
           <FormRow label={tr("txLabel")} value={logForm.label} onChange={function(e) { setLogField("label", e.target.value); }} />
           <FormRow label={tr("amount")} value={logForm.amount} onChange={function(e) { setLogField("amount", e.target.value); }} type="number" last={true} />
           <BigBtn label={tr("logExpense")} disabled={!logForm.amount} onPress={function() { if (logFor) logExpense(logFor.tripId, logFor.key); }} />
+        </Overlay>
+
+        {addCategoryOverlay(function(label, icon) { addCategoryToTrip(trip.id, label, icon); })}
+
+        <Overlay open={!!delCat} onClose={function() { setDelCat(null); setMoveTarget(""); }} title={delCat ? ("Delete " + delCat.label) : "Delete budget"}>
+          <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginBottom: 14 }}>
+            {"This budget already has " + (delCat ? dollars(delCat.spentAmt) : "") + " logged against it. Move it into another budget, or delete it outright."}
+          </div>
+          {delCat && trip.allocations.filter(function(a) { return a.key !== delCat.key; }).length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, marginBottom: 8 }}>Move into</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+                {trip.allocations.filter(function(a) { return a.key !== delCat.key; }).map(function(a) {
+                  var on = moveTarget === a.key;
+                  return (
+                    <button key={a.key} onClick={function() { setMoveTarget(a.key); }}
+                      style={{ border: on ? ("2px solid " + T.orange) : "2px solid rgba(0,0,0,0.08)", background: on ? T.orangeDim : "#fff", color: on ? T.orange : T.ink2, borderRadius: 12, padding: "8px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
+                      {a.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <BigBtn label="Move" disabled={!moveTarget} onPress={function() { moveCategoryInto(delCat.tripId, delCat.key, moveTarget); }} />
+            </div>
+          )}
+          <button onClick={function() { if (delCat) deleteCategoryOutright(delCat.tripId, delCat.key); }}
+            style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "8px 0 4px" }}>
+            {"Delete outright"}
+          </button>
         </Overlay>
       </div>
     );
