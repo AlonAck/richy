@@ -95,6 +95,13 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).t
       { key: "other",      label: "Other",      icon: "box",      color: "#8B8B8B", planned: 0,    spent: 0, entries: [] },
       { key: "buffer",     label: "Buffer",     icon: "shield",   color: "#6B5C4E", planned: 250,  spent: 0, entries: [] }
     ]
+  }, {
+    id: 100, name: "Weekend in Austin", destination: "Austin", days: 3, startDate: "", style: "comfort", total: 800, icon: "car",
+    reserved: true, reserveTxId: 5001,
+    advisorTips: [],
+    allocations: [
+      { key: "food", label: "Food", icon: "food", color: "#27A85F", planned: 300, spent: 120, entries: [{ id: 1, label: "BBQ", amount: 120, date: "2026-06-30" }] }
+    ]
   }] : [];
   var el;
   if (view === "trips") {

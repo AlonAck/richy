@@ -2116,7 +2116,11 @@ function Overview(props) {
   var budgets  = props.budgets || [];
   var cats     = props.categories || [];
   var trips    = props.trips || [];
-  var liveTrips = trips.filter(function(t) { return !t.ended; }).map(function(t) { return { trip: t, dayInfo: tripDayInfo(t) }; }).filter(function(x) { return x.dayInfo && x.dayInfo.status === "live"; });
+  // A trip counts as "started" either because its start date puts today inside
+  // its date range, or - since most trips never get a start date filled in -
+  // because the user has pressed "Deduct from balance", which is the actual
+  // signal that real spending against it has begun.
+  var liveTrips = trips.filter(function(t) { return !t.ended; }).map(function(t) { return { trip: t, dayInfo: tripDayInfo(t) }; }).filter(function(x) { return (x.dayInfo && x.dayInfo.status === "live") || x.trip.reserved; });
   var username = props.username || "";
   var name     = username.charAt(0).toUpperCase() + username.slice(1);
 
@@ -2757,7 +2761,7 @@ function Overview(props) {
                 <SVGIcon id={t.icon || "plane"} size={20} color={T.heroInk} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>{"Day " + di.dayNum + " of " + t.days + (t.destination ? (" - " + t.destination) : "")}</div>
+                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>{(di ? ("Day " + di.dayNum + " of " + t.days) : "Trip in progress") + (t.destination ? (" - " + t.destination) : "")}</div>
                 <div style={{ fontSize: 17, fontWeight: 700, color: T.heroInk, marginTop: 2 }}>{t.name}</div>
               </div>
               <SVGIcon id="chevron" size={16} color={T.heroInk} />
@@ -4600,7 +4604,7 @@ function Goals(props) {
         }} />
       </Overlay>
 
-      {props.onOpenTrip && (props.trips || []).map(function(t) {
+      {props.onOpenTrip && (props.trips || []).filter(function(t) { return !t.ended; }).map(function(t) {
         var tSpent = t.allocations.reduce(function(s, a) { return s + (a.spent || 0); }, 0);
         var tPct = t.total > 0 ? Math.min(100, Math.round((tSpent / t.total) * 100)) : 0;
         return (
