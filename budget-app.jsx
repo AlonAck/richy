@@ -765,6 +765,45 @@ function RingChart(props) {
   );
 }
 
+// A number that eases from the previously shown value to the new one (same
+// 850ms ease-out cubic as the hero draw progress). First mount counts up from
+// zero so fresh screens feel alive.
+function CountUp(props) {
+  var _s = useState(0); var shown = _s[0]; var setShown = _s[1];
+  var fromRef = useRef(0);
+  var rafRef = useRef(null);
+  useEffect(function() {
+    var from = fromRef.current;
+    var to = props.value || 0;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    if (from === to) { setShown(to); return; }
+    var startT = 0;
+    var dur = props.duration || 850;
+    function tick(now) {
+      if (!startT) startT = now;
+      var t = Math.min(1, (now - startT) / dur);
+      var v = from + (to - from) * (1 - Math.pow(1 - t, 3));
+      setShown(v); fromRef.current = v;
+      if (t < 1) rafRef.current = requestAnimationFrame(tick);
+    }
+    rafRef.current = requestAnimationFrame(tick);
+    return function() { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [props.value]);
+  return <span>{(props.format || dollars)(shown)}</span>;
+}
+
+// A RingChart that draws itself from zero on first paint (the ring already
+// transitions stroke-dashoffset, so mounting at 0 and then setting the real
+// value one frame later animates the sweep).
+function DrawRing(props) {
+  var _m = useState(false); var mounted = _m[0]; var setMounted = _m[1];
+  useEffect(function() {
+    var t = setTimeout(function() { setMounted(true); }, 40);
+    return function() { clearTimeout(t); };
+  }, []);
+  return <RingChart size={props.size} stroke={props.stroke} value={mounted ? props.value : 0} max={props.max} color={props.color} track={props.track} />;
+}
+
 function IconBadge(props) {
   var size = props.size || 38;
   var r = Math.round(size * 0.27);
@@ -6698,7 +6737,7 @@ function Advisor(props) {
       + "[ACTION:{\"kind\":\"goalAdd\",\"name\":\"Emergency Fund\",\"amount\":200}] adds money to an existing goal. "
       + "Use the EXACT category name from this list when logging expenses or budgets: " + (cats.map(function(c) { return c.name; }).join(", ") || "Other") + ". "
       + "If the user mentions several things at once, emit several tags. Only emit a tag for a concrete event with a real number that the user actually states - never for hypotheticals, plans, or general advice. Do not mention the word ACTION or the tag syntax in your spoken reply; just speak naturally and let the tags do the work."
-      + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Be honest about what Richy currently does not support: no live bank or card sync, no shared couples mode, no interest-based debt payoff calculator, no business accounting. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : ""),
+      + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a CFO who builds a business plan - send business owners there. Be honest about what Richy currently does not support: no live bank or card sync, no shared couples mode, no interest-based debt payoff calculator. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : ""),
       500,
       function(err, text) {
         setChatLoading(false);
@@ -7912,6 +7951,132 @@ function mapBizCategories(arr, monthly) {
   return base;
 }
 
+// ---- Business P&L math ------------------------------------------------------
+// All deterministic, derived from the business's dated entry ledger. Expenses
+// carry bizExpense:true + catKey; revenue deposits carry revenue:true. The
+// cumulative c.spent on each category stays the all-time source of truth;
+// these give the month-scoped view that keeps a "monthly budget" honest.
+function bizMonthSpend(biz, ym) {
+  return round2(((biz && biz.entries) || []).reduce(function(s, e) {
+    return s + ((e.bizExpense && (e.date || "").slice(0, 7) === ym) ? (e.amount || 0) : 0);
+  }, 0));
+}
+function bizMonthRevenue(biz, ym) {
+  return round2(((biz && biz.entries) || []).reduce(function(s, e) {
+    return s + ((e.kind === "deposit" && e.revenue && (e.date || "").slice(0, 7) === ym) ? (e.amount || 0) : 0);
+  }, 0));
+}
+function bizMonthProfit(biz, ym) {
+  var rev = bizMonthRevenue(biz, ym);
+  var spend = bizMonthSpend(biz, ym);
+  var profit = round2(rev - spend);
+  return { revenue: rev, spend: spend, profit: profit, margin: rev > 0 ? profit / rev : null };
+}
+function bizCatMonthSpent(biz, key, ym) {
+  return round2(((biz && biz.entries) || []).reduce(function(s, e) {
+    return s + ((e.bizExpense && e.catKey === key && (e.date || "").slice(0, 7) === ym) ? (e.amount || 0) : 0);
+  }, 0));
+}
+// Average monthly net burn (spend minus revenue, floored at zero) over up to
+// the three most recent FULL months after the business was created. Without a
+// full month of history, extrapolate month-to-date (with an early-month floor
+// so day 1 doesn't produce silly projections); with no activity at all, fall
+// back to the planned monthly budget.
+function bizBurn(biz) {
+  var createdYm = (((biz && biz.createdAt) || "")).slice(0, 7);
+  var months = [];
+  for (var i = 1; i <= 3; i++) {
+    var d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - i);
+    var ym = d.toISOString().slice(0, 7);
+    if (createdYm && ym > createdYm) months.push(ym);
+  }
+  if (months.length) {
+    var tot = 0;
+    months.forEach(function(m) { tot += Math.max(0, bizMonthSpend(biz, m) - bizMonthRevenue(biz, m)); });
+    return round2(tot / months.length);
+  }
+  var now = new Date();
+  var daysIn = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  var dayFrac = Math.max(0.15, now.getDate() / daysIn);
+  var mtd = Math.max(0, bizMonthSpend(biz, curMonth()) - bizMonthRevenue(biz, curMonth()));
+  if (mtd > 0) return round2(mtd / dayFrac);
+  return ((biz && biz.profile && biz.profile.monthly) || 0);
+}
+// Months of cash left at the current net burn. null = self-sustaining
+// (revenue covers spending, or nothing is being spent).
+function bizRunway(biz) {
+  var burn = bizBurn(biz);
+  if (burn <= 0) return null;
+  return Math.round((businessCash(biz) / burn) * 10) / 10;
+}
+// Month-to-date spend vs today's fair share of the monthly budget - the
+// business twin of the trip livePaceInsight. null when no budget is set.
+function bizPace(biz) {
+  var monthly = (biz && biz.profile && biz.profile.monthly) || 0;
+  if (monthly <= 0) return null;
+  var now = new Date();
+  var daysIn = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  var dayFrac = now.getDate() / daysIn;
+  var mtd = bizMonthSpend(biz, curMonth());
+  var expected = monthly * dayFrac;
+  var projected = round2(mtd / Math.max(0.1, dayFrac));
+  var verdict = mtd > expected * 1.10 ? "over" : (mtd < expected * 0.90 ? "under" : "good");
+  var msg = dollars(mtd) + " spent so far this month.";
+  if (verdict === "over") msg += " At this pace the month lands around " + dollars(projected) + ", " + dollars(Math.max(0, projected - monthly)) + " over the " + dollars(monthly) + " budget.";
+  else if (verdict === "under") msg += " Comfortably under the " + dollars(monthly) + " budget at this pace.";
+  else msg += " Right on pace for the " + dollars(monthly) + " monthly budget.";
+  return { verdict: verdict, mtd: mtd, expected: round2(expected), projected: projected, text: msg };
+}
+// A 5-100 health read from runway, pace, revenue vs goal and bucket overspend.
+// Idea-stage businesses with no cash yet aren't punished for runway or revenue.
+function bizHealth(biz) {
+  var pf = (biz && biz.profile) || {};
+  var stage = pf.stage || "idea";
+  var score = 70;
+  var runway = bizRunway(biz);
+  if (!(stage === "idea" && businessCash(biz) <= 0)) {
+    if (runway === null) score += 15;
+    else if (runway >= 6) score += 10;
+    else if (runway < 2) score -= 25;
+    else if (runway < 4) score -= 10;
+  }
+  var pace = bizPace(biz);
+  if (pace) { score += pace.verdict === "over" ? -10 : 5; }
+  if (stage !== "idea" && (pf.revenueGoal || 0) > 0) {
+    var now = new Date();
+    var daysIn = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    var target = pf.revenueGoal * (now.getDate() / daysIn);
+    var rev = bizMonthRevenue(biz, curMonth());
+    if (rev >= target) score += 10;
+    else if (rev < target * 0.5) score -= 10;
+  }
+  var overPenalty = 0;
+  ((biz && biz.categories) || []).forEach(function(c) {
+    if ((c.planned || 0) > 0 && bizCatMonthSpent(biz, c.key, curMonth()) > c.planned * 1.2) overPenalty += 5;
+  });
+  score -= Math.min(10, overPenalty);
+  score = Math.max(5, Math.min(100, Math.round(score)));
+  var label = score >= 80 ? "Strong" : score >= 60 ? "Steady" : score >= 40 ? "Watch" : "At risk";
+  var color = score >= 80 ? T.green : score >= 60 ? T.orange : score >= 40 ? "#C8983A" : T.red;
+  return { score: score, label: label, color: color };
+}
+// Trailing 14 days of revenue vs the 14 days before that.
+function bizRevenueTrend(biz) {
+  var now = Date.now();
+  var d14 = new Date(now - 14 * 86400000).toISOString().slice(0, 10);
+  var d28 = new Date(now - 28 * 86400000).toISOString().slice(0, 10);
+  var recent = 0, prior = 0;
+  ((biz && biz.entries) || []).forEach(function(e) {
+    if (!(e.kind === "deposit" && e.revenue)) return;
+    var dt = e.date || "";
+    if (dt > d14) recent += e.amount || 0;
+    else if (dt > d28) prior += e.amount || 0;
+  });
+  var verdict = recent > prior * 1.1 ? "up" : (recent < prior * 0.9 ? "down" : "flat");
+  if (recent === 0 && prior === 0) verdict = "flat";
+  return { recent: round2(recent), prior: round2(prior), verdict: verdict };
+}
+
 function SavingsView(props) {
   var accts = props.savings || [];
   var tx = props.tx || [];
@@ -8269,12 +8434,30 @@ function BusinessView(props) {
   var _rv = useState(null); var revFor = _rv[0]; var setRevFor = _rv[1];
   var _rvm = useState({ label: "", amount: "" }); var revForm = _rvm[0]; var setRevForm = _rvm[1];
   var _de = useState({}); var detailEdits = _de[0]; var setDetailEdits = _de[1];
-  var _bc = useState({}); var bizChats = _bc[0]; var setBizChats = _bc[1];
   var _bi = useState(""); var chatInput = _bi[0]; var setChatInput = _bi[1];
   var _bl = useState(false); var chatLoading = _bl[0]; var setChatLoading = _bl[1];
   var _rp2 = useState(false); var replanning = _rp2[0]; var setReplanning = _rp2[1];
   var _del = useState(null); var deleteConfirm = _del[0]; var setDeleteConfirm = _del[1];
   var _delOut = useState(null); var deleteOutrightConfirm = _delOut[0]; var setDeleteOutrightConfirm = _delOut[1];
+
+  // Fresh-props ref so async AI callbacks never patch from a stale snapshot
+  // (a reply can land after another save has already advanced the array).
+  var bizesRef = useRef(bizes); bizesRef.current = bizes;
+
+  // Inject the business-tab animation kit once (own id so the tab also works
+  // standalone in the dev harness, without the Overview having mounted first).
+  useEffect(function() {
+    if (document.getElementById("richy-biz-css")) return;
+    var st = document.createElement("style");
+    st.id = "richy-biz-css";
+    st.textContent = "@keyframes rcFadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}"
+      + "@keyframes rcCheckPop{0%{transform:scale(0.6);}55%{transform:scale(1.12);}100%{transform:scale(1);}}"
+      + "@keyframes rcShimmer{from{transform:translateX(-110%) skewX(-12deg);}to{transform:translateX(240%) skewX(-12deg);}}"
+      + "@keyframes rcPillIn{from{opacity:0;transform:translateY(8px) scale(0.96);}to{opacity:1;transform:none;}}"
+      + "@keyframes rcBadgePulse{0%,100%{opacity:1;}50%{opacity:0.35;}}"
+      + ".rc-hero-scroll{scrollbar-width:none;-ms-overflow-style:none;}.rc-hero-scroll::-webkit-scrollbar{display:none;width:0;height:0;}";
+    document.head.appendChild(st);
+  }, []);
 
   var STRUCTURES = [{ v: "company", l: "Company" }, { v: "individual", l: "Individual" }, { v: "freelancer", l: "Freelancer" }];
   var STAGES = [{ v: "idea", l: "Just an idea" }, { v: "launching", l: "Launching soon" }, { v: "running", l: "Already running" }];
@@ -8296,7 +8479,7 @@ function BusinessView(props) {
     return { id: Date.now() + 1, type: type, amount: round2(amount), label: (type === "expense" ? "-> " : "<- ") + bizName + (suffix || ""), catId: "savings-transfer", category: "Business transfer", transfer: true, date: today, repeat: "none", pending: false };
   }
   function patchBiz(id, patch) {
-    return bizes.map(function(b) { if (b.id !== id) return b; var n = {}; for (var k in b) n[k] = b[k]; for (var k2 in patch) n[k2] = patch[k2]; return n; });
+    return bizesRef.current.map(function(b) { if (b.id !== id) return b; var n = {}; for (var k in b) n[k] = b[k]; for (var k2 in patch) n[k2] = patch[k2]; return n; });
   }
 
   // ---- Intake / plan generation -------------------------------------------
@@ -8370,7 +8553,10 @@ function BusinessView(props) {
     var biz = {
       id: "biz_" + Date.now(), name: form.name || "My Business", what: form.what || "",
       icon: form.icon || "briefcase", color: form.color || BIZ_COLORS[0], createdAt: today,
-      profile: profile, plan: plan, categories: categories, entries: entries
+      profile: profile, plan: plan, categories: categories, entries: entries,
+      // Carry the wizard conversation into the account's CFO thread so the
+      // owner's setup questions and Richard's answers aren't lost.
+      chat: wizChat.slice(-30)
     };
     var next = bizes.concat([biz]);
     if (startCap > 0 && fromMain) props.onBusinessMove(tx.concat([transferTx("expense", startCap, biz.name)]), next);
@@ -8504,20 +8690,14 @@ function BusinessView(props) {
   }
 
   // ---- Richard CFO chat + replan ------------------------------------------
-  function applyAllocToBiz(biz, arr) {
-    var byKey = bizAllocToMap(arr);
-    if (!Object.keys(byKey).length) return false;
-    var cats = biz.categories.map(function(c) { return byKey.hasOwnProperty(c.key) ? Object.assign({}, c, { planned: byKey[c.key] }) : c; });
-    props.onSaveBusinesses(patchBiz(biz.id, { categories: cats }));
-    return true;
-  }
+  // The thread lives on the business object itself (biz.chat, capped at 30
+  // messages) so the conversation survives reloads and syncs across devices.
   function sendChat(biz) {
     if (!chatInput.trim() || chatLoading) return;
     var msg = chatInput.trim();
     setChatInput("");
-    var prev = bizChats[biz.id] || [];
-    var nc = prev.concat([{ role: "user", text: msg }]);
-    setBizChats(function(p) { var n = {}; for (var k in p) n[k] = p[k]; n[biz.id] = nc; return n; });
+    var nc = (biz.chat || []).concat([{ role: "user", text: msg }]);
+    props.onSaveBusinesses(patchBiz(biz.id, { chat: nc.slice(-30) }));
     setChatLoading(true);
     var pf = biz.profile || {};
     var split = (biz.categories || []).map(function(c) { return c.label + ": " + dollars(c.planned || 0) + " budgeted, " + dollars(c.spent || 0) + " spent"; }).join("; ");
@@ -8530,22 +8710,32 @@ function BusinessView(props) {
       + "You can DIRECTLY change the monthly budget split, not just describe it. When the owner wants a change, give one short plain-text sentence explaining what you did, then on a new line append a directive in EXACTLY this form: @@ALLOC[{\"category\":\"Marketing\",\"amount\":600},{\"category\":\"Software\",\"amount\":150}] "
       + "Only list the buckets you are changing, using whole numbers, and keep the overall total close to " + dollars(pf.monthly || 0) + " by also adjusting Buffer or Other when needed. Categories must be from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer. "
       + "Only include the @@ALLOC directive when you actually intend to change the split; for general questions just answer normally." + RICHARD_FORMAT + " The @@ALLOC directive, when you use it, must be the very last thing in your reply.";
-    callClaude(nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }), sys, 500, function(e, reply) {
+    callClaude(nc.filter(function(m) { return m.role !== "system"; }).map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }), sys, 500, function(e, reply) {
       setChatLoading(false);
       if (e || !reply) {
-        setBizChats(function(p) { var n = {}; for (var k in p) n[k] = p[k]; n[biz.id] = (p[biz.id] || []).concat([{ role: "richard", text: "Sorry, I could not connect. Try again." }]); return n; });
+        props.onSaveBusinesses(patchBiz(biz.id, { chat: nc.concat([{ role: "richard", text: "Sorry, I could not connect. Try again." }]).slice(-30) }));
         return;
       }
       var parsed = extractAllocDirective(reply);
+      // One combined save for the reply and any budget retune, so the two
+      // writes can't race each other.
+      var patch = {};
       var applied = false;
-      if (parsed.allocations) { applied = applyAllocToBiz(biz, parsed.allocations); }
-      setBizChats(function(p) {
-        var n = {}; for (var k in p) n[k] = p[k];
-        var thread = (p[biz.id] || []).concat([{ role: "richard", text: parsed.text }]);
-        if (applied) thread = thread.concat([{ role: "system", text: "Budget updated" }]);
-        n[biz.id] = thread;
-        return n;
-      });
+      if (parsed.allocations) {
+        var byKey = bizAllocToMap(parsed.allocations);
+        if (Object.keys(byKey).length) {
+          var cur = null;
+          for (var ci = 0; ci < bizesRef.current.length; ci++) { if (bizesRef.current[ci].id === biz.id) { cur = bizesRef.current[ci]; break; } }
+          if (cur) {
+            patch.categories = cur.categories.map(function(c) { return byKey.hasOwnProperty(c.key) ? Object.assign({}, c, { planned: byKey[c.key] }) : c; });
+            applied = true;
+          }
+        }
+      }
+      var thread = nc.concat([{ role: "richard", text: parsed.text }]);
+      if (applied) thread = thread.concat([{ role: "system", text: "Budget updated" }]);
+      patch.chat = thread.slice(-30);
+      props.onSaveBusinesses(patchBiz(biz.id, patch));
     });
   }
   function replanWithRichard(biz) {
@@ -8972,10 +9162,11 @@ function BusinessView(props) {
   // ---- Detail view ---------------------------------------------------------
   function detailView(biz) {
     var bal = businessCash(biz);
-    var spent = businessSpent(biz);
+    var ym = curMonth();
+    var monthSpent = bizMonthSpend(biz, ym);
     var monthly = (biz.profile && biz.profile.monthly) || 0;
     var plannedTotal = biz.categories.reduce(function(s, c) { return s + (c.planned || 0); }, 0);
-    var thread = bizChats[biz.id] || [];
+    var thread = biz.chat || [];
     var capHistory = (biz.entries || []).filter(function(e) { return !e.bizExpense; }).slice().sort(function(x, y) { return (y.id || 0) - (x.id || 0); }).slice(0, 6);
     var plan = biz.plan || {};
     return (
@@ -8996,8 +9187,8 @@ function BusinessView(props) {
             </div>
             <div style={{ display: "flex", gap: 16, marginTop: 12, borderTop: "0.5px solid " + T.heroSep, paddingTop: 12 }}>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>Spent</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: T.heroInk, marginTop: 3 }}>{dollars(spent)}</div>
+                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>Spent this month</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: T.heroInk, marginTop: 3 }}>{dollars(monthSpent)}</div>
               </div>
               <div style={{ width: "0.5px", background: T.heroSep }} />
               <div style={{ flex: 1 }}>
@@ -9063,7 +9254,8 @@ function BusinessView(props) {
 
         <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 2px 10px" }}>Budget categories</div>
         {biz.categories.map(function(a) {
-          var over = a.spent > a.planned && a.planned > 0;
+          var catMonth = bizCatMonthSpent(biz, a.key, ym);
+          var over = catMonth > a.planned && a.planned > 0;
           return (
             <Card key={a.key} style={{ marginBottom: 12, overflow: "hidden" }}>
               <div style={{ padding: "15px 16px" }}>
@@ -9073,14 +9265,15 @@ function BusinessView(props) {
                   </div>
                   <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: T.ink }}>{a.label}</span>
                   <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: over ? T.red : T.ink2 }}>{dollars(a.spent) + " / " + sym}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: over ? T.red : T.ink2 }}>{dollars(catMonth) + " / " + sym}</span>
                     <input type="number" value={getDetailEdit(biz.id, "alloc_" + a.key, a.planned)}
                       onChange={function(e) { setDetailEdit(biz.id, "alloc_" + a.key, e.target.value); }}
                       onBlur={function(e) { updatePlanned(biz.id, a.key, e.target.value); clearDetailEdit(biz.id, "alloc_" + a.key); }}
                       style={{ width: 58, border: "none", background: "rgba(0,0,0,0.05)", borderRadius: 7, outline: "none", fontSize: 13, fontWeight: 600, color: T.ink, fontFamily: UI, textAlign: "right", padding: "3px 6px", boxSizing: "border-box" }} />
                   </div>
                 </div>
-                <ProgressBar value={a.spent} max={a.planned || 1} color={over ? T.red : a.color} h={6} />
+                <ProgressBar value={catMonth} max={a.planned || 1} color={over ? T.red : a.color} h={6} />
+                {a.spent > catMonth && <div style={{ fontSize: 11, color: T.ink3, marginTop: 5 }}>{"All time: " + dollars(a.spent)}</div>}
                 {(a.entries || []).length > 0 && (
                   <div style={{ marginTop: 10 }}>
                     {a.entries.map(function(e) {

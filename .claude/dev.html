@@ -51,6 +51,9 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).t
   var PieChart = RC.PieChart, Pie = RC.Pie, Cell = RC.Cell, ResponsiveContainer = RC.ResponsiveContainer;
   eval(out);
 
+  // Expose the pure business-math helpers for console verification in tests.
+  try { window.__richy = { bizMonthSpend: bizMonthSpend, bizMonthRevenue: bizMonthRevenue, bizMonthProfit: bizMonthProfit, bizCatMonthSpent: bizCatMonthSpent, bizBurn: bizBurn, bizRunway: bizRunway, bizPace: bizPace, bizHealth: bizHealth, bizRevenueTrend: bizRevenueTrend, businessCash: businessCash }; } catch (e) {}
+
   function iso(d){ return new Date(Date.now() - d*86400000).toISOString().slice(0,10); }
   var mockCats = freshCategories();
   var mockTx = [
@@ -183,16 +186,38 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).t
     el = React.createElement(EditEmailView, { currentEmail: "alon@example.com", hasPw: qs.get("haspw") === "1", onBack: function(){}, onSave: function(){} });
   } else if (view === "business") {
     function BusinessHarness() {
-      var seedCats = localBizSplit(1200).map(function(c){ return c.key === "marketing" ? Object.assign({}, c, { spent: 300, entries: [{ id: 50, label: "Logo design", amount: 300, date: "2026-06-05" }] }) : c; });
+      // Three months of history (created mid-April, "today" is early July):
+      // May net burn 400-180=220, June net burn 420-350=70 -> bizBurn 145.
+      // Cash 2650 in - 1150 out = 1500 -> runway ~10.3 months.
+      var seedCats = localBizSplit(1200).map(function(c){
+        if (c.key === "marketing") return Object.assign({}, c, { spent: 670, entries: [{ id: 50, label: "Logo design", amount: 300, date: "2026-04-20" }, { id: 52, label: "Instagram ads", amount: 150, date: "2026-05-12" }, { id: 54, label: "Instagram ads", amount: 220, date: "2026-06-15" }] });
+        if (c.key === "inventory") return Object.assign({}, c, { spent: 450, entries: [{ id: 51, label: "Wax + wicks", amount: 250, date: "2026-05-05" }, { id: 53, label: "Jars", amount: 200, date: "2026-06-08" }] });
+        if (c.key === "software")  return Object.assign({}, c, { spent: 30,  entries: [{ id: 55, label: "Shopify", amount: 30, date: "2026-07-01" }] });
+        return c;
+      });
       var seedBiz = qs.get("seed") ? [{
-        id: "biz_1", name: "Candle Co", what: "handmade candles", icon: "briefcase", color: "#8970C6", createdAt: "2026-06-01",
+        id: "biz_1", name: "Candle Co", what: "handmade candles", icon: "briefcase", color: "#8970C6", createdAt: "2026-04-15",
         profile: { structure: "individual", stage: "launching", size: "side", monthly: 1200, revenueGoal: 3000, runway: 6, goal: "quit my job in a year" },
-        plan: { summary: "A lean handmade-candle side business. Start small, prove people will pay, then scale what works.", sections: [{ title: "Positioning", body: "Lean into a signature scent and a story only you can tell." }, { title: "First 90 days", body: "Sell at two local markets and open a simple online shop." }], tips: ["Reinvest early profit into the scents that sell.", "Keep a buffer for slow months."], verdict: { assessment: "Six months of runway is healthy for a side project at this budget.", keyNumber: "6 months", keyNumberLabel: "of runway" }, generatedAt: "2026-06-01" },
+        plan: { summary: "A lean handmade-candle side business. Start small, prove people will pay, then scale what works.", sections: [{ title: "Positioning", body: "Lean into a signature scent and a story only you can tell." }, { title: "First 90 days", body: "Sell at two local markets and open a simple online shop." }], tips: ["Reinvest early profit into the scents that sell.", "Keep a buffer for slow months."], verdict: { assessment: "Six months of runway is healthy for a side project at this budget.", keyNumber: "6 months", keyNumberLabel: "of runway" }, generatedAt: "2026-04-15" },
         categories: seedCats,
-        entries: [{ id: 1, kind: "deposit", amount: 2000, date: "2026-06-01", fromMain: true, label: "From balance" }, { id: 50, kind: "withdraw", amount: 300, date: "2026-06-05", fromMain: false, label: "Logo design", bizExpense: true, catKey: "marketing" }]
+        chat: [{ role: "user", text: "How should I price my candles?" }, { role: "richard", text: "Aim for 3 to 4 times your material cost - premium scents and packaging can go higher." }],
+        entries: [
+          { id: 1,  kind: "deposit",  amount: 2000, date: "2026-04-15", fromMain: true,  label: "From balance" },
+          { id: 50, kind: "withdraw", amount: 300,  date: "2026-04-20", fromMain: false, label: "Logo design",    bizExpense: true, catKey: "marketing" },
+          { id: 51, kind: "withdraw", amount: 250,  date: "2026-05-05", fromMain: false, label: "Wax + wicks",    bizExpense: true, catKey: "inventory" },
+          { id: 52, kind: "withdraw", amount: 150,  date: "2026-05-12", fromMain: false, label: "Instagram ads",  bizExpense: true, catKey: "marketing" },
+          { id: 60, kind: "deposit",  amount: 180,  date: "2026-05-25", fromMain: false, label: "Revenue: Market stall", revenue: true },
+          { id: 53, kind: "withdraw", amount: 200,  date: "2026-06-08", fromMain: false, label: "Jars",           bizExpense: true, catKey: "inventory" },
+          { id: 54, kind: "withdraw", amount: 220,  date: "2026-06-15", fromMain: false, label: "Instagram ads",  bizExpense: true, catKey: "marketing" },
+          { id: 61, kind: "deposit",  amount: 260,  date: "2026-06-20", fromMain: false, label: "Revenue: Online orders", revenue: true },
+          { id: 62, kind: "deposit",  amount: 90,   date: "2026-06-28", fromMain: false, label: "Revenue: Market stall", revenue: true },
+          { id: 55, kind: "withdraw", amount: 30,   date: "2026-07-01", fromMain: false, label: "Shopify",        bizExpense: true, catKey: "software" },
+          { id: 63, kind: "deposit",  amount: 120,  date: "2026-07-01", fromMain: false, label: "Revenue: Online orders", revenue: true }
+        ]
       }] : [];
       var _b = React.useState(seedBiz); var bz = _b[0]; var setBz = _b[1];
       var _tx = React.useState(mockTx); var tx = _tx[0]; var setTx = _tx[1];
+      window.__seedBiz = bz[0] || null;
       return React.createElement(BusinessView, {
         businesses: bz, tx: tx, openBizId: qs.get("seed") ? "biz_1" : null, username: "Alon", lang: "en", richardInstructions: "",
         onSaveBusinesses: function(n){ setBz(n); },
