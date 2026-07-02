@@ -254,7 +254,7 @@ function resolveCat(cats, t) {
 
 const UI = "-apple-system, system-ui, sans-serif";
 const DISP = "-apple-system, system-ui, sans-serif";
-const SERIF = "Georgia, 'Times New Roman', serif";
+const SERIF = "'Source Serif 4', Georgia, 'Times New Roman', serif";
 
 var _currency = { sym: "$" };
 var _lang = { code: "en" };
@@ -2641,7 +2641,7 @@ function Overview(props) {
             {/* Panel 1 - Trend */}
             <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>BALANCE TREND</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: HMUT, fontFamily: SERIF }}>Balance Trend</span>
                 {rangeRow()}
               </div>
               <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>{trendChart()}</div>
@@ -2660,7 +2660,7 @@ function Overview(props) {
             {/* Panel 2 - Categories */}
             <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>WHERE IT GOES</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: HMUT, fontFamily: SERIF }}>Where It Goes</span>
                 {rangeRow()}
               </div>
               {winCats.length === 0 ? (
@@ -2670,7 +2670,7 @@ function Overview(props) {
                   <div style={{ position: "relative", width: 132, height: 132, flexShrink: 0 }}>
                     {donutChart()}
                     <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                      <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.1em", color: HFNT }}>SPENT</div>
+                      <div style={{ fontSize: 9, fontWeight: 600, color: HFNT, fontFamily: SERIF }}>Spent</div>
                       <div style={{ fontSize: 20, fontWeight: 700, color: HINK, letterSpacing: "-0.03em" }}>{dollars(winExpenseTot)}</div>
                     </div>
                   </div>
@@ -2695,11 +2695,11 @@ function Overview(props) {
                 {ringChart()}
                 <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                   <div style={{ fontSize: 30, fontWeight: 700, color: HINK, letterSpacing: "-0.03em", lineHeight: 1 }}>{Math.round(Math.max(0, winSav) * dp)}<span style={{ fontSize: 16 }}>%</span></div>
-                  <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.1em", color: HFNT, marginTop: 2 }}>SAVED</div>
+                  <div style={{ fontSize: 9, fontWeight: 600, color: HFNT, fontFamily: SERIF, marginTop: 2 }}>Saved</div>
                 </div>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>SAVINGS RATE</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: HMUT, fontFamily: SERIF }}>Savings Rate</div>
                 <div style={{ fontSize: 16, fontWeight: 600, color: HINK, lineHeight: 1.35, marginTop: 8, letterSpacing: "-0.01em" }}>{winIncomeTot > 0 ? "You kept " + dollars(winKept) + " of what you earned." : "No income recorded in this period."}</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 10 }}>
                   <SVGIcon id={winSav >= 0 ? "up" : "down"} size={14} color={winSav >= 0 ? HPOS : HNEG} />
@@ -2711,7 +2711,7 @@ function Overview(props) {
             {/* Panel 4 - Top merchants */}
             <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>TOP MERCHANTS</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: HMUT, fontFamily: SERIF }}>Top Merchants</span>
                 {rangeRow()}
               </div>
               <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 13 }}>
