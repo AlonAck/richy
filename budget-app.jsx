@@ -375,6 +375,25 @@ function round2(n) {
 // a new month simply has no matching transactions). Net worth stays all-time.
 function curMonth() { return new Date().toISOString().slice(0, 7); }   // "2026-06"
 function inMonth(t, ym) { return !!(t && t.date) && t.date.slice(0, 7) === ym; }
+// Month-key arithmetic done as pure string math so it can never be skewed by
+// the local-time vs toISOString (UTC) mismatch. Dates in the app are stored
+// as UTC ISO strings, so month keys derived from curMonth() stay consistent.
+function ymShift(baseYm, offset) {                                     // ("2026-07", 1) -> "2026-06"
+  var p = baseYm.split("-");
+  var idx = parseInt(p[0], 10) * 12 + (parseInt(p[1], 10) - 1) - offset;
+  var y = Math.floor(idx / 12), m = (idx % 12 + 12) % 12;
+  return y + "-" + (m + 1 < 10 ? "0" : "") + (m + 1);
+}
+function ymDiff(fromYm, toYm) {                                        // whole months from -> to
+  var a = fromYm.split("-"), b = toYm.split("-");
+  return (parseInt(b[0], 10) - parseInt(a[0], 10)) * 12 + (parseInt(b[1], 10) - parseInt(a[1], 10));
+}
+// Day-of-month progress in UTC terms (matches curMonth and stored dates).
+function monthDayFrac() {
+  var d = new Date();
+  var daysIn = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+  return d.getUTCDate() / daysIn;
+}
 
 // The starting/opening balance is NET WORTH the user already had, not money
 // earned this month - so it must be excluded from income and savings-rate math
@@ -4087,6 +4106,19 @@ function fireReminder(n) {
   if ("serviceWorker" in navigator && navigator.serviceWorker.getRegistration) {
     navigator.serviceWorker.getRegistration().then(function(reg) {
       if (reg && reg.showNotification) { reg.showNotification("Richy", { body: body, tag: "note-" + n.id }); }
+      else { plain(); }
+    }).catch(plain);
+  } else { plain(); }
+}
+
+// Business notifications share the reminder plumbing but NEVER prompt for
+// permission - they only fire if the user already granted it elsewhere.
+function fireBizNotification(title, body, tag) {
+  if (typeof window === "undefined" || !("Notification" in window) || Notification.permission !== "granted") return;
+  function plain() { try { new Notification(title, { body: body }); } catch (e) {} }
+  if ("serviceWorker" in navigator && navigator.serviceWorker.getRegistration) {
+    navigator.serviceWorker.getRegistration().then(function(reg) {
+      if (reg && reg.showNotification) { reg.showNotification(title, { body: body, tag: tag }); }
       else { plain(); }
     }).catch(plain);
   } else { plain(); }
@@ -8002,8 +8034,7 @@ function bizBurn(biz) {
   var createdYm = (((biz && biz.createdAt) || "")).slice(0, 7);
   var months = [];
   for (var i = 1; i <= 3; i++) {
-    var d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - i);
-    var ym = d.toISOString().slice(0, 7);
+    var ym = ymShift(curMonth(), i);
     if (createdYm && ym > createdYm) months.push(ym);
   }
   if (months.length) {
@@ -8011,9 +8042,7 @@ function bizBurn(biz) {
     months.forEach(function(m) { tot += Math.max(0, bizMonthSpend(biz, m) - bizMonthRevenue(biz, m)); });
     return round2(tot / months.length);
   }
-  var now = new Date();
-  var daysIn = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  var dayFrac = Math.max(0.15, now.getDate() / daysIn);
+  var dayFrac = Math.max(0.15, monthDayFrac());
   var mtd = Math.max(0, bizMonthSpend(biz, curMonth()) - bizMonthRevenue(biz, curMonth()));
   if (mtd > 0) return round2(mtd / dayFrac);
   return ((biz && biz.profile && biz.profile.monthly) || 0);
@@ -8030,9 +8059,7 @@ function bizRunway(biz) {
 function bizPace(biz) {
   var monthly = (biz && biz.profile && biz.profile.monthly) || 0;
   if (monthly <= 0) return null;
-  var now = new Date();
-  var daysIn = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  var dayFrac = now.getDate() / daysIn;
+  var dayFrac = monthDayFrac();
   var mtd = bizMonthSpend(biz, curMonth());
   var expected = monthly * dayFrac;
   var projected = round2(mtd / Math.max(0.1, dayFrac));
@@ -8059,9 +8086,7 @@ function bizHealth(biz) {
   var pace = bizPace(biz);
   if (pace) { score += pace.verdict === "over" ? -10 : 5; }
   if (stage !== "idea" && (pf.revenueGoal || 0) > 0) {
-    var now = new Date();
-    var daysIn = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    var target = pf.revenueGoal * (now.getDate() / daysIn);
+    var target = pf.revenueGoal * monthDayFrac();
     var rev = bizMonthRevenue(biz, curMonth());
     if (rev >= target) score += 10;
     else if (rev < target * 0.5) score -= 10;
@@ -8185,6 +8210,152 @@ function detectGraduation(biz) {
     if (revCount >= 3 || (goal > 0 && bizMonthRevenue(biz, curMonth()) >= goal * 0.5)) return "running";
   }
   return null;
+}
+
+// ---- Business idea engine ---------------------------------------------------
+// Deterministic growth/savings ideas from the real ledger, each with dollar
+// figures. First hit feeds the weekly review; the full list backs the
+// on-demand "growth ideas" panel when the AI is unreachable.
+function bizIdeas(biz) {
+  var out = [];
+  var pf = biz.profile || {};
+  var stage = pf.stage || "idea";
+  var ym = curMonth();
+  var monthly = pf.monthly || 0;
+  var pl = bizMonthProfit(biz, ym);
+  var trend = bizRevenueTrend(biz);
+  var cash = businessCash(biz);
+  var pace = bizPace(biz);
+  var mktSpend = bizCatMonthSpent(biz, "marketing", ym);
+  var mktPlanned = 0;
+  var bufSpend = bizCatMonthSpent(biz, "buffer", ym);
+  var big = null;
+  (biz.categories || []).forEach(function(c) {
+    if (c.key === "marketing") mktPlanned = c.planned || 0;
+    var sp = bizCatMonthSpent(biz, c.key, ym);
+    if (!big || sp > big.spend) big = { label: c.label, spend: sp };
+  });
+  if (stage !== "idea" && pl.revenue === 0) out.push({ title: "Get your first sale", body: "Nothing teaches faster than one real customer. Offer " + (biz.what || "your product") + " directly to 10 people this week - even at a discount - and record the sale here." });
+  if (trend.verdict !== "up" && monthly > 0 && mktSpend < monthly * 0.15) out.push({ title: "Revenue has gone quiet", body: "You've spent " + dollars(mktSpend) + " on marketing this month" + (mktPlanned > mktSpend ? " of " + dollars(mktPlanned) + " budgeted" : "") + ". Put the unspent marketing money into the one channel that brought your last customers." });
+  if (pl.margin !== null && pl.margin >= 0.6 && trend.verdict === "up") out.push({ title: "Room to raise prices", body: "Your margin is " + Math.round(pl.margin * 100) + "% and revenue is climbing. Test a 10% price rise on the bestseller - on " + dollars(pl.revenue) + " of monthly sales that's about " + dollars(pl.revenue * 0.1) + " extra profit for zero extra work." });
+  if (pl.spend > 0 && big && big.spend > pl.spend * 0.3) out.push({ title: "One cost is eating the budget", body: big.label + " took " + dollars(big.spend) + " this month - over 30% of everything you spent. Get one competing quote or renegotiate before next month's bill." });
+  if (stage === "running" && monthly > 0 && cash > monthly * 3) out.push({ title: "Idle cash could be working", body: "You're sitting on " + dollars(cash) + " - more than 3 months of budget. Reinvest a slice into whatever wins customers, or raise the Buffer deliberately instead of by default." });
+  if (pace && pace.verdict === "over" && bufSpend === 0) out.push({ title: "Use the buffer on purpose", body: "Spending is running ahead of plan but the Buffer bucket is untouched. Reallocate it toward the overspending category so the plan matches reality." });
+  var pads = {
+    idea: [{ title: "Talk to 5 real customers", body: "Before spending more, get five honest conversations with people who might pay. Write down their exact words - that's your marketing copy later." }],
+    launching: [{ title: "Pick one channel and go deep", body: "Spreading thin kills launches. Choose the single channel your buyers actually use and show up there three times this week." }],
+    running: [{ title: "Systemize one chore", body: "Write down the one task that eats your week and turn it into a checklist or template. An hour saved weekly is a full week back every year." }]
+  };
+  (pads[stage] || pads.idea).forEach(function(p) { out.push(p); });
+  return out;
+}
+
+// ---- Weekly CFO review ------------------------------------------------------
+// Due once the business has any life in it and the last review is 7+ days old.
+function reviewDue(biz) {
+  if (!biz) return false;
+  if (!((biz.entries || []).length > 0 || biz.roadmap)) return false;
+  var last = (biz.reviews || [])[0];
+  if (!last) return true;
+  var t = new Date((last.date || "") + "T00:00:00").getTime();
+  if (isNaN(t)) return true;
+  return (Date.now() - t) >= 7 * 86400000;
+}
+// The deterministic weekly digest every review call is grounded in - Richard
+// never gets to invent a number.
+function bizWeeklyDigest(biz) {
+  var pf = biz.profile || {};
+  var ym = curMonth();
+  var pl = bizMonthProfit(biz, ym);
+  var health = bizHealth(biz);
+  var pace = bizPace(biz);
+  var runway = bizRunway(biz);
+  var prog = roadmapProgress(biz.roadmap);
+  var mss = (biz.roadmap && biz.roadmap.milestones) || [];
+  var cur = null;
+  for (var i = 0; i < mss.length; i++) { if (!mss[i].done) { cur = mss[i]; break; } }
+  var nextTask = null;
+  if (cur) { for (var j = 0; j < (cur.tasks || []).length; j++) { if (!cur.tasks[j].done) { nextTask = cur.tasks[j].label; break; } } }
+  var catLine = (biz.categories || []).filter(function(c) { return (c.planned || 0) > 0 || bizCatMonthSpent(biz, c.key, ym) > 0; }).map(function(c) { return c.label + " " + dollars(bizCatMonthSpent(biz, c.key, ym)) + " of " + dollars(c.planned || 0); }).join("; ");
+  var dayFrac = monthDayFrac();
+  return "Business: " + (biz.name || "my business") + " - " + (biz.what || "unspecified") + ". Stage: " + (pf.stage || "idea") + ". "
+    + "This month: revenue " + dollars(pl.revenue) + " (monthly goal " + dollars(pf.revenueGoal || 0) + ", month is " + Math.round(dayFrac * 100) + "% done), spent " + dollars(pl.spend) + " of " + dollars(pf.monthly || 0) + " budget, profit " + dollars(pl.profit) + ". "
+    + "Cash " + dollars(businessCash(biz)) + ", runway " + (runway === null ? "self-sustaining" : runway + " months") + ", health " + health.score + " of 100 (" + health.label + "). "
+    + (pace ? ("Pace: " + pace.text + " ") : "")
+    + "Budget buckets (spent of planned): " + (catLine || "none") + ". "
+    + (biz.roadmap ? ("Roadmap: " + prog.done + " of " + prog.total + " tasks done" + (cur ? (", current milestone: " + cur.title + (nextTask ? (", next task: " + nextTask) : "")) : ", all milestones complete") + ". ") : "No roadmap yet. ")
+    + ((biz.reviews && biz.reviews[0]) ? ("Last week you told them: " + biz.reviews[0].headline + " ") : "This is their first weekly review. ")
+    + "12-month goal: " + (pf.goal || "unspecified") + ".";
+}
+// Offline/parse-failure fallback so a review still lands every week.
+function localWeeklyReview(biz) {
+  var pf = biz.profile || {};
+  var ym = curMonth();
+  var health = bizHealth(biz);
+  var pace = bizPace(biz);
+  var runway = bizRunway(biz);
+  var status = health.score >= 70 ? "on-track" : (health.score >= 45 ? "watch" : "off-track");
+  var headline = status === "on-track"
+    ? "Steady week for " + (biz.name || "the business") + " - the numbers are holding up."
+    : status === "watch"
+      ? "Worth a look this week - a couple of numbers are drifting."
+      : "This week needs attention - the numbers are moving the wrong way.";
+  var worst = null;
+  (biz.categories || []).forEach(function(c) {
+    if ((c.planned || 0) <= 0) return;
+    var sp = bizCatMonthSpent(biz, c.key, ym);
+    if (sp - c.planned > 0 && (!worst || sp - c.planned > worst.overBy)) worst = { label: c.label, overBy: round2(sp - c.planned), planned: c.planned };
+  });
+  var tip = worst
+    ? { title: "Rein in " + worst.label, body: worst.label + " is " + dollars(worst.overBy) + " over its " + dollars(worst.planned) + " budget this month. Pause spending there or move budget from Buffer so the plan matches reality." }
+    : { title: "Keep the ledger honest", body: "Log every business expense and sale the day it happens - the advice here is only as sharp as the numbers you feed it." };
+  var warning = (runway !== null && runway < 3)
+    ? { title: "Runway is short", body: "About " + runway + " months of cash left at the current burn. Cut the biggest non-earning cost or push revenue now - don't let it get to one." }
+    : (pace && pace.verdict === "over")
+      ? { title: "Pace is hot", body: pace.text }
+      : { title: "Nothing burning", body: "No urgent risk this week. Use the calm to work the roadmap." };
+  var idea = bizIdeas(biz)[0];
+  return { status: status, headline: headline, tip: tip, warning: warning, idea: { title: idea.title, body: idea.body }, taskSuggestion: null, graduate: "", source: "local" };
+}
+// Run the weekly review. Always calls back with a stored-shape review whose
+// numbers are computed locally - the model's text is advice, never data.
+function runWeeklyReview(biz, richardInstructions, lang, cb) {
+  var custom = (richardInstructions && richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + richardInstructions + "\n\n") : "";
+  var langSuffix = (lang && lang !== "en") ? (" Every string value must be written entirely in " + (LANGUAGE_NAMES[lang] || "English") + ".") : "";
+  var sys = custom + "You are Richard, a sharp, warm, honest business CFO inside the Richy app, delivering the owner's weekly business review. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"status\":\"on-track\" or \"watch\" or \"off-track\",\"headline\":\"one honest sentence, max 18 words, on exactly where the business stands this week\",\"tip\":{\"title\":\"2 to 5 words\",\"body\":\"1 to 2 sentences of concrete advice tied to their real numbers\"},\"warning\":{\"title\":\"2 to 5 words\",\"body\":\"the one risk to watch, tied to a real number\"},\"idea\":{\"title\":\"2 to 5 words\",\"body\":\"one growth or savings idea, with a dollar figure where possible\"},\"taskSuggestion\":{\"label\":\"one concrete task under 14 words, or empty string\",\"milestone\":\"the milestone title to file it under, or empty string\"},\"graduate\":\"\"}. Never repeat last week's headline. Base every claim only on the numbers given - never invent figures. If the business has clearly outgrown its stage (idea stage but real money is moving; launching stage but revenue keeps arriving) set graduate to the next stage, launching or running - otherwise leave it an empty string." + langSuffix;
+  callClaude([{ role: "user", content: bizWeeklyDigest(biz) }], sys, 600, function(e, text) {
+    var ym = curMonth();
+    var pl = bizMonthProfit(biz, ym);
+    var frozen = { revenue: pl.revenue, spend: pl.spend, profit: pl.profit, runwayMonths: bizRunway(biz), healthScore: bizHealth(biz).score };
+    function finish(r) {
+      cb({
+        id: "rev_" + Date.now(), date: new Date().toISOString().slice(0, 10),
+        status: r.status, headline: r.headline, tip: r.tip, warning: r.warning, idea: r.idea,
+        taskSuggestion: (r.taskSuggestion && r.taskSuggestion.label) ? r.taskSuggestion : null,
+        graduate: r.graduate || "", source: r.source || "ai",
+        revenue: frozen.revenue, spend: frozen.spend, profit: frozen.profit, runwayMonths: frozen.runwayMonths, healthScore: frozen.healthScore
+      });
+    }
+    if (e || !text) { finish(localWeeklyReview(biz)); return; }
+    try {
+      var jsonStr = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
+      var p = JSON.parse(jsonStr);
+      var lr = localWeeklyReview(biz);
+      var okStatus = { "on-track": 1, "watch": 1, "off-track": 1 };
+      var okGrad = { launching: 1, running: 1 };
+      if (!p.headline || !okStatus[p.status]) { finish(lr); return; }
+      finish({
+        status: p.status,
+        headline: String(p.headline).slice(0, 170),
+        tip: (p.tip && p.tip.body) ? { title: String(p.tip.title || "Tip").slice(0, 40), body: String(p.tip.body).slice(0, 300) } : lr.tip,
+        warning: (p.warning && p.warning.body) ? { title: String(p.warning.title || "Watch").slice(0, 40), body: String(p.warning.body).slice(0, 300) } : lr.warning,
+        idea: (p.idea && p.idea.body) ? { title: String(p.idea.title || "Idea").slice(0, 40), body: String(p.idea.body).slice(0, 300) } : lr.idea,
+        taskSuggestion: (p.taskSuggestion && p.taskSuggestion.label) ? { label: String(p.taskSuggestion.label).slice(0, 120), milestone: String(p.taskSuggestion.milestone || "").slice(0, 70) } : null,
+        graduate: okGrad[p.graduate] ? p.graduate : "",
+        source: "ai"
+      });
+    } catch (e2) { finish(localWeeklyReview(biz)); }
+  });
 }
 
 function SavingsView(props) {
@@ -8584,7 +8755,7 @@ function BusinessView(props) {
     if (heroScrollTimer.current) clearTimeout(heroScrollTimer.current);
     heroScrollTimer.current = setTimeout(function() { var w = el.clientWidth || 1; setHeroPage(Math.round(el.scrollLeft / w)); }, 100);
   }
-  function ymOffset(off) { var d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - off); return d.toISOString().slice(0, 7); }
+  function ymOffset(off) { return ymShift(curMonth(), off); }
   function ymLabel(ymStr) { var p = ymStr.split("-"); var MO = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; return MO[(parseInt(p[1], 10) || 1) - 1] + " " + p[0]; }
 
   // Roadmap: generation, task toggling, milestone celebration, graduation.
@@ -8639,6 +8810,68 @@ function BusinessView(props) {
     }
     setLastChecked(!wasDone ? tid : null);
     props.onSaveBusinesses(patchBiz(biz.id, patch));
+  }
+  // Weekly review + growth ideas.
+  var _rvl = useState(false); var reviewLoading = _rvl[0]; var setReviewLoading = _rvl[1];
+  var _pro = useState(false); var pastOpen = _pro[0]; var setPastOpen = _pro[1];
+  var _gi = useState(null); var ideas = _gi[0]; var setIdeas = _gi[1];
+  var _gil = useState(false); var ideasLoading = _gil[0]; var setIdeasLoading = _gil[1];
+  // A due review runs when the detail opens (covers businesses beyond the
+  // 2-per-session cap of the app-open sweep, and manual Refresh stays rare).
+  useEffect(function() {
+    if (view !== "detail" || !activeId || reviewLoading) return;
+    var b = null;
+    for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === activeId) { b = bizes[i]; break; } }
+    if (!b || !reviewDue(b)) return;
+    runDetailReview(b);
+  }, [activeId, view, bizes]);
+  useEffect(function() { setPastOpen(false); setIdeas(null); }, [activeId]);
+  function runDetailReview(b) {
+    if (reviewLoading) return;
+    setReviewLoading(true);
+    runWeeklyReview(b, props.richardInstructions, props.lang, function(review) {
+      setReviewLoading(false);
+      var cur = null;
+      for (var i = 0; i < bizesRef.current.length; i++) { if (bizesRef.current[i].id === b.id) { cur = bizesRef.current[i]; break; } }
+      props.onSaveBusinesses(patchBiz(b.id, { reviews: [review].concat((cur || b).reviews || []).slice(0, 8) }));
+    });
+  }
+  function addSuggestedTask(biz, review) {
+    var rm = biz.roadmap;
+    if (!rm || !review.taskSuggestion || review.taskSuggestion.added) return;
+    var mss = rm.milestones || [];
+    if (!mss.length) return;
+    var targetIdx = -1;
+    if (review.taskSuggestion.milestone) {
+      for (var i = 0; i < mss.length; i++) { if (mss[i].title.toLowerCase().indexOf(review.taskSuggestion.milestone.toLowerCase()) !== -1) { targetIdx = i; break; } }
+    }
+    if (targetIdx === -1) { for (var j = 0; j < mss.length; j++) { if (!mss[j].done) { targetIdx = j; break; } } }
+    if (targetIdx === -1) targetIdx = mss.length - 1;
+    var ms = mss.map(function(m, mi) {
+      if (mi !== targetIdx) return m;
+      return Object.assign({}, m, { done: false, doneAt: null, tasks: (m.tasks || []).concat([{ id: "ts_" + Date.now(), label: review.taskSuggestion.label, done: false, doneAt: null }]) });
+    });
+    var reviews = (biz.reviews || []).map(function(r) { return r.id === review.id ? Object.assign({}, r, { taskSuggestion: Object.assign({}, r.taskSuggestion, { added: true }) }) : r; });
+    props.onSaveBusinesses(patchBiz(biz.id, { roadmap: Object.assign({}, rm, { milestones: ms }), reviews: reviews }));
+  }
+  function fetchIdeas(biz) {
+    if (ideasLoading) return;
+    setIdeasLoading(true); setIdeas(null);
+    var custom = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
+    var sys = custom + "You are Richard, a sharp, warm, honest business CFO inside the Richy app. Give the owner growth ideas grounded ONLY in the numbers provided - never invent figures. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"ideas\":[{\"title\":\"2 to 6 words\",\"body\":\"2 to 3 concrete sentences tied to their numbers\",\"impact\":\"one short line like: about $120 more per month, or empty string\"}]} with EXACTLY 3 ideas." + langLine();
+    callClaude([{ role: "user", content: bizWeeklyDigest(biz) + " Give me 3 growth ideas." }], sys, 500, function(e, text) {
+      setIdeasLoading(false);
+      if (!e && text) {
+        try {
+          var p = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
+          if (Array.isArray(p.ideas) && p.ideas.length) {
+            setIdeas(p.ideas.slice(0, 3).map(function(x) { return { title: String(x.title || "Idea").slice(0, 50), body: String(x.body || "").slice(0, 340), impact: String(x.impact || "").slice(0, 60) }; }));
+            return;
+          }
+        } catch (e2) {}
+      }
+      setIdeas(bizIdeas(biz).slice(0, 3).map(function(x) { return { title: x.title, body: x.body, impact: "" }; }));
+    });
   }
   function graduateBiz(biz, newStage) {
     var pf = {}; for (var k in (biz.profile || {})) pf[k] = biz.profile[k];
@@ -9481,6 +9714,113 @@ function BusinessView(props) {
         </div>
 
         {(function() {
+          var reviews = biz.reviews || [];
+          var latest = reviews[0];
+          if (!latest && !reviewLoading) return null;
+          var stColor = latest ? (latest.status === "on-track" ? T.green : latest.status === "watch" ? "#C8983A" : T.red) : T.ink3;
+          var stBg = latest ? (latest.status === "on-track" ? "rgba(39,168,95,0.12)" : latest.status === "watch" ? "rgba(200,152,58,0.15)" : "rgba(217,84,107,0.12)") : "transparent";
+          var stLabel = latest ? (latest.status === "on-track" ? "On track" : latest.status === "watch" ? "Worth a look" : "Needs attention") : "";
+          var rows = latest ? [
+            { icon: "star", tint: T.green, v: latest.tip },
+            { icon: "shield", tint: "#C8983A", v: latest.warning },
+            { icon: "up", tint: T.orange, v: latest.idea }
+          ].filter(function(r) { return r.v && r.v.body; }) : [];
+          var fwd = { idea: { launching: 1, running: 1 }, launching: { running: 1 }, running: {} };
+          var showGrad = !!(latest && latest.graduate && fwd[stage] && fwd[stage][latest.graduate] && !detectGraduation(biz));
+          return (
+            <Card style={{ padding: "16px 18px", marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.03s both", position: "relative", overflow: "hidden" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>This week with Richard</div>
+                {latest && <span style={{ fontSize: 11, color: T.ink3 }}>{latest.date}</span>}
+              </div>
+              {reviewLoading && !latest && (
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: T.ink2 }}>Richard is running your weekly review...</div>
+                  <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3 }}>Real numbers in, honest read out.</div>
+                  <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "45%", background: "linear-gradient(105deg, transparent, rgba(255,255,255,0.5), transparent)", animation: "rcShimmer 1.4s ease infinite", pointerEvents: "none" }} />
+                </div>
+              )}
+              {latest && (
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: stColor, background: stBg, borderRadius: 999, padding: "4px 11px", letterSpacing: "0.03em" }}>{stLabel}</span>
+                    {reviewLoading && <span style={{ fontSize: 11, color: T.ink3 }}>updating...</span>}
+                  </div>
+                  <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, lineHeight: 1.4, marginBottom: 6 }}>{latest.headline}</div>
+                  {rows.map(function(r, i) {
+                    return (
+                      <div key={i} style={{ display: "flex", gap: 10, padding: "8px 0", borderTop: i > 0 ? "0.5px solid " + T.sep : "none" }}>
+                        <div style={{ width: 30, height: 30, borderRadius: 9, background: r.tint + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                          <SVGIcon id={r.icon} size={15} color={r.tint} />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 12.5, fontWeight: 700, color: T.ink }}>{r.v.title}</div>
+                          <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 1 }}>{r.v.body}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {latest.taskSuggestion && !latest.taskSuggestion.added && biz.roadmap && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, background: T.orangeDim, borderRadius: 12, padding: "10px 12px", marginTop: 8 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 10.5, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.06em" }}>Suggested step</div>
+                        <div style={{ fontSize: 12.5, color: T.ink, marginTop: 2, lineHeight: 1.4 }}>{latest.taskSuggestion.label}</div>
+                      </div>
+                      <button onClick={function() { addSuggestedTask(biz, latest); }}
+                        style={{ background: T.btn, border: "none", borderRadius: 9, padding: "8px 12px", fontSize: 12, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Add to roadmap</button>
+                    </div>
+                  )}
+                  {showGrad && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, background: T.orangeDim, borderRadius: 12, padding: "10px 12px", marginTop: 8 }}>
+                      <div style={{ flex: 1, fontSize: 12.5, color: T.ink, lineHeight: 1.4 }}>{"Richard thinks it's time to graduate to the " + (latest.graduate === "running" ? "running" : "launch") + " stage."}</div>
+                      <button onClick={function() { graduateBiz(biz, latest.graduate); }}
+                        style={{ background: T.btn, border: "none", borderRadius: 9, padding: "8px 12px", fontSize: 12, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Graduate</button>
+                    </div>
+                  )}
+                  <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                    <button onClick={function() { fetchIdeas(biz); }} disabled={ideasLoading}
+                      style={{ flex: 1, background: T.orangeDim, border: "none", borderRadius: 10, padding: "10px 0", fontSize: 12.5, fontWeight: 700, color: T.orange, cursor: ideasLoading ? "default" : "pointer", fontFamily: UI }}>{ideasLoading ? "Thinking..." : "Get growth ideas"}</button>
+                    {reviews.length > 1 && (
+                      <button onClick={function() { setPastOpen(!pastOpen); }}
+                        style={{ flex: 1, background: "none", border: "1.5px solid " + T.sep, borderRadius: 10, padding: "10px 0", fontSize: 12.5, fontWeight: 600, color: T.ink2, cursor: "pointer", fontFamily: UI }}>{pastOpen ? "Hide past reviews" : "Past reviews (" + (reviews.length - 1) + ")"}</button>
+                    )}
+                  </div>
+                  {ideas && (
+                    <div style={{ marginTop: 10 }}>
+                      {ideas.map(function(gi, i) {
+                        return (
+                          <div key={i} style={{ background: "rgba(0,0,0,0.03)", borderRadius: 12, padding: "11px 13px", marginBottom: i < ideas.length - 1 ? 8 : 0, animation: "rcFadeUp 0.45s ease " + (i * 0.08) + "s both" }}>
+                            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: T.ink }}>{gi.title}</div>
+                              {gi.impact ? <div style={{ fontSize: 11.5, fontWeight: 700, color: T.green, flexShrink: 0 }}>{gi.impact}</div> : null}
+                            </div>
+                            <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 3 }}>{gi.body}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {pastOpen && reviews.length > 1 && (
+                    <div style={{ marginTop: 10, borderTop: "0.5px solid " + T.sep, paddingTop: 4 }}>
+                      {reviews.slice(1).map(function(r) {
+                        var c = r.status === "on-track" ? T.green : r.status === "watch" ? "#C8983A" : T.red;
+                        return (
+                          <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 9, padding: "7px 0" }}>
+                            <span style={{ width: 7, height: 7, borderRadius: "50%", background: c, flexShrink: 0 }} />
+                            <span style={{ fontSize: 11.5, color: T.ink3, flexShrink: 0 }}>{r.date}</span>
+                            <span style={{ flex: 1, fontSize: 12, color: T.ink2, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.headline}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+            </Card>
+          );
+        })()}
+
+        {(function() {
           var rm = biz.roadmap;
           if (!rm && roadmapBuilding) {
             return (
@@ -9591,12 +9931,7 @@ function BusinessView(props) {
 
         {(function() {
           var created = (biz.createdAt || "").slice(0, 7);
-          var maxBack = 0;
-          if (created) {
-            var cp = created.split("-");
-            var nw = new Date();
-            maxBack = Math.max(0, (nw.getFullYear() - parseInt(cp[0], 10)) * 12 + (nw.getMonth() + 1 - parseInt(cp[1], 10)));
-          }
+          var maxBack = created ? Math.max(0, ymDiff(created, curMonth())) : 0;
           var off = Math.min(plMonthOff, maxBack);
           var ymSel = ymOffset(off);
           var mpl = bizMonthProfit(biz, ymSel);
@@ -11305,6 +11640,36 @@ export default function App() {
     if (dueNow.length) { fireDue(dueNow); }
     return function() { for (var k in remTimers.current) { clearTimeout(remTimers.current[k]); } };
   }, [notes]);
+
+  // Weekly CFO reviews: on app open, run Richard's review for up to two due
+  // businesses (the client-side stand-in for a weekly cron). Results apply
+  // through a fresh-state ref so a slow reply can't clobber newer edits, and
+  // a notification fires only if permission was already granted elsewhere.
+  var businessesRef = useRef(businesses);
+  businessesRef.current = businesses;
+  var bizReviewRan = useRef(false);
+  useEffect(function() {
+    if (bizReviewRan.current || !accountKey || !businesses.length) return;
+    bizReviewRan.current = true;
+    var due = businesses.filter(reviewDue).slice(0, 2);
+    if (!due.length) return;
+    function runNext(idx) {
+      if (idx >= due.length) return;
+      var target = due[idx];
+      runWeeklyReview(target, richardCtx, lang, function(review) {
+        var next = businessesRef.current.map(function(b) {
+          if (b.id !== target.id) return b;
+          var n = {}; for (var k in b) n[k] = b[k];
+          n.reviews = [review].concat(b.reviews || []).slice(0, 8);
+          return n;
+        });
+        onSaveBusinesses(next);
+        fireBizNotification("Richy - " + (target.name || "Business"), review.headline, "biz-review-" + target.id);
+        runNext(idx + 1);
+      });
+    }
+    runNext(0);
+  }, [businesses, accountKey]);
 
   function onSaveFolders(next) { setFolders(next); save({ folders: next }); }
   function onSaveCategories(next) { setCategories(next); save({ categories: next }); }
