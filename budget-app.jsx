@@ -254,7 +254,6 @@ function resolveCat(cats, t) {
 
 const UI = "-apple-system, system-ui, sans-serif";
 const DISP = "-apple-system, system-ui, sans-serif";
-const SERIF = "Georgia, 'Times New Roman', serif";
 
 var _currency = { sym: "$" };
 var _lang = { code: "en" };
@@ -829,7 +828,7 @@ function Overlay(props) {
 function FormRow(props) {
   return (
     <div style={{ background: T.inputBg, borderRadius: 13, padding: "9px 14px", marginBottom: props.last ? 0 : 7 }}>
-      <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 3 }}>
+      <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, marginBottom: 3 }}>
         {props.label}
       </div>
       {props.opts ? (
@@ -893,7 +892,7 @@ function CatPicker(props) {
   return (
     <div style={{ background: "rgba(0,0,0,0.04)", borderRadius: 13, padding: "9px 14px", marginBottom: props.last ? 0 : 7 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
-        <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, fontFamily: SERIF }}>
+        <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI }}>
           {props.label || "Category"}
         </div>
         {props.onManage && (
@@ -1001,7 +1000,7 @@ function AmountField(props) {
   return (
     <div style={{ background: "rgba(0,0,0,0.04)", borderRadius: 14, padding: "11px 15px 12px", marginBottom: 7 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3, minHeight: 14 }}>
-        <span style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, fontFamily: SERIF }}>{tr("amount")}</span>
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI }}>{tr("amount")}</span>
         {foreign && (
           <span style={{ fontSize: 12, fontWeight: 700, color: T.ink2, fontFamily: UI, letterSpacing: "-0.01em" }}>
             {props.rateLoading ? "..." : ("= " + fmtCur(props.mainSym, conv))}
@@ -1409,7 +1408,7 @@ function AuthScreen(props) {
                 <input value={password2} onChange={function(e) { setPW2(e.target.value); }}
                   type={showPw ? "text" : "password"} placeholder="Repeat password" autoComplete="new-password"
                   style={fieldStyle} />, 12)}
-              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, fontFamily: SERIF, padding: "2px 4px 7px" }}>Date of birth</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", padding: "2px 4px 7px" }}>Date of birth</div>
               {fieldWrap("calendar",
                 <input value={dob} onChange={function(e) { setDob(e.target.value); }}
                   type="date"
@@ -1426,7 +1425,7 @@ function AuthScreen(props) {
           {step === "signup_prefs" && (
             <div>
               <div style={{ fontSize: 13, color: T.ink3, marginBottom: 14, lineHeight: 1.5 }}>Almost there — pick your language and currency so the app feels right from day one.</div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 8 }}>Language</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Language</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
                 {LANGUAGE_OPTIONS.map(function(o) {
                   var sel = signupLang === o.code;
@@ -1438,7 +1437,7 @@ function AuthScreen(props) {
                   );
                 })}
               </div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 8 }}>Currency</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Currency</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {CURRENCY_OPTIONS.slice(0, 16).map(function(c) {
                   var sel = signupCur === c.sym;
@@ -1450,7 +1449,7 @@ function AuthScreen(props) {
                   );
                 })}
               </div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, fontFamily: SERIF, margin: "20px 0 8px" }}>Notes for Richard</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "20px 0 8px" }}>Notes for Richard</div>
               <textarea value={richardNotes} onChange={function(e) { setRichardNotes(e.target.value); }}
                 placeholder="Anything Richard should know about you — your goals, money habits, what you're saving for…"
                 rows={3}
@@ -1563,14 +1562,14 @@ function CatchUpScreen(props) {
         </div>
 
         <div style={{ background: "#fff", borderRadius: 16, padding: "14px 16px", marginBottom: 14, boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 4 }}>Income received this {monthName}</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Income received this {monthName}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <span style={{ fontSize: 22, color: T.ink3, fontWeight: 600 }}>{sym}</span>
             <input value={inc} onChange={function(e) { setInc(e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 22, fontFamily: UI, color: T.ink, fontWeight: 700 }} />
           </div>
         </div>
 
-        <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, fontFamily: SERIF, margin: "4px 2px 8px" }}>Spent so far this {monthName}</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "4px 2px 8px" }}>Spent so far this {monthName}</div>
         <div style={{ background: "#fff", borderRadius: 16, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
           {cats.map(function(c, i) {
             return (
@@ -1657,7 +1656,7 @@ function OnboardingScreen(props) {
 
 
   var fieldStyle = { width: "100%", background: "rgba(255,255,255,0.88)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 16px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", marginBottom: 12, display: "block" };
-  var labelStyle = { fontSize: 12, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 8, display: "block" };
+  var labelStyle = { fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8, display: "block" };
 
   if (loading) {
     return (
@@ -2068,11 +2067,11 @@ function FoundMoney(props) {
       <Overlay open={open} onClose={function() { setOpen(false); }} title="Found Money">
         <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
           <div style={{ flex: 1, background: T.greenDim, borderRadius: 14, padding: "12px 14px" }}>
-            <div style={{ fontSize: 9.5, fontWeight: 700, color: T.ink3, fontFamily: SERIF }}>Recoverable / year</div>
+            <div style={{ fontSize: 9.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em" }}>Recoverable / year</div>
             <div style={{ fontSize: 22, fontWeight: 700, color: T.green, letterSpacing: "-0.02em", marginTop: 3 }}>{dollars(recoverable)}</div>
           </div>
           <div style={{ flex: 1, background: "rgba(0,0,0,0.04)", borderRadius: 14, padding: "12px 14px" }}>
-            <div style={{ fontSize: 9.5, fontWeight: 700, color: T.ink3, fontFamily: SERIF }}>Recovered so far</div>
+            <div style={{ fontSize: 9.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em" }}>Recovered so far</div>
             <div style={{ fontSize: 22, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", marginTop: 3 }}>{dollars(tally)}</div>
           </div>
         </div>
@@ -2604,7 +2603,7 @@ function Overview(props) {
                     })}
                   </div>
                 ) : (
-                  <span style={{ fontSize: 11, fontWeight: 600, color: HMUT, fontFamily: SERIF }}>{tr("netBalance")}</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>{tr("netBalance")}</span>
                 )}
                 <div onPointerDown={stopDrag} onClick={function() { setHidden(function(v) { return !v; }); }} style={{ cursor: "pointer", padding: 4, display: "flex" }}>
                   <SVGIcon id={hidden ? "eyeoff" : "eye"} size={20} color={HMUT} />
@@ -2627,12 +2626,12 @@ function Overview(props) {
               </div>
               <div style={{ display: "flex", gap: 14, borderTop: "0.5px solid " + HSEP, paddingTop: 14 }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, color: HFNT, fontFamily: SERIF }}>{tr("income")}</div>
+                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>{tr("income")}</div>
                   <div style={{ fontSize: 16, fontWeight: 700, color: HPOS, letterSpacing: "-0.02em", marginTop: 3 }}>{"+" + dollars(income)}</div>
                 </div>
                 <div style={{ width: "0.5px", background: HSEP }} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, color: HFNT, fontFamily: SERIF }}>{tr("spent")}</div>
+                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>{tr("spent")}</div>
                   <div style={{ fontSize: 16, fontWeight: 700, color: HNEG, letterSpacing: "-0.02em", marginTop: 3 }}>{"-" + dollars(expense)}</div>
                 </div>
               </div>
@@ -2761,17 +2760,17 @@ function Overview(props) {
       {(income > 0 || expense > 0) && (
         <div style={{ display: "flex", gap: 10, marginBottom: 20, animation: "rcFadeUp 0.6s ease 0.06s both" }}>
           <div style={{ flex: 1, background: !hasIncome ? T.card : (savRate >= 20 ? T.greenDim : savRate > 0 ? T.orangeDim : "rgba(224,48,48,0.07)"), borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 8 }}>{tr("savingsRate")}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{tr("savingsRate")}</div>
             <div style={{ fontSize: 26, fontWeight: 700, color: !hasIncome ? T.ink3 : (savRate >= 20 ? T.green : savRate > 0 ? T.orange : T.red), letterSpacing: "-0.02em" }}>{!hasIncome ? "-" : savRate + "%"}</div>
             <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>{!hasIncome ? tr("noIncomeYet") : (savRate >= 20 ? tr("excellent") : savRate >= 10 ? tr("onTrack") : savRate > 0 ? tr("buildItUp") : tr("overspending"))}</div>
           </div>
           <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 8 }}>{tr("transactions")}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{tr("transactions")}</div>
             <div style={{ fontSize: 26, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{monthTxCount}</div>
             <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>{tr("thisPeriod")}</div>
           </div>
           <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 8 }}>{tr("goals")}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{tr("goals")}</div>
             <div style={{ fontSize: 26, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{goals.length}</div>
             <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>{goals.length === 1 ? tr("activeGoal") : tr("activeGoals")}</div>
           </div>
@@ -2791,19 +2790,19 @@ function Overview(props) {
                 <SVGIcon id={t.icon || "plane"} size={20} color={T.heroInk} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: T.heroMut, fontFamily: SERIF }}>{(di ? ("Day " + di.dayNum + " of " + t.days) : "Trip in progress") + (t.destination ? (" - " + t.destination) : "")}</div>
+                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>{(di ? ("Day " + di.dayNum + " of " + t.days) : "Trip in progress") + (t.destination ? (" - " + t.destination) : "")}</div>
                 <div style={{ fontSize: 17, fontWeight: 700, color: T.heroInk, marginTop: 2 }}>{t.name}</div>
               </div>
               <SVGIcon id="chevron" size={16} color={T.heroInk} />
             </div>
             <div style={{ position: "relative", display: "flex", gap: 16, marginTop: 14, borderTop: "0.5px solid " + T.heroSep, paddingTop: 12 }}>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: T.heroMut, fontFamily: SERIF }}>{tr("spent")}</div>
+                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>{tr("spent")}</div>
                 <div style={{ fontSize: 15, fontWeight: 700, color: T.heroInk, marginTop: 3 }}>{dollars(spent)}</div>
               </div>
               <div style={{ width: "0.5px", background: T.heroSep }} />
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: T.heroMut, fontFamily: SERIF }}>{tr("leftToSpend")}</div>
+                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>{tr("leftToSpend")}</div>
                 <div style={{ fontSize: 15, fontWeight: 700, color: left < 0 ? T.heroNeg : T.heroInk, marginTop: 3 }}>{dollars(left)}</div>
               </div>
             </div>
@@ -2863,7 +2862,7 @@ function Overview(props) {
               );
             })}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: T.orangeDim }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: T.ink2, fontFamily: SERIF }}>{bizAccts.length > 0 ? "Total set aside" : tr("totalSavings")}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: T.ink2, textTransform: "uppercase", letterSpacing: "0.08em" }}>{bizAccts.length > 0 ? "Total set aside" : tr("totalSavings")}</span>
               <span style={{ fontSize: 16, fontWeight: 800, color: T.orange, letterSpacing: "-0.02em" }}>{dollars(savTotal + bizTotal)}</span>
             </div>
           </Card>
@@ -3486,7 +3485,7 @@ function ImportSheet(props) {
   }
 
   var selStyle = { width: "100%", padding: "9px 11px", borderRadius: 11, border: "1.5px solid " + T.sep, background: T.card, fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", marginTop: 4 };
-  var lblStyle = { fontSize: 10.5, fontWeight: 700, color: T.ink3, fontFamily: SERIF };
+  var lblStyle = { fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em" };
   var colOptions = rows.length ? rows[0].map(function(h, i) { return { i: i, name: hasHeader ? (h || ("Column " + (i + 1))) : ("Column " + (i + 1)) }; }) : [];
 
   function colSelect(field, label) {
@@ -3794,7 +3793,7 @@ function Activity(props) {
         })()}
         <FormRow label={tr("date")} value={form.date} onChange={function(e) { setField("date", e.target.value); }} type="date" />
         <div style={{ marginBottom: 7 }}>
-          <div style={{ fontSize: 10.5, color: T.ink3, fontFamily: SERIF, fontWeight: 700, marginBottom: 5 }}>{tr("repeat")}</div>
+          <div style={{ fontSize: 10.5, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 5 }}>{tr("repeat")}</div>
           <div style={{ display: "flex", gap: 6 }}>
             {["none","weekly","monthly"].map(function(opt) {
               var on = form.repeat === opt;
@@ -3819,7 +3818,7 @@ function Activity(props) {
         </button>
         {(props.savings || []).length > 0 && (
           <div style={{ marginBottom: 8 }}>
-            <div style={{ fontSize: 10.5, color: T.ink3, fontFamily: SERIF, fontWeight: 700, marginBottom: 5 }}>Add to</div>
+            <div style={{ fontSize: 10.5, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 5 }}>Add to</div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {[{ id: "", name: "Balance" }].concat(props.savings || []).map(function(opt) {
                 var sel = form.savingsDest === opt.id;
@@ -3886,7 +3885,7 @@ function Activity(props) {
         <CatPicker label={tr("category")} categories={cats} value={editForm.catId} onChange={function(id) { setEditField("catId", id); }} onManage={props.onManageCategories} />
         <FormRow label={tr("date")} value={editForm.date} onChange={function(e) { setEditField("date", e.target.value); }} type="date" />
         <div style={{ marginBottom: 7 }}>
-          <div style={{ fontSize: 10.5, color: T.ink3, fontFamily: SERIF, fontWeight: 700, marginBottom: 5 }}>{tr("repeat")}</div>
+          <div style={{ fontSize: 10.5, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 5 }}>{tr("repeat")}</div>
           <div style={{ display: "flex", gap: 6 }}>
             {["none","weekly","monthly"].map(function(opt) {
               var on = editForm.repeat === opt;
@@ -3937,11 +3936,11 @@ function Activity(props) {
       {props.tx.length > 0 && (
         <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
           <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "14px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 6 }}>{tr("moneyIn")}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{tr("moneyIn")}</div>
             <div style={{ fontSize: 20, fontWeight: 700, color: T.green, letterSpacing: "-0.02em" }}>{dollars(totalIn)}</div>
           </div>
           <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "14px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 6 }}>{tr("moneyOut")}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{tr("moneyOut")}</div>
             <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(totalOut)}</div>
           </div>
         </div>
@@ -4470,7 +4469,7 @@ function Budgets(props) {
         <Card style={{ padding: "20px", marginBottom: 20 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <div style={{ fontSize: 11, color: T.ink3, fontFamily: SERIF, fontWeight: 700 }}>{tr("totalSpent")}</div>
+              <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>{tr("totalSpent")}</div>
               <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: "-0.03em", color: totalSpent > totalLimit ? T.red : T.ink, lineHeight: 1.1, marginTop: 4 }}>
                 {dollars(totalSpent)}
               </div>
@@ -5276,7 +5275,7 @@ function Trips(props) {
             <FormRow label={tr("tripDays")} value={form.days} onChange={function(e) { setField("days", e.target.value); }} type="number" />
             <FormRow label="Start date (optional)" value={form.startDate} onChange={function(e) { setField("startDate", e.target.value); }} type="date" />
             <FormRow label="Notes for Richard (optional)" value={form.notes} onChange={function(e) { setField("notes", e.target.value); }} placeholder="anything he should know - must-dos, style, who's coming" last={true} />
-            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, fontFamily: SERIF, margin: "14px 0 8px" }}>{tr("travelStyle")}</div>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, margin: "14px 0 8px" }}>{tr("travelStyle")}</div>
             <div style={{ display: "flex", gap: 8 }}>
               {styleOpts.map(function(s) {
                 var on = form.style === s.k;
@@ -5288,7 +5287,7 @@ function Trips(props) {
                 );
               })}
             </div>
-            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, fontFamily: SERIF, margin: "16px 0 8px" }}>{tr("tripIcon")}</div>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, margin: "16px 0 8px" }}>{tr("tripIcon")}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {TRIP_ICONS.map(function(ic) {
                 var on = (form.icon || "plane") === ic;
@@ -5300,7 +5299,7 @@ function Trips(props) {
                 );
               })}
             </div>
-            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, fontFamily: SERIF, margin: "16px 0 8px" }}>Want Richard to plan the budget?</div>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, margin: "16px 0 8px" }}>Want Richard to plan the budget?</div>
             <div style={{ display: "flex", gap: 8 }}>
               {[{ v: true, l: "Yes, plan it" }, { v: false, l: "No, I'll do it" }].map(function(o) {
                 var on = form.wantPlan === o.v;
@@ -5441,7 +5440,7 @@ function Trips(props) {
     return (
       <Overlay open={!!addCatFor} onClose={function() { setAddCatFor(null); }} title={tr("addCategory")}>
         <FormRow label={tr("name")} value={addCatForm.label} onChange={function(e) { setAddCatForm(function(p) { return Object.assign({}, p, { label: e.target.value }); }); }} last={true} />
-        <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, fontFamily: SERIF, margin: "14px 0 8px" }}>{tr("tripIcon")}</div>
+        <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, margin: "14px 0 8px" }}>{tr("tripIcon")}</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
           {TRIP_ICONS.map(function(ic) {
             var on = addCatForm.icon === ic;
@@ -5474,7 +5473,7 @@ function Trips(props) {
             <SVGIcon id={trip.icon || "plane"} size={24} color={T.heroInk} />
           </div>
           <div style={{ position: "relative" }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: T.heroMut, fontFamily: SERIF }}>{(trip.destination || "Trip") + (trip.days ? (" - " + trip.days + "d") : "")}</div>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut }}>{(trip.destination || "Trip") + (trip.days ? (" - " + trip.days + "d") : "")}</div>
             <div style={{ fontSize: 26, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.02em", marginTop: 4 }}>{trip.name}</div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginTop: 10 }}>
               <span style={{ fontSize: 22, fontWeight: 700, color: T.heroInk }}>{_currency.sym}</span>
@@ -5485,12 +5484,12 @@ function Trips(props) {
             </div>
             <div style={{ display: "flex", gap: 16, marginTop: 12, borderTop: "0.5px solid " + T.heroSep, paddingTop: 12 }}>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: T.heroMut, fontFamily: SERIF }}>{tr("spent")}</div>
+                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>{tr("spent")}</div>
                 <div style={{ fontSize: 16, fontWeight: 700, color: T.heroInk, marginTop: 3 }}>{dollars(spent)}</div>
               </div>
               <div style={{ width: "0.5px", background: T.heroSep }} />
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: T.heroMut, fontFamily: SERIF }}>{tr("leftToSpend")}</div>
+                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>{tr("leftToSpend")}</div>
                 <div style={{ fontSize: 16, fontWeight: 700, color: left < 0 ? T.heroNeg : T.heroInk, marginTop: 3 }}>{dollars(left)}</div>
               </div>
             </div>
@@ -5659,7 +5658,7 @@ function Trips(props) {
         <div style={{ position: "relative", overflow: "hidden", borderRadius: 22, padding: "20px 22px", background: T.heroBg, boxShadow: T.heroShadow, marginBottom: 16 }}>
           <div style={{ position: "absolute", bottom: -70, left: -50, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
           <div style={{ position: "relative" }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: T.heroMut, fontFamily: SERIF }}>{tr("leftAfterBudgets")}</div>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut }}>{tr("leftAfterBudgets")}</div>
             <div style={{ fontSize: 34, fontWeight: 700, color: afterBudgets < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em", marginTop: 8 }}>{(afterBudgets < 0 ? "-" : "") + dollars(afterBudgets)}</div>
             <div style={{ fontSize: 12.5, color: T.heroMut, marginTop: 6, lineHeight: 1.5 }}>{dollars(trip.total) + " " + tr("tripBudget").toLowerCase() + " - " + dollars(plannedTotal) + " " + tr("allocated").toLowerCase()}</div>
           </div>
@@ -5711,7 +5710,7 @@ function Trips(props) {
               </div>
               {trip.allocations.filter(function(a) { return a.key !== delCat.key; }).length > 0 && (
                 <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 8 }}>Move into</div>
+                  <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, marginBottom: 8 }}>Move into</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
                     {trip.allocations.filter(function(a) { return a.key !== delCat.key; }).map(function(a) {
                       var on = moveTarget === a.key;
@@ -5896,7 +5895,7 @@ function BigDecisions(props) {
         )}
         {vd.tradeoff && (
           <div style={{ marginTop: 13 }}>
-            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 3 }}>The tradeoff</div>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>The tradeoff</div>
             <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.45 }}>{vd.tradeoff}</div>
           </div>
         )}
@@ -6926,14 +6925,14 @@ function Advisor(props) {
     panels.push(
       <div key="health" style={panelStyle({ justifyContent: "space-between" })}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 11, fontWeight: 600, color: HMUT, fontFamily: SERIF }}>Financial Health</span>
+          <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, color: HMUT }}>Financial Health</span>
           <span style={{ background: ringColor + "26", color: ringColor, fontSize: 11, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 8 }}>{advice.scoreLabel}</span>
         </div>
         <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
           <RingChart value={advice.score} max={100} size={142} stroke={10} color={ringColor} track={HTRACK} />
           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
             <span style={{ fontSize: 44, fontWeight: 700, letterSpacing: "-0.03em", color: HINK }}>{advice.score}</span>
-            <span style={{ fontSize: 9, color: HFNT, fontFamily: SERIF, marginTop: 4 }}>out of 100</span>
+            <span style={{ fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: HFNT, marginTop: 4 }}>out of 100</span>
           </div>
         </div>
         <div style={{ textAlign: "center" }}>
@@ -6943,7 +6942,7 @@ function Advisor(props) {
           {[{ k: "Saving", v: savingStat.label, d: savingStat.dot }, { k: "Spending", v: spendStat.label, d: spendStat.dot }, { k: "Buffer", v: bufferTxt, d: bufferStat }].map(function(col, ci) {
             return (
               <div key={col.k} style={{ flex: 1, textAlign: "center", borderRight: ci < 2 ? "0.5px solid " + HSEP : "none" }}>
-                <div style={{ fontSize: 10, color: HMUT, fontFamily: SERIF, marginBottom: 6 }}>{col.k}</div>
+                <div style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: HMUT, marginBottom: 6 }}>{col.k}</div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: col.d }} />
                   <span style={{ fontSize: 14, fontWeight: 600, color: HINK }}>{col.v}</span>
@@ -6962,7 +6961,7 @@ function Advisor(props) {
           <div style={{ width: 38, height: 38, borderRadius: 12, background: HPB, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <SVGIcon id={move.icon} size={19} color={HPT} />
           </div>
-          <span style={{ fontSize: 11, fontWeight: 700, color: HMUT, fontFamily: SERIF }}>Your Next Big Move</span>
+          <span style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700, color: HMUT }}>Your Next Big Move</span>
         </div>
         {move.impact ? (
           <div style={{ marginTop: 20, display: "flex", alignItems: "baseline", gap: 9 }}>
@@ -6980,11 +6979,11 @@ function Advisor(props) {
       panels.push(
         <div key="flow" style={panelStyle({ justifyContent: "space-between" })}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: 11, fontWeight: 600, color: HMUT, fontFamily: SERIF }}>Cash Flow</span>
+            <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, color: HMUT }}>Cash Flow</span>
             <span style={{ fontSize: 11, color: HFNT }}>This month</span>
           </div>
           <div>
-            <div style={{ fontSize: 11, color: HFNT, fontFamily: SERIF, marginBottom: 4 }}>{netKept >= 0 ? "You kept" : "You overspent"}</div>
+            <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: HFNT, marginBottom: 4 }}>{netKept >= 0 ? "You kept" : "You overspent"}</div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
               <span style={{ fontSize: 38, fontWeight: 700, letterSpacing: "-0.03em", color: netKept >= 0 ? HPOS : HNEG, lineHeight: 1 }}>{(netKept < 0 ? "-" : "") + dollars(Math.abs(netKept))}</span>
               <span style={{ fontSize: 13, color: HFNT }}>{income > 0 ? (savings + "% of income") : "no income logged yet"}</span>
@@ -6996,12 +6995,12 @@ function Advisor(props) {
           </div>
           <div style={{ display: "flex", borderTop: "0.5px solid " + HSEP, paddingTop: 14 }}>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 10, color: HFNT, fontFamily: SERIF }}>Income</div>
+              <div style={{ fontSize: 10, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>Income</div>
               <div style={{ fontSize: 16, fontWeight: 700, color: HPOS, letterSpacing: "-0.02em", marginTop: 3 }}>{"+" + dollars(income)}</div>
             </div>
             <div style={{ width: "0.5px", background: HSEP }} />
             <div style={{ flex: 1, paddingLeft: 14 }}>
-              <div style={{ fontSize: 10, color: HFNT, fontFamily: SERIF }}>Spent</div>
+              <div style={{ fontSize: 10, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>Spent</div>
               <div style={{ fontSize: 16, fontWeight: 700, color: HNEG, letterSpacing: "-0.02em", marginTop: 3 }}>{"-" + dollars(expense)}</div>
             </div>
           </div>
@@ -7014,7 +7013,7 @@ function Advisor(props) {
       panels.push(
         <div key="cats" style={panelStyle()}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <span style={{ fontSize: 11, fontWeight: 600, color: HMUT, fontFamily: SERIF }}>Where It Goes</span>
+            <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, color: HMUT }}>Where It Goes</span>
             <span style={{ fontSize: 11, color: HFNT }}>{dollars(expense) + " spent"}</span>
           </div>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 11 }}>
@@ -7050,7 +7049,7 @@ function Advisor(props) {
       panels.push(
         <div key="subs" style={panelStyle()}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <span style={{ fontSize: 11, fontWeight: 600, color: HMUT, fontFamily: SERIF }}>What You Pay For</span>
+            <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, color: HMUT }}>What You Pay For</span>
             <span style={{ fontSize: 11, color: HFNT }}>{subs.length + " subscription" + (subs.length === 1 ? "" : "s")}</span>
           </div>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 13 }}>
@@ -7078,7 +7077,7 @@ function Advisor(props) {
       panels.push(
         <div key="ahead" style={panelStyle({ justifyContent: "space-between" })}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: 11, fontWeight: 600, color: HMUT, fontFamily: SERIF }}>Looking Ahead</span>
+            <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, color: HMUT }}>Looking Ahead</span>
             <span style={{ fontSize: 11, color: HFNT }}>At your pace</span>
           </div>
           <div>
@@ -7113,7 +7112,7 @@ function Advisor(props) {
       panels.push(
         <div key="watch" style={panelStyle()}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <span style={{ fontSize: 11, fontWeight: 600, color: HMUT, fontFamily: SERIF }}>Worth a Look</span>
+            <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, color: HMUT }}>Worth a Look</span>
             <span style={{ fontSize: 11, color: HFNT }}>{watch.length + " flag" + (watch.length === 1 ? "" : "s")}</span>
           </div>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 14 }}>
@@ -7506,11 +7505,11 @@ function CategoryForm(props) {
       </div>
       <FormRow label="Name" value={nm} onChange={function(e) { setNm(e.target.value); }} />
       <div style={{ background: "rgba(0,0,0,0.04)", borderRadius: 14, padding: "12px 15px", marginBottom: 9 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 9 }}>Icon</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 9 }}>Icon</div>
         <IconGrid value={ic} color={col} onChange={setIc} />
       </div>
       <div style={{ background: "rgba(0,0,0,0.04)", borderRadius: 14, padding: "12px 15px", marginBottom: 9 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 9 }}>Color</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 9 }}>Color</div>
         <ColorGrid value={col} onChange={setCol} />
       </div>
       {props.folders.length > 0 && (
@@ -7532,7 +7531,7 @@ function CategoryForm(props) {
 function FolderSelectRow(props) {
   return (
     <div style={{ background: "rgba(0,0,0,0.04)", borderRadius: 14, padding: "12px 15px", marginBottom: 9 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 5 }}>Folder</div>
+      <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 5 }}>Folder</div>
       <select value={props.value} onChange={function(e) { props.onChange(e.target.value); }}
         style={{ width: "100%", border: "none", background: "none", fontSize: 16, color: T.ink, fontFamily: UI, outline: "none", padding: 0 }}>
         {props.folders.map(function(f) { return <option key={f.id} value={f.id}>{f.name}</option>; })}
@@ -7608,7 +7607,7 @@ function Categories(props) {
           <div key={grp.folder.id} style={{ marginBottom: 20 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 6px 8px" }}>
               <SVGIcon id="folder" size={15} color={T.ink3} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: T.ink3, fontFamily: SERIF }}>{grp.folder.name}</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em" }}>{grp.folder.name}</span>
               <span style={{ fontSize: 12, color: T.ink3 }}>{grp.items.length}</span>
             </div>
             {grp.items.length === 0 ? (
@@ -7700,7 +7699,7 @@ function CollabView(props) {
             </div>
           </Card>
           <Card style={{ padding: "20px", marginBottom: 16 }}>
-            <div style={{ fontSize: 11, color: T.ink3, fontFamily: SERIF, fontWeight: 700, marginBottom: 10 }}>Household name</div>
+            <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 10 }}>Household name</div>
             <input value={name} onChange={function(e) { setName(e.target.value); }} placeholder="Our Home"
               style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid " + T.sep, background: T.card, borderRadius: 12, padding: "12px 14px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none" }} />
             <BigBtn label={busy ? "Creating..." : "Create household"} disabled={busy || !name.trim()} onPress={function() { run(props.onCreate(name.trim())); }} />
@@ -7719,7 +7718,7 @@ function CollabView(props) {
             <div style={{ fontSize: 13, color: T.ink3, marginTop: 3 }}>{(hh.members || []).length} member{(hh.members || []).length === 1 ? "" : "s"}</div>
           </Card>
 
-          <div style={{ fontSize: 11, color: T.ink3, fontFamily: SERIF, fontWeight: 700, margin: "0 6px 8px" }}>Members</div>
+          <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 6px 8px" }}>Members</div>
           <Card style={{ overflow: "hidden", marginBottom: 16 }}>
             {(hh.members || []).map(function(m, i) {
               var isMe = m.uid === props.myUid;
@@ -7740,7 +7739,7 @@ function CollabView(props) {
 
           {(hh.pendingEmails || []).length > 0 && (
             <div>
-              <div style={{ fontSize: 11, color: T.ink3, fontFamily: SERIF, fontWeight: 700, margin: "0 6px 8px" }}>Invited</div>
+              <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 6px 8px" }}>Invited</div>
               <Card style={{ overflow: "hidden", marginBottom: 16 }}>
                 {hh.pendingEmails.map(function(pe, i) {
                   return (
@@ -7760,7 +7759,7 @@ function CollabView(props) {
           )}
 
           <Card style={{ padding: "20px", marginBottom: 16 }}>
-            <div style={{ fontSize: 11, color: T.ink3, fontFamily: SERIF, fontWeight: 700, marginBottom: 10 }}>Invite by email</div>
+            <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 10 }}>Invite by email</div>
             <input value={email} onChange={function(e) { setEmail(e.target.value); }} placeholder="partner@email.com" type="email"
               style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid " + T.sep, background: T.card, borderRadius: 12, padding: "12px 14px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none" }} />
             <BigBtn label={busy ? "Sending..." : "Send invite"} disabled={busy || !validEmail(email)} onPress={function() {
@@ -7817,7 +7816,7 @@ function EditOpeningBalanceView(props) {
       </div>
 
       <Card style={{ padding: "18px 22px", marginBottom: 20 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 8 }}>Opening balance</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Opening balance</div>
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
           <span style={{ fontSize: 22, color: T.ink3, fontWeight: 600 }}>{sym}</span>
           <input value={val} onChange={function(e) { setVal(e.target.value); }} type="number" inputMode="decimal" placeholder="0"
@@ -8026,7 +8025,7 @@ function SavingsView(props) {
 
       {accts.length > 0 && (
         <Card style={{ padding: "18px 20px", marginBottom: 16, background: T.heroBg, boxShadow: T.heroShadow }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: T.heroMut, fontFamily: SERIF, marginBottom: 6 }}>{tr("totalSavings")}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: T.heroMut, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{tr("totalSavings")}</div>
           <div style={{ fontSize: 36, fontWeight: 800, color: T.heroText, letterSpacing: "-0.03em", lineHeight: 1 }}>{dollars(total)}</div>
           <div style={{ fontSize: 12.5, color: T.heroFaint, marginTop: 7 }}>{accts.length + " " + (accts.length === 1 ? "account" : "accounts") + " · " + tr("balanceUntouched").toLowerCase()}</div>
         </Card>
@@ -8058,7 +8057,7 @@ function SavingsView(props) {
             </div>
             {open && (
               <div style={{ borderTop: "0.5px solid " + T.sep, padding: "14px 16px", background: "rgba(0,0,0,0.015)" }}>
-                <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 8 }}>{tr("history")}</div>
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>{tr("history")}</div>
                 {entries.length === 0 ? (
                   <div style={{ fontSize: 13, color: T.ink3, marginBottom: 12 }}>{tr("noMovesYet")}</div>
                 ) : (
@@ -8080,7 +8079,7 @@ function SavingsView(props) {
                     })}
                   </div>
                 )}
-                <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 6 }}>{tr("rename")}</div>
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>{tr("rename")}</div>
                 <div style={{ display: "flex", gap: 8, marginBottom: 4 }}>
                   <input value={renameVal} onChange={function(ev) { setRenameVal(ev.target.value); }}
                     style={{ flex: 1, background: T.card, border: "1px solid " + T.sep, borderRadius: 10, padding: "9px 12px", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box" }} />
@@ -8132,10 +8131,10 @@ function SavingsView(props) {
 
       {creating ? (
         <Card style={{ padding: "18px 18px", marginTop: 4, marginBottom: 12 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 10 }}>{tr("newSavingsAccount")}</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>{tr("newSavingsAccount")}</div>
           <input value={cName} onChange={function(e) { setCName(e.target.value); }} placeholder={tr("savingsAccountName")} autoFocus={true}
             style={{ width: "100%", background: "rgba(0,0,0,0.04)", border: "none", borderRadius: 12, padding: "12px 14px", fontSize: 16, fontFamily: UI, color: T.ink, fontWeight: 600, outline: "none", boxSizing: "border-box", marginBottom: 12 }} />
-          <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 7 }}>{tr("pickIcon")}</div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>{tr("pickIcon")}</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
             {SAVINGS_ICONS.map(function(ic) {
               var on = ic === cIcon;
@@ -8156,7 +8155,7 @@ function SavingsView(props) {
               );
             })}
           </div>
-          <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 6 }}>{tr("startingAmount")}</div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>{tr("startingAmount")}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(0,0,0,0.04)", borderRadius: 12, padding: "10px 14px", marginBottom: 10 }}>
             <span style={{ fontSize: 18, color: T.ink3, fontWeight: 600 }}>{sym}</span>
             <input value={cAmt} onChange={function(e) { setCAmt(e.target.value); }} type="number" inputMode="decimal" placeholder="0"
@@ -8597,7 +8596,7 @@ function BusinessView(props) {
     );
   }
   function fieldLabel(t) {
-    return <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, fontFamily: SERIF, margin: "16px 0 8px" }}>{t}</div>;
+    return <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, margin: "16px 0 8px" }}>{t}</div>;
   }
   function amtField(label, val, onChange) {
     return (
@@ -8712,7 +8711,7 @@ function BusinessView(props) {
       );
     }
     var amtStyleI = { width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 15px 15px 40px", fontSize: 18, fontFamily: UI, color: T.ink, fontWeight: 700, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" };
-    var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 10 };
+    var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 };
 
     // Step 4 (plan review) stays in the normal card layout.
     if (step === 4) {
@@ -8735,7 +8734,7 @@ function BusinessView(props) {
                     <span style={{ fontSize: 12.5, color: T.ink3, fontWeight: 600 }}>{planResult.verdict.keyNumberLabel || ""}</span>
                   </div>
                 )}
-                <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 8 }}>Monthly budget</div>
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Monthly budget</div>
                 {planResult.categories.map(function(a, idx) {
                   return (
                     <div key={a.key} style={{ display: "flex", alignItems: "center", gap: 11, padding: "9px 0", borderBottom: idx < planResult.categories.length - 1 ? ("0.5px solid " + T.sep) : "none" }}>
@@ -8979,7 +8978,7 @@ function BusinessView(props) {
             <SVGIcon id={biz.icon || "briefcase"} size={24} color={T.heroInk} />
           </div>
           <div style={{ position: "relative" }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: T.heroMut, fontFamily: SERIF }}>{labelOf(STRUCTURES, biz.profile && biz.profile.structure) + " - " + labelOf(STAGES, biz.profile && biz.profile.stage)}</div>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut }}>{labelOf(STRUCTURES, biz.profile && biz.profile.structure) + " - " + labelOf(STAGES, biz.profile && biz.profile.stage)}</div>
             <div style={{ fontSize: 26, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.02em", marginTop: 4 }}>{biz.name}</div>
             <div style={{ fontSize: 13, color: T.heroMut, marginTop: 4 }}>{biz.what || ""}</div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 7, marginTop: 12 }}>
@@ -8988,12 +8987,12 @@ function BusinessView(props) {
             </div>
             <div style={{ display: "flex", gap: 16, marginTop: 12, borderTop: "0.5px solid " + T.heroSep, paddingTop: 12 }}>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: T.heroMut, fontFamily: SERIF }}>Spent</div>
+                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>Spent</div>
                 <div style={{ fontSize: 16, fontWeight: 700, color: T.heroInk, marginTop: 3 }}>{dollars(spent)}</div>
               </div>
               <div style={{ width: "0.5px", background: T.heroSep }} />
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: T.heroMut, fontFamily: SERIF }}>Monthly budget</div>
+                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>Monthly budget</div>
                 <div style={{ fontSize: 16, fontWeight: 700, color: T.heroInk, marginTop: 3 }}>{dollars(monthly)}</div>
               </div>
             </div>
@@ -9053,7 +9052,7 @@ function BusinessView(props) {
           </Card>
         )}
 
-        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, fontFamily: SERIF, margin: "0 2px 10px" }}>Budget categories</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 2px 10px" }}>Budget categories</div>
         {biz.categories.map(function(a) {
           var over = a.spent > a.planned && a.planned > 0;
           return (
@@ -9098,7 +9097,7 @@ function BusinessView(props) {
         <div style={{ position: "relative", overflow: "hidden", borderRadius: 22, padding: "20px 22px", background: T.heroBg, boxShadow: T.heroShadow, marginBottom: 16, marginTop: 4 }}>
           <div style={{ position: "absolute", bottom: -70, left: -50, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
           <div style={{ position: "relative" }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: T.heroMut, fontFamily: SERIF }}>Unallocated budget</div>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut }}>Unallocated budget</div>
             <div style={{ fontSize: 34, fontWeight: 700, color: (monthly - plannedTotal) < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em", marginTop: 8 }}>{((monthly - plannedTotal) < 0 ? "-" : "") + dollars(Math.abs(monthly - plannedTotal))}</div>
             <div style={{ fontSize: 12.5, color: T.heroMut, marginTop: 6, lineHeight: 1.5 }}>{dollars(monthly) + " monthly budget - " + dollars(plannedTotal) + " allocated"}</div>
           </div>
@@ -9106,7 +9105,7 @@ function BusinessView(props) {
 
         {capHistory.length > 0 && (
           <Card style={{ padding: "14px 16px", marginBottom: 12 }}>
-            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 8 }}>Capital history</div>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Capital history</div>
             {capHistory.map(function(e) {
               var dep = e.kind !== "withdraw";
               return (
@@ -9290,7 +9289,7 @@ function LogMonthView(props) {
       </div>
 
       <Card style={{ padding: "16px 18px", marginBottom: 14 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 6 }}>Income received this {monthName}</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Income received this {monthName}</div>
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
           <span style={{ fontSize: 22, color: T.ink3, fontWeight: 600 }}>{sym}</span>
           <input value={inc} onChange={function(e) { setInc(e.target.value); }} type="number" inputMode="decimal" placeholder="0"
@@ -9298,7 +9297,7 @@ function LogMonthView(props) {
         </div>
       </Card>
 
-      <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, fontFamily: SERIF, margin: "4px 4px 8px" }}>Spent so far this {monthName}</div>
+      <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "4px 4px 8px" }}>Spent so far this {monthName}</div>
       <Card style={{ overflow: "hidden", marginBottom: 16 }}>
         {cats.map(function(c, i) {
           var already = spentThisMonth(c);
@@ -9335,7 +9334,7 @@ function NicknameView(props) {
     <div>
       <SubViewBack onBack={props.onBack} />
       <Card style={{ padding: "22px 20px", marginBottom: 16 }}>
-        <div style={{ fontSize: 11, color: T.ink3, fontFamily: SERIF, fontWeight: 700, marginBottom: 10 }}>{tr("richyRefersTo")}</div>
+        <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 10 }}>{tr("richyRefersTo")}</div>
         <input
           value={val}
           onChange={function(e) { setVal(e.target.value); }}
@@ -9448,7 +9447,7 @@ function AppearanceView(props) {
     { id: false, label: "Light", sub: "Warm off-white background", a: "#F7F3EE", b: "#FFFFFF" },
     { id: true,  label: "Dark",  sub: "Deep dark background",      a: "#131110", b: "#1C1915" },
   ];
-  var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, padding: "18px 4px 8px", fontFamily: SERIF };
+  var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", padding: "18px 4px 8px", fontFamily: UI };
   return (
     <div>
       <SubViewBack onBack={props.onBack} />
@@ -9562,7 +9561,7 @@ function PrivacyView(props) {
   var langLabel = (LANGUAGE_OPTIONS.filter(function(o) { return o.code === (blob.lang || "en"); })[0] || {}).label || "English";
   var curLabel = (CURRENCY_OPTIONS.filter(function(o) { return o.sym === (blob.currency || "$"); })[0] || {}).label || (blob.currency || "$");
   var themeLabel = themeLabelOf(blob.theme);
-  var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, padding: "18px 4px 8px", fontFamily: SERIF };
+  var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", padding: "18px 4px 8px", fontFamily: UI };
 
   var rows = [];
   rows.push({ label: "Name",              value: blob.displayName || "",   onClick: props.onEditName });
@@ -9653,7 +9652,7 @@ function EditEmailView(props) {
   }
 
   var inputStyle = { width: "100%", fontSize: 16, color: T.ink, background: "none", border: "none", outline: "none", fontFamily: UI, padding: 0, boxSizing: "border-box" };
-  var fieldLabelStyle = { fontSize: 11, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 8 };
+  var fieldLabelStyle = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 8 };
 
   return (
     <div>
@@ -9688,7 +9687,7 @@ function EditEmailView(props) {
 
 function EditDobView(props) {
   var _dob = useState(props.currentDob || ""); var dob = _dob[0]; var setDob = _dob[1];
-  var flStyle = { fontSize: 11, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 10 };
+  var flStyle = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 10 };
   return (
     <div>
       <SubViewBack onBack={props.onBack} label="Privacy & Data" />
@@ -9719,7 +9718,7 @@ function EditFinancialView(props) {
     props.onSave({ lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: oData.age || "" });
   }
 
-  var flStyle = { fontSize: 11, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 8, display: "block" };
+  var flStyle = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 8, display: "block" };
   var numInput = { width: "100%", fontSize: 15, color: T.ink, background: "none", border: "none", outline: "none", fontFamily: UI, padding: "11px 0", borderBottom: "0.5px solid " + T.sep, boxSizing: "border-box", display: "block" };
 
   return (
@@ -9818,7 +9817,7 @@ function PasswordView(props) {
 
   var inputStyle = { width: "100%", fontSize: 16, color: T.ink, background: "none", border: "none", outline: "none", fontFamily: UI, padding: 0, boxSizing: "border-box" };
   var fieldStyle = { borderBottom: "0.5px solid " + T.sep, paddingBottom: 14, marginBottom: 14 };
-  var fieldLabelStyle = { fontSize: 11, fontWeight: 700, color: T.ink3, fontFamily: SERIF, marginBottom: 8 };
+  var fieldLabelStyle = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 8 };
   var canSubmit = !loading && newPw.length >= 6 && confirmPw.length > 0 && (!hasPw || oldPw.length > 0);
 
   return (
