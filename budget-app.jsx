@@ -76,7 +76,7 @@ var THEMES = {
     advGreen: "#4ADE80", advRingLow: "#E07848",
     catNameHero: "rgba(255,255,255,0.82)", merchNameHero: "rgba(255,255,255,0.9)", merchBar: "linear-gradient(90deg,#C8673A99,#E07848)",
   },
-  // "blue" (Cornflower Blue) — a light periwinkle hero with deep-navy ink, built on
+  // "blue" (Cornflower Ocean) — a light periwinkle hero with deep-navy ink, built on
   // the two requested blues: #5C7AE3 (cornflower periwinkle — hero + accent highlight)
   // and #3C4C82 (deep navy — primary accent for on-cream buttons/marks/links, crisp
   // ~8:1 on the cream bg). The hero ink is #242C52, a deepened shade of #3C4C82, so
@@ -112,7 +112,7 @@ applyTheme("purple");
 
 // Display names for each theme id, keyed the same as THEMES. Single source of
 // truth for the label shown in Profile / Privacy rows and the Appearance picker.
-var THEME_LABELS = { purple: "Mika's Violet", classic: "Dark Ember", blue: "Cornflower Blue" };
+var THEME_LABELS = { purple: "Mika's Violet", classic: "Dark Ember", blue: "Cornflower Ocean" };
 function themeLabelOf(name) { return THEME_LABELS[name] || THEME_LABELS.purple; }
 
 var LIGHT_BG = "#F7F3EE";
@@ -9440,7 +9440,7 @@ function CurrencyView(props) {
 function AppearanceView(props) {
   var opts = [
     { id: "purple",  label: "Mika's Violet",    sub: "Lavender hero, violet accents",  a: "#9D78E8", b: "#C8B1FF" },
-    { id: "blue",    label: "Cornflower Blue",  sub: "Periwinkle hero, navy accents",  a: "#5C7AE3", b: "#3C4C82" },
+    { id: "blue",    label: "Cornflower Ocean", sub: "Periwinkle hero, navy accents",  a: "#5C7AE3", b: "#3C4C82" },
     { id: "classic", label: "Dark Ember",       sub: "Dark hero, warm amber accents",  a: "#1E1A16", b: "#C8673A" }
   ];
   var modeOpts = [
