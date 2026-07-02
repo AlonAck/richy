@@ -8459,6 +8459,24 @@ function BusinessView(props) {
     document.head.appendChild(st);
   }, []);
 
+  // Detail hero carousel (3 panels) + P&L month picker.
+  var _hp = useState(0); var heroPage = _hp[0]; var setHeroPage = _hp[1];
+  var heroScrollRef = useRef(null);
+  var heroScrollTimer = useRef(null);
+  var _pmo = useState(0); var plMonthOff = _pmo[0]; var setPlMonthOff = _pmo[1];
+  useEffect(function() {
+    setHeroPage(0); setPlMonthOff(0);
+    var el = heroScrollRef.current; if (el) el.scrollLeft = 0;
+  }, [activeId]);
+  function heroGoPage(i) { setHeroPage(i); var el = heroScrollRef.current; if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" }); }
+  function heroOnScroll(e) {
+    var el = e.currentTarget;
+    if (heroScrollTimer.current) clearTimeout(heroScrollTimer.current);
+    heroScrollTimer.current = setTimeout(function() { var w = el.clientWidth || 1; setHeroPage(Math.round(el.scrollLeft / w)); }, 100);
+  }
+  function ymOffset(off) { var d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - off); return d.toISOString().slice(0, 7); }
+  function ymLabel(ymStr) { var p = ymStr.split("-"); var MO = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; return MO[(parseInt(p[1], 10) || 1) - 1] + " " + p[0]; }
+
   var STRUCTURES = [{ v: "company", l: "Company" }, { v: "individual", l: "Individual" }, { v: "freelancer", l: "Freelancer" }];
   var STAGES = [{ v: "idea", l: "Just an idea" }, { v: "launching", l: "Launching soon" }, { v: "running", l: "Already running" }];
   var SIZES = [{ v: "side", l: "Side project" }, { v: "growing", l: "Growing venture" }, { v: "full", l: "Full company" }];
@@ -9169,37 +9187,108 @@ function BusinessView(props) {
     var thread = biz.chat || [];
     var capHistory = (biz.entries || []).filter(function(e) { return !e.bizExpense; }).slice().sort(function(x, y) { return (y.id || 0) - (x.id || 0); }).slice(0, 6);
     var plan = biz.plan || {};
+    var health = bizHealth(biz);
+    var pl = bizMonthProfit(biz, ym);
+    var pace = bizPace(biz);
+    var runway = bizRunway(biz);
+    var stage = (biz.profile && biz.profile.stage) || "idea";
+    var heroKick = { fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut };
+    var heroCellLbl = { fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut };
+    var heroPanelSt = { flex: "0 0 100%", scrollSnapAlign: "start", padding: "18px 22px", boxSizing: "border-box", position: "relative", display: "flex", flexDirection: "column" };
+    var heroDotOff = (T.bg === DARK_BG) ? "rgba(255,255,255,0.26)" : "rgba(0,0,0,0.16)";
     return (
       <div>
         {backRow("Business", function() { setView("list"); setActiveId(null); })}
-        <div style={{ position: "relative", overflow: "hidden", borderRadius: 22, padding: "22px 22px", background: T.heroBg, boxShadow: T.heroShadow, marginBottom: 16 }}>
-          <div style={{ position: "absolute", top: -70, right: -60, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
-          <div style={{ position: "absolute", top: 0, right: 0, width: 48, height: 48, borderRadius: 15, background: "rgba(255,255,255,0.28)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <SVGIcon id={biz.icon || "briefcase"} size={24} color={T.heroInk} />
+        <div style={{ marginBottom: 4, animation: "rcFadeUp 0.55s ease both" }}>
+          <div style={{ position: "relative", borderRadius: 22, overflow: "hidden", background: T.heroBg, boxShadow: T.heroShadow, height: 206 }}>
+            <div style={{ position: "absolute", top: -70, right: -60, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none", zIndex: 0 }} />
+            <div style={{ position: "absolute", bottom: -70, left: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow2 + ",transparent 65%)", pointerEvents: "none", zIndex: 0 }} />
+            <div ref={heroScrollRef} onScroll={heroOnScroll} className="rc-hero-scroll"
+              style={{ position: "relative", zIndex: 1, display: "flex", height: "100%", width: "100%", overflowX: "auto", overflowY: "hidden", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
+
+              <div style={heroPanelSt}>
+                <div style={{ position: "absolute", top: 16, right: 18, width: 44, height: 44, borderRadius: 14, background: "rgba(255,255,255,0.28)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <SVGIcon id={biz.icon || "briefcase"} size={22} color={T.heroInk} />
+                </div>
+                <div style={heroKick}>{labelOf(STRUCTURES, biz.profile && biz.profile.structure) + " - " + labelOf(STAGES, stage)}</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.02em", marginTop: 4, paddingRight: 52, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{biz.name}</div>
+                <div style={{ fontSize: 12.5, color: T.heroMut, marginTop: 2, paddingRight: 52, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{biz.what || ""}</div>
+                <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginTop: "auto" }}>
+                  <div>
+                    <div style={{ fontSize: 32, fontWeight: 700, color: bal < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em" }}><CountUp value={bal} /></div>
+                    <div style={{ fontSize: 12, color: T.heroMut, marginTop: 2 }}>cash on hand</div>
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ position: "relative", width: 54, height: 54, margin: "0 auto" }}>
+                      <DrawRing size={54} stroke={5} value={health.score} max={100} color={health.color} track="rgba(255,255,255,0.25)" />
+                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: T.heroInk }}>{health.score}</div>
+                    </div>
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.heroMut, marginTop: 4 }}>{health.label}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={heroPanelSt}>
+                <div style={heroKick}>{"This month - " + ymLabel(ym)}</div>
+                {stage === "idea" ? (
+                  <div style={{ marginTop: 10 }}>
+                    <div style={{ fontSize: 30, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.03em" }}><CountUp value={pl.spend} /></div>
+                    <div style={{ fontSize: 12, color: T.heroMut, marginTop: 2 }}>{"spent of " + dollars(monthly) + " planned - keep the idea stage lean"}</div>
+                  </div>
+                ) : (
+                  <div style={{ marginTop: 10 }}>
+                    <div style={{ fontSize: 30, fontWeight: 700, color: pl.profit < 0 ? T.heroNeg : T.heroPos, letterSpacing: "-0.03em" }}><CountUp value={pl.profit} /></div>
+                    <div style={{ fontSize: 12, color: T.heroMut, marginTop: 2 }}>{"profit this month" + (pl.margin !== null ? " - " + Math.round(pl.margin * 100) + "% margin" : (stage === "launching" && pl.revenue === 0 ? " - your first sale changes everything" : ""))}</div>
+                  </div>
+                )}
+                <div style={{ display: "flex", gap: 14, marginTop: "auto", borderTop: "0.5px solid " + T.heroSep, paddingTop: 10 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={heroCellLbl}>Revenue</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: pl.revenue > 0 ? T.heroPos : T.heroInk, marginTop: 3 }}>{dollars(pl.revenue)}</div>
+                  </div>
+                  <div style={{ width: "0.5px", background: T.heroSep }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={heroCellLbl}>Spent</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: T.heroInk, marginTop: 3 }}>{dollars(pl.spend)}</div>
+                  </div>
+                  <div style={{ width: "0.5px", background: T.heroSep }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={heroCellLbl}>Budget</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: T.heroInk, marginTop: 3 }}>{dollars(monthly)}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={heroPanelSt}>
+                <div style={heroKick}>Runway & pace</div>
+                <div style={{ marginTop: 10 }}>
+                  {runway === null ? (
+                    <div style={{ fontSize: 25, fontWeight: 700, color: T.heroPos, letterSpacing: "-0.02em" }}>Self-sustaining</div>
+                  ) : (
+                    <div style={{ fontSize: 30, fontWeight: 700, color: runway < 2 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em" }}>
+                      <CountUp value={runway} format={function(v) { return (Math.round(v * 10) / 10).toFixed(1); }} />
+                      <span style={{ fontSize: 16, fontWeight: 600 }}> months</span>
+                    </div>
+                  )}
+                  <div style={{ fontSize: 12, color: T.heroMut, marginTop: 2 }}>{runway === null ? "revenue is covering your spending" : "of runway at your current burn"}</div>
+                </div>
+                <div style={{ marginTop: "auto", borderTop: "0.5px solid " + T.heroSep, paddingTop: 10 }}>
+                  <div style={{ fontSize: 12, lineHeight: 1.5, color: pace ? (pace.verdict === "over" ? T.heroNeg : pace.verdict === "under" ? T.heroPos : T.heroInk) : T.heroMut }}>
+                    {pace ? pace.text : "Set a monthly budget to track your spending pace."}
+                  </div>
+                </div>
+              </div>
+
+            </div>
           </div>
-          <div style={{ position: "relative" }}>
-            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut }}>{labelOf(STRUCTURES, biz.profile && biz.profile.structure) + " - " + labelOf(STAGES, biz.profile && biz.profile.stage)}</div>
-            <div style={{ fontSize: 26, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.02em", marginTop: 4 }}>{biz.name}</div>
-            <div style={{ fontSize: 13, color: T.heroMut, marginTop: 4 }}>{biz.what || ""}</div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 7, marginTop: 12 }}>
-              <span style={{ fontSize: 34, fontWeight: 700, color: bal < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em" }}>{dollars(bal)}</span>
-              <span style={{ fontSize: 12.5, color: T.heroMut }}>cash on hand</span>
-            </div>
-            <div style={{ display: "flex", gap: 16, marginTop: 12, borderTop: "0.5px solid " + T.heroSep, paddingTop: 12 }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>Spent this month</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: T.heroInk, marginTop: 3 }}>{dollars(monthSpent)}</div>
-              </div>
-              <div style={{ width: "0.5px", background: T.heroSep }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>Monthly budget</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: T.heroInk, marginTop: 3 }}>{dollars(monthly)}</div>
-              </div>
-            </div>
+          <div style={{ display: "flex", justifyContent: "center", gap: 7, padding: "10px 0 8px" }}>
+            {[0, 1, 2].map(function(i) {
+              return <div key={i} onClick={function() { heroGoPage(i); }} style={{ width: i === heroPage ? 18 : 6, height: 6, borderRadius: 3, cursor: "pointer", transition: "all 0.3s cubic-bezier(0.22,1,0.36,1)", background: i === heroPage ? T.orange : heroDotOff }} />;
+            })}
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        <div style={{ display: "flex", gap: 8, marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.05s both" }}>
           <button onClick={function() { openAction(biz.id, "add"); }}
             style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 12, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow }}>Add capital</button>
           <button onClick={function() { setRevFor(biz.id); setRevForm({ label: "", amount: "" }); }}
@@ -9207,6 +9296,88 @@ function BusinessView(props) {
           <button onClick={function() { openAction(biz.id, "withdraw"); }} disabled={bal <= 0}
             style={{ flex: 1, border: "1.5px solid " + (bal <= 0 ? "rgba(0,0,0,0.08)" : T.orange), cursor: bal <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 12, background: "none", color: bal <= 0 ? T.ink3 : T.orange }}>Withdraw</button>
         </div>
+
+        {(function() {
+          var created = (biz.createdAt || "").slice(0, 7);
+          var maxBack = 0;
+          if (created) {
+            var cp = created.split("-");
+            var nw = new Date();
+            maxBack = Math.max(0, (nw.getFullYear() - parseInt(cp[0], 10)) * 12 + (nw.getMonth() + 1 - parseInt(cp[1], 10)));
+          }
+          var off = Math.min(plMonthOff, maxBack);
+          var ymSel = ymOffset(off);
+          var mpl = bizMonthProfit(biz, ymSel);
+          var revGoal = (biz.profile && biz.profile.revenueGoal) || 0;
+          var catRows = biz.categories.filter(function(c) { return (c.planned || 0) > 0 || bizCatMonthSpent(biz, c.key, ymSel) > 0; });
+          var stepSt = function(disabled) { return { width: 26, height: 26, borderRadius: 8, border: "none", background: "rgba(0,0,0,0.05)", cursor: disabled ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: disabled ? 0.35 : 1, padding: 0 }; };
+          var rowSt = { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0" };
+          return (
+            <Card style={{ padding: "16px 18px", marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.08s both" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Profit & loss</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <button disabled={off >= maxBack} onClick={function() { setPlMonthOff(Math.min(off + 1, maxBack)); }} style={stepSt(off >= maxBack)}>
+                    <span style={{ transform: "rotate(180deg)", display: "flex" }}><SVGIcon id="chevron" size={14} color={T.ink2} /></span>
+                  </button>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: T.ink, minWidth: 62, textAlign: "center", fontFamily: UI }}>{ymLabel(ymSel)}</span>
+                  <button disabled={off <= 0} onClick={function() { setPlMonthOff(Math.max(off - 1, 0)); }} style={stepSt(off <= 0)}>
+                    <SVGIcon id="chevron" size={14} color={T.ink2} />
+                  </button>
+                </div>
+              </div>
+              <div style={rowSt}>
+                <span style={{ fontSize: 13.5, color: T.ink2 }}>Revenue</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: mpl.revenue > 0 ? T.green : T.ink }}>{dollars(mpl.revenue)}</span>
+              </div>
+              <div style={rowSt}>
+                <span style={{ fontSize: 13.5, color: T.ink2 }}>Expenses</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>{dollars(mpl.spend)}</span>
+              </div>
+              <div style={{ borderTop: "0.5px solid " + T.sep, marginTop: 4, paddingTop: 8, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>Profit</span>
+                <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.01em", color: mpl.profit < 0 ? T.red : T.green }}>{(mpl.profit < 0 ? "-" : "") + dollars(Math.abs(mpl.profit))}</span>
+              </div>
+              {mpl.margin !== null && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 5 }}>
+                  <span style={{ fontSize: 12.5, color: T.ink3 }}>Margin</span>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: mpl.margin < 0 ? T.red : T.ink2 }}>{Math.round(mpl.margin * 100) + "%"}</span>
+                </div>
+              )}
+              {stage === "running" && revGoal > 0 && off === 0 && (
+                <div style={{ marginTop: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                    <span style={{ fontSize: 12.5, color: T.ink2, fontWeight: 600 }}>Revenue vs goal</span>
+                    <span style={{ fontSize: 12, color: T.ink3 }}>{dollars(mpl.revenue) + " of " + dollars(revGoal)}</span>
+                  </div>
+                  <ProgressBar value={mpl.revenue} max={revGoal} color={T.green} h={5} />
+                </div>
+              )}
+              {stage === "launching" && mpl.revenue === 0 && off === 0 && (
+                <div style={{ marginTop: 12, background: T.orangeDim, borderRadius: 10, padding: "9px 12px", fontSize: 12.5, color: T.ink, lineHeight: 1.5 }}>
+                  No revenue logged yet. Your first sale is the one number that changes everything - when it lands, record it here.
+                </div>
+              )}
+              {catRows.length > 0 && (
+                <div style={{ marginTop: 14, borderTop: "0.5px solid " + T.sep, paddingTop: 12 }}>
+                  {catRows.map(function(c, i) {
+                    var sp = bizCatMonthSpent(biz, c.key, ymSel);
+                    var ov = sp > (c.planned || 0) && (c.planned || 0) > 0;
+                    return (
+                      <div key={c.key} style={{ marginBottom: i < catRows.length - 1 ? 9 : 0 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                          <span style={{ fontSize: 12.5, color: T.ink2, fontWeight: 600 }}>{c.label}</span>
+                          <span style={{ fontSize: 12, color: ov ? T.red : T.ink3 }}>{dollars(sp) + ((c.planned || 0) > 0 ? " / " + dollars(c.planned) : "")}</span>
+                        </div>
+                        <ProgressBar value={sp} max={c.planned || 1} color={ov ? T.red : c.color} h={4} />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </Card>
+          );
+        })()}
 
         {(plan.summary || (plan.sections && plan.sections.length)) && (
           <Card style={{ padding: "16px 18px", marginBottom: 16 }}>
