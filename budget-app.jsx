@@ -76,27 +76,29 @@ var THEMES = {
     advGreen: "#4ADE80", advRingLow: "#E07848",
     catNameHero: "rgba(255,255,255,0.82)", merchNameHero: "rgba(255,255,255,0.9)", merchBar: "linear-gradient(90deg,#C8673A99,#E07848)",
   },
-  // "blue" (Cornflower Blue) — a light periwinkle hero with deep-navy ink, mirroring
-  // the structure of "purple" but built on the three requested blues: #697EE0
-  // (periwinkle hero / accent highlight), #3F60F7 (royal accent + buttons), and
-  // #222B82 (deep navy hero text). Light hero => dark text, like the flagship Violet.
+  // "blue" (Cornflower Blue) — a light periwinkle hero with deep-navy ink, built on
+  // the two requested blues: #5C7AE3 (cornflower periwinkle — hero + accent highlight)
+  // and #3C4C82 (deep navy — primary accent for on-cream buttons/marks/links, crisp
+  // ~8:1 on the cream bg). The hero ink is #242C52, a deepened shade of #3C4C82, so
+  // the balance number reads clearly on the periwinkle hero (#3C4C82 alone is only
+  // ~2.3:1 there). Light hero => dark text, like the flagship Violet.
   blue: {
-    orange: "#3F60F7", orangeHi: "#697EE0", orangeDim: "rgba(63,96,247,0.13)", orangeGlow: "rgba(63,96,247,0.30)",
-    heroBg: "linear-gradient(160deg,#697EE0 0%,#8B9BEA 50%,#B7C2F4 100%)",
-    heroBg2: "linear-gradient(135deg,#697EE0 0%,#8B9BEA 55%,#B7C2F4 100%)",
-    btn: "linear-gradient(135deg,#5A73F0 0%,#3F60F7 60%,#2E4BE0 100%)",
-    heroShadow: "0 12px 40px rgba(63,96,247,0.30), 0 2px 8px rgba(63,96,247,0.16)",
+    orange: "#3C4C82", orangeHi: "#5C7AE3", orangeDim: "rgba(92,122,227,0.15)", orangeGlow: "rgba(92,122,227,0.30)",
+    heroBg: "linear-gradient(160deg,#5C7AE3 0%,#8493E2 50%,#B2BEED 100%)",
+    heroBg2: "linear-gradient(135deg,#5C7AE3 0%,#8493E2 55%,#B2BEED 100%)",
+    btn: "linear-gradient(135deg,#5C7AE3 0%,#4C5E9C 55%,#3C4C82 100%)",
+    heroShadow: "0 12px 40px rgba(60,76,130,0.30), 0 2px 8px rgba(60,76,130,0.16)",
     heroGlow1: "rgba(255,255,255,0.36)", heroGlow2: "rgba(255,255,255,0.16)",
-    heroText: "#222B82", heroMut: "rgba(34,43,130,0.62)", heroFaint: "rgba(34,43,130,0.46)",
-    heroSep: "rgba(34,43,130,0.13)", heroTrack: "rgba(34,43,130,0.10)",
+    heroText: "#242C52", heroMut: "rgba(36,44,82,0.62)", heroFaint: "rgba(36,44,82,0.46)",
+    heroSep: "rgba(36,44,82,0.13)", heroTrack: "rgba(36,44,82,0.10)",
     heroPos: "#188A4A", heroNeg: "#C73A36",
-    heroPillBg: "#FFFFFF", heroPillText: "#181F5C", heroRangeBg: "rgba(34,43,130,0.08)",
-    trendLineA: "#2C46C8", trendLineB: "#5E77E8", trendArea: "#3A55D0",
-    trendDot: "#2C46C8", trendDotStroke: "#C3CDF6", trendGlow: "#3A55D0",
-    gridStrong: "rgba(34,43,130,0.12)", gridMid: "rgba(34,43,130,0.08)", gridFaint: "rgba(34,43,130,0.06)",
-    ringA: "#2C46C8",
+    heroPillBg: "#FFFFFF", heroPillText: "#1B2140", heroRangeBg: "rgba(36,44,82,0.08)",
+    trendLineA: "#2E3A66", trendLineB: "#5C7AE3", trendArea: "#3C4C82",
+    trendDot: "#2E3A66", trendDotStroke: "#C3CDF0", trendGlow: "#3C4C82",
+    gridStrong: "rgba(36,44,82,0.12)", gridMid: "rgba(36,44,82,0.08)", gridFaint: "rgba(36,44,82,0.06)",
+    ringA: "#3C4C82",
     advGreen: "#188A4A", advRingLow: "#E03030",
-    catNameHero: "rgba(34,43,130,0.82)", merchNameHero: "rgba(34,43,130,0.85)", merchBar: "linear-gradient(90deg,#3A55D0,#6076E4)",
+    catNameHero: "rgba(36,44,82,0.82)", merchNameHero: "rgba(36,44,82,0.85)", merchBar: "linear-gradient(90deg,#3C4C82,#5C7AE3)",
   },
 };
 var _theme = { name: "purple" };
@@ -9438,7 +9440,7 @@ function CurrencyView(props) {
 function AppearanceView(props) {
   var opts = [
     { id: "purple",  label: "Mika's Violet",    sub: "Lavender hero, violet accents",  a: "#9D78E8", b: "#C8B1FF" },
-    { id: "blue",    label: "Cornflower Blue",  sub: "Periwinkle hero, royal accents", a: "#697EE0", b: "#3F60F7" },
+    { id: "blue",    label: "Cornflower Blue",  sub: "Periwinkle hero, navy accents",  a: "#5C7AE3", b: "#3C4C82" },
     { id: "classic", label: "Dark Ember",       sub: "Dark hero, warm amber accents",  a: "#1E1A16", b: "#C8673A" }
   ];
   var modeOpts = [
