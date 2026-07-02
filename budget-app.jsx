@@ -804,6 +804,22 @@ function DrawRing(props) {
   return <RingChart size={props.size} stroke={props.stroke} value={mounted ? props.value : 0} max={props.max} color={props.color} track={props.track} />;
 }
 
+// Animated check circle for task rows: the circle fills and the check stroke
+// draws itself when done flips on; `pop` adds the springy scale keyframe.
+function TaskCheck(props) {
+  var sz = props.size || 22;
+  var c = props.color || T.orange;
+  return (
+    <span style={{ width: sz, height: sz, flexShrink: 0, display: "inline-flex", animation: props.pop ? "rcCheckPop 0.45s cubic-bezier(0.34,1.56,0.64,1) both" : "none" }}>
+      <svg width={sz} height={sz} viewBox="0 0 22 22">
+        <circle cx="11" cy="11" r="10" fill={props.done ? c : "transparent"} stroke={props.done ? c : T.ink3} strokeWidth="1.5" style={{ transition: "fill 0.25s ease, stroke 0.25s ease" }} />
+        <path d="M6.5 11.5 L9.5 14.5 L15.5 7.5" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+          strokeDasharray="14" strokeDashoffset={props.done ? 0 : 14} style={{ transition: "stroke-dashoffset 0.35s ease 0.08s" }} />
+      </svg>
+    </span>
+  );
+}
+
 function IconBadge(props) {
   var size = props.size || 38;
   var r = Math.round(size * 0.27);
@@ -8077,6 +8093,100 @@ function bizRevenueTrend(biz) {
   return { recent: round2(recent), prior: round2(prior), verdict: verdict };
 }
 
+// ---- Business roadmap -------------------------------------------------------
+// A stage-tuned milestone checklist Richard drafts for every business. The
+// offline templates below double as the fallback when the AI is unreachable.
+var LOCAL_ROADMAPS = {
+  idea: [
+    { title: "Prove someone wants it", tasks: ["Describe your offer in one sentence a stranger would understand", "Talk to 5 people who could be customers and write down what they say", "Find 3 competitors and note what they charge"] },
+    { title: "Shape the offer", tasks: ["Pick one product or service to lead with", "Set a starting price using what competitors charge", "Decide what makes yours the obvious pick"] },
+    { title: "First real sale", tasks: ["Offer it to 10 people directly", "Land one paying customer", "Write down what convinced them to buy"] }
+  ],
+  launching: [
+    { title: "Make it official", tasks: ["Sort the legal basics - registration and any required fees", "Set your prices and write them down", "Run every business expense through this account from now on"] },
+    { title: "Launch on one channel", tasks: ["Pick the one channel your customers actually use", "Show up there 3 times this week", "Ask every buyer how they found you"] },
+    { title: "First 10 customers", tasks: ["Reach 10 paying customers", "Record every sale in this account", "Ask 3 customers what almost stopped them from buying"] }
+  ],
+  running: [
+    { title: "Know your numbers", tasks: ["Log every expense and sale here for one full month", "Work out your margin on the main product", "Cut or renegotiate the biggest cost that isn't earning"] },
+    { title: "Double down on what works", tasks: ["Find which channel brings the most customers", "Move budget from the weakest channel to the strongest", "Raise prices on the bestseller if margin is under 50%"] },
+    { title: "Build it to last", tasks: ["Set up one repeatable way customers come back", "Write down the weekly routine the business needs", "Set next quarter's revenue target"] }
+  ]
+};
+var MILESTONE_PRAISE = [
+  "That milestone is done - real progress. The next one is already lined up for you.",
+  "Another milestone down. This is exactly how businesses get built - one finished step at a time.",
+  "Milestone cleared. Momentum like this is worth more than any plan on paper - keep it rolling.",
+  "That's a big one done. Take a breath, then look at the next step - you're ahead of everyone who's still just talking about it."
+];
+function localRoadmap(biz) {
+  var stage = (biz.profile && biz.profile.stage) || "idea";
+  var tpl = LOCAL_ROADMAPS[stage] || LOCAL_ROADMAPS.idea;
+  return {
+    generatedAt: new Date().toISOString().slice(0, 10), stage: stage, source: "local",
+    milestones: tpl.map(function(m, i) {
+      return { id: "m" + i, title: m.title, done: false, doneAt: null, tasks: m.tasks.map(function(lbl, j) { return { id: "t" + i + "_" + j, label: lbl, done: false, doneAt: null }; }) };
+    })
+  };
+}
+function roadmapProgress(roadmap) {
+  var done = 0, total = 0;
+  ((roadmap && roadmap.milestones) || []).forEach(function(m) { (m.tasks || []).forEach(function(t) { total++; if (t.done) done++; }); });
+  return { done: done, total: total };
+}
+// Ask Richard for a stage-tuned roadmap; always calls back with a valid
+// roadmap object (falls back to the local template on any failure).
+function buildRoadmap(biz, richardInstructions, lang, cb) {
+  var pf = biz.profile || {};
+  var stage = pf.stage || "idea";
+  var custom = (richardInstructions && richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + richardInstructions + "\n\n") : "";
+  var langSuffix = (lang && lang !== "en") ? (" Every string value must be written entirely in " + (LANGUAGE_NAMES[lang] || "English") + ".") : "";
+  var sys = custom + "You are Richard, a sharp, warm, honest business CFO inside the Richy app. Build a step-by-step roadmap that takes this owner from where they are today to a working, growing business. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"milestones\":[{\"title\":\"short milestone name\",\"tasks\":[{\"label\":\"one concrete action\"}]}]}. Exactly 3 or 4 milestones, 2 or 3 tasks each, ordered as a path from today to the 12-month goal. Every task must be a single concrete action the owner can physically do, MAXIMUM 16 words - include a number or deliverable where possible (like: talk to 5 potential customers, list 3 competitors and their prices). Keep the whole reply compact enough to never get cut off. Tune it to the stage: idea = validate demand before spending money (talk to real customers, define the offer, land the first paying customer); launching = make it real (legal and fees, set prices, pick one launch channel, first 10 customers, track every sale); running = sharpen the machine (review margins, double down on the best channel, keep customers coming back, systemize the busywork)." + langSuffix;
+  var pl = bizMonthProfit(biz, curMonth());
+  var usr = "Business: " + (biz.name || "my business") + " - " + (biz.what || "unspecified") + ". Stage: " + stage + ". Scale: " + (pf.size || "side") + ". "
+    + "Monthly budget " + dollars(pf.monthly || 0) + ", revenue goal " + dollars(pf.revenueGoal || 0) + ", cash on hand " + dollars(businessCash(biz)) + ". "
+    + "This month so far: " + dollars(pl.revenue) + " revenue, " + dollars(pl.spend) + " spent. "
+    + "12-month goal: " + (pf.goal || "unspecified") + ". "
+    + (biz.plan && biz.plan.summary ? ("Current plan summary: " + biz.plan.summary + " ") : "")
+    + "Build the roadmap.";
+  callClaude([{ role: "user", content: usr }], sys, 1100, function(e, text) {
+    if (e || !text) { cb(localRoadmap(biz)); return; }
+    try {
+      var jsonStr = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
+      var parsed = JSON.parse(jsonStr);
+      var ms = (parsed.milestones || []).slice(0, 5).map(function(m, i) {
+        return {
+          id: "m" + i, title: String(m.title || ("Milestone " + (i + 1))).slice(0, 70), done: false, doneAt: null,
+          tasks: (m.tasks || []).slice(0, 4).map(function(t, j) { return { id: "t" + i + "_" + j, label: String((t && t.label) || t || "").slice(0, 160), done: false, doneAt: null }; }).filter(function(t) { return t.label; })
+        };
+      }).filter(function(m) { return m.tasks.length; });
+      if (!ms.length) { cb(localRoadmap(biz)); return; }
+      cb({ generatedAt: new Date().toISOString().slice(0, 10), stage: stage, source: "ai", milestones: ms });
+    } catch (e2) { cb(localRoadmap(biz)); }
+  });
+}
+// Deterministic stage-graduation check: idea -> launching once real money
+// moves (or a milestone lands); launching -> running once revenue is repeating.
+function detectGraduation(biz) {
+  var stage = (biz.profile && biz.profile.stage) || "idea";
+  var entries = biz.entries || [];
+  if (stage === "idea") {
+    var hasExpense = false;
+    for (var i = 0; i < entries.length; i++) { if (entries[i].bizExpense) { hasExpense = true; break; } }
+    var msDone = false;
+    var mss = (biz.roadmap && biz.roadmap.milestones) || [];
+    for (var j = 0; j < mss.length; j++) { if (mss[j].done) { msDone = true; break; } }
+    if (hasExpense || msDone) return "launching";
+  }
+  if (stage === "launching") {
+    var revCount = 0;
+    for (var k = 0; k < entries.length; k++) { if (entries[k].kind === "deposit" && entries[k].revenue) revCount++; }
+    var goal = (biz.profile && biz.profile.revenueGoal) || 0;
+    if (revCount >= 3 || (goal > 0 && bizMonthRevenue(biz, curMonth()) >= goal * 0.5)) return "running";
+  }
+  return null;
+}
+
 function SavingsView(props) {
   var accts = props.savings || [];
   var tx = props.tx || [];
@@ -8476,6 +8586,79 @@ function BusinessView(props) {
   }
   function ymOffset(off) { var d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - off); return d.toISOString().slice(0, 7); }
   function ymLabel(ymStr) { var p = ymStr.split("-"); var MO = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; return MO[(parseInt(p[1], 10) || 1) - 1] + " " + p[0]; }
+
+  // Roadmap: generation, task toggling, milestone celebration, graduation.
+  var _rb = useState(false); var roadmapBuilding = _rb[0]; var setRoadmapBuilding = _rb[1];
+  var _cel = useState(null); var celebrate = _cel[0]; var setCelebrate = _cel[1];
+  var _lc = useState(null); var lastChecked = _lc[0]; var setLastChecked = _lc[1];
+  var _xm = useState(null); var expandedMs = _xm[0]; var setExpandedMs = _xm[1];
+  var celTimer = useRef(null);
+  useEffect(function() { return function() { if (celTimer.current) clearTimeout(celTimer.current); }; }, []);
+  // Draft a roadmap the first time a planned business is opened - this is also
+  // the retrofit path for accounts created before roadmaps existed.
+  useEffect(function() {
+    if (view !== "detail" || !activeId || roadmapBuilding) return;
+    var b = null;
+    for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === activeId) { b = bizes[i]; break; } }
+    if (!b || b.roadmap || !b.plan) return;
+    regenRoadmap(b);
+  }, [activeId, view, bizes]);
+  function regenRoadmap(b) {
+    setRoadmapBuilding(true);
+    buildRoadmap(b, props.richardInstructions, props.lang, function(rm) {
+      setRoadmapBuilding(false);
+      props.onSaveBusinesses(patchBiz(b.id, { roadmap: rm }));
+    });
+  }
+  function toggleTask(biz, mid, tid) {
+    var rm = biz.roadmap; if (!rm) return;
+    var completedTitle = null; var completedIdx = 0;
+    var wasDone = false;
+    var mss = rm.milestones || [];
+    for (var i = 0; i < mss.length; i++) {
+      if (mss[i].id !== mid) continue;
+      var ts = mss[i].tasks || [];
+      for (var j = 0; j < ts.length; j++) { if (ts[j].id === tid) { wasDone = !!ts[j].done; break; } }
+      break;
+    }
+    var ms = mss.map(function(m, mi) {
+      if (m.id !== mid) return m;
+      var tasks = (m.tasks || []).map(function(t) { return t.id === tid ? Object.assign({}, t, { done: !wasDone, doneAt: !wasDone ? today : null }) : t; });
+      var allDone = tasks.length > 0 && tasks.reduce(function(s, t) { return s && !!t.done; }, true);
+      if (allDone && !m.done) { completedTitle = m.title; completedIdx = mi; }
+      return Object.assign({}, m, { tasks: tasks, done: allDone, doneAt: allDone ? (m.doneAt || today) : null });
+    });
+    var patch = { roadmap: Object.assign({}, rm, { milestones: ms }) };
+    if (completedTitle) {
+      // A deterministic Richard reaction lands in the thread instantly; the
+      // next weekly review references the progress with real context.
+      patch.chat = ((biz.chat || []).concat([{ role: "richard", text: MILESTONE_PRAISE[completedIdx % MILESTONE_PRAISE.length] }])).slice(-30);
+      setCelebrate({ id: mid, title: completedTitle });
+      if (celTimer.current) clearTimeout(celTimer.current);
+      celTimer.current = setTimeout(function() { setCelebrate(null); }, 2600);
+    }
+    setLastChecked(!wasDone ? tid : null);
+    props.onSaveBusinesses(patchBiz(biz.id, patch));
+  }
+  function graduateBiz(biz, newStage) {
+    var pf = {}; for (var k in (biz.profile || {})) pf[k] = biz.profile[k];
+    var from = pf.stage || "idea";
+    if (from === newStage) return;
+    pf.stage = newStage;
+    var line = newStage === "launching"
+      ? "Big moment - " + (biz.name || "the business") + " just moved from idea to launch. I've rebuilt the roadmap for a business that's really out there now."
+      : "Big moment - " + (biz.name || "the business") + " is officially a running business. New roadmap: sharper margins, repeat customers, systems.";
+    props.onSaveBusinesses(patchBiz(biz.id, {
+      profile: pf,
+      graduations: (biz.graduations || []).concat([{ from: from, to: newStage, date: today }]),
+      chat: ((biz.chat || []).concat([{ role: "richard", text: line }])).slice(-30),
+      roadmap: null
+    }));
+    setCelebrate({ id: "grad", title: newStage === "launching" ? "Launched" : "Up and running" });
+    if (celTimer.current) clearTimeout(celTimer.current);
+    celTimer.current = setTimeout(function() { setCelebrate(null); }, 2600);
+    regenRoadmap(Object.assign({}, biz, { profile: pf }));
+  }
 
   var STRUCTURES = [{ v: "company", l: "Company" }, { v: "individual", l: "Individual" }, { v: "freelancer", l: "Freelancer" }];
   var STAGES = [{ v: "idea", l: "Just an idea" }, { v: "launching", l: "Launching soon" }, { v: "running", l: "Already running" }];
@@ -9296,6 +9479,115 @@ function BusinessView(props) {
           <button onClick={function() { openAction(biz.id, "withdraw"); }} disabled={bal <= 0}
             style={{ flex: 1, border: "1.5px solid " + (bal <= 0 ? "rgba(0,0,0,0.08)" : T.orange), cursor: bal <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 12, background: "none", color: bal <= 0 ? T.ink3 : T.orange }}>Withdraw</button>
         </div>
+
+        {(function() {
+          var rm = biz.roadmap;
+          if (!rm && roadmapBuilding) {
+            return (
+              <Card style={{ padding: "18px", marginBottom: 16, position: "relative", overflow: "hidden", animation: "rcFadeUp 0.55s ease 0.06s both" }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Roadmap</div>
+                <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, marginTop: 8 }}>Richard is drafting your roadmap...</div>
+                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3, lineHeight: 1.45 }}>Clear milestones with concrete steps - a path from here to a working business.</div>
+                <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "45%", background: "linear-gradient(105deg, transparent, rgba(255,255,255,0.5), transparent)", animation: "rcShimmer 1.4s ease infinite", pointerEvents: "none" }} />
+              </Card>
+            );
+          }
+          if (!rm) {
+            return (
+              <Card style={{ padding: "16px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12, animation: "rcFadeUp 0.55s ease 0.06s both" }}>
+                <CatBadge icon="chart" color={T.orange} size={40} soft={true} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>No roadmap yet</div>
+                  <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Richard can lay out the concrete steps from here to a working business.</div>
+                </div>
+                <button onClick={function() { regenRoadmap(biz); }}
+                  style={{ background: T.btn, border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Build it</button>
+              </Card>
+            );
+          }
+          var prog = roadmapProgress(rm);
+          var gradTarget = detectGraduation(biz);
+          var curId = null;
+          for (var ci = 0; ci < rm.milestones.length; ci++) { if (!rm.milestones[ci].done) { curId = rm.milestones[ci].id; break; } }
+          function taskRow(m, t) {
+            return (
+              <div key={t.id} onClick={function() { toggleTask(biz, m.id, t.id); }} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", cursor: "pointer" }}>
+                <TaskCheck done={!!t.done} pop={lastChecked === t.id && !!t.done} color={T.orange} />
+                <span style={{ flex: 1, fontSize: 13.5, lineHeight: 1.45, color: t.done ? T.ink3 : T.ink, textDecoration: t.done ? "line-through" : "none", transition: "color 0.3s ease" }}>{t.label}</span>
+              </div>
+            );
+          }
+          return (
+            <Card style={{ padding: "16px 18px", marginBottom: 16, position: "relative", overflow: "hidden", animation: "rcFadeUp 0.55s ease 0.06s both" }}>
+              {celebrate && (
+                <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "45%", background: "linear-gradient(105deg, transparent, rgba(255,255,255,0.55), transparent)", animation: "rcShimmer 1.1s ease both", pointerEvents: "none", zIndex: 2 }} />
+              )}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Roadmap</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <DrawRing size={26} stroke={3.5} value={prog.done} max={prog.total || 1} color={T.orange} />
+                  <span style={{ fontSize: 12, fontWeight: 700, color: T.ink2 }}>{prog.done + " of " + prog.total}</span>
+                  {rm.source === "local" && (
+                    <button onClick={function() { regenRoadmap(biz); }} disabled={roadmapBuilding}
+                      style={{ background: T.orangeDim, border: "none", borderRadius: 9, padding: "5px 10px", fontSize: 11, fontWeight: 700, color: T.orange, cursor: roadmapBuilding ? "default" : "pointer", fontFamily: UI }}>{roadmapBuilding ? "..." : "Ask Richard"}</button>
+                  )}
+                </div>
+              </div>
+              {celebrate && (
+                <div style={{ display: "flex", justifyContent: "center", margin: "4px 0 10px" }}>
+                  <div style={{ background: T.orangeDim, color: T.orange, borderRadius: 999, padding: "6px 14px", fontSize: 12.5, fontWeight: 700, animation: "rcPillIn 0.45s ease both" }}>
+                    {"Milestone complete - " + celebrate.title}
+                  </div>
+                </div>
+              )}
+              {gradTarget && (
+                <div style={{ background: T.heroBg, borderRadius: 14, padding: "13px 14px", margin: "8px 0 10px", boxShadow: T.heroShadow }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, color: T.heroInk, lineHeight: 1.4 }}>
+                    {gradTarget === "launching" ? ("Richard thinks " + biz.name + " is moving from idea to launch.") : ("Richard thinks " + biz.name + " is now a running business.")}
+                  </div>
+                  <div style={{ fontSize: 12.5, color: T.heroMut, marginTop: 3, lineHeight: 1.45 }}>
+                    {gradTarget === "launching" ? "Real money is moving - that's a launch. Graduating rebuilds the roadmap for this new stage." : "Revenue is coming in again and again. Graduating rebuilds the roadmap around margins, repeat customers and systems."}
+                  </div>
+                  <button onClick={function() { graduateBiz(biz, gradTarget); }}
+                    style={{ marginTop: 10, background: "rgba(255,255,255,0.92)", border: "none", borderRadius: 10, padding: "9px 16px", fontSize: 12.5, fontWeight: 700, color: T.orange, cursor: "pointer", fontFamily: UI }}>Graduate</button>
+                </div>
+              )}
+              {rm.milestones.map(function(m, mi) {
+                var borderSt = mi > 0 ? "0.5px solid " + T.sep : "none";
+                if (m.done) {
+                  return (
+                    <div key={m.id} style={{ borderTop: borderSt }}>
+                      <div onClick={function() { setExpandedMs(expandedMs === m.id ? null : m.id); }} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", cursor: "pointer" }}>
+                        <TaskCheck done={true} size={20} color={T.green} />
+                        <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600, color: T.ink3, textDecoration: "line-through" }}>{m.title}</span>
+                        <span style={{ transform: expandedMs === m.id ? "rotate(-90deg)" : "rotate(90deg)", display: "flex", transition: "transform 0.25s ease" }}><SVGIcon id="chevron" size={13} color={T.ink3} /></span>
+                      </div>
+                      {expandedMs === m.id && <div style={{ paddingLeft: 4, paddingBottom: 6 }}>{(m.tasks || []).map(function(t) { return taskRow(m, t); })}</div>}
+                    </div>
+                  );
+                }
+                if (m.id !== curId) {
+                  return (
+                    <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderTop: borderSt, opacity: 0.55 }}>
+                      <span style={{ width: 20, height: 20, borderRadius: "50%", border: "1.5px dashed " + T.ink3, flexShrink: 0, boxSizing: "border-box" }} />
+                      <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600, color: T.ink2 }}>{m.title}</span>
+                      <span style={{ fontSize: 11.5, color: T.ink3 }}>{((m.tasks || []).length) + " steps"}</span>
+                    </div>
+                  );
+                }
+                return (
+                  <div key={m.id} style={{ padding: "9px 0 4px", borderTop: borderSt }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: T.ink, flex: 1 }}>{m.title}</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: T.orange, background: T.orangeDim, borderRadius: 999, padding: "3px 9px", letterSpacing: "0.05em", textTransform: "uppercase" }}>Now</span>
+                    </div>
+                    {(m.tasks || []).map(function(t) { return taskRow(m, t); })}
+                  </div>
+                );
+              })}
+            </Card>
+          );
+        })()}
 
         {(function() {
           var created = (biz.createdAt || "").slice(0, 7);
