@@ -421,6 +421,15 @@ function businessSpent(biz) {
 function isTransfer(t) {
   return !!(t && (t.transfer === true || t.catId === "savings-transfer"));
 }
+// Trip spend is already tracked and budgeted inside its own trip ledger (see
+// "Plan a Trip" below). The single lump-sum tx created when the user hits
+// "Deduct from Balance" only exists to move real money out of the main
+// balance - counting it again in monthly income/expense would double-count
+// the same spending and distort that month's savings rate, exactly like a
+// savings transfer. So it's excluded from monthly cash-flow/savings math too.
+function isTrip(t) {
+  return !!(t && t.trip === true);
+}
 
 // Offline fallback rates, expressed as approximate units of each currency per 1 USD.
 // Used when the live FX request fails (no network) OR when the currency is outside
@@ -2212,11 +2221,11 @@ function Overview(props) {
   // to/from savings pots are excluded too - moving your own money isn't earning or
   // spending it.
   var income  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && isSettled(t) && inMonth(t, ym); }).reduce(function(s,t) { return s+t.amount; }, 0);
-  var expense = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && isSettled(t) && inMonth(t, ym); }).reduce(function(s,t) { return s+t.amount; }, 0);
+  var expense = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && isSettled(t) && inMonth(t, ym); }).reduce(function(s,t) { return s+t.amount; }, 0);
   var hasIncome = income > 0;
   var savRate = hasIncome ? Math.round(((income - expense) / income) * 100) : 0;
   function spentInCat(c) {
-    return tx.filter(function(t) { return t.type === "expense" && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s,t){return s+t.amount;}, 0);
+    return tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s,t){return s+t.amount;}, 0);
   }
   var recent = tx.filter(function(t) { return !isTransfer(t); }).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,4);
   var monthTxCount = tx.filter(function(t) { return inMonth(t, ym) && !isTransfer(t); }).length;
@@ -2349,9 +2358,9 @@ function Overview(props) {
   var monthNet = income - expense;
 
   function winExpenseInCat(c) {
-    return tx.filter(function(t) { return t.type === "expense" && t.date >= winStart && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    return tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && t.date >= winStart && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
   }
-  var winExpenseTot = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && t.date >= winStart; }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var winExpenseTot = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && t.date >= winStart; }).reduce(function(s, t) { return s + t.amount; }, 0);
   var winIncomeTot  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && t.date >= winStart; }).reduce(function(s, t) { return s + t.amount; }, 0);
   var winSav = winIncomeTot > 0 ? Math.round(((winIncomeTot - winExpenseTot) / winIncomeTot) * 100) : 0;
   var winKept = Math.max(0, winIncomeTot - winExpenseTot);
@@ -2361,7 +2370,7 @@ function Overview(props) {
     .slice(0, 6);
 
   var labelTotals = {};
-  tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && t.date >= winStart; }).forEach(function(t) {
+  tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && t.date >= winStart; }).forEach(function(t) {
     var k = t.label || "Other";
     labelTotals[k] = (labelTotals[k] || 0) + t.amount;
   });
@@ -4398,7 +4407,7 @@ function Budgets(props) {
 
   function spentForCat(c) {
     var ym = curMonth();
-    return props.tx.filter(function(t) { return t.type === "expense" && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    return props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
   }
 
   var rows = props.budgets.map(function(b) {
@@ -5085,7 +5094,7 @@ function Trips(props) {
     props.onSaveTrips(nextTrips);
   }
   function reserveTrip(trip) {
-    var t = { id: Date.now(), type: "expense", amount: tripSpent(trip), label: "Trip: " + trip.name, catId: "c7", category: "Travel", date: new Date().toISOString().slice(0, 10) };
+    var t = { id: Date.now(), type: "expense", amount: tripSpent(trip), label: "Trip: " + trip.name, catId: "c7", category: "Travel", date: new Date().toISOString().slice(0, 10), trip: true };
     var nextTrips = props.trips.map(function(x) { return x.id === trip.id ? Object.assign({}, x, { reserved: true, reserveTxId: t.id }) : x; });
     props.onTripReserve(props.tx.concat([t]), nextTrips);
   }
@@ -6090,7 +6099,7 @@ function Advisor(props) {
   var ymA = curMonth();
   // Cash-flow is this month (matches the dashboard); net worth is all-time.
   var income = props.tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var expense = props.tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var expense = props.tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
   // Net worth = main balance (all-time tx) + every savings pot + business cash.
   var netWorth = props.tx.reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0) + savingsTotal(props.savings || []) + businessTotal(props.businesses || []);
   var savings = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
@@ -6155,7 +6164,7 @@ function Advisor(props) {
     + "Personalized Plan: " + (props.plan ? props.plan.slice(0, 200) + "..." : "not yet created");
 
   function catSpend(c) {
-    return props.tx.filter(function(t) { return t.type === "expense" && inMonth(t, ymA) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    return props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ymA) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
   }
 
   function localAnalysis() {
@@ -6865,7 +6874,7 @@ function Advisor(props) {
     return d.getFullYear() + "-" + (mm < 10 ? "0" + mm : "" + mm);
   }
   function catSpendInMonth(c, ym) {
-    return props.tx.filter(function(t) { return t.type === "expense" && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    return props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
   }
 
   // Build the swipeable analysis hero (dots + scroll-snap panels). Every panel is
@@ -6884,7 +6893,7 @@ function Advisor(props) {
 
     var netKept = Math.round(income - expense);
     var prevYm = ymShift(ymA, -1);
-    var prevExpenseTot = props.tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && inMonth(t, prevYm); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    var prevExpenseTot = props.tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && inMonth(t, prevYm); }).reduce(function(s, t) { return s + t.amount; }, 0);
     var spendDelta = Math.round(expense - prevExpenseTot);
 
     var catTotal = allCats.reduce(function(s, c) { return s + c.spent; }, 0) || 1;
@@ -9254,7 +9263,7 @@ function LogMonthView(props) {
 
   // What's already logged this month per category, and the budget limit if set.
   function spentThisMonth(c) {
-    return allTx.filter(function(t) { return t.type === "expense" && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    return allTx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
   }
   function limitFor(c) {
     var b = allBudgets.filter(function(x) { return x.catId === c.id || x.category === c.name; })[0];
