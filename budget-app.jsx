@@ -4912,6 +4912,28 @@ function extractAllocDirective(text) {
   return { text: clean, allocations: allocations };
 }
 
+// Extract a @@BIZ[...] ops directive from a business-chat reply. Unlike the
+// @@ALLOC extractor this keeps the text AFTER the directive, so an @@ALLOC
+// on a later line still survives a second extraction pass.
+function extractBizDirective(text) {
+  text = text || "";
+  var idx = text.indexOf("@@BIZ");
+  if (idx === -1) return { text: text.trim(), ops: null };
+  var ops = null;
+  var jend = -1;
+  var jstart = text.indexOf("[", idx);
+  if (jstart !== -1) {
+    var jsonStr = sliceJsonArray(text, jstart);
+    if (jsonStr) {
+      jend = jstart + jsonStr.length;
+      try { var arr = JSON.parse(jsonStr); if (Array.isArray(arr)) ops = arr; } catch (e) {}
+    }
+  }
+  var clean = (text.slice(0, idx) + (jend !== -1 ? text.slice(jend) : "")).trim();
+  if (!clean) clean = "Done.";
+  return { text: clean, ops: ops };
+}
+
 // Turn Richard's free-form {category, amount} list into a {bucketKey: amount}
 // map keyed to our fixed TRIP_CATEGORIES buckets.
 function allocDirectiveToMap(arr) {
@@ -9161,20 +9183,24 @@ function BusinessView(props) {
     }
     setAct(null);
   }
+  // Pure patch builders shared by the buttons and the @@BIZ chat directive,
+  // so both paths write identical shapes.
+  function buildExpensePatch(biz, key, label, amount, eid) {
+    var cat = null; for (var j = 0; j < biz.categories.length; j++) { if (biz.categories[j].key === key) { cat = biz.categories[j]; break; } }
+    var lbl = label || ((cat && cat.label) || "Expense");
+    var cats = biz.categories.map(function(c) {
+      return c.key === key ? Object.assign({}, c, { spent: round2((c.spent || 0) + amount), entries: (c.entries || []).concat([{ id: eid, label: lbl, amount: round2(amount), date: today }]) }) : c;
+    });
+    return { categories: cats, entries: (biz.entries || []).concat([{ id: eid, kind: "withdraw", amount: round2(amount), date: today, fromMain: false, label: lbl, bizExpense: true, catKey: key }]) };
+  }
+  function buildRevenuePatch(biz, label, amount, eid) {
+    return { entries: (biz.entries || []).concat([{ id: eid, kind: "deposit", amount: round2(amount), date: today, fromMain: false, label: label ? ("Revenue: " + label) : "Revenue", revenue: true }]) };
+  }
   function logExpense(bizId, key) {
     var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
-    if (!biz) { setLogFor(null); return; }
     var v = parseFloat(logForm.amount) || 0;
-    if (v <= 0) { setLogFor(null); return; }
-    var eid = Date.now();
-    var cat = null; for (var j = 0; j < biz.categories.length; j++) { if (biz.categories[j].key === key) { cat = biz.categories[j]; break; } }
-    var label = logForm.label || ((cat && cat.label) || "Expense");
-    var cats = biz.categories.map(function(c) {
-      return c.key === key ? Object.assign({}, c, { spent: round2((c.spent || 0) + v), entries: (c.entries || []).concat([{ id: eid, label: label, amount: round2(v), date: today }]) }) : c;
-    });
-    var potEntry = { id: eid, kind: "withdraw", amount: round2(v), date: today, fromMain: false, label: label, bizExpense: true, catKey: key };
-    var next = patchBiz(bizId, { categories: cats, entries: (biz.entries || []).concat([potEntry]) });
-    props.onSaveBusinesses(next);
+    if (!biz || v <= 0) { setLogFor(null); return; }
+    props.onSaveBusinesses(patchBiz(bizId, buildExpensePatch(biz, key, logForm.label, v, Date.now())));
     setLogFor(null); setLogForm({ label: "", amount: "" });
   }
   function deleteExpense(bizId, key, eid) {
@@ -9191,11 +9217,9 @@ function BusinessView(props) {
   }
   function logRevenue(bizId) {
     var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
-    if (!biz) { setRevFor(null); return; }
     var v = parseFloat(revForm.amount) || 0;
-    if (v <= 0) { setRevFor(null); return; }
-    var entry = { id: Date.now(), kind: "deposit", amount: round2(v), date: today, fromMain: false, label: revForm.label ? ("Revenue: " + revForm.label) : "Revenue", revenue: true };
-    props.onSaveBusinesses(patchBiz(bizId, { entries: (biz.entries || []).concat([entry]) }));
+    if (!biz || v <= 0) { setRevFor(null); return; }
+    props.onSaveBusinesses(patchBiz(bizId, buildRevenuePatch(biz, revForm.label, v, Date.now())));
     setRevFor(null); setRevForm({ label: "", amount: "" });
   }
   function updatePlanned(bizId, key, rawVal) {
@@ -9218,6 +9242,74 @@ function BusinessView(props) {
   }
 
   // ---- Richard CFO chat + replan ------------------------------------------
+  // Apply a @@BIZ ops list onto a working copy of the business. Returns the
+  // combined field patch, one system chip per applied op, and any stage move
+  // (which the caller turns into a graduation) - or null if nothing applied.
+  function applyBizOps(biz, ops) {
+    var work = biz; var chips = []; var stageTo = null;
+    var eid = Date.now();
+    (ops || []).forEach(function(op) {
+      if (!op || !op.op) return;
+      if (op.op === "expense") {
+        var amt = parseFloat(op.amount) || 0; if (amt <= 0) return;
+        var byKey = bizAllocToMap([{ category: op.category, amount: 1 }]);
+        var key = null; for (var kk in byKey) { key = kk; break; }
+        if (!key) key = "other";
+        work = Object.assign({}, work, buildExpensePatch(work, key, op.label, amt, eid++));
+        var catLabel = "Other";
+        for (var i = 0; i < BIZ_CATEGORIES.length; i++) { if (BIZ_CATEGORIES[i].key === key) { catLabel = BIZ_CATEGORIES[i].label; break; } }
+        chips.push("Logged " + dollars(amt) + " to " + catLabel);
+      } else if (op.op === "revenue") {
+        var amt2 = parseFloat(op.amount) || 0; if (amt2 <= 0) return;
+        work = Object.assign({}, work, buildRevenuePatch(work, op.label, amt2, eid++));
+        chips.push("Recorded " + dollars(amt2) + " revenue");
+      } else if (op.op === "taskDone") {
+        var rm = work.roadmap; if (!rm || !op.task) return;
+        var needle = String(op.task).toLowerCase();
+        var mss = rm.milestones || [];
+        var foundM = null, foundT = null;
+        for (var mi = 0; mi < mss.length && !foundT; mi++) {
+          var ts = mss[mi].tasks || [];
+          for (var ti = 0; ti < ts.length; ti++) {
+            var lbl = (ts[ti].label || "").toLowerCase();
+            if (!ts[ti].done && (lbl.indexOf(needle) !== -1 || needle.indexOf(lbl) !== -1)) { foundM = mss[mi]; foundT = ts[ti]; break; }
+          }
+        }
+        if (!foundT) return;
+        var ms2 = mss.map(function(m) {
+          if (m.id !== foundM.id) return m;
+          var tasks = (m.tasks || []).map(function(t) { return t.id === foundT.id ? Object.assign({}, t, { done: true, doneAt: today }) : t; });
+          var allDone = tasks.length > 0 && tasks.reduce(function(s, t) { return s && !!t.done; }, true);
+          return Object.assign({}, m, { tasks: tasks, done: allDone, doneAt: allDone ? (m.doneAt || today) : m.doneAt });
+        });
+        work = Object.assign({}, work, { roadmap: Object.assign({}, rm, { milestones: ms2 }) });
+        chips.push("Task completed: " + foundT.label);
+      } else if (op.op === "taskAdd") {
+        var rm3 = work.roadmap; if (!rm3 || !op.task) return;
+        var mss3 = rm3.milestones || []; if (!mss3.length) return;
+        var idx = -1;
+        if (op.milestone) { for (var a = 0; a < mss3.length; a++) { if (mss3[a].title.toLowerCase().indexOf(String(op.milestone).toLowerCase()) !== -1) { idx = a; break; } } }
+        if (idx === -1) { for (var b2 = 0; b2 < mss3.length; b2++) { if (!mss3[b2].done) { idx = b2; break; } } }
+        if (idx === -1) idx = mss3.length - 1;
+        var ms3 = mss3.map(function(m, mj) { return mj === idx ? Object.assign({}, m, { done: false, doneAt: null, tasks: (m.tasks || []).concat([{ id: "tc_" + (eid++), label: String(op.task).slice(0, 160), done: false, doneAt: null }]) }) : m; });
+        work = Object.assign({}, work, { roadmap: Object.assign({}, rm3, { milestones: ms3 }) });
+        chips.push("Added to roadmap: " + String(op.task).slice(0, 60));
+      } else if (op.op === "stage") {
+        var curStage = (work.profile && work.profile.stage) || "idea";
+        var fwd = { idea: { launching: 1, running: 1 }, launching: { running: 1 }, running: {} };
+        if (!fwd[curStage] || !fwd[curStage][op.value]) return;
+        var pf = {}; for (var pk in (work.profile || {})) pf[pk] = work.profile[pk];
+        pf.stage = op.value;
+        work = Object.assign({}, work, { profile: pf, graduations: (work.graduations || []).concat([{ from: curStage, to: op.value, date: today }]), roadmap: null });
+        stageTo = op.value;
+        chips.push("Graduated to " + (op.value === "running" ? "running" : "launching"));
+      }
+    });
+    if (work === biz) return null;
+    var patch = {};
+    ["categories", "entries", "roadmap", "profile", "graduations"].forEach(function(f) { if (work[f] !== biz[f]) patch[f] = work[f]; });
+    return { patch: patch, chips: chips, stageTo: stageTo, work: work };
+  }
   // The thread lives on the business object itself (biz.chat, capped at 30
   // messages) so the conversation survives reloads and syncs across devices.
   function sendChat(biz) {
@@ -9228,42 +9320,69 @@ function BusinessView(props) {
     props.onSaveBusinesses(patchBiz(biz.id, { chat: nc.slice(-30) }));
     setChatLoading(true);
     var pf = biz.profile || {};
-    var split = (biz.categories || []).map(function(c) { return c.label + ": " + dollars(c.planned || 0) + " budgeted, " + dollars(c.spent || 0) + " spent"; }).join("; ");
+    var ymNow = curMonth();
+    var split = (biz.categories || []).map(function(c) { return c.label + ": " + dollars(c.planned || 0) + " budgeted, " + dollars(bizCatMonthSpent(biz, c.key, ymNow)) + " spent this month"; }).join("; ");
+    var paceNow = bizPace(biz);
+    var openTasks = [];
+    var mssC = (biz.roadmap && biz.roadmap.milestones) || [];
+    for (var oi = 0; oi < mssC.length && openTasks.length < 6; oi++) {
+      if (mssC[oi].done) continue;
+      var tsC = mssC[oi].tasks || [];
+      for (var oj = 0; oj < tsC.length && openTasks.length < 6; oj++) { if (!tsC[oj].done) openTasks.push(tsC[oj].label); }
+    }
     var custom = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
     var sys = custom + "You are Richard, a warm, sharp, honest business CFO inside the Richy app. You are helping the owner run and budget their business and make it succeed. "
-      + "Business: " + (biz.name || "the business") + " - " + (biz.what || "unspecified") + ". Structure: " + labelOf(STRUCTURES, pf.structure) + ". Stage: " + labelOf(STAGES, pf.stage) + ". Scale: " + labelOf(SIZES, pf.size) + ". "
-      + "Monthly budget " + dollars(pf.monthly || 0) + ", revenue goal " + dollars(pf.revenueGoal || 0) + ", cash on hand " + dollars(businessCash(biz)) + ", spent so far " + dollars(businessSpent(biz)) + ". "
-      + "Current budget split: " + (split || "not set") + ". "
-      + "Answer the owner's question with concrete, practical advice tied to their real numbers. "
-      + "You can DIRECTLY change the monthly budget split, not just describe it. When the owner wants a change, give one short plain-text sentence explaining what you did, then on a new line append a directive in EXACTLY this form: @@ALLOC[{\"category\":\"Marketing\",\"amount\":600},{\"category\":\"Software\",\"amount\":150}] "
-      + "Only list the buckets you are changing, using whole numbers, and keep the overall total close to " + dollars(pf.monthly || 0) + " by also adjusting Buffer or Other when needed. Categories must be from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer. "
-      + "Only include the @@ALLOC directive when you actually intend to change the split; for general questions just answer normally." + RICHARD_FORMAT + " The @@ALLOC directive, when you use it, must be the very last thing in your reply.";
-    callClaude(nc.filter(function(m) { return m.role !== "system"; }).map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }), sys, 500, function(e, reply) {
+      + "Business: " + (biz.name || "the business") + " - " + (biz.what || "unspecified") + ". Structure: " + labelOf(STRUCTURES, pf.structure) + ". Stage: " + labelOf(STAGES, pf.stage) + ". Scale: " + labelOf(SIZES, pf.size) + ". Revenue goal " + dollars(pf.revenueGoal || 0) + "/month. "
+      + "LIVE NUMBERS - " + bizContextLine(biz) + (paceNow ? (" " + paceNow.text) : "") + " "
+      + "Monthly budget split: " + (split || "not set") + ". "
+      + (openTasks.length ? ("Open roadmap tasks: " + openTasks.join(" | ") + ". ") : "")
+      + "Ground every answer in these numbers, and when you give advice end with one concrete action. "
+      + "You can DIRECTLY change the monthly budget split. When the owner wants that, give one short sentence explaining what you did, then on a new line append: @@ALLOC[{\"category\":\"Marketing\",\"amount\":600}] - only the buckets you are changing, whole numbers, keep the total close to " + dollars(pf.monthly || 0) + " by also adjusting Buffer or Other. Categories only from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer. "
+      + "You can also ACT on the business. When the owner reports a real money event or a finished step, or asks you to record one, acknowledge it in words and append ONE directive line at the very end: @@BIZ[{\"op\":\"expense\",\"category\":\"Marketing\",\"amount\":120,\"label\":\"Facebook ads\"},{\"op\":\"revenue\",\"amount\":300,\"label\":\"First sale\"},{\"op\":\"taskDone\",\"task\":\"words quoted from an open roadmap task\"},{\"op\":\"taskAdd\",\"milestone\":\"milestone title\",\"task\":\"new concrete task\"},{\"op\":\"stage\",\"value\":\"launching\"}] - include ONLY the ops that apply (usually one or two). Use taskDone only when the owner says they finished something matching an open roadmap task, quoting its words. Only emit ops for concrete events with real numbers the owner actually states - never for hypotheticals or plans. "
+      + "Use each directive at most once, each on its own line at the very end of the reply, @@ALLOC before @@BIZ. Do not mention the directive syntax in your spoken reply." + RICHARD_FORMAT;
+    callClaude(nc.filter(function(m) { return m.role !== "system"; }).map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }), sys, 600, function(e, reply) {
       setChatLoading(false);
       if (e || !reply) {
         props.onSaveBusinesses(patchBiz(biz.id, { chat: nc.concat([{ role: "richard", text: "Sorry, I could not connect. Try again." }]).slice(-30) }));
         return;
       }
-      var parsed = extractAllocDirective(reply);
-      // One combined save for the reply and any budget retune, so the two
-      // writes can't race each other.
+      // Strip @@BIZ first (it preserves trailing text), then @@ALLOC, and land
+      // everything - ops, retune, reply, chips - in ONE combined save so no
+      // write can race another.
+      var bizParsed = extractBizDirective(reply);
+      var parsed = extractAllocDirective(bizParsed.text);
+      var cur = null;
+      for (var ci = 0; ci < bizesRef.current.length; ci++) { if (bizesRef.current[ci].id === biz.id) { cur = bizesRef.current[ci]; break; } }
+      cur = cur || biz;
       var patch = {};
-      var applied = false;
+      var chips = [];
+      var stageTo = null;
+      if (bizParsed.ops) {
+        var appliedOps = applyBizOps(cur, bizParsed.ops);
+        if (appliedOps) {
+          for (var f in appliedOps.patch) patch[f] = appliedOps.patch[f];
+          chips = appliedOps.chips.slice();
+          stageTo = appliedOps.stageTo;
+          cur = appliedOps.work;
+        }
+      }
       if (parsed.allocations) {
         var byKey = bizAllocToMap(parsed.allocations);
         if (Object.keys(byKey).length) {
-          var cur = null;
-          for (var ci = 0; ci < bizesRef.current.length; ci++) { if (bizesRef.current[ci].id === biz.id) { cur = bizesRef.current[ci]; break; } }
-          if (cur) {
-            patch.categories = cur.categories.map(function(c) { return byKey.hasOwnProperty(c.key) ? Object.assign({}, c, { planned: byKey[c.key] }) : c; });
-            applied = true;
-          }
+          patch.categories = (patch.categories || cur.categories).map(function(c) { return byKey.hasOwnProperty(c.key) ? Object.assign({}, c, { planned: byKey[c.key] }) : c; });
+          chips.push("Budget updated");
         }
       }
       var thread = nc.concat([{ role: "richard", text: parsed.text }]);
-      if (applied) thread = thread.concat([{ role: "system", text: "Budget updated" }]);
+      chips.forEach(function(cp) { thread = thread.concat([{ role: "system", text: cp }]); });
       patch.chat = thread.slice(-30);
       props.onSaveBusinesses(patchBiz(biz.id, patch));
+      if (stageTo) {
+        setCelebrate({ id: "grad", title: stageTo === "launching" ? "Launched" : "Up and running" });
+        if (celTimer.current) clearTimeout(celTimer.current);
+        celTimer.current = setTimeout(function() { setCelebrate(null); }, 2600);
+        regenRoadmap(cur);
+      }
     });
   }
   function replanWithRichard(biz) {
