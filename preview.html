@@ -14,6 +14,21 @@
 <style>
   html,body{margin:0;background:#F7F3EE;}
   #err{white-space:pre-wrap;font-family:monospace;color:#b00;padding:16px;font-size:13px;}
+  /* Native launch splash: painted by the browser the instant HTML arrives, long
+     before the app bundle is fetched and compiled. React replaces it on mount. */
+  .rc-splash{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-family:-apple-system,system-ui,sans-serif;}
+  .rc-splash-in{text-align:center;}
+  .rc-splash-logo{width:64px;height:64px;border-radius:20px;background:#0D0C18;margin:0 auto;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 32px rgba(0,0,0,0.18);animation:rcSplashBreathe 2.2s ease-in-out infinite;}
+  .rc-splash-logo span{font-family:Georgia,'Times New Roman',serif;font-size:40px;font-weight:700;color:#C8973A;line-height:1;transform:translateY(2px);}
+  .rc-splash-name{font-size:19px;font-weight:800;letter-spacing:-0.02em;color:#1A1410;margin-top:18px;opacity:0;animation:rcSplashIn 0.6s ease 0.15s forwards;}
+  html.rc-dark .rc-splash-name{color:#F2EDE6;}
+  .rc-splash-dots{margin-top:14px;display:flex;justify-content:center;gap:4px;opacity:0;animation:rcSplashIn 0.6s ease 0.3s forwards;}
+  .rc-splash-dots i{width:5px;height:5px;border-radius:50%;background:#B0A396;animation:rcSplashDot 1.15s ease-in-out infinite;}
+  .rc-splash-dots i:nth-child(2){animation-delay:0.16s}
+  .rc-splash-dots i:nth-child(3){animation-delay:0.32s}
+  @keyframes rcSplashBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.055)}}
+  @keyframes rcSplashIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @keyframes rcSplashDot{0%,60%,100%{transform:translateY(0);opacity:0.35}30%{transform:translateY(-4px);opacity:1}}
 </style>
 <script>
 // Paint the saved background BEFORE React (Babel + fetch) mounts, so a returning
@@ -24,6 +39,7 @@
     if (localStorage.getItem("cb_dark") === "1") {
       var bg = "#131110";
       document.documentElement.style.background = bg;
+      document.documentElement.classList.add("rc-dark");
       var setBody = function () { document.body.style.background = bg; };
       if (document.body) setBody(); else document.addEventListener("DOMContentLoaded", setBody);
       var tc = document.querySelector('meta[name="theme-color"]');
@@ -34,7 +50,15 @@
 </script>
 </head>
 <body>
-<div id="root"></div>
+<div id="root">
+  <div class="rc-splash">
+    <div class="rc-splash-in">
+      <div class="rc-splash-logo"><span>R</span></div>
+      <div class="rc-splash-name">Richy</div>
+      <div class="rc-splash-dots"><i></i><i></i><i></i></div>
+    </div>
+  </div>
+</div>
 <div id="err"></div>
 <script>
 // Register the service worker so reminder notifications can be shown via the SW
@@ -81,7 +105,15 @@ var RC = (function(){
   return { ResponsiveContainer: ResponsiveContainer, PieChart: PieChart, Pie: Pie, Cell: Cell };
 })();
 var APP_SRC = (location.protocol === "http:" || location.protocol === "https:") ? ("budget-app.jsx?t=" + Date.now()) : ("http://localhost:3000/budget-app.jsx?t=" + Date.now());
-fetch(APP_SRC).then(function(r){ return r.text(); }).then(function(src){
+// Retry the bundle fetch a couple of times - a single dropped connection on a
+// flaky network must not strand the user on the splash screen.
+function fetchApp(attempt) {
+  return fetch(APP_SRC).then(function(r){ return r.text(); }).catch(function(e){
+    if (attempt >= 2) throw e;
+    return new Promise(function(res){ setTimeout(res, 350); }).then(function(){ return fetchApp(attempt + 1); });
+  });
+}
+fetchApp(0).then(function(src){
   var code = src
     .replace(/^\s*import[^\n]*\n/gm, "")
     .replace(/export default function App/, "function App");

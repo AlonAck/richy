@@ -343,14 +343,14 @@ var LANGUAGE_OPTIONS = [
 var LANGUAGE_NAMES = { en: "English", he: "Hebrew", es: "Spanish", fr: "French", ar: "Arabic", ru: "Russian", de: "German", pt: "Portuguese" };
 
 var TRANSLATIONS = {
-  en: { overview:"Overview", activity:"Activity", budgets:"Budgets", goals:"Goals", advisor:"Advisor", profile:"Profile", language:"Language", currency:"Currency", yourPlan:"Your Plan", categories:"Categories", signOut:"Sign Out", richyMember:"Richy member", richyRefersTo:"Richy refers to you as", seeYourPlan:"See your plan by Richard", netBalance:"Net Balance", income:"Income", spent:"Spent", topSpend:"Top spend", morning:"Good morning", afternoon:"Good afternoon", evening:"Good evening", savedThisPeriod:"saved this period", redoQuestionnaire:"Redo Questionnaire", yourPlanByRichard:"Your Plan by Richard", noTransactions:"No transactions yet", noTransactionsSub:"Tap + to log your first one. Awareness is the first step to wealth.", overviewEmptySub:"The Richest Man in Babylon started by tracking every coin. Start yours in Activity.", savingsRate:"Savings Rate", excellent:"Excellent", onTrack:"On track", buildItUp:"Build it up", overspending:"Overspending", noIncomeYet:"No income logged yet", thisPeriod:"this period", transactions:"Transactions", whereItWent:"Where it went", overLimit:"over limit", complete:"complete", savedLabel:"saved", spentLabel:"spent", toGo:"to go", recent:"Recent", activeGoal:"active goal", activeGoals:"active goals", today:"Today", yesterday:"Yesterday", moneyIn:"Money In", moneyOut:"Money Out", newTransaction:"New Transaction", editTransaction:"Edit Transaction", addTransaction:"Add Transaction", saveChanges:"Save Changes", deleteTx:"Delete transaction", amount:"Amount", txLabel:"Label", category:"Category", date:"Date", repeat:"Repeat", once:"Once", weekly:"Weekly", monthly:"Monthly", markPending:"Mark as pending", expense:"Expense", noBudgets:"No budgets yet", noBudgetsSub:"Tap + to set a limit for a category. A budget is just telling your money where to go.", newBudget:"New Budget", editLimit:"Edit Limit", addBudget:"Add Budget", removeBudget:"Remove this budget", totalSpent:"Total Spent", byCategory:"By Category", edit:"Edit", delete:"Delete", save:"Save", budgeted:"budgeted", monthlyLimit:"Monthly limit", allCatsHaveBudget:"Every category already has a budget. Add a new category first.", noGoals:"No budget books yet", noGoalsSub:"Tap + to create your first budget book. A goal with a deadline is a plan, not a wish.", newBudgetBook:"New Budget Book", editBudgetBook:"Edit Budget Book", createBudgetBook:"Create Budget Book", deleteBudgetBook:"Delete budget book", addToBudgetBook:"Add to Budget Book", alreadySaved:"Already saved", target:"Target", name:"Name", goalComplete:"Goal complete!", remaining:"remaining", add:"Add", richySuggests:"Richard suggests", implement:"Implement", dismiss:"Dismiss", aiAdvisor:"AI Financial Advisor", aiAdvisorSub:"Personalized advice based on your real spending and expert financial wisdom.", analyzeMyFinances:"Analyze My Finances", analyzingFinances:"Analyzing your finances...", fewSeconds:"This takes a few seconds", refresh:"Refresh", insights:"Insights", analysisFailed:"Analysis failed", tryAgain:"Try Again", askYourAdvisor:"Ask Your Advisor", advisorQ1:"How can I save more?", advisorQ2:"Is my savings rate healthy?", advisorQ3:"What to do with my surplus?", thinking:"Thinking...", yesDo:"Yes, do it", notNow:"Not now", askRichard:"Ask Richard anything...", giveFeedback:"Give Richard feedback...", advisorDisclaimer:"Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.", translate:"Translate plan", noPlanYet:"No plan yet. Complete the onboarding questionnaire to get your personalized plan from Richard.", notes:"Notes", notesEmpty:"No notes yet", notesEmptySub:"Track who owes you and who you owe. Tap + to add your first one.", theyOweMe:"They owe me", iOwe:"I owe", newNote:"New Note", addNote:"Add Note", editNote:"Edit Note", saveNote:"Save Note", settle:"Settle", settleTitle:"Settle note", settleAddBalance:"Add to my balance", reminder:"Reminder", reminderTitle:"Set a reminder", setReminder:"Set reminder", clearReminder:"Clear reminder", reminderWhen:"Remind me on", reminderDenied:"Notifications are blocked. The note will still show a due badge.", due:"Due", overdue:"Overdue", deleteNote:"Delete note", trips:"Trips", planATrip:"Plan a Trip", planATripSub:"Budget a getaway without touching your balance.", planNewTrip:"Plan a New Trip", noTrips:"No trips yet", noTripsSub:"Plan a getaway and Richard will split your budget across the essentials.", tripName:"Trip name", destination:"Destination", tripBudget:"Total budget", tripDays:"Days", travelStyle:"Travel style", styleBudget:"Budget", styleComfort:"Comfort", styleLuxury:"Luxury", next:"Next", back:"Back", richardPlanning:"Richard is planning your trip", richardPlanningSub:"Splitting your budget across the essentials.", tripSplit:"Your budget split", allocated:"Allocated", overBy:"over by", saveTrip:"Save Trip", addCategory:"Add category", deductFromBalance:"Deduct from balance", deductExplain:"This tracks what you actually spend on this trip as one live expense, so your balance only drops as you log spending here - not the whole budget up front. You can undo it anytime.", reserved:"Tracking against balance", undoReserve:"Stop tracking", logExpense:"Log expense", logExpenseTitle:"Log a trip expense", tripTips:"Richard's tips", deleteTrip:"Delete trip", deleteTripConfirm:"Delete this trip? This cannot be undone.", spentOf:"spent of", leftToSpend:"left to spend", planning:"Planning", tripSummary:"Trip summary", appearance:"Appearance", leftAfterBudgets:"Left after budgets", tripIcon:"Trip icon", savings:"Savings", netWorth:"Net Worth", balance:"Balance", manage:"Manage", totalSavings:"Total saved", savingsIntro:"Money you keep separate from your spending balance - an emergency fund, a sinking fund, anything you don't want to accidentally spend. It counts toward your net worth, never your balance.", newSavingsAccount:"New savings account", savingsAccountName:"Account name", addMoney:"Add money", withdraw:"Withdraw", fromBalance:"From my balance", externalMoney:"Money I already have", toBalance:"To my balance", removeFromNet:"Spend or remove", startingAmount:"Starting amount (optional)", createAccount:"Create account", closeAccount:"Close account", rename:"Rename", emptySavingsSub:"Keep an emergency fund or a sinking fund separate from your spending balance.", addSavingsAccount:"Add a savings account", history:"History", balanceUntouched:"Your spending balance stays untouched", movesFromBalance:"Moves money out of your spending balance", addsToBalance:"Adds the money back to your spending balance", leavesNetWorth:"Leaves your accounts - lowers your net worth", pickIcon:"Icon", emergencyFund:"Emergency Fund", noMovesYet:"No moves yet", pastChats:"Past chats", newChat:"New chat", conversation:"conversation", conversations:"conversations", noPastChats:"No past chats yet", message:"message", messages:"messages" },
-  he: { overview:"סקירה", activity:"פעילות", budgets:"תקציבים", goals:"יעדים", advisor:"יועץ", profile:"פרופיל", language:"שפה", currency:"מטבע", yourPlan:"התוכנית שלך", categories:"קטגוריות", signOut:"התנתק", richyMember:"חבר Richy", richyRefersTo:"ריצ'י מכנה אותך", seeYourPlan:"ראה את התוכנית שלך", netBalance:"יתרה נטו", income:"הכנסות", spent:"הוצאות", topSpend:"הוצאה עיקרית", morning:"בוקר טוב", afternoon:"צהריים טובים", evening:"ערב טוב", savedThisPeriod:"נחסך בתקופה זו", redoQuestionnaire:"מלא שאלון מחדש", yourPlanByRichard:"התוכנית שלך", noTransactions:"אין עסקאות עדיין", noTransactionsSub:"לחץ + כדי לרשום. מודעות היא הצעד הראשון לעושר.", overviewEmptySub:"עשיר בבבל התחיל בלעקוב אחרי כל מטבע. התחל גם אתה בפעילות.", savingsRate:"שיעור חיסכון", excellent:"מצוין", onTrack:"במסלול", buildItUp:"שפר את זה", overspending:"הוצאה יתרה", thisPeriod:"בתקופה זו", transactions:"עסקאות", whereItWent:"לאן הלך", overLimit:"מעל המגבלה", complete:"הושלם", savedLabel:"נחסך", spentLabel:"הוצא", toGo:"לסיום", recent:"אחרון", activeGoal:"יעד פעיל", activeGoals:"יעדים פעילים", today:"היום", yesterday:"אתמול", moneyIn:"כסף נכנס", moneyOut:"כסף יוצא", newTransaction:"עסקה חדשה", editTransaction:"ערוך עסקה", addTransaction:"הוסף עסקה", saveChanges:"שמור שינויים", deleteTx:"מחק עסקה", amount:"סכום", txLabel:"תיאור", category:"קטגוריה", date:"תאריך", repeat:"חזרה", once:"פעם אחת", weekly:"שבועי", monthly:"חודשי", markPending:"סמן כממתין", expense:"הוצאה", noBudgets:"אין תקציבים עדיין", noBudgetsSub:"לחץ + להגדרת מגבלה לקטגוריה. תקציב הוא פשוט להגיד לכסף לאן ללכת.", newBudget:"תקציב חדש", editLimit:"ערוך מגבלה", addBudget:"הוסף תקציב", removeBudget:"הסר תקציב זה", totalSpent:"סך הוצאות", byCategory:"לפי קטגוריה", edit:"ערוך", delete:"מחק", save:"שמור", budgeted:"מתוקצב", monthlyLimit:"מגבלה חודשית", allCatsHaveBudget:"לכל הקטגוריות יש תקציב. הוסף קטגוריה חדשה תחילה.", noGoals:"אין ספרי תקציב עדיין", noGoalsSub:"לחץ + ליצירת ספר תקציב ראשון. יעד עם מועד הוא תוכנית, לא משאלה.", newBudgetBook:"ספר תקציב חדש", editBudgetBook:"ערוך ספר תקציב", createBudgetBook:"צור ספר תקציב", deleteBudgetBook:"מחק ספר תקציב", addToBudgetBook:"הוסף לספר תקציב", alreadySaved:"כבר נחסך", target:"יעד", name:"שם", goalComplete:"היעד הושג!", remaining:"נותר", add:"הוסף", richySuggests:"ריצ'י מציע", implement:"יישם", dismiss:"דחה", aiAdvisor:"יועץ פיננסי AI", aiAdvisorSub:"ייעוץ מותאם אישית בהתבסס על ההוצאות שלך.", analyzeMyFinances:"נתח את הכספים שלי", analyzingFinances:"מנתח את הכספים שלך...", fewSeconds:"זה לוקח כמה שניות", refresh:"רענן", insights:"תובנות", analysisFailed:"הניתוח נכשל", tryAgain:"נסה שוב", askYourAdvisor:"שאל את היועץ שלך", advisorQ1:"איך אוכל לחסוך יותר?", advisorQ2:"האם שיעור החיסכון שלי בריא?", advisorQ3:"מה לעשות עם העודף שלי?", thinking:"חושב...", yesDo:"כן, עשה זאת", notNow:"לא עכשיו", askRichard:"שאל את ריצ'רד כל דבר...", giveFeedback:"תן ל-ריצ'רד משוב...", advisorDisclaimer:"ריצ'רד הוא עוזר AI ולא יועץ פיננסי מורשה. תמיד ערוך מחקר עצמאי לפני קבלת החלטות כלכליות.", translate:"תרגם תוכנית", noPlanYet:"אין תוכנית עדיין. מלא את השאלון כדי לקבל את התוכנית האישית שלך מריצ'רד." },
-  es: { overview:"Resumen", activity:"Actividad", budgets:"Presupuestos", goals:"Metas", advisor:"Asesor", profile:"Perfil", language:"Idioma", currency:"Moneda", yourPlan:"Tu Plan", categories:"Categorias", signOut:"Cerrar sesion", richyMember:"Miembro Richy", richyRefersTo:"Richy te llama", seeYourPlan:"Ver tu plan de Richard", netBalance:"Saldo Neto", income:"Ingresos", spent:"Gastado", topSpend:"Mas gastado", morning:"Buenos dias", afternoon:"Buenas tardes", evening:"Buenas noches", savedThisPeriod:"ahorrado este periodo", redoQuestionnaire:"Rehacer cuestionario", yourPlanByRichard:"Tu plan de Richard", noTransactions:"Sin transacciones aun", noTransactionsSub:"Toca + para registrar la primera. La conciencia es el primer paso a la riqueza.", overviewEmptySub:"El hombre mas rico de Babilonia empezo rastreando cada moneda. Empieza en Actividad.", savingsRate:"Tasa de ahorro", excellent:"Excelente", onTrack:"En camino", buildItUp:"Mejoralo", overspending:"Exceso de gasto", thisPeriod:"este periodo", transactions:"Transacciones", whereItWent:"A donde fue", overLimit:"sobre el limite", complete:"completo", savedLabel:"ahorrado", spentLabel:"gastado", toGo:"restante", recent:"Reciente", activeGoal:"meta activa", activeGoals:"metas activas", today:"Hoy", yesterday:"Ayer", moneyIn:"Dinero Entrada", moneyOut:"Dinero Salida", newTransaction:"Nueva Transaccion", editTransaction:"Editar Transaccion", addTransaction:"Agregar Transaccion", saveChanges:"Guardar Cambios", deleteTx:"Eliminar transaccion", amount:"Monto", txLabel:"Etiqueta", category:"Categoria", date:"Fecha", repeat:"Repetir", once:"Una vez", weekly:"Semanal", monthly:"Mensual", markPending:"Marcar como pendiente", expense:"Gasto", noBudgets:"Sin presupuestos aun", noBudgetsSub:"Toca + para establecer un limite. Un presupuesto le dice a tu dinero donde ir.", newBudget:"Nuevo Presupuesto", editLimit:"Editar Limite", addBudget:"Agregar Presupuesto", removeBudget:"Eliminar este presupuesto", totalSpent:"Total Gastado", byCategory:"Por Categoria", edit:"Editar", delete:"Eliminar", save:"Guardar", budgeted:"presupuestado", monthlyLimit:"Limite mensual", allCatsHaveBudget:"Cada categoria ya tiene presupuesto. Agrega una nueva categoria primero.", noGoals:"Sin libros de metas aun", noGoalsSub:"Toca + para crear tu primer libro de metas. Una meta con fecha limite es un plan.", newBudgetBook:"Nuevo Libro de Metas", editBudgetBook:"Editar Libro de Metas", createBudgetBook:"Crear Libro de Metas", deleteBudgetBook:"Eliminar libro de metas", addToBudgetBook:"Agregar al Libro de Metas", alreadySaved:"Ya ahorrado", target:"Objetivo", name:"Nombre", goalComplete:"Meta completada!", remaining:"restante", add:"Agregar", richySuggests:"Richard sugiere", implement:"Implementar", dismiss:"Descartar", aiAdvisor:"Asesor Financiero IA", aiAdvisorSub:"Consejos personalizados basados en tus gastos reales.", analyzeMyFinances:"Analizar Mis Finanzas", analyzingFinances:"Analizando tus finanzas...", fewSeconds:"Esto tarda unos segundos", refresh:"Actualizar", insights:"Perspectivas", analysisFailed:"Analisis fallido", tryAgain:"Intentar de nuevo", askYourAdvisor:"Pregunta a tu Asesor", advisorQ1:"Como puedo ahorrar mas?", advisorQ2:"Es saludable mi tasa de ahorro?", advisorQ3:"Que hacer con mi excedente?", thinking:"Pensando...", yesDo:"Si, hazlo", notNow:"Ahora no", askRichard:"Pregunta a Richard cualquier cosa...", giveFeedback:"Da retroalimentacion a Richard...", advisorDisclaimer:"Richard es un asistente de IA, no un asesor financiero certificado. Investiga siempre antes de tomar decisiones financieras.", translate:"Traducir plan", noPlanYet:"Aun no hay plan. Completa el cuestionario para obtener tu plan personalizado de Richard." },
-  fr: { overview:"Apercu", activity:"Activite", budgets:"Budgets", goals:"Objectifs", advisor:"Conseiller", profile:"Profil", language:"Langue", currency:"Devise", yourPlan:"Votre Plan", categories:"Categories", signOut:"Deconnexion", richyMember:"Membre Richy", richyRefersTo:"Richy vous appelle", seeYourPlan:"Voir votre plan de Richard", netBalance:"Solde Net", income:"Revenus", spent:"Depenses", topSpend:"Top depenses", morning:"Bonjour", afternoon:"Bon apres-midi", evening:"Bonsoir", savedThisPeriod:"epargne cette periode", redoQuestionnaire:"Refaire le questionnaire", yourPlanByRichard:"Votre plan de Richard", noTransactions:"Aucune transaction", noTransactionsSub:"Appuyez + pour enregistrer la premiere. La conscience est le premier pas vers la richesse.", overviewEmptySub:"L homme le plus riche de Babylone commencat par suivre chaque piece. Commencez dans Activite.", savingsRate:"Taux d epargne", excellent:"Excellent", onTrack:"En bonne voie", buildItUp:"Ameliorez-le", overspending:"Depassement", thisPeriod:"cette periode", transactions:"Transactions", whereItWent:"Ou est alle", overLimit:"au-dessus de la limite", complete:"complete", savedLabel:"epargne", spentLabel:"depense", toGo:"restant", recent:"Recent", activeGoal:"objectif actif", activeGoals:"objectifs actifs", today:"Aujourd hui", yesterday:"Hier", moneyIn:"Argent entrant", moneyOut:"Argent sortant", newTransaction:"Nouvelle Transaction", editTransaction:"Modifier Transaction", addTransaction:"Ajouter Transaction", saveChanges:"Enregistrer les modifications", deleteTx:"Supprimer la transaction", amount:"Montant", txLabel:"Libelle", category:"Categorie", date:"Date", repeat:"Repetition", once:"Une fois", weekly:"Hebdomadaire", monthly:"Mensuel", markPending:"Marquer comme en attente", expense:"Depense", noBudgets:"Aucun budget", noBudgetsSub:"Appuyez + pour fixer une limite. Un budget dit a votre argent ou aller.", newBudget:"Nouveau Budget", editLimit:"Modifier Limite", addBudget:"Ajouter Budget", removeBudget:"Supprimer ce budget", totalSpent:"Total Depense", byCategory:"Par Categorie", edit:"Modifier", delete:"Supprimer", save:"Enregistrer", budgeted:"budgete", monthlyLimit:"Limite mensuelle", allCatsHaveBudget:"Chaque categorie a deja un budget. Ajoutez d abord une nouvelle categorie.", noGoals:"Aucun livret d epargne", noGoalsSub:"Appuyez + pour creer votre premier livret. Un objectif avec une echeance est un plan.", newBudgetBook:"Nouveau Livret", editBudgetBook:"Modifier Livret", createBudgetBook:"Creer Livret", deleteBudgetBook:"Supprimer le livret", addToBudgetBook:"Ajouter au Livret", alreadySaved:"Deja epargne", target:"Objectif", name:"Nom", goalComplete:"Objectif atteint!", remaining:"restant", add:"Ajouter", richySuggests:"Richard suggere", implement:"Implementer", dismiss:"Ignorer", aiAdvisor:"Conseiller Financier IA", aiAdvisorSub:"Conseils personnalises bases sur vos depenses reelles.", analyzeMyFinances:"Analyser mes Finances", analyzingFinances:"Analyse de vos finances...", fewSeconds:"Cela prend quelques secondes", refresh:"Actualiser", insights:"Perspectives", analysisFailed:"Analyse echouee", tryAgain:"Reessayer", askYourAdvisor:"Demandez a votre Conseiller", advisorQ1:"Comment puis-je economiser davantage?", advisorQ2:"Mon taux d epargne est-il sain?", advisorQ3:"Que faire avec mon surplus?", thinking:"Je reflechis...", yesDo:"Oui, fais-le", notNow:"Pas maintenant", askRichard:"Demandez a Richard n importe quoi...", giveFeedback:"Donnez vos retours a Richard...", advisorDisclaimer:"Richard est un assistant IA, pas un conseiller financier agree. Faites toujours vos propres recherches.", translate:"Traduire le plan", noPlanYet:"Pas encore de plan. Completez le questionnaire pour obtenir votre plan personnalise de Richard." },
-  ar: { overview:"نظرة عامة", activity:"النشاط", budgets:"الميزانيات", goals:"الاهداف", advisor:"المستشار", profile:"الملف الشخصي", language:"اللغة", currency:"العملة", yourPlan:"خطتك", categories:"الفئات", signOut:"تسجيل الخروج", richyMember:"عضو Richy", richyRefersTo:"ريتشي يناديك", seeYourPlan:"انظر خطتك من ريتشارد", netBalance:"الرصيد الصافي", income:"الدخل", spent:"المنفق", topSpend:"اعلى انفاق", morning:"صباح الخير", afternoon:"مساء الخير", evening:"مساء الخير", savedThisPeriod:"تم توفيره", redoQuestionnaire:"اعادة الاستبيان", yourPlanByRichard:"خطتك من ريتشارد", noTransactions:"لا توجد معاملات بعد", noTransactionsSub:"اضغط + لتسجيل اول معاملة. الوعي هو الخطوة الاولى نحو الثروة.", overviewEmptySub:"اغنى رجل في بابل بدا بتتبع كل عملة. ابدا في النشاط.", savingsRate:"معدل الادخار", excellent:"ممتاز", onTrack:"في المسار", buildItUp:"طوره", overspending:"انفاق زائد", thisPeriod:"هذه الفترة", transactions:"المعاملات", whereItWent:"اين ذهب", overLimit:"فوق الحد", complete:"مكتمل", savedLabel:"مدخر", spentLabel:"انفق", toGo:"متبقي", recent:"الاخير", activeGoal:"هدف نشط", activeGoals:"اهداف نشطة", today:"اليوم", yesterday:"امس", moneyIn:"المال الداخل", moneyOut:"المال الخارج", newTransaction:"معاملة جديدة", editTransaction:"تعديل المعاملة", addTransaction:"اضافة معاملة", saveChanges:"حفظ التغييرات", deleteTx:"حذف المعاملة", amount:"المبلغ", txLabel:"التسمية", category:"الفئة", date:"التاريخ", repeat:"تكرار", once:"مرة واحدة", weekly:"اسبوعي", monthly:"شهري", markPending:"وضع علامة معلقة", expense:"مصروف", noBudgets:"لا توجد ميزانيات بعد", noBudgetsSub:"اضغط + لتعيين حد للفئة. الميزانية هي توجيه المال.", newBudget:"ميزانية جديدة", editLimit:"تعديل الحد", addBudget:"اضافة ميزانية", removeBudget:"حذف هذه الميزانية", totalSpent:"اجمالي الانفاق", byCategory:"حسب الفئة", edit:"تعديل", delete:"حذف", save:"حفظ", budgeted:"مخصص", monthlyLimit:"الحد الشهري", allCatsHaveBudget:"كل الفئات لديها ميزانية. اضف فئة جديدة اولا.", noGoals:"لا توجد دفاتر بعد", noGoalsSub:"اضغط + لانشاء اول دفتر. الهدف بموعد خطة وليس امنية.", newBudgetBook:"دفتر جديد", editBudgetBook:"تعديل الدفتر", createBudgetBook:"انشاء دفتر", deleteBudgetBook:"حذف الدفتر", addToBudgetBook:"اضافة الى الدفتر", alreadySaved:"تم الادخار مسبقا", target:"الهدف", name:"الاسم", goalComplete:"تم تحقيق الهدف!", remaining:"متبقي", add:"اضافة", richySuggests:"اقتراح ريتشارد", implement:"تطبيق", dismiss:"تجاهل", aiAdvisor:"مستشار مالي AI", aiAdvisorSub:"نصائح مخصصة بناء على انفاقك الفعلي.", analyzeMyFinances:"تحليل ماليتي", analyzingFinances:"جاري تحليل ماليتك...", fewSeconds:"هذا يستغرق بضع ثوان", refresh:"تحديث", insights:"رؤى", analysisFailed:"فشل التحليل", tryAgain:"حاول مجددا", askYourAdvisor:"اسال مستشارك", advisorQ1:"كيف يمكنني توفير المزيد؟", advisorQ2:"هل معدل توفيري صحي؟", advisorQ3:"ماذا افعل بالفائض؟", thinking:"افكر...", yesDo:"نعم افعل ذلك", notNow:"ليس الان", askRichard:"اسال ريتشارد اي شيء...", giveFeedback:"اعطِ ريتشارد ملاحظاتك...", advisorDisclaimer:"ريتشارد مساعد ذكاء اصطناعي وليس مستشارا ماليا معتمدا. دائما ابحث قبل اتخاذ قرارات مالية.", translate:"ترجمة الخطة", noPlanYet:"لا توجد خطة بعد. اكمل الاستبيان للحصول على خطتك الشخصية من ريتشارد." },
-  ru: { overview:"Обзор", activity:"Активность", budgets:"Бюджеты", goals:"Цели", advisor:"Советник", profile:"Профиль", language:"Язык", currency:"Валюта", yourPlan:"Ваш план", categories:"Категории", signOut:"Выйти", richyMember:"Участник Richy", richyRefersTo:"Richy называет тебя", seeYourPlan:"Посмотреть план от Ричарда", netBalance:"Чистый баланс", income:"Доходы", spent:"Расходы", topSpend:"Главная трата", morning:"Доброе утро", afternoon:"Добрый день", evening:"Добрый вечер", savedThisPeriod:"сохранено за период", redoQuestionnaire:"Пройти снова", yourPlanByRichard:"Ваш план от Ричарда", noTransactions:"Нет транзакций", noTransactionsSub:"Нажмите + чтобы добавить первую. Осознанность - первый шаг к богатству.", overviewEmptySub:"Богатейший человек Вавилона начал с учёта каждой монеты. Начните в Активности.", savingsRate:"Уровень сбережений", excellent:"Отлично", onTrack:"В норме", buildItUp:"Улучшайте", overspending:"Перерасход", thisPeriod:"за период", transactions:"Транзакции", whereItWent:"Куда ушло", overLimit:"сверх лимита", complete:"завершено", savedLabel:"накоплено", spentLabel:"потрачено", toGo:"осталось", recent:"Последние", activeGoal:"активная цель", activeGoals:"активных целей", today:"Сегодня", yesterday:"Вчера", moneyIn:"Доходы", moneyOut:"Расходы", newTransaction:"Новая транзакция", editTransaction:"Редактировать", addTransaction:"Добавить транзакцию", saveChanges:"Сохранить изменения", deleteTx:"Удалить транзакцию", amount:"Сумма", txLabel:"Описание", category:"Категория", date:"Дата", repeat:"Повтор", once:"Однократно", weekly:"Еженедельно", monthly:"Ежемесячно", markPending:"Отметить как ожидающее", expense:"Расход", noBudgets:"Нет бюджетов", noBudgetsSub:"Нажмите + чтобы задать лимит. Бюджет говорит деньгам куда идти.", newBudget:"Новый бюджет", editLimit:"Изменить лимит", addBudget:"Добавить бюджет", removeBudget:"Удалить этот бюджет", totalSpent:"Всего потрачено", byCategory:"По категориям", edit:"Редактировать", delete:"Удалить", save:"Сохранить", budgeted:"запланировано", monthlyLimit:"Месячный лимит", allCatsHaveBudget:"Все категории уже имеют бюджет. Сначала добавьте новую категорию.", noGoals:"Нет книг целей", noGoalsSub:"Нажмите + чтобы создать первую. Цель с датой - это план, а не мечта.", newBudgetBook:"Новая книга целей", editBudgetBook:"Редактировать книгу целей", createBudgetBook:"Создать книгу целей", deleteBudgetBook:"Удалить книгу целей", addToBudgetBook:"Добавить в книгу целей", alreadySaved:"Уже накоплено", target:"Цель", name:"Название", goalComplete:"Цель достигнута!", remaining:"осталось", add:"Добавить", richySuggests:"Ричард предлагает", implement:"Применить", dismiss:"Отклонить", aiAdvisor:"Финансовый советник ИИ", aiAdvisorSub:"Персональные советы на основе ваших расходов.", analyzeMyFinances:"Анализировать мои финансы", analyzingFinances:"Анализируем ваши финансы...", fewSeconds:"Это займет несколько секунд", refresh:"Обновить", insights:"Инсайты", analysisFailed:"Анализ не удался", tryAgain:"Попробовать снова", askYourAdvisor:"Спросите вашего советника", advisorQ1:"Как сэкономить больше?", advisorQ2:"Мой уровень сбережений здоровый?", advisorQ3:"Что делать с излишком?", thinking:"Думаю...", yesDo:"Да, сделай это", notNow:"Не сейчас", askRichard:"Спросите Ричарда что угодно...", giveFeedback:"Дайте обратную связь Ричарду...", advisorDisclaimer:"Ричард является ИИ-помощником, а не лицензированным финансовым советником. Всегда проводите собственное исследование.", translate:"Перевести план", noPlanYet:"Noch kein Plan. Fullen Sie den Fragebogen aus, um Ihren personlichen Plan von Richard zu erhalten." },
-  de: { overview:"Ubersicht", activity:"Aktivitat", budgets:"Budgets", goals:"Ziele", advisor:"Berater", profile:"Profil", language:"Sprache", currency:"Wahrung", yourPlan:"Ihr Plan", categories:"Kategorien", signOut:"Abmelden", richyMember:"Richy-Mitglied", richyRefersTo:"Richy nennt dich", seeYourPlan:"Sehen Sie Ihren Plan von Richard", netBalance:"Nettosaldo", income:"Einnahmen", spent:"Ausgaben", topSpend:"Ausgabe", morning:"Guten Morgen", afternoon:"Guten Tag", evening:"Guten Abend", savedThisPeriod:"gespart in dieser Periode", redoQuestionnaire:"Fragebogen wiederholen", yourPlanByRichard:"Ihr Plan von Richard", noTransactions:"Noch keine Transaktionen", noTransactionsSub:"Tippe + um die erste zu erfassen. Bewusstsein ist der erste Schritt zum Reichtum.", overviewEmptySub:"Der reichste Mann Babylons begann damit, jede Muenze zu verfolgen. Starte in Aktivitat.", savingsRate:"Sparrate", excellent:"Ausgezeichnet", onTrack:"Auf Kurs", buildItUp:"Verbessern", overspending:"Mehrausgaben", thisPeriod:"diese Periode", transactions:"Transaktionen", whereItWent:"Wo es hinging", overLimit:"uber dem Limit", complete:"abgeschlossen", savedLabel:"gespart", spentLabel:"ausgegeben", toGo:"verbleibend", recent:"Aktuell", activeGoal:"aktives Ziel", activeGoals:"aktive Ziele", today:"Heute", yesterday:"Gestern", moneyIn:"Einnahmen", moneyOut:"Ausgaben", newTransaction:"Neue Transaktion", editTransaction:"Transaktion bearbeiten", addTransaction:"Transaktion hinzufugen", saveChanges:"Anderungen speichern", deleteTx:"Transaktion loschen", amount:"Betrag", txLabel:"Bezeichnung", category:"Kategorie", date:"Datum", repeat:"Wiederholung", once:"Einmalig", weekly:"Wochentlich", monthly:"Monatlich", markPending:"Als ausstehend markieren", expense:"Ausgabe", noBudgets:"Noch keine Budgets", noBudgetsSub:"Tippe + um ein Limit festzulegen. Ein Budget sagt deinem Geld wo es hingehen soll.", newBudget:"Neues Budget", editLimit:"Limit bearbeiten", addBudget:"Budget hinzufugen", removeBudget:"Dieses Budget entfernen", totalSpent:"Gesamt ausgegeben", byCategory:"Nach Kategorie", edit:"Bearbeiten", delete:"Loschen", save:"Speichern", budgeted:"budgetiert", monthlyLimit:"Monatliches Limit", allCatsHaveBudget:"Alle Kategorien haben bereits ein Budget. Zuerst neue Kategorie hinzufugen.", noGoals:"Noch keine Sparbuecher", noGoalsSub:"Tippe + um dein erstes Sparbuch zu erstellen. Ein Ziel mit Termin ist ein Plan, kein Wunsch.", newBudgetBook:"Neues Sparbuch", editBudgetBook:"Sparbuch bearbeiten", createBudgetBook:"Sparbuch erstellen", deleteBudgetBook:"Sparbuch loschen", addToBudgetBook:"Zum Sparbuch hinzufugen", alreadySaved:"Bereits gespart", target:"Ziel", name:"Name", goalComplete:"Ziel erreicht!", remaining:"verbleibend", add:"Hinzufugen", richySuggests:"Richard schlagt vor", implement:"Umsetzen", dismiss:"Ablehnen", aiAdvisor:"KI-Finanzberater", aiAdvisorSub:"Personalisierte Ratschlage basierend auf Ihren Ausgaben.", analyzeMyFinances:"Meine Finanzen analysieren", analyzingFinances:"Ihre Finanzen werden analysiert...", fewSeconds:"Dies dauert einige Sekunden", refresh:"Aktualisieren", insights:"Einblicke", analysisFailed:"Analyse fehlgeschlagen", tryAgain:"Erneut versuchen", askYourAdvisor:"Fragen Sie Ihren Berater", advisorQ1:"Wie kann ich mehr sparen?", advisorQ2:"Ist meine Sparrate gesund?", advisorQ3:"Was tun mit meinem Uberschuss?", thinking:"Denke nach...", yesDo:"Ja, mach es", notNow:"Nicht jetzt", askRichard:"Fragen Sie Richard alles...", giveFeedback:"Geben Sie Richard Feedback...", advisorDisclaimer:"Richard ist ein KI-Assistent, kein lizenzierter Finanzberater. Recherchieren Sie stets selbst vor Finanzentscheidungen.", translate:"Plan ubersetzen", noPlanYet:"Noch kein Plan. Fullen Sie den Fragebogen aus um Ihren personlichen Plan von Richard zu erhalten." },
-  pt: { overview:"Visao Geral", activity:"Atividade", budgets:"Orcamentos", goals:"Metas", advisor:"Consultor", profile:"Perfil", language:"Idioma", currency:"Moeda", yourPlan:"Seu Plano", categories:"Categorias", signOut:"Sair", richyMember:"Membro Richy", richyRefersTo:"Richy te chama", seeYourPlan:"Ver seu plano de Richard", netBalance:"Saldo Liquido", income:"Receita", spent:"Gasto", topSpend:"Principal gasto", morning:"Bom dia", afternoon:"Boa tarde", evening:"Boa noite", savedThisPeriod:"economizado neste periodo", redoQuestionnaire:"Refazer questionario", yourPlanByRichard:"Seu plano de Richard", noTransactions:"Nenhuma transacao ainda", noTransactionsSub:"Toque + para registrar a primeira. Consciencia e o primeiro passo para a riqueza.", overviewEmptySub:"O homem mais rico da Babilonia comecou rastreando cada moeda. Comece em Atividade.", savingsRate:"Taxa de Poupanca", excellent:"Excelente", onTrack:"No caminho", buildItUp:"Melhore", overspending:"Excesso de gastos", thisPeriod:"este periodo", transactions:"Transacoes", whereItWent:"Para onde foi", overLimit:"acima do limite", complete:"concluido", savedLabel:"economizado", spentLabel:"gasto", toGo:"restante", recent:"Recente", activeGoal:"meta ativa", activeGoals:"metas ativas", today:"Hoje", yesterday:"Ontem", moneyIn:"Entrada", moneyOut:"Saida", newTransaction:"Nova Transacao", editTransaction:"Editar Transacao", addTransaction:"Adicionar Transacao", saveChanges:"Salvar Alteracoes", deleteTx:"Excluir transacao", amount:"Valor", txLabel:"Rotulo", category:"Categoria", date:"Data", repeat:"Repeticao", once:"Uma vez", weekly:"Semanal", monthly:"Mensal", markPending:"Marcar como pendente", expense:"Despesa", noBudgets:"Nenhum orcamento ainda", noBudgetsSub:"Toque + para definir um limite. Um orcamento e dizer ao seu dinheiro para onde ir.", newBudget:"Novo Orcamento", editLimit:"Editar Limite", addBudget:"Adicionar Orcamento", removeBudget:"Remover este orcamento", totalSpent:"Total Gasto", byCategory:"Por Categoria", edit:"Editar", delete:"Excluir", save:"Salvar", budgeted:"orcado", monthlyLimit:"Limite mensal", allCatsHaveBudget:"Cada categoria ja tem um orcamento. Adicione uma nova categoria primeiro.", noGoals:"Nenhum caderno de metas ainda", noGoalsSub:"Toque + para criar seu primeiro caderno. Uma meta com prazo e um plano.", newBudgetBook:"Novo Caderno de Metas", editBudgetBook:"Editar Caderno de Metas", createBudgetBook:"Criar Caderno de Metas", deleteBudgetBook:"Excluir caderno de metas", addToBudgetBook:"Adicionar ao Caderno de Metas", alreadySaved:"Ja economizado", target:"Meta", name:"Nome", goalComplete:"Meta concluida!", remaining:"restante", add:"Adicionar", richySuggests:"Richard sugere", implement:"Implementar", dismiss:"Dispensar", aiAdvisor:"Consultor Financeiro IA", aiAdvisorSub:"Conselhos personalizados com base nos seus gastos reais.", analyzeMyFinances:"Analisar Minhas Financas", analyzingFinances:"Analisando suas financas...", fewSeconds:"Isso leva alguns segundos", refresh:"Atualizar", insights:"Perspectivas", analysisFailed:"Analise falhou", tryAgain:"Tentar novamente", askYourAdvisor:"Pergunte ao seu Consultor", advisorQ1:"Como posso economizar mais?", advisorQ2:"Minha taxa de poupanca e saudavel?", advisorQ3:"O que fazer com meu excedente?", thinking:"Pensando...", yesDo:"Sim, faca isso", notNow:"Agora nao", askRichard:"Pergunte a Richard qualquer coisa...", giveFeedback:"Dar feedback a Richard...", advisorDisclaimer:"Richard e um assistente de IA, nao um consultor financeiro licenciado. Sempre pesquise antes de tomar decisoes financeiras.", translate:"Traduzir plano", noPlanYet:"Ainda sem plano. Complete o questionario para obter seu plano personalizado de Richard." }
+  en: { overview:"Overview", activity:"Activity", budgets:"Budgets", goals:"Goals", advisor:"Advisor", profile:"Profile", language:"Language", currency:"Currency", yourPlan:"Your Plan", categories:"Categories", signOut:"Sign Out", richyMember:"Richy member", richyRefersTo:"Richy refers to you as", seeYourPlan:"See your plan by Richard", netBalance:"Net Balance", income:"Income", spent:"Spent", topSpend:"Top spend", morning:"Good morning", afternoon:"Good afternoon", evening:"Good evening", savedThisPeriod:"saved this period", redoQuestionnaire:"Redo Questionnaire", yourPlanByRichard:"Your Plan by Richard", noTransactions:"No transactions yet", noTransactionsSub:"Tap + to log your first one. Awareness is the first step to wealth.", overviewEmptySub:"The Richest Man in Babylon started by tracking every coin. Start yours in Activity.", savingsRate:"Savings Rate", excellent:"Excellent", onTrack:"On track", buildItUp:"Build it up", overspending:"Overspending", noIncomeYet:"No income logged yet", thisPeriod:"this period", transactions:"Transactions", whereItWent:"Where it went", overLimit:"over limit", complete:"complete", savedLabel:"saved", spentLabel:"spent", toGo:"to go", recent:"Recent", activeGoal:"active goal", activeGoals:"active goals", today:"Today", yesterday:"Yesterday", moneyIn:"Money In", moneyOut:"Money Out", newTransaction:"New Transaction", editTransaction:"Edit Transaction", addTransaction:"Add Transaction", saveChanges:"Save Changes", deleteTx:"Delete transaction", amount:"Amount", txLabel:"Label", category:"Category", date:"Date", repeat:"Repeat", once:"Once", weekly:"Weekly", monthly:"Monthly", markPending:"Mark as pending", expense:"Expense", noBudgets:"No budgets yet", noBudgetsSub:"Tap + to set a limit for a category. A budget is just telling your money where to go.", newBudget:"New Budget", editLimit:"Edit Limit", addBudget:"Add Budget", removeBudget:"Remove this budget", totalSpent:"Total Spent", byCategory:"By Category", edit:"Edit", delete:"Delete", save:"Save", budgeted:"budgeted", monthlyLimit:"Monthly limit", allCatsHaveBudget:"Every category already has a budget. Add a new category first.", noGoals:"No budget books yet", noGoalsSub:"Tap + to create your first budget book. A goal with a deadline is a plan, not a wish.", newBudgetBook:"New Budget Book", editBudgetBook:"Edit Budget Book", createBudgetBook:"Create Budget Book", deleteBudgetBook:"Delete budget book", addToBudgetBook:"Add to Budget Book", alreadySaved:"Already saved", target:"Target", name:"Name", goalComplete:"Goal complete!", remaining:"remaining", add:"Add", richySuggests:"Richard suggests", implement:"Implement", dismiss:"Dismiss", aiAdvisor:"AI Financial Advisor", aiAdvisorSub:"Personalized advice based on your real spending and expert financial wisdom.", analyzeMyFinances:"Analyze My Finances", thinkP1:"Reading your numbers",thinkP2:"Thinking it through",thinkP3:"Weighing the options",thinkP4:"Writing back",anStep1:"Reading your month",anStep2:"Scanning {n} transactions",anStep3:"Comparing plan to reality",anStep4:"Finding what matters most",anStep5:"Writing your analysis",analyzingFinances:"Analyzing your finances...", fewSeconds:"This takes a few seconds", refresh:"Refresh", insights:"Insights", analysisFailed:"Analysis failed", tryAgain:"Try Again", askYourAdvisor:"Ask Your Advisor", advisorQ1:"How can I save more?", advisorQ2:"Is my savings rate healthy?", advisorQ3:"What to do with my surplus?", thinking:"Thinking...", yesDo:"Yes, do it", notNow:"Not now", askRichard:"Ask Richard anything...", giveFeedback:"Give Richard feedback...", advisorDisclaimer:"Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.", translate:"Translate plan", noPlanYet:"No plan yet. Complete the onboarding questionnaire to get your personalized plan from Richard.", notes:"Notes", notesEmpty:"No notes yet", notesEmptySub:"Track who owes you and who you owe. Tap + to add your first one.", theyOweMe:"They owe me", iOwe:"I owe", newNote:"New Note", addNote:"Add Note", editNote:"Edit Note", saveNote:"Save Note", settle:"Settle", settleTitle:"Settle note", settleAddBalance:"Add to my balance", reminder:"Reminder", reminderTitle:"Set a reminder", setReminder:"Set reminder", clearReminder:"Clear reminder", reminderWhen:"Remind me on", reminderDenied:"Notifications are blocked. The note will still show a due badge.", due:"Due", overdue:"Overdue", deleteNote:"Delete note", trips:"Trips", planATrip:"Plan a Trip", planATripSub:"Budget a getaway without touching your balance.", planNewTrip:"Plan a New Trip", noTrips:"No trips yet", noTripsSub:"Plan a getaway and Richard will split your budget across the essentials.", tripName:"Trip name", destination:"Destination", tripBudget:"Total budget", tripDays:"Days", travelStyle:"Travel style", styleBudget:"Budget", styleComfort:"Comfort", styleLuxury:"Luxury", next:"Next", back:"Back", richardPlanning:"Richard is planning your trip", richardPlanningSub:"Splitting your budget across the essentials.", tripSplit:"Your budget split", allocated:"Allocated", overBy:"over by", saveTrip:"Save Trip", addCategory:"Add category", deductFromBalance:"Deduct from balance", deductExplain:"This tracks what you actually spend on this trip as one live expense, so your balance only drops as you log spending here - not the whole budget up front. You can undo it anytime.", reserved:"Tracking against balance", undoReserve:"Stop tracking", logExpense:"Log expense", logExpenseTitle:"Log a trip expense", tripTips:"Richard's tips", deleteTrip:"Delete trip", deleteTripConfirm:"Delete this trip? This cannot be undone.", spentOf:"spent of", leftToSpend:"left to spend", planning:"Planning", tripSummary:"Trip summary", appearance:"Appearance", leftAfterBudgets:"Left after budgets", tripIcon:"Trip icon", savings:"Savings", netWorth:"Net Worth", balance:"Balance", manage:"Manage", totalSavings:"Total saved", savingsIntro:"Money you keep separate from your spending balance - an emergency fund, a sinking fund, anything you don't want to accidentally spend. It counts toward your net worth, never your balance.", newSavingsAccount:"New savings account", savingsAccountName:"Account name", addMoney:"Add money", withdraw:"Withdraw", fromBalance:"From my balance", externalMoney:"Money I already have", toBalance:"To my balance", removeFromNet:"Spend or remove", startingAmount:"Starting amount (optional)", createAccount:"Create account", closeAccount:"Close account", rename:"Rename", emptySavingsSub:"Keep an emergency fund or a sinking fund separate from your spending balance.", addSavingsAccount:"Add a savings account", history:"History", balanceUntouched:"Your spending balance stays untouched", movesFromBalance:"Moves money out of your spending balance", addsToBalance:"Adds the money back to your spending balance", leavesNetWorth:"Leaves your accounts - lowers your net worth", pickIcon:"Icon", emergencyFund:"Emergency Fund", noMovesYet:"No moves yet", pastChats:"Past chats", newChat:"New chat", conversation:"conversation", conversations:"conversations", noPastChats:"No past chats yet", message:"message", messages:"messages" },
+  he: { overview:"סקירה", activity:"פעילות", budgets:"תקציבים", goals:"יעדים", advisor:"יועץ", profile:"פרופיל", language:"שפה", currency:"מטבע", yourPlan:"התוכנית שלך", categories:"קטגוריות", signOut:"התנתק", richyMember:"חבר Richy", richyRefersTo:"ריצ'י מכנה אותך", seeYourPlan:"ראה את התוכנית שלך", netBalance:"יתרה נטו", income:"הכנסות", spent:"הוצאות", topSpend:"הוצאה עיקרית", morning:"בוקר טוב", afternoon:"צהריים טובים", evening:"ערב טוב", savedThisPeriod:"נחסך בתקופה זו", redoQuestionnaire:"מלא שאלון מחדש", yourPlanByRichard:"התוכנית שלך", noTransactions:"אין עסקאות עדיין", noTransactionsSub:"לחץ + כדי לרשום. מודעות היא הצעד הראשון לעושר.", overviewEmptySub:"עשיר בבבל התחיל בלעקוב אחרי כל מטבע. התחל גם אתה בפעילות.", savingsRate:"שיעור חיסכון", excellent:"מצוין", onTrack:"במסלול", buildItUp:"שפר את זה", overspending:"הוצאה יתרה", thisPeriod:"בתקופה זו", transactions:"עסקאות", whereItWent:"לאן הלך", overLimit:"מעל המגבלה", complete:"הושלם", savedLabel:"נחסך", spentLabel:"הוצא", toGo:"לסיום", recent:"אחרון", activeGoal:"יעד פעיל", activeGoals:"יעדים פעילים", today:"היום", yesterday:"אתמול", moneyIn:"כסף נכנס", moneyOut:"כסף יוצא", newTransaction:"עסקה חדשה", editTransaction:"ערוך עסקה", addTransaction:"הוסף עסקה", saveChanges:"שמור שינויים", deleteTx:"מחק עסקה", amount:"סכום", txLabel:"תיאור", category:"קטגוריה", date:"תאריך", repeat:"חזרה", once:"פעם אחת", weekly:"שבועי", monthly:"חודשי", markPending:"סמן כממתין", expense:"הוצאה", noBudgets:"אין תקציבים עדיין", noBudgetsSub:"לחץ + להגדרת מגבלה לקטגוריה. תקציב הוא פשוט להגיד לכסף לאן ללכת.", newBudget:"תקציב חדש", editLimit:"ערוך מגבלה", addBudget:"הוסף תקציב", removeBudget:"הסר תקציב זה", totalSpent:"סך הוצאות", byCategory:"לפי קטגוריה", edit:"ערוך", delete:"מחק", save:"שמור", budgeted:"מתוקצב", monthlyLimit:"מגבלה חודשית", allCatsHaveBudget:"לכל הקטגוריות יש תקציב. הוסף קטגוריה חדשה תחילה.", noGoals:"אין ספרי תקציב עדיין", noGoalsSub:"לחץ + ליצירת ספר תקציב ראשון. יעד עם מועד הוא תוכנית, לא משאלה.", newBudgetBook:"ספר תקציב חדש", editBudgetBook:"ערוך ספר תקציב", createBudgetBook:"צור ספר תקציב", deleteBudgetBook:"מחק ספר תקציב", addToBudgetBook:"הוסף לספר תקציב", alreadySaved:"כבר נחסך", target:"יעד", name:"שם", goalComplete:"היעד הושג!", remaining:"נותר", add:"הוסף", richySuggests:"ריצ'י מציע", implement:"יישם", dismiss:"דחה", aiAdvisor:"יועץ פיננסי AI", aiAdvisorSub:"ייעוץ מותאם אישית בהתבסס על ההוצאות שלך.", analyzeMyFinances:"נתח את הכספים שלי", thinkP1:"קורא את המספרים שלך",thinkP2:"חושב על זה",thinkP3:"שוקל את האפשרויות",thinkP4:"מנסח תשובה",anStep1:"קורא את החודש שלך",anStep2:"סורק {n} תנועות",anStep3:"משווה תוכנית למציאות",anStep4:"מאתר את מה שחשוב באמת",anStep5:"כותב את הניתוח",analyzingFinances:"מנתח את הכספים שלך...", fewSeconds:"זה לוקח כמה שניות", refresh:"רענן", insights:"תובנות", analysisFailed:"הניתוח נכשל", tryAgain:"נסה שוב", askYourAdvisor:"שאל את היועץ שלך", advisorQ1:"איך אוכל לחסוך יותר?", advisorQ2:"האם שיעור החיסכון שלי בריא?", advisorQ3:"מה לעשות עם העודף שלי?", thinking:"חושב...", yesDo:"כן, עשה זאת", notNow:"לא עכשיו", askRichard:"שאל את ריצ'רד כל דבר...", giveFeedback:"תן ל-ריצ'רד משוב...", advisorDisclaimer:"ריצ'רד הוא עוזר AI ולא יועץ פיננסי מורשה. תמיד ערוך מחקר עצמאי לפני קבלת החלטות כלכליות.", translate:"תרגם תוכנית", noPlanYet:"אין תוכנית עדיין. מלא את השאלון כדי לקבל את התוכנית האישית שלך מריצ'רד." },
+  es: { overview:"Resumen", activity:"Actividad", budgets:"Presupuestos", goals:"Metas", advisor:"Asesor", profile:"Perfil", language:"Idioma", currency:"Moneda", yourPlan:"Tu Plan", categories:"Categorias", signOut:"Cerrar sesion", richyMember:"Miembro Richy", richyRefersTo:"Richy te llama", seeYourPlan:"Ver tu plan de Richard", netBalance:"Saldo Neto", income:"Ingresos", spent:"Gastado", topSpend:"Mas gastado", morning:"Buenos dias", afternoon:"Buenas tardes", evening:"Buenas noches", savedThisPeriod:"ahorrado este periodo", redoQuestionnaire:"Rehacer cuestionario", yourPlanByRichard:"Tu plan de Richard", noTransactions:"Sin transacciones aun", noTransactionsSub:"Toca + para registrar la primera. La conciencia es el primer paso a la riqueza.", overviewEmptySub:"El hombre mas rico de Babilonia empezo rastreando cada moneda. Empieza en Actividad.", savingsRate:"Tasa de ahorro", excellent:"Excelente", onTrack:"En camino", buildItUp:"Mejoralo", overspending:"Exceso de gasto", thisPeriod:"este periodo", transactions:"Transacciones", whereItWent:"A donde fue", overLimit:"sobre el limite", complete:"completo", savedLabel:"ahorrado", spentLabel:"gastado", toGo:"restante", recent:"Reciente", activeGoal:"meta activa", activeGoals:"metas activas", today:"Hoy", yesterday:"Ayer", moneyIn:"Dinero Entrada", moneyOut:"Dinero Salida", newTransaction:"Nueva Transaccion", editTransaction:"Editar Transaccion", addTransaction:"Agregar Transaccion", saveChanges:"Guardar Cambios", deleteTx:"Eliminar transaccion", amount:"Monto", txLabel:"Etiqueta", category:"Categoria", date:"Fecha", repeat:"Repetir", once:"Una vez", weekly:"Semanal", monthly:"Mensual", markPending:"Marcar como pendiente", expense:"Gasto", noBudgets:"Sin presupuestos aun", noBudgetsSub:"Toca + para establecer un limite. Un presupuesto le dice a tu dinero donde ir.", newBudget:"Nuevo Presupuesto", editLimit:"Editar Limite", addBudget:"Agregar Presupuesto", removeBudget:"Eliminar este presupuesto", totalSpent:"Total Gastado", byCategory:"Por Categoria", edit:"Editar", delete:"Eliminar", save:"Guardar", budgeted:"presupuestado", monthlyLimit:"Limite mensual", allCatsHaveBudget:"Cada categoria ya tiene presupuesto. Agrega una nueva categoria primero.", noGoals:"Sin libros de metas aun", noGoalsSub:"Toca + para crear tu primer libro de metas. Una meta con fecha limite es un plan.", newBudgetBook:"Nuevo Libro de Metas", editBudgetBook:"Editar Libro de Metas", createBudgetBook:"Crear Libro de Metas", deleteBudgetBook:"Eliminar libro de metas", addToBudgetBook:"Agregar al Libro de Metas", alreadySaved:"Ya ahorrado", target:"Objetivo", name:"Nombre", goalComplete:"Meta completada!", remaining:"restante", add:"Agregar", richySuggests:"Richard sugiere", implement:"Implementar", dismiss:"Descartar", aiAdvisor:"Asesor Financiero IA", aiAdvisorSub:"Consejos personalizados basados en tus gastos reales.", analyzeMyFinances:"Analizar Mis Finanzas", thinkP1:"Leyendo tus numeros",thinkP2:"Pensandolo bien",thinkP3:"Sopesando opciones",thinkP4:"Escribiendo la respuesta",anStep1:"Leyendo tu mes",anStep2:"Escaneando {n} transacciones",anStep3:"Comparando plan y realidad",anStep4:"Buscando lo mas importante",anStep5:"Escribiendo tu analisis",analyzingFinances:"Analizando tus finanzas...", fewSeconds:"Esto tarda unos segundos", refresh:"Actualizar", insights:"Perspectivas", analysisFailed:"Analisis fallido", tryAgain:"Intentar de nuevo", askYourAdvisor:"Pregunta a tu Asesor", advisorQ1:"Como puedo ahorrar mas?", advisorQ2:"Es saludable mi tasa de ahorro?", advisorQ3:"Que hacer con mi excedente?", thinking:"Pensando...", yesDo:"Si, hazlo", notNow:"Ahora no", askRichard:"Pregunta a Richard cualquier cosa...", giveFeedback:"Da retroalimentacion a Richard...", advisorDisclaimer:"Richard es un asistente de IA, no un asesor financiero certificado. Investiga siempre antes de tomar decisiones financieras.", translate:"Traducir plan", noPlanYet:"Aun no hay plan. Completa el cuestionario para obtener tu plan personalizado de Richard." },
+  fr: { overview:"Apercu", activity:"Activite", budgets:"Budgets", goals:"Objectifs", advisor:"Conseiller", profile:"Profil", language:"Langue", currency:"Devise", yourPlan:"Votre Plan", categories:"Categories", signOut:"Deconnexion", richyMember:"Membre Richy", richyRefersTo:"Richy vous appelle", seeYourPlan:"Voir votre plan de Richard", netBalance:"Solde Net", income:"Revenus", spent:"Depenses", topSpend:"Top depenses", morning:"Bonjour", afternoon:"Bon apres-midi", evening:"Bonsoir", savedThisPeriod:"epargne cette periode", redoQuestionnaire:"Refaire le questionnaire", yourPlanByRichard:"Votre plan de Richard", noTransactions:"Aucune transaction", noTransactionsSub:"Appuyez + pour enregistrer la premiere. La conscience est le premier pas vers la richesse.", overviewEmptySub:"L homme le plus riche de Babylone commencat par suivre chaque piece. Commencez dans Activite.", savingsRate:"Taux d epargne", excellent:"Excellent", onTrack:"En bonne voie", buildItUp:"Ameliorez-le", overspending:"Depassement", thisPeriod:"cette periode", transactions:"Transactions", whereItWent:"Ou est alle", overLimit:"au-dessus de la limite", complete:"complete", savedLabel:"epargne", spentLabel:"depense", toGo:"restant", recent:"Recent", activeGoal:"objectif actif", activeGoals:"objectifs actifs", today:"Aujourd hui", yesterday:"Hier", moneyIn:"Argent entrant", moneyOut:"Argent sortant", newTransaction:"Nouvelle Transaction", editTransaction:"Modifier Transaction", addTransaction:"Ajouter Transaction", saveChanges:"Enregistrer les modifications", deleteTx:"Supprimer la transaction", amount:"Montant", txLabel:"Libelle", category:"Categorie", date:"Date", repeat:"Repetition", once:"Une fois", weekly:"Hebdomadaire", monthly:"Mensuel", markPending:"Marquer comme en attente", expense:"Depense", noBudgets:"Aucun budget", noBudgetsSub:"Appuyez + pour fixer une limite. Un budget dit a votre argent ou aller.", newBudget:"Nouveau Budget", editLimit:"Modifier Limite", addBudget:"Ajouter Budget", removeBudget:"Supprimer ce budget", totalSpent:"Total Depense", byCategory:"Par Categorie", edit:"Modifier", delete:"Supprimer", save:"Enregistrer", budgeted:"budgete", monthlyLimit:"Limite mensuelle", allCatsHaveBudget:"Chaque categorie a deja un budget. Ajoutez d abord une nouvelle categorie.", noGoals:"Aucun livret d epargne", noGoalsSub:"Appuyez + pour creer votre premier livret. Un objectif avec une echeance est un plan.", newBudgetBook:"Nouveau Livret", editBudgetBook:"Modifier Livret", createBudgetBook:"Creer Livret", deleteBudgetBook:"Supprimer le livret", addToBudgetBook:"Ajouter au Livret", alreadySaved:"Deja epargne", target:"Objectif", name:"Nom", goalComplete:"Objectif atteint!", remaining:"restant", add:"Ajouter", richySuggests:"Richard suggere", implement:"Implementer", dismiss:"Ignorer", aiAdvisor:"Conseiller Financier IA", aiAdvisorSub:"Conseils personnalises bases sur vos depenses reelles.", analyzeMyFinances:"Analyser mes Finances", thinkP1:"Je lis vos chiffres",thinkP2:"J'y reflechis",thinkP3:"Je pese les options",thinkP4:"Je redige la reponse",anStep1:"Lecture de votre mois",anStep2:"Analyse de {n} transactions",anStep3:"Comparaison plan et realite",anStep4:"Recherche de l'essentiel",anStep5:"Redaction de votre analyse",analyzingFinances:"Analyse de vos finances...", fewSeconds:"Cela prend quelques secondes", refresh:"Actualiser", insights:"Perspectives", analysisFailed:"Analyse echouee", tryAgain:"Reessayer", askYourAdvisor:"Demandez a votre Conseiller", advisorQ1:"Comment puis-je economiser davantage?", advisorQ2:"Mon taux d epargne est-il sain?", advisorQ3:"Que faire avec mon surplus?", thinking:"Je reflechis...", yesDo:"Oui, fais-le", notNow:"Pas maintenant", askRichard:"Demandez a Richard n importe quoi...", giveFeedback:"Donnez vos retours a Richard...", advisorDisclaimer:"Richard est un assistant IA, pas un conseiller financier agree. Faites toujours vos propres recherches.", translate:"Traduire le plan", noPlanYet:"Pas encore de plan. Completez le questionnaire pour obtenir votre plan personnalise de Richard." },
+  ar: { overview:"نظرة عامة", activity:"النشاط", budgets:"الميزانيات", goals:"الاهداف", advisor:"المستشار", profile:"الملف الشخصي", language:"اللغة", currency:"العملة", yourPlan:"خطتك", categories:"الفئات", signOut:"تسجيل الخروج", richyMember:"عضو Richy", richyRefersTo:"ريتشي يناديك", seeYourPlan:"انظر خطتك من ريتشارد", netBalance:"الرصيد الصافي", income:"الدخل", spent:"المنفق", topSpend:"اعلى انفاق", morning:"صباح الخير", afternoon:"مساء الخير", evening:"مساء الخير", savedThisPeriod:"تم توفيره", redoQuestionnaire:"اعادة الاستبيان", yourPlanByRichard:"خطتك من ريتشارد", noTransactions:"لا توجد معاملات بعد", noTransactionsSub:"اضغط + لتسجيل اول معاملة. الوعي هو الخطوة الاولى نحو الثروة.", overviewEmptySub:"اغنى رجل في بابل بدا بتتبع كل عملة. ابدا في النشاط.", savingsRate:"معدل الادخار", excellent:"ممتاز", onTrack:"في المسار", buildItUp:"طوره", overspending:"انفاق زائد", thisPeriod:"هذه الفترة", transactions:"المعاملات", whereItWent:"اين ذهب", overLimit:"فوق الحد", complete:"مكتمل", savedLabel:"مدخر", spentLabel:"انفق", toGo:"متبقي", recent:"الاخير", activeGoal:"هدف نشط", activeGoals:"اهداف نشطة", today:"اليوم", yesterday:"امس", moneyIn:"المال الداخل", moneyOut:"المال الخارج", newTransaction:"معاملة جديدة", editTransaction:"تعديل المعاملة", addTransaction:"اضافة معاملة", saveChanges:"حفظ التغييرات", deleteTx:"حذف المعاملة", amount:"المبلغ", txLabel:"التسمية", category:"الفئة", date:"التاريخ", repeat:"تكرار", once:"مرة واحدة", weekly:"اسبوعي", monthly:"شهري", markPending:"وضع علامة معلقة", expense:"مصروف", noBudgets:"لا توجد ميزانيات بعد", noBudgetsSub:"اضغط + لتعيين حد للفئة. الميزانية هي توجيه المال.", newBudget:"ميزانية جديدة", editLimit:"تعديل الحد", addBudget:"اضافة ميزانية", removeBudget:"حذف هذه الميزانية", totalSpent:"اجمالي الانفاق", byCategory:"حسب الفئة", edit:"تعديل", delete:"حذف", save:"حفظ", budgeted:"مخصص", monthlyLimit:"الحد الشهري", allCatsHaveBudget:"كل الفئات لديها ميزانية. اضف فئة جديدة اولا.", noGoals:"لا توجد دفاتر بعد", noGoalsSub:"اضغط + لانشاء اول دفتر. الهدف بموعد خطة وليس امنية.", newBudgetBook:"دفتر جديد", editBudgetBook:"تعديل الدفتر", createBudgetBook:"انشاء دفتر", deleteBudgetBook:"حذف الدفتر", addToBudgetBook:"اضافة الى الدفتر", alreadySaved:"تم الادخار مسبقا", target:"الهدف", name:"الاسم", goalComplete:"تم تحقيق الهدف!", remaining:"متبقي", add:"اضافة", richySuggests:"اقتراح ريتشارد", implement:"تطبيق", dismiss:"تجاهل", aiAdvisor:"مستشار مالي AI", aiAdvisorSub:"نصائح مخصصة بناء على انفاقك الفعلي.", analyzeMyFinances:"تحليل ماليتي", thinkP1:"أقرأ أرقامك",thinkP2:"أفكر في الأمر",thinkP3:"أوازن الخيارات",thinkP4:"أكتب الرد",anStep1:"أقرأ شهرك",anStep2:"أفحص {n} من المعاملات",anStep3:"أقارن الخطة بالواقع",anStep4:"أبحث عن الأهم",anStep5:"أكتب تحليلك",analyzingFinances:"جاري تحليل ماليتك...", fewSeconds:"هذا يستغرق بضع ثوان", refresh:"تحديث", insights:"رؤى", analysisFailed:"فشل التحليل", tryAgain:"حاول مجددا", askYourAdvisor:"اسال مستشارك", advisorQ1:"كيف يمكنني توفير المزيد؟", advisorQ2:"هل معدل توفيري صحي؟", advisorQ3:"ماذا افعل بالفائض؟", thinking:"افكر...", yesDo:"نعم افعل ذلك", notNow:"ليس الان", askRichard:"اسال ريتشارد اي شيء...", giveFeedback:"اعطِ ريتشارد ملاحظاتك...", advisorDisclaimer:"ريتشارد مساعد ذكاء اصطناعي وليس مستشارا ماليا معتمدا. دائما ابحث قبل اتخاذ قرارات مالية.", translate:"ترجمة الخطة", noPlanYet:"لا توجد خطة بعد. اكمل الاستبيان للحصول على خطتك الشخصية من ريتشارد." },
+  ru: { overview:"Обзор", activity:"Активность", budgets:"Бюджеты", goals:"Цели", advisor:"Советник", profile:"Профиль", language:"Язык", currency:"Валюта", yourPlan:"Ваш план", categories:"Категории", signOut:"Выйти", richyMember:"Участник Richy", richyRefersTo:"Richy называет тебя", seeYourPlan:"Посмотреть план от Ричарда", netBalance:"Чистый баланс", income:"Доходы", spent:"Расходы", topSpend:"Главная трата", morning:"Доброе утро", afternoon:"Добрый день", evening:"Добрый вечер", savedThisPeriod:"сохранено за период", redoQuestionnaire:"Пройти снова", yourPlanByRichard:"Ваш план от Ричарда", noTransactions:"Нет транзакций", noTransactionsSub:"Нажмите + чтобы добавить первую. Осознанность - первый шаг к богатству.", overviewEmptySub:"Богатейший человек Вавилона начал с учёта каждой монеты. Начните в Активности.", savingsRate:"Уровень сбережений", excellent:"Отлично", onTrack:"В норме", buildItUp:"Улучшайте", overspending:"Перерасход", thisPeriod:"за период", transactions:"Транзакции", whereItWent:"Куда ушло", overLimit:"сверх лимита", complete:"завершено", savedLabel:"накоплено", spentLabel:"потрачено", toGo:"осталось", recent:"Последние", activeGoal:"активная цель", activeGoals:"активных целей", today:"Сегодня", yesterday:"Вчера", moneyIn:"Доходы", moneyOut:"Расходы", newTransaction:"Новая транзакция", editTransaction:"Редактировать", addTransaction:"Добавить транзакцию", saveChanges:"Сохранить изменения", deleteTx:"Удалить транзакцию", amount:"Сумма", txLabel:"Описание", category:"Категория", date:"Дата", repeat:"Повтор", once:"Однократно", weekly:"Еженедельно", monthly:"Ежемесячно", markPending:"Отметить как ожидающее", expense:"Расход", noBudgets:"Нет бюджетов", noBudgetsSub:"Нажмите + чтобы задать лимит. Бюджет говорит деньгам куда идти.", newBudget:"Новый бюджет", editLimit:"Изменить лимит", addBudget:"Добавить бюджет", removeBudget:"Удалить этот бюджет", totalSpent:"Всего потрачено", byCategory:"По категориям", edit:"Редактировать", delete:"Удалить", save:"Сохранить", budgeted:"запланировано", monthlyLimit:"Месячный лимит", allCatsHaveBudget:"Все категории уже имеют бюджет. Сначала добавьте новую категорию.", noGoals:"Нет книг целей", noGoalsSub:"Нажмите + чтобы создать первую. Цель с датой - это план, а не мечта.", newBudgetBook:"Новая книга целей", editBudgetBook:"Редактировать книгу целей", createBudgetBook:"Создать книгу целей", deleteBudgetBook:"Удалить книгу целей", addToBudgetBook:"Добавить в книгу целей", alreadySaved:"Уже накоплено", target:"Цель", name:"Название", goalComplete:"Цель достигнута!", remaining:"осталось", add:"Добавить", richySuggests:"Ричард предлагает", implement:"Применить", dismiss:"Отклонить", aiAdvisor:"Финансовый советник ИИ", aiAdvisorSub:"Персональные советы на основе ваших расходов.", analyzeMyFinances:"Анализировать мои финансы", thinkP1:"Читаю ваши цифры",thinkP2:"Обдумываю",thinkP3:"Взвешиваю варианты",thinkP4:"Пишу ответ",anStep1:"Читаю ваш месяц",anStep2:"Проверяю {n} операций",anStep3:"Сравниваю план с реальностью",anStep4:"Ищу самое важное",anStep5:"Пишу ваш анализ",analyzingFinances:"Анализируем ваши финансы...", fewSeconds:"Это займет несколько секунд", refresh:"Обновить", insights:"Инсайты", analysisFailed:"Анализ не удался", tryAgain:"Попробовать снова", askYourAdvisor:"Спросите вашего советника", advisorQ1:"Как сэкономить больше?", advisorQ2:"Мой уровень сбережений здоровый?", advisorQ3:"Что делать с излишком?", thinking:"Думаю...", yesDo:"Да, сделай это", notNow:"Не сейчас", askRichard:"Спросите Ричарда что угодно...", giveFeedback:"Дайте обратную связь Ричарду...", advisorDisclaimer:"Ричард является ИИ-помощником, а не лицензированным финансовым советником. Всегда проводите собственное исследование.", translate:"Перевести план", noPlanYet:"Noch kein Plan. Fullen Sie den Fragebogen aus, um Ihren personlichen Plan von Richard zu erhalten." },
+  de: { overview:"Ubersicht", activity:"Aktivitat", budgets:"Budgets", goals:"Ziele", advisor:"Berater", profile:"Profil", language:"Sprache", currency:"Wahrung", yourPlan:"Ihr Plan", categories:"Kategorien", signOut:"Abmelden", richyMember:"Richy-Mitglied", richyRefersTo:"Richy nennt dich", seeYourPlan:"Sehen Sie Ihren Plan von Richard", netBalance:"Nettosaldo", income:"Einnahmen", spent:"Ausgaben", topSpend:"Ausgabe", morning:"Guten Morgen", afternoon:"Guten Tag", evening:"Guten Abend", savedThisPeriod:"gespart in dieser Periode", redoQuestionnaire:"Fragebogen wiederholen", yourPlanByRichard:"Ihr Plan von Richard", noTransactions:"Noch keine Transaktionen", noTransactionsSub:"Tippe + um die erste zu erfassen. Bewusstsein ist der erste Schritt zum Reichtum.", overviewEmptySub:"Der reichste Mann Babylons begann damit, jede Muenze zu verfolgen. Starte in Aktivitat.", savingsRate:"Sparrate", excellent:"Ausgezeichnet", onTrack:"Auf Kurs", buildItUp:"Verbessern", overspending:"Mehrausgaben", thisPeriod:"diese Periode", transactions:"Transaktionen", whereItWent:"Wo es hinging", overLimit:"uber dem Limit", complete:"abgeschlossen", savedLabel:"gespart", spentLabel:"ausgegeben", toGo:"verbleibend", recent:"Aktuell", activeGoal:"aktives Ziel", activeGoals:"aktive Ziele", today:"Heute", yesterday:"Gestern", moneyIn:"Einnahmen", moneyOut:"Ausgaben", newTransaction:"Neue Transaktion", editTransaction:"Transaktion bearbeiten", addTransaction:"Transaktion hinzufugen", saveChanges:"Anderungen speichern", deleteTx:"Transaktion loschen", amount:"Betrag", txLabel:"Bezeichnung", category:"Kategorie", date:"Datum", repeat:"Wiederholung", once:"Einmalig", weekly:"Wochentlich", monthly:"Monatlich", markPending:"Als ausstehend markieren", expense:"Ausgabe", noBudgets:"Noch keine Budgets", noBudgetsSub:"Tippe + um ein Limit festzulegen. Ein Budget sagt deinem Geld wo es hingehen soll.", newBudget:"Neues Budget", editLimit:"Limit bearbeiten", addBudget:"Budget hinzufugen", removeBudget:"Dieses Budget entfernen", totalSpent:"Gesamt ausgegeben", byCategory:"Nach Kategorie", edit:"Bearbeiten", delete:"Loschen", save:"Speichern", budgeted:"budgetiert", monthlyLimit:"Monatliches Limit", allCatsHaveBudget:"Alle Kategorien haben bereits ein Budget. Zuerst neue Kategorie hinzufugen.", noGoals:"Noch keine Sparbuecher", noGoalsSub:"Tippe + um dein erstes Sparbuch zu erstellen. Ein Ziel mit Termin ist ein Plan, kein Wunsch.", newBudgetBook:"Neues Sparbuch", editBudgetBook:"Sparbuch bearbeiten", createBudgetBook:"Sparbuch erstellen", deleteBudgetBook:"Sparbuch loschen", addToBudgetBook:"Zum Sparbuch hinzufugen", alreadySaved:"Bereits gespart", target:"Ziel", name:"Name", goalComplete:"Ziel erreicht!", remaining:"verbleibend", add:"Hinzufugen", richySuggests:"Richard schlagt vor", implement:"Umsetzen", dismiss:"Ablehnen", aiAdvisor:"KI-Finanzberater", aiAdvisorSub:"Personalisierte Ratschlage basierend auf Ihren Ausgaben.", analyzeMyFinances:"Meine Finanzen analysieren", thinkP1:"Ich lese Ihre Zahlen",thinkP2:"Ich denke nach",thinkP3:"Ich vergleiche die Optionen",thinkP4:"Ich schreibe die Antwort",anStep1:"Ihr Monat wird gelesen",anStep2:"{n} Transaktionen werden gescannt",anStep3:"Vergleich mit Ihrem Plan",anStep4:"Das Wichtigste wird gefunden",anStep5:"Ihre Analyse wird geschrieben",analyzingFinances:"Ihre Finanzen werden analysiert...", fewSeconds:"Dies dauert einige Sekunden", refresh:"Aktualisieren", insights:"Einblicke", analysisFailed:"Analyse fehlgeschlagen", tryAgain:"Erneut versuchen", askYourAdvisor:"Fragen Sie Ihren Berater", advisorQ1:"Wie kann ich mehr sparen?", advisorQ2:"Ist meine Sparrate gesund?", advisorQ3:"Was tun mit meinem Uberschuss?", thinking:"Denke nach...", yesDo:"Ja, mach es", notNow:"Nicht jetzt", askRichard:"Fragen Sie Richard alles...", giveFeedback:"Geben Sie Richard Feedback...", advisorDisclaimer:"Richard ist ein KI-Assistent, kein lizenzierter Finanzberater. Recherchieren Sie stets selbst vor Finanzentscheidungen.", translate:"Plan ubersetzen", noPlanYet:"Noch kein Plan. Fullen Sie den Fragebogen aus um Ihren personlichen Plan von Richard zu erhalten." },
+  pt: { overview:"Visao Geral", activity:"Atividade", budgets:"Orcamentos", goals:"Metas", advisor:"Consultor", profile:"Perfil", language:"Idioma", currency:"Moeda", yourPlan:"Seu Plano", categories:"Categorias", signOut:"Sair", richyMember:"Membro Richy", richyRefersTo:"Richy te chama", seeYourPlan:"Ver seu plano de Richard", netBalance:"Saldo Liquido", income:"Receita", spent:"Gasto", topSpend:"Principal gasto", morning:"Bom dia", afternoon:"Boa tarde", evening:"Boa noite", savedThisPeriod:"economizado neste periodo", redoQuestionnaire:"Refazer questionario", yourPlanByRichard:"Seu plano de Richard", noTransactions:"Nenhuma transacao ainda", noTransactionsSub:"Toque + para registrar a primeira. Consciencia e o primeiro passo para a riqueza.", overviewEmptySub:"O homem mais rico da Babilonia comecou rastreando cada moeda. Comece em Atividade.", savingsRate:"Taxa de Poupanca", excellent:"Excelente", onTrack:"No caminho", buildItUp:"Melhore", overspending:"Excesso de gastos", thisPeriod:"este periodo", transactions:"Transacoes", whereItWent:"Para onde foi", overLimit:"acima do limite", complete:"concluido", savedLabel:"economizado", spentLabel:"gasto", toGo:"restante", recent:"Recente", activeGoal:"meta ativa", activeGoals:"metas ativas", today:"Hoje", yesterday:"Ontem", moneyIn:"Entrada", moneyOut:"Saida", newTransaction:"Nova Transacao", editTransaction:"Editar Transacao", addTransaction:"Adicionar Transacao", saveChanges:"Salvar Alteracoes", deleteTx:"Excluir transacao", amount:"Valor", txLabel:"Rotulo", category:"Categoria", date:"Data", repeat:"Repeticao", once:"Uma vez", weekly:"Semanal", monthly:"Mensal", markPending:"Marcar como pendente", expense:"Despesa", noBudgets:"Nenhum orcamento ainda", noBudgetsSub:"Toque + para definir um limite. Um orcamento e dizer ao seu dinheiro para onde ir.", newBudget:"Novo Orcamento", editLimit:"Editar Limite", addBudget:"Adicionar Orcamento", removeBudget:"Remover este orcamento", totalSpent:"Total Gasto", byCategory:"Por Categoria", edit:"Editar", delete:"Excluir", save:"Salvar", budgeted:"orcado", monthlyLimit:"Limite mensal", allCatsHaveBudget:"Cada categoria ja tem um orcamento. Adicione uma nova categoria primeiro.", noGoals:"Nenhum caderno de metas ainda", noGoalsSub:"Toque + para criar seu primeiro caderno. Uma meta com prazo e um plano.", newBudgetBook:"Novo Caderno de Metas", editBudgetBook:"Editar Caderno de Metas", createBudgetBook:"Criar Caderno de Metas", deleteBudgetBook:"Excluir caderno de metas", addToBudgetBook:"Adicionar ao Caderno de Metas", alreadySaved:"Ja economizado", target:"Meta", name:"Nome", goalComplete:"Meta concluida!", remaining:"restante", add:"Adicionar", richySuggests:"Richard sugere", implement:"Implementar", dismiss:"Dispensar", aiAdvisor:"Consultor Financeiro IA", aiAdvisorSub:"Conselhos personalizados com base nos seus gastos reais.", analyzeMyFinances:"Analisar Minhas Financas", thinkP1:"Lendo seus numeros",thinkP2:"Pensando bem",thinkP3:"Pesando as opcoes",thinkP4:"Escrevendo a resposta",anStep1:"Lendo seu mes",anStep2:"Analisando {n} transacoes",anStep3:"Comparando plano e realidade",anStep4:"Buscando o que mais importa",anStep5:"Escrevendo sua analise",analyzingFinances:"Analisando suas financas...", fewSeconds:"Isso leva alguns segundos", refresh:"Atualizar", insights:"Perspectivas", analysisFailed:"Analise falhou", tryAgain:"Tentar novamente", askYourAdvisor:"Pergunte ao seu Consultor", advisorQ1:"Como posso economizar mais?", advisorQ2:"Minha taxa de poupanca e saudavel?", advisorQ3:"O que fazer com meu excedente?", thinking:"Pensando...", yesDo:"Sim, faca isso", notNow:"Agora nao", askRichard:"Pergunte a Richard qualquer coisa...", giveFeedback:"Dar feedback a Richard...", advisorDisclaimer:"Richard e um assistente de IA, nao um consultor financeiro licenciado. Sempre pesquise antes de tomar decisoes financeiras.", translate:"Traduzir plano", noPlanYet:"Ainda sem plano. Complete o questionario para obter seu plano personalizado de Richard." }
 };
 function tr(key) {
   var code = _lang.code || "en";
@@ -677,6 +677,194 @@ function RichyLogo(props) {
       <text x="50" y="75" textAnchor="middle" fontFamily={"Georgia, 'Times New Roman', serif"} fontSize="72" fontWeight="700" fill="#C8973A">R</text>
     </svg>
   );
+}
+
+// === LOADING & THINKING ANIMATIONS ===
+// Perceived-performance toolkit. Every AI wait in the app funnels through these
+// pieces so waiting reads as Richard visibly working, not a stalled screen:
+// typing dots, a rotating "what I'm doing right now" phrase, and a staged
+// checklist with a progress bar that always moves forward, never runs backwards,
+// and only finishes when the real work returns.
+function ensureLoadingCss() {
+  var id = "richy-loading-css";
+  if (document.getElementById(id)) return;
+  var st = document.createElement("style"); st.id = id;
+  st.textContent = [
+    "@keyframes rclDot{0%,60%,100%{transform:translateY(0);opacity:0.35}30%{transform:translateY(-4px);opacity:1}}",
+    "@keyframes rclPhrase{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}",
+    "@keyframes rclBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.055)}}",
+    "@keyframes rclGlow{0%,100%{opacity:0.45;transform:scale(0.92)}50%{opacity:0.95;transform:scale(1.18)}}",
+    "@keyframes rclSheen{from{transform:translateX(-130%)}to{transform:translateX(430%)}}",
+    "@keyframes rclPing{from{opacity:0.55;transform:scale(0.6)}to{opacity:0;transform:scale(2.1)}}",
+    "@keyframes rclPop{0%{transform:scale(0.5)}60%{transform:scale(1.18)}100%{transform:scale(1)}}",
+    "@media (prefers-reduced-motion:reduce){*{animation-duration:0.001s!important;animation-iteration-count:1!important;transition-duration:0.001s!important}}",
+  ].join("");
+  document.head.appendChild(st);
+}
+
+// iMessage-style typing dots.
+function ThinkingDots(props) {
+  useEffect(function() { ensureLoadingCss(); }, []);
+  var s = props.size || 5;
+  var c = props.color || T.ink3;
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: Math.max(2.5, s * 0.6) }}>
+      {[0, 0.16, 0.32].map(function(d) {
+        return <span key={d} style={{ width: s, height: s, borderRadius: "50%", background: c, display: "inline-block", animation: "rclDot 1.15s ease-in-out " + d + "s infinite" }} />;
+      })}
+    </span>
+  );
+}
+
+// Cycles through short status phrases so a wait reads as visible work.
+function ThinkingPhrase(props) {
+  var phrases = (props.phrases && props.phrases.length) ? props.phrases : [tr("thinkP1"), tr("thinkP2"), tr("thinkP3"), tr("thinkP4")];
+  var _i = useState(0); var i = _i[0]; var setI = _i[1];
+  useEffect(function() {
+    ensureLoadingCss();
+    var iv = setInterval(function() { setI(function(n) { return n + 1; }); }, props.interval || 2100);
+    return function() { clearInterval(iv); };
+  }, [phrases.length]);
+  return <span key={i} style={{ display: "inline-block", animation: "rclPhrase 0.4s ease both" }}>{phrases[i % phrases.length]}</span>;
+}
+
+// Chat-bubble thinking indicator: typing dots plus a live status phrase.
+// Drop-in replacement for the old static "..." bubbles.
+function RichardThinking(props) {
+  var size = props.size || 13.5;
+  return (
+    <div style={{ display: "flex", justifyContent: "flex-start" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, background: "rgba(0,0,0,0.05)", borderRadius: props.radius || "4px 16px 16px 16px", padding: "10px 14px", animation: "rclPhrase 0.3s ease both" }}>
+        <ThinkingDots size={Math.round(size * 0.36 * 10) / 10} color={T.orange} />
+        <span style={{ fontSize: size - 0.5, color: T.ink3, fontWeight: 600, fontFamily: UI }}>
+          <ThinkingPhrase phrases={props.phrases} />
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// Staged "Richard is working" panel: breathing avatar, steps that check off one
+// by one on a pace matched to the request, and an asymptotic progress bar that
+// eases toward done but never quite arrives until the response does. The steps
+// are theater - the request is one round trip - but they mirror what the model
+// is actually asked to do, and the wait feels shorter when the work is visible.
+function AIWorking(props) {
+  useEffect(function() { ensureLoadingCss(); }, []);
+  var steps = props.steps || [];
+  var expected = props.expectedMs || 9000;
+  var _t = useState(0); var t = _t[0]; var setT = _t[1];
+  useEffect(function() {
+    var start = Date.now();
+    var iv = setInterval(function() { setT(Date.now() - start); }, 120);
+    return function() { clearInterval(iv); };
+  }, []);
+  var pct = Math.min(94, 100 * (1 - Math.exp(-t / (expected * 0.55))));
+  var doneCount = 0;
+  for (var i = 0; i < steps.length - 1; i++) {
+    if (t > (expected * (i + 1)) / (steps.length + 0.4)) doneCount = i + 1;
+  }
+  var compact = !!props.compact;
+  var inner = (
+    <div style={{ textAlign: "center" }}>
+      {!compact && (
+        <div style={{ position: "relative", width: 54, height: 54, margin: "0 auto 16px" }}>
+          <div style={{ position: "absolute", inset: -8, borderRadius: "50%", background: "radial-gradient(circle," + T.orangeGlow + " 0%, transparent 70%)", filter: "blur(6px)", animation: "rclGlow 2.4s ease-in-out infinite" }} />
+          <div style={{ position: "relative", width: 54, height: 54, borderRadius: 18, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 26px " + T.orangeGlow, animation: "rclBreathe 2.4s ease-in-out infinite" }}>
+            <SVGIcon id="spark" size={26} color="#fff" />
+          </div>
+        </div>
+      )}
+      {props.title && <div style={{ fontSize: compact ? 13.5 : 15.5, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>{props.title}</div>}
+      {props.sub && <div style={{ fontSize: compact ? 12 : 13, color: T.ink3, marginTop: 4 }}>{props.sub}</div>}
+      <div style={{ height: 5, borderRadius: 999, background: "rgba(0,0,0,0.07)", marginTop: compact ? 12 : 18, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: pct + "%", borderRadius: 999, background: "linear-gradient(90deg," + T.orangeHi + "," + T.orange + ")", transition: "width 0.35s ease", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: 0, bottom: 0, width: "38%", background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent)", animation: "rclSheen 1.6s ease-in-out infinite" }} />
+        </div>
+      </div>
+      {steps.length > 0 && (
+        <div style={{ marginTop: compact ? 12 : 16, display: "flex", flexDirection: "column", gap: compact ? 7 : 9, textAlign: "left" }}>
+          {steps.map(function(label, idx) {
+            var done = idx < doneCount;
+            var active = idx === doneCount;
+            return (
+              <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, animation: "rclPhrase 0.4s ease " + (idx * 0.07) + "s both", opacity: done || active ? 1 : 0.45 }}>
+                <span style={{ position: "relative", width: 17, height: 17, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {done && (
+                    <span style={{ width: 17, height: 17, borderRadius: "50%", background: T.green, display: "flex", alignItems: "center", justifyContent: "center", animation: "rclPop 0.35s ease both" }}>
+                      <SVGIcon id="check" size={10} color="#fff" />
+                    </span>
+                  )}
+                  {active && (
+                    <span style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ position: "absolute", width: 15, height: 15, borderRadius: "50%", background: T.orange, animation: "rclPing 1.5s ease-out infinite" }} />
+                      <span style={{ position: "relative", width: 8, height: 8, borderRadius: "50%", background: T.orange }} />
+                    </span>
+                  )}
+                  {!done && !active && <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.ink3 }} />}
+                </span>
+                <span style={{ fontSize: compact ? 12.5 : 13, fontWeight: active ? 650 : 500, color: done ? T.ink3 : active ? T.ink : T.ink3, letterSpacing: "-0.005em" }}>{label}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+  if (props.bare) return <div style={props.style}>{inner}</div>;
+  return <Card style={Object.assign({ padding: compact ? "18px 18px" : "30px 22px 26px" }, props.style)}>{inner}</Card>;
+}
+
+// Full-screen boot splash shown while auth resolves: breathing logo, soft halo,
+// wordmark, typing dots. Replaces the old static logo square.
+function BootSplash() {
+  useEffect(function() { ensureLoadingCss(); }, []);
+  return (
+    <div style={{ minHeight: "100vh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI }}>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ position: "relative", width: 64, height: 64, margin: "0 auto" }}>
+          <div style={{ position: "absolute", inset: -12, borderRadius: "50%", background: "radial-gradient(circle," + T.orangeGlow + " 0%, transparent 70%)", filter: "blur(8px)", animation: "rclGlow 2.2s ease-in-out infinite" }} />
+          <div style={{ position: "relative", width: 64, height: 64, borderRadius: 20, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 12px 32px " + T.orangeGlow, animation: "rclBreathe 2.2s ease-in-out infinite" }}>
+            <SVGIcon id="spark" size={30} color="#fff" />
+          </div>
+        </div>
+        <div style={{ fontSize: 19, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em", marginTop: 18, animation: "rclPhrase 0.6s ease 0.15s both" }}>Richy</div>
+        <div style={{ marginTop: 14, animation: "rclPhrase 0.6s ease 0.3s both" }}>
+          <ThinkingDots size={5} color={T.ink3} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Streams Richard's reply in word by word - the "live answer" feel of the big
+// AI apps - instead of popping the finished text in at once. Only the message
+// flagged by props.animate streams; history renders instantly.
+function TypeReveal(props) {
+  var full = props.text || "";
+  var words = full.split(/(\s+)/);
+  var _n = useState(props.animate ? 2 : words.length); var n = _n[0]; var setN = _n[1];
+  useEffect(function() {
+    if (!props.animate) { setN(words.length); return; }
+    var step = Math.max(2, Math.round(words.length / 55)); // long answers stream faster; ~3s cap
+    var iv = setInterval(function() {
+      setN(function(cur) {
+        var next = cur + step;
+        if (next >= words.length) {
+          clearInterval(iv);
+          if (props.onDone) props.onDone();
+          return words.length;
+        }
+        if (props.onTick) props.onTick();
+        return next;
+      });
+    }, 60);
+    return function() { clearInterval(iv); };
+  }, [full]);
+  var partial = words.slice(0, n).join("");
+  // Keep a bold run open mid-stream so unpaired ** never flashes as raw text.
+  if (((partial.match(/\*\*/g) || []).length) % 2 === 1) partial += "**";
+  return <RichardText text={partial} size={props.size} color={props.color} />;
 }
 
 function SVGIcon(props) {
@@ -1086,7 +1274,7 @@ function AmountField(props) {
         <span style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI }}>{tr("amount")}</span>
         {foreign && (
           <span style={{ fontSize: 12, fontWeight: 700, color: T.ink2, fontFamily: UI, letterSpacing: "-0.01em" }}>
-            {props.rateLoading ? "..." : ("= " + fmtCur(props.mainSym, conv))}
+            {props.rateLoading ? <ThinkingDots size={3} color={T.ink3} /> : ("= " + fmtCur(props.mainSym, conv))}
           </span>
         )}
       </div>
@@ -1558,7 +1746,7 @@ function AuthScreen(props) {
               onClick={step === "login" ? login : step === "signup_email" ? sendCode : step === "signup_details" ? goToPrefs : step === "forgot_password" ? sendPasswordReset : finishSignup}
               disabled={busy}
               style={{ width: "100%", background: busy ? "rgba(0,0,0,0.08)" : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: busy ? T.ink3 : "#fff", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: busy ? "default" : "pointer", marginTop: 16, boxShadow: busy ? "none" : "0 6px 20px " + T.orangeGlow + ", 0 2px 6px rgba(0,0,0,0.1)", letterSpacing: "-0.01em" }}>
-              {busy ? "Please wait..."
+              {busy ? <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>Please wait<ThinkingDots size={4.5} color={T.ink3} /></span>
                 : step === "login" ? "Sign In"
                 : step === "signup_email" ? "Continue"
                 : step === "signup_details" ? "Continue"
@@ -1744,14 +1932,12 @@ function OnboardingScreen(props) {
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI }}>
-        <div style={{ textAlign: "center", padding: "0 32px" }}>
-          <div style={{ width: 64, height: 64, borderRadius: 22, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 22px", boxShadow: "0 12px 32px " + T.orangeGlow }}>
-            <SVGIcon id="spark" size={30} color="#fff" />
-          </div>
-          <div style={{ fontSize: 21, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.3 }}>
-            Richard is building your plan...
-          </div>
-          <div style={{ fontSize: 14, color: T.ink3, marginTop: 10 }}>This takes just a moment.</div>
+        <div style={{ width: "100%", maxWidth: 320, padding: "0 32px" }}>
+          <AIWorking bare
+            title="Richard is building your plan"
+            sub="Tailored to your answers - not a template."
+            expectedMs={12000}
+            steps={["Reading your answers", "Shaping your monthly budgets", "Stress-testing the numbers", "Polishing your plan"]} />
         </div>
       </div>
     );
@@ -2163,7 +2349,10 @@ function FoundMoney(props) {
           <div style={{ background: "rgba(200,103,58,0.06)", borderRadius: 14, padding: "12px 14px", marginBottom: 14 }}>
             <div style={{ fontSize: 10.5, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Richard</div>
             {narrLoading
-              ? <div style={{ fontSize: 13.5, color: T.ink3, fontStyle: "italic" }}>Reviewing your spending...</div>
+              ? <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, color: T.ink3, fontWeight: 600 }}>
+                  <ThinkingDots size={4} color={T.orange} />
+                  <ThinkingPhrase phrases={["Reviewing your spending", "Cross-checking the charges", "Writing it up"]} />
+                </div>
               : <RichardText text={narr} size={13.5} />}
           </div>
         )}
@@ -2191,7 +2380,10 @@ function FoundMoney(props) {
                   {draft && draft.id === f.id && (
                     <div style={{ marginTop: 11, background: "rgba(0,0,0,0.035)", borderRadius: 12, padding: "11px 13px" }}>
                       {draft.loading
-                        ? <div style={{ fontSize: 13, color: T.ink3, fontStyle: "italic" }}>Richard is writing it...</div>
+                        ? <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: T.ink3, fontWeight: 600 }}>
+                            <ThinkingDots size={3.5} color={T.orange} />
+                            <ThinkingPhrase phrases={["Drafting your message", "Keeping it polite but firm", "Almost there"]} />
+                          </div>
                         : <div>
                             <div style={{ fontSize: 13, color: T.ink, lineHeight: 1.55, whiteSpace: "pre-wrap" }}>{draft.text}</div>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 10 }}>
@@ -5603,11 +5795,7 @@ function Trips(props) {
                           </div>
                         );
                       })}
-                      {wizardNoteLoading && (
-                        <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                          <div style={{ background: "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13, color: T.ink3, fontFamily: UI }}>...</div>
-                        </div>
-                      )}
+                      {wizardNoteLoading && <RichardThinking size={13} radius={12} />}
                     </div>
                   )}
                   <div style={{ display: "flex", gap: 8 }}>
@@ -5765,11 +5953,7 @@ function Trips(props) {
                   </div>
                 );
               })}
-              {tripNoteLoading && (
-                <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                  <div style={{ background: "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13.5, color: T.ink3, fontFamily: UI }}>...</div>
-                </div>
-              )}
+              {tripNoteLoading && <RichardThinking size={13.5} radius={12} />}
             </div>
           )}
           <div style={{ display: "flex", gap: 8, padding: "10px 12px" }}>
@@ -6163,8 +6347,15 @@ function BigDecisions(props) {
         </div>
 
         <button onClick={function() { ask(); }} disabled={loading || !q.trim()} style={{ width: "100%", marginTop: 12, background: (loading || !q.trim()) ? "rgba(0,0,0,0.10)" : T.btn, color: (loading || !q.trim()) ? T.ink3 : "#fff", border: "none", borderRadius: 14, padding: "14px 0", fontSize: 15.5, fontFamily: UI, fontWeight: 700, cursor: (loading || !q.trim()) ? "default" : "pointer", boxShadow: (loading || !q.trim()) ? "none" : "0 6px 20px " + T.orangeGlow }}>
-          {loading ? "Richard is weighing it..." : "Get Richard's verdict"}
+          {loading
+            ? <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>Richard is weighing it<ThinkingDots size={4} color={T.ink3} /></span>
+            : "Get Richard's verdict"}
         </button>
+
+        {loading && (
+          <AIWorking compact style={{ marginTop: 12 }} expectedMs={7000}
+            steps={["Running your real numbers", "Weighing the trade-off", "Writing the verdict"]} />
+        )}
 
         {err && <div style={{ fontSize: 12.5, color: T.red, background: "rgba(224,48,48,0.08)", borderRadius: 10, padding: "9px 12px", marginTop: 12 }}>{err}</div>}
 
@@ -6203,6 +6394,18 @@ function Advisor(props) {
   var input = _in[0]; var setInput = _in[1];
   var _cl = useState(false);
   var chatLoading = _cl[0]; var setChatLoading = _cl[1];
+  // Index of the just-arrived assistant message: only that one streams in via
+  // TypeReveal; history and remounts render instantly.
+  var animMsgRef = useRef(-1);
+  var chatScrollRef = useRef(null);
+  function pinChatScroll() {
+    var el = chatScrollRef.current;
+    if (el && el.scrollHeight - el.scrollTop - el.clientHeight < 90) el.scrollTop = el.scrollHeight;
+  }
+  useEffect(function() {
+    var el = chatScrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [chat.length, chatLoading]);
   // Previous-chats history overlay. The live `chat` above is the current session;
   // archived sessions come in via props.chats and persist through props.onSaveChats.
   var _hist = useState(false);
@@ -6915,7 +7118,7 @@ function Advisor(props) {
           display = display ? display + "\n\n" + cue : cue;
         }
         if (!display) display = "Got it - I've noted that below. Tap Apply to update your app.";
-        setChat(function(p) { return p.concat([{ role: "assistant", text: display }]); });
+        setChat(function(p) { animMsgRef.current = p.length; return p.concat([{ role: "assistant", text: display }]); });
         if (updates.length > 0) {
           setPendingUpdates(updates);
           setPendingAction(null);
@@ -7412,10 +7615,19 @@ function Advisor(props) {
       )}
 
       {loading && (
-        <Card style={{ padding: "44px 22px", margin: "16px 0 20px", textAlign: "center" }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: T.ink2 }}>{tr("analyzingFinances")}</div>
-          <div style={{ fontSize: 13, color: T.ink3, marginTop: 4 }}>{tr("fewSeconds")}</div>
-        </Card>
+        <AIWorking
+          style={{ margin: "16px 0 20px" }}
+          title={tr("analyzingFinances")}
+          sub={tr("fewSeconds")}
+          expectedMs={10000}
+          steps={[
+            tr("anStep1"),
+            (props.tx || []).length > 0 ? tr("anStep2").replace("{n}", (props.tx || []).length) : tr("anStep2").replace("{n} ", "").replace("{n}", ""),
+            tr("anStep3"),
+            tr("anStep4"),
+            tr("anStep5"),
+          ]}
+        />
       )}
 
       {advice && !advice.error && (
@@ -7489,22 +7701,18 @@ function Advisor(props) {
       </div>
       <Card style={{ overflow: "hidden", marginBottom: 24 }}>
         {chat.length > 0 && (
-          <div style={{ maxHeight: 300, overflowY: "auto", padding: "16px 14px 4px", display: "flex", flexDirection: "column", gap: 10 }}>
+          <div ref={chatScrollRef} style={{ maxHeight: 300, overflowY: "auto", padding: "16px 14px 4px", display: "flex", flexDirection: "column", gap: 10 }}>
             {chat.map(function(m, i) {
               var u = m.role === "user";
               return (
                 <div key={i} style={{ display: "flex", justifyContent: u ? "flex-end" : "flex-start" }}>
                   <div style={{ maxWidth: "84%", padding: "11px 14px", fontSize: 13.5, lineHeight: 1.5, whiteSpace: "pre-wrap", borderRadius: u ? "16px 16px 4px 16px" : "4px 16px 16px 16px", background: u ? "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.045)", color: u ? "#fff" : T.ink, boxShadow: u ? "0 4px 14px rgba(137,112,198,0.22)" : "none" }}>
-                    {u ? m.text : <RichardText text={m.text} size={13.5} />}
+                    {u ? m.text : <TypeReveal text={m.text} size={13.5} animate={i === animMsgRef.current} onTick={pinChatScroll} onDone={function() { animMsgRef.current = -1; }} />}
                   </div>
                 </div>
               );
             })}
-            {chatLoading && (
-              <div style={{ padding: "11px 14px", background: "rgba(0,0,0,0.045)", borderRadius: "4px 16px 16px 16px", width: "fit-content", fontSize: 13.5, color: T.ink3 }}>
-                {tr("thinking")}
-              </div>
-            )}
+            {chatLoading && <RichardThinking size={13.5} />}
           </div>
         )}
         {chat.length === 0 && (
@@ -8865,6 +9073,8 @@ function BusinessView(props) {
   var _de = useState({}); var detailEdits = _de[0]; var setDetailEdits = _de[1];
   var _bi = useState(""); var chatInput = _bi[0]; var setChatInput = _bi[1];
   var _bl = useState(false); var chatLoading = _bl[0]; var setChatLoading = _bl[1];
+  // Text of the just-arrived CFO reply - only that message streams in.
+  var animBizRef = useRef(null);
   var _rp2 = useState(false); var replanning = _rp2[0]; var setReplanning = _rp2[1];
   var _del = useState(null); var deleteConfirm = _del[0]; var setDeleteConfirm = _del[1];
   var _delOut = useState(null); var deleteOutrightConfirm = _delOut[0]; var setDeleteOutrightConfirm = _delOut[1];
@@ -9409,6 +9619,7 @@ function BusinessView(props) {
       }
       var thread = nc.concat([{ role: "richard", text: parsed.text }]);
       chips.forEach(function(cp) { thread = thread.concat([{ role: "system", text: cp }]); });
+      animBizRef.current = parsed.text;
       patch.chat = thread.slice(-30);
       props.onSaveBusinesses(patchBiz(biz.id, patch));
       if (stageTo) {
@@ -9600,9 +9811,12 @@ function BusinessView(props) {
           {backRow("Back", function() { setStep(3); })}
           <Card style={{ padding: "18px 18px 20px" }}>
             {planning ? (
-              <div style={{ padding: "34px 10px", textAlign: "center" }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>Richard is building your plan...</div>
-                <div style={{ fontSize: 13, color: T.ink3, marginTop: 5 }}>Drafting your strategy and operating budget.</div>
+              <div style={{ padding: "24px 10px 16px" }}>
+                <AIWorking bare
+                  title="Richard is building your plan"
+                  sub="Strategy first, then your operating budget."
+                  expectedMs={12000}
+                  steps={["Reading your setup", "Sizing the operating budget", "Drafting the strategy", "Writing the verdict"]} />
               </div>
             ) : planResult ? (
               <div>
@@ -9670,11 +9884,7 @@ function BusinessView(props) {
                           </div>
                         );
                       })}
-                      {wizLoading && (
-                        <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                          <div style={{ background: "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13, color: T.ink3, fontFamily: UI }}>...</div>
-                        </div>
-                      )}
+                      {wizLoading && <RichardThinking size={13} radius={12} />}
                     </div>
                   )}
                   <div style={{ display: "flex", gap: 8 }}>
@@ -9982,8 +10192,13 @@ function BusinessView(props) {
               </div>
               {reviewLoading && !latest && (
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: T.ink2 }}>Richard is running your weekly review...</div>
-                  <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3 }}>Real numbers in, honest read out.</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 600, color: T.ink2 }}>
+                    Richard is running your weekly review
+                    <ThinkingDots size={3.5} color={T.orange} />
+                  </div>
+                  <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3 }}>
+                    <ThinkingPhrase phrases={["Pulling this month's numbers", "Comparing to last week", "Writing the honest read"]} />
+                  </div>
                   <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "45%", background: "linear-gradient(105deg, transparent, rgba(255,255,255,0.5), transparent)", animation: "rcShimmer 1.4s ease infinite", pointerEvents: "none" }} />
                 </div>
               )}
@@ -9991,7 +10206,7 @@ function BusinessView(props) {
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                     <span style={{ fontSize: 11, fontWeight: 700, color: stColor, background: stBg, borderRadius: 999, padding: "4px 11px", letterSpacing: "0.03em" }}>{stLabel}</span>
-                    {reviewLoading && <span style={{ fontSize: 11, color: T.ink3 }}>updating...</span>}
+                    {reviewLoading && <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, color: T.ink3 }}>updating<ThinkingDots size={2.5} color={T.ink3} /></span>}
                   </div>
                   <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, lineHeight: 1.4, marginBottom: 6 }}>{latest.headline}</div>
                   {rows.map(function(r, i) {
@@ -10026,7 +10241,7 @@ function BusinessView(props) {
                   )}
                   <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
                     <button onClick={function() { fetchIdeas(biz); }} disabled={ideasLoading}
-                      style={{ flex: 1, background: T.orangeDim, border: "none", borderRadius: 10, padding: "10px 0", fontSize: 12.5, fontWeight: 700, color: T.orange, cursor: ideasLoading ? "default" : "pointer", fontFamily: UI }}>{ideasLoading ? "Thinking..." : "Get growth ideas"}</button>
+                      style={{ flex: 1, background: T.orangeDim, border: "none", borderRadius: 10, padding: "10px 0", fontSize: 12.5, fontWeight: 700, color: T.orange, cursor: ideasLoading ? "default" : "pointer", fontFamily: UI }}>{ideasLoading ? <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>Thinking<ThinkingDots size={3.5} color={T.orange} /></span> : "Get growth ideas"}</button>
                     {reviews.length > 1 && (
                       <button onClick={function() { setPastOpen(!pastOpen); }}
                         style={{ flex: 1, background: "none", border: "1.5px solid " + T.sep, borderRadius: 10, padding: "10px 0", fontSize: 12.5, fontWeight: 600, color: T.ink2, cursor: "pointer", fontFamily: UI }}>{pastOpen ? "Hide past reviews" : "Past reviews (" + (reviews.length - 1) + ")"}</button>
@@ -10073,8 +10288,13 @@ function BusinessView(props) {
             return (
               <Card style={{ padding: "18px", marginBottom: 16, position: "relative", overflow: "hidden", animation: "rcFadeUp 0.55s ease 0.06s both" }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Roadmap</div>
-                <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, marginTop: 8 }}>Richard is drafting your roadmap...</div>
-                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3, lineHeight: 1.45 }}>Clear milestones with concrete steps - a path from here to a working business.</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14.5, fontWeight: 700, color: T.ink, marginTop: 8 }}>
+                  Richard is drafting your roadmap
+                  <ThinkingDots size={3.5} color={T.orange} />
+                </div>
+                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3, lineHeight: 1.45 }}>
+                  <ThinkingPhrase phrases={["Reading where the business stands", "Laying out the milestones", "Breaking them into concrete steps"]} />
+                </div>
                 <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "45%", background: "linear-gradient(105deg, transparent, rgba(255,255,255,0.5), transparent)", animation: "rcShimmer 1.4s ease infinite", pointerEvents: "none" }} />
               </Card>
             );
@@ -10116,7 +10336,7 @@ function BusinessView(props) {
                   <span style={{ fontSize: 12, fontWeight: 700, color: T.ink2 }}>{prog.done + " of " + prog.total}</span>
                   {rm.source === "local" && (
                     <button onClick={function() { regenRoadmap(biz); }} disabled={roadmapBuilding}
-                      style={{ background: T.orangeDim, border: "none", borderRadius: 9, padding: "5px 10px", fontSize: 11, fontWeight: 700, color: T.orange, cursor: roadmapBuilding ? "default" : "pointer", fontFamily: UI }}>{roadmapBuilding ? "..." : "Ask Richard"}</button>
+                      style={{ background: T.orangeDim, border: "none", borderRadius: 9, padding: "5px 10px", fontSize: 11, fontWeight: 700, color: T.orange, cursor: roadmapBuilding ? "default" : "pointer", fontFamily: UI }}>{roadmapBuilding ? <ThinkingDots size={3.5} color={T.orange} /> : "Ask Richard"}</button>
                   )}
                 </div>
               </div>
@@ -10293,7 +10513,7 @@ function BusinessView(props) {
               <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Have Richard draft a business plan and budget for you.</div>
             </div>
             <button onClick={function() { replanWithRichard(biz); }} disabled={replanning}
-              style={{ background: T.btn, border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: replanning ? "default" : "pointer", fontFamily: UI, flexShrink: 0 }}>{replanning ? "..." : "Ask Richard"}</button>
+              style={{ background: T.btn, border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: replanning ? "default" : "pointer", fontFamily: UI, flexShrink: 0 }}>{replanning ? <ThinkingDots size={3.5} color="#fff" /> : "Ask Richard"}</button>
           </Card>
         )}
 
@@ -10392,16 +10612,12 @@ function BusinessView(props) {
                 return (
                   <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
                     <div style={{ maxWidth: "82%", background: isUser ? T.orange : "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13.5, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
-                      {isUser ? m.text : <RichardText text={m.text} size={13.5} />}
+                      {isUser ? m.text : <TypeReveal text={m.text} size={13.5} animate={m.role === "richard" && m.text === animBizRef.current} onDone={function() { animBizRef.current = null; }} />}
                     </div>
                   </div>
                 );
               })}
-              {chatLoading && (
-                <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                  <div style={{ background: "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13.5, color: T.ink3, fontFamily: UI }}>...</div>
-                </div>
-              )}
+              {chatLoading && <RichardThinking size={13.5} radius={12} />}
             </div>
           )}
           <div style={{ display: "flex", gap: 8, padding: "10px 12px" }}>
@@ -11237,7 +11453,7 @@ function PlanView(props) {
             {props.lang && props.lang !== "en" && (
               <button onClick={translatePlan}
                 style={{ fontSize: 11, color: T.orange, background: "none", border: "none", cursor: "pointer", fontFamily: UI, fontWeight: 600, padding: 0, opacity: translatingPlan ? 0.5 : 1 }}>
-                {translatingPlan ? "..." : tr("translate")}
+                {translatingPlan ? <ThinkingDots size={3} color={T.orange} /> : tr("translate")}
               </button>
             )}
           </div>
@@ -11264,8 +11480,8 @@ function PlanView(props) {
             );
           })}
           {loading && (
-            <div style={{ display: "flex", justifyContent: "flex-start", marginTop: 10 }}>
-              <div style={{ background: "rgba(0,0,0,0.05)", borderRadius: 14, padding: "9px 13px", fontSize: 14, color: T.ink3, fontFamily: UI }}>...</div>
+            <div style={{ marginTop: 10 }}>
+              <RichardThinking size={14} radius={14} />
             </div>
           )}
         </Card>
@@ -12016,13 +12232,7 @@ export default function App() {
   }
 
   if (cloudReady() && !authChecked) {
-    return (
-      <div style={{ minHeight: "100vh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI }}>
-        <div style={{ width: 64, height: 64, borderRadius: 20, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 12px 32px " + T.orangeGlow }}>
-          <SVGIcon id="spark" size={30} color="#fff" />
-        </div>
-      </div>
-    );
+    return <BootSplash />;
   }
 
   if (!user) return <AuthScreen onLogin={handleLogin} />;
