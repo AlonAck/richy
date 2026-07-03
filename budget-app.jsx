@@ -5204,6 +5204,8 @@ function Trips(props) {
   var _wnc = useState([]); var wizardNoteChat = _wnc[0]; var setWizardNoteChat = _wnc[1];
   var _wni = useState(""); var wizardNoteInput = _wni[0]; var setWizardNoteInput = _wni[1];
   var _wnl = useState(false); var wizardNoteLoading = _wnl[0]; var setWizardNoteLoading = _wnl[1];
+  // Text of the just-arrived Richard reply (wizard or trip chat) - only that message streams in.
+  var animTripRef = useRef(null);
   var _ba = useState(null); var budgetAssessment = _ba[0]; var setBudgetAssessment = _ba[1];
   var _acf = useState(null); var addCatFor = _acf[0]; var setAddCatFor = _acf[1];
   var _acfm = useState({ label: "", icon: "box" }); var addCatForm = _acfm[0]; var setAddCatForm = _acfm[1];
@@ -5274,6 +5276,7 @@ function Trips(props) {
         var parsed = extractAllocDirective(reply);
         var applied = false;
         if (parsed.allocations) { applied = applyAllocToWizard(parsed.allocations); }
+        animTripRef.current = parsed.text;
         setWizardNoteChat(function(p) {
           var next = p.concat([{ role: "richard", text: parsed.text }]);
           if (applied) next = next.concat([{ role: "system", text: "Budget split updated" }]);
@@ -5325,6 +5328,7 @@ function Trips(props) {
         var parsed = extractAllocDirective(reply);
         var applied = false;
         if (parsed.allocations) { applied = applyAllocToTrip(trip, parsed.allocations); }
+        animTripRef.current = parsed.text;
         setTripNoteChats(function(p) {
           var n = {}; for (var k in p) n[k] = p[k];
           var thread = (p[trip.id] || []).concat([{ role: "richard", text: parsed.text }]);
@@ -5790,7 +5794,7 @@ function Trips(props) {
                         return (
                           <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
                             <div style={{ maxWidth: "82%", background: isUser ? T.orange : "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
-                              {isUser ? m.text : <RichardText text={m.text} size={13} />}
+                              {isUser ? m.text : <TypeReveal text={m.text} size={13} animate={m.role === "richard" && m.text === animTripRef.current} onDone={function() { animTripRef.current = null; }} />}
                             </div>
                           </div>
                         );
@@ -5948,7 +5952,7 @@ function Trips(props) {
                 return (
                   <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
                     <div style={{ maxWidth: "82%", background: isUser ? T.orange : "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13.5, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
-                      {isUser ? m.text : <RichardText text={m.text} size={13.5} />}
+                      {isUser ? m.text : <TypeReveal text={m.text} size={13.5} animate={m.role === "richard" && m.text === animTripRef.current} onDone={function() { animTripRef.current = null; }} />}
                     </div>
                   </div>
                 );
@@ -9397,6 +9401,7 @@ function BusinessView(props) {
       var parsed = extractAllocDirective(reply);
       var applied = false;
       if (parsed.allocations) { applied = applyAllocToWizard(parsed.allocations); }
+      animBizRef.current = parsed.text;
       setWizChat(function(p) { var next = p.concat([{ role: "richard", text: parsed.text }]); if (applied) next = next.concat([{ role: "system", text: "Budget updated" }]); return next; });
     });
   }
@@ -9879,7 +9884,7 @@ function BusinessView(props) {
                         return (
                           <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
                             <div style={{ maxWidth: "82%", background: isUser ? T.orange : "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
-                              {isUser ? m.text : <RichardText text={m.text} size={13} />}
+                              {isUser ? m.text : <TypeReveal text={m.text} size={13} animate={m.role === "richard" && m.text === animBizRef.current} onDone={function() { animBizRef.current = null; }} />}
                             </div>
                           </div>
                         );
@@ -11347,6 +11352,8 @@ function PlanView(props) {
   var _msgs = useState([]); var msgs = _msgs[0]; var setMsgs = _msgs[1];
   var _inp = useState(""); var input = _inp[0]; var setInput = _inp[1];
   var _load = useState(false); var loading = _load[0]; var setLoading = _load[1];
+  // Text of the just-arrived Richard reply - only that message streams in.
+  var animPlanRef = useRef(null);
   var _pa = useState(null); var pendingAction = _pa[0]; var setPendingAction = _pa[1];
   var _tp = useState(false); var translatingPlan = _tp[0]; var setTranslatingPlan = _tp[1];
 
@@ -11416,6 +11423,7 @@ function PlanView(props) {
       var text = err || !reply ? "Sorry, I could not connect. Try again." : reply;
       var action = parseAction(text);
       var clean = cleanText(text);
+      animPlanRef.current = clean;
       setMsgs(function(prev) { return prev.concat([{ role: "richard", text: clean }]); });
       if (action) setPendingAction(action);
       setLoading(false);
@@ -11474,7 +11482,7 @@ function PlanView(props) {
             return (
               <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start", marginBottom: i < msgs.length - 1 ? 10 : 0 }}>
                 <div style={{ maxWidth: "82%", background: isUser ? T.orange : "rgba(0,0,0,0.05)", borderRadius: 14, padding: "9px 13px", fontSize: 14, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
-                  {isUser ? m.text : <RichardText text={m.text} size={14} />}
+                  {isUser ? m.text : <TypeReveal text={m.text} size={14} animate={m.role === "richard" && m.text === animPlanRef.current} onDone={function() { animPlanRef.current = null; }} />}
                 </div>
               </div>
             );
