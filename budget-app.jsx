@@ -12069,26 +12069,32 @@ export default function App() {
         {currentTab === "instructions" && <RichardInstructionsView value={richardInstructions} onSave={function(text) { onSaveInstructions(text); setTab(prevTabRef.current || "profile"); }} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
       </div>
 
-      <div style={{ position: "fixed", bottom: "calc(20px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", width: "calc(100% - 32px)", maxWidth: 398, zIndex: 30, background: T.navGlass, backdropFilter: "blur(28px) saturate(190%) brightness(1.08)", WebkitBackdropFilter: "blur(28px) saturate(190%) brightness(1.08)", borderRadius: 34, border: "1px solid " + T.glassBorder, boxShadow: "0 12px 40px rgba(0,0,0,0.18), 0 2px 10px rgba(0,0,0,0.08), inset 0 1px 0.5px " + T.navRimTop + ", inset 0 -1px 0.5px " + T.navRimBot }}>
-        {/* Specular sheen — the curved-glass glare across the top of the bar. Self-clips
-            via its own border radius (no overflow:hidden, so the active lens shadow
-            isn't cropped). Sits below the buttons in paint order. */}
-        <div style={{ position: "absolute", inset: 0, borderRadius: 34, pointerEvents: "none", background: "linear-gradient(180deg, " + T.navSheen + " 0%, rgba(255,255,255,0) 42%, rgba(255,255,255,0) 100%)" }} />
-        <div style={{ position: "relative", display: "flex", justifyContent: "space-around", padding: "10px 4px 12px" }}>
-          {TABS.map(function(tab) {
-            var active = currentTab === tab.id;
-            return (
-              <button key={tab.id} onClick={function() { setTab(tab.id); setSheet(false); }}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "4px 4px", flex: 1, minWidth: 0 }}>
-                <div style={{ background: active ? T.navPillGlass : "none", borderRadius: 22, padding: active ? "6px 12px" : "6px 9px", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.22s cubic-bezier(0.22,1,0.36,1)", backdropFilter: active ? "blur(8px) saturate(200%) brightness(1.18)" : "none", WebkitBackdropFilter: active ? "blur(8px) saturate(200%) brightness(1.18)" : "none", boxShadow: active ? ("inset 0 1px 0.5px " + T.navPillRim + ", inset 0 -1px 1px " + T.navPillShade + ", 0 2px 7px rgba(0,0,0,0.12)") : "none" }}>
-                  <SVGIcon id={tab.id} size={21} color={active ? T.orange : T.ink3} />
-                </div>
-                <span style={{ fontSize: 9.5, fontWeight: active ? 700 : 400, color: active ? T.orange : T.ink3, letterSpacing: "0.005em", whiteSpace: "nowrap" }}>
-                  {tr(tab.id)}
-                </span>
-              </button>
-            );
-          })}
+      {/* Outer wrapper only does fixed positioning — no backdrop-filter here.
+          iOS/WebKit will detach a position:fixed element from the viewport
+          during scroll if backdrop-filter lives on that same element, so the
+          glass blur is applied to an inner div instead. */}
+      <div style={{ position: "fixed", bottom: "calc(20px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", width: "calc(100% - 32px)", maxWidth: 398, zIndex: 30 }}>
+        <div style={{ position: "relative", background: T.navGlass, backdropFilter: "blur(28px) saturate(190%) brightness(1.08)", WebkitBackdropFilter: "blur(28px) saturate(190%) brightness(1.08)", borderRadius: 34, border: "1px solid " + T.glassBorder, boxShadow: "0 12px 40px rgba(0,0,0,0.18), 0 2px 10px rgba(0,0,0,0.08), inset 0 1px 0.5px " + T.navRimTop + ", inset 0 -1px 0.5px " + T.navRimBot }}>
+          {/* Specular sheen — the curved-glass glare across the top of the bar. Self-clips
+              via its own border radius (no overflow:hidden, so the active lens shadow
+              isn't cropped). Sits below the buttons in paint order. */}
+          <div style={{ position: "absolute", inset: 0, borderRadius: 34, pointerEvents: "none", background: "linear-gradient(180deg, " + T.navSheen + " 0%, rgba(255,255,255,0) 42%, rgba(255,255,255,0) 100%)" }} />
+          <div style={{ position: "relative", display: "flex", justifyContent: "space-around", padding: "10px 4px 12px" }}>
+            {TABS.map(function(tab) {
+              var active = currentTab === tab.id;
+              return (
+                <button key={tab.id} onClick={function() { setTab(tab.id); setSheet(false); }}
+                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "4px 4px", flex: 1, minWidth: 0 }}>
+                  <div style={{ background: active ? T.navPillGlass : "none", borderRadius: 22, padding: active ? "6px 12px" : "6px 9px", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.22s cubic-bezier(0.22,1,0.36,1)", backdropFilter: active ? "blur(8px) saturate(200%) brightness(1.18)" : "none", WebkitBackdropFilter: active ? "blur(8px) saturate(200%) brightness(1.18)" : "none", boxShadow: active ? ("inset 0 1px 0.5px " + T.navPillRim + ", inset 0 -1px 1px " + T.navPillShade + ", 0 2px 7px rgba(0,0,0,0.12)") : "none" }}>
+                    <SVGIcon id={tab.id} size={21} color={active ? T.orange : T.ink3} />
+                  </div>
+                  <span style={{ fontSize: 9.5, fontWeight: active ? 700 : 400, color: active ? T.orange : T.ink3, letterSpacing: "0.005em", whiteSpace: "nowrap" }}>
+                    {tr(tab.id)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
