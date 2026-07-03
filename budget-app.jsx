@@ -12239,6 +12239,14 @@ export default function App() {
     save({ tx: updatedTx });
   }
 
+  // Swipe left/right between the 5 main bottom-nav tabs. Ignored on sub-pages
+  // and inside the hero/analysis carousels (marked "rc-hero-scroll"), which
+  // already own horizontal swipe for their own paging.
+  // These refs must stay above the early-return loading screens below - hooks
+  // can't be conditional, or React throws once the user passes those screens.
+  var swipeRef = useRef(null);
+  var swipeContentRef = useRef(null);
+
   if (cloudReady() && !authChecked) {
     return <BootSplash />;
   }
@@ -12265,12 +12273,7 @@ export default function App() {
   }
 
   var currentTab = tab;
-  // Swipe left/right between the 5 main bottom-nav tabs. Ignored on sub-pages
-  // and inside the hero/analysis carousels (marked "rc-hero-scroll"), which
-  // already own horizontal swipe for their own paging.
   var MAIN_TAB_IDS = TABS.map(function(t) { return t.id; });
-  var swipeRef = useRef(null);
-  var swipeContentRef = useRef(null);
   function hasHorizontalScrollAncestor(node, stopAt) {
     while (node && node !== stopAt) {
       if (node.scrollWidth > node.clientWidth + 1) return true;
