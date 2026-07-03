@@ -226,6 +226,23 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).t
       });
     }
     el = React.createElement(BusinessHarness, {});
+  } else if (view === "budgets") {
+    var budgetsMockTx = [
+      { id: 101, type: "expense", amount: 1800, label: "Rent",   catId: "c1", category: "Housing",       date: iso(0) },
+      { id: 102, type: "expense", amount: 420,  label: "Food",   catId: "c2", category: "Food",          date: iso(1) },
+      { id: 103, type: "expense", amount: 95,   label: "Uber",   catId: "c3", category: "Transport",     date: iso(0) },
+      { id: 104, type: "expense", amount: 10.99,label: "Spotify",catId: "c5", category: "Entertainment", date: iso(0) }
+    ];
+    var mockBudgets = [
+      { catId: "c1", limit: 1500 },
+      { catId: "c2", limit: 500 },
+      { catId: "c3", limit: 150 },
+      { catId: "c5", limit: 40 }
+    ];
+    el = React.createElement(Budgets, {
+      tx: budgetsMockTx, categories: mockCats, budgets: mockBudgets,
+      onSaveBudgets: function(){}, onBack: function(){}, sheetOpen: false, setSheetOpen: function(){}
+    });
   } else if (view === "savings") {
     function SavingsHarness() {
       var _s = React.useState([]); var sv = _s[0]; var setSv = _s[1];

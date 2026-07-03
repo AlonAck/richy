@@ -2672,8 +2672,8 @@ function Overview(props) {
     var w = d.vw || 366;
     var dx = d.dx || 0;
     var np = page;
-    if (dx < -w * 0.2 && page < 4) np = page + 1;
-    else if (dx > w * 0.2 && page > 0) np = page - 1;
+    if (dx < -w * 0.38 && page < 4) np = page + 1;
+    else if (dx > w * 0.38 && page > 0) np = page - 1;
     d.dx = 0;
     d.axis = null;
     setDragX(0);
@@ -3544,7 +3544,7 @@ function looksLikeSubscription(label) {
 // A real outflow worth auditing: not opening balance, internal transfer, future
 // dated, or pending.
 function isAuditableExpense(t, todayISO) {
-  return !!(t && t.type === "expense" && !isOpening(t) && !isTransfer(t) && !t.pending && (!t.date || t.date <= todayISO));
+  return !!(t && t.type === "expense" && !isOpening(t) && !isTransfer(t) && !isTrip(t) && !t.pending && (!t.date || t.date <= todayISO));
 }
 
 function fmDaysBetween(a, b) {
@@ -4843,7 +4843,7 @@ function Budgets(props) {
           <div style={{ marginTop: 18 }}>
             <div style={{ display: "flex", height: 12, borderRadius: 8, overflow: "hidden", gap: 2, background: "rgba(0,0,0,0.05)" }}>
               {segTotal > 0 ? segs.map(function(r) {
-                return <div key={r.cat.id} title={r.cat.name} style={{ width: (r.spent / segTotal * 100) + "%", background: r.over ? T.red : r.cat.color, height: "100%" }} />;
+                return <div key={r.cat.id} title={r.cat.name} style={{ width: (r.spent / segTotal * 100) + "%", background: r.cat.color, height: "100%" }} />;
               }) : <div style={{ width: "100%" }} />}
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", marginTop: 12 }}>
@@ -10072,7 +10072,7 @@ function BusinessView(props) {
     var stage = (biz.profile && biz.profile.stage) || "idea";
     var heroKick = { fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut };
     var heroCellLbl = { fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut };
-    var heroPanelSt = { flex: "0 0 100%", scrollSnapAlign: "start", padding: "18px 22px", boxSizing: "border-box", position: "relative", display: "flex", flexDirection: "column" };
+    var heroPanelSt = { flex: "0 0 100%", width: "100%", overflow: "hidden", scrollSnapAlign: "start", padding: "18px 22px", boxSizing: "border-box", position: "relative", display: "flex", flexDirection: "column" };
     var heroDotOff = (T.bg === DARK_BG) ? "rgba(255,255,255,0.26)" : "rgba(0,0,0,0.16)";
     return (
       <div>
@@ -12265,6 +12265,42 @@ export default function App() {
   }
 
   var currentTab = tab;
+  // Swipe left/right between the 5 main bottom-nav tabs. Ignored on sub-pages
+  // and inside the hero/analysis carousels (marked "rc-hero-scroll"), which
+  // already own horizontal swipe for their own paging.
+  var MAIN_TAB_IDS = TABS.map(function(t) { return t.id; });
+  var swipeRef = useRef(null);
+  var swipeContentRef = useRef(null);
+  function hasHorizontalScrollAncestor(node, stopAt) {
+    while (node && node !== stopAt) {
+      if (node.scrollWidth > node.clientWidth + 1) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+  function onContentTouchStart(e) {
+    swipeRef.current = null;
+    if (sheet) return; // don't hijack swipes while a bottom sheet is open over the content
+    if (e.touches.length !== 1) return; // ignore pinch/multi-touch
+    if (e.target.closest && e.target.closest(".rc-hero-scroll")) return;
+    if (hasHorizontalScrollAncestor(e.target, swipeContentRef.current)) return;
+    var t0 = e.touches[0];
+    swipeRef.current = { x: t0.clientX, y: t0.clientY, time: Date.now() };
+  }
+  function onContentTouchEnd(e) {
+    var start = swipeRef.current;
+    swipeRef.current = null;
+    if (!start) return;
+    if (MAIN_TAB_IDS.indexOf(currentTab) === -1) return;
+    var touch = e.changedTouches[0];
+    var dx = touch.clientX - start.x;
+    var dy = touch.clientY - start.y;
+    if (Date.now() - start.time > 600) return;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    var idx = MAIN_TAB_IDS.indexOf(currentTab);
+    if (dx < 0 && idx < MAIN_TAB_IDS.length - 1) { setTab(MAIN_TAB_IDS[idx + 1]); setSheet(false); }
+    else if (dx > 0 && idx > 0) { setTab(MAIN_TAB_IDS[idx - 1]); setSheet(false); }
+  }
   applyTheme(theme);      // keep the live T palette in sync with the chosen design every render
   applyDarkMode(darkMode); // re-apply dark/light mode tokens on every render so T stays consistent
   var _localeMap = { en: "en-US", he: "he-IL", es: "es-ES", fr: "fr-FR", ar: "ar-SA", ru: "ru-RU", de: "de-DE", pt: "pt-BR" };
@@ -12297,7 +12333,7 @@ export default function App() {
         </div>
       </div>
 
-      <div key={animKey} style={{ padding: "8px 16px 16px", animation: animDir === "right" ? "navSlideRight 0.28s cubic-bezier(0.22,1,0.36,1) both" : animDir === "left" ? "navSlideLeft 0.28s cubic-bezier(0.22,1,0.36,1) both" : "navFade 0.20s ease both" }}>
+      <div key={animKey} ref={swipeContentRef} onTouchStart={onContentTouchStart} onTouchEnd={onContentTouchEnd} style={{ padding: "8px 16px 16px", animation: animDir === "right" ? "navSlideRight 0.28s cubic-bezier(0.22,1,0.36,1) both" : animDir === "left" ? "navSlideLeft 0.28s cubic-bezier(0.22,1,0.36,1) both" : "navFade 0.20s ease both" }}>
         {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} trips={trips} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
         {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} onSavingsMove={onSavingsMove} />}
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
