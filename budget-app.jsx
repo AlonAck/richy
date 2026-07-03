@@ -2222,6 +2222,72 @@ function FoundMoney(props) {
   );
 }
 
+// Overview pulse card for business accounts: health ring, this-month profit,
+// runway, the next roadmap step and a review-ready badge. Renders nothing when
+// the user has no businesses, so it costs the Overview nothing.
+function BusinessPulse(props) {
+  var bizes = props.businesses || [];
+  if (!bizes.length || !props.onOpenBusiness) return null;
+  var shown = bizes.slice(0, 2);
+  return (
+    <div style={{ animation: "rcFadeUp 0.6s ease 0.08s both" }}>
+      {shown.map(function(b) {
+        var health = bizHealth(b);
+        var pl = bizMonthProfit(b, curMonth());
+        var runway = bizRunway(b);
+        var mss = (b.roadmap && b.roadmap.milestones) || [];
+        var nextTask = null;
+        for (var i = 0; i < mss.length && !nextTask; i++) {
+          if (mss[i].done) continue;
+          var ts = mss[i].tasks || [];
+          for (var j = 0; j < ts.length; j++) { if (!ts[j].done) { nextTask = ts[j].label; break; } }
+        }
+        var fresh = b.reviews && b.reviews[0] && (Date.now() - new Date((b.reviews[0].date || "") + "T00:00:00").getTime()) < 3 * 86400000;
+        var reviewReady = reviewDue(b) || fresh;
+        return (
+          <Card key={b.id} style={{ marginBottom: 14, overflow: "hidden" }}>
+            <div onClick={function() { props.onOpenBusiness(b.id); }} style={{ padding: "13px 16px", cursor: "pointer" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ position: "relative", width: 42, height: 42, flexShrink: 0 }}>
+                  <DrawRing size={42} stroke={4} value={health.score} max={100} color={health.color} />
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: T.ink }}>{health.score}</div>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI }}>Business</div>
+                  <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 1 }}>{b.name}</div>
+                  <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>
+                    <span style={{ fontWeight: 700, color: pl.profit < 0 ? T.red : (pl.profit > 0 ? T.green : T.ink2) }}>{(pl.profit < 0 ? "-" : "") + dollars(Math.abs(pl.profit))}</span>
+                    {" profit this month - " + (runway === null ? "self-sustaining" : runway + " mo runway")}
+                  </div>
+                </div>
+                <SVGIcon id="chevron" size={16} color={T.ink3} />
+              </div>
+              {nextTask && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, background: "rgba(0,0,0,0.03)", borderRadius: 10, padding: "8px 11px" }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.05em", flexShrink: 0 }}>Next</span>
+                  <span style={{ flex: 1, fontSize: 12.5, color: T.ink2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{nextTask}</span>
+                </div>
+              )}
+              {reviewReady && (
+                <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: nextTask ? 7 : 10 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: T.orange, animation: "rcBadgePulse 1.6s ease 2", flexShrink: 0 }} />
+                  <span style={{ fontSize: 12, fontWeight: 600, color: T.orange }}>Weekly review ready</span>
+                </div>
+              )}
+            </div>
+          </Card>
+        );
+      })}
+      {bizes.length > 2 && (
+        <button onClick={function() { props.onOpenBusiness(null); }}
+          style={{ width: "100%", background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI, padding: "2px 0 12px", textAlign: "center" }}>
+          {"+" + (bizes.length - 2) + " more business" + (bizes.length - 2 > 1 ? "es" : "")}
+        </button>
+      )}
+    </div>
+  );
+}
+
 function Overview(props) {
   var tx       = props.tx;
   var goals    = props.goals;
@@ -2329,6 +2395,7 @@ function Overview(props) {
     var st = document.createElement("style");
     st.id = "rc-ov-anim";
     st.textContent = "@keyframes rcFadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}"
+      + "@keyframes rcBadgePulse{0%,100%{opacity:1;}50%{opacity:0.35;}}"
       + ".rc-hero-scroll{scrollbar-width:none;-ms-overflow-style:none;}.rc-hero-scroll::-webkit-scrollbar{display:none;width:0;height:0;}";
     document.head.appendChild(st);
   }, []);
@@ -2899,6 +2966,8 @@ function Overview(props) {
       })}
 
       <FoundMoney tx={tx} categories={cats} foundMoney={props.foundMoney} onSaveFoundMoney={props.onSaveFoundMoney} richardInstructions={props.richardInstructions} lang={props.lang} />
+
+      <BusinessPulse businesses={bizAccts} onOpenBusiness={props.onOpenBusiness} />
 
       <div style={{ animation: "rcFadeUp 0.6s ease 0.09s both" }}>
         <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -6248,7 +6317,11 @@ function Advisor(props) {
       : "No goals set") + "\n\n"
     + "=== ALL-TIME STATS ===\n"
     + "Net Worth (all-time): $" + Math.round(netWorth) + "\n"
-    + "Personalized Plan: " + (props.plan ? props.plan.slice(0, 200) + "..." : "not yet created");
+    + "Personalized Plan: " + (props.plan ? props.plan.slice(0, 200) + "..." : "not yet created")
+    + ((props.businesses || []).length
+      ? "\n\n=== BUSINESSES (managed in Savings -> Business Account, Richard is their CFO) ===\n"
+        + props.businesses.map(bizContextLine).join("\n")
+      : "");
 
   function catSpend(c) {
     return props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ymA) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
@@ -8356,6 +8429,27 @@ function runWeeklyReview(biz, richardInstructions, lang, cb) {
       });
     } catch (e2) { finish(localWeeklyReview(biz)); }
   });
+}
+// One-line business summary for Richard's other surfaces (main Advisor chat,
+// CFO chat live context) so he is never blind to the business.
+function bizContextLine(biz) {
+  var pf = biz.profile || {};
+  var ym = curMonth();
+  var pl = bizMonthProfit(biz, ym);
+  var runway = bizRunway(biz);
+  var health = bizHealth(biz);
+  var prog = roadmapProgress(biz.roadmap);
+  var mss = (biz.roadmap && biz.roadmap.milestones) || [];
+  var cur = null;
+  for (var i = 0; i < mss.length; i++) { if (!mss[i].done) { cur = mss[i]; break; } }
+  var nextTask = null;
+  if (cur) { for (var j = 0; j < (cur.tasks || []).length; j++) { if (!cur.tasks[j].done) { nextTask = cur.tasks[j].label; break; } } }
+  return (biz.name || "Business") + " (" + (pf.stage || "idea") + " stage): cash " + dollars(businessCash(biz))
+    + ", this month " + dollars(pl.revenue) + " revenue / " + dollars(pl.spend) + " spent / " + dollars(pl.profit) + " profit"
+    + ", runway " + (runway === null ? "self-sustaining" : runway + " months")
+    + ", health " + health.label
+    + (biz.roadmap ? (", roadmap " + prog.done + " of " + prog.total + " tasks done" + (nextTask ? (", next task: " + nextTask) : "")) : "")
+    + ((biz.reviews && biz.reviews[0]) ? (". Last weekly review said: " + biz.reviews[0].headline) : "") + ".";
 }
 
 function SavingsView(props) {

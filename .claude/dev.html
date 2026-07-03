@@ -239,7 +239,23 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).t
     }
     el = React.createElement(SavingsHarness, {});
   } else {
-    el = React.createElement(Overview, { tx: mockTx, goals: mockGoals, budgets: [], categories: mockCats, businesses: [], trips: mockTrips, username: "Alon", plan: "", onCategories: function(){}, onOpenBusiness: function(){}, onOpenTrip: function(id){ window.__clicked = "trip_" + id; } });
+    var ovBiz = qs.get("seed") ? [{
+      id: "biz_ov", name: "Candle Co", what: "handmade candles", icon: "briefcase", color: "#8970C6", createdAt: "2026-04-15",
+      profile: { structure: "individual", stage: "launching", size: "side", monthly: 1200, revenueGoal: 3000, runway: 6, goal: "quit my job in a year" },
+      plan: { summary: "A lean handmade-candle side business.", sections: [], tips: [], generatedAt: "2026-04-15" },
+      categories: localBizSplit(1200),
+      roadmap: { generatedAt: "2026-06-20", stage: "launching", source: "ai", milestones: [
+        { id: "m0", title: "Make it official", done: true, doneAt: "2026-06-25", tasks: [{ id: "t0", label: "Register the business", done: true, doneAt: "2026-06-25" }] },
+        { id: "m1", title: "Launch on one channel", done: false, doneAt: null, tasks: [{ id: "t1", label: "Pick the one channel your customers actually use", done: false, doneAt: null }, { id: "t2", label: "Show up there 3 times this week", done: false, doneAt: null }] }
+      ] },
+      reviews: [],
+      entries: [
+        { id: 1, kind: "deposit", amount: 2000, date: "2026-04-15", fromMain: false, label: "Starting capital" },
+        { id: 2, kind: "withdraw", amount: 150, date: "2026-06-10", fromMain: false, label: "Ads", bizExpense: true, catKey: "marketing" },
+        { id: 3, kind: "deposit", amount: 260, date: "2026-07-01", fromMain: false, label: "Revenue: Online orders", revenue: true }
+      ]
+    }] : [];
+    el = React.createElement(Overview, { tx: mockTx, goals: mockGoals, budgets: [], categories: mockCats, businesses: ovBiz, trips: mockTrips, username: "Alon", plan: "", onCategories: function(){}, onOpenBusiness: function(id){ window.__clicked = "biz_" + id; }, onOpenTrip: function(id){ window.__clicked = "trip_" + id; } });
   }
   ReactDOM.createRoot(document.getElementById("root")).render(
     React.createElement("div", { style: { maxWidth: 420, margin: "0 auto", padding: 16, minHeight: "100vh" } }, el)
