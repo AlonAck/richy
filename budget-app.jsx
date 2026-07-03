@@ -5002,6 +5002,9 @@ function Trips(props) {
   var _tp = useState([]); var tips = _tp[0]; var setTips = _tp[1];
   var _lf = useState(null); var logFor = _lf[0]; var setLogFor = _lf[1];
   var _lfm = useState({ label: "", amount: "" }); var logForm = _lfm[0]; var setLogForm = _lfm[1];
+  var _res = useState(null); var reserveFor = _res[0]; var setReserveFor = _res[1];
+  var _resL = useState(""); var resLabel = _resL[0]; var setResLabel = _resL[1];
+  var _resD = useState(""); var resDate = _resD[0]; var setResDate = _resD[1];
   var _de = useState({}); var detailEdits = _de[0]; var setDetailEdits = _de[1];
   var _tnc = useState({}); var tripNoteChats = _tnc[0]; var setTripNoteChats = _tnc[1];
   var _tni = useState(""); var tripNoteInput = _tni[0]; var setTripNoteInput = _tni[1];
@@ -5271,10 +5274,20 @@ function Trips(props) {
     var nextTrips = props.trips.map(function(t) { return t.id === tripId ? Object.assign({}, t, { startDate: val }) : t; });
     props.onSaveTrips(nextTrips);
   }
-  function reserveTrip(trip) {
-    var t = { id: Date.now(), type: "expense", amount: tripSpent(trip), label: "Trip: " + trip.name, catId: "c7", category: "Travel", date: new Date().toISOString().slice(0, 10), trip: true };
+  function openReserve(trip) {
+    setReserveFor(trip.id);
+    setResLabel("Trip: " + trip.name);
+    setResDate(new Date().toISOString().slice(0, 10));
+  }
+  function reserveTrip() {
+    var trip = props.trips.filter(function(t) { return t.id === reserveFor; })[0];
+    if (!trip) { setReserveFor(null); return; }
+    var d = resDate || new Date().toISOString().slice(0, 10);
+    var lbl = resLabel.trim() || ("Trip: " + trip.name);
+    var t = { id: Date.now(), type: "expense", amount: tripSpent(trip), label: lbl, catId: "c7", category: "Travel", date: d, trip: true };
     var nextTrips = props.trips.map(function(x) { return x.id === trip.id ? Object.assign({}, x, { reserved: true, reserveTxId: t.id }) : x; });
     props.onTripReserve(props.tx.concat([t]), nextTrips);
+    setReserveFor(null);
   }
   function undoReserve(trip) {
     var nextTx = props.tx.filter(function(x) { return x.id !== trip.reserveTxId; });
@@ -5710,7 +5723,7 @@ function Trips(props) {
         ) : (
           <Card style={{ padding: "16px 16px", marginBottom: 16 }}>
             <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginBottom: 12 }}>{tr("deductExplain")}</div>
-            <BigBtn label={tr("deductFromBalance")} onPress={function() { reserveTrip(trip); }} />
+            <BigBtn label={tr("deductFromBalance")} onPress={function() { openReserve(trip); }} />
           </Card>
         )}
 
@@ -5885,6 +5898,12 @@ function Trips(props) {
           <FormRow label={tr("txLabel")} value={logForm.label} onChange={function(e) { setLogField("label", e.target.value); }} />
           <FormRow label={tr("amount")} value={logForm.amount} onChange={function(e) { setLogField("amount", e.target.value); }} type="number" last={true} />
           <BigBtn label={tr("logExpense")} disabled={!logForm.amount} onPress={function() { if (logFor) logExpense(logFor.tripId, logFor.key); }} />
+        </Overlay>
+
+        <Overlay open={!!reserveFor} onClose={function() { setReserveFor(null); }} title={tr("deductFromBalance")}>
+          <FormRow label={tr("name")} value={resLabel} onChange={function(e) { setResLabel(e.target.value); }} />
+          <FormRow label={tr("date")} value={resDate} onChange={function(e) { setResDate(e.target.value); }} type="date" last={true} />
+          <BigBtn label={tr("deductFromBalance")} onPress={reserveTrip} />
         </Overlay>
 
         {addCategoryOverlay(function(label, icon) { addCategoryToTrip(trip.id, label, icon); })}
@@ -8491,6 +8510,8 @@ function SavingsView(props) {
   var _act = useState(null); var act = _act[0]; var setAct = _act[1];
   var _amt = useState(""); var amt = _amt[0]; var setAmt = _amt[1];
   var _src = useState(""); var src = _src[0]; var setSrc = _src[1];
+  var _wLabel = useState(""); var wLabel = _wLabel[0]; var setWLabel = _wLabel[1];
+  var _wDate = useState(""); var wDate = _wDate[0]; var setWDate = _wDate[1];
   var _exp = useState(null); var expanded = _exp[0]; var setExpanded = _exp[1];
   var _ren = useState(""); var renameVal = _ren[0]; var setRenameVal = _ren[1];
   var _del = useState(null); var deleteConfirm = _del[0]; var setDeleteConfirm = _del[1];
@@ -8506,14 +8527,15 @@ function SavingsView(props) {
       return n;
     });
   }
-  function transferTx(type, amount, accName, suffix) {
-    return { id: Date.now() + 1, type: type, amount: round2(amount), label: (type === "expense" ? "→ " : "← ") + accName + (suffix || ""), catId: "savings-transfer", category: "Savings transfer", transfer: true, date: today, repeat: "none", pending: false };
+  function transferTx(type, amount, accName, suffix, dateOverride) {
+    return { id: Date.now() + 1, type: type, amount: round2(amount), label: (type === "expense" ? "→ " : "← ") + accName + (suffix || ""), catId: "savings-transfer", category: "Savings transfer", transfer: true, date: dateOverride || today, repeat: "none", pending: false };
   }
 
   function openAction(id, kind) {
     setAct({ id: id, kind: kind });
     setAmt("");
     setSrc(kind === "add" ? "external" : "balance");
+    setWLabel(""); setWDate(today);
   }
   function submitAction() {
     if (!actAcct) { setAct(null); return; }
@@ -8530,9 +8552,11 @@ function SavingsView(props) {
       var w = Math.min(round2(v), bal);
       if (w <= 0) { setAct(null); return; }
       var toMain = src === "balance";
-      var entry2 = { id: Date.now(), kind: "withdraw", amount: w, date: today, fromMain: toMain, label: toMain ? tr("toBalance") : tr("removeFromNet") };
+      var wd = wDate || today;
+      var custom = wLabel.trim();
+      var entry2 = { id: Date.now(), kind: "withdraw", amount: w, date: wd, fromMain: toMain, label: custom || (toMain ? tr("toBalance") : tr("removeFromNet")) };
       var nextSav2 = withEntry(actAcct.id, entry2);
-      if (toMain) props.onMove(tx.concat([transferTx("income", w, actAcct.name)]), nextSav2);
+      if (toMain) props.onMove(tx.concat([transferTx("income", w, actAcct.name, custom ? (" · " + custom) : "", wd)]), nextSav2);
       else props.onSaveSavings(nextSav2);
     }
     setAct(null);
@@ -8784,6 +8808,12 @@ function SavingsView(props) {
             {act.kind === "add"
               ? seg(src, setSrc, [{ v: "external", label: tr("externalMoney") }, { v: "balance", label: tr("fromBalance") }])
               : seg(src, setSrc, [{ v: "balance", label: tr("toBalance") }, { v: "remove", label: tr("removeFromNet") }])}
+            {act.kind === "withdraw" && (
+              <div style={{ marginTop: 9 }}>
+                <FormRow label={tr("name")} value={wLabel} onChange={function(e) { setWLabel(e.target.value); }} placeholder={src === "balance" ? tr("toBalance") : tr("removeFromNet")} />
+                <FormRow label={tr("date")} value={wDate} onChange={function(e) { setWDate(e.target.value); }} type="date" last={true} />
+              </div>
+            )}
             <div style={{ fontSize: 12, color: T.ink3, marginTop: 9, lineHeight: 1.45, padding: "0 2px" }}>
               {act.kind === "add"
                 ? (src === "external" ? tr("balanceUntouched") : tr("movesFromBalance"))
@@ -8826,6 +8856,8 @@ function BusinessView(props) {
   var _act = useState(null); var act = _act[0]; var setAct = _act[1];
   var _amt = useState(""); var amt = _amt[0]; var setAmt = _amt[1];
   var _src = useState("external"); var srcc = _src[0]; var setSrc = _src[1];
+  var _wLabel = useState(""); var wLabel = _wLabel[0]; var setWLabel = _wLabel[1];
+  var _wDate = useState(""); var wDate = _wDate[0]; var setWDate = _wDate[1];
   var _lf = useState(null); var logFor = _lf[0]; var setLogFor = _lf[1];
   var _lfm = useState({ label: "", amount: "" }); var logForm = _lfm[0]; var setLogForm = _lfm[1];
   var _rv = useState(null); var revFor = _rv[0]; var setRevFor = _rv[1];
@@ -9025,8 +9057,8 @@ function BusinessView(props) {
   var activeBiz = null;
   for (var bi = 0; bi < bizes.length; bi++) { if (bizes[bi].id === activeId) { activeBiz = bizes[bi]; break; } }
 
-  function transferTx(type, amount, bizName, suffix) {
-    return { id: Date.now() + 1, type: type, amount: round2(amount), label: (type === "expense" ? "-> " : "<- ") + bizName + (suffix || ""), catId: "savings-transfer", category: "Business transfer", transfer: true, date: today, repeat: "none", pending: false };
+  function transferTx(type, amount, bizName, suffix, dateOverride) {
+    return { id: Date.now() + 1, type: type, amount: round2(amount), label: (type === "expense" ? "-> " : "<- ") + bizName + (suffix || ""), catId: "savings-transfer", category: "Business transfer", transfer: true, date: dateOverride || today, repeat: "none", pending: false };
   }
   function patchBiz(id, patch) {
     return bizesRef.current.map(function(b) { if (b.id !== id) return b; var n = {}; for (var k in b) n[k] = b[k]; for (var k2 in patch) n[k2] = patch[k2]; return n; });
@@ -9160,7 +9192,7 @@ function BusinessView(props) {
   }
 
   // ---- Capital, expenses, revenue -----------------------------------------
-  function openAction(id, kind) { setAct({ id: id, kind: kind }); setAmt(""); setSrc(kind === "add" ? "external" : "balance"); }
+  function openAction(id, kind) { setAct({ id: id, kind: kind }); setAmt(""); setSrc(kind === "add" ? "external" : "balance"); setWLabel(""); setWDate(today); }
   function submitAction() {
     if (!activeBiz) { setAct(null); return; }
     var v = parseFloat(amt);
@@ -9176,9 +9208,11 @@ function BusinessView(props) {
       var w = Math.min(round2(v), bal);
       if (w <= 0) { setAct(null); return; }
       var toMain = srcc === "balance";
-      var entry2 = { id: Date.now(), kind: "withdraw", amount: w, date: today, fromMain: toMain, label: toMain ? "To balance" : "Taken out" };
+      var wd = wDate || today;
+      var custom = wLabel.trim();
+      var entry2 = { id: Date.now(), kind: "withdraw", amount: w, date: wd, fromMain: toMain, label: custom || (toMain ? "To balance" : "Taken out") };
       var next2 = patchBiz(activeBiz.id, { entries: (activeBiz.entries || []).concat([entry2]) });
-      if (toMain) props.onBusinessMove(tx.concat([transferTx("income", w, activeBiz.name)]), next2);
+      if (toMain) props.onBusinessMove(tx.concat([transferTx("income", w, activeBiz.name, custom ? (" · " + custom) : "", wd)]), next2);
       else props.onSaveBusinesses(next2);
     }
     setAct(null);
@@ -10419,6 +10453,12 @@ function BusinessView(props) {
             {act && act.kind === "add"
               ? seg(srcc, setSrc, [{ v: "external", l: "New money" }, { v: "balance", l: "From balance" }])
               : seg(srcc, setSrc, [{ v: "balance", l: "To balance" }, { v: "remove", l: "Take out" }])}
+            {act && act.kind === "withdraw" && (
+              <div style={{ marginTop: 9 }}>
+                <FormRow label="Name" value={wLabel} onChange={function(e) { setWLabel(e.target.value); }} placeholder={srcc === "balance" ? "To balance" : "Taken out"} />
+                <FormRow label="Date" value={wDate} onChange={function(e) { setWDate(e.target.value); }} type="date" last={true} />
+              </div>
+            )}
             <div style={{ fontSize: 12, color: T.ink3, marginTop: 9, lineHeight: 1.45, padding: "0 2px" }}>
               {act && act.kind === "add"
                 ? (srcc === "external" ? "Outside money - your spendable balance is untouched, net worth rises." : "Moves from your spendable balance. Net worth is unchanged.")
