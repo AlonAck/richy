@@ -8443,7 +8443,6 @@ function Advisor(props) {
   // (the old bright #4ADE80 and light orangeHi washed out on the pale background).
   var GREEN_HERO = T.advGreen;
   var ringColor = advice && advice.score >= 80 ? GREEN_HERO : advice && advice.score >= 60 ? T.gold : T.advRingLow;
-  var name = (props.username || "").trim() || "there";
 
   // Three real signals for the dark card's bottom row.
   var bufferMonths = expense > 0 ? (netWorth / expense) : (netWorth > 0 ? 12 : 0);
@@ -8459,6 +8458,19 @@ function Advisor(props) {
   var insMeta = { strength: { icon: "chart", color: T.green, tag: "Strength" }, warning: { icon: "credit", color: T.red, tag: "Watch" }, tip: { icon: "coins", color: T.gold, tag: "Tip" } };
 
   // Shared bits used across states.
+  // Auto-analyze: whenever there's no advice and nothing is already in
+  // flight, kick off getAdvice() by itself. This fires once on mount (the
+  // common case - the cache went stale because a transaction happened while
+  // the user was on another tab, so Advisor remounts with no cache) and
+  // again any time advice/loading are cleared without a fresh fetch already
+  // running (e.g. the error-retry path below). The user never has to press
+  // a button for the normal "just show me the analysis" path anymore - the
+  // only manual control left is the refresh icon in the header, for when
+  // they want a new read without anything having changed.
+  useEffect(function() {
+    if (!advice && !loading) getAdvice();
+  }, [advice, loading]);
+
   var richardHead = (
     <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "6px 2px 0" }}>
       <div style={{ position: "relative", width: 52, height: 52, flexShrink: 0 }}>
@@ -8470,11 +8482,11 @@ function Advisor(props) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 19, fontWeight: 700, letterSpacing: "-0.02em", color: T.ink }}>Richard</div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.green }} />
-          <span style={{ fontSize: 12, color: T.ink3 }}>{advice ? "Analyzed your month - just now" : "Ready to analyze your month"}</span>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: loading ? T.orange : T.green, animation: loading ? "rcBadgePulse 1.3s ease-in-out infinite" : "none" }} />
+          <span style={{ fontSize: 12, color: T.ink3 }}>{loading ? "Analyzing your month..." : advice ? "Analyzed your month - just now" : "Ready to analyze your month"}</span>
         </div>
       </div>
-      {advice && !advice.error && (
+      {advice && !advice.error && !loading && (
         <button onClick={function() { setAdvice(null); getAdvice(); }}
           style={{ width: 40, height: 40, border: "none", borderRadius: 13, background: "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
           <SVGIcon id="refresh" size={18} color={T.ink2} />
@@ -8901,24 +8913,6 @@ function Advisor(props) {
       {richardHead}
 
       <BigDecisions ctx={ctx} coreProblem={coreProblem} username={props.username} lang={props.lang} richardInstructions={props.richardInstructions} decisions={props.decisions} onSaveDecisions={props.onSaveDecisions} />
-
-      {!advice && !loading && (
-        <div>
-          <div style={{ padding: "16px 4px 0" }}>
-            <h1 style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.12, color: T.ink }}>{"Let's look at your month, " + name + "."}</h1>
-            <p style={{ margin: "7px 0 0", fontSize: 14.5, lineHeight: 1.45, color: T.ink2 }}>{tr("aiAdvisorSub")}</p>
-          </div>
-          {errMsg && (
-            <div style={{ fontSize: 12, color: T.red, background: "rgba(255,59,48,0.08)", borderRadius: 10, padding: "8px 12px", margin: "14px 4px 0", textAlign: "left" }}>
-              {errMsg}
-            </div>
-          )}
-          <button onClick={getAdvice}
-            style={{ width: "100%", background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: "pointer", marginTop: 18, boxShadow: "0 6px 20px " + T.orangeGlow, letterSpacing: "-0.01em" }}>
-            {tr("analyzeMyFinances")}
-          </button>
-        </div>
-      )}
 
       {loading && (
         <AIWorking
