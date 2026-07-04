@@ -2659,9 +2659,10 @@ function CatchUpScreen(props) {
 
   return (
     <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column", maxWidth: 430, margin: "0 auto", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", top: -70, right: -60, width: 260, height: 260, borderRadius: "50%", background: "radial-gradient(circle,rgba(137,112,198,0.14) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift 9s ease-in-out infinite" }} />
+      <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base="#FBF3E8" speed={0.16} intensity={0.7} yScale={0.44} xScale={1.05} style={{ position: "absolute" }} />
+      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.82) 0%, rgba(251,243,232,0.42) 24%, rgba(251,243,232,0.42) 76%, rgba(251,243,232,0.78) 100%)" }} />
 
-      <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "56px 22px 16px", position: "relative" }}>
+      <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "56px 22px 16px", position: "relative", zIndex: 2 }}>
 
         <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 22, animation: "rclPhrase 0.45s ease both" }}>
           <div style={{ position: "relative", width: 46, height: 46, flexShrink: 0 }}>
@@ -2707,7 +2708,7 @@ function CatchUpScreen(props) {
 
       </div>
 
-      <div style={{ padding: "14px 22px 40px", borderTop: "0.5px solid rgba(0,0,0,0.06)", background: "rgba(253,245,236,0.85)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", position: "relative" }}>
+      <div style={{ padding: "14px 22px 40px", borderTop: "0.5px solid rgba(0,0,0,0.06)", background: "rgba(253,245,236,0.85)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", position: "relative", zIndex: 2 }}>
         <JrBtn label="Add to my month" onPress={function() { props.onComplete(buildTxs()); }} style={{ padding: "16px 0", fontSize: 16 }} />
         <button onClick={function() { props.onComplete([]); }} className="jr-press"
           style={{ width: "100%", background: "none", border: "none", fontSize: 14, color: JINK3, cursor: "pointer", fontFamily: UI, padding: "12px 0 0", display: "block", textAlign: "center" }}>
@@ -6970,7 +6971,11 @@ function Trips(props) {
     var sum = allocSum(alloc);
     var styleOpts = [{ k: "budget", l: tr("styleBudget") }, { k: "comfort", l: tr("styleComfort") }, { k: "luxury", l: tr("styleLuxury") }];
     return (
-      <div>
+      <div style={{ position: "relative" }}>
+        <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base={T.bg} speed={0.16} intensity={0.5} yScale={0.44} xScale={1.05}
+          style={{ position: "fixed", top: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, height: "100%", zIndex: 0 }} />
+        <div style={{ position: "fixed", top: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, height: "100%", zIndex: 0, pointerEvents: "none", background: "linear-gradient(180deg," + jrRgba(T.bg, 0.74) + " 0%," + jrRgba(T.bg, 0.4) + " 22%," + jrRgba(T.bg, 0.4) + " 74%," + jrRgba(T.bg, 0.66) + " 100%)" }} />
+        <div style={{ position: "relative", zIndex: 1 }}>
         {backRow(step === 2 ? tr("planning") : tr("trips"), function() { if (step === 2) { setStep(1); } else { setView("list"); } })}
         {step === 1 ? (
           <Card style={{ padding: "18px 18px 20px" }}>
@@ -6983,13 +6988,11 @@ function Trips(props) {
             <FormRow label="Notes for Richard (optional)" value={form.notes} onChange={function(e) { setField("notes", e.target.value); }} placeholder="anything he should know - must-dos, style, who's coming" last={true} />
             <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, margin: "14px 0 8px" }}>{tr("travelStyle")}</div>
             <div style={{ display: "flex", gap: 8 }}>
-              {styleOpts.map(function(s) {
-                var on = form.style === s.k;
+              {styleOpts.map(function(s, i) {
                 return (
-                  <button key={s.k} onClick={function() { setField("style", s.k); }}
-                    style={{ flex: 1, border: on ? ("2px solid " + T.orange) : "2px solid rgba(0,0,0,0.08)", background: on ? T.orangeDim : "#fff", color: on ? T.orange : T.ink2, borderRadius: 13, padding: "11px 0", fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
-                    {s.l}
-                  </button>
+                  <JrChip key={s.k} label={s.l} selected={form.style === s.k} delay={0.04 + i * 0.05}
+                    style={{ flex: 1, justifyContent: "center", padding: "11px 0" }}
+                    onPress={function() { setField("style", s.k); }} />
                 );
               })}
             </div>
@@ -6998,26 +7001,24 @@ function Trips(props) {
               {TRIP_ICONS.map(function(ic) {
                 var on = (form.icon || "plane") === ic;
                 return (
-                  <button key={ic} onClick={function() { setField("icon", ic); }}
-                    style={{ width: 44, height: 44, border: on ? ("2px solid " + T.orange) : "2px solid rgba(0,0,0,0.08)", background: on ? T.orangeDim : "#fff", borderRadius: 13, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxSizing: "border-box" }}>
-                    <SVGIcon id={ic} size={20} color={on ? T.orange : T.ink2} />
+                  <button key={ic} onClick={function() { setField("icon", ic); }} className="jr-press"
+                    style={{ width: 44, height: 44, border: on ? "none" : "1.5px solid rgba(0,0,0,0.08)", background: on ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : "#fff", borderRadius: 13, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxSizing: "border-box", boxShadow: on ? "0 5px 14px " + T.orangeGlow : "0 2px 6px rgba(0,0,0,0.05)", transition: "background 0.2s ease, box-shadow 0.2s ease" }}>
+                    <SVGIcon id={ic} size={20} color={on ? "#fff" : T.ink2} />
                   </button>
                 );
               })}
             </div>
             <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, margin: "16px 0 8px" }}>Want Richard to plan the budget?</div>
             <div style={{ display: "flex", gap: 8 }}>
-              {[{ v: true, l: "Yes, plan it" }, { v: false, l: "No, I'll do it" }].map(function(o) {
-                var on = form.wantPlan === o.v;
+              {[{ v: true, l: "Yes, plan it" }, { v: false, l: "No, I'll do it" }].map(function(o, i) {
                 return (
-                  <button key={String(o.v)} onClick={function() { setField("wantPlan", o.v); }}
-                    style={{ flex: 1, border: on ? ("2px solid " + T.orange) : "2px solid rgba(0,0,0,0.08)", background: on ? T.orangeDim : "#fff", color: on ? T.orange : T.ink2, borderRadius: 13, padding: "11px 0", fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
-                    {o.l}
-                  </button>
+                  <JrChip key={String(o.v)} label={o.l} selected={form.wantPlan === o.v} delay={0.04 + i * 0.05}
+                    style={{ flex: 1, justifyContent: "center", padding: "11px 0" }}
+                    onPress={function() { setField("wantPlan", o.v); }} />
                 );
               })}
             </div>
-            <BigBtn label={tr("next")} disabled={!form.name || total <= 0} onPress={function() { setStep(2); if (form.wantPlan) { planWithRichard(); } else { applyLocalSplit(); } }} />
+            <JrBtn label={tr("next")} disabled={!form.name || total <= 0} onPress={function() { setStep(2); if (form.wantPlan) { planWithRichard(); } else { applyLocalSplit(); } }} style={{ marginTop: 18 }} />
           </Card>
         ) : (
           <Card style={{ padding: "18px 18px 20px" }}>
@@ -7126,12 +7127,13 @@ function Trips(props) {
                     </button>
                   </div>
                 </div>
-                <BigBtn label={tr("saveTrip")} disabled={total <= 0} onPress={saveTrip} />
+                <JrBtn label={tr("saveTrip")} disabled={total <= 0} onPress={saveTrip} style={{ marginTop: 18 }} />
               </div>
             )}
           </Card>
         )}
         {addCategoryOverlay(function(label, icon) { addWizardCategory(label, icon); })}
+        </div>
       </div>
     );
   }
@@ -10375,6 +10377,12 @@ function BusinessView(props) {
   var _v = useState(props.openBizId ? "detail" : "list"); var view = _v[0]; var setView = _v[1];
   var _aid = useState(props.openBizId || null); var activeId = _aid[0]; var setActiveId = _aid[1];
   var _st = useState(1); var step = _st[0]; var setStep = _st[1];
+  // Jomo-style interview position: one question per screen (bq = business
+  // question index), with direction-aware slide transitions. `step` still
+  // gates the phases (1-3 = interview portal, 4 = plan review).
+  var _bq = useState(0); var bq = _bq[0]; var setBq = _bq[1];
+  var _bqd = useState("fwd"); var bqDir = _bqd[0]; var setBqDir = _bqd[1];
+  var bizAdvRef = useRef(false);
   var _fm = useState({ name: "", what: "", notes: "", wantPlan: true, structure: "individual", stage: "idea", size: "side", monthly: "", revenueGoal: "", runway: "", goal: "", startCap: "", capSrc: "external", icon: "briefcase", color: BIZ_COLORS[0] });
   var form = _fm[0]; var setForm = _fm[1];
   var _pl = useState(false); var planning = _pl[0]; var setPlanning = _pl[1];
@@ -10653,7 +10661,7 @@ function BusinessView(props) {
   }
   function startWizard() {
     setForm({ name: "", what: "", notes: "", wantPlan: true, structure: "individual", stage: "idea", size: "side", monthly: "", revenueGoal: "", runway: "", goal: "", startCap: "", capSrc: "external", icon: "briefcase", color: BIZ_COLORS[0] });
-    setPlanResult(null); setErr(""); setStep(1); setWizChat([]); setWizInput(""); setView("wizard");
+    setPlanResult(null); setErr(""); setStep(1); setBq(0); setBqDir("fwd"); setWizChat([]); setWizInput(""); setView("wizard");
   }
   // Create the account from whatever we have. With a plan the categories come from
   // planResult; without one (the owner skipped Richard) we seed a blank budget they
@@ -11104,32 +11112,6 @@ function BusinessView(props) {
         </div>
       );
     }
-    function ipills(value, setter, options) {
-      return (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-          {options.map(function(o) {
-            var sel = value === o.v;
-            return (
-              <button key={o.v} onClick={function() { setter(o.v); }}
-                style={{ padding: "10px 18px", borderRadius: 12, border: sel ? ("2px solid " + T.orange) : "1.5px solid rgba(0,0,0,0.1)", background: sel ? T.orangeDim : "rgba(255,255,255,0.8)", color: sel ? T.orange : T.ink2, fontSize: 14, fontWeight: sel ? 700 : 500, fontFamily: UI, cursor: "pointer" }}>
-                {o.l}
-              </button>
-            );
-          })}
-        </div>
-      );
-    }
-    function icta(label, onPress, disabled) {
-      return (
-        <button onClick={onPress} disabled={!!disabled}
-          style={{ width: "100%", background: disabled ? "rgba(0,0,0,0.08)" : ("linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")"), color: disabled ? T.ink3 : "#fff", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: disabled ? "default" : "pointer", marginTop: 16, boxShadow: disabled ? "none" : ("0 6px 20px " + T.orangeGlow + ", 0 2px 6px rgba(0,0,0,0.1)"), letterSpacing: "-0.01em" }}>
-          {label}
-        </button>
-      );
-    }
-    var amtStyleI = { width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 15px 15px 40px", fontSize: 18, fontFamily: UI, color: T.ink, fontWeight: 700, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" };
-    var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 };
-
     // Step 4 (plan review) stays in the normal card layout.
     if (step === 4) {
       return (
@@ -11222,8 +11204,8 @@ function BusinessView(props) {
                       style={{ background: wizInput.trim() && !wizLoading ? T.btn : "rgba(0,0,0,0.1)", border: "none", borderRadius: 10, width: 38, height: 38, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 17 }}>^</button>
                   </div>
                 </div>
-                <BigBtn label="Create business account" onPress={saveBusiness} />
-                <button onClick={buildPlan} style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>Redo plan</button>
+                <JrBtn label="Create business account" onPress={saveBusiness} style={{ marginTop: 18 }} />
+                <button onClick={buildPlan} className="jr-press" style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>Redo plan</button>
               </div>
             ) : (
               <div style={{ padding: "20px 10px", textAlign: "center" }}>
@@ -11236,139 +11218,277 @@ function BusinessView(props) {
       );
     }
 
-    // Steps 1-3: full-screen immersive interview, styled like the signup AuthScreen.
-    var stepTitles = [
-      null,
-      { t: "Set up your business", s: form.wantPlan ? "Richard will plan your strategy and budget." : "Create a blank account you can shape yourself." },
-      { t: "Tell Richard about it", s: "A few details about your venture." },
-      { t: "The numbers", s: "So Richard can build a realistic plan." }
+    // Jomo-style interview: one question per screen, shader lines flowing
+    // behind, animated progress bar on top. Same form fields and the same
+    // exits (createBlank / buildPlan) as the old 3-step version - only the
+    // presentation changed. This portal always sits on the cream journey
+    // gradient, so text uses the pinned journey inks (JINK*) while accents
+    // stay on the live theme tokens.
+    var BQ_TOTAL = 12;
+    var BQS = [
+      { h: "What's it called?", s: "Working titles welcome - you can rename it any time." },
+      { h: "What does it do?", s: "One line is plenty. Richard reads this before he plans anything." },
+      { h: "Make it yours.", s: "The face this business wears in the app." },
+      { h: "Want Richard to build the plan?", s: "A short interview, then a strategy and an operating budget." },
+      { h: "Company or individual?", s: "So the plan fits how you actually operate." },
+      { h: "What stage are you at?", s: "The roadmap starts where you are - not where a template says." },
+      { h: "How big is the commitment?", s: "Be honest. Side projects get side-project plans." },
+      { h: "What will it cost to run?", s: "Per month, roughly. This becomes the operating budget." },
+      { h: "Monthly revenue goal?", s: "A target Richard can pace you against." },
+      { h: "How many months of runway?", s: "Savings set aside to keep it alive while it grows." },
+      { h: "What does success look like?", s: "Twelve months from now - make it concrete." },
+      { h: "Seed it with capital?", s: "Optional - give the business account money on day one." },
     ];
-    var shead = stepTitles[step] || stepTitles[1];
-
-    var dots = (
-      <div style={{ display: "flex", gap: 6 }}>
-        {[1, 2, 3].map(function(n) {
-          return <div key={n} style={{ height: 6, borderRadius: 3, width: n === step ? 20 : 6, background: n <= step ? T.orange : "rgba(0,0,0,0.13)" }} />;
-        })}
-      </div>
-    );
+    var bqh = BQS[bq] || BQS[0];
+    function bqAdvance() {
+      setBqDir("fwd");
+      if (bq >= BQ_TOTAL - 1) { setStep(4); buildPlan(); return; }
+      setBq(bq + 1);
+    }
+    function bqAuto() {
+      if (bizAdvRef.current) return;
+      bizAdvRef.current = true;
+      setTimeout(function() { bizAdvRef.current = false; bqAdvance(); }, 240);
+    }
+    function bqBack() {
+      if (bq <= 0) { setView("list"); return; }
+      setBqDir("back"); setBq(bq - 1);
+    }
+    var jInput = Object.assign({}, iStyle, { color: JINK });
+    var bqLabel = { fontSize: 11.5, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 12 };
+    var runwayNum = parseFloat(form.runway) || 0;
+    var capNum = parseFloat(form.startCap) || 0;
 
     var screenContent = (
-      <div style={{ position: "fixed", inset: 0, zIndex: 91, background: "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)", display: "flex", flexDirection: "column", fontFamily: UI }}>
-        <div style={{ position: "absolute", top: -80, right: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(137,112,198,0.15) 0%,transparent 70%)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: 60, left: -80, width: 240, height: 240, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,154,60,0.12) 0%,transparent 70%)", pointerEvents: "none" }} />
+      <div style={{ position: "fixed", inset: 0, zIndex: 91, background: JR_BG, display: "flex", flexDirection: "column", fontFamily: UI, overflow: "hidden" }}>
+        <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base="#FBF3E8" speed={0.18} intensity={0.75} yScale={0.44} xScale={1.05} style={{ position: "absolute" }} />
+        <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.85) 0%, rgba(251,243,232,0.45) 24%, rgba(251,243,232,0.45) 76%, rgba(251,243,232,0.8) 100%)" }} />
 
-        <div style={{ display: "flex", alignItems: "center", padding: "20px 20px 0", position: "relative", zIndex: 1 }}>
-          <button onClick={function() { if (step > 1) { setStep(step - 1); } else { setView("list"); } }}
-            style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: T.orange, fontSize: 14, fontWeight: 600, fontFamily: UI, padding: 0 }}>
-            <span style={{ transform: "rotate(180deg)", display: "flex" }}><SVGIcon id="chevron" size={18} color={T.orange} /></span>
-            {step > 1 ? "Back" : "Business"}
-          </button>
-          <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>{dots}</div>
-          <div style={{ width: 70 }} />
+        <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0", position: "relative", zIndex: 2, maxWidth: 430, width: "100%", margin: "0 auto", boxSizing: "border-box" }}>
+          <JrIconBtn icon="chevron" rotate={180} onPress={bqBack} />
+          <JourneyBar pct={((bq + 1) / BQ_TOTAL) * 100} />
+          <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: JINK3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(bq + 1) + "/" + BQ_TOTAL}</div>
         </div>
 
-        <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px 48px", position: "relative", zIndex: 1 }}>
+        <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "28px 24px 8px", position: "relative", zIndex: 2 }}>
           <div style={{ maxWidth: 380, margin: "0 auto" }}>
-
-            <div style={{ textAlign: "center", marginBottom: 28 }}>
-              <div style={{ width: 64, height: 64, borderRadius: 20, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", boxShadow: "0 8px 24px rgba(196,154,60,0.18)" }}>
-                <SVGIcon id={form.icon || "briefcase"} size={30} color={T.orange} />
-              </div>
-              <div style={{ fontSize: 28, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.15 }}>{shead.t}</div>
-              <div style={{ fontSize: 14, color: T.ink2, marginTop: 6 }}>{shead.s}</div>
-            </div>
-
-            {step === 1 && (
+            <JrStepShell k={bq} dir={bqDir}>
               <div>
-                {iwrap("briefcase",
-                  <input value={form.name} onChange={function(e) { setField("name", e.target.value); }}
-                    placeholder="Business name"
-                    style={iStyle} />, 12)}
-                {iwrap("chat",
-                  <input value={form.what} onChange={function(e) { setField("what", e.target.value); }}
-                    placeholder="What does it do? e.g. handmade candles, web design"
-                    style={iStyle} />, 12)}
-                <textarea value={form.notes} onChange={function(e) { setField("notes", e.target.value); }}
-                  placeholder="Notes for Richard (optional) - goals, constraints, ideas..."
-                  rows={3}
-                  style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "13px 16px", fontSize: 15, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", resize: "vertical", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", marginBottom: 20 }} />
-                <div style={secLabel}>Icon</div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
-                  {BIZ_ICONS.map(function(ic) {
-                    var on = (form.icon || "briefcase") === ic;
+                <div style={{ fontSize: 25, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.25, marginBottom: 8 }}>
+                  <WordReveal text={bqh.h} base={0.04} step={0.045} />
+                </div>
+                <div style={{ fontSize: 14, color: JINK3, marginBottom: 26, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>{bqh.s}</div>
+              </div>
+
+              {bq === 0 && (
+                <div>
+                  {iwrap("briefcase",
+                    <input value={form.name} onChange={function(e) { setField("name", e.target.value); }}
+                      placeholder="Business name" autoFocus
+                      className="jr-field" style={jInput} />, 12)}
+                </div>
+              )}
+
+              {bq === 1 && (
+                <div>
+                  {iwrap("chat",
+                    <input value={form.what} onChange={function(e) { setField("what", e.target.value); }}
+                      placeholder="e.g. handmade candles, web design"
+                      className="jr-field" style={jInput} />, 12)}
+                  <textarea value={form.notes} onChange={function(e) { setField("notes", e.target.value); }}
+                    placeholder="Notes for Richard (optional) - goals, constraints, ideas..."
+                    rows={3}
+                    className="jr-field" style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "13px 16px", fontSize: 15, fontFamily: UI, color: JINK, outline: "none", boxSizing: "border-box", resize: "vertical", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
+                </div>
+              )}
+
+              {bq === 2 && (
+                <div>
+                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
+                    <div style={{ position: "relative", width: 72, height: 72 }}>
+                      <div style={{ position: "absolute", inset: -12, borderRadius: "50%", background: "radial-gradient(circle," + form.color + "55 0%, transparent 70%)", filter: "blur(9px)", animation: "rclGlow 2.6s ease-in-out infinite" }} />
+                      <div key={form.icon + form.color} style={{ position: "relative", width: 72, height: 72, borderRadius: 22, background: "linear-gradient(145deg," + form.color + "," + form.color + "CC)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 26px " + form.color + "55", animation: "rclPop 0.35s ease both" }}>
+                        <SVGIcon id={form.icon || "briefcase"} size={32} color="#fff" />
+                      </div>
+                    </div>
+                  </div>
+                  <div style={bqLabel}>Icon</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+                    {BIZ_ICONS.map(function(ic, i) {
+                      var on = (form.icon || "briefcase") === ic;
+                      return (
+                        <button key={ic} onClick={function() { setField("icon", ic); }} className="jr-press"
+                          style={{ width: 48, height: 48, border: on ? "none" : "1.5px solid rgba(0,0,0,0.09)", background: on ? "linear-gradient(145deg," + form.color + "," + form.color + "CC)" : "rgba(255,255,255,0.85)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxSizing: "border-box", boxShadow: on ? "0 5px 14px " + form.color + "55" : "0 2px 6px rgba(0,0,0,0.05)", animation: "rcjChipIn 0.4s cubic-bezier(0.34,1.56,0.64,1) " + (0.05 + i * 0.04).toFixed(2) + "s both", transition: "background 0.2s ease, box-shadow 0.2s ease" }}>
+                          <SVGIcon id={ic} size={22} color={on ? "#fff" : JINK2} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div style={bqLabel}>Color</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                    {BIZ_COLORS.map(function(col, i) {
+                      var on = col === form.color;
+                      return (
+                        <button key={col} onClick={function() { setField("color", col); }} className="jr-press"
+                          style={{ width: 34, height: 34, borderRadius: "50%", border: "none", background: col, cursor: "pointer", padding: 0, boxShadow: on ? "0 0 0 3px #fff, 0 0 0 5px " + col + ", 0 4px 12px " + col + "66" : "0 2px 6px rgba(0,0,0,0.12)", transform: on ? "scale(1.08)" : "scale(1)", transition: "box-shadow 0.2s ease, transform 0.2s ease", animation: "rcjChipIn 0.4s cubic-bezier(0.34,1.56,0.64,1) " + (0.3 + i * 0.04).toFixed(2) + "s both" }} />
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {bq === 3 && (
+                <Stagger k="bq3" step={0.08}>
+                  {[
+                    { v: true, icon: "spark", t: "Yes - interview me, then plan it", s: "Richard drafts the strategy and a monthly budget." },
+                    { v: false, icon: "box", t: "No - just open a blank account", s: "Skip the questions. Budget it yourself, add a plan later." },
+                  ].map(function(o) {
+                    var sel = form.wantPlan === o.v;
                     return (
-                      <button key={ic} onClick={function() { setField("icon", ic); }}
-                        style={{ width: 48, height: 48, border: on ? ("2px solid " + form.color) : "1.5px solid rgba(0,0,0,0.09)", background: on ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.7)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxSizing: "border-box" }}>
-                        <SVGIcon id={ic} size={22} color={on ? form.color : T.ink2} />
+                      <button key={String(o.v)} className="jr-press"
+                        onClick={function() {
+                          setField("wantPlan", o.v);
+                          if (o.v) { bqAuto(); }
+                          else if (form.name.trim()) { createBlank(); }
+                        }}
+                        style={{ width: "100%", background: sel ? "rgba(137,112,198,0.06)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "16px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px rgba(137,112,198,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", marginBottom: 11, transition: "box-shadow 0.25s ease, border-color 0.25s ease" }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 12, background: sel ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.25s ease" }}>
+                          <SVGIcon id={o.icon} size={19} color={sel ? "#fff" : JINK3} />
+                        </div>
+                        <span style={{ flex: 1 }}>
+                          <span style={{ display: "block", fontSize: 15, fontWeight: 700, color: JINK, lineHeight: 1.3 }}>{o.t}</span>
+                          <span style={{ display: "block", fontSize: 12.5, color: JINK3, marginTop: 3, lineHeight: 1.45 }}>{o.s}</span>
+                        </span>
                       </button>
                     );
                   })}
-                </div>
-                <div style={secLabel}>Color</div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 20 }}>
-                  {BIZ_COLORS.map(function(col) {
-                    var on = col === form.color;
-                    return <button key={col} onClick={function() { setField("color", col); }} style={{ width: 32, height: 32, borderRadius: "50%", border: on ? "3px solid rgba(0,0,0,0.25)" : "2px solid rgba(0,0,0,0.08)", background: col, cursor: "pointer", padding: 0 }} />;
+                </Stagger>
+              )}
+
+              {bq === 4 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                  {STRUCTURES.map(function(o, i) {
+                    return (
+                      <JrChip key={o.v} label={o.l} selected={form.structure === o.v} delay={0.05 + i * 0.06}
+                        style={{ padding: "13px 20px" }}
+                        onPress={function() { setField("structure", o.v); bqAuto(); }} />
+                    );
                   })}
                 </div>
-                <div style={secLabel}>Want Richard to build your plan?</div>
-                {ipills(form.wantPlan ? "yes" : "no", function(v) { setField("wantPlan", v === "yes"); }, [{ v: "yes", l: "Yes, plan it" }, { v: "no", l: "No, just create" }])}
-                <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5 }}>{form.wantPlan ? "Richard interviews you, then drafts a plan and a monthly budget." : "Skip the questions - open a blank account you can budget yourself."}</div>
-                {icta(form.wantPlan ? "Next" : "Create account", function() { if (form.wantPlan) { setStep(2); } else { createBlank(); } }, !form.name.trim())}
-              </div>
-            )}
+              )}
 
-            {step === 2 && (
-              <div>
-                <div style={secLabel}>Are you a company or an individual?</div>
-                {ipills(form.structure, function(v) { setField("structure", v); }, STRUCTURES)}
-                <div style={secLabel}>What stage are you at?</div>
-                {ipills(form.stage, function(v) { setField("stage", v); }, STAGES)}
-                <div style={secLabel}>How big is this project?</div>
-                {ipills(form.size, function(v) { setField("size", v); }, SIZES)}
-                {icta("Next", function() { setStep(3); }, false)}
-              </div>
-            )}
+              {bq === 5 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                  {STAGES.map(function(o, i) {
+                    return (
+                      <JrChip key={o.v} label={o.l} selected={form.stage === o.v} delay={0.05 + i * 0.06}
+                        style={{ padding: "13px 20px" }}
+                        onPress={function() { setField("stage", o.v); bqAuto(); }} />
+                    );
+                  })}
+                </div>
+              )}
 
-            {step === 3 && (
-              <div>
-                <div style={secLabel}>How much will you spend per month?</div>
-                <div style={{ position: "relative", marginBottom: 12 }}>
-                  <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", fontSize: 16, fontWeight: 600, color: T.ink3, fontFamily: UI }}>{sym}</div>
-                  <input value={form.monthly} onChange={function(e) { setField("monthly", e.target.value); }} type="number" inputMode="decimal" placeholder="0"
-                    style={amtStyleI} />
+              {bq === 6 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                  {SIZES.map(function(o, i) {
+                    return (
+                      <JrChip key={o.v} label={o.l} selected={form.size === o.v} delay={0.05 + i * 0.06}
+                        style={{ padding: "13px 20px" }}
+                        onPress={function() { setField("size", o.v); bqAuto(); }} />
+                    );
+                  })}
                 </div>
-                <div style={secLabel}>Monthly revenue goal</div>
-                <div style={{ position: "relative", marginBottom: 12 }}>
-                  <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", fontSize: 16, fontWeight: 600, color: T.ink3, fontFamily: UI }}>{sym}</div>
-                  <input value={form.revenueGoal} onChange={function(e) { setField("revenueGoal", e.target.value); }} type="number" inputMode="decimal" placeholder="0"
-                    style={amtStyleI} />
+              )}
+
+              {bq === 7 && (
+                <div style={{ paddingTop: 14 }}>
+                  <QuickAmount value={form.monthly} onChange={function(v) { setField("monthly", v); }} picks={[250, 500, 1000, 2500]} />
                 </div>
-                <div style={secLabel}>Months of runway / savings set aside</div>
-                <input value={form.runway} onChange={function(e) { setField("runway", e.target.value); }} type="number" inputMode="decimal" placeholder="e.g. 6"
-                  style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 16px", fontSize: 16, fontFamily: UI, color: T.ink, fontWeight: 600, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", marginBottom: 12 }} />
-                {iwrap("star",
-                  <input value={form.goal} onChange={function(e) { setField("goal", e.target.value); }}
-                    placeholder="What does success look like in 12 months?"
-                    style={iStyle} />, 12)}
-                <div style={secLabel}>Money to set aside now (optional)</div>
-                <div style={{ position: "relative", marginBottom: 10 }}>
-                  <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", fontSize: 16, fontWeight: 600, color: T.ink3, fontFamily: UI }}>{sym}</div>
-                  <input value={form.startCap} onChange={function(e) { setField("startCap", e.target.value); }} type="number" inputMode="decimal" placeholder="0"
-                    style={amtStyleI} />
+              )}
+
+              {bq === 8 && (
+                <div style={{ paddingTop: 14 }}>
+                  <QuickAmount value={form.revenueGoal} onChange={function(v) { setField("revenueGoal", v); }} picks={[500, 1000, 3000, 5000]} />
                 </div>
-                {parseFloat(form.startCap) > 0 && (
-                  <div style={{ marginBottom: 12 }}>
-                    {ipills(form.capSrc, function(v) { setField("capSrc", v); }, [{ v: "external", l: "New money" }, { v: "balance", l: "From balance" }])}
-                    <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.45 }}>{form.capSrc === "external" ? "Outside money you are putting in - your spendable balance is untouched." : "Moves from your spendable balance into the business. Net worth is unchanged."}</div>
+              )}
+
+              {bq === 9 && (
+                <div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 18 }}>
+                    {[3, 6, 12, 24].map(function(m, i) {
+                      return (
+                        <JrChip key={m} label={m + " months"} selected={runwayNum === m} delay={0.05 + i * 0.06}
+                          onPress={function() { setField("runway", String(m)); }} />
+                      );
+                    })}
                   </div>
-                )}
-                {icta("Build my plan with Richard", function() { setStep(4); buildPlan(); }, monthly <= 0)}
-              </div>
-            )}
+                  <input value={form.runway} onChange={function(e) { setField("runway", e.target.value); }} type="number" inputMode="decimal" placeholder="or type the months"
+                    className="jr-field" style={Object.assign({}, jInput, { padding: "15px 16px" })} />
+                </div>
+              )}
 
+              {bq === 10 && (
+                <div>
+                  {iwrap("star",
+                    <input value={form.goal} onChange={function(e) { setField("goal", e.target.value); }}
+                      placeholder="e.g. steady side income"
+                      className="jr-field" style={jInput} />, 14)}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {["Quit my job", "Steady side income", "First 100 customers", "Profitable every month"].map(function(g, i) {
+                      return (
+                        <JrChip key={g} small label={g} selected={form.goal === g} delay={0.1 + i * 0.06}
+                          onPress={function() { setField("goal", g); }} />
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {bq === 11 && (
+                <div style={{ paddingTop: 14 }}>
+                  <QuickAmount value={form.startCap} onChange={function(v) { setField("startCap", v); }} picks={[500, 1000, 5000]} />
+                  {capNum > 0 && (
+                    <div style={{ marginTop: 20, textAlign: "center" }}>
+                      <div style={{ display: "flex", justifyContent: "center", gap: 10, marginBottom: 10 }}>
+                        {[{ v: "external", l: "New money" }, { v: "balance", l: "From balance" }].map(function(o, i) {
+                          return (
+                            <JrChip key={o.v} label={o.l} selected={form.capSrc === o.v} delay={0.05 + i * 0.06}
+                              onPress={function() { setField("capSrc", o.v); }} />
+                          );
+                        })}
+                      </div>
+                      <div key={form.capSrc} style={{ fontSize: 12.5, color: JINK2, lineHeight: 1.5, maxWidth: 300, margin: "0 auto", animation: "rclPhrase 0.35s ease both" }}>
+                        {form.capSrc === "external" ? "Outside money you are putting in - your spendable balance is untouched." : "Moves from your spendable balance into the business. Net worth is unchanged."}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </JrStepShell>
           </div>
+        </div>
+
+        <div style={{ padding: "12px 24px 40px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box", position: "relative", zIndex: 2 }}>
+          {bq === 0 && <JrBtn label="Continue" disabled={!form.name.trim()} onPress={bqAdvance} />}
+          {(bq === 1 || bq === 2) && <JrBtn label="Continue" onPress={bqAdvance} />}
+          {bq === 3 && (
+            <div style={{ textAlign: "center", fontSize: 12.5, color: JINK3, fontWeight: 600, padding: "14px 0" }}>Pick one to continue</div>
+          )}
+          {bq >= 4 && bq <= 6 && (
+            <div style={{ textAlign: "center", fontSize: 12.5, color: JINK3, fontWeight: 600, padding: "14px 0" }}>Tap an option to continue</div>
+          )}
+          {bq === 7 && <JrBtn label="Continue" disabled={monthly <= 0} onPress={bqAdvance} />}
+          {(bq === 8 || bq === 9 || bq === 10) && (
+            <div>
+              <JrBtn label="Continue" onPress={bqAdvance} />
+              <button onClick={bqAdvance} className="jr-press"
+                style={{ width: "100%", background: "none", border: "none", color: JINK3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0" }}>
+                Skip for now
+              </button>
+            </div>
+          )}
+          {bq === 11 && <JrBtn label="Build my plan with Richard" onPress={bqAdvance} />}
         </div>
       </div>
     );
