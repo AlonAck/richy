@@ -1317,6 +1317,12 @@ function jrHex(h) {
   if (isNaN(n) || h.length !== 6) return [0.5, 0.5, 0.5];
   return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
 }
+// Same hex, back out to an rgba() string at the given alpha - for veils that
+// must match the live (theme + dark-mode) background.
+function jrRgba(hex, a) {
+  var c = jrHex(hex);
+  return "rgba(" + Math.round(c[0] * 255) + "," + Math.round(c[1] * 255) + "," + Math.round(c[2] * 255) + "," + a + ")";
+}
 
 // Raw-WebGL animated shader background (no three.js). Flowing chromatic light
 // ribbons - reworked from the classic sine-ribbon shader to TINT a warm base
@@ -1363,15 +1369,18 @@ function JrShaderBg(props) {
     var vs = "attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }";
     var fs = [
       "precision highp float;",
-      "uniform vec2 u_res; uniform float u_time, u_xScale, u_yScale, u_distortion, u_intensity;",
+      "uniform vec2 u_res; uniform float u_time, u_xScale, u_yScale, u_intensity;",
       "uniform vec3 u_c1, u_c2, u_c3, u_base;",
       "void main(){",
       "  vec2 p = (gl_FragCoord.xy * 2.0 - u_res) / min(u_res.x, u_res.y);",
-      "  float d = length(p) * u_distortion;",
-      "  float rx = p.x * (1.0 + d), gx = p.x, bx = p.x * (1.0 - d);",
-      "  float i1 = 0.05 / abs(p.y + sin((rx + u_time) * u_xScale) * u_yScale);",
-      "  float i2 = 0.05 / abs(p.y + sin((gx + u_time * 1.18) * u_xScale) * u_yScale);",
-      "  float i3 = 0.05 / abs(p.y + sin((bx + u_time * 0.82) * u_xScale) * u_yScale);",
+      // Three ribbons share one traveling wave, offset by a FIXED 120 degrees
+      // each. They weave against each other but their spacing never drifts -
+      // no per-ribbon time multiplier, no distance-based fan-out - so the
+      // pattern reads as consistent from center to edge and start to finish.
+      "  float ph = (p.x + u_time) * u_xScale;",
+      "  float i1 = 0.05 / abs(p.y + sin(ph) * u_yScale);",
+      "  float i2 = 0.05 / abs(p.y + sin(ph + 2.0944) * u_yScale);",
+      "  float i3 = 0.05 / abs(p.y + sin(ph + 4.1888) * u_yScale);",
       // Tint the warm base toward each ribbon color by its (clamped) mask,
       // rather than adding light - keeps ribbons colored on a light ground.
       "  float m1 = clamp(i1 * u_intensity, 0.0, 1.0);",
@@ -1408,7 +1417,7 @@ function JrShaderBg(props) {
     S.lose = gl.getExtension("WEBGL_lose_context");
 
     var U = {};
-    ["u_res", "u_time", "u_xScale", "u_yScale", "u_distortion", "u_intensity", "u_c1", "u_c2", "u_c3", "u_base"].forEach(function(n) {
+    ["u_res", "u_time", "u_xScale", "u_yScale", "u_intensity", "u_c1", "u_c2", "u_c3", "u_base"].forEach(function(n) {
       U[n] = gl.getUniformLocation(prog, n);
     });
     S.u = U;
@@ -1448,7 +1457,6 @@ function JrShaderBg(props) {
       gl.uniform1f(U.u_time, t);
       gl.uniform1f(U.u_xScale, cur.xScale);
       gl.uniform1f(U.u_yScale, cur.yScale);
-      gl.uniform1f(U.u_distortion, 0.06);
       gl.uniform1f(U.u_intensity, cur.intensity);
       gl.uniform3fv(U.u_c1, cur.c[0]);
       gl.uniform3fv(U.u_c2, cur.c[1]);
@@ -8443,6 +8451,7 @@ function Advisor(props) {
   // (the old bright #4ADE80 and light orangeHi washed out on the pale background).
   var GREEN_HERO = T.advGreen;
   var ringColor = advice && advice.score >= 80 ? GREEN_HERO : advice && advice.score >= 60 ? T.gold : T.advRingLow;
+  var name = (props.username || "").trim() || "there";
 
   // Three real signals for the dark card's bottom row.
   var bufferMonths = expense > 0 ? (netWorth / expense) : (netWorth > 0 ? 12 : 0);
@@ -8908,8 +8917,23 @@ function Advisor(props) {
     );
   }
 
-  return (
+  // Ambient shader backdrop for the Richard tab - the same flowing lines as
+  // the sign-up journey, scoped to the app column (fixed, centered, capped at
+  // the 430px width) and sitting behind the content. base = T.bg so the quiet
+  // areas match the live theme/dark background seamlessly; the opaque cards
+  // scroll over it, ribbons show in the gaps and behind the header.
+  var advShader = (
     <div>
+      <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base={T.bg} speed={0.16} intensity={0.55} yScale={0.44} xScale={1.05}
+        style={{ position: "fixed", top: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, height: "100%", zIndex: 0 }} />
+      <div style={{ position: "fixed", top: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, height: "100%", zIndex: 0, pointerEvents: "none", background: "linear-gradient(180deg," + jrRgba(T.bg, 0.72) + " 0%," + jrRgba(T.bg, 0.34) + " 20%," + jrRgba(T.bg, 0.34) + " 74%," + jrRgba(T.bg, 0.6) + " 100%)" }} />
+    </div>
+  );
+
+  return (
+    <div style={{ position: "relative" }}>
+      {advShader}
+      <div style={{ position: "relative", zIndex: 1 }}>
       {richardHead}
 
       <BigDecisions ctx={ctx} coreProblem={coreProblem} username={props.username} lang={props.lang} richardInstructions={props.richardInstructions} decisions={props.decisions} onSaveDecisions={props.onSaveDecisions} />
@@ -9166,6 +9190,7 @@ function Advisor(props) {
           </div>
         </div>
       ), document.body)}
+      </div>
     </div>
   );
 }
