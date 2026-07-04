@@ -6576,6 +6576,7 @@ function Trips(props) {
     var sys = "You are Richard, a warm and knowledgeable personal finance and travel advisor inside the Richy app. "
       + "The user is setting up a trip budget: " + (form.name || "a trip") + " to " + (form.destination || "an unspecified destination") + ". "
       + "Trip details: " + (form.days || 0) + " days, " + (form.style || "comfort") + " style, total budget " + dollars(total) + ". "
+      + (form.notes && form.notes.trim() ? ("Notes from the traveler: " + form.notes.trim() + ". ") : "")
       + "Current budget split: " + (allocSummary || "not yet set") + ". "
       + "The user has comments or suggestions about how this budget is split. Listen to their feedback and adjust the allocation to fit their priorities. "
       + "You can DIRECTLY change the budget, not just describe it. When the user wants a change, give one short plain-text sentence explaining what you did, then on a new line append a directive in EXACTLY this form: @@ALLOC[{\"category\":\"Food\",\"amount\":600},{\"category\":\"Buffer\",\"amount\":150}] "
@@ -6628,6 +6629,7 @@ function Trips(props) {
     var sys = "You are Richard, a warm and knowledgeable personal finance and travel advisor inside the Richy app. "
       + "The user is planning a trip: " + (trip.name || "a trip") + " to " + (trip.destination || "an unspecified destination") + ". "
       + "Trip details: " + (trip.days || 0) + " days, " + (trip.style || "comfort") + " style, total budget " + dollars(trip.total || 0) + ". "
+      + (trip.notes && trip.notes.trim() ? ("Notes from the traveler: " + trip.notes.trim() + ". ") : "")
       + "Budget allocation: " + allocSummary + ". " + liveContext
       + "The user has notes, suggestions, or comments about this trip plan. Listen carefully and adjust the budget to their feedback. "
       + "You can DIRECTLY change the budget, not just describe it. When the user wants a change, give one short plain-text sentence explaining what you did, then on a new line append a directive in EXACTLY this form: @@ALLOC[{\"category\":\"Housing\",\"amount\":400},{\"category\":\"Food\",\"amount\":300}] "
@@ -6719,6 +6721,7 @@ function Trips(props) {
     var currentSplit = alloc.map(function(a) { return a.label + " " + dollars(a.planned || 0); }).join(", ");
     var convo = wizardNoteChat.map(function(m) { return (m.role === "user" ? "User" : m.role === "system" ? "System" : "Richard") + ": " + m.text; }).join("\n");
     var usr = "Re-split a " + (form.style || "comfort") + " trip to " + (form.destination || "somewhere") + " for " + (form.days || "a few") + " days, total budget " + dollars(total) + ". "
+      + (form.notes && form.notes.trim() ? ("Notes from the traveler: " + form.notes.trim() + ". ") : "")
       + (currentSplit ? "Current split: " + currentSplit + ". " : "")
       + (convo ? "Take this conversation with the user about their priorities into account:\n" + convo + "\n" : "")
       + "Produce an updated split across the buckets that reflects those priorities, 3 short practical tips, and a budget assessment.";
@@ -9998,6 +10001,7 @@ function buildRoadmap(biz, richardInstructions, lang, cb) {
     + "Monthly budget " + dollars(pf.monthly || 0) + ", revenue goal " + dollars(pf.revenueGoal || 0) + ", cash on hand " + dollars(businessCash(biz)) + ". "
     + "This month so far: " + dollars(pl.revenue) + " revenue, " + dollars(pl.spend) + " spent. "
     + "12-month goal: " + (pf.goal || "unspecified") + ". "
+    + (pf.notes && pf.notes.trim() ? ("Owner's notes: " + pf.notes.trim() + ". ") : "")
     + (biz.plan && biz.plan.summary ? ("Current plan summary: " + biz.plan.summary + " ") : "")
     + "Build the roadmap.";
   callClaude([{ role: "user", content: usr }], sys, 1100, function(e, text) {
@@ -10111,7 +10115,8 @@ function bizWeeklyDigest(biz) {
     + "Budget buckets (spent of planned): " + (catLine || "none") + ". "
     + (biz.roadmap ? ("Roadmap: " + prog.done + " of " + prog.total + " tasks done" + (cur ? (", current milestone: " + cur.title + (nextTask ? (", next task: " + nextTask) : "")) : ", all milestones complete") + ". ") : "No roadmap yet. ")
     + ((biz.reviews && biz.reviews[0]) ? ("Last week you told them: " + biz.reviews[0].headline + " ") : "This is their first weekly review. ")
-    + "12-month goal: " + (pf.goal || "unspecified") + ".";
+    + "12-month goal: " + (pf.goal || "unspecified") + "."
+    + (pf.notes && pf.notes.trim() ? (" Owner's notes: " + pf.notes.trim() + ".") : "");
 }
 // Offline/parse-failure fallback so a review still lands every week.
 function localWeeklyReview(biz) {
@@ -11091,6 +11096,7 @@ function BusinessView(props) {
       + "Business: " + (biz.name || "the business") + " - " + (biz.what || "unspecified") + ". Structure: " + labelOf(STRUCTURES, pf.structure) + ". Stage: " + labelOf(STAGES, pf.stage) + ". Scale: " + labelOf(SIZES, pf.size) + ". Revenue goal " + dollars(pf.revenueGoal || 0) + "/month. "
       + "LIVE NUMBERS - " + bizContextLine(biz) + (paceNow ? (" " + paceNow.text) : "") + " "
       + "Monthly budget split: " + (split || "not set") + ". "
+      + (pf.notes && pf.notes.trim() ? ("Owner's notes: " + pf.notes.trim() + ". ") : "")
       + (openTasks.length ? ("Open roadmap tasks: " + openTasks.join(" | ") + ". ") : "")
       + "Ground every answer in these numbers, and when you give advice end with one concrete action. "
       + "You can DIRECTLY change the monthly budget split. When the owner wants that, give one short sentence explaining what you did, then on a new line append: @@ALLOC[{\"category\":\"Marketing\",\"amount\":600}] - only the buckets you are changing, whole numbers, keep the total close to " + dollars(pf.monthly || 0) + " by also adjusting Buffer or Other. Categories only from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer. "
