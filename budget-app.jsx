@@ -1308,6 +1308,174 @@ function WordReveal(props) {
   );
 }
 
+// Hex ("#8970C6" / "#abc") -> [r,g,b] in 0..1, for feeding theme colors into
+// the shader. Falls back to mid-grey on a bad string.
+function jrHex(h) {
+  h = String(h || "").replace("#", "");
+  if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+  var n = parseInt(h, 16);
+  if (isNaN(n) || h.length !== 6) return [0.5, 0.5, 0.5];
+  return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+}
+
+// Raw-WebGL animated shader background (no three.js). Flowing chromatic light
+// ribbons - reworked from the classic sine-ribbon shader to TINT a warm base
+// instead of glowing neon on black, so it fits the app's parchment aesthetic.
+// Colors come from the live theme (passed as hex), so it follows purple /
+// classic / blue automatically. It's "reactive": speed, intensity and the
+// three ribbon colors ease toward the latest props every frame, so a screen
+// can make it surge and shift hue as the user moves through the flow.
+// Degrades gracefully: no WebGL -> renders nothing and the container's own
+// background shows; reduced-motion -> holds a single static frame.
+function JrShaderBg(props) {
+  var canvasRef = useRef(null);
+  var stateRef = useRef({ gl: null, prog: null, u: {}, raf: null, buf: null, lose: null });
+  // Live targets the render loop eases toward. Updated by the effect below on
+  // every prop change - this is what makes the background reactive.
+  var tgtRef = useRef({
+    speed: props.speed == null ? 1 : props.speed,
+    intensity: props.intensity == null ? 1 : props.intensity,
+    xScale: props.xScale == null ? 1.0 : props.xScale,
+    yScale: props.yScale == null ? 0.5 : props.yScale,
+    c: (props.colors || ["#8970C6", "#C8B1FF", "#C8983A"]).map(jrHex),
+    base: jrHex(props.base || "#FBF3E8"),
+  });
+
+  useEffect(function() {
+    tgtRef.current = {
+      speed: props.speed == null ? 1 : props.speed,
+      intensity: props.intensity == null ? 1 : props.intensity,
+      xScale: props.xScale == null ? 1.0 : props.xScale,
+      yScale: props.yScale == null ? 0.5 : props.yScale,
+      c: (props.colors || ["#8970C6", "#C8B1FF", "#C8983A"]).map(jrHex),
+      base: jrHex(props.base || "#FBF3E8"),
+    };
+  });
+
+  useEffect(function() {
+    var canvas = canvasRef.current;
+    if (!canvas) return;
+    var gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+    if (!gl) return; // no WebGL -> container background shows through
+    var S = stateRef.current;
+    S.gl = gl;
+
+    var vs = "attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }";
+    var fs = [
+      "precision highp float;",
+      "uniform vec2 u_res; uniform float u_time, u_xScale, u_yScale, u_distortion, u_intensity;",
+      "uniform vec3 u_c1, u_c2, u_c3, u_base;",
+      "void main(){",
+      "  vec2 p = (gl_FragCoord.xy * 2.0 - u_res) / min(u_res.x, u_res.y);",
+      "  float d = length(p) * u_distortion;",
+      "  float rx = p.x * (1.0 + d), gx = p.x, bx = p.x * (1.0 - d);",
+      "  float i1 = 0.05 / abs(p.y + sin((rx + u_time) * u_xScale) * u_yScale);",
+      "  float i2 = 0.05 / abs(p.y + sin((gx + u_time * 1.18) * u_xScale) * u_yScale);",
+      "  float i3 = 0.05 / abs(p.y + sin((bx + u_time * 0.82) * u_xScale) * u_yScale);",
+      // Tint the warm base toward each ribbon color by its (clamped) mask,
+      // rather than adding light - keeps ribbons colored on a light ground.
+      "  float m1 = clamp(i1 * u_intensity, 0.0, 1.0);",
+      "  float m2 = clamp(i2 * u_intensity, 0.0, 1.0);",
+      "  float m3 = clamp(i3 * u_intensity, 0.0, 1.0);",
+      "  vec3 col = u_base;",
+      "  col = mix(col, u_c3, m3 * 0.9);",
+      "  col = mix(col, u_c1, m1);",
+      "  col = mix(col, u_c2, m2 * 0.85);",
+      "  gl_FragColor = vec4(col, 1.0);",
+      "}",
+    ].join("\n");
+
+    function mkShader(type, src) {
+      var sh = gl.createShader(type);
+      gl.shaderSource(sh, src); gl.compileShader(sh);
+      return sh;
+    }
+    var prog = gl.createProgram();
+    gl.attachShader(prog, mkShader(gl.VERTEX_SHADER, vs));
+    gl.attachShader(prog, mkShader(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+    gl.useProgram(prog);
+    S.prog = prog;
+
+    var buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    var loc = gl.getAttribLocation(prog, "p");
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    S.buf = buf;
+    S.lose = gl.getExtension("WEBGL_lose_context");
+
+    var U = {};
+    ["u_res", "u_time", "u_xScale", "u_yScale", "u_distortion", "u_intensity", "u_c1", "u_c2", "u_c3", "u_base"].forEach(function(n) {
+      U[n] = gl.getUniformLocation(prog, n);
+    });
+    S.u = U;
+
+    function resize() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      var w = Math.floor(canvas.clientWidth * dpr), h = Math.floor(canvas.clientHeight * dpr);
+      if (w < 2 || h < 2) return;
+      if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+      gl.viewport(0, 0, w, h);
+      gl.uniform2f(U.u_res, w, h);
+    }
+
+    // Eased "current" values so prop changes glide instead of snapping.
+    var cur = {
+      speed: tgtRef.current.speed, intensity: tgtRef.current.intensity,
+      xScale: tgtRef.current.xScale, yScale: tgtRef.current.yScale,
+      c: tgtRef.current.c.map(function(v) { return v.slice(); }),
+      base: tgtRef.current.base.slice(),
+    };
+    var t = 0, last = 0, reduced = jrReduced(), hidden = false;
+    function lerp(a, b, k) { return a + (b - a) * k; }
+    function ease3(a, b, k) { a[0] = lerp(a[0], b[0], k); a[1] = lerp(a[1], b[1], k); a[2] = lerp(a[2], b[2], k); }
+
+    function frame(now) {
+      var tg = tgtRef.current;
+      var dt = last ? Math.min(0.05, (now - last) / 1000) : 0.016; last = now;
+      var k = Math.min(1, dt * 3.2); // ~easing rate toward targets
+      cur.speed = lerp(cur.speed, tg.speed, k);
+      cur.intensity = lerp(cur.intensity, tg.intensity, k);
+      cur.xScale = lerp(cur.xScale, tg.xScale, k);
+      cur.yScale = lerp(cur.yScale, tg.yScale, k);
+      ease3(cur.c[0], tg.c[0], k); ease3(cur.c[1], tg.c[1], k); ease3(cur.c[2], tg.c[2], k);
+      ease3(cur.base, tg.base, k);
+      if (!reduced && !hidden) t += dt * cur.speed;
+      resize();
+      gl.uniform1f(U.u_time, t);
+      gl.uniform1f(U.u_xScale, cur.xScale);
+      gl.uniform1f(U.u_yScale, cur.yScale);
+      gl.uniform1f(U.u_distortion, 0.06);
+      gl.uniform1f(U.u_intensity, cur.intensity);
+      gl.uniform3fv(U.u_c1, cur.c[0]);
+      gl.uniform3fv(U.u_c2, cur.c[1]);
+      gl.uniform3fv(U.u_c3, cur.c[2]);
+      gl.uniform3fv(U.u_base, cur.base);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      // Reduced motion: draw one settled frame, then idle (no time advance,
+      // but keep easing color/intensity so screen changes still register).
+      S.raf = requestAnimationFrame(frame);
+    }
+    S.raf = requestAnimationFrame(frame);
+
+    function onVis() { hidden = document.hidden; }
+    window.addEventListener("resize", resize);
+    document.addEventListener("visibilitychange", onVis);
+
+    return function() {
+      if (S.raf) cancelAnimationFrame(S.raf);
+      window.removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", onVis);
+      try { if (S.buf) gl.deleteBuffer(S.buf); if (S.prog) gl.deleteProgram(S.prog); if (S.lose) S.lose.loseContext(); } catch (e) {}
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} style={Object.assign({ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", display: "block", pointerEvents: "none", zIndex: 0 }, props.style)} />;
+}
+
 function SVGIcon(props) {
   var size = props.size || 22;
   var color = props.color || T.ink2;
@@ -1867,11 +2035,12 @@ function WelcomeHero(props) {
   useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
   return (
     <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-      <div style={{ position: "absolute", top: -80, right: -60, width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle,rgba(137,112,198,0.16) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift 9s ease-in-out infinite" }} />
-      <div style={{ position: "absolute", bottom: 40, left: -90, width: 260, height: 260, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,154,60,0.13) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift2 11s ease-in-out infinite" }} />
-      <div style={{ position: "absolute", top: "38%", left: -50, width: 170, height: 170, borderRadius: "50%", background: "radial-gradient(circle,rgba(39,168,95,0.10) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift 13s ease-in-out 1.5s infinite" }} />
+      <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base="#FBF3E8" speed={0.22} intensity={0.85} yScale={0.42} xScale={1.05} style={{ position: "absolute" }} />
+      {/* Cream veil so the headline (top) and buttons (bottom) stay crisp while
+          the ribbons shine through the middle. */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.9) 0%, rgba(251,243,232,0.4) 26%, rgba(251,243,232,0.18) 52%, rgba(251,243,232,0.55) 82%, rgba(251,243,232,0.85) 100%)" }} />
 
-      <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", padding: "54px 24px 30px", position: "relative" }}>
+      <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", padding: "54px 24px 30px", position: "relative", zIndex: 2 }}>
         <Stagger step={0.09} style={{ width: "100%", maxWidth: 380, display: "flex", flexDirection: "column", alignItems: "center" }}>
           <RichyLogo size={74} style={{ display: "block", margin: "0 auto", borderRadius: 21, boxShadow: "0 12px 32px rgba(0,0,0,0.22), 0 4px 12px rgba(0,0,0,0.14)" }} />
           <div style={{ fontSize: 31, fontWeight: 800, color: JINK, letterSpacing: "-0.03em", lineHeight: 1.14, textAlign: "center", marginTop: 20 }}>
@@ -1898,7 +2067,7 @@ function WelcomeHero(props) {
         </Stagger>
       </div>
 
-      <div style={{ padding: "6px 24px 34px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box", position: "relative" }}>
+      <div style={{ padding: "6px 24px 34px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box", position: "relative", zIndex: 2 }}>
         <div style={{ animation: "rclPhrase 0.5s ease 0.75s both" }}>
           <JrBtn label="Get started" onPress={props.onGetStarted} />
           <button onClick={props.onSignIn}
@@ -2782,8 +2951,22 @@ function MathStoryScreen(props) {
     ),
   });
 
+  // Reactive shader targets. Calm on the ring, surges (faster + brighter) on
+  // the big-number beats, and swings green + gold on the good-news beats. The
+  // shader eases between these on its own, so each phase change morphs.
+  var curBeat = beats[Math.min(bi, beats.length - 1)];
+  var accentGreen = ph === "commit" || (ph === "beats" && curBeat && curBeat.color === T.green);
+  var hasBig = ph === "beats" && curBeat && !!curBeat.big;
+  var shColors = accentGreen ? [T.green, "#7BD6A2", T.green] : [T.orange, T.orangeHi, T.orange];
+  var shSpeed = ph === "ring" ? 0.18 : ph === "commit" ? 0.26 : (hasBig ? 0.6 : 0.36);
+  var shIntensity = ph === "ring" ? 0.6 : ph === "commit" ? 0.92 : (hasBig ? 1.18 : 0.82);
+  var shY = hasBig ? 0.52 : 0.44;
+
   return (
-    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI }}>
+    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, position: "relative", overflow: "hidden" }}>
+      <JrShaderBg colors={shColors} base="#FBF3E8" speed={shSpeed} intensity={shIntensity} yScale={shY} xScale={1.1} style={{ position: "absolute" }} />
+      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.78) 0%, rgba(251,243,232,0.28) 34%, rgba(251,243,232,0.32) 66%, rgba(251,243,232,0.72) 100%)" }} />
+      <div style={{ position: "relative", zIndex: 2 }}>
       {ph === "ring" && (
         <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 32px" }}>
           <div style={{ textAlign: "center" }}>
@@ -2809,6 +2992,7 @@ function MathStoryScreen(props) {
           <CommitScreen username={props.username} onCommit={props.onCommit} />
         </JrStepShell>
       )}
+      </div>
     </div>
   );
 }
