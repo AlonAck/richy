@@ -6498,6 +6498,13 @@ function Trips(props) {
   var _v = useState(props.openTripId ? "detail" : "list"); var view = _v[0]; var setView = _v[1];
   var _aid = useState(props.openTripId || null); var activeId = _aid[0]; var setActiveId = _aid[1];
   var _st = useState(1); var step = _st[0]; var setStep = _st[1];
+  // Jomo interview position for the create-a-trip flow: one question per
+  // screen (tq), plus a "do the math" story beat index. `step` still gates the
+  // phases: 1 = interview portal, "story" = trip story, 2 = budget split.
+  var _tq = useState(0); var tq = _tq[0]; var setTq = _tq[1];
+  var _tqd = useState("fwd"); var tqDir = _tqd[0]; var setTqDir = _tqd[1];
+  var _trb = useState(0); var tripBeat = _trb[0]; var setTripBeat = _trb[1];
+  var tripAdvRef = useRef(false);
   var _fm = useState({ name: "", destination: "", total: "", days: "", startDate: "", style: "comfort", icon: "plane", notes: "", wantPlan: true });
   var form = _fm[0]; var setForm = _fm[1];
   var _pl = useState(false); var planning = _pl[0]; var setPlanning = _pl[1];
@@ -6765,7 +6772,7 @@ function Trips(props) {
   }
   function startWizard() {
     setForm({ name: "", destination: "", total: "", days: "", startDate: "", style: "comfort", icon: "plane", notes: "", wantPlan: true });
-    setAlloc([]); setTips([]); setStep(1); setView("wizard");
+    setAlloc([]); setTips([]); setStep(1); setTq(0); setTqDir("fwd"); setTripBeat(0); setView("wizard");
   }
   function saveTrip() {
     var total = parseFloat(form.total) || 0;
@@ -6970,57 +6977,222 @@ function Trips(props) {
     var total = parseFloat(form.total) || 0;
     var sum = allocSum(alloc);
     var styleOpts = [{ k: "budget", l: tr("styleBudget") }, { k: "comfort", l: tr("styleComfort") }, { k: "luxury", l: tr("styleLuxury") }];
+
+    // Interview (one question per screen) + "do the math" trip story: a
+    // full-screen Jomo portal on the cream journey gradient. Same form fields
+    // and the same exits (planWithRichard / applyLocalSplit -> step 2) as the
+    // old details form.
+    if (step === 1 || step === "story") {
+      var TQ_TOTAL = 9;
+      var TQS = [
+        { h: "What's the trip?", s: "Name it - a city break, a honeymoon, a festival." },
+        { h: "Where are you headed?", s: "Richard tailors the plan to the place." },
+        { h: "How many days?", s: "Roughly how long you'll be away." },
+        { h: "When do you leave?", s: "Optional - lets Richard pace your saving." },
+        { h: "What's the budget?", s: "The whole pot - flights, beds, food, fun." },
+        { h: "What's the vibe?", s: "How you like to travel shapes the split." },
+        { h: "Give it a look.", s: "The icon this trip wears in the app." },
+        { h: "Anything Richard should know?", s: "Must-dos, who's coming, the style. Optional." },
+        { h: "Want Richard to plan the budget?", s: "He'll split it across the trip - or you can." },
+      ];
+      var tqh = TQS[tq] || TQS[0];
+      var daysNum = parseInt(form.days, 10) || 0;
+      function tqAdvance() {
+        setTqDir("fwd");
+        if (tq >= TQ_TOTAL - 1) { setTripBeat(0); setStep("story"); return; }
+        setTq(tq + 1);
+      }
+      function tqAuto() {
+        if (tripAdvRef.current) return;
+        tripAdvRef.current = true;
+        setTimeout(function() { tripAdvRef.current = false; tqAdvance(); }, 240);
+      }
+      function tqBack() {
+        if (tq <= 0) { setView("list"); return; }
+        setTqDir("back"); setTq(tq - 1);
+      }
+      var jInput = { width: "100%", background: "rgba(255,255,255,0.9)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 16px", fontSize: 16, fontFamily: UI, color: JINK, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" };
+
+      // ---- Trip story ----
+      if (step === "story") {
+        var stTotal = parseFloat(form.total) || 0;
+        var stDays = parseInt(form.days, 10) || 0;
+        var stPerDay = stDays > 0 ? Math.round(stTotal / stDays) : 0;
+        var stWhere = (form.destination || form.name || "your trip").trim();
+        var stMonths = 0;
+        if (form.startDate) {
+          var sd = new Date(form.startDate + "T00:00:00");
+          if (!isNaN(sd.getTime())) { var nowD = new Date(); stMonths = Math.max(0, Math.round((sd - nowD) / (30 * 86400000))); }
+        }
+        var stPerMonth = stMonths >= 1 ? Math.round(stTotal / stMonths) : 0;
+        var styleFlavor = form.style === "luxury" ? "Luxury's the vibe - Richard leaves room for the good stuff." : form.style === "budget" ? "Lean and smart - Richard makes every dollar travel far." : "Comfort's the vibe - a balance of nice and sensible.";
+        var tripBeats = [];
+        tripBeats.push({ key: "total", kicker: stWhere, color: T.orange, headline: stDays > 0 ? (stDays + (stDays === 1 ? " day away" : " days away")) : "Your trip", big: { value: stTotal }, sub: "The whole pot - flights, beds, food and fun. " + styleFlavor });
+        if (stPerDay > 0) {
+          tripBeats.push({ key: "perday", kicker: "On the ground", color: T.orange, headline: "That's about", big: { value: stPerDay, suffix: " /day" }, sub: "Everything once you're there, spread across " + stDays + (stDays === 1 ? " day." : " days.") });
+        }
+        if (stPerMonth > 0) {
+          tripBeats.push({ key: "save", kicker: "Make it painless", color: T.green, headline: "Set aside", big: { value: stPerMonth, suffix: " /mo", color: T.green }, sub: "Save that each month and " + stWhere + " is paid for before you pack - about " + stMonths + (stMonths === 1 ? " month to go." : " months to go.") });
+        }
+        tripBeats.push({ key: "ready", kicker: "Let's plan it", color: T.orange, headline: form.wantPlan ? ("Ready to plan " + stWhere + "?") : ("Ready to set up " + stWhere + "?"), sub: form.wantPlan ? "Richard will split this into flights, stays, food and activities - and keep you on pace." : "You'll set the split yourself on the next screen - Richard just gives you the buckets.", cta: form.wantPlan ? "Plan my trip" : "Set up my budget" });
+        var tBeat = tripBeats[Math.min(tripBeat, tripBeats.length - 1)];
+        var tGreen = tBeat.color === T.green;
+        var storyContent = (
+          <div style={{ position: "fixed", inset: 0, zIndex: 91, background: JR_BG, fontFamily: UI, overflow: "hidden" }}>
+            <JrShaderBg colors={tGreen ? [T.green, "#7BD6A2", T.green] : [T.orange, T.orangeHi, T.orange]} base="#FBF3E8" speed={tBeat.big ? 0.55 : 0.28} intensity={tBeat.big ? 1.05 : 0.8} yScale={tBeat.big ? 0.5 : 0.44} xScale={1.1} style={{ position: "absolute" }} />
+            <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.78) 0%, rgba(251,243,232,0.3) 34%, rgba(251,243,232,0.34) 66%, rgba(251,243,232,0.72) 100%)" }} />
+            <div style={{ position: "relative", zIndex: 2, height: "100%" }}>
+              <JrStepShell k={tripBeat}>
+                <StoryBeat beat={tBeat} onNext={function() {
+                  if (tripBeat + 1 < tripBeats.length) { setTripBeat(tripBeat + 1); }
+                  else { setStep(2); if (form.wantPlan) { planWithRichard(); } else { applyLocalSplit(); } }
+                }} />
+              </JrStepShell>
+            </div>
+          </div>
+        );
+        return ReactDOM.createPortal(storyContent, document.body);
+      }
+
+      // ---- Interview ----
+      var interviewContent = (
+        <div style={{ position: "fixed", inset: 0, zIndex: 91, background: JR_BG, display: "flex", flexDirection: "column", fontFamily: UI, overflow: "hidden" }}>
+          <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base="#FBF3E8" speed={0.18} intensity={0.75} yScale={0.44} xScale={1.05} style={{ position: "absolute" }} />
+          <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.85) 0%, rgba(251,243,232,0.45) 24%, rgba(251,243,232,0.45) 76%, rgba(251,243,232,0.8) 100%)" }} />
+
+          <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0", position: "relative", zIndex: 2, maxWidth: 430, width: "100%", margin: "0 auto", boxSizing: "border-box" }}>
+            <JrIconBtn icon="chevron" rotate={180} onPress={tqBack} />
+            <JourneyBar pct={((tq + 1) / TQ_TOTAL) * 100} />
+            <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: JINK3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(tq + 1) + "/" + TQ_TOTAL}</div>
+          </div>
+
+          <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "28px 24px 8px", position: "relative", zIndex: 2 }}>
+            <div style={{ maxWidth: 380, margin: "0 auto" }}>
+              <JrStepShell k={tq} dir={tqDir}>
+                <div>
+                  <div style={{ fontSize: 25, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.25, marginBottom: 8 }}>
+                    <WordReveal text={tqh.h} base={0.04} step={0.045} />
+                  </div>
+                  <div style={{ fontSize: 14, color: JINK3, marginBottom: 26, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>{tqh.s}</div>
+                </div>
+
+                {tq === 0 && (
+                  <input value={form.name} onChange={function(e) { setField("name", e.target.value); }} placeholder="e.g. Tokyo Spring" autoFocus className="jr-field" style={jInput} />
+                )}
+                {tq === 1 && (
+                  <input value={form.destination} onChange={function(e) { setField("destination", e.target.value); }} placeholder="e.g. Tokyo, Japan" autoFocus className="jr-field" style={jInput} />
+                )}
+                {tq === 2 && (
+                  <div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 16 }}>
+                      {[3, 5, 7, 10, 14].map(function(d, i) {
+                        return <JrChip key={d} label={d + " days"} selected={daysNum === d} delay={0.05 + i * 0.06} onPress={function() { setField("days", String(d)); }} />;
+                      })}
+                    </div>
+                    <input value={form.days} onChange={function(e) { setField("days", e.target.value); }} type="number" inputMode="numeric" placeholder="or type the number of days" className="jr-field" style={jInput} />
+                  </div>
+                )}
+                {tq === 3 && (
+                  <input value={form.startDate} onChange={function(e) { setField("startDate", e.target.value); }} type="date" className="jr-field" style={jInput} />
+                )}
+                {tq === 4 && (
+                  <div style={{ paddingTop: 14 }}>
+                    <QuickAmount value={form.total} onChange={function(v) { setField("total", v); }} picks={[1000, 2500, 5000, 10000]} />
+                  </div>
+                )}
+                {tq === 5 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                    {styleOpts.map(function(s, i) {
+                      return <JrChip key={s.k} label={s.l} selected={form.style === s.k} delay={0.05 + i * 0.06} style={{ padding: "13px 20px" }} onPress={function() { setField("style", s.k); tqAuto(); }} />;
+                    })}
+                  </div>
+                )}
+                {tq === 6 && (
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "center", marginBottom: 22 }}>
+                      <div style={{ position: "relative", width: 72, height: 72 }}>
+                        <div style={{ position: "absolute", inset: -12, borderRadius: "50%", background: "radial-gradient(circle," + T.orangeGlow + " 0%, transparent 70%)", filter: "blur(9px)", animation: "rclGlow 2.6s ease-in-out infinite" }} />
+                        <div key={form.icon} style={{ position: "relative", width: 72, height: 72, borderRadius: 22, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 26px " + T.orangeGlow, animation: "rclPop 0.35s ease both" }}>
+                          <SVGIcon id={form.icon || "plane"} size={32} color="#fff" />
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
+                      {TRIP_ICONS.map(function(ic, i) {
+                        var on = (form.icon || "plane") === ic;
+                        return (
+                          <button key={ic} onClick={function() { setField("icon", ic); }} className="jr-press"
+                            style={{ width: 46, height: 46, border: on ? "none" : "1.5px solid rgba(0,0,0,0.09)", background: on ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : "rgba(255,255,255,0.85)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxSizing: "border-box", boxShadow: on ? "0 5px 14px " + T.orangeGlow : "0 2px 6px rgba(0,0,0,0.05)", animation: "rcjChipIn 0.4s cubic-bezier(0.34,1.56,0.64,1) " + (0.05 + i * 0.04).toFixed(2) + "s both", transition: "background 0.2s ease, box-shadow 0.2s ease" }}>
+                            <SVGIcon id={ic} size={22} color={on ? "#fff" : JINK2} />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                {tq === 7 && (
+                  <textarea value={form.notes} onChange={function(e) { setField("notes", e.target.value); }} placeholder="Must-dos, who's coming, the style..." rows={4} className="jr-field" style={Object.assign({}, jInput, { resize: "vertical" })} />
+                )}
+                {tq === 8 && (
+                  <Stagger k="tq8" step={0.08}>
+                    {[
+                      { v: true, icon: "spark", t: "Yes - Richard splits it", s: "He divides your budget across flights, stays, food and fun." },
+                      { v: false, icon: "box", t: "No - I'll split it myself", s: "Get the buckets and set each amount yourself." },
+                    ].map(function(o) {
+                      var sel = form.wantPlan === o.v;
+                      return (
+                        <button key={String(o.v)} className="jr-press" onClick={function() { setField("wantPlan", o.v); tqAuto(); }}
+                          style={{ width: "100%", background: sel ? "rgba(137,112,198,0.06)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "16px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px rgba(137,112,198,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", marginBottom: 11, transition: "box-shadow 0.25s ease, border-color 0.25s ease" }}>
+                          <div style={{ width: 40, height: 40, borderRadius: 12, background: sel ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.25s ease" }}>
+                            <SVGIcon id={o.icon} size={19} color={sel ? "#fff" : JINK3} />
+                          </div>
+                          <span style={{ flex: 1 }}>
+                            <span style={{ display: "block", fontSize: 15, fontWeight: 700, color: JINK, lineHeight: 1.3 }}>{o.t}</span>
+                            <span style={{ display: "block", fontSize: 12.5, color: JINK3, marginTop: 3, lineHeight: 1.45 }}>{o.s}</span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </Stagger>
+                )}
+              </JrStepShell>
+            </div>
+          </div>
+
+          <div style={{ padding: "12px 24px 40px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box", position: "relative", zIndex: 2 }}>
+            {tq === 0 && <JrBtn label="Continue" disabled={!form.name.trim()} onPress={tqAdvance} />}
+            {tq === 1 && <JrBtn label="Continue" disabled={!form.destination.trim()} onPress={tqAdvance} />}
+            {tq === 2 && <JrBtn label="Continue" disabled={daysNum <= 0} onPress={tqAdvance} />}
+            {tq === 3 && (
+              <div>
+                <JrBtn label="Continue" onPress={tqAdvance} />
+                <button onClick={tqAdvance} className="jr-press" style={{ width: "100%", background: "none", border: "none", color: JINK3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0" }}>Skip for now</button>
+              </div>
+            )}
+            {tq === 4 && <JrBtn label="Continue" disabled={total <= 0} onPress={tqAdvance} />}
+            {tq === 5 && <div style={{ textAlign: "center", fontSize: 12.5, color: JINK3, fontWeight: 600, padding: "14px 0" }}>Tap a vibe to continue</div>}
+            {tq === 6 && <JrBtn label="Continue" onPress={tqAdvance} />}
+            {tq === 7 && (
+              <div>
+                <JrBtn label="Continue" onPress={tqAdvance} />
+                <button onClick={tqAdvance} className="jr-press" style={{ width: "100%", background: "none", border: "none", color: JINK3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0" }}>Skip for now</button>
+              </div>
+            )}
+            {tq === 8 && <div style={{ textAlign: "center", fontSize: 12.5, color: JINK3, fontWeight: 600, padding: "14px 0" }}>Pick one to continue</div>}
+          </div>
+        </div>
+      );
+      return ReactDOM.createPortal(interviewContent, document.body);
+    }
+
+    // ---- Budget split (step 2): inline card with the shader backdrop ----
     return (
       <div style={{ position: "relative" }}>
         <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base={T.bg} speed={0.16} intensity={0.5} yScale={0.44} xScale={1.05}
           style={{ position: "fixed", top: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, height: "100%", zIndex: 0 }} />
         <div style={{ position: "fixed", top: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, height: "100%", zIndex: 0, pointerEvents: "none", background: "linear-gradient(180deg," + jrRgba(T.bg, 0.74) + " 0%," + jrRgba(T.bg, 0.4) + " 22%," + jrRgba(T.bg, 0.4) + " 74%," + jrRgba(T.bg, 0.66) + " 100%)" }} />
         <div style={{ position: "relative", zIndex: 1 }}>
-        {backRow(step === 2 ? tr("planning") : tr("trips"), function() { if (step === 2) { setStep(1); } else { setView("list"); } })}
-        {step === 1 ? (
-          <Card style={{ padding: "18px 18px 20px" }}>
-            <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, marginBottom: 14, fontFamily: DISP, letterSpacing: "-0.02em" }}>{tr("planNewTrip")}</div>
-            <FormRow label={tr("tripName")} value={form.name} onChange={function(e) { setField("name", e.target.value); }} />
-            <FormRow label={tr("destination")} value={form.destination} onChange={function(e) { setField("destination", e.target.value); }} />
-            <FormRow label={tr("tripBudget")} value={form.total} onChange={function(e) { setField("total", e.target.value); }} type="number" />
-            <FormRow label={tr("tripDays")} value={form.days} onChange={function(e) { setField("days", e.target.value); }} type="number" />
-            <FormRow label="Start date (optional)" value={form.startDate} onChange={function(e) { setField("startDate", e.target.value); }} type="date" />
-            <FormRow label="Notes for Richard (optional)" value={form.notes} onChange={function(e) { setField("notes", e.target.value); }} placeholder="anything he should know - must-dos, style, who's coming" last={true} />
-            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, margin: "14px 0 8px" }}>{tr("travelStyle")}</div>
-            <div style={{ display: "flex", gap: 8 }}>
-              {styleOpts.map(function(s, i) {
-                return (
-                  <JrChip key={s.k} label={s.l} selected={form.style === s.k} delay={0.04 + i * 0.05}
-                    style={{ flex: 1, justifyContent: "center", padding: "11px 0" }}
-                    onPress={function() { setField("style", s.k); }} />
-                );
-              })}
-            </div>
-            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, margin: "16px 0 8px" }}>{tr("tripIcon")}</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {TRIP_ICONS.map(function(ic) {
-                var on = (form.icon || "plane") === ic;
-                return (
-                  <button key={ic} onClick={function() { setField("icon", ic); }} className="jr-press"
-                    style={{ width: 44, height: 44, border: on ? "none" : "1.5px solid rgba(0,0,0,0.08)", background: on ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : "#fff", borderRadius: 13, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxSizing: "border-box", boxShadow: on ? "0 5px 14px " + T.orangeGlow : "0 2px 6px rgba(0,0,0,0.05)", transition: "background 0.2s ease, box-shadow 0.2s ease" }}>
-                    <SVGIcon id={ic} size={20} color={on ? "#fff" : T.ink2} />
-                  </button>
-                );
-              })}
-            </div>
-            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, margin: "16px 0 8px" }}>Want Richard to plan the budget?</div>
-            <div style={{ display: "flex", gap: 8 }}>
-              {[{ v: true, l: "Yes, plan it" }, { v: false, l: "No, I'll do it" }].map(function(o, i) {
-                return (
-                  <JrChip key={String(o.v)} label={o.l} selected={form.wantPlan === o.v} delay={0.04 + i * 0.05}
-                    style={{ flex: 1, justifyContent: "center", padding: "11px 0" }}
-                    onPress={function() { setField("wantPlan", o.v); }} />
-                );
-              })}
-            </div>
-            <JrBtn label={tr("next")} disabled={!form.name || total <= 0} onPress={function() { setStep(2); if (form.wantPlan) { planWithRichard(); } else { applyLocalSplit(); } }} style={{ marginTop: 18 }} />
-          </Card>
-        ) : (
+        {backRow(tr("planning"), function() { setStep(1); })}
           <Card style={{ padding: "18px 18px 20px" }}>
             {planning ? (
               <div style={{ padding: "34px 10px", textAlign: "center" }}>
@@ -7131,7 +7303,6 @@ function Trips(props) {
               </div>
             )}
           </Card>
-        )}
         {addCategoryOverlay(function(label, icon) { addWizardCategory(label, icon); })}
         </div>
       </div>
