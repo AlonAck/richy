@@ -867,6 +867,364 @@ function TypeReveal(props) {
   return <RichardText text={partial} size={props.size} color={props.color} />;
 }
 
+// === JOURNEY ANIMATION PRIMITIVES ===
+// The sign-up journey's motion toolkit: count-ups, rolling digits, progress
+// ring, staggered entrances, growing bar comparisons, laurel badges, and the
+// journey CTA button. CSS keyframes live in one injected block; JS-driven
+// animations (rAF) self-check prefers-reduced-motion because the global CSS
+// kill rule can't reach them.
+// The journey screens sit on a hardcoded warm cream gradient in every theme
+// and mode, so text directly on that background uses pinned light-palette
+// inks (a retake from Profile can happen in dark mode, where T.ink flips
+// light and would vanish on cream). Accents still come from T.
+var JINK = "#1A1410", JINK2 = "#6B5C4E", JINK3 = "#B0A396";
+var JR_BG = "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)";
+
+function ensureJourneyCss() {
+  var id = "richy-journey-css";
+  if (document.getElementById(id)) return;
+  var st = document.createElement("style"); st.id = id;
+  st.textContent = [
+    "@keyframes rcjSlideInR{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}",
+    "@keyframes rcjSlideInL{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}",
+    "@keyframes rcjShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(2px)}}",
+    "@keyframes rcjFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}",
+    "@keyframes rcjDrift{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(18px,-14px) scale(1.06)}}",
+    "@keyframes rcjDrift2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-14px,10px) scale(1.08)}}",
+    // Glow color is baked purple: keyframes can't read the runtime theme. New
+    // signups always run the default purple theme; on themed retakes the glow
+    // reads slightly off-accent, which is cosmetic.
+    "@keyframes rcjPulseGlow{0%,100%{box-shadow:0 6px 20px rgba(137,112,198,0.30)}50%{box-shadow:0 6px 32px rgba(137,112,198,0.55)}}",
+    "@keyframes rcjCheckPop{0%{transform:scale(0.4);opacity:0}60%{transform:scale(1.15);opacity:1}100%{transform:scale(1);opacity:1}}",
+    "@keyframes rcjToastIn{from{opacity:0;transform:translate(-50%,14px)}to{opacity:1;transform:translate(-50%,0)}}",
+    "@keyframes rcjShimmerSoft{0%{transform:translateX(-160%) skewX(-14deg)}55%{transform:translateX(320%) skewX(-14deg)}100%{transform:translateX(320%) skewX(-14deg)}}",
+    ".jr-field:focus{outline:none;border-color:#9D78E8 !important;box-shadow:0 0 0 4px rgba(137,112,198,0.18),0 2px 8px rgba(0,0,0,0.04) !important;}",
+    ".jr-scroll{scrollbar-width:none;-ms-overflow-style:none;}",
+    ".jr-scroll::-webkit-scrollbar{display:none;}",
+  ].join("");
+  document.head.appendChild(st);
+}
+
+function jrReduced() {
+  try { return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; }
+}
+
+// Currency for giant story numbers: whole units, no decimals - decimals read
+// as noise at 56px.
+function jrCur(n) {
+  return (_currency.sym || "$") + Math.round(Math.abs(n || 0)).toLocaleString("en-US");
+}
+
+// rAF count-up with ease-out. Returns the live value; snaps for reduced motion.
+function useCountUp(target, duration, delay, onDone) {
+  var _v = useState(0); var v = _v[0]; var setV = _v[1];
+  var doneRef = useRef(false);
+  useEffect(function() {
+    var tgt = target || 0;
+    if (jrReduced()) {
+      setV(tgt);
+      if (onDone && !doneRef.current) { doneRef.current = true; onDone(); }
+      return;
+    }
+    var raf = null;
+    var dur = duration || 1400;
+    var t0 = setTimeout(function() {
+      var start = performance.now();
+      function tick(now) {
+        var p = Math.min(1, (now - start) / dur);
+        var e = 1 - Math.pow(1 - p, 3);
+        setV(tgt * e);
+        if (p < 1) { raf = requestAnimationFrame(tick); }
+        else if (onDone && !doneRef.current) { doneRef.current = true; onDone(); }
+      }
+      raf = requestAnimationFrame(tick);
+    }, delay || 0);
+    return function() { clearTimeout(t0); if (raf) cancelAnimationFrame(raf); };
+  }, [target]);
+  return v;
+}
+
+function CountUpNum(props) {
+  useEffect(function() { ensureJourneyCss(); }, []);
+  var v = useCountUp(props.value, props.duration, props.delay, props.onDone);
+  var txt = props.format ? props.format(v) : Math.round(v).toLocaleString("en-US");
+  return <span style={Object.assign({ fontVariantNumeric: "tabular-nums" }, props.style)}>{(props.prefix || "") + txt}{props.suffix || ""}</span>;
+}
+
+// Jomo-style rolling digits: each digit is a fixed-height window over a 0-9
+// strip that slides to the current digit with a per-digit stagger.
+function RollingNum(props) {
+  useEffect(function() { ensureJourneyCss(); }, []);
+  var size = props.size || 44;
+  var color = props.color || JINK;
+  var h = Math.round(size * 1.16);
+  var text = String(props.text == null ? "" : props.text);
+  var reduced = jrReduced();
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", fontFamily: UI, fontWeight: props.weight || 800, fontSize: size, color: color, letterSpacing: "-0.02em", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+      {text.split("").map(function(ch, i) {
+        if (!/[0-9]/.test(ch)) {
+          return <span key={"s" + i} style={{ display: "inline-block", height: h, lineHeight: h + "px" }}>{ch}</span>;
+        }
+        var d = parseInt(ch, 10);
+        return (
+          <span key={"d" + i} style={{ display: "inline-block", height: h, overflow: "hidden", boxSizing: "border-box" }}>
+            <span style={{ display: "block", transform: "translateY(" + (-d * h) + "px)", transition: reduced ? "none" : "transform 0.42s cubic-bezier(0.2,0.9,0.3,1) " + (i * 0.03).toFixed(2) + "s" }}>
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(function(n) {
+                return <span key={n} style={{ display: "block", height: h, lineHeight: h + "px", textAlign: "center" }}>{n}</span>;
+              })}
+            </span>
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
+// SVG ring + center percentage driven by the SAME rAF value so they never
+// desync. Ease-in-out so it lingers believably in the middle.
+function ProgressRing(props) {
+  useEffect(function() { ensureLoadingCss(); ensureJourneyCss(); }, []);
+  var size = props.size || 150, stroke = props.stroke || 10;
+  var r = (size - stroke) / 2;
+  var C = 2 * Math.PI * r;
+  var _p = useState(0); var p = _p[0]; var setP = _p[1];
+  useEffect(function() {
+    if (jrReduced()) { setP(1); return; }
+    var dur = props.duration || 2600, raf = null, start = performance.now();
+    function tick(now) {
+      var t = Math.min(1, (now - start) / dur);
+      var e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      setP(e);
+      if (t < 1) raf = requestAnimationFrame(tick);
+    }
+    raf = requestAnimationFrame(tick);
+    return function() { if (raf) cancelAnimationFrame(raf); };
+  }, []);
+  var done = p >= 1;
+  useEffect(function() {
+    if (!done || !props.onDone) return;
+    var t = setTimeout(props.onDone, 420);
+    return function() { clearTimeout(t); };
+  }, [done]);
+  var color = props.color || T.orange;
+  return (
+    <div style={{ position: "relative", width: size, height: size, margin: "0 auto" }}>
+      <div style={{ position: "absolute", inset: -14, borderRadius: "50%", background: "radial-gradient(circle," + T.orangeGlow + " 0%, transparent 70%)", filter: "blur(10px)", animation: "rclGlow 2.4s ease-in-out infinite" }} />
+      <svg width={size} height={size} style={{ transform: "rotate(-90deg)", position: "relative" }}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={props.track || "rgba(0,0,0,0.07)"} strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round"
+          strokeDasharray={C} strokeDashoffset={C * (1 - p)} />
+      </svg>
+      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: Math.round(size * 0.21), fontWeight: 800, color: JINK, fontFamily: UI, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>
+        {Math.round(p * 100)}%
+      </div>
+    </div>
+  );
+}
+
+// Top-of-questionnaire progress bar.
+function JourneyBar(props) {
+  useEffect(function() { ensureJourneyCss(); }, []);
+  return (
+    <div style={{ height: 4, borderRadius: 999, background: "rgba(0,0,0,0.08)", overflow: "hidden", flex: 1 }}>
+      <div style={{ height: "100%", width: (props.pct || 0) + "%", borderRadius: 999, background: T.btn, transition: "width 0.45s cubic-bezier(0.22,1,0.36,1)" }} />
+    </div>
+  );
+}
+
+// Children fade up one after another. Re-key via props.k to replay per screen.
+function Stagger(props) {
+  useEffect(function() { ensureLoadingCss(); }, []);
+  var base = props.base == null ? 0.05 : props.base;
+  var step = props.step == null ? 0.07 : props.step;
+  var kids = React.Children.toArray(props.children);
+  return (
+    <div key={props.k} style={props.style}>
+      {kids.map(function(ch, i) {
+        return <div key={i} style={{ animation: "rclPhrase 0.45s ease " + (base + i * step).toFixed(2) + "s both" }}>{ch}</div>;
+      })}
+    </div>
+  );
+}
+
+// Before/after bars that grow from zero with a springy ease; labels follow.
+function BarCompare(props) {
+  useEffect(function() { ensureJourneyCss(); }, []);
+  var H = props.height || 110;
+  var _g = useState(false); var grown = _g[0]; var setGrown = _g[1];
+  useEffect(function() {
+    if (jrReduced()) { setGrown(true); return; }
+    var t = setTimeout(function() { setGrown(true); }, props.delay || 200);
+    return function() { clearTimeout(t); };
+  }, []);
+  return (
+    <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 38 }}>
+      {(props.items || []).map(function(it, i) {
+        var bh = grown ? Math.max(8, Math.round(H * ((it.pct || 0) / 100))) : 0;
+        return (
+          <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 7, width: 92 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: it.color, opacity: grown ? 1 : 0, transition: "opacity 0.5s ease " + (0.6 + i * 0.18).toFixed(2) + "s", textAlign: "center", lineHeight: 1.3 }}>{it.value}</div>
+            <div style={{ display: "flex", alignItems: "flex-end", height: H, boxSizing: "border-box" }}>
+              <div style={{ width: 52, height: bh, borderRadius: "10px 10px 4px 4px", background: it.color, transition: "height 0.9s cubic-bezier(0.34,1.56,0.64,1) " + (i * 0.18).toFixed(2) + "s", boxShadow: "0 8px 20px " + (it.glow || "rgba(0,0,0,0.10)") }} />
+            </div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.06em", textAlign: "center" }}>{it.label}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// One laurel branch; the badge mirrors it around a stacked stat.
+function LaurelSide(props) {
+  var g = T.gold;
+  return (
+    <svg width="22" height="50" viewBox="0 0 22 50" style={{ transform: props.flip ? "scaleX(-1)" : "none", flexShrink: 0 }}>
+      <path d="M19 48 C 8 38, 6 24, 13 3" fill="none" stroke={g} strokeWidth="1.6" strokeLinecap="round" opacity="0.9" />
+      <ellipse cx="16.5" cy="41" rx="5.4" ry="2.1" fill={g} opacity="0.85" transform="rotate(-38 16.5 41)" />
+      <ellipse cx="13.5" cy="33" rx="5.4" ry="2.1" fill={g} opacity="0.85" transform="rotate(-46 13.5 33)" />
+      <ellipse cx="11.5" cy="25" rx="5.2" ry="2" fill={g} opacity="0.85" transform="rotate(-56 11.5 25)" />
+      <ellipse cx="10.5" cy="17" rx="5" ry="1.9" fill={g} opacity="0.85" transform="rotate(-66 10.5 17)" />
+      <ellipse cx="11" cy="9" rx="4.6" ry="1.8" fill={g} opacity="0.85" transform="rotate(-76 11 9)" />
+    </svg>
+  );
+}
+
+function LaurelBadge(props) {
+  useEffect(function() { ensureJourneyCss(); }, []);
+  return (
+    <div style={{ position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "6px 6px", minWidth: 146, boxSizing: "border-box" }}>
+      <LaurelSide />
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 17, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.15 }}>{props.stat}</div>
+        <div style={{ fontSize: 9.5, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.09em", marginTop: 2 }}>{props.sub}</div>
+      </div>
+      <LaurelSide flip />
+      <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "34%", background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent)", animation: "rcjShimmerSoft 4.6s ease-in-out infinite", pointerEvents: "none" }} />
+    </div>
+  );
+}
+
+// Journey CTA: press-scale, disabled-to-enabled crossfade, spinner-in-button.
+function JrBtn(props) {
+  useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
+  var _pr = useState(false); var pressed = _pr[0]; var setPressed = _pr[1];
+  var off = props.disabled || props.busy;
+  return (
+    <button onClick={function() { if (!off && props.onPress) props.onPress(); }}
+      onPointerDown={function() { if (!off) setPressed(true); }}
+      onPointerUp={function() { setPressed(false); }}
+      onPointerLeave={function() { setPressed(false); }}
+      style={Object.assign({
+        width: "100%", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, letterSpacing: "-0.01em",
+        background: props.disabled ? "rgba(0,0,0,0.08)" : props.ghost ? "none" : T.btn,
+        color: props.disabled ? JINK3 : props.ghost ? JINK2 : "#fff",
+        cursor: off ? "default" : "pointer",
+        boxShadow: props.disabled || props.ghost ? "none" : "0 6px 20px " + T.orangeGlow + ", 0 2px 6px rgba(0,0,0,0.1)",
+        transform: pressed ? "scale(0.97)" : "scale(1)",
+        transition: "transform 0.12s ease, background 0.35s ease, box-shadow 0.35s ease, color 0.35s ease",
+        boxSizing: "border-box",
+        animation: props.pulse && !off ? "rcjPulseGlow 2.2s ease-in-out infinite" : "none"
+      }, props.style)}>
+      {props.busy
+        ? <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>{props.busyLabel || "Please wait"}<ThinkingDots size={4.5} color="rgba(255,255,255,0.9)" /></span>
+        : props.label}
+    </button>
+  );
+}
+
+// Screen-transition wrapper: re-key via props.k, slides in from the travel
+// direction. Enter-only, matching the app's nav transitions.
+function JrStepShell(props) {
+  useEffect(function() { ensureJourneyCss(); }, []);
+  return (
+    <div key={props.k} style={{ animation: (props.dir === "back" ? "rcjSlideInL" : "rcjSlideInR") + " 0.38s cubic-bezier(0.22,1,0.36,1) both" }}>
+      {props.children}
+    </div>
+  );
+}
+
+// Number entry with personality: rolling display, adaptive steppers,
+// quick-pick chips, and a "type it instead" escape hatch. Emits STRINGS -
+// the onboarding contract stores money as strings.
+function QuickAmount(props) {
+  useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
+  var _ty = useState(false); var typing = _ty[0]; var setTyping = _ty[1];
+  var sym = props.sym || _currency.sym || "$";
+  var num = parseFloat(props.value) || 0;
+  function stepSize(v) { return v < 500 ? 50 : v < 2000 ? 100 : 250; }
+  function setNum(n) { props.onChange(String(Math.max(0, Math.round(n)))); }
+  var rb = { width: 46, height: 46, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff", color: JINK2, fontSize: 22, fontWeight: 600, cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.06)", fontFamily: UI, boxSizing: "border-box", flexShrink: 0, lineHeight: 1 };
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 20 }}>
+        <button onClick={function() { setNum(num - stepSize(num - 1)); }} style={rb}>−</button>
+        <RollingNum text={sym + Math.round(num).toLocaleString("en-US")} size={props.compact ? 32 : 44} color={JINK} />
+        <button onClick={function() { setNum(num + stepSize(num)); }} style={rb}>+</button>
+      </div>
+      {props.hint}
+      {(props.picks || []).length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginTop: props.compact ? 12 : 18 }}>
+          {props.picks.map(function(p) {
+            var sel = num === p;
+            return (
+              <button key={p} onClick={function() { setNum(p); }}
+                style={{ padding: "9px 15px", borderRadius: 999, border: sel ? "2px solid " + T.orange : "1.5px solid rgba(0,0,0,0.09)", background: sel ? T.orangeDim : "rgba(255,255,255,0.85)", color: sel ? T.orange : JINK2, fontSize: 13.5, fontWeight: sel ? 700 : 500, fontFamily: UI, cursor: "pointer", boxSizing: "border-box", animation: sel ? "rclPop 0.3s ease" : "none" }}>
+                {sym + p.toLocaleString("en-US")}
+              </button>
+            );
+          })}
+        </div>
+      )}
+      <div style={{ marginTop: props.compact ? 10 : 14 }}>
+        {typing ? (
+          <input autoFocus type="number" value={props.value} onChange={function(e) { props.onChange(e.target.value); }}
+            placeholder="0" className="jr-field"
+            style={{ width: 160, background: "rgba(255,255,255,0.9)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 14, padding: "11px 14px", fontSize: 16, fontFamily: UI, color: JINK, outline: "none", boxSizing: "border-box", textAlign: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
+        ) : (
+          <button onClick={function() { setTyping(true); }}
+            style={{ background: "none", border: "none", color: JINK3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: 4 }}>
+            type it instead
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Bottom toast for validation nudges; auto-dismisses.
+function JrToast(props) {
+  useEffect(function() {
+    ensureJourneyCss();
+    if (!props.msg) return;
+    var t = setTimeout(function() { if (props.onDone) props.onDone(); }, 2400);
+    return function() { clearTimeout(t); };
+  }, [props.msg]);
+  if (!props.msg) return null;
+  return (
+    <div key={props.msg} style={{ position: "fixed", left: "50%", bottom: 96, transform: "translateX(-50%)", background: "rgba(24,20,16,0.92)", color: "#fff", fontSize: 13.5, fontWeight: 600, fontFamily: UI, padding: "11px 18px", borderRadius: 999, boxShadow: "0 10px 30px rgba(0,0,0,0.25)", animation: "rcjToastIn 0.3s ease both", zIndex: 60, maxWidth: "84vw", textAlign: "center", boxSizing: "border-box" }}>
+      {props.msg}
+    </div>
+  );
+}
+
+// Headline reveal: words fade up one by one. Lighter than TypeReveal (no
+// markdown pipeline) - for big story headlines.
+function WordReveal(props) {
+  useEffect(function() { ensureLoadingCss(); }, []);
+  var words = String(props.text || "").split(" ");
+  var base = props.base == null ? 0.1 : props.base;
+  var step = props.step == null ? 0.08 : props.step;
+  return (
+    <span>
+      {words.map(function(w, i) {
+        return <span key={i} style={{ display: "inline-block", animation: "rclPhrase 0.5s ease " + (base + i * step).toFixed(2) + "s both", whiteSpace: "pre" }}>{w + (i < words.length - 1 ? " " : "")}</span>;
+      })}
+    </span>
+  );
+}
+
 function SVGIcon(props) {
   var size = props.size || 22;
   var color = props.color || T.ink2;
@@ -1389,8 +1747,240 @@ function authMsg(err) {
   return (err && err.message) ? err.message : "Something went wrong. Please try again.";
 }
 
+// === WELCOME JOURNEY (pre-auth) ===
+// Jomo-style marketing landing shown before the auth card on a device's first
+// visit: hero with laurel stats and a growing before/after chart, then a
+// three-slide intro carousel. Copy stays honest - no invented user counts.
+
+function TestimonialLine() {
+  useEffect(function() { ensureLoadingCss(); }, []);
+  var quotes = [
+    { q: "“It's the first budget I didn't abandon in week two.”", who: "early user" },
+    { q: "“Richard caught a subscription I'd been paying for a year.”", who: "early user" },
+    { q: "“Feels like a private banker, not a spreadsheet.”", who: "family tester" },
+  ];
+  var _i = useState(0); var i = _i[0]; var setI = _i[1];
+  useEffect(function() {
+    var iv = setInterval(function() { setI(function(n) { return n + 1; }); }, 3600);
+    return function() { clearInterval(iv); };
+  }, []);
+  var cur = quotes[i % quotes.length];
+  return (
+    <div style={{ textAlign: "center", minHeight: 74 }}>
+      <div style={{ display: "flex", justifyContent: "center", gap: 3, marginBottom: 7 }}>
+        {[0, 1, 2, 3, 4].map(function(n) {
+          return <svg key={n} width="13" height="13" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill={T.gold} /></svg>;
+        })}
+      </div>
+      <div key={i} style={{ animation: "rclPhrase 0.5s ease both" }}>
+        <div style={{ fontSize: 14, color: JINK2, fontStyle: "italic", lineHeight: 1.5, maxWidth: 300, margin: "0 auto" }}>{cur.q}</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 5 }}>— {cur.who}</div>
+      </div>
+    </div>
+  );
+}
+
+function WelcomeHero(props) {
+  useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
+  return (
+    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <div style={{ position: "absolute", top: -80, right: -60, width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle,rgba(137,112,198,0.16) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift 9s ease-in-out infinite" }} />
+      <div style={{ position: "absolute", bottom: 40, left: -90, width: 260, height: 260, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,154,60,0.13) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift2 11s ease-in-out infinite" }} />
+      <div style={{ position: "absolute", top: "38%", left: -50, width: 170, height: 170, borderRadius: "50%", background: "radial-gradient(circle,rgba(39,168,95,0.10) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift 13s ease-in-out 1.5s infinite" }} />
+
+      <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", padding: "54px 24px 30px", position: "relative" }}>
+        <Stagger step={0.09} style={{ width: "100%", maxWidth: 380, display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <RichyLogo size={74} style={{ display: "block", margin: "0 auto", borderRadius: 21, boxShadow: "0 12px 32px rgba(0,0,0,0.22), 0 4px 12px rgba(0,0,0,0.14)" }} />
+          <div style={{ fontSize: 31, fontWeight: 800, color: JINK, letterSpacing: "-0.03em", lineHeight: 1.14, textAlign: "center", marginTop: 20 }}>
+            Your money has a<br />manager now.
+          </div>
+          <div style={{ fontSize: 15, color: JINK2, textAlign: "center", lineHeight: 1.55, marginTop: 10, maxWidth: 320 }}>
+            A beautiful budget, paired with Richard — an advisor who actually knows your numbers.
+          </div>
+          <div style={{ display: "flex", justifyContent: "center", gap: 10, marginTop: 22 }}>
+            <LaurelBadge stat="Richard" sub="Your personal CFO" />
+            <LaurelBadge stat="50 currencies" sub="8 languages" />
+          </div>
+          <div style={{ width: "100%", background: "rgba(255,255,255,0.72)", border: "1px solid rgba(0,0,0,0.05)", borderRadius: 20, padding: "18px 16px 14px", marginTop: 22, boxShadow: "0 8px 28px rgba(40,28,16,0.08)", boxSizing: "border-box", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", textAlign: "center", marginBottom: 14 }}>A typical month of spending</div>
+            <BarCompare height={96} delay={650} items={[
+              { label: "Untracked", value: "~15% vanishes", pct: 86, color: "rgba(224,48,48,0.72)", glow: "rgba(224,48,48,0.18)" },
+              { label: "With Richy", value: "seen & planned", pct: 30, color: T.green, glow: T.greenGlow },
+            ]} />
+            <div style={{ fontSize: 10.5, color: JINK3, textAlign: "center", marginTop: 10, lineHeight: 1.4 }}>Illustrative — commonly cited estimates of untracked personal spending.</div>
+          </div>
+          <div style={{ marginTop: 20, width: "100%" }}>
+            <TestimonialLine />
+          </div>
+        </Stagger>
+      </div>
+
+      <div style={{ padding: "6px 24px 34px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box", position: "relative" }}>
+        <div style={{ animation: "rclPhrase 0.5s ease 0.75s both" }}>
+          <JrBtn label="Get started" onPress={props.onGetStarted} />
+          <button onClick={props.onSignIn}
+            style={{ width: "100%", background: "none", border: "none", color: JINK2, fontSize: 14.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "15px 0 0" }}>
+            I already have an account
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Mock mini-cards for the carousel slides. Pure decoration - static data.
+function JrMockChip(props) {
+  return (
+    <div style={{ position: "absolute", top: props.top, bottom: props.bottom, left: props.left, right: props.right, background: "rgba(255,255,255,0.96)", borderRadius: 13, padding: "9px 13px", boxShadow: "0 10px 26px rgba(40,28,16,0.14)", display: "flex", alignItems: "center", gap: 8, animation: "rcjFloat " + (props.dur || "3.6s") + " ease-in-out " + (props.delay || "0s") + " infinite", boxSizing: "border-box", whiteSpace: "nowrap" }}>
+      <div style={{ width: 26, height: 26, borderRadius: 9, background: props.tint, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <SVGIcon id={props.icon} size={14} color="#fff" />
+      </div>
+      <div>
+        <div style={{ fontSize: 11.5, fontWeight: 700, color: JINK, lineHeight: 1.2 }}>{props.line1}</div>
+        {props.line2 && <div style={{ fontSize: 10, fontWeight: 600, color: props.line2Color || JINK3, lineHeight: 1.3 }}>{props.line2}</div>}
+      </div>
+    </div>
+  );
+}
+
+function IntroCarousel(props) {
+  useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
+  var trackRef = useRef(null);
+  var touchedRef = useRef(false);
+  var _i = useState(0); var idx = _i[0]; var setIdx = _i[1];
+
+  useEffect(function() {
+    var iv = setInterval(function() {
+      if (touchedRef.current) return;
+      var el = trackRef.current; if (!el) return;
+      var w = el.offsetWidth || 1;
+      var cur = Math.round(el.scrollLeft / w);
+      if (cur >= 2) { clearInterval(iv); return; }
+      el.scrollTo({ left: (cur + 1) * w, behavior: jrReduced() ? "auto" : "smooth" });
+    }, 3800);
+    return function() { clearInterval(iv); };
+  }, []);
+
+  function onScroll() {
+    var el = trackRef.current; if (!el) return;
+    var i = Math.round(el.scrollLeft / (el.offsetWidth || 1));
+    if (i !== idx) setIdx(Math.max(0, Math.min(2, i)));
+  }
+
+  var slideWrap = { flex: "0 0 100%", scrollSnapAlign: "start", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "10px 28px 0", boxSizing: "border-box" };
+  var mockCard = { position: "relative", width: 268, background: "#fff", borderRadius: 22, padding: "18px 18px", boxShadow: "0 18px 44px rgba(40,28,16,0.13)", boxSizing: "border-box" };
+  var h2 = { fontSize: 22.5, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", textAlign: "center", lineHeight: 1.22, marginTop: 34 };
+  var sub = { fontSize: 14, color: JINK2, textAlign: "center", lineHeight: 1.55, marginTop: 8, maxWidth: 300 };
+
+  return (
+    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
+      <div style={{ display: "flex", justifyContent: "flex-end", padding: "18px 20px 0" }}>
+        <button onClick={props.onDone} style={{ background: "none", border: "none", color: JINK3, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: 6 }}>Skip</button>
+      </div>
+
+      <div ref={trackRef} onScroll={onScroll} onPointerDown={function() { touchedRef.current = true; }} className="jr-scroll"
+        style={{ flex: 1, display: "flex", overflowX: "auto", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
+
+        <div style={slideWrap}>
+          <div style={{ position: "relative", paddingBottom: 26 }}>
+            <div style={mockCard}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em" }}>Balance</div>
+              <div style={{ fontSize: 30, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", marginTop: 3 }}>$2,840</div>
+              {[
+                { label: "Food", pct: 62, color: T.green, amt: "$412" },
+                { label: "Transport", pct: 38, color: T.blue, amt: "$95" },
+                { label: "Fun", pct: 81, color: T.orange, amt: "$203" },
+              ].map(function(r) {
+                return (
+                  <div key={r.label} style={{ marginTop: 12 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, fontWeight: 650, color: JINK2, marginBottom: 4 }}>
+                      <span>{r.label}</span><span>{r.amt}</span>
+                    </div>
+                    <div style={{ height: 6, borderRadius: 999, background: "rgba(0,0,0,0.06)", overflow: "hidden" }}>
+                      <div style={{ width: r.pct + "%", height: "100%", borderRadius: 999, background: r.color }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <JrMockChip top={-16} right={-30} icon="up" tint={T.green} line1="Salary" line2="+$3,000" line2Color={T.green} dur="4.2s" />
+            <JrMockChip bottom={0} left={-26} icon="coffee" tint={T.gold} line1="Coffee" line2="-$4.50" delay="0.9s" />
+          </div>
+          <div style={h2}>Every move, seen.</div>
+          <div style={sub}>Log in seconds, in any currency. Your month organizes itself while you live it.</div>
+        </div>
+
+        <div style={slideWrap}>
+          <div style={{ position: "relative", paddingBottom: 26 }}>
+            <div style={mockCard}>
+              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+                <div style={{ background: T.orangeDim, borderRadius: "16px 4px 16px 16px", padding: "9px 13px", fontSize: 12, fontWeight: 600, color: JINK, maxWidth: 190 }}>
+                  Can I afford a weekend trip?
+                </div>
+              </div>
+              <div style={{ display: "flex", marginBottom: 10 }}>
+                <div style={{ background: "rgba(0,0,0,0.045)", borderRadius: "4px 16px 16px 16px", padding: "9px 13px", fontSize: 12, fontWeight: 500, color: JINK, lineHeight: 1.5, maxWidth: 205 }}>
+                  Yes — if food stays under $180 this week. Want me to watch it for you?
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 7, paddingLeft: 4 }}>
+                <ThinkingDots size={4} color={T.orange} />
+                <span style={{ fontSize: 10.5, fontWeight: 600, color: JINK3 }}>Richard is checking your numbers</span>
+              </div>
+            </div>
+            <JrMockChip top={-16} left={-24} icon="search" tint={T.orange} line1="Found a leak" line2="unused subscription" dur="4.4s" />
+            <JrMockChip bottom={0} right={-24} icon="shield" tint={T.blue} line1="Private" line2="your data stays yours" delay="1.1s" />
+          </div>
+          <div style={h2}>Richard works for you.</div>
+          <div style={sub}>A personal CFO who reviews your month, hunts down leaks, and answers straight questions with straight numbers.</div>
+        </div>
+
+        <div style={slideWrap}>
+          <div style={{ position: "relative", paddingBottom: 26 }}>
+            <div style={mockCard}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Your goal</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 13, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 16px " + T.orangeGlow }}>
+                  <SVGIcon id="goals" size={20} color="#fff" />
+                </div>
+                <div>
+                  <div style={{ fontSize: 14.5, fontWeight: 800, color: JINK }}>Emergency fund</div>
+                  <div style={{ fontSize: 11.5, fontWeight: 600, color: JINK3 }}>$3,500 of $10,000</div>
+                </div>
+              </div>
+              <div style={{ height: 8, borderRadius: 999, background: "rgba(0,0,0,0.06)", overflow: "hidden", marginTop: 14, position: "relative" }}>
+                <div style={{ width: "35%", height: "100%", borderRadius: 999, background: T.btn, position: "relative", overflow: "hidden" }}>
+                  <div style={{ position: "absolute", top: 0, bottom: 0, width: "40%", background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent)", animation: "rclSheen 1.8s ease-in-out infinite" }} />
+                </div>
+              </div>
+              <div style={{ fontSize: 11.5, fontWeight: 600, color: JINK2, marginTop: 12, lineHeight: 1.5 }}>On pace for October. Richard will nudge you if you drift.</div>
+            </div>
+            <JrMockChip top={-16} right={-28} icon="plane" tint={T.blue} line1="Trip planned" line2="Tokyo · $5,000" dur="4s" />
+            <JrMockChip bottom={0} left={-26} icon="check" tint={T.green} line1="Under budget" line2="3 weeks straight" delay="0.8s" />
+          </div>
+          <div style={h2}>Goals that actually land.</div>
+          <div style={sub}>Budgets shaped to your real numbers — plus trips, savings pots, and a plan that updates as life happens.</div>
+        </div>
+      </div>
+
+      <div style={{ padding: "14px 24px 34px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: 16 }}>
+          {[0, 1, 2].map(function(n) {
+            return <div key={n} style={{ width: n === idx ? 20 : 6, height: 6, borderRadius: 999, background: n === idx ? T.orange : "rgba(137,112,198,0.25)", transition: "width 0.3s ease, background 0.3s ease" }} />;
+          })}
+        </div>
+        <JrBtn label="Create my account" onPress={props.onDone} />
+      </div>
+    </div>
+  );
+}
+
 function AuthScreen(props) {
-  var _s = useState("login");
+  // First visit on this device lands on the marketing welcome; after that the
+  // device goes straight to sign-in (no marketing wall for returning users).
+  var _s = useState(function() {
+    try { return localStorage.getItem("cb_welcome_seen") ? "login" : "welcome"; } catch (e) { return "welcome"; }
+  });
   var step = _s[0]; var setStep = _s[1];
   var _e = useState("");
   var email = _e[0]; var setEmail = _e[1];
@@ -1543,13 +2133,27 @@ function AuthScreen(props) {
     });
   }
 
+  useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
+
+  function seenWelcome() {
+    try { localStorage.setItem("cb_welcome_seen", "1"); } catch (e) {}
+  }
+  if (step === "welcome") {
+    return <WelcomeHero
+      onGetStarted={function() { seenWelcome(); setStep("intro"); }}
+      onSignIn={function() { seenWelcome(); goTo("login"); }} />;
+  }
+  if (step === "intro") {
+    return <IntroCarousel onDone={function() { goTo("signup_email"); }} />;
+  }
+
   var titles = {
     login:            { t: "Welcome back",    s: "Sign in to your account" },
     login_verify:     { t: "Check your email", s: "We sent a 6-digit code to " + email },
     signup_email:     { t: "Get started",     s: "Enter your email to begin" },
     signup_verify:    { t: "Check your email", s: "We sent a 6-digit code to " + email },
     signup_details:   { t: "Almost there",    s: "A few details to finish your account" },
-    signup_prefs:     { t: "One last step",   s: "Set your language and currency" },
+    signup_prefs:     { t: "Meet Richard",    s: "Tell him a little about you (optional)" },
     forgot_password:  { t: "Reset password",  s: "Enter your email and we'll send a reset link" },
   };
   var head = titles[step] || titles.login;
@@ -1596,22 +2200,24 @@ function AuthScreen(props) {
 
         <div style={{ textAlign: "center", marginBottom: 36 }}>
           <RichyLogo size={80} style={{ display: "block", margin: "0 auto 18px", borderRadius: 22, boxShadow: "0 12px 32px rgba(0,0,0,0.22), 0 4px 12px rgba(0,0,0,0.14)" }} />
-          <div style={{ fontSize: 30, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.15 }}>
-            {head.t}
-          </div>
-          <div style={{ fontSize: 15, color: T.ink2, marginTop: 6, wordBreak: "break-word" }}>
-            {head.s}
+          <div key={step} style={{ animation: "rclPhrase 0.45s ease both" }}>
+            <div style={{ fontSize: 30, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.15 }}>
+              {head.t}
+            </div>
+            <div style={{ fontSize: 15, color: T.ink2, marginTop: 6, wordBreak: "break-word" }}>
+              {head.s}
+            </div>
           </div>
         </div>
 
-        <div style={{ width: "100%", maxWidth: 380 }}>
+        <div key={"body-" + step} style={{ width: "100%", maxWidth: 380, animation: "rcjSlideInR 0.38s cubic-bezier(0.22,1,0.36,1) both" }}>
           {step === "login" && (
             <div>
               {fieldWrap("mail",
                 <input value={email} onChange={function(e) { setEmail(e.target.value); }}
                   placeholder="Email" type="email" autoComplete="email"
                   onKeyDown={function(e) { if (e.key === "Enter") login(); }}
-                  style={fieldStyle} />, 12)}
+                  className="jr-field" style={fieldStyle} />, 12)}
               <div style={{ position: "relative", marginBottom: 0 }}>
                 <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)" }}>
                   <SVGIcon id="lock" size={17} color={T.ink3} />
@@ -1619,7 +2225,7 @@ function AuthScreen(props) {
                 <input value={password} onChange={function(e) { setPW(e.target.value); }}
                   type={showPw ? "text" : "password"} placeholder="Password" autoComplete="current-password"
                   onKeyDown={function(e) { if (e.key === "Enter") login(); }}
-                  style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 46px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
+                  className="jr-field" style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 46px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
                 <button onClick={function() { setShowPw(function(v) { return !v; }); }}
                   style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                   <SVGIcon id={showPw ? "eyeoff" : "eye"} size={17} color={T.ink3} />
@@ -1640,7 +2246,7 @@ function AuthScreen(props) {
                 <input value={email} onChange={function(e) { setEmail(e.target.value); }}
                   placeholder="Your email address" type="email" autoComplete="email" autoFocus={true}
                   onKeyDown={function(e) { if (e.key === "Enter") sendPasswordReset(); }}
-                  style={fieldStyle} />, 0)}
+                  className="jr-field" style={fieldStyle} />, 0)}
             </div>
           )}
 
@@ -1650,7 +2256,7 @@ function AuthScreen(props) {
                 <input value={email} onChange={function(e) { setEmail(e.target.value); }}
                   placeholder="Email" type="email" autoComplete="email" autoFocus
                   onKeyDown={function(e) { if (e.key === "Enter") sendCode(); }}
-                  style={fieldStyle} />, 0)}
+                  className="jr-field" style={fieldStyle} />, 0)}
               <div style={{ fontSize: 12.5, color: T.ink3, padding: "10px 4px 0", lineHeight: 1.5 }}>
                 Next you'll set a password and a few details.
               </div>
@@ -1662,14 +2268,14 @@ function AuthScreen(props) {
               {fieldWrap("user",
                 <input value={fullName} onChange={function(e) { setFullName(e.target.value); }}
                   placeholder="Full name" autoComplete="name" autoFocus
-                  style={fieldStyle} />, 12)}
+                  className="jr-field" style={fieldStyle} />, 12)}
               <div style={{ position: "relative", marginBottom: 12 }}>
                 <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)" }}>
                   <SVGIcon id="lock" size={17} color={T.ink3} />
                 </div>
                 <input value={password} onChange={function(e) { setPW(e.target.value); }}
                   type={showPw ? "text" : "password"} placeholder="Set a password" autoComplete="new-password"
-                  style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 46px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
+                  className="jr-field" style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 46px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
                 <button onClick={function() { setShowPw(function(v) { return !v; }); }}
                   style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                   <SVGIcon id={showPw ? "eyeoff" : "eye"} size={17} color={T.ink3} />
@@ -1678,53 +2284,29 @@ function AuthScreen(props) {
               {fieldWrap("lock",
                 <input value={password2} onChange={function(e) { setPW2(e.target.value); }}
                   type={showPw ? "text" : "password"} placeholder="Repeat password" autoComplete="new-password"
-                  style={fieldStyle} />, 12)}
+                  className="jr-field" style={fieldStyle} />, 12)}
               <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", padding: "2px 4px 7px" }}>Date of birth</div>
               {fieldWrap("calendar",
                 <input value={dob} onChange={function(e) { setDob(e.target.value); }}
                   type="date"
                   onKeyDown={function(e) { if (e.key === "Enter") finishSignup(); }}
-                  style={fieldStyle} />, 12)}
+                  className="jr-field" style={fieldStyle} />, 12)}
               {fieldWrap("coins",
                 <input value={startBal} onChange={function(e) { setStartBal(e.target.value); }}
                   type="number" placeholder="Starting balance (optional)"
                   onKeyDown={function(e) { if (e.key === "Enter") finishSignup(); }}
-                  style={fieldStyle} />, 0)}
+                  className="jr-field" style={fieldStyle} />, 0)}
             </div>
           )}
 
           {step === "signup_prefs" && (
             <div>
-              <div style={{ fontSize: 13, color: T.ink3, marginBottom: 14, lineHeight: 1.5 }}>Almost there — pick your language and currency so the app feels right from day one.</div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Language</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
-                {LANGUAGE_OPTIONS.map(function(o) {
-                  var sel = signupLang === o.code;
-                  return (
-                    <button key={o.code} onClick={function() { setSignupLang(o.code); }}
-                      style={{ padding: "9px 16px", borderRadius: 12, border: sel ? "2px solid " + T.orange : "1.5px solid rgba(0,0,0,0.1)", background: sel ? T.orangeDim : "rgba(255,255,255,0.8)", color: sel ? T.orange : T.ink2, fontSize: 13, fontWeight: sel ? 700 : 500, fontFamily: UI, cursor: "pointer" }}>
-                      {o.label}
-                    </button>
-                  );
-                })}
-              </div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Currency</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {CURRENCY_OPTIONS.slice(0, 16).map(function(c) {
-                  var sel = signupCur === c.sym;
-                  return (
-                    <button key={c.sym} onClick={function() { setSignupCur(c.sym); }}
-                      style={{ padding: "9px 14px", borderRadius: 12, border: sel ? "2px solid " + T.orange : "1.5px solid rgba(0,0,0,0.1)", background: sel ? T.orangeDim : "rgba(255,255,255,0.8)", color: sel ? T.orange : T.ink2, fontSize: 13, fontWeight: sel ? 700 : 500, fontFamily: UI, cursor: "pointer" }}>
-                      {c.sym} {c.code}
-                    </button>
-                  );
-                })}
-              </div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "20px 0 8px" }}>Notes for Richard</div>
+              <div style={{ fontSize: 13, color: T.ink3, marginBottom: 14, lineHeight: 1.5 }}>Optional — a line or two so Richard starts out knowing you. You'll pick your language and currency right after this.</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Notes for Richard</div>
               <textarea value={richardNotes} onChange={function(e) { setRichardNotes(e.target.value); }}
                 placeholder="Anything Richard should know about you — your goals, money habits, what you're saving for…"
                 rows={3}
-                style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "13px 16px", fontSize: 15, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", resize: "vertical", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
+                className="jr-field" style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "13px 16px", fontSize: 15, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", resize: "vertical", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
             </div>
           )}
 
@@ -1736,23 +2318,21 @@ function AuthScreen(props) {
           )}
 
           {error && (
-            <div style={{ fontSize: 13, color: T.red, padding: "10px 4px 4px", lineHeight: 1.45 }}>
+            <div key={error} style={{ fontSize: 13, color: T.red, padding: "10px 4px 4px", lineHeight: 1.45, animation: "rcjShake 0.4s ease" }}>
               {error}
             </div>
           )}
 
           {!ssoProvider && (
-            <button
-              onClick={step === "login" ? login : step === "signup_email" ? sendCode : step === "signup_details" ? goToPrefs : step === "forgot_password" ? sendPasswordReset : finishSignup}
-              disabled={busy}
-              style={{ width: "100%", background: busy ? "rgba(0,0,0,0.08)" : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: busy ? T.ink3 : "#fff", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: busy ? "default" : "pointer", marginTop: 16, boxShadow: busy ? "none" : "0 6px 20px " + T.orangeGlow + ", 0 2px 6px rgba(0,0,0,0.1)", letterSpacing: "-0.01em" }}>
-              {busy ? <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>Please wait<ThinkingDots size={4.5} color={T.ink3} /></span>
-                : step === "login" ? "Sign In"
+            <JrBtn
+              onPress={step === "login" ? login : step === "signup_email" ? sendCode : step === "signup_details" ? goToPrefs : step === "forgot_password" ? sendPasswordReset : finishSignup}
+              busy={busy}
+              label={step === "login" ? "Sign In"
                 : step === "signup_email" ? "Continue"
                 : step === "signup_details" ? "Continue"
                 : step === "forgot_password" ? "Send reset link"
                 : "Create Account"}
-            </button>
+              style={{ marginTop: 16 }} />
           )}
 
           {(step === "login" || step === "signup_email") && ssoBlock}
@@ -1873,6 +2453,272 @@ function CatchUpScreen(props) {
   );
 }
 
+// === MONEY STORY + QUESTIONNAIRE CONFIG ===
+// The "let's do the math" centerpiece. deriveMoneyStory is the single source
+// of every number shown; claims stay conservative (60% recovery, capped at
+// 25% of income) and copy hedges with "about" - honest storytelling, not
+// scare math.
+
+var LEAK_OPTIONS = [
+  { id: "delivery", label: "Food delivery",     icon: "food" },
+  { id: "subs",     label: "Subscriptions",     icon: "tv" },
+  { id: "impulse",  label: "Impulse buys",      icon: "cart" },
+  { id: "goingout", label: "Going out",         icon: "coffee" },
+  { id: "shopping", label: "Shopping",          icon: "shirt" },
+  { id: "noidea",   label: "Honestly, no idea", icon: "search" },
+];
+
+// EXACT existing coreProblem strings - Advisor matches on them. Only the
+// icons are new.
+var PROBLEM_OPTIONS = [
+  { label: "Saving for a specific goal",             icon: "goals" },
+  { label: "Managing irregular or variable income",  icon: "activity" },
+  { label: "Paying off debt",                        icon: "credit" },
+  { label: "Understanding where my money goes",      icon: "search" },
+  { label: "Planning finances with a partner",       icon: "heart" },
+  { label: "Building financial confidence",          icon: "shield" },
+  { label: "Just getting started with budgeting",    icon: "spark" },
+];
+
+function deriveMoneyStory(d) {
+  var I = parseFloat(d.income) || 0;
+  var O = parseFloat(d.overspend) || 0;
+  var derived = false;
+  if (O <= 0 && I > 0) { O = Math.round(I * 0.12); derived = true; }
+  if (I > 0 && O > 0) O = Math.min(O, Math.round(I * 0.5));
+  var leakCount = (d.leaks || []).filter(function(l) { return l !== "noidea"; }).length;
+  if (O <= 0) return { mode: "minimal", leakCount: leakCount };
+  var Y = O * 12, F5 = Y * 5;
+  var R = Math.max(10, Math.round(O * 0.6 / 10) * 10);
+  if (I > 0) R = Math.max(10, Math.min(R, Math.round(I * 0.25)));
+  var RY = R * 12;
+  var G = parseFloat(d.goalAmt) || 0;
+  var goalMonths = G > 0 ? Math.ceil(G / R) : null;
+  return { mode: "full", derived: derived, monthlyLeak: O, yearlyLeak: Y, fiveYear: F5, recoverMo: R, recoverYr: RY, goalMonths: goalMonths, goalAmt: G, leakCount: leakCount };
+}
+
+// One full-screen story moment. Staged: kicker+headline reveal -> giant
+// count-up -> subtext -> Continue. Every beat can also be tapped through -
+// the timers only pace the reveal, they never gate progress backwards.
+function StoryBeat(props) {
+  useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
+  var b = props.beat;
+  var _st = useState(0); var st = _st[0]; var setSt = _st[1];
+  useEffect(function() {
+    setSt(0);
+    var timers = [];
+    var quick = jrReduced();
+    var headMs = quick ? 60 : 500 + String(b.headline || "").split(" ").length * 85;
+    timers.push(setTimeout(function() { setSt(1); }, headMs));
+    if (!b.big) {
+      timers.push(setTimeout(function() { setSt(2); }, headMs + (quick ? 40 : 350)));
+      timers.push(setTimeout(function() { setSt(3); }, headMs + (quick ? 80 : 1100)));
+    }
+    return function() { timers.forEach(function(t) { clearTimeout(t); }); };
+  }, [b.key]);
+  useEffect(function() {
+    if (st !== 2) return;
+    var t = setTimeout(function() { setSt(3); }, jrReduced() ? 60 : 900);
+    return function() { clearTimeout(t); };
+  }, [st]);
+  var accent = b.color || T.orange;
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: UI, boxSizing: "border-box" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 30px 0", textAlign: "center" }}>
+        {b.kicker && (
+          <div style={{ fontSize: 11.5, fontWeight: 800, color: accent, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14, animation: "rclPhrase 0.5s ease both" }}>
+            {b.kicker}
+          </div>
+        )}
+        <div style={{ fontSize: 25, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.28, maxWidth: 330 }}>
+          <WordReveal text={b.headline} base={0.15} step={0.085} />
+        </div>
+        {b.big && st >= 1 && (
+          <div style={{ marginTop: 22, animation: "rclPhrase 0.4s ease both" }}>
+            <CountUpNum value={b.big.value} duration={b.big.duration || 1500} format={b.big.format || jrCur}
+              suffix={b.big.suffix || ""} onDone={function() { setSt(function(s) { return s < 2 ? 2 : s; }); }}
+              style={{ fontSize: 56, fontWeight: 800, color: b.big.color || accent, letterSpacing: "-0.03em", lineHeight: 1.05, display: "block" }} />
+          </div>
+        )}
+        <div style={{ marginTop: 18, minHeight: 48, maxWidth: 320 }}>
+          {st >= 2 && b.sub && (
+            <div style={{ fontSize: 15, color: JINK2, lineHeight: 1.6, animation: "rclPhrase 0.5s ease both" }}>{b.sub}</div>
+          )}
+        </div>
+        {st >= 2 && b.extra && (
+          <div style={{ marginTop: 14, width: "100%", maxWidth: 340, animation: "rclPhrase 0.5s ease 0.15s both" }}>{b.extra}</div>
+        )}
+      </div>
+      <div style={{ padding: "18px 24px 40px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box" }}>
+        <div style={{ opacity: st >= 3 ? 1 : 0, pointerEvents: st >= 3 ? "auto" : "none", transition: "opacity 0.5s ease" }}>
+          <JrBtn label={b.cta || "Continue"} onPress={props.onNext} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Jomo's commitment moment, Richy-toned: a staggered pact checklist and one
+// big pulsing yes. The ghost link also proceeds - never a dead end.
+function CommitScreen(props) {
+  useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
+  var items = [
+    "I'll log what I spend - it takes seconds",
+    "I'll give every " + ((_currency.sym || "$")) + " a job each month",
+    "I'll let Richard flag what I'd miss",
+  ];
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: UI }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 30px 0" }}>
+        <div style={{ fontSize: 11.5, fontWeight: 800, color: T.orange, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14, animation: "rclPhrase 0.5s ease both" }}>
+          The pact
+        </div>
+        <div style={{ fontSize: 26, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.25, textAlign: "center", maxWidth: 320 }}>
+          <WordReveal text={"Ready to take it back" + (props.username ? ", " + props.username : "") + "?"} />
+        </div>
+        <div style={{ marginTop: 30, display: "flex", flexDirection: "column", gap: 16, width: "100%", maxWidth: 330 }}>
+          {items.map(function(label, i) {
+            var d = 0.9 + i * 0.45;
+            return (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 13, animation: "rclPhrase 0.5s ease " + d.toFixed(2) + "s both" }}>
+                <span style={{ width: 26, height: 26, borderRadius: "50%", background: T.green, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, animation: "rcjCheckPop 0.45s cubic-bezier(0.34,1.56,0.64,1) " + (d + 0.18).toFixed(2) + "s both", boxShadow: "0 4px 12px " + T.greenGlow }}>
+                  <SVGIcon id="check" size={13} color="#fff" />
+                </span>
+                <span style={{ fontSize: 15, fontWeight: 600, color: JINK, lineHeight: 1.45, textAlign: "left" }}>{label}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <div style={{ padding: "18px 24px 40px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box" }}>
+        <div style={{ animation: "rclPhrase 0.5s ease 2.4s both" }}>
+          <JrBtn label="YES — I'm in" pulse onPress={props.onCommit} />
+          <button onClick={props.onCommit}
+            style={{ width: "100%", background: "none", border: "none", color: JINK3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0" }}>
+            I'll just look around first
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Phase machine: counting ring -> story beats -> commitment. props.data is
+// the questionnaire answers; props.onCommit hands control to plan generation.
+function MathStoryScreen(props) {
+  useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
+  var _ph = useState("ring"); var ph = _ph[0]; var setPh = _ph[1];
+  var _bi = useState(0); var bi = _bi[0]; var setBi = _bi[1];
+  var d = props.data || {};
+  var s = deriveMoneyStory(d);
+  var goalName = (d.goalName || "").trim();
+
+  var beats = [];
+  if (s.mode === "full") {
+    beats.push({
+      key: "leak", kicker: "Let's be honest", color: T.orange,
+      headline: "Every month, this quietly slips through the cracks.",
+      big: { value: s.monthlyLeak, suffix: " /mo" },
+      sub: s.derived
+        ? "You said you weren't sure - so I used what's typical: about 12% of income goes untracked."
+        : "That's your own estimate" + (s.leakCount > 0 ? ", across " + s.leakCount + " leak source" + (s.leakCount > 1 ? "s" : "") + " you named yourself." : "."),
+    });
+    beats.push({
+      key: "year", kicker: "Twelve months from now", color: T.orange,
+      headline: "In a year, that adds up to",
+      big: { value: s.yearlyLeak, duration: 1800 },
+      sub: "Gone - without a single real decision being made.",
+    });
+    beats.push({
+      key: "five", kicker: "Keep drifting", color: T.orange,
+      headline: "Five years of drifting costs you",
+      big: { value: s.fiveYear, duration: 2000 },
+      sub: (s.goalAmt > 0 && goalName)
+        ? "That's " + Math.max(1, Math.floor(s.fiveYear / s.goalAmt)) + "x your " + goalName + "."
+        : "That's a car. A year of rent. A serious head start.",
+      extra: (
+        <BarCompare height={72} delay={250} items={[
+          { label: "1 year", value: jrCur(s.yearlyLeak), pct: 24, color: "rgba(224,48,48,0.55)", glow: "rgba(224,48,48,0.15)" },
+          { label: "5 years", value: jrCur(s.fiveYear), pct: 92, color: "rgba(224,48,48,0.8)", glow: "rgba(224,48,48,0.2)" },
+        ]} />
+      ),
+    });
+    beats.push({
+      key: "good", kicker: "Now the good news", color: T.green,
+      headline: "People who see their money get most of it back.",
+      big: { value: s.recoverYr, suffix: " /yr", color: T.green },
+      sub: "Tracking and a real plan typically recover about 60% of the leak - roughly " + jrCur(s.recoverMo) + " a month back in your pocket.",
+    });
+    if (s.goalMonths && goalName) {
+      beats.push({
+        key: "goal", kicker: "Your goal", color: T.green,
+        headline: goalName + ": suddenly within reach.",
+        big: { value: s.goalMonths, format: function(v) { return "~" + Math.max(1, Math.round(v)); }, suffix: " months", color: T.green, duration: 1300 },
+        sub: "At " + jrCur(s.recoverMo) + " recovered monthly, " + jrCur(s.goalAmt) + " stops being a dream and becomes a date. Richard will pace you.",
+      });
+    }
+  } else {
+    beats.push({
+      key: "min", kicker: "Here's the plan", color: T.orange,
+      headline: "You told me where it leaks. I'll find the numbers.",
+      sub: "Log as you go and Richard connects the dots - most people spot their first recoverable expense in the first week.",
+    });
+  }
+  beats.push({
+    key: "method", kicker: "How it works", color: T.orange,
+    headline: "No magic. Just visibility.",
+    cta: "Sounds right",
+    extra: (
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left" }}>
+        {[
+          { icon: "eye",     t: "See every expense the moment it happens" },
+          { icon: "budgets", t: "Budgets shaped to your real numbers" },
+          { icon: "advisor", t: "Richard reviews your month with you" },
+        ].map(function(r, i) {
+          return (
+            <div key={r.icon} style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(255,255,255,0.8)", border: "1px solid rgba(0,0,0,0.05)", borderRadius: 15, padding: "13px 15px", boxShadow: "0 3px 12px rgba(40,28,16,0.06)", animation: "rclPhrase 0.45s ease " + (0.25 + i * 0.16).toFixed(2) + "s both", boxSizing: "border-box" }}>
+              <span style={{ width: 34, height: 34, borderRadius: 11, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <SVGIcon id={r.icon} size={17} color={T.orange} />
+              </span>
+              <span style={{ fontSize: 13.5, fontWeight: 650, color: JINK, lineHeight: 1.4 }}>{r.t}</span>
+            </div>
+          );
+        })}
+      </div>
+    ),
+  });
+
+  return (
+    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI }}>
+      {ph === "ring" && (
+        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 32px" }}>
+          <div style={{ textAlign: "center" }}>
+            <ProgressRing size={150} duration={2800} onDone={function() { setPh("beats"); }} />
+            <div style={{ fontSize: 17, fontWeight: 800, color: JINK, letterSpacing: "-0.01em", marginTop: 24 }}>Richard is doing the math</div>
+            <div style={{ fontSize: 13.5, fontWeight: 600, color: JINK3, marginTop: 8 }}>
+              <ThinkingPhrase phrases={["Reading your answers", "Tracing the leaks", "Pricing the next five years"]} interval={950} />
+            </div>
+          </div>
+        </div>
+      )}
+      {ph === "beats" && (
+        <JrStepShell k={bi}>
+          <StoryBeat beat={beats[Math.min(bi, beats.length - 1)]}
+            onNext={function() {
+              if (bi + 1 < beats.length) setBi(bi + 1);
+              else setPh("commit");
+            }} />
+        </JrStepShell>
+      )}
+      {ph === "commit" && (
+        <JrStepShell k="commit">
+          <CommitScreen username={props.username} onCommit={props.onCommit} />
+        </JrStepShell>
+      )}
+    </div>
+  );
+}
+
 var STAGES = [
   { label: "Teenager",  icon: "star" },
   { label: "Student",   icon: "book" },
@@ -1897,17 +2743,42 @@ function OnboardingScreen(props) {
   var _gp = useState(""); var genPlan = _gp[0]; var setGenPlan = _gp[1];
   var _god = useState(null); var genOData = _god[0]; var setGenOData = _god[1];
   var _em = useState("manual"); var entryMethod = _em[0]; var setEntryMethod = _em[1];
+  // Journey additions: 9-screen questionnaire index, travel direction for the
+  // slide transitions, the money-leak answers feeding the math story, and the
+  // "q" -> "story" phase switch. The legacy step/loading states still drive
+  // plan generation and the step-6 plan screen - that contract is untouched.
+  var _qi = useState(0); var qIndex = _qi[0]; var setQIndex = _qi[1];
+  var _dr = useState("fwd"); var dir = _dr[0]; var setDir = _dr[1];
+  var _ph = useState("q"); var phase = _ph[0]; var setPhase = _ph[1];
+  var _lk = useState([]); var leaks = _lk[0]; var setLeaks = _lk[1];
+  var _ov = useState(""); var overspend = _ov[0]; var setOverspend = _ov[1];
+  var _gd = useState(false); var greetDone = _gd[0]; var setGreetDone = _gd[1];
+  var _ts = useState(""); var toast = _ts[0]; var setToast = _ts[1];
+  // Language + currency are asked HERE (not only at email signup) so Google
+  // sign-ins get asked too. Selections apply to the globals immediately, so
+  // the rest of the questionnaire and the math story format in the user's
+  // own currency; App persists them to the blob on completion.
+  var _plc = useState(_lang.code || "en"); var prefLang = _plc[0]; var setPrefLang = _plc[1];
+  var _pcc = useState(_currency.sym || "$"); var prefCur = _pcc[0]; var setPrefCur = _pcc[1];
+  var advRef = useRef(false);
+  useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
 
   var age = computeAge(props.dob);
+  var firstName = String(props.username || "").trim().split(" ")[0] || "there";
 
   function buildPlan() {
     setLoading(true);
     setErr("");
     var ageStr = age !== null ? String(age) : "not provided";
-    var langName = LANGUAGE_NAMES[props.lang] || "English";
+    var langName = LANGUAGE_NAMES[prefLang || props.lang] || "English";
     var langInstruction = langName !== "English" ? " Respond entirely in " + langName + "." : "";
     var system = "You are Richard, a warm and knowledgeable personal finance advisor inside the Richy app. A new user has just answered their onboarding questions. Their primary financial challenge is: " + (coreProblem || "general budgeting") + ". Generate a concise, personalized financial plan that directly addresses THEIR SPECIFIC PROBLEM, not generic advice. Base it on proven frameworks but tailor it to their situation. Keep the plan under 230 words." + RICHARD_FORMAT + " IMPORTANT: If their problem involves features Richy doesn't have yet (couples mode, debt payoff tracking, business accounting), be honest about that and suggest practical workarounds." + langInstruction;
-    var userMsg = "Name: " + props.username + ". Age: " + ageStr + ". Life stage: " + lifeStage + ". PRIMARY CHALLENGE: " + (coreProblem || "building a financial plan") + ". Monthly income: $" + (income || "0") + ". Monthly essentials: $" + (essentials || "0") + ". Current savings: $" + (savings || "0") + ". Total debt: $" + (debt || "0") + ". Top goal: " + (goalName || "financial freedom") + ", target $" + (goalAmt || "unknown") + ", timeline: " + (timeline || "unspecified") + ". Write a plan that directly addresses my primary challenge.";
+    var leakLabels = leaks.map(function(id) {
+      var hit = LEAK_OPTIONS.filter(function(o) { return o.id === id; })[0];
+      return hit ? hit.label : id;
+    });
+    var cs = prefCur || _currency.sym || "$";
+    var userMsg = "Name: " + props.username + ". Age: " + ageStr + ". Life stage: " + lifeStage + ". PRIMARY CHALLENGE: " + (coreProblem || "building a financial plan") + ". My currency symbol is " + cs + " - use it for every amount. Monthly income: " + cs + (income || "0") + ". Monthly essentials: " + cs + (essentials || "0") + ". Current savings: " + cs + (savings || "0") + ". Total debt: " + cs + (debt || "0") + ". Top goal: " + (goalName || "financial freedom") + ", target " + cs + (goalAmt || "unknown") + ", timeline: " + (timeline || "unspecified") + ". Self-reported money leaks: " + (leakLabels.length ? leakLabels.join(", ") : "not specified") + ". Estimated monthly overspend: " + cs + (overspend || "unknown") + ". Write a plan that directly addresses my primary challenge.";
     callClaude(
       [{ role: "user", content: userMsg }],
       system,
@@ -1917,7 +2788,7 @@ function OnboardingScreen(props) {
         var plan = (planErr || !text)
           ? ("Start here, " + props.username + ". For your challenge of " + (coreProblem || "managing your money") + ": Track every dollar you spend this month - awareness is step one. Set aside 10% of whatever you earn before you touch anything else. Build one month of essential expenses as a buffer. Then pour your focus into your goal: " + (goalName || "financial freedom") + ". Small consistent actions, repeated every month, compound into real wealth.")
           : text;
-        var oData = { lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: ageStr, coreProblem: coreProblem };
+        var oData = { lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: ageStr, coreProblem: coreProblem, moneyLeaks: leakLabels.join(", "), overspendEst: overspend, prefLang: prefLang, prefCurrency: prefCur };
         setGenPlan(plan);
         setGenOData(oData);
         setStep(6);
@@ -2042,150 +2913,294 @@ function OnboardingScreen(props) {
     );
   }
 
-  var coreProblemOptions = [
-    "Saving for a specific goal",
-    "Managing irregular or variable income",
-    "Paying off debt",
-    "Understanding where my money goes",
-    "Planning finances with a partner",
-    "Building financial confidence",
-    "Just getting started with budgeting",
+  var Q_TOTAL = 10;
+  var QUESTIONS = [
+    { h: "", s: "" }, // 0: Richard's greeting - custom body
+    { h: "Make Richy yours.", s: "Language and currency — everything adapts, right now." },
+    { h: "Hi " + firstName + " — where are you in life?", s: "So the plan fits your reality, not a template." },
+    { h: "What's your biggest money frustration?", s: "Richard builds your whole plan around this." },
+    { h: "What lands in your account each month?", s: "Roughly is fine — salary, allowance, side income, all of it." },
+    { h: "What do the essentials cost you?", s: "Rent, food, utilities, transport. The must-pays." },
+    { h: "Where does your money leak?", s: "Pick all that apply. Richard doesn't judge." },
+    { h: "How much slips away each month?", s: "Money spent that you can't quite account for." },
+    { h: "Where do you stand today?", s: "Honest numbers make a better plan." },
+    { h: "One goal. Make it real.", s: "Something specific you're going for." },
   ];
 
-  var questions = [
-    { q: "What's your biggest financial challenge?",      s: "This helps Richard build a plan that actually addresses what matters to you." },
-    { q: "How would you describe yourself?",              s: "This helps Richard tailor your plan to your life." },
-    { q: "What is your monthly money situation?",         s: "Approximate numbers are completely fine." },
-    { q: "Where do you stand right now?",                 s: "Honest numbers lead to a better plan." },
-    { q: "What is your most important goal?",             s: "Something specific you want to reach." },
-  ];
-  var current = questions[step - 1];
-
-  function nextStep() {
-    if (step === 1 && !coreProblem) { setErr("Pick the challenge that resonates most."); return; }
-    if (step === 2 && !lifeStage) { setErr("Pick the option that fits you best."); return; }
+  function advance() {
     setErr("");
-    if (step < 5) { setStep(step + 1); return; }
-    buildPlan();
+    setDir("fwd");
+    if (qIndex >= Q_TOTAL - 1) { setPhase("story"); return; }
+    setQIndex(qIndex + 1);
+  }
+  // Single-choice screens advance on their own after the selection pop; the
+  // ref guards a double-tap from skipping two screens.
+  function autoAdvance() {
+    if (advRef.current) return;
+    advRef.current = true;
+    setTimeout(function() { advRef.current = false; advance(); }, 240);
+  }
+  function goBack() {
+    if (qIndex <= 0) return;
+    setDir("back"); setQIndex(qIndex - 1);
+  }
+  function toggleLeak(id) {
+    setLeaks(function(cur) {
+      if (id === "noidea") return cur.indexOf("noidea") >= 0 ? [] : ["noidea"];
+      var next = cur.filter(function(x) { return x !== "noidea"; });
+      if (next.indexOf(id) >= 0) return next.filter(function(x) { return x !== id; });
+      return next.concat([id]);
+    });
+  }
+  // Jomo-style dynamic encouragement under the overspend stepper.
+  function overspendHint() {
+    var o = parseFloat(overspend) || 0;
+    var I = parseFloat(income) || 0;
+    if (o <= 0) return { tag: "Take a guess", txt: "Most people underestimate this." };
+    var band;
+    if (I > 0) { var p = o / I; band = p < 0.05 ? 0 : p <= 0.15 ? 1 : 2; }
+    else { band = o < 150 ? 0 : o <= 600 ? 1 : 2; }
+    if (band === 0) return { tag: "Modest", txt: "Careful — or optimistic. We'll find out." };
+    if (band === 1) return { tag: "That's typical", txt: "Right in the common range — and very fixable." };
+    return { tag: "Bold and honest", txt: "Big number, big upside." };
+  }
+
+  if (phase === "story") {
+    return (
+      <MathStoryScreen
+        data={{ income: income, essentials: essentials, overspend: overspend, leaks: leaks, goalName: goalName, goalAmt: goalAmt, savings: savings }}
+        username={firstName}
+        onCommit={buildPlan} />
+    );
+  }
+
+  var qh = QUESTIONS[qIndex];
+  var hint = overspendHint();
+  var incNum = parseFloat(income) || 0;
+  var essPicks = incNum > 0
+    ? [0.3, 0.5, 0.7].map(function(p) { return Math.max(50, Math.round(incNum * p / 50) * 50); })
+    : [800, 1500, 2500];
+  var labelJ = { fontSize: 11.5, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 12 };
+  function optCardStyle(sel) {
+    return { width: "100%", background: sel ? "rgba(137,112,198,0.07)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "15px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", animation: sel ? "rclPop 0.25s ease" : "none", marginBottom: 11 };
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)", fontFamily: UI, display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column" }}>
 
-      <div style={{ padding: "64px 24px 0", flex: 1 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0" }}>
+        {qIndex > 0 ? (
+          <button onClick={goBack} style={{ width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", padding: 0, flexShrink: 0, boxSizing: "border-box" }}>
+            <span style={{ transform: "rotate(180deg)", display: "flex" }}><SVGIcon id="chevron" size={16} color={JINK2} /></span>
+          </button>
+        ) : <div style={{ width: 34, flexShrink: 0 }} />}
+        <JourneyBar pct={((qIndex + 1) / Q_TOTAL) * 100} />
+        <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: JINK3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(qIndex + 1) + "/" + Q_TOTAL}</div>
+      </div>
 
-        <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 44 }}>
-          {[1, 2, 3, 4, 5].map(function(n) {
-            return (
-              <div key={n} style={{ width: 8, height: 8, borderRadius: "50%", background: n <= step ? T.orange : "rgba(137,112,198,0.22)", transition: "background 0.25s" }} />
-            );
-          })}
-        </div>
+      <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "28px 24px 8px" }}>
+        <div style={{ maxWidth: 380, margin: "0 auto" }}>
+          <JrStepShell k={qIndex} dir={dir}>
+            {qIndex > 0 && (
+              <div>
+                <div style={{ fontSize: 25, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.25, marginBottom: 8 }}>{qh.h}</div>
+                <div style={{ fontSize: 14, color: JINK3, marginBottom: 26, lineHeight: 1.55 }}>{qh.s}</div>
+              </div>
+            )}
 
-        <div style={{ fontSize: 25, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.25, marginBottom: 8 }}>
-          {current.q}
-        </div>
-        <div style={{ fontSize: 14, color: T.ink3, marginBottom: 28, lineHeight: 1.55 }}>
-          {current.s}
-        </div>
-
-        {step === 1 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-            {coreProblemOptions.map(function(opt) {
-              var sel = coreProblem === opt;
-              return (
-                <button key={opt} onClick={function() { setCoreProblem(opt); setErr(""); }}
-                  style={{ background: sel ? "rgba(137,112,198,0.07)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "16px 20px", textAlign: "left", cursor: "pointer", fontSize: 16, fontWeight: sel ? 600 : 500, color: sel ? T.ink : T.ink2, boxShadow: "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI }}>
-                  {opt}
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {step === 2 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-            {STAGES.map(function(st) {
-              var sel = lifeStage === st.label;
-              return (
-                <button key={st.label} onClick={function() { setLifeStage(st.label); setErr(""); }}
-                  style={{ background: sel ? "rgba(137,112,198,0.07)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "16px 20px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI }}>
-                  <div style={{ width: 38, height: 38, borderRadius: 11, background: sel ? T.orangeDim : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <SVGIcon id={st.icon} size={18} color={sel ? T.orange : T.ink3} />
+            {qIndex === 0 && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 30 }}>
+                <div style={{ position: "relative", width: 62, height: 62, marginBottom: 24 }}>
+                  <div style={{ position: "absolute", inset: -10, borderRadius: "50%", background: "radial-gradient(circle," + T.orangeGlow + " 0%, transparent 70%)", filter: "blur(8px)", animation: "rclGlow 2.4s ease-in-out infinite" }} />
+                  <div style={{ position: "relative", width: 62, height: 62, borderRadius: 20, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 26px " + T.orangeGlow, animation: "rclBreathe 2.4s ease-in-out infinite" }}>
+                    <SVGIcon id="spark" size={28} color="#fff" />
                   </div>
-                  <span style={{ fontSize: 17, fontWeight: sel ? 700 : 500, color: sel ? T.ink : T.ink2 }}>{st.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        )}
+                </div>
+                <div style={{ background: "#fff", borderRadius: "4px 20px 20px 20px", padding: "16px 18px", boxShadow: "0 6px 22px rgba(40,28,16,0.09)", maxWidth: 330, boxSizing: "border-box" }}>
+                  <TypeReveal animate color={JINK} size={15.5}
+                    text={"Hi " + firstName + ". I'm **Richard** — your money's new manager. Nine quick questions, and then I'll show you something most people never see about their own money."}
+                    onDone={function() { setGreetDone(true); }} />
+                </div>
+              </div>
+            )}
 
-        {step === 3 && (
-          <div>
-            <span style={labelStyle}>Monthly Income</span>
-            <input value={income} onChange={function(e) { setIncome(e.target.value); }} type="number" placeholder="e.g. 3000" style={fieldStyle} />
-            <span style={Object.assign({}, labelStyle, { marginTop: 4 })}>Monthly Essentials</span>
-            <div style={{ fontSize: 12, color: T.ink3, marginBottom: 8 }}>Rent, food, utilities, transport</div>
-            <input value={essentials} onChange={function(e) { setEssentials(e.target.value); }} type="number" placeholder="e.g. 1800" style={fieldStyle} />
-          </div>
-        )}
+            {qIndex === 1 && (
+              <div>
+                <div style={labelJ}>Language</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 22 }}>
+                  {LANGUAGE_OPTIONS.map(function(o, i) {
+                    var sel = prefLang === o.code;
+                    return (
+                      <button key={o.code} onClick={function() { setPrefLang(o.code); _lang.code = o.code; }}
+                        style={{ padding: "9px 16px", borderRadius: 12, border: sel ? "2px solid " + T.orange : "1.5px solid rgba(0,0,0,0.1)", background: sel ? T.orangeDim : "rgba(255,255,255,0.85)", color: sel ? T.orange : JINK2, fontSize: 13, fontWeight: sel ? 700 : 500, fontFamily: UI, cursor: "pointer", boxSizing: "border-box", animation: sel ? "rclPop 0.25s ease" : "rclPhrase 0.4s ease " + (i * 0.04).toFixed(2) + "s both" }}>
+                        {o.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div style={labelJ}>Currency</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {CURRENCY_OPTIONS.slice(0, 16).map(function(c, i) {
+                    var sel = prefCur === c.sym;
+                    return (
+                      <button key={c.sym} onClick={function() { setPrefCur(c.sym); _currency.sym = c.sym; }}
+                        style={{ padding: "9px 14px", borderRadius: 12, border: sel ? "2px solid " + T.orange : "1.5px solid rgba(0,0,0,0.1)", background: sel ? T.orangeDim : "rgba(255,255,255,0.85)", color: sel ? T.orange : JINK2, fontSize: 13, fontWeight: sel ? 700 : 500, fontFamily: UI, cursor: "pointer", boxSizing: "border-box", animation: sel ? "rclPop 0.25s ease" : "rclPhrase 0.4s ease " + (0.3 + i * 0.03).toFixed(2) + "s both" }}>
+                        {c.sym} {c.code}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div key={prefCur} style={{ marginTop: 22, textAlign: "center", animation: "rclPhrase 0.35s ease both" }}>
+                  <span style={{ display: "inline-block", background: "rgba(255,255,255,0.85)", border: "1px solid rgba(0,0,0,0.06)", borderRadius: 999, padding: "8px 16px", fontSize: 13, fontWeight: 700, color: JINK2, boxShadow: "0 2px 8px rgba(0,0,0,0.04)", boxSizing: "border-box" }}>
+                    Your coffee: {fmtCur(prefCur, 4.5)}
+                  </span>
+                </div>
+              </div>
+            )}
 
-        {step === 4 && (
-          <div>
-            <span style={labelStyle}>Current Savings</span>
-            <input value={savings} onChange={function(e) { setSavings(e.target.value); }} type="number" placeholder="e.g. 500" style={fieldStyle} />
-            <span style={Object.assign({}, labelStyle, { marginTop: 4 })}>Total Debt</span>
-            <div style={{ fontSize: 12, color: T.ink3, marginBottom: 8 }}>Credit cards, loans - enter 0 if none</div>
-            <input value={debt} onChange={function(e) { setDebt(e.target.value); }} type="number" placeholder="e.g. 0" style={fieldStyle} />
-          </div>
-        )}
+            {qIndex === 2 && (
+              <Stagger k="q2" step={0.06}>
+                {STAGES.map(function(st) {
+                  var sel = lifeStage === st.label;
+                  return (
+                    <button key={st.label} onClick={function() { setLifeStage(st.label); autoAdvance(); }} style={optCardStyle(sel)}>
+                      <div style={{ width: 38, height: 38, borderRadius: 11, background: sel ? T.orangeDim : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <SVGIcon id={st.icon} size={18} color={sel ? T.orange : JINK3} />
+                      </div>
+                      <span style={{ fontSize: 17, fontWeight: sel ? 700 : 500, color: sel ? JINK : JINK2 }}>{st.label}</span>
+                    </button>
+                  );
+                })}
+              </Stagger>
+            )}
 
-        {step === 5 && (
-          <div>
-            <span style={labelStyle}>Goal Name</span>
-            <input value={goalName} onChange={function(e) { setGoalName(e.target.value); }} type="text" placeholder="e.g. Emergency fund, New laptop" style={fieldStyle} />
-            <span style={Object.assign({}, labelStyle, { marginTop: 4 })}>Target Amount</span>
-            <input value={goalAmt} onChange={function(e) { setGoalAmt(e.target.value); }} type="number" placeholder="e.g. 5000" style={fieldStyle} />
-            <span style={Object.assign({}, labelStyle, { marginTop: 4 })}>Timeline</span>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 4 }}>
-              {TIMELINES.map(function(t) {
-                var sel = timeline === t;
-                return (
-                  <button key={t} onClick={function() { setTimeline(t); }}
-                    style={{ background: sel ? T.orange : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.09)"), borderRadius: 30, padding: "9px 18px", fontSize: 14, fontWeight: sel ? 700 : 500, color: sel ? "#fff" : T.ink2, cursor: "pointer", fontFamily: UI }}>
-                    {t}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
+            {qIndex === 3 && (
+              <Stagger k="q3" step={0.05}>
+                {PROBLEM_OPTIONS.map(function(opt) {
+                  var sel = coreProblem === opt.label;
+                  return (
+                    <button key={opt.label} onClick={function() { setCoreProblem(opt.label); autoAdvance(); }} style={optCardStyle(sel)}>
+                      <div style={{ width: 36, height: 36, borderRadius: 11, background: sel ? T.orangeDim : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <SVGIcon id={opt.icon} size={17} color={sel ? T.orange : JINK3} />
+                      </div>
+                      <span style={{ fontSize: 15, fontWeight: sel ? 700 : 500, color: sel ? JINK : JINK2, lineHeight: 1.35 }}>{opt.label}</span>
+                    </button>
+                  );
+                })}
+              </Stagger>
+            )}
 
-        {err && (
-          <div style={{ fontSize: 13, color: T.red, marginTop: 14, lineHeight: 1.45 }}>{err}</div>
-        )}
+            {qIndex === 4 && (
+              <div style={{ paddingTop: 14 }}>
+                <QuickAmount value={income} onChange={setIncome} picks={[1500, 3000, 5000, 8000]} />
+              </div>
+            )}
 
+            {qIndex === 5 && (
+              <div style={{ paddingTop: 14 }}>
+                <QuickAmount value={essentials} onChange={setEssentials} picks={essPicks} />
+              </div>
+            )}
+
+            {qIndex === 6 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                {LEAK_OPTIONS.map(function(o, i) {
+                  var sel = leaks.indexOf(o.id) >= 0;
+                  return (
+                    <button key={o.id} onClick={function() { toggleLeak(o.id); }}
+                      style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 15px", borderRadius: 999, border: sel ? "2px solid " + T.orange : "1.5px solid rgba(0,0,0,0.09)", background: sel ? T.orangeDim : "rgba(255,255,255,0.9)", cursor: "pointer", fontFamily: UI, boxSizing: "border-box", animation: sel ? "rclPop 0.25s ease" : "rclPhrase 0.4s ease " + (i * 0.06).toFixed(2) + "s both" }}>
+                      <SVGIcon id={o.icon} size={15} color={sel ? T.orange : JINK3} />
+                      <span style={{ fontSize: 14, fontWeight: sel ? 700 : 500, color: sel ? T.orange : JINK2 }}>{o.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {qIndex === 7 && (
+              <div style={{ paddingTop: 14 }}>
+                <QuickAmount value={overspend} onChange={setOverspend} picks={[100, 250, 500, 1000]} />
+                <div key={hint.tag} style={{ textAlign: "center", marginTop: 18, animation: "rclPhrase 0.35s ease both" }}>
+                  <span style={{ display: "inline-block", background: T.orangeDim, color: T.orange, fontSize: 12.5, fontWeight: 800, padding: "7px 14px", borderRadius: 999, letterSpacing: "0.02em" }}>{hint.tag}</span>
+                  <div style={{ fontSize: 13, color: JINK2, marginTop: 8, lineHeight: 1.5 }}>{hint.txt}</div>
+                </div>
+              </div>
+            )}
+
+            {qIndex === 8 && (
+              <div style={{ textAlign: "center", paddingTop: 6 }}>
+                <div style={labelJ}>Saved up</div>
+                <QuickAmount compact value={savings} onChange={setSavings} picks={[500, 2000, 10000]} />
+                <div style={Object.assign({}, labelJ, { marginTop: 30 })}>Total debt</div>
+                <QuickAmount compact value={debt} onChange={setDebt} picks={[0, 1000, 5000]} />
+              </div>
+            )}
+
+            {qIndex === 9 && (
+              <div>
+                <div style={labelJ}>Goal name</div>
+                <input value={goalName} onChange={function(e) { setGoalName(e.target.value); }} type="text" placeholder="e.g. Emergency fund, first apartment"
+                  className="jr-field" style={Object.assign({}, fieldStyle, { color: JINK })} />
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 6 }}>
+                  {["Emergency fund", "Travel", "New laptop", "First apartment"].map(function(g) {
+                    var sel = goalName === g;
+                    return (
+                      <button key={g} onClick={function() { setGoalName(g); }}
+                        style={{ padding: "8px 13px", borderRadius: 999, border: sel ? "2px solid " + T.orange : "1.5px solid rgba(0,0,0,0.09)", background: sel ? T.orangeDim : "rgba(255,255,255,0.85)", color: sel ? T.orange : JINK2, fontSize: 12.5, fontWeight: sel ? 700 : 500, fontFamily: UI, cursor: "pointer", boxSizing: "border-box", animation: sel ? "rclPop 0.25s ease" : "none" }}>
+                        {g}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div style={Object.assign({}, labelJ, { marginTop: 20, textAlign: "center" })}>Target amount</div>
+                <div style={{ textAlign: "center" }}>
+                  <QuickAmount compact value={goalAmt} onChange={setGoalAmt} picks={[2000, 5000, 10000]} />
+                </div>
+                <div style={Object.assign({}, labelJ, { marginTop: 22 })}>Timeline</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                  {TIMELINES.map(function(t) {
+                    var sel = timeline === t;
+                    return (
+                      <button key={t} onClick={function() { setTimeline(t); }}
+                        style={{ background: sel ? T.orange : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.09)"), borderRadius: 30, padding: "9px 18px", fontSize: 14, fontWeight: sel ? 700 : 500, color: sel ? "#fff" : JINK2, cursor: "pointer", fontFamily: UI, boxSizing: "border-box", animation: sel ? "rclPop 0.25s ease" : "none" }}>
+                        {t}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </JrStepShell>
+        </div>
       </div>
 
-      <div style={{ padding: "20px 24px 52px" }}>
-        {step > 1 && (
-          <button onClick={function() { setStep(step - 1); setErr(""); }}
-            style={{ background: "none", border: "none", fontSize: 14, color: T.ink3, cursor: "pointer", fontFamily: UI, marginBottom: 10, padding: 0 }}>
-            Back
-          </button>
+      <div style={{ padding: "12px 24px 40px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box" }}>
+        {qIndex === 0 && <JrBtn label="Let's go" disabled={!greetDone} onPress={advance} />}
+        {qIndex === 1 && <JrBtn label="Continue" onPress={advance} />}
+        {(qIndex === 2 || qIndex === 3) && (
+          <div style={{ textAlign: "center", fontSize: 12.5, color: JINK3, fontWeight: 600, padding: "14px 0" }}>Tap an option to continue</div>
         )}
-        <button onClick={nextStep}
-          style={{ width: "100%", background: "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: "#fff", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 6px 20px " + T.orangeGlow + ", 0 2px 6px rgba(0,0,0,0.1)", letterSpacing: "-0.01em" }}>
-          {step < 4 ? "Next" : "Build My Plan"}
-        </button>
-        {step > 1 && step < 4 && (
-          <button onClick={function() { setErr(""); setStep(step + 1); }}
-            style={{ background: "none", border: "none", fontSize: 13, color: T.ink3, cursor: "pointer", fontFamily: UI, marginTop: 14, padding: 0, display: "block", width: "100%", textAlign: "center" }}>
-            Skip this step
-          </button>
+        {qIndex >= 4 && qIndex <= 8 && (
+          <div>
+            <JrBtn label="Continue"
+              onPress={function() {
+                if (qIndex === 6 && leaks.length === 0) { setToast("Pick at least one — or skip below."); return; }
+                advance();
+              }} />
+            <button onClick={function() {
+                if (qIndex === 6) setLeaks([]);
+                if (qIndex === 7) setOverspend("");
+                advance();
+              }}
+              style={{ width: "100%", background: "none", border: "none", color: JINK3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0" }}>
+              {qIndex === 7 ? "I really don't know" : "Skip for now"}
+            </button>
+          </div>
         )}
+        {qIndex === 9 && <JrBtn label="Do the math" onPress={advance} />}
       </div>
 
+      <JrToast msg={toast} onDone={function() { setToast(""); }} />
     </div>
   );
 }
@@ -12197,6 +13212,14 @@ export default function App() {
     merged.plan = plan;
     merged.onboardingData = oData;
     setOnboardingData(oData);
+    // Language & currency now come from the questionnaire (asked on every
+    // path, including Google sign-ins that never saw the email prefs step).
+    if (oData && oData.prefLang) {
+      merged.lang = oData.prefLang; _lang.code = oData.prefLang; setLang(oData.prefLang);
+    }
+    if (oData && oData.prefCurrency) {
+      merged.currency = oData.prefCurrency; _currency.sym = oData.prefCurrency; setCurrency(oData.prefCurrency);
+    }
     if (suggestedBudgets && suggestedBudgets.length) {
       setBudgets(suggestedBudgets);
       merged.budgets = suggestedBudgets;

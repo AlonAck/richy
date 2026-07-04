@@ -255,6 +255,20 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).t
       });
     }
     el = React.createElement(SavingsHarness, {});
+  } else if (view === "auth") {
+    // Full welcome journey; Firebase calls only fire on submit, so browsing is safe.
+    try { if (!qs.get("seen")) localStorage.removeItem("cb_welcome_seen"); } catch (e) {}
+    el = React.createElement(AuthScreen, { onLogin: function(n, b, k) { window.__clicked = "login_" + n; } });
+  } else if (view === "onboarding") {
+    _currency.sym = qs.get("cur") || "$";
+    el = React.createElement(OnboardingScreen, {
+      username: "Alon Acker", dob: "1995-03-14", lang: "en",
+      onComplete: function(plan, oData, budgets, em) { window.__done = { plan: plan, oData: oData, budgets: budgets, em: em }; document.title = "ONBOARDING DONE"; }
+    });
+  } else if (view === "mathstory") {
+    _currency.sym = qs.get("cur") || "$";
+    var msData = qs.get("empty") ? {} : { income: "6000", essentials: "2600", overspend: "700", leaks: ["delivery", "subs", "impulse"], goalName: "Emergency fund", goalAmt: "10000", timeline: "1 year", savings: "1500" };
+    el = React.createElement(MathStoryScreen, { data: msData, username: "Alon", onCommit: function() { window.__clicked = "commit"; document.title = "COMMIT"; } });
   } else {
     var ovBiz = qs.get("seed") ? [{
       id: "biz_ov", name: "Candle Co", what: "handmade candles", icon: "briefcase", color: "#8970C6", createdAt: "2026-04-15",
@@ -274,8 +288,9 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).t
     }] : [];
     el = React.createElement(Overview, { tx: mockTx, goals: mockGoals, budgets: [], categories: mockCats, businesses: ovBiz, trips: mockTrips, username: "Alon", plan: "", onCategories: function(){}, onOpenBusiness: function(id){ window.__clicked = "biz_" + id; }, onOpenTrip: function(id){ window.__clicked = "trip_" + id; } });
   }
+  var fullBleed = view === "auth" || view === "onboarding" || view === "mathstory";
   ReactDOM.createRoot(document.getElementById("root")).render(
-    React.createElement("div", { style: { maxWidth: 420, margin: "0 auto", padding: 16, minHeight: "100vh" } }, el)
+    fullBleed ? el : React.createElement("div", { style: { maxWidth: 420, margin: "0 auto", padding: 16, minHeight: "100vh" } }, el)
   );
 }).catch(function(e){
   document.getElementById("err").textContent = "Dev harness error:\n" + (e && e.stack ? e.stack : e);
