@@ -101,14 +101,14 @@ var THEMES = {
     catNameHero: "rgba(36,44,82,0.82)", merchNameHero: "rgba(36,44,82,0.85)", merchBar: "linear-gradient(90deg,#3C4C82,#5C7AE3)",
   },
 };
-var _theme = { name: "purple" };
+var _theme = { name: "blue" };
 function applyTheme(name) {
-  var p = THEMES[name] || THEMES.purple;
+  var p = THEMES[name] || THEMES.blue;
   for (var k in p) { T[k] = p[k]; }
   T.heroInk = p.heroText;
-  _theme.name = THEMES[name] ? name : "purple";
+  _theme.name = THEMES[name] ? name : "blue";
 }
-applyTheme("purple");
+applyTheme("blue");
 
 // Display names for each theme id, keyed the same as THEMES. Single source of
 // truth for the label shown in Profile / Privacy rows and the Appearance picker.
@@ -155,8 +155,8 @@ function applyDarkMode(dark) {
 // default while Firestore loads. Synced to the cloud value on every change.
 function lastLook() {
   try {
-    return { theme: localStorage.getItem("cb_theme") || "purple", dark: localStorage.getItem("cb_dark") === "1" };
-  } catch (e) { return { theme: "purple", dark: false }; }
+    return { theme: localStorage.getItem("cb_theme") || "blue", dark: localStorage.getItem("cb_dark") === "1" };
+  } catch (e) { return { theme: "blue", dark: false }; }
 }
 function rememberLook(theme, dark) {
   try { localStorage.setItem("cb_theme", theme); localStorage.setItem("cb_dark", dark ? "1" : "0"); } catch (e) {}
@@ -898,9 +898,14 @@ function ensureJourneyCss() {
     "@keyframes rcjCheckPop{0%{transform:scale(0.4);opacity:0}60%{transform:scale(1.15);opacity:1}100%{transform:scale(1);opacity:1}}",
     "@keyframes rcjToastIn{from{opacity:0;transform:translate(-50%,14px)}to{opacity:1;transform:translate(-50%,0)}}",
     "@keyframes rcjShimmerSoft{0%{transform:translateX(-160%) skewX(-14deg)}55%{transform:translateX(320%) skewX(-14deg)}100%{transform:translateX(320%) skewX(-14deg)}}",
+    "@keyframes rcjChipIn{from{opacity:0;transform:translateY(9px) scale(0.88)}to{opacity:1;transform:none}}",
+    "@keyframes rcjBarGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}",
+    "@keyframes rcjNumPop{0%{opacity:0;transform:scale(0.82) translateY(8px)}60%{opacity:1;transform:scale(1.05)}100%{opacity:1;transform:none}}",
     ".jr-field:focus{outline:none;border-color:#9D78E8 !important;box-shadow:0 0 0 4px rgba(137,112,198,0.18),0 2px 8px rgba(0,0,0,0.04) !important;}",
     ".jr-scroll{scrollbar-width:none;-ms-overflow-style:none;}",
     ".jr-scroll::-webkit-scrollbar{display:none;}",
+    ".jr-press{transition:transform 0.12s ease;}",
+    ".jr-press:active{transform:scale(0.95);}",
   ].join("");
   document.head.appendChild(st);
 }
@@ -1023,12 +1028,15 @@ function ProgressRing(props) {
   );
 }
 
-// Top-of-questionnaire progress bar.
+// Top-of-questionnaire progress bar: eased width + a live sheen sweeping the
+// fill so it always reads as alive, never a static strip.
 function JourneyBar(props) {
-  useEffect(function() { ensureJourneyCss(); }, []);
+  useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
   return (
-    <div style={{ height: 4, borderRadius: 999, background: "rgba(0,0,0,0.08)", overflow: "hidden", flex: 1 }}>
-      <div style={{ height: "100%", width: (props.pct || 0) + "%", borderRadius: 999, background: T.btn, transition: "width 0.45s cubic-bezier(0.22,1,0.36,1)" }} />
+    <div style={{ height: 5, borderRadius: 999, background: "rgba(0,0,0,0.08)", overflow: "hidden", flex: 1, boxSizing: "border-box" }}>
+      <div style={{ height: "100%", width: (props.pct || 0) + "%", borderRadius: 999, background: T.btn, transition: "width 0.45s cubic-bezier(0.22,1,0.36,1)", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: 0, bottom: 0, width: "42%", background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.6),transparent)", animation: "rclSheen 2.3s ease-in-out infinite" }} />
+      </div>
     </div>
   );
 }
@@ -1134,6 +1142,79 @@ function JrBtn(props) {
   );
 }
 
+// Selectable chip with real presence: gradient fill + white check pop when
+// picked, press squish, springy staggered entrance. Replaces every flat
+// picker pill in the journey (language, currency, quick-picks, leaks,
+// timelines, goal suggestions).
+function JrChip(props) {
+  useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
+  var _pr = useState(false); var pressed = _pr[0]; var setPressed = _pr[1];
+  var sel = !!props.selected;
+  return (
+    <button onClick={props.onPress}
+      onPointerDown={function() { setPressed(true); }}
+      onPointerUp={function() { setPressed(false); }}
+      onPointerLeave={function() { setPressed(false); }}
+      style={Object.assign({
+        position: "relative", display: "inline-flex", alignItems: "center", gap: 8,
+        padding: props.sub ? "9px 14px" : props.small ? "8px 14px" : "10px 16px",
+        borderRadius: props.sub ? 15 : 999,
+        border: "1.5px solid " + (sel ? "transparent" : "rgba(0,0,0,0.09)"),
+        background: sel ? T.btn : "rgba(255,255,255,0.92)",
+        color: sel ? "#fff" : JINK2,
+        boxShadow: sel ? "0 7px 18px " + T.orangeGlow + ", 0 2px 5px rgba(0,0,0,0.08)" : "0 2px 8px rgba(0,0,0,0.05)",
+        cursor: "pointer", fontFamily: UI, boxSizing: "border-box",
+        transform: pressed ? "scale(0.93)" : "scale(1)",
+        transition: "transform 0.12s ease, background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
+        animation: props.delay != null ? "rcjChipIn 0.42s cubic-bezier(0.34,1.56,0.64,1) " + props.delay.toFixed(2) + "s both" : "none",
+      }, props.style)}>
+      {sel ? (
+        <span style={{ width: 15, height: 15, borderRadius: "50%", background: "rgba(255,255,255,0.95)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, animation: "rcjCheckPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both" }}>
+          <SVGIcon id="check" size={9} color={T.orange} />
+        </span>
+      ) : props.icon ? (
+        <SVGIcon id={props.icon} size={14} color={JINK3} />
+      ) : null}
+      <span style={{ textAlign: "left" }}>
+        <span style={{ display: "block", fontSize: props.sub ? 14.5 : props.small ? 12.5 : 13.5, fontWeight: sel ? 750 : 550, lineHeight: 1.2, letterSpacing: "-0.01em" }}>{props.label}</span>
+        {props.sub && <span style={{ display: "block", fontSize: 9.5, fontWeight: 700, opacity: sel ? 0.9 : 0.55, lineHeight: 1.35, letterSpacing: "0.06em", textTransform: "uppercase" }}>{props.sub}</span>}
+      </span>
+    </button>
+  );
+}
+
+// Small circular icon button (back chevron etc.) with press squish.
+function JrIconBtn(props) {
+  useEffect(function() { ensureJourneyCss(); }, []);
+  var _pr = useState(false); var pressed = _pr[0]; var setPressed = _pr[1];
+  return (
+    <button onClick={props.onPress}
+      onPointerDown={function() { setPressed(true); }}
+      onPointerUp={function() { setPressed(false); }}
+      onPointerLeave={function() { setPressed(false); }}
+      style={{ width: props.size || 34, height: props.size || 34, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", padding: 0, flexShrink: 0, boxSizing: "border-box", transform: pressed ? "scale(0.86)" : "scale(1)", transition: "transform 0.13s ease" }}>
+      <span style={{ transform: "rotate(" + (props.rotate || 0) + "deg)", display: "flex" }}>
+        <SVGIcon id={props.icon || "chevron"} size={16} color={JINK2} />
+      </span>
+    </button>
+  );
+}
+
+// Stepper - / + button: bigger tap target, purple flash + squish on press.
+function JrStepBtn(props) {
+  useEffect(function() { ensureJourneyCss(); }, []);
+  var _pr = useState(false); var pressed = _pr[0]; var setPressed = _pr[1];
+  return (
+    <button onClick={props.onPress}
+      onPointerDown={function() { setPressed(true); }}
+      onPointerUp={function() { setPressed(false); }}
+      onPointerLeave={function() { setPressed(false); }}
+      style={{ width: 46, height: 46, borderRadius: "50%", border: "1.5px solid " + (pressed ? T.orange : "rgba(0,0,0,0.08)"), background: pressed ? T.orangeDim : "#fff", color: pressed ? T.orange : JINK2, fontSize: 22, fontWeight: 600, cursor: "pointer", boxShadow: pressed ? "0 2px 14px " + T.orangeGlow : "0 2px 10px rgba(0,0,0,0.06)", fontFamily: UI, boxSizing: "border-box", flexShrink: 0, lineHeight: 1, transform: pressed ? "scale(0.9)" : "scale(1)", transition: "transform 0.12s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease" }}>
+      {props.label}
+    </button>
+  );
+}
+
 // Screen-transition wrapper: re-key via props.k, slides in from the travel
 // direction. Enter-only, matching the app's nav transitions.
 function JrStepShell(props) {
@@ -1155,24 +1236,26 @@ function QuickAmount(props) {
   var num = parseFloat(props.value) || 0;
   function stepSize(v) { return v < 500 ? 50 : v < 2000 ? 100 : 250; }
   function setNum(n) { props.onChange(String(Math.max(0, Math.round(n)))); }
-  var rb = { width: 46, height: 46, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff", color: JINK2, fontSize: 22, fontWeight: 600, cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.06)", fontFamily: UI, boxSizing: "border-box", flexShrink: 0, lineHeight: 1 };
   return (
     <div style={{ textAlign: "center" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 20 }}>
-        <button onClick={function() { setNum(num - stepSize(num - 1)); }} style={rb}>−</button>
-        <RollingNum text={sym + Math.round(num).toLocaleString("en-US")} size={props.compact ? 32 : 44} color={JINK} />
-        <button onClick={function() { setNum(num + stepSize(num)); }} style={rb}>+</button>
+        <JrStepBtn label="−" onPress={function() { setNum(num - stepSize(num - 1)); }} />
+        <span style={{ position: "relative", display: "inline-flex" }}>
+          <span style={{ position: "absolute", inset: props.compact ? -10 : -16, borderRadius: "50%", background: "radial-gradient(ellipse," + T.orangeGlow + " 0%, transparent 68%)", filter: "blur(10px)", opacity: num > 0 ? 0.8 : 0.3, transition: "opacity 0.5s ease", pointerEvents: "none", animation: "rclGlow 3s ease-in-out infinite" }} />
+          <span style={{ position: "relative" }}>
+            <RollingNum text={sym + Math.round(num).toLocaleString("en-US")} size={props.compact ? 32 : 44} color={JINK} />
+          </span>
+        </span>
+        <JrStepBtn label="+" onPress={function() { setNum(num + stepSize(num)); }} />
       </div>
       {props.hint}
       {(props.picks || []).length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginTop: props.compact ? 12 : 18 }}>
-          {props.picks.map(function(p) {
-            var sel = num === p;
+          {props.picks.map(function(p, i) {
             return (
-              <button key={p} onClick={function() { setNum(p); }}
-                style={{ padding: "9px 15px", borderRadius: 999, border: sel ? "2px solid " + T.orange : "1.5px solid rgba(0,0,0,0.09)", background: sel ? T.orangeDim : "rgba(255,255,255,0.85)", color: sel ? T.orange : JINK2, fontSize: 13.5, fontWeight: sel ? 700 : 500, fontFamily: UI, cursor: "pointer", boxSizing: "border-box", animation: sel ? "rclPop 0.3s ease" : "none" }}>
-                {sym + p.toLocaleString("en-US")}
-              </button>
+              <JrChip key={p} small selected={num === p} delay={0.1 + i * 0.06}
+                label={sym + p.toLocaleString("en-US")}
+                onPress={function() { setNum(p); }} />
             );
           })}
         </div>
@@ -2177,7 +2260,7 @@ function AuthScreen(props) {
         <span style={{ fontSize: 12, color: T.ink3, fontWeight: 500 }}>or continue with</span>
         <div style={{ flex: 1, height: "0.5px", background: "rgba(0,0,0,0.12)" }} />
       </div>
-      <button onClick={googleSignIn} disabled={busy}
+      <button onClick={googleSignIn} disabled={busy} className="jr-press"
         style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, background: "#fff", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 16, padding: "14px 0", fontSize: 15, fontFamily: UI, fontWeight: 600, color: T.ink, cursor: busy ? "default" : "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
         <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
           <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z" />
@@ -2199,7 +2282,10 @@ function AuthScreen(props) {
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px 24px" }}>
 
         <div style={{ textAlign: "center", marginBottom: 36 }}>
-          <RichyLogo size={80} style={{ display: "block", margin: "0 auto 18px", borderRadius: 22, boxShadow: "0 12px 32px rgba(0,0,0,0.22), 0 4px 12px rgba(0,0,0,0.14)" }} />
+          <div style={{ position: "relative", width: 80, height: 80, margin: "0 auto 18px" }}>
+            <div style={{ position: "absolute", inset: -14, borderRadius: "50%", background: "radial-gradient(circle," + T.orangeGlow + " 0%, transparent 70%)", filter: "blur(10px)", animation: "rclGlow 3s ease-in-out infinite", pointerEvents: "none" }} />
+            <RichyLogo size={80} style={{ display: "block", position: "relative", borderRadius: 22, boxShadow: "0 12px 32px rgba(0,0,0,0.22), 0 4px 12px rgba(0,0,0,0.14)", animation: "rclBreathe 3s ease-in-out infinite" }} />
+          </div>
           <div key={step} style={{ animation: "rclPhrase 0.45s ease both" }}>
             <div style={{ fontSize: 30, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.15 }}>
               {head.t}
@@ -2391,44 +2477,50 @@ function CatchUpScreen(props) {
     return out;
   }
 
-  var fieldBox = { display: "flex", alignItems: "center", gap: 3, background: "rgba(0,0,0,0.04)", borderRadius: 10, padding: "7px 10px", minWidth: 96 };
-  var amtInput = { width: 58, border: "none", background: "none", outline: "none", fontSize: 15, fontFamily: UI, color: T.ink, fontWeight: 600, textAlign: "right" };
+  var fieldBox = { display: "flex", alignItems: "center", gap: 3, background: "rgba(0,0,0,0.04)", borderRadius: 10, padding: "7px 10px", minWidth: 96, boxSizing: "border-box" };
+  var amtInput = { width: 58, border: "none", background: "none", outline: "none", fontSize: 15, fontFamily: UI, color: JINK, fontWeight: 600, textAlign: "right" };
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)", fontFamily: UI, display: "flex", flexDirection: "column", maxWidth: 430, margin: "0 auto" }}>
+    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column", maxWidth: 430, margin: "0 auto", position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", top: -70, right: -60, width: 260, height: 260, borderRadius: "50%", background: "radial-gradient(circle,rgba(137,112,198,0.14) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift 9s ease-in-out infinite" }} />
 
-      <div style={{ flex: 1, overflowY: "auto", padding: "56px 22px 16px" }}>
+      <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "56px 22px 16px", position: "relative" }}>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 22 }}>
-          <div style={{ width: 46, height: 46, borderRadius: 14, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 8px 24px " + T.orangeGlow }}>
-            <SVGIcon id="activity" size={22} color="#fff" />
+        <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 22, animation: "rclPhrase 0.45s ease both" }}>
+          <div style={{ position: "relative", width: 46, height: 46, flexShrink: 0 }}>
+            <div style={{ position: "absolute", inset: -8, borderRadius: "50%", background: "radial-gradient(circle," + T.orangeGlow + " 0%, transparent 70%)", filter: "blur(7px)", animation: "rclGlow 2.6s ease-in-out infinite" }} />
+            <div style={{ position: "relative", width: 46, height: 46, borderRadius: 14, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 24px " + T.orangeGlow, animation: "rclBreathe 2.6s ease-in-out infinite" }}>
+              <SVGIcon id="activity" size={22} color="#fff" />
+            </div>
           </div>
           <div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.2 }}>You're partway through {monthName}.</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+              <WordReveal text={"You're partway through " + monthName + "."} base={0.1} step={0.06} />
+            </div>
           </div>
         </div>
 
-        <div style={{ fontSize: 14.5, color: T.ink2, lineHeight: 1.55, marginBottom: 22 }}>
+        <div style={{ fontSize: 14.5, color: JINK2, lineHeight: 1.55, marginBottom: 22, animation: "rclPhrase 0.5s ease 0.35s both" }}>
           Log what you've already spent this month so your budgets start real, not at zero. Rough numbers are fine, and you can edit anything later in Activity.
         </div>
 
-        <div style={{ background: "#fff", borderRadius: 16, padding: "14px 16px", marginBottom: 14, boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Income received this {monthName}</div>
+        <div style={{ background: "#fff", borderRadius: 16, padding: "14px 16px", marginBottom: 14, boxShadow: "0 6px 20px rgba(40,28,16,0.07)", animation: "rcjChipIn 0.45s cubic-bezier(0.34,1.56,0.64,1) 0.45s both", boxSizing: "border-box" }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Income received this {monthName}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ fontSize: 22, color: T.ink3, fontWeight: 600 }}>{sym}</span>
-            <input value={inc} onChange={function(e) { setInc(e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 22, fontFamily: UI, color: T.ink, fontWeight: 700 }} />
+            <span style={{ fontSize: 22, color: JINK3, fontWeight: 600 }}>{sym}</span>
+            <input value={inc} onChange={function(e) { setInc(e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 22, fontFamily: UI, color: JINK, fontWeight: 700 }} />
           </div>
         </div>
 
-        <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "4px 2px 8px" }}>Spent so far this {monthName}</div>
-        <div style={{ background: "#fff", borderRadius: 16, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "4px 2px 8px", animation: "rclPhrase 0.45s ease 0.55s both" }}>Spent so far this {monthName}</div>
+        <div style={{ background: "#fff", borderRadius: 16, overflow: "hidden", boxShadow: "0 6px 20px rgba(40,28,16,0.07)", animation: "rcjChipIn 0.45s cubic-bezier(0.34,1.56,0.64,1) 0.6s both" }}>
           {cats.map(function(c, i) {
             return (
-              <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderBottom: i < cats.length - 1 ? "0.5px solid " + T.sep : "none" }}>
+              <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderBottom: i < cats.length - 1 ? "0.5px solid rgba(0,0,0,0.06)" : "none", animation: "rclPhrase 0.4s ease " + (0.65 + i * 0.06).toFixed(2) + "s both" }}>
                 <CatBadge icon={c.icon} color={c.color} size={34} soft={true} />
-                <span style={{ flex: 1, fontSize: 15, color: T.ink, fontWeight: 500 }}>{c.name}</span>
+                <span style={{ flex: 1, fontSize: 15, color: JINK, fontWeight: 500 }}>{c.name}</span>
                 <div style={fieldBox}>
-                  <span style={{ fontSize: 14, color: T.ink3, fontWeight: 600 }}>{sym}</span>
+                  <span style={{ fontSize: 14, color: JINK3, fontWeight: 600 }}>{sym}</span>
                   <input value={amts[c.id] || ""} onChange={function(e) { setAmt(c.id, e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={amtInput} />
                 </div>
               </div>
@@ -2438,13 +2530,10 @@ function CatchUpScreen(props) {
 
       </div>
 
-      <div style={{ padding: "14px 22px 40px", borderTop: "0.5px solid rgba(0,0,0,0.06)", background: "rgba(253,245,236,0.85)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}>
-        <button onClick={function() { props.onComplete(buildTxs()); }}
-          style={{ width: "100%", background: "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: "#fff", border: "none", borderRadius: 16, padding: "16px 0", fontSize: 16, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 6px 20px " + T.orangeGlow, letterSpacing: "-0.01em" }}>
-          Add to my month
-        </button>
-        <button onClick={function() { props.onComplete([]); }}
-          style={{ width: "100%", background: "none", border: "none", fontSize: 14, color: T.ink3, cursor: "pointer", fontFamily: UI, padding: "12px 0 0", display: "block", textAlign: "center" }}>
+      <div style={{ padding: "14px 22px 40px", borderTop: "0.5px solid rgba(0,0,0,0.06)", background: "rgba(253,245,236,0.85)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", position: "relative" }}>
+        <JrBtn label="Add to my month" onPress={function() { props.onComplete(buildTxs()); }} style={{ padding: "16px 0", fontSize: 16 }} />
+        <button onClick={function() { props.onComplete([]); }} className="jr-press"
+          style={{ width: "100%", background: "none", border: "none", fontSize: 14, color: JINK3, cursor: "pointer", fontFamily: UI, padding: "12px 0 0", display: "block", textAlign: "center" }}>
           Skip for now
         </button>
       </div>
@@ -2522,9 +2611,12 @@ function StoryBeat(props) {
     return function() { clearTimeout(t); };
   }, [st]);
   var accent = b.color || T.orange;
+  var orbTint = accent === T.green ? "rgba(39,168,95,0.16)" : "rgba(137,112,198,0.15)";
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: UI, boxSizing: "border-box" }}>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 30px 0", textAlign: "center" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: UI, boxSizing: "border-box", position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", top: "16%", left: "50%", marginLeft: -180, width: 360, height: 360, borderRadius: "50%", background: "radial-gradient(circle," + orbTint + " 0%, transparent 70%)", filter: "blur(16px)", pointerEvents: "none", animation: "rclGlow 3.4s ease-in-out infinite" }} />
+      <div style={{ position: "absolute", bottom: "8%", right: -70, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,154,60,0.09) 0%, transparent 70%)", pointerEvents: "none", animation: "rcjDrift2 10s ease-in-out infinite" }} />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 30px 0", textAlign: "center", position: "relative" }}>
         {b.kicker && (
           <div style={{ fontSize: 11.5, fontWeight: 800, color: accent, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14, animation: "rclPhrase 0.5s ease both" }}>
             {b.kicker}
@@ -2534,7 +2626,7 @@ function StoryBeat(props) {
           <WordReveal text={b.headline} base={0.15} step={0.085} />
         </div>
         {b.big && st >= 1 && (
-          <div style={{ marginTop: 22, animation: "rclPhrase 0.4s ease both" }}>
+          <div style={{ marginTop: 22, animation: "rcjNumPop 0.55s cubic-bezier(0.34,1.56,0.64,1) both" }}>
             <CountUpNum value={b.big.value} duration={b.big.duration || 1500} format={b.big.format || jrCur}
               suffix={b.big.suffix || ""} onDone={function() { setSt(function(s) { return s < 2 ? 2 : s; }); }}
               style={{ fontSize: 56, fontWeight: 800, color: b.big.color || accent, letterSpacing: "-0.03em", lineHeight: 1.05, display: "block" }} />
@@ -2568,8 +2660,10 @@ function CommitScreen(props) {
     "I'll let Richard flag what I'd miss",
   ];
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: UI }}>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 30px 0" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: UI, position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", top: -70, right: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(137,112,198,0.16) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift 9s ease-in-out infinite" }} />
+      <div style={{ position: "absolute", bottom: 30, left: -80, width: 250, height: 250, borderRadius: "50%", background: "radial-gradient(circle,rgba(39,168,95,0.13) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift2 11s ease-in-out infinite" }} />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 30px 0", position: "relative" }}>
         <div style={{ fontSize: 11.5, fontWeight: 800, color: T.orange, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14, animation: "rclPhrase 0.5s ease both" }}>
           The pact
         </div>
@@ -2836,78 +2930,92 @@ function OnboardingScreen(props) {
 
   if (step === 6) {
     var proposed = suggestBudgets();
+    var maxLimit = proposed.reduce(function(m, b) { return Math.max(m, b.limit); }, 1);
     return (
-      <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)", fontFamily: UI, overflowY: "auto" }}>
-        <div style={{ padding: "56px 24px 52px" }}>
+      <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, overflowY: "auto", position: "relative", overflowX: "hidden" }}>
+        <div style={{ position: "absolute", top: -70, right: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(137,112,198,0.14) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift 9s ease-in-out infinite" }} />
+        <div style={{ position: "absolute", top: 420, left: -80, width: 240, height: 240, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,154,60,0.11) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift2 11s ease-in-out infinite" }} />
+        <div style={{ padding: "56px 24px 52px", position: "relative", maxWidth: 428, margin: "0 auto", boxSizing: "border-box" }}>
+          <Stagger step={0.14} base={0.05}>
 
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 28 }}>
-            <div style={{ width: 48, height: 48, borderRadius: 16, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 8px 24px " + T.orangeGlow }}>
-              <SVGIcon id="spark" size={22} color="#fff" />
+            <div style={{ position: "relative", width: 48, height: 48, flexShrink: 0 }}>
+              <div style={{ position: "absolute", inset: -8, borderRadius: "50%", background: "radial-gradient(circle," + T.orangeGlow + " 0%, transparent 70%)", filter: "blur(7px)", animation: "rclGlow 2.6s ease-in-out infinite" }} />
+              <div style={{ position: "relative", width: 48, height: 48, borderRadius: 16, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 24px " + T.orangeGlow, animation: "rclBreathe 2.6s ease-in-out infinite" }}>
+                <SVGIcon id="spark" size={22} color="#fff" />
+              </div>
             </div>
             <div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Your plan is ready.</div>
-              <div style={{ fontSize: 13, color: T.ink3, marginTop: 2 }}>Richard built this just for you.</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: JINK, letterSpacing: "-0.02em" }}><WordReveal text="Your plan is ready." base={0.15} step={0.07} /></div>
+              <div style={{ fontSize: 13, color: JINK3, marginTop: 2 }}>Richard built this just for you.</div>
             </div>
           </div>
 
-          <div style={{ background: "#fff", borderRadius: 18, padding: "20px 20px", marginBottom: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>Your Plan by Richard</div>
-            <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.7 }}>{genPlan}</div>
+          <div style={{ background: "#fff", borderRadius: 18, padding: "20px 20px", marginBottom: 20, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 12 }}>
+              <ThinkingDots size={4} color={T.orange} />
+              <span style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em" }}>Your Plan by Richard</span>
+            </div>
+            <TypeReveal animate text={genPlan} size={14} color={JINK} />
           </div>
 
-          <div style={{ background: "#fff", borderRadius: 18, padding: "20px 20px", marginBottom: 16, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, marginBottom: 6 }}>How do you want to add transactions?</div>
-            <div style={{ fontSize: 13, color: T.ink3, marginBottom: 16, lineHeight: 1.55 }}>You can change this anytime in Profile.</div>
+          <div style={{ background: "#fff", borderRadius: 18, padding: "20px 20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: JINK, marginBottom: 6 }}>How do you want to add transactions?</div>
+            <div style={{ fontSize: 13, color: JINK3, marginBottom: 16, lineHeight: 1.55 }}>You can change this anytime in Profile.</div>
             {[
               { id: "manual", label: "Enter them manually", sub: "Log each transaction yourself - full control" },
               { id: "import", label: "Import from a CSV file", sub: "Upload a bank or card statement to fill them in" }
             ].map(function(opt) {
               var sel = entryMethod === opt.id;
               return (
-                <button key={opt.id} onClick={function() { setEntryMethod(opt.id); }}
-                  style={{ width: "100%", textAlign: "left", marginBottom: 10, background: sel ? "rgba(137,112,198,0.07)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 14, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, fontFamily: UI }}>
+                <button key={opt.id} onClick={function() { setEntryMethod(opt.id); }} className="jr-press"
+                  style={{ width: "100%", textAlign: "left", marginBottom: 10, background: sel ? "rgba(137,112,198,0.06)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 14, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, fontFamily: UI, boxSizing: "border-box", boxShadow: sel ? "0 0 0 3px " + T.orangeDim : "none", transition: "box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease" }}>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 15, fontWeight: sel ? 700 : 600, color: T.ink }}>{opt.label}</div>
-                    <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{opt.sub}</div>
+                    <div style={{ fontSize: 15, fontWeight: sel ? 700 : 600, color: JINK }}>{opt.label}</div>
+                    <div style={{ fontSize: 12.5, color: JINK3, marginTop: 2 }}>{opt.sub}</div>
                   </div>
-                  {sel && <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><SVGIcon id="check" size={12} color="#fff" /></div>}
+                  {sel && <div style={{ width: 22, height: 22, borderRadius: "50%", background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, animation: "rcjCheckPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both", boxShadow: "0 3px 10px " + T.orangeGlow }}><SVGIcon id="check" size={12} color="#fff" /></div>}
                 </button>
               );
             })}
           </div>
 
           {proposed.length > 0 && (
-            <div style={{ background: "#fff", borderRadius: 18, padding: "20px 20px", marginBottom: 16, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, marginBottom: 6 }}>Set up your budgets automatically?</div>
-              <div style={{ fontSize: 13, color: T.ink3, marginBottom: 18, lineHeight: 1.55 }}>Based on your numbers, Richard suggests these monthly limits:</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
-                {proposed.map(function(b) {
+            <div style={{ background: "#fff", borderRadius: 18, padding: "20px 20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: JINK, marginBottom: 6 }}>Set up your budgets automatically?</div>
+              <div style={{ fontSize: 13, color: JINK3, marginBottom: 18, lineHeight: 1.55 }}>Based on your numbers, Richard suggests these monthly limits:</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 13, marginBottom: 20 }}>
+                {proposed.map(function(b, i) {
+                  var pct = Math.max(8, Math.round((b.limit / maxLimit) * 100));
+                  var d = 0.5 + i * 0.13;
                   return (
-                    <div key={b.catId} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: 14, color: T.ink2 }}>{b.category}</span>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>${b.limit}</span>
+                    <div key={b.catId} style={{ animation: "rclPhrase 0.45s ease " + d.toFixed(2) + "s both" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
+                        <span style={{ fontSize: 14, color: JINK2, fontWeight: 600 }}>{b.category}</span>
+                        <span style={{ fontSize: 14, fontWeight: 800, color: JINK, fontVariantNumeric: "tabular-nums" }}>
+                          <CountUpNum value={b.limit} duration={900} delay={d * 1000} format={function(v) { return jrCur(v); }} />
+                        </span>
+                      </div>
+                      <div style={{ height: 6, borderRadius: 999, background: "rgba(0,0,0,0.05)", overflow: "hidden" }}>
+                        <div style={{ width: pct + "%", height: "100%", borderRadius: 999, background: T.btn, transformOrigin: "left center", animation: "rcjBarGrow 0.8s cubic-bezier(0.22,1,0.36,1) " + (d + 0.15).toFixed(2) + "s both" }} />
+                      </div>
                     </div>
                   );
                 })}
               </div>
-              <button onClick={function() { props.onComplete(genPlan, genOData, proposed, entryMethod); }}
-                style={{ width: "100%", background: "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: "#fff", border: "none", borderRadius: 14, padding: "15px 0", fontSize: 16, fontFamily: UI, fontWeight: 700, cursor: "pointer", marginBottom: 10, boxShadow: "0 4px 16px " + T.orangeGlow }}>
-                Yes, set them up
-              </button>
-              <button onClick={function() { props.onComplete(genPlan, genOData, null, entryMethod); }}
-                style={{ width: "100%", background: "none", border: "none", fontSize: 14, color: T.ink3, cursor: "pointer", fontFamily: UI, padding: "8px 0" }}>
+              <JrBtn label="Yes, set them up" onPress={function() { props.onComplete(genPlan, genOData, proposed, entryMethod); }} style={{ marginBottom: 10, padding: "15px 0", fontSize: 16 }} />
+              <button onClick={function() { props.onComplete(genPlan, genOData, null, entryMethod); }} className="jr-press"
+                style={{ width: "100%", background: "none", border: "none", fontSize: 14, color: JINK3, cursor: "pointer", fontFamily: UI, padding: "8px 0" }}>
                 I'll set them up myself
               </button>
             </div>
           )}
 
           {proposed.length === 0 && (
-            <button onClick={function() { props.onComplete(genPlan, genOData, null, entryMethod); }}
-              style={{ width: "100%", background: "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: "#fff", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 6px 20px " + T.orangeGlow }}>
-              Get Started
-            </button>
+            <JrBtn label="Get Started" onPress={function() { props.onComplete(genPlan, genOData, null, entryMethod); }} />
           )}
 
+          </Stagger>
         </div>
       </div>
     );
@@ -2982,17 +3090,23 @@ function OnboardingScreen(props) {
     : [800, 1500, 2500];
   var labelJ = { fontSize: 11.5, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 12 };
   function optCardStyle(sel) {
-    return { width: "100%", background: sel ? "rgba(137,112,198,0.07)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "15px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", animation: sel ? "rclPop 0.25s ease" : "none", marginBottom: 11 };
+    return { width: "100%", background: sel ? "rgba(137,112,198,0.06)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "15px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px rgba(137,112,198,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", animation: sel ? "rclPop 0.25s ease" : "none", marginBottom: 11, transition: "box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease" };
   }
+  function optIconTile(sel, size) {
+    return { width: size, height: size, borderRadius: 11, background: sel ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: sel ? "0 5px 14px " + T.orangeGlow : "none", transition: "background 0.25s ease, box-shadow 0.25s ease" };
+  }
+  var optCheck = (
+    <span style={{ marginLeft: "auto", width: 22, height: 22, borderRadius: "50%", background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, animation: "rcjCheckPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both", boxShadow: "0 3px 10px " + T.orangeGlow }}>
+      <SVGIcon id="check" size={12} color="#fff" />
+    </span>
+  );
 
   return (
     <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column" }}>
 
       <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0" }}>
         {qIndex > 0 ? (
-          <button onClick={goBack} style={{ width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", padding: 0, flexShrink: 0, boxSizing: "border-box" }}>
-            <span style={{ transform: "rotate(180deg)", display: "flex" }}><SVGIcon id="chevron" size={16} color={JINK2} /></span>
-          </button>
+          <JrIconBtn icon="chevron" rotate={180} onPress={goBack} />
         ) : <div style={{ width: 34, flexShrink: 0 }} />}
         <JourneyBar pct={((qIndex + 1) / Q_TOTAL) * 100} />
         <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: JINK3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(qIndex + 1) + "/" + Q_TOTAL}</div>
@@ -3003,8 +3117,10 @@ function OnboardingScreen(props) {
           <JrStepShell k={qIndex} dir={dir}>
             {qIndex > 0 && (
               <div>
-                <div style={{ fontSize: 25, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.25, marginBottom: 8 }}>{qh.h}</div>
-                <div style={{ fontSize: 14, color: JINK3, marginBottom: 26, lineHeight: 1.55 }}>{qh.s}</div>
+                <div style={{ fontSize: 25, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.25, marginBottom: 8 }}>
+                  <WordReveal text={qh.h} base={0.04} step={0.045} />
+                </div>
+                <div style={{ fontSize: 14, color: JINK3, marginBottom: 26, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>{qh.s}</div>
               </div>
             )}
 
@@ -3029,24 +3145,18 @@ function OnboardingScreen(props) {
                 <div style={labelJ}>Language</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 22 }}>
                   {LANGUAGE_OPTIONS.map(function(o, i) {
-                    var sel = prefLang === o.code;
                     return (
-                      <button key={o.code} onClick={function() { setPrefLang(o.code); _lang.code = o.code; }}
-                        style={{ padding: "9px 16px", borderRadius: 12, border: sel ? "2px solid " + T.orange : "1.5px solid rgba(0,0,0,0.1)", background: sel ? T.orangeDim : "rgba(255,255,255,0.85)", color: sel ? T.orange : JINK2, fontSize: 13, fontWeight: sel ? 700 : 500, fontFamily: UI, cursor: "pointer", boxSizing: "border-box", animation: sel ? "rclPop 0.25s ease" : "rclPhrase 0.4s ease " + (i * 0.04).toFixed(2) + "s both" }}>
-                        {o.label}
-                      </button>
+                      <JrChip key={o.code} label={o.label} selected={prefLang === o.code} delay={0.05 + i * 0.05}
+                        onPress={function() { setPrefLang(o.code); _lang.code = o.code; }} />
                     );
                   })}
                 </div>
                 <div style={labelJ}>Currency</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {CURRENCY_OPTIONS.slice(0, 16).map(function(c, i) {
-                    var sel = prefCur === c.sym;
                     return (
-                      <button key={c.sym} onClick={function() { setPrefCur(c.sym); _currency.sym = c.sym; }}
-                        style={{ padding: "9px 14px", borderRadius: 12, border: sel ? "2px solid " + T.orange : "1.5px solid rgba(0,0,0,0.1)", background: sel ? T.orangeDim : "rgba(255,255,255,0.85)", color: sel ? T.orange : JINK2, fontSize: 13, fontWeight: sel ? 700 : 500, fontFamily: UI, cursor: "pointer", boxSizing: "border-box", animation: sel ? "rclPop 0.25s ease" : "rclPhrase 0.4s ease " + (0.3 + i * 0.03).toFixed(2) + "s both" }}>
-                        {c.sym} {c.code}
-                      </button>
+                      <JrChip key={c.sym} label={c.sym} sub={c.code} selected={prefCur === c.sym} delay={0.35 + i * 0.035}
+                        onPress={function() { setPrefCur(c.sym); _currency.sym = c.sym; }} />
                     );
                   })}
                 </div>
@@ -3064,10 +3174,11 @@ function OnboardingScreen(props) {
                   var sel = lifeStage === st.label;
                   return (
                     <button key={st.label} onClick={function() { setLifeStage(st.label); autoAdvance(); }} style={optCardStyle(sel)}>
-                      <div style={{ width: 38, height: 38, borderRadius: 11, background: sel ? T.orangeDim : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <SVGIcon id={st.icon} size={18} color={sel ? T.orange : JINK3} />
+                      <div style={optIconTile(sel, 38)}>
+                        <SVGIcon id={st.icon} size={18} color={sel ? "#fff" : JINK3} />
                       </div>
                       <span style={{ fontSize: 17, fontWeight: sel ? 700 : 500, color: sel ? JINK : JINK2 }}>{st.label}</span>
+                      {sel && optCheck}
                     </button>
                   );
                 })}
@@ -3080,10 +3191,11 @@ function OnboardingScreen(props) {
                   var sel = coreProblem === opt.label;
                   return (
                     <button key={opt.label} onClick={function() { setCoreProblem(opt.label); autoAdvance(); }} style={optCardStyle(sel)}>
-                      <div style={{ width: 36, height: 36, borderRadius: 11, background: sel ? T.orangeDim : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <SVGIcon id={opt.icon} size={17} color={sel ? T.orange : JINK3} />
+                      <div style={optIconTile(sel, 36)}>
+                        <SVGIcon id={opt.icon} size={17} color={sel ? "#fff" : JINK3} />
                       </div>
                       <span style={{ fontSize: 15, fontWeight: sel ? 700 : 500, color: sel ? JINK : JINK2, lineHeight: 1.35 }}>{opt.label}</span>
+                      {sel && optCheck}
                     </button>
                   );
                 })}
@@ -3105,13 +3217,10 @@ function OnboardingScreen(props) {
             {qIndex === 6 && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                 {LEAK_OPTIONS.map(function(o, i) {
-                  var sel = leaks.indexOf(o.id) >= 0;
                   return (
-                    <button key={o.id} onClick={function() { toggleLeak(o.id); }}
-                      style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 15px", borderRadius: 999, border: sel ? "2px solid " + T.orange : "1.5px solid rgba(0,0,0,0.09)", background: sel ? T.orangeDim : "rgba(255,255,255,0.9)", cursor: "pointer", fontFamily: UI, boxSizing: "border-box", animation: sel ? "rclPop 0.25s ease" : "rclPhrase 0.4s ease " + (i * 0.06).toFixed(2) + "s both" }}>
-                      <SVGIcon id={o.icon} size={15} color={sel ? T.orange : JINK3} />
-                      <span style={{ fontSize: 14, fontWeight: sel ? 700 : 500, color: sel ? T.orange : JINK2 }}>{o.label}</span>
-                    </button>
+                    <JrChip key={o.id} icon={o.icon} label={o.label} selected={leaks.indexOf(o.id) >= 0} delay={0.05 + i * 0.07}
+                      style={{ padding: "11px 16px" }}
+                      onPress={function() { toggleLeak(o.id); }} />
                   );
                 })}
               </div>
@@ -3142,13 +3251,10 @@ function OnboardingScreen(props) {
                 <input value={goalName} onChange={function(e) { setGoalName(e.target.value); }} type="text" placeholder="e.g. Emergency fund, first apartment"
                   className="jr-field" style={Object.assign({}, fieldStyle, { color: JINK })} />
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 6 }}>
-                  {["Emergency fund", "Travel", "New laptop", "First apartment"].map(function(g) {
-                    var sel = goalName === g;
+                  {["Emergency fund", "Travel", "New laptop", "First apartment"].map(function(g, i) {
                     return (
-                      <button key={g} onClick={function() { setGoalName(g); }}
-                        style={{ padding: "8px 13px", borderRadius: 999, border: sel ? "2px solid " + T.orange : "1.5px solid rgba(0,0,0,0.09)", background: sel ? T.orangeDim : "rgba(255,255,255,0.85)", color: sel ? T.orange : JINK2, fontSize: 12.5, fontWeight: sel ? 700 : 500, fontFamily: UI, cursor: "pointer", boxSizing: "border-box", animation: sel ? "rclPop 0.25s ease" : "none" }}>
-                        {g}
-                      </button>
+                      <JrChip key={g} small label={g} selected={goalName === g} delay={0.1 + i * 0.06}
+                        onPress={function() { setGoalName(g); }} />
                     );
                   })}
                 </div>
@@ -3158,13 +3264,10 @@ function OnboardingScreen(props) {
                 </div>
                 <div style={Object.assign({}, labelJ, { marginTop: 22 })}>Timeline</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                  {TIMELINES.map(function(t) {
-                    var sel = timeline === t;
+                  {TIMELINES.map(function(t, i) {
                     return (
-                      <button key={t} onClick={function() { setTimeline(t); }}
-                        style={{ background: sel ? T.orange : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.09)"), borderRadius: 30, padding: "9px 18px", fontSize: 14, fontWeight: sel ? 700 : 500, color: sel ? "#fff" : JINK2, cursor: "pointer", fontFamily: UI, boxSizing: "border-box", animation: sel ? "rclPop 0.25s ease" : "none" }}>
-                        {t}
-                      </button>
+                      <JrChip key={t} label={t} selected={timeline === t} delay={0.15 + i * 0.06}
+                        onPress={function() { setTimeline(t); }} />
                     );
                   })}
                 </div>
@@ -12838,7 +12941,7 @@ export default function App() {
     setHouseholdId(data.householdId || null);
     setUserDob(data.dob || "");
     _lang.code = data.lang || "en"; setLang(data.lang || "en");
-    var th = data.theme || "purple"; applyTheme(th); setTheme(th);
+    var th = data.theme || "blue"; applyTheme(th); setTheme(th);
     var dm = !!data.darkMode; applyDarkMode(dm); setDarkMode(dm);
     rememberLook(th, dm);
   }
@@ -12849,7 +12952,7 @@ export default function App() {
 
   // Build the starting document for a brand-new account (e.g. first Google sign-in).
   function defaultBlob(name, email) {
-    return { tx: [], budgets: [], goals: [], trips: [], savings: [], businesses: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: email, theme: "purple" };
+    return { tx: [], budgets: [], goals: [], trips: [], savings: [], businesses: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: email, theme: "blue" };
   }
 
   // Firebase Auth is the single source of truth for the session. It restores the
@@ -12984,7 +13087,7 @@ export default function App() {
     setUser(null); setAccountKey(null); setTab("overview");
     setHouseholdId(null); setHousehold(null); setInvites([]);
     setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]);
-    _lang.code = "en"; setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang("en"); applyTheme("purple"); setTheme("purple");
+    _lang.code = "en"; setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang("en"); applyTheme("blue"); setTheme("blue");
   }
 
   function save(next) {
