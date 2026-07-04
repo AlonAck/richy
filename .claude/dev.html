@@ -161,14 +161,17 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).t
       var _on = React.useState(true); var on = _on[0]; var setOn = _on[1];
       function sig(){ return tx.length + ":" + ((tx[tx.length-1]||{}).id||""); }
       function onSaveAnalysis(next){ setMa(next ? { data: next, sig: sig() } : null); }
-      var cached = (ma && ma.sig === sig()) ? ma.data : null;
+      // Mirrors the App: the saved analysis is ALWAYS handed back (it survives
+      // tx changes); analysisStale flags that the numbers moved on since it ran.
+      var cached = ma ? ma.data : null;
+      var stale = !!(ma && ma.sig !== sig());
       return React.createElement("div", null,
         React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 12 } },
           React.createElement("button", { id: "harness-toggle", onClick: function(){ setOn(!on); }, style: { padding: "6px 12px" } }, on ? "Leave tab" : "Return to tab"),
           React.createElement("button", { id: "harness-addtx", onClick: function(){ setTx(tx.concat([{ id: 999, type: "expense", amount: 5, label: "Coffee", catId: "c2", category: "Food", date: "2026-06-25" }])); }, style: { padding: "6px 12px" } }, "Add transaction"),
-          React.createElement("span", { id: "harness-cache", style: { padding: "6px 0", fontSize: 12 } }, cached ? "CACHE: present" : "CACHE: empty")
+          React.createElement("span", { id: "harness-cache", style: { padding: "6px 0", fontSize: 12 } }, (cached ? "CACHE: present" : "CACHE: empty") + (stale ? " (stale)" : ""))
         ),
-        on ? React.createElement(Advisor, { tx: tx, budgets: [], goals: mockGoals, categories: mockCats, username: "Alon", plan: "", lang: "en", cachedAnalysis: cached, onSaveAnalysis: onSaveAnalysis }) : React.createElement("div", { style: { padding: 24, opacity: 0.6 } }, "(advisor tab unmounted)")
+        on ? React.createElement(Advisor, { tx: tx, budgets: [], goals: mockGoals, categories: mockCats, username: "Alon", plan: "", lang: "en", cachedAnalysis: cached, analysisStale: stale, onSaveAnalysis: onSaveAnalysis }) : React.createElement("div", { style: { padding: 24, opacity: 0.6 } }, "(advisor tab unmounted)")
       );
     }
     el = React.createElement(AdvisorHarness, {});

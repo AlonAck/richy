@@ -8469,19 +8469,17 @@ function Advisor(props) {
   var insMeta = { strength: { icon: "chart", color: T.green, tag: "Strength" }, warning: { icon: "credit", color: T.red, tag: "Watch" }, tip: { icon: "coins", color: T.gold, tag: "Tip" } };
 
   // Shared bits used across states.
-  // Auto-analyze: whenever there's no advice and nothing is already in
-  // flight, kick off getAdvice() by itself. This fires once on mount (the
-  // common case - the cache went stale because a transaction happened while
-  // the user was on another tab, so Advisor remounts with no cache) and
-  // again any time advice/loading are cleared without a fresh fetch already
-  // running (e.g. the error-retry path below). The user never has to press
-  // a button for the normal "just show me the analysis" path anymore - the
-  // only manual control left is the refresh icon in the header, for when
-  // they want a new read without anything having changed.
+  // First-run only: if there is no analysis at all yet, generate one on mount
+  // so the tab is never a dead "press to analyze" gate. After that it NEVER
+  // re-runs on its own - the saved analysis is always shown (even once the
+  // month's transactions have moved on), and the ONLY way to refresh it is the
+  // refresh button in the header. props.analysisStale tells us the numbers
+  // changed since this read, so we invite (not force) a refresh.
   useEffect(function() {
     if (!advice && !loading) getAdvice();
   }, [advice, loading]);
 
+  var stale = props.analysisStale && advice && !advice.error && !loading;
   var richardHead = (
     <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "6px 2px 0" }}>
       <div style={{ position: "relative", width: 52, height: 52, flexShrink: 0 }}>
@@ -8493,14 +8491,14 @@ function Advisor(props) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 19, fontWeight: 700, letterSpacing: "-0.02em", color: T.ink }}>Richard</div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: loading ? T.orange : T.green, animation: loading ? "rcBadgePulse 1.3s ease-in-out infinite" : "none" }} />
-          <span style={{ fontSize: 12, color: T.ink3 }}>{loading ? "Analyzing your month..." : advice ? "Analyzed your month - just now" : "Ready to analyze your month"}</span>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: loading ? T.orange : stale ? T.gold : T.green, animation: loading ? "rcBadgePulse 1.3s ease-in-out infinite" : "none" }} />
+          <span style={{ fontSize: 12, color: stale ? T.gold : T.ink3, fontWeight: stale ? 600 : 400 }}>{loading ? "Analyzing your month..." : stale ? "Your month changed - tap refresh" : advice ? "Analyzed your month - just now" : "Ready to analyze your month"}</span>
         </div>
       </div>
       {advice && !advice.error && !loading && (
         <button onClick={function() { setAdvice(null); getAdvice(); }}
-          style={{ width: 40, height: 40, border: "none", borderRadius: 13, background: "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
-          <SVGIcon id="refresh" size={18} color={T.ink2} />
+          style={{ width: 40, height: 40, border: "none", borderRadius: 13, background: stale ? T.orangeDim : "rgba(0,0,0,0.04)", boxShadow: stale ? "0 0 0 3px " + T.orangeGlow : "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, transition: "background 0.3s ease, box-shadow 0.3s ease" }}>
+          <SVGIcon id="refresh" size={18} color={stale ? T.orange : T.ink2} />
         </button>
       )}
     </div>
@@ -9586,7 +9584,15 @@ var SAVINGS_COLORS = ["#8970C6", "#C8673A", "#27A85F", "#C8983A", "#4A90D9", "#D
 
 // Business Account look-and-feel banks.
 var BIZ_ICONS = ["briefcase", "chart", "building", "cart", "laptop", "tool", "coins", "coffee", "leaf", "star"];
-var BIZ_COLORS = ["#8970C6", "#2799C8", "#27A85F", "#C8983A", "#3B82B8", "#D9546B", "#5BB8A8", "#C8673A"];
+// A broad, curated identity palette for a business (drives its banner, cards
+// and progress bars across the app). The wizard also offers a custom color
+// well beyond these presets, so the banner is fully customizable.
+var BIZ_COLORS = [
+  "#8970C6", "#6C5CE7", "#5C7AE3", "#2E7DD6", "#2799C8", "#00B4A0",
+  "#5BB8A8", "#27A85F", "#3FA34D", "#7CB342", "#C8983A", "#E0A100",
+  "#E07848", "#C8673A", "#D9546B", "#E0556E", "#B5548F", "#8B5C9E",
+  "#5A7D9A", "#6B5C4E",
+];
 
 // Default business budget buckets. Richard re-splits a monthly budget across
 // these; the pct map is the local fallback when the AI call is unavailable.
@@ -10382,6 +10388,7 @@ function BusinessView(props) {
   // gates the phases (1-3 = interview portal, 4 = plan review).
   var _bq = useState(0); var bq = _bq[0]; var setBq = _bq[1];
   var _bqd = useState("fwd"); var bqDir = _bqd[0]; var setBqDir = _bqd[1];
+  var _bsb = useState(0); var bizBeat = _bsb[0]; var setBizBeat = _bsb[1];
   var bizAdvRef = useRef(false);
   var _fm = useState({ name: "", what: "", notes: "", wantPlan: true, structure: "individual", stage: "idea", size: "side", monthly: "", revenueGoal: "", runway: "", goal: "", startCap: "", capSrc: "external", icon: "briefcase", color: BIZ_COLORS[0] });
   var form = _fm[0]; var setForm = _fm[1];
@@ -10661,7 +10668,7 @@ function BusinessView(props) {
   }
   function startWizard() {
     setForm({ name: "", what: "", notes: "", wantPlan: true, structure: "individual", stage: "idea", size: "side", monthly: "", revenueGoal: "", runway: "", goal: "", startCap: "", capSrc: "external", icon: "briefcase", color: BIZ_COLORS[0] });
-    setPlanResult(null); setErr(""); setStep(1); setBq(0); setBqDir("fwd"); setWizChat([]); setWizInput(""); setView("wizard");
+    setPlanResult(null); setErr(""); setStep(1); setBq(0); setBqDir("fwd"); setBizBeat(0); setWizChat([]); setWizInput(""); setView("wizard");
   }
   // Create the account from whatever we have. With a plan the categories come from
   // planResult; without one (the owner skipped Richard) we seed a blank budget they
@@ -11112,6 +11119,83 @@ function BusinessView(props) {
         </div>
       );
     }
+    // "Do the math" story: Jomo-style animated beats derived from the numbers
+    // the user just gave, shown between the interview and the plan build. Pure
+    // arithmetic - no AI call - so it lands instantly. Ends by kicking off the
+    // real plan (setStep(4) + buildPlan).
+    if (step === "story") {
+      var sMonthly = parseFloat(form.monthly) || 0;
+      var sRev = parseFloat(form.revenueGoal) || 0;
+      var sRunway = parseFloat(form.runway) || 0;
+      var sCap = parseFloat(form.startCap) || 0;
+      var sYearCost = sMonthly * 12;
+      var sCushion = sRunway > 0 ? sRunway * sMonthly : sCap;
+      var sProfit = sRev - sMonthly;
+      var sYearProfit = sProfit * 12;
+      var sName = (form.name || "your business").trim();
+      var bizBeats = [];
+      bizBeats.push({
+        key: "cost", kicker: "The cost of the dream", color: T.orange,
+        headline: "Running " + sName + " will cost about",
+        big: { value: sMonthly, suffix: " /mo" },
+        sub: "That's " + jrCur(sYearCost) + " a year to keep the lights on. Real, but knowable.",
+      });
+      if (sCushion > 0) {
+        bizBeats.push({
+          key: "cushion", kicker: "Your cushion", color: T.orange,
+          headline: sRunway > 0 ? "You've set aside enough for" : "You're seeding it with",
+          big: sRunway > 0
+            ? { value: sRunway, format: function(v) { return String(Math.max(1, Math.round(v))); }, suffix: " months", duration: 1200 }
+            : { value: sCap },
+          sub: sRunway > 0
+            ? "About " + jrCur(sCushion) + " of runway - room to prove it works before you sweat."
+            : "Day-one capital to buy what you need and move fast.",
+        });
+      }
+      if (sRev > 0) {
+        bizBeats.push({
+          key: "target", kicker: "The target", color: T.orange,
+          headline: jrCur(sRev) + " a month would make it real",
+          big: { value: sRev, suffix: " /mo" },
+          sub: sRev >= sMonthly
+            ? "That's " + (Math.round((sRev / (sMonthly || 1)) * 10) / 10) + "x what it costs to run - a business, not a hobby."
+            : "That won't cover costs yet - something to grow past in the first months.",
+        });
+      }
+      if (sProfit > 0) {
+        bizBeats.push({
+          key: "profit", kicker: "Now the upside", color: T.green,
+          headline: "Hit that and you keep",
+          big: { value: sProfit, suffix: " /mo", color: T.green },
+          sub: "Around " + jrCur(sYearProfit) + " of profit over a year. That's the prize Richard will help you chase.",
+        });
+      }
+      bizBeats.push({
+        key: "ready", kicker: "Let's build it", color: T.orange,
+        headline: "Ready to make " + sName + " real?",
+        sub: "Richard will turn these numbers into a strategy and a month-by-month operating budget.",
+        cta: "Build my plan with Richard",
+      });
+      var sBeat = bizBeats[Math.min(bizBeat, bizBeats.length - 1)];
+      var sGreen = sBeat.color === T.green;
+      var sStoryContent = (
+        <div style={{ position: "fixed", inset: 0, zIndex: 91, background: JR_BG, fontFamily: UI, overflow: "hidden" }}>
+          <JrShaderBg colors={sGreen ? [T.green, "#7BD6A2", T.green] : [T.orange, T.orangeHi, T.orange]} base="#FBF3E8"
+            speed={sBeat.big ? 0.55 : 0.28} intensity={sBeat.big ? 1.05 : 0.8} yScale={sBeat.big ? 0.5 : 0.44} xScale={1.1} style={{ position: "absolute" }} />
+          <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.78) 0%, rgba(251,243,232,0.3) 34%, rgba(251,243,232,0.34) 66%, rgba(251,243,232,0.72) 100%)" }} />
+          <div style={{ position: "relative", zIndex: 2, height: "100%" }}>
+            <JrStepShell k={bizBeat}>
+              <StoryBeat beat={sBeat} onNext={function() {
+                if (bizBeat + 1 < bizBeats.length) { setBizBeat(bizBeat + 1); }
+                else { setStep(4); buildPlan(); }
+              }} />
+            </JrStepShell>
+          </div>
+        </div>
+      );
+      return ReactDOM.createPortal(sStoryContent, document.body);
+    }
+
     // Step 4 (plan review) stays in the normal card layout.
     if (step === 4) {
       return (
@@ -11242,7 +11326,8 @@ function BusinessView(props) {
     var bqh = BQS[bq] || BQS[0];
     function bqAdvance() {
       setBqDir("fwd");
-      if (bq >= BQ_TOTAL - 1) { setStep(4); buildPlan(); return; }
+      // End of the interview -> Richard's "do the math" story, THEN the plan.
+      if (bq >= BQ_TOTAL - 1) { setBizBeat(0); setStep("story"); return; }
       setBq(bq + 1);
     }
     function bqAuto() {
@@ -11333,6 +11418,20 @@ function BusinessView(props) {
                           style={{ width: 34, height: 34, borderRadius: "50%", border: "none", background: col, cursor: "pointer", padding: 0, boxShadow: on ? "0 0 0 3px #fff, 0 0 0 5px " + col + ", 0 4px 12px " + col + "66" : "0 2px 6px rgba(0,0,0,0.12)", transform: on ? "scale(1.08)" : "scale(1)", transition: "box-shadow 0.2s ease, transform 0.2s ease", animation: "rcjChipIn 0.4s cubic-bezier(0.34,1.56,0.64,1) " + (0.3 + i * 0.04).toFixed(2) + "s both" }} />
                       );
                     })}
+                    {/* Custom color well - the native picker, disguised as a
+                        rainbow swatch, so any color is fair game. When a custom
+                        (non-preset) color is active it fills with that color. */}
+                    {(function() {
+                      var custom = BIZ_COLORS.indexOf(form.color) < 0;
+                      return (
+                        <label className="jr-press" title="Custom color"
+                          style={{ position: "relative", width: 34, height: 34, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box", background: custom ? form.color : "conic-gradient(from 0deg,#E0556E,#E0A100,#27A85F,#00B4A0,#2E7DD6,#8970C6,#E0556E)", boxShadow: custom ? "0 0 0 3px #fff, 0 0 0 5px " + form.color + ", 0 4px 12px " + form.color + "66" : "0 2px 6px rgba(0,0,0,0.14)", transform: custom ? "scale(1.08)" : "scale(1)", transition: "box-shadow 0.2s ease, transform 0.2s ease", animation: "rcjChipIn 0.4s cubic-bezier(0.34,1.56,0.64,1) " + (0.3 + BIZ_COLORS.length * 0.04).toFixed(2) + "s both" }}>
+                          <input type="color" value={custom ? form.color : "#8970C6"} onChange={function(e) { setField("color", e.target.value); }}
+                            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer", border: "none", padding: 0, margin: 0 }} />
+                          <SVGIcon id={custom ? "check" : "plus"} size={14} color="#fff" />
+                        </label>
+                      );
+                    })()}
                   </div>
                 </div>
               )}
@@ -13794,7 +13893,7 @@ export default function App() {
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} savings={savings} businesses={businesses} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={(monthAnalysis && monthAnalysis.sig === txSignature()) ? monthAnalysis.data : null} onSaveAnalysis={onSaveAnalysis} />}
+        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} savings={savings} businesses={businesses} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={monthAnalysis ? monthAnalysis.data : null} analysisStale={!!(monthAnalysis && monthAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} />}
         {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} richardInstructions={richardInstructions} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "profile"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewPrivacy={function() { setTab("privacy"); }} trips={trips} onViewTripHistory={function() { setTab("tripHistory"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
