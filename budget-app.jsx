@@ -11314,6 +11314,776 @@ function SavingsView(props) {
   );
 }
 
+// The Investing account page: a brokerage-style view of one account. Portfolio
+// hero with a value trend, cash available, holdings at live prices, allocation
+// donut, watchlist, recent activity, and the buy/sell/dividend/deposit/withdraw
+// sheets. Quotes poll every 60s while the page is visible; fresh prices are
+// mirrored onto acct.meta in state and persisted at most once per day (they
+// also piggyback on any trade save), so Firestore isn't written per poll.
+function InvestingView(props) {
+  var accts = props.investing || [];
+  var tx = props.tx || [];
+  var sym = _currency.sym;
+  var appCode = SYM_TO_CODE[sym] || "USD";
+  var today = new Date().toISOString().slice(0, 10);
+  var acct = null;
+  for (var ai = 0; ai < accts.length; ai++) { if (accts[ai].id === props.openInvId) { acct = accts[ai]; break; } }
+  if (!acct && accts.length) acct = accts[0];
+
+  var _rng = useState("1M"); var range = _rng[0]; var setRange = _rng[1];
+  var _md = useState("native"); var curMode = _md[0]; var setCurMode = _md[1];
+  var _qs = useState({}); var quotes = _qs[0]; var setQuotes = _qs[1];
+  var _cd = useState({}); var chartCache = _cd[0]; var setChartCache = _cd[1];
+  var _cb = useState(false); var chartBusy = _cb[0]; var setChartBusy = _cb[1];
+  var _cn2 = useState(""); var chartNote = _cn2[0]; var setChartNote = _cn2[1];
+  var _sh2 = useState(null); var sheet = _sh2[0]; var setSheet = _sh2[1];
+  var _fx = useState(0); var setFxTick = _fx[1];
+  var _q2 = useState(""); var searchQ = _q2[0]; var setSearchQ = _q2[1];
+  var _sr = useState(null); var searchRes = _sr[0]; var setSearchRes = _sr[1];
+  var _sb = useState(false); var searchBusy = _sb[0]; var setSearchBusy = _sb[1];
+  var _pick = useState(null); var pick = _pick[0]; var setPick = _pick[1];
+  var _osh = useState(""); var ordShares = _osh[0]; var setOrdShares = _osh[1];
+  var _opr = useState(""); var ordPrice = _opr[0]; var setOrdPrice = _opr[1];
+  var _ofe = useState(""); var ordFees = _ofe[0]; var setOrdFees = _ofe[1];
+  var _oda = useState(today); var ordDate = _oda[0]; var setOrdDate = _oda[1];
+  var _ocf = useState(false); var confirming = _ocf[0]; var setConfirming = _ocf[1];
+  var _oer = useState(""); var ordErr = _oer[0]; var setOrdErr = _oer[1];
+  var _dsym = useState(""); var divSym = _dsym[0]; var setDivSym = _dsym[1];
+  var _damt = useState(""); var divAmt = _damt[0]; var setDivAmt = _damt[1];
+  var _cAmt = useState(""); var cashAmt = _cAmt[0]; var setCashAmt = _cAmt[1];
+  var _cSrc = useState("balance"); var cashSrc = _cSrc[0]; var setCashSrc = _cSrc[1];
+  var _allA = useState(false); var allAct = _allA[0]; var setAllAct = _allA[1];
+
+  var pos = acct ? positionsOf(acct) : {};
+  var held = [];
+  for (var hk in pos) { if (pos[hk].shares > 0) held.push(hk); }
+  var watchlist = (acct && acct.watchlist) || [];
+
+  // Live price for display: fresh quote -> persisted mirror -> manual -> avg cost.
+  function curPrice(symbol, fallbackAvg) {
+    var q = quotes[symbol];
+    if (q && q.price) return q.price;
+    return investingPriceOf(acct, symbol, fallbackAvg);
+  }
+  function curOf(symbol) {
+    return (pos[symbol] && pos[symbol].currency) || ((acct.meta || {})[symbol] || {}).currency || "USD";
+  }
+  // Money renderer honoring the native/converted toggle.
+  function money(amount, code) { return invFmt(amount, code, curMode === "app" ? "app" : (code === appCode ? "app" : "native")); }
+
+  var cash = acct ? investingCash(acct) : 0;
+  var holdingsValue = 0;
+  held.forEach(function(s) { holdingsValue += invConvert(pos[s].shares * curPrice(s, pos[s].avgCost), pos[s].currency); });
+  holdingsValue = round2(holdingsValue);
+  var worth = round2(cash + holdingsValue);
+  var dayChange = 0;
+  held.forEach(function(s) {
+    var q = quotes[s] || (acct.meta || {})[s];
+    if (q && typeof q.price === "number" && typeof q.prevClose === "number") dayChange += invConvert(pos[s].shares * (q.price - q.prevClose), pos[s].currency);
+    else if (q && typeof q.lastPrice === "number" && typeof q.prevClose === "number") dayChange += invConvert(pos[s].shares * (q.lastPrice - q.prevClose), pos[s].currency);
+  });
+  dayChange = round2(dayChange);
+
+  // Load FX for every holding currency once so conversions use live rates.
+  useEffect(function() {
+    if (!acct) return;
+    var codes = [];
+    for (var s in pos) { if (codes.indexOf(pos[s].currency) === -1) codes.push(pos[s].currency); }
+    loadInvRates(codes, function() { setFxTick(function(n) { return n + 1; }); });
+  }, [acct ? acct.id : null, held.join(",")]);
+
+  // Quote polling: mount + 60s, paused while the tab is hidden, catch-up on
+  // return. Fresh prices are mirrored to acct.meta; Firestore sees it once/day.
+  useEffect(function() {
+    if (!acct) return;
+    var stop = false;
+    function refresh() {
+      if (stop || document.visibilityState === "hidden") return;
+      var symbols = held.slice();
+      watchlist.forEach(function(w) { if (symbols.indexOf(w) === -1) symbols.push(w); });
+      if (!symbols.length) return;
+      stockQuotes(symbols, function(map) {
+        if (stop) return;
+        var good = {};
+        for (var s in map) { if (map[s]) good[s] = map[s]; }
+        setQuotes(function(prev) { return Object.assign({}, prev, good); });
+        mirrorQuotes(good);
+      });
+    }
+    refresh();
+    var iv = setInterval(refresh, 60000);
+    function onVis() { if (document.visibilityState === "visible") refresh(); }
+    document.addEventListener("visibilitychange", onVis);
+    return function() { stop = true; clearInterval(iv); document.removeEventListener("visibilitychange", onVis); };
+  }, [acct ? acct.id : null, held.join(","), watchlist.join(",")]);
+
+  function mirrorQuotes(map) {
+    if (!acct) return;
+    var any = false; for (var k0 in map) { any = true; break; }
+    if (!any) return;
+    var persist = acct.priceSnapshotDate !== today;
+    var next = accts.map(function(a) {
+      if (a.id !== acct.id) return a;
+      var n = {}; for (var k in a) n[k] = a[k];
+      n.meta = Object.assign({}, a.meta);
+      for (var s in map) {
+        var q = map[s];
+        n.meta[s] = Object.assign({}, n.meta[s] || {}, { currency: q.currency, lastPrice: q.price, prevClose: q.prevClose, lastPriceAt: q.asOf || Date.now() });
+      }
+      if (persist) n.priceSnapshotDate = today;
+      return n;
+    });
+    if (persist) props.onSaveInvesting(next);
+  }
+
+  // Portfolio trend: fetch a daily close series per traded symbol for the range,
+  // then replay the ledger over that grid. Cached per range for the session.
+  useEffect(function() {
+    if (!acct) return;
+    var key = acct.id + "::" + range + "::" + (acct.trades || []).length;
+    if (chartCache[key]) return;
+    var symbols = [];
+    (acct.trades || []).forEach(function(t) { if (symbols.indexOf(t.symbol) === -1) symbols.push(t.symbol); });
+    if (!symbols.length) { setChartCache(function(p) { var n = Object.assign({}, p); n[key] = []; return n; }); return; }
+    setChartBusy(true); setChartNote("");
+    var seriesMap = {}; var left = symbols.length; var missing = [];
+    symbols.forEach(function(s) {
+      stockSeries(s, range, function(err, ser) {
+        if (ser) seriesMap[s] = ser; else missing.push(s);
+        left--;
+        if (!left) {
+          var pts = investingSeries(acct, seriesMap);
+          setChartCache(function(p) { var n = Object.assign({}, p); n[key] = pts; return n; });
+          setChartNote(missing.length ? "Some prices are approximate (" + missing.join(", ") + ")" : "");
+          setChartBusy(false);
+        }
+      });
+    });
+  }, [acct ? acct.id : null, range, acct ? (acct.trades || []).length : 0]);
+
+  // Debounced symbol search for the Buy / Watch sheets.
+  useEffect(function() {
+    var q = searchQ.trim();
+    if (!q) { setSearchRes(null); setSearchBusy(false); return; }
+    setSearchBusy(true);
+    var t = setTimeout(function() {
+      stockSearch(q, function(err, results) { setSearchRes(results || []); setSearchBusy(false); });
+    }, 350);
+    return function() { clearTimeout(t); };
+  }, [searchQ]);
+
+  function transferTxInv(type, amount, suffix, dateOverride) {
+    return { id: Date.now() + 1, type: type, amount: round2(amount), label: (type === "expense" ? "→ " : "← ") + acct.name + (suffix || ""), catId: "savings-transfer", category: "Investing transfer", transfer: true, date: dateOverride || today, repeat: "none", pending: false };
+  }
+  function withAcct(mutate) {
+    return accts.map(function(a) {
+      if (a.id !== acct.id) return a;
+      var n = {}; for (var k in a) n[k] = a[k];
+      mutate(n);
+      return n;
+    });
+  }
+  function openSheet(kind, extra) {
+    setSheet(kind); setOrdErr(""); setConfirming(false);
+    setSearchQ(""); setSearchRes(null); setPick(null);
+    setOrdShares(""); setOrdPrice(""); setOrdFees(""); setOrdDate(today);
+    setCashAmt(""); setCashSrc(kind === "deposit" ? "balance" : "balance");
+    setDivSym(held[0] || ""); setDivAmt("");
+    if (extra && extra.symbol) {
+      var symbol = extra.symbol;
+      var so = { symbol: symbol, name: (pos[symbol] && pos[symbol].name) || symbol, currency: curOf(symbol), exchange: ((acct.meta || {})[symbol] || {}).exchange || "" };
+      setPick(so);
+      prefillPrice(so);
+    }
+  }
+  function prefillPrice(symObj) {
+    var q = quotes[symObj.symbol];
+    if (q && q.price) { setOrdPrice(String(q.price)); return; }
+    stockQuote(symObj.symbol, function(err, qq) {
+      if (qq && qq.price) { setOrdPrice(function(prev) { return prev || String(qq.price); }); if (!symObj.currency && qq.currency) symObj.currency = qq.currency; }
+    });
+  }
+  // The ONE validated trade mutation both the sheets and Richard's chat use.
+  function saveTrade(kind, symObj, shares, price, fees, date) {
+    if (!(shares > 0) || !(price > 0)) return "Enter shares and a price.";
+    var cur = symObj.currency || "USD";
+    var rate = invRateOf(cur);
+    var gross = shares * price;
+    var cashAmount = round2((kind === "buy" ? gross + (fees || 0) : gross - (fees || 0)) * rate);
+    if (cashAmount < 0) cashAmount = 0;
+    if (kind === "buy" && cashAmount > investingCash(acct)) {
+      return "Not enough cash: this order needs " + dollars(cashAmount) + " and the account holds " + dollars(investingCash(acct)) + ". Deposit first.";
+    }
+    if (kind === "sell") {
+      var heldShares = (positionsOf(acct)[symObj.symbol] || { shares: 0 }).shares;
+      if (shares > heldShares + 1e-9) return "You only hold " + heldShares + " shares of " + symObj.symbol + ".";
+    }
+    var trade = { id: Date.now(), kind: kind, symbol: symObj.symbol, name: symObj.name || symObj.symbol, shares: shares, price: price, fees: fees || 0, date: date || today, currency: cur, cashAmount: cashAmount, fxRate: rate };
+    props.onSaveInvesting(withAcct(function(n) {
+      n.trades = (n.trades || []).concat([trade]);
+      n.meta = Object.assign({}, n.meta);
+      var old = n.meta[trade.symbol] || {};
+      n.meta[trade.symbol] = Object.assign({}, old, { name: trade.name, currency: cur, exchange: symObj.exchange || old.exchange || "", lastPrice: old.lastPrice || price, prevClose: old.prevClose, lastPriceAt: old.lastPriceAt || Date.now() });
+      n.priceSnapshotDate = today;
+    }));
+    return null;
+  }
+  function saveDividend(symbol, amount, date) {
+    if (!symbol || !(amount > 0)) return "Pick a holding and an amount.";
+    var cur = curOf(symbol);
+    var rate = invRateOf(cur);
+    var d = { id: Date.now(), symbol: symbol, amount: round2(amount), currency: cur, cashAmount: round2(amount * rate), fxRate: rate, date: date || today };
+    props.onSaveInvesting(withAcct(function(n) { n.dividends = (n.dividends || []).concat([d]); }));
+    return null;
+  }
+  function submitCash() {
+    var v = parseFloat(cashAmt);
+    if (isNaN(v) || v <= 0) return;
+    if (sheet === "deposit") {
+      var fromMain = cashSrc === "balance";
+      var entry = { id: Date.now(), kind: "deposit", amount: round2(v), date: today, fromMain: fromMain, label: fromMain ? tr("fromBalance") : tr("externalMoney") };
+      var next = withAcct(function(n) { n.cashEntries = (n.cashEntries || []).concat([entry]); });
+      if (fromMain) props.onMove(tx.concat([transferTxInv("expense", v)]), next);
+      else props.onSaveInvesting(next);
+    } else {
+      var w = Math.min(round2(v), cash);
+      if (w <= 0) return;
+      var toMain = cashSrc === "balance";
+      var entry2 = { id: Date.now(), kind: "withdraw", amount: w, date: today, fromMain: toMain, label: toMain ? tr("toBalance") : tr("removeFromNet") };
+      var next2 = withAcct(function(n) { n.cashEntries = (n.cashEntries || []).concat([entry2]); });
+      if (toMain) props.onMove(tx.concat([transferTxInv("income", w)]), next2);
+      else props.onSaveInvesting(next2);
+    }
+    setSheet(null);
+  }
+  function toggleWatch(symbol) {
+    props.onSaveInvesting(withAcct(function(n) {
+      var w = (n.watchlist || []).slice();
+      var i = w.indexOf(symbol);
+      if (i === -1) w.push(symbol); else w.splice(i, 1);
+      n.watchlist = w;
+    }));
+  }
+  function openStock(symbol) { if (props.onOpenStock) props.onOpenStock(acct.id, symbol); }
+
+  // --- portfolio trend chart (self-contained; hero-token styling) ---
+  function invSmooth(pts) {
+    var n = pts.length;
+    if (n < 3) return pts.map(function(p, i) { return (i ? "L" : "M") + p.x.toFixed(1) + " " + p.y.toFixed(1); }).join(" ");
+    var dx = [], dy = [], m = [], i;
+    for (i = 0; i < n - 1; i++) { dx[i] = pts[i + 1].x - pts[i].x; dy[i] = pts[i + 1].y - pts[i].y; m[i] = dx[i] !== 0 ? dy[i] / dx[i] : 0; }
+    var t = [m[0]];
+    for (i = 1; i < n - 1; i++) { t[i] = (m[i - 1] * m[i] <= 0) ? 0 : (m[i - 1] + m[i]) / 2; }
+    t[n - 1] = m[n - 2];
+    for (i = 0; i < n - 1; i++) {
+      if (m[i] === 0) { t[i] = 0; t[i + 1] = 0; }
+      else { var a = t[i] / m[i], b = t[i + 1] / m[i], h = Math.sqrt(a * a + b * b); if (h > 3) { var s2 = 3 / h; t[i] = s2 * a * m[i]; t[i + 1] = s2 * b * m[i]; } }
+    }
+    var d = "M" + pts[0].x.toFixed(1) + " " + pts[0].y.toFixed(1);
+    for (i = 0; i < n - 1; i++) {
+      var c1x = pts[i].x + dx[i] / 3, c1y = pts[i].y + t[i] * dx[i] / 3;
+      var c2x = pts[i + 1].x - dx[i] / 3, c2y = pts[i + 1].y - t[i + 1] * dx[i] / 3;
+      d += " C " + c1x.toFixed(1) + " " + c1y.toFixed(1) + " " + c2x.toFixed(1) + " " + c2y.toFixed(1) + " " + pts[i + 1].x.toFixed(1) + " " + pts[i + 1].y.toFixed(1);
+    }
+    return d;
+  }
+  function invCompact(v) {
+    var a = Math.abs(v);
+    var s3 = a >= 1000 ? (a / 1000).toFixed(1).replace(/\.0$/, "") + "k" : String(Math.round(a));
+    return (v < 0 ? "-" : "") + sym + s3;
+  }
+  function portfolioChart(points) {
+    var W = 318, H = 96, topY = 8, botY = 88;
+    var vals = points.map(function(p) { return p.c; });
+    var mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals);
+    var span = (mx - mn) || 1;
+    var lo = mn - span * 0.1, hi = mx + span * 0.1;
+    function yOf(v) { return botY - ((v - lo) / (hi - lo)) * (botY - topY); }
+    var pts = points.map(function(p, i) { return { x: points.length > 1 ? (i / (points.length - 1)) * W : 0, y: yOf(p.c) }; });
+    var line = invSmooth(pts);
+    var area = line + " L " + W + " " + botY + " L 0 " + botY + " Z";
+    var up = vals[vals.length - 1] >= vals[0];
+    var col = up ? T.heroPos : T.heroNeg;
+    var last = pts[pts.length - 1];
+    return (
+      <svg width="100%" height={H} viewBox={"0 0 " + W + " " + H} preserveAspectRatio="none" style={{ display: "block", overflow: "visible" }}>
+        <defs>
+          <linearGradient id="invArea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={col} stopOpacity={0.25} />
+            <stop offset="100%" stopColor={col} stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <line x1={0} y1={yOf(mx)} x2={W} y2={yOf(mx)} stroke={T.heroSep} strokeWidth={1} />
+        <line x1={0} y1={yOf(mn)} x2={W} y2={yOf(mn)} stroke={T.heroSep} strokeWidth={1} />
+        <path d={area} fill="url(#invArea)" />
+        <path d={line} fill="none" stroke={col} strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx={last.x} cy={last.y} r={3.2} fill={col} stroke={T.heroBg} strokeWidth={1.6} />
+        <text x={3} y={yOf(mx) - 4} fontSize={9} fontFamily={UI} fill={T.heroMut}>{invCompact(mx)}</text>
+        <text x={3} y={yOf(mn) - 4} fontSize={9} fontFamily={UI} fill={T.heroMut}>{invCompact(mn)}</text>
+      </svg>
+    );
+  }
+
+  if (!acct) {
+    return (
+      <div>
+        <SubViewBack onBack={props.onBack} label={props.backLabel || "Accounts"} />
+        <div style={{ textAlign: "center", padding: "60px 20px", color: T.ink3, fontSize: 14 }}>No investing account yet. Open one from Accounts.</div>
+      </div>
+    );
+  }
+
+  var chartKey = acct.id + "::" + range + "::" + (acct.trades || []).length;
+  var chartPts = chartCache[chartKey];
+  var rangeGain = (chartPts && chartPts.length > 1) ? round2(chartPts[chartPts.length - 1].c - chartPts[0].c) : null;
+
+  // Allocation slices: each holding + cash, in app currency.
+  var slices = held.map(function(s, i) {
+    return { label: s, value: invConvert(pos[s].shares * curPrice(s, pos[s].avgCost), pos[s].currency), color: INVESTING_COLORS[i % INVESTING_COLORS.length] };
+  });
+  if (cash > 0) slices.push({ label: "Cash", value: cash, color: T.orange });
+  var sliceTotal = slices.reduce(function(s, x) { return s + x.value; }, 0) || 1;
+
+  // Recent activity: one merged, newest-first stream of everything that happened.
+  var activity = [];
+  (acct.cashEntries || []).forEach(function(e) { activity.push({ id: "c" + e.id, date: e.date, label: e.label || (e.kind === "deposit" ? tr("addMoney") : tr("withdraw")), amount: e.amount, sign: e.kind === "deposit" ? 1 : -1, kind: "cash" }); });
+  (acct.trades || []).forEach(function(t2) { activity.push({ id: "t" + t2.id, date: t2.date, label: (t2.kind === "buy" ? "Buy " : "Sell ") + t2.shares + " " + t2.symbol + " @ " + invFmt(t2.price, t2.currency, "native"), amount: t2.cashAmount, sign: t2.kind === "buy" ? -1 : 1, kind: "trade" }); });
+  (acct.dividends || []).forEach(function(d2) { activity.push({ id: "d" + d2.id, date: d2.date, label: "Dividend · " + d2.symbol, amount: d2.cashAmount, sign: 1, kind: "div" }); });
+  activity.sort(function(a, b) { return a.date === b.date ? (b.id < a.id ? -1 : 1) : (a.date < b.date ? 1 : -1); });
+
+  var seg2 = function(value, setter, options) {
+    return (
+      <div style={{ display: "flex", gap: 4, background: "rgba(0,0,0,0.05)", borderRadius: 11, padding: 3 }}>
+        {options.map(function(o) {
+          var on = value === o.v;
+          return (
+            <button key={o.v} onClick={function() { setter(o.v); }}
+              style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "9px 6px", borderRadius: 8, background: on ? T.btn : "transparent", color: on ? "#fff" : T.ink2, textShadow: on ? "0 1px 2px rgba(42,31,77,0.35)" : "none" }}>
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
+  function holdingRow(s) {
+    var p = pos[s];
+    var q = quotes[s];
+    var price = curPrice(s, p.avgCost);
+    var value = invConvert(p.shares * price, p.currency);
+    var unreal = round2(invConvert(p.shares * (price - p.avgCost), p.currency));
+    var unrealPct = p.avgCost > 0 ? round2(((price - p.avgCost) / p.avgCost) * 100) : 0;
+    var dayPct = q && q.prevClose ? round2(((q.price - q.prevClose) / q.prevClose) * 100) : null;
+    var meta = (acct.meta || {})[s] || {};
+    var stale = !q && !meta.lastPrice;
+    return (
+      <button key={s} onClick={function() { openStock(s); }} style={{ width: "100%", textAlign: "left", background: "none", border: "none", borderBottom: "0.5px solid " + T.sep, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
+        {meta.logo ? (
+          <img src={meta.logo} alt="" style={{ width: 38, height: 38, borderRadius: 12, objectFit: "cover", background: "rgba(0,0,0,0.05)", flexShrink: 0 }} />
+        ) : (
+          <CatBadge icon="chart" color={acct.color || T.green} size={38} soft={true} />
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+            <span style={{ fontSize: 15, fontWeight: 800, color: T.ink }}>{s}</span>
+            {isTASE(s) && <span style={{ fontSize: 9.5, fontWeight: 700, color: T.ink3, background: "rgba(0,0,0,0.06)", borderRadius: 5, padding: "1px 5px" }}>DELAYED</span>}
+            {stale && <span style={{ fontSize: 9.5, fontWeight: 700, color: T.gold, background: "rgba(0,0,0,0.06)", borderRadius: 5, padding: "1px 5px" }}>NO LIVE PRICE</span>}
+          </div>
+          <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.shares + " × " + invFmt(p.avgCost, p.currency, "native") + " avg"}</div>
+        </div>
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: T.ink }}>{curMode === "app" ? dollars(value) : money(p.shares * price, p.currency)}</div>
+          <div style={{ fontSize: 11.5, fontWeight: 700, marginTop: 2, color: unreal >= 0 ? T.green : T.red }}>
+            {(unreal >= 0 ? "+" : "") + dollars(unreal) + " (" + (unrealPct >= 0 ? "+" : "") + unrealPct + "%)"}
+            {dayPct != null && <span style={{ color: T.ink3, fontWeight: 600 }}>{"  ·  " + (dayPct >= 0 ? "+" : "") + dayPct + "% today"}</span>}
+          </div>
+        </div>
+      </button>
+    );
+  }
+  function watchRow(s) {
+    var q = quotes[s];
+    return (
+      <div key={s} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderBottom: "0.5px solid " + T.sep }}>
+        <button onClick={function() { openStock(s); }} style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 10, background: "none", border: "none", cursor: "pointer", fontFamily: UI, textAlign: "left", padding: 0 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+              <span style={{ fontSize: 14.5, fontWeight: 800, color: T.ink }}>{s}</span>
+              {isTASE(s) && <span style={{ fontSize: 9.5, fontWeight: 700, color: T.ink3, background: "rgba(0,0,0,0.06)", borderRadius: 5, padding: "1px 5px" }}>DELAYED</span>}
+            </div>
+            {q ? (
+              <div style={{ fontSize: 12, marginTop: 2, color: T.ink3 }}>
+                {invFmt(q.price, q.currency, "native")}
+                <span style={{ fontWeight: 700, color: q.change >= 0 ? T.green : T.red }}>{"  " + (q.change >= 0 ? "+" : "") + q.changePct + "%"}</span>
+              </div>
+            ) : (
+              <div style={{ marginTop: 4 }}><ThinkingDots s={3.5} color={T.ink3} /></div>
+            )}
+          </div>
+        </button>
+        <button onClick={function() { toggleWatch(s); }} style={{ border: "none", background: "rgba(0,0,0,0.05)", borderRadius: 9, width: 28, height: 28, cursor: "pointer", color: T.ink3, fontSize: 15, lineHeight: 1, flexShrink: 0 }}>×</button>
+      </div>
+    );
+  }
+
+  var ordSharesN = parseFloat(ordShares) || 0;
+  var ordPriceN = parseFloat(ordPrice) || 0;
+  var ordFeesN = parseFloat(ordFees) || 0;
+  var ordCur = pick ? (pick.currency || "USD") : "USD";
+  var ordGrossNative = round2(ordSharesN * ordPriceN);
+  var ordCashCost = round2((ordSharesN * ordPriceN + (sheet === "buy" ? ordFeesN : -ordFeesN)) * invRateOf(ordCur));
+  var sellHeld = (sheet === "sell" && pick) ? ((pos[pick.symbol] || {}).shares || 0) : 0;
+  var sellRealized = (sheet === "sell" && pick && pos[pick.symbol]) ? round2(ordSharesN * (ordPriceN - pos[pick.symbol].avgCost) - ordFeesN) : 0;
+
+  var inputBox = { width: "100%", background: "rgba(0,0,0,0.04)", border: "none", borderRadius: 12, padding: "12px 14px", fontSize: 15, fontFamily: UI, color: T.ink, fontWeight: 600, outline: "none", boxSizing: "border-box" };
+  var lbl = { fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 };
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} label={props.backLabel || "Accounts"} />
+
+      {/* hero */}
+      <Card style={{ padding: "18px 20px 14px", marginBottom: 14, background: T.heroBg, boxShadow: T.heroShadow }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+          <CatBadge icon={acct.icon || "chart"} color={acct.color || T.green} size={34} soft={true} />
+          <div style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 700, color: T.heroText, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{acct.name}</div>
+          <button onClick={function() { setCurMode(curMode === "app" ? "native" : "app"); }}
+            style={{ border: "1px solid " + T.heroSep, background: "transparent", color: T.heroMut, borderRadius: 999, padding: "4px 10px", fontSize: 10.5, fontWeight: 700, fontFamily: UI, cursor: "pointer", letterSpacing: "0.04em" }}>
+            {curMode === "app" ? sym + " " + appCode : "NATIVE"}
+          </button>
+        </div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.heroMut, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Portfolio value</div>
+        <div style={{ fontSize: 34, fontWeight: 800, color: T.heroText, letterSpacing: "-0.03em", lineHeight: 1 }}><CountUp value={worth} /></div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 7, marginBottom: 6 }}>
+          {dayChange !== 0 && (
+            <span style={{ fontSize: 12, fontWeight: 800, color: dayChange > 0 ? T.heroPos : T.heroNeg }}>{(dayChange > 0 ? "+" : "") + dollars(dayChange) + " today"}</span>
+          )}
+          <span style={{ fontSize: 12, color: T.heroFaint }}>{dollars(cash) + " cash available"}</span>
+        </div>
+        {(acct.trades || []).length > 0 && (
+          <div style={{ marginTop: 8 }}>
+            {chartBusy && !chartPts ? (
+              <div style={{ height: 96, display: "flex", alignItems: "center", justifyContent: "center" }}><ThinkingDots s={5} color={T.heroMut} /></div>
+            ) : (chartPts && chartPts.length > 1) ? (
+              <div>
+                {portfolioChart(chartPts)}
+                {rangeGain != null && (
+                  <div style={{ fontSize: 11.5, fontWeight: 700, marginTop: 6, color: rangeGain >= 0 ? T.heroPos : T.heroNeg }}>
+                    {(rangeGain >= 0 ? "+" : "") + dollars(rangeGain) + " " + range.toLowerCase()}
+                    {chartNote && <span style={{ color: T.heroFaint, fontWeight: 600 }}>{"  ·  " + chartNote}</span>}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div style={{ fontSize: 12, color: T.heroFaint, padding: "8px 0" }}>Chart unavailable right now.</div>
+            )}
+            <div style={{ display: "flex", gap: 4, marginTop: 10 }}>
+              {["1W", "1M", "3M", "1Y", "ALL"].map(function(r) {
+                var on = r === range;
+                return (
+                  <button key={r} onClick={function() { setRange(r); }}
+                    style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 11, fontWeight: 800, padding: "6px 0", borderRadius: 8, background: on ? "rgba(255,255,255,0.28)" : "transparent", color: on ? T.heroText : T.heroMut, letterSpacing: "0.03em" }}>
+                    {r}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </Card>
+
+      {/* actions */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        <button onClick={function() { openSheet("buy"); }}
+          style={{ flex: 1.4, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 14, fontWeight: 800, padding: "12px 0", borderRadius: 13, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 4px 12px " + T.orangeGlow }}>Buy</button>
+        <button onClick={function() { openSheet("deposit"); }}
+          style={{ flex: 1, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 13, background: "none", color: T.orange }}>Deposit</button>
+        <button onClick={function() { openSheet("withdraw"); }} disabled={cash <= 0}
+          style={{ flex: 1, border: "1.5px solid " + (cash <= 0 ? "rgba(0,0,0,0.08)" : T.orange), cursor: cash <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 13, background: "none", color: cash <= 0 ? T.ink3 : T.orange }}>Withdraw</button>
+      </div>
+
+      {/* holdings */}
+      <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+          <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Holdings</span>
+        </div>
+        {held.length > 0 && (
+          <button onClick={function() { openSheet("dividend"); }} style={{ background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 12.5, fontWeight: 700, fontFamily: UI }}>Log dividend</button>
+        )}
+      </div>
+      {held.length === 0 ? (
+        <Card style={{ padding: "22px 20px", marginBottom: 18, textAlign: "center" }}>
+          <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, marginBottom: 5 }}>Your first position starts here</div>
+          <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginBottom: 12 }}>{cash > 0 ? "You have " + dollars(cash) + " ready to invest. Search any US or Tel Aviv stock and ETF." : "Deposit cash, then buy your first stock or ETF - live prices included."}</div>
+          <BigBtn label={cash > 0 ? "Buy your first stock" : "Deposit cash"} onPress={function() { openSheet(cash > 0 ? "buy" : "deposit"); }} />
+        </Card>
+      ) : (
+        <Card style={{ overflow: "hidden", marginBottom: 18 }}>
+          {held.sort(function(a, b) { return invConvert(pos[b].shares * curPrice(b, pos[b].avgCost), pos[b].currency) - invConvert(pos[a].shares * curPrice(a, pos[a].avgCost), pos[a].currency); }).map(holdingRow)}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: T.orangeDim }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: T.ink2, textTransform: "uppercase", letterSpacing: "0.08em" }}>Holdings value</span>
+            <span style={{ fontSize: 15, fontWeight: 800, color: T.orange }}>{dollars(holdingsValue)}</span>
+          </div>
+        </Card>
+      )}
+
+      {/* allocation */}
+      {slices.length > 1 && (
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+            <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Allocation</span>
+          </div>
+          <Card style={{ padding: "16px 18px", display: "flex", alignItems: "center", gap: 18 }}>
+            <svg width={108} height={108} viewBox="0 0 108 108" style={{ transform: "rotate(-90deg)", flexShrink: 0 }}>
+              <circle cx={54} cy={54} r={44} fill="none" stroke={"rgba(0,0,0,0.06)"} strokeWidth={15} />
+              {(function() {
+                var C = 2 * Math.PI * 44; var acc = 0;
+                return slices.map(function(sl, i) {
+                  var frac = sl.value / sliceTotal;
+                  var start = acc; acc += frac;
+                  return <circle key={i} cx={54} cy={54} r={44} fill="none" stroke={sl.color} strokeWidth={15} strokeDasharray={(Math.max(frac - 0.012, 0.004) * C).toFixed(2) + " " + (C + 2).toFixed(2)} strokeDashoffset={(-start * C).toFixed(2)} />;
+                });
+              })()}
+            </svg>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {slices.map(function(sl, i) {
+                return (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0" }}>
+                    <div style={{ width: 9, height: 9, borderRadius: 3, background: sl.color, flexShrink: 0 }} />
+                    <span style={{ flex: 1, fontSize: 12.5, fontWeight: 700, color: T.ink, fontFamily: UI }}>{sl.label}</span>
+                    <span style={{ fontSize: 12, color: T.ink3, fontFamily: UI }}>{Math.round((sl.value / sliceTotal) * 100) + "%"}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* watchlist */}
+      <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+          <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Watchlist</span>
+        </div>
+        <button onClick={function() { openSheet("watch"); }} style={{ background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 12.5, fontWeight: 700, fontFamily: UI }}>+ Add</button>
+      </div>
+      {watchlist.length === 0 ? (
+        <div style={{ fontSize: 12.5, color: T.ink3, padding: "2px 2px 16px" }}>Track tickers you're curious about - live quotes, no commitment.</div>
+      ) : (
+        <Card style={{ overflow: "hidden", marginBottom: 18 }}>{watchlist.map(watchRow)}</Card>
+      )}
+
+      {/* recent activity */}
+      {activity.length > 0 && (
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+              <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Activity</span>
+            </div>
+            {activity.length > 8 && (
+              <button onClick={function() { setAllAct(true); }} style={{ background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 12.5, fontWeight: 700, fontFamily: UI }}>See all</button>
+            )}
+          </div>
+          <Card style={{ overflow: "hidden" }}>
+            {activity.slice(0, 8).map(function(ev) {
+              return (
+                <div key={ev.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 16px", borderBottom: "0.5px solid " + T.sep }}>
+                  <div style={{ width: 26, height: 26, borderRadius: 8, background: (ev.sign > 0 ? T.green : T.ink3) + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <SVGIcon id={ev.kind === "trade" ? "chart" : (ev.sign > 0 ? "down" : "up")} size={13} color={ev.sign > 0 ? T.green : T.ink2} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, color: T.ink, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.label}</div>
+                    <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{ev.date}</div>
+                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: ev.sign > 0 ? T.green : T.ink2, flexShrink: 0 }}>{(ev.sign > 0 ? "+" : "-") + dollars(ev.amount)}</span>
+                </div>
+              );
+            })}
+          </Card>
+        </div>
+      )}
+
+      {/* buy / sell / watch sheet */}
+      <Overlay open={sheet === "buy" || sheet === "sell" || sheet === "watch"} onClose={function() { setSheet(null); }}
+        title={sheet === "sell" ? "Sell" + (pick ? " · " + pick.symbol : "") : sheet === "watch" ? "Add to watchlist" : "Buy" + (pick ? " · " + pick.symbol : "")}>
+        {(!pick || sheet === "watch") ? (
+          <div>
+            <input value={searchQ} onChange={function(e) { setSearchQ(e.target.value); }} placeholder="Search a stock or ETF - AAPL, VOO, TEVA.TA..." autoFocus={true}
+              style={Object.assign({}, inputBox, { marginBottom: 10 })} />
+            {searchBusy && <div style={{ padding: "14px 4px" }}><ThinkingDots s={4.5} color={T.ink3} /></div>}
+            {!searchBusy && searchRes && searchRes.length === 0 && (
+              <div style={{ fontSize: 13, color: T.ink3, padding: "10px 2px" }}>Nothing found. Try the exact ticker, or add .TA for Tel Aviv.</div>
+            )}
+            {!searchBusy && searchRes && searchRes.map(function(r) {
+              return (
+                <button key={r.symbol} onClick={function() {
+                  if (sheet === "watch") {
+                    if (watchlist.indexOf(r.symbol) === -1) toggleWatch(r.symbol);
+                    setSheet(null);
+                  } else { setPick(r); prefillPrice(r); }
+                }}
+                  style={{ width: "100%", textAlign: "left", background: "none", border: "none", borderBottom: "0.5px solid " + T.sep, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 11, padding: "12px 4px" }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14.5, fontWeight: 800, color: T.ink }}>{r.symbol}</div>
+                    <div style={{ fontSize: 12, color: T.ink3, marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</div>
+                  </div>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: T.ink3, background: "rgba(0,0,0,0.06)", borderRadius: 6, padding: "3px 7px", flexShrink: 0 }}>{r.exchange || "US"}</span>
+                </button>
+              );
+            })}
+            {!searchQ && !searchRes && sheet !== "watch" && held.length > 0 && (
+              <div>
+                <div style={Object.assign({}, lbl, { marginTop: 4 })}>Or one you already hold</div>
+                {held.map(function(s) {
+                  return (
+                    <button key={s} onClick={function() { openSheet(sheet, { symbol: s }); }}
+                      style={{ border: "1px solid " + T.sep, background: T.card, borderRadius: 10, padding: "7px 12px", marginRight: 7, marginBottom: 7, cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.ink }}>{s}</button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : confirming ? (
+          <div>
+            <div style={{ background: "rgba(0,0,0,0.035)", borderRadius: 14, padding: "14px 16px", marginBottom: 12 }}>
+              {[
+                [sheet === "buy" ? "Buy" : "Sell", ordSharesN + " × " + pick.symbol],
+                ["Price", invFmt(ordPriceN, ordCur, "native")],
+                ordFeesN > 0 ? ["Fees", invFmt(ordFeesN, ordCur, "native")] : null,
+                ["Total", invFmt(ordGrossNative + (sheet === "buy" ? ordFeesN : -ordFeesN), ordCur, "native")],
+                [sheet === "buy" ? "Cash needed" : "Cash back", dollars(ordCashCost)],
+                ["Cash after", dollars(round2(sheet === "buy" ? cash - ordCashCost : cash + ordCashCost))],
+                ["Date", ordDate]
+              ].filter(Boolean).map(function(row, i) {
+                return (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", fontFamily: UI }}>
+                    <span style={{ fontSize: 12.5, color: T.ink3, fontWeight: 600 }}>{row[0]}</span>
+                    <span style={{ fontSize: 13.5, color: T.ink, fontWeight: 700 }}>{row[1]}</span>
+                  </div>
+                );
+              })}
+              {sheet === "sell" && (
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", fontFamily: UI }}>
+                  <span style={{ fontSize: 12.5, color: T.ink3, fontWeight: 600 }}>Realized P&L</span>
+                  <span style={{ fontSize: 13.5, fontWeight: 800, color: sellRealized >= 0 ? T.green : T.red }}>{(sellRealized >= 0 ? "+" : "") + invFmt(sellRealized, ordCur, "native")}</span>
+                </div>
+              )}
+            </div>
+            {ordErr && <div style={{ fontSize: 12.5, color: T.red, marginBottom: 10, lineHeight: 1.45 }}>{ordErr}</div>}
+            <BigBtn label={sheet === "buy" ? "Confirm buy" : "Confirm sell"} onPress={function() {
+              var err = saveTrade(sheet, pick, ordSharesN, ordPriceN, ordFeesN, ordDate);
+              if (err) { setOrdErr(err); return; }
+              setSheet(null);
+            }} />
+            <button onClick={function() { setConfirming(false); }}
+              style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>{tr("back")}</button>
+          </div>
+        ) : (
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15.5, fontWeight: 800, color: T.ink }}>{pick.symbol}</div>
+                <div style={{ fontSize: 12, color: T.ink3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pick.name}</div>
+              </div>
+              {quotes[pick.symbol] && (
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: T.ink }}>{invFmt(quotes[pick.symbol].price, ordCur, "native")}</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: quotes[pick.symbol].change >= 0 ? T.green : T.red }}>{(quotes[pick.symbol].change >= 0 ? "+" : "") + quotes[pick.symbol].changePct + "% today"}</div>
+                </div>
+              )}
+              <button onClick={function() { setPick(null); setSearchQ(""); setSearchRes(null); }} style={{ border: "none", background: "rgba(0,0,0,0.05)", borderRadius: 9, padding: "6px 10px", cursor: "pointer", color: T.ink3, fontSize: 12, fontWeight: 700, fontFamily: UI, flexShrink: 0 }}>Change</button>
+            </div>
+            {sheet === "sell" && (
+              <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 10 }}>
+                {"You hold " + sellHeld + " shares · avg " + invFmt((pos[pick.symbol] || {}).avgCost || 0, ordCur, "native")}
+                <button onClick={function() { setOrdShares(String(sellHeld)); }} style={{ border: "none", background: "none", color: T.orange, fontWeight: 700, fontFamily: UI, fontSize: 12.5, cursor: "pointer", padding: "0 0 0 8px" }}>Sell all</button>
+              </div>
+            )}
+            <div style={lbl}>Shares</div>
+            <input value={ordShares} onChange={function(e) { setOrdShares(e.target.value); }} type="number" inputMode="decimal" placeholder="0" autoFocus={true} style={Object.assign({}, inputBox, { marginBottom: 10 })} />
+            <div style={lbl}>{"Price per share (" + ordCur + ")"}</div>
+            <input value={ordPrice} onChange={function(e) { setOrdPrice(e.target.value); }} type="number" inputMode="decimal" placeholder="Live price loads here" style={Object.assign({}, inputBox, { marginBottom: 10 })} />
+            <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ flex: 1 }}>
+                <div style={lbl}>{"Fees (" + ordCur + ", optional)"}</div>
+                <input value={ordFees} onChange={function(e) { setOrdFees(e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={inputBox} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={lbl}>{tr("date")}</div>
+                <input value={ordDate} onChange={function(e) { setOrdDate(e.target.value); }} type="date" style={inputBox} />
+              </div>
+            </div>
+            {ordSharesN > 0 && ordPriceN > 0 && (
+              <div style={{ fontSize: 12.5, color: T.ink2, marginTop: 12, lineHeight: 1.5 }}>
+                {(sheet === "buy" ? "Costs " : "Returns ") + dollars(ordCashCost) + " of account cash"}
+                {sheet === "buy" && ordCashCost > cash && <span style={{ color: T.red, fontWeight: 700 }}>{" - only " + dollars(cash) + " available"}</span>}
+              </div>
+            )}
+            <BigBtn label={sheet === "buy" ? "Review buy" : "Review sell"} disabled={!(ordSharesN > 0 && ordPriceN > 0) || (sheet === "buy" && ordCashCost > cash) || (sheet === "sell" && ordSharesN > sellHeld)} onPress={function() { setOrdErr(""); setConfirming(true); }} />
+          </div>
+        )}
+      </Overlay>
+
+      {/* dividend sheet */}
+      <Overlay open={sheet === "dividend"} onClose={function() { setSheet(null); }} title="Log a dividend">
+        <div style={lbl}>Holding</div>
+        <div style={{ background: T.inputBg || "rgba(0,0,0,0.04)", borderRadius: 12, padding: "10px 14px", marginBottom: 10 }}>
+          <select value={divSym} onChange={function(e) { setDivSym(e.target.value); }} style={{ width: "100%", border: "none", background: "none", fontSize: 15, color: T.ink, fontFamily: UI, outline: "none" }}>
+            {held.map(function(s) { return <option key={s} value={s}>{s}</option>; })}
+          </select>
+        </div>
+        <div style={lbl}>{"Amount (" + (divSym ? curOf(divSym) : "USD") + ", total)"}</div>
+        <input value={divAmt} onChange={function(e) { setDivAmt(e.target.value); }} type="number" inputMode="decimal" placeholder="0" autoFocus={true} style={Object.assign({}, inputBox, { marginBottom: 12 })} />
+        <div style={{ fontSize: 12, color: T.ink3, marginBottom: 4, lineHeight: 1.45 }}>Lands in this account's cash - ready to reinvest.</div>
+        <BigBtn label="Log dividend" disabled={!(parseFloat(divAmt) > 0) || !divSym} onPress={function() {
+          var err = saveDividend(divSym, parseFloat(divAmt), today);
+          if (!err) setSheet(null);
+        }} />
+      </Overlay>
+
+      {/* deposit / withdraw sheet */}
+      <Overlay open={sheet === "deposit" || sheet === "withdraw"} onClose={function() { setSheet(null); }} title={(sheet === "deposit" ? "Deposit cash" : tr("withdraw")) + " · " + acct.name}>
+        {sheet === "withdraw" && <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 10 }}>{"Cash available: " + dollars(cash)}</div>}
+        <div style={{ background: "rgba(0,0,0,0.04)", borderRadius: 14, padding: "16px 18px", marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ fontSize: 22, color: T.ink3, fontWeight: 600 }}>{sym}</span>
+            <input value={cashAmt} onChange={function(e) { setCashAmt(e.target.value); }} type="number" inputMode="decimal" placeholder="0" autoFocus={true}
+              style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 28, fontFamily: UI, color: T.ink, fontWeight: 700, padding: 0, boxSizing: "border-box", width: "100%" }} />
+          </div>
+        </div>
+        {sheet === "deposit"
+          ? seg2(cashSrc, setCashSrc, [{ v: "balance", label: tr("fromBalance") }, { v: "external", label: tr("externalMoney") }])
+          : seg2(cashSrc, setCashSrc, [{ v: "balance", label: tr("toBalance") }, { v: "remove", label: tr("removeFromNet") }])}
+        <div style={{ fontSize: 12, color: T.ink3, marginTop: 9, lineHeight: 1.45, padding: "0 2px" }}>
+          {sheet === "deposit"
+            ? (cashSrc === "external" ? tr("balanceUntouched") : tr("movesFromBalance"))
+            : (cashSrc === "balance" ? tr("addsToBalance") : tr("leavesNetWorth"))}
+        </div>
+        <BigBtn label={sheet === "deposit" ? "Deposit" : tr("withdraw")} onPress={submitCash} disabled={!(parseFloat(cashAmt) > 0)} />
+      </Overlay>
+
+      {/* full activity sheet */}
+      <Overlay open={allAct} onClose={function() { setAllAct(false); }} title={"Activity · " + acct.name}>
+        {activity.map(function(ev) {
+          return (
+            <div key={ev.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 2px", borderBottom: "0.5px solid " + T.sep }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, color: T.ink, fontWeight: 500 }}>{ev.label}</div>
+                <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{ev.date}</div>
+              </div>
+              <span style={{ fontSize: 13, fontWeight: 700, color: ev.sign > 0 ? T.green : T.ink2 }}>{(ev.sign > 0 ? "+" : "-") + dollars(ev.amount)}</span>
+            </div>
+          );
+        })}
+      </Overlay>
+    </div>
+  );
+}
+
 // A Business Account: part savings pot (a walled-off cash balance separate from
 // personal spending money), part Plan-a-Trip (business budget categories), with
 // Richard acting as a CFO who interviews the owner, drafts a business plan and a
@@ -14869,6 +15639,7 @@ export default function App() {
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} />}
         {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Overview" : "Savings"} onBack={function() { setTab(prevTabRef.current || "overview"); }} />}
+        {currentTab === "investing" && <InvestingView investing={investing} tx={tx} openInvId={openInv} username={user} lang={lang} richardInstructions={richardCtx} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} backLabel={prevTabRef.current === "overview" ? "Overview" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
         {currentTab === "editOpeningBalance" && <EditOpeningBalanceView tx={tx} onComplete={handleEditOpeningBalance} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "logMonth" && <LogMonthView categories={categories} tx={tx} budgets={budgets} onComplete={handleLogMonth} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "collab" && <CollabView household={household} householdId={householdId} invites={invites} myUid={accountKey} onCreate={onCreateHousehold} onInvite={onInviteMember} onCancelInvite={onCancelInvite} onAccept={onAcceptInvite} onLeave={onLeaveHousehold} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}

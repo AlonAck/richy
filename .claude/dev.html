@@ -283,6 +283,37 @@ fetchSource(1).then(function(src){
       });
     }
     el = React.createElement(SavingsHarness, {});
+  } else if (view === "investing") {
+    function InvestingHarness() {
+      var seedInv = qs.get("seed") ? [{
+        id: "inv_1", name: "My Portfolio", color: "#27A85F", icon: "chart", createdAt: "2026-01-01",
+        cashEntries: [{ id: 1, kind: "deposit", amount: 8000, date: "2026-01-01", fromMain: false, label: "External" }],
+        trades: [
+          { id: 2, kind: "buy", symbol: "AAPL", name: "Apple Inc.", shares: 10, price: 250, fees: 0, date: "2026-02-01", currency: "USD", cashAmount: 2500, fxRate: 1 },
+          { id: 3, kind: "buy", symbol: "VOO", name: "Vanguard S&P 500 ETF", shares: 4, price: 580, fees: 0, date: "2026-03-15", currency: "USD", cashAmount: 2320, fxRate: 1 },
+          { id: 4, kind: "buy", symbol: "TEVA.TA", name: "Teva Pharmaceutical", shares: 20, price: 95, fees: 0, date: "2026-05-10", currency: "ILS", cashAmount: 513.51, fxRate: 0.2703 },
+          { id: 5, kind: "sell", symbol: "AAPL", name: "Apple Inc.", shares: 3, price: 285, fees: 0, date: "2026-06-01", currency: "USD", cashAmount: 855, fxRate: 1 }
+        ],
+        dividends: [{ id: 6, symbol: "VOO", amount: 7.4, currency: "USD", cashAmount: 7.4, fxRate: 1, date: "2026-06-20" }],
+        watchlist: ["MSFT"], meta: {
+          "AAPL": { name: "Apple Inc.", currency: "USD", lastPrice: 292.4, prevClose: 289.1, lastPriceAt: Date.now(), exchange: "NASDAQ" },
+          "VOO": { name: "Vanguard S&P 500 ETF", currency: "USD", lastPrice: 618.7, prevClose: 612.9, lastPriceAt: Date.now(), exchange: "NYSE ARCA" },
+          "TEVA.TA": { name: "Teva Pharmaceutical", currency: "ILS", lastPrice: 102.4, prevClose: 105.4, lastPriceAt: Date.now(), exchange: "TASE" }
+        },
+        analyses: {}, chats: {}, priceSnapshotDate: ""
+      }] : [];
+      var _iv = React.useState(seedInv); var iv = _iv[0]; var setIv = _iv[1];
+      var _tx = React.useState(mockTx); var tx = _tx[0]; var setTx = _tx[1];
+      window.__invState = function(){ return { investing: iv, tx: tx }; };
+      return React.createElement(InvestingView, {
+        investing: iv, tx: tx, openInvId: "inv_1", username: "Alon", lang: "en", richardInstructions: "",
+        onSaveInvesting: function(n){ setIv(n); },
+        onMove: function(ntx, ni){ setTx(ntx); setIv(ni); },
+        onBack: function(){ window.__clicked = "back"; }, backLabel: "Accounts",
+        onOpenStock: function(acctId, symbol){ window.__clicked = "stock_" + symbol; }
+      });
+    }
+    el = React.createElement(InvestingHarness, {});
   } else if (view === "auth") {
     // Full welcome journey; Firebase calls only fire on submit, so browsing is safe.
     try { if (!qs.get("seen")) localStorage.removeItem("cb_welcome_seen"); } catch (e) {}
