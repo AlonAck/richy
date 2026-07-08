@@ -263,11 +263,23 @@ fetchSource(1).then(function(src){
     function SavingsHarness() {
       var _s = React.useState([]); var sv = _s[0]; var setSv = _s[1];
       var _b = React.useState([]); var bz = _b[0]; var setBz = _b[1];
+      var _iv = React.useState(qs.get("seedinv") ? [{
+        id: "inv_1", name: "My Portfolio", color: "#27A85F", icon: "chart", createdAt: "2026-01-01",
+        cashEntries: [{ id: 1, kind: "deposit", amount: 5000, date: "2026-01-01", fromMain: false, label: "External" }],
+        trades: [
+          { id: 2, kind: "buy", symbol: "AAPL", name: "Apple Inc.", shares: 10, price: 100, fees: 0, date: "2026-01-02", currency: "USD", cashAmount: 1000, fxRate: 1 },
+          { id: 3, kind: "buy", symbol: "AAPL", name: "Apple Inc.", shares: 10, price: 200, fees: 0, date: "2026-02-02", currency: "USD", cashAmount: 2000, fxRate: 1 }
+        ],
+        dividends: [], watchlist: ["VOO"], meta: { AAPL: { name: "Apple Inc.", currency: "USD", lastPrice: 292.4, prevClose: 289.1, lastPriceAt: Date.now() } },
+        analyses: {}, chats: {}, priceSnapshotDate: ""
+      }] : []); var iv = _iv[0]; var setIv = _iv[1];
       var _tx = React.useState(mockTx); var tx = _tx[0]; var setTx = _tx[1];
+      window.__invState = function(){ return { investing: iv, tx: tx }; };
       return React.createElement(SavingsView, {
-        savings: sv, businesses: bz, tx: tx,
+        savings: sv, businesses: bz, investing: iv, tx: tx,
         onSaveSavings: function(n){ setSv(n); }, onMove: function(ntx, ns){ setTx(ntx); setSv(ns); },
-        onBack: function(){}, onOpenBusiness: function(){}
+        onSaveInvesting: function(n){ setIv(n); }, onInvestingMove: function(ntx, ni){ setTx(ntx); setIv(ni); },
+        onBack: function(){}, onOpenBusiness: function(){}, onOpenInvesting: function(id){ window.__clicked = "inv_" + id; }
       });
     }
     el = React.createElement(SavingsHarness, {});

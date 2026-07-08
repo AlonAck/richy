@@ -836,6 +836,20 @@ function investingHoldingsValue(acct) {
   return round2(total);
 }
 function investingWorth(acct) { return round2(investingCash(acct) + investingHoldingsValue(acct)); }
+// Today's move of the whole account in app currency, from the persisted quote
+// mirrors (lastPrice vs prevClose). Symbols missing either price contribute 0.
+function investingDayChange(acct) {
+  var pos = positionsOf(acct);
+  var sum = 0;
+  for (var sym in pos) {
+    var p = pos[sym];
+    if (p.shares <= 0) continue;
+    var m = acct && acct.meta && acct.meta[sym];
+    if (!m || typeof m.lastPrice !== "number" || typeof m.prevClose !== "number") continue;
+    sum += invConvert(p.shares * (m.lastPrice - m.prevClose), p.currency);
+  }
+  return round2(sum);
+}
 function investingTotal(list) {
   if (!list || !list.length) return 0;
   return round2(list.reduce(function(s, a) { return s + investingWorth(a); }, 0));
@@ -4893,20 +4907,20 @@ function Overview(props) {
         <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-            <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("savings")}</span>
+            <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{props.onOpenInvesting ? "Accounts" : tr("savings")}</span>
           </div>
-          {(savAccts.length > 0 || bizAccts.length > 0) && (
+          {(savAccts.length > 0 || bizAccts.length > 0 || invAccts.length > 0) && (
             <button onClick={props.onOpenSavings} style={{ background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI, display: "flex", alignItems: "center", gap: 2 }}>
               {tr("manage")}<SVGIcon id="chevron" size={15} color={T.orange} />
             </button>
           )}
         </div>
-        {(savAccts.length === 0 && bizAccts.length === 0) ? (
+        {(savAccts.length === 0 && bizAccts.length === 0 && invAccts.length === 0) ? (
           <button onClick={props.onOpenSavings} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, marginBottom: 20, padding: "15px 16px", borderRadius: 18, background: T.card, border: "1px dashed " + T.orange + "66", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)" }}>
             <CatBadge icon="coins" color={T.orange} size={38} soft={true} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>{props.onOpenBusiness ? "Open an account" : tr("addSavingsAccount")}</div>
-              <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>{props.onOpenBusiness ? "A savings pot, or a business account with Richard." : tr("emptySavingsSub")}</div>
+              <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>{props.onOpenInvesting ? "A savings pot, a business, or an investing account." : props.onOpenBusiness ? "A savings pot, or a business account with Richard." : tr("emptySavingsSub")}</div>
             </div>
             <SVGIcon id="plus" size={20} color={T.orange} />
           </button>
@@ -4933,9 +4947,27 @@ function Overview(props) {
                 </button>
               );
             })}
+            {invAccts.map(function(v) {
+              var dc = investingDayChange(v);
+              return (
+                <button key={v.id} onClick={function() { if (props.onOpenInvesting) props.onOpenInvesting(v.id); }} style={{ width: "100%", textAlign: "left", background: "none", border: "none", borderBottom: "0.5px solid " + T.sep, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
+                  <CatBadge icon={v.icon || "chart"} color={v.color || T.green} size={36} soft={true} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 15, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name}</div>
+                    <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1 }}>Investing</div>
+                  </div>
+                  <div style={{ textAlign: "right", flexShrink: 0 }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>{dollars(investingWorth(v))}</div>
+                    {dc !== 0 && (
+                      <div style={{ fontSize: 11.5, fontWeight: 700, color: dc > 0 ? T.green : T.red, marginTop: 1 }}>{(dc > 0 ? "+" : "") + dollars(dc) + " today"}</div>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: T.orangeDim }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: T.ink2, textTransform: "uppercase", letterSpacing: "0.08em" }}>{bizAccts.length > 0 ? "Total set aside" : tr("totalSavings")}</span>
-              <span style={{ fontSize: 16, fontWeight: 800, color: T.orange, letterSpacing: "-0.02em" }}>{dollars(savTotal + bizTotal)}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: T.ink2, textTransform: "uppercase", letterSpacing: "0.08em" }}>{(bizAccts.length > 0 || invAccts.length > 0) ? "Total set aside" : tr("totalSavings")}</span>
+              <span style={{ fontSize: 16, fontWeight: 800, color: T.orange, letterSpacing: "-0.02em" }}>{dollars(savTotal + bizTotal + invTotal)}</span>
             </div>
           </Card>
         )}
@@ -10415,6 +10447,8 @@ function EditOpeningBalanceView(props) {
 // account returns any remaining balance to the main balance so no money vanishes.
 var SAVINGS_ICONS = ["coins", "shield", "home", "car", "plane", "heart", "gift", "umbrella", "star", "leaf"];
 var SAVINGS_COLORS = ["#8970C6", "#C8673A", "#27A85F", "#C8983A", "#4A90D9", "#D9546B", "#5BB8A8", "#9B6DB5"];
+var INVESTING_ICONS = ["chart", "star", "shield", "coins", "building", "leaf", "briefcase", "spark"];
+var INVESTING_COLORS = ["#27A85F", "#8970C6", "#4A90D9", "#C8983A", "#D9546B", "#5BB8A8"];
 
 // Business Account look-and-feel banks.
 var BIZ_ICONS = ["briefcase", "chart", "building", "cart", "laptop", "tool", "coins", "coffee", "leaf", "star"];
@@ -10878,6 +10912,10 @@ function SavingsView(props) {
 
   var _cr = useState(false); var creating = _cr[0]; var setCreating = _cr[1];
   var _pk = useState(false); var picking = _pk[0]; var setPicking = _pk[1];
+  var _cri = useState(false); var creatingInv = _cri[0]; var setCreatingInv = _cri[1];
+  var _cin = useState(""); var ciName = _cin[0]; var setCiName = _cin[1];
+  var _cii = useState("chart"); var ciIcon = _cii[0]; var setCiIcon = _cii[1];
+  var _cicl = useState(INVESTING_COLORS[0]); var ciColor = _cicl[0]; var setCiColor = _cicl[1];
   var _cn = useState(""); var cName = _cn[0]; var setCName = _cn[1];
   var _cic = useState("coins"); var cIcon = _cic[0]; var setCIcon = _cic[1];
   var _ccl = useState(SAVINGS_COLORS[0]); var cColor = _ccl[0]; var setCColor = _ccl[1];
@@ -10895,6 +10933,12 @@ function SavingsView(props) {
 
   var total = savingsTotal(accts);
   var actAcct = act ? accts.filter(function(a) { return a.id === act.id; })[0] : null;
+  // Hub totals: this page is the Accounts hub, so the hero counts every kind of
+  // account it lists - savings pots, businesses, and investing portfolios.
+  var bizAccts = props.onOpenBusiness ? (props.businesses || []) : [];
+  var invAccts = props.onOpenInvesting ? (props.investing || []) : [];
+  var hubTotal = round2(total + businessTotal(bizAccts) + investingTotal(invAccts));
+  var hubCount = accts.length + bizAccts.length + invAccts.length;
 
   function withEntry(id, entry) {
     return accts.map(function(a) {
@@ -10956,6 +11000,13 @@ function SavingsView(props) {
     var name = renameVal.trim(); if (!name) return;
     props.onSaveSavings(accts.map(function(a) { if (a.id !== acct.id) return a; var n = {}; for (var k in a) n[k] = a[k]; n.name = name; return n; }));
   }
+  function doCreateInv() {
+    var name = ciName.trim(); if (!name || !props.onSaveInvesting) return;
+    var acct = { id: "inv_" + Date.now(), name: name, color: ciColor, icon: ciIcon, createdAt: today, cashEntries: [], trades: [], dividends: [], watchlist: [], meta: {}, analyses: {}, chats: {}, priceSnapshotDate: "" };
+    props.onSaveInvesting((props.investing || []).concat([acct]));
+    setCreatingInv(false); setCiName(""); setCiIcon("chart"); setCiColor(INVESTING_COLORS[0]);
+    if (props.onOpenInvesting) props.onOpenInvesting(acct.id);
+  }
   function doClose(acct) {
     var bal = savingsBalance(acct);
     var nextSav = accts.filter(function(a) { return a.id !== acct.id; });
@@ -10993,13 +11044,13 @@ function SavingsView(props) {
     <div>
       <SubViewBack onBack={props.onBack} label={tr("overview")} />
 
-      <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, marginBottom: 18, padding: "0 2px" }}>{props.onOpenBusiness ? "Money set aside outside your spendable balance. Open a savings pot, or a business account with its own budget and a plan from Richard." : tr("savingsIntro")}</div>
+      <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, marginBottom: 18, padding: "0 2px" }}>{props.onOpenBusiness ? "Money set aside outside your spendable balance. Open a savings pot, a business account with a plan from Richard, or an investing account with live markets." : tr("savingsIntro")}</div>
 
-      {accts.length > 0 && (
+      {hubCount > 0 && (
         <Card style={{ padding: "18px 20px", marginBottom: 16, background: T.heroBg, boxShadow: T.heroShadow }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: T.heroMut, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{tr("totalSavings")}</div>
-          <div style={{ fontSize: 36, fontWeight: 800, color: T.heroText, letterSpacing: "-0.03em", lineHeight: 1 }}>{dollars(total)}</div>
-          <div style={{ fontSize: 12.5, color: T.heroFaint, marginTop: 7 }}>{accts.length + " " + (accts.length === 1 ? "account" : "accounts") + " · " + tr("balanceUntouched").toLowerCase()}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: T.heroMut, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{props.onOpenBusiness ? "Across your accounts" : tr("totalSavings")}</div>
+          <div style={{ fontSize: 36, fontWeight: 800, color: T.heroText, letterSpacing: "-0.03em", lineHeight: 1 }}>{dollars(hubTotal)}</div>
+          <div style={{ fontSize: 12.5, color: T.heroFaint, marginTop: 7 }}>{hubCount + " " + (hubCount === 1 ? "account" : "accounts") + " · " + tr("balanceUntouched").toLowerCase()}</div>
         </Card>
       )}
 
@@ -11101,7 +11152,56 @@ function SavingsView(props) {
         );
       })}
 
-      {creating ? (
+      {props.onOpenInvesting && invAccts.map(function(v) {
+        var pos = positionsOf(v);
+        var nHold = 0;
+        for (var ps in pos) { if (pos[ps].shares > 0) nHold++; }
+        return (
+          <Card key={v.id} style={{ marginBottom: 12 }}>
+            <button onClick={function() { props.onOpenInvesting(v.id); }} style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "15px 16px" }}>
+              <CatBadge icon={v.icon || "chart"} color={v.color || T.green} size={42} soft={true} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15.5, fontWeight: 700, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name}</div>
+                <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>{(nHold ? nHold + (nHold === 1 ? " holding" : " holdings") + " · " : "") + "Investing"}</div>
+              </div>
+              <div style={{ fontSize: 19, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em", flexShrink: 0 }}>{dollars(investingWorth(v))}</div>
+            </button>
+          </Card>
+        );
+      })}
+
+      {creatingInv ? (
+        <Card style={{ padding: "18px 18px", marginTop: 4, marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>New investing account</div>
+          <input value={ciName} onChange={function(e) { setCiName(e.target.value); }} placeholder="Name, e.g. My Portfolio" autoFocus={true}
+            style={{ width: "100%", background: "rgba(0,0,0,0.04)", border: "none", borderRadius: 12, padding: "12px 14px", fontSize: 16, fontFamily: UI, color: T.ink, fontWeight: 600, outline: "none", boxSizing: "border-box", marginBottom: 12 }} />
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>{tr("pickIcon")}</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+            {INVESTING_ICONS.map(function(ic) {
+              var on = ic === ciIcon;
+              return (
+                <button key={ic} onClick={function() { setCiIcon(ic); }}
+                  style={{ width: 40, height: 40, borderRadius: 12, border: on ? "2px solid " + ciColor : "1px solid " + T.sep, background: on ? ciColor + "1F" : T.card, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <SVGIcon id={ic} size={19} color={on ? ciColor : T.ink3} />
+                </button>
+              );
+            })}
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 9, marginBottom: 14 }}>
+            {INVESTING_COLORS.map(function(col) {
+              var on = col === ciColor;
+              return (
+                <button key={col} onClick={function() { setCiColor(col); }}
+                  style={{ width: 28, height: 28, borderRadius: "50%", border: on ? "3px solid " + T.ink : "1px solid rgba(0,0,0,0.1)", background: col, cursor: "pointer", padding: 0 }} />
+              );
+            })}
+          </div>
+          <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, marginBottom: 12 }}>You'll add cash and buy your first stock inside the account. Live prices, your positions, and Richard's take on every holding.</div>
+          <BigBtn label={tr("createAccount")} onPress={doCreateInv} disabled={!ciName.trim()} />
+          <button onClick={function() { setCreatingInv(false); }}
+            style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>{tr("dismiss")}</button>
+        </Card>
+      ) : creating ? (
         <Card style={{ padding: "18px 18px", marginTop: 4, marginBottom: 12 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>{tr("newSavingsAccount")}</div>
           <input value={cName} onChange={function(e) { setCName(e.target.value); }} placeholder={tr("savingsAccountName")} autoFocus={true}
@@ -11168,6 +11268,16 @@ function SavingsView(props) {
           </div>
           <SVGIcon id="chevron" size={18} color={T.ink3} />
         </button>
+        {props.onOpenInvesting && (
+          <button onClick={function() { setPicking(false); setCreatingInv(true); }} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 16, background: T.card, border: "1px solid " + T.sep, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)", marginTop: 10 }}>
+            <CatBadge icon="chart" color="#27A85F" size={42} soft={true} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>Investing account</div>
+              <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Live markets, your holdings, and Richard's analysis.</div>
+            </div>
+            <SVGIcon id="chevron" size={18} color={T.ink3} />
+          </button>
+        )}
       </Overlay>
 
       <Overlay open={!!act} onClose={function() { setAct(null); }} title={(act && act.kind === "add" ? tr("addMoney") : tr("withdraw")) + (actAcct ? " · " + actAcct.name : "")}>
