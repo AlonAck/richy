@@ -55,12 +55,17 @@ fetchSource(1).then(function(src){
     .replace(/^\s*import[^\n]*\n/gm, "")
     .replace(/export default function App/, "function App");
   var out = Babel.transform(code, { presets: ["react"] }).code;
+  // Market data is mocked by default so the harness never needs API keys or
+  // network; add ?live=1 to hit the real /api/stock proxy for smoke tests.
+  window.__RICHY_MOCK__ = new URLSearchParams(location.search).get("live") !== "1";
   var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
   var PieChart = RC.PieChart, Pie = RC.Pie, Cell = RC.Cell, ResponsiveContainer = RC.ResponsiveContainer;
   eval(out);
 
   // Expose the pure business-math helpers for console verification in tests.
   try { window.__richy = { bizMonthSpend: bizMonthSpend, bizMonthRevenue: bizMonthRevenue, bizMonthProfit: bizMonthProfit, bizCatMonthSpent: bizCatMonthSpent, bizBurn: bizBurn, bizRunway: bizRunway, bizPace: bizPace, bizHealth: bizHealth, bizRevenueTrend: bizRevenueTrend, businessCash: businessCash }; } catch (e) {}
+  // Market-data adapter + FX helpers (Investing feature) for the same purpose.
+  try { Object.assign(window.__richy, { stockQuote: stockQuote, stockQuotes: stockQuotes, stockSeries: stockSeries, stockSearch: stockSearch, stockProfile: stockProfile, stockNews: stockNews, isTASE: isTASE, invFmt: invFmt, invConvert: invConvert, loadInvRates: loadInvRates }); } catch (e) {}
 
   function iso(d){ return new Date(Date.now() - d*86400000).toISOString().slice(0,10); }
   var mockCats = freshCategories();

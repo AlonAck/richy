@@ -489,6 +489,286 @@ function fetchRate(fromSym, toSym, cb) {
     .catch(function() { cb(fxStaticRate(fromSym, toSym), true); });
 }
 
+// === MARKET DATA (Investing) ===
+// Live quotes/charts/search/news for Investing accounts, all through api/stock.js
+// (Finnhub for real-time US quotes, Yahoo v8 for charts + TASE, Twelve Data as the
+// US chart fallback). The proxy normalizes every provider to ONE shape and already
+// converted TASE agorot to shekels, so nothing here does math on prices - only
+// display conversion (invFmt/invConvert below). All callbacks are cb(err, data).
+function stockApiUrl(params) {
+  var base = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "data:" || location.protocol === "file:") ? "https://richy-mgkl.vercel.app/api/stock" : "/api/stock";
+  var qs = [];
+  for (var k in params) { if (params[k] != null && params[k] !== "") qs.push(k + "=" + encodeURIComponent(params[k])); }
+  return base + "?" + qs.join("&");
+}
+// Labeling fact only (delayed badge, exchange chip) - never a price-math fact.
+function isTASE(symbol) { return /\.TA$/.test(symbol || ""); }
+
+var _stockCache = {};    // session TTL cache: { key: { at, data } }
+var _stockInflight = {}; // concurrent callers of the same key share one fetch
+var STOCK_RANGE_MAP = { "1D": ["1d", "5m"], "1W": ["5d", "15m"], "1M": ["1mo", "1d"], "3M": ["3mo", "1d"], "1Y": ["1y", "1d"], "ALL": ["max", "1wk"] };
+var YRANGE_TO_KEY = { "1d": "1D", "5d": "1W", "1mo": "1M", "3mo": "3M", "1y": "1Y", "max": "ALL" };
+
+function _stockGet(key, ttl, params, cb) {
+  if (typeof window !== "undefined" && window.__RICHY_MOCK__) { _mockStock(params, cb); return; }
+  var hit = _stockCache[key];
+  if (hit && (Date.now() - hit.at) < ttl) { cb(null, hit.data); return; }
+  if (_stockInflight[key]) { _stockInflight[key].push(cb); return; }
+  _stockInflight[key] = [cb];
+  fetch(stockApiUrl(params))
+    .then(function(r) { return r.text(); })
+    .then(function(raw) {
+      var data = null;
+      try { data = JSON.parse(raw); } catch (e) { /* handled below */ }
+      var waiting = _stockInflight[key] || []; delete _stockInflight[key];
+      if (data && data.ok) {
+        _stockCache[key] = { at: Date.now(), data: data.data };
+        waiting.forEach(function(w) { w(null, data.data); });
+      } else {
+        var code = (data && data.error && data.error.code) || "upstream_error";
+        var err = new Error(code + ": " + ((data && data.error && data.error.message) || String(raw).slice(0, 80)));
+        err.code = code;
+        waiting.forEach(function(w) { w(err, null); });
+      }
+    })
+    .catch(function(e) {
+      var waiting = _stockInflight[key] || []; delete _stockInflight[key];
+      var err = new Error("network: " + e.message); err.code = "network";
+      waiting.forEach(function(w) { w(err, null); });
+    });
+}
+
+function _stkLsGet(k) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
+// Bounded series cache: an index key tracks entries; past 120 the oldest 20 go.
+function _stkLsSet(k, v) {
+  try {
+    localStorage.setItem(k, JSON.stringify(v));
+    var idx = _stkLsGet("cb_stk_idx") || [];
+    idx = idx.filter(function(e) { return e.k !== k; });
+    idx.push({ k: k, at: Date.now() });
+    if (idx.length > 120) {
+      idx.sort(function(a, b) { return a.at - b.at; });
+      idx.slice(0, 20).forEach(function(e) { try { localStorage.removeItem(e.k); } catch (e2) {} });
+      idx = idx.slice(20);
+    }
+    localStorage.setItem("cb_stk_idx", JSON.stringify(idx));
+  } catch (e) {}
+}
+
+function stockQuote(symbol, cb) {
+  _stockGet("quote::" + symbol, 20000, { fn: "quote", symbol: symbol }, function(err, data) {
+    if (!err && data) { data.stale = false; cb(null, data); return; }
+    // Proxy unreachable: fall back to the last-good daily series tail so the UI
+    // still shows a price, honestly badged as stale.
+    var lg = _stkLsGet("cb_stk_lastgood::" + symbol + "::1M");
+    if (lg && lg.series && lg.series.points && lg.series.points.length) {
+      var pts = lg.series.points; var last = pts[pts.length - 1];
+      var prev = pts.length > 1 ? pts[pts.length - 2].c : last.c;
+      cb(null, { symbol: symbol, price: last.c, prevClose: prev, open: null, high: null, low: null,
+        change: round2(last.c - prev), changePct: prev ? round2((last.c - prev) / prev * 100) : 0,
+        currency: lg.series.currency || "USD", delayed: true, asOf: last.t, source: "cache", stale: true });
+      return;
+    }
+    cb(err, null);
+  });
+}
+
+// Batch quotes with a 120ms stagger (max ~8 req/s, far under Finnhub's burst cap);
+// symbols already in the session cache resolve without taking a stagger slot.
+// cb(map) where map[symbol] is a quote or null (UI falls back to persisted lastPrice).
+function stockQuotes(symbols, cb) {
+  var out = {}; var pending = symbols.length;
+  if (!pending) { cb(out); return; }
+  var slot = 0;
+  symbols.forEach(function(sym) {
+    function fire() {
+      stockQuote(sym, function(err, q) { out[sym] = q || null; pending--; if (!pending) cb(out); });
+    }
+    var hit = _stockCache["quote::" + sym];
+    if (hit && (Date.now() - hit.at) < 20000) { fire(); }
+    else { setTimeout(fire, slot * 120); slot++; }
+  });
+}
+
+// Chart series with the full fallback chain: memory -> today's localStorage copy
+// (daily ranges) -> Yahoo via proxy -> Twelve Data via proxy (US daily only) ->
+// last-good copy of any age (cached:true + cachedAt for an "as of" badge) -> null.
+function stockSeries(symbol, rangeKey, cb) {
+  var pair = STOCK_RANGE_MAP[rangeKey];
+  if (!pair) { cb(new Error("bad range: " + rangeKey), null); return; }
+  var range = pair[0], interval = pair[1];
+  var daily = range !== "1d" && range !== "5d";
+  var dayKey = "cb_stk_series::" + symbol + "::" + rangeKey + "::" + new Date().toISOString().slice(0, 10);
+  if (daily && !(typeof window !== "undefined" && window.__RICHY_MOCK__)) {
+    var todayHit = _stkLsGet(dayKey);
+    if (todayHit && todayHit.points) { todayHit.cached = false; todayHit.cachedAt = null; cb(null, todayHit); return; }
+  }
+  function done(series) {
+    series.rangeKey = rangeKey; series.cached = false; series.cachedAt = null;
+    if (daily) {
+      _stkLsSet(dayKey, series);
+      _stkLsSet("cb_stk_lastgood::" + symbol + "::" + rangeKey, { series: series, savedAt: Date.now() });
+    }
+    cb(null, series);
+  }
+  function lastGood() {
+    var lg = _stkLsGet("cb_stk_lastgood::" + symbol + "::" + rangeKey);
+    if (lg && lg.series) { lg.series.cached = true; lg.series.cachedAt = lg.savedAt; cb(null, lg.series); return; }
+    cb(null, null); // UI shows the no-chart / manual-price state
+  }
+  _stockGet("series::" + symbol + "::" + rangeKey, daily ? 3600000 : 60000, { fn: "series", symbol: symbol, range: range, interval: interval }, function(err, data) {
+    if (!err && data && data.points && data.points.length) { done(data); return; }
+    if (daily && !isTASE(symbol) && symbol.charAt(0) !== "^") {
+      _stockGet("series2::" + symbol + "::" + rangeKey, 3600000, { fn: "series2", symbol: symbol, range: range }, function(err2, data2) {
+        if (!err2 && data2 && data2.points && data2.points.length) { done(data2); return; }
+        lastGood();
+      });
+      return;
+    }
+    lastGood();
+  });
+}
+
+function stockSearch(q, cb) {
+  q = (q || "").trim();
+  if (!q) { cb(null, []); return; }
+  _stockGet("search::" + q.toLowerCase(), 300000, { fn: "search", q: q }, function(err, data) {
+    cb(err, data ? data.results : null);
+  });
+}
+function stockProfile(symbol, cb) {
+  _stockGet("profile::" + symbol, 86400000, { fn: "profile", symbol: symbol }, cb);
+}
+function stockNews(symbol, cb) {
+  _stockGet("news::" + symbol, 900000, { fn: "news", symbol: symbol }, function(err, data) {
+    cb(err, data ? data.items : null);
+  });
+}
+
+// --- FX for holdings (display + net worth conversion) ---
+var CODE_TO_SYM = (function() {
+  var m = {};
+  CURRENCY_OPTIONS.forEach(function(o) { if (!m[o.code]) m[o.code] = o.sym; });
+  return m;
+})();
+// Same contract as fetchRate but takes ISO codes; shares _fxCache (fetchRate's
+// keys are already CODE_CODE) so the two session caches unify for free.
+function fetchRateByCode(fromCode, toCode, cb) {
+  if (fromCode === toCode) { cb(1, false); return; }
+  var key = fromCode + "_" + toCode;
+  if (_fxCache[key]) { cb(_fxCache[key], false); return; }
+  var staticRate = (FX_FALLBACK[toCode] && FX_FALLBACK[fromCode]) ? FX_FALLBACK[toCode] / FX_FALLBACK[fromCode] : 1;
+  fetch("https://api.frankfurter.dev/v1/latest?base=" + fromCode + "&symbols=" + toCode)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var rate = d && d.rates && d.rates[toCode];
+      if (typeof rate === "number" && rate > 0) { _fxCache[key] = rate; cb(rate, false); }
+      else { cb(staticRate, true); }
+    })
+    .catch(function() { cb(staticRate, true); });
+}
+// Session rates from each holding currency to the APP currency, seeded from the
+// static table so net worth is computable synchronously before any network. The
+// map self-invalidates if the user switches app currency mid-session.
+var _invRates = { _to: "" };
+function _invRatesFor() {
+  var appCode = SYM_TO_CODE[_currency.sym] || "USD";
+  if (_invRates._to !== appCode) _invRates = { _to: appCode };
+  return _invRates;
+}
+function invRateOf(code) {
+  var appCode = SYM_TO_CODE[_currency.sym] || "USD";
+  if (!code || code === appCode) return 1;
+  var rates = _invRatesFor();
+  if (rates[code]) return rates[code];
+  var f = FX_FALLBACK[code], t = FX_FALLBACK[appCode];
+  return (f && t) ? t / f : 1;
+}
+function loadInvRates(codes, cb) {
+  var appCode = SYM_TO_CODE[_currency.sym] || "USD";
+  var rates = _invRatesFor();
+  var todo = [];
+  (codes || []).forEach(function(c) { if (c && c !== appCode && !rates[c] && todo.indexOf(c) === -1) todo.push(c); });
+  if (!todo.length) { if (cb) cb(rates); return; }
+  var left = todo.length;
+  todo.forEach(function(c) {
+    fetchRateByCode(c, appCode, function(rate) {
+      _invRatesFor()[c] = rate;
+      left--; if (!left && cb) cb(_invRatesFor());
+    });
+  });
+}
+// Convert first, round2 second; display formatting never feeds stored numbers.
+function invConvert(amount, code) { return round2((amount || 0) * invRateOf(code)); }
+// mode "native": the holding's own currency ($184.20, 4 decimals under 1.00 for
+// penny prices). mode "app": converted to the app currency via session rates.
+function invFmt(amount, code, mode) {
+  if (mode === "app") return fmtCur(_currency.sym, invConvert(amount, code));
+  var sym = CODE_TO_SYM[code] || (code + " ");
+  var abs = Math.abs(amount || 0);
+  var dec = abs > 0 && abs < 1 ? 4 : 2;
+  return (amount < 0 ? "-" : "") + sym + abs.toLocaleString("en-US", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+}
+
+// --- Mock market data (dev.html harness) ---
+// Deterministic canned data so the Investing pages render with no keys and no
+// network. Callbacks are deferred 300ms so loading states actually appear.
+var MOCK_STOCKS = {
+  "AAPL": { name: "Apple Inc.", exchange: "NASDAQ", currency: "USD", price: 292.4, prevClose: 289.1 },
+  "MSFT": { name: "Microsoft Corporation", exchange: "NASDAQ", currency: "USD", price: 512.3, prevClose: 515.8 },
+  "VOO": { name: "Vanguard S&P 500 ETF", exchange: "NYSE ARCA", currency: "USD", price: 618.7, prevClose: 612.9 },
+  "TEVA.TA": { name: "Teva Pharmaceutical", exchange: "TASE", currency: "ILS", price: 102.4, prevClose: 105.4 }
+};
+function _mockSeries(symbol, rangeKey) {
+  var m = MOCK_STOCKS[symbol] || { price: 100, prevClose: 99, currency: "USD" };
+  var counts = { "1D": 78, "1W": 130, "1M": 22, "3M": 66, "1Y": 253, "ALL": 520 };
+  var n = counts[rangeKey] || 60;
+  var seed = 0;
+  for (var i = 0; i < symbol.length; i++) seed = (seed * 31 + symbol.charCodeAt(i)) % 997;
+  var stepMs = rangeKey === "1D" ? 300000 : rangeKey === "1W" ? 900000 : rangeKey === "ALL" ? 604800000 : 86400000;
+  var now = Date.now(); var pts = [];
+  for (var k = 0; k < n; k++) {
+    var wave = Math.sin((k + seed) / 9) * 0.04 + Math.sin((k + seed) / 23) * 0.06;
+    var drift = ((k - n / 2) / n) * 0.08;
+    pts.push({ t: now - (n - 1 - k) * stepMs, c: round2(m.price * (1 + wave + drift - 0.03)) });
+  }
+  pts[pts.length - 1].c = m.price;
+  return { symbol: symbol, currency: m.currency, rangeKey: rangeKey, prevClose: m.prevClose, points: pts, delayed: isTASE(symbol), source: "mock", cached: false, cachedAt: null };
+}
+function _mockStock(params, cb) {
+  setTimeout(function() {
+    var fn = params.fn; var sym = params.symbol; var m = MOCK_STOCKS[sym];
+    if (fn === "quote") {
+      if (!m) { var e = new Error("not_found: mock"); e.code = "not_found"; cb(e, null); return; }
+      var change = round2(m.price - m.prevClose);
+      cb(null, { symbol: sym, price: m.price, prevClose: m.prevClose, open: m.prevClose,
+        high: Math.max(m.price, m.prevClose) + 1, low: Math.min(m.price, m.prevClose) - 1,
+        change: change, changePct: round2((change / m.prevClose) * 100), currency: m.currency,
+        delayed: isTASE(sym), asOf: Date.now() - 60000, source: "mock" });
+    } else if (fn === "series" || fn === "series2") {
+      cb(null, _mockSeries(sym, YRANGE_TO_KEY[params.range] || "1M"));
+    } else if (fn === "search") {
+      var q = (params.q || "").toUpperCase(); var results = [];
+      for (var k in MOCK_STOCKS) {
+        if (k.indexOf(q) !== -1 || MOCK_STOCKS[k].name.toUpperCase().indexOf(q) !== -1) {
+          results.push({ symbol: k, name: MOCK_STOCKS[k].name, exchange: MOCK_STOCKS[k].exchange, currency: MOCK_STOCKS[k].currency, source: "mock" });
+        }
+      }
+      cb(null, { results: results });
+    } else if (fn === "profile") {
+      cb(null, { symbol: sym, name: m ? m.name : sym, logo: "", exchange: m ? m.exchange : "US", currency: m ? m.currency : "USD", marketCap: 3100000000000, industry: "Technology", country: m && m.currency === "ILS" ? "IL" : "US", ipo: "1980-12-12", weburl: "" });
+    } else if (fn === "news") {
+      cb(null, { items: isTASE(sym) ? [] : [
+        { id: 1, headline: (m ? m.name : sym) + " beats quarterly expectations", summary: "Revenue and margins came in ahead of consensus.", source: "MockWire", url: "#", datetime: Date.now() - 14400000, image: "" },
+        { id: 2, headline: "Analysts weigh in on " + sym + " ahead of earnings", summary: "Price targets vary widely across the street.", source: "MockDesk", url: "#", datetime: Date.now() - 93600000, image: "" },
+        { id: 3, headline: "Sector rotation puts the spotlight on " + sym, summary: "Fund flows show renewed interest this quarter.", source: "MockDaily", url: "#", datetime: Date.now() - 180000000, image: "" }
+      ] });
+    } else {
+      cb(new Error("bad_request: mock fn " + fn), null);
+    }
+  }, 300);
+}
+
 function hashPass(pw) {
   var h = 5381;
   for (var i = 0; i < pw.length; i++) {
