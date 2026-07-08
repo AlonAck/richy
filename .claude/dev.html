@@ -42,7 +42,15 @@ var RC = (function(){
   return { ResponsiveContainer: ResponsiveContainer, PieChart: PieChart, Pie: Pie, Cell: Cell };
 })();
 
-fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).then(function(src){
+// python -m http.server occasionally resets the connection on this ~1MB file,
+// so retry a few times before declaring the harness dead.
+function fetchSource(attempt){
+  return fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).catch(function(e){
+    if (attempt >= 5) throw e;
+    return new Promise(function(res){ setTimeout(function(){ res(fetchSource(attempt + 1)); }, 700); });
+  });
+}
+fetchSource(1).then(function(src){
   var code = src
     .replace(/^\s*import[^\n]*\n/gm, "")
     .replace(/export default function App/, "function App");

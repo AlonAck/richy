@@ -1825,6 +1825,21 @@ function CatPicker(props) {
 // wall of text. RichardText below renders that structure. No emojis (house style).
 var RICHARD_FORMAT = " Format your answer so it is easy to scan instead of a wall of text: open with one short, warm sentence that gives the main point, then when you have more than a couple of points put each on its own line starting with \"- \" (one idea per line, keep it short). You may bold a key term or a short label with **double asterisks**. For a quick reply a sentence or two is fine. Do not use emojis.";
 
+// User-written context kept getting lost as one-line asides in the middle of
+// long prompts, so Richard would e.g. budget flights for a teenager whose dad
+// pays for them. Every prompt now routes free text through these two builders,
+// which put it up front and explicitly rank it above default assumptions.
+function richardUserCtx(text) {
+  if (!text || !String(text).trim()) return "";
+  return "CONTEXT FROM THE USER - HIGHEST PRIORITY (follow any instructions in it, and let this background OVERRIDE default assumptions: if it says a cost is covered by someone else, does not apply to them, or must stay fixed, every number and tip you produce must reflect that):\n" + String(text).trim() + "\n\n";
+}
+// Inline block for questionnaire notes (trip wizard, business wizard). Same
+// idea, but embeddable mid-prompt next to the other facts it modifies.
+function richardNotesBlock(label, text) {
+  if (!text || !String(text).trim()) return "";
+  return "IMPORTANT " + label + " - TREAT AS HARD FACTS THAT OVERRIDE DEFAULT ASSUMPTIONS, NOT AS BACKGROUND: \"" + String(text).trim() + "\". Let these notes reshape the actual numbers: if they say a cost is covered by someone else or does not apply, allocate 0 to it and redistribute that money to what the user will actually spend on; if they describe who the user is (age, student, someone else paying) or constraints they have, every allocation, tip, and piece of advice must visibly account for it. ";
+}
+
 // Render Richard's lightly-structured text: **bold** inline, "- " bullets, and
 // short paragraphs. Deliberately tiny - no markdown engine, just the few marks
 // we ask Richard to use.
@@ -3059,7 +3074,7 @@ function OnboardingScreen(props) {
     var ageStr = age !== null ? String(age) : "not provided";
     var langName = LANGUAGE_NAMES[prefLang || props.lang] || "English";
     var langInstruction = langName !== "English" ? " Respond entirely in " + langName + "." : "";
-    var system = "You are Richard, a warm and knowledgeable personal finance advisor inside the Richy app. A new user has just answered their onboarding questions. Their primary financial challenge is: " + (coreProblem || "general budgeting") + ". Generate a concise, personalized financial plan that directly addresses THEIR SPECIFIC PROBLEM, not generic advice. Base it on proven frameworks but tailor it to their situation. Keep the plan under 230 words." + RICHARD_FORMAT + " IMPORTANT: If their problem involves features Richy doesn't have yet (couples mode, debt payoff tracking, business accounting), be honest about that and suggest practical workarounds." + langInstruction;
+    var system = richardUserCtx(props.richardNotes) + "You are Richard, a warm and knowledgeable personal finance advisor inside the Richy app. A new user has just answered their onboarding questions. Their primary financial challenge is: " + (coreProblem || "general budgeting") + ". Generate a concise, personalized financial plan that directly addresses THEIR SPECIFIC PROBLEM, not generic advice. Base it on proven frameworks but tailor it to their situation. Keep the plan under 230 words." + RICHARD_FORMAT + " IMPORTANT: If their problem involves features Richy doesn't have yet (couples mode, debt payoff tracking, business accounting), be honest about that and suggest practical workarounds." + langInstruction;
     var leakLabels = leaks.map(function(id) {
       var hit = LEAK_OPTIONS.filter(function(o) { return o.id === id; })[0];
       return hit ? hit.label : id;
@@ -3524,7 +3539,7 @@ function FoundMoney(props) {
   var recoverable = findings.reduce(function(s, f) { return s + (f.annual || 0); }, 0);
 
   function richardSystem(extra) {
-    var custom = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
+    var custom = richardUserCtx(props.richardInstructions);
     var langLine = (props.lang && props.lang !== "en") ? (" Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + ".") : "";
     return custom + extra + langLine;
   }
@@ -6573,10 +6588,11 @@ function Trips(props) {
     setWizardNoteLoading(true);
     var total = parseFloat(form.total) || 0;
     var allocSummary = alloc.map(function(a) { return a.label + ": " + dollars(a.planned || 0); }).join("; ");
-    var sys = "You are Richard, a warm and knowledgeable personal finance and travel advisor inside the Richy app. "
+    var sys = richardUserCtx(props.richardInstructions)
+      + "You are Richard, a warm and knowledgeable personal finance and travel advisor inside the Richy app. "
       + "The user is setting up a trip budget: " + (form.name || "a trip") + " to " + (form.destination || "an unspecified destination") + ". "
       + "Trip details: " + (form.days || 0) + " days, " + (form.style || "comfort") + " style, total budget " + dollars(total) + ". "
-      + (form.notes && form.notes.trim() ? ("Notes from the traveler: " + form.notes.trim() + ". ") : "")
+      + richardNotesBlock("NOTES FROM THE TRAVELER", form.notes)
       + "Current budget split: " + (allocSummary || "not yet set") + ". "
       + "The user has comments or suggestions about how this budget is split. Listen to their feedback and adjust the allocation to fit their priorities. "
       + "You can DIRECTLY change the budget, not just describe it. When the user wants a change, give one short plain-text sentence explaining what you did, then on a new line append a directive in EXACTLY this form: @@ALLOC[{\"category\":\"Food\",\"amount\":600},{\"category\":\"Buffer\",\"amount\":150}] "
@@ -6626,10 +6642,11 @@ function Trips(props) {
     } else if (dayInfo && dayInfo.status === "past") {
       liveContext = "This trip has already ended. ";
     }
-    var sys = "You are Richard, a warm and knowledgeable personal finance and travel advisor inside the Richy app. "
+    var sys = richardUserCtx(props.richardInstructions)
+      + "You are Richard, a warm and knowledgeable personal finance and travel advisor inside the Richy app. "
       + "The user is planning a trip: " + (trip.name || "a trip") + " to " + (trip.destination || "an unspecified destination") + ". "
       + "Trip details: " + (trip.days || 0) + " days, " + (trip.style || "comfort") + " style, total budget " + dollars(trip.total || 0) + ". "
-      + (trip.notes && trip.notes.trim() ? ("Notes from the traveler: " + trip.notes.trim() + ". ") : "")
+      + richardNotesBlock("NOTES FROM THE TRAVELER", trip.notes)
       + "Budget allocation: " + allocSummary + ". " + liveContext
       + "The user has notes, suggestions, or comments about this trip plan. Listen carefully and adjust the budget to their feedback. "
       + "You can DIRECTLY change the budget, not just describe it. When the user wants a change, give one short plain-text sentence explaining what you did, then on a new line append a directive in EXACTLY this form: @@ALLOC[{\"category\":\"Housing\",\"amount\":400},{\"category\":\"Food\",\"amount\":300}] "
@@ -6717,11 +6734,11 @@ function Trips(props) {
     setPlanning(true);
     setBudgetAssessment(null);
     var total = parseFloat(form.total) || 0;
-    var sys = "You are Richard, a warm, expert travel-budget planner inside the Richy app. Re-split a trip budget across exactly these buckets: Flights, Housing, Food, Activities, Shopping, Transport, Other, Buffer. Honor the user's stated priorities from the conversation. Also estimate the realistic total cost for that destination, travel style, and number of days, then compare it to the user's budget. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"allocations\":[{\"category\":\"Flights\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"\"],\"budgetAssessment\":{\"estimated\":1200,\"verdict\":\"short\",\"note\":\"One sentence comparing budget to realistic cost.\"}}. verdict must be one of: short, excess, good. The amounts are whole numbers that sum to the total budget. Use Other for any spending that does not fit the main buckets.";
+    var sys = richardUserCtx(props.richardInstructions) + "You are Richard, a warm, expert travel-budget planner inside the Richy app. Re-split a trip budget across exactly these buckets: Flights, Housing, Food, Activities, Shopping, Transport, Other, Buffer. Honor the user's stated priorities from the conversation. The traveler's notes are hard constraints, not background: if they say a cost is covered by someone else (like a parent paying for the flights) or does not apply, set that bucket to 0 and redistribute the money to buckets the traveler will actually spend from, and make the tips and assessment fit their actual situation. Also estimate the realistic total cost for that destination, travel style, and number of days, then compare it to the user's budget. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"allocations\":[{\"category\":\"Flights\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"\"],\"budgetAssessment\":{\"estimated\":1200,\"verdict\":\"short\",\"note\":\"One sentence comparing budget to realistic cost.\"}}. verdict must be one of: short, excess, good. The amounts are whole numbers that sum to the total budget. Use Other for any spending that does not fit the main buckets.";
     var currentSplit = alloc.map(function(a) { return a.label + " " + dollars(a.planned || 0); }).join(", ");
     var convo = wizardNoteChat.map(function(m) { return (m.role === "user" ? "User" : m.role === "system" ? "System" : "Richard") + ": " + m.text; }).join("\n");
     var usr = "Re-split a " + (form.style || "comfort") + " trip to " + (form.destination || "somewhere") + " for " + (form.days || "a few") + " days, total budget " + dollars(total) + ". "
-      + (form.notes && form.notes.trim() ? ("Notes from the traveler: " + form.notes.trim() + ". ") : "")
+      + richardNotesBlock("NOTES FROM THE TRAVELER", form.notes)
       + (currentSplit ? "Current split: " + currentSplit + ". " : "")
       + (convo ? "Take this conversation with the user about their priorities into account:\n" + convo + "\n" : "")
       + "Produce an updated split across the buckets that reflects those priorities, 3 short practical tips, and a budget assessment.";
@@ -6741,8 +6758,8 @@ function Trips(props) {
     setPlanning(true);
     setBudgetAssessment(null);
     var total = parseFloat(form.total) || 0;
-    var sys = "You are Richard, a warm, expert travel-budget planner inside the Richy app. Split a trip budget across exactly these buckets: Flights, Housing, Food, Activities, Shopping, Transport, Other, Buffer. Also estimate the realistic total cost for that destination, travel style, and number of days, then compare it to the user's budget. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"allocations\":[{\"category\":\"Flights\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"\"],\"budgetAssessment\":{\"estimated\":1200,\"verdict\":\"short\",\"note\":\"One sentence comparing budget to realistic cost.\"}}. verdict must be one of: short (budget is not enough), excess (budget is more than needed), good (budget is reasonable). The amounts are whole numbers that sum to the total budget. Use Other for any spending that does not fit the main buckets.";
-    var usr = "Plan a " + (form.style || "comfort") + " trip to " + (form.destination || "somewhere") + " for " + (form.days || "a few") + " days, total budget " + dollars(total) + ". " + (form.notes && form.notes.trim() ? ("Notes from the traveler: " + form.notes.trim() + ". ") : "") + "Split the budget across the buckets, give 3 short practical tips, and assess whether the budget is realistic for this destination.";
+    var sys = richardUserCtx(props.richardInstructions) + "You are Richard, a warm, expert travel-budget planner inside the Richy app. Split a trip budget across exactly these buckets: Flights, Housing, Food, Activities, Shopping, Transport, Other, Buffer. The traveler's notes are hard constraints, not background: if they say a cost is covered by someone else (like a parent paying for the flights) or does not apply, set that bucket to 0 and redistribute the money to buckets the traveler will actually spend from, and make the tips fit who the traveler actually is. Also estimate the realistic total cost for that destination, travel style, and number of days, then compare it to the user's budget - excluding any costs the notes say are covered by someone else. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"allocations\":[{\"category\":\"Flights\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"\"],\"budgetAssessment\":{\"estimated\":1200,\"verdict\":\"short\",\"note\":\"One sentence comparing budget to realistic cost.\"}}. verdict must be one of: short (budget is not enough), excess (budget is more than needed), good (budget is reasonable). The amounts are whole numbers that sum to the total budget. Use Other for any spending that does not fit the main buckets.";
+    var usr = "Plan a " + (form.style || "comfort") + " trip to " + (form.destination || "somewhere") + " for " + (form.days || "a few") + " days, total budget " + dollars(total) + ". " + richardNotesBlock("NOTES FROM THE TRAVELER", form.notes) + "Split the budget across the buckets, give 3 short practical tips, and assess whether the budget is realistic for this destination.";
     callClaude([{ role: "user", content: usr }], sys, 800, function(e, text) {
       if (e || !text) { applyLocalSplit(); return; }
       try {
@@ -7703,7 +7720,7 @@ function BigDecisions(props) {
     var text = (question || q || "").trim();
     if (!text || loading) return;
     setQ(text); setErr(""); setLoading(true); setVerdict(null); setActive(null);
-    var custom = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
+    var custom = richardUserCtx(props.richardInstructions);
     var langLine = (props.lang && props.lang !== "en") ? (" Every string value must be written entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + ".") : "";
     var system = custom + "You are Richard, a calm, sharp, honest personal finance advisor inside the Richy app. The user faces a real, specific money decision. Using their ACTUAL financial data, give a clear PERSONAL verdict run against their real cash flow, savings, goals and net worth - never generic advice. If it is a no or only a stretch, say so plainly and kindly. Return ONLY valid JSON, no markdown, no emojis, exactly this shape: {\"verdict\":\"yes|no|stretch|wait\",\"verdictLabel\":\"short label e.g. Yes, you can afford it\",\"headline\":\"one warm sentence with the core reason\",\"keyNumber\":\"the single most important figure e.g. $340/mo or 4 months\",\"keyNumberLabel\":\"what that figure means in 2 to 4 words\",\"reasoning\":[\"2 to 4 short bullets, each tied to a real number\"],\"tradeoff\":\"one sentence on what they give up or risk\",\"toMakeYes\":\"the single most impactful change that would make it work; empty string if already a clear yes\",\"confidence\":\"high|medium|low\"}." + langLine;
     var content = "Decision: " + text + "\n\nMy financial data:\n" + (props.ctx || "(no data provided)") + (props.coreProblem ? ("\n\nMy main financial challenge: " + props.coreProblem) : "");
@@ -8423,7 +8440,7 @@ function Advisor(props) {
 
   function getAdvice() {
     setLoading(true); setAdvice(null); setErrMsg("");
-    var customInstructionsPrefix = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
+    var customInstructionsPrefix = richardUserCtx(props.richardInstructions);
     var system = customInstructionsPrefix + "You are an elite personal finance advisor trained on the wisdom of the world's greatest wealth builders. You have deep knowledge from:\n\nBOOKS & AUTHORS:\n- The Psychology of Money (Morgan Housel): wealth is about behavior not intelligence; saving is about the gap between ego and income; reasonable beats rational\n- Rich Dad Poor Dad (Robert Kiyosaki): assets put money in pocket, liabilities take it out; buy assets first, luxuries last; make money work for you\n- The Millionaire Next Door (Stanley & Danko): most millionaires live below their means, drive used cars, avoid lifestyle inflation\n- I Will Teach You To Be Rich (Ramit Sethi): automate savings, negotiate bills, spend extravagantly on things you love but cut mercilessly elsewhere\n- The Total Money Makeover (Dave Ramsey): debt snowball, emergency fund first, live on less than you earn\n- Think and Grow Rich (Napoleon Hill): definiteness of purpose, the mastermind principle, persistence\n- The Richest Man in Babylon (George Clason): pay yourself first 10%, let savings work, live on 70%, give 20% to debts\n- Money Master the Game (Tony Robbins): asset allocation drives 90% of returns, fees kill wealth, asymmetric risk/reward\n\nINTERVIEWS & QUOTES FROM THE WEALTHY:\n- Warren Buffett: do not save what is left after spending, spend what is left after saving; rule 1 never lose money, rule 2 never forget rule 1; someone is sitting in the shade today because someone planted a tree long ago\n- Charlie Munger: invert always invert; avoid what destroys wealth as much as seeking what builds it; the best thing a human being can do is to help another human being know more\n- Ray Dalio: diversify well and you can reduce risk without reducing returns; pain plus reflection equals progress; he who lives by the crystal ball will eat shattered glass\n- Naval Ravikant: earn with your mind not your time; specific knowledge cannot be taught; build or buy equity in a business\n- Warren Buffett on compounding: the snowball: compound interest is the eighth wonder of the world\n- Mark Cuban: pay off credit cards every month, never carry a balance; savings rates matter more than investment returns early on\n- Grant Cardone: the middle class saves to retire, the wealthy invest to create income now; 40% of income saved minimum\n- Jeff Bezos: focus on what will not change, not what will; think in long time horizons\n- Elon Musk: take as much risk as you can afford, you only live once\n\nPROVEN STRATEGIES:\n- Pay yourself first: automate 10-20% savings before touching income\n- The latte factor: small daily expenses compound into large annual costs\n- 50/30/20 rule: 50% needs, 30% wants, 20% savings and debt\n- Emergency fund: 3-6 months of expenses in liquid savings before investing\n- No lifestyle inflation: when income rises, raise savings rate not spending\n- Avoid car payments: buy used cars with cash or low financing\n- Cook more, eat out less: food is typically the fastest growing expense\n- Cancel subscriptions quarterly: audit recurring charges every 3 months\n- Negotiate everything: bills, salary, rent, insurance premiums\n- Tax efficiency: maximize retirement accounts before taxable investing\n- Index funds beat active management 90% of the time over 10 years\n- The 4% rule: you can withdraw 4% annually from a portfolio indefinitely\n- House hacking: rent part of your home to cover the mortgage\n- The one-day rule: wait 24 hours before any purchase over $50\n\nReturn ONLY valid JSON, no markdown. Never use emojis or non-ASCII symbols anywhere in any field. Use this structure: {\"score\":72,\"scoreLabel\":\"Good\",\"headline\":\"Summary here.\",\"insights\":[{\"type\":\"strength\",\"title\":\"Title\",\"body\":\"Body.\"},{\"type\":\"warning\",\"title\":\"Title\",\"body\":\"Body.\"},{\"type\":\"tip\",\"title\":\"Title\",\"body\":\"Body.\"}],\"expertQuote\":{\"quote\":\"Quote.\",\"author\":\"Author\"},\"webInsight\":{\"title\":\"Title\",\"body\":\"Body.\"}}";
     var analysisPrompt = coreProblem
       ? "Analyze these finances. The user's primary challenge is: " + coreProblem + ". Tailor your insights specifically to this challenge — don't give generic advice. Context: " + ctx
@@ -8580,7 +8597,7 @@ function Advisor(props) {
     var nc = chat.concat([{ role: "user", text: msg }]);
     setChat(nc);
     setChatLoading(true);
-    var customInstructionsPrefix = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
+    var customInstructionsPrefix = richardUserCtx(props.richardInstructions);
     callClaude(
       nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }),
       customInstructionsPrefix + "You are Richard, a smart assistant inside the Richy personal finance app. You are calm, warm, direct, and knowledgeable - a trusted friend who is an expert in money and can help with anything the user asks. You have deep knowledge from The Psychology of Money, Rich Dad Poor Dad, The Millionaire Next Door, I Will Teach You To Be Rich, The Total Money Makeover, Think and Grow Rich, The Richest Man in Babylon, and wisdom from Warren Buffett, Charlie Munger, Ray Dalio, Naval Ravikant, Mark Cuban, Grant Cardone and other wealth builders. You can answer questions about personal finance, investments, budgeting, debt, taxes, and wealth-building. You can also answer questions about how to use the Richy app (it has tabs: Overview, Activity for transactions, Budgets for spending limits, Goals for savings targets, and Advisor which is where we are now; categories are managed via the tag icon on Overview or the Manage link in pickers). You can answer general knowledge and technical questions too - if someone asks about math, technology, or anything else, answer helpfully. Always refer back to the user's real financial data when relevant. Current user financial data: " + ctx + "." + (coreProblem ? " The user's primary financial challenge is: " + coreProblem + ". Connect your advice to this when relevant." : "")
@@ -9993,7 +10010,7 @@ function roadmapProgress(roadmap) {
 function buildRoadmap(biz, richardInstructions, lang, cb) {
   var pf = biz.profile || {};
   var stage = pf.stage || "idea";
-  var custom = (richardInstructions && richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + richardInstructions + "\n\n") : "";
+  var custom = richardUserCtx(richardInstructions);
   var langSuffix = (lang && lang !== "en") ? (" Every string value must be written entirely in " + (LANGUAGE_NAMES[lang] || "English") + ".") : "";
   var sys = custom + "You are Richard, a sharp, warm, honest business CFO inside the Richy app. Build a step-by-step roadmap that takes this owner from where they are today to a working, growing business. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"milestones\":[{\"title\":\"short milestone name\",\"tasks\":[{\"label\":\"one concrete action\"}]}]}. Exactly 3 or 4 milestones, 2 or 3 tasks each, ordered as a path from today to the 12-month goal. Every task must be a single concrete action the owner can physically do, MAXIMUM 16 words - include a number or deliverable where possible (like: talk to 5 potential customers, list 3 competitors and their prices). Keep the whole reply compact enough to never get cut off. Tune it to the stage: idea = validate demand before spending money (talk to real customers, define the offer, land the first paying customer); launching = make it real (legal and fees, set prices, pick one launch channel, first 10 customers, track every sale); running = sharpen the machine (review margins, double down on the best channel, keep customers coming back, systemize the busywork)." + langSuffix;
   var pl = bizMonthProfit(biz, curMonth());
@@ -10001,9 +10018,9 @@ function buildRoadmap(biz, richardInstructions, lang, cb) {
     + "Monthly budget " + dollars(pf.monthly || 0) + ", revenue goal " + dollars(pf.revenueGoal || 0) + ", cash on hand " + dollars(businessCash(biz)) + ". "
     + "This month so far: " + dollars(pl.revenue) + " revenue, " + dollars(pl.spend) + " spent. "
     + "12-month goal: " + (pf.goal || "unspecified") + ". "
-    + (pf.notes && pf.notes.trim() ? ("Owner's notes: " + pf.notes.trim() + ". ") : "")
+    + richardNotesBlock("NOTES FROM THE OWNER", pf.notes)
     + (biz.plan && biz.plan.summary ? ("Current plan summary: " + biz.plan.summary + " ") : "")
-    + "Build the roadmap.";
+    + "Build the roadmap. Every milestone and task must fit who the owner says they are in their notes.";
   callClaude([{ role: "user", content: usr }], sys, 1100, function(e, text) {
     if (e || !text) { cb(localRoadmap(biz)); return; }
     try {
@@ -10108,15 +10125,15 @@ function bizWeeklyDigest(biz) {
   if (cur) { for (var j = 0; j < (cur.tasks || []).length; j++) { if (!cur.tasks[j].done) { nextTask = cur.tasks[j].label; break; } } }
   var catLine = (biz.categories || []).filter(function(c) { return (c.planned || 0) > 0 || bizCatMonthSpent(biz, c.key, ym) > 0; }).map(function(c) { return c.label + " " + dollars(bizCatMonthSpent(biz, c.key, ym)) + " of " + dollars(c.planned || 0); }).join("; ");
   var dayFrac = monthDayFrac();
-  return "Business: " + (biz.name || "my business") + " - " + (biz.what || "unspecified") + ". Stage: " + (pf.stage || "idea") + ". "
+  return richardNotesBlock("NOTES FROM THE OWNER", pf.notes)
+    + "Business: " + (biz.name || "my business") + " - " + (biz.what || "unspecified") + ". Stage: " + (pf.stage || "idea") + ". "
     + "This month: revenue " + dollars(pl.revenue) + " (monthly goal " + dollars(pf.revenueGoal || 0) + ", month is " + Math.round(dayFrac * 100) + "% done), spent " + dollars(pl.spend) + " of " + dollars(pf.monthly || 0) + " budget, profit " + dollars(pl.profit) + ". "
     + "Cash " + dollars(businessCash(biz)) + ", runway " + (runway === null ? "self-sustaining" : runway + " months") + ", health " + health.score + " of 100 (" + health.label + "). "
     + (pace ? ("Pace: " + pace.text + " ") : "")
     + "Budget buckets (spent of planned): " + (catLine || "none") + ". "
     + (biz.roadmap ? ("Roadmap: " + prog.done + " of " + prog.total + " tasks done" + (cur ? (", current milestone: " + cur.title + (nextTask ? (", next task: " + nextTask) : "")) : ", all milestones complete") + ". ") : "No roadmap yet. ")
     + ((biz.reviews && biz.reviews[0]) ? ("Last week you told them: " + biz.reviews[0].headline + " ") : "This is their first weekly review. ")
-    + "12-month goal: " + (pf.goal || "unspecified") + "."
-    + (pf.notes && pf.notes.trim() ? (" Owner's notes: " + pf.notes.trim() + ".") : "");
+    + "12-month goal: " + (pf.goal || "unspecified") + ".";
 }
 // Offline/parse-failure fallback so a review still lands every week.
 function localWeeklyReview(biz) {
@@ -10151,7 +10168,7 @@ function localWeeklyReview(biz) {
 // Run the weekly review. Always calls back with a stored-shape review whose
 // numbers are computed locally - the model's text is advice, never data.
 function runWeeklyReview(biz, richardInstructions, lang, cb) {
-  var custom = (richardInstructions && richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + richardInstructions + "\n\n") : "";
+  var custom = richardUserCtx(richardInstructions);
   var langSuffix = (lang && lang !== "en") ? (" Every string value must be written entirely in " + (LANGUAGE_NAMES[lang] || "English") + ".") : "";
   var sys = custom + "You are Richard, a sharp, warm, honest business CFO inside the Richy app, delivering the owner's weekly business review. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"status\":\"on-track\" or \"watch\" or \"off-track\",\"headline\":\"one honest sentence, max 18 words, on exactly where the business stands this week\",\"tip\":{\"title\":\"2 to 5 words\",\"body\":\"1 to 2 sentences of concrete advice tied to their real numbers\"},\"warning\":{\"title\":\"2 to 5 words\",\"body\":\"the one risk to watch, tied to a real number\"},\"idea\":{\"title\":\"2 to 5 words\",\"body\":\"one growth or savings idea, with a dollar figure where possible\"},\"taskSuggestion\":{\"label\":\"one concrete task under 14 words, or empty string\",\"milestone\":\"the milestone title to file it under, or empty string\"},\"graduate\":\"\"}. Never repeat last week's headline. Base every claim only on the numbers given - never invent figures. If the business has clearly outgrown its stage (idea stage but real money is moving; launching stage but revenue keeps arriving) set graduate to the next stage, launching or running - otherwise leave it an empty string." + langSuffix;
   callClaude([{ role: "user", content: bizWeeklyDigest(biz) }], sys, 600, function(e, text) {
@@ -10731,7 +10748,7 @@ function BusinessView(props) {
   function fetchIdeas(biz) {
     if (ideasLoading) return;
     setIdeasLoading(true); setIdeas(null);
-    var custom = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
+    var custom = richardUserCtx(props.richardInstructions);
     var sys = custom + "You are Richard, a sharp, warm, honest business CFO inside the Richy app. Give the owner growth ideas grounded ONLY in the numbers provided - never invent figures. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"ideas\":[{\"title\":\"2 to 6 words\",\"body\":\"2 to 3 concrete sentences tied to their numbers\",\"impact\":\"one short line like: about $120 more per month, or empty string\"}]} with EXACTLY 3 ideas." + langLine();
     callClaude([{ role: "user", content: bizWeeklyDigest(biz) + " Give me 3 growth ideas." }], sys, 500, function(e, text) {
       setIdeasLoading(false);
@@ -10817,14 +10834,14 @@ function BusinessView(props) {
   function buildPlan() {
     setPlanning(true); setErr("");
     var monthly = parseFloat(form.monthly) || 0;
-    var custom = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
-    var sys = custom + "You are Richard, a sharp, warm, honest business CFO and startup advisor inside the Richy app. Build a practical, realistic, encouraging business plan and a monthly operating budget for the user's business, run against the real numbers they give you. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"summary\":\"2 to 3 sentence plain-English summary of the business and the path to making it work\",\"sections\":[{\"title\":\"short section title\",\"body\":\"2 to 4 sentences of concrete, specific advice\"}],\"categories\":[{\"category\":\"Marketing\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"short actionable tip\"],\"verdict\":{\"assessment\":\"one honest sentence on whether this budget and runway are realistic\",\"keyNumber\":\"the single most important figure e.g. 7 months runway or break-even at $4k/mo\",\"keyNumberLabel\":\"what that figure means in 2 to 4 words\"}}. Provide 4 to 6 sections covering positioning, the first 90 days, pricing and revenue, costs to watch, and the biggest risk. The categories must be chosen only from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer, and the amounts are whole numbers that sum to about the monthly budget. Be honest if the budget or runway looks too thin." + langLine();
+    var custom = richardUserCtx(props.richardInstructions);
+    var sys = custom + "You are Richard, a sharp, warm, honest business CFO and startup advisor inside the Richy app. Build a practical, realistic, encouraging business plan and a monthly operating budget for the user's business, run against the real numbers they give you. The owner's notes, when present, are hard requirements: let them override the stage and scale defaults in the budget split, the plan sections, the tips, and the verdict - a plan that ignores what the owner wrote in their notes is a failed plan. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"summary\":\"2 to 3 sentence plain-English summary of the business and the path to making it work\",\"sections\":[{\"title\":\"short section title\",\"body\":\"2 to 4 sentences of concrete, specific advice\"}],\"categories\":[{\"category\":\"Marketing\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"short actionable tip\"],\"verdict\":{\"assessment\":\"one honest sentence on whether this budget and runway are realistic\",\"keyNumber\":\"the single most important figure e.g. 7 months runway or break-even at $4k/mo\",\"keyNumberLabel\":\"what that figure means in 2 to 4 words\"}}. Provide 4 to 6 sections covering positioning, the first 90 days, pricing and revenue, costs to watch, and the biggest risk. The categories must be chosen only from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer, and the amounts are whole numbers that sum to about the monthly budget. Be honest if the budget or runway looks too thin." + langLine();
     var usr = "Business name: " + (form.name || "my business") + ". What it does: " + (form.what || "unspecified") + ". "
       + "Legal structure: " + labelOf(STRUCTURES, form.structure) + ". Stage: " + labelOf(STAGES, form.stage) + ". Scale: " + labelOf(SIZES, form.size) + ". "
       + "Planned monthly spend: " + dollars(monthly) + ". Monthly revenue goal: " + dollars(parseFloat(form.revenueGoal) || 0) + ". "
       + "Runway / savings set aside: " + ((parseFloat(form.runway) || 0) > 0 ? (form.runway + " months") : "not specified") + ". "
       + "What success looks like in 12 months: " + (form.goal || "not specified") + ". "
-      + (form.notes && form.notes.trim() ? ("Notes for Richard from the owner: " + form.notes.trim() + ". ") : "")
+      + richardNotesBlock("NOTES FROM THE OWNER", form.notes)
       + "Build the plan, split the monthly budget across the buckets, give 4 short practical tips, and give an honest verdict on whether this is realistic.";
     callClaude([{ role: "user", content: usr }], sys, 1200, function(e, text) {
       if (e || !text) { applyLocalPlan(); return; }
@@ -10899,10 +10916,10 @@ function BusinessView(props) {
     setWizChat(nc); setWizLoading(true);
     var monthly = parseFloat(form.monthly) || 0;
     var split = planResult.categories.map(function(c) { return c.label + ": " + dollars(c.planned || 0); }).join("; ");
-    var custom = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
+    var custom = richardUserCtx(props.richardInstructions);
     var sys = custom + "You are Richard, a warm, sharp business CFO inside the Richy app, helping set up a new business budget. "
       + "Business: " + (form.name || "the business") + " - " + (form.what || "unspecified") + ". Structure: " + labelOf(STRUCTURES, form.structure) + ". Stage: " + labelOf(STAGES, form.stage) + ". Scale: " + labelOf(SIZES, form.size) + ". Monthly budget " + dollars(monthly) + ", revenue goal " + dollars(parseFloat(form.revenueGoal) || 0) + ". "
-      + (form.notes && form.notes.trim() ? ("Owner's notes: " + form.notes.trim() + ". ") : "")
+      + richardNotesBlock("NOTES FROM THE OWNER", form.notes)
       + "Current proposed budget split: " + (split || "not set") + ". "
       + "Answer the owner's question with concrete, practical advice. You can DIRECTLY change the split, not just describe it. When the owner wants a change, give one short plain-text sentence explaining what you did, then on a new line append a directive in EXACTLY this form: @@ALLOC[{\"category\":\"Marketing\",\"amount\":600},{\"category\":\"Software\",\"amount\":150}] "
       + "Only list the buckets you are changing, using whole numbers, and keep the overall total close to " + dollars(monthly) + " by also adjusting Buffer or Other when needed. Categories must be from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer. "
@@ -11091,12 +11108,12 @@ function BusinessView(props) {
       var tsC = mssC[oi].tasks || [];
       for (var oj = 0; oj < tsC.length && openTasks.length < 6; oj++) { if (!tsC[oj].done) openTasks.push(tsC[oj].label); }
     }
-    var custom = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
+    var custom = richardUserCtx(props.richardInstructions);
     var sys = custom + "You are Richard, a warm, sharp, honest business CFO inside the Richy app. You are helping the owner run and budget their business and make it succeed. "
       + "Business: " + (biz.name || "the business") + " - " + (biz.what || "unspecified") + ". Structure: " + labelOf(STRUCTURES, pf.structure) + ". Stage: " + labelOf(STAGES, pf.stage) + ". Scale: " + labelOf(SIZES, pf.size) + ". Revenue goal " + dollars(pf.revenueGoal || 0) + "/month. "
       + "LIVE NUMBERS - " + bizContextLine(biz) + (paceNow ? (" " + paceNow.text) : "") + " "
       + "Monthly budget split: " + (split || "not set") + ". "
-      + (pf.notes && pf.notes.trim() ? ("Owner's notes: " + pf.notes.trim() + ". ") : "")
+      + richardNotesBlock("NOTES FROM THE OWNER", pf.notes)
       + (openTasks.length ? ("Open roadmap tasks: " + openTasks.join(" | ") + ". ") : "")
       + "Ground every answer in these numbers, and when you give advice end with one concrete action. "
       + "You can DIRECTLY change the monthly budget split. When the owner wants that, give one short sentence explaining what you did, then on a new line append: @@ALLOC[{\"category\":\"Marketing\",\"amount\":600}] - only the buckets you are changing, whole numbers, keep the total close to " + dollars(pf.monthly || 0) + " by also adjusting Buffer or Other. Categories only from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer. "
@@ -11151,10 +11168,12 @@ function BusinessView(props) {
   function replanWithRichard(biz) {
     setReplanning(true);
     var pf = biz.profile || {};
-    var custom = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
+    var custom = richardUserCtx(props.richardInstructions);
     var sys = custom + "You are Richard, a sharp, warm, honest business CFO inside the Richy app. Refresh the business plan and monthly operating budget using the latest numbers. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"summary\":\"2 to 3 sentences\",\"sections\":[{\"title\":\"\",\"body\":\"\"}],\"categories\":[{\"category\":\"Marketing\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"\"],\"verdict\":{\"assessment\":\"\",\"keyNumber\":\"\",\"keyNumberLabel\":\"\"}}. Categories only from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer, whole numbers summing to about the monthly budget. 4 to 6 sections." + langLine();
     var usr = "Business: " + (biz.name || "my business") + " - " + (biz.what || "unspecified") + ". Structure: " + labelOf(STRUCTURES, pf.structure) + ". Stage: " + labelOf(STAGES, pf.stage) + ". Scale: " + labelOf(SIZES, pf.size) + ". "
-      + "Monthly budget " + dollars(pf.monthly || 0) + ", revenue goal " + dollars(pf.revenueGoal || 0) + ", cash on hand " + dollars(businessCash(biz)) + ", spent so far " + dollars(businessSpent(biz)) + ", runway " + ((pf.runway || 0) > 0 ? (pf.runway + " months") : "unspecified") + ". 12-month goal: " + (pf.goal || "unspecified") + ". Refresh the plan and budget.";
+      + "Monthly budget " + dollars(pf.monthly || 0) + ", revenue goal " + dollars(pf.revenueGoal || 0) + ", cash on hand " + dollars(businessCash(biz)) + ", spent so far " + dollars(businessSpent(biz)) + ", runway " + ((pf.runway || 0) > 0 ? (pf.runway + " months") : "unspecified") + ". 12-month goal: " + (pf.goal || "unspecified") + ". "
+      + richardNotesBlock("NOTES FROM THE OWNER", pf.notes)
+      + "Refresh the plan and budget.";
     callClaude([{ role: "user", content: usr }], sys, 1200, function(e, text) {
       setReplanning(false);
       if (e || !text) return;
@@ -13120,7 +13139,7 @@ function PlanView(props) {
     });
     var planChallenge = (props.onboardingData && props.onboardingData.coreProblem) || "";
     var langName = props.lang && props.lang !== "en" ? (LANGUAGE_NAMES[props.lang] || "English") : "";
-    var customInstructionsPrefix = (props.richardInstructions && props.richardInstructions.trim()) ? ("CONTEXT FROM THE USER (follow any instructions; treat background as things to keep in mind):\n" + props.richardInstructions + "\n\n") : "";
+    var customInstructionsPrefix = richardUserCtx(props.richardInstructions);
     var sys = customInstructionsPrefix + "You are Richard, a calm, warm, and deeply knowledgeable personal finance advisor inside the Richy app. You are a trusted friend who combines world-class financial expertise with genuine care for the user's situation. "
       + "The user's name is " + (props.username || "there") + ". "
       + (planChallenge ? "Their primary financial challenge is: " + planChallenge + ". Address this challenge directly and specifically — no generic advice. " : "")
@@ -13979,7 +13998,7 @@ export default function App() {
   if (!user) return <AuthScreen onLogin={handleLogin} />;
 
   if (!onboardingDone) {
-    return <OnboardingScreen username={user} dob={userDob} lang={lang} onComplete={handleOnboardingComplete} />;
+    return <OnboardingScreen username={user} dob={userDob} lang={lang} richardNotes={richardNotes} onComplete={handleOnboardingComplete} />;
   }
 
   if (!catchUpDone) {
@@ -14067,7 +14086,7 @@ export default function App() {
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "goals" && <Goals goals={goals} trips={trips} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
-        {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
+        {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} richardInstructions={richardCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} savings={savings} businesses={businesses} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={monthAnalysis ? monthAnalysis.data : null} analysisStale={!!(monthAnalysis && monthAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} />}
