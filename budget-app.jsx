@@ -10449,6 +10449,21 @@ var SAVINGS_ICONS = ["coins", "shield", "home", "car", "plane", "heart", "gift",
 var SAVINGS_COLORS = ["#8970C6", "#C8673A", "#27A85F", "#C8983A", "#4A90D9", "#D9546B", "#5BB8A8", "#9B6DB5"];
 var INVESTING_ICONS = ["chart", "star", "shield", "coins", "building", "leaf", "briefcase", "spark"];
 var INVESTING_COLORS = ["#27A85F", "#8970C6", "#4A90D9", "#C8983A", "#D9546B", "#5BB8A8"];
+// Beginner-friendly quick picks: you can't buy an index (the S&P 500 itself),
+// so each friendly name maps to the low-fee, US-listed fund that tracks it -
+// all covered by the free data tier. Tap "S&P 500" and get VOO, no ticker
+// knowledge needed. Yahoo's search returns futures/indices for these queries,
+// never the buyable fund, so this list is the reliable path.
+var POPULAR_FUNDS = [
+  { symbol: "VOO", label: "S&P 500", sub: "Vanguard 500", name: "Vanguard S&P 500 ETF" },
+  { symbol: "QQQ", label: "Nasdaq 100", sub: "Invesco QQQ", name: "Invesco QQQ Trust" },
+  { symbol: "VTI", label: "Total US Market", sub: "Vanguard", name: "Vanguard Total Stock Market ETF" },
+  { symbol: "VT", label: "Total World", sub: "Vanguard", name: "Vanguard Total World Stock ETF" },
+  { symbol: "DIA", label: "Dow Jones", sub: "SPDR Dow", name: "SPDR Dow Jones Industrial Average ETF" },
+  { symbol: "SCHD", label: "Dividend", sub: "Schwab", name: "Schwab US Dividend Equity ETF" },
+  { symbol: "BND", label: "US Bonds", sub: "Vanguard", name: "Vanguard Total Bond Market ETF" },
+  { symbol: "GLD", label: "Gold", sub: "SPDR Gold", name: "SPDR Gold Shares" }
+];
 
 // Business Account look-and-feel banks.
 var BIZ_ICONS = ["briefcase", "chart", "building", "cart", "laptop", "tool", "coins", "coffee", "leaf", "star"];
@@ -11461,6 +11476,15 @@ function InvestingView(props) {
     });
   }, [acct ? acct.id : null, range, acct ? (acct.trades || []).length : 0]);
 
+  // A sheet request handed over from the stock page (Buy more / Sell) opens
+  // the matching sheet here so the validated trade flow lives in one place.
+  useEffect(function() {
+    if (props.sheetReq && acct) {
+      openSheet(props.sheetReq.kind, { symbol: props.sheetReq.symbol });
+      if (props.onClearSheetReq) props.onClearSheetReq();
+    }
+  }, [props.sheetReq]);
+
   // Debounced symbol search for the Buy / Watch sheets.
   useEffect(function() {
     var q = searchQ.trim();
@@ -11935,15 +11959,39 @@ function InvestingView(props) {
                 </button>
               );
             })}
-            {!searchQ && !searchRes && sheet !== "watch" && held.length > 0 && (
-              <div>
-                <div style={Object.assign({}, lbl, { marginTop: 4 })}>Or one you already hold</div>
-                {held.map(function(s) {
-                  return (
-                    <button key={s} onClick={function() { openSheet(sheet, { symbol: s }); }}
-                      style={{ border: "1px solid " + T.sep, background: T.card, borderRadius: 10, padding: "7px 12px", marginRight: 7, marginBottom: 7, cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.ink }}>{s}</button>
-                  );
-                })}
+            {!searchQ && !searchRes && (
+              <div style={{ marginTop: 2 }}>
+                <div style={Object.assign({}, lbl, { marginTop: 4, marginBottom: 8 })}>Popular funds</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  {POPULAR_FUNDS.map(function(f) {
+                    var owned = held.indexOf(f.symbol) !== -1;
+                    var watched = watchlist.indexOf(f.symbol) !== -1;
+                    return (
+                      <button key={f.symbol} onClick={function() {
+                        if (sheet === "watch") { if (!watched) toggleWatch(f.symbol); setSheet(null); }
+                        else { var p = { symbol: f.symbol, name: f.name, exchange: "US", currency: "USD" }; setPick(p); prefillPrice(p); }
+                      }}
+                        style={{ border: "1px solid " + T.sep, background: T.card, borderRadius: 12, padding: "11px 12px", cursor: "pointer", fontFamily: UI, textAlign: "left", boxSizing: "border-box" }}>
+                        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 6 }}>
+                          <span style={{ fontSize: 13.5, fontWeight: 800, color: T.ink }}>{f.label}</span>
+                          <span style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3 }}>{f.symbol}</span>
+                        </div>
+                        <div style={{ fontSize: 11, color: T.ink3, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{(sheet === "watch" && watched) ? "On your watchlist" : owned ? "In your holdings" : f.sub}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+                {sheet !== "watch" && held.length > 0 && (
+                  <div style={{ marginTop: 12 }}>
+                    <div style={Object.assign({}, lbl, { marginBottom: 8 })}>Or one you already hold</div>
+                    {held.map(function(s) {
+                      return (
+                        <button key={s} onClick={function() { openSheet(sheet, { symbol: s }); }}
+                          style={{ border: "1px solid " + T.sep, background: T.card, borderRadius: 10, padding: "7px 12px", marginRight: 7, marginBottom: 7, cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.ink }}>{s}</button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -12080,6 +12128,409 @@ function InvestingView(props) {
           );
         })}
       </Overlay>
+    </div>
+  );
+}
+
+// The per-stock page: acts like a real investing platform for one ticker. Live
+// price header, range-tabbed price chart, key stats, your position + trade
+// history, and company news. Buy/Sell route back to the account page's sheets
+// via a sheet request so the validated trade flow exists in exactly one place.
+function StockView(props) {
+  var accts = props.investing || [];
+  var req = props.openStock || {};
+  var symbol = req.symbol || "";
+  var acct = null;
+  for (var ai = 0; ai < accts.length; ai++) { if (accts[ai].id === req.acctId) { acct = accts[ai]; break; } }
+  if (!acct && accts.length) acct = accts[0];
+  var meta = (acct && acct.meta && acct.meta[symbol]) || {};
+  var allPos = acct ? positionsOf(acct) : {};
+  var pos = allPos[symbol] || null;
+  var heldNow = pos && pos.shares > 0;
+  var cur = meta.currency || (pos && pos.currency) || (isTASE(symbol) ? "ILS" : "USD");
+  var today = new Date().toISOString().slice(0, 10);
+
+  var _q = useState(null); var quote = _q[0]; var setQuote = _q[1];
+  var _rng = useState("1D"); var range = _rng[0]; var setRange = _rng[1];
+  var _sc = useState({}); var serCache = _sc[0]; var setSerCache = _sc[1];
+  var _sb2 = useState(false); var serBusy = _sb2[0]; var setSerBusy = _sb2[1];
+  var _pf = useState(null); var profile = _pf[0]; var setProfile = _pf[1];
+  var _nw = useState(null); var news = _nw[0]; var setNews = _nw[1];
+  var _mp = useState(""); var manualVal = _mp[0]; var setManualVal = _mp[1];
+  var _fx2 = useState(0); var setFx2 = _fx2[1];
+
+  useEffect(function() { loadInvRates([cur], function() { setFx2(function(n) { return n + 1; }); }); }, [cur]);
+
+  // Single-symbol quote poll, 60s, visibility-aware.
+  useEffect(function() {
+    if (!symbol) return;
+    var stop = false;
+    function refresh() {
+      if (stop || document.visibilityState === "hidden") return;
+      stockQuote(symbol, function(err, q) { if (!stop && q) setQuote(q); });
+    }
+    refresh();
+    var iv = setInterval(refresh, 60000);
+    function onVis() { if (document.visibilityState === "visible") refresh(); }
+    document.addEventListener("visibilitychange", onVis);
+    return function() { stop = true; clearInterval(iv); document.removeEventListener("visibilitychange", onVis); };
+  }, [symbol]);
+
+  // Chart series for the active range (plus 1Y once, for the 52-week stat).
+  useEffect(function() {
+    if (!symbol) return;
+    if (serCache[range]) return;
+    setSerBusy(true);
+    stockSeries(symbol, range, function(err, ser) {
+      setSerCache(function(p) { var n = Object.assign({}, p); n[range] = ser || { points: [] }; return n; });
+      setSerBusy(false);
+    });
+  }, [symbol, range]);
+  useEffect(function() {
+    if (!symbol || serCache["1Y"]) return;
+    stockSeries(symbol, "1Y", function(err, ser) {
+      if (ser) setSerCache(function(p) { var n = Object.assign({}, p); if (!n["1Y"]) n["1Y"] = ser; return n; });
+    });
+  }, [symbol]);
+
+  // Profile (name/logo/market cap) once; mirror the logo onto acct.meta the
+  // first time so holdings rows get it without their own profile calls.
+  useEffect(function() {
+    if (!symbol) return;
+    stockProfile(symbol, function(err, p) {
+      if (!p) return;
+      setProfile(p);
+      if (acct && props.onSaveInvesting && ((p.logo && meta.logo !== p.logo) || (p.name && !meta.name))) {
+        props.onSaveInvesting(accts.map(function(a) {
+          if (a.id !== acct.id) return a;
+          var n = {}; for (var k in a) n[k] = a[k];
+          n.meta = Object.assign({}, a.meta);
+          n.meta[symbol] = Object.assign({}, n.meta[symbol] || {}, { name: p.name || (n.meta[symbol] || {}).name, logo: p.logo || (n.meta[symbol] || {}).logo, exchange: p.exchange || (n.meta[symbol] || {}).exchange, currency: (n.meta[symbol] || {}).currency || p.currency });
+          return n;
+        }));
+      }
+    });
+    stockNews(symbol, function(err, items) { setNews(items || []); });
+  }, [symbol]);
+
+  var price = (quote && quote.price) || meta.lastPrice || meta.manualPrice || (pos ? pos.avgCost : 0);
+  var prevClose = (quote && quote.prevClose) || meta.prevClose || null;
+  var change = prevClose ? round2(price - prevClose) : 0;
+  var changePct = prevClose ? round2((change / prevClose) * 100) : 0;
+  var noLive = !quote && !meta.lastPrice;
+  var asOfAge = quote && quote.asOf ? Date.now() - quote.asOf : null;
+  var marketClosed = !!(quote && !isTASE(symbol) && asOfAge != null && asOfAge > 20 * 60000);
+  var name = (profile && profile.name) || meta.name || (pos && pos.name) || symbol;
+  var exchange = (profile && profile.exchange) || meta.exchange || (isTASE(symbol) ? "TASE" : "US");
+  var logo = (profile && profile.logo) || meta.logo || "";
+
+  function relTime(ms) {
+    var d = Date.now() - ms;
+    if (d < 3600000) return Math.max(1, Math.round(d / 60000)) + "m ago";
+    if (d < 86400000) return Math.round(d / 3600000) + "h ago";
+    return Math.round(d / 86400000) + "d ago";
+  }
+  function bigNum(v) {
+    if (v == null) return "—";
+    if (v >= 1e12) return (v / 1e12).toFixed(2) + "T";
+    if (v >= 1e9) return (v / 1e9).toFixed(1) + "B";
+    if (v >= 1e6) return (v / 1e6).toFixed(0) + "M";
+    return String(Math.round(v));
+  }
+  var yr = serCache["1Y"];
+  var wk52lo = null, wk52hi = null;
+  if (yr && yr.points && yr.points.length) {
+    yr.points.forEach(function(p) { if (wk52lo == null || p.c < wk52lo) wk52lo = p.c; if (wk52hi == null || p.c > wk52hi) wk52hi = p.c; });
+  }
+
+  function saveManual() {
+    var v = parseFloat(manualVal);
+    if (!(v > 0) || !acct || !props.onSaveInvesting) return;
+    props.onSaveInvesting(accts.map(function(a) {
+      if (a.id !== acct.id) return a;
+      var n = {}; for (var k in a) n[k] = a[k];
+      n.meta = Object.assign({}, a.meta);
+      n.meta[symbol] = Object.assign({}, n.meta[symbol] || {}, { manualPrice: round2(v), currency: cur });
+      return n;
+    }));
+    setManualVal("");
+  }
+
+  // --- price chart (card styling, gain/loss colored, prevClose baseline on 1D) ---
+  function stockChart(ser) {
+    var points = ser.points || [];
+    if (points.length < 2) return <div style={{ height: 170, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12.5, color: T.ink3 }}>No chart data for this range.</div>;
+    var W = 330, H = 170, topY = 10, botY = 152;
+    var vals = points.map(function(p) { return p.c; });
+    var mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals);
+    var base = range === "1D" && ser.prevClose != null ? ser.prevClose : vals[0];
+    mn = Math.min(mn, base); mx = Math.max(mx, base);
+    var span = (mx - mn) || 1;
+    var lo = mn - span * 0.08, hi = mx + span * 0.08;
+    function yOf(v) { return botY - ((v - lo) / (hi - lo)) * (botY - topY); }
+    var pts = points.map(function(p, i) { return { x: (i / (points.length - 1)) * W, y: yOf(p.c) }; });
+    // reuse the same monotone spline as everywhere else
+    function sm(pp) {
+      var n = pp.length;
+      if (n < 3) return pp.map(function(p, i) { return (i ? "L" : "M") + p.x.toFixed(1) + " " + p.y.toFixed(1); }).join(" ");
+      var dx = [], dy = [], m = [], i;
+      for (i = 0; i < n - 1; i++) { dx[i] = pp[i + 1].x - pp[i].x; dy[i] = pp[i + 1].y - pp[i].y; m[i] = dx[i] !== 0 ? dy[i] / dx[i] : 0; }
+      var t = [m[0]];
+      for (i = 1; i < n - 1; i++) { t[i] = (m[i - 1] * m[i] <= 0) ? 0 : (m[i - 1] + m[i]) / 2; }
+      t[n - 1] = m[n - 2];
+      for (i = 0; i < n - 1; i++) {
+        if (m[i] === 0) { t[i] = 0; t[i + 1] = 0; }
+        else { var a = t[i] / m[i], b = t[i + 1] / m[i], h = Math.sqrt(a * a + b * b); if (h > 3) { var s = 3 / h; t[i] = s * a * m[i]; t[i + 1] = s * b * m[i]; } }
+      }
+      var d = "M" + pp[0].x.toFixed(1) + " " + pp[0].y.toFixed(1);
+      for (i = 0; i < n - 1; i++) {
+        var c1x = pp[i].x + dx[i] / 3, c1y = pp[i].y + t[i] * dx[i] / 3;
+        var c2x = pp[i + 1].x - dx[i] / 3, c2y = pp[i + 1].y - t[i + 1] * dx[i] / 3;
+        d += " C " + c1x.toFixed(1) + " " + c1y.toFixed(1) + " " + c2x.toFixed(1) + " " + c2y.toFixed(1) + " " + pp[i + 1].x.toFixed(1) + " " + pp[i + 1].y.toFixed(1);
+      }
+      return d;
+    }
+    var line = sm(pts);
+    var area = line + " L " + W + " " + botY + " L 0 " + botY + " Z";
+    var up = vals[vals.length - 1] >= base;
+    var col = up ? T.green : T.red;
+    var last = pts[pts.length - 1];
+    var baseY = yOf(base);
+    return (
+      <svg width="100%" height={H + 16} viewBox={"0 0 " + W + " " + (H + 16)} preserveAspectRatio="none" style={{ display: "block", overflow: "visible" }}>
+        <defs>
+          <linearGradient id="stkArea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={col} stopOpacity={0.20} />
+            <stop offset="100%" stopColor={col} stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <line x1={0} y1={baseY.toFixed(1)} x2={W} y2={baseY.toFixed(1)} stroke={T.ink3} strokeWidth={1} strokeDasharray="3 4" opacity={0.5} />
+        <path d={area} fill="url(#stkArea)" />
+        <path d={line} fill="none" stroke={col} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx={last.x} cy={last.y} r={3.2} fill={col} stroke={T.card} strokeWidth={1.6} />
+        <text x={3} y={topY + 2} fontSize={9} fontFamily={UI} fill={T.ink3}>{invFmt(mx, cur, "native")}</text>
+        <text x={3} y={botY + 12} fontSize={9} fontFamily={UI} fill={T.ink3}>{invFmt(mn, cur, "native")}</text>
+      </svg>
+    );
+  }
+
+  if (!acct || !symbol) {
+    return (
+      <div>
+        <SubViewBack onBack={props.onBack} label={props.backLabel || "Investing"} />
+        <div style={{ textAlign: "center", padding: "60px 20px", color: T.ink3, fontSize: 14 }}>Pick a stock from your investing account.</div>
+      </div>
+    );
+  }
+
+  var ser = serCache[range];
+  var rangeFirst = ser && ser.points && ser.points.length ? ser.points[0].c : null;
+  var rangeLast = ser && ser.points && ser.points.length ? ser.points[ser.points.length - 1].c : null;
+  var rangeBase = range === "1D" && ser && ser.prevClose != null ? ser.prevClose : rangeFirst;
+  var rangePct = (rangeBase && rangeLast) ? round2(((rangeLast - rangeBase) / rangeBase) * 100) : null;
+  var statBox = { flex: 1, minWidth: 0, background: "rgba(0,0,0,0.03)", borderRadius: 12, padding: "9px 11px", boxSizing: "border-box" };
+  var statLbl = { fontSize: 9.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em" };
+  var statVal = { fontSize: 13.5, fontWeight: 800, color: T.ink, marginTop: 3 };
+  var stats = [
+    ["Open", quote && quote.open != null ? invFmt(quote.open, cur, "native") : "—"],
+    ["High", quote && quote.high != null ? invFmt(quote.high, cur, "native") : "—"],
+    ["Low", quote && quote.low != null ? invFmt(quote.low, cur, "native") : "—"],
+    ["Prev close", prevClose != null ? invFmt(prevClose, cur, "native") : "—"],
+    ["Mkt cap", profile && profile.marketCap ? "$" + bigNum(profile.marketCap) : "—"],
+    ["52w range", (wk52lo != null && wk52hi != null) ? invFmt(wk52lo, cur, "native") + "–" + invFmt(wk52hi, cur, "native") : "—"]
+  ];
+  var myTrades = ((acct.trades || []).filter(function(t) { return t.symbol === symbol; })).sort(function(a, b) { return a.date < b.date ? 1 : -1; });
+  var divsCollected = investingDividendTotal(acct, symbol);
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} label={props.backLabel || "Investing"} />
+
+      {/* header + price */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12, padding: "0 2px" }}>
+        {logo ? (
+          <img src={logo} alt="" style={{ width: 46, height: 46, borderRadius: 14, objectFit: "cover", background: "rgba(0,0,0,0.05)", flexShrink: 0 }} />
+        ) : (
+          <CatBadge icon="chart" color={(acct && acct.color) || T.green} size={46} soft={true} />
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+            <span style={{ fontSize: 20, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em" }}>{symbol}</span>
+            <span style={{ fontSize: 10, fontWeight: 700, color: T.ink3, background: "rgba(0,0,0,0.06)", borderRadius: 6, padding: "2px 7px" }}>{exchange}</span>
+            {isTASE(symbol) && <span style={{ fontSize: 9.5, fontWeight: 700, color: T.ink3, background: "rgba(0,0,0,0.06)", borderRadius: 5, padding: "2px 6px" }}>DELAYED</span>}
+            {marketClosed && <span style={{ fontSize: 9.5, fontWeight: 700, color: T.gold, background: "rgba(0,0,0,0.06)", borderRadius: 5, padding: "2px 6px" }}>MARKET CLOSED</span>}
+          </div>
+          <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</div>
+        </div>
+      </div>
+      <div style={{ padding: "0 2px", marginBottom: 14 }}>
+        <span style={{ fontSize: 34, fontWeight: 800, color: T.ink, letterSpacing: "-0.03em" }}>
+          <CountUp value={price} format={function(v) { return invFmt(v, cur, "native"); }} />
+        </span>
+        {prevClose != null && (
+          <span style={{ fontSize: 14.5, fontWeight: 800, marginLeft: 10, color: change >= 0 ? T.green : T.red }}>
+            {(change >= 0 ? "+" : "") + invFmt(change, cur, "native") + " (" + (changePct >= 0 ? "+" : "") + changePct + "%)"}
+          </span>
+        )}
+        {quote && quote.stale && <div style={{ fontSize: 11.5, color: T.gold, fontWeight: 700, marginTop: 3 }}>{"Last known price · " + new Date(quote.asOf).toLocaleDateString()}</div>}
+        {noLive && !meta.manualPrice && (
+          <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center" }}>
+            <input value={manualVal} onChange={function(e) { setManualVal(e.target.value); }} type="number" inputMode="decimal" placeholder={"Set price (" + cur + ")"}
+              style={{ flex: 1, background: "rgba(0,0,0,0.04)", border: "none", borderRadius: 10, padding: "9px 12px", fontSize: 13.5, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box" }} />
+            <button onClick={saveManual} disabled={!(parseFloat(manualVal) > 0)}
+              style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "9px 14px", borderRadius: 10, background: parseFloat(manualVal) > 0 ? T.orange : "rgba(0,0,0,0.08)", color: parseFloat(manualVal) > 0 ? "#fff" : T.ink3 }}>Set</button>
+          </div>
+        )}
+      </div>
+
+      {/* chart */}
+      <Card style={{ padding: "14px 14px 10px", marginBottom: 14 }}>
+        {serBusy && !ser ? (
+          <div style={{ height: 170, display: "flex", alignItems: "center", justifyContent: "center" }}><ThinkingDots s={5} color={T.ink3} /></div>
+        ) : ser ? stockChart(ser) : (
+          <div style={{ height: 170, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12.5, color: T.ink3 }}>Chart unavailable.</div>
+        )}
+        <div style={{ display: "flex", gap: 4, marginTop: 8 }}>
+          {["1D", "1W", "1M", "3M", "1Y", "ALL"].map(function(r) {
+            var on = r === range;
+            return (
+              <button key={r} onClick={function() { setRange(r); }}
+                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 11, fontWeight: 800, padding: "7px 0", borderRadius: 8, background: on ? T.orangeDim : "transparent", color: on ? T.orange : T.ink3, letterSpacing: "0.03em" }}>
+                {r}
+              </button>
+            );
+          })}
+        </div>
+        {rangePct != null && (
+          <div style={{ fontSize: 11.5, fontWeight: 700, marginTop: 8, padding: "0 2px", color: rangePct >= 0 ? T.green : T.red }}>
+            {(rangePct >= 0 ? "+" : "") + rangePct + "% " + (range === "1D" ? "today" : "over " + range.toLowerCase())}
+            {ser && ser.cached && <span style={{ color: T.gold, fontWeight: 700 }}>{"  ·  offline copy" + (ser.cachedAt ? " from " + new Date(ser.cachedAt).toLocaleDateString() : "")}</span>}
+          </div>
+        )}
+      </Card>
+
+      {/* key stats */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+        {stats.map(function(st, i) {
+          return (
+            <div key={i} style={Object.assign({}, statBox, { flexBasis: "31%" })}>
+              <div style={statLbl}>{st[0]}</div>
+              <div style={statVal}>{st[1]}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* your position */}
+      {pos && (pos.shares > 0 || pos.realized !== 0) && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+            <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Your position</span>
+          </div>
+          <Card style={{ padding: "16px 18px" }}>
+            {heldNow && (function() {
+              var value = pos.shares * price;
+              var unreal = round2(pos.shares * (price - pos.avgCost));
+              var unrealPct = pos.avgCost > 0 ? round2(((price - pos.avgCost) / pos.avgCost) * 100) : 0;
+              var rows = [
+                ["Shares", String(pos.shares)],
+                ["Avg cost", invFmt(pos.avgCost, cur, "native")],
+                ["Invested", invFmt(pos.invested, cur, "native")],
+                ["Market value", invFmt(value, cur, "native") + "  ·  " + dollars(invConvert(value, cur))]
+              ];
+              return (
+                <div>
+                  {rows.map(function(r, i) {
+                    return (
+                      <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", fontFamily: UI }}>
+                        <span style={{ fontSize: 12.5, color: T.ink3, fontWeight: 600 }}>{r[0]}</span>
+                        <span style={{ fontSize: 13.5, color: T.ink, fontWeight: 700 }}>{r[1]}</span>
+                      </div>
+                    );
+                  })}
+                  <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", fontFamily: UI }}>
+                    <span style={{ fontSize: 12.5, color: T.ink3, fontWeight: 600 }}>Unrealized P&L</span>
+                    <span style={{ fontSize: 13.5, fontWeight: 800, color: unreal >= 0 ? T.green : T.red }}>{(unreal >= 0 ? "+" : "") + invFmt(unreal, cur, "native") + " (" + (unrealPct >= 0 ? "+" : "") + unrealPct + "%)"}</span>
+                  </div>
+                </div>
+              );
+            })()}
+            {pos.realized !== 0 && (
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", fontFamily: UI }}>
+                <span style={{ fontSize: 12.5, color: T.ink3, fontWeight: 600 }}>Realized P&L</span>
+                <span style={{ fontSize: 13.5, fontWeight: 800, color: pos.realized >= 0 ? T.green : T.red }}>{(pos.realized >= 0 ? "+" : "") + invFmt(round2(pos.realized), cur, "native")}</span>
+              </div>
+            )}
+            {divsCollected > 0 && (
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", fontFamily: UI }}>
+                <span style={{ fontSize: 12.5, color: T.ink3, fontWeight: 600 }}>Dividends collected</span>
+                <span style={{ fontSize: 13.5, fontWeight: 700, color: T.ink }}>{invFmt(divsCollected, cur, "native")}</span>
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              <button onClick={function() { if (props.onTrade) props.onTrade(symbol, "buy"); }}
+                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 800, padding: "11px 0", borderRadius: 12, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow }}>Buy more</button>
+              {heldNow && (
+                <button onClick={function() { if (props.onTrade) props.onTrade(symbol, "sell"); }}
+                  style={{ flex: 1, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "11px 0", borderRadius: 12, background: "none", color: T.orange }}>Sell</button>
+              )}
+            </div>
+            {myTrades.length > 0 && (
+              <div style={{ marginTop: 14, borderTop: "0.5px solid " + T.sep, paddingTop: 10 }}>
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Trade history</div>
+                {myTrades.map(function(t) {
+                  return (
+                    <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: "0.5px solid " + T.sep, fontFamily: UI }}>
+                      <div>
+                        <span style={{ fontSize: 12.5, fontWeight: 800, color: t.kind === "buy" ? T.green : T.red }}>{t.kind === "buy" ? "BUY" : "SELL"}</span>
+                        <span style={{ fontSize: 12.5, color: T.ink, fontWeight: 600, marginLeft: 8 }}>{t.shares + " × " + invFmt(t.price, t.currency, "native")}</span>
+                        {t.fees > 0 && <span style={{ fontSize: 11, color: T.ink3, marginLeft: 6 }}>{"+ " + invFmt(t.fees, t.currency, "native") + " fees"}</span>}
+                      </div>
+                      <span style={{ fontSize: 11.5, color: T.ink3 }}>{t.date}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </Card>
+        </div>
+      )}
+      {!pos && (
+        <Card style={{ padding: "16px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>Watching, not holding</div>
+            <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Ready to open a position?</div>
+          </div>
+          <button onClick={function() { if (props.onTrade) props.onTrade(symbol, "buy"); }}
+            style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 800, padding: "11px 18px", borderRadius: 12, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow, flexShrink: 0 }}>Buy</button>
+        </Card>
+      )}
+
+      {/* news */}
+      <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+        <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>News</span>
+      </div>
+      {news === null ? (
+        <div style={{ padding: "10px 4px 20px" }}><ThinkingDots s={4.5} color={T.ink3} /></div>
+      ) : news.length === 0 ? (
+        <div style={{ fontSize: 12.5, color: T.ink3, padding: "2px 2px 20px" }}>{isTASE(symbol) ? "No news coverage for this listing yet." : "No recent headlines."}</div>
+      ) : (
+        <Card style={{ overflow: "hidden", marginBottom: 20 }}>
+          {news.map(function(it) {
+            return (
+              <a key={it.id} href={it.url} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderBottom: "0.5px solid " + T.sep, textDecoration: "none" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, color: T.ink, lineHeight: 1.35, fontFamily: UI }}>{it.headline}</div>
+                  <div style={{ fontSize: 11, color: T.ink3, marginTop: 3, fontFamily: UI }}>{(it.source || "News") + " · " + relTime(it.datetime)}</div>
+                </div>
+                {it.image && <img src={it.image} alt="" style={{ width: 48, height: 48, borderRadius: 10, objectFit: "cover", background: "rgba(0,0,0,0.05)", flexShrink: 0 }} />}
+              </a>
+            );
+          })}
+        </Card>
+      )}
     </div>
   );
 }
@@ -14976,6 +15427,8 @@ export default function App() {
   var openInv = _oiv[0]; var setOpenInv = _oiv[1];
   var _osk = useState(null); // { acctId, symbol } for the stock detail page
   var openStock = _osk[0]; var setOpenStock = _osk[1];
+  var _isr = useState(null); // pending sheet on the investing page (from StockView)
+  var invSheetReq = _isr[0]; var setInvSheetReq = _isr[1];
   var _nts = useState([]);
   var notes = _nts[0]; var setNotes = _nts[1];
   var _fld = useState([]);
@@ -15639,7 +16092,8 @@ export default function App() {
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} />}
         {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Overview" : "Savings"} onBack={function() { setTab(prevTabRef.current || "overview"); }} />}
-        {currentTab === "investing" && <InvestingView investing={investing} tx={tx} openInvId={openInv} username={user} lang={lang} richardInstructions={richardCtx} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} backLabel={prevTabRef.current === "overview" ? "Overview" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
+        {currentTab === "investing" && <InvestingView investing={investing} tx={tx} openInvId={openInv} username={user} lang={lang} richardInstructions={richardCtx} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} backLabel={prevTabRef.current === "overview" ? "Overview" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
+        {currentTab === "stock" && <StockView investing={investing} openStock={openStock} username={user} lang={lang} richardInstructions={richardCtx} onSaveInvesting={onSaveInvesting} backLabel="Investing" onBack={function() { setTab("investing"); }} onTrade={function(symbol, kind) { setOpenInv(openStock ? openStock.acctId : null); setInvSheetReq({ kind: kind, symbol: symbol }); setTab("investing"); }} />}
         {currentTab === "editOpeningBalance" && <EditOpeningBalanceView tx={tx} onComplete={handleEditOpeningBalance} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "logMonth" && <LogMonthView categories={categories} tx={tx} budgets={budgets} onComplete={handleLogMonth} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "collab" && <CollabView household={household} householdId={householdId} invites={invites} myUid={accountKey} onCreate={onCreateHousehold} onInvite={onInviteMember} onCancelInvite={onCancelInvite} onAccept={onAcceptInvite} onLeave={onLeaveHousehold} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}

@@ -7,6 +7,13 @@
 <style>
   html,body{margin:0;background:#F7F3EE;}
   #err{white-space:pre-wrap;font-family:monospace;color:#b00;padding:16px;font-size:13px;}
+  /* The app injects these globally; the harness renders single components that
+     don't mount that injector, so bottom-sheets would sit uncentered (left:50%
+     needs the keyframe's translateX(-50%)). Mirror them here so sheets center. */
+  @keyframes sheetSlideUp{from{opacity:0;transform:translateX(-50%) translateY(56px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+  @keyframes sheetSlideDown{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(56px)}}
+  @keyframes overlayFadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes overlayFadeOut{from{opacity:1}to{opacity:0}}
 </style>
 </head>
 <body>
