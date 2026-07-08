@@ -11826,6 +11826,30 @@ function InvestingView(props) {
           style={{ flex: 1, border: "1.5px solid " + (cash <= 0 ? "rgba(0,0,0,0.08)" : T.orange), cursor: cash <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 13, background: "none", color: cash <= 0 ? T.ink3 : T.orange }}>Withdraw</button>
       </div>
 
+      {/* New to investing? - prominent for first-timers, a quiet refresher once done */}
+      {props.onOpenInvestorOnboard && (
+        !props.investorProfile ? (
+          <button onClick={props.onOpenInvestorOnboard}
+            style={{ width: "100%", marginBottom: 16, cursor: "pointer", fontFamily: UI, textAlign: "left", display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 16, background: "linear-gradient(135deg," + T.heroBg + "," + T.heroBg2 + ")", border: "none", boxShadow: T.heroShadow, boxSizing: "border-box" }}>
+            <div style={{ width: 42, height: 42, borderRadius: 13, background: "rgba(255,255,255,0.28)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <SVGIcon id="spark" size={20} color={T.heroText} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: T.heroText }}>New to investing?</div>
+              <div style={{ fontSize: 12.5, color: T.heroMut, marginTop: 2, lineHeight: 1.4 }}>Answer 4 quick questions and Richard will teach you the basics, your way.</div>
+            </div>
+            <SVGIcon id="chevron" size={18} color={T.heroText} />
+          </button>
+        ) : (
+          <button onClick={props.onOpenInvestorOnboard}
+            style={{ width: "100%", marginBottom: 16, cursor: "pointer", fontFamily: UI, textAlign: "left", display: "flex", alignItems: "center", gap: 11, padding: "11px 14px", borderRadius: 13, background: T.card, border: "1px solid " + T.sep, boxSizing: "border-box" }}>
+            <SVGIcon id="book" size={16} color={T.orange} />
+            <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: T.ink }}>Investing basics from Richard</span>
+            <SVGIcon id="chevron" size={16} color={T.ink3} />
+          </button>
+        )
+      )}
+
       {/* holdings */}
       <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -12132,6 +12156,80 @@ function InvestingView(props) {
   );
 }
 
+// === RICHARD'S STOCK TAKE ===
+// A beginner-friendly read on one stock: outlook, plain-English opinion, a
+// near-term prediction (with honest uncertainty), tips, a "is this a good pick?"
+// checklist, and a personal note tied to the user's real money and how new they
+// are to investing. Generated once a day and cached on acct.analyses[symbol];
+// a deterministic local fallback keeps the panel useful with no network/AI.
+function investorLevelPhrase(profile) {
+  var exp = profile && profile.experience;
+  if (exp === "regular") return "an experienced investor who knows the basics";
+  if (exp === "some") return "someone who has dabbled a little in investing";
+  return "a complete beginner who is new to investing";
+}
+function investorGlossary(profile) {
+  // Beginners get terms explained; experienced users don't need the hand-holding.
+  var exp = profile && profile.experience;
+  if (exp === "regular") return "";
+  return " The reader is still learning, so avoid jargon - if you must use a term like P/E, market cap, or dividend, explain it in a few plain words right there.";
+}
+function localStockTake(ctx) {
+  // Momentum-only heuristic, clearly worded as a plain observation (not AI).
+  var d = ctx.changePct || 0, r = ctx.rangePct;
+  var outlook = "neutral";
+  if (r != null) outlook = r > 6 ? "up" : r < -6 ? "down" : "neutral";
+  var dir = outlook === "up" ? "has been climbing" : outlook === "down" ? "has been sliding" : "has been fairly steady";
+  var checks = [
+    { label: "Do you understand it?", ok: "watch", note: "Only buy a company whose business you can explain in a sentence." },
+    { label: "Is it a big, established name?", ok: ctx.marketCap && ctx.marketCap > 1e10 ? "yes" : "watch", note: ctx.marketCap && ctx.marketCap > 1e10 ? "It's a large, well-known company." : "Smaller companies swing harder - size your bet accordingly." },
+    { label: "Are you diversified?", ok: ctx.concentrationPct != null && ctx.concentrationPct > 40 ? "no" : "yes", note: ctx.concentrationPct != null && ctx.concentrationPct > 40 ? "This one is already a big slice of your portfolio." : "One stock shouldn't dominate your portfolio." },
+    { label: "Is this money you can leave alone?", ok: "watch", note: "Invest money you won't need for a few years." }
+  ];
+  return {
+    outlook: outlook, confidence: "low",
+    headline: ctx.name + " " + dir + " lately.",
+    opinion: "Here's a plain read while my full analysis is offline: over the recent stretch " + ctx.symbol + " " + dir + ". That's history, not a promise - prices move on news and mood. Focus on whether this fits your plan, not on catching a perfect moment.",
+    prediction: "I can't predict the next move, and anyone who claims certainty is guessing. Watch how it reacts to its next earnings update.",
+    tips: ["Buy in small amounts over time instead of all at once.", "Decide in advance how much of your portfolio this can be."],
+    goodPick: checks,
+    forYou: "You have " + dollars(ctx.investingCash || 0) + " ready to invest - only put in what you're comfortable leaving alone.",
+    source: "local", generatedAt: ctx.today
+  };
+}
+function runStockTake(ctx, cb) {
+  var level = investorLevelPhrase(ctx.profile);
+  var langName = LANGUAGE_NAMES[ctx.lang] || "English";
+  var langLine = langName !== "English" ? " Write entirely in " + langName + "." : "";
+  var posLine = ctx.position && ctx.position.shares > 0
+    ? "They already hold " + ctx.position.shares + " shares at an average cost of " + invFmt(ctx.position.avgCost, ctx.currency, "native") + " (currently " + (ctx.position.unrealPct >= 0 ? "up" : "down") + " " + Math.abs(ctx.position.unrealPct) + "%)."
+    : "They do not own this yet - they're just looking.";
+  var goalsLine = (ctx.goals && ctx.goals.length) ? " Active money goals: " + ctx.goals.slice(0, 3).map(function(g) { return g.name + " (target " + dollars(g.target) + ")"; }).join(", ") + "." : "";
+  var newsLine = (ctx.news && ctx.news.length) ? " Recent headlines: " + ctx.news.slice(0, 5).map(function(h) { return "\"" + h + "\""; }).join("; ") + "." : " No recent headlines available.";
+  var digest = "Stock: " + ctx.name + " (" + ctx.symbol + "), trading at " + invFmt(ctx.price, ctx.currency, "native") +
+    ", " + (ctx.changePct >= 0 ? "up" : "down") + " " + Math.abs(ctx.changePct) + "% today" +
+    (ctx.rangePct != null ? ", " + (ctx.rangePct >= 0 ? "up" : "down") + " " + Math.abs(ctx.rangePct) + "% over the " + (ctx.rangeLabel || "recent period") : "") +
+    (ctx.marketCap ? ", market value about $" + (ctx.marketCap >= 1e12 ? (ctx.marketCap / 1e12).toFixed(1) + " trillion" : (ctx.marketCap / 1e9).toFixed(0) + " billion") : "") + ". " + posLine + newsLine;
+  var personal = "About the reader: they are " + level + ". Their spendable balance is " + dollars(ctx.balance || 0) + " and they have " + dollars(ctx.investingCash || 0) + " of uninvested cash in this account." +
+    (ctx.concentrationPct != null ? " This stock would be about " + ctx.concentrationPct + "% of their portfolio." : "") + goalsLine +
+    (ctx.profile && ctx.profile.risk ? " When markets drop, they tend to: " + ctx.profile.risk + "." : "");
+  var system = richardUserCtx(ctx.richardInstructions) +
+    "You are Richard, this person's warm, honest personal stock analyst inside a budgeting app. You give a real, direct opinion - but always with humility about uncertainty, and always tied to THIS person's actual money and experience level. Never guarantee a price or a return. If putting money here would leave them without an emergency cushion, or make one stock too big a slice, say so before any encouragement." + investorGlossary(ctx.profile) +
+    " Return ONLY a JSON object, nothing before or after it, in exactly this shape: {\"outlook\":\"up|neutral|down\",\"confidence\":\"low|medium|high\",\"headline\":\"one short plain sentence\",\"opinion\":\"2-3 plain-English sentences with your honest view\",\"prediction\":\"what you'd watch for next, stated with honest uncertainty\",\"tips\":[\"1 to 3 short concrete tips for this person\"],\"goodPick\":[{\"label\":\"short check\",\"ok\":\"yes|watch|no\",\"note\":\"one short line\"}],\"forYou\":\"one warm sentence tying it to their money and experience\"}. Give 3 or 4 goodPick checks a beginner can actually judge." + langLine;
+  callClaude([{ role: "user", content: digest + " " + personal }], system, 750, function(err, text) {
+    if (err || !text) { cb(localStockTake(ctx)); return; }
+    try {
+      var obj = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
+      if (!obj || !obj.opinion) { cb(localStockTake(ctx)); return; }
+      obj.source = "ai"; obj.generatedAt = ctx.today;
+      if (!Array.isArray(obj.tips)) obj.tips = obj.tips ? [String(obj.tips)] : [];
+      if (!Array.isArray(obj.goodPick)) obj.goodPick = [];
+      if (["up", "down", "neutral"].indexOf(obj.outlook) === -1) obj.outlook = "neutral";
+      cb(obj);
+    } catch (e) { cb(localStockTake(ctx)); }
+  });
+}
+
 // The per-stock page: acts like a real investing platform for one ticker. Live
 // price header, range-tabbed price chart, key stats, your position + trade
 // history, and company news. Buy/Sell route back to the account page's sheets
@@ -12158,6 +12256,9 @@ function StockView(props) {
   var _nw = useState(null); var news = _nw[0]; var setNews = _nw[1];
   var _mp = useState(""); var manualVal = _mp[0]; var setManualVal = _mp[1];
   var _fx2 = useState(0); var setFx2 = _fx2[1];
+  var _tk = useState(false); var takeBusy = _tk[0]; var setTakeBusy = _tk[1];
+  var _fresh = useState(false); var freshTake = _fresh[0]; var setFreshTake = _fresh[1];
+  var takeGenRef = useRef("");
 
   useEffect(function() { loadInvRates([cur], function() { setFx2(function(n) { return n + 1; }); }); }, [cur]);
 
@@ -12212,6 +12313,48 @@ function StockView(props) {
     });
     stockNews(symbol, function(err, items) { setNews(items || []); });
   }, [symbol]);
+
+  // Richard's take: generate once a day when we have a price, cache on the
+  // account. Re-runs cheaply on price ticks but the ref + date guard block
+  // any regeneration.
+  useEffect(function() {
+    if (!acct || !symbol) return;
+    var key = symbol + "::" + today;
+    var cached = acct.analyses && acct.analyses[symbol];
+    if (cached && cached.generatedAt === today) return;
+    if (takeGenRef.current === key) return;
+    var pxKnown = (quote && quote.price) || meta.lastPrice || meta.manualPrice;
+    if (!pxKnown) return; // wait for the first quote
+    takeGenRef.current = key;
+    setTakeBusy(true);
+    var bal = 0;
+    (props.tx || []).forEach(function(t) { if (t.pending || t.catchUp || (t.date && t.date > today)) return; bal += t.type === "income" ? t.amount : -t.amount; });
+    var worthNow = investingWorth(acct) || 1;
+    var posNow = allPos[symbol];
+    var holdVal = posNow && posNow.shares > 0 ? invConvert(posNow.shares * pxKnown, cur) : 0;
+    var rc = serCache[range];
+    var rPct = (rc && rc.points && rc.points.length > 1) ? round2(((rc.points[rc.points.length - 1].c - rc.points[0].c) / rc.points[0].c) * 100) : null;
+    var ctx = {
+      symbol: symbol, name: (profile && profile.name) || meta.name || symbol, price: pxKnown, currency: cur,
+      changePct: (quote && quote.changePct) || 0, rangePct: rPct, rangeLabel: range === "1D" ? "day" : range.toLowerCase(),
+      marketCap: profile && profile.marketCap, news: (news || []).map(function(n) { return n.headline; }),
+      position: posNow && posNow.shares > 0 ? { shares: posNow.shares, avgCost: posNow.avgCost, unrealPct: posNow.avgCost > 0 ? round2(((pxKnown - posNow.avgCost) / posNow.avgCost) * 100) : 0 } : null,
+      balance: round2(bal), investingCash: investingCash(acct),
+      concentrationPct: worthNow > 0 ? Math.round((holdVal / worthNow) * 100) : null,
+      goals: props.goals || [], profile: props.investorProfile, lang: props.lang, richardInstructions: props.richardInstructions, today: today
+    };
+    runStockTake(ctx, function(result) {
+      if (props.onSaveInvesting) {
+        props.onSaveInvesting(accts.map(function(a) {
+          if (a.id !== acct.id) return a;
+          var n = {}; for (var k in a) n[k] = a[k];
+          n.analyses = Object.assign({}, a.analyses); n.analyses[symbol] = result;
+          return n;
+        }));
+      }
+      setTakeBusy(false); setFreshTake(true);
+    });
+  }, [symbol, quote ? quote.price : 0, news, props.investorProfile]);
 
   var price = (quote && quote.price) || meta.lastPrice || meta.manualPrice || (pos ? pos.avgCost : 0);
   var prevClose = (quote && quote.prevClose) || meta.prevClose || null;
@@ -12409,6 +12552,110 @@ function StockView(props) {
         )}
       </Card>
 
+      {/* Richard's take */}
+      {(function() {
+        var take = acct.analyses && acct.analyses[symbol];
+        var OUT = {
+          up: { label: "Optimistic", color: T.green, icon: "up" },
+          down: { label: "Cautious", color: T.red, icon: "down" },
+          neutral: { label: "Neutral", color: T.ink2, icon: "chart" }
+        };
+        var dotColor = { yes: T.green, watch: T.gold, no: T.red };
+        return (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+              <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Richard's take</span>
+            </div>
+            <Card style={{ padding: "16px 18px" }}>
+              {(!take && takeBusy) ? (
+                <AIWorking compact title="Richard is reading the charts and news" sub="Forming an honest, personal view." expectedMs={9000}
+                  steps={["Reading the price action", "Scanning the headlines", "Checking it against your money", "Writing his take"]} />
+              ) : !take ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, color: T.ink3, fontSize: 13 }}><ThinkingDots s={4.5} color={T.ink3} /><span>Richard is getting his read ready...</span></div>
+              ) : (
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 11, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 12px " + T.orangeGlow }}>
+                      <SVGIcon id="spark" size={17} color="#fff" />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: T.ink, lineHeight: 1.3 }}>{take.headline}</div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5, background: (OUT[take.outlook] || OUT.neutral).color + "18", borderRadius: 999, padding: "5px 10px", flexShrink: 0 }}>
+                      <SVGIcon id={(OUT[take.outlook] || OUT.neutral).icon} size={12} color={(OUT[take.outlook] || OUT.neutral).color} />
+                      <span style={{ fontSize: 11, fontWeight: 800, color: (OUT[take.outlook] || OUT.neutral).color }}>{(OUT[take.outlook] || OUT.neutral).label}</span>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.55 }}>
+                    <TypeReveal animate={freshTake} text={take.opinion} size={14} color={T.ink} />
+                  </div>
+                  {take.prediction && (
+                    <div style={{ marginTop: 12, background: "rgba(0,0,0,0.03)", borderRadius: 12, padding: "11px 13px" }}>
+                      <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 4 }}>What he's watching</div>
+                      <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5 }}>{take.prediction}</div>
+                    </div>
+                  )}
+                  {take.tips && take.tips.length > 0 && (
+                    <div style={{ marginTop: 12 }}>
+                      {take.tips.map(function(tip, i) {
+                        return (
+                          <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 6 }}>
+                            <div style={{ width: 5, height: 5, borderRadius: "50%", background: T.orange, marginTop: 7, flexShrink: 0 }} />
+                            <span style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5 }}>{tip}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {take.goodPick && take.goodPick.length > 0 && (
+                    <div style={{ marginTop: 14, borderTop: "0.5px solid " + T.sep, paddingTop: 12 }}>
+                      <div style={{ fontSize: 12, fontWeight: 800, color: T.ink, marginBottom: 10 }}>Is this a good pick?</div>
+                      {take.goodPick.map(function(c, i) {
+                        var col = dotColor[c.ok] || T.ink3;
+                        return (
+                          <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 9 }}>
+                            <div style={{ width: 18, height: 18, borderRadius: "50%", background: col + "22", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                              <SVGIcon id={c.ok === "no" ? "close" : c.ok === "watch" ? "clock" : "check"} size={10} color={col} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: T.ink }}>{c.label}</div>
+                              {c.note && <div style={{ fontSize: 12, color: T.ink3, marginTop: 1, lineHeight: 1.45 }}>{c.note}</div>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {take.forYou && (
+                    <div style={{ marginTop: 12, background: T.orangeDim, borderRadius: 12, padding: "12px 14px", display: "flex", gap: 10, alignItems: "flex-start" }}>
+                      <SVGIcon id="star" size={15} color={T.orange} />
+                      <span style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, fontWeight: 500 }}>{take.forYou}</span>
+                    </div>
+                  )}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
+                    <span style={{ fontSize: 10.5, color: T.ink3 }}>{"Richard's take · " + (take.generatedAt === today ? "today" : take.generatedAt) + (take.source === "local" ? " · offline read" : "")}</span>
+                    {!takeBusy && (
+                      <button onClick={function() { takeGenRef.current = ""; if (props.onSaveInvesting) { props.onSaveInvesting(accts.map(function(a) { if (a.id !== acct.id) return a; var n = {}; for (var k in a) n[k] = a[k]; n.analyses = Object.assign({}, a.analyses); delete n.analyses[symbol]; return n; })); } setFreshTake(false); }}
+                        style={{ background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 11.5, fontWeight: 700, fontFamily: UI, display: "flex", alignItems: "center", gap: 3 }}>
+                        <SVGIcon id="refresh" size={12} color={T.orange} />Refresh
+                      </button>
+                    )}
+                  </div>
+                  <div style={{ fontSize: 10.5, color: T.ink3, marginTop: 8, lineHeight: 1.4 }}>Richard's take is a perspective, not financial advice.</div>
+                  {props.onOpenInvestorOnboard && !props.investorProfile && (
+                    <button onClick={props.onOpenInvestorOnboard}
+                      style={{ width: "100%", marginTop: 12, border: "1.5px dashed " + T.orange + "77", background: "none", borderRadius: 12, padding: "11px 0", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.orange }}>
+                      New to investing? Get the basics first
+                    </button>
+                  )}
+                </div>
+              )}
+            </Card>
+          </div>
+        );
+      })()}
+
       {/* key stats */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
         {stats.map(function(st, i) {
@@ -12531,6 +12778,285 @@ function StockView(props) {
           })}
         </Card>
       )}
+    </div>
+  );
+}
+
+// === NEW TO INVESTING? (investor profile + tailored basics) ===
+// A short Jomo-style questionnaire (same look as onboarding) that learns how new
+// the user is, how hands-on they want to be, how much they'd start with, and how
+// they'd react to a drop. Richard then teaches the basics AT THEIR LEVEL and
+// gives them a checklist for judging any stock. The profile is reused to tune
+// every per-stock take, so beginners get plainer language and gentler nudges.
+var INV_EXPERIENCE = [
+  { v: "never", label: "Never - total beginner", sub: "I've never bought a stock", icon: "leaf" },
+  { v: "some", label: "A little", sub: "I've dabbled, or own a bit", icon: "chart" },
+  { v: "regular", label: "I invest regularly", sub: "I know my way around", icon: "star" }
+];
+var INV_INVOLVEMENT = [
+  { v: "passive", label: "Set it and forget it", sub: "Buy good things, leave them alone", icon: "shield" },
+  { v: "monthly", label: "Check in now and then", sub: "A look every month or so", icon: "calendar" },
+  { v: "active", label: "Hands-on", sub: "I want to follow it closely", icon: "activity" }
+];
+var INV_AMOUNT = [
+  { v: "toe", label: "Just dipping a toe", sub: "A little, to learn", icon: "droplet" },
+  { v: "few", label: "A few hundred", sub: "Enough to matter, not scary", icon: "coins" },
+  { v: "grand", label: "A thousand or more", sub: "I'm ready to commit", icon: "briefcase" },
+  { v: "unsure", label: "Not sure yet", sub: "Help me figure it out", icon: "chart" }
+];
+var INV_RISK = [
+  { v: "sell", label: "I'd probably sell", sub: "Losses keep me up at night", icon: "down" },
+  { v: "hold", label: "I'd wait it out", sub: "Ups and downs are normal", icon: "shield" },
+  { v: "buy", label: "I'd buy more", sub: "A dip is a discount", icon: "up" }
+];
+function localInvestingBasics(profile) {
+  var beginner = profile.experience === "never";
+  return {
+    intro: beginner
+      ? "Welcome - everyone starts here. Investing just means putting money into things that can grow over time, like a slice of a company (a stock) or a basket of many companies (a fund)."
+      : "Here's a quick refresher tuned to how you like to invest.",
+    lessons: [
+      { title: "Time beats timing", body: "You don't need to catch the perfect moment. Money left invested for years tends to grow through the ups and downs. Buying a little on a regular schedule beats trying to guess the bottom." },
+      { title: "Spread it out", body: "Don't put everything in one stock. A broad fund like an S&P 500 fund holds 500 companies at once, so no single one can sink you. Beginners often start there." },
+      { title: "Only invest what can wait", body: "Use money you won't need for a few years. Keep an emergency cushion in cash first - investing money you might need next month is how people get forced to sell at a bad time." }
+    ],
+    goodPick: [
+      { label: "Do I understand it?", why: "If you can't explain what the company does in a sentence, that's a reason to pause." },
+      { label: "Is it making money?", why: "Profitable, growing companies are steadier than hype." },
+      { label: "Is the price sane?", why: "A great company can still be a bad buy if it's wildly overpriced." },
+      { label: "Does it fit my plan?", why: "It should match how much risk you're comfortable with, not just look exciting." }
+    ],
+    firstMove: beginner ? "Start with a broad, low-fee fund and a small amount you won't miss." : "Decide your target mix, then add on a schedule.",
+    source: "local"
+  };
+}
+function runInvestingBasics(profile, username, lang, richardInstructions, cb) {
+  var langName = LANGUAGE_NAMES[lang] || "English";
+  var langLine = langName !== "English" ? " Write entirely in " + langName + "." : "";
+  var expMap = { never: "a complete beginner who has never invested", some: "someone who has dabbled a little", regular: "an experienced investor" };
+  var amtMap = { toe: "just a little to learn", few: "a few hundred", grand: "a thousand or more", unsure: "an amount they're still deciding" };
+  var invMap = { passive: "wants to set it and forget it", monthly: "will check in occasionally", active: "wants to be hands-on" };
+  var riskMap = { sell: "would get nervous and sell in a downturn", hold: "would hold through a downturn", buy: "would buy more in a downturn" };
+  var profileLine = "The reader is " + (expMap[profile.experience] || "new to investing") + ", " + (invMap[profile.involvement] || "") + ", planning to start with " + (amtMap[profile.amount] || "some money") + ", and " + (riskMap[profile.risk] || "is figuring out their risk comfort") + ". Their name is " + (username || "there") + ".";
+  var system = richardUserCtx(richardInstructions) +
+    "You are Richard, a warm, encouraging money mentor teaching someone the basics of investing, tuned exactly to their experience level and answers. Plain, friendly English. If they're a beginner, explain every term in a few plain words and keep it gentle and confidence-building. If they're experienced, skip the hand-holding and be crisp. Never hype, never guarantee returns, and remind them to invest only money they can leave alone." +
+    " Return ONLY a JSON object in exactly this shape: {\"intro\":\"1-2 warm sentences meeting them at their level\",\"lessons\":[{\"title\":\"short\",\"body\":\"2-3 plain sentences\"}],\"goodPick\":[{\"label\":\"a check they can actually apply\",\"why\":\"one plain sentence\"}],\"firstMove\":\"one concrete first action for them\"}. Give 3 lessons and 3-4 goodPick checks." + langLine;
+  callClaude([{ role: "user", content: profileLine + " Teach them the basics of investing and how to tell if a stock is a good pick, tailored to them." }], system, 850, function(err, text) {
+    if (err || !text) { cb(localInvestingBasics(profile)); return; }
+    try {
+      var obj = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
+      if (!obj || !obj.intro || !Array.isArray(obj.lessons)) { cb(localInvestingBasics(profile)); return; }
+      if (!Array.isArray(obj.goodPick)) obj.goodPick = localInvestingBasics(profile).goodPick;
+      obj.source = "ai";
+      cb(obj);
+    } catch (e) { cb(localInvestingBasics(profile)); }
+  });
+}
+
+function InvestorOnboardScreen(props) {
+  var existing = props.investorProfile || null;
+  var _qi = useState(existing ? 5 : 0); var qIndex = _qi[0]; var setQIndex = _qi[1];
+  var _dr = useState("fwd"); var dir = _dr[0]; var setDir = _dr[1];
+  var _exp = useState(existing ? existing.experience : ""); var experience = _exp[0]; var setExperience = _exp[1];
+  var _inv = useState(existing ? existing.involvement : ""); var involvement = _inv[0]; var setInvolvement = _inv[1];
+  var _amt = useState(existing ? existing.amount : ""); var amount = _amt[0]; var setAmount = _amt[1];
+  var _rsk = useState(existing ? existing.risk : ""); var risk = _rsk[0]; var setRisk = _rsk[1];
+  var _bs = useState(existing ? existing.basics : null); var basics = _bs[0]; var setBasics = _bs[1];
+  var _ld = useState(false); var loading = _ld[0]; var setLoading = _ld[1];
+  var advRef = useRef(false);
+  useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
+  var firstName = String(props.username || "").trim().split(" ")[0] || "there";
+  var Q_TOTAL = 6;
+
+  function persist(nextBasics) {
+    props.onSave({ experience: experience, involvement: involvement, amount: amount, risk: risk, basics: nextBasics || basics, generatedAt: props.today || "" });
+  }
+  function advance() {
+    setDir("fwd");
+    if (qIndex >= 4) { generate(); return; }
+    setQIndex(qIndex + 1);
+  }
+  function autoAdvance() {
+    if (advRef.current) return;
+    advRef.current = true;
+    setTimeout(function() { advRef.current = false; advance(); }, 240);
+  }
+  function goBack() { if (qIndex <= 0) return; setDir("back"); setQIndex(qIndex - 1); }
+  // riskOverride avoids a stale-closure read: the last card sets risk state AND
+  // triggers generation in the same tick, so we thread the picked value through.
+  function generate(riskOverride) {
+    var r = riskOverride || risk;
+    setDir("fwd"); setQIndex(5); setLoading(true);
+    var prof = { experience: experience, involvement: involvement, amount: amount, risk: r };
+    runInvestingBasics(prof, props.username, props.lang, props.richardInstructions, function(result) {
+      setBasics(result); setLoading(false);
+      props.onSave(Object.assign({}, prof, { basics: result, generatedAt: props.today || "" }));
+    });
+  }
+
+  var QH = [
+    { h: "", s: "" },
+    { h: "Have you invested before?", s: "No wrong answer - it just tells me where to start." },
+    { h: "How hands-on do you want to be?", s: "There's a good way to invest for every style." },
+    { h: "How much are you thinking of starting with?", s: "Start small if you like. You can always add later." },
+    { h: "Your stocks drop 20% in a week. You...", s: "Be honest - this decides how much risk suits you." },
+    { h: "", s: "" }
+  ];
+
+  function optCard(sel) {
+    return { width: "100%", background: sel ? "rgba(137,112,198,0.06)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "15px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px rgba(137,112,198,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", marginBottom: 11, transition: "box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease" };
+  }
+  function optTile(sel) {
+    return { width: 38, height: 38, borderRadius: 11, background: sel ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: sel ? "0 5px 14px " + T.orangeGlow : "none", transition: "background 0.25s ease, box-shadow 0.25s ease" };
+  }
+  var optCheck = (
+    <span style={{ marginLeft: "auto", width: 22, height: 22, borderRadius: "50%", background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, animation: "rcjCheckPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both", boxShadow: "0 3px 10px " + T.orangeGlow }}>
+      <SVGIcon id="check" size={12} color="#fff" />
+    </span>
+  );
+  function cardList(options, value, setter, last) {
+    return (
+      <Stagger k={"q" + qIndex} step={0.06}>
+        {options.map(function(o) {
+          var sel = value === o.v;
+          return (
+            <button key={o.v} onClick={function() { setter(o.v); if (last) { if (advRef.current) return; advRef.current = true; setTimeout(function() { advRef.current = false; generate(o.v); }, 260); } else { autoAdvance(); } }} style={optCard(sel)}>
+              <div style={optTile(sel)}><SVGIcon id={o.icon} size={18} color={sel ? "#fff" : JINK3} /></div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15.5, fontWeight: sel ? 700 : 600, color: sel ? JINK : JINK2 }}>{o.label}</div>
+                <div style={{ fontSize: 12.5, color: JINK3, marginTop: 2 }}>{o.sub}</div>
+              </div>
+              {sel && optCheck}
+            </button>
+          );
+        })}
+      </Stagger>
+    );
+  }
+
+  // Result screen (qIndex 5): loading, then Richard's tailored basics.
+  if (qIndex === 5) {
+    if (loading) {
+      return (
+        <div style={{ minHeight: "100vh", background: JR_BG, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI }}>
+          <div style={{ width: "100%", maxWidth: 320, padding: "0 32px" }}>
+            <AIWorking bare title="Richard is putting together your starter guide" sub="Tuned to exactly how you answered." expectedMs={11000}
+              steps={["Reading your answers", "Choosing what matters for you", "Writing it in plain English", "Adding your good-pick checklist"]} />
+          </div>
+        </div>
+      );
+    }
+    var b = basics || localInvestingBasics({ experience: experience, involvement: involvement, amount: amount, risk: risk });
+    var expLabel = (INV_EXPERIENCE.filter(function(o) { return o.v === experience; })[0] || {}).label || "New to investing";
+    return (
+      <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, overflowY: "auto", position: "relative", overflowX: "hidden" }}>
+        <div style={{ position: "absolute", top: -70, right: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(137,112,198,0.14) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift 9s ease-in-out infinite" }} />
+        <div style={{ padding: "52px 24px 48px", position: "relative", maxWidth: 428, margin: "0 auto", boxSizing: "border-box" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
+            <div style={{ position: "relative", width: 48, height: 48, flexShrink: 0 }}>
+              <div style={{ position: "absolute", inset: -8, borderRadius: "50%", background: "radial-gradient(circle," + T.orangeGlow + " 0%, transparent 70%)", filter: "blur(7px)", animation: "rclGlow 2.6s ease-in-out infinite" }} />
+              <div style={{ position: "relative", width: 48, height: 48, borderRadius: 16, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 24px " + T.orangeGlow, animation: "rclBreathe 2.6s ease-in-out infinite" }}>
+                <SVGIcon id="spark" size={22} color="#fff" />
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: JINK, letterSpacing: "-0.02em" }}><WordReveal text={"You're set, " + firstName + "."} base={0.1} step={0.06} /></div>
+              <div style={{ fontSize: 13, color: JINK3, marginTop: 2 }}>{expLabel} · your investing basics</div>
+            </div>
+          </div>
+
+          <div style={{ background: "#fff", borderRadius: 18, padding: "20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 12 }}>
+              <ThinkingDots size={4} color={T.orange} />
+              <span style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em" }}>Richard's guide for you</span>
+            </div>
+            <TypeReveal animate={basics && basics.source === "ai"} text={b.intro} size={14.5} color={JINK} />
+            <div style={{ marginTop: 16 }}>
+              {(b.lessons || []).map(function(l, i) {
+                return (
+                  <div key={i} style={{ marginBottom: 14, animation: "rclPhrase 0.45s ease " + (0.3 + i * 0.15).toFixed(2) + "s both" }}>
+                    <div style={{ fontSize: 14.5, fontWeight: 800, color: JINK, marginBottom: 3 }}>{l.title}</div>
+                    <div style={{ fontSize: 13.5, color: JINK2, lineHeight: 1.55 }}>{l.body}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div style={{ background: "#fff", borderRadius: 18, padding: "20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
+            <div style={{ fontSize: 15.5, fontWeight: 800, color: JINK, marginBottom: 4 }}>How to tell if a stock is a good pick</div>
+            <div style={{ fontSize: 13, color: JINK3, marginBottom: 14, lineHeight: 1.5 }}>Run any stock through these before you buy.</div>
+            {(b.goodPick || []).map(function(c, i) {
+              return (
+                <div key={i} style={{ display: "flex", gap: 11, alignItems: "flex-start", marginBottom: 12, animation: "rclPhrase 0.45s ease " + (0.2 + i * 0.12).toFixed(2) + "s both" }}>
+                  <div style={{ width: 24, height: 24, borderRadius: 8, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 12, fontWeight: 800, color: T.orange, fontFamily: UI }}>{i + 1}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: JINK }}>{c.label}</div>
+                    <div style={{ fontSize: 12.5, color: JINK3, marginTop: 1, lineHeight: 1.45 }}>{c.why}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {b.firstMove && (
+            <div style={{ background: "linear-gradient(145deg,rgba(137,112,198,0.10),rgba(196,154,60,0.08))", borderRadius: 16, padding: "16px 18px", marginBottom: 20, boxSizing: "border-box" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5 }}>Your first move</div>
+              <div style={{ fontSize: 14, color: JINK, fontWeight: 600, lineHeight: 1.5 }}>{b.firstMove}</div>
+            </div>
+          )}
+
+          <JrBtn label="Start exploring" onPress={function() { persist(b); props.onDone(); }} />
+          <div style={{ fontSize: 11.5, color: JINK3, textAlign: "center", marginTop: 14, lineHeight: 1.45 }}>Richard is a guide, not a licensed financial advisor. Invest only what you can afford to leave alone.</div>
+        </div>
+      </div>
+    );
+  }
+
+  var qh = QH[qIndex];
+  return (
+    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0" }}>
+        {qIndex > 0 ? <JrIconBtn icon="chevron" rotate={180} onPress={goBack} /> : <button onClick={props.onDone} style={{ width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, padding: 0 }}><SVGIcon id="close" size={15} color={JINK2} /></button>}
+        <JourneyBar pct={((qIndex + 1) / Q_TOTAL) * 100} />
+        <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: JINK3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(qIndex + 1) + "/" + Q_TOTAL}</div>
+      </div>
+
+      <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "28px 24px 8px" }}>
+        <div style={{ maxWidth: 380, margin: "0 auto" }}>
+          <JrStepShell k={qIndex} dir={dir}>
+            {qIndex > 0 && (
+              <div>
+                <div style={{ fontSize: 25, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.25, marginBottom: 8 }}>
+                  <WordReveal text={qh.h} base={0.04} step={0.045} />
+                </div>
+                <div style={{ fontSize: 14, color: JINK3, marginBottom: 26, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>{qh.s}</div>
+              </div>
+            )}
+            {qIndex === 0 && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 30 }}>
+                <div style={{ position: "relative", width: 62, height: 62, marginBottom: 24 }}>
+                  <div style={{ position: "absolute", inset: -10, borderRadius: "50%", background: "radial-gradient(circle," + T.orangeGlow + " 0%, transparent 70%)", filter: "blur(8px)", animation: "rclGlow 2.4s ease-in-out infinite" }} />
+                  <div style={{ position: "relative", width: 62, height: 62, borderRadius: 20, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 26px " + T.orangeGlow, animation: "rclBreathe 2.4s ease-in-out infinite" }}>
+                    <SVGIcon id="spark" size={28} color="#fff" />
+                  </div>
+                </div>
+                <div style={{ background: "#fff", borderRadius: "4px 20px 20px 20px", padding: "16px 18px", boxShadow: "0 6px 22px rgba(40,28,16,0.09)", maxWidth: 330, boxSizing: "border-box" }}>
+                  <TypeReveal animate color={JINK} size={15.5}
+                    text={"Hi " + firstName + ". Investing can feel like a members-only club, but it really isn't. Four quick questions and I'll teach you the basics **your way** - then show you how to size up any stock."} />
+                </div>
+                <div style={{ marginTop: 26, width: "100%" }}>
+                  <JrBtn label="Let's go" onPress={advance} />
+                </div>
+              </div>
+            )}
+            {qIndex === 1 && cardList(INV_EXPERIENCE, experience, setExperience)}
+            {qIndex === 2 && cardList(INV_INVOLVEMENT, involvement, setInvolvement)}
+            {qIndex === 3 && cardList(INV_AMOUNT, amount, setAmount)}
+            {qIndex === 4 && cardList(INV_RISK, risk, setRisk, true)}
+          </JrStepShell>
+        </div>
+      </div>
     </div>
   );
 }
@@ -15419,6 +15945,8 @@ export default function App() {
   var businesses = _biz[0]; var setBusinesses = _biz[1];
   var _inv = useState([]);
   var investing = _inv[0]; var setInvesting = _inv[1];
+  var _ivp = useState(null);
+  var investorProfile = _ivp[0]; var setInvestorProfile = _ivp[1];
   var _otr = useState(null);
   var openTrip = _otr[0]; var setOpenTrip = _otr[1];
   var _obz = useState(null);
@@ -15519,6 +16047,7 @@ export default function App() {
     setBusinesses(data.businesses || []);
     // Investing accounts are personal for the same reason (your portfolio).
     setInvesting(data.investing || []);
+    setInvestorProfile(data.investorProfile || null);
     setNotes(data.notes || []);
     setFoundMoney(data.foundMoney || { tally: 0, dismissed: [], acted: [] });
     setDecisions(data.decisions || []);
@@ -15688,7 +16217,7 @@ export default function App() {
     blobRef.current = {};
     setUser(null); setAccountKey(null); setTab("overview");
     setHouseholdId(null); setHousehold(null); setInvites([]);
-    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]);
+    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setInvestorProfile(null); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]);
     _lang.code = "en"; setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang("en"); applyTheme("blue"); setTheme("blue");
   }
 
@@ -15697,7 +16226,7 @@ export default function App() {
     var existing = blobRef.current || {};
     var blob = {};
     for (var ek in existing) blob[ek] = existing[ek];
-    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.savings = savings; blob.businesses = businesses; blob.investing = investing; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme; blob.foundMoney = foundMoney; blob.decisions = decisions; blob.monthAnalysis = monthAnalysis;
+    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.savings = savings; blob.businesses = businesses; blob.investing = investing; blob.investorProfile = investorProfile; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme; blob.foundMoney = foundMoney; blob.decisions = decisions; blob.monthAnalysis = monthAnalysis;
     for (var k in next) blob[k] = next[k];
     blobRef.current = blob;
     // Debounce Firestore writes: coalesce rapid successive saves (e.g. typing)
@@ -15749,6 +16278,7 @@ export default function App() {
   // write both arrays atomically via onInvestingMove.
   function onSaveInvesting(next) { setInvesting(next); save({ investing: next }); }
   function onInvestingMove(nextTx, nextInvesting) { setTx(nextTx); setInvesting(nextInvesting); save({ tx: nextTx, investing: nextInvesting }); }
+  function onSaveInvestorProfile(next) { setInvestorProfile(next); save({ investorProfile: next }); }
 
   // Reminder scheduling. Timers don't survive reload, so we re-derive them from
   // each note's durable `reminder.due` whenever notes change, firing any that are
@@ -16092,8 +16622,9 @@ export default function App() {
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} />}
         {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Overview" : "Savings"} onBack={function() { setTab(prevTabRef.current || "overview"); }} />}
-        {currentTab === "investing" && <InvestingView investing={investing} tx={tx} openInvId={openInv} username={user} lang={lang} richardInstructions={richardCtx} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} backLabel={prevTabRef.current === "overview" ? "Overview" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
-        {currentTab === "stock" && <StockView investing={investing} openStock={openStock} username={user} lang={lang} richardInstructions={richardCtx} onSaveInvesting={onSaveInvesting} backLabel="Investing" onBack={function() { setTab("investing"); }} onTrade={function(symbol, kind) { setOpenInv(openStock ? openStock.acctId : null); setInvSheetReq({ kind: kind, symbol: symbol }); setTab("investing"); }} />}
+        {currentTab === "investing" && <InvestingView investing={investing} tx={tx} openInvId={openInv} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} onOpenInvestorOnboard={function() { prevTabRef.current = "investing"; setTab("investorOnboard"); }} backLabel={prevTabRef.current === "overview" ? "Overview" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
+        {currentTab === "stock" && <StockView investing={investing} tx={tx} goals={goals} openStock={openStock} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onOpenInvestorOnboard={function() { prevTabRef.current = "stock"; setTab("investorOnboard"); }} backLabel="Investing" onBack={function() { setTab("investing"); }} onTrade={function(symbol, kind) { setOpenInv(openStock ? openStock.acctId : null); setInvSheetReq({ kind: kind, symbol: symbol }); setTab("investing"); }} />}
+        {currentTab === "investorOnboard" && <InvestorOnboardScreen investorProfile={investorProfile} username={user} lang={lang} richardInstructions={richardCtx} today={new Date().toISOString().slice(0, 10)} onSave={onSaveInvestorProfile} onDone={function() { setTab(prevTabRef.current || "investing"); }} />}
         {currentTab === "editOpeningBalance" && <EditOpeningBalanceView tx={tx} onComplete={handleEditOpeningBalance} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "logMonth" && <LogMonthView categories={categories} tx={tx} budgets={budgets} onComplete={handleLogMonth} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "collab" && <CollabView household={household} householdId={householdId} invites={invites} myUid={accountKey} onCreate={onCreateHousehold} onInvite={onInviteMember} onCancelInvite={onCancelInvite} onAccept={onAcceptInvite} onLeave={onLeaveHousehold} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}

@@ -314,13 +314,52 @@ fetchSource(1).then(function(src){
       window.__invState = function(){ return { investing: iv, tx: tx }; };
       return React.createElement(InvestingView, {
         investing: iv, tx: tx, openInvId: "inv_1", username: "Alon", lang: "en", richardInstructions: "",
+        investorProfile: qs.get("profile") ? { experience: "never", involvement: "monthly", amount: "few", risk: "hold", generatedAt: "2026-07-08" } : null,
         onSaveInvesting: function(n){ setIv(n); },
         onMove: function(ntx, ni){ setTx(ntx); setIv(ni); },
+        onOpenInvestorOnboard: function(){ window.__clicked = "onboard"; },
         onBack: function(){ window.__clicked = "back"; }, backLabel: "Accounts",
         onOpenStock: function(acctId, symbol){ window.__clicked = "stock_" + symbol; }
       });
     }
     el = React.createElement(InvestingHarness, {});
+  } else if (view === "stock") {
+    function StockHarness() {
+      var seedInv = [{
+        id: "inv_1", name: "My Portfolio", color: "#27A85F", icon: "chart", createdAt: "2026-01-01",
+        cashEntries: [{ id: 1, kind: "deposit", amount: 8000, date: "2026-01-01", fromMain: false, label: "External" }],
+        trades: [
+          { id: 2, kind: "buy", symbol: "AAPL", name: "Apple Inc.", shares: 10, price: 250, fees: 0, date: "2026-02-01", currency: "USD", cashAmount: 2500, fxRate: 1 },
+          { id: 5, kind: "sell", symbol: "AAPL", name: "Apple Inc.", shares: 3, price: 285, fees: 0, date: "2026-06-01", currency: "USD", cashAmount: 855, fxRate: 1 }
+        ],
+        dividends: [], watchlist: [], meta: { "AAPL": { name: "Apple Inc.", currency: "USD", lastPrice: 292.4, prevClose: 289.1, lastPriceAt: Date.now(), exchange: "NASDAQ" } },
+        analyses: {}, chats: {}, priceSnapshotDate: ""
+      }];
+      var _iv = React.useState(seedInv); var iv = _iv[0]; var setIv = _iv[1];
+      window.__invState = function(){ return { investing: iv }; };
+      return React.createElement(StockView, {
+        investing: iv, tx: mockTx, goals: mockGoals, openStock: { acctId: "inv_1", symbol: "AAPL" },
+        username: "Alon", lang: "en", richardInstructions: "",
+        investorProfile: qs.get("profile") ? { experience: "never", involvement: "monthly", amount: "few", risk: "hold" } : null,
+        onSaveInvesting: function(n){ setIv(n); },
+        onOpenInvestorOnboard: function(){ window.__clicked = "onboard"; },
+        onBack: function(){ window.__clicked = "back"; }, backLabel: "Investing",
+        onTrade: function(symbol, kind){ window.__clicked = kind + "_" + symbol; }
+      });
+    }
+    el = React.createElement(StockHarness, {});
+  } else if (view === "investorOnboard") {
+    function OnboardHarness() {
+      var _p = React.useState(qs.get("done") ? { experience: "never", involvement: "monthly", amount: "few", risk: "hold", basics: null, generatedAt: "" } : null);
+      var p = _p[0]; var setP = _p[1];
+      window.__profile = function(){ return p; };
+      return React.createElement(InvestorOnboardScreen, {
+        investorProfile: p, username: "Alon", lang: "en", richardInstructions: "", today: "2026-07-08",
+        onSave: function(n){ setP(n); window.__saved = n; },
+        onDone: function(){ window.__clicked = "done"; }
+      });
+    }
+    el = React.createElement(OnboardHarness, {});
   } else if (view === "auth") {
     // Full welcome journey; Firebase calls only fire on submit, so browsing is safe.
     try { if (!qs.get("seen")) localStorage.removeItem("cb_welcome_seen"); } catch (e) {}
