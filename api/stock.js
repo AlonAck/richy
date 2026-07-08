@@ -296,11 +296,25 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    // ---- news (Finnhub, North-American companies only) -------------------
+    // ---- news (Finnhub company news, or general market news for MARKET) ---
     if (fn === "news") {
       var nCache = "public, s-maxage=900";
       if (isYahooSymbol(symbol)) { sendData(res, "news", nCache, { items: [] }); return; }
       if (!finnhubKey) { sendErr(res, 500, "config_error", "FINNHUB_API_KEY is not set."); return; }
+      // symbol=MARKET returns the general market headline feed (for the scout).
+      if (symbol === "MARKET") {
+        var gm = await getJson("https://finnhub.io/api/v1/news?category=general&token=" + finnhubKey);
+        if (gm.status === 429) { sendErr(res, 429, "rate_limited", "Finnhub rate limit", "finnhub"); return; }
+        var gl = Array.isArray(gm.data) ? gm.data : [];
+        var gitems = [];
+        for (var gi = 0; gi < gl.length && gitems.length < 12; gi++) {
+          var g = gl[gi];
+          if (!g.headline || !g.url) continue;
+          gitems.push({ id: g.id || g.datetime, headline: g.headline, summary: g.summary || "", source: g.source || "", url: g.url, datetime: (g.datetime || 0) * 1000, image: g.image || "" });
+        }
+        sendData(res, "news", nCache, { items: gitems });
+        return;
+      }
       var now = new Date();
       var to = now.toISOString().slice(0, 10);
       var from = new Date(now.getTime() - 14 * 86400000).toISOString().slice(0, 10);

@@ -348,6 +348,27 @@ fetchSource(1).then(function(src){
       });
     }
     el = React.createElement(StockHarness, {});
+  } else if (view === "scout") {
+    function ScoutHarness() {
+      var seedInv = [{
+        id: "inv_1", name: "My Portfolio", color: "#27A85F", icon: "chart", createdAt: "2026-01-01",
+        cashEntries: [{ id: 1, kind: "deposit", amount: 4200, date: "2026-01-01", fromMain: false, label: "External" }],
+        trades: [], dividends: [], watchlist: [], meta: {}, analyses: {}, chats: {},
+        scout: qs.get("cached") ? { generatedAt: "2026-07-08", source: "ai", marketNote: "Markets are risk-on with AI names leading; valuations are stretched, so be selective.", picks: [{ symbol: "NVDA", name: "NVIDIA Corporation", confidence: "high", thesis: "The clear arms-dealer of the AI boom - everyone building AI needs its chips.", catalyst: "Next-gen Blackwell chips ramping into data centers.", risks: "Priced for perfection; any demand wobble hits hard.", suggestedAmount: 600, suggestedPct: 14 }], chat: [] } : null,
+        priceSnapshotDate: ""
+      }];
+      var _iv = React.useState(seedInv); var iv = _iv[0]; var setIv = _iv[1];
+      window.__invState = function(){ return { investing: iv }; };
+      return React.createElement(StockScoutView, {
+        investing: iv, openInvId: "inv_1", tx: mockTx, goals: mockGoals, username: "Alon", lang: "en", richardInstructions: "",
+        investorProfile: qs.get("profile") ? { experience: "never", involvement: "monthly", amount: "few", risk: "hold" } : null,
+        onSaveInvesting: function(n){ setIv(n); },
+        onBack: function(){ window.__clicked = "back"; }, backLabel: "Investing",
+        onOpenStock: function(a, s){ window.__clicked = "stock_" + s; },
+        onTrade: function(a, s){ window.__clicked = "buy_" + s; }
+      });
+    }
+    el = React.createElement(ScoutHarness, {});
   } else if (view === "investorOnboard") {
     function OnboardHarness() {
       var _p = React.useState(qs.get("done") ? { experience: "never", involvement: "monthly", amount: "few", risk: "hold", basics: null, generatedAt: "" } : null);

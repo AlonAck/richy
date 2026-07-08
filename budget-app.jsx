@@ -644,6 +644,23 @@ function stockNews(symbol, cb) {
     cb(err, data ? data.items : null);
   });
 }
+// General market headline feed (for the stock scout's macro read).
+function stockMarketNews(cb) {
+  _stockGet("news::MARKET", 900000, { fn: "news", symbol: "MARKET" }, function(err, data) {
+    cb(err, data ? data.items : null);
+  });
+}
+// The scout's candidate universe: liquid, well-known US names spread across the
+// themes where "the next big hit" tends to come from. Richard reasons over REAL
+// recent price action + headlines for these, not a hardcoded opinion.
+var SCOUT_POOL = [
+  { symbol: "NVDA", theme: "AI chips" }, { symbol: "AMD", theme: "Semiconductors" },
+  { symbol: "MSFT", theme: "AI + cloud" }, { symbol: "GOOGL", theme: "AI + search" },
+  { symbol: "AMZN", theme: "Cloud + retail" }, { symbol: "META", theme: "AI + social" },
+  { symbol: "TSLA", theme: "EV + robotics" }, { symbol: "PLTR", theme: "AI software" },
+  { symbol: "AVGO", theme: "AI networking" }, { symbol: "SHOP", theme: "E-commerce" },
+  { symbol: "UBER", theme: "Mobility" }, { symbol: "SOFI", theme: "Fintech" }
+];
 
 // --- FX for holdings (display + net worth conversion) ---
 var CODE_TO_SYM = (function() {
@@ -717,7 +734,14 @@ var MOCK_STOCKS = {
   "AAPL": { name: "Apple Inc.", exchange: "NASDAQ", currency: "USD", price: 292.4, prevClose: 289.1 },
   "MSFT": { name: "Microsoft Corporation", exchange: "NASDAQ", currency: "USD", price: 512.3, prevClose: 515.8 },
   "VOO": { name: "Vanguard S&P 500 ETF", exchange: "NYSE ARCA", currency: "USD", price: 618.7, prevClose: 612.9 },
-  "TEVA.TA": { name: "Teva Pharmaceutical", exchange: "TASE", currency: "ILS", price: 102.4, prevClose: 105.4 }
+  "TEVA.TA": { name: "Teva Pharmaceutical", exchange: "TASE", currency: "ILS", price: 102.4, prevClose: 105.4 },
+  "NVDA": { name: "NVIDIA Corporation", exchange: "NASDAQ", currency: "USD", price: 178.2, prevClose: 172.6 },
+  "AMD": { name: "Advanced Micro Devices", exchange: "NASDAQ", currency: "USD", price: 241.5, prevClose: 238.0 },
+  "GOOGL": { name: "Alphabet Inc.", exchange: "NASDAQ", currency: "USD", price: 205.9, prevClose: 203.1 },
+  "AMZN": { name: "Amazon.com Inc.", exchange: "NASDAQ", currency: "USD", price: 238.4, prevClose: 240.2 },
+  "META": { name: "Meta Platforms Inc.", exchange: "NASDAQ", currency: "USD", price: 742.1, prevClose: 728.5 },
+  "TSLA": { name: "Tesla Inc.", exchange: "NASDAQ", currency: "USD", price: 412.8, prevClose: 421.0 },
+  "PLTR": { name: "Palantir Technologies", exchange: "NASDAQ", currency: "USD", price: 92.6, prevClose: 88.9 }
 };
 function _mockSeries(symbol, rangeKey) {
   var m = MOCK_STOCKS[symbol] || { price: 100, prevClose: 99, currency: "USD" };
@@ -8263,7 +8287,10 @@ function Trips(props) {
   return listView();
 }
 
-function callClaude(messages, system, maxTokens, callback) {
+// Optional 5th arg `model` picks a specific model (e.g. "claude-opus-4-8" for the
+// deep stock scout). Omitted -> the proxy's default Sonnet. The proxy whitelists
+// model strings, so an unknown value simply falls back to Sonnet.
+function callClaude(messages, system, maxTokens, callback, model) {
   var apiUrl = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "data:" || location.protocol === "file:") ? "https://richy-mgkl.vercel.app/api/chat" : "/api/chat";
   fetch(apiUrl, {
     method: "POST",
@@ -8274,6 +8301,7 @@ function callClaude(messages, system, maxTokens, callback) {
       messages: messages,
       system: system,
       maxTokens: maxTokens || 800,
+      model: model || undefined,
     }),
   }).then(function(res) {
     return res.text().then(function(raw) {
@@ -11850,6 +11878,21 @@ function InvestingView(props) {
         )
       )}
 
+      {/* Searching for a new stock? - Richard's deep Opus scout */}
+      {props.onOpenScout && (
+        <button onClick={props.onOpenScout}
+          style={{ width: "100%", marginBottom: 16, cursor: "pointer", fontFamily: UI, textAlign: "left", display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 16, background: T.card, border: "1.5px solid " + T.orange + "44", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 6px 20px rgba(0,0,0,0.05)", boxSizing: "border-box" }}>
+          <div style={{ width: 42, height: 42, borderRadius: 13, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 5px 14px " + T.orangeGlow }}>
+            <SVGIcon id="search" size={20} color="#fff" />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: T.ink }}>Searching for a new stock?</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Richard thinks his hardest across the market to find your next big pick.</div>
+          </div>
+          <SVGIcon id="chevron" size={18} color={T.ink3} />
+        </button>
+      )}
+
       {/* holdings */}
       <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -13057,6 +13100,304 @@ function InvestorOnboardScreen(props) {
           </JrStepShell>
         </div>
       </div>
+    </div>
+  );
+}
+
+// === STOCK SCOUT (find the next big pick) ===
+// Richard's most rigorous mode: gather REAL recent price action + market news for
+// a diverse candidate pool, hand it all to Opus, and get back 2-3 ranked ideas
+// with a thesis, catalyst, risks, and a position size tied to the user's cash.
+// A Sonnet chatbot on the results page lets them interrogate the reasoning.
+function gatherScoutData(cb) {
+  var out = SCOUT_POOL.map(function(p) { return { symbol: p.symbol, theme: p.theme, quote: null, yrPct: null, moPct: null }; });
+  var need = out.length * 2 + 1;
+  var mNews = [];
+  function done() { need--; if (need <= 0) cb({ candidates: out, marketNews: mNews }); }
+  stockQuotes(out.map(function(o) { return o.symbol; }), function(qmap) {
+    out.forEach(function(o) { o.quote = qmap[o.symbol] || null; done(); });
+  });
+  out.forEach(function(o, i) {
+    setTimeout(function() {
+      stockSeries(o.symbol, "1Y", function(err, ser) {
+        if (ser && ser.points && ser.points.length > 1) {
+          var pts = ser.points;
+          o.yrPct = round2((pts[pts.length - 1].c - pts[0].c) / pts[0].c * 100);
+          var mIdx = Math.max(0, pts.length - 22);
+          o.moPct = round2((pts[pts.length - 1].c - pts[mIdx].c) / pts[mIdx].c * 100);
+        }
+        done();
+      });
+    }, i * 80);
+  });
+  stockMarketNews(function(err, items) { mNews = items || []; done(); });
+}
+function localStockScout(candidates, ctx) {
+  var scored = candidates.filter(function(c) { return c.yrPct != null || c.moPct != null; })
+    .map(function(c) { return { c: c, score: (c.moPct || 0) * 0.6 + (c.yrPct || 0) * 0.4 }; })
+    .sort(function(a, b) { return b.score - a.score; });
+  var cash = ctx.investingCash || 0;
+  var picks = scored.slice(0, 2).map(function(s) {
+    var amt = Math.max(0, Math.round(cash * 0.15));
+    return { symbol: s.c.symbol, name: s.c.symbol, confidence: "low",
+      thesis: "Among your candidates, " + s.c.symbol + " (" + s.c.theme + ") shows the strongest recent momentum (" + ((s.c.moPct || 0) >= 0 ? "+" : "") + (s.c.moPct || 0) + "% this month). That's history, not a promise - treat it as a starting point to research, not a verdict.",
+      catalyst: "Momentum in the " + s.c.theme + " space.", risks: "Fast risers can fall just as fast - keep the position small.",
+      suggestedAmount: amt, suggestedPct: cash > 0 ? Math.round(amt / cash * 100) : 0 };
+  });
+  return { marketNote: "I'm working from recent price action while my deeper analysis is offline - take these as leads to dig into.", picks: picks, source: "local", generatedAt: ctx.today, marketNews: [] };
+}
+function runStockScout(ctx, cb) {
+  var langName = LANGUAGE_NAMES[ctx.lang] || "English";
+  var langLine = langName !== "English" ? " Write entirely in " + langName + "." : "";
+  gatherScoutData(function(data) {
+    var withData = data.candidates.filter(function(c) { return c.quote || c.yrPct != null; });
+    if (!withData.length) { cb(localStockScout(data.candidates, ctx)); return; }
+    var lines = data.candidates.map(function(c) {
+      var q = c.quote;
+      return c.symbol + " (" + c.theme + "): " + (q ? invFmt(q.price, "USD", "native") + ", " + (q.changePct >= 0 ? "+" : "") + q.changePct + "% today" : "price n/a") +
+        (c.yrPct != null ? ", " + (c.yrPct >= 0 ? "+" : "") + c.yrPct + "% over 1yr" : "") +
+        (c.moPct != null ? ", " + (c.moPct >= 0 ? "+" : "") + c.moPct + "% over 1mo" : "");
+    }).join("\n");
+    var newsLines = (data.marketNews || []).slice(0, 6).map(function(n) { return "- " + n.headline; }).join("\n");
+    var riskWord = { sell: "gets nervous and may sell in downturns", hold: "holds steady through downturns", buy: "likes to buy the dip" }[(ctx.profile || {}).risk] || "is still finding their risk comfort";
+    var personal = "The investor has " + dollars(ctx.investingCash || 0) + " of cash ready to invest in this account and a spendable balance of " + dollars(ctx.balance || 0) + ". They are " + investorLevelPhrase(ctx.profile) + " who " + riskWord + ".";
+    var system = richardUserCtx(ctx.richardInstructions) +
+      "You are Richard in your most rigorous mode - a sharp, honest stock analyst hunting for the most promising opportunities for THIS person right now. Reason from the real data provided (recent price action and current headlines) together with what you know about these companies' products, moats, and likely catalysts. Have a genuine view, but name the risks plainly and never promise a return. Rank the 2 or 3 strongest ideas. Size each suggestion to what they can actually afford: never more than their available cash, smaller for a beginner or a nervous investor, and keep any single idea a sensible slice rather than everything at once." + investorGlossary(ctx.profile) +
+      " Return ONLY a JSON object: {\"marketNote\":\"1-2 sentences on the current backdrop\",\"picks\":[{\"symbol\":\"TICKER\",\"name\":\"Company name\",\"confidence\":\"low|medium|high\",\"thesis\":\"why this could be a winner, in plain English\",\"catalyst\":\"the specific driver - a product, trend, or event\",\"risks\":\"the main way this goes wrong\",\"suggestedAmount\":<number of " + (SYM_TO_CODE[_currency.sym] || "USD") + ">,\"suggestedPct\":<percent of their investing cash>}]}. Choose only from the tickers listed above." + langLine;
+    callClaude([{ role: "user", content: "Candidate data:\n" + lines + "\n\nCurrent market headlines:\n" + (newsLines || "(none available)") + "\n\n" + personal + " Find the next big opportunities for me and size each one to my situation." }],
+      system, 1500, function(err, text) {
+        if (err || !text) { cb(localStockScout(data.candidates, ctx)); return; }
+        try {
+          var obj = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
+          if (!obj || !Array.isArray(obj.picks) || !obj.picks.length) { cb(localStockScout(data.candidates, ctx)); return; }
+          obj.source = "ai"; obj.generatedAt = ctx.today; obj.marketNews = (data.marketNews || []).slice(0, 6);
+          cb(obj);
+        } catch (e) { cb(localStockScout(data.candidates, ctx)); }
+      }, "claude-opus-4-8");
+  });
+}
+function sendScoutChat(scout, ctx, history, cb) {
+  var picksLine = (scout.picks || []).map(function(p) { return p.symbol + " (" + p.confidence + " confidence): " + p.thesis + " Catalyst: " + p.catalyst + " Risk: " + p.risks + " Suggested: " + dollars(p.suggestedAmount || 0); }).join("\n");
+  var langName = LANGUAGE_NAMES[ctx.lang] || "English";
+  var langLine = langName !== "English" ? " Reply entirely in " + langName + "." : "";
+  var system = richardUserCtx(ctx.richardInstructions) +
+    "You are Richard, discussing the stock ideas you just gave this person. Be warm, direct, and concrete, explain your reasoning when asked, and stay honest about uncertainty - never promise returns. Tie advice to their money: they have " + dollars(ctx.investingCash || 0) + " of investing cash and are " + investorLevelPhrase(ctx.profile) + ". Your scouting report said: " + (scout.marketNote || "") + "\nYour picks:\n" + picksLine + RICHARD_FORMAT + langLine;
+  callClaude(history, system, 700, cb);
+}
+
+function StockScoutView(props) {
+  var accts = props.investing || [];
+  var tx = props.tx || [];
+  var today = new Date().toISOString().slice(0, 10);
+  var acct = null;
+  for (var ai = 0; ai < accts.length; ai++) { if (accts[ai].id === props.openInvId) { acct = accts[ai]; break; } }
+  if (!acct && accts.length) acct = accts[0];
+  var scout = acct && acct.scout ? acct.scout : null;
+
+  var _bs = useState(false); var busy = _bs[0]; var setBusy = _bs[1];
+  var _ci = useState(""); var chatInput = _ci[0]; var setChatInput = _ci[1];
+  var _cbz = useState(false); var chatBusy = _cbz[0]; var setChatBusy = _cbz[1];
+  var _fr = useState(-1); var freshIdx = _fr[0]; var setFreshIdx = _fr[1];
+  var genRef = useRef("");
+  var chatEndRef = useRef(null);
+
+  var cash = acct ? investingCash(acct) : 0;
+  var balance = 0;
+  tx.forEach(function(t) { if (t.pending || t.catchUp || (t.date && t.date > today)) return; balance += t.type === "income" ? t.amount : -t.amount; });
+  balance = round2(balance);
+
+  function ctxObj() {
+    return { investingCash: cash, balance: balance, profile: props.investorProfile, lang: props.lang, richardInstructions: props.richardInstructions, today: today };
+  }
+  function saveScout(next) {
+    if (!acct) return;
+    props.onSaveInvesting(accts.map(function(a) { if (a.id !== acct.id) return a; var n = {}; for (var k in a) n[k] = a[k]; n.scout = next; return n; }));
+  }
+  function generate() {
+    if (!acct) return;
+    setBusy(true);
+    runStockScout(ctxObj(), function(result) {
+      result.chat = (acct.scout && acct.scout.chat) || [];
+      saveScout(result);
+      setBusy(false);
+    });
+  }
+  // Auto-run once when the page opens with no fresh report.
+  useEffect(function() {
+    if (!acct) return;
+    var key = acct.id + "::" + today;
+    if (genRef.current === key) return;
+    if (scout && scout.generatedAt === today) return;
+    if (busy) return;
+    genRef.current = key;
+    generate();
+  }, [acct ? acct.id : null]);
+
+  useEffect(function() {
+    if (chatEndRef.current && chatEndRef.current.scrollIntoView) chatEndRef.current.scrollIntoView({ block: "end" });
+  }, [scout ? (scout.chat || []).length : 0, chatBusy]);
+
+  function sendChat(text) {
+    var msg = (text != null ? text : chatInput).trim();
+    if (!msg || chatBusy || !scout) return;
+    setChatInput("");
+    var history = (scout.chat || []).concat([{ role: "user", text: msg }]);
+    saveScout(Object.assign({}, scout, { chat: history }));
+    setChatBusy(true);
+    var apiHist = history.map(function(m) { return { role: m.role === "richard" ? "assistant" : "user", content: m.text }; });
+    sendScoutChat(scout, ctxObj(), apiHist, function(err, reply) {
+      setChatBusy(false);
+      var text2 = (err || !reply) ? "Sorry, I couldn't think that through just now - try again in a moment." : reply;
+      var next = history.concat([{ role: "richard", text: text2 }]);
+      setFreshIdx(next.length - 1);
+      // Read the freshest account so a price-poll save elsewhere can't clobber chat.
+      var live = null; (props.investing || []).forEach(function(a) { if (a.id === acct.id) live = a; });
+      var base = (live && live.scout) ? live.scout : scout;
+      saveScout(Object.assign({}, base, { chat: next }));
+    });
+  }
+
+  var confColor = { high: T.green, medium: T.gold, low: T.ink3 };
+
+  if (!acct) {
+    return (
+      <div>
+        <SubViewBack onBack={props.onBack} label={props.backLabel || "Investing"} />
+        <div style={{ textAlign: "center", padding: "60px 20px", color: T.ink3, fontSize: 14 }}>Open an investing account first, then let Richard scout for you.</div>
+      </div>
+    );
+  }
+
+  var msgs = (scout && scout.chat) || [];
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} label={props.backLabel || "Investing"} />
+
+      <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 6, padding: "0 2px" }}>
+        <div style={{ position: "relative", width: 40, height: 40, flexShrink: 0 }}>
+          <div style={{ position: "absolute", inset: -6, borderRadius: "50%", background: "radial-gradient(circle," + T.orangeGlow + " 0%, transparent 70%)", filter: "blur(6px)" }} />
+          <div style={{ position: "relative", width: 40, height: 40, borderRadius: 13, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 18px " + T.orangeGlow }}>
+            <SVGIcon id="search" size={19} color="#fff" />
+          </div>
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 19, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em" }}>Richard's scouting report</div>
+          <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 1 }}>Deep analysis of the market's movers</div>
+        </div>
+      </div>
+
+      {busy ? (
+        <Card style={{ padding: "22px 20px", marginTop: 12 }}>
+          <AIWorking bare title="Richard is thinking as hard as he can" sub="Deep-reasoning mode - reading live prices and the news before he commits."
+            expectedMs={30000} steps={["Pulling live prices and headlines", "Reading the market's mood", "Weighing every candidate", "Pressure-testing his picks", "Sizing it to your money"]} />
+        </Card>
+      ) : !scout ? (
+        <Card style={{ padding: "24px 20px", marginTop: 12, textAlign: "center" }}>
+          <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, marginBottom: 6 }}>Ready when you are</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 14 }}>Richard will study the market's movers and the news, then bring you his best ideas.</div>
+          <BigBtn label="Find me the next big pick" onPress={generate} />
+        </Card>
+      ) : (
+        <div>
+          {scout.marketNote && (
+            <div style={{ marginTop: 12, marginBottom: 14, background: T.orangeDim, borderRadius: 14, padding: "13px 15px", display: "flex", gap: 10, alignItems: "flex-start" }}>
+              <SVGIcon id="chart" size={15} color={T.orange} />
+              <span style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, fontWeight: 500 }}>{scout.marketNote}</span>
+            </div>
+          )}
+
+          {(scout.picks || []).map(function(p, i) {
+            var overCash = (p.suggestedAmount || 0) > cash;
+            return (
+              <Card key={p.symbol + i} style={{ padding: "16px 18px", marginBottom: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 10 }}>
+                  <div style={{ width: 30, height: 30, borderRadius: 10, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 13, fontWeight: 800, color: "#fff", fontFamily: UI }}>{i + 1}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: T.ink }}>{p.symbol}</div>
+                    <div style={{ fontSize: 12, color: T.ink3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name || p.symbol}</div>
+                  </div>
+                  {p.confidence && (
+                    <div style={{ background: (confColor[p.confidence] || T.ink3) + "1E", borderRadius: 999, padding: "4px 10px", flexShrink: 0 }}>
+                      <span style={{ fontSize: 10.5, fontWeight: 800, color: confColor[p.confidence] || T.ink3, textTransform: "uppercase", letterSpacing: "0.04em" }}>{p.confidence}</span>
+                    </div>
+                  )}
+                </div>
+                {[["Why Richard likes it", p.thesis], ["The catalyst", p.catalyst], ["The risk", p.risks]].map(function(row, j) {
+                  return row[1] ? (
+                    <div key={j} style={{ marginBottom: 9 }}>
+                      <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 3 }}>{row[0]}</div>
+                      <div style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.5 }}>{row[1]}</div>
+                    </div>
+                  ) : null;
+                })}
+                {p.suggestedAmount != null && (
+                  <div style={{ marginTop: 10, background: "rgba(0,0,0,0.03)", borderRadius: 12, padding: "12px 14px" }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 3 }}>How much to put in</div>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: T.ink }}>{"Up to " + dollars(p.suggestedAmount) + (p.suggestedPct ? "  ·  " + p.suggestedPct + "% of your cash" : "")}</div>
+                    {overCash && <div style={{ fontSize: 11.5, color: T.gold, fontWeight: 600, marginTop: 3 }}>{"That's more than your " + dollars(cash) + " cash - deposit first, or start smaller."}</div>}
+                  </div>
+                )}
+                <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                  <button onClick={function() { if (props.onOpenStock) props.onOpenStock(acct.id, p.symbol); }}
+                    style={{ flex: 1, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "10px 0", borderRadius: 11, background: "none", color: T.orange }}>{"See " + p.symbol}</button>
+                  <button onClick={function() { if (props.onTrade) props.onTrade(acct.id, p.symbol); }}
+                    style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 800, padding: "10px 0", borderRadius: 11, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow }}>Buy</button>
+                </div>
+              </Card>
+            );
+          })}
+
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "4px 2px 14px" }}>
+            <span style={{ fontSize: 10.5, color: T.ink3 }}>{"Scouted " + (scout.generatedAt === today ? "today" : scout.generatedAt) + (scout.source === "local" ? " · offline read" : " · deep-reasoning mode")}</span>
+            {!busy && <button onClick={generate} style={{ background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 11.5, fontWeight: 700, fontFamily: UI, display: "flex", alignItems: "center", gap: 3 }}><SVGIcon id="refresh" size={12} color={T.orange} />New scout</button>}
+          </div>
+
+          {/* Ask Richard (Sonnet chat) */}
+          <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+            <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Ask Richard about these</span>
+          </div>
+          <Card style={{ padding: "14px 16px" }}>
+            {msgs.length === 0 && !chatBusy && (
+              <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 12 }}>Curious why he picked these, or how they fit your plan? Ask him anything.</div>
+            )}
+            {msgs.map(function(m, i) {
+              var mine = m.role === "user";
+              return (
+                <div key={i} style={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start", marginBottom: 9 }}>
+                  <div style={{ maxWidth: "85%", background: mine ? T.btn : "rgba(0,0,0,0.05)", color: mine ? "#fff" : T.ink, borderRadius: mine ? "14px 14px 4px 14px" : "14px 14px 14px 4px", padding: "9px 13px", fontSize: 13.5, lineHeight: 1.5, fontFamily: UI }}>
+                    {mine ? m.text : <TypeReveal animate={i === freshIdx} text={m.text} size={13.5} color={T.ink} />}
+                  </div>
+                </div>
+              );
+            })}
+            {chatBusy && (
+              <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 9 }}>
+                <div style={{ background: "rgba(0,0,0,0.05)", borderRadius: "14px 14px 14px 4px", padding: "11px 14px" }}><ThinkingDots size={4.5} color={T.ink3} /></div>
+              </div>
+            )}
+            <div ref={chatEndRef} />
+            {msgs.length === 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 12 }}>
+                {[(scout.picks && scout.picks[0] ? "Why " + scout.picks[0].symbol + "?" : "Why these?"), "Is this risky for me?", "How much should I start with?"].map(function(q) {
+                  return <button key={q} onClick={function() { sendChat(q); }} style={{ border: "1px solid " + T.sep, background: T.card, borderRadius: 999, padding: "7px 13px", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.ink2 }}>{q}</button>;
+                })}
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
+              <input value={chatInput} onChange={function(e) { setChatInput(e.target.value); }} onKeyDown={function(e) { if (e.key === "Enter") sendChat(); }}
+                placeholder="Ask Richard anything..." style={{ flex: 1, background: "rgba(0,0,0,0.04)", border: "none", borderRadius: 12, padding: "11px 14px", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box" }} />
+              <button onClick={function() { sendChat(); }} disabled={!chatInput.trim() || chatBusy}
+                style={{ border: "none", cursor: chatInput.trim() && !chatBusy ? "pointer" : "default", background: chatInput.trim() && !chatBusy ? T.btn : "rgba(0,0,0,0.08)", borderRadius: 12, width: 42, height: 42, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <SVGIcon id="up" size={17} color={chatInput.trim() && !chatBusy ? "#fff" : T.ink3} />
+              </button>
+            </div>
+          </Card>
+
+          <div style={{ fontSize: 11, color: T.ink3, marginTop: 12, lineHeight: 1.45, padding: "0 2px 8px" }}>Richard's scouting is research to explore, not financial advice. He can be wrong - always do your own homework before you buy.</div>
+        </div>
+      )}
     </div>
   );
 }
@@ -16622,7 +16963,8 @@ export default function App() {
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} />}
         {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Overview" : "Savings"} onBack={function() { setTab(prevTabRef.current || "overview"); }} />}
-        {currentTab === "investing" && <InvestingView investing={investing} tx={tx} openInvId={openInv} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} onOpenInvestorOnboard={function() { prevTabRef.current = "investing"; setTab("investorOnboard"); }} backLabel={prevTabRef.current === "overview" ? "Overview" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
+        {currentTab === "investing" && <InvestingView investing={investing} tx={tx} openInvId={openInv} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} onOpenInvestorOnboard={function() { prevTabRef.current = "investing"; setTab("investorOnboard"); }} onOpenScout={function() { prevTabRef.current = "investing"; setTab("scout"); }} backLabel={prevTabRef.current === "overview" ? "Overview" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
+        {currentTab === "scout" && <StockScoutView investing={investing} openInvId={openInv} tx={tx} goals={goals} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} backLabel="Investing" onBack={function() { setTab("investing"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} onTrade={function(acctId, symbol) { setOpenInv(acctId); setInvSheetReq({ kind: "buy", symbol: symbol }); setTab("investing"); }} />}
         {currentTab === "stock" && <StockView investing={investing} tx={tx} goals={goals} openStock={openStock} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onOpenInvestorOnboard={function() { prevTabRef.current = "stock"; setTab("investorOnboard"); }} backLabel="Investing" onBack={function() { setTab("investing"); }} onTrade={function(symbol, kind) { setOpenInv(openStock ? openStock.acctId : null); setInvSheetReq({ kind: kind, symbol: symbol }); setTab("investing"); }} />}
         {currentTab === "investorOnboard" && <InvestorOnboardScreen investorProfile={investorProfile} username={user} lang={lang} richardInstructions={richardCtx} today={new Date().toISOString().slice(0, 10)} onSave={onSaveInvestorProfile} onDone={function() { setTab(prevTabRef.current || "investing"); }} />}
         {currentTab === "editOpeningBalance" && <EditOpeningBalanceView tx={tx} onComplete={handleEditOpeningBalance} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
