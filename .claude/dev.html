@@ -65,7 +65,7 @@ fetchSource(1).then(function(src){
   // Expose the pure business-math helpers for console verification in tests.
   try { window.__richy = { bizMonthSpend: bizMonthSpend, bizMonthRevenue: bizMonthRevenue, bizMonthProfit: bizMonthProfit, bizCatMonthSpent: bizCatMonthSpent, bizBurn: bizBurn, bizRunway: bizRunway, bizPace: bizPace, bizHealth: bizHealth, bizRevenueTrend: bizRevenueTrend, businessCash: businessCash }; } catch (e) {}
   // Market-data adapter + FX helpers (Investing feature) for the same purpose.
-  try { Object.assign(window.__richy, { stockQuote: stockQuote, stockQuotes: stockQuotes, stockSeries: stockSeries, stockSearch: stockSearch, stockProfile: stockProfile, stockNews: stockNews, isTASE: isTASE, invFmt: invFmt, invConvert: invConvert, loadInvRates: loadInvRates }); } catch (e) {}
+  try { Object.assign(window.__richy, { stockQuote: stockQuote, stockQuotes: stockQuotes, stockSeries: stockSeries, stockSearch: stockSearch, stockProfile: stockProfile, stockNews: stockNews, isTASE: isTASE, invFmt: invFmt, invConvert: invConvert, loadInvRates: loadInvRates, investingCash: investingCash, positionsOf: positionsOf, investingHoldingsValue: investingHoldingsValue, investingWorth: investingWorth, investingTotal: investingTotal, investingSeries: investingSeries, investingDividendTotal: investingDividendTotal }); } catch (e) {}
 
   function iso(d){ return new Date(Date.now() - d*86400000).toISOString().slice(0,10); }
   var mockCats = freshCategories();

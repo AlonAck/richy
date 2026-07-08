@@ -769,6 +769,126 @@ function _mockStock(params, cb) {
   }, 300);
 }
 
+// === INVESTING ACCOUNTS (money math) ===
+// An Investing account is a brokerage-style pot: a CASH balance (deposits in,
+// buys out, sells/dividends back in - always held in the app's main currency)
+// plus HOLDINGS from a full trade ledger priced in each stock's own currency.
+// Cash moves mirror savings pots exactly; a trade converts cash <-> the stock's
+// native currency at the FX rate locked when the trade was saved (cashAmount
+// carries the app-currency side). Net worth counts cash + holdings valued at
+// the last persisted price, so it works synchronously and offline.
+function investingCash(acct) {
+  if (!acct) return 0;
+  var cash = 0;
+  (acct.cashEntries || []).forEach(function(e) { cash += e.kind === "withdraw" ? -(e.amount || 0) : (e.amount || 0); });
+  (acct.trades || []).forEach(function(t) { cash += t.kind === "buy" ? -(t.cashAmount || 0) : (t.cashAmount || 0); });
+  (acct.dividends || []).forEach(function(d) { cash += d.cashAmount || 0; });
+  return round2(cash);
+}
+// Replay the ledger chronologically per symbol with the AVERAGE-COST method:
+// buys fold fees into the cost basis, sells realize (price - avgCost) - fees
+// and never move avgCost. Sold-out symbols stay in the map (shares 0) so their
+// realized P&L and history remain visible.
+function positionsOf(acct) {
+  var out = {};
+  var trades = ((acct && acct.trades) || []).slice().sort(function(a, b) {
+    return a.date === b.date ? (a.id || 0) - (b.id || 0) : (a.date < b.date ? -1 : 1);
+  });
+  trades.forEach(function(t) {
+    var p = out[t.symbol] || (out[t.symbol] = { shares: 0, avgCost: 0, invested: 0, realized: 0, currency: t.currency || "USD", name: t.name || t.symbol });
+    if (t.name) p.name = t.name;
+    var n = t.shares || 0, price = t.price || 0, fees = t.fees || 0;
+    if (t.kind === "buy") {
+      var newCost = p.shares * p.avgCost + n * price + fees;
+      p.shares += n;
+      p.avgCost = p.shares > 0 ? newCost / p.shares : 0;
+    } else {
+      var sold = Math.min(n, p.shares);
+      p.realized += sold * (price - p.avgCost) - fees;
+      p.shares -= sold;
+      if (p.shares <= 1e-7) { p.shares = 0; p.avgCost = 0; }
+    }
+    p.invested = p.shares * p.avgCost;
+  });
+  return out;
+}
+function investingDividendTotal(acct, symbol) {
+  return round2(((acct && acct.dividends) || []).reduce(function(s, d) {
+    return s + ((symbol && d.symbol !== symbol) ? 0 : (d.amount || 0));
+  }, 0));
+}
+// Valuation price for one holding: live-quote mirror persisted on the account ->
+// user-entered manual price (TASE offline case) -> average cost as last resort.
+function investingPriceOf(acct, symbol, fallbackAvg) {
+  var m = acct && acct.meta && acct.meta[symbol];
+  if (m && typeof m.lastPrice === "number" && m.lastPrice > 0) return m.lastPrice;
+  if (m && typeof m.manualPrice === "number" && m.manualPrice > 0) return m.manualPrice;
+  return fallbackAvg || 0;
+}
+function investingHoldingsValue(acct) {
+  var pos = positionsOf(acct);
+  var total = 0;
+  for (var sym in pos) {
+    var p = pos[sym];
+    if (p.shares <= 0) continue;
+    total += invConvert(p.shares * investingPriceOf(acct, sym, p.avgCost), p.currency);
+  }
+  return round2(total);
+}
+function investingWorth(acct) { return round2(investingCash(acct) + investingHoldingsValue(acct)); }
+function investingTotal(list) {
+  if (!list || !list.length) return 0;
+  return round2(list.reduce(function(s, a) { return s + investingWorth(a); }, 0));
+}
+// Portfolio value over time for the account trend chart: replay cash and shares
+// held on each day of the grid and price them with per-symbol close series
+// (seriesMap[SYM] = stockSeries result). The densest series provides the grid.
+// Symbols without a series are valued flat at their current price, and FX uses
+// today's session rates for every day - both documented V1 simplifications.
+function investingSeries(acct, seriesMap) {
+  if (!acct) return [];
+  var symCur = {};
+  (acct.trades || []).forEach(function(t) { symCur[t.symbol] = t.currency || "USD"; });
+  var grid = null;
+  for (var s in symCur) {
+    var ser = seriesMap && seriesMap[s];
+    if (ser && ser.points && ser.points.length && (!grid || ser.points.length > grid.points.length)) grid = ser;
+  }
+  if (!grid) return [];
+  var posAll = positionsOf(acct);
+  // Flat, date-sorted money timeline replayed cumulatively across the grid.
+  var ev = [];
+  (acct.cashEntries || []).forEach(function(e) { ev.push({ date: e.date || "", cash: e.kind === "withdraw" ? -(e.amount || 0) : (e.amount || 0) }); });
+  (acct.trades || []).forEach(function(t) { ev.push({ date: t.date || "", cash: t.kind === "buy" ? -(t.cashAmount || 0) : (t.cashAmount || 0), sym: t.symbol, shares: (t.kind === "buy" ? 1 : -1) * (t.shares || 0) }); });
+  (acct.dividends || []).forEach(function(d) { ev.push({ date: d.date || "", cash: d.cashAmount || 0 }); });
+  ev.sort(function(a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+  var out = [];
+  var cash = 0; var shares = {}; var k = 0;
+  for (var i = 0; i < grid.points.length; i++) {
+    var t = grid.points[i].t;
+    var day = new Date(t).toISOString().slice(0, 10);
+    while (k < ev.length && ev[k].date <= day) {
+      cash += ev[k].cash || 0;
+      if (ev[k].sym) shares[ev[k].sym] = (shares[ev[k].sym] || 0) + ev[k].shares;
+      k++;
+    }
+    var value = cash;
+    for (var sym2 in shares) {
+      if (!shares[sym2]) continue;
+      var ser2 = seriesMap && seriesMap[sym2];
+      var px = null;
+      if (ser2 && ser2.points && ser2.points.length) {
+        for (var j = ser2.points.length - 1; j >= 0; j--) { if (ser2.points[j].t <= t) { px = ser2.points[j].c; break; } }
+        if (px == null) px = ser2.points[0].c;
+      }
+      if (px == null) px = investingPriceOf(acct, sym2, posAll[sym2] ? posAll[sym2].avgCost : 0);
+      value += invConvert(shares[sym2] * px, symCur[sym2] || "USD");
+    }
+    out.push({ t: t, c: round2(value) });
+  }
+  return out;
+}
+
 function hashPass(pw) {
   var h = 5381;
   for (var i = 0; i < pw.length; i++) {
@@ -4153,7 +4273,9 @@ function Overview(props) {
   var savTotal = savingsTotal(savAccts);
   var bizAccts = props.businesses || [];
   var bizTotal = businessTotal(bizAccts);
-  var netWorth = balance + savTotal + bizTotal;
+  var invAccts = props.investing || [];
+  var invTotal = investingTotal(invAccts);
+  var netWorth = balance + savTotal + bizTotal + invTotal;
   // Cash-flow stats are THIS MONTH only. Opening balance is net worth, not income,
   // so it is excluded here (else the savings rate reads 100%). Internal transfers
   // to/from savings pots are excluded too - moving your own money isn't earning or
@@ -6566,6 +6688,7 @@ function Goals(props) {
   function linkedAccountOf(g) {
     if (g.linkType === "savings") return (props.savings || []).filter(function(x) { return String(x.id) === String(g.linkId); })[0] || null;
     if (g.linkType === "business") return (props.businesses || []).filter(function(x) { return String(x.id) === String(g.linkId); })[0] || null;
+    if (g.linkType === "investing") return (props.investing || []).filter(function(x) { return String(x.id) === String(g.linkId); })[0] || null;
     return null;
   }
   function mainBalanceCalc() {
@@ -6577,13 +6700,16 @@ function Goals(props) {
     return income - expense;
   }
   function netWorthCalc() {
-    return mainBalanceCalc() + savingsTotal(props.savings || []) + businessTotal(props.businesses || []);
+    return mainBalanceCalc() + savingsTotal(props.savings || []) + businessTotal(props.businesses || []) + investingTotal(props.investing || []);
   }
   function linkedBalanceOf(g) {
     if (g.linkType === "balance") return mainBalanceCalc();
     if (g.linkType === "networth") return netWorthCalc();
     var acct = linkedAccountOf(g);
     if (!acct) return null;
+    // An investing goal tracks the whole account (cash + holdings at market) -
+    // "my investments reach X" means total value, not just uninvested cash.
+    if (g.linkType === "investing") return investingWorth(acct);
     return g.linkType === "business" ? businessCash(acct) : savingsBalance(acct);
   }
   function linkedLabelOf(g) {
@@ -6603,6 +6729,7 @@ function Goals(props) {
           <option value="networth">{tr("netWorth")}</option>
           {(props.savings || []).map(function(a) { return <option key={"savings:" + a.id} value={"savings:" + a.id}>{a.name}</option>; })}
           {(props.businesses || []).map(function(b) { return <option key={"business:" + b.id} value={"business:" + b.id}>{b.name}</option>; })}
+          {(props.investing || []).map(function(v) { return <option key={"investing:" + v.id} value={"investing:" + v.id}>{v.name}</option>; })}
         </select>
       </div>
     );
@@ -13959,10 +14086,16 @@ export default function App() {
   var savings = _sav[0]; var setSavings = _sav[1];
   var _biz = useState([]);
   var businesses = _biz[0]; var setBusinesses = _biz[1];
+  var _inv = useState([]);
+  var investing = _inv[0]; var setInvesting = _inv[1];
   var _otr = useState(null);
   var openTrip = _otr[0]; var setOpenTrip = _otr[1];
   var _obz = useState(null);
   var openBiz = _obz[0]; var setOpenBiz = _obz[1];
+  var _oiv = useState(null);
+  var openInv = _oiv[0]; var setOpenInv = _oiv[1];
+  var _osk = useState(null); // { acctId, symbol } for the stock detail page
+  var openStock = _osk[0]; var setOpenStock = _osk[1];
   var _nts = useState([]);
   var notes = _nts[0]; var setNotes = _nts[1];
   var _fld = useState([]);
@@ -14051,6 +14184,8 @@ export default function App() {
     setSavings(data.savings || []);
     // Business accounts are personal too (separated business money + plan).
     setBusinesses(data.businesses || []);
+    // Investing accounts are personal for the same reason (your portfolio).
+    setInvesting(data.investing || []);
     setNotes(data.notes || []);
     setFoundMoney(data.foundMoney || { tally: 0, dismissed: [], acted: [] });
     setDecisions(data.decisions || []);
@@ -14086,7 +14221,7 @@ export default function App() {
 
   // Build the starting document for a brand-new account (e.g. first Google sign-in).
   function defaultBlob(name, email) {
-    return { tx: [], budgets: [], goals: [], trips: [], savings: [], businesses: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: email, theme: "blue" };
+    return { tx: [], budgets: [], goals: [], trips: [], savings: [], businesses: [], investing: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: email, theme: "blue" };
   }
 
   // Firebase Auth is the single source of truth for the session. It restores the
@@ -14220,7 +14355,7 @@ export default function App() {
     blobRef.current = {};
     setUser(null); setAccountKey(null); setTab("overview");
     setHouseholdId(null); setHousehold(null); setInvites([]);
-    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]);
+    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]);
     _lang.code = "en"; setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang("en"); applyTheme("blue"); setTheme("blue");
   }
 
@@ -14229,7 +14364,7 @@ export default function App() {
     var existing = blobRef.current || {};
     var blob = {};
     for (var ek in existing) blob[ek] = existing[ek];
-    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.savings = savings; blob.businesses = businesses; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme; blob.foundMoney = foundMoney; blob.decisions = decisions; blob.monthAnalysis = monthAnalysis;
+    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.savings = savings; blob.businesses = businesses; blob.investing = investing; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme; blob.foundMoney = foundMoney; blob.decisions = decisions; blob.monthAnalysis = monthAnalysis;
     for (var k in next) blob[k] = next[k];
     blobRef.current = blob;
     // Debounce Firestore writes: coalesce rapid successive saves (e.g. typing)
@@ -14275,6 +14410,12 @@ export default function App() {
   // to/from the main balance writes both arrays atomically via onBusinessMove.
   function onSaveBusinesses(next) { setBusinesses(next); save({ businesses: next }); }
   function onBusinessMove(nextTx, nextBusinesses) { setTx(nextTx); setBusinesses(nextBusinesses); save({ tx: nextTx, businesses: nextBusinesses }); }
+  // Investing accounts mirror savings/business: account-only writes (trades that
+  // spend cash already inside the account, watchlist, analyses, price snapshots)
+  // go through onSaveInvesting; deposits/withdrawals that touch the main balance
+  // write both arrays atomically via onInvestingMove.
+  function onSaveInvesting(next) { setInvesting(next); save({ investing: next }); }
+  function onInvestingMove(nextTx, nextInvesting) { setTx(nextTx); setInvesting(nextInvesting); save({ tx: nextTx, investing: nextInvesting }); }
 
   // Reminder scheduling. Timers don't survive reload, so we re-derive them from
   // each note's durable `reminder.due` whenever notes change, firing any that are
@@ -14597,11 +14738,11 @@ export default function App() {
       </div>
 
       <div key={animKey} ref={swipeContentRef} onTouchStart={onContentTouchStart} onTouchEnd={onContentTouchEnd} style={{ padding: "8px 16px 16px", animation: animDir === "right" ? "navSlideRight 0.28s cubic-bezier(0.22,1,0.36,1) both" : animDir === "left" ? "navSlideLeft 0.28s cubic-bezier(0.22,1,0.36,1) both" : "navFade 0.20s ease both" }}>
-        {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} trips={trips} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
+        {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} investing={investing} trips={trips} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
         {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} onSavingsMove={onSavingsMove} />}
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
-        {currentTab === "goals" && <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
+        {currentTab === "goals" && <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} richardInstructions={richardCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
@@ -14616,7 +14757,7 @@ export default function App() {
         {currentTab === "language" && <LanguageView lang={lang} onLangChange={onSaveLang} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "appearance" && <AppearanceView theme={theme} onThemeChange={onSaveTheme} darkMode={darkMode} onDarkModeChange={onSaveDarkMode} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
-        {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} />}
+        {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} />}
         {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Overview" : "Savings"} onBack={function() { setTab(prevTabRef.current || "overview"); }} />}
         {currentTab === "editOpeningBalance" && <EditOpeningBalanceView tx={tx} onComplete={handleEditOpeningBalance} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "logMonth" && <LogMonthView categories={categories} tx={tx} budgets={budgets} onComplete={handleLogMonth} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
