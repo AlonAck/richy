@@ -6267,34 +6267,60 @@ function Goals(props) {
     });
   }
 
-  // A goal can sync its "saved" amount from a savings pot or business account
-  // instead of being tracked manually - linkKey is "savings:<id>" or
-  // "business:<id>", encoded/decoded around the plain linkType/linkId fields.
+  // A goal can sync its "saved" amount from a savings pot, business account,
+  // the main spending balance, or total net worth - instead of being tracked
+  // manually. linkKey is "savings:<id>" / "business:<id>" for accounts, or the
+  // bare word "balance" / "networth" for the two whole-of-account options.
+  // Sync is always opt-in - "" (no link) is the default, and any goal can be
+  // unlinked at any time from the edit sheet.
   function parseLinkKey(key) {
     if (!key) return { linkType: "", linkId: "" };
+    if (key === "balance" || key === "networth") return { linkType: key, linkId: "" };
     var idx = key.indexOf(":");
     return { linkType: key.slice(0, idx), linkId: key.slice(idx + 1) };
   }
-  function linkKeyOf(g) { return (g.linkType && g.linkId) ? (g.linkType + ":" + g.linkId) : ""; }
+  function linkKeyOf(g) {
+    if (g.linkType === "balance" || g.linkType === "networth") return g.linkType;
+    return (g.linkType && g.linkId) ? (g.linkType + ":" + g.linkId) : "";
+  }
   function linkedAccountOf(g) {
     if (g.linkType === "savings") return (props.savings || []).filter(function(x) { return String(x.id) === String(g.linkId); })[0] || null;
     if (g.linkType === "business") return (props.businesses || []).filter(function(x) { return String(x.id) === String(g.linkId); })[0] || null;
     return null;
   }
+  function mainBalanceCalc() {
+    var txs = props.tx || [];
+    var today = new Date().toISOString().slice(0, 10);
+    var settled = function(t) { return !t.pending && !t.catchUp && t.date <= today; };
+    var income = txs.filter(function(t) { return t.type === "income" && settled(t); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    var expense = txs.filter(function(t) { return t.type === "expense" && settled(t); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    return income - expense;
+  }
+  function netWorthCalc() {
+    return mainBalanceCalc() + savingsTotal(props.savings || []) + businessTotal(props.businesses || []);
+  }
   function linkedBalanceOf(g) {
+    if (g.linkType === "balance") return mainBalanceCalc();
+    if (g.linkType === "networth") return netWorthCalc();
     var acct = linkedAccountOf(g);
     if (!acct) return null;
     return g.linkType === "business" ? businessCash(acct) : savingsBalance(acct);
   }
-  function hasLinkableAccounts() { return (props.savings || []).length > 0 || (props.businesses || []).length > 0; }
+  function linkedLabelOf(g) {
+    if (g.linkType === "balance") return tr("balance");
+    if (g.linkType === "networth") return tr("netWorth");
+    var acct = linkedAccountOf(g);
+    return acct ? acct.name : "";
+  }
   function syncSelectRow(value, onChange) {
-    if (!hasLinkableAccounts()) return null;
     return (
       <div style={{ background: T.inputBg, borderRadius: 13, padding: "9px 14px", marginBottom: 7 }}>
         <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, marginBottom: 3 }}>{tr("syncWithAccount")}</div>
         <select value={value} onChange={function(e) { onChange(e.target.value); }}
           style={{ width: "100%", border: "none", background: "none", fontSize: 15, color: T.ink, fontFamily: UI, outline: "none", padding: 0 }}>
           <option value="">{tr("noSync")}</option>
+          <option value="balance">{tr("balance")}</option>
+          <option value="networth">{tr("netWorth")}</option>
           {(props.savings || []).map(function(a) { return <option key={"savings:" + a.id} value={"savings:" + a.id}>{a.name}</option>; })}
           {(props.businesses || []).map(function(b) { return <option key={"business:" + b.id} value={"business:" + b.id}>{b.name}</option>; })}
         </select>
@@ -6421,7 +6447,7 @@ function Goals(props) {
         var linkedBal = linkedBalanceOf(g);
         var isLinked = linkedBal != null;
         var saved = isLinked ? linkedBal : (g.saved || 0);
-        var pct = Math.min(100, Math.round((saved / g.target) * 100));
+        var pct = Math.max(0, Math.min(100, Math.round((saved / g.target) * 100)));
         var done = saved >= g.target;
         var deadlineBadge = null;
         if (g.deadline) {
@@ -6443,7 +6469,7 @@ function Goals(props) {
                   {isLinked && (
                     <div style={{ marginTop: 6 }}>
                       <span style={{ fontSize: 10, fontWeight: 700, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.02em", color: T.orange, background: T.orangeDim }}>
-                        {tr("syncedWith") + " " + linkedAccountOf(g).name}
+                        {tr("syncedWith") + " " + linkedLabelOf(g)}
                       </span>
                     </div>
                   )}
@@ -14283,7 +14309,7 @@ export default function App() {
         {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} onSavingsMove={onSavingsMove} />}
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
-        {currentTab === "goals" && <Goals goals={goals} trips={trips} savings={savings} businesses={businesses} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
+        {currentTab === "goals" && <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} richardInstructions={richardCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
