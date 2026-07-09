@@ -2136,6 +2136,13 @@ function Overlay(props) {
         paddingBottom: "calc(28px + env(safe-area-inset-bottom, 0px))",
         animation: closing ? "sheetSlideDown 0.27s cubic-bezier(0.4,0,1,1) both" : "sheetSlideUp 0.34s cubic-bezier(0.22,1,0.36,1) both",
       }}>
+        {props.ribbon && (
+          <React.Fragment>
+            <JrShaderBg colors={props.ribbonColors || [T.orange, T.orangeHi, T.orange]} base="#FBF3E8" speed={0.16} intensity={0.55} yScale={0.5} xScale={1.05} style={{ position: "absolute", borderRadius: "24px 24px 0 0" }} />
+            <div style={{ position: "absolute", inset: 0, borderRadius: "24px 24px 0 0", pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.86) 0%, rgba(251,243,232,0.5) 30%, rgba(251,243,232,0.42) 60%, rgba(251,243,232,0.82) 100%)" }} />
+          </React.Fragment>
+        )}
+        <div style={{ position: "relative" }}>
         <div style={{ width: 38, height: 5, borderRadius: 3, background: T.orangeDim, margin: "9px auto 0" }} />
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px 8px" }}>
           <span style={{ fontSize: 18, fontWeight: 700, fontFamily: DISP, color: T.ink, letterSpacing: "-0.02em" }}>{props.title}</span>
@@ -2146,6 +2153,7 @@ function Overlay(props) {
           }}>x</button>
         </div>
         <div style={{ padding: "2px 20px 0" }}>{props.children}</div>
+        </div>
       </div>
     </div>
   ), document.body);
@@ -9772,7 +9780,7 @@ function Advisor(props) {
     if (advice.expertQuote && advice.expertQuote.quote) {
       panels.push(
         <div key="quote" style={panelStyle({ justifyContent: "center", position: "relative" })}>
-          <span style={{ position: "absolute", top: 4, left: 14, fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 120, lineHeight: 1, color: HINK, opacity: 0.1, pointerEvents: "none" }}>{'”'}</span>
+          <span style={{ position: "absolute", top: 4, left: 14, fontFamily: DISP, fontSize: 120, lineHeight: 1, color: HINK, opacity: 0.1, pointerEvents: "none" }}>{'”'}</span>
           <p style={{ position: "relative", margin: 0, fontSize: 18, lineHeight: 1.5, fontWeight: 600, letterSpacing: "-0.01em", color: HINK }}>{advice.expertQuote.quote}</p>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 16 }}>
             <div style={{ width: 18, height: 2, borderRadius: 2, background: T.gold }} />
@@ -11157,20 +11165,21 @@ function SavingsView(props) {
                   {tr("closeAccount")}{bal > 0 ? " · " + dollars(bal) + " → " + tr("balance").toLowerCase() : ""}
                 </button>
                 {deleteConfirm === a.id ? (
-                  <div style={{ marginTop: 8, background: "rgba(220,50,50,0.07)", borderRadius: 10, padding: "10px 12px" }}>
-                    <div style={{ fontSize: 12.5, color: T.ink2, marginBottom: 8, lineHeight: 1.45 }}>
-                      {bal > 0 ? dollars(bal) + " will be permanently lost. " : ""}Delete this account?
+                  <div style={{ marginTop: 8, background: "rgba(220,50,50,0.1)", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(224,48,48,0.2)" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: T.red, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>⚠ This cannot be undone</div>
+                    <div style={{ fontSize: 12.5, color: T.ink2, marginBottom: 12, lineHeight: 1.5 }}>
+                      Deleting this account will permanently remove it{bal > 0 ? " and the " + dollars(bal) + " inside it" : ""}. This action is irreversible.
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
                       <button onClick={function() { doDelete(a); }}
-                        style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "8px 0", borderRadius: 9, background: T.red, color: "#fff" }}>Delete</button>
+                        style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "10px 0", borderRadius: 9, background: T.red, color: "#fff" }}>Delete permanently</button>
                       <button onClick={function() { setDeleteConfirm(null); }}
-                        style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "8px 0", borderRadius: 9, background: "rgba(0,0,0,0.07)", color: T.ink2 }}>Cancel</button>
+                        style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "10px 0", borderRadius: 9, background: "rgba(0,0,0,0.07)", color: T.ink2 }}>Cancel</button>
                     </div>
                   </div>
                 ) : (
                   <button onClick={function() { setDeleteConfirm(a.id); }}
-                    style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 2, padding: "4px 0", textAlign: "left" }}>
+                    style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 2, padding: "4px 0", textAlign: "left" }}>
                     Delete account
                   </button>
                 )}
@@ -11396,6 +11405,7 @@ function InvestingView(props) {
   var _cAmt = useState(""); var cashAmt = _cAmt[0]; var setCashAmt = _cAmt[1];
   var _cSrc = useState("balance"); var cashSrc = _cSrc[0]; var setCashSrc = _cSrc[1];
   var _allA = useState(false); var allAct = _allA[0]; var setAllAct = _allA[1];
+  var _delConfirm = useState(false); var delConfirm = _delConfirm[0]; var setDelConfirm = _delConfirm[1];
 
   var pos = acct ? positionsOf(acct) : {};
   var held = [];
@@ -12442,6 +12452,26 @@ function StockView(props) {
     setManualVal("");
   }
 
+  function doDeleteStock() {
+    if (!acct || !props.onSaveInvesting) return;
+    var newAcct = {}; for (var k in acct) newAcct[k] = acct[k];
+    var newTrades = (acct.trades || []).filter(function(t) { return t.symbol !== symbol; });
+    var newDividends = (acct.dividends || []).filter(function(d) { return d.symbol !== symbol; });
+    var newWatchlist = (acct.watchlist || []).filter(function(w) { return w !== symbol; });
+    var newMeta = Object.assign({}, acct.meta);
+    delete newMeta[symbol];
+    var newAnalyses = Object.assign({}, acct.analyses);
+    delete newAnalyses[symbol];
+    newAcct.trades = newTrades;
+    newAcct.dividends = newDividends;
+    newAcct.watchlist = newWatchlist;
+    newAcct.meta = newMeta;
+    newAcct.analyses = newAnalyses;
+    props.onSaveInvesting(accts.map(function(a) { return a.id === acct.id ? newAcct : a; }));
+    setDelConfirm(false);
+    if (props.onBack) props.onBack();
+  }
+
   // --- price chart (card styling, gain/loss colored, prevClose baseline on 1D) ---
   function stockChart(ser) {
     var points = ser.points || [];
@@ -12821,6 +12851,27 @@ function StockView(props) {
           })}
         </Card>
       )}
+
+      {/* delete stock */}
+      {delConfirm ? (
+        <Card style={{ padding: "16px 18px", marginBottom: 20, background: "rgba(224,48,48,0.08)", border: "1px solid rgba(224,48,48,0.2)" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: T.red, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>⚠ This cannot be undone</div>
+          <div style={{ fontSize: 13, color: T.ink2, marginBottom: 14, lineHeight: 1.5 }}>
+            Deleting {symbol} will permanently remove this stock from your account, including all trades and analysis history. This action is irreversible.
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={doDeleteStock}
+              style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "11px 0", borderRadius: 10, background: T.red, color: "#fff" }}>Delete permanently</button>
+            <button onClick={function() { setDelConfirm(false); }}
+              style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "11px 0", borderRadius: 10, background: "rgba(0,0,0,0.07)", color: T.ink2 }}>Cancel</button>
+          </div>
+        </Card>
+      ) : (
+        <button onClick={function() { setDelConfirm(true); }}
+          style={{ width: "100%", marginBottom: 20, background: "none", border: "none", color: T.red, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "8px 0", textAlign: "center" }}>
+          Delete {symbol} from account
+        </button>
+      )}
     </div>
   );
 }
@@ -13140,6 +13191,7 @@ function localStockScout(candidates, ctx) {
   var picks = scored.slice(0, 2).map(function(s) {
     var amt = Math.max(0, Math.round(cash * 0.15));
     return { symbol: s.c.symbol, name: s.c.symbol, confidence: "low",
+      hook: "The hot hand in " + s.c.theme + " right now.",
       thesis: "Among your candidates, " + s.c.symbol + " (" + s.c.theme + ") shows the strongest recent momentum (" + ((s.c.moPct || 0) >= 0 ? "+" : "") + (s.c.moPct || 0) + "% this month). That's history, not a promise - treat it as a starting point to research, not a verdict.",
       catalyst: "Momentum in the " + s.c.theme + " space.", risks: "Fast risers can fall just as fast - keep the position small.",
       suggestedAmount: amt, suggestedPct: cash > 0 ? Math.round(amt / cash * 100) : 0 };
@@ -13162,8 +13214,8 @@ function runStockScout(ctx, cb) {
     var riskWord = { sell: "gets nervous and may sell in downturns", hold: "holds steady through downturns", buy: "likes to buy the dip" }[(ctx.profile || {}).risk] || "is still finding their risk comfort";
     var personal = "The investor has " + dollars(ctx.investingCash || 0) + " of cash ready to invest in this account and a spendable balance of " + dollars(ctx.balance || 0) + ". They are " + investorLevelPhrase(ctx.profile) + " who " + riskWord + ".";
     var system = richardUserCtx(ctx.richardInstructions) +
-      "You are Richard in your most rigorous mode - a sharp, honest stock analyst hunting for the most promising opportunities for THIS person right now. Reason from the real data provided (recent price action and current headlines) together with what you know about these companies' products, moats, and likely catalysts. Have a genuine view, but name the risks plainly and never promise a return. Rank the 2 or 3 strongest ideas. Size each suggestion to what they can actually afford: never more than their available cash, smaller for a beginner or a nervous investor, and keep any single idea a sensible slice rather than everything at once." + investorGlossary(ctx.profile) +
-      " Return ONLY a JSON object: {\"marketNote\":\"1-2 sentences on the current backdrop\",\"picks\":[{\"symbol\":\"TICKER\",\"name\":\"Company name\",\"confidence\":\"low|medium|high\",\"thesis\":\"why this could be a winner, in plain English\",\"catalyst\":\"the specific driver - a product, trend, or event\",\"risks\":\"the main way this goes wrong\",\"suggestedAmount\":<number of " + (SYM_TO_CODE[_currency.sym] || "USD") + ">,\"suggestedPct\":<percent of their investing cash>}]}. Choose only from the tickers listed above." + langLine;
+      "You are Richard in your most rigorous mode - a sharp, honest stock analyst hunting for the most promising opportunities for THIS person right now. Reason from the real data provided (recent price action and current headlines) together with what you know about these companies' products, moats, and likely catalysts. Have a genuine view, but name the risks plainly and never promise a return. Rank the 2 or 3 strongest ideas. Size each suggestion to what they can actually afford: never more than their available cash, smaller for a beginner or a nervous investor, and keep any single idea a sensible slice rather than everything at once. Write the way you'd talk to a smart friend over coffee, not the way an analyst files a report: short, punchy sentences, zero filler, no essay voice." + investorGlossary(ctx.profile) +
+      " Return ONLY a JSON object: {\"marketNote\":\"one punchy sentence on the market's mood right now\",\"picks\":[{\"symbol\":\"TICKER\",\"name\":\"Company name\",\"confidence\":\"low|medium|high\",\"hook\":\"your headline for this pick - ten words max, vivid enough to stop someone mid-scroll, no ticker needed\",\"thesis\":\"why it could win - at most two short spoken sentences\",\"catalyst\":\"the one specific driver - a product, trend, or event, in one sentence\",\"risks\":\"the main way it goes wrong, in one or two blunt sentences\",\"suggestedAmount\":<number of " + (SYM_TO_CODE[_currency.sym] || "USD") + ">,\"suggestedPct\":<percent of their investing cash>}]}. Choose only from the tickers listed above." + langLine;
     callClaude([{ role: "user", content: "Candidate data:\n" + lines + "\n\nCurrent market headlines:\n" + (newsLines || "(none available)") + "\n\n" + personal + " Find the next big opportunities for me and size each one to my situation." }],
       system, 1500, function(err, text) {
         if (err || !text) { cb(localStockScout(data.candidates, ctx)); return; }
@@ -13181,8 +13233,121 @@ function sendScoutChat(scout, ctx, history, cb) {
   var langName = LANGUAGE_NAMES[ctx.lang] || "English";
   var langLine = langName !== "English" ? " Reply entirely in " + langName + "." : "";
   var system = richardUserCtx(ctx.richardInstructions) +
-    "You are Richard, discussing the stock ideas you just gave this person. Be warm, direct, and concrete, explain your reasoning when asked, and stay honest about uncertainty - never promise returns. Tie advice to their money: they have " + dollars(ctx.investingCash || 0) + " of investing cash and are " + investorLevelPhrase(ctx.profile) + ". Your scouting report said: " + (scout.marketNote || "") + "\nYour picks:\n" + picksLine + RICHARD_FORMAT + langLine;
+    "You are Richard, discussing the stock ideas you just gave this person. Be warm, direct, and concrete, explain your reasoning when asked, and stay honest about uncertainty - never promise returns. Keep replies short and punchy - two to four spoken-style sentences unless they ask for real depth. Tie advice to their money: they have " + dollars(ctx.investingCash || 0) + " of investing cash and are " + investorLevelPhrase(ctx.profile) + ". Your scouting report said: " + (scout.marketNote || "") + "\nYour picks:\n" + picksLine + RICHARD_FORMAT + langLine;
   callClaude(history, system, 700, cb);
+}
+
+// === Stocks, the 40-second version ===
+// A tap-through, auto-advancing story strip (five slides, not a chapter) that
+// teaches a first-timer just enough to read the scouting report. Pure SVG +
+// CSS - no AI call - so it also fills the wait while Opus is thinking.
+var SCOUT_BASICS = [
+  { h: "You're buying a slice", b: "A stock is a small piece of a real company. When the company does well over time, your slice is worth more." },
+  { h: "Prices are just moods", b: "The price is millions of people voting with their money, all day long. Daily wiggles are normal - ignore most of them." },
+  { h: "Every pick needs a spark", b: "Richard names a catalyst for each idea: the specific event or trend that could push the price. No spark, no pick." },
+  { h: "Dips are part of the deal", b: "Even great stocks drop sometimes. Only invest money you can leave alone for a few years." },
+  { h: "Start small, learn cheap", b: "You don't need to be bold, just consistent. Richard sizes every idea to your cash so no single bet can hurt you." }
+];
+function scoutBasicsSeen() { try { return localStorage.getItem("richyScoutBasicsSeen") === "1"; } catch (e) { return false; } }
+function markScoutBasicsSeen() { try { localStorage.setItem("richyScoutBasicsSeen", "1"); } catch (e) {} }
+function ScoutBasicsScene(props) {
+  var i = props.beat;
+  var common = { width: 132, height: 96, viewBox: "0 0 132 96", fill: "none" };
+  if (i === 0) return (
+    <svg {...common}>
+      <circle cx="62" cy="52" r="30" stroke={T.orange} strokeOpacity="0.28" strokeWidth="2.5" strokeDasharray="3.5 5" />
+      <circle cx="62" cy="52" r="21" fill={T.orange} fillOpacity="0.07" />
+      <path d="M62 52 L62 22 A30 30 0 0 1 87.5 36.2 Z" fill={T.orange}
+        style={{ animation: "rsbSliceOut 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.7s both" }} />
+    </svg>
+  );
+  if (i === 1) return (
+    <svg {...common}>
+      <path d="M12 62 C26 40 34 74 48 58 C60 44 66 66 80 50 C92 38 100 54 118 34"
+        stroke={T.orange} strokeWidth="3" strokeLinecap="round" pathLength="100"
+        strokeDasharray="100" strokeDashoffset="100" style={{ animation: "rsbDraw 1.8s ease 0.25s both" }} />
+      <circle cx="118" cy="34" r="4.5" fill={T.orange}
+        style={{ animation: "rsbPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 1.9s both", transformBox: "fill-box", transformOrigin: "center" }} />
+      <circle cx="118" cy="34" r="8" stroke={T.orange} strokeWidth="1.5"
+        style={{ animation: "rsbPing 1.6s ease-out 2.1s infinite", transformBox: "fill-box", transformOrigin: "center" }} />
+    </svg>
+  );
+  if (i === 2) return (
+    <svg {...common}>
+      <circle cx="66" cy="48" r="17" stroke={T.gold} strokeWidth="1.5"
+        style={{ animation: "rsbPing 1.7s ease-out 0.9s infinite", transformBox: "fill-box", transformOrigin: "center" }} />
+      <circle cx="66" cy="48" r="26" stroke={T.gold} strokeWidth="1.2"
+        style={{ animation: "rsbPing 1.7s ease-out 1.35s infinite", transformBox: "fill-box", transformOrigin: "center" }} />
+      <path d="M66 20 L72 41 L94 48 L72 55 L66 76 L60 55 L38 48 L60 41 Z" fill={T.gold}
+        style={{ animation: "rsbPop 0.65s cubic-bezier(0.34,1.56,0.64,1) 0.35s both", transformBox: "fill-box", transformOrigin: "center" }} />
+    </svg>
+  );
+  if (i === 3) return (
+    <svg {...common}>
+      <path d="M14 40 H118" stroke={T.ink3} strokeOpacity="0.3" strokeWidth="1.5" strokeDasharray="3 5" />
+      <path d="M14 40 L38 40 C50 40 46 70 60 70 C74 70 74 46 88 36 C98 29 106 26 118 21"
+        stroke={T.orange} strokeWidth="3" strokeLinecap="round" pathLength="100"
+        strokeDasharray="100" strokeDashoffset="100" style={{ animation: "rsbDraw 2s ease 0.3s both" }} />
+      <circle cx="118" cy="21" r="4.5" fill={T.green}
+        style={{ animation: "rsbPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 2.2s both", transformBox: "fill-box", transformOrigin: "center" }} />
+    </svg>
+  );
+  return (
+    <svg {...common}>
+      {[[42, 24, 0.35], [62, 38, 0.65], [82, 54, 1]].map(function(bar, j) {
+        return <rect key={j} x={bar[0]} y={80 - bar[1]} width="15" height={bar[1]} rx="4" fill={T.orange} fillOpacity={bar[2]}
+          style={{ animation: "rsbBar 0.6s cubic-bezier(0.34,1.4,0.64,1) " + (0.3 + j * 0.28).toFixed(2) + "s both", transformBox: "fill-box", transformOrigin: "50% 100%" }} />;
+      })}
+      <path d="M36 82 H103" stroke={T.ink3} strokeOpacity="0.35" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+function ScoutBasicsStory(props) {
+  var _b = useState(0); var beat = _b[0]; var setBeat = _b[1];
+  var N = SCOUT_BASICS.length;
+  var last = beat === N - 1;
+  useEffect(function() {
+    if (last) return;
+    var t = setTimeout(function() { setBeat(beat + 1); }, 5200);
+    return function() { clearTimeout(t); };
+  }, [beat]);
+  function next() { if (last) props.onDone(); else setBeat(beat + 1); }
+  var s = SCOUT_BASICS[beat];
+  return (
+    <Card style={{ padding: 0, marginTop: 12, overflow: "hidden" }}>
+      <div onClick={next} style={{ cursor: "pointer", padding: "13px 16px 16px", background: "linear-gradient(150deg, rgba(137,112,198,0.08), rgba(196,154,60,0.05))" }}>
+        <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>
+          {SCOUT_BASICS.map(function(_, i) {
+            return (
+              <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: "rgba(0,0,0,0.09)", overflow: "hidden" }}>
+                {i < beat ? <div style={{ width: "100%", height: "100%", background: T.orange, borderRadius: 2 }} />
+                  : i === beat ? <div key={"f" + beat} style={{ height: "100%", background: T.orange, borderRadius: 2, animation: last ? "rsbFill 0.5s ease both" : "rsbFill 5.2s linear both" }} /> : null}
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontSize: 10.5, fontWeight: 800, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em" }}>Stocks, the 40-second version</span>
+          <button onClick={function(e) { e.stopPropagation(); props.onDone(); }}
+            style={{ background: "none", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.ink3, padding: "2px 0 2px 12px" }}>Skip</button>
+        </div>
+        <div key={beat}>
+          <div style={{ display: "flex", justifyContent: "center", padding: "3px 0 1px" }}>
+            <ScoutBasicsScene beat={beat} />
+          </div>
+          <div style={{ fontSize: 16.5, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em", textAlign: "center", animation: "rsbUp 0.4s ease both" }}>{s.h}</div>
+          <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.55, textAlign: "center", maxWidth: 300, margin: "5px auto 0", animation: "rsbUp 0.45s ease 0.08s both" }}>{s.b}</div>
+        </div>
+        <div style={{ textAlign: "center", marginTop: 12 }}>
+          {last ? (
+            <span style={{ display: "inline-block", background: T.btn, color: "#fff", borderRadius: 999, padding: "9px 20px", fontSize: 13, fontWeight: 800, fontFamily: UI, boxShadow: "0 3px 10px " + T.orangeGlow, animation: "rsbUp 0.45s ease 0.2s both" }}>Got it - show me the picks</span>
+          ) : (
+            <span style={{ fontSize: 11, color: T.ink3, fontWeight: 600 }}>{"Tap to continue · " + (beat + 1) + "/" + N}</span>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
 }
 
 function StockScoutView(props) {
@@ -13201,6 +13366,28 @@ function StockScoutView(props) {
   var genRef = useRef("");
   var chatEndRef = useRef(null);
 
+  // Anyone still learning gets the 40-second basics story (auto once, replayable);
+  // regulars skip straight to the report.
+  var isBeginner = !props.investorProfile || props.investorProfile.experience !== "regular";
+  var _sbs = useState(isBeginner && !scoutBasicsSeen()); var showBasics = _sbs[0]; var setShowBasics = _sbs[1];
+  // Which picks have "Richard's reasoning" open (hook-first cards start closed).
+  var _xp = useState({}); var expanded = _xp[0]; var setExpanded = _xp[1];
+  function togglePick(i) { var n = Object.assign({}, expanded); n[i] = !n[i]; setExpanded(n); }
+
+  useEffect(function() {
+    if (document.getElementById("richy-scout-css")) return;
+    var st = document.createElement("style");
+    st.id = "richy-scout-css";
+    st.textContent = "@keyframes rsbDraw{to{stroke-dashoffset:0}}"
+      + "@keyframes rsbPop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.18);opacity:1}100%{transform:scale(1);opacity:1}}"
+      + "@keyframes rsbSliceOut{from{transform:translate(0,0)}to{transform:translate(7px,-7px)}}"
+      + "@keyframes rsbPing{from{opacity:0.55;transform:scale(0.55)}to{opacity:0;transform:scale(1.8)}}"
+      + "@keyframes rsbBar{from{transform:scaleY(0)}to{transform:scaleY(1)}}"
+      + "@keyframes rsbFill{from{width:0%}to{width:100%}}"
+      + "@keyframes rsbUp{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}";
+    document.head.appendChild(st);
+  }, []);
+
   var cash = acct ? investingCash(acct) : 0;
   var balance = 0;
   tx.forEach(function(t) { if (t.pending || t.catchUp || (t.date && t.date > today)) return; balance += t.type === "income" ? t.amount : -t.amount; });
@@ -13216,6 +13403,7 @@ function StockScoutView(props) {
   function generate() {
     if (!acct) return;
     setBusy(true);
+    setExpanded({});
     runStockScout(ctxObj(), function(result) {
       result.chat = (acct.scout && acct.scout.chat) || [];
       saveScout(result);
@@ -13287,6 +13475,15 @@ function StockScoutView(props) {
         </div>
       </div>
 
+      {showBasics && <ScoutBasicsStory onDone={function() { markScoutBasicsSeen(); setShowBasics(false); }} />}
+      {!showBasics && isBeginner && (
+        <button onClick={function() { setShowBasics(true); }}
+          style={{ display: "inline-flex", alignItems: "center", gap: 6, margin: "10px 2px 0", background: T.orangeDim, border: "none", borderRadius: 999, padding: "7px 13px", cursor: "pointer", fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.orange }}>
+          <SVGIcon id="book" size={13} color={T.orange} />
+          Stock basics in 40 seconds
+        </button>
+      )}
+
       {busy ? (
         <Card style={{ padding: "22px 20px", marginTop: 12 }}>
           <AIWorking bare title="Richard is thinking as hard as he can" sub="Deep-reasoning mode - reading live prices and the news before he commits."
@@ -13309,6 +13506,14 @@ function StockScoutView(props) {
 
           {(scout.picks || []).map(function(p, i) {
             var overCash = (p.suggestedAmount || 0) > cash;
+            // Older saved reports predate the hook field - promote the thesis's
+            // first sentence so those cards still lead with a one-liner.
+            var hook = p.hook;
+            if (!hook && p.thesis) {
+              var fs = String(p.thesis).split(". ")[0];
+              if (fs.length <= 110) hook = fs + (/[.!?]$/.test(fs) ? "" : ".");
+            }
+            var open = !hook || !!expanded[i];
             return (
               <Card key={p.symbol + i} style={{ padding: "16px 18px", marginBottom: 12 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 10 }}>
@@ -13323,19 +13528,36 @@ function StockScoutView(props) {
                     </div>
                   )}
                 </div>
-                {[["Why Richard likes it", p.thesis], ["The catalyst", p.catalyst], ["The risk", p.risks]].map(function(row, j) {
-                  return row[1] ? (
-                    <div key={j} style={{ marginBottom: 9 }}>
-                      <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 3 }}>{row[0]}</div>
-                      <div style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.5 }}>{row[1]}</div>
-                    </div>
-                  ) : null;
-                })}
+                {hook && (
+                  <div style={{ display: "flex", gap: 10, marginBottom: 11 }}>
+                    <div style={{ width: 3, borderRadius: 2, background: "linear-gradient(180deg," + T.orangeHi + "," + T.orange + ")", flexShrink: 0 }} />
+                    <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, lineHeight: 1.42, letterSpacing: "-0.01em" }}>{hook}</div>
+                  </div>
+                )}
                 {p.suggestedAmount != null && (
-                  <div style={{ marginTop: 10, background: "rgba(0,0,0,0.03)", borderRadius: 12, padding: "12px 14px" }}>
+                  <div style={{ background: "rgba(0,0,0,0.03)", borderRadius: 12, padding: "12px 14px", marginBottom: 10 }}>
                     <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 3 }}>How much to put in</div>
                     <div style={{ fontSize: 15, fontWeight: 800, color: T.ink }}>{"Up to " + dollars(p.suggestedAmount) + (p.suggestedPct ? "  ·  " + p.suggestedPct + "% of your cash" : "")}</div>
                     {overCash && <div style={{ fontSize: 11.5, color: T.gold, fontWeight: 600, marginTop: 3 }}>{"That's more than your " + dollars(cash) + " cash - deposit first, or start smaller."}</div>}
+                  </div>
+                )}
+                {hook && (
+                  <button onClick={function() { togglePick(i); }}
+                    style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", padding: "2px 0", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.orange }}>
+                    <span style={{ display: "inline-flex", transform: open ? "rotate(90deg)" : "none", transition: "transform 0.25s ease" }}><SVGIcon id="chevron" size={12} color={T.orange} /></span>
+                    {open ? "Hide the reasoning" : "Richard's reasoning - the 20-second read"}
+                  </button>
+                )}
+                {open && (
+                  <div style={{ marginTop: 8 }}>
+                    {[["Why Richard likes it", p.thesis], ["The catalyst", p.catalyst], ["The risk", p.risks]].map(function(row, j) {
+                      return row[1] ? (
+                        <div key={j} style={{ marginBottom: 9, animation: "rclPhrase 0.35s ease " + (j * 0.08).toFixed(2) + "s both" }}>
+                          <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 3 }}>{row[0]}</div>
+                          <div style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.5 }}>{row[1]}</div>
+                        </div>
+                      ) : null;
+                    })}
                   </div>
                 )}
                 <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
