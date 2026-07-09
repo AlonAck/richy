@@ -13237,17 +13237,12 @@ function sendScoutChat(scout, ctx, history, cb) {
   callClaude(history, system, 700, cb);
 }
 
-// === Stocks, the 40-second version ===
-// A tap-through, auto-advancing story strip (five slides, not a chapter) that
-// teaches a first-timer just enough to read the scouting report. Pure SVG +
-// CSS - no AI call - so it also fills the wait while Opus is thinking.
-var SCOUT_BASICS = [
-  { h: "You're buying a slice", b: "A stock is a small piece of a real company. When the company does well over time, your slice is worth more." },
-  { h: "Prices are just moods", b: "The price is millions of people voting with their money, all day long. Daily wiggles are normal - ignore most of them." },
-  { h: "Every pick needs a spark", b: "Richard names a catalyst for each idea: the specific event or trend that could push the price. No spark, no pick." },
-  { h: "Dips are part of the deal", b: "Even great stocks drop sometimes. Only invest money you can leave alone for a few years." },
-  { h: "Start small, learn cheap", b: "You don't need to be bold, just consistent. Richard sizes every idea to your cash so no single bet can hurt you." }
-];
+// === Stocks: the trailer ===
+// A full-screen, Apple-keynote-style cinematic that teaches a first-timer just
+// enough to read the scouting report: a near-black purple stage, light streaks
+// that shoot a different direction every scene, and huge type that blurs in
+// word by word. Pure CSS + SVG - no video file, no AI call - so it also fills
+// the wait while Opus is thinking.
 function scoutBasicsSeen() { try { return localStorage.getItem("richyScoutBasicsSeen") === "1"; } catch (e) { return false; } }
 function markScoutBasicsSeen() { try { localStorage.setItem("richyScoutBasicsSeen", "1"); } catch (e) {} }
 function ScoutBasicsScene(props) {
@@ -13302,51 +13297,87 @@ function ScoutBasicsScene(props) {
     </svg>
   );
 }
-function ScoutBasicsStory(props) {
-  var _b = useState(0); var beat = _b[0]; var setBeat = _b[1];
-  var N = SCOUT_BASICS.length;
-  var last = beat === N - 1;
+var SCOUT_CINEMA = [
+  { h: "Stocks.", s: "The whole idea, in 30 seconds.", glyph: -1 },
+  { h: "You're buying a slice.", s: "A stock is a small piece of a real company. It does well, your slice is worth more.", glyph: 0 },
+  { h: "Prices are just moods.", s: "Millions of people voting with money, all day. The wiggles are normal.", glyph: 1 },
+  { h: "Every pick needs a spark.", s: "The catalyst: one specific event that could actually move the price.", glyph: 2 },
+  { h: "Dips are part of the deal.", s: "Great stocks drop sometimes. Only invest money that can sit for years.", glyph: 3 },
+  { h: "Start small. Learn cheap.", s: "Every idea is sized to your cash, so no single bet can hurt you.", glyph: 4 },
+  { h: "Richard's on it.", s: "He reads the prices and the news, then brings you his best ideas.", glyph: -1, last: true }
+];
+// Light-streak choreography: every scene shoots the lines a different way.
+// rotate(a) maps a streak's local "up" to: 0=up, 90=right, 135=down-right...
+function cinStreaks(scene) {
+  var mode = scene % 5, out = [], n = 13, i;
+  for (i = 0; i < n; i++) {
+    var st = { a: 0, x: 50, y: 50, len: 24 + ((i * 7) % 20), w: i % 3 === 0 ? 3 : 2, d: -(i * 0.37), gold: i % 5 === 4, dur: 2.3 + ((i * 13) % 10) / 10 };
+    if (mode === 0) { st.a = i * (360 / n); st.x = 50; st.y = 46; }                         // radial burst from center
+    else if (mode === 1) { st.a = 135; st.x = ((i * 37) % 130) - 20; st.y = ((i * 23) % 30) - 20; } // diagonal rain, down-right
+    else if (mode === 2) { st.a = 0; st.x = (i * 29 + 7) % 100; st.y = 105 + ((i * 11) % 25); }     // rising from the floor
+    else if (mode === 3) { st.a = i % 2 ? 45 : 315; st.x = i % 2 ? ((i * 31) % 45) - 5 : 60 + ((i * 31) % 45); st.y = 100 + ((i * 17) % 25); } // cross-fire from the corners
+    else { st.a = 90; st.x = -10 - ((i * 9) % 20); st.y = (i * 31 + 9) % 100; }              // horizontal sweep, left to right
+    out.push(st);
+  }
+  return out;
+}
+function ScoutCinema(props) {
+  var _sc = useState(0); var scene = _sc[0]; var setScene = _sc[1];
+  var _cl = useState(false); var closing = _cl[0]; var setClosing = _cl[1];
+  var N = SCOUT_CINEMA.length;
+  var c = SCOUT_CINEMA[scene];
   useEffect(function() {
-    if (last) return;
-    var t = setTimeout(function() { setBeat(beat + 1); }, 5200);
+    if (c.last || closing) return;
+    var t = setTimeout(function() { setScene(scene + 1); }, 4300);
     return function() { clearTimeout(t); };
-  }, [beat]);
-  function next() { if (last) props.onDone(); else setBeat(beat + 1); }
-  var s = SCOUT_BASICS[beat];
+  }, [scene, closing]);
+  function finish() { if (closing) return; setClosing(true); setTimeout(props.onDone, 420); }
+  function next() { if (c.last) finish(); else setScene(scene + 1); }
+  var PU = "#8B72C9", PU2 = "#A78BFA", GO = "#C49A3C";
   return (
-    <Card style={{ padding: 0, marginTop: 12, overflow: "hidden" }}>
-      <div onClick={next} style={{ cursor: "pointer", padding: "13px 16px 16px", background: "linear-gradient(150deg, rgba(137,112,198,0.08), rgba(196,154,60,0.05))" }}>
-        <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>
-          {SCOUT_BASICS.map(function(_, i) {
-            return (
-              <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: "rgba(0,0,0,0.09)", overflow: "hidden" }}>
-                {i < beat ? <div style={{ width: "100%", height: "100%", background: T.orange, borderRadius: 2 }} />
-                  : i === beat ? <div key={"f" + beat} style={{ height: "100%", background: T.orange, borderRadius: 2, animation: last ? "rsbFill 0.5s ease both" : "rsbFill 5.2s linear both" }} /> : null}
-              </div>
-            );
+    <div onClick={next} style={{ position: "fixed", inset: 0, zIndex: 500, overflow: "hidden", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", justifyContent: "center", background: "radial-gradient(130% 100% at 50% 0%, #181031 0%, #0B0716 55%, #050310 100%)", animation: closing ? "rscFadeOut 0.4s ease both" : "rscFade 0.5s ease both" }}>
+      {/* pulsing core glow behind the type */}
+      <div style={{ position: "absolute", left: "50%", top: "48%", width: 380, height: 380, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,114,201,0.30) 0%, rgba(139,114,201,0.10) 45%, transparent 70%)", filter: "blur(28px)", animation: "rscPulse 3.4s ease-in-out infinite", pointerEvents: "none" }} />
+      {/* the purple light streaks - re-choreographed every scene */}
+      <div key={"streaks" + scene} style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+        {cinStreaks(scene).map(function(st, i) {
+          var col = st.gold ? GO : (i % 2 ? PU2 : PU);
+          return (
+            <div key={i} style={{ position: "absolute", left: st.x + "%", top: st.y + "%", transform: "rotate(" + st.a + "deg)" }}>
+              <div style={{ width: st.w, height: st.len + "vh", borderRadius: 999, background: "linear-gradient(180deg, transparent, " + col + ", transparent)", boxShadow: "0 0 " + (st.w * 6) + "px " + col, animation: "rscShoot " + st.dur + "s cubic-bezier(0.25,0.6,0.3,1) " + st.d + "s infinite" }} />
+            </div>
+          );
+        })}
+      </div>
+      {/* scene content */}
+      <div key={scene} style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "0 30px", maxWidth: 540, boxSizing: "border-box" }}>
+        {c.glyph >= 0 && (
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 20, filter: "drop-shadow(0 0 16px rgba(167,139,250,0.65)) brightness(1.3)", animation: "rscGlyph 0.9s cubic-bezier(0.22,0.9,0.3,1) 0.25s both" + (c.last ? "" : ", rscOut 0.55s ease 3.7s both") }}>
+            <div style={{ transform: "scale(1.3)" }}><ScoutBasicsScene beat={c.glyph} /></div>
+          </div>
+        )}
+        <div style={{ fontSize: "clamp(30px, 8.5vw, 47px)", fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1.12, textShadow: "0 0 34px rgba(139,114,201,0.5)", animation: c.last ? "none" : "rscOut 0.55s ease 3.7s both" }}>
+          {c.h.split(" ").map(function(w, j) {
+            return <span key={j} style={{ display: "inline-block", marginRight: "0.24em", animation: "rscWord 0.75s cubic-bezier(0.22,0.9,0.3,1) " + (0.15 + j * 0.12).toFixed(2) + "s both" }}>{w}</span>;
           })}
         </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 10.5, fontWeight: 800, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em" }}>Stocks, the 40-second version</span>
-          <button onClick={function(e) { e.stopPropagation(); props.onDone(); }}
-            style={{ background: "none", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.ink3, padding: "2px 0 2px 12px" }}>Skip</button>
-        </div>
-        <div key={beat}>
-          <div style={{ display: "flex", justifyContent: "center", padding: "3px 0 1px" }}>
-            <ScoutBasicsScene beat={beat} />
-          </div>
-          <div style={{ fontSize: 16.5, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em", textAlign: "center", animation: "rsbUp 0.4s ease both" }}>{s.h}</div>
-          <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.55, textAlign: "center", maxWidth: 300, margin: "5px auto 0", animation: "rsbUp 0.45s ease 0.08s both" }}>{s.b}</div>
-        </div>
-        <div style={{ textAlign: "center", marginTop: 12 }}>
-          {last ? (
-            <span style={{ display: "inline-block", background: T.btn, color: "#fff", borderRadius: 999, padding: "9px 20px", fontSize: 13, fontWeight: 800, fontFamily: UI, boxShadow: "0 3px 10px " + T.orangeGlow, animation: "rsbUp 0.45s ease 0.2s both" }}>Got it - show me the picks</span>
-          ) : (
-            <span style={{ fontSize: 11, color: T.ink3, fontWeight: 600 }}>{"Tap to continue · " + (beat + 1) + "/" + N}</span>
-          )}
-        </div>
+        <div style={{ fontSize: 15, color: "rgba(235,230,255,0.72)", marginTop: 15, lineHeight: 1.55, maxWidth: 380, marginLeft: "auto", marginRight: "auto", animation: "rscWord 0.75s ease 0.95s both" + (c.last ? "" : ", rscOut 0.55s ease 3.7s both") }}>{c.s}</div>
+        {c.last && (
+          <button onClick={function(e) { e.stopPropagation(); finish(); }}
+            style={{ marginTop: 30, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 14.5, fontWeight: 800, color: "#fff", padding: "13px 30px", borderRadius: 999, background: "linear-gradient(145deg," + PU2 + "," + PU + ")", boxShadow: "0 0 28px rgba(139,114,201,0.55), 0 6px 18px rgba(0,0,0,0.4)", animation: "rscWord 0.75s ease 1.6s both" }}>
+            Show me the picks</button>
+        )}
       </div>
-    </Card>
+      {/* vignette + skip */}
+      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(90% 90% at 50% 50%, transparent 55%, rgba(3,1,10,0.6) 100%)", pointerEvents: "none" }} />
+      <button onClick={function(e) { e.stopPropagation(); finish(); }}
+        style={{ position: "absolute", top: 20, right: 18, zIndex: 3, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.16)", borderRadius: 999, padding: "7px 16px", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.62)" }}>Skip</button>
+      <div style={{ position: "absolute", bottom: 22, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 6, pointerEvents: "none" }}>
+        {SCOUT_CINEMA.map(function(_, i) {
+          return <div key={i} style={{ width: i === scene ? 18 : 5, height: 5, borderRadius: 999, background: i === scene ? PU2 : "rgba(255,255,255,0.22)", transition: "width 0.35s ease, background 0.35s ease" }} />;
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -13384,7 +13415,14 @@ function StockScoutView(props) {
       + "@keyframes rsbPing{from{opacity:0.55;transform:scale(0.55)}to{opacity:0;transform:scale(1.8)}}"
       + "@keyframes rsbBar{from{transform:scaleY(0)}to{transform:scaleY(1)}}"
       + "@keyframes rsbFill{from{width:0%}to{width:100%}}"
-      + "@keyframes rsbUp{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}";
+      + "@keyframes rsbUp{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}"
+      + "@keyframes rscFade{from{opacity:0}to{opacity:1}}"
+      + "@keyframes rscFadeOut{to{opacity:0}}"
+      + "@keyframes rscWord{from{opacity:0;transform:translateY(26px) scale(1.06);filter:blur(10px)}to{opacity:1;transform:none;filter:blur(0)}}"
+      + "@keyframes rscOut{to{opacity:0;transform:scale(0.96) translateY(-10px);filter:blur(8px)}}"
+      + "@keyframes rscGlyph{from{opacity:0;transform:scale(1.28) translateY(14px)}to{opacity:1;transform:none}}"
+      + "@keyframes rscShoot{0%{transform:translateY(28vh);opacity:0}16%{opacity:1}78%{opacity:0.9}100%{transform:translateY(-125vh);opacity:0}}"
+      + "@keyframes rscPulse{0%,100%{opacity:0.55;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.14)}}";
     document.head.appendChild(st);
   }, []);
 
@@ -13475,12 +13513,12 @@ function StockScoutView(props) {
         </div>
       </div>
 
-      {showBasics && <ScoutBasicsStory onDone={function() { markScoutBasicsSeen(); setShowBasics(false); }} />}
+      {showBasics && <ScoutCinema onDone={function() { markScoutBasicsSeen(); setShowBasics(false); }} />}
       {!showBasics && isBeginner && (
         <button onClick={function() { setShowBasics(true); }}
           style={{ display: "inline-flex", alignItems: "center", gap: 6, margin: "10px 2px 0", background: T.orangeDim, border: "none", borderRadius: 999, padding: "7px 13px", cursor: "pointer", fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.orange }}>
-          <SVGIcon id="book" size={13} color={T.orange} />
-          Stock basics in 40 seconds
+          <SVGIcon id="film" size={13} color={T.orange} />
+          Watch: stocks in 30 seconds
         </button>
       )}
 
