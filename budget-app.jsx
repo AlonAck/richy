@@ -13311,7 +13311,7 @@ var SCOUT_CINEMA = [
 function cinStreaks(scene) {
   var mode = scene % 5, out = [], n = 13, i;
   for (i = 0; i < n; i++) {
-    var st = { a: 0, x: 50, y: 50, len: 24 + ((i * 7) % 20), w: i % 3 === 0 ? 3 : 2, d: -(i * 0.37), gold: i % 5 === 4, dur: 2.3 + ((i * 13) % 10) / 10 };
+    var st = { a: 0, x: 50, y: 50, len: 140 + ((i * 11) % 90), w: i % 3 === 0 ? 3 : 2, d: -(i * 0.55), gold: i % 5 === 4, dur: 5.2 + ((i * 13) % 14) / 10 };
     if (mode === 0) { st.a = i * (360 / n); st.x = 50; st.y = 46; }                         // radial burst from center
     else if (mode === 1) { st.a = 135; st.x = ((i * 37) % 130) - 20; st.y = ((i * 23) % 30) - 20; } // diagonal rain, down-right
     else if (mode === 2) { st.a = 0; st.x = (i * 29 + 7) % 100; st.y = 105 + ((i * 11) % 25); }     // rising from the floor
@@ -13333,11 +13333,20 @@ function ScoutCinema(props) {
   }, [scene, closing]);
   function finish() { if (closing) return; setClosing(true); setTimeout(props.onDone, 420); }
   function next() { if (c.last) finish(); else setScene(scene + 1); }
-  var PU = "#8B72C9", PU2 = "#A78BFA", GO = "#C49A3C";
+  // Colors follow the live theme (purple/classic/blue - T.orange etc. already
+  // reflect whichever the user picked in Appearance); the stage itself stays a
+  // near-black cinema backdrop (required for the streaks to glow) but tinted
+  // with that same accent so it still visibly "matches" the chosen look.
+  var PU = T.orange, PU2 = T.orangeHi, GO = T.gold;
+  // Every stop here must be fully opaque (no alpha) - this div sits over the
+  // live page via position:fixed, so any translucent stop lets the page
+  // underneath show through instead of a clean cinema black.
+  function cinTint(hex, keep) { var c = jrHex(hex); return "rgb(" + Math.round(c[0] * 255 * keep) + "," + Math.round(c[1] * 255 * keep) + "," + Math.round(c[2] * 255 * keep) + ")"; }
+  var stageBg = "radial-gradient(130% 100% at 50% 0%, " + cinTint(PU, 0.34) + " 0%, " + cinTint(PU, 0.09) + " 45%, #050308 100%)";
   return (
-    <div onClick={next} style={{ position: "fixed", inset: 0, zIndex: 500, overflow: "hidden", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", justifyContent: "center", background: "radial-gradient(130% 100% at 50% 0%, #181031 0%, #0B0716 55%, #050310 100%)", animation: closing ? "rscFadeOut 0.4s ease both" : "rscFade 0.5s ease both" }}>
+    <div onClick={next} style={{ position: "fixed", inset: 0, zIndex: 500, overflow: "hidden", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", justifyContent: "center", background: stageBg, animation: closing ? "rscFadeOut 0.4s ease both" : "rscFade 0.5s ease both" }}>
       {/* pulsing core glow behind the type */}
-      <div style={{ position: "absolute", left: "50%", top: "48%", width: 380, height: 380, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,114,201,0.30) 0%, rgba(139,114,201,0.10) 45%, transparent 70%)", filter: "blur(28px)", animation: "rscPulse 3.4s ease-in-out infinite", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", left: "50%", top: "48%", width: 380, height: 380, borderRadius: "50%", background: "radial-gradient(circle, " + jrRgba(PU, 0.30) + " 0%, " + jrRgba(PU, 0.10) + " 45%, transparent 70%)", filter: "blur(28px)", animation: "rscPulse 3.4s ease-in-out infinite", pointerEvents: "none" }} />
       {/* the purple light streaks - re-choreographed every scene */}
       <div key={"streaks" + scene} style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
         {cinStreaks(scene).map(function(st, i) {
@@ -13352,11 +13361,11 @@ function ScoutCinema(props) {
       {/* scene content */}
       <div key={scene} style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "0 30px", maxWidth: 540, boxSizing: "border-box" }}>
         {c.glyph >= 0 && (
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 20, filter: "drop-shadow(0 0 16px rgba(167,139,250,0.65)) brightness(1.3)", animation: "rscGlyph 0.9s cubic-bezier(0.22,0.9,0.3,1) 0.25s both" + (c.last ? "" : ", rscOut 0.55s ease 3.7s both") }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 20, filter: "drop-shadow(0 0 16px " + jrRgba(PU2, 0.65) + ") brightness(1.3)", animation: "rscGlyph 0.9s cubic-bezier(0.22,0.9,0.3,1) 0.25s both" + (c.last ? "" : ", rscOut 0.55s ease 3.7s both") }}>
             <div style={{ transform: "scale(1.3)" }}><ScoutBasicsScene beat={c.glyph} /></div>
           </div>
         )}
-        <div style={{ fontSize: "clamp(30px, 8.5vw, 47px)", fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1.12, textShadow: "0 0 34px rgba(139,114,201,0.5)", animation: c.last ? "none" : "rscOut 0.55s ease 3.7s both" }}>
+        <div style={{ fontSize: "clamp(30px, 8.5vw, 47px)", fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1.12, textShadow: "0 0 34px " + jrRgba(PU, 0.5), animation: c.last ? "none" : "rscOut 0.55s ease 3.7s both" }}>
           {c.h.split(" ").map(function(w, j) {
             return <span key={j} style={{ display: "inline-block", marginRight: "0.24em", animation: "rscWord 0.75s cubic-bezier(0.22,0.9,0.3,1) " + (0.15 + j * 0.12).toFixed(2) + "s both" }}>{w}</span>;
           })}
@@ -13364,7 +13373,7 @@ function ScoutCinema(props) {
         <div style={{ fontSize: 15, color: "rgba(235,230,255,0.72)", marginTop: 15, lineHeight: 1.55, maxWidth: 380, marginLeft: "auto", marginRight: "auto", animation: "rscWord 0.75s ease 0.95s both" + (c.last ? "" : ", rscOut 0.55s ease 3.7s both") }}>{c.s}</div>
         {c.last && (
           <button onClick={function(e) { e.stopPropagation(); finish(); }}
-            style={{ marginTop: 30, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 14.5, fontWeight: 800, color: "#fff", padding: "13px 30px", borderRadius: 999, background: "linear-gradient(145deg," + PU2 + "," + PU + ")", boxShadow: "0 0 28px rgba(139,114,201,0.55), 0 6px 18px rgba(0,0,0,0.4)", animation: "rscWord 0.75s ease 1.6s both" }}>
+            style={{ marginTop: 30, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 14.5, fontWeight: 800, color: "#fff", padding: "13px 30px", borderRadius: 999, background: "linear-gradient(145deg," + PU2 + "," + PU + ")", boxShadow: "0 0 28px " + jrRgba(PU, 0.55) + ", 0 6px 18px rgba(0,0,0,0.4)", animation: "rscWord 0.75s ease 1.6s both" }}>
             Show me the picks</button>
         )}
       </div>
@@ -13421,7 +13430,7 @@ function StockScoutView(props) {
       + "@keyframes rscWord{from{opacity:0;transform:translateY(26px) scale(1.06);filter:blur(10px)}to{opacity:1;transform:none;filter:blur(0)}}"
       + "@keyframes rscOut{to{opacity:0;transform:scale(0.96) translateY(-10px);filter:blur(8px)}}"
       + "@keyframes rscGlyph{from{opacity:0;transform:scale(1.28) translateY(14px)}to{opacity:1;transform:none}}"
-      + "@keyframes rscShoot{0%{transform:translateY(28vh);opacity:0}16%{opacity:1}78%{opacity:0.9}100%{transform:translateY(-125vh);opacity:0}}"
+      + "@keyframes rscShoot{0%{transform:translateY(55vh);opacity:0}16%{opacity:1}80%{opacity:0.85}100%{transform:translateY(-195vh);opacity:0}}"
       + "@keyframes rscPulse{0%,100%{opacity:0.55;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.14)}}";
     document.head.appendChild(st);
   }, []);
