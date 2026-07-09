@@ -11801,7 +11801,8 @@ function InvestingView(props) {
   var lbl = { fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 };
 
   return (
-    <div>
+    <div style={{ position: "relative", zIndex: 0 }}>
+      <ScoutBeamsBg />
       <SubViewBack onBack={props.onBack} label={props.backLabel || "Accounts"} />
 
       {/* hero */}
@@ -12311,6 +12312,7 @@ function StockView(props) {
   var _fx2 = useState(0); var setFx2 = _fx2[1];
   var _tk = useState(false); var takeBusy = _tk[0]; var setTakeBusy = _tk[1];
   var _fresh = useState(false); var freshTake = _fresh[0]; var setFreshTake = _fresh[1];
+  var _delConfirm = useState(false); var delConfirm = _delConfirm[0]; var setDelConfirm = _delConfirm[1];
   var takeGenRef = useRef("");
 
   useEffect(function() { loadInvRates([cur], function() { setFx2(function(n) { return n + 1; }); }); }, [cur]);
@@ -12559,7 +12561,8 @@ function StockView(props) {
   var divsCollected = investingDividendTotal(acct, symbol);
 
   return (
-    <div>
+    <div style={{ position: "relative", zIndex: 0 }}>
+      <ScoutBeamsBg />
       <SubViewBack onBack={props.onBack} label={props.backLabel || "Investing"} />
 
       {/* header + price */}
@@ -13042,7 +13045,8 @@ function InvestorOnboardScreen(props) {
   if (qIndex === 5) {
     if (loading) {
       return (
-        <div style={{ minHeight: "100vh", background: JR_BG, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI }}>
+        <div style={{ minHeight: "100vh", background: JR_BG, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI, position: "relative", zIndex: 0 }}>
+          <ScoutBeamsBg opacity={0.42} />
           <div style={{ width: "100%", maxWidth: 320, padding: "0 32px" }}>
             <AIWorking bare title="Richard is putting together your starter guide" sub="Tuned to exactly how you answered." expectedMs={11000}
               steps={["Reading your answers", "Choosing what matters for you", "Writing it in plain English", "Adding your good-pick checklist"]} />
@@ -13053,7 +13057,8 @@ function InvestorOnboardScreen(props) {
     var b = basics || localInvestingBasics({ experience: experience, involvement: involvement, amount: amount, risk: risk });
     var expLabel = (INV_EXPERIENCE.filter(function(o) { return o.v === experience; })[0] || {}).label || "New to investing";
     return (
-      <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, overflowY: "auto", position: "relative", overflowX: "hidden" }}>
+      <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, overflowY: "auto", position: "relative", zIndex: 0, overflowX: "hidden" }}>
+        <ScoutBeamsBg opacity={0.42} />
         <div style={{ position: "absolute", top: -70, right: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(137,112,198,0.14) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift 9s ease-in-out infinite" }} />
         <button onClick={props.onDone} style={{ position: "absolute", top: 18, left: 16, zIndex: 4, width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, boxShadow: "0 2px 8px rgba(40,28,16,0.08)" }}>
           <span style={{ display: "inline-flex", transform: "rotate(180deg)" }}><SVGIcon id="chevron" size={15} color={JINK2} /></span>
@@ -13125,7 +13130,8 @@ function InvestorOnboardScreen(props) {
 
   var qh = QH[qIndex];
   return (
-    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column", position: "relative", zIndex: 0 }}>
+      <ScoutBeamsBg opacity={0.42} />
       {showCinema && <ScoutCinema onDone={function() { setShowCinema(false); }} />}
       <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0" }}>
         {qIndex > 0 ? <JrIconBtn icon="chevron" rotate={180} onPress={goBack} /> : <button onClick={props.onDone} style={{ width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, padding: 0 }}><SVGIcon id="close" size={15} color={JINK2} /></button>}
@@ -13334,8 +13340,44 @@ function ensureScoutCss() {
     + "@keyframes rscOut{to{opacity:0;transform:scale(0.96) translateY(-10px);filter:blur(8px)}}"
     + "@keyframes rscGlyph{from{opacity:0;transform:scale(1.28) translateY(14px)}to{opacity:1;transform:none}}"
     + "@keyframes rscShoot{0%{transform:translateY(55vh);opacity:0}16%{opacity:1}80%{opacity:0.85}100%{transform:translateY(-195vh);opacity:0}}"
-    + "@keyframes rscPulse{0%,100%{opacity:0.55;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.14)}}";
+    + "@keyframes rscPulse{0%,100%{opacity:0.55;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.14)}}"
+    + "@keyframes rscBeam{0%{opacity:0;transform:translateY(70vh)}14%{opacity:1}86%{opacity:1}100%{opacity:0;transform:translateY(-165vh)}}";
   document.head.appendChild(st);
+}
+// Ambient version of the trailer's light streaks, for use as a quiet animated
+// background behind any investing page. Absolute + self-clipping + zIndex:-1, so
+// a root only needs position:relative;zIndex:0 to sit it behind the content.
+// Colors follow the live theme; opacity follows dark/light unless overridden
+// (pass an explicit opacity for the always-cream onboarding surfaces).
+function ScoutBeamsBg(props) {
+  useEffect(function() { ensureScoutCss(); }, []);
+  var PU = T.orange, PU2 = T.orangeHi, GO = T.gold;
+  var isDark = T.bg === DARK_BG;
+  var n = props.count || 10;
+  var angle = props.angle != null ? props.angle : 19;
+  var out = [];
+  for (var i = 0; i < n; i++) {
+    out.push({
+      x: ((i * 27 + 8) % 116) - 8,
+      y: ((i * 37 + 6) % 120) - 12,
+      len: 80 + ((i * 19) % 75),
+      w: i % 3 === 0 ? 7 : 5,
+      dur: 15 + ((i * 7) % 12),
+      d: -(i * 2.3),
+      col: i % 5 === 4 ? GO : (i % 2 ? PU2 : PU)
+    });
+  }
+  return (
+    <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: -1, opacity: props.opacity != null ? props.opacity : (isDark ? 0.58 : 0.45) }}>
+      {out.map(function(b, i) {
+        return (
+          <div key={i} style={{ position: "absolute", left: b.x + "%", top: b.y + "%", transform: "rotate(" + angle + "deg)" }}>
+            <div style={{ width: b.w, height: b.len + "vh", borderRadius: 999, background: "linear-gradient(180deg, transparent, " + b.col + ", transparent)", boxShadow: "0 0 " + (b.w * 5) + "px " + b.col, animation: "rscBeam " + b.dur + "s linear " + b.d + "s infinite" }} />
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 var SCOUT_CINEMA = [
   { h: "Stocks.", s: "The whole idea, in 30 seconds.", glyph: -1 },
@@ -13595,7 +13637,8 @@ function StockScoutView(props) {
   var msgs = (scout && scout.chat) || [];
 
   return (
-    <div>
+    <div style={{ position: "relative", zIndex: 0 }}>
+      <ScoutBeamsBg />
       <SubViewBack onBack={props.onBack} label={props.backLabel || "Investing"} />
 
       <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 6, padding: "0 2px" }}>

@@ -104,6 +104,8 @@ fetchSource(1).then(function(src){
   var qs = new URLSearchParams(location.search);
   if (typeof applyTheme === "function") { applyTheme(qs.get("theme") || "purple"); }
   if (typeof applyDarkMode === "function") { applyDarkMode(qs.get("dark") === "1"); }
+  // Mirror the real app shell's page background so dark-mode previews are faithful.
+  try { var _pageBg = qs.get("dark") === "1" ? DARK_BG : LIGHT_BG; document.documentElement.style.background = _pageBg; document.body.style.background = _pageBg; } catch (e) {}
   var view = qs.get("view") || "overview";
   var mockTrips = qs.get("seed") ? [{
     id: 99, name: "Tokyo Spring", destination: "Tokyo", days: 8, startDate: "2026-06-28", style: "comfort", total: 5000, icon: "umbrella",
