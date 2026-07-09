@@ -12957,6 +12957,9 @@ function InvestorOnboardScreen(props) {
   var _rsk = useState(existing ? existing.risk : ""); var risk = _rsk[0]; var setRisk = _rsk[1];
   var _bs = useState(existing ? existing.basics : null); var basics = _bs[0]; var setBasics = _bs[1];
   var _ld = useState(false); var loading = _ld[0]; var setLoading = _ld[1];
+  // The full-screen trailer plays ONLY here (the "New to investing?" journey),
+  // and only for brand-new users - returning users open straight to their guide.
+  var _cin = useState(!existing); var showCinema = _cin[0]; var setShowCinema = _cin[1];
   var advRef = useRef(false);
   useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
   var firstName = String(props.username || "").trim().split(" ")[0] || "there";
@@ -12976,6 +12979,13 @@ function InvestorOnboardScreen(props) {
     setTimeout(function() { advRef.current = false; advance(); }, 240);
   }
   function goBack() { if (qIndex <= 0) return; setDir("back"); setQIndex(qIndex - 1); }
+  // Wipe the answers and run the questionnaire again from the top (offered on
+  // the results page so anyone can redo the test).
+  function retake() {
+    setShowCinema(false);
+    setExperience(""); setInvolvement(""); setAmount(""); setRisk(""); setBasics(null);
+    setLoading(false); setDir("fwd"); setQIndex(1);
+  }
   // riskOverride avoids a stale-closure read: the last card sets risk state AND
   // triggers generation in the same tick, so we thread the picked value through.
   function generate(riskOverride) {
@@ -13045,6 +13055,9 @@ function InvestorOnboardScreen(props) {
     return (
       <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, overflowY: "auto", position: "relative", overflowX: "hidden" }}>
         <div style={{ position: "absolute", top: -70, right: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(137,112,198,0.14) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift 9s ease-in-out infinite" }} />
+        <button onClick={props.onDone} style={{ position: "absolute", top: 18, left: 16, zIndex: 4, width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, boxShadow: "0 2px 8px rgba(40,28,16,0.08)" }}>
+          <span style={{ display: "inline-flex", transform: "rotate(180deg)" }}><SVGIcon id="chevron" size={15} color={JINK2} /></span>
+        </button>
         <div style={{ padding: "52px 24px 48px", position: "relative", maxWidth: 428, margin: "0 auto", boxSizing: "border-box" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
             <div style={{ position: "relative", width: 48, height: 48, flexShrink: 0 }}>
@@ -13101,6 +13114,9 @@ function InvestorOnboardScreen(props) {
           )}
 
           <JrBtn label="Start exploring" onPress={function() { persist(b); props.onDone(); }} />
+          <button onClick={retake} style={{ width: "100%", marginTop: 12, background: "none", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.orange, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+            <SVGIcon id="refresh" size={14} color={T.orange} /> Redo the test
+          </button>
           <div style={{ fontSize: 11.5, color: JINK3, textAlign: "center", marginTop: 14, lineHeight: 1.45 }}>Richard is a guide, not a licensed financial advisor. Invest only what you can afford to leave alone.</div>
         </div>
       </div>
@@ -13110,6 +13126,7 @@ function InvestorOnboardScreen(props) {
   var qh = QH[qIndex];
   return (
     <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column" }}>
+      {showCinema && <ScoutCinema onDone={function() { setShowCinema(false); }} />}
       <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0" }}>
         {qIndex > 0 ? <JrIconBtn icon="chevron" rotate={180} onPress={goBack} /> : <button onClick={props.onDone} style={{ width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, padding: 0 }}><SVGIcon id="close" size={15} color={JINK2} /></button>}
         <JourneyBar pct={((qIndex + 1) / Q_TOTAL) * 100} />
@@ -13297,6 +13314,29 @@ function ScoutBasicsScene(props) {
     </svg>
   );
 }
+// Keyframes for both the inline basics story (rsb*) and the full-screen
+// trailer (rsc*). Injected once; safe to call from any component that renders
+// either, since the cinema now plays inside the onboarding too.
+function ensureScoutCss() {
+  if (document.getElementById("richy-scout-css")) return;
+  var st = document.createElement("style");
+  st.id = "richy-scout-css";
+  st.textContent = "@keyframes rsbDraw{to{stroke-dashoffset:0}}"
+    + "@keyframes rsbPop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.18);opacity:1}100%{transform:scale(1);opacity:1}}"
+    + "@keyframes rsbSliceOut{from{transform:translate(0,0)}to{transform:translate(7px,-7px)}}"
+    + "@keyframes rsbPing{from{opacity:0.55;transform:scale(0.55)}to{opacity:0;transform:scale(1.8)}}"
+    + "@keyframes rsbBar{from{transform:scaleY(0)}to{transform:scaleY(1)}}"
+    + "@keyframes rsbFill{from{width:0%}to{width:100%}}"
+    + "@keyframes rsbUp{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}"
+    + "@keyframes rscFade{from{opacity:0}to{opacity:1}}"
+    + "@keyframes rscFadeOut{to{opacity:0}}"
+    + "@keyframes rscWord{from{opacity:0;transform:translateY(26px) scale(1.06);filter:blur(10px)}to{opacity:1;transform:none;filter:blur(0)}}"
+    + "@keyframes rscOut{to{opacity:0;transform:scale(0.96) translateY(-10px);filter:blur(8px)}}"
+    + "@keyframes rscGlyph{from{opacity:0;transform:scale(1.28) translateY(14px)}to{opacity:1;transform:none}}"
+    + "@keyframes rscShoot{0%{transform:translateY(55vh);opacity:0}16%{opacity:1}80%{opacity:0.85}100%{transform:translateY(-195vh);opacity:0}}"
+    + "@keyframes rscPulse{0%,100%{opacity:0.55;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.14)}}";
+  document.head.appendChild(st);
+}
 var SCOUT_CINEMA = [
   { h: "Stocks.", s: "The whole idea, in 30 seconds.", glyph: -1 },
   { h: "You're buying a slice.", s: "A stock is a small piece of a real company. It does well, your slice is worth more.", glyph: 0 },
@@ -13311,7 +13351,7 @@ var SCOUT_CINEMA = [
 function cinStreaks(scene) {
   var mode = scene % 5, out = [], n = 13, i;
   for (i = 0; i < n; i++) {
-    var st = { a: 0, x: 50, y: 50, len: 140 + ((i * 11) % 90), w: i % 3 === 0 ? 3 : 2, d: -(i * 0.55), gold: i % 5 === 4, dur: 5.2 + ((i * 13) % 14) / 10 };
+    var st = { a: 0, x: 50, y: 50, len: 140 + ((i * 11) % 90), w: i % 3 === 0 ? 8 : 6, d: -(i * 0.55), gold: i % 5 === 4, dur: 5.2 + ((i * 13) % 14) / 10 };
     if (mode === 0) { st.a = i * (360 / n); st.x = 50; st.y = 46; }                         // radial burst from center
     else if (mode === 1) { st.a = 135; st.x = ((i * 37) % 130) - 20; st.y = ((i * 23) % 30) - 20; } // diagonal rain, down-right
     else if (mode === 2) { st.a = 0; st.x = (i * 29 + 7) % 100; st.y = 105 + ((i * 11) % 25); }     // rising from the floor
@@ -13326,6 +13366,7 @@ function ScoutCinema(props) {
   var _cl = useState(false); var closing = _cl[0]; var setClosing = _cl[1];
   var N = SCOUT_CINEMA.length;
   var c = SCOUT_CINEMA[scene];
+  useEffect(function() { ensureScoutCss(); }, []);
   useEffect(function() {
     if (c.last || closing) return;
     var t = setTimeout(function() { setScene(scene + 1); }, 4300);
@@ -13334,16 +13375,33 @@ function ScoutCinema(props) {
   function finish() { if (closing) return; setClosing(true); setTimeout(props.onDone, 420); }
   function next() { if (c.last) finish(); else setScene(scene + 1); }
   // Colors follow the live theme (purple/classic/blue - T.orange etc. already
-  // reflect whichever the user picked in Appearance); the stage itself stays a
-  // near-black cinema backdrop (required for the streaks to glow) but tinted
-  // with that same accent so it still visibly "matches" the chosen look.
+  // reflect whichever the user picked in Appearance). The stage itself now
+  // also follows the actual dark/light mode setting, not just the theme -
+  // dark mode gets the near-black trailer look, light mode a bright,
+  // sunlit version of the same idea.
   var PU = T.orange, PU2 = T.orangeHi, GO = T.gold;
+  var isDark = T.bg === DARK_BG;
   // Every stop here must be fully opaque (no alpha) - this div sits over the
   // live page via position:fixed, so any translucent stop lets the page
-  // underneath show through instead of a clean cinema black.
-  function cinTint(hex, keep) { var c = jrHex(hex); return "rgb(" + Math.round(c[0] * 255 * keep) + "," + Math.round(c[1] * 255 * keep) + "," + Math.round(c[2] * 255 * keep) + ")"; }
-  var stageBg = "radial-gradient(130% 100% at 50% 0%, " + cinTint(PU, 0.34) + " 0%, " + cinTint(PU, 0.09) + " 45%, #050308 100%)";
-  return (
+  // underneath show through instead of a clean cinema surface.
+  function cinLerp(hexA, hexB, t) {
+    var a = jrHex(hexA), b = jrHex(hexB);
+    return "rgb(" + Math.round((a[0] + (b[0] - a[0]) * t) * 255) + "," + Math.round((a[1] + (b[1] - a[1]) * t) * 255) + "," + Math.round((a[2] + (b[2] - a[2]) * t) * 255) + ")";
+  }
+  var stageBg = isDark
+    ? "radial-gradient(130% 100% at 50% 0%, " + cinLerp(PU, "#000000", 0.66) + " 0%, " + cinLerp(PU, "#000000", 0.91) + " 45%, #050308 100%)"
+    : "radial-gradient(130% 100% at 50% 0%, " + cinLerp(PU, "#FFFFFF", 0.62) + " 0%, " + cinLerp(PU, "#FFFFFF", 0.85) + " 45%, " + LIGHT_BG + " 100%)";
+  var textCol = T.ink;
+  var subCol = jrRgba(T.ink, 0.66);
+  var chipBg = jrRgba(T.ink, isDark ? 0.09 : 0.05);
+  var chipBorder = jrRgba(T.ink, isDark ? 0.18 : 0.13);
+  var chipText = jrRgba(T.ink, 0.62);
+  var dotOff = jrRgba(T.ink, isDark ? 0.24 : 0.18);
+  var vignette = "rgba(0,0,0," + (isDark ? 0.55 : 0.12) + ")";
+  // Portal to <body> so the fixed overlay escapes any transformed ancestor
+  // (the onboarding's JrStepShell slide-transitions animate transform, which
+  // otherwise traps position:fixed into a small "square" and clips the streaks).
+  var content = (
     <div onClick={next} style={{ position: "fixed", inset: 0, zIndex: 500, overflow: "hidden", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", justifyContent: "center", background: stageBg, animation: closing ? "rscFadeOut 0.4s ease both" : "rscFade 0.5s ease both" }}>
       {/* pulsing core glow behind the type */}
       <div style={{ position: "absolute", left: "50%", top: "48%", width: 380, height: 380, borderRadius: "50%", background: "radial-gradient(circle, " + jrRgba(PU, 0.30) + " 0%, " + jrRgba(PU, 0.10) + " 45%, transparent 70%)", filter: "blur(28px)", animation: "rscPulse 3.4s ease-in-out infinite", pointerEvents: "none" }} />
@@ -13365,12 +13423,12 @@ function ScoutCinema(props) {
             <div style={{ transform: "scale(1.3)" }}><ScoutBasicsScene beat={c.glyph} /></div>
           </div>
         )}
-        <div style={{ fontSize: "clamp(30px, 8.5vw, 47px)", fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1.12, textShadow: "0 0 34px " + jrRgba(PU, 0.5), animation: c.last ? "none" : "rscOut 0.55s ease 3.7s both" }}>
+        <div style={{ fontSize: "clamp(30px, 8.5vw, 47px)", fontWeight: 800, color: textCol, letterSpacing: "-0.03em", lineHeight: 1.12, textShadow: "0 0 34px " + jrRgba(PU, isDark ? 0.5 : 0.28), animation: c.last ? "none" : "rscOut 0.55s ease 3.7s both" }}>
           {c.h.split(" ").map(function(w, j) {
             return <span key={j} style={{ display: "inline-block", marginRight: "0.24em", animation: "rscWord 0.75s cubic-bezier(0.22,0.9,0.3,1) " + (0.15 + j * 0.12).toFixed(2) + "s both" }}>{w}</span>;
           })}
         </div>
-        <div style={{ fontSize: 15, color: "rgba(235,230,255,0.72)", marginTop: 15, lineHeight: 1.55, maxWidth: 380, marginLeft: "auto", marginRight: "auto", animation: "rscWord 0.75s ease 0.95s both" + (c.last ? "" : ", rscOut 0.55s ease 3.7s both") }}>{c.s}</div>
+        <div style={{ fontSize: 15, color: subCol, marginTop: 15, lineHeight: 1.55, maxWidth: 380, marginLeft: "auto", marginRight: "auto", animation: "rscWord 0.75s ease 0.95s both" + (c.last ? "" : ", rscOut 0.55s ease 3.7s both") }}>{c.s}</div>
         {c.last && (
           <button onClick={function(e) { e.stopPropagation(); finish(); }}
             style={{ marginTop: 30, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 14.5, fontWeight: 800, color: "#fff", padding: "13px 30px", borderRadius: 999, background: "linear-gradient(145deg," + PU2 + "," + PU + ")", boxShadow: "0 0 28px " + jrRgba(PU, 0.55) + ", 0 6px 18px rgba(0,0,0,0.4)", animation: "rscWord 0.75s ease 1.6s both" }}>
@@ -13378,15 +13436,65 @@ function ScoutCinema(props) {
         )}
       </div>
       {/* vignette + skip */}
-      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(90% 90% at 50% 50%, transparent 55%, rgba(3,1,10,0.6) 100%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(90% 90% at 50% 50%, transparent 55%, " + vignette + " 100%)", pointerEvents: "none" }} />
       <button onClick={function(e) { e.stopPropagation(); finish(); }}
-        style={{ position: "absolute", top: 20, right: 18, zIndex: 3, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.16)", borderRadius: 999, padding: "7px 16px", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.62)" }}>Skip</button>
+        style={{ position: "absolute", top: 20, right: 18, zIndex: 3, background: chipBg, border: "1px solid " + chipBorder, borderRadius: 999, padding: "7px 16px", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, color: chipText }}>Skip</button>
       <div style={{ position: "absolute", bottom: 22, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 6, pointerEvents: "none" }}>
         {SCOUT_CINEMA.map(function(_, i) {
-          return <div key={i} style={{ width: i === scene ? 18 : 5, height: 5, borderRadius: 999, background: i === scene ? PU2 : "rgba(255,255,255,0.22)", transition: "width 0.35s ease, background 0.35s ease" }} />;
+          return <div key={i} style={{ width: i === scene ? 18 : 5, height: 5, borderRadius: 999, background: i === scene ? PU2 : dotOff, transition: "width 0.35s ease, background 0.35s ease" }} />;
         })}
       </div>
     </div>
+  );
+  return (typeof ReactDOM !== "undefined" && ReactDOM.createPortal) ? ReactDOM.createPortal(content, document.body) : content;
+}
+
+// The inline "learning banner" for the Stock Scout page: a compact, tap-through
+// story card (NOT the full-screen trailer - that lives in onboarding). Same
+// beats and glyphs as the cinema, but embedded quietly in the page flow.
+function ScoutBasicsStory(props) {
+  var beats = SCOUT_CINEMA.filter(function(b) { return b.glyph >= 0; });
+  var _i = useState(0); var idx = _i[0]; var setIdx = _i[1];
+  var N = beats.length;
+  var last = idx >= N - 1;
+  var b = beats[idx];
+  useEffect(function() { ensureScoutCss(); }, []);
+  useEffect(function() {
+    if (last) return;
+    var t = setTimeout(function() { setIdx(idx + 1); }, 5000);
+    return function() { clearTimeout(t); };
+  }, [idx]);
+  function next() { if (last) props.onDone && props.onDone(); else setIdx(idx + 1); }
+  return (
+    <Card style={{ padding: 0, marginTop: 12, overflow: "hidden" }}>
+      <div onClick={next} style={{ cursor: "pointer", padding: "14px 16px 16px", background: "linear-gradient(150deg," + T.orangeDim + ", transparent 70%)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+            <SVGIcon id="film" size={13} color={T.orange} />
+            <span style={{ fontSize: 11, fontWeight: 800, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em" }}>Stocks, the basics</span>
+          </div>
+          <button onClick={function(e) { e.stopPropagation(); props.onDone && props.onDone(); }}
+            style={{ background: "none", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.ink3, padding: 0 }}>Skip</button>
+        </div>
+        <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+          <div key={idx} style={{ flexShrink: 0, filter: "drop-shadow(0 3px 8px " + T.orangeGlow + ")", animation: "rsbUp 0.4s ease both" }}>
+            <ScoutBasicsScene beat={b.glyph} />
+          </div>
+          <div key={"t" + idx} style={{ flex: 1, minWidth: 0, animation: "rsbUp 0.45s ease 0.05s both" }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.2 }}>{b.h}</div>
+            <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginTop: 4 }}>{b.s}</div>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14 }}>
+          <div style={{ display: "flex", gap: 5 }}>
+            {beats.map(function(_, i) {
+              return <div key={i} style={{ width: i === idx ? 16 : 5, height: 5, borderRadius: 999, background: i === idx ? T.orange : T.orangeDim, transition: "width 0.3s ease" }} />;
+            })}
+          </div>
+          <span style={{ fontSize: 11.5, fontWeight: 700, color: T.orange }}>{last ? "Got it" : "Tap for next"}</span>
+        </div>
+      </div>
+    </Card>
   );
 }
 
@@ -13414,26 +13522,7 @@ function StockScoutView(props) {
   var _xp = useState({}); var expanded = _xp[0]; var setExpanded = _xp[1];
   function togglePick(i) { var n = Object.assign({}, expanded); n[i] = !n[i]; setExpanded(n); }
 
-  useEffect(function() {
-    if (document.getElementById("richy-scout-css")) return;
-    var st = document.createElement("style");
-    st.id = "richy-scout-css";
-    st.textContent = "@keyframes rsbDraw{to{stroke-dashoffset:0}}"
-      + "@keyframes rsbPop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.18);opacity:1}100%{transform:scale(1);opacity:1}}"
-      + "@keyframes rsbSliceOut{from{transform:translate(0,0)}to{transform:translate(7px,-7px)}}"
-      + "@keyframes rsbPing{from{opacity:0.55;transform:scale(0.55)}to{opacity:0;transform:scale(1.8)}}"
-      + "@keyframes rsbBar{from{transform:scaleY(0)}to{transform:scaleY(1)}}"
-      + "@keyframes rsbFill{from{width:0%}to{width:100%}}"
-      + "@keyframes rsbUp{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}"
-      + "@keyframes rscFade{from{opacity:0}to{opacity:1}}"
-      + "@keyframes rscFadeOut{to{opacity:0}}"
-      + "@keyframes rscWord{from{opacity:0;transform:translateY(26px) scale(1.06);filter:blur(10px)}to{opacity:1;transform:none;filter:blur(0)}}"
-      + "@keyframes rscOut{to{opacity:0;transform:scale(0.96) translateY(-10px);filter:blur(8px)}}"
-      + "@keyframes rscGlyph{from{opacity:0;transform:scale(1.28) translateY(14px)}to{opacity:1;transform:none}}"
-      + "@keyframes rscShoot{0%{transform:translateY(55vh);opacity:0}16%{opacity:1}80%{opacity:0.85}100%{transform:translateY(-195vh);opacity:0}}"
-      + "@keyframes rscPulse{0%,100%{opacity:0.55;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.14)}}";
-    document.head.appendChild(st);
-  }, []);
+  useEffect(function() { ensureScoutCss(); }, []);
 
   var cash = acct ? investingCash(acct) : 0;
   var balance = 0;
@@ -13522,12 +13611,12 @@ function StockScoutView(props) {
         </div>
       </div>
 
-      {showBasics && <ScoutCinema onDone={function() { markScoutBasicsSeen(); setShowBasics(false); }} />}
+      {showBasics && <ScoutBasicsStory onDone={function() { markScoutBasicsSeen(); setShowBasics(false); }} />}
       {!showBasics && isBeginner && (
         <button onClick={function() { setShowBasics(true); }}
           style={{ display: "inline-flex", alignItems: "center", gap: 6, margin: "10px 2px 0", background: T.orangeDim, border: "none", borderRadius: 999, padding: "7px 13px", cursor: "pointer", fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.orange }}>
-          <SVGIcon id="film" size={13} color={T.orange} />
-          Watch: stocks in 30 seconds
+          <SVGIcon id="book" size={13} color={T.orange} />
+          Stock basics
         </button>
       )}
 

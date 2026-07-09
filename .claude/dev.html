@@ -103,6 +103,7 @@ fetchSource(1).then(function(src){
 
   var qs = new URLSearchParams(location.search);
   if (typeof applyTheme === "function") { applyTheme(qs.get("theme") || "purple"); }
+  if (typeof applyDarkMode === "function") { applyDarkMode(qs.get("dark") === "1"); }
   var view = qs.get("view") || "overview";
   var mockTrips = qs.get("seed") ? [{
     id: 99, name: "Tokyo Spring", destination: "Tokyo", days: 8, startDate: "2026-06-28", style: "comfort", total: 5000, icon: "umbrella",
@@ -318,6 +319,7 @@ fetchSource(1).then(function(src){
         onSaveInvesting: function(n){ setIv(n); },
         onMove: function(ntx, ni){ setTx(ntx); setIv(ni); },
         onOpenInvestorOnboard: function(){ window.__clicked = "onboard"; },
+        onOpenScout: function(){ window.location.href = "/.claude/dev.html?view=scout&profile=" + (qs.get("profile")||"") + "&seed=1"; },
         onBack: function(){ window.__clicked = "back"; }, backLabel: "Accounts",
         onOpenStock: function(acctId, symbol){ window.__clicked = "stock_" + symbol; }
       });
