@@ -11865,28 +11865,19 @@ function InvestingView(props) {
           style={{ flex: 1, border: "1.5px solid " + (cash <= 0 ? "rgba(0,0,0,0.08)" : T.orange), cursor: cash <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 13, background: "none", color: cash <= 0 ? T.ink3 : T.orange }}>Withdraw</button>
       </div>
 
-      {/* New to investing? - prominent for first-timers, a quiet refresher once done */}
+      {/* New to investing? - same card format as the scout entry below */}
       {props.onOpenInvestorOnboard && (
-        !props.investorProfile ? (
-          <button onClick={props.onOpenInvestorOnboard}
-            style={{ width: "100%", marginBottom: 16, cursor: "pointer", fontFamily: UI, textAlign: "left", display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 16, background: "linear-gradient(135deg," + T.heroBg + "," + T.heroBg2 + ")", border: "none", boxShadow: T.heroShadow, boxSizing: "border-box" }}>
-            <div style={{ width: 42, height: 42, borderRadius: 13, background: "rgba(255,255,255,0.28)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <SVGIcon id="spark" size={20} color={T.heroText} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 15, fontWeight: 800, color: T.heroText }}>New to investing?</div>
-              <div style={{ fontSize: 12.5, color: T.heroMut, marginTop: 2, lineHeight: 1.4 }}>Answer 4 quick questions and Richard will teach you the basics, your way.</div>
-            </div>
-            <SVGIcon id="chevron" size={18} color={T.heroText} />
-          </button>
-        ) : (
-          <button onClick={props.onOpenInvestorOnboard}
-            style={{ width: "100%", marginBottom: 16, cursor: "pointer", fontFamily: UI, textAlign: "left", display: "flex", alignItems: "center", gap: 11, padding: "11px 14px", borderRadius: 13, background: T.card, border: "1px solid " + T.sep, boxSizing: "border-box" }}>
-            <SVGIcon id="book" size={16} color={T.orange} />
-            <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: T.ink }}>Investing basics from Richard</span>
-            <SVGIcon id="chevron" size={16} color={T.ink3} />
-          </button>
-        )
+        <button onClick={props.onOpenInvestorOnboard}
+          style={{ width: "100%", marginBottom: 16, cursor: "pointer", fontFamily: UI, textAlign: "left", display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 16, background: T.card, border: "1.5px solid " + T.orange + "44", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 6px 20px rgba(0,0,0,0.05)", boxSizing: "border-box" }}>
+          <div style={{ width: 42, height: 42, borderRadius: 13, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 5px 14px " + T.orangeGlow }}>
+            <SVGIcon id="spark" size={20} color="#fff" />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: T.ink }}>{props.investorProfile ? "Investing basics from Richard" : "New to investing?"}</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>{props.investorProfile ? "Revisit your guide, or redo the test anytime." : "Watch how stocks work, then get the basics tuned to you."}</div>
+          </div>
+          <SVGIcon id="chevron" size={18} color={T.ink3} />
+        </button>
       )}
 
       {/* Searching for a new stock? - Richard's deep Opus scout */}
@@ -13132,7 +13123,7 @@ function InvestorOnboardScreen(props) {
   return (
     <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column", position: "relative", zIndex: 0 }}>
       <ScoutBeamsBg opacity={0.42} />
-      {showCinema && <ScoutCinema onDone={function() { setShowCinema(false); }} />}
+      {showCinema && <ScoutCinema scenes={ONBOARD_CINEMA} onDone={function() { setShowCinema(false); }} />}
       <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0" }}>
         {qIndex > 0 ? <JrIconBtn icon="chevron" rotate={180} onPress={goBack} /> : <button onClick={props.onDone} style={{ width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, padding: 0 }}><SVGIcon id="close" size={15} color={JINK2} /></button>}
         <JourneyBar pct={((qIndex + 1) / Q_TOTAL) * 100} />
@@ -13310,6 +13301,28 @@ function ScoutBasicsScene(props) {
         style={{ animation: "rsbPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 2.2s both", transformBox: "fill-box", transformOrigin: "center" }} />
     </svg>
   );
+  if (i === 5) return (
+    <svg {...common}>
+      {/* magnifier sweeping the market - Richard reading everything */}
+      <circle cx="58" cy="42" r="20" stroke={T.orange} strokeWidth="3" pathLength="100"
+        strokeDasharray="100" strokeDashoffset="100" style={{ animation: "rsbDraw 1s ease 0.3s both" }} />
+      <path d="M73 57 L89 73" stroke={T.orange} strokeWidth="4" strokeLinecap="round" pathLength="100"
+        strokeDasharray="100" strokeDashoffset="100" style={{ animation: "rsbDraw 0.5s ease 1.2s both" }} />
+      <path d="M50 46 l6 -7 l5 4 l8 -10" stroke={T.gold} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" pathLength="100"
+        strokeDasharray="100" strokeDashoffset="100" style={{ animation: "rsbDraw 0.7s ease 1.5s both" }} />
+      <circle cx="58" cy="42" r="28" stroke={T.gold} strokeWidth="1.5"
+        style={{ animation: "rsbPing 1.7s ease-out 1.9s infinite", transformBox: "fill-box", transformOrigin: "center" }} />
+    </svg>
+  );
+  if (i === 6) return (
+    <svg {...common}>
+      {/* shield + check - honest, risk named, nothing promised */}
+      <path d="M66 14 L92 24 V44 C92 60 81 70 66 78 C51 70 40 60 40 44 V24 Z" stroke={T.orange} strokeWidth="3" strokeLinejoin="round" pathLength="100"
+        strokeDasharray="100" strokeDashoffset="100" style={{ animation: "rsbDraw 1.3s ease 0.3s both" }} />
+      <path d="M54 45 l9 9 l17 -17" stroke={T.green} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" pathLength="100"
+        strokeDasharray="100" strokeDashoffset="100" style={{ animation: "rsbDraw 0.6s ease 1.5s both" }} />
+    </svg>
+  );
   return (
     <svg {...common}>
       {[[42, 24, 0.35], [62, 38, 0.65], [82, 54, 1]].map(function(bar, j) {
@@ -13379,6 +13392,7 @@ function ScoutBeamsBg(props) {
     </div>
   );
 }
+// The five teaching beats - shared by the inline banner and the onboarding film.
 var SCOUT_CINEMA = [
   { h: "Stocks.", s: "The whole idea, in 30 seconds.", glyph: -1 },
   { h: "You're buying a slice.", s: "A stock is a small piece of a real company. It does well, your slice is worth more.", glyph: 0 },
@@ -13387,6 +13401,28 @@ var SCOUT_CINEMA = [
   { h: "Dips are part of the deal.", s: "Great stocks drop sometimes. Only invest money that can sit for years.", glyph: 3 },
   { h: "Start small. Learn cheap.", s: "Every idea is sized to your cash, so no single bet can hurt you.", glyph: 4 },
   { h: "Richard's on it.", s: "He reads the prices and the news, then brings you his best ideas.", glyph: -1, last: true }
+];
+// Film for the "New to investing?" journey: how stocks work + how to spot a
+// good one, ending by handing off into the 4-question test.
+var ONBOARD_CINEMA = [
+  { h: "Stocks.", s: "How they work - and how to spot a good one.", glyph: -1 },
+  { h: "You're buying a slice.", s: "A stock is a small piece of a real company. It does well, your slice is worth more.", glyph: 0 },
+  { h: "Prices are just moods.", s: "Millions of people voting with money, all day. The daily wiggles are normal.", glyph: 1 },
+  { h: "Good picks make real money.", s: "Look for a business you understand, with profits that keep growing - not hype.", glyph: 4 },
+  { h: "Then find the spark.", s: "The catalyst: one specific event or trend that could push the price higher.", glyph: 2 },
+  { h: "Dips are part of the deal.", s: "Even great stocks drop. Only invest money that can sit for years.", glyph: 3 },
+  { h: "Now let's make it yours.", s: "Four quick questions, and Richard tunes the basics to exactly you.", glyph: -1, last: true, cta: "Let's begin" }
+];
+// Film for the Stock Scout: how Richard hunts, what makes him good, and why
+// he's worth trusting. Plays once per investing account, on first open.
+var RICHARD_CINEMA = [
+  { h: "Meet your scout.", s: "How Richard finds your next big pick.", glyph: -1 },
+  { h: "He reads everything.", s: "Live prices, momentum, and today's headlines - across the market's biggest movers.", glyph: 5 },
+  { h: "Then he thinks. Hard.", s: "His deepest reasoning mode weighs every candidate before he commits to a view.", glyph: 2 },
+  { h: "Honest about risk.", s: "Every pick names its catalyst and how it could go wrong. No hype, no promised returns.", glyph: 6 },
+  { h: "Sized to your money.", s: "He never suggests more than you can afford - and keeps it smaller while you learn.", glyph: 4 },
+  { h: "Why he's the best.", s: "He's read more market history than any human could, and he isn't paid to sell you anything.", glyph: 1 },
+  { h: "Let him hunt.", s: "Fresh picks, scouted from live data, whenever you ask.", glyph: -1, last: true, cta: "Show me the picks" }
 ];
 // Light-streak choreography: every scene shoots the lines a different way.
 // rotate(a) maps a streak's local "up" to: 0=up, 90=right, 135=down-right...
@@ -13404,10 +13440,11 @@ function cinStreaks(scene) {
   return out;
 }
 function ScoutCinema(props) {
+  var SC = props.scenes || SCOUT_CINEMA;
   var _sc = useState(0); var scene = _sc[0]; var setScene = _sc[1];
   var _cl = useState(false); var closing = _cl[0]; var setClosing = _cl[1];
-  var N = SCOUT_CINEMA.length;
-  var c = SCOUT_CINEMA[scene];
+  var N = SC.length;
+  var c = SC[scene];
   useEffect(function() { ensureScoutCss(); }, []);
   useEffect(function() {
     if (c.last || closing) return;
@@ -13474,7 +13511,7 @@ function ScoutCinema(props) {
         {c.last && (
           <button onClick={function(e) { e.stopPropagation(); finish(); }}
             style={{ marginTop: 30, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 14.5, fontWeight: 800, color: "#fff", padding: "13px 30px", borderRadius: 999, background: "linear-gradient(145deg," + PU2 + "," + PU + ")", boxShadow: "0 0 28px " + jrRgba(PU, 0.55) + ", 0 6px 18px rgba(0,0,0,0.4)", animation: "rscWord 0.75s ease 1.6s both" }}>
-            Show me the picks</button>
+            {c.cta || "Show me the picks"}</button>
         )}
       </div>
       {/* vignette + skip */}
@@ -13482,7 +13519,7 @@ function ScoutCinema(props) {
       <button onClick={function(e) { e.stopPropagation(); finish(); }}
         style={{ position: "absolute", top: 20, right: 18, zIndex: 3, background: chipBg, border: "1px solid " + chipBorder, borderRadius: 999, padding: "7px 16px", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, color: chipText }}>Skip</button>
       <div style={{ position: "absolute", bottom: 22, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 6, pointerEvents: "none" }}>
-        {SCOUT_CINEMA.map(function(_, i) {
+        {SC.map(function(_, i) {
           return <div key={i} style={{ width: i === scene ? 18 : 5, height: 5, borderRadius: 999, background: i === scene ? PU2 : dotOff, transition: "width 0.35s ease, background 0.35s ease" }} />;
         })}
       </div>
@@ -13578,6 +13615,12 @@ function StockScoutView(props) {
     if (!acct) return;
     props.onSaveInvesting(accts.map(function(a) { if (a.id !== acct.id) return a; var n = {}; for (var k in a) n[k] = a[k]; n.scout = next; return n; }));
   }
+  // "Meet your scout" film: once per investing account, on the first open of
+  // this page (persisted on the account, so it survives devices and sessions).
+  function markIntroSeen() {
+    if (!acct) return;
+    props.onSaveInvesting(accts.map(function(a) { if (a.id !== acct.id) return a; var n = {}; for (var k in a) n[k] = a[k]; n.scoutIntroSeen = true; return n; }));
+  }
   function generate() {
     if (!acct) return;
     setBusy(true);
@@ -13639,6 +13682,7 @@ function StockScoutView(props) {
   return (
     <div style={{ position: "relative", zIndex: 0 }}>
       <ScoutBeamsBg />
+      {acct && !acct.scoutIntroSeen && <ScoutCinema scenes={RICHARD_CINEMA} onDone={markIntroSeen} />}
       <SubViewBack onBack={props.onBack} label={props.backLabel || "Investing"} />
 
       <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 6, padding: "0 2px" }}>

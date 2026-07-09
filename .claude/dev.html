@@ -329,6 +329,9 @@ fetchSource(1).then(function(src){
     el = React.createElement(InvestingHarness, {});
   } else if (view === "stock") {
     function StockHarness() {
+      // ?sym=GOOGL opens a stock with NO position and NO meta - the exact path a
+      // scout pick's "See the stock" button takes.
+      var sym = qs.get("sym") || "AAPL";
       var seedInv = [{
         id: "inv_1", name: "My Portfolio", color: "#27A85F", icon: "chart", createdAt: "2026-01-01",
         cashEntries: [{ id: 1, kind: "deposit", amount: 8000, date: "2026-01-01", fromMain: false, label: "External" }],
@@ -342,7 +345,7 @@ fetchSource(1).then(function(src){
       var _iv = React.useState(seedInv); var iv = _iv[0]; var setIv = _iv[1];
       window.__invState = function(){ return { investing: iv }; };
       return React.createElement(StockView, {
-        investing: iv, tx: mockTx, goals: mockGoals, openStock: { acctId: "inv_1", symbol: "AAPL" },
+        investing: iv, tx: mockTx, goals: mockGoals, openStock: { acctId: "inv_1", symbol: sym },
         username: "Alon", lang: "en", richardInstructions: "",
         investorProfile: qs.get("profile") ? { experience: "never", involvement: "monthly", amount: "few", risk: "hold" } : null,
         onSaveInvesting: function(n){ setIv(n); },
