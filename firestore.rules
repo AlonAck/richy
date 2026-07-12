@@ -14,6 +14,25 @@ service cloud.firestore {
 
     match /users/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
+
+      // Bank Sync inbox: written ONLY by the api/bank-sync.js server function
+      // (the Admin SDK bypasses these rules). The owner may read and drain it;
+      // no client may create or edit inbox docs.
+      match /syncInbox/{docId} {
+        allow read, delete: if request.auth != null && request.auth.uid == uid;
+        allow create, update: if false;
+      }
+    }
+
+    // Bank Sync key -> uid mapping. Created by the owner when enabling Bank
+    // Sync, deleted when disabling (revocation). The doc id is the SHA-256 of
+    // the 128-bit random key (the raw key never touches the database), so
+    // get-by-id is not guessable; list is denied so ids can't be enumerated.
+    match /syncKeys/{key} {
+      allow get: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow list, update: if false;
     }
 
     // Households (Collab / couples mode). A shared document that two or more

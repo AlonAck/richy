@@ -71,6 +71,8 @@ fetchSource(1).then(function(src){
 
   // Expose the pure business-math helpers for console verification in tests.
   try { window.__richy = { bizMonthSpend: bizMonthSpend, bizMonthRevenue: bizMonthRevenue, bizMonthProfit: bizMonthProfit, bizCatMonthSpent: bizCatMonthSpent, bizBurn: bizBurn, bizRunway: bizRunway, bizPace: bizPace, bizHealth: bizHealth, bizRevenueTrend: bizRevenueTrend, businessCash: businessCash }; } catch (e) {}
+  // Bank Sync ingestion helpers for console verification.
+  try { Object.assign(window.__richy, { syncDocToTx: syncDocToTx, dupKey: dupKey, normalizeMerchant: normalizeMerchant, sha256Hex: sha256Hex }); } catch (e) {}
   // Market-data adapter + FX helpers (Investing feature) for the same purpose.
   try { Object.assign(window.__richy, { stockQuote: stockQuote, stockQuotes: stockQuotes, stockSeries: stockSeries, stockSearch: stockSearch, stockProfile: stockProfile, stockNews: stockNews, isTASE: isTASE, invFmt: invFmt, invConvert: invConvert, loadInvRates: loadInvRates, investingCash: investingCash, positionsOf: positionsOf, investingHoldingsValue: investingHoldingsValue, investingWorth: investingWorth, investingTotal: investingTotal, investingSeries: investingSeries, investingDividendTotal: investingDividendTotal }); } catch (e) {}
 
@@ -388,6 +390,19 @@ fetchSource(1).then(function(src){
       });
     }
     el = React.createElement(OnboardHarness, {});
+  } else if (view === "bankSync") {
+    // ?on=1 starts enabled; ?synced=1 also seeds a last-sync time and count.
+    function BankSyncHarness() {
+      var seeded = qs.get("on") ? { enabled: true, key: "rk_9f2c81d4a0b36e57c8d90112aabbccdd", keyHash: "mock", createdAt: Date.now() - 86400000, lastSyncAt: qs.get("synced") ? Date.now() - 3600000 : null, count: qs.get("synced") ? 12 : 0 } : null;
+      var _bs = React.useState(seeded); var bs = _bs[0]; var setBs = _bs[1];
+      return React.createElement(BankSyncView, {
+        bankSync: bs,
+        onEnable: function() { setBs({ enabled: true, key: "rk_9f2c81d4a0b36e57c8d90112aabbccdd", keyHash: "mock", createdAt: Date.now(), lastSyncAt: null, count: 0 }); return Promise.resolve(); },
+        onDisable: function() { setBs({ enabled: false, key: null, keyHash: null, createdAt: null, lastSyncAt: bs && bs.lastSyncAt, count: (bs && bs.count) || 0 }); },
+        onBack: function() { window.__clicked = "back"; }
+      });
+    }
+    el = React.createElement(BankSyncHarness, {});
   } else if (view === "auth") {
     // Full welcome journey; Firebase calls only fire on submit, so browsing is safe.
     try { if (!qs.get("seen")) localStorage.removeItem("cb_welcome_seen"); } catch (e) {}

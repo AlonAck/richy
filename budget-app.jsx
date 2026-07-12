@@ -325,6 +325,11 @@ var SYM_TO_CODE = (function() {
   CURRENCY_OPTIONS.forEach(function(o) { m[o.sym] = o.code; });
   return m;
 })();
+var CODE_TO_SYM = (function() {
+  var m = {};
+  CURRENCY_OPTIONS.forEach(function(o) { m[o.code] = o.sym; });
+  return m;
+})();
 var SYM_TO_DEC = (function() {
   var m = {};
   CURRENCY_OPTIONS.forEach(function(o) { m[o.sym] = o.dec; });
@@ -985,6 +990,38 @@ var CLOUD = {
     if (!cloudReady() || !uid) return Promise.resolve();
     return _fsdb().collection("users").doc(uid).set(data);
   },
+  // ---- Bank Sync (Apple Pay via iOS Shortcuts) --------------------------------
+  // syncKeys/{sha256(key)} maps a per-user random token to their uid so
+  // api/bank-sync.js can resolve who a POSTed transaction belongs to (only the
+  // hash is stored - the raw key is never in the database). The inbox
+  // subcollection is server-written only; the running app drains it into real
+  // transactions. `key` here is already the hash.
+  createSyncKey: function(key, uid) {
+    if (!cloudReady() || !uid) return Promise.resolve();
+    return _fsdb().collection("syncKeys").doc(key).set({ uid: uid, createdAt: Date.now() });
+  },
+  deleteSyncKey: function(key) {
+    if (!cloudReady()) return Promise.resolve();
+    return _fsdb().collection("syncKeys").doc(key).delete();
+  },
+  subscribeSyncInbox: function(uid, cb) {
+    if (!cloudReady() || !uid) return function() {};
+    return _fsdb().collection("users").doc(uid).collection("syncInbox").onSnapshot(
+      function(qs) {
+        var out = [];
+        qs.forEach(function(d) { out.push(Object.assign({ _id: d.id }, d.data())); });
+        cb(out);
+      },
+      function() {}
+    );
+  },
+  deleteSyncInboxDocs: function(uid, ids) {
+    if (!cloudReady() || !uid || !ids.length) return Promise.resolve();
+    var batch = _fsdb().batch();
+    ids.forEach(function(id) { batch.delete(_fsdb().collection("users").doc(uid).collection("syncInbox").doc(id)); });
+    return batch.commit();
+  },
+
   hasPasswordProvider: function() {
     var cu = cloudReady() ? _auth().currentUser : null;
     if (!cu) return false;
@@ -5306,6 +5343,49 @@ function dupKey(type, date, amount, label) {
   return (type || "") + "|" + (date || "") + "|" + Number(amount || 0).toFixed(2) + "|" + (label || "").toLowerCase().trim().slice(0, 40);
 }
 
+// ===== BANK SYNC ==============================================================
+// The raw sync key never touches Firestore: syncKeys docs are keyed by its
+// SHA-256, so a database read (console, backup, leak) yields no credential that
+// could inject transactions into an account.
+function sha256Hex(str) {
+  var bytes = new TextEncoder().encode(str);
+  return crypto.subtle.digest("SHA-256", bytes).then(function(buf) {
+    return Array.prototype.map.call(new Uint8Array(buf), function(b) { return ("0" + b.toString(16)).slice(-2); }).join("");
+  });
+}
+// Turn one syncInbox doc (POSTed by the user's iPhone Shortcut on every Apple
+// Pay tap, see api/bank-sync.js) into a normal expense transaction. Reuses the
+// CSV importer's brains: learned/keyword categorization, merchant cleanup, and
+// dupKey dedup. Returns null when the doc is a duplicate of something already
+// booked (seen = a {dupKey: true} set the caller maintains across the batch).
+function syncDocToTx(doc, seen, txList, cats, mainSym, id) {
+  // "STARBUCKS #1123" -> "Starbucks"; keep the raw merchant if cleanup eats it all.
+  var cleaned = normalizeMerchant(doc.merchant);
+  var label = cleaned ? cleaned.replace(/\b[a-z]/g, function(ch) { return ch.toUpperCase(); }) : (doc.merchant || "Card purchase");
+  label = label.slice(0, 60);
+
+  var date = doc.date || new Date().toISOString().slice(0, 10);
+  var entered = round2(doc.amount);
+
+  // The Shortcut reports the card's currency; convert into the app's main
+  // currency exactly like a manually entered foreign expense (static rate -
+  // same offline baseline manual entry falls back to).
+  var docSym = doc.currency ? CODE_TO_SYM[doc.currency] : null;
+  var foreign = !!(docSym && docSym !== mainSym);
+  var rate = foreign ? fxStaticRate(docSym, mainSym) : 1;
+  var amount = round2(entered * rate);
+
+  var key = dupKey("expense", date, amount, label);
+  if (seen[key]) return null;
+  seen[key] = true;
+
+  var catId = suggestCatId(label, txList, cats) || guessImportCatId(label, cats);
+  var c = catById(cats, catId) || { id: "", name: "Other" };
+  var tx = { type: "expense", amount: amount, label: label, catId: c.id, category: c.name, date: date, id: id, repeat: "none", pending: false, synced: true };
+  if (foreign) { tx.origAmount = entered; tx.origCur = docSym; tx.rate = rate; }
+  return tx;
+}
+
 // ===== FOUND MONEY ============================================================
 // A deterministic audit of the user's OWN transactions. Every figure here is
 // computed from real tx data (never invented by the model), so the numbers can
@@ -6114,6 +6194,7 @@ function Activity(props) {
                         </span>
                         {t.origCur && t.origCur !== _currency.sym && <span style={{ fontSize: 10, fontWeight: 700, color: T.gold, background: T.goldDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.02em" }}>{fmtCur(t.origCur, t.origAmount)}</span>}
                         {t.pending && <span style={{ fontSize: 10, fontWeight: 700, color: T.gold, background: T.goldDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.04em" }}>PENDING</span>}
+                        {t.synced && <span style={{ fontSize: 10, fontWeight: 700, color: T.green, background: T.greenDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.04em" }}>AUTO</span>}
                         {t.repeat && t.repeat !== "none" && <span style={{ fontSize: 10, fontWeight: 600, color: T.ink2, background: T.orangeDim, borderRadius: 5, padding: "1px 6px" }}>{t.repeat === "weekly" ? tr("weekly") : tr("monthly")}</span>}
                       </div>
                     </div>
@@ -13357,38 +13438,18 @@ function ensureScoutCss() {
     + "@keyframes rscBeam{0%{opacity:0;transform:translateY(70vh)}14%{opacity:1}86%{opacity:1}100%{opacity:0;transform:translateY(-165vh)}}";
   document.head.appendChild(st);
 }
-// Ambient version of the trailer's light streaks, for use as a quiet animated
-// background behind any investing page. Absolute + self-clipping + zIndex:-1, so
-// a root only needs position:relative;zIndex:0 to sit it behind the content.
-// Colors follow the live theme; opacity follows dark/light unless overridden
-// (pass an explicit opacity for the always-cream onboarding surfaces).
+// Ambient background behind any investing page: the same soft, blurred crossing
+// chrome-wave ribbons as the onboarding story beats (JrShaderBg), not the older
+// falling light-streaks. Absolute + self-clipping + zIndex:-1, so a root only
+// needs position:relative;zIndex:0 to sit it behind the content. Colors follow
+// the live theme; opacity follows dark/light unless overridden (pass an explicit
+// opacity for the always-cream onboarding surfaces).
 function ScoutBeamsBg(props) {
-  useEffect(function() { ensureScoutCss(); }, []);
-  var PU = T.orange, PU2 = T.orangeHi, GO = T.gold;
   var isDark = T.bg === DARK_BG;
-  var n = props.count || 10;
-  var angle = props.angle != null ? props.angle : 19;
-  var out = [];
-  for (var i = 0; i < n; i++) {
-    out.push({
-      x: ((i * 27 + 8) % 116) - 8,
-      y: ((i * 37 + 6) % 120) - 12,
-      len: 80 + ((i * 19) % 75),
-      w: i % 3 === 0 ? 7 : 5,
-      dur: 15 + ((i * 7) % 12),
-      d: -(i * 2.3),
-      col: i % 5 === 4 ? GO : (i % 2 ? PU2 : PU)
-    });
-  }
   return (
-    <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: -1, opacity: props.opacity != null ? props.opacity : (isDark ? 0.58 : 0.45) }}>
-      {out.map(function(b, i) {
-        return (
-          <div key={i} style={{ position: "absolute", left: b.x + "%", top: b.y + "%", transform: "rotate(" + angle + "deg)" }}>
-            <div style={{ width: b.w, height: b.len + "vh", borderRadius: 999, background: "linear-gradient(180deg, transparent, " + b.col + ", transparent)", boxShadow: "0 0 " + (b.w * 5) + "px " + b.col, animation: "rscBeam " + b.dur + "s linear " + b.d + "s infinite" }} />
-          </div>
-        );
-      })}
+    <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: -1, opacity: props.opacity != null ? props.opacity : (isDark ? 0.62 : 0.5) }}>
+      <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base={T.bg} speed={0.16} intensity={0.85} yScale={0.46} xScale={1.05}
+        style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
     </div>
   );
 }
@@ -16030,6 +16091,157 @@ function EntryMethodView(props) {
   );
 }
 
+// Where the iPhone Shortcut (and the in-app test button) POST transactions.
+// Always the absolute production URL - the phone can't use a relative path.
+var BANK_SYNC_ENDPOINT = "https://richy-mgkl.vercel.app/api/bank-sync";
+
+// The one-time iPhone setup, shown while Bank Sync is on. Kept as data so the
+// numbered rendering stays dumb.
+var BANK_SYNC_STEPS = [
+  "On your iPhone, open the Shortcuts app and go to the Automation tab.",
+  "Tap the + button and pick \"Transaction\".",
+  "Choose your Apple Pay cards, select \"Run Immediately\", then tap Next and \"New Blank Automation\".",
+  "Add the action \"Get Contents of URL\" and paste the sync address above into it.",
+  "Expand the action's options: set Method to POST and Request Body to JSON.",
+  "Add four fields - key: paste your sync key. merchant: pick the Merchant variable from Shortcut Input. amount: pick the Amount variable. currency: type your card's 3-letter code, like USD or ILS.",
+  "Tap Done. From now on, every tap of your iPhone lands in Richy on its own."
+];
+
+function BankSyncView(props) {
+  var bs = props.bankSync;
+  var enabled = !!(bs && bs.enabled);
+  var _cp = useState(""); var copied = _cp[0]; var setCopied = _cp[1];
+  var _ts = useState("idle"); var testState = _ts[0]; var setTestState = _ts[1];
+  var _bz = useState(false); var busy = _bz[0]; var setBusy = _bz[1];
+  var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", padding: "18px 4px 8px", fontFamily: UI };
+
+  function copy(which, text) {
+    function done() { setCopied(which); setTimeout(function() { setCopied(""); }, 1600); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(done);
+    else done();
+  }
+
+  function handleEnable() {
+    if (busy) return;
+    setBusy(true);
+    Promise.resolve(props.onEnable()).catch(function() {}).then(function() { setBusy(false); });
+  }
+
+  function handleDisable() {
+    if (!window.confirm("Turn off Bank Sync? Your synced transactions stay - your iPhone shortcut will simply stop working.")) return;
+    setTestState("idle");
+    props.onDisable();
+  }
+
+  // Exercises the entire pipe: endpoint -> Firestore inbox -> the live listener
+  // books it as a real expense the user can then delete from Activity.
+  function sendTest() {
+    if (testState === "sending" || !bs || !bs.key) return;
+    setTestState("sending");
+    fetch(BANK_SYNC_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key: bs.key, merchant: "Richy Test Purchase", amount: "1.00", test: true })
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      setTestState(d && d.ok ? "sent" : "error");
+    }).catch(function() { setTestState("error"); });
+  }
+
+  function copyRow(which, label, value, last) {
+    return (
+      <div style={{ padding: "13px 20px", borderBottom: last ? "none" : "0.5px solid " + T.sep, boxSizing: "border-box" }}>
+        <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5 }}>{label}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ flex: 1, minWidth: 0, fontSize: 12.5, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</div>
+          <button onClick={function() { copy(which, value); }}
+            style={{ flexShrink: 0, background: copied === which ? T.greenDim : T.orangeDim, color: copied === which ? T.green : T.orange, border: "none", borderRadius: 9, padding: "6px 12px", fontSize: 12, fontWeight: 700, fontFamily: UI, cursor: "pointer" }}>
+            {copied === which ? "Copied" : "Copy"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!enabled) {
+    return (
+      <div>
+        <SubViewBack onBack={props.onBack} />
+        <Card style={{ padding: "34px 24px 26px", textAlign: "center", marginBottom: 16 }}>
+          <div style={{ width: 52, height: 52, borderRadius: 16, background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+            <SVGIcon id="credit" size={24} color={T.green} />
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: T.ink, marginBottom: 6, fontFamily: DISP, letterSpacing: "-0.02em" }}>Automatic Apple Pay sync</div>
+          <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, maxWidth: 300, margin: "0 auto 22px" }}>
+            Every purchase you tap with your iPhone lands in Richy by itself - categorized and labeled, no typing. A one-time shortcut on your phone does the sending.
+          </div>
+          <button onClick={handleEnable} disabled={busy}
+            style={{ width: "100%", background: T.btn, color: "#fff", border: "none", borderRadius: 16, padding: "15px 0", fontSize: 16, fontFamily: UI, fontWeight: 600, cursor: "pointer", opacity: busy ? 0.6 : 1, boxSizing: "border-box" }}>
+            {busy ? "Turning on..." : "Turn on Bank Sync"}
+          </button>
+        </Card>
+        <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.55, padding: "0 6px" }}>
+          Works with any card in Apple Wallet. Your bank credentials are never involved - your phone only reports the merchant and amount of each tap, straight to your own Richy account.
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+
+      <Card style={{ overflow: "hidden", marginBottom: 4 }}>
+        <div style={{ padding: "15px 20px", display: "flex", alignItems: "center", gap: 10, borderBottom: "0.5px solid " + T.sep }}>
+          <span style={{ width: 9, height: 9, borderRadius: "50%", background: T.green, boxShadow: "0 0 0 4px " + T.greenDim, flexShrink: 0 }} />
+          <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, fontFamily: UI }}>Active</span>
+        </div>
+        <InfoRow label="Last synced" value={bs.lastSyncAt ? new Date(bs.lastSyncAt).toLocaleString() : "Waiting for first transaction"} />
+        <InfoRow label="Transactions synced" value={String(bs.count || 0)} last />
+      </Card>
+
+      <div style={secLabel}>One-time iPhone setup</div>
+      <Card style={{ overflow: "hidden", marginBottom: 4 }}>
+        {copyRow("url", "Sync address", BANK_SYNC_ENDPOINT)}
+        {copyRow("key", "Your sync key", bs.key, true)}
+      </Card>
+      <Card style={{ padding: "6px 20px", marginBottom: 4, marginTop: 12 }}>
+        {BANK_SYNC_STEPS.map(function(step, i) {
+          return (
+            <div key={i} style={{ display: "flex", gap: 12, padding: "11px 0", borderBottom: i < BANK_SYNC_STEPS.length - 1 ? "0.5px solid " + T.sep : "none" }}>
+              <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orangeDim, color: T.orange, fontSize: 11.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontFamily: UI, marginTop: 1 }}>{i + 1}</div>
+              <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, fontFamily: UI }}>{step}</div>
+            </div>
+          );
+        })}
+      </Card>
+
+      <div style={secLabel}>Check it works</div>
+      <button onClick={sendTest} disabled={testState === "sending"}
+        style={{ width: "100%", background: T.card, color: T.orange, border: "1.5px solid " + T.orangeDim, borderRadius: 16, padding: "14px 0", fontSize: 15, fontFamily: UI, fontWeight: 600, cursor: "pointer", marginBottom: 8, opacity: testState === "sending" ? 0.6 : 1, boxSizing: "border-box" }}>
+        {testState === "sending" ? "Sending..." : "Send a test transaction"}
+      </button>
+      {testState === "sent" && (
+        <div style={{ fontSize: 12.5, color: T.green, lineHeight: 1.5, padding: "0 6px 10px", fontFamily: UI }}>
+          Sent. It should appear in Activity within a few seconds - delete it there once you've seen it.
+        </div>
+      )}
+      {testState === "error" && (
+        <div style={{ fontSize: 12.5, color: T.red, lineHeight: 1.5, padding: "0 6px 10px", fontFamily: UI }}>
+          That didn't go through. Check your connection and try again in a moment.
+        </div>
+      )}
+
+      <button onClick={handleDisable}
+        style={{ width: "100%", background: "rgba(224,48,48,0.08)", color: T.red, border: "1px solid rgba(224,48,48,0.14)", borderRadius: 16, padding: "14px 0", fontSize: 15, fontFamily: UI, fontWeight: 600, cursor: "pointer", marginTop: 10, boxSizing: "border-box" }}>
+        Turn off Bank Sync
+      </button>
+      <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, padding: "8px 6px 0", fontFamily: UI }}>
+        Turning it off keeps everything already synced and simply stops new transactions from arriving.
+      </div>
+    </div>
+  );
+}
+
 function InfoRow(props) {
   var rowStyle = { width: "100%", padding: "13px 20px", borderBottom: props.last ? "none" : "0.5px solid " + T.sep, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 };
   var label = <span style={{ fontSize: 14, color: T.ink3, fontFamily: UI, flexShrink: 0 }}>{props.label}</span>;
@@ -16673,7 +16885,8 @@ function Profile(props) {
         <ProfileRow icon="credit" iconBg={T.greenDim} iconColor={T.green} label="Currency" value={curLabel} onClick={props.onViewCurrency} />
         <ProfileRow icon="briefcase" iconBg={T.greenDim} iconColor={T.green} label="Opening Balance" onClick={props.onViewEditOpeningBalance} />
         <ProfileRow icon="activity" iconBg={T.greenDim} iconColor={T.green} label="Log This Month" onClick={props.onViewLogMonth} />
-        <ProfileRow icon="edit" iconBg={T.greenDim} iconColor={T.green} label="Adding Transactions" value={props.entryMethod === "import" ? "CSV import" : "Manual"} onClick={props.onViewEntryMethod} last />
+        <ProfileRow icon="edit" iconBg={T.greenDim} iconColor={T.green} label="Adding Transactions" value={props.entryMethod === "import" ? "CSV import" : "Manual"} onClick={props.onViewEntryMethod} />
+        <ProfileRow icon="refresh" iconBg={T.greenDim} iconColor={T.green} label="Bank Sync" value={props.bankSync && props.bankSync.enabled ? "On" : "Off"} onClick={props.onViewBankSync} last />
       </ProfileSection>
 
       {/* ── Visual ── */}
@@ -16786,6 +16999,11 @@ export default function App() {
   var onboardingData = _oda[0]; var setOnboardingData = _oda[1];
   var _em = useState("manual");
   var entryMethod = _em[0]; var setEntryMethod = _em[1];
+  // Bank Sync (Apple Pay via iOS Shortcuts): { enabled, key, createdAt,
+  // lastSyncAt, count }. The key doubles as the credential the user's iPhone
+  // Shortcut sends to api/bank-sync.js; null until first enabled.
+  var _bsy = useState(null);
+  var bankSync = _bsy[0]; var setBankSync = _bsy[1];
   // Found Money: only the user's DECISIONS persist (the running tally, dismissed
   // finding ids, and a log of acted items). Findings themselves are recomputed
   // from tx each session by findMoney().
@@ -16855,6 +17073,7 @@ export default function App() {
     setOnboardingData(data.onboardingData || {});
     setMonthAnalysis(data.monthAnalysis || null);
     setEntryMethod(data.entryMethod === "import" ? "import" : "manual");
+    setBankSync(data.bankSync || null);
     setHouseholdId(data.householdId || null);
     setUserDob(data.dob || "");
     _lang.code = data.lang || "en"; setLang(data.lang || "en");
@@ -17003,7 +17222,7 @@ export default function App() {
     blobRef.current = {};
     setUser(null); setAccountKey(null); setTab("overview");
     setHouseholdId(null); setHousehold(null); setInvites([]);
-    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setInvestorProfile(null); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]);
+    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setInvestorProfile(null); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]); setBankSync(null);
     _lang.code = "en"; setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang("en"); applyTheme("blue"); setTheme("blue");
   }
 
@@ -17065,6 +17284,53 @@ export default function App() {
   function onSaveInvesting(next) { setInvesting(next); save({ investing: next }); }
   function onInvestingMove(nextTx, nextInvesting) { setTx(nextTx); setInvesting(nextInvesting); save({ tx: nextTx, investing: nextInvesting }); }
   function onSaveInvestorProfile(next) { setInvestorProfile(next); save({ investorProfile: next }); }
+
+  // ---- Bank Sync ingestion ----------------------------------------------------
+  // While enabled, listen to users/{uid}/syncInbox (filled by api/bank-sync.js on
+  // every Apple Pay tap the user's iPhone Shortcut reports) and book each doc as
+  // a normal expense. Refs keep the snapshot callback on fresh state without
+  // resubscribing on every render; inbox docs are deleted only AFTER the save
+  // resolves, so a crash mid-flight re-delivers rather than losing a purchase.
+  var txRef = useRef(tx); txRef.current = tx;
+  var catsRef = useRef(categories); catsRef.current = categories;
+  var curSymRef = useRef(currency); curSymRef.current = currency;
+  var bankSyncRef = useRef(bankSync); bankSyncRef.current = bankSync;
+  var syncSeenRef = useRef({}); // inbox ids already handled this session (snapshot re-fires before the delete lands)
+  useEffect(function() {
+    if (!accountKey || !bankSync || !bankSync.enabled) return function() {};
+    var unsub = CLOUD.subscribeSyncInbox(accountKey, function(docs) {
+      var fresh = docs.filter(function(d) { return !syncSeenRef.current[d._id]; });
+      if (!fresh.length) return;
+      fresh.forEach(function(d) { syncSeenRef.current[d._id] = true; });
+      fresh.sort(function(a, b) { return (a.receivedAt || 0) - (b.receivedAt || 0); });
+      var curTx = txRef.current;
+      var seen = {};
+      curTx.forEach(function(t) { seen[dupKey(t.type, t.date, t.amount, t.label)] = true; });
+      var base = Date.now();
+      var newTxs = [];
+      fresh.forEach(function(d, i) {
+        var t = syncDocToTx(d, seen, curTx, catsRef.current, curSymRef.current, base + i);
+        if (t) newTxs.push(t);
+      });
+      var ids = fresh.map(function(d) { return d._id; });
+      if (!newTxs.length) { CLOUD.deleteSyncInboxDocs(accountKey, ids); return; } // all duplicates
+      var bs = bankSyncRef.current || {};
+      var nextBs = { enabled: true, key: bs.key, keyHash: bs.keyHash || null, createdAt: bs.createdAt || null, lastSyncAt: Date.now(), count: (bs.count || 0) + newTxs.length };
+      var nextTx = curTx.concat(newTxs);
+      // Immediate persist (mirrors persistNotesOnly below): merge into the
+      // freshest blob so this write can't clobber other arrays, skip the debounce.
+      var existing = blobRef.current || {};
+      var blob = {};
+      for (var k in existing) blob[k] = existing[k];
+      blob.tx = nextTx; blob.bankSync = nextBs;
+      blobRef.current = blob;
+      setTx(nextTx); setBankSync(nextBs);
+      CLOUD.saveUser(accountKey, blob).then(function() {
+        CLOUD.deleteSyncInboxDocs(accountKey, ids);
+      });
+    });
+    return unsub;
+  }, [accountKey, bankSync && bankSync.enabled]);
 
   // Reminder scheduling. Timers don't survive reload, so we re-derive them from
   // each note's durable `reminder.due` whenever notes change, firing any that are
@@ -17214,6 +17480,31 @@ export default function App() {
   function onSaveEmail(email) { save({ email: email }); }
   function onSaveFinancial(oData) { save({ onboardingData: oData }); }
   function onSaveEntryMethod(m) { var v = m === "import" ? "import" : "manual"; setEntryMethod(v); save({ entryMethod: v }); }
+  // Enabling mints a fresh random key and registers it in syncKeys BEFORE it's
+  // shown to the user (a key the endpoint can't resolve would be useless).
+  // Disabling deletes the mapping, which is the revocation: the iPhone Shortcut
+  // keeps firing but api/bank-sync.js answers 404 unknown_key from then on.
+  function onEnableBankSync() {
+    var bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    var key = "rk_" + Array.prototype.map.call(bytes, function(b) { return ("0" + b.toString(16)).slice(-2); }).join("");
+    // Register the HASH of the key (see sha256Hex) before showing it to the user.
+    return sha256Hex(key).then(function(hash) {
+      return CLOUD.createSyncKey(hash, accountKey).then(function() {
+        var next = { enabled: true, key: key, keyHash: hash, createdAt: Date.now(), lastSyncAt: (bankSync && bankSync.lastSyncAt) || null, count: (bankSync && bankSync.count) || 0 };
+        setBankSync(next);
+        save({ bankSync: next });
+      });
+    });
+  }
+  function onDisableBankSync() {
+    var old = bankSync;
+    var next = { enabled: false, key: null, keyHash: null, createdAt: null, lastSyncAt: (old && old.lastSyncAt) || null, count: (old && old.count) || 0 };
+    setBankSync(next);
+    save({ bankSync: next });
+    if (old && old.keyHash) CLOUD.deleteSyncKey(old.keyHash).catch(function() {});
+    else if (old && old.key) sha256Hex(old.key).then(function(h) { CLOUD.deleteSyncKey(h).catch(function() {}); });
+  }
   function onSaveInstructions(text) { setRichardInstructions(text); save({ richardInstructions: text }); }
 
   // What Richard sees as user-provided context: the editable custom instructions
@@ -17369,7 +17660,7 @@ export default function App() {
             <div style={{ background: T.orangeDim, borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em" }}>{monthLabel}</div>
           </div>
           <span style={{ flex: 1, fontSize: 20, fontWeight: 700, color: T.ink, textAlign: "center", letterSpacing: "-0.02em" }}>
-            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
+            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
           <div style={{ width: 86, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
             {HAS_FAB.indexOf(currentTab) !== -1 && (
@@ -17396,7 +17687,7 @@ export default function App() {
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} savings={savings} businesses={businesses} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={monthAnalysis ? monthAnalysis.data : null} analysisStale={!!(monthAnalysis && monthAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} />}
-        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} richardInstructions={richardInstructions} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "profile"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewPrivacy={function() { setTab("privacy"); }} trips={trips} onViewTripHistory={function() { setTab("tripHistory"); }} />}
+        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} richardInstructions={richardInstructions} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "profile"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} bankSync={bankSync} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewPrivacy={function() { setTab("privacy"); }} trips={trips} onViewTripHistory={function() { setTab("tripHistory"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
         {currentTab === "editEmail" && <EditEmailView currentEmail={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onSave={function(email) { onSaveEmail(email); setTab("privacy"); }} />}
@@ -17406,6 +17697,7 @@ export default function App() {
         {currentTab === "language" && <LanguageView lang={lang} onLangChange={onSaveLang} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "appearance" && <AppearanceView theme={theme} onThemeChange={onSaveTheme} darkMode={darkMode} onDarkModeChange={onSaveDarkMode} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "bankSync" && <BankSyncView bankSync={bankSync} onEnable={onEnableBankSync} onDisable={onDisableBankSync} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} />}
         {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Overview" : "Savings"} onBack={function() { setTab(prevTabRef.current || "overview"); }} />}
         {currentTab === "investing" && <InvestingView investing={investing} tx={tx} openInvId={openInv} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} onOpenInvestorOnboard={function() { prevTabRef.current = "investing"; setTab("investorOnboard"); }} onOpenScout={function() { prevTabRef.current = "investing"; setTab("scout"); }} backLabel={prevTabRef.current === "overview" ? "Overview" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
