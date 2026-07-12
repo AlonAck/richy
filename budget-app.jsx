@@ -5833,6 +5833,8 @@ function Activity(props) {
   var editTx = _et[0]; var setEditTx = _et[1];
   var _ef = useState(blankForm);
   var editForm = _ef[0]; var setEditForm = _ef[1];
+  var _dtc = useState(false);
+  var delTxConfirm = _dtc[0]; var setDelTxConfirm = _dtc[1];
   var _fc = useState("");
   var filterCat = _fc[0]; var setFilterCat = _fc[1];
 
@@ -6089,7 +6091,7 @@ function Activity(props) {
         <BigBtn label={tr("addTransaction")} onPress={add} disabled={!form.amount || !form.label} />
       </Overlay>
 
-      <Overlay open={!!editTx} onClose={function() { setEditTx(null); }} title={tr("editTransaction")}>
+      <Overlay open={!!editTx} onClose={function() { setEditTx(null); setDelTxConfirm(false); }} title={tr("editTransaction")}>
         <div style={{ display: "flex", gap: 7, marginBottom: 7 }}>
           {["expense","income"].map(function(opt) {
             var on = editForm.type === opt;
@@ -6132,10 +6134,24 @@ function Activity(props) {
           </div>
         </button>
         <BigBtn label={tr("saveChanges")} onPress={saveEdit} disabled={!editForm.amount || !editForm.label} />
-        <button onClick={function() { props.onSaveTx(props.tx.filter(function(x) { return x.id !== editTx.id; })); setEditTx(null); }}
-          style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>
-          {tr("deleteTx")}
-        </button>
+        {delTxConfirm ? (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 8, padding: "5px 0", fontSize: 13, fontWeight: 600, fontFamily: UI, color: T.ink3 }}>
+            <span>Are you sure you want to delete this?</span>
+            <button onClick={function() { props.onSaveTx(props.tx.filter(function(x) { return x.id !== editTx.id; })); setEditTx(null); setDelTxConfirm(false); }}
+              style={{ background: "none", border: "none", color: T.red, fontSize: 13, fontWeight: 700, fontFamily: UI, cursor: "pointer", padding: "5px 4px" }}>
+              Yes, delete
+            </button>
+            <button onClick={function() { setDelTxConfirm(false); }}
+              style={{ background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "5px 4px" }}>
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button onClick={function() { setDelTxConfirm(true); }}
+            style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>
+            {tr("deleteTx")}
+          </button>
+        )}
       </Overlay>
 
       {props.tx.length === 0 && (
