@@ -16096,15 +16096,24 @@ function EntryMethodView(props) {
 var BANK_SYNC_ENDPOINT = "https://richy-mgkl.vercel.app/api/bank-sync";
 
 // The one-time iPhone setup, shown while Bank Sync is on. Kept as data so the
-// numbered rendering stays dumb.
+// numbered rendering stays dumb. Broken into small, literal taps (naming the
+// exact button/label the user will see) rather than bundling several actions
+// into one step - the old version's dense steps 4-6 were where people got lost.
 var BANK_SYNC_STEPS = [
-  "On your iPhone, open the Shortcuts app and go to the Automation tab.",
-  "Tap the + button and pick \"Transaction\".",
-  "Choose your Apple Pay cards, select \"Run Immediately\", then tap Next and \"New Blank Automation\".",
-  "Add the action \"Get Contents of URL\" and paste the sync address above into it.",
-  "Expand the action's options: set Method to POST and Request Body to JSON.",
-  "Add four fields - key: paste your sync key. merchant: pick the Merchant variable from Shortcut Input. amount: pick the Amount variable. currency: type your card's 3-letter code, like USD or ILS.",
-  "Tap Done. From now on, every tap of your iPhone lands in Richy on its own."
+  { text: "Open the Shortcuts app on your iPhone (it comes with iOS - no download needed)." },
+  { text: "Tap Automation at the bottom, then tap the + in the top corner." },
+  { text: "Tap Create Personal Automation, then choose Transaction from the list (iOS 26 calls this Wallet)." },
+  { text: "Turn on the card(s) you want to track, then tap Next." },
+  { text: "Tap Add Action, search for \"Get Contents of URL\", and tap it to add it." },
+  { text: "Tap the blue web address in that action, then paste the sync address you copied above." },
+  { text: "Tap Show More just below it. Set Method to POST and Request Body to JSON." },
+  { text: "Tap Add new field four times to create these fields, one at a time:", subs: [
+    "key - choose Text, then paste your sync key from above.",
+    "merchant - choose Text, tap inside the value box, then tap the blue Merchant under Shortcut Input.",
+    "amount - choose Text, tap inside the value box, then tap the blue Amount under Shortcut Input.",
+    "currency - choose Text, then type your card's 3-letter code, like USD or ILS."
+  ] },
+  { text: "Turn off \"Notify When Run\" so it stays silent, tap Next, then Done. From now on, every tap of your iPhone lands in Richy on its own." }
 ];
 
 function BankSyncView(props) {
@@ -16217,9 +16226,18 @@ function BankSyncView(props) {
       <Card style={{ padding: "6px 20px", marginBottom: 4, marginTop: 12 }}>
         {BANK_SYNC_STEPS.map(function(step, i) {
           return (
-            <div key={i} style={{ display: "flex", gap: 12, padding: "11px 0", borderBottom: i < BANK_SYNC_STEPS.length - 1 ? "0.5px solid " + T.sep : "none" }}>
-              <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orangeDim, color: T.orange, fontSize: 11.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontFamily: UI, marginTop: 1 }}>{i + 1}</div>
-              <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, fontFamily: UI }}>{step}</div>
+            <div key={i} style={{ padding: "11px 0", borderBottom: i < BANK_SYNC_STEPS.length - 1 ? "0.5px solid " + T.sep : "none" }}>
+              <div style={{ display: "flex", gap: 12 }}>
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orangeDim, color: T.orange, fontSize: 11.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontFamily: UI, marginTop: 1 }}>{i + 1}</div>
+                <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, fontFamily: UI }}>{step.text}</div>
+              </div>
+              {step.subs && (
+                <div style={{ marginLeft: 34, marginTop: 6, display: "flex", flexDirection: "column", gap: 5 }}>
+                  {step.subs.map(function(sub, j) {
+                    return <div key={j} style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, fontFamily: UI }}>{"• " + sub}</div>;
+                  })}
+                </div>
+              )}
             </div>
           );
         })}
