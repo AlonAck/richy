@@ -256,6 +256,16 @@ fetchSource(1).then(function(src){
       });
     }
     el = React.createElement(BusinessHarness, {});
+  } else if (view === "activity") {
+    function ActivityHarness() {
+      var _tx = React.useState(mockTx); var atx = _tx[0]; var setAtx = _tx[1];
+      var _sheet = React.useState(false); var sh = _sheet[0]; var setSh = _sheet[1];
+      return React.createElement(Activity, {
+        tx: atx, categories: mockCats, onSaveTx: function(n){ setAtx(n); }, entryMethod: "manual",
+        sheetOpen: sh, setSheetOpen: setSh, accountKey: "u1", onManageCategories: function(){}, onOpenNotes: function(){}, savings: []
+      });
+    }
+    el = React.createElement(ActivityHarness);
   } else if (view === "budgets") {
     var budgetsMockTx = [
       { id: 101, type: "expense", amount: 1800, label: "Rent",   catId: "c1", category: "Housing",       date: iso(0) },

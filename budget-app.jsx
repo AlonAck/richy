@@ -5833,6 +5833,8 @@ function Activity(props) {
   var editTx = _et[0]; var setEditTx = _et[1];
   var _ef = useState(blankForm);
   var editForm = _ef[0]; var setEditForm = _ef[1];
+  var _fc = useState("");
+  var filterCat = _fc[0]; var setFilterCat = _fc[1];
 
   function setField(key, val) {
     setForm(function(prev) {
@@ -5949,7 +5951,12 @@ function Activity(props) {
 
   // Internal savings transfers are managed in the Savings screen, not here - keep
   // them out of the ledger so they can't be edited into a desync with their pot.
-  var sorted = props.tx.filter(function(t) { return !isTransfer(t); }).sort(function(a, b) { return b.date.localeCompare(a.date); });
+  var unfiltered = props.tx.filter(function(t) { return !isTransfer(t); });
+  var usedCatIds = {};
+  unfiltered.forEach(function(t) { if (t.catId) usedCatIds[t.catId] = true; });
+  var filterOpts = cats.filter(function(c) { return usedCatIds[c.id]; });
+
+  var sorted = unfiltered.filter(function(t) { return !filterCat || t.catId === filterCat; }).sort(function(a, b) { return b.date.localeCompare(a.date); });
   var groups = {};
   sorted.forEach(function(t) {
     if (!groups[t.date]) groups[t.date] = [];
@@ -5957,8 +5964,8 @@ function Activity(props) {
   });
   var dates = Object.keys(groups).sort(function(a, b) { return b.localeCompare(a); });
 
-  var totalIn  = props.tx.filter(function(t){return t.type==="income" && !isTransfer(t);}).reduce(function(s,t){return s+t.amount;},0);
-  var totalOut = props.tx.filter(function(t){return t.type==="expense" && !isTransfer(t);}).reduce(function(s,t){return s+t.amount;},0);
+  var totalIn  = sorted.filter(function(t){return t.type==="income";}).reduce(function(s,t){return s+t.amount;},0);
+  var totalOut = sorted.filter(function(t){return t.type==="expense";}).reduce(function(s,t){return s+t.amount;},0);
 
   return (
     <div>
@@ -6149,6 +6156,27 @@ function Activity(props) {
         </Card>
       )}
 
+      {props.tx.length > 0 && filterOpts.length > 0 && (
+        <div style={{ display: "flex", gap: 7, overflowX: "auto", marginBottom: 14, paddingBottom: 2 }}>
+          <button onClick={function() { setFilterCat(""); }}
+            style={{ flexShrink: 0, padding: "7px 13px", borderRadius: 9, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: 700, fontFamily: UI,
+              background: !filterCat ? T.orangeDim : "rgba(0,0,0,0.04)", color: !filterCat ? T.orange : T.ink3 }}>
+            All
+          </button>
+          {filterOpts.map(function(c) {
+            var on = filterCat === c.id;
+            return (
+              <button key={c.id} onClick={function() { setFilterCat(on ? "" : c.id); }}
+                style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 6, padding: "7px 13px", borderRadius: 9, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: 700, fontFamily: UI,
+                  background: on ? c.color + "22" : "rgba(0,0,0,0.04)", color: on ? c.color : T.ink3 }}>
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: c.color, display: "inline-block" }} />
+                {c.name}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {props.tx.length > 0 && (
         <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
           <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "14px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
@@ -6160,6 +6188,12 @@ function Activity(props) {
             <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(totalOut)}</div>
           </div>
         </div>
+      )}
+
+      {props.tx.length > 0 && dates.length === 0 && (
+        <Card style={{ padding: "30px 24px", textAlign: "center" }}>
+          <div style={{ fontSize: 13.5, color: T.ink3 }}>No transactions in this category yet.</div>
+        </Card>
       )}
 
       {dates.map(function(date) {
@@ -6633,6 +6667,8 @@ function Budgets(props) {
   var val = _v[0]; var setVal = _v[1];
   var _nb = useState({ catId: "", limit: "" });
   var nb = _nb[0]; var setNb = _nb[1];
+  var _vc = useState(null);
+  var viewCat = _vc[0]; var setViewCat = _vc[1];
 
   function spentForCat(c) {
     var ym = curMonth();
@@ -6656,6 +6692,9 @@ function Budgets(props) {
   var used = {};
   props.budgets.forEach(function(b) { used[b.catId] = true; });
   var avail = cats.filter(function(c) { return !used[c.id]; });
+
+  var viewRow = viewCat ? rows.filter(function(r) { return r.catId === viewCat; })[0] : null;
+  var viewTxs = viewRow ? props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, curMonth()) && (t.catId === viewRow.catId || t.category === viewRow.cat.name); }).sort(function(a, b) { return b.date.localeCompare(a.date); }) : [];
 
   return (
     <div>
@@ -6691,6 +6730,26 @@ function Budgets(props) {
           style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 12, padding: "6px 0" }}>
           {tr("removeBudget")}
         </button>
+      </Overlay>
+
+      <Overlay open={!!viewCat} onClose={function() { setViewCat(null); }} title={viewRow ? viewRow.cat.name + " this month" : ""}>
+        {viewTxs.length === 0 ? (
+          <div style={{ padding: "20px 4px 8px", textAlign: "center", color: T.ink3, fontSize: 14 }}>No expenses in this category yet.</div>
+        ) : (
+          <div>
+            {viewTxs.map(function(t, i) {
+              return (
+                <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 2px", borderBottom: i < viewTxs.length - 1 ? "0.5px solid " + T.sep : "none" }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
+                    <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1 }}>{dateLabel(t.date)}</div>
+                  </div>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: T.red }}>{"-" + dollars(t.amount)}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </Overlay>
 
       {props.budgets.length === 0 && (
@@ -6753,7 +6812,7 @@ function Budgets(props) {
               var pct = r.limit > 0 ? Math.round((r.spent / r.limit) * 100) : 0;
               return (
                 <div key={r.catId || i} style={{ borderBottom: i < rows.length - 1 ? "0.5px solid " + T.sep : "none" }}>
-                  <div style={{ padding: "14px 16px 12px" }}>
+                  <div onClick={function() { setViewCat(r.catId); }} style={{ padding: "14px 16px 12px", cursor: "pointer" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 9 }}>
                       <CatBadge icon={r.cat.icon} color={r.cat.color} size={34} soft={true} />
                       <div style={{ flex: 1, minWidth: 0 }}>
