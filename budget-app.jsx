@@ -6258,6 +6258,16 @@ function fireBizNotification(title, body, tag) {
   } else { plain(); }
 }
 
+// Settle a note into a real transaction: owed-to-you becomes income, you-owe
+// becomes an expense, both dated today. Shared by the manual Settle button
+// (Notes' doSettle) and Richard's chat-driven noteSettle action so the two
+// paths can never drift apart.
+function settleNoteToTx(n) {
+  var t = { id: n.id, type: n.dir === "owed" ? "income" : "expense", amount: n.amount, label: n.label, catId: n.catId || "", category: n.category || "", date: new Date().toISOString().slice(0, 10), repeat: "none", pending: false };
+  if (n.origCur) { t.origAmount = n.origAmount; t.origCur = n.origCur; t.rate = n.rate; }
+  return t;
+}
+
 // Notes / "who owes whom". A note looks like an Activity row but the amount is
 // neutral (it is not real money yet) and carries a direction tag. Settling a note
 // optionally converts it into a real transaction and removes it from the list.
@@ -6403,9 +6413,7 @@ function Notes(props) {
     setSettleNote(null);
     var nextNotes = props.notes.filter(function(x) { return x.id !== n.id; });
     if (addToBalance) {
-      var t = { id: n.id, type: n.dir === "owed" ? "income" : "expense", amount: n.amount, label: n.label, catId: n.catId || "", category: n.category || "", date: new Date().toISOString().slice(0, 10), repeat: "none", pending: false };
-      if (n.origCur) { t.origAmount = n.origAmount; t.origCur = n.origCur; t.rate = n.rate; }
-      props.onSettleNote(props.tx.concat([t]), nextNotes);
+      props.onSettleNote(props.tx.concat([settleNoteToTx(n)]), nextNotes);
     } else {
       props.onSaveNotes(nextNotes);
     }
@@ -8609,6 +8617,69 @@ function BigDecisions(props) {
   );
 }
 
+// "Test the change before it's done": every [ACTION:...] tag Richard emits
+// runs through here BEFORE it's allowed into the confirm card. Pure and
+// deterministic (no model call) - schema-checks the shape, and for ops that
+// reference an existing name (rename/delete/settle/deposit-into), confirms
+// that name actually exists in the user's current data. A rejected action
+// never reaches the user as something to Apply.
+function validateAction(a, ctx) {
+  var cats = ctx.categories || [];
+  var folders = ctx.folders || [];
+  var savings = ctx.savings || [];
+  var notes = ctx.notes || [];
+  function isNum(v) { var n = parseFloat(v); return !isNaN(n) && isFinite(n); }
+  function positiveAmount(v) { return isNum(v) && parseFloat(v) > 0 && parseFloat(v) < 10000000; }
+  function textOk(v, max) { return typeof v === "string" && v.trim().length > 0 && v.trim().length <= max; }
+  function hasCat(name) { return !!(catByName(cats, name) || catById(cats, name)); }
+  function hasFolder(name) { return folders.some(function(f) { return f.name === name; }); }
+  function hasSavings(name) { return savings.some(function(s) { return s.name === name; }); }
+  function hasOpenNote(label) { return notes.some(function(n) { return n.label === label; }); }
+
+  if (!a || typeof a !== "object" || typeof a.kind !== "string") return { ok: false, reason: "malformed action" };
+
+  switch (a.kind) {
+    case "expense": case "income":
+      return positiveAmount(a.amount) ? { ok: true } : { ok: false, reason: "invalid amount" };
+    case "budget":
+      if (!positiveAmount(a.limit) && parseFloat(a.limit) !== 0) return { ok: false, reason: "invalid limit" };
+      return hasCat(a.category) ? { ok: true } : { ok: false, reason: "unknown category \"" + a.category + "\"" };
+    case "goal":
+      return positiveAmount(a.target) && textOk(a.name, 60) ? { ok: true } : { ok: false, reason: "invalid goal" };
+    case "goalAdd":
+      return positiveAmount(a.amount) && textOk(a.name, 60) ? { ok: true } : { ok: false, reason: "invalid goal amount" };
+    case "category":
+      if (a.op === "add") return textOk(a.name, 30) ? { ok: true } : { ok: false, reason: "invalid category name" };
+      if (a.op === "rename") return hasCat(a.name) && textOk(a.newName, 30) ? { ok: true } : { ok: false, reason: "unknown category \"" + a.name + "\"" };
+      if (a.op === "delete") return hasCat(a.name) ? { ok: true } : { ok: false, reason: "unknown category \"" + a.name + "\"" };
+      return { ok: false, reason: "unknown category op" };
+    case "folder":
+      if (a.op === "add") return textOk(a.name, 30) ? { ok: true } : { ok: false, reason: "invalid folder name" };
+      if (a.op === "rename") return hasFolder(a.name) && textOk(a.newName, 30) ? { ok: true } : { ok: false, reason: "unknown folder \"" + a.name + "\"" };
+      if (a.op === "delete") return hasFolder(a.name) ? { ok: true } : { ok: false, reason: "unknown folder \"" + a.name + "\"" };
+      return { ok: false, reason: "unknown folder op" };
+    case "savingsOpen":
+      return textOk(a.name, 40) ? { ok: true } : { ok: false, reason: "invalid savings pot name" };
+    case "savingsMove":
+      if (a.op !== "deposit" && a.op !== "withdraw") return { ok: false, reason: "unknown savings op" };
+      if (!positiveAmount(a.amount)) return { ok: false, reason: "invalid amount" };
+      return hasSavings(a.account) ? { ok: true } : { ok: false, reason: "unknown savings pot \"" + a.account + "\"" };
+    case "note":
+      if (a.dir !== "owed" && a.dir !== "owe") return { ok: false, reason: "unknown note direction" };
+      return positiveAmount(a.amount) && textOk(a.label, 80) ? { ok: true } : { ok: false, reason: "invalid note" };
+    case "noteSettle":
+      return hasOpenNote(a.label) ? { ok: true } : { ok: false, reason: "no open note labeled \"" + a.label + "\"" };
+    case "instructions":
+      if (a.op !== "append" && a.op !== "set") return { ok: false, reason: "unknown instructions op" };
+      return textOk(a.text, 500) ? { ok: true } : { ok: false, reason: "invalid instructions text" };
+    case "banner":
+      if (a.tone && a.tone !== "info" && a.tone !== "success" && a.tone !== "warn") return { ok: false, reason: "unknown banner tone" };
+      return textOk(a.text, 200) ? { ok: true } : { ok: false, reason: "invalid banner text" };
+    default:
+      return { ok: false, reason: "unknown action kind \"" + a.kind + "\"" };
+  }
+}
+
 function Advisor(props) {
   // Seed from the App-level cache so re-entering the tab restores the last
   // analysis without a fresh (token-burning) API call. useState reads the prop
@@ -8793,6 +8864,18 @@ function Advisor(props) {
     + "=== ALL-TIME STATS ===\n"
     + "Net Worth (all-time): $" + Math.round(netWorth) + "\n"
     + "Personalized Plan: " + (props.plan ? props.plan.slice(0, 200) + "..." : "not yet created")
+    + "\n\n=== CATEGORIES (exact names, use these when referencing/renaming/deleting) ===\n"
+    + (cats.length ? cats.map(function(c) { return c.name; }).join(", ") : "none")
+    + "\n\n=== CATEGORY FOLDERS (exact names) ===\n"
+    + ((props.folders || []).length ? props.folders.map(function(f) { return f.name; }).join(", ") : "none")
+    + "\n\n=== SAVINGS POTS (exact names, with balance) ===\n"
+    + ((props.savings || []).length
+      ? props.savings.map(function(a) { return a.name + ": $" + Math.round((a.entries || []).reduce(function(s, e) { return s + (e.kind === "deposit" ? e.amount : -e.amount); }, 0)); }).join("\n")
+      : "none")
+    + "\n\n=== OPEN NOTES / DEBTS (who owes whom - use the exact label to settle one) ===\n"
+    + ((props.notes || []).length
+      ? props.notes.map(function(n) { return (n.dir === "owed" ? "Owed to user: " : "User owes: ") + dollars(n.amount) + " - " + n.label; }).join("\n")
+      : "none")
     + ((props.businesses || []).length
       ? "\n\n=== BUSINESSES (managed in Savings -> Business Account, Richard is their CFO) ===\n"
         + props.businesses.map(bizContextLine).join("\n")
@@ -9238,6 +9321,14 @@ function Advisor(props) {
     if (a.kind === "budget") return "Set " + (a.category || "?") + " budget to " + dollars(parseFloat(a.limit) || 0);
     if (a.kind === "goal") return "Create goal: " + (a.name || "New Goal") + " (" + dollars(parseFloat(a.target) || 0) + ")";
     if (a.kind === "goalAdd") return "Add " + dollars(parseFloat(a.amount) || 0) + " to " + (a.name || "goal");
+    if (a.kind === "category") return a.op === "add" ? "Add category: " + a.name : a.op === "rename" ? "Rename category " + a.name + " to " + a.newName : "Delete category: " + a.name;
+    if (a.kind === "folder") return a.op === "add" ? "Add folder: " + a.name : a.op === "rename" ? "Rename folder " + a.name + " to " + a.newName : "Delete folder: " + a.name;
+    if (a.kind === "savingsOpen") return "Open a savings pot: " + a.name;
+    if (a.kind === "savingsMove") return (a.op === "deposit" ? "Deposit " : "Withdraw ") + dollars(parseFloat(a.amount) || 0) + (a.op === "deposit" ? " into " : " from ") + a.account + (a.label ? " - " + a.label : "");
+    if (a.kind === "note") return (a.dir === "owed" ? "Log debt: " + a.label + " owes you " : "Log debt: you owe " + a.label + " ") + dollars(parseFloat(a.amount) || 0);
+    if (a.kind === "noteSettle") return "Settle: " + a.label;
+    if (a.kind === "instructions") return (a.op === "append" ? "Add to Richard's instructions: " : "Set Richard's instructions to: ") + "“" + a.text + "”";
+    if (a.kind === "banner") return "Show banner: “" + a.text + "”";
     return "Update your data";
   }
   // Apply every confirmed action at once. Batches each data type into a single
@@ -9248,7 +9339,13 @@ function Advisor(props) {
     var newTx = [];
     var nextBudgets = (props.budgets || []).slice();
     var nextGoals = (props.goals || []).slice();
-    var txChanged = false, budChanged = false, goalChanged = false;
+    var nextCats = cats.slice();
+    var nextFolders = (props.folders || []).slice();
+    var nextSavings = (props.savings || []).slice();
+    var nextNotes = (props.notes || []).slice();
+    var nextBanners = (props.customBanners || []).slice();
+    var newInstructions = null;
+    var txChanged = false, budChanged = false, goalChanged = false, catChanged = false, folderChanged = false, savChanged = false, noteChanged = false, noteSettled = false, bannerChanged = false;
     actions.forEach(function(a, i) {
       if (a.kind === "expense" || a.kind === "income") {
         var wantName = a.category || (a.kind === "income" ? "Salary" : "Other");
@@ -9267,11 +9364,65 @@ function Advisor(props) {
       } else if (a.kind === "goalAdd") {
         nextGoals = nextGoals.map(function(g) { return g.name.toLowerCase() === (a.name || "").toLowerCase() ? Object.assign({}, g, { saved: round2((g.saved || 0) + (parseFloat(a.amount) || 0)) }) : g; });
         goalChanged = true;
+      } else if (a.kind === "category") {
+        if (a.op === "add") { nextCats = nextCats.concat([{ id: "c" + (base + i), name: a.name, color: a.color || "#8970C6", icon: a.icon || "box", folderId: null }]); catChanged = true; }
+        else if (a.op === "rename") { var rc = catByName(nextCats, a.name); if (rc) { nextCats = nextCats.map(function(c) { return c.id === rc.id ? Object.assign({}, c, { name: a.newName }) : c; }); catChanged = true; } }
+        else if (a.op === "delete") { var dc = catByName(nextCats, a.name); if (dc) { nextCats = nextCats.filter(function(c) { return c.id !== dc.id; }); catChanged = true; } }
+      } else if (a.kind === "folder") {
+        if (a.op === "add") { nextFolders = nextFolders.concat([{ id: "f" + (base + i), name: a.name }]); folderChanged = true; }
+        else if (a.op === "rename") { nextFolders = nextFolders.map(function(f) { return f.name === a.name ? Object.assign({}, f, { name: a.newName }) : f; }); folderChanged = true; }
+        else if (a.op === "delete") { nextFolders = nextFolders.filter(function(f) { return f.name !== a.name; }); folderChanged = true; }
+      } else if (a.kind === "savingsOpen") {
+        nextSavings = nextSavings.concat([{ id: "sav_" + (base + i), name: a.name, color: a.color || "#27A85F", icon: a.icon || "shield", createdAt: today, entries: [] }]);
+        savChanged = true;
+      } else if (a.kind === "savingsMove") {
+        var acct = nextSavings.filter(function(s) { return s.name === a.account; })[0];
+        if (acct) {
+          var entry = { id: base + i, kind: a.op, amount: round2(parseFloat(a.amount) || 0), date: today, fromMain: false, label: a.label || "" };
+          nextSavings = nextSavings.map(function(s) { return s.id === acct.id ? Object.assign({}, s, { entries: (s.entries || []).concat([entry]) }) : s; });
+          savChanged = true;
+        }
+      } else if (a.kind === "note") {
+        var nc = a.category ? (catByName(cats, a.category) || {}) : {};
+        nextNotes = nextNotes.concat([{ id: base + i, dir: a.dir, amount: round2(parseFloat(a.amount) || 0), label: a.label, catId: nc.id || "", category: nc.name || "", date: today, reminder: null }]);
+        noteChanged = true;
+      } else if (a.kind === "noteSettle") {
+        var sn = nextNotes.filter(function(n) { return n.label === a.label; })[0];
+        if (sn) {
+          nextNotes = nextNotes.filter(function(n) { return n.id !== sn.id; });
+          noteChanged = true; noteSettled = true;
+          newTx.push(settleNoteToTx(sn));
+          txChanged = true;
+        }
+      } else if (a.kind === "instructions") {
+        newInstructions = a.op === "append" && props.rawInstructions ? (props.rawInstructions + "\n" + a.text) : a.text;
+      } else if (a.kind === "banner") {
+        var banner = { id: base + i, text: a.text, tone: a.tone || "info", icon: a.icon || "spark", dismissible: a.dismissible !== false, createdAt: Date.now(), dismissedAt: null };
+        nextBanners = nextBanners.concat([banner]);
+        // Cap history: drop the oldest already-dismissed banners first, then the
+        // oldest overall, so the array can't grow without bound.
+        if (nextBanners.length > 10) {
+          nextBanners = nextBanners.sort(function(x, y) { return (!!x.dismissedAt === !!y.dismissedAt) ? x.createdAt - y.createdAt : (x.dismissedAt ? -1 : 1); }).slice(nextBanners.length - 10);
+        }
+        bannerChanged = true;
       }
     });
-    if (txChanged && props.onSaveTx) props.onSaveTx((props.tx || []).concat(newTx));
+    // A settle touches tx + notes together - write them atomically (mirrors the
+    // manual Settle button) so one save can't land without the other. Otherwise
+    // tx and notes are independent and save separately.
+    if (noteSettled && props.onSettleNote) {
+      props.onSettleNote((props.tx || []).concat(newTx), nextNotes);
+    } else {
+      if (txChanged && props.onSaveTx) props.onSaveTx((props.tx || []).concat(newTx));
+      if (noteChanged && props.onSaveNotes) props.onSaveNotes(nextNotes);
+    }
     if (budChanged && props.onSaveBudgets) props.onSaveBudgets(nextBudgets);
     if (goalChanged && props.onSaveGoals) props.onSaveGoals(nextGoals);
+    if (catChanged && props.onSaveCategories) props.onSaveCategories(nextCats);
+    if (folderChanged && props.onSaveFolders) props.onSaveFolders(nextFolders);
+    if (savChanged && props.onSaveSavings) props.onSaveSavings(nextSavings);
+    if (bannerChanged && props.onSaveBanners) props.onSaveBanners(nextBanners);
+    if (newInstructions !== null && props.onSaveInstructions) props.onSaveInstructions(newInstructions);
   }
 
   // Fold the live chat into the persisted archive (newest first), de-duped by id.
@@ -9325,20 +9476,37 @@ function Advisor(props) {
     callClaude(
       nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }),
       customInstructionsPrefix + "You are Richard, a smart assistant inside the Richy personal finance app. You are calm, warm, direct, and knowledgeable - a trusted friend who is an expert in money and can help with anything the user asks. You have deep knowledge from The Psychology of Money, Rich Dad Poor Dad, The Millionaire Next Door, I Will Teach You To Be Rich, The Total Money Makeover, Think and Grow Rich, The Richest Man in Babylon, and wisdom from Warren Buffett, Charlie Munger, Ray Dalio, Naval Ravikant, Mark Cuban, Grant Cardone and other wealth builders. You can answer questions about personal finance, investments, budgeting, debt, taxes, and wealth-building. You can also answer questions about how to use the Richy app (it has tabs: Overview, Activity for transactions, Budgets for spending limits, Goals for savings targets, and Advisor which is where we are now; categories are managed via the tag icon on Overview or the Manage link in pickers). You can answer general knowledge and technical questions too - if someone asks about math, technology, or anything else, answer helpfully. Always refer back to the user's real financial data when relevant. Current user financial data: " + ctx + "." + (coreProblem ? " The user's primary financial challenge is: " + coreProblem + ". Connect your advice to this when relevant." : "")
-      + " IMPORTANT - YOU CAN UPDATE THE APP FOR THE USER. When the user tells you about a real money event - they spent money, got paid, started a new job, got a raise, paid a bill, or saved toward a goal - acknowledge it warmly in words AND append one or more action tags at the very END of your reply (after your sentence, on their own). The app will show the user a confirmation card to apply them. Action formats (use valid JSON, no spaces in keys): "
+      + " IMPORTANT - YOU CAN UPDATE THE APP FOR THE USER, ACROSS EVERYTHING except Business/Investing accounts and Trips (those have their own dedicated tools). When the user tells you about a real money event, or directly asks you to change or create something in the app, acknowledge it warmly in words AND append one or more action tags at the very END of your reply (after your sentence, on their own). The app validates and shows the user a confirmation card before anything is applied - nothing you emit takes effect until they tap Apply, so it is fine to be generous about proposing a tag when the user's intent is clear. Action formats (use valid JSON, no spaces in keys): "
       + "[ACTION:{\"kind\":\"expense\",\"amount\":50,\"category\":\"Food\",\"label\":\"groceries\"}] logs a purchase; "
       + "[ACTION:{\"kind\":\"income\",\"amount\":4000,\"label\":\"new job salary\"}] logs income received; "
       + "[ACTION:{\"kind\":\"budget\",\"category\":\"Food\",\"limit\":500}] sets a monthly budget; "
       + "[ACTION:{\"kind\":\"goal\",\"name\":\"Emergency Fund\",\"target\":3000}] creates a savings goal; "
-      + "[ACTION:{\"kind\":\"goalAdd\",\"name\":\"Emergency Fund\",\"amount\":200}] adds money to an existing goal. "
-      + "Use the EXACT category name from this list when logging expenses or budgets: " + (cats.map(function(c) { return c.name; }).join(", ") || "Other") + ". "
-      + "If the user mentions several things at once, emit several tags. Only emit a tag for a concrete event with a real number that the user actually states - never for hypotheticals, plans, or general advice. Do not mention the word ACTION or the tag syntax in your spoken reply; just speak naturally and let the tags do the work."
+      + "[ACTION:{\"kind\":\"goalAdd\",\"name\":\"Emergency Fund\",\"amount\":200}] adds money to an existing goal; "
+      + "[ACTION:{\"kind\":\"category\",\"op\":\"add\",\"name\":\"Pets\",\"color\":\"#8970C6\",\"icon\":\"heart\"}] or {\"op\":\"rename\",\"name\":\"Pets\",\"newName\":\"Pet Care\"} or {\"op\":\"delete\",\"name\":\"Pets\"} manages a spending category; "
+      + "[ACTION:{\"kind\":\"folder\",\"op\":\"add\",\"name\":\"Fun\"}] or {\"op\":\"rename\",\"name\":\"Fun\",\"newName\":\"Leisure\"} or {\"op\":\"delete\",\"name\":\"Fun\"} manages a category folder; "
+      + "[ACTION:{\"kind\":\"savingsOpen\",\"name\":\"Travel Fund\",\"color\":\"#27A85F\",\"icon\":\"plane\"}] opens a new savings pot; "
+      + "[ACTION:{\"kind\":\"savingsMove\",\"account\":\"Travel Fund\",\"op\":\"deposit\",\"amount\":200,\"label\":\"birthday money\"}] (op is deposit or withdraw) puts money into or takes money out of an EXISTING savings pot from outside the main balance; "
+      + "[ACTION:{\"kind\":\"note\",\"dir\":\"owed\",\"amount\":40,\"label\":\"Sam - dinner split\"}] (dir is owed = someone owes the user, or owe = the user owes someone) logs a debt; "
+      + "[ACTION:{\"kind\":\"noteSettle\",\"label\":\"Sam - dinner split\"}] settles an existing open note by its exact label, turning it into a real transaction; "
+      + "[ACTION:{\"kind\":\"instructions\",\"op\":\"append\",\"text\":\"I hate subscriptions, always flag them\"}] (op is append or set) updates YOUR OWN custom instructions for how to advise this user going forward - use only when the user directly asks you to remember/always do something; "
+      + "[ACTION:{\"kind\":\"banner\",\"text\":\"Rent is due Friday\",\"tone\":\"info\",\"icon\":\"spark\",\"dismissible\":true}] (tone is info, success, or warn) puts a small banner message at the top of the app, visible on every tab, until the user dismisses it - use ONLY when the user directly and explicitly asks you to put up/create/show a banner or reminder message; never on your own initiative. "
+      + "Use the EXACT category, folder, savings pot, and note-label names given in the data below - never invent or guess a name. "
+      + "If the user mentions several things at once, emit several tags. Only emit a tag for a concrete event, or a direct explicit request to change/create something, with real values the user actually stated - never for hypotheticals, plans, or general advice. Do not mention the word ACTION or the tag syntax in your spoken reply; just speak naturally and let the tags do the work."
       + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a CFO who builds a business plan - send business owners there. Be honest about what Richy currently does not support: no live bank or card sync, no shared couples mode, no interest-based debt payoff calculator. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : ""),
       500,
       function(err, text) {
         setChatLoading(false);
         var response = err || !text ? Richard(msg) : text;
-        var updates = parseUpdates(response);
+        var rawUpdates = parseUpdates(response);
+        // "Test the change before it's done": every proposed action is checked
+        // against the user's real current data before it's allowed anywhere near
+        // the confirm card. Invalid/unresolvable ones are silently dropped, not
+        // shown broken - the user only ever sees things that will actually work.
+        var validationCtx = { categories: cats, folders: props.folders, savings: props.savings, notes: props.notes };
+        var updates = [], rejectedCount = 0;
+        rawUpdates.forEach(function(a) {
+          if (validateAction(a, validationCtx).ok) updates.push(a); else rejectedCount++;
+        });
         var display = stripUpdates(response);
         if (updates.length > 0) {
           // Always tell the user, in the chat, that a change is being proposed -
@@ -9346,7 +9514,11 @@ function Advisor(props) {
           var cue = updates.length > 1
             ? "I'd like to make " + updates.length + " changes to your app - review and confirm them below."
             : "I'd like to make a change to your app - review and confirm it below.";
+          if (rejectedCount > 0) cue += " (" + rejectedCount + " other change" + (rejectedCount > 1 ? "s" : "") + " didn't look right, so I left " + (rejectedCount > 1 ? "them" : "it") + " out.)";
           display = display ? display + "\n\n" + cue : cue;
+        } else if (rejectedCount > 0) {
+          var soloCue = "That didn't quite check out against your real data, so I didn't propose it - want to try rephrasing?";
+          display = display ? display + "\n\n" + soloCue : soloCue;
         }
         if (!display) display = "Got it - I've noted that below. Tap Apply to update your app.";
         setChat(function(p) { animMsgRef.current = p.length; return p.concat([{ role: "assistant", text: display }]); });
@@ -16943,6 +17115,41 @@ function Profile(props) {
   );
 }
 
+// Small, structured widgets Richard can create from Advisor chat (see the
+// "banner" action kind) - text/tone/icon only, rendered through this one fixed
+// component. Never raw markup from the model. Shown under the header on every
+// tab so "put a banner on the app" reads as global, not tab-specific.
+var BANNER_TONES = {
+  info:    { bg: "orangeDim", fg: "orange" },
+  success: { bg: "greenDim",  fg: "green" },
+  warn:    { bg: "goldDim",   fg: "gold" }
+};
+function CustomBanners(props) {
+  var live = (props.banners || []).filter(function(b) { return !b.dismissedAt; });
+  if (!live.length) return null;
+  function dismiss(id) {
+    props.onSave((props.banners || []).map(function(b) { return b.id === id ? Object.assign({}, b, { dismissedAt: Date.now() }) : b; }));
+  }
+  return (
+    <div style={{ padding: "10px 16px 0", display: "flex", flexDirection: "column", gap: 8, maxWidth: 430, margin: "0 auto" }}>
+      {live.map(function(b) {
+        var tone = BANNER_TONES[b.tone] || BANNER_TONES.info;
+        return (
+          <div key={b.id} style={{ display: "flex", alignItems: "center", gap: 10, background: T[tone.bg], borderRadius: 14, padding: "12px 14px" }}>
+            <SVGIcon id={b.icon || "spark"} size={16} color={T[tone.fg]} />
+            <div style={{ flex: 1, fontSize: 13.5, color: T.ink, fontWeight: 600, lineHeight: 1.4 }}>{b.text}</div>
+            {b.dismissible !== false && (
+              <button onClick={function() { dismiss(b.id); }} style={{ background: "none", border: "none", cursor: "pointer", flexShrink: 0, padding: 4, display: "flex" }}>
+                <SVGIcon id="close" size={14} color={T[tone.fg]} />
+              </button>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 var TABS = [
   { id: "overview", label: "Overview" },
   { id: "activity", label: "Activity" },
@@ -17032,6 +17239,11 @@ export default function App() {
   // Shortcut sends to api/bank-sync.js; null until first enabled.
   var _bsy = useState(null);
   var bankSync = _bsy[0]; var setBankSync = _bsy[1];
+  // Custom banners Richard can create from Advisor chat (e.g. "put a banner up
+  // saying rent is due Friday"). Structured widgets only - text/tone/icon, never
+  // raw markup - rendered by CustomBanners under the header on every tab.
+  var _cbn = useState([]);
+  var customBanners = _cbn[0]; var setCustomBanners = _cbn[1];
   // Found Money: only the user's DECISIONS persist (the running tally, dismissed
   // finding ids, and a log of acted items). Findings themselves are recomputed
   // from tx each session by findMoney().
@@ -17102,6 +17314,7 @@ export default function App() {
     setMonthAnalysis(data.monthAnalysis || null);
     setEntryMethod(data.entryMethod === "import" ? "import" : "manual");
     setBankSync(data.bankSync || null);
+    setCustomBanners(data.customBanners || []);
     setHouseholdId(data.householdId || null);
     setUserDob(data.dob || "");
     _lang.code = data.lang || "en"; setLang(data.lang || "en");
@@ -17250,7 +17463,7 @@ export default function App() {
     blobRef.current = {};
     setUser(null); setAccountKey(null); setTab("overview");
     setHouseholdId(null); setHousehold(null); setInvites([]);
-    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setInvestorProfile(null); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]); setBankSync(null);
+    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setInvestorProfile(null); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]); setBankSync(null); setCustomBanners([]);
     _lang.code = "en"; setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang("en"); applyTheme("blue"); setTheme("blue");
   }
 
@@ -17291,6 +17504,7 @@ export default function App() {
   function onSaveDecisions(next) { setDecisions(next); save({ decisions: next }); }
   function onSaveChats(next) { setRichardChats(next); save({ richardChats: next }); }
   function onSaveNotes(next) { setNotes(next); save({ notes: next }); }
+  function onSaveBanners(next) { setCustomBanners(next); save({ customBanners: next }); }
   function onSettleNote(nextTx, nextNotes) { setTx(nextTx); setNotes(nextNotes); save({ tx: nextTx, notes: nextNotes }); }
   function onSaveTrips(next) { setTrips(next); save({ trips: next }); }
   // Atomic two-array write (mirrors onSettleNote) so reserving a trip can't clobber tx.
@@ -17705,6 +17919,8 @@ export default function App() {
         </div>
       </div>
 
+      <CustomBanners banners={customBanners} onSave={onSaveBanners} />
+
       <div key={animKey} ref={swipeContentRef} onTouchStart={onContentTouchStart} onTouchEnd={onContentTouchEnd} style={{ padding: "8px 16px 16px", animation: animDir === "right" ? "navSlideRight 0.28s cubic-bezier(0.22,1,0.36,1) both" : animDir === "left" ? "navSlideLeft 0.28s cubic-bezier(0.22,1,0.36,1) both" : "navFade 0.20s ease both" }}>
         {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} investing={investing} trips={trips} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
         {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} onSavingsMove={onSavingsMove} />}
@@ -17714,7 +17930,7 @@ export default function App() {
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} richardInstructions={richardCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} savings={savings} businesses={businesses} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={monthAnalysis ? monthAnalysis.data : null} analysisStale={!!(monthAnalysis && monthAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} />}
+        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} notes={notes} savings={savings} businesses={businesses} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={monthAnalysis ? monthAnalysis.data : null} analysisStale={!!(monthAnalysis && monthAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} />}
         {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} richardInstructions={richardInstructions} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "profile"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} bankSync={bankSync} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewPrivacy={function() { setTab("privacy"); }} trips={trips} onViewTripHistory={function() { setTab("tripHistory"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}

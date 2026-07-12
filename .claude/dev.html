@@ -73,6 +73,8 @@ fetchSource(1).then(function(src){
   try { window.__richy = { bizMonthSpend: bizMonthSpend, bizMonthRevenue: bizMonthRevenue, bizMonthProfit: bizMonthProfit, bizCatMonthSpent: bizCatMonthSpent, bizBurn: bizBurn, bizRunway: bizRunway, bizPace: bizPace, bizHealth: bizHealth, bizRevenueTrend: bizRevenueTrend, businessCash: businessCash }; } catch (e) {}
   // Bank Sync ingestion helpers for console verification.
   try { Object.assign(window.__richy, { syncDocToTx: syncDocToTx, dupKey: dupKey, normalizeMerchant: normalizeMerchant, sha256Hex: sha256Hex }); } catch (e) {}
+  // Advisor chat "acting" action validation, for console verification.
+  try { Object.assign(window.__richy, { validateAction: validateAction, settleNoteToTx: settleNoteToTx }); } catch (e) {}
   // Market-data adapter + FX helpers (Investing feature) for the same purpose.
   try { Object.assign(window.__richy, { stockQuote: stockQuote, stockQuotes: stockQuotes, stockSeries: stockSeries, stockSearch: stockSearch, stockProfile: stockProfile, stockNews: stockNews, isTASE: isTASE, invFmt: invFmt, invConvert: invConvert, loadInvRates: loadInvRates, investingCash: investingCash, positionsOf: positionsOf, investingHoldingsValue: investingHoldingsValue, investingWorth: investingWorth, investingTotal: investingTotal, investingSeries: investingSeries, investingDividendTotal: investingDividendTotal }); } catch (e) {}
 
@@ -407,6 +409,20 @@ fetchSource(1).then(function(src){
       });
     }
     el = React.createElement(BankSyncHarness, {});
+  } else if (view === "banners") {
+    // Seeds one banner per tone, plus one non-dismissible, so all render paths show at once.
+    function BannersHarness() {
+      var seeded = [
+        { id: 1, text: "Rent is due Friday", tone: "info", icon: "spark", dismissible: true, createdAt: Date.now(), dismissedAt: null },
+        { id: 2, text: "You hit your savings goal for the month", tone: "success", icon: "flag", dismissible: true, createdAt: Date.now(), dismissedAt: null },
+        { id: 3, text: "Food budget is almost maxed out", tone: "warn", icon: "spark", dismissible: true, createdAt: Date.now(), dismissedAt: null },
+        { id: 4, text: "Pinned reminder (not dismissible)", tone: "info", icon: "spark", dismissible: false, createdAt: Date.now(), dismissedAt: null }
+      ];
+      var _b = React.useState(seeded); var banners = _b[0]; var setB = _b[1];
+      window.__banners = function() { return banners; };
+      return React.createElement(CustomBanners, { banners: banners, onSave: function(n) { setB(n); } });
+    }
+    el = React.createElement(BannersHarness, {});
   } else if (view === "auth") {
     // Full welcome journey; Firebase calls only fire on submit, so browsing is safe.
     try { if (!qs.get("seen")) localStorage.removeItem("cb_welcome_seen"); } catch (e) {}
