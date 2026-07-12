@@ -990,7 +990,7 @@ var CLOUD = {
     if (!cloudReady() || !uid) return Promise.resolve();
     return _fsdb().collection("users").doc(uid).set(data);
   },
-  // ---- Bank Sync (Apple Pay via iOS Shortcuts) --------------------------------
+  // ---- Bank Sync (Apple Pay / Google Pay via phone automations) ----------------
   // syncKeys/{sha256(key)} maps a per-user random token to their uid so
   // api/bank-sync.js can resolve who a POSTed transaction belongs to (only the
   // hash is stored - the raw key is never in the database). The inbox
@@ -5353,8 +5353,8 @@ function sha256Hex(str) {
     return Array.prototype.map.call(new Uint8Array(buf), function(b) { return ("0" + b.toString(16)).slice(-2); }).join("");
   });
 }
-// Turn one syncInbox doc (POSTed by the user's iPhone Shortcut on every Apple
-// Pay tap, see api/bank-sync.js) into a normal expense transaction. Reuses the
+// Turn one syncInbox doc (POSTed by the user's phone automation on every Apple
+// Pay / Google Pay tap, see api/bank-sync.js) into a normal expense transaction. Reuses the
 // CSV importer's brains: learned/keyword categorization, merchant cleanup, and
 // dupKey dedup. Returns null when the doc is a duplicate of something already
 // booked (seen = a {dupKey: true} set the caller maintains across the batch).
@@ -16338,15 +16338,18 @@ function EntryMethodView(props) {
   );
 }
 
-// Where the iPhone Shortcut (and the in-app test button) POST transactions.
+// Where the phone automations (and the in-app test button) POST transactions.
 // Always the absolute production URL - the phone can't use a relative path.
 var BANK_SYNC_ENDPOINT = "https://richy-mgkl.vercel.app/api/bank-sync";
 
-// The one-time iPhone setup, shown while Bank Sync is on. Kept as data so the
-// numbered rendering stays dumb. Broken into small, literal taps (naming the
-// exact button/label the user will see) rather than bundling several actions
-// into one step - the old version's dense steps 4-6 were where people got lost.
-var BANK_SYNC_STEPS = [
+// The one-time phone setup, shown while Bank Sync is on - one step list per
+// platform (iPhone rides the Shortcuts "Transaction" automation; Android has
+// no equivalent, so MacroDroid forwards Google Wallet's tap notification and
+// the endpoint parses it). Kept as data so the numbered rendering stays dumb.
+// Broken into small, literal taps (naming the exact button/label the user will
+// see) rather than bundling several actions into one step - the old version's
+// dense steps 4-6 were where people got lost.
+var BANK_SYNC_STEPS_IOS = [
   { text: "Open the Shortcuts app on your iPhone (it comes with iOS - no download needed)." },
   { text: "Tap Automation at the bottom, then tap the + in the top corner." },
   { text: "Tap Create Personal Automation, then choose Transaction from the list (iOS 26 calls this Wallet)." },
@@ -16363,6 +16366,19 @@ var BANK_SYNC_STEPS = [
   { text: "Turn off \"Notify When Run\" so it stays silent, tap Next, then Done. From now on, every tap of your iPhone lands in Richy on its own." }
 ];
 
+var BANK_SYNC_STEPS_ANDROID = [
+  { text: "Install the free MacroDroid app from the Play Store and open it. (Google Wallet has no built-in automation - MacroDroid forwards its purchase notifications for you.)" },
+  { text: "Tap Add Macro (the big +), then tap the + next to Triggers." },
+  { text: "Choose Notification, then Notification Received, then Select Application(s). Tick Google Wallet (called Google Pay on some phones) and tap OK. If Android asks, allow MacroDroid to read notifications - that's how it sees each purchase." },
+  { text: "Tap the + next to Actions, then choose Connectivity, then HTTP Request." },
+  { text: "Set the method to POST, and paste the sync address you copied above into the URL box." },
+  { text: "Open the Body tab, set Content Type to application/json, and paste the request body you copied above into the content box.", subs: [
+    "It already contains your sync key - don't edit the [not_title] and [notification] parts, MacroDroid fills those in with each purchase.",
+    "If your card isn't in US dollars, change USD to your card's 3-letter code, like EUR or ILS."
+  ] },
+  { text: "Tap the checkmark to save, name the macro something like \"Richy Sync\", and leave it enabled. From now on, every tap of your phone lands in Richy on its own." }
+];
+
 function BankSyncView(props) {
   var bs = props.bankSync;
   var enabled = !!(bs && bs.enabled);
@@ -16370,6 +16386,10 @@ function BankSyncView(props) {
   var _ts = useState("idle"); var testState = _ts[0]; var setTestState = _ts[1];
   var _bz = useState(false); var busy = _bz[0]; var setBusy = _bz[1];
   var _err = useState(""); var enableErr = _err[0]; var setEnableErr = _err[1];
+  // Which wallet's setup guide is showing. A guess from the user agent picks
+  // the starting tab; the toggle below lets them switch freely.
+  var _pf = useState(/android/i.test(navigator.userAgent) ? "android" : "iphone");
+  var platform = _pf[0]; var setPlatform = _pf[1];
   var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", padding: "18px 4px 8px", fontFamily: UI };
 
   function copy(which, text) {
@@ -16391,7 +16411,7 @@ function BankSyncView(props) {
   }
 
   function handleDisable() {
-    if (!window.confirm("Turn off Bank Sync? Your synced transactions stay - your iPhone shortcut will simply stop working.")) return;
+    if (!window.confirm("Turn off Bank Sync? Your synced transactions stay - your phone's automation will simply stop working.")) return;
     setTestState("idle");
     props.onDisable();
   }
@@ -16433,9 +16453,9 @@ function BankSyncView(props) {
           <div style={{ width: 52, height: 52, borderRadius: 16, background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
             <SVGIcon id="credit" size={24} color={T.green} />
           </div>
-          <div style={{ fontSize: 18, fontWeight: 700, color: T.ink, marginBottom: 6, fontFamily: DISP, letterSpacing: "-0.02em" }}>Automatic Apple Pay sync</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: T.ink, marginBottom: 6, fontFamily: DISP, letterSpacing: "-0.02em" }}>Automatic tap-to-pay sync</div>
           <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, maxWidth: 300, margin: "0 auto 22px" }}>
-            Every purchase you tap with your iPhone lands in Richy by itself - categorized and labeled, no typing. A one-time shortcut on your phone does the sending.
+            Every purchase you tap with Apple Pay or Google Pay lands in Richy by itself - categorized and labeled, no typing. A one-time automation on your phone does the sending.
           </div>
           <button onClick={handleEnable} disabled={busy}
             style={{ width: "100%", background: T.btn, color: "#fff", border: "none", borderRadius: 16, padding: "15px 0", fontSize: 16, fontFamily: UI, fontWeight: 600, cursor: "pointer", opacity: busy ? 0.6 : 1, boxSizing: "border-box" }}>
@@ -16446,7 +16466,7 @@ function BankSyncView(props) {
           )}
         </Card>
         <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.55, padding: "0 6px" }}>
-          Works with any card in Apple Wallet. Your bank credentials are never involved - your phone only reports the merchant and amount of each tap, straight to your own Richy account.
+          Works with any card in Apple Wallet or Google Wallet. Your bank credentials are never involved - your phone only reports the merchant and amount of each tap, straight to your own Richy account.
         </div>
       </div>
     );
@@ -16465,15 +16485,27 @@ function BankSyncView(props) {
         <InfoRow label="Transactions synced" value={String(bs.count || 0)} last />
       </Card>
 
-      <div style={secLabel}>One-time iPhone setup</div>
+      <div style={secLabel}>{platform === "android" ? "One-time Android setup" : "One-time iPhone setup"}</div>
+      <div style={{ display: "flex", gap: 6, background: T.card, borderRadius: 14, padding: 5, marginBottom: 12, boxSizing: "border-box" }}>
+        {[{ id: "iphone", label: "iPhone · Apple Pay" }, { id: "android", label: "Android · Google Pay" }].map(function(opt) {
+          var on = platform === opt.id;
+          return (
+            <button key={opt.id} onClick={function() { setPlatform(opt.id); }}
+              style={{ flex: 1, background: on ? T.orangeDim : "transparent", color: on ? T.orange : T.ink3, border: "none", borderRadius: 10, padding: "9px 0", fontSize: 12.5, fontWeight: 700, fontFamily: UI, cursor: "pointer" }}>
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
       <Card style={{ overflow: "hidden", marginBottom: 4 }}>
         {copyRow("url", "Sync address", BANK_SYNC_ENDPOINT)}
-        {copyRow("key", "Your sync key", bs.key, true)}
+        {copyRow("key", "Your sync key", bs.key, platform !== "android")}
+        {platform === "android" && copyRow("body", "Request body", '{"key":"' + bs.key + '","title":"[not_title]","text":"[notification]","currency":"USD"}', true)}
       </Card>
       <Card style={{ padding: "6px 20px", marginBottom: 4, marginTop: 12 }}>
-        {BANK_SYNC_STEPS.map(function(step, i) {
+        {(platform === "android" ? BANK_SYNC_STEPS_ANDROID : BANK_SYNC_STEPS_IOS).map(function(step, i, steps) {
           return (
-            <div key={i} style={{ padding: "11px 0", borderBottom: i < BANK_SYNC_STEPS.length - 1 ? "0.5px solid " + T.sep : "none" }}>
+            <div key={platform + i} style={{ padding: "11px 0", borderBottom: i < steps.length - 1 ? "0.5px solid " + T.sep : "none" }}>
               <div style={{ display: "flex", gap: 12 }}>
                 <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orangeDim, color: T.orange, fontSize: 11.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontFamily: UI, marginTop: 1 }}>{i + 1}</div>
                 <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, fontFamily: UI }}>{step.text}</div>
@@ -17309,9 +17341,9 @@ export default function App() {
   var onboardingData = _oda[0]; var setOnboardingData = _oda[1];
   var _em = useState("manual");
   var entryMethod = _em[0]; var setEntryMethod = _em[1];
-  // Bank Sync (Apple Pay via iOS Shortcuts): { enabled, key, createdAt,
-  // lastSyncAt, count }. The key doubles as the credential the user's iPhone
-  // Shortcut sends to api/bank-sync.js; null until first enabled.
+  // Bank Sync (Apple Pay / Google Pay via phone automations): { enabled, key,
+  // createdAt, lastSyncAt, count }. The key doubles as the credential the
+  // phone automation sends to api/bank-sync.js; null until first enabled.
   var _bsy = useState(null);
   var bankSync = _bsy[0]; var setBankSync = _bsy[1];
   // Custom banners Richard can create from Advisor chat (e.g. "put a banner up
@@ -17604,7 +17636,7 @@ export default function App() {
 
   // ---- Bank Sync ingestion ----------------------------------------------------
   // While enabled, listen to users/{uid}/syncInbox (filled by api/bank-sync.js on
-  // every Apple Pay tap the user's iPhone Shortcut reports) and book each doc as
+  // every tap the user's phone automation reports) and book each doc as
   // a normal expense. Refs keep the snapshot callback on fresh state without
   // resubscribing on every render; inbox docs are deleted only AFTER the save
   // resolves, so a crash mid-flight re-delivers rather than losing a purchase.
@@ -17799,7 +17831,7 @@ export default function App() {
   function onSaveEntryMethod(m) { var v = m === "import" ? "import" : "manual"; setEntryMethod(v); save({ entryMethod: v }); }
   // Enabling mints a fresh random key and registers it in syncKeys BEFORE it's
   // shown to the user (a key the endpoint can't resolve would be useless).
-  // Disabling deletes the mapping, which is the revocation: the iPhone Shortcut
+  // Disabling deletes the mapping, which is the revocation: the phone automation
   // keeps firing but api/bank-sync.js answers 404 unknown_key from then on.
   function onEnableBankSync() {
     var bytes = new Uint8Array(16);

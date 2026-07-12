@@ -1,5 +1,8 @@
-// Bank Sync ingestion endpoint. An iOS Shortcuts "Transaction" automation on the
-// user's iPhone POSTs every Apple Pay tap here ({ key, merchant, amount, ... }).
+// Bank Sync ingestion endpoint. Two phone automations POST every tap-to-pay
+// purchase here: an iOS Shortcuts "Transaction" automation sends clean fields
+// ({ key, merchant, amount, ... }), while Android (MacroDroid watching Google
+// Wallet notifications) sends the raw notification ({ key, title, text, ... })
+// which we parse into merchant + amount below.
 // The key is a per-user random token created when Bank Sync is enabled in the
 // app; syncKeys/{key} maps it to a uid, and deleting that doc (disable) revokes
 // access. We never write into users/{uid} itself - the client owns that blob and
@@ -33,6 +36,44 @@ function parseAmount(v) {
   return isNaN(n) ? NaN : Math.round(Math.abs(n) * 100) / 100;
 }
 
+// Google Wallet phrases its tap notification differently across versions and
+// locales - "$4.50 with Visa ••••1234" / "Starbucks", "You paid $4.50 to
+// Starbucks", "$4.50 at Starbucks" - so instead of one format we clean out the
+// card fragment, grab the first money-looking number, and take the merchant
+// from an "at/to X" phrase or whichever line is left holding only words.
+var CARD_FRAG_RE = /(?:[•*xX]{2,}\s*\d{2,6}|\b(?:ending|ends)\s+(?:in\s+)?\d{2,6})/g;
+var WITH_CARD_RE = /\bwith\s+(?:your\s+)?(?:visa|mastercard|amex|american express|discover|maestro|card\b)[^\n]*/gi;
+var NOISE_RE = /\b(?:google (?:wallet|pay)|payment|purchase|transaction|you paid|paid)\b/gi;
+
+function parseNotification(title, text) {
+  var clean = function(s) {
+    return String(s == null ? "" : s).replace(CARD_FRAG_RE, " ").replace(WITH_CARD_RE, " ").trim();
+  };
+  var t1 = clean(title);
+  var t2 = clean(text);
+  var combined = t1 + "\n" + t2;
+
+  // Amount: prefer a number touching a currency mark or 3-letter code, then a
+  // decimal-bearing number, then any number at all.
+  var m = combined.match(/(?:[$€£₪¥₹]|\b[A-Z]{3}\b)\s*(\d[\d.,]*)/) ||
+          combined.match(/(\d[\d.,]*)\s*(?:[$€£₪¥₹]|\b[A-Z]{3}\b)/) ||
+          combined.match(/(\d+[.,]\d{1,2})\b/) ||
+          combined.match(/(\d[\d.,]*)/);
+  var amount = m ? m[1] : "";
+
+  var merchant = "";
+  var at = combined.match(/\b(?:at|to)\s+([^\n]{2,60})/i);
+  if (at) merchant = at[1];
+  else {
+    // The line that isn't carrying the amount is usually the merchant.
+    var lines = [t1, t2].map(function(s) { return s.replace(NOISE_RE, " ").trim(); });
+    var noAmt = lines.filter(function(s) { return s && !/\d/.test(s); });
+    merchant = noAmt[0] || lines.filter(Boolean)[0] || "";
+  }
+  merchant = merchant.replace(NOISE_RE, " ").replace(/[\s\-–—:,.]+$/g, "").replace(/\s{2,}/g, " ").trim();
+  return { merchant: merchant, amount: amount };
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -55,8 +96,16 @@ module.exports = async function handler(req, res) {
   var key = String(body.key || "").trim();
   if (!KEY_RE.test(key)) { res.status(400).json({ ok: false, error: { code: "bad_key" } }); return; }
 
-  var merchant = String(body.merchant || body.name || "").trim().slice(0, 80) || "Card purchase";
+  var merchant = String(body.merchant || body.name || "").trim();
   var amount = parseAmount(body.amount);
+  // Android path: no clean fields, just the forwarded Google Wallet
+  // notification - fill whichever of merchant/amount the body didn't carry.
+  if ((!merchant || isNaN(amount)) && (body.title || body.text)) {
+    var notif = parseNotification(body.title, body.text);
+    if (!merchant) merchant = notif.merchant;
+    if (isNaN(amount)) amount = parseAmount(notif.amount);
+  }
+  merchant = merchant.slice(0, 80) || "Card purchase";
   if (isNaN(amount) || amount <= 0 || amount >= 1000000) {
     res.status(400).json({ ok: false, error: { code: "bad_amount" } });
     return;
