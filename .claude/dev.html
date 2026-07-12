@@ -397,7 +397,11 @@ fetchSource(1).then(function(src){
       var _bs = React.useState(seeded); var bs = _bs[0]; var setBs = _bs[1];
       return React.createElement(BankSyncView, {
         bankSync: bs,
-        onEnable: function() { setBs({ enabled: true, key: "rk_9f2c81d4a0b36e57c8d90112aabbccdd", keyHash: "mock", createdAt: Date.now(), lastSyncAt: null, count: 0 }); return Promise.resolve(); },
+        onEnable: function() {
+          if (qs.get("fail")) return Promise.reject(new Error("Missing or insufficient permissions."));
+          setBs({ enabled: true, key: "rk_9f2c81d4a0b36e57c8d90112aabbccdd", keyHash: "mock", createdAt: Date.now(), lastSyncAt: null, count: 0 });
+          return Promise.resolve();
+        },
         onDisable: function() { setBs({ enabled: false, key: null, keyHash: null, createdAt: null, lastSyncAt: bs && bs.lastSyncAt, count: (bs && bs.count) || 0 }); },
         onBack: function() { window.__clicked = "back"; }
       });

@@ -16113,6 +16113,7 @@ function BankSyncView(props) {
   var _cp = useState(""); var copied = _cp[0]; var setCopied = _cp[1];
   var _ts = useState("idle"); var testState = _ts[0]; var setTestState = _ts[1];
   var _bz = useState(false); var busy = _bz[0]; var setBusy = _bz[1];
+  var _err = useState(""); var enableErr = _err[0]; var setEnableErr = _err[1];
   var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", padding: "18px 4px 8px", fontFamily: UI };
 
   function copy(which, text) {
@@ -16121,10 +16122,16 @@ function BankSyncView(props) {
     else done();
   }
 
+  // A failed write here is almost always Firestore rejecting it (rules not yet
+  // published, or signed out) - surface it instead of the button silently doing
+  // nothing, which is indistinguishable from "broken" to the user.
   function handleEnable() {
     if (busy) return;
     setBusy(true);
-    Promise.resolve(props.onEnable()).catch(function() {}).then(function() { setBusy(false); });
+    setEnableErr("");
+    Promise.resolve(props.onEnable()).catch(function(e) {
+      setEnableErr((e && e.message) || "Couldn't turn on Bank Sync. Check your connection and try again.");
+    }).then(function() { setBusy(false); });
   }
 
   function handleDisable() {
@@ -16178,6 +16185,9 @@ function BankSyncView(props) {
             style={{ width: "100%", background: T.btn, color: "#fff", border: "none", borderRadius: 16, padding: "15px 0", fontSize: 16, fontFamily: UI, fontWeight: 600, cursor: "pointer", opacity: busy ? 0.6 : 1, boxSizing: "border-box" }}>
             {busy ? "Turning on..." : "Turn on Bank Sync"}
           </button>
+          {enableErr && (
+            <div style={{ fontSize: 12.5, color: T.red, lineHeight: 1.5, marginTop: 10, fontFamily: UI }}>{enableErr}</div>
+          )}
         </Card>
         <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.55, padding: "0 6px" }}>
           Works with any card in Apple Wallet. Your bank credentials are never involved - your phone only reports the merchant and amount of each tap, straight to your own Richy account.
