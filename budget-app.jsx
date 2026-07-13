@@ -16342,61 +16342,360 @@ function EntryMethodView(props) {
 // Always the absolute production URL - the phone can't use a relative path.
 var BANK_SYNC_ENDPOINT = "https://richy-mgkl.vercel.app/api/bank-sync";
 
-// The one-time phone setup, shown while Bank Sync is on - one step list per
-// platform (iPhone rides the Shortcuts "Transaction" automation; Android has
-// no equivalent, so MacroDroid forwards Google Wallet's tap notification and
-// the endpoint parses it). Kept as data so the numbered rendering stays dumb.
-// Broken into small, literal taps (naming the exact button/label the user will
-// see) rather than bundling several actions into one step - the old version's
-// dense steps 4-6 were where people got lost.
-var BANK_SYNC_STEPS_IOS = [
-  { text: "Open the Shortcuts app on your iPhone (it comes with iOS - no download needed)." },
-  { text: "Tap Automation at the bottom, then tap the + in the top corner." },
-  { text: "Tap Create Personal Automation, then choose Transaction from the list (iOS 26 calls this Wallet)." },
-  { text: "Turn on the card(s) you want to track, then tap Next." },
-  { text: "Tap Add Action, search for \"Get Contents of URL\", and tap it to add it." },
-  { text: "Tap the blue web address in that action, then paste the sync address you copied above." },
-  { text: "Tap Show More just below it. Set Method to POST and Request Body to JSON." },
-  { text: "Tap Add new field four times to create these fields, one at a time:", subs: [
-    "key - choose Text, then paste your sync key from above.",
+// The one-time phone setup, reformatted as a Jomo-style journey (the same
+// shell as the signup questionnaire): one literal action per page, slide
+// transitions, a progress bar, and copy buttons ON the page that needs the
+// pasting. Kept as data so the page rendering stays dumb. iPhone rides the
+// Shortcuts "Transaction" automation; Android has no equivalent, so MacroDroid
+// forwards Google Wallet's tap notification and the endpoint parses it.
+// h = page headline (the action), s = the literal how, subs = fine print
+// cards, copy = which value gets a copy card on that page.
+var BANK_SYNC_JOURNEY_IOS = [
+  { h: "Open the Shortcuts app.", s: "It comes with every iPhone - no download needed. Swipe down on your home screen and type \"Shortcuts\" if you can't spot it." },
+  { h: "Start a new automation.", s: "Tap Automation in the bottom bar, then tap the + in the top corner." },
+  { h: "Choose Transaction.", s: "Tap Create Personal Automation, then pick Transaction from the list. On iOS 26 it's called Wallet." },
+  { h: "Pick your cards.", s: "Turn on the card or cards you want Richy to track, then tap Next." },
+  { h: "Add the action.", s: "Tap Add Action, search for \"Get Contents of URL\", and tap it to add it." },
+  { h: "Paste the sync address.", s: "Tap the blue web address inside the action, then paste this:", copy: "url" },
+  { h: "Switch it to POST.", s: "Tap Show More just below the address. Set Method to POST and Request Body to JSON." },
+  { h: "Add four fields.", s: "Tap Add new field four times - one for each of these, in order:", subs: [
+    "key - choose Text, then paste your sync key from the box above.",
     "merchant - choose Text, tap inside the value box, then tap the blue Merchant under Shortcut Input.",
     "amount - choose Text, tap inside the value box, then tap the blue Amount under Shortcut Input.",
     "currency - choose Text, then type your card's 3-letter code, like USD or ILS."
-  ] },
-  { text: "Turn off \"Notify When Run\" so it stays silent, tap Next, then Done. From now on, every tap of your iPhone lands in Richy on its own." }
+  ], copy: "key" },
+  { h: "Make it silent.", s: "Turn off \"Notify When Run\" so it never interrupts you, then tap Next, then Done. From now on, every tap of your iPhone lands in Richy on its own." }
 ];
 
-var BANK_SYNC_STEPS_ANDROID = [
-  { text: "Install the free MacroDroid app from the Play Store and open it. (Google Wallet has no built-in automation - MacroDroid forwards its purchase notifications for you.)" },
-  { text: "Tap Add Macro (the big +), then tap the + next to Triggers." },
-  { text: "Choose Notification, then Notification Received, then Select Application(s). Tick Google Wallet (called Google Pay on some phones) and tap OK. If Android asks, allow MacroDroid to read notifications - that's how it sees each purchase." },
-  { text: "Tap the + next to Actions, then choose Connectivity, then HTTP Request." },
-  { text: "Set the method to POST, and paste the sync address you copied above into the URL box." },
-  { text: "Open the Body tab, set Content Type to application/json, and paste the request body you copied above into the content box.", subs: [
+var BANK_SYNC_JOURNEY_ANDROID = [
+  { h: "Install MacroDroid.", s: "It's free on the Play Store. Google Wallet has no built-in automation - MacroDroid forwards its purchase notifications to Richy for you." },
+  { h: "Start a new macro.", s: "Open MacroDroid, tap Add Macro (the big +), then tap the + next to Triggers." },
+  { h: "Pick the trigger.", s: "Choose Notification, then Notification Received, then Select Application(s). Tick Google Wallet - called Google Pay on some phones - and tap OK.", subs: [
+    "If Android asks, allow MacroDroid to read notifications - that's how it sees each purchase."
+  ] },
+  { h: "Add the action.", s: "Tap the + next to Actions, then choose Connectivity, then HTTP Request." },
+  { h: "Paste the sync address.", s: "Set the method to POST, then paste this into the URL box:", copy: "url" },
+  { h: "Paste the request body.", s: "Open the Body tab, set Content Type to application/json, and paste this into the content box:", copy: "body", subs: [
     "It already contains your sync key - don't edit the [not_title] and [notification] parts, MacroDroid fills those in with each purchase.",
     "If your card isn't in US dollars, change USD to your card's 3-letter code, like EUR or ILS."
   ] },
-  { text: "Tap the checkmark to save, name the macro something like \"Richy Sync\", and leave it enabled. From now on, every tap of your phone lands in Richy on its own." }
+  { h: "Save it.", s: "Tap the checkmark, name the macro something like \"Richy Sync\", and leave it enabled. From now on, every tap of your phone lands in Richy on its own." }
 ];
+
+var BANK_SYNC_CHAT_STARTERS = [
+  "I can't find that button",
+  "Is this safe?",
+  "What's a sync key?",
+  "Nothing shows up in Richy"
+];
+
+// Slide-up help chat for the setup journey: Richard answers questions with the
+// full step list and the user's current page in context. History lives in the
+// journey (props.msgs/onMsgs) so it survives moving between pages.
+function BankSyncHelpChat(props) {
+  var _in = useState(""); var input = _in[0]; var setInput = _in[1];
+  var _ld = useState(false); var loading = _ld[0]; var setLoading = _ld[1];
+  var endRef = useRef(null);
+  var msgs = props.msgs || [];
+  useEffect(function() {
+    if (props.open && endRef.current && endRef.current.scrollIntoView) endRef.current.scrollIntoView({ block: "end" });
+  }, [msgs.length, loading, props.open]);
+
+  function send(text) {
+    var t = String(text == null ? input : text).trim();
+    if (!t || loading) return;
+    var next = msgs.concat([{ role: "user", text: t }]);
+    props.onMsgs(next);
+    setInput("");
+    setLoading(true);
+    var steps = props.platform === "android" ? BANK_SYNC_JOURNEY_ANDROID : BANK_SYNC_JOURNEY_IOS;
+    var stepLines = steps.map(function(st, i) {
+      return (i + 1) + ". " + st.h + " " + st.s + (st.subs ? " (" + st.subs.join(" / ") + ")" : "");
+    }).join("\n");
+    var system = "You are Richard, the warm advisor inside the Richy budget app, walking a user through Bank Sync's one-time phone setup. How it works: " +
+      (props.platform === "android"
+        ? "the free MacroDroid app watches for Google Wallet's purchase notification and forwards it"
+        : "the iPhone Shortcuts app's Transaction automation fires on each Apple Pay tap and sends the details") +
+      " as a POST to the user's personal Richy sync address, and Richy books the expense automatically. No bank login or credentials are ever involved; the sync key can only ADD expenses to this one account, never read anything. The user is on the setup page titled \"" + (props.stepLabel || "Getting started") + "\". The full " +
+      (props.platform === "android" ? "Android" : "iPhone") + " steps are:\n" + stepLines +
+      "\nAnswer setup questions concretely and literally, naming the exact buttons they'll see on their phone. The sync address, sync key and request body each have a Copy button on their own setup page - point users there instead of reciting values. If they think it isn't working, remind them the final page has a Send a test transaction button. Keep answers under 90 words, in plain sentences - no markdown headings, only use a numbered list when listing taps.";
+    var history = next.slice(-10).map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; });
+    callClaude(history, system, 400, function(err, out) {
+      setLoading(false);
+      props.onMsgs(next.concat([{ role: "richard", text: (err || !out) ? "I couldn't reach the server just now - check your connection and ask me again in a moment." : out, fresh: true }]));
+    });
+  }
+
+  if (!props.open) return null;
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 95 }}>
+      <div onClick={props.onClose} style={{ position: "absolute", inset: 0, background: "rgba(24,16,8,0.42)", animation: "rclPhrase 0.25s ease both" }} />
+      <div style={{ position: "absolute", left: "50%", bottom: 0, transform: "translateX(-50%)", width: "100%", maxWidth: 428, height: "min(560px, 80vh)", background: JR_BG, borderRadius: "24px 24px 0 0", boxShadow: "0 -12px 40px rgba(0,0,0,0.24)", display: "flex", flexDirection: "column", boxSizing: "border-box", animation: "rcjToastIn 0.32s ease both" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "16px 18px 12px", borderBottom: "1px solid rgba(0,0,0,0.06)", flexShrink: 0 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 12, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 5px 14px " + T.orangeGlow }}>
+            <SVGIcon id="spark" size={17} color="#fff" />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: JINK, letterSpacing: "-0.01em", fontFamily: UI }}>Ask Richard</div>
+            <div style={{ fontSize: 11.5, color: JINK3, fontWeight: 600, fontFamily: UI }}>Bank Sync setup help</div>
+          </div>
+          <JrIconBtn icon="close" onPress={props.onClose} />
+        </div>
+        <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "16px 16px 8px" }}>
+          <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 10 }}>
+            <div style={{ background: "#fff", borderRadius: "4px 16px 16px 16px", padding: "11px 14px", maxWidth: "85%", boxShadow: "0 3px 12px rgba(40,28,16,0.06)", fontSize: 13.5, color: JINK, lineHeight: 1.55, fontFamily: UI, boxSizing: "border-box" }}>
+              I'll get you through this setup. Ask me anything - which button to tap, what a word means, or why something isn't showing up.
+            </div>
+          </div>
+          {msgs.length === 0 && !loading && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
+              {BANK_SYNC_CHAT_STARTERS.map(function(sq, i) {
+                return <JrChip key={sq} small label={sq} delay={0.1 + i * 0.06} onPress={function() { send(sq); }} />;
+              })}
+            </div>
+          )}
+          {msgs.map(function(m, i) {
+            var mine = m.role === "user";
+            var isLast = i === msgs.length - 1;
+            return (
+              <div key={i} style={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start", marginBottom: 10 }}>
+                <div style={{ background: mine ? T.btn : "#fff", color: mine ? "#fff" : JINK, borderRadius: mine ? "16px 4px 16px 16px" : "4px 16px 16px 16px", padding: "11px 14px", maxWidth: "85%", boxShadow: mine ? "0 4px 14px " + T.orangeGlow : "0 3px 12px rgba(40,28,16,0.06)", fontSize: 13.5, lineHeight: 1.55, fontFamily: UI, boxSizing: "border-box" }}>
+                  {mine ? m.text : <TypeReveal animate={!!(isLast && m.fresh)} text={m.text} size={13.5} color={JINK} />}
+                </div>
+              </div>
+            );
+          })}
+          {loading && <RichardThinking phrases={["Reading the steps", "Checking your setup", "Thinking it through"]} />}
+          <div ref={endRef} />
+        </div>
+        <div style={{ padding: "10px 14px 20px", display: "flex", gap: 9, alignItems: "center", borderTop: "1px solid rgba(0,0,0,0.06)", flexShrink: 0, boxSizing: "border-box" }}>
+          <input value={input} onChange={function(e) { setInput(e.target.value); }}
+            onKeyDown={function(e) { if (e.key === "Enter" && !loading) send(); }}
+            placeholder="Ask about any step..."
+            style={{ flex: 1, minWidth: 0, background: "#fff", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 999, padding: "12px 16px", fontSize: 14.5, fontFamily: UI, color: JINK, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
+          <button onClick={function() { send(); }} disabled={loading || !input.trim()}
+            style={{ width: 44, height: 44, borderRadius: "50%", border: "none", background: (!input.trim() || loading) ? "rgba(0,0,0,0.08)" : T.btn, display: "flex", alignItems: "center", justifyContent: "center", cursor: (!input.trim() || loading) ? "default" : "pointer", flexShrink: 0, boxShadow: (!input.trim() || loading) ? "none" : "0 5px 14px " + T.orangeGlow, transition: "background 0.25s ease, box-shadow 0.25s ease" }}>
+            <SVGIcon id="up" size={18} color={(!input.trim() || loading) ? JINK3 : "#fff"} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Full-screen guided setup in the questionnaire's exact shell: back button +
+// progress bar + page counter up top, one action per page with slide
+// transitions, the CTA pinned at the bottom, and a persistent "Ask Richard"
+// escape hatch. Page 0 picks the platform; the final page proves the pipe
+// works with a test transaction.
+function BankSyncJourney(props) {
+  useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
+  var bs = props.bankSync || {};
+  var _pf = useState(/android/i.test(navigator.userAgent) ? "android" : "iphone");
+  var platform = _pf[0]; var setPlatform = _pf[1];
+  var _ix = useState(0); var idx = _ix[0]; var setIdx = _ix[1];
+  var _dr = useState("fwd"); var dir = _dr[0]; var setDir = _dr[1];
+  var _cp = useState(""); var copied = _cp[0]; var setCopied = _cp[1];
+  var _ts = useState("idle"); var testState = _ts[0]; var setTestState = _ts[1];
+  var _co = useState(false); var chatOpen = _co[0]; var setChatOpen = _co[1];
+  var _cm = useState([]); var chatMsgs = _cm[0]; var setChatMsgs = _cm[1];
+  var advRef = useRef(false);
+
+  var steps = platform === "android" ? BANK_SYNC_JOURNEY_ANDROID : BANK_SYNC_JOURNEY_IOS;
+  var total = steps.length + 2; // platform page + one page per step + test page
+  var isTest = idx === total - 1;
+  var step = (idx > 0 && !isTest) ? steps[idx - 1] : null;
+  var stepLabel = idx === 0 ? "Which phone do you have?" : isTest ? "Send a test transaction" : step.h;
+
+  var copyValue = {
+    url: BANK_SYNC_ENDPOINT,
+    key: bs.key || "",
+    body: '{"key":"' + (bs.key || "") + '","title":"[not_title]","text":"[notification]","currency":"USD"}'
+  };
+  var copyLabel = { url: "Sync address", key: "Your sync key", body: "Request body" };
+
+  function copy(which) {
+    function done() { setCopied(which); setTimeout(function() { setCopied(""); }, 1800); }
+    var text = copyValue[which] || "";
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(done);
+    else done();
+  }
+  function advance() {
+    setDir("fwd");
+    setIdx(function(i) { return Math.min(total - 1, i + 1); });
+  }
+  // The platform cards advance on their own after the selection pop; the ref
+  // guards a double-tap from skipping two pages.
+  function pickPlatform(p) {
+    setPlatform(p);
+    if (advRef.current) return;
+    advRef.current = true;
+    setTimeout(function() { advRef.current = false; advance(); }, 240);
+  }
+  function goBack() {
+    if (idx <= 0) { props.onClose(); return; }
+    setDir("back"); setIdx(idx - 1);
+  }
+  // Exercises the entire pipe: endpoint -> Firestore inbox -> the live listener
+  // books it as a real expense the user can then delete from Activity.
+  function sendTest() {
+    if (testState === "sending" || !bs.key) return;
+    setTestState("sending");
+    fetch(BANK_SYNC_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key: bs.key, merchant: "Richy Test Purchase", amount: "1.00", test: true })
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      setTestState(d && d.ok ? "sent" : "error");
+    }).catch(function() { setTestState("error"); });
+  }
+
+  var labelJ = { fontSize: 11.5, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 12 };
+  var headJ = { fontSize: 25, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.25, marginBottom: 8 };
+  var subCard = { background: "rgba(255,255,255,0.85)", border: "1px solid rgba(0,0,0,0.05)", borderRadius: 14, padding: "12px 15px", fontSize: 13, color: JINK2, lineHeight: 1.5, boxSizing: "border-box" };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 80, background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column" }}>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0", flexShrink: 0 }}>
+        {idx > 0 ? (
+          <JrIconBtn icon="chevron" rotate={180} onPress={goBack} />
+        ) : (
+          <JrIconBtn icon="close" onPress={props.onClose} />
+        )}
+        <JourneyBar pct={((idx + 1) / total) * 100} />
+        <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: JINK3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(idx + 1) + "/" + total}</div>
+      </div>
+
+      <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "28px 24px 8px" }}>
+        <div style={{ maxWidth: 380, margin: "0 auto" }}>
+          <JrStepShell k={platform + idx} dir={dir}>
+
+            {idx === 0 && (
+              <div>
+                <div style={headJ}>
+                  <WordReveal text="Which phone do you have?" base={0.04} step={0.045} />
+                </div>
+                <div style={{ fontSize: 14, color: JINK3, marginBottom: 26, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>
+                  One-time setup, about two minutes. Your bank login is never involved - your phone only reports the merchant and amount of each tap.
+                </div>
+                <Stagger k="bsj-platform" step={0.06}>
+                  {[
+                    { id: "iphone", label: "iPhone", sub: "Apple Pay, via the built-in Shortcuts app" },
+                    { id: "android", label: "Android", sub: "Google Pay, via the free MacroDroid app" }
+                  ].map(function(opt) {
+                    var sel = platform === opt.id;
+                    return (
+                      <button key={opt.id} onClick={function() { pickPlatform(opt.id); }}
+                        style={{ width: "100%", background: sel ? "rgba(137,112,198,0.06)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "17px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px rgba(137,112,198,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", marginBottom: 11, transition: "box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease" }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 12, background: sel ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: sel ? "0 5px 14px " + T.orangeGlow : "none", transition: "background 0.25s ease, box-shadow 0.25s ease" }}>
+                          <SVGIcon id="phone" size={19} color={sel ? "#fff" : JINK3} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 17, fontWeight: sel ? 700 : 600, color: JINK }}>{opt.label}</div>
+                          <div style={{ fontSize: 12.5, color: JINK3, marginTop: 2 }}>{opt.sub}</div>
+                        </div>
+                        {sel && (
+                          <span style={{ width: 22, height: 22, borderRadius: "50%", background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, animation: "rcjCheckPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both", boxShadow: "0 3px 10px " + T.orangeGlow }}>
+                            <SVGIcon id="check" size={12} color="#fff" />
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </Stagger>
+              </div>
+            )}
+
+            {step && (
+              <div>
+                <div style={labelJ}>{"Step " + idx + " of " + steps.length}</div>
+                <div style={headJ}>
+                  <WordReveal text={step.h} base={0.04} step={0.045} />
+                </div>
+                <div style={{ fontSize: 15, color: JINK2, marginBottom: 20, lineHeight: 1.6, animation: "rclPhrase 0.45s ease 0.25s both" }}>{step.s}</div>
+                {step.copy && (
+                  <div style={{ background: "#fff", borderRadius: 16, padding: "15px 16px", boxShadow: "0 6px 22px rgba(40,28,16,0.08)", marginBottom: 16, boxSizing: "border-box", animation: "rclPhrase 0.45s ease 0.35s both" }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>{copyLabel[step.copy]}</div>
+                    <div style={{ fontSize: 12.5, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", color: JINK, wordBreak: "break-all", lineHeight: 1.55, marginBottom: 12 }}>{copyValue[step.copy]}</div>
+                    <button onClick={function() { copy(step.copy); }}
+                      style={{ width: "100%", background: copied === step.copy ? T.greenDim : T.orangeDim, color: copied === step.copy ? T.green : T.orange, border: "none", borderRadius: 12, padding: "11px 0", fontSize: 14, fontWeight: 700, fontFamily: UI, cursor: "pointer", boxSizing: "border-box", transition: "background 0.2s ease, color 0.2s ease" }}>
+                      {copied === step.copy ? "Copied - now paste it on your phone" : "Copy"}
+                    </button>
+                  </div>
+                )}
+                {step.subs && (
+                  <Stagger k={platform + idx + "subs"} step={0.09} base={0.35} style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+                    {step.subs.map(function(sub, j) {
+                      return <div key={j} style={subCard}>{sub}</div>;
+                    })}
+                  </Stagger>
+                )}
+              </div>
+            )}
+
+            {isTest && (
+              <div>
+                <div style={labelJ}>Last step</div>
+                <div style={headJ}>
+                  <WordReveal text="Let's prove it works." base={0.04} step={0.045} />
+                </div>
+                <div style={{ fontSize: 15, color: JINK2, marginBottom: 24, lineHeight: 1.6, animation: "rclPhrase 0.45s ease 0.25s both" }}>
+                  This sends a pretend $1.00 purchase through the exact pipe your phone will use. It should appear in Activity within a few seconds - delete it there once you've seen it.
+                </div>
+                <div style={{ animation: "rclPhrase 0.45s ease 0.35s both" }}>
+                  <button onClick={sendTest} disabled={testState === "sending"}
+                    style={{ width: "100%", background: "#fff", color: T.orange, border: "1.5px solid " + T.orangeDim, borderRadius: 16, padding: "15px 0", fontSize: 15.5, fontFamily: UI, fontWeight: 700, cursor: "pointer", opacity: testState === "sending" ? 0.6 : 1, boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                    {testState === "sending" ? "Sending..." : testState === "sent" ? "Send another test" : "Send a test transaction"}
+                  </button>
+                  {testState === "sent" && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14, animation: "rclPhrase 0.35s ease both" }}>
+                      <span style={{ width: 20, height: 20, borderRadius: "50%", background: T.green, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, animation: "rclPop 0.35s ease both" }}>
+                        <SVGIcon id="check" size={11} color="#fff" />
+                      </span>
+                      <span style={{ fontSize: 13.5, color: T.green, fontWeight: 600, lineHeight: 1.5 }}>Sent - go check Activity in a moment.</span>
+                    </div>
+                  )}
+                  {testState === "error" && (
+                    <div style={{ fontSize: 13, color: T.red, lineHeight: 1.5, marginTop: 12 }}>That didn't go through. Check your connection and try again in a moment.</div>
+                  )}
+                </div>
+              </div>
+            )}
+
+          </JrStepShell>
+        </div>
+      </div>
+
+      <div style={{ padding: "12px 24px 34px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box", flexShrink: 0 }}>
+        {idx === 0 && (
+          <div style={{ textAlign: "center", fontSize: 12.5, color: JINK3, fontWeight: 600, padding: "14px 0" }}>Tap your phone to continue</div>
+        )}
+        {step && <JrBtn label="Done, next" onPress={advance} />}
+        {isTest && <JrBtn label="Finish setup" onPress={props.onClose} />}
+        <button onClick={function() { setChatOpen(true); }}
+          style={{ width: "100%", background: "none", border: "none", color: JINK3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+          <SVGIcon id="spark" size={14} color={T.orange} />
+          Stuck? Ask Richard
+        </button>
+      </div>
+
+      <BankSyncHelpChat open={chatOpen} onClose={function() { setChatOpen(false); }}
+        platform={platform} stepLabel={stepLabel} msgs={chatMsgs} onMsgs={setChatMsgs} />
+    </div>
+  );
+}
 
 function BankSyncView(props) {
   var bs = props.bankSync;
   var enabled = !!(bs && bs.enabled);
-  var _cp = useState(""); var copied = _cp[0]; var setCopied = _cp[1];
   var _ts = useState("idle"); var testState = _ts[0]; var setTestState = _ts[1];
   var _bz = useState(false); var busy = _bz[0]; var setBusy = _bz[1];
   var _err = useState(""); var enableErr = _err[0]; var setEnableErr = _err[1];
-  // Which wallet's setup guide is showing. A guess from the user agent picks
-  // the starting tab; the toggle below lets them switch freely.
-  var _pf = useState(/android/i.test(navigator.userAgent) ? "android" : "iphone");
-  var platform = _pf[0]; var setPlatform = _pf[1];
+  // The guided phone setup (questionnaire-style, one action per page). Opens
+  // by itself right after enabling - that's the moment the user needs it.
+  var _gd = useState(false); var guide = _gd[0]; var setGuide = _gd[1];
   var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", padding: "18px 4px 8px", fontFamily: UI };
-
-  function copy(which, text) {
-    function done() { setCopied(which); setTimeout(function() { setCopied(""); }, 1600); }
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(done);
-    else done();
-  }
 
   // A failed write here is almost always Firestore rejecting it (rules not yet
   // published, or signed out) - surface it instead of the button silently doing
@@ -16405,7 +16704,9 @@ function BankSyncView(props) {
     if (busy) return;
     setBusy(true);
     setEnableErr("");
-    Promise.resolve(props.onEnable()).catch(function(e) {
+    Promise.resolve(props.onEnable()).then(function() {
+      setGuide(true);
+    }).catch(function(e) {
       setEnableErr((e && e.message) || "Couldn't turn on Bank Sync. Check your connection and try again.");
     }).then(function() { setBusy(false); });
   }
@@ -16428,21 +16729,6 @@ function BankSyncView(props) {
     }).then(function(r) { return r.json(); }).then(function(d) {
       setTestState(d && d.ok ? "sent" : "error");
     }).catch(function() { setTestState("error"); });
-  }
-
-  function copyRow(which, label, value, last) {
-    return (
-      <div style={{ padding: "13px 20px", borderBottom: last ? "none" : "0.5px solid " + T.sep, boxSizing: "border-box" }}>
-        <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5 }}>{label}</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ flex: 1, minWidth: 0, fontSize: 12.5, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</div>
-          <button onClick={function() { copy(which, value); }}
-            style={{ flexShrink: 0, background: copied === which ? T.greenDim : T.orangeDim, color: copied === which ? T.green : T.orange, border: "none", borderRadius: 9, padding: "6px 12px", fontSize: 12, fontWeight: 700, fontFamily: UI, cursor: "pointer" }}>
-            {copied === which ? "Copied" : "Copy"}
-          </button>
-        </div>
-      </div>
-    );
   }
 
   if (!enabled) {
@@ -16485,41 +16771,19 @@ function BankSyncView(props) {
         <InfoRow label="Transactions synced" value={String(bs.count || 0)} last />
       </Card>
 
-      <div style={secLabel}>{platform === "android" ? "One-time Android setup" : "One-time iPhone setup"}</div>
-      <div style={{ display: "flex", gap: 6, background: T.card, borderRadius: 14, padding: 5, marginBottom: 12, boxSizing: "border-box" }}>
-        {[{ id: "iphone", label: "iPhone · Apple Pay" }, { id: "android", label: "Android · Google Pay" }].map(function(opt) {
-          var on = platform === opt.id;
-          return (
-            <button key={opt.id} onClick={function() { setPlatform(opt.id); }}
-              style={{ flex: 1, background: on ? T.orangeDim : "transparent", color: on ? T.orange : T.ink3, border: "none", borderRadius: 10, padding: "9px 0", fontSize: 12.5, fontWeight: 700, fontFamily: UI, cursor: "pointer" }}>
-              {opt.label}
-            </button>
-          );
-        })}
-      </div>
+      <div style={secLabel}>One-time phone setup</div>
       <Card style={{ overflow: "hidden", marginBottom: 4 }}>
-        {copyRow("url", "Sync address", BANK_SYNC_ENDPOINT)}
-        {copyRow("key", "Your sync key", bs.key, platform !== "android")}
-        {platform === "android" && copyRow("body", "Request body", '{"key":"' + bs.key + '","title":"[not_title]","text":"[notification]","currency":"USD"}', true)}
-      </Card>
-      <Card style={{ padding: "6px 20px", marginBottom: 4, marginTop: 12 }}>
-        {(platform === "android" ? BANK_SYNC_STEPS_ANDROID : BANK_SYNC_STEPS_IOS).map(function(step, i, steps) {
-          return (
-            <div key={platform + i} style={{ padding: "11px 0", borderBottom: i < steps.length - 1 ? "0.5px solid " + T.sep : "none" }}>
-              <div style={{ display: "flex", gap: 12 }}>
-                <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orangeDim, color: T.orange, fontSize: 11.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontFamily: UI, marginTop: 1 }}>{i + 1}</div>
-                <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, fontFamily: UI }}>{step.text}</div>
-              </div>
-              {step.subs && (
-                <div style={{ marginLeft: 34, marginTop: 6, display: "flex", flexDirection: "column", gap: 5 }}>
-                  {step.subs.map(function(sub, j) {
-                    return <div key={j} style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, fontFamily: UI }}>{"• " + sub}</div>;
-                  })}
-                </div>
-              )}
-            </div>
-          );
-        })}
+        <button onClick={function() { setGuide(true); }}
+          style={{ width: "100%", padding: "16px 20px", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, textAlign: "left", fontFamily: UI, boxSizing: "border-box" }}>
+          <div style={{ width: 42, height: 42, borderRadius: 13, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <SVGIcon id="phone" size={20} color={T.orange} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>Set up your phone</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.45 }}>A guided walkthrough, one step per page - about two minutes. iPhone or Android.</div>
+          </div>
+          <SVGIcon id="chevron" size={14} color={T.ink3} />
+        </button>
       </Card>
 
       <div style={secLabel}>Check it works</div>
@@ -16545,6 +16809,8 @@ function BankSyncView(props) {
       <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, padding: "8px 6px 0", fontFamily: UI }}>
         Turning it off keeps everything already synced and simply stops new transactions from arriving.
       </div>
+
+      {guide && <BankSyncJourney bankSync={bs} onClose={function() { setGuide(false); }} />}
     </div>
   );
 }
