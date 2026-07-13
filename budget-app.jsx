@@ -2024,6 +2024,7 @@ function SVGIcon(props) {
     umbrella: "M23 12a11 11 0 00-22 0M12 12v8a2 2 0 004 0",
     close:    "M18 6L6 18M6 6l12 12",
     clock:    "M12 7v5l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+    camera:   "M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2zM12 17a4 4 0 100-8 4 4 0 000 8z",
   };
   var d = icons[props.id] || "";
   return (
@@ -16819,18 +16820,59 @@ function BankSyncDemo(props) {
 function BankSyncHelpChat(props) {
   var _in = useState(""); var input = _in[0]; var setInput = _in[1];
   var _ld = useState(false); var loading = _ld[0]; var setLoading = _ld[1];
+  // A screenshot waiting to go out with the next message, as a data URL.
+  var _pi = useState(null); var pendingImg = _pi[0]; var setPendingImg = _pi[1];
   var endRef = useRef(null);
+  var fileRef = useRef(null);
   var msgs = props.msgs || [];
   useEffect(function() {
     if (props.open && endRef.current && endRef.current.scrollIntoView) endRef.current.scrollIntoView({ block: "end" });
-  }, [msgs.length, loading, props.open]);
+  }, [msgs.length, loading, props.open, pendingImg]);
+
+  // Downscale on-device before sending: phone screenshots are multi-MB, and
+  // the model reads a 1200px JPEG just as well as the original.
+  function pickImage(file) {
+    if (!file || !/^image\//.test(file.type)) return;
+    var reader = new FileReader();
+    reader.onload = function() {
+      var img = new Image();
+      img.onload = function() {
+        var MAX = 1200;
+        var scale = Math.min(1, MAX / Math.max(img.width, img.height));
+        var canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(img.width * scale));
+        canvas.height = Math.max(1, Math.round(img.height * scale));
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        setPendingImg(canvas.toDataURL("image/jpeg", 0.82));
+      };
+      img.onerror = function() { setPendingImg(null); };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // user message -> Claude content blocks. Only the most recent screenshot in
+  // the history rides along as real pixels; older ones collapse to a stub so
+  // the payload never snowballs past the proxy's body limit.
+  function toContent(m, isLatestImg) {
+    if (!m.img) return m.text;
+    var parts = [];
+    if (isLatestImg) {
+      var match = /^data:(image\/[a-z+.-]+);base64,(.*)$/.exec(m.img);
+      if (match) parts.push({ type: "image", source: { type: "base64", media_type: match[1], data: match[2] } });
+    }
+    parts.push({ type: "text", text: (m.text || "Here's a screenshot of my screen.") + (isLatestImg ? "" : " [screenshot was attached here]") });
+    return parts;
+  }
 
   function send(text) {
     var t = String(text == null ? input : text).trim();
-    if (!t || loading) return;
-    var next = msgs.concat([{ role: "user", text: t }]);
+    var img = text == null ? pendingImg : null;
+    if ((!t && !img) || loading) return;
+    var next = msgs.concat([{ role: "user", text: t, img: img }]);
     props.onMsgs(next);
     setInput("");
+    setPendingImg(null);
     setLoading(true);
     var steps = props.platform === "android" ? BANK_SYNC_JOURNEY_ANDROID : BANK_SYNC_JOURNEY_IOS;
     var stepLines = steps.map(function(st, i) {
@@ -16842,8 +16884,13 @@ function BankSyncHelpChat(props) {
         : "the iPhone Shortcuts app's Transaction automation fires on each Apple Pay tap and sends the details") +
       " as a POST to the user's personal Richy sync address, and Richy books the expense automatically. No bank login or credentials are ever involved; the sync key can only ADD expenses to this one account, never read anything. The user is on the setup page titled \"" + (props.stepLabel || "Getting started") + "\". The full " +
       (props.platform === "android" ? "Android" : "iPhone") + " steps are:\n" + stepLines +
-      "\nAnswer setup questions concretely and literally, naming the exact buttons they'll see on their phone. The sync address, sync key and request body each have a Copy button on their own setup page - point users there instead of reciting values. If they think it isn't working, remind them the final page has a Send a test transaction button. Keep answers under 90 words, in plain sentences - no markdown headings, only use a numbered list when listing taps.";
-    var history = next.slice(-10).map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; });
+      "\nAnswer setup questions concretely and literally, naming the exact buttons they'll see on their phone. The user may attach screenshots of their phone's screen - read them carefully, say what screen they're on, and name the exact next tap. The sync address, sync key and request body each have a Copy button on their own setup page - point users there instead of reciting values. If they think it isn't working, remind them the final page has a Send a test transaction button. Keep answers under 90 words, in plain sentences - no markdown headings, only use a numbered list when listing taps.";
+    var recent = next.slice(-10);
+    var latestImgIdx = -1;
+    for (var li = recent.length - 1; li >= 0; li--) { if (recent[li].img) { latestImgIdx = li; break; } }
+    var history = recent.map(function(m, mi) {
+      return { role: m.role === "user" ? "user" : "assistant", content: m.role === "user" ? toContent(m, mi === latestImgIdx) : m.text };
+    });
     callClaude(history, system, 400, function(err, out) {
       setLoading(false);
       props.onMsgs(next.concat([{ role: "richard", text: (err || !out) ? "I couldn't reach the server just now - check your connection and ask me again in a moment." : out, fresh: true }]));
@@ -16868,7 +16915,7 @@ function BankSyncHelpChat(props) {
         <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "16px 16px 8px" }}>
           <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 10 }}>
             <div style={{ background: "#fff", borderRadius: "4px 16px 16px 16px", padding: "11px 14px", maxWidth: "85%", boxShadow: "0 3px 12px rgba(40,28,16,0.06)", fontSize: 13.5, color: JINK, lineHeight: 1.55, fontFamily: UI, boxSizing: "border-box" }}>
-              I'll get you through this setup. Ask me anything - which button to tap, what a word means, or why something isn't showing up.
+              I'll get you through this setup. Ask me anything - which button to tap, what a word means, or why something isn't showing up. Stuck? Send me a screenshot of your screen and I'll tell you the exact next tap.
             </div>
           </div>
           {msgs.length === 0 && !loading && (
@@ -16883,8 +16930,16 @@ function BankSyncHelpChat(props) {
             var isLast = i === msgs.length - 1;
             return (
               <div key={i} style={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start", marginBottom: 10 }}>
-                <div style={{ background: mine ? T.btn : "#fff", color: mine ? "#fff" : JINK, borderRadius: mine ? "16px 4px 16px 16px" : "4px 16px 16px 16px", padding: "11px 14px", maxWidth: "85%", boxShadow: mine ? "0 4px 14px " + T.orangeGlow : "0 3px 12px rgba(40,28,16,0.06)", fontSize: 13.5, lineHeight: 1.55, fontFamily: UI, boxSizing: "border-box" }}>
-                  {mine ? m.text : <TypeReveal animate={!!(isLast && m.fresh)} text={m.text} size={13.5} color={JINK} />}
+                <div style={{ background: mine ? T.btn : "#fff", color: mine ? "#fff" : JINK, borderRadius: mine ? "16px 4px 16px 16px" : "4px 16px 16px 16px", padding: m.img ? "6px 6px 9px" : "11px 14px", maxWidth: "85%", boxShadow: mine ? "0 4px 14px " + T.orangeGlow : "0 3px 12px rgba(40,28,16,0.06)", fontSize: 13.5, lineHeight: 1.55, fontFamily: UI, boxSizing: "border-box" }}>
+                  {m.img && (
+                    <img src={m.img} alt="Attached screenshot"
+                      style={{ display: "block", width: "100%", maxHeight: 220, objectFit: "cover", borderRadius: mine ? "12px 2px 12px 12px" : "2px 12px 12px 12px", marginBottom: m.text ? 7 : 0 }} />
+                  )}
+                  {m.text ? (
+                    <span style={{ display: "block", padding: m.img ? "0 8px" : 0 }}>
+                      {mine ? m.text : <TypeReveal animate={!!(isLast && m.fresh)} text={m.text} size={13.5} color={JINK} />}
+                    </span>
+                  ) : null}
                 </div>
               </div>
             );
@@ -16892,15 +16947,36 @@ function BankSyncHelpChat(props) {
           {loading && <RichardThinking phrases={["Reading the steps", "Checking your setup", "Thinking it through"]} />}
           <div ref={endRef} />
         </div>
-        <div style={{ padding: "10px 14px 20px", display: "flex", gap: 9, alignItems: "center", borderTop: "1px solid rgba(0,0,0,0.06)", flexShrink: 0, boxSizing: "border-box" }}>
-          <input value={input} onChange={function(e) { setInput(e.target.value); }}
-            onKeyDown={function(e) { if (e.key === "Enter" && !loading) send(); }}
-            placeholder="Ask about any step..."
-            style={{ flex: 1, minWidth: 0, background: "#fff", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 999, padding: "12px 16px", fontSize: 14.5, fontFamily: UI, color: JINK, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
-          <button onClick={function() { send(); }} disabled={loading || !input.trim()}
-            style={{ width: 44, height: 44, borderRadius: "50%", border: "none", background: (!input.trim() || loading) ? "rgba(0,0,0,0.08)" : T.btn, display: "flex", alignItems: "center", justifyContent: "center", cursor: (!input.trim() || loading) ? "default" : "pointer", flexShrink: 0, boxShadow: (!input.trim() || loading) ? "none" : "0 5px 14px " + T.orangeGlow, transition: "background 0.25s ease, box-shadow 0.25s ease" }}>
-            <SVGIcon id="up" size={18} color={(!input.trim() || loading) ? JINK3 : "#fff"} />
-          </button>
+        <div style={{ borderTop: "1px solid rgba(0,0,0,0.06)", flexShrink: 0 }}>
+          {pendingImg && (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px 0" }}>
+              <div style={{ position: "relative", flexShrink: 0 }}>
+                <img src={pendingImg} alt="Screenshot to send"
+                  style={{ display: "block", width: 52, height: 52, objectFit: "cover", borderRadius: 12, border: "1.5px solid rgba(0,0,0,0.09)", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }} />
+                <button onClick={function() { setPendingImg(null); }} aria-label="Remove screenshot"
+                  style={{ position: "absolute", top: -7, right: -7, width: 20, height: 20, borderRadius: "50%", border: "2px solid " + JR_BG, background: "rgba(24,20,16,0.85)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
+                  <SVGIcon id="close" size={9} color="#fff" />
+                </button>
+              </div>
+              <span style={{ fontSize: 12, color: JINK3, fontWeight: 600, fontFamily: UI }}>Screenshot attached - Richard will look at it.</span>
+            </div>
+          )}
+          <div style={{ padding: "10px 14px 20px", display: "flex", gap: 9, alignItems: "center", boxSizing: "border-box" }}>
+            <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }}
+              onChange={function(e) { pickImage(e.target.files && e.target.files[0]); e.target.value = ""; }} />
+            <button onClick={function() { if (fileRef.current) fileRef.current.click(); }} aria-label="Attach a screenshot"
+              style={{ width: 44, height: 44, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.09)", background: pendingImg ? T.orangeDim : "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.05)", transition: "background 0.25s ease" }}>
+              <SVGIcon id="camera" size={18} color={pendingImg ? T.orange : JINK3} />
+            </button>
+            <input value={input} onChange={function(e) { setInput(e.target.value); }}
+              onKeyDown={function(e) { if (e.key === "Enter" && !loading) send(); }}
+              placeholder={pendingImg ? "Add a note, or just send..." : "Ask about any step..."}
+              style={{ flex: 1, minWidth: 0, background: "#fff", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 999, padding: "12px 16px", fontSize: 14.5, fontFamily: UI, color: JINK, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
+            <button onClick={function() { send(); }} disabled={loading || (!input.trim() && !pendingImg)}
+              style={{ width: 44, height: 44, borderRadius: "50%", border: "none", background: ((!input.trim() && !pendingImg) || loading) ? "rgba(0,0,0,0.08)" : T.btn, display: "flex", alignItems: "center", justifyContent: "center", cursor: ((!input.trim() && !pendingImg) || loading) ? "default" : "pointer", flexShrink: 0, boxShadow: ((!input.trim() && !pendingImg) || loading) ? "none" : "0 5px 14px " + T.orangeGlow, transition: "background 0.25s ease, box-shadow 0.25s ease" }}>
+              <SVGIcon id="up" size={18} color={((!input.trim() && !pendingImg) || loading) ? JINK3 : "#fff"} />
+            </button>
+          </div>
         </div>
       </div>
     </div>
