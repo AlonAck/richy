@@ -12,7 +12,9 @@ var admin = require("firebase-admin");
 var nodeCrypto = require("crypto");
 
 // Initialized once per warm instance. FIREBASE_SERVICE_ACCOUNT holds the service
-// account JSON (raw or base64) generated in the Firebase console.
+// account JSON (raw or base64) generated in the Firebase console. Env vars are
+// snapshotted into a deployment at build time, so changing this value in the
+// Vercel dashboard only takes effect on the NEXT deployment, not the current one.
 function initAdmin() {
   if (admin.apps.length) return true;
   var raw = process.env.FIREBASE_SERVICE_ACCOUNT;
