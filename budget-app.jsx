@@ -16351,35 +16351,35 @@ var BANK_SYNC_ENDPOINT = "https://richy-mgkl.vercel.app/api/bank-sync";
 // h = page headline (the action), s = the literal how, subs = fine print
 // cards, copy = which value gets a copy card on that page.
 var BANK_SYNC_JOURNEY_IOS = [
-  { h: "Open the Shortcuts app.", s: "It comes with every iPhone - no download needed. Swipe down on your home screen and type \"Shortcuts\" if you can't spot it." },
-  { h: "Start a new automation.", s: "Tap Automation in the bottom bar, then tap the + in the top corner." },
-  { h: "Choose Transaction.", s: "Tap Create Personal Automation, then pick Transaction from the list. On iOS 26 it's called Wallet." },
-  { h: "Pick your cards.", s: "Turn on the card or cards you want Richy to track, then tap Next." },
-  { h: "Add the action.", s: "Tap Add Action, search for \"Get Contents of URL\", and tap it to add it." },
-  { h: "Paste the sync address.", s: "Tap the blue web address inside the action, then paste this:", copy: "url" },
-  { h: "Switch it to POST.", s: "Tap Show More just below the address. Set Method to POST and Request Body to JSON." },
+  { h: "Open the Shortcuts app.", s: "It comes with every iPhone - no download needed. Swipe down on your home screen and type \"Shortcuts\" if you can't spot it.", demo: "ios1" },
+  { h: "Start a new automation.", s: "Tap Automation in the bottom bar, then tap the + in the top corner.", demo: "ios2" },
+  { h: "Choose Transaction.", s: "Tap Create Personal Automation, then pick Transaction from the list. On iOS 26 it's called Wallet.", demo: "ios3" },
+  { h: "Pick your cards.", s: "Turn on the card or cards you want Richy to track, then tap Next.", demo: "ios4" },
+  { h: "Add the action.", s: "Tap Add Action, search for \"Get Contents of URL\", and tap it to add it.", demo: "ios5" },
+  { h: "Paste the sync address.", s: "Tap the blue web address inside the action, then paste this:", copy: "url", demo: "ios6" },
+  { h: "Switch it to POST.", s: "Tap Show More just below the address. Set Method to POST and Request Body to JSON.", demo: "ios7" },
   { h: "Add four fields.", s: "Tap Add new field four times - one for each of these, in order:", subs: [
     "key - choose Text, then paste your sync key from the box above.",
     "merchant - choose Text, tap inside the value box, then tap the blue Merchant under Shortcut Input.",
     "amount - choose Text, tap inside the value box, then tap the blue Amount under Shortcut Input.",
     "currency - choose Text, then type your card's 3-letter code, like USD or ILS."
-  ], copy: "key" },
-  { h: "Make it silent.", s: "Turn off \"Notify When Run\" so it never interrupts you, then tap Next, then Done. From now on, every tap of your iPhone lands in Richy on its own." }
+  ], copy: "key", demo: "ios8" },
+  { h: "Make it silent.", s: "Turn off \"Notify When Run\" so it never interrupts you, then tap Next, then Done. From now on, every tap of your iPhone lands in Richy on its own.", demo: "ios9" }
 ];
 
 var BANK_SYNC_JOURNEY_ANDROID = [
-  { h: "Install MacroDroid.", s: "It's free on the Play Store. Google Wallet has no built-in automation - MacroDroid forwards its purchase notifications to Richy for you." },
-  { h: "Start a new macro.", s: "Open MacroDroid, tap Add Macro (the big +), then tap the + next to Triggers." },
+  { h: "Install MacroDroid.", s: "It's free on the Play Store. Google Wallet has no built-in automation - MacroDroid forwards its purchase notifications to Richy for you.", demo: "and1" },
+  { h: "Start a new macro.", s: "Open MacroDroid, tap Add Macro (the big +), then tap the + next to Triggers.", demo: "and2" },
   { h: "Pick the trigger.", s: "Choose Notification, then Notification Received, then Select Application(s). Tick Google Wallet - called Google Pay on some phones - and tap OK.", subs: [
     "If Android asks, allow MacroDroid to read notifications - that's how it sees each purchase."
-  ] },
-  { h: "Add the action.", s: "Tap the + next to Actions, then choose Connectivity, then HTTP Request." },
-  { h: "Paste the sync address.", s: "Set the method to POST, then paste this into the URL box:", copy: "url" },
+  ], demo: "and3" },
+  { h: "Add the action.", s: "Tap the + next to Actions, then choose Connectivity, then HTTP Request.", demo: "and4" },
+  { h: "Paste the sync address.", s: "Set the method to POST, then paste this into the URL box:", copy: "url", demo: "and5" },
   { h: "Paste the request body.", s: "Open the Body tab, set Content Type to application/json, and paste this into the content box:", copy: "body", subs: [
     "It already contains your sync key - don't edit the [not_title] and [notification] parts, MacroDroid fills those in with each purchase.",
     "If your card isn't in US dollars, change USD to your card's 3-letter code, like EUR or ILS."
-  ] },
-  { h: "Save it.", s: "Tap the checkmark, name the macro something like \"Richy Sync\", and leave it enabled. From now on, every tap of your phone lands in Richy on its own." }
+  ], demo: "and6" },
+  { h: "Save it.", s: "Tap the checkmark, name the macro something like \"Richy Sync\", and leave it enabled. From now on, every tap of your phone lands in Richy on its own.", demo: "and7" }
 ];
 
 var BANK_SYNC_CHAT_STARTERS = [
@@ -16388,6 +16388,430 @@ var BANK_SYNC_CHAT_STARTERS = [
   "What's a sync key?",
   "Nothing shows up in Richy"
 ];
+
+// ---- Setup demo "videos" ---------------------------------------------------
+// Every journey page carries a looping demo of the exact tap it asks for.
+// They're authored mini phone screens (not recordings), so they stay correct,
+// weigh nothing, and follow the theme. Each scene is a phase-render function;
+// BankSyncDemo cycles the phases on a timer and the journey's existing
+// keyframes (rclPing / rclPhrase / rclPop / rcjCheckPop) do the motion.
+
+// The "finger": a pulsing ring centered on whatever relative parent it sits in.
+function BsdTap() {
+  return (
+    <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 3 }}>
+      <span style={{ position: "absolute", width: 30, height: 30, borderRadius: "50%", background: T.orange, opacity: 0.35, animation: "rclPing 1.1s ease-out infinite" }} />
+      <span style={{ width: 12, height: 12, borderRadius: "50%", background: T.orange, boxShadow: "0 0 0 3px rgba(255,255,255,0.75)" }} />
+    </span>
+  );
+}
+
+// Framed mock phone screen: title bar (optional + button or custom right node).
+function BsdPhone(props) {
+  return (
+    <div style={{ background: "linear-gradient(180deg,#FFFFFF,#FBF7F1)", border: "1px solid rgba(0,0,0,0.07)", borderRadius: 20, boxShadow: "0 10px 26px rgba(40,28,16,0.10)", padding: "12px 10px 12px", position: "relative", overflow: "hidden", boxSizing: "border-box" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 6px 10px" }}>
+        <span style={{ fontSize: 12, fontWeight: 800, color: JINK, letterSpacing: "-0.01em", fontFamily: UI }}>{props.title}</span>
+        {props.right ? props.right : props.plus ? (
+          <span style={{ position: "relative", width: 22, height: 22, borderRadius: "50%", background: props.plusHl ? T.orange : "rgba(0,0,0,0.06)", color: props.plusHl ? "#fff" : T.orange, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, transition: "background 0.3s ease, color 0.3s ease" }}>
+            +
+            {props.plusTap && <BsdTap />}
+          </span>
+        ) : <span />}
+      </div>
+      {props.children}
+    </div>
+  );
+}
+
+// Generic list row: icon / label / blue Shortcuts-style token / toggle /
+// checkbox / chevron / AUTO-style badge; hl = the post-tap highlight state.
+function BsdRow(props) {
+  return (
+    <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 8, margin: "0 10px 6px", padding: "9px 11px", borderRadius: 11, background: props.hl ? T.orangeDim : "#fff", border: "1px solid " + (props.hl ? T.orange : "rgba(0,0,0,0.06)"), transition: "background 0.3s ease, border-color 0.3s ease", boxSizing: "border-box" }}>
+      {props.icon && (
+        <span style={{ width: 20, height: 20, borderRadius: 6, background: props.hl ? T.orange : "rgba(0,0,0,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.3s ease" }}>
+          <SVGIcon id={props.icon} size={11} color={props.hl ? "#fff" : JINK3} />
+        </span>
+      )}
+      <span style={{ flex: 1, minWidth: 0, fontSize: 11.5, fontWeight: props.hl ? 750 : 600, color: JINK, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontFamily: UI }}>{props.label}</span>
+      {props.badge && <span style={{ fontSize: 8, fontWeight: 800, color: T.green, background: T.greenDim, borderRadius: 5, padding: "2px 5px", flexShrink: 0, letterSpacing: "0.04em" }}>{props.badge}</span>}
+      {props.value && <span style={{ fontSize: 10.5, fontWeight: 650, color: props.blue ? "#3478F6" : JINK3, whiteSpace: "nowrap", flexShrink: 0, fontFamily: UI }}>{props.value}</span>}
+      {props.toggle != null && <BsdToggle on={props.toggle} />}
+      {props.check != null && (
+        <span style={{ width: 15, height: 15, borderRadius: 4, border: "1.5px solid " + (props.check ? T.green : "rgba(0,0,0,0.2)"), background: props.check ? T.green : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.25s ease, border-color 0.25s ease" }}>
+          {props.check && <SVGIcon id="check" size={9} color="#fff" />}
+        </span>
+      )}
+      {props.chev && <SVGIcon id="chevron" size={10} color={JINK3} />}
+      {props.tap && <BsdTap />}
+    </div>
+  );
+}
+
+function BsdToggle(props) {
+  return (
+    <span style={{ width: 30, height: 18, borderRadius: 999, background: props.on ? T.green : "rgba(0,0,0,0.14)", position: "relative", flexShrink: 0, transition: "background 0.3s ease" }}>
+      <span style={{ position: "absolute", top: 2, left: props.on ? 14 : 2, width: 14, height: 14, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.25)", transition: "left 0.3s ease" }} />
+    </span>
+  );
+}
+
+function BsdBtn(props) {
+  return (
+    <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "6px 14px", borderRadius: 999, background: props.hl ? T.orange : "rgba(0,0,0,0.07)", color: props.hl ? "#fff" : JINK2, fontSize: 10.5, fontWeight: 750, fontFamily: UI, transition: "background 0.3s ease, color 0.3s ease", whiteSpace: "nowrap" }}>
+      {props.label}
+      {props.tap && <BsdTap />}
+    </span>
+  );
+}
+
+// Paste target: dashed while empty, green check once "pasted".
+function BsdField(props) {
+  return (
+    <div style={{ position: "relative", margin: "0 10px 6px", padding: "9px 24px 9px 11px", borderRadius: 11, background: "#fff", border: "1.5px " + (props.pasted ? "solid " + T.green : "dashed rgba(0,0,0,0.16)"), fontSize: 9.5, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", color: props.pasted ? JINK : JINK3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: "border-color 0.3s ease", boxSizing: "border-box" }}>
+      {props.pasted ? props.value : (props.placeholder || "Tap to paste")}
+      {props.tap && <BsdTap />}
+      {props.pasted && (
+        <span style={{ position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", width: 15, height: 15, borderRadius: "50%", background: T.green, display: "flex", alignItems: "center", justifyContent: "center", animation: "rcjCheckPop 0.35s ease both" }}>
+          <SVGIcon id="check" size={8} color="#fff" />
+        </span>
+      )}
+    </div>
+  );
+}
+
+function BsdAppIcon(props) {
+  return (
+    <div style={{ position: "relative", textAlign: "center" }}>
+      <div style={{ width: 32, height: 32, borderRadius: 10, margin: "0 auto", background: props.grad || "rgba(0,0,0,0.08)", display: "flex", alignItems: "center", justifyContent: "center", transform: props.pop ? "scale(1.18)" : "scale(1)", transition: "transform 0.35s cubic-bezier(0.34,1.56,0.64,1)", boxShadow: props.pop ? "0 6px 14px rgba(0,0,0,0.18)" : "none" }}>
+        {props.icon && <SVGIcon id={props.icon} size={15} color="#fff" />}
+      </div>
+      <div style={{ fontSize: 7.5, fontWeight: 600, color: JINK3, marginTop: 3, fontFamily: UI }}>{props.label}</div>
+      {props.tap && <BsdTap />}
+    </div>
+  );
+}
+
+function BsdTabs(props) {
+  return (
+    <div style={{ display: "flex", gap: 4, margin: "8px 10px 0", padding: 4, background: "rgba(0,0,0,0.045)", borderRadius: 11 }}>
+      {props.items.map(function(it, i) {
+        var on = props.active === i;
+        return (
+          <span key={it} style={{ position: "relative", flex: 1, textAlign: "center", padding: "6px 0", borderRadius: 8, fontSize: 9.5, fontWeight: 700, fontFamily: UI, color: on ? T.orange : JINK3, background: on ? "#fff" : "transparent", boxShadow: on ? "0 2px 6px rgba(0,0,0,0.08)" : "none", transition: "background 0.3s ease, color 0.3s ease" }}>
+            {it}
+            {props.tap === i && <BsdTap />}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+// One scene per journey page. durs[i] = ms spent in phase i before looping.
+var BANK_SYNC_DEMOS = {
+  // The payoff, shown on the platform page and the test page: a card tap
+  // landing in Activity by itself.
+  payoff: { durs: [1100, 1100, 1900], render: function(p) {
+    return (
+      <BsdPhone title="Richy · Activity">
+        {p >= 1 && (
+          <div key="chip" style={{ margin: "0 10px 8px", display: "flex", justifyContent: "center", animation: "rclPhrase 0.35s ease both" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: T.orangeDim, color: T.orange, borderRadius: 999, padding: "4px 10px", fontSize: 9.5, fontWeight: 800, fontFamily: UI }}>
+              <SVGIcon id="credit" size={10} color={T.orange} />
+              You tap your card - $4.50
+            </span>
+          </div>
+        )}
+        {p >= 2 && (
+          <div key="new" style={{ animation: "rclPop 0.4s ease both" }}>
+            <BsdRow icon="credit" label="Blue Bottle Coffee" value="-$4.50" badge="AUTO" hl />
+          </div>
+        )}
+        <BsdRow icon="cart" label="Whole Foods" value="-$62.10" />
+        <BsdRow icon="food" label="Dinner with Sam" value="-$29.00" />
+      </BsdPhone>
+    );
+  } },
+
+  ios1: { durs: [1100, 1100, 1400], render: function(p) {
+    return (
+      <BsdPhone title="Home Screen">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, padding: "2px 12px 4px" }}>
+          <BsdAppIcon label="Photos" />
+          <BsdAppIcon label="Wallet" />
+          <BsdAppIcon label="Maps" />
+          <BsdAppIcon label="Music" />
+          <BsdAppIcon label="Shortcuts" grad="linear-gradient(135deg,#5AC8FA,#FF5E8A)" icon="spark" tap={p === 1} pop={p === 2} />
+          <BsdAppIcon label="Notes" />
+          <BsdAppIcon label="Files" />
+          <BsdAppIcon label="Mail" />
+        </div>
+      </BsdPhone>
+    );
+  } },
+
+  ios2: { durs: [1000, 1100, 1100, 1500], render: function(p) {
+    return (
+      <BsdPhone title="Shortcuts" plus plusHl={p >= 3} plusTap={p === 2}>
+        {p >= 3 ? (
+          <div key="sheet" style={{ margin: "0 10px", animation: "rclPhrase 0.35s ease both" }}>
+            <div style={{ borderRadius: 12, background: "#fff", border: "1px solid rgba(0,0,0,0.07)", padding: "12px 12px", fontSize: 11, fontWeight: 750, color: JINK, textAlign: "center", fontFamily: UI }}>New Automation</div>
+          </div>
+        ) : (
+          <div style={{ margin: "0 10px" }}>
+            <div style={{ borderRadius: 12, background: "rgba(0,0,0,0.04)", height: 42 }} />
+          </div>
+        )}
+        <BsdTabs items={["Shortcuts", "Automation", "Gallery"]} active={p >= 1 ? 1 : 0} tap={p === 1 ? 1 : null} />
+      </BsdPhone>
+    );
+  } },
+
+  ios3: { durs: [1100, 1000, 1500], render: function(p) {
+    return (
+      <BsdPhone title="New Automation">
+        <BsdRow icon="clock" label="Time of Day" chev />
+        <BsdRow icon="credit" label="Transaction" chev tap={p === 1} hl={p === 2} />
+        <BsdRow icon="sun" label="Wake Up" chev />
+      </BsdPhone>
+    );
+  } },
+
+  ios4: { durs: [1000, 1000, 1000, 1500], render: function(p) {
+    return (
+      <BsdPhone title="Transaction" right={<BsdBtn label="Next" hl={p === 3} tap={p === 3} />}>
+        <BsdRow icon="credit" label="Visa ····4821" toggle={p >= 1} tap={p === 1} />
+        <BsdRow icon="credit" label="Mastercard ····7703" toggle={p >= 2} tap={p === 2} />
+      </BsdPhone>
+    );
+  } },
+
+  ios5: { durs: [1100, 1100, 1500], render: function(p) {
+    return (
+      <BsdPhone title="Add Action">
+        <div style={{ position: "relative", margin: "0 10px 8px", padding: "8px 11px", borderRadius: 11, background: "rgba(0,0,0,0.05)", fontSize: 10.5, color: p >= 1 ? JINK : JINK3, fontWeight: 600, fontFamily: UI }}>
+          {p >= 1 ? "Get Contents of URL" : "Search actions"}
+          {p === 0 && <BsdTap />}
+        </div>
+        {p >= 1 && (
+          <div key="res" style={{ animation: "rclPhrase 0.3s ease both" }}>
+            <BsdRow icon="refresh" label="Get Contents of URL" tap={p === 2} hl={p === 2} />
+          </div>
+        )}
+      </BsdPhone>
+    );
+  } },
+
+  ios6: { durs: [1100, 1100, 1800], render: function(p) {
+    return (
+      <BsdPhone title="Get Contents of URL">
+        <div style={{ margin: "0 10px 6px", fontSize: 10.5, fontWeight: 600, color: JINK2, fontFamily: UI }}>
+          Get contents of <span style={{ color: "#3478F6", fontWeight: 750 }}>URL</span>
+        </div>
+        <BsdField placeholder="URL" tap={p === 1} pasted={p >= 2} value="richy-mgkl.vercel.app/api/bank-sync" />
+      </BsdPhone>
+    );
+  } },
+
+  ios7: { durs: [1100, 1100, 1600], render: function(p) {
+    return (
+      <BsdPhone title="Get Contents of URL">
+        <BsdRow label="Show More" chev tap={p === 0} />
+        {p >= 1 && (
+          <div key="more" style={{ animation: "rclPhrase 0.3s ease both" }}>
+            <BsdRow label="Method" value={p >= 2 ? "POST" : "GET"} blue={p >= 2} tap={p === 1} hl={p === 2} />
+            <BsdRow label="Request Body" value="JSON" blue={p >= 2} />
+          </div>
+        )}
+      </BsdPhone>
+    );
+  } },
+
+  ios8: { durs: [1100, 800, 800, 800, 1700], render: function(p) {
+    var fields = [["key", "rk_9f2c…"], ["merchant", "Merchant"], ["amount", "Amount"], ["currency", "USD"]];
+    return (
+      <BsdPhone title="Request Body · JSON">
+        {fields.map(function(f, i) {
+          if (p < i + 1) return null;
+          return (
+            <div key={f[0]} style={{ animation: "rclPhrase 0.3s ease both" }}>
+              <BsdRow label={f[0]} value={f[1]} blue={i === 1 || i === 2} />
+            </div>
+          );
+        })}
+        <div style={{ position: "relative", margin: "2px 10px 0", padding: "8px 11px", borderRadius: 11, border: "1.5px dashed rgba(0,0,0,0.16)", fontSize: 10.5, fontWeight: 750, color: T.orange, textAlign: "center", fontFamily: UI }}>
+          Add new field
+          {p < 4 && <BsdTap />}
+        </div>
+      </BsdPhone>
+    );
+  } },
+
+  ios9: { durs: [1200, 1100, 1600], render: function(p) {
+    return (
+      <BsdPhone title="New Automation" right={<BsdBtn label="Done" hl={p === 2} tap={p === 2} />}>
+        <BsdRow label="Notify When Run" toggle={p < 1} tap={p === 0} />
+        <BsdRow label="Run Immediately" toggle={true} />
+      </BsdPhone>
+    );
+  } },
+
+  and1: { durs: [1100, 1200, 1600], render: function(p) {
+    return (
+      <BsdPhone title="Play Store">
+        <div style={{ display: "flex", alignItems: "center", gap: 9, margin: "0 10px 8px" }}>
+          <div style={{ width: 32, height: 32, borderRadius: 9, background: "linear-gradient(135deg,#B23BE0,#5A67E8)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <SVGIcon id="spark" size={14} color="#fff" />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11.5, fontWeight: 750, color: JINK, fontFamily: UI }}>MacroDroid</div>
+            <div style={{ fontSize: 9, color: JINK3, fontFamily: UI }}>Device automation · Free</div>
+          </div>
+          <BsdBtn label={p >= 2 ? "Open" : p === 1 ? "Installing…" : "Install"} hl={p !== 1} tap={p === 0} />
+        </div>
+        {p >= 1 && (
+          <div key="bar" style={{ margin: "0 10px", height: 4, borderRadius: 999, background: "rgba(0,0,0,0.07)", overflow: "hidden" }}>
+            <div style={{ height: "100%", width: p >= 2 ? "100%" : "55%", background: T.green, transition: "width 0.9s ease" }} />
+          </div>
+        )}
+      </BsdPhone>
+    );
+  } },
+
+  and2: { durs: [1300, 1200, 1500], render: function(p) {
+    if (p === 0) {
+      return (
+        <BsdPhone title="MacroDroid">
+          <div style={{ padding: "8px 10px 4px", display: "flex", justifyContent: "center" }}>
+            <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6, background: T.orange, color: "#fff", borderRadius: 999, padding: "9px 16px", fontSize: 11, fontWeight: 800, fontFamily: UI, boxShadow: "0 6px 14px " + T.orangeGlow }}>
+              + Add Macro
+              <BsdTap />
+            </span>
+          </div>
+        </BsdPhone>
+      );
+    }
+    return (
+      <BsdPhone title="New Macro">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 10px 6px" }}>
+          <span style={{ fontSize: 10.5, fontWeight: 800, color: JINK2, fontFamily: UI }}>Triggers</span>
+          <span style={{ position: "relative", width: 20, height: 20, borderRadius: "50%", background: p >= 2 ? T.orange : "rgba(0,0,0,0.07)", color: p >= 2 ? "#fff" : T.orange, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, transition: "background 0.3s ease, color 0.3s ease" }}>
+            +
+            {p === 1 && <BsdTap />}
+          </span>
+        </div>
+        <div style={{ margin: "0 10px", borderRadius: 11, border: "1.5px dashed rgba(0,0,0,0.14)", padding: "12px 0", textAlign: "center", fontSize: 9.5, color: JINK3, fontWeight: 600, fontFamily: UI }}>No triggers yet</div>
+      </BsdPhone>
+    );
+  } },
+
+  and3: { durs: [1100, 1100, 1100, 1500], render: function(p) {
+    return (
+      <BsdPhone title="Add Trigger">
+        <BsdRow label="Notification" chev tap={p === 0} hl={p === 1} />
+        {p >= 1 && (
+          <div key="w" style={{ animation: "rclPhrase 0.3s ease both" }}>
+            <BsdRow icon="credit" label="Google Wallet" check={p >= 2} tap={p === 1} />
+          </div>
+        )}
+        {p >= 2 && (
+          <div key="ok" style={{ margin: "2px 10px 0", display: "flex", justifyContent: "flex-end", animation: "rclPhrase 0.3s ease both" }}>
+            <BsdBtn label="OK" hl={p === 3} tap={p === 3} />
+          </div>
+        )}
+      </BsdPhone>
+    );
+  } },
+
+  and4: { durs: [1100, 1100, 1100, 1400], render: function(p) {
+    return (
+      <BsdPhone title="New Macro">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 10px 6px" }}>
+          <span style={{ fontSize: 10.5, fontWeight: 800, color: JINK2, fontFamily: UI }}>Actions</span>
+          <span style={{ position: "relative", width: 20, height: 20, borderRadius: "50%", background: p >= 1 ? T.orange : "rgba(0,0,0,0.07)", color: p >= 1 ? "#fff" : T.orange, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, transition: "background 0.3s ease, color 0.3s ease" }}>
+            +
+            {p === 0 && <BsdTap />}
+          </span>
+        </div>
+        {p >= 1 && (
+          <div key="c" style={{ animation: "rclPhrase 0.3s ease both" }}>
+            <BsdRow label="Connectivity" chev tap={p === 1} hl={p === 2} />
+          </div>
+        )}
+        {p >= 2 && (
+          <div key="h" style={{ animation: "rclPhrase 0.3s ease both" }}>
+            <BsdRow label="HTTP Request" tap={p === 2} hl={p === 3} />
+          </div>
+        )}
+      </BsdPhone>
+    );
+  } },
+
+  and5: { durs: [1100, 1100, 1800], render: function(p) {
+    return (
+      <BsdPhone title="HTTP Request">
+        <BsdRow label="Method" value={p >= 1 ? "POST" : "GET"} blue={p >= 1} tap={p === 0} hl={p === 1} />
+        <BsdField placeholder="URL" tap={p === 1} pasted={p >= 2} value="richy-mgkl.vercel.app/api/bank-sync" />
+      </BsdPhone>
+    );
+  } },
+
+  and6: { durs: [1100, 1100, 1800], render: function(p) {
+    return (
+      <BsdPhone title="HTTP Request">
+        <BsdTabs items={["Config", "Body"]} active={p >= 1 ? 1 : 0} tap={p === 0 ? 1 : null} />
+        {p >= 1 && (
+          <div key="b" style={{ animation: "rclPhrase 0.3s ease both", marginTop: 8 }}>
+            <BsdRow label="Content Type" value="application/json" blue />
+            <BsdField placeholder="Content" tap={p === 1} pasted={p >= 2} value='{"key":"rk_…","title":"[not_title]","text":"[notification]"}' />
+          </div>
+        )}
+      </BsdPhone>
+    );
+  } },
+
+  and7: { durs: [1200, 1100, 1600], render: function(p) {
+    return (
+      <BsdPhone title="New Macro" right={
+        <span style={{ position: "relative", width: 22, height: 22, borderRadius: "50%", background: p >= 1 ? T.green : "rgba(0,0,0,0.07)", display: "flex", alignItems: "center", justifyContent: "center", transition: "background 0.3s ease" }}>
+          <SVGIcon id="check" size={11} color={p >= 1 ? "#fff" : JINK3} />
+          {p === 0 && <BsdTap />}
+        </span>
+      }>
+        <BsdField pasted={p >= 1} placeholder="Macro name" value="Richy Sync" />
+        <BsdRow label="Enabled" toggle={p >= 2} />
+      </BsdPhone>
+    );
+  } },
+};
+
+// Plays a scene on loop. Honors reduced motion by freezing on the final frame.
+function BankSyncDemo(props) {
+  var scene = BANK_SYNC_DEMOS[props.id];
+  var reduced = jrReduced();
+  var _p = useState(0); var p = _p[0]; var setP = _p[1];
+  useEffect(function() { setP(0); }, [props.id]);
+  useEffect(function() {
+    if (!scene || reduced) return;
+    var t = setTimeout(function() { setP((p + 1) % scene.durs.length); }, scene.durs[p]);
+    return function() { clearTimeout(t); };
+  }, [p, props.id]);
+  if (!scene) return null;
+  var phase = reduced ? scene.durs.length - 1 : p;
+  return (
+    <div style={{ marginBottom: 18, animation: "rclPhrase 0.45s ease 0.3s both" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+        <span style={{ width: 14, height: 14, borderRadius: "50%", background: T.orangeDim, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ width: 0, height: 0, borderTop: "3px solid transparent", borderBottom: "3px solid transparent", borderLeft: "5px solid " + T.orange, marginLeft: 1 }} />
+        </span>
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.09em", fontFamily: UI }}>Watch - it loops</span>
+      </div>
+      {scene.render(phase)}
+    </div>
+  );
+}
 
 // Slide-up help chat for the setup journey: Richard answers questions with the
 // full step list and the user's current page in context. History lives in the
@@ -16576,9 +17000,10 @@ function BankSyncJourney(props) {
                 <div style={headJ}>
                   <WordReveal text="Which phone do you have?" base={0.04} step={0.045} />
                 </div>
-                <div style={{ fontSize: 14, color: JINK3, marginBottom: 26, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>
+                <div style={{ fontSize: 14, color: JINK3, marginBottom: 20, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>
                   One-time setup, about two minutes. Your bank login is never involved - your phone only reports the merchant and amount of each tap.
                 </div>
+                <BankSyncDemo id="payoff" />
                 <Stagger k="bsj-platform" step={0.06}>
                   {[
                     { id: "iphone", label: "iPhone", sub: "Apple Pay, via the built-in Shortcuts app" },
@@ -16614,6 +17039,7 @@ function BankSyncJourney(props) {
                   <WordReveal text={step.h} base={0.04} step={0.045} />
                 </div>
                 <div style={{ fontSize: 15, color: JINK2, marginBottom: 20, lineHeight: 1.6, animation: "rclPhrase 0.45s ease 0.25s both" }}>{step.s}</div>
+                {step.demo && <BankSyncDemo id={step.demo} />}
                 {step.copy && (
                   <div style={{ background: "#fff", borderRadius: 16, padding: "15px 16px", boxShadow: "0 6px 22px rgba(40,28,16,0.08)", marginBottom: 16, boxSizing: "border-box", animation: "rclPhrase 0.45s ease 0.35s both" }}>
                     <div style={{ fontSize: 10.5, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>{copyLabel[step.copy]}</div>
@@ -16640,9 +17066,10 @@ function BankSyncJourney(props) {
                 <div style={headJ}>
                   <WordReveal text="Let's prove it works." base={0.04} step={0.045} />
                 </div>
-                <div style={{ fontSize: 15, color: JINK2, marginBottom: 24, lineHeight: 1.6, animation: "rclPhrase 0.45s ease 0.25s both" }}>
+                <div style={{ fontSize: 15, color: JINK2, marginBottom: 20, lineHeight: 1.6, animation: "rclPhrase 0.45s ease 0.25s both" }}>
                   This sends a pretend $1.00 purchase through the exact pipe your phone will use. It should appear in Activity within a few seconds - delete it there once you've seen it.
                 </div>
+                <BankSyncDemo id="payoff" />
                 <div style={{ animation: "rclPhrase 0.45s ease 0.35s both" }}>
                   <button onClick={sendTest} disabled={testState === "sending"}
                     style={{ width: "100%", background: "#fff", color: T.orange, border: "1.5px solid " + T.orangeDim, borderRadius: 16, padding: "15px 0", fontSize: 15.5, fontFamily: UI, fontWeight: 700, cursor: "pointer", opacity: testState === "sending" ? 0.6 : 1, boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
