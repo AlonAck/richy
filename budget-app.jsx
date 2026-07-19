@@ -4314,6 +4314,9 @@ function BusinessPulse(props) {
 
 function Overview(props) {
   var tx       = props.tx;
+  // Navigate to another main tab/menu. Most summary cards are tappable and jump
+  // to the screen they summarize, so the overview feels like a live hub.
+  function nav(t) { if (props.onNavigate) props.onNavigate(t); }
   var goals    = props.goals;
   var budgets  = props.budgets || [];
   var cats     = props.categories || [];
@@ -4967,17 +4970,17 @@ function Overview(props) {
 
       {(income > 0 || expense > 0) && (
         <div style={{ display: "flex", gap: 10, marginBottom: 20, animation: "rcFadeUp 0.6s ease 0.06s both" }}>
-          <div style={{ flex: 1, background: !hasIncome ? T.card : (savRate >= 20 ? T.greenDim : savRate > 0 ? T.orangeDim : "rgba(224,48,48,0.07)"), borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+          <div onClick={function() { nav("advisor"); }} style={{ flex: 1, background: !hasIncome ? T.card : (savRate >= 20 ? T.greenDim : savRate > 0 ? T.orangeDim : "rgba(224,48,48,0.07)"), borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer" }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{tr("savingsRate")}</div>
             <div style={{ fontSize: 26, fontWeight: 700, color: !hasIncome ? T.ink3 : (savRate >= 20 ? T.green : savRate > 0 ? T.orange : T.red), letterSpacing: "-0.02em" }}>{!hasIncome ? "-" : savRate + "%"}</div>
             <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>{!hasIncome ? tr("noIncomeYet") : (savRate >= 20 ? tr("excellent") : savRate >= 10 ? tr("onTrack") : savRate > 0 ? tr("buildItUp") : tr("overspending"))}</div>
           </div>
-          <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+          <div onClick={function() { nav("activity"); }} style={{ flex: 1, background: T.card, borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer" }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{tr("transactions")}</div>
             <div style={{ fontSize: 26, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{monthTxCount}</div>
             <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>{tr("thisPeriod")}</div>
           </div>
-          <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+          <div onClick={function() { nav("goals"); }} style={{ flex: 1, background: T.card, borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer" }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{tr("goals")}</div>
             <div style={{ fontSize: 26, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{goals.length}</div>
             <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>{goals.length === 1 ? tr("activeGoal") : tr("activeGoals")}</div>
@@ -5098,13 +5101,13 @@ function Overview(props) {
       </div>
 
       {budgetRows.length > 0 && (
-        <div style={{ animation: "rcFadeUp 0.6s ease 0.12s both" }}>
+        <div onClick={function() { nav("budgets"); }} style={{ animation: "rcFadeUp 0.6s ease 0.12s both", cursor: "pointer" }}>
           <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
               <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("budgets")}</span>
             </div>
-            <span style={{ fontSize: 12, color: T.ink3 }}>{budgetRows.filter(function(b){return b.over;}).length > 0 ? budgetRows.filter(function(b){return b.over;}).length + " " + tr("overLimit") : tr("onTrack")}</span>
+            <span style={{ fontSize: 12, color: T.ink3, display: "flex", alignItems: "center", gap: 4 }}>{budgetRows.filter(function(b){return b.over;}).length > 0 ? budgetRows.filter(function(b){return b.over;}).length + " " + tr("overLimit") : tr("onTrack")}<SVGIcon id="chevron" size={13} color={T.ink3} /></span>
           </div>
           <Card style={{ marginBottom: 20, overflow: "hidden" }}>
             {budgetRows.map(function(b, i) {
@@ -5128,13 +5131,13 @@ function Overview(props) {
       )}
 
       {goals.length > 0 && (
-        <div style={{ animation: "rcFadeUp 0.6s ease 0.15s both" }}>
+        <div onClick={function() { nav("goals"); }} style={{ animation: "rcFadeUp 0.6s ease 0.15s both", cursor: "pointer" }}>
           <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
               <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("goals")}</span>
             </div>
-            <span style={{ fontSize: 12, color: T.ink3 }}>{goals.filter(function(g){return goalSavedAmount(g, tx, savAccts, bizAccts, invAccts)>=g.target;}).length + "/" + goals.length + " " + tr("complete")}</span>
+            <span style={{ fontSize: 12, color: T.ink3, display: "flex", alignItems: "center", gap: 4 }}>{goals.filter(function(g){return goalSavedAmount(g, tx, savAccts, bizAccts, invAccts)>=g.target;}).length + "/" + goals.length + " " + tr("complete")}<SVGIcon id="chevron" size={13} color={T.ink3} /></span>
           </div>
           <Card style={{ marginBottom: 20, overflow: "hidden" }}>
             {goals.map(function(g, i) {
@@ -5163,10 +5166,12 @@ function Overview(props) {
       )}
 
       {recent.length > 0 && (
-        <div style={{ animation: "rcFadeUp 0.6s ease 0.18s both" }}>
+        <div onClick={function() { nav("activity"); }} style={{ animation: "rcFadeUp 0.6s ease 0.18s both", cursor: "pointer" }}>
           <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
             <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("recent")}</span>
+            <div style={{ flex: 1 }} />
+            <SVGIcon id="chevron" size={14} color={T.ink3} />
           </div>
           <Card style={{ overflow: "hidden", marginBottom: 8 }}>
             {recent.map(function(t, i) {
@@ -18619,9 +18624,9 @@ export default function App() {
     var st = document.createElement("style"); st.id = id;
     st.textContent = [
       "button,a,[role=button]{-webkit-tap-highlight-color:transparent;outline:none;}",
-      "@keyframes navFade{from{opacity:0}to{opacity:1}}",
-      "@keyframes navSlideRight{from{opacity:0;transform:translateX(22px)}to{opacity:1;transform:none}}",
-      "@keyframes navSlideLeft{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:none}}",
+      "@keyframes navFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}",
+      "@keyframes navSlideRight{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}",
+      "@keyframes navSlideLeft{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}",
       "@keyframes sheetSlideUp{from{opacity:0;transform:translateX(-50%) translateY(56px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}",
       "@keyframes sheetSlideDown{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(56px)}}",
       "@keyframes overlayFadeIn{from{opacity:0}to{opacity:1}}",
@@ -18916,8 +18921,8 @@ export default function App() {
 
       <CustomBanners banners={customBanners} onSave={onSaveBanners} />
 
-      <div key={animKey} ref={swipeContentRef} onTouchStart={onContentTouchStart} onTouchEnd={onContentTouchEnd} style={{ padding: "8px 16px 16px", animation: animDir === "right" ? "navSlideRight 0.28s cubic-bezier(0.22,1,0.36,1) both" : animDir === "left" ? "navSlideLeft 0.28s cubic-bezier(0.22,1,0.36,1) both" : "navFade 0.20s ease both" }}>
-        {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} investing={investing} trips={trips} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
+      <div key={animKey} ref={swipeContentRef} onTouchStart={onContentTouchStart} onTouchEnd={onContentTouchEnd} style={{ padding: "8px 16px 16px", animation: animDir === "right" ? "navSlideRight 0.42s cubic-bezier(0.22,1,0.36,1) both" : animDir === "left" ? "navSlideLeft 0.42s cubic-bezier(0.22,1,0.36,1) both" : "navFade 0.38s cubic-bezier(0.22,1,0.36,1) both" }}>
+        {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} investing={investing} trips={trips} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
         {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} />}
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
