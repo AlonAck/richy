@@ -883,6 +883,28 @@ function investingTotal(list) {
   if (!list || !list.length) return 0;
   return round2(list.reduce(function(s, a) { return s + investingWorth(a); }, 0));
 }
+// Settled main spending balance (income minus expense), mirroring the Overview's
+// own balance math - excludes pending / future / catch-up rows.
+function mainSpendBalance(tx) {
+  var today = new Date().toISOString().slice(0, 10);
+  return (tx || []).filter(function(t) {
+    return !t.pending && !t.catchUp && t.date <= today;
+  }).reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0);
+}
+// A goal's effective "saved" amount. Manually-tracked goals use their stored
+// g.saved; a goal linked to an account, the main balance, or net worth derives
+// its progress live from that source - so a synced goal never sits at a stale 0%.
+// Mirrors linkedBalanceOf() inside the Goals screen, but as a shared pure helper
+// the Overview and Advisor can call too.
+function goalSavedAmount(g, tx, savings, businesses, investing) {
+  if (!g) return 0;
+  if (g.linkType === "balance") return mainSpendBalance(tx);
+  if (g.linkType === "networth") return mainSpendBalance(tx) + savingsTotal(savings || []) + businessTotal(businesses || []) + investingTotal(investing || []);
+  if (g.linkType === "savings") { var a = (savings || []).filter(function(x) { return String(x.id) === String(g.linkId); })[0]; return a ? savingsBalance(a) : (g.saved || 0); }
+  if (g.linkType === "business") { var b = (businesses || []).filter(function(x) { return String(x.id) === String(g.linkId); })[0]; return b ? businessCash(b) : (g.saved || 0); }
+  if (g.linkType === "investing") { var v = (investing || []).filter(function(x) { return String(x.id) === String(g.linkId); })[0]; return v ? investingWorth(v) : (g.saved || 0); }
+  return g.saved || 0;
+}
 // Portfolio value over time for the account trend chart: replay cash and shares
 // held on each day of the grid and price them with per-symbol close series
 // (seriesMap[SYM] = stockSeries result). The densest series provides the grid.
@@ -4533,14 +4555,46 @@ function Overview(props) {
       dayDelta[t.date] = (dayDelta[t.date] || 0) + (t.type === "income" ? t.amount : -t.amount);
     }
   });
-  var series = [];
-  var run = startBal;
-  for (var di = 0; di <= winDays; di++) {
-    run += (dayDelta[isoAgo(winDays - di)] || 0);
-    series.push(run);
+  // Net-worth series: the main balance plus every pot (savings + business +
+  // investing cash) reconstructed per day from their dated entries, so the line
+  // follows real net worth over time. Transfers move the main leg and the pot leg
+  // in opposite directions on the same day, so net worth stays flat across them;
+  // external deposits (no main leg) lift it, exactly as they should. Investing
+  // holdings are held at a flat baseline so the line ends exactly on today's net
+  // worth (intra-window market swings aren't tracked here).
+  var potDeltaByDate = {};
+  function addPotEntries(list, field) {
+    (list || []).forEach(function(a) {
+      (a[field] || []).forEach(function(e) {
+        if (e && e.date) potDeltaByDate[e.date] = (potDeltaByDate[e.date] || 0) + (e.kind === "withdraw" ? -(e.amount || 0) : (e.amount || 0));
+      });
+    });
   }
+  addPotEntries(savAccts, "entries");
+  addPotEntries(bizAccts, "entries");
+  addPotEntries(invAccts, "cashEntries");
+  var potCashAllTime = 0, potCashBefore = 0;
+  Object.keys(potDeltaByDate).forEach(function(d) {
+    potCashAllTime += potDeltaByDate[d];
+    if (d < winStart) potCashBefore += potDeltaByDate[d];
+  });
+  var potExtraToday = savTotal + bizTotal + invTotal;      // net worth minus main balance
+  var holdingsBaseline = potExtraToday - potCashAllTime;    // investing holdings value (flat)
+  var netStart = startBal + potCashBefore + holdingsBaseline;
+  var balSeries = [], netSeries = [];
+  var run = startBal, netRun = netStart;
+  for (var di = 0; di <= winDays; di++) {
+    var dISO = isoAgo(winDays - di);
+    var md = dayDelta[dISO] || 0;
+    var pd = potDeltaByDate[dISO] || 0;
+    run += md;
+    netRun += md + pd;
+    balSeries.push(run);
+    netSeries.push(netRun);
+  }
+  var series = showNet ? netSeries : balSeries;
   var nPts = series.length;
-  var trendNet = series[series.length - 1] - startBal;
+  var trendNet = series[series.length - 1] - (showNet ? netStart : startBal);
   var trendUp = trendNet >= 0;
 
   var MONTHS3 = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -4794,7 +4848,7 @@ function Overview(props) {
             {/* Panel 1 - Trend */}
             <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>BALANCE TREND</span>
+                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>{(showNet ? tr("netWorth") : tr("balance")).toUpperCase() + " TREND"}</span>
                 {rangeRow()}
               </div>
               <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>{trendChart()}</div>
@@ -4805,7 +4859,7 @@ function Overview(props) {
                 </div>
                 <div style={{ textAlign: "right" }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: HINK, letterSpacing: "-0.02em" }}>{dollars(series[series.length - 1])}</div>
-                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>balance now</div>
+                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>{(showNet ? tr("netWorth") : tr("balance")).toLowerCase() + " now"}</div>
                 </div>
               </div>
             </div>
@@ -5080,12 +5134,13 @@ function Overview(props) {
               <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
               <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("goals")}</span>
             </div>
-            <span style={{ fontSize: 12, color: T.ink3 }}>{goals.filter(function(g){return g.saved>=g.target;}).length + "/" + goals.length + " " + tr("complete")}</span>
+            <span style={{ fontSize: 12, color: T.ink3 }}>{goals.filter(function(g){return goalSavedAmount(g, tx, savAccts, bizAccts, invAccts)>=g.target;}).length + "/" + goals.length + " " + tr("complete")}</span>
           </div>
           <Card style={{ marginBottom: 20, overflow: "hidden" }}>
             {goals.map(function(g, i) {
-              var pct = Math.min(100, Math.round((g.saved / g.target) * 100));
-              var done = g.saved >= g.target;
+              var saved = goalSavedAmount(g, tx, savAccts, bizAccts, invAccts);
+              var pct = Math.max(0, Math.min(100, Math.round((saved / g.target) * 100)));
+              var done = saved >= g.target;
               return (
                 <div key={g.id} style={{ padding: "14px 18px", borderBottom: i < goals.length-1 ? "0.5px solid " + T.sep : "none" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
@@ -5095,10 +5150,10 @@ function Overview(props) {
                       <span style={{ fontSize: 14, fontWeight: 700, color: done ? T.green : T.orange }}>{pct}%</span>
                     </div>
                   </div>
-                  <ProgressBar value={g.saved} max={g.target} color={done ? T.green : T.orange} h={5} />
+                  <ProgressBar value={saved} max={g.target} color={done ? T.green : T.orange} h={5} />
                   <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
-                    <span style={{ fontSize: 11, color: T.ink3 }}>{dollars(g.saved) + " " + tr("savedLabel")}</span>
-                    <span style={{ fontSize: 11, color: T.ink3, fontWeight: 500 }}>{dollars(g.target - g.saved) + " " + tr("toGo")}</span>
+                    <span style={{ fontSize: 11, color: T.ink3 }}>{dollars(saved) + " " + tr("savedLabel")}</span>
+                    <span style={{ fontSize: 11, color: T.ink3, fontWeight: 500 }}>{dollars(Math.max(0, g.target - saved)) + " " + tr("toGo")}</span>
                   </div>
                 </div>
               );
@@ -8913,8 +8968,9 @@ function Advisor(props) {
 
   // Goal progress
   var goalProgress = (props.goals || []).map(function(g) {
-    var pct = g.target > 0 ? Math.round((g.saved / g.target) * 100) : 0;
-    return g.name + ": $" + Math.round(g.saved) + "/$" + g.target + " (" + pct + "%)";
+    var saved = goalSavedAmount(g, props.tx, props.savings, props.businesses, props.investing);
+    var pct = g.target > 0 ? Math.round((saved / g.target) * 100) : 0;
+    return g.name + ": $" + Math.round(saved) + "/$" + g.target + " (" + pct + "%)";
   });
 
   var ctx = "=== USER FINANCIAL DATA ===\n"
@@ -9732,8 +9788,9 @@ function Advisor(props) {
         impact: dollars(cut * 12), impactLabel: "a year from one category" };
     }
     var efGoal = (props.goals || []).filter(function(g) { return /emergenc/i.test(g.name || ""); })[0] || (props.goals || [])[0];
-    if (efGoal && (efGoal.target || 0) > (efGoal.saved || 0) && surplus > 0) {
-      var gap = Math.round(efGoal.target - efGoal.saved);
+    var efSaved = goalSavedAmount(efGoal, props.tx, props.savings, props.businesses, props.investing);
+    if (efGoal && (efGoal.target || 0) > efSaved && surplus > 0) {
+      var gap = Math.round(efGoal.target - efSaved);
       var months = Math.max(1, Math.ceil(gap / surplus));
       return { icon: "shield", label: "Finish what you started",
         title: "Fund your " + efGoal.name,
@@ -9812,8 +9869,9 @@ function Advisor(props) {
     var savTotal = savingsTotal(props.savings || []);
     var goals = props.goals || [];
     var efGoal = goals.filter(function(g) { return /emergenc/i.test(g.name || ""); })[0] || goals[0];
-    var goalPct = efGoal && efGoal.target > 0 ? Math.min(100, Math.round((efGoal.saved / efGoal.target) * 100)) : 0;
-    var goalGap = efGoal ? Math.max(0, Math.round((efGoal.target || 0) - (efGoal.saved || 0))) : 0;
+    var efSaved = goalSavedAmount(efGoal, props.tx, props.savings, props.businesses, props.investing);
+    var goalPct = efGoal && efGoal.target > 0 ? Math.min(100, Math.round((efSaved / efGoal.target) * 100)) : 0;
+    var goalGap = efGoal ? Math.max(0, Math.round((efGoal.target || 0) - efSaved)) : 0;
     var goalMonths = (goalGap > 0 && surplus > 0) ? Math.ceil(goalGap / surplus) : 0;
 
     var overBudget = (props.budgets || []).map(function(b) {
@@ -10010,7 +10068,7 @@ function Advisor(props) {
             <div style={{ borderTop: "0.5px solid " + HSEP, paddingTop: 14 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 7 }}>
                 <span style={{ fontSize: 12.5, fontWeight: 600, color: HINK, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "62%" }}>{efGoal.name}</span>
-                <span style={{ fontSize: 12, color: HMUT }}>{dollars(efGoal.saved || 0) + " / " + dollars(efGoal.target || 0)}</span>
+                <span style={{ fontSize: 12, color: HMUT }}>{dollars(efSaved || 0) + " / " + dollars(efGoal.target || 0)}</span>
               </div>
               <div style={{ height: 6, borderRadius: 4, background: HTRACK, overflow: "hidden" }}>
                 <div style={{ height: "100%", width: goalPct + "%", background: T.merchBar, borderRadius: 4 }} />
@@ -10026,10 +10084,11 @@ function Advisor(props) {
 
     // Panel - Goal Pace (will your current pace hit the goal's deadline?)
     if (goals.length > 0) {
-      var deadlineGoals = goals.filter(function(g) { return g.deadline && (g.target || 0) > (g.saved || 0); })
+      var savedOfGoal = function(g) { return goalSavedAmount(g, props.tx, props.savings, props.businesses, props.investing); };
+      var deadlineGoals = goals.filter(function(g) { return g.deadline && (g.target || 0) > savedOfGoal(g); })
         .sort(function(a, b) { return a.deadline < b.deadline ? -1 : (a.deadline > b.deadline ? 1 : 0); });
       var paceGoal = deadlineGoals[0];
-      var paceGap = paceGoal ? Math.max(0, Math.round((paceGoal.target || 0) - (paceGoal.saved || 0))) : 0;
+      var paceGap = paceGoal ? Math.max(0, Math.round((paceGoal.target || 0) - savedOfGoal(paceGoal))) : 0;
       var todayISOp = new Date().toISOString().slice(0, 10);
       var paceOverdue = !!(paceGoal && paceGoal.deadline < todayISOp);
       var paceMonthsLeft = paceGoal ? monthsUntilDate(paceGoal.deadline) : 0;
@@ -18806,7 +18865,7 @@ export default function App() {
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} richardInstructions={richardCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} notes={notes} savings={savings} businesses={businesses} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={monthAnalysis ? monthAnalysis.data : null} analysisStale={!!(monthAnalysis && monthAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} />}
+        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={monthAnalysis ? monthAnalysis.data : null} analysisStale={!!(monthAnalysis && monthAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} />}
         {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} richardInstructions={richardInstructions} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "profile"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} bankSync={bankSync} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewPrivacy={function() { setTab("privacy"); }} trips={trips} onViewTripHistory={function() { setTab("tripHistory"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
