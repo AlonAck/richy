@@ -6015,8 +6015,44 @@ function Activity(props) {
   var filterOpts = cats.filter(function(c) { return usedCatIds[c.id]; });
 
   var sorted = unfiltered.filter(function(t) { return !filterCat || t.catId === filterCat; }).sort(function(a, b) { return b.date.localeCompare(a.date); });
+
+  // Money moved into or out of a savings pot, business account, or investing
+  // account surfaces here as read-only rows, so the feed reflects every move -
+  // even external add/withdraw, which never touches the main ledger. Editing
+  // still lives in each account screen (tapping a row jumps there) to keep a pot
+  // in sync with its own entries. Hidden while a category filter is active,
+  // since account moves have no spending category.
+  var acctMoves = [];
+  function collectMoves(list, entryField, typeLabel, defIcon, opener) {
+    (list || []).forEach(function(a) {
+      (a[entryField] || []).forEach(function(e) {
+        if (!e || !e.date) return;
+        var withdraw = e.kind === "withdraw";
+        acctMoves.push({
+          id: "acctmove:" + typeLabel + ":" + a.id + ":" + (e.id != null ? e.id : (e.date + ":" + e.amount)),
+          date: e.date,
+          accountMove: true,
+          moveKind: withdraw ? "withdraw" : "deposit",
+          amount: e.amount || 0,
+          label: e.label || ((withdraw ? "Withdrawal - " : "Added to ") + a.name),
+          accountName: a.name,
+          accountColor: a.color || T.orange,
+          accountIcon: a.icon || defIcon,
+          accountType: typeLabel,
+          openAccount: function() { if (opener) opener(a.id); }
+        });
+      });
+    });
+  }
+  if (!filterCat) {
+    collectMoves(props.savings, "entries", "Savings", "shield", props.onOpenSavings ? function() { props.onOpenSavings(); } : null);
+    collectMoves(props.businesses, "entries", "Business", "briefcase", props.onOpenBusiness);
+    collectMoves(props.investing, "cashEntries", "Investing", "chart", props.onOpenInvesting);
+  }
+
+  var combined = sorted.concat(acctMoves).sort(function(a, b) { return b.date.localeCompare(a.date); });
   var groups = {};
-  sorted.forEach(function(t) {
+  combined.forEach(function(t) {
     if (!groups[t.date]) groups[t.date] = [];
     groups[t.date].push(t);
   });
@@ -6270,7 +6306,7 @@ function Activity(props) {
 
       {dates.map(function(date) {
         var dayItems = groups[date];
-        var dayNet = dayItems.reduce(function(s,t){ return t.type === "income" ? s + t.amount : s - t.amount; }, 0);
+        var dayNet = dayItems.reduce(function(s,t){ if (t.accountMove) return s; return t.type === "income" ? s + t.amount : s - t.amount; }, 0);
         return (
           <div key={date} style={{ marginBottom: 20 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 4px 8px" }}>
@@ -6279,6 +6315,30 @@ function Activity(props) {
             </div>
             <Card style={{ overflow: "hidden" }}>
               {dayItems.map(function(t, i) {
+                var notLast = i < dayItems.length - 1;
+                if (t.accountMove) {
+                  var dep = t.moveKind === "deposit";
+                  return (
+                    <div key={t.id} onClick={t.openAccount}
+                      style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 16px", borderBottom: notLast ? "0.5px solid " + T.sep : "none", cursor: "pointer", userSelect: "none", WebkitUserSelect: "none" }}>
+                      <CatBadge icon={t.accountIcon} color={t.accountColor} size={40} soft={true} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 15, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
+                        <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                            <span style={{ width: 6, height: 6, borderRadius: "50%", background: t.accountColor, display: "inline-block" }} />
+                            {t.accountName}
+                          </span>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: t.accountColor, background: t.accountColor + "1e", borderRadius: 5, padding: "1px 6px", letterSpacing: "0.04em", textTransform: "uppercase" }}>{dep ? "Moved in" : "Moved out"}</span>
+                        </div>
+                      </div>
+                      <span style={{ fontSize: 15.5, fontWeight: 700, color: dep ? T.ink : T.ink2, letterSpacing: "-0.02em", display: "flex", alignItems: "center", gap: 5 }}>
+                        {(dep ? "+" : "-") + dollars(t.amount)}
+                        <SVGIcon id="chevron" size={15} color={T.ink3} />
+                      </span>
+                    </div>
+                  );
+                }
                 var c = resolveCat(cats, t);
                 return (
                   <div key={t.id}
@@ -18858,7 +18918,7 @@ export default function App() {
 
       <div key={animKey} ref={swipeContentRef} onTouchStart={onContentTouchStart} onTouchEnd={onContentTouchEnd} style={{ padding: "8px 16px 16px", animation: animDir === "right" ? "navSlideRight 0.28s cubic-bezier(0.22,1,0.36,1) both" : animDir === "left" ? "navSlideLeft 0.28s cubic-bezier(0.22,1,0.36,1) both" : "navFade 0.20s ease both" }}>
         {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} investing={investing} trips={trips} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
-        {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} onSavingsMove={onSavingsMove} />}
+        {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} />}
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "goals" && <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
