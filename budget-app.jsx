@@ -13818,8 +13818,65 @@ function ensureScoutCss() {
 // opacity for the always-cream onboarding surfaces).
 function ScoutBeamsBg(props) {
   var isDark = T.bg === DARK_BG;
+  // A full-phone backdrop that stays put as the page scrolls. It lives as a
+  // z-index:-1 child of the page's (transparent) container, so it layers correctly
+  // behind the content and above the app background - no opaque ancestor to fight.
+  //
+  // Two things make this trickier than a plain background:
+  //  1. The page container is inset by the tab wrapper's padding and sits below the
+  //     header, so an inset:0 layer would be narrower than the screen and start
+  //     mid-way down. We instead size the layer to the whole viewport (100vw x
+  //     100vh) so it covers the phone edge to edge.
+  //  2. We can't use position:fixed to pin it: every screen renders inside App's
+  //     nav-slide wrapper, whose filled transform (animation-fill-mode:both) becomes
+  //     the containing block for fixed descendants - trapping them to that wrapper
+  //     instead of the viewport. So we translate the layer every frame to sit at the
+  //     viewport's top-left, which keeps it full-bleed and scroll-locked.
+  var wrapRef = useRef(null);
+  useEffect(function() {
+    var wrap = wrapRef.current;
+    if (!wrap) return;
+    var host = wrap.parentNode; // the (transparent) page container we're pinned within
+    // The app renders in a centered, max-width column; cover that column (its full
+    // width, edge to edge) rather than the raw viewport, so we don't spill into the
+    // grey margins on wide screens. Falls back to the viewport if no column is found.
+    var col = host;
+    while (col && col !== document.body && col.nodeType === 1) {
+      var mw = getComputedStyle(col).maxWidth;
+      if (mw !== "none" && parseFloat(mw) <= 520) break;
+      col = col.parentNode;
+    }
+    // Nearest actually-scrolling ancestor (some screens scroll an inner div rather
+    // than the window), falling back to the window.
+    var scroller = host;
+    while (scroller && scroller !== document.body && scroller.nodeType === 1) {
+      var oy = getComputedStyle(scroller).overflowY;
+      if ((oy === "auto" || oy === "scroll") && scroller.scrollHeight > scroller.clientHeight + 1) break;
+      scroller = scroller.parentNode;
+    }
+    var target = (scroller && scroller.nodeType === 1 && scroller !== document.body) ? scroller : window;
+    var raf = 0;
+    function sync() {
+      raf = 0;
+      var h = host.getBoundingClientRect();
+      // Horizontal: match the app column; vertical: pin to the viewport top. So the
+      // layer stays full-bleed across the column and never scrolls away.
+      var box = (col && col.nodeType === 1 && col !== document.body) ? col.getBoundingClientRect() : { left: 0, width: window.innerWidth };
+      wrap.style.width = box.width + "px";
+      wrap.style.transform = "translate(" + (box.left - h.left) + "px," + (-h.top) + "px)";
+    }
+    function onScroll() { if (!raf) raf = requestAnimationFrame(sync); }
+    sync();
+    target.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    return function() {
+      target.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
   return (
-    <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: -1, opacity: props.opacity != null ? props.opacity : (isDark ? 0.62 : 0.5) }}>
+    <div ref={wrapRef} aria-hidden="true" style={{ position: "absolute", top: 0, left: 0, width: "100vw", height: "100vh", overflow: "hidden", pointerEvents: "none", zIndex: -1, willChange: "transform", opacity: props.opacity != null ? props.opacity : (isDark ? 0.62 : 0.5) }}>
       <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base={T.bg} speed={0.16} intensity={0.85} yScale={0.46} xScale={1.05}
         style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
     </div>
@@ -18160,6 +18217,72 @@ var TABS = [
 
 var HAS_FAB = ["activity", "goals", "budgets", "categories", "notes"];
 
+// Bottom tab bar with an Apple-style "liquid glass" active lens: instead of the
+// selected pill popping in and out per button, one glass lens glides and settles
+// under whichever tab is active (with a soft spring overshoot), and the tapped
+// icon springs down and back. Purely presentational - App owns the `current` tab.
+function GlassTabBar(props) {
+  var tabs = props.tabs, current = props.current, onSelect = props.onSelect;
+  var rowRef = useRef(null);
+  var btnRefs = useRef([]);
+  var _lens = useState(null); var lens = _lens[0]; var setLens = _lens[1];
+  var _press = useState(-1); var press = _press[0]; var setPress = _press[1];
+  var activeIndex = 0;
+  for (var ai = 0; ai < tabs.length; ai++) { if (tabs[ai].id === current) { activeIndex = ai; break; } }
+  // Measure the active icon cell and park the gliding lens over it. Re-runs on tab
+  // change and on resize/theme so the lens keeps tracking the real layout.
+  useEffect(function() {
+    function place() {
+      var row = rowRef.current, btn = btnRefs.current[activeIndex];
+      if (!row || !btn) return;
+      var rr = row.getBoundingClientRect();
+      var cell = btn.firstChild || btn; // the icon wrapper the lens hugs
+      var cr = cell.getBoundingClientRect();
+      setLens({ x: cr.left - rr.left, y: cr.top - rr.top, w: cr.width, h: cr.height });
+    }
+    place();
+    window.addEventListener("resize", place, { passive: true });
+    return function() { window.removeEventListener("resize", place); };
+  }, [activeIndex, tabs.length]);
+  var lensStyle = lens ? {
+    position: "absolute", left: 0, top: lens.y, height: lens.h, width: lens.w,
+    transform: "translateX(" + lens.x + "px)",
+    borderRadius: 22, background: T.navPillGlass,
+    backdropFilter: "blur(8px) saturate(200%) brightness(1.18)", WebkitBackdropFilter: "blur(8px) saturate(200%) brightness(1.18)",
+    boxShadow: "inset 0 1px 0.5px " + T.navPillRim + ", inset 0 -1px 1px " + T.navPillShade + ", 0 2px 7px rgba(0,0,0,0.12)",
+    // Spring-glide: a touch of overshoot so it settles like liquid, not a slide.
+    transition: "transform 0.52s cubic-bezier(0.34,1.32,0.5,1), width 0.52s cubic-bezier(0.34,1.32,0.5,1)",
+    pointerEvents: "none", zIndex: 0
+  } : { display: "none" };
+  return (
+    <div ref={rowRef} style={{ position: "relative", display: "flex", justifyContent: "space-around", padding: "10px 4px 12px" }}>
+      <div aria-hidden="true" style={lensStyle} />
+      {tabs.map(function(t, idx) {
+        var active = t.id === current;
+        var pressed = press === idx;
+        return (
+          <button key={t.id}
+            ref={function(el) { btnRefs.current[idx] = el; }}
+            onClick={function() { onSelect(t.id); }}
+            onPointerDown={function() { setPress(idx); }}
+            onPointerUp={function() { setPress(-1); }}
+            onPointerLeave={function() { setPress(-1); }}
+            onPointerCancel={function() { setPress(-1); }}
+            style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "4px 4px", flex: 1, minWidth: 0, WebkitTapHighlightColor: "transparent" }}>
+            {/* Constant padding so icons never shift - only the lens moves under them. */}
+            <div style={{ borderRadius: 22, padding: "6px 12px", display: "flex", alignItems: "center", justifyContent: "center", transform: pressed ? "scale(0.8)" : "scale(1)", transition: "transform 0.34s cubic-bezier(0.34,1.56,0.64,1)" }}>
+              <SVGIcon id={t.id} size={21} color={active ? T.orange : T.ink3} />
+            </div>
+            <span style={{ fontSize: 9.5, fontWeight: active ? 700 : 400, color: active ? T.orange : T.ink3, letterSpacing: "0.005em", whiteSpace: "nowrap", transition: "color 0.4s ease" }}>
+              {tr(t.id)}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function App() {
   var _user = useState(null);
   var user = _user[0]; var setUser = _user[1];
@@ -18822,13 +18945,122 @@ export default function App() {
     save({ tx: updatedTx });
   }
 
-  // Swipe left/right between the 5 main bottom-nav tabs. Ignored on sub-pages
-  // and inside the hero/analysis carousels (marked "rc-hero-scroll"), which
-  // already own horizontal swipe for their own paging.
-  // These refs must stay above the early-return loading screens below - hooks
+  // Swipe left/right between the 5 main bottom-nav tabs - now an interactive,
+  // finger-following drag (like the iOS home screen): the current page tracks your
+  // thumb, the neighbouring tab peeks in from the edge, and it snaps on release.
+  // Ignored on sub-pages and inside the hero/analysis carousels (marked
+  // "rc-hero-scroll"), which already own horizontal swipe for their own paging.
+  // These hooks must stay above the early-return loading screens below - hooks
   // can't be conditional, or React throws once the user passes those screens.
-  var swipeRef = useRef(null);
-  var swipeContentRef = useRef(null);
+  var swipeContentRef = useRef(null); // the stable content host we attach touch to
+  var trackRef = useRef(null);        // the sliding track (transform driven imperatively)
+  var dragRef = useRef({});           // per-gesture bookkeeping (no re-render)
+  var liveRef = useRef({});           // fresh currentTab/sheet/order for the native handlers
+  var skipEntryAnimRef = useRef(false); // suppress the tap slide-in for the panel a drag commits
+  var _drag = useState(null); var drag = _drag[0]; var setDrag = _drag[1];
+  // Attach native (non-passive) touch listeners once the main UI exists, so we can
+  // preventDefault to lock a horizontal drag against the page's vertical scroll -
+  // React's synthetic touch listeners are passive and can't. Re-attaches when the
+  // app crosses the auth/onboarding gates below (that's when the host first mounts).
+  useEffect(function() {
+    var host = swipeContentRef.current;
+    if (!host) return;
+    function horizontalScrollAncestor(node) {
+      while (node && node !== host) {
+        if (node.scrollWidth > node.clientWidth + 1) return true;
+        node = node.parentElement;
+      }
+      return false;
+    }
+    function onStart(e) {
+      var d = dragRef.current = { started: false };
+      var live = liveRef.current;
+      if (live.sheet || e.touches.length !== 1) return;
+      if (!live.mainSet || !live.mainSet[live.currentTab]) return;
+      if (e.target.closest && e.target.closest(".rc-hero-scroll")) return;
+      if (horizontalScrollAncestor(e.target)) return;
+      var t0 = e.touches[0];
+      d.startX = t0.clientX; d.startY = t0.clientY; d.time = Date.now();
+      d.width = host.clientWidth || window.innerWidth;
+      d.order = (live.order || []).slice();
+      d.idx = d.order.indexOf(live.currentTab);
+      d.axis = null; d.started = true; d.mounted = undefined; d.dx = 0;
+    }
+    function onMove(e) {
+      var d = dragRef.current;
+      if (!d || !d.started) return;
+      var t = e.touches[0];
+      var dx = t.clientX - d.startX, dy = t.clientY - d.startY;
+      if (d.axis === null) {
+        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+        d.axis = Math.abs(dx) > Math.abs(dy) * 1.2 ? "x" : "y";
+        if (d.axis !== "x") { d.started = false; return; } // let vertical scroll win
+      }
+      e.preventDefault(); // horizontal lock
+      var goingNext = dx < 0;
+      var nIdx = goingNext ? d.idx + 1 : d.idx - 1;
+      var hasN = nIdx >= 0 && nIdx < d.order.length;
+      var eff = hasN ? dx : dx * 0.28; // rubber-band past the ends
+      var neighborId = hasN ? d.order[nIdx] : null;
+      if (d.mounted !== neighborId) {
+        d.mounted = neighborId;
+        setDrag(neighborId ? { neighborId: neighborId, side: goingNext ? "next" : "prev" } : null);
+      }
+      d.dx = eff;
+      var track = trackRef.current;
+      if (track) { track.style.transition = "none"; track.style.transform = "translateX(" + eff + "px)"; }
+    }
+    function settle(cb) {
+      var track = trackRef.current;
+      if (!track) { cb(); return; }
+      var done = false;
+      function fin() { if (done) return; done = true; track.removeEventListener("transitionend", fin); cb(); }
+      track.addEventListener("transitionend", fin);
+      setTimeout(fin, 500);
+    }
+    function onEnd() {
+      var d = dragRef.current;
+      if (!d || !d.started || d.axis !== "x") { if (d) d.started = false; return; }
+      d.started = false;
+      var track = trackRef.current;
+      var width = d.width, dx = d.dx || 0, goingNext = dx < 0;
+      var nIdx = goingNext ? d.idx + 1 : d.idx - 1;
+      var hasN = nIdx >= 0 && nIdx < d.order.length;
+      var dt = Date.now() - d.time;
+      var pass = hasN && (Math.abs(dx) > width * 0.32 || (Math.abs(dx) > 40 && dt < 300));
+      if (pass && track) {
+        track.style.transition = "transform 0.42s cubic-bezier(0.22,1,0.36,1)";
+        track.style.transform = "translateX(" + (goingNext ? -width : width) + "px)";
+        var newId = d.order[nIdx];
+        settle(function() {
+          // Drop the track back to 0 and swap current -> neighbour together. React 18
+          // batches the state updates and flushes before the next paint, so the frame
+          // where the *old* page would sit at 0 is never shown - the just-peeked page
+          // is already the new current at the same spot, so there's no flash.
+          skipEntryAnimRef.current = true;
+          track.style.transition = "none";
+          track.style.transform = "translateX(0px)";
+          setDrag(null); setTab(newId); setSheet(false);
+        });
+      } else if (track) {
+        track.style.transition = "transform 0.4s cubic-bezier(0.22,1,0.36,1)";
+        track.style.transform = "translateX(0px)";
+        settle(function() { setDrag(null); });
+      } else {
+        setDrag(null);
+      }
+    }
+    host.addEventListener("touchstart", onStart, { passive: true });
+    host.addEventListener("touchmove", onMove, { passive: false });
+    host.addEventListener("touchend", onEnd, { passive: true });
+    host.addEventListener("touchcancel", onEnd, { passive: true });
+    return function() {
+      host.removeEventListener("touchstart", onStart);
+      host.removeEventListener("touchmove", onMove);
+      host.removeEventListener("touchend", onEnd);
+      host.removeEventListener("touchcancel", onEnd);
+    };
+  }, [authChecked, user, onboardingDone, catchUpDone]);
 
   if (cloudReady() && !authChecked) {
     return <BootSplash />;
@@ -18857,35 +19089,18 @@ export default function App() {
 
   var currentTab = tab;
   var MAIN_TAB_IDS = TABS.map(function(t) { return t.id; });
-  function hasHorizontalScrollAncestor(node, stopAt) {
-    while (node && node !== stopAt) {
-      if (node.scrollWidth > node.clientWidth + 1) return true;
-      node = node.parentElement;
-    }
-    return false;
-  }
-  function onContentTouchStart(e) {
-    swipeRef.current = null;
-    if (sheet) return; // don't hijack swipes while a bottom sheet is open over the content
-    if (e.touches.length !== 1) return; // ignore pinch/multi-touch
-    if (e.target.closest && e.target.closest(".rc-hero-scroll")) return;
-    if (hasHorizontalScrollAncestor(e.target, swipeContentRef.current)) return;
-    var t0 = e.touches[0];
-    swipeRef.current = { x: t0.clientX, y: t0.clientY, time: Date.now() };
-  }
-  function onContentTouchEnd(e) {
-    var start = swipeRef.current;
-    swipeRef.current = null;
-    if (!start) return;
-    if (MAIN_TAB_IDS.indexOf(currentTab) === -1) return;
-    var touch = e.changedTouches[0];
-    var dx = touch.clientX - start.x;
-    var dy = touch.clientY - start.y;
-    if (Date.now() - start.time > 600) return;
-    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-    var idx = MAIN_TAB_IDS.indexOf(currentTab);
-    if (dx < 0 && idx < MAIN_TAB_IDS.length - 1) { setTab(MAIN_TAB_IDS[idx + 1]); setSheet(false); }
-    else if (dx > 0 && idx > 0) { setTab(MAIN_TAB_IDS[idx - 1]); setSheet(false); }
+  // Feed the native drag handlers fresh values without re-subscribing each render.
+  liveRef.current = { currentTab: currentTab, sheet: sheet, order: MAIN_TAB_IDS, mainSet: MAIN_TABS_SET };
+
+  // The five swipeable main tabs, produced by id so both the visible page and the
+  // neighbour that peeks in during a drag come from one place.
+  function mainTabEl(id) {
+    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} investing={investing} trips={trips} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
+    if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} />;
+    if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
+    if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
+    if (id === "advisor") return <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={monthAnalysis ? monthAnalysis.data : null} analysisStale={!!(monthAnalysis && monthAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} />;
+    return null;
   }
   applyTheme(theme);      // keep the live T palette in sync with the chosen design every render
   applyDarkMode(darkMode); // re-apply dark/light mode tokens on every render so T stays consistent
@@ -18921,16 +19136,35 @@ export default function App() {
 
       <CustomBanners banners={customBanners} onSave={onSaveBanners} />
 
-      <div key={animKey} ref={swipeContentRef} onTouchStart={onContentTouchStart} onTouchEnd={onContentTouchEnd} style={{ padding: "8px 16px 16px", animation: animDir === "right" ? "navSlideRight 0.42s cubic-bezier(0.22,1,0.36,1) both" : animDir === "left" ? "navSlideLeft 0.42s cubic-bezier(0.22,1,0.36,1) both" : "navFade 0.38s cubic-bezier(0.22,1,0.36,1) both" }}>
-        {currentTab === "overview" && <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} investing={investing} trips={trips} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
-        {currentTab === "activity" && <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} />}
+      <div ref={swipeContentRef} style={{ position: "relative", overflowX: "clip" }}>
+        {MAIN_TABS_SET[currentTab] ? (
+          (function() {
+            // Suppress the tap slide-in for the panel a drag just committed - it's
+            // already parked in place; animating it would double up the motion.
+            var entryAnim;
+            if (skipEntryAnimRef.current) { skipEntryAnimRef.current = false; entryAnim = "none"; }
+            else { entryAnim = animDir === "right" ? "navSlideRight 0.42s cubic-bezier(0.22,1,0.36,1) both" : animDir === "left" ? "navSlideLeft 0.42s cubic-bezier(0.22,1,0.36,1) both" : "navFade 0.38s cubic-bezier(0.22,1,0.36,1) both"; }
+            return (
+              // Track is transform-driven imperatively during a drag (see the native
+              // touch effect); no transform in JSX so React never fights those writes.
+              <div ref={trackRef} style={{ position: "relative", willChange: "transform" }}>
+                <div key={"main-" + currentTab} style={{ padding: "8px 16px 16px", animation: entryAnim }}>
+                  {mainTabEl(currentTab)}
+                </div>
+                {drag && drag.neighborId && (
+                  <div style={{ position: "absolute", top: 0, left: drag.side === "next" ? "100%" : "-100%", width: "100%", padding: "8px 16px 16px", boxSizing: "border-box" }}>
+                    {mainTabEl(drag.neighborId)}
+                  </div>
+                )}
+              </div>
+            );
+          })()
+        ) : (
+        <div key={animKey} style={{ padding: "8px 16px 16px", animation: animDir === "right" ? "navSlideRight 0.42s cubic-bezier(0.22,1,0.36,1) both" : animDir === "left" ? "navSlideLeft 0.42s cubic-bezier(0.22,1,0.36,1) both" : "navFade 0.38s cubic-bezier(0.22,1,0.36,1) both" }}>
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
-        {currentTab === "budgets" && <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
-        {currentTab === "goals" && <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />}
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} richardInstructions={richardCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "advisor" && <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={monthAnalysis ? monthAnalysis.data : null} analysisStale={!!(monthAnalysis && monthAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} />}
         {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} richardInstructions={richardInstructions} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "profile"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} bankSync={bankSync} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewPrivacy={function() { setTab("privacy"); }} trips={trips} onViewTripHistory={function() { setTab("tripHistory"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
@@ -18954,6 +19188,8 @@ export default function App() {
         {currentTab === "currency" && <CurrencyView currency={currency} onCurrencyChange={onSaveCurrency} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "nickname" && <NicknameView value={user} onSave={function(name) { onSaveNickname(name); setTab(prevTabRef.current || "profile"); }} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "instructions" && <RichardInstructionsView value={richardInstructions} onSave={function(text) { onSaveInstructions(text); setTab(prevTabRef.current || "profile"); }} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        </div>
+        )}
       </div>
 
       {/* Outer wrapper only does fixed positioning — no backdrop-filter here.
@@ -18966,22 +19202,7 @@ export default function App() {
               via its own border radius (no overflow:hidden, so the active lens shadow
               isn't cropped). Sits below the buttons in paint order. */}
           <div style={{ position: "absolute", inset: 0, borderRadius: 34, pointerEvents: "none", background: "linear-gradient(180deg, " + T.navSheen + " 0%, rgba(255,255,255,0) 42%, rgba(255,255,255,0) 100%)" }} />
-          <div style={{ position: "relative", display: "flex", justifyContent: "space-around", padding: "10px 4px 12px" }}>
-            {TABS.map(function(tab) {
-              var active = currentTab === tab.id;
-              return (
-                <button key={tab.id} onClick={function() { setTab(tab.id); setSheet(false); }}
-                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "4px 4px", flex: 1, minWidth: 0 }}>
-                  <div style={{ background: active ? T.navPillGlass : "none", borderRadius: 22, padding: active ? "6px 12px" : "6px 9px", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.22s cubic-bezier(0.22,1,0.36,1)", backdropFilter: active ? "blur(8px) saturate(200%) brightness(1.18)" : "none", WebkitBackdropFilter: active ? "blur(8px) saturate(200%) brightness(1.18)" : "none", boxShadow: active ? ("inset 0 1px 0.5px " + T.navPillRim + ", inset 0 -1px 1px " + T.navPillShade + ", 0 2px 7px rgba(0,0,0,0.12)") : "none" }}>
-                    <SVGIcon id={tab.id} size={21} color={active ? T.orange : T.ink3} />
-                  </div>
-                  <span style={{ fontSize: 9.5, fontWeight: active ? 700 : 400, color: active ? T.orange : T.ink3, letterSpacing: "0.005em", whiteSpace: "nowrap" }}>
-                    {tr(tab.id)}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          <GlassTabBar tabs={TABS} current={currentTab} onSelect={function(id) { setTab(id); setSheet(false); }} />
         </div>
       </div>
     </div>
