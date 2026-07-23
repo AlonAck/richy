@@ -980,6 +980,15 @@ function cloudReady() {
   var f = _fb();
   return !!(f && f.apps && f.apps.length);
 }
+// True once real keys are in firebase-init.js, regardless of whether the SDK
+// scripts actually loaded - lets cloudErrorMsg() tell "never configured" apart
+// from "SDK failed to load this time" (ad blocker, flaky connection).
+function cloudConfigured() {
+  return typeof window !== "undefined" && window.__RICHY_FB_CONFIGURED__ === true;
+}
+function cloudErrorMsg() {
+  return cloudConfigured() ? CLOUD_CONNECT_MSG : CLOUD_SETUP_MSG;
+}
 function _auth() { return _fb().auth(); }
 function _fsdb() { return _fb().firestore(); }
 
@@ -2511,6 +2520,7 @@ function isEmail(s) {
 }
 
 var CLOUD_SETUP_MSG = "Cloud sign-in is not configured yet. Add your Firebase keys in firebase-init.js.";
+var CLOUD_CONNECT_MSG = "Couldn't connect to the server. Check your internet connection (or disable any ad blocker/VPN) and try again.";
 
 // Turn a Firebase auth error into a short, human message.
 function authMsg(err) {
@@ -2813,7 +2823,7 @@ function AuthScreen(props) {
     setError("");
     var em = email.trim().toLowerCase();
     if (!isEmail(em) || !password) { setError("Enter your email and password."); return; }
-    if (!cloudReady()) { setError(CLOUD_SETUP_MSG); return; }
+    if (!cloudReady()) { setError(cloudErrorMsg()); return; }
     setBusy(true);
     CLOUD.signIn(em, password).then(function() {
       // The App's auth listener detects the new session and loads the account.
@@ -2845,7 +2855,7 @@ function AuthScreen(props) {
 
   function finishSignup() {
     setError("");
-    if (!cloudReady()) { setError(CLOUD_SETUP_MSG); return; }
+    if (!cloudReady()) { setError(cloudErrorMsg()); return; }
     var em = email.trim().toLowerCase();
     setBusy(true);
     // Tell the App's auth listener to stand down while we create the user's
@@ -2884,7 +2894,7 @@ function AuthScreen(props) {
   // document created by the App's auth listener.
   function googleSignIn() {
     setError("");
-    if (!cloudReady()) { setError(CLOUD_SETUP_MSG); return; }
+    if (!cloudReady()) { setError(cloudErrorMsg()); return; }
     setBusy(true);
     CLOUD.signInGoogle().then(function() {
       setBusy(false);
@@ -2903,7 +2913,7 @@ function AuthScreen(props) {
     setError(""); setNotice("");
     var em = email.trim().toLowerCase();
     if (!isEmail(em)) { setError("Enter your email address."); return; }
-    if (!cloudReady()) { setError(CLOUD_SETUP_MSG); return; }
+    if (!cloudReady()) { setError(cloudErrorMsg()); return; }
     setBusy(true);
     CLOUD.sendPasswordReset(em).then(function() {
       setBusy(false);

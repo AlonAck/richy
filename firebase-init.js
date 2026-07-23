@@ -24,8 +24,14 @@ var firebaseConfig = {
 // Initialize only when real keys are present and the SDK loaded. This lets the
 // app boot (and show a friendly "configure Firebase" message) before setup.
 (function () {
+  // Set regardless of whether the Firebase SDK scripts above actually loaded,
+  // so the app can tell "keys were never filled in" apart from "the SDK failed
+  // to load over the network" (ad blocker, flaky connection, CDN hiccup) - the
+  // two look identical from cloudReady() alone but need very different error
+  // copy for the user.
+  window.__RICHY_FB_CONFIGURED__ = firebaseConfig.apiKey.indexOf("PASTE") === -1;
   if (typeof firebase === "undefined") return;
-  if (firebaseConfig.apiKey.indexOf("PASTE") !== -1) return;
+  if (!window.__RICHY_FB_CONFIGURED__) return;
   if (!firebase.apps || !firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
   }
