@@ -419,6 +419,20 @@ fetchSource(1).then(function(src){
       });
     }
     el = React.createElement(BankSyncHarness, {});
+  } else if (view === "debts") {
+    // ?seed=1 seeds three debts; expose window.__richy.debtPayoffPlan for math checks.
+    try { window.__richy = window.__richy || {}; window.__richy.debtPayoffPlan = debtPayoffPlan; } catch (e) {}
+    function DebtHarness() {
+      var seed = qs.get("seed") ? [
+        { id: "d1", name: "Visa card", balance: 4200, apr: 22, minPayment: 120, createdAt: "2026-06-01" },
+        { id: "d2", name: "Car loan", balance: 8500, apr: 6.5, minPayment: 240, createdAt: "2026-06-01" },
+        { id: "d3", name: "Overdraft", balance: 1400, apr: 14, minPayment: 40, createdAt: "2026-06-01" }
+      ] : [];
+      var _d = React.useState(seed); var dbts = _d[0]; var setD = _d[1];
+      window.__debts = function(){ return dbts; };
+      return React.createElement(DebtView, { debts: dbts, onSaveDebts: function(n){ setD(n); }, onBack: function(){ window.__clicked = "back"; } });
+    }
+    el = React.createElement(DebtHarness, {});
   } else if (view === "banners") {
     // Seeds one banner per tone, plus one non-dismissible, so all render paths show at once.
     function BannersHarness() {

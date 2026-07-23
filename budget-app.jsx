@@ -9820,7 +9820,7 @@ function Advisor(props) {
       + "[ACTION:{\"kind\":\"banner\",\"text\":\"Rent is due Friday\",\"tone\":\"info\",\"icon\":\"spark\",\"dismissible\":true}] (tone is info, success, or warn) puts a small banner message at the top of the app, visible on every tab, until the user dismisses it - use ONLY when the user directly and explicitly asks you to put up/create/show a banner or reminder message; never on your own initiative. "
       + "Use the EXACT category, folder, savings pot, and note-label names given in the data below - never invent or guess a name. "
       + "If the user mentions several things at once, emit several tags. Only emit a tag for a concrete event, or a direct explicit request to change/create something, with real values the user actually stated - never for hypotheticals, plans, or general advice. Do not mention the word ACTION or the tag syntax in your spoken reply; just speak naturally and let the tags do the work."
-      + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a CFO who builds a business plan - send business owners there. Be honest about what Richy currently does not support: no live bank or card sync, no shared couples mode, no interest-based debt payoff calculator. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : ""),
+      + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a CFO who builds a business plan - send business owners there. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Be honest about what Richy currently does not support: no live bank sync beyond the phone-based Bank Sync setup, no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : ""),
       500,
       function(err, text) {
         setChatLoading(false);
@@ -11537,6 +11537,255 @@ function bizContextLine(biz) {
     + ", health " + health.label
     + (biz.roadmap ? (", roadmap " + prog.done + " of " + prog.total + " tasks done" + (nextTask ? (", next task: " + nextTask) : "")) : "")
     + ((biz.reviews && biz.reviews[0]) ? (". Last weekly review said: " + biz.reviews[0].headline) : "") + ".";
+}
+
+// ---- Debt payoff engine ------------------------------------------------------
+// Interest-aware month-by-month simulation. Every debt accrues apr/12 each month
+// and pays at least its minimum; all spare cash (the user's extra, plus the
+// minimums freed as debts clear) funnels to ONE target debt chosen by method:
+// avalanche = highest APR first (least total interest), snowball = smallest
+// balance first (fastest first win). Guards a plan that never clears (payments
+// can't outpace interest) with a horizon cap and a neverClears flag. Pure: it
+// copies the input, so callers can run it freely on every render.
+function debtPayoffPlan(debts, extraMonthly, method) {
+  var list = (debts || [])
+    .filter(function(d) { return (parseFloat(d.balance) || 0) > 0; })
+    .map(function(d) {
+      return { id: d.id, name: d.name, bal: parseFloat(d.balance) || 0, apr: Math.max(0, parseFloat(d.apr) || 0), min: Math.max(0, parseFloat(d.minPayment) || 0) };
+    });
+  if (!list.length) return { empty: true, months: 0, totalInterest: 0, order: [], neverClears: false, minTotal: 0 };
+  var extra = Math.max(0, parseFloat(extraMonthly) || 0);
+  var totalMin = list.reduce(function(s, d) { return s + d.min; }, 0);
+  var totalInterest = 0, month = 0, MAX = 720;
+  var cleared = {}, order = [];
+  function target() {
+    var active = list.filter(function(d) { return d.bal > 0.005; });
+    if (!active.length) return null;
+    if (method === "snowball") return active.reduce(function(a, b) { return b.bal < a.bal ? b : a; });
+    return active.reduce(function(a, b) { return b.apr > a.apr ? b : a; });
+  }
+  while (month < MAX) {
+    var active = list.filter(function(d) { return d.bal > 0.005; });
+    if (!active.length) break;
+    month++;
+    active.forEach(function(d) { var interest = d.bal * (d.apr / 100) / 12; d.bal += interest; totalInterest += interest; });
+    var pool = extra + active.reduce(function(s, d) { return s + d.min; }, 0);
+    active.forEach(function(d) { var pay = Math.min(d.min, d.bal); d.bal -= pay; pool -= pay; });
+    var guard = 0;
+    while (pool > 0.005 && guard < 60) {
+      guard++;
+      var t = target();
+      if (!t) break;
+      var pay = Math.min(pool, t.bal);
+      t.bal -= pay; pool -= pay;
+    }
+    // Record every debt that cleared THIS month - whether finished by its own
+    // minimum (when the balance dropped below the minimum) or by the funnel - so
+    // the payoff order reflects reality, not just where the last dollar landed.
+    active.forEach(function(d) { if (d.bal <= 0.005 && !cleared[d.id]) { cleared[d.id] = month; order.push({ id: d.id, name: d.name, month: month }); } });
+  }
+  list.forEach(function(d) { if (d.bal <= 0.005 && !cleared[d.id]) { cleared[d.id] = month; order.push({ id: d.id, name: d.name, month: month }); } });
+  var remaining = list.reduce(function(s, d) { return s + Math.max(0, d.bal); }, 0);
+  var neverClears = month >= MAX && remaining > 0.005;
+  order.sort(function(a, b) { return a.month - b.month; });
+  return { empty: false, months: month, totalInterest: round2(totalInterest), order: order, neverClears: neverClears, minTotal: round2(totalMin) };
+}
+
+function DebtView(props) {
+  var debts = props.debts || [];
+  var today = new Date().toISOString().slice(0, 10);
+  var localeMap = { en: "en-US", he: "he-IL", es: "es-ES", fr: "fr-FR", ar: "ar-SA", ru: "ru-RU", de: "de-DE", pt: "pt-BR" };
+  var locale = localeMap[_lang.code] || "en-US";
+
+  var _extra = useState(""); var extra = _extra[0]; var setExtra = _extra[1];
+  var _method = useState("avalanche"); var method = _method[0]; var setMethod = _method[1];
+  var _form = useState(null); var form = _form[0]; var setForm = _form[1];
+  var _del = useState(null); var delId = _del[0]; var setDelId = _del[1];
+
+  var totalDebt = debts.reduce(function(s, d) { return s + (parseFloat(d.balance) || 0); }, 0);
+  var totalMin = debts.reduce(function(s, d) { return s + (parseFloat(d.minPayment) || 0); }, 0);
+  var plan = debtPayoffPlan(debts, extra, method);
+
+  function setF(k, v) { setForm(function(p) { var n = {}; for (var x in p) n[x] = p[x]; n[k] = v; return n; }); }
+  function openAdd() { setForm({ name: "", balance: "", apr: "", minPayment: "" }); }
+  function openEdit(d) { setForm({ id: d.id, name: d.name, balance: String(d.balance), apr: String(d.apr), minPayment: String(d.minPayment) }); }
+  function saveForm() {
+    if (!form || !form.name.trim() || !(parseFloat(form.balance) > 0)) return;
+    var rec = { id: form.id || ("debt_" + Date.now()), name: form.name.trim(), balance: round2(parseFloat(form.balance) || 0), apr: Math.max(0, parseFloat(form.apr) || 0), minPayment: Math.max(0, parseFloat(form.minPayment) || 0), createdAt: form.id ? undefined : today };
+    var next = form.id ? debts.map(function(d) { return d.id === form.id ? Object.assign({}, d, rec) : d; }) : debts.concat([rec]);
+    props.onSaveDebts(next);
+    setForm(null);
+  }
+  function doDelete(id) { props.onSaveDebts(debts.filter(function(d) { return d.id !== id; })); setDelId(null); }
+
+  function monthLabel(m) {
+    var d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + m);
+    return d.toLocaleString(locale, { month: "short", year: "numeric" });
+  }
+
+  var numInput = { flex: 1, border: "none", background: "none", outline: "none", fontSize: 16, fontFamily: UI, color: T.ink, fontWeight: 700, textAlign: "right", width: "100%" };
+  var fieldWrap = { display: "flex", alignItems: "center", gap: 6, background: "rgba(0,0,0,0.04)", borderRadius: 11, padding: "11px 13px", marginBottom: 9 };
+  // The strategy's recommended target for any spare money - highest APR for
+  // avalanche, smallest balance for snowball - not merely whichever debt clears
+  // first on minimums alone (which would mislead when no extra is set yet).
+  var attackFirst = (function() {
+    var active = debts.filter(function(d) { return (parseFloat(d.balance) || 0) > 0; });
+    if (!active.length) return null;
+    if (method === "snowball") return active.reduce(function(a, b) { return (parseFloat(b.balance) || 0) < (parseFloat(a.balance) || 0) ? b : a; }).name;
+    return active.reduce(function(a, b) { return (parseFloat(b.apr) || 0) > (parseFloat(a.apr) || 0) ? b : a; }).name;
+  })();
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} label={tr("profile")} />
+
+      <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, marginBottom: 18, padding: "0 2px" }}>
+        Track what you owe, then let Richard build a real payoff plan — interest and all — with a debt-free date, not just a total.
+      </div>
+
+      {debts.length === 0 ? (
+        <Card style={{ padding: "40px 24px", textAlign: "center" }}>
+          <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+            <SVGIcon id="credit" size={24} color={T.orange} />
+          </div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: T.ink, marginBottom: 5 }}>No debts tracked</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 18 }}>Add a card, loan, or overdraft with its balance and interest rate, and I'll show you the fastest way out.</div>
+          <button onClick={openAdd}
+            style={{ background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 13, padding: "12px 22px", fontSize: 14, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px " + T.orangeGlow }}>
+            Add your first debt
+          </button>
+        </Card>
+      ) : (
+        <div>
+          <Card style={{ padding: "18px 20px", marginBottom: 16, background: T.heroBg, boxShadow: T.heroShadow }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.heroMut, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Total owed</div>
+            <div style={{ fontSize: 36, fontWeight: 800, color: T.heroText, letterSpacing: "-0.03em", lineHeight: 1 }}>{dollars(totalDebt)}</div>
+            <div style={{ fontSize: 12.5, color: T.heroFaint, marginTop: 7 }}>{debts.length + " " + (debts.length === 1 ? "debt" : "debts") + " · " + dollars(totalMin) + " minimum / month"}</div>
+          </Card>
+
+          {debts.map(function(d) {
+            return (
+              <Card key={d.id} style={{ marginBottom: 12, overflow: "hidden" }}>
+                <div style={{ padding: "15px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+                  <CatBadge icon="credit" color={T.red} size={42} soft={true} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 15.5, fontWeight: 700, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.name}</div>
+                    <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>{(parseFloat(d.apr) || 0) + "% APR · " + dollars(parseFloat(d.minPayment) || 0) + " min"}</div>
+                  </div>
+                  <div style={{ fontSize: 19, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(parseFloat(d.balance) || 0)}</div>
+                </div>
+                <div style={{ display: "flex", gap: 8, padding: "0 16px 14px" }}>
+                  <button onClick={function() { openEdit(d); }}
+                    style={{ flex: 1, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "9px 0", borderRadius: 11, background: "none", color: T.orange }}>Edit</button>
+                  {delId === d.id ? (
+                    <button onClick={function() { doDelete(d.id); }}
+                      style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "9px 0", borderRadius: 11, background: T.red, color: "#fff" }}>Tap to confirm</button>
+                  ) : (
+                    <button onClick={function() { setDelId(d.id); }}
+                      style={{ width: 46, flexShrink: 0, border: "none", cursor: "pointer", background: "rgba(0,0,0,0.04)", borderRadius: 11, padding: "9px 0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <SVGIcon id="trash" size={16} color={T.ink3} />
+                    </button>
+                  )}
+                </div>
+              </Card>
+            );
+          })}
+
+          <button onClick={openAdd}
+            style={{ width: "100%", border: "1.5px dashed " + T.orange, background: "none", color: T.orange, borderRadius: 13, padding: "12px 0", fontSize: 14, fontFamily: UI, fontWeight: 700, cursor: "pointer", marginBottom: 18 }}>
+            + Add another debt
+          </button>
+
+          <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "6px 2px 10px" }}>Your payoff plan</div>
+
+          <Card style={{ padding: "16px 18px", marginBottom: 12 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 600, color: T.ink2, marginBottom: 6 }}>Extra you can add each month (on top of minimums)</div>
+            <div style={fieldWrap}>
+              <span style={{ fontSize: 16, color: T.ink3, fontWeight: 600 }}>{_currency.sym}</span>
+              <input value={extra} onChange={function(e) { setExtra(e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={numInput} />
+            </div>
+            <div style={{ display: "flex", gap: 7, marginTop: 4 }}>
+              {[{ id: "avalanche", label: "Avalanche" }, { id: "snowball", label: "Snowball" }].map(function(m) {
+                var on = method === m.id;
+                return (
+                  <button key={m.id} onClick={function() { setMethod(m.id); }}
+                    style={{ flex: 1, padding: "9px 0", borderRadius: 11, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700, fontFamily: UI,
+                      background: on ? T.orangeDim : "rgba(0,0,0,0.04)", color: on ? T.orange : T.ink3 }}>
+                    {m.label}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ fontSize: 12, color: T.ink3, marginTop: 8, lineHeight: 1.45 }}>
+              {method === "avalanche" ? "Avalanche hits the highest interest rate first — you pay the least interest overall." : "Snowball clears the smallest balance first — quick wins to keep you going."}
+            </div>
+          </Card>
+
+          {plan.neverClears ? (
+            <Card style={{ padding: "18px 20px", marginBottom: 16, borderLeft: "3px solid " + T.gold }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, marginBottom: 6 }}>Almost treading water</div>
+              <div style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.55 }}>Right now the payments barely cover the interest, so the balance hardly moves. Adding even a little more each month is what turns the corner — try nudging the extra amount up to see your debt-free date appear.</div>
+            </Card>
+          ) : (
+            <Card style={{ padding: "18px 20px", marginBottom: 16, background: T.heroBg, boxShadow: T.heroShadow }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.heroMut, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Debt-free by</div>
+              <div style={{ fontSize: 32, fontWeight: 800, color: T.heroText, letterSpacing: "-0.02em", lineHeight: 1 }}>{monthLabel(plan.months)}</div>
+              <div style={{ fontSize: 12.5, color: T.heroFaint, marginTop: 7 }}>{plan.months + " " + (plan.months === 1 ? "month" : "months") + " · " + dollars(plan.totalInterest) + " interest along the way"}</div>
+              {attackFirst && (
+                <div style={{ marginTop: 12, padding: "10px 12px", borderRadius: 11, background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: 9 }}>
+                  <SVGIcon id="spark" size={15} color={T.heroText} />
+                  <span style={{ fontSize: 13, color: T.heroText, fontWeight: 600 }}>Attack <strong>{attackFirst}</strong> first</span>
+                </div>
+              )}
+            </Card>
+          )}
+
+          {plan.order.length > 1 && !plan.neverClears && (
+            <Card style={{ padding: "14px 16px", marginBottom: 16 }}>
+              <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Payoff order</div>
+              {plan.order.map(function(o, i) {
+                return (
+                  <div key={o.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", borderBottom: i < plan.order.length - 1 ? "0.5px solid " + T.sep : "none" }}>
+                    <div style={{ width: 24, height: 24, borderRadius: 8, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 12, fontWeight: 800, color: T.orange }}>{i + 1}</div>
+                    <span style={{ flex: 1, fontSize: 13.5, color: T.ink, fontWeight: 500 }}>{o.name}</span>
+                    <span style={{ fontSize: 12.5, color: T.ink3, fontWeight: 600 }}>{monthLabel(o.month)}</span>
+                  </div>
+                );
+              })}
+            </Card>
+          )}
+        </div>
+      )}
+
+      <Overlay open={!!form} onClose={function() { setForm(null); }} title={form && form.id ? "Edit debt" : "Add a debt"}>
+        <div style={{ fontSize: 10.5, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 5 }}>Name</div>
+        <input value={form ? form.name : ""} onChange={function(e) { setF("name", e.target.value); }} type="text" placeholder="Credit card, car loan, overdraft..."
+          style={{ width: "100%", border: "none", background: "rgba(0,0,0,0.04)", borderRadius: 11, padding: "12px 13px", fontSize: 15, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", marginBottom: 10 }} />
+        <div style={{ fontSize: 10.5, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 5 }}>Balance owed</div>
+        <div style={fieldWrap}>
+          <span style={{ fontSize: 16, color: T.ink3, fontWeight: 600 }}>{_currency.sym}</span>
+          <input value={form ? form.balance : ""} onChange={function(e) { setF("balance", e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={numInput} />
+        </div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 10.5, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 5 }}>Interest rate</div>
+            <div style={fieldWrap}>
+              <input value={form ? form.apr : ""} onChange={function(e) { setF("apr", e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={Object.assign({}, numInput, { textAlign: "left" })} />
+              <span style={{ fontSize: 15, color: T.ink3, fontWeight: 600 }}>%</span>
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 10.5, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 5 }}>Min / month</div>
+            <div style={fieldWrap}>
+              <span style={{ fontSize: 16, color: T.ink3, fontWeight: 600 }}>{_currency.sym}</span>
+              <input value={form ? form.minPayment : ""} onChange={function(e) { setF("minPayment", e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={numInput} />
+            </div>
+          </div>
+        </div>
+        <BigBtn label={form && form.id ? "Save" : "Add debt"} onPress={saveForm} disabled={!form || !form.name.trim() || !(parseFloat(form.balance) > 0)} />
+      </Overlay>
+    </div>
+  );
 }
 
 function SavingsView(props) {
@@ -18034,7 +18283,8 @@ function PlanView(props) {
       + "You carry the wisdom of Warren Buffett (do not save what is left after spending — spend what is left after saving; rule one: never lose money), Charlie Munger (invert, always invert; avoid what destroys wealth as much as seeking what builds it), Ray Dalio (diversify well and you can reduce risk without reducing returns; pain plus reflection equals progress), Naval Ravikant (earn with your mind not your time; build or buy equity), and Mark Cuban (pay off credit cards every month; savings rates matter more than investment returns early on). "
       + "You know the Richy app deeply: it has tabs for Overview (balance, cash flow, net worth), Activity (all transactions), Budgets (monthly spending limits by category), Goals (savings targets), and Advisor (full AI analysis). Categories are managed via the tag icon on Overview or the Manage link in transaction pickers. "
       + "Richy CAN import a CSV statement: the Activity tab has an import button that reads a bank or card CSV export entirely on-device (it maps columns, handles separate money-in/money-out columns, auto-categorizes from the user's history, and skips duplicates). If someone is tired of manual entry, point them there. "
-      + "Be honest about what Richy currently does not support: no live bank or card sync (CSV import is the workaround), no shared couples mode, no interest-based debt payoff calculator, no business accounting. If asked about these, acknowledge the gap and offer the best workaround available inside Richy. "
+      + "Richy HAS a Debts tracker (Profile -> Debts): the user logs each debt's balance, rate, and minimum, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date. Point anyone paying off debt there, and answer 'what first' with their actual numbers. "
+      + "Be honest about what Richy currently does not support: no live bank sync beyond the phone-based Bank Sync setup, no fully shared couples ledger yet. If asked about these, acknowledge the gap and offer the best workaround available inside Richy. "
       + "Be concise and direct — keep it short unless the user asks for more depth." + RICHARD_FORMAT + " The only bracketed syntax you may use is the action tag described next. "
       + "If you want to suggest a specific concrete change to the user's app, append exactly one action tag at the very end of your reply: "
       + "[ACTION:{\"type\":\"budget\",\"category\":\"Food\",\"limit\":500}] to set a monthly budget limit, or "
@@ -18292,6 +18542,7 @@ function Profile(props) {
       <ProfileSection icon="user" title="Account" bg={T.blueDim} color={T.blue} glow={T.blueGlow}>
         <ProfileRow icon="edit" iconBg={T.blueDim} iconColor={T.blue} label="Your Name" value={props.user} onClick={props.onViewNickname} />
         <ProfileRow icon="home" iconBg={T.blueDim} iconColor={T.blue} label="Collab" value={props.householdName || (props.inviteCount ? props.inviteCount + " invite" + (props.inviteCount === 1 ? "" : "s") : "Off")} onClick={props.onViewCollab} />
+        <ProfileRow icon="credit" iconBg={"rgba(224,48,48,0.12)"} iconColor={T.red} label="Debts" value={props.debtCount ? (props.debtCount + " tracked") : "Off"} onClick={props.onViewDebts} />
         <ProfileRow icon="shield" iconBg={T.blueDim} iconColor={T.blue} label="Privacy & Data" onClick={props.onViewPrivacy} last />
       </ProfileSection>
 
@@ -18431,6 +18682,10 @@ export default function App() {
   var savings = _sav[0]; var setSavings = _sav[1];
   var _biz = useState([]);
   var businesses = _biz[0]; var setBusinesses = _biz[1];
+  // Tracked debts [{id, name, balance, apr, minPayment, createdAt}]. Personal
+  // (never shared), drives the interest-aware payoff planner in DebtView.
+  var _debts = useState([]);
+  var debts = _debts[0]; var setDebts = _debts[1];
   var _inv = useState([]);
   var investing = _inv[0]; var setInvesting = _inv[1];
   var _ivp = useState(null);
@@ -18543,6 +18798,7 @@ export default function App() {
     setSavings(data.savings || []);
     // Business accounts are personal too (separated business money + plan).
     setBusinesses(data.businesses || []);
+    setDebts(data.debts || []);
     // Investing accounts are personal for the same reason (your portfolio).
     setInvesting(data.investing || []);
     setInvestorProfile(data.investorProfile || null);
@@ -18587,7 +18843,7 @@ export default function App() {
 
   // Build the starting document for a brand-new account (e.g. first Google sign-in).
   function defaultBlob(name, email) {
-    return { tx: [], budgets: [], goals: [], trips: [], savings: [], businesses: [], investing: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: email, theme: "blue" };
+    return { tx: [], budgets: [], goals: [], trips: [], savings: [], businesses: [], investing: [], debts: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: email, theme: "blue" };
   }
 
   // Firebase Auth is the single source of truth for the session. It restores the
@@ -18776,6 +19032,7 @@ export default function App() {
   // revenue, budget tweaks) go through onSaveBusinesses; capital that moves
   // to/from the main balance writes both arrays atomically via onBusinessMove.
   function onSaveBusinesses(next) { setBusinesses(next); save({ businesses: next }); }
+  function onSaveDebts(next) { setDebts(next); save({ debts: next }); }
   function onBusinessMove(nextTx, nextBusinesses) { setTx(nextTx); setBusinesses(nextBusinesses); save({ tx: nextTx, businesses: nextBusinesses }); }
   // Investing accounts mirror savings/business: account-only writes (trades that
   // spend cash already inside the account, watchlist, analyses, price snapshots)
@@ -19310,7 +19567,7 @@ export default function App() {
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} richardInstructions={richardCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} richardInstructions={richardInstructions} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "profile"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} bankSync={bankSync} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewPrivacy={function() { setTab("privacy"); }} trips={trips} onViewTripHistory={function() { setTab("tripHistory"); }} />}
+        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} richardInstructions={richardInstructions} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "profile"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} bankSync={bankSync} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} debtCount={debts.length} onViewDebts={function() { prevTabRef.current = "profile"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} trips={trips} onViewTripHistory={function() { setTab("tripHistory"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
         {currentTab === "editEmail" && <EditEmailView currentEmail={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onSave={function(email) { onSaveEmail(email); setTab("privacy"); }} />}
@@ -19330,6 +19587,7 @@ export default function App() {
         {currentTab === "editOpeningBalance" && <EditOpeningBalanceView tx={tx} onComplete={handleEditOpeningBalance} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "logMonth" && <LogMonthView categories={categories} tx={tx} budgets={budgets} onComplete={handleLogMonth} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "collab" && <CollabView household={household} householdId={householdId} invites={invites} myUid={accountKey} onCreate={onCreateHousehold} onInvite={onInviteMember} onCancelInvite={onCancelInvite} onAccept={onAcceptInvite} onLeave={onLeaveHousehold} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "debts" && <DebtView debts={debts} onSaveDebts={onSaveDebts} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "currency" && <CurrencyView currency={currency} onCurrencyChange={onSaveCurrency} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "nickname" && <NicknameView value={user} onSave={function(name) { onSaveNickname(name); setTab(prevTabRef.current || "profile"); }} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "instructions" && <RichardInstructionsView value={richardInstructions} onSave={function(text) { onSaveInstructions(text); setTab(prevTabRef.current || "profile"); }} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
