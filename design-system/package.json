@@ -1,0 +1,17 @@
+{
+  "name": "richy-design-system",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone component bundle extracted from Richy's budget-app.jsx, for syncing to claude.ai/design.",
+  "main": "dist/richy-ds.js",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  }
+}
