@@ -8254,9 +8254,11 @@ function Trips(props) {
     // ---- Budget split (step 2): inline card with the shader backdrop ----
     return (
       <div style={{ position: "relative" }}>
-        <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base={T.bg} speed={0.16} intensity={0.5} yScale={0.44} xScale={1.05}
-          style={{ position: "fixed", top: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, height: "100%", zIndex: 0 }} />
-        <div style={{ position: "fixed", top: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, height: "100%", zIndex: 0, pointerEvents: "none", background: "linear-gradient(180deg," + jrRgba(T.bg, 0.74) + " 0%," + jrRgba(T.bg, 0.4) + " 22%," + jrRgba(T.bg, 0.4) + " 74%," + jrRgba(T.bg, 0.66) + " 100%)" }} />
+        <ScrollLockBg zIndex={0}>
+          <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base={T.bg} speed={0.16} intensity={0.5} yScale={0.44} xScale={1.05}
+            style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
+          <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", background: "linear-gradient(180deg," + jrRgba(T.bg, 0.74) + " 0%," + jrRgba(T.bg, 0.4) + " 22%," + jrRgba(T.bg, 0.4) + " 74%," + jrRgba(T.bg, 0.66) + " 100%)" }} />
+        </ScrollLockBg>
         <div style={{ position: "relative", zIndex: 1 }}>
         {backRow(tr("planning"), function() { setStep(1); })}
           <Card style={{ padding: "18px 18px 20px" }}>
@@ -10414,16 +10416,18 @@ function Advisor(props) {
   }
 
   // Ambient shader backdrop for the Richard tab - the same flowing lines as
-  // the sign-up journey, scoped to the app column (fixed, centered, capped at
-  // the 430px width) and sitting behind the content. base = T.bg so the quiet
-  // areas match the live theme/dark background seamlessly; the opaque cards
-  // scroll over it, ribbons show in the gaps and behind the header.
+  // the sign-up journey, scoped to the app column and sitting behind the
+  // content. Scroll-locked via ScrollLockBg (plain position:fixed gets trapped
+  // by the nav-slide wrapper's animated transform and drifts with the page
+  // instead of staying centered as you scroll). base = T.bg so the quiet areas
+  // match the live theme/dark background seamlessly; the opaque cards scroll
+  // over it, ribbons show in the gaps and behind the header.
   var advShader = (
-    <div>
+    <ScrollLockBg zIndex={0}>
       <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base={T.bg} speed={0.16} intensity={0.55} yScale={0.44} xScale={1.05}
-        style={{ position: "fixed", top: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, height: "100%", zIndex: 0 }} />
-      <div style={{ position: "fixed", top: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, height: "100%", zIndex: 0, pointerEvents: "none", background: "linear-gradient(180deg," + jrRgba(T.bg, 0.72) + " 0%," + jrRgba(T.bg, 0.34) + " 20%," + jrRgba(T.bg, 0.34) + " 74%," + jrRgba(T.bg, 0.6) + " 100%)" }} />
-    </div>
+        style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
+      <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", background: "linear-gradient(180deg," + jrRgba(T.bg, 0.72) + " 0%," + jrRgba(T.bg, 0.34) + " 20%," + jrRgba(T.bg, 0.34) + " 74%," + jrRgba(T.bg, 0.6) + " 100%)" }} />
+    </ScrollLockBg>
   );
 
   return (
@@ -14200,28 +14204,24 @@ function ensureScoutCss() {
     + "@keyframes rscBeam{0%{opacity:0;transform:translateY(70vh)}14%{opacity:1}86%{opacity:1}100%{opacity:0;transform:translateY(-165vh)}}";
   document.head.appendChild(st);
 }
-// Ambient background behind any investing page: the same soft, blurred crossing
-// chrome-wave ribbons as the onboarding story beats (JrShaderBg), not the older
-// falling light-streaks. Absolute + self-clipping + zIndex:-1, so a root only
-// needs position:relative;zIndex:0 to sit it behind the content. Colors follow
-// the live theme; opacity follows dark/light unless overridden (pass an explicit
-// opacity for the always-cream onboarding surfaces).
-function ScoutBeamsBg(props) {
-  var isDark = T.bg === DARK_BG;
-  // A full-phone backdrop that stays put as the page scrolls. It lives as a
-  // z-index:-1 child of the page's (transparent) container, so it layers correctly
-  // behind the content and above the app background - no opaque ancestor to fight.
-  //
-  // Two things make this trickier than a plain background:
-  //  1. The page container is inset by the tab wrapper's padding and sits below the
-  //     header, so an inset:0 layer would be narrower than the screen and start
-  //     mid-way down. We instead size the layer to the whole viewport (100vw x
-  //     100vh) so it covers the phone edge to edge.
-  //  2. We can't use position:fixed to pin it: every screen renders inside App's
-  //     nav-slide wrapper, whose filled transform (animation-fill-mode:both) becomes
-  //     the containing block for fixed descendants - trapping them to that wrapper
-  //     instead of the viewport. So we translate the layer every frame to sit at the
-  //     viewport's top-left, which keeps it full-bleed and scroll-locked.
+// Full-bleed backdrop layer that stays put as the page scrolls, centered on the
+// app's column. It lives as a child of the page's (transparent, position:relative)
+// container, so it layers correctly behind the content and above the app
+// background - no opaque ancestor to fight.
+//
+// Two things make this trickier than a plain background:
+//  1. The page container is inset by the tab wrapper's padding and sits below the
+//     header, so an inset:0 layer would be narrower than the screen and start
+//     mid-way down. We instead size the layer to the whole viewport (100vw x
+//     100vh) so it covers the phone edge to edge.
+//  2. We can't use position:fixed to pin it: every screen renders inside App's
+//     nav-slide wrapper, whose filled transform (animation-fill-mode:both) becomes
+//     the containing block for fixed descendants - trapping them to that wrapper
+//     instead of the viewport (so a "fixed" backdrop drifts along with the page
+//     instead of staying centered as you scroll). So we translate the layer every
+//     frame to sit at the viewport's top-left, which keeps it full-bleed and
+//     scroll-locked no matter which ancestor is doing the scrolling.
+function ScrollLockBg(props) {
   var wrapRef = useRef(null);
   useEffect(function() {
     var wrap = wrapRef.current;
@@ -14266,10 +14266,26 @@ function ScoutBeamsBg(props) {
     };
   }, []);
   return (
-    <div ref={wrapRef} aria-hidden="true" style={{ position: "absolute", top: 0, left: 0, width: "100vw", height: "100vh", overflow: "hidden", pointerEvents: "none", zIndex: -1, willChange: "transform", opacity: props.opacity != null ? props.opacity : (isDark ? 0.62 : 0.5) }}>
-      <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base={T.bg} speed={0.16} intensity={0.85} yScale={0.46} xScale={1.05}
-        style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
+    <div ref={wrapRef} aria-hidden="true" style={{ position: "absolute", top: 0, left: 0, width: "100vw", height: "100vh", overflow: "hidden", pointerEvents: "none", zIndex: props.zIndex != null ? props.zIndex : -1, willChange: "transform" }}>
+      {props.children}
     </div>
+  );
+}
+// Ambient background behind any investing page: the same soft, blurred crossing
+// chrome-wave ribbons as the onboarding story beats (JrShaderBg), not the older
+// falling light-streaks. Self-clipping + zIndex:-1 via ScrollLockBg, so a root
+// only needs position:relative;zIndex:0 to sit it behind the content. Colors
+// follow the live theme; opacity follows dark/light unless overridden (pass an
+// explicit opacity for the always-cream onboarding surfaces).
+function ScoutBeamsBg(props) {
+  var isDark = T.bg === DARK_BG;
+  return (
+    <ScrollLockBg>
+      <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: props.opacity != null ? props.opacity : (isDark ? 0.62 : 0.5) }}>
+        <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base={T.bg} speed={0.16} intensity={0.85} yScale={0.46} xScale={1.05}
+          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
+      </div>
+    </ScrollLockBg>
   );
 }
 // The five teaching beats - shared by the inline banner and the onboarding film.
