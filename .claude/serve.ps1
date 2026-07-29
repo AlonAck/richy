@@ -1,6 +1,8 @@
 param(
   [string]$Root = (Split-Path -Parent $PSScriptRoot),
-  [int]$Port = 8899
+  # Falls back to $env:PORT so parallel sessions can each be handed a free port;
+  # an explicit -Port still wins, and 8899 remains the default when neither is set.
+  [int]$Port = $(if ($env:PORT) { [int]$env:PORT } else { 8899 })
 )
 Add-Type -AssemblyName System.Web
 $listener = New-Object System.Net.HttpListener

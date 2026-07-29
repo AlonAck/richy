@@ -1210,6 +1210,9 @@ function ensureLoadingCss() {
     "@keyframes rclSheen{from{transform:translateX(-130%)}to{transform:translateX(430%)}}",
     "@keyframes rclPing{from{opacity:0.55;transform:scale(0.6)}to{opacity:0;transform:scale(2.1)}}",
     "@keyframes rclPop{0%{transform:scale(0.5)}60%{transform:scale(1.18)}100%{transform:scale(1)}}",
+    "@keyframes rclFadeSeg{from{opacity:0}to{opacity:1}}",
+    ".rcl-seg{display:inline-block;opacity:0;animation-name:rclFadeSeg;animation-timing-function:ease-out;animation-fill-mode:forwards;}",
+    ".rcl-seg-space{white-space:pre;}",
     "@media (prefers-reduced-motion:reduce){*{animation-duration:0.001s!important;animation-iteration-count:1!important;transition-duration:0.001s!important}}",
   ].join("");
   document.head.appendChild(st);
@@ -1353,6 +1356,10 @@ function BootSplash() {
 // Streams Richard's reply in word by word - the "live answer" feel of the big
 // AI apps - instead of popping the finished text in at once. Only the message
 // flagged by props.animate streams; history renders instantly.
+//
+// props.fade opts the reveal into ResponseStream's fade feel: instead of text
+// snapping in at full opacity as the prefix grows, each new block eases up. It
+// only reads while streaming, so it rides along with props.animate.
 function TypeReveal(props) {
   var full = props.text || "";
   var words = full.split(/(\s+)/);
@@ -1377,7 +1384,238 @@ function TypeReveal(props) {
   var partial = words.slice(0, n).join("");
   // Keep a bold run open mid-stream so unpaired ** never flashes as raw text.
   if (((partial.match(/\*\*/g) || []).length) % 2 === 1) partial += "**";
-  return <RichardText text={partial} size={props.size} color={props.color} />;
+  return <RichardText text={partial} size={props.size} color={props.color} fade={!!(props.fade && props.animate)} />;
+}
+
+// Generic text-reveal primitive, ported from the shadcn/prompt-kit
+// ResponseStream component. Same props and the same speed math as upstream;
+// the Tailwind classes become inline styles and the fade keyframes ride along
+// with the rest of the loading CSS, because this app has no build step.
+//
+// Two reveal modes:
+//   "typewriter" - characters land in chunks, terminal-style.
+//   "fade"       - whole words fade up on a stagger; calmer, reads as thought.
+//
+// textStream takes either a finished string or an async iterable of chunks, so
+// the same component can front a real token stream the day we have one.
+//
+// This renders PLAIN TEXT. Richard's answers carry **markdown**, and those keep
+// using TypeReveal, which renders through RichardText. Reach for ResponseStream
+// on plain copy where the reveal itself is the point.
+//
+// Two deliberate departures from upstream:
+//   1. ES5 syntax and no useCallback/useMemo - the preview shells only alias
+//      useState/useEffect/useRef into scope, so nothing else may be used.
+//   2. The fade stagger is measured from the segments already on screen, not
+//      from the absolute word index. Upstream multiplies segmentDelay by the
+//      global index, so word 400 of a long answer waits 400 * delay ms and the
+//      tail never arrives. Ours keeps a constant pace at any length.
+function useTextStream(props) {
+  var textStream = props.textStream;
+
+  var _d = useState(""); var displayedText = _d[0]; var setDisplayedText = _d[1];
+  var _c = useState(false); var isComplete = _c[0]; var setIsComplete = _c[1];
+  var _s = useState([]); var segments = _s[0]; var setSegments = _s[1];
+
+  // Everything the animation loop reads lives in one ref. The loop starts once
+  // per stream and must see current props without being torn down and restarted.
+  var cfg = useRef({});
+  cfg.current = {
+    mode: props.mode || "typewriter",
+    speed: props.speed == null ? 20 : props.speed,
+    fadeDuration: props.fadeDuration,
+    segmentDelay: props.segmentDelay,
+    characterChunkSize: props.characterChunkSize,
+    onComplete: props.onComplete,
+    onError: props.onError,
+    onTick: props.onTick,
+  };
+
+  var idxRef = useRef(0);
+  var rafRef = useRef(null);
+  var liveRef = useRef(null);   // cancellation token for an in-flight iterable
+  var doneRef = useRef(false);
+  var shownRef = useRef(0);     // segments already revealed, for the stagger fix
+
+  function normSpeed() { return Math.min(100, Math.max(1, cfg.current.speed)); }
+
+  function chunkSize() {
+    if (typeof cfg.current.characterChunkSize === "number") return Math.max(1, cfg.current.characterChunkSize);
+    if (cfg.current.mode !== "typewriter") return 1;
+    var n = normSpeed();
+    if (n < 25) return 1;
+    return Math.max(1, Math.round((n - 25) / 10));
+  }
+
+  function segmentDelay() {
+    if (typeof cfg.current.segmentDelay === "number") return Math.max(0, cfg.current.segmentDelay);
+    return Math.max(1, Math.round(100 / Math.sqrt(normSpeed())));
+  }
+
+  function fadeDuration() {
+    if (typeof cfg.current.fadeDuration === "number") return Math.max(10, cfg.current.fadeDuration);
+    return Math.round(1000 / Math.sqrt(normSpeed()));
+  }
+
+  // Word segmentation, so a fade reveals whole words rather than characters.
+  // Intl.Segmenter knows scripts without spaces (Hebrew is fine either way,
+  // but the app ships an RTL locale and this is the correct primitive).
+  function splitSegments(text) {
+    try {
+      var seg = new Intl.Segmenter(navigator.language, { granularity: "word" });
+      return Array.from(seg.segment(text)).map(function(s, i) { return { text: s.segment, index: i }; });
+    } catch (e) {
+      if (cfg.current.onError) cfg.current.onError(e);
+      return text.split(/(\s+)/).filter(Boolean).map(function(w, i) { return { text: w, index: i }; });
+    }
+  }
+
+  function push(text) {
+    setDisplayedText(text);
+    if (cfg.current.mode === "fade") {
+      var next = splitSegments(text);
+      // Stagger only the words that are new this frame; the ones already faded
+      // in keep delay 0 so they don't restart.
+      var base = shownRef.current;
+      for (var i = 0; i < next.length; i++) next[i].delayIdx = Math.max(0, i - base);
+      shownRef.current = Math.max(0, next.length - 1);
+      setSegments(next);
+    }
+    if (cfg.current.onTick) cfg.current.onTick();
+  }
+
+  function finish() {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    setIsComplete(true);
+    if (cfg.current.onComplete) cfg.current.onComplete();
+  }
+
+  function pause() {
+    if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+  }
+
+  function reset() {
+    pause();
+    if (liveRef.current) { liveRef.current.aborted = true; liveRef.current = null; }
+    idxRef.current = 0;
+    shownRef.current = 0;
+    doneRef.current = false;
+    setDisplayedText("");
+    setSegments([]);
+    setIsComplete(false);
+  }
+
+  function runString(text) {
+    var lastFrame = 0;
+    var tick = function(ts) {
+      var wait = segmentDelay();
+      if (wait > 0 && ts - lastFrame < wait) { rafRef.current = requestAnimationFrame(tick); return; }
+      lastFrame = ts;
+      if (idxRef.current >= text.length) { finish(); return; }
+      var end = Math.min(idxRef.current + chunkSize(), text.length);
+      push(text.slice(0, end));
+      idxRef.current = end;
+      if (end < text.length) rafRef.current = requestAnimationFrame(tick);
+      else finish();
+    };
+    rafRef.current = requestAnimationFrame(tick);
+  }
+
+  // Async iterables are drained by hand rather than with for-await, to keep the
+  // file ES5 - Babel standalone runs here with only the react preset.
+  function runIterable(stream) {
+    var live = { aborted: false };
+    liveRef.current = live;
+    var it = stream[Symbol.asyncIterator] ? stream[Symbol.asyncIterator]() : stream[Symbol.iterator]();
+    var acc = "";
+    function step() {
+      if (live.aborted) return;
+      Promise.resolve(it.next()).then(function(r) {
+        if (live.aborted) return;
+        if (r.done) { finish(); return; }
+        acc += r.value == null ? "" : String(r.value);
+        push(acc);
+        step();
+      }).catch(function(e) {
+        if (live.aborted) return;
+        if (cfg.current.onError) cfg.current.onError(e);
+        finish();
+      });
+    }
+    step();
+  }
+
+  function startStreaming() {
+    reset();
+    if (typeof textStream === "string") runString(textStream);
+    else if (textStream) runIterable(textStream);
+    else finish();
+  }
+
+  useEffect(function() {
+    startStreaming();
+    return function() {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (liveRef.current) liveRef.current.aborted = true;
+    };
+  }, [textStream]);
+
+  return {
+    displayedText: displayedText,
+    isComplete: isComplete,
+    segments: segments,
+    getFadeDuration: fadeDuration,
+    getSegmentDelay: segmentDelay,
+    reset: reset,
+    startStreaming: startStreaming,
+    pause: pause,
+    resume: function() { if (typeof textStream === "string" && !doneRef.current) runString(textStream); },
+  };
+}
+
+function ResponseStream(props) {
+  // Injected during render, not in an effect: the fade rule sets the segments'
+  // starting opacity to 0, and an effect lands after the first paint, so the
+  // first words would flash in at full opacity before fading.
+  ensureLoadingCss();
+  var mode = props.mode || "typewriter";
+  var stream = useTextStream({
+    textStream: props.textStream,
+    speed: props.speed,
+    mode: mode,
+    onComplete: props.onComplete,
+    onTick: props.onTick,
+    onError: props.onError,
+    fadeDuration: props.fadeDuration,
+    segmentDelay: props.segmentDelay,
+    characterChunkSize: props.characterChunkSize,
+  });
+
+  var base = { fontFamily: UI, fontSize: props.size || 14, color: props.color || T.ink, lineHeight: 1.55 };
+  var style = Object.assign(base, props.style);
+
+  var body;
+  if (mode === "fade") {
+    var dur = stream.getFadeDuration();
+    var gap = stream.getSegmentDelay();
+    body = stream.segments.map(function(seg, i) {
+      var space = /^\s+$/.test(seg.text);
+      return (
+        <span
+          key={seg.text + "-" + i}
+          className={"rcl-seg" + (space ? " rcl-seg-space" : "")}
+          style={{ animationDuration: dur + "ms", animationDelay: (seg.delayIdx || 0) * gap + "ms" }}
+        >
+          {seg.text}
+        </span>
+      );
+    });
+  } else {
+    body = stream.displayedText;
+  }
+
+  return React.createElement(props.as || "div", { style: style }, body);
 }
 
 // === JOURNEY ANIMATION PRIMITIVES ===
@@ -1739,9 +1977,304 @@ function JrStepShell(props) {
   );
 }
 
-// Number entry with personality: rolling display, adaptive steppers,
-// quick-pick chips, and a "type it instead" escape hatch. Emits STRINGS -
-// the onboarding contract stores money as strings.
+// === AMOUNT SLIDER ===
+// Drag-to-set money control. The track is a live grid of accent squares that
+// trails the thumb, so moving a number feels like moving something physical
+// instead of tapping a stepper. Deliberately quiet - low alpha, slow drift, no
+// hard flicker: it should read as the surface breathing, not a light show.
+// Values are magnetic (every stop is a round number) and the quick-pick amounts
+// sit on the track as landmark ticks, so the chips and the slider are one control.
+var AMT_CELL = 6;    // square grid pitch, px
+var AMT_GAP = 1;     // gutter between squares
+var AMT_THUMB = 26;  // thumb width; the fill and ticks inset by half of it so the
+                     // thumb's center lands exactly on the value it reports
+
+// Deterministic per-cell noise: an organic-looking grid with nothing stored.
+function amtHash(x, y) {
+  var n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+  return n - Math.floor(n);
+}
+
+// A round step for the range, so dragging never lands on 3,417.
+function amtStep(span) {
+  return span <= 600 ? 10 : span <= 2000 ? 25 : span <= 6000 ? 50
+    : span <= 25000 ? 100 : span <= 120000 ? 500 : 1000;
+}
+
+function AmountSlider(props) {
+  useEffect(function() { ensureJourneyCss(); }, []);
+  var canvasRef = useRef(null);
+  var trackRef = useRef(null);
+  var drawRef = useRef(null);
+  var fracRef = useRef(0);
+  var maxRef = useRef(0);
+  var dragRef = useRef(false);
+  var _gr = useState(false); var grabbing = _gr[0]; var setGrabbing = _gr[1];
+  var _fo = useState(false); var focused = _fo[0]; var setFocused = _fo[1];
+
+  // The journey runs on its own fixed cream surface; every other surface follows
+  // the live theme and dark mode.
+  var app = props.tone === "app";
+  var value = Math.max(0, props.value || 0);
+  var marks = (props.marks || []).filter(function(m) { return m > 0; });
+
+  // Range comes from the quick-picks, with headroom above the top one. It only
+  // ever grows: were it to shrink back as the value came down, the thumb would
+  // re-pin to the right edge and dragging left would feel stuck.
+  var top = marks.length ? Math.max.apply(null, marks) : 5000;
+  var want = Math.max(Math.round(top * 1.5), value);
+  if (want > maxRef.current) maxRef.current = want;
+  var step = props.step || amtStep(maxRef.current);
+  var max = Math.max(step, Math.ceil(maxRef.current / step) * step);
+  var frac = Math.min(1, Math.max(0, value / max));
+  fracRef.current = frac;
+
+  var trackH = props.compact ? 28 : 34;
+  var trackBg = app ? T.inputBg : "rgba(0,0,0,0.045)";
+  var edge    = app ? T.sep : "rgba(0,0,0,0.07)";
+  var thumbBg = app ? T.card : "#fff";
+  var tickInk = app ? T.ink3 : JINK3;
+
+  // Landmarks pull harder than the plain step, so the thumb settles exactly on a
+  // quick-pick whenever it passes near one.
+  function snap(v) {
+    var pull = max * 0.02;
+    for (var i = 0; i < marks.length; i++) {
+      if (Math.abs(marks[i] - v) <= pull) return marks[i];
+    }
+    return Math.min(max, Math.max(0, Math.round(v / step) * step));
+  }
+  function emit(v) { if (v !== value && props.onChange) props.onChange(v); }
+  function valueAt(clientX) {
+    var el = trackRef.current;
+    if (!el) return value;
+    var r = el.getBoundingClientRect();
+    var usable = Math.max(1, r.width - AMT_THUMB);
+    var f = (clientX - r.left - AMT_THUMB / 2) / usable;
+    return snap(Math.min(1, Math.max(0, f)) * max);
+  }
+
+  function onDown(e) {
+    dragRef.current = true;
+    setGrabbing(true);
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+    emit(valueAt(e.clientX));
+  }
+  function onMove(e) { if (dragRef.current) emit(valueAt(e.clientX)); }
+  function onUp(e) {
+    if (!dragRef.current) return;
+    dragRef.current = false;
+    setGrabbing(false);
+    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (err) {}
+  }
+  function onKey(e) {
+    var k = e.key;
+    var v = null;
+    if (k === "ArrowRight" || k === "ArrowUp") v = value + step;
+    else if (k === "ArrowLeft" || k === "ArrowDown") v = value - step;
+    else if (k === "PageUp") v = value + step * 10;
+    else if (k === "PageDown") v = value - step * 10;
+    else if (k === "Home") v = 0;
+    else if (k === "End") v = max;
+    if (v === null) return;
+    e.preventDefault();
+    emit(Math.min(max, Math.max(0, Math.round(v / step) * step)));
+  }
+
+  useEffect(function() {
+    var canvas = canvasRef.current, track = trackRef.current;
+    if (!canvas || !track) return;
+    var ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    var reduced = jrReduced();
+    var raf = 0, running = false, onScreen = true, cw = 0, ch = 0;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    function resize() {
+      cw = track.clientWidth; ch = track.clientHeight;
+      canvas.width = Math.max(1, Math.round(cw * dpr));
+      canvas.height = Math.max(1, Math.round(ch * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // Always paint one frame here. rAF never fires in a background tab, so a
+      // slider mounted in one would otherwise sit blank until it got focus.
+      paint(performance.now());
+    }
+
+    var last = performance.now(), phase = 0, hintPhase = 0;
+    // paint() draws exactly one frame and schedules nothing; loop() is the only
+    // thing that ever queues another. Keeping them apart lets resize and the
+    // visibility handlers force a frame without forking a second rAF chain.
+    function paint(now) {
+      var dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+      var fill = fracRef.current;
+      // Drift picks up slightly with the amount, but never into a flicker.
+      phase += dt * (0.25 + fill * 1.0);
+      hintPhase += dt;
+      ctx.clearRect(0, 0, cw, ch);
+      var cols = Math.ceil(cw / AMT_CELL), rows = Math.ceil(ch / AMT_CELL);
+      var sq = AMT_CELL - AMT_GAP;
+      var fillPx = AMT_THUMB / 2 + fill * (cw - AMT_THUMB);
+      var bandPx = (0.3 + fill * 0.5) * cw;   // tail length behind the thumb
+      var hintStrength = 0.06 * (1 - fill);   // faint nudge in the empty track
+      // T is mutated in place by applyTheme, so re-reading it each frame keeps
+      // the fill on-theme (and on the right dark shade) without any listener.
+      ctx.fillStyle = T.orange;
+      for (var cx = 0; cx < cols; cx++) {
+        var cellPx = cx * AMT_CELL + AMT_CELL / 2;
+        var base, tail;
+        if (cellPx <= fillPx) {
+          var band = 1 - (fillPx - cellPx) / bandPx;
+          if (band <= 0) continue;
+          base = band * band * 0.5;
+          tail = true;
+        } else {
+          if (hintStrength <= 0.002) continue;
+          var reach = cw - fillPx;
+          var along = reach > 0 ? (cellPx - fillPx) / reach : 0;
+          // Fades in past the thumb, peaks mid-track, fades at the end; the crest
+          // drifts rightward to hint "there's more this way".
+          base = hintStrength * Math.sin(along * Math.PI)
+            * (0.5 + 0.5 * Math.sin((cellPx / cw) * 5 - hintPhase * 2.2));
+          if (base <= 0.002) continue;
+          tail = false;
+        }
+        for (var cy = 0; cy < rows; cy++) {
+          var ph = amtHash(cx, cy) * Math.PI * 2;
+          var stat = 0.62 + 0.38 * amtHash(cx + 7.3, cy - 3.1);
+          var anim = reduced ? 1
+            : tail ? 0.66 + 0.34 * (0.5 + 0.5 * Math.sin(phase * 1.6 + ph + cx * 0.28))
+            : 0.7 + 0.3 * (0.5 + 0.5 * Math.sin(phase * 1.3 + ph));
+          var a = base * stat * anim;
+          if (a < 0.02) continue;
+          ctx.globalAlpha = a > 1 ? 1 : a;
+          ctx.fillRect(cx * AMT_CELL, cy * AMT_CELL, sq, sq);
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+    function loop(now) {
+      paint(now);
+      if (running) raf = requestAnimationFrame(loop);
+    }
+    // Runs only when there is someone to see it: motion allowed, on screen, tab
+    // in front. Any of those going false parks the loop; all true resumes it.
+    function start() {
+      if (running || reduced || !onScreen || document.hidden) return;
+      running = true;
+      last = performance.now();
+      raf = requestAnimationFrame(loop);
+    }
+    function stop() {
+      if (!running) return;
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+    drawRef.current = paint;
+
+    resize();
+    start();
+
+    var ro = new ResizeObserver(resize);
+    ro.observe(track);
+
+    var io = new IntersectionObserver(function(entries) {
+      onScreen = entries[0] ? entries[0].isIntersecting : true;
+      if (onScreen) start(); else stop();
+    });
+    io.observe(track);
+
+    function onVis() { if (document.hidden) stop(); else start(); }
+    document.addEventListener("visibilitychange", onVis);
+
+    return function() {
+      stop();
+      ro.disconnect(); io.disconnect();
+      document.removeEventListener("visibilitychange", onVis);
+      drawRef.current = null;
+    };
+  }, []);
+
+  // Under reduced motion the loop is static, so repaint when the value moves.
+  useEffect(function() { if (jrReduced() && drawRef.current) drawRef.current(performance.now()); }, [frac]);
+
+  var sym = props.sym || _currency.sym || "$";
+  return (
+    <div ref={trackRef}
+      role="slider" tabIndex={0}
+      aria-label={props.label || "Amount"}
+      aria-valuemin={0} aria-valuemax={max} aria-valuenow={value}
+      aria-valuetext={sym + Math.round(value).toLocaleString("en-US")}
+      onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}
+      onKeyDown={onKey}
+      onFocus={function() { setFocused(true); }}
+      onBlur={function() { setFocused(false); }}
+      style={{
+        position: "relative", height: trackH, width: "100%", borderRadius: 13,
+        background: trackBg, border: "0.5px solid " + edge, overflow: "hidden",
+        touchAction: "none", cursor: grabbing ? "grabbing" : "pointer",
+        boxSizing: "border-box", outline: "none",
+        boxShadow: focused ? "0 0 0 3px " + T.orangeDim : "none",
+        transition: "box-shadow 0.2s ease",
+        userSelect: "none", WebkitUserSelect: "none", WebkitTapHighlightColor: "transparent",
+      }}>
+      <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} />
+      {marks.map(function(m) {
+        var f = m / max;
+        var passed = m <= value + 0.5;
+        return (
+          <span key={m} style={{
+            position: "absolute", top: "50%", width: 3, height: 3, borderRadius: "50%",
+            left: "calc(" + f + " * (100% - " + AMT_THUMB + "px) + " + (AMT_THUMB / 2) + "px)",
+            transform: "translate(-50%,-50%)", pointerEvents: "none",
+            background: passed ? T.orange : tickInk,
+            opacity: passed ? 0.5 : 0.4,
+            transition: "background 0.25s ease, opacity 0.25s ease",
+          }} />
+        );
+      })}
+      <span style={{
+        position: "absolute", top: "50%", left: "calc(" + frac + " * (100% - " + AMT_THUMB + "px))",
+        width: AMT_THUMB, height: trackH - 8, borderRadius: 9, background: thumbBg,
+        transform: "translateY(-50%)" + (grabbing ? " scale(1.06)" : ""),
+        boxShadow: "0 2px 8px rgba(40,28,16,0.18), 0 0 0 0.5px " + edge,
+        transition: (grabbing ? "" : "left 0.32s cubic-bezier(0.22,1,0.36,1), ") + "transform 0.16s ease, box-shadow 0.25s ease",
+        pointerEvents: "none", boxSizing: "border-box",
+      }}>
+        <span style={{
+          position: "absolute", left: "50%", top: "50%", width: 2, height: Math.round(trackH * 0.34),
+          borderRadius: 1, background: T.orange, opacity: 0.38, transform: "translate(-50%,-50%)",
+        }} />
+      </span>
+    </div>
+  );
+}
+
+// Settings-surface amount row: the exact figure stays typeable, the track under
+// it is for the numbers people only ever know roughly. Emits STRINGS, matching
+// the onboarding blob's money contract. (AmountField is the transaction form's
+// hero input - different surface, different job.)
+function AmountSettingRow(props) {
+  var flStyle = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 8, display: "block" };
+  var numInput = { width: "100%", fontSize: 15, color: T.ink, background: "none", border: "none", outline: "none", fontFamily: UI, padding: "11px 0 9px", boxSizing: "border-box", display: "block" };
+  return (
+    <div style={{ marginTop: props.first ? 0 : 16, paddingBottom: props.last ? 0 : 16, borderBottom: props.last ? "none" : "0.5px solid " + T.sep }}>
+      <span style={flStyle}>{props.label}</span>
+      <input value={props.value} onChange={function(e) { props.onChange(e.target.value); }}
+        type="number" inputMode="numeric" placeholder="0" style={numInput} />
+      <AmountSlider tone="app" compact
+        value={parseFloat(props.value) || 0}
+        marks={props.picks}
+        label={props.label}
+        onChange={function(v) { props.onChange(String(v)); }} />
+    </div>
+  );
+}
+
+// Number entry with personality: rolling display, adaptive steppers, a magnetic
+// drag track, quick-pick chips, and a "type it instead" escape hatch. Emits
+// STRINGS - the onboarding contract stores money as strings.
 function QuickAmount(props) {
   useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
   var _ty = useState(false); var typing = _ty[0]; var setTyping = _ty[1];
@@ -1761,6 +2294,15 @@ function QuickAmount(props) {
         </span>
         <JrStepBtn label="+" onPress={function() { setNum(num + stepSize(num)); }} />
       </div>
+      {/* Coarse control: drag the whole range at once. The steppers stay for
+          precise nudges, and the quick-picks below double as its landmark ticks.
+          Needs two picks at minimum to have a sensible range and any landmarks. */}
+      {(props.picks || []).length > 1 && (
+        <div style={{ marginTop: props.compact ? 14 : 20 }}>
+          <AmountSlider compact={props.compact} value={num} marks={props.picks} sym={sym}
+            label={props.label || "Amount"} onChange={setNum} />
+        </div>
+      )}
       {props.hint}
       {(props.picks || []).length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginTop: props.compact ? 12 : 18 }}>
@@ -2382,6 +2924,24 @@ function RichardText(props) {
   var text = (props.text || "").replace(/\r/g, "");
   var color = props.color || T.ink;
   var size = props.size || 14;
+  // Opt-in reveal: each block fades up the first time it appears. This is the
+  // markdown-safe half of ResponseStream's "fade" mode - that component stages
+  // whole words, which would flatten the bold/bullet structure this renderer
+  // exists to produce, so we stage blocks instead. Block keys are derived from
+  // the source line index and stay stable as a streaming prefix grows, so React
+  // reuses the element and the animation fires once instead of restarting on
+  // every tick. Injected during render, not in an effect: the keyframe starts
+  // at opacity 0 and an effect would land after the first paint.
+  var fade = !!props.fade;
+  if (fade) ensureLoadingCss();
+  function fx(base) {
+    if (!fade) return base;
+    base.animationName = "rclFadeSeg";
+    base.animationDuration = (props.fadeDuration || 420) + "ms";
+    base.animationTimingFunction = "ease-out";
+    base.animationFillMode = "both";
+    return base;
+  }
   var lines = text.split("\n");
   var blocks = [];
   var bullets = [];
@@ -2389,10 +2949,13 @@ function RichardText(props) {
     if (!bullets.length) return;
     var items = bullets; bullets = [];
     blocks.push(
+      // The fade rides on each row, not the list: the group's element is reused
+      // as a streaming list grows, so fading the group would animate only the
+      // first bullet and let the rest pop in.
       <div key={"ul" + blocks.length} style={{ display: "flex", flexDirection: "column", gap: 5, margin: "7px 0" }}>
         {items.map(function(it, i) {
           return (
-            <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+            <div key={i} style={fx({ display: "flex", gap: 8, alignItems: "flex-start" })}>
               <span style={{ color: T.orange, fontWeight: 700, flexShrink: 0 }}>-</span>
               <span style={{ flex: 1 }}>{renderRichInline(it, "li" + i)}</span>
             </div>
@@ -2408,8 +2971,8 @@ function RichardText(props) {
     if (b) { bullets.push(b[1]); return; }
     flush();
     var h = line.match(/^\*\*(.+?)\*\*:?$/);
-    if (h) { blocks.push(<div key={"h" + i} style={{ fontWeight: 700, color: color, margin: "9px 0 1px" }}>{h[1]}</div>); return; }
-    blocks.push(<div key={"p" + i} style={{ margin: "5px 0" }}>{renderRichInline(line, "p" + i)}</div>);
+    if (h) { blocks.push(<div key={"h" + i} style={fx({ fontWeight: 700, color: color, margin: "9px 0 1px" })}>{h[1]}</div>); return; }
+    blocks.push(<div key={"p" + i} style={fx({ margin: "5px 0" })}>{renderRichInline(line, "p" + i)}</div>);
   });
   flush();
   return <div style={{ fontSize: size, color: color, lineHeight: 1.6, fontFamily: UI, whiteSpace: "normal" }}>{blocks}</div>;
@@ -3736,7 +4299,7 @@ function OnboardingScreen(props) {
               <ThinkingDots size={4} color={T.orange} />
               <span style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em" }}>Your Plan by Richard</span>
             </div>
-            <TypeReveal animate text={genPlan} size={14} color={JINK} />
+            <TypeReveal fade animate text={genPlan} size={14} color={JINK} />
           </div>
 
           <div style={{ background: "#fff", borderRadius: 18, padding: "20px 20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
@@ -3913,7 +4476,7 @@ function OnboardingScreen(props) {
                   </div>
                 </div>
                 <div style={{ background: "#fff", borderRadius: "4px 20px 20px 20px", padding: "16px 18px", boxShadow: "0 6px 22px rgba(40,28,16,0.09)", maxWidth: 330, boxSizing: "border-box" }}>
-                  <TypeReveal animate color={JINK} size={15.5}
+                  <TypeReveal fade animate color={JINK} size={15.5}
                     text={"Hi " + firstName + ". I'm **Richard** — your money's new manager. Nine quick questions, and then I'll show you something most people never see about their own money."}
                     onDone={function() { setGreetDone(true); }} />
                 </div>
@@ -3984,13 +4547,13 @@ function OnboardingScreen(props) {
 
             {qIndex === 4 && (
               <div style={{ paddingTop: 14 }}>
-                <QuickAmount value={income} onChange={setIncome} picks={[1500, 3000, 5000, 8000]} />
+                <QuickAmount label="Monthly income" value={income} onChange={setIncome} picks={[1500, 3000, 5000, 8000]} />
               </div>
             )}
 
             {qIndex === 5 && (
               <div style={{ paddingTop: 14 }}>
-                <QuickAmount value={essentials} onChange={setEssentials} picks={essPicks} />
+                <QuickAmount label="Monthly essentials" value={essentials} onChange={setEssentials} picks={essPicks} />
               </div>
             )}
 
@@ -4008,7 +4571,7 @@ function OnboardingScreen(props) {
 
             {qIndex === 7 && (
               <div style={{ paddingTop: 14 }}>
-                <QuickAmount value={overspend} onChange={setOverspend} picks={[100, 250, 500, 1000]} />
+                <QuickAmount label="Unaccounted spending each month" value={overspend} onChange={setOverspend} picks={[100, 250, 500, 1000]} />
                 <div key={hint.tag} style={{ textAlign: "center", marginTop: 18, animation: "rclPhrase 0.35s ease both" }}>
                   <span style={{ display: "inline-block", background: T.orangeDim, color: T.orange, fontSize: 12.5, fontWeight: 800, padding: "7px 14px", borderRadius: 999, letterSpacing: "0.02em" }}>{hint.tag}</span>
                   <div style={{ fontSize: 13, color: JINK2, marginTop: 8, lineHeight: 1.5 }}>{hint.txt}</div>
@@ -4019,9 +4582,9 @@ function OnboardingScreen(props) {
             {qIndex === 8 && (
               <div style={{ textAlign: "center", paddingTop: 6 }}>
                 <div style={labelJ}>Saved up</div>
-                <QuickAmount compact value={savings} onChange={setSavings} picks={[500, 2000, 10000]} />
+                <QuickAmount compact label="Saved up" value={savings} onChange={setSavings} picks={[500, 2000, 10000]} />
                 <div style={Object.assign({}, labelJ, { marginTop: 30 })}>Total debt</div>
-                <QuickAmount compact value={debt} onChange={setDebt} picks={[0, 1000, 5000]} />
+                <QuickAmount compact label="Total debt" value={debt} onChange={setDebt} picks={[0, 1000, 5000]} />
               </div>
             )}
 
@@ -4040,7 +4603,7 @@ function OnboardingScreen(props) {
                 </div>
                 <div style={Object.assign({}, labelJ, { marginTop: 20, textAlign: "center" })}>Target amount</div>
                 <div style={{ textAlign: "center" }}>
-                  <QuickAmount compact value={goalAmt} onChange={setGoalAmt} picks={[2000, 5000, 10000]} />
+                  <QuickAmount compact label="Goal target amount" value={goalAmt} onChange={setGoalAmt} picks={[2000, 5000, 10000]} />
                 </div>
                 <div style={Object.assign({}, labelJ, { marginTop: 22 })}>Timeline</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
@@ -5023,6 +5586,27 @@ function Overview(props) {
           </div>
         </div>
       )}
+
+      <div style={{ marginBottom: 20, animation: "rcFadeUp 0.6s ease 0.05s both" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, fontFamily: UI }}>{"Get the most from Richy"}</div>
+        <div style={{ display: "flex", gap: 10 }}>
+          {[
+            { icon: "credit",  title: "Crush your debt", sub: "Payoff plan + debt-free date", go: function() { if (props.onOpenDebts) props.onOpenDebts(); else nav("debts"); } },
+            { icon: "user",    title: "Add your partner", sub: "Share budgets & goals",       go: function() { if (props.onOpenCollab) props.onOpenCollab(); else nav("collab"); } },
+            { icon: "refresh", title: "Sync your bank",   sub: "Auto-import transactions",     go: function() { if (props.onSetupSync) props.onSetupSync(); else nav("bankSync"); } }
+          ].map(function(a, i) {
+            return (
+              <div key={i} onClick={a.go} style={{ flex: 1, background: T.card, borderRadius: 16, padding: "14px 12px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer", textAlign: "center" }}>
+                <div style={{ width: 38, height: 38, borderRadius: 12, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 8px" }}>
+                  <SVGIcon id={a.icon} size={18} color={T.orange} />
+                </div>
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: T.ink, lineHeight: 1.25 }}>{a.title}</div>
+                <div style={{ fontSize: 10.5, color: T.ink3, marginTop: 3, lineHeight: 1.3 }}>{a.sub}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {tx.length === 0 && (
         <Card style={{ padding: "36px 24px", textAlign: "center", marginBottom: 20 }}>
@@ -8231,7 +8815,7 @@ function Trips(props) {
                 )}
                 {tq === 4 && (
                   <div style={{ paddingTop: 14 }}>
-                    <QuickAmount value={form.total} onChange={function(v) { setField("total", v); }} picks={[1000, 2500, 5000, 10000]} />
+                    <QuickAmount label="Total trip budget" value={form.total} onChange={function(v) { setField("total", v); }} picks={[1000, 2500, 5000, 10000]} />
                   </div>
                 )}
                 {tq === 5 && (
@@ -8413,7 +8997,7 @@ function Trips(props) {
                         return (
                           <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
                             <div style={{ maxWidth: "82%", background: isUser ? T.orange : "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
-                              {isUser ? m.text : <TypeReveal text={m.text} size={13} animate={m.role === "richard" && m.text === animTripRef.current} onDone={function() { animTripRef.current = null; }} />}
+                              {isUser ? m.text : <TypeReveal fade text={m.text} size={13} animate={m.role === "richard" && m.text === animTripRef.current} onDone={function() { animTripRef.current = null; }} />}
                             </div>
                           </div>
                         );
@@ -8571,7 +9155,7 @@ function Trips(props) {
                 return (
                   <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
                     <div style={{ maxWidth: "82%", background: isUser ? T.orange : "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13.5, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
-                      {isUser ? m.text : <TypeReveal text={m.text} size={13.5} animate={m.role === "richard" && m.text === animTripRef.current} onDone={function() { animTripRef.current = null; }} />}
+                      {isUser ? m.text : <TypeReveal fade text={m.text} size={13.5} animate={m.role === "richard" && m.text === animTripRef.current} onDone={function() { animTripRef.current = null; }} />}
                     </div>
                   </div>
                 );
@@ -9128,6 +9712,16 @@ function Advisor(props) {
   var advScrollRef = useRef(null);
   var advScrollTimer = useRef(null);
   var advCountRef = useRef(0); // live panel count, set during render of the hero
+
+  // The Next Big Move panel streams its copy in rather than popping it, but a
+  // reveal that plays behind an off-screen panel is a reveal nobody sees - so it
+  // waits until the user has actually swiped to it. The flag latches on, so
+  // swiping away and back doesn't replay the animation.
+  var moveIdxRef = useRef(-1); // index of the move panel, set during hero render
+  var _mv = useState(false); var moveSeen = _mv[0]; var setMoveSeen = _mv[1];
+  useEffect(function() {
+    if (!moveSeen && moveIdxRef.current >= 0 && page >= moveIdxRef.current) setMoveSeen(true);
+  }, [page, moveSeen]);
 
   // Grow the ask box to fit wrapped text (capped), and snap it back when cleared.
   function autoGrow(el) {
@@ -10206,6 +10800,7 @@ function Advisor(props) {
     );
 
     // Panel - Your Next Big Move
+    moveIdxRef.current = panels.length;
     panels.push(
       <div key="move" style={panelStyle({ justifyContent: "center" })}>
         <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
@@ -10221,7 +10816,17 @@ function Advisor(props) {
           </div>
         ) : null}
         <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.015em", color: HINK, marginTop: move.impact ? 16 : 18 }}>{move.title}</div>
-        <div style={{ fontSize: 14, lineHeight: 1.55, color: HMUT, marginTop: 9 }}>{move.action}</div>
+        {/* The move copy fades in word by word. A hidden copy of the finished
+            text holds the space so the panel - which centers its content in a
+            fixed-height frame - doesn't drift upward as words land. */}
+        <div style={{ position: "relative", marginTop: 9 }}>
+          <div aria-hidden="true" style={{ fontSize: 14, lineHeight: 1.55, color: HMUT, visibility: "hidden" }}>{move.action}</div>
+          {moveSeen ? (
+            <ResponseStream textStream={move.action} mode="fade" size={14} color={HMUT}
+              fadeDuration={900} segmentDelay={26}
+              style={{ position: "absolute", left: 0, top: 0, right: 0 }} />
+          ) : null}
+        </div>
       </div>
     );
 
@@ -10599,7 +11204,7 @@ function Advisor(props) {
               return (
                 <div key={i} style={{ display: "flex", justifyContent: u ? "flex-end" : "flex-start" }}>
                   <div style={{ maxWidth: "84%", padding: "11px 14px", fontSize: 13.5, lineHeight: 1.5, whiteSpace: "pre-wrap", borderRadius: u ? "16px 16px 4px 16px" : "4px 16px 16px 16px", background: u ? "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.045)", color: u ? "#fff" : T.ink, boxShadow: u ? "0 4px 14px rgba(137,112,198,0.22)" : "none" }}>
-                    {u ? m.text : <TypeReveal text={m.text} size={13.5} animate={i === animMsgRef.current} onTick={pinChatScroll} onDone={function() { animMsgRef.current = -1; }} />}
+                    {u ? m.text : <TypeReveal fade text={m.text} size={13.5} animate={i === animMsgRef.current} onTick={pinChatScroll} onDone={function() { animMsgRef.current = -1; }} />}
                   </div>
                 </div>
               );
@@ -13570,7 +14175,7 @@ function StockView(props) {
                     </div>
                   </div>
                   <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.55 }}>
-                    <TypeReveal animate={freshTake} text={take.opinion} size={14} color={T.ink} />
+                    <TypeReveal fade animate={freshTake} text={take.opinion} size={14} color={T.ink} />
                   </div>
                   {take.prediction && (
                     <div style={{ marginTop: 12, background: "rgba(0,0,0,0.03)", borderRadius: 12, padding: "11px 13px" }}>
@@ -13988,7 +14593,7 @@ function InvestorOnboardScreen(props) {
               <ThinkingDots size={4} color={T.orange} />
               <span style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em" }}>Richard's guide for you</span>
             </div>
-            <TypeReveal animate={basics && basics.source === "ai"} text={b.intro} size={14.5} color={JINK} />
+            <TypeReveal fade animate={basics && basics.source === "ai"} text={b.intro} size={14.5} color={JINK} />
             <div style={{ marginTop: 16 }}>
               {(b.lessons || []).map(function(l, i) {
                 return (
@@ -14065,7 +14670,7 @@ function InvestorOnboardScreen(props) {
                   </div>
                 </div>
                 <div style={{ background: "#fff", borderRadius: "4px 20px 20px 20px", padding: "16px 18px", boxShadow: "0 6px 22px rgba(40,28,16,0.09)", maxWidth: 330, boxSizing: "border-box" }}>
-                  <TypeReveal animate color={JINK} size={15.5}
+                  <TypeReveal fade animate color={JINK} size={15.5}
                     text={"Hi " + firstName + ". Investing can feel like a members-only club, but it really isn't. Four quick questions and I'll teach you the basics **your way** - then show you how to size up any stock."} />
                 </div>
                 <div style={{ marginTop: 26, width: "100%" }}>
@@ -14776,7 +15381,7 @@ function StockScoutView(props) {
               return (
                 <div key={i} style={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start", marginBottom: 9 }}>
                   <div style={{ maxWidth: "85%", background: mine ? T.btn : "rgba(0,0,0,0.05)", color: mine ? "#fff" : T.ink, borderRadius: mine ? "14px 14px 4px 14px" : "14px 14px 14px 4px", padding: "9px 13px", fontSize: 13.5, lineHeight: 1.5, fontFamily: UI }}>
-                    {mine ? m.text : <TypeReveal animate={i === freshIdx} text={m.text} size={13.5} color={T.ink} />}
+                    {mine ? m.text : <TypeReveal fade animate={i === freshIdx} text={m.text} size={13.5} color={T.ink} />}
                   </div>
                 </div>
               );
@@ -15717,7 +16322,7 @@ function BusinessView(props) {
                         return (
                           <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
                             <div style={{ maxWidth: "82%", background: isUser ? T.orange : "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
-                              {isUser ? m.text : <TypeReveal text={m.text} size={13} animate={m.role === "richard" && m.text === animBizRef.current} onDone={function() { animBizRef.current = null; }} />}
+                              {isUser ? m.text : <TypeReveal fade text={m.text} size={13} animate={m.role === "richard" && m.text === animBizRef.current} onDone={function() { animBizRef.current = null; }} />}
                             </div>
                           </div>
                         );
@@ -15948,13 +16553,13 @@ function BusinessView(props) {
 
               {bq === 7 && (
                 <div style={{ paddingTop: 14 }}>
-                  <QuickAmount value={form.monthly} onChange={function(v) { setField("monthly", v); }} picks={[250, 500, 1000, 2500]} />
+                  <QuickAmount label="Monthly business costs" value={form.monthly} onChange={function(v) { setField("monthly", v); }} picks={[250, 500, 1000, 2500]} />
                 </div>
               )}
 
               {bq === 8 && (
                 <div style={{ paddingTop: 14 }}>
-                  <QuickAmount value={form.revenueGoal} onChange={function(v) { setField("revenueGoal", v); }} picks={[500, 1000, 3000, 5000]} />
+                  <QuickAmount label="Monthly revenue goal" value={form.revenueGoal} onChange={function(v) { setField("revenueGoal", v); }} picks={[500, 1000, 3000, 5000]} />
                 </div>
               )}
 
@@ -15992,7 +16597,7 @@ function BusinessView(props) {
 
               {bq === 11 && (
                 <div style={{ paddingTop: 14 }}>
-                  <QuickAmount value={form.startCap} onChange={function(v) { setField("startCap", v); }} picks={[500, 1000, 5000]} />
+                  <QuickAmount label="Starting capital" value={form.startCap} onChange={function(v) { setField("startCap", v); }} picks={[500, 1000, 5000]} />
                   {capNum > 0 && (
                     <div style={{ marginTop: 20, textAlign: "center" }}>
                       <div style={{ display: "flex", justifyContent: "center", gap: 10, marginBottom: 10 }}>
@@ -16603,7 +17208,7 @@ function BusinessView(props) {
                 return (
                   <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
                     <div style={{ maxWidth: "82%", background: isUser ? T.orange : "rgba(0,0,0,0.05)", borderRadius: 12, padding: "8px 12px", fontSize: 13.5, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
-                      {isUser ? m.text : <TypeReveal text={m.text} size={13.5} animate={m.role === "richard" && m.text === animBizRef.current} onDone={function() { animBizRef.current = null; }} />}
+                      {isUser ? m.text : <TypeReveal fade text={m.text} size={13.5} animate={m.role === "richard" && m.text === animBizRef.current} onDone={function() { animBizRef.current = null; }} />}
                     </div>
                   </div>
                 );
@@ -17602,7 +18207,7 @@ function BankSyncHelpChat(props) {
                   )}
                   {m.text ? (
                     <span style={{ display: "block", padding: m.img ? "0 8px" : 0 }}>
-                      {mine ? m.text : <TypeReveal animate={!!(isLast && m.fresh)} text={m.text} size={13.5} color={JINK} />}
+                      {mine ? m.text : <TypeReveal fade animate={!!(isLast && m.fresh)} text={m.text} size={13.5} color={JINK} />}
                     </span>
                   ) : null}
                 </div>
@@ -18335,20 +18940,15 @@ function EditFinancialView(props) {
             );
           })}
         </div>
-        <span style={flStyle}>Monthly income</span>
-        <input value={income} onChange={function(e) { setIncome(e.target.value); }} type="number" placeholder="0" style={numInput} />
-        <span style={Object.assign({}, flStyle, { marginTop: 14 })}>Monthly essentials</span>
-        <input value={essentials} onChange={function(e) { setEssentials(e.target.value); }} type="number" placeholder="0" style={numInput} />
-        <span style={Object.assign({}, flStyle, { marginTop: 14 })}>Current savings</span>
-        <input value={savings} onChange={function(e) { setSavings(e.target.value); }} type="number" placeholder="0" style={numInput} />
-        <span style={Object.assign({}, flStyle, { marginTop: 14 })}>Total debt</span>
-        <input value={debt} onChange={function(e) { setDebt(e.target.value); }} type="number" placeholder="0" style={Object.assign({}, numInput, { borderBottom: "none" })} />
+        <AmountSettingRow first label="Monthly income" value={income} onChange={setIncome} picks={[1500, 3000, 5000, 8000]} />
+        <AmountSettingRow label="Monthly essentials" value={essentials} onChange={setEssentials} picks={[800, 1500, 2500, 4000]} />
+        <AmountSettingRow label="Current savings" value={savings} onChange={setSavings} picks={[500, 2000, 10000, 25000]} />
+        <AmountSettingRow last label="Total debt" value={debt} onChange={setDebt} picks={[1000, 5000, 20000]} />
       </Card>
       <Card style={{ padding: "22px 20px", marginBottom: 12 }}>
         <span style={flStyle}>Top goal</span>
         <input value={goalName} onChange={function(e) { setGoalName(e.target.value); }} placeholder="e.g. Emergency fund" style={numInput} />
-        <span style={Object.assign({}, flStyle, { marginTop: 14 })}>Target amount</span>
-        <input value={goalAmt} onChange={function(e) { setGoalAmt(e.target.value); }} type="number" placeholder="0" style={numInput} />
+        <AmountSettingRow label="Target amount" value={goalAmt} onChange={setGoalAmt} picks={[2000, 5000, 10000, 25000]} />
         <span style={Object.assign({}, flStyle, { marginTop: 14 })}>Timeline</span>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, paddingTop: 8 }}>
           {TIMELINES.map(function(t) {
@@ -18608,7 +19208,7 @@ function PlanView(props) {
             return (
               <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start", marginBottom: i < msgs.length - 1 ? 10 : 0 }}>
                 <div style={{ maxWidth: "82%", background: isUser ? T.orange : "rgba(0,0,0,0.05)", borderRadius: 14, padding: "9px 13px", fontSize: 14, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
-                  {isUser ? m.text : <TypeReveal text={m.text} size={14} animate={m.role === "richard" && m.text === animPlanRef.current} onDone={function() { animPlanRef.current = null; }} />}
+                  {isUser ? m.text : <TypeReveal fade text={m.text} size={14} animate={m.role === "richard" && m.text === animPlanRef.current} onDone={function() { animPlanRef.current = null; }} />}
                 </div>
               </div>
             );
@@ -19818,7 +20418,7 @@ export default function App() {
   // The five swipeable main tabs, produced by id so both the visible page and the
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
-    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} investing={investing} trips={trips} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
+    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} investing={investing} trips={trips} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} />;
     if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
