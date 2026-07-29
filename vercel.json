@@ -2,5 +2,8 @@
   "version": 2,
   "rewrites": [
     { "source": "/", "destination": "/preview.html" }
+  ],
+  "crons": [
+    { "path": "/api/leumi-fintaka?action=sync&cron=1", "schedule": "0 6 * * *" }
   ]
 }
