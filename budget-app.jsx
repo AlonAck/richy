@@ -455,6 +455,28 @@ function isTrip(t) {
   return !!(t && t.trip === true);
 }
 
+// Resolves a bulk-delete action's filters (category exact name, merchant
+// substring on the label, type, date range) against the real transaction list.
+// Opening balance, savings/business transfers and trip lump-sums are always
+// excluded - they're structural ledger entries, not things a "delete my Food
+// spending" request should ever be able to reach. At least one filter is
+// required by the caller (validateAction); this just applies whichever were given.
+function matchDeleteTx(a, tx) {
+  var cat = a.category ? (a.category + "").trim().toLowerCase() : null;
+  var merchant = a.merchant ? (a.merchant + "").trim().toLowerCase() : null;
+  var type = (a.type === "income" || a.type === "expense") ? a.type : null;
+  var from = a.dateFrom || null, to = a.dateTo || null;
+  return (tx || []).filter(function(t) {
+    if (isOpening(t) || isTransfer(t) || isTrip(t)) return false;
+    if (cat && (t.category || "").trim().toLowerCase() !== cat) return false;
+    if (merchant && (t.label || "").toLowerCase().indexOf(merchant) === -1) return false;
+    if (type && t.type !== type) return false;
+    if (from && (t.date || "") < from) return false;
+    if (to && (t.date || "") > to) return false;
+    return true;
+  });
+}
+
 // Offline fallback rates, expressed as approximate units of each currency per 1 USD.
 // Used when the live FX request fails (no network) OR when the currency is outside
 // frankfurter's ECB set (COP, GHS, VND, NGN, etc.). rate(from -> to) = USD[to] / USD[from].
@@ -9687,6 +9709,16 @@ function validateAction(a, ctx) {
     case "banner":
       if (a.tone && a.tone !== "info" && a.tone !== "success" && a.tone !== "warn") return { ok: false, reason: "unknown banner tone" };
       return textOk(a.text, 200) ? { ok: true } : { ok: false, reason: "invalid banner text" };
+    case "deleteTx":
+      // Requires at least one real filter - never allow a scope-free "delete
+      // everything" tag through, even if the model were to emit one.
+      if (!a.category && !a.merchant && !a.dateFrom && !a.dateTo && !a.type) return { ok: false, reason: "delete needs at least one filter" };
+      if (a.category && !hasCat(a.category)) return { ok: false, reason: "unknown category \"" + a.category + "\"" };
+      if (a.type && a.type !== "expense" && a.type !== "income") return { ok: false, reason: "unknown type" };
+      if (a.dateFrom && !/^\d{4}-\d{2}-\d{2}$/.test(a.dateFrom)) return { ok: false, reason: "invalid dateFrom" };
+      if (a.dateTo && !/^\d{4}-\d{2}-\d{2}$/.test(a.dateTo)) return { ok: false, reason: "invalid dateTo" };
+      var delMatches = matchDeleteTx(a, ctx.tx);
+      return delMatches.length > 0 ? { ok: true } : { ok: false, reason: "no transactions match that" };
     default:
       return { ok: false, reason: "unknown action kind \"" + a.kind + "\"" };
   }
@@ -10353,6 +10385,16 @@ function Advisor(props) {
     if (a.kind === "noteSettle") return "Settle: " + a.label;
     if (a.kind === "instructions") return (a.op === "append" ? "Add to Richard's instructions: " : "Set Richard's instructions to: ") + "“" + a.text + "”";
     if (a.kind === "banner") return "Show banner: “" + a.text + "”";
+    if (a.kind === "deleteTx") {
+      var delMatches = matchDeleteTx(a, props.tx);
+      var delTotal = delMatches.reduce(function(s, t) { return s + t.amount; }, 0);
+      var scope = [];
+      if (a.category) scope.push(a.category);
+      if (a.merchant) scope.push("“" + a.merchant + "”");
+      if (a.type) scope.push(a.type + " only");
+      if (a.dateFrom || a.dateTo) scope.push((a.dateFrom || "any date") + " → " + (a.dateTo || "now"));
+      return "Delete " + delMatches.length + " transaction" + (delMatches.length === 1 ? "" : "s") + (scope.length ? " (" + scope.join(", ") + ")" : "") + " – " + dollars(delTotal) + " total. This can't be undone.";
+    }
     return "Update your data";
   }
   // Apply every confirmed action at once. Batches each data type into a single
@@ -10369,6 +10411,8 @@ function Advisor(props) {
     var nextNotes = (props.notes || []).slice();
     var nextBanners = (props.customBanners || []).slice();
     var newInstructions = null;
+    var removeTxIds = {};
+    var deletedCount = 0, deletedTotal = 0;
     var txChanged = false, budChanged = false, goalChanged = false, catChanged = false, folderChanged = false, savChanged = false, noteChanged = false, noteSettled = false, bannerChanged = false;
     actions.forEach(function(a, i) {
       if (a.kind === "expense" || a.kind === "income") {
@@ -10429,15 +10473,22 @@ function Advisor(props) {
           nextBanners = nextBanners.sort(function(x, y) { return (!!x.dismissedAt === !!y.dismissedAt) ? x.createdAt - y.createdAt : (x.dismissedAt ? -1 : 1); }).slice(nextBanners.length - 10);
         }
         bannerChanged = true;
+      } else if (a.kind === "deleteTx") {
+        var delMatches = matchDeleteTx(a, props.tx);
+        delMatches.forEach(function(t) {
+          if (!removeTxIds[t.id]) { removeTxIds[t.id] = true; deletedCount++; deletedTotal += t.amount; }
+        });
+        if (delMatches.length) txChanged = true;
       }
     });
     // A settle touches tx + notes together - write them atomically (mirrors the
     // manual Settle button) so one save can't land without the other. Otherwise
     // tx and notes are independent and save separately.
+    var survivingTx = (props.tx || []).filter(function(t) { return !removeTxIds[t.id]; });
     if (noteSettled && props.onSettleNote) {
-      props.onSettleNote((props.tx || []).concat(newTx), nextNotes);
+      props.onSettleNote(survivingTx.concat(newTx), nextNotes);
     } else {
-      if (txChanged && props.onSaveTx) props.onSaveTx((props.tx || []).concat(newTx));
+      if (txChanged && props.onSaveTx) props.onSaveTx(survivingTx.concat(newTx));
       if (noteChanged && props.onSaveNotes) props.onSaveNotes(nextNotes);
     }
     if (budChanged && props.onSaveBudgets) props.onSaveBudgets(nextBudgets);
@@ -10447,6 +10498,7 @@ function Advisor(props) {
     if (savChanged && props.onSaveSavings) props.onSaveSavings(nextSavings);
     if (bannerChanged && props.onSaveBanners) props.onSaveBanners(nextBanners);
     if (newInstructions !== null && props.onSaveInstructions) props.onSaveInstructions(newInstructions);
+    return { deletedCount: deletedCount, deletedTotal: deletedTotal };
   }
 
   // Fold the live chat into the persisted archive (newest first), de-duped by id.
@@ -10515,6 +10567,7 @@ function Advisor(props) {
       + "[ACTION:{\"kind\":\"noteSettle\",\"label\":\"Sam - dinner split\"}] settles an existing open note by its exact label, turning it into a real transaction; "
       + "[ACTION:{\"kind\":\"instructions\",\"op\":\"append\",\"text\":\"I hate subscriptions, always flag them\"}] (op is append or set) updates YOUR OWN custom instructions for how to advise this user going forward - use only when the user directly asks you to remember/always do something; "
       + "[ACTION:{\"kind\":\"banner\",\"text\":\"Rent is due Friday\",\"tone\":\"info\",\"icon\":\"spark\",\"dismissible\":true}] (tone is info, success, or warn) puts a small banner message at the top of the app, visible on every tab, until the user dismisses it - use ONLY when the user directly and explicitly asks you to put up/create/show a banner or reminder message; never on your own initiative. "
+      + "[ACTION:{\"kind\":\"deleteTx\",\"category\":\"Food\",\"merchant\":\"Starbucks\",\"dateFrom\":\"2026-07-01\",\"dateTo\":\"2026-07-31\",\"type\":\"expense\"}] bulk-deletes every transaction matching the filters you give (category is an exact category name, merchant is a substring matched against the transaction label, type is expense or income, dateFrom/dateTo are YYYY-MM-DD and inclusive) - ALL fields are optional but you MUST include at least one, and only the filters the user actually specified; never invent a date range or category to narrow it. This is IRREVERSIBLE and deletes real logged data, so use it ONLY when the user explicitly asks to delete/remove/clear transactions (never on your own initiative, never as part of a broader cleanup you suggested), and never target their whole history with zero filters - if they say \"delete everything\" ask them to confirm a scope (a category, merchant, or date range) first instead of proposing the tag. The confirmation card will show exactly how many transactions and how much money match before anything is removed, so you don't need to state the count yourself. "
       + "Use the EXACT category, folder, savings pot, and note-label names given in the data below - never invent or guess a name. "
       + "If the user mentions several things at once, emit several tags. Only emit a tag for a concrete event, or a direct explicit request to change/create something, with real values the user actually stated - never for hypotheticals, plans, or general advice. Do not mention the word ACTION or the tag syntax in your spoken reply; just speak naturally and let the tags do the work."
       + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a CFO who builds a business plan - send business owners there. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (phone-automation Bank Sync is the real automatic option), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : ""),
@@ -10527,7 +10580,7 @@ function Advisor(props) {
         // against the user's real current data before it's allowed anywhere near
         // the confirm card. Invalid/unresolvable ones are silently dropped, not
         // shown broken - the user only ever sees things that will actually work.
-        var validationCtx = { categories: cats, folders: props.folders, savings: props.savings, notes: props.notes };
+        var validationCtx = { categories: cats, folders: props.folders, savings: props.savings, notes: props.notes, tx: props.tx };
         var updates = [], rejectedCount = 0;
         rawUpdates.forEach(function(a) {
           if (validateAction(a, validationCtx).ok) updates.push(a); else rejectedCount++;
@@ -11265,38 +11318,54 @@ function Advisor(props) {
             })}
           </div>
         )}
-        {pendingUpdates && pendingUpdates.length > 0 && (
-          <div style={{ padding: "13px 13px 11px", borderTop: "0.5px solid " + T.sep, background: T.orangeDim, marginTop: 10, borderRadius: 10 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.orange, marginBottom: 9, display: "flex", alignItems: "center", gap: 6 }}>
-              <SVGIcon id="spark" size={15} color={T.orange} />
-              Richard wants to update your app
+        {pendingUpdates && pendingUpdates.length > 0 && (function() {
+          // A batch containing a delete gets a red warning treatment instead of
+          // the usual mild orange "update" card - this one can't be undone.
+          var hasDelete = pendingUpdates.some(function(a) { return a.kind === "deleteTx"; });
+          var tint = hasDelete ? T.redDim : T.orangeDim;
+          var accent = hasDelete ? T.red : T.orange;
+          return (
+            <div style={{ padding: "13px 13px 11px", borderTop: "0.5px solid " + T.sep, background: tint, marginTop: 10, borderRadius: 10 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: accent, marginBottom: 9, display: "flex", alignItems: "center", gap: 6 }}>
+                <SVGIcon id={hasDelete ? "trash" : "spark"} size={15} color={accent} />
+                {hasDelete ? "Richard wants to delete transactions" : "Richard wants to update your app"}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 11 }}>
+                {pendingUpdates.map(function(a, i) {
+                  var isDel = a.kind === "deleteTx";
+                  return (
+                    <div key={i} style={{ fontSize: 13, color: isDel ? T.red : T.ink, fontWeight: isDel ? 600 : 400, background: "rgba(255,255,255,0.55)", borderRadius: 8, padding: "8px 11px", lineHeight: 1.4 }}>
+                      {updateLabel(a)}
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ display: "flex", gap: 6 }}>
+                <button onClick={function() {
+                  var summary = applyUpdates(pendingUpdates);
+                  var n = pendingUpdates.length;
+                  var msg;
+                  if (summary && summary.deletedCount > 0 && n === 1) {
+                    msg = "Done - I've deleted " + summary.deletedCount + " transaction" + (summary.deletedCount === 1 ? "" : "s") + " (" + dollars(summary.deletedTotal) + " total). You'll see it reflected across Overview, Activity, Budgets and Goals.";
+                  } else if (summary && summary.deletedCount > 0) {
+                    msg = "Done - I've updated your app with " + n + " changes, including deleting " + summary.deletedCount + " transaction" + (summary.deletedCount === 1 ? "" : "s") + " (" + dollars(summary.deletedTotal) + " total). You'll see it reflected across Overview, Activity, Budgets and Goals.";
+                  } else {
+                    msg = "Done - I've updated your app with " + n + " change" + (n > 1 ? "s" : "") + ". You'll see it reflected across Overview, Activity, Budgets and Goals.";
+                  }
+                  setChat(function(p) { return p.concat([{ role: "assistant", text: msg }]); });
+                  setPendingUpdates(null);
+                }}
+                  style={{ flex: 1, background: hasDelete ? T.red : T.btn, color: "#fff", textShadow: hasDelete ? "none" : "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 10, padding: "9px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                  {hasDelete ? "Yes, delete" : "Apply" + (pendingUpdates.length > 1 ? " all" : "")}
+                </button>
+                <button onClick={function() { setPendingUpdates(null); }}
+                  style={{ flex: 1, background: "rgba(0,0,0,0.1)", color: T.ink2, border: "none", borderRadius: 10, padding: "9px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                  Not now
+                </button>
+              </div>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 11 }}>
-              {pendingUpdates.map(function(a, i) {
-                return (
-                  <div key={i} style={{ fontSize: 13, color: T.ink, background: "rgba(255,255,255,0.55)", borderRadius: 8, padding: "8px 11px", lineHeight: 1.4 }}>
-                    {updateLabel(a)}
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{ display: "flex", gap: 6 }}>
-              <button onClick={function() {
-                applyUpdates(pendingUpdates);
-                var n = pendingUpdates.length;
-                setChat(function(p) { return p.concat([{ role: "assistant", text: "Done - I've updated your app with " + n + " change" + (n > 1 ? "s" : "") + ". You'll see it reflected across Overview, Activity, Budgets and Goals." }]); });
-                setPendingUpdates(null);
-              }}
-                style={{ flex: 1, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 10, padding: "9px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                Apply {pendingUpdates.length > 1 ? "all" : ""}
-              </button>
-              <button onClick={function() { setPendingUpdates(null); }}
-                style={{ flex: 1, background: "rgba(0,0,0,0.1)", color: T.ink2, border: "none", borderRadius: 10, padding: "9px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                Not now
-              </button>
-            </div>
-          </div>
-        )}
+          );
+        })()}
         {pendingAction && (
           <div style={{ padding: "12px 12px 4px", borderTop: "0.5px solid " + T.sep, background: T.orangeDim, marginTop: 10, borderRadius: 10 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: T.orange, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
