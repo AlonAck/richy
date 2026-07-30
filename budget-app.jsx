@@ -11099,13 +11099,31 @@ function Advisor(props) {
             return <div key={i} onClick={function() { advGoPage(i); }} style={{ width: i === pageClamped ? 18 : 6, height: 6, borderRadius: 3, cursor: "pointer", transition: "all 0.3s cubic-bezier(0.22,1,0.36,1)", background: i === pageClamped ? T.orange : dotOff }} />;
           })}
         </div>
-        <div style={{ position: "relative", height: HERO_H, borderRadius: 24, overflow: "hidden", background: T.heroBg, boxShadow: T.heroShadow }}>
+        {/* One container for the panels AND the Full Analysis footer so the
+            gradient runs unbroken through both - stacking two boxes with the
+            same background would seam where they meet. */}
+        <div style={{ position: "relative", borderRadius: 24, overflow: "hidden", background: T.heroBg, boxShadow: T.heroShadow }}>
           <div style={{ position: "absolute", top: -70, right: -60, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none", zIndex: 0 }} />
           <div style={{ position: "absolute", bottom: -70, left: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow2 + ",transparent 65%)", pointerEvents: "none", zIndex: 0 }} />
           <div ref={advScrollRef} onScroll={advOnScroll} className="rc-hero-scroll"
-            style={{ position: "relative", zIndex: 1, display: "flex", height: "100%", width: "100%", overflowX: "auto", overflowY: "hidden", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
+            style={{ position: "relative", zIndex: 1, display: "flex", height: HERO_H, width: "100%", overflowX: "auto", overflowY: "hidden", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
             {panels}
           </div>
+          {/* Way into the Full Analysis page. Sits below every panel rather than
+              being one of them, so it stays reachable whichever card you're on. */}
+          <button onClick={props.onOpenFullAnalysis}
+            style={{ position: "relative", zIndex: 1, width: "100%", boxSizing: "border-box", textAlign: "left", cursor: "pointer", fontFamily: UI, background: "transparent", border: "none", borderTop: "0.5px solid " + HSEP, padding: "14px 18px", display: "flex", alignItems: "center", gap: 13 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 12, background: HPB, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <ClaudeMark size={20} color={HPT} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: HINK, letterSpacing: "-0.01em" }}>Full Analysis</div>
+              <div style={{ fontSize: 12, color: HMUT, lineHeight: 1.4, marginTop: 2 }}>
+                Your score, key numbers, every budget line and what to fix first.
+              </div>
+            </div>
+            <SVGIcon id="chevron" size={19} color={HMUT} />
+          </button>
         </div>
       </div>
     );
@@ -11181,22 +11199,6 @@ function Advisor(props) {
               );
             })}
           </div>
-
-          {/* Gateway into the Full Analysis page: Claude-marked so it reads as
-              the AI read-out, with a chevron so it's obviously a way in. */}
-          <button onClick={props.onOpenFullAnalysis}
-            style={{ width: "100%", marginTop: 14, textAlign: "left", cursor: "pointer", fontFamily: UI, background: T.card, border: "0.5px solid " + T.sep, borderRadius: 18, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.07)", padding: "15px 16px", display: "flex", alignItems: "center", gap: 14 }}>
-            <div style={{ width: 42, height: 42, borderRadius: 13, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <ClaudeMark size={22} color={T.orange} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 15.5, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>Full Analysis</div>
-              <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.4, marginTop: 2 }}>
-                Your health score, key numbers, every budget line and what Richard would fix first - all on one page.
-              </div>
-            </div>
-            <SVGIcon id="chevron" size={20} color={T.orange} />
-          </button>
 
         </div>
       )}
