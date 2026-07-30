@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Richy · User Simulation Report — July 25, 2026</title>
+<style>
+  :root{
+    --bg:#141210;
+    --card:#1E1B18;
+    --card-dark:#252218;
+    --accent:#C8673A;
+    --accent-light:#E07848;
+    --text:#F0EBE3;
+    --muted:#9E9690;
+    --green:#27A85F;
+    --red:#E03030;
+    --gold:#C8983A;
+    --purple:#9B6DB5;
+    --border:rgba(255,255,255,0.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system, system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.55;
+  }
+  .wrap{
+    max-width:1200px;
+    margin:0 auto;
+    padding:24px 16px 72px;
+  }
+
+  /* ---------- Header ---------- */
+  header.report-head{margin-bottom:26px;}
+  h1{
+    font-size:30px;
+    line-height:1.15;
+    font-weight:800;
+    letter-spacing:-0.02em;
+    margin:0 0 6px;
+  }
+  h1 .dot{color:var(--accent);}
+  .subtitle{
+    color:var(--muted);
+    font-size:14px;
+    margin:0 0 22px;
+  }
+  .stat-row{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0,1fr));
+    gap:12px;
+  }
+  .stat{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:16px 16px 14px;
+  }
+  .stat .label{
+    font-size:10.5px;
+    letter-spacing:0.09em;
+    text-transform:uppercase;
+    color:var(--muted);
+    font-weight:600;
+    margin-bottom:8px;
+  }
+  .stat .value{
+    font-size:24px;
+    font-weight:800;
+    letter-spacing:-0.01em;
+    line-height:1.1;
+  }
+  .stat .sub{font-size:12px;color:var(--muted);margin-top:3px;}
+  .c-green{color:var(--green);}
+  .c-red{color:var(--red);}
+  .c-accent{color:var(--accent);}
+  .c-gold{color:var(--gold);}
+  .c-muted{color:var(--muted);}
+
+  /* ---------- Sections ---------- */
+  .section-title{
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--muted);
+    font-weight:700;
+    margin:36px 0 14px;
+  }
+
+  /* ---------- Charts ---------- */
+  .chart-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:14px;
+  }
+  .chart-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:16px 14px 12px;
+  }
+  .chart-card .chart-label{
+    font-size:10.5px;
+    letter-spacing:0.09em;
+    text-transform:uppercase;
+    color:var(--muted);
+    font-weight:700;
+    margin-bottom:12px;
+  }
+  .canvas-box{height:260px;position:relative;}
+  .canvas-box canvas{width:100% !important;height:260px !important;}
+
+  /* ---------- Table ---------- */
+  .table-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:6px;
+    overflow-x:auto;
+  }
+  table{
+    border-collapse:collapse;
+    width:100%;
+    min-width:820px;
+    font-size:13px;
+  }
+  thead th{
+    text-align:left;
+    font-size:10px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--muted);
+    font-weight:700;
+    padding:12px 10px;
+    border-bottom:1px solid var(--border);
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:11px 10px;
+    border-bottom:1px solid var(--border);
+    vertical-align:middle;
+    white-space:nowrap;
+  }
+  tbody tr:nth-child(even){background:var(--card-dark);}
+  tbody tr:last-child td{border-bottom:none;}
+  td.name{font-weight:600;}
+  td.arch, td.country{color:var(--muted);}
+  .cell-score{
+    display:inline-block;
+    min-width:30px;
+    text-align:center;
+    padding:3px 8px;
+    border-radius:8px;
+    font-weight:700;
+    font-size:12.5px;
+  }
+  .imp-low{background:rgba(224,48,48,0.18);color:#F08A8A;}
+  .imp-mid{background:rgba(200,152,58,0.18);color:#E3BE72;}
+  .imp-high{background:rgba(39,168,95,0.18);color:#6DD79B;}
+  .pill{
+    display:inline-block;
+    padding:3px 12px;
+    border-radius:999px;
+    font-size:11.5px;
+    font-weight:700;
+    letter-spacing:0.02em;
+  }
+  .pill-kept{background:rgba(39,168,95,0.16);color:#6DD79B;border:1px solid rgba(39,168,95,0.35);}
+  .pill-gave{background:rgba(224,48,48,0.14);color:#F08A8A;border:1px solid rgba(224,48,48,0.32);}
+
+  /* ---------- Accordion ---------- */
+  .acc{display:flex;flex-direction:column;gap:10px;}
+  .acc-item{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    overflow:hidden;
+  }
+  .acc-head{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:14px 16px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .acc-head:hover{background:var(--card-dark);}
+  .acc-who{flex:1;min-width:0;}
+  .acc-name{font-weight:700;font-size:14.5px;}
+  .acc-arch{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .badges{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;}
+  .badge{
+    background:var(--card-dark);
+    border:1px solid var(--border);
+    border-radius:9px;
+    padding:4px 8px;
+    font-size:10.5px;
+    font-weight:700;
+    color:var(--muted);
+    white-space:nowrap;
+  }
+  .badge b{font-size:12px;}
+  .chev{
+    flex-shrink:0;
+    width:16px;height:16px;
+    color:var(--muted);
+    transition:transform .28s ease;
+  }
+  .acc-item.open .chev{transform:rotate(90deg);}
+  .acc-body{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height .38s cubic-bezier(.4,0,.2,1);
+  }
+  .acc-inner{padding:2px 16px 20px;border-top:1px solid var(--border);}
+  .acc-inner p.op{
+    color:var(--muted);
+    font-size:13.5px;
+    line-height:1.7;
+    margin:14px 0 0;
+  }
+  .field{margin-top:18px;}
+  .field .k{
+    font-size:10.5px;
+    letter-spacing:0.09em;
+    text-transform:uppercase;
+    font-weight:700;
+    color:var(--accent);
+    margin-bottom:5px;
+  }
+  .field .v{font-size:13.5px;color:var(--text);line-height:1.6;}
+  .field.give .k{color:var(--red);}
+  .tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;}
+  .tag{
+    background:rgba(200,103,58,0.14);
+    border:1px solid rgba(200,103,58,0.36);
+    color:var(--accent-light);
+    border-radius:999px;
+    padding:4px 11px;
+    font-size:11.5px;
+    line-height:1.4;
+  }
+  footer{
+    margin-top:44px;
+    color:var(--muted);
+    font-size:11.5px;
+    text-align:center;
+  }
+
+  @media (min-width:720px){
+    .wrap{padding:40px 28px 90px;}
+    h1{font-size:40px;}
+    .stat-row{grid-template-columns:repeat(5, minmax(0,1fr));}
+    .chart-grid{grid-template-columns:repeat(2, minmax(0,1fr));gap:16px;}
+    .stat .value{font-size:26px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ Section 1: Header ============ -->
+  <header class="report-head">
+    <h1>Richy <span class="dot">·</span> User Simulation Report</h1>
+    <p class="subtitle" id="subtitle"></p>
+    <div class="stat-row" id="statRow"></div>
+  </header>
+
+  <!-- ============ Section 2: Charts ============ -->
+  <div class="section-title">Charts</div>
+  <div class="chart-grid">
+    <div class="chart-card"><div class="chart-label">First Impression Scores</div><div class="canvas-box"><canvas id="c1"></canvas></div></div>
+    <div class="chart-card"><div class="chart-label">AI Advisor Usefulness</div><div class="canvas-box"><canvas id="c2"></canvas></div></div>
+    <div class="chart-card"><div class="chart-label">Impression vs. Time to Decide</div><div class="canvas-box"><canvas id="c3"></canvas></div></div>
+    <div class="chart-card"><div class="chart-label">Kept vs. Gave Up</div><div class="canvas-box"><canvas id="c4"></canvas></div></div>
+    <div class="chart-card"><div class="chart-label">NPS Scores</div><div class="canvas-box"><canvas id="c5"></canvas></div></div>
+    <div class="chart-card"><div class="chart-label">Missing Feature Frequency</div><div class="canvas-box"><canvas id="c6"></canvas></div></div>
+    <div class="chart-card"><div class="chart-label">Max Willingness to Pay ($/mo)</div><div class="canvas-box"><canvas id="c7"></canvas></div></div>
+    <div class="chart-card"><div class="chart-label">Likelihood to Buy at $5/mo (%)</div><div class="canvas-box"><canvas id="c8"></canvas></div></div>
+  </div>
+
+  <!-- ============ Section 3: Table ============ -->
+  <div class="section-title">Summary</div>
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Persona</th><th>Archetype</th><th>Country</th>
+          <th>Impression</th><th>AI Score</th><th>NPS</th>
+          <th>WTP</th><th>Buy@$5</th><th>Decision</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- ============ Section 4: Accordion ============ -->
+  <div class="section-title">Full Opinions</div>
+  <div class="acc" id="accordion"></div>
+
+  <footer id="footer"></footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const DATA = {
+  "date": "2026-07-25",
+  "dateLabel": "July 25, 2026",
+  "cohortLabel": "Cohort: 10 personas",
+  "summary": {
+    "avgFirstImpression": 4.3,
+    "keptCount": 3,
+    "totalCount": 10,
+    "keptPct": 30.0,
+    "avgNPS": -2.3,
+    "avgMaxWTP": 2.7,
+    "avgBuyAt5": 13.2,
+    "avgAIUsefulness": 4.1,
+    "avgPwaInstall": 2.4,
+    "avgMinutesBeforeDecision": 13.6
+  },
+  "missingFeatureThemes": [
+    { "theme": "Real bank sync / auto-import", "count": 8 },
+    { "theme": "Hebrew RTL + incomplete localisation", "count": 5 },
+    { "theme": "Bill calendar / true recurring transactions", "count": 5 },
+    { "theme": "Couples & shared-bill ledger", "count": 3 },
+    { "theme": "Irregular / multi-stream income handling", "count": 3 },
+    { "theme": "Debt tools: discoverability & modelling", "count": 3 },
+    { "theme": "Data export", "count": 3 },
+    { "theme": "Installments / BNPL / tashlumim", "count": 2 },
+    { "theme": "Business tax: payroll, VAT, invoicing", "count": 2 },
+    { "theme": "Statement OCR & jargon explanation", "count": 1 },
+    { "theme": "Personal emergency-fund runway", "count": 1 },
+    { "theme": "Credit-card billing-cycle logic", "count": 1 },
+    { "theme": "Onboarding empathy & accessibility", "count": 1 },
+    { "theme": "Family support commitments", "count": 1 }
+  ],
+  "results": [
+    {
+      "persona": "Noa Ben-Shitrit (22, College student)",
+      "shortName": "Noa",
+      "archetype": "College student",
+      "country": "Israel",
+      "firstImpressionScore": 4,
+      "aiUsefulnessScore": 4,
+      "wouldGiveUp": true,
+      "giveUpReason": "She came because she couldn't pay her share of the arnona and there is no way to split a bill or track what a roommate owes without digging into Notes in Activity; on top of that, Bank Sync turned out to be a nine-step iPhone Shortcut that only catches Apple Pay, so every Bit transfer and Wolt order would still be typed by hand.",
+      "minutesBeforeDecision": 13,
+      "missingFeatures": [
+        "Splitting a shared bill with roommates and tracking who paid what",
+        "A settle-up / who-owes-who screen that isn't buried inside Activity",
+        "Real bank or Bit connection instead of a manual Shortcuts automation",
+        "Automatic capture of Israeli debit card and bank transfer spending",
+        "Due-date reminders for recurring bills like arnona and va'ad bayit"
+      ],
+      "favoriteThing": "nothing",
+      "fullOpinion": "I opened this at eleven at night because my roommate sent me a voice note about the arnona and I wanted to feel like I was doing something. Ten screens of questions. I get why they're there, it's not confusing, but I was guessing on half of them — I genuinely do not know what my 'essentials' are, I typed 2000 because it sounded like a number. Then Richard did his little loading ring and told me I'm leaking around 480 a month, 5,760 a year, and that in five years it's a car. That part actually landed. That was the one moment where I sat up a bit.\n\nAnd then it just... became work. It asked me to remember what I spent this month, which is the exact thing I opened the app because I can't do. I put a fake ballpark in and felt stupid. I went looking for the thing I actually needed — a way to say the arnona was 1,400, I owe half, here's what I still owe Maya — and there is nothing. There's a Notes thing for owes/owed hidden inside Activity and a 'household' invite that is clearly built for couples, not three students who split three bills. Then I tapped 'stop typing every expense' and it wants me to build a nine-step iPhone Shortcut, and even then it only sees Apple Pay taps. Most of my money moves through Bit and my Leumi card. So it would see almost nothing and I'd still be typing every Wolt order myself at midnight. I closed it. I still don't know where the 1,900 went and now I've also spent fifteen minutes not sleeping.",
+      "npsScore": 1,
+      "pwaInstallLikelihood": 2,
+      "maxWTPPerMonth": 0,
+      "likelihoodToBuyAt5": 4
+    },
+    {
+      "persona": "Yotam Vaknin (29, Young professional)",
+      "shortName": "Yotam",
+      "archetype": "Young professional",
+      "country": "Israel",
+      "firstImpressionScore": 5,
+      "aiUsefulnessScore": 4,
+      "wouldGiveUp": true,
+      "giveUpReason": "He opened Bank Sync expecting some kind of aggregation and found a 9-step Shortcuts automation that only captures Apple Pay taps — which misses his Isracard charges, hora'at keva and rent, i.e. essentially all of the money he came to find. Everything else in the app depends on data he'd have to type in himself.",
+      "minutesBeforeDecision": 12,
+      "missingFeatures": [
+        "Real Israeli card/bank aggregation (Isracard, Max, Cal, Bank Hapoalim)",
+        "Hora'at keva / standing order and direct-debit tracking",
+        "Tashlumim (installment purchase) tracking",
+        "Credit-card billing-cycle logic (charge date vs purchase date)",
+        "Working RTL — Hebrew renders left-to-right, and most screens aren't translated"
+      ],
+      "favoriteThing": "nothing",
+      "fullOpinion": "I build payment infrastructure for a living, so I went straight to Bank Sync, because that's the only screen that decides whether an app like this is real. And credit where it's due — the SHA-256 sync key, the inbox draining into transactions, that's a clean little design and someone thought about it. But it's Apple Pay notification forwarding through a nine-step Shortcuts automation, capturing merchant and amount and nothing else. I pay for almost everything with a physical Isracard. My rent is a bank transfer. My gym, my insurance, my arnona, my phone — hora'at keva. My sneakers are in tashlumim. None of that will ever reach this app. So the honest answer to 'where does my money go' is still 'type it in yourself for a few months and find out', and I already know I won't do that.\n\nThe onboarding also lost me before that. Nine questions where I'm guessing at my own numbers, then a very dramatic screen telling me my leak becomes a car in five years — which is my guess multiplied by sixty, presented like a revelation. I could see the arithmetic while the ring was still spinning. Then a screen asking me to make a pact. I'm not the audience for that. And the giveaway: I switched the language to Hebrew for two seconds, and it renders left-to-right with half the screens still in English. If you're going to ship עברית in the language picker, ship direction with it. That told me more about how seriously Israel was considered than any feature list would.",
+      "npsScore": -2,
+      "pwaInstallLikelihood": 1,
+      "maxWTPPerMonth": 0,
+      "likelihoodToBuyAt5": 5
+    },
+    {
+      "persona": "Rania Haddad (38, Working parent)",
+      "shortName": "Rania",
+      "archetype": "Working parent",
+      "country": "Israel",
+      "firstImpressionScore": 4,
+      "aiUsefulnessScore": 3,
+      "wouldGiveUp": true,
+      "giveUpReason": "The one thing she downloaded it for — seeing her and Ilyas's spending together — turns out to require Ilyas to download the app, make an account and accept an invite, and even then it isn't a real joint ledger. She wasn't going to wake him up for that after the argument they'd just had.",
+      "minutesBeforeDecision": 11,
+      "missingFeatures": [
+        "A joint household view that doesn't depend on my husband installing the app",
+        "Any real connection to an Israeli bank account",
+        "A bill calendar with due dates so I can see the 10th coming",
+        "A way to enter two incomes when one of them changes every month",
+        "Hebrew that actually reads right to left"
+      ],
+      "favoriteThing": "nothing",
+      "fullOpinion": "I sat on the balcony after everyone was asleep and gave this thing eleven minutes I did not have. It asked me nine or ten questions, some of them twice as far as I could tell, and one of them was \"monthly income\" — one box, one number. My salary is fixed. Ilyas drives a truck and last month they paid him eighteen days late, which is the entire reason I was sitting outside at midnight in the first place. So I typed a number that is not true, which is exactly the thing that made the mashkanta bounce. It let me tick \"managing irregular or variable income\" as my problem and then never mentioned it again except when I asked the advisor directly, and he told me straight out that the app doesn't really do that yet and I should keep a buffer month. I know I should keep a buffer month. If I had a buffer month I would not be downloading budget apps at midnight.\n\nThen I found the part about inviting a partner and understood what it actually is: Ilyas has to download it, make an account with an email he never checks, and press accept, and after all that I still don't get one list showing what each of us spent. I did not come here for pretty charts of my own salary. I can already see my own salary. I chose Hebrew at the start and half the screens stayed in English facing the wrong direction, which told me nobody here has actually sat down and used it in this country. I closed it and opened the third app.",
+      "npsScore": -5,
+      "pwaInstallLikelihood": 1,
+      "maxWTPPerMonth": 0,
+      "likelihoodToBuyAt5": 3
+    },
+    {
+      "persona": "Elior Mizrahi (34, Freelancer)",
+      "shortName": "Elior",
+      "archetype": "Freelancer",
+      "country": "Israel",
+      "firstImpressionScore": 4,
+      "aiUsefulnessScore": 6,
+      "wouldGiveUp": true,
+      "giveUpReason": "He downloaded it specifically to see if it could handle income arriving in four unpredictable lumps, and within fifteen minutes confirmed there is no smoothing tool at all — plus Bank Sync only captures wallet taps, so none of his bank-transfer income or standing-order obligations would ever land in the app.",
+      "minutesBeforeDecision": 14,
+      "missingFeatures": [
+        "An actual irregular-income buffer — pay-yourself-a-fixed-salary logic",
+        "A rule that sets aside a percentage of every payment for ma'am and income tax",
+        "Capture of bank transfers and hora'at keva — Bank Sync is wallet taps only",
+        "Expected-invoice tracking with payment terms (shotef+90)",
+        "A bill calendar with due dates for fixed obligations like child support"
+      ],
+      "favoriteThing": "nothing",
+      "fullOpinion": "I picked עברית on the first screen and the whole interface stayed left-to-right. That should have been my cue. I switched to English, fine, I read English, but if you're going to list Hebrew as one of your eight languages then at least turn the text around. Then question three asks what my biggest problem is and I choose \"managing irregular or variable income,\" and question four — the very next screen — asks me for my monthly income. One number. I have a client who just pushed ₪18,000 to shotef plus 90 and I do three weeks of miluim a year. There is no number. I typed 19,000 because 228 divided by 12 is 19, and everything the app told me after that was built on a figure that has never once been true in any actual month of my life.\n\nI went to Richard and asked him straight out. To his credit he didn't sell me anything — he said Richy doesn't have income smoothing, told me to open a savings pot and treat it as my employer, pay myself a fixed salary out of it. That's a decent idea. It's also the idea I already have, in a spreadsheet, for free, and Richy can't enforce it, can't skim a percentage off each payment for ma'am, can't tell me when the money actually arrives versus when I invoiced. I looked at the business section because runway is genuinely the number I care about, and it's nine buckets called Marketing and Buffer and it wants months of data I'd have to type in by hand. And I'd have to type all of it by hand, because Bank Sync is a Shortcuts automation that forwards Apple Pay taps — every shekel that enters my life is a transfer from a client and every shekel that leaves is a standing order. It would see my coffee. It would never see the child support. I'm not going to hand-enter my own bank statement at 1am so an app can tell me I'm leaking 12% on food delivery.",
+      "npsScore": -2,
+      "pwaInstallLikelihood": 2,
+      "maxWTPPerMonth": 0,
+      "likelihoodToBuyAt5": 8
+    },
+    {
+      "persona": "Shoshana Perlmutter (71, Retiree)",
+      "shortName": "Shoshana",
+      "archetype": "Retiree",
+      "country": "Israel",
+      "firstImpressionScore": 3,
+      "aiUsefulnessScore": 2,
+      "wouldGiveUp": true,
+      "giveUpReason": "She chose Hebrew and the Hebrew came out running the wrong way across the screen, mixed with English she had to squint at; then the one thing she opened the app for, Found Money, was empty because she has no transactions in it and every way to get them in requires the bank app she already cannot use.",
+      "minutesBeforeDecision": 14,
+      "missingFeatures": [
+        "Hebrew that actually reads right-to-left, and not half English",
+        "A real connection to Bank Hapoalim or Leumi showing standing orders",
+        "A way to identify an unfamiliar charge without typing in months of spending",
+        "An option to enter what you know and leave blank what you don't",
+        "Bigger text and something that explains itself"
+      ],
+      "favoriteThing": "nothing",
+      "fullOpinion": "My granddaughter put this on my phone and said just press things, so I sat with it after she left. The first screens were pretty, I will say that, cream colored and soft, not shouting at me. Then I chose Hebrew, because I am Israeli and I am 71 and my English is a teacher's English, not a computer's English. And the Hebrew came out backwards. Not the letters, the lines - they start on the wrong side and my eyes slide off them. And half the words stayed in English anyway, sitting in the same sentence. I put my glasses on and took them off twice thinking it was me. It is not me.\n\nThen it asked me nine questions and I could answer maybe three. My income yes, that I know, it comes on the tenth. But how much do I spend on essentials? What is my total debt? Yaakov paid every bill for thirty-four years and now I am supposed to type the number into a telephone. There was a small button, skip for now, and I pressed it four times and each time I felt like a student who did not do the homework. After that it told me I am losing money and in five years it is a car, a year of rent. I own my apartment. I have owned it since 1987. It does not know anything about me and it is telling me about rent.\n\nThe only reason I kept going is that I saw the words Found Money and that is exactly why I wanted it - there is a charge of thirty-nine shekel on my Leumi statement from a company I have never heard of, and I do not know which standing orders are still running since Yaakov died. I pressed it and there was nothing there. It wants me to first put in all my purchases myself, or bring in a file from the bank app that I told the girl at the branch I cannot use, or set up some list of nine steps on the phone that only catches when I tap the phone at a shop, which is not how thirty-nine shekel leaves my account every month anyway. So the one thing I came for is the one thing it cannot do. I put the phone down. I will go to the branch while it is still open and ask a person.",
+      "npsScore": -8,
+      "pwaInstallLikelihood": 1,
+      "maxWTPPerMonth": 0,
+      "likelihoodToBuyAt5": 2
+    },
+    {
+      "persona": "Dmitri Kravchenko (45, Recent immigrant)",
+      "shortName": "Dmitri",
+      "archetype": "Recent immigrant",
+      "country": "Israel",
+      "firstImpressionScore": 3,
+      "aiUsefulnessScore": 2,
+      "wouldGiveUp": true,
+      "giveUpReason": "The app advertises 8 languages and his daughter set it to Russian, but the entire 10-screen onboarding is hardcoded English — and it ended by asking him to tap 'YES — I'm in' on a three-point pact he could not read, which is exactly how he ended up with a Cal credit line he never agreed to.",
+      "minutesBeforeDecision": 11,
+      "missingFeatures": [
+        "Full Russian translation of the onboarding questions",
+        "Reading a Cal credit card statement from a photo or PDF",
+        "Any real connection to Israeli banks or credit companies (Cal, Isracard)",
+        "A way to track the fixed money he sends his mother every month",
+        "Plain explanations of Israeli terms — credit line, hora'at keva, tashlumim"
+      ],
+      "favoriteThing": "nothing",
+      "fullOpinion": "My daughter put this on my phone and set it to Russian. I saw Русский in the list and I thought, good, finally something written for me. The shekel sign was there, correct. Then every screen after that was English. Which of these seven sentences is your biggest problem — English. How much do you spend on food — English. I typed numbers, because numbers I understand, but I did not know what the app was telling me back. At the end it showed a page with three checkmarks and a big button, YES I'm in. In English. I am not pressing that. I already pressed something this month I could not read, and now there is a credit line on my card that nobody asked me about.\n\nIt says eight languages on the very first screen with a little badge. It is not eight languages. It is English with a few Russian words in the corners. I gave it ten, eleven minutes after a full day on site, and I have nothing — it cannot look at the statement lying on my table, it does not know my card, it only wanted me to type in what I already do not know. My daughter is in her room with headphones and I am not going in there to ask her to read a phone to me again. I closed it.",
+      "npsScore": -7,
+      "pwaInstallLikelihood": 0,
+      "maxWTPPerMonth": 0,
+      "likelihoodToBuyAt5": 2
+    },
+    {
+      "persona": "Maya Rosenfeld (41, High earner / low saver)",
+      "shortName": "Maya",
+      "archetype": "High earner / low saver",
+      "country": "United States",
+      "firstImpressionScore": 6,
+      "aiUsefulnessScore": 5,
+      "wouldGiveUp": false,
+      "giveUpReason": "",
+      "minutesBeforeDecision": 15,
+      "missingFeatures": [
+        "A months-of-runway / emergency-fund view for a personal account",
+        "Clarity on whether 'monthly income' means gross or take-home, and where a bonus goes",
+        "Some way to export a summary to hand to my financial advisor",
+        "Bill and due-date tracking for autopay; 'repeat' is just a label",
+        "A visible entry point for student loans"
+      ],
+      "favoriteThing": "The math story screen after the questions — watching it turn my guess into $72,000 a year and $360,000 over five years, and then telling me roughly $3,600 a month of that is recoverable. That's the first time anyone has put my problem in a number I could feel.",
+      "fullOpinion": "I downloaded this in a parking garage about four minutes after my financial advisor asked me what I spend every month and I was off by six thousand dollars. So my bar was: do not make me build a spreadsheet. It cleared that. The signup was three screens, I used Google, and then a character named Richard walked me through nine questions without any of the jargon I was braced for. When it asked what my biggest frustration was and one of the options was literally 'Understanding where my money goes,' I actually said 'yes, that one' out loud in my car. And the story screen at the end genuinely got me. It took the number I'd admitted to and multiplied it out — $72,000 a year, $360,000 over five years — and I sat there with the engine off looking at that. It also said $360,000 was 'a car, a year of rent,' which in Scottsdale it very much is not, so somewhere in there this app was clearly written for someone who doesn't earn what I earn. But the number landed anyway.\n\nHere's the problem. It asked me, repeatedly, for numbers I do not have. What are your essentials? What do you overspend? I don't know — that is the entire reason I am in this parking garage. I typed a guess for my monthly income and immediately wasn't sure if it wanted gross or what actually hits my checking account, and there's no note anywhere clarifying, and my pay is base plus two big bonuses a year so neither answer is really true. Then I got dumped into a beautiful, completely empty dashboard built entirely out of things I'd made up ninety seconds earlier. The charts had nothing in them. There's a 'Found Money' section that apparently finds subscriptions I'm wasting money on, which is exactly what I want, and it found nothing, because I have no transactions.\n\nWhat saves it is that the CSV import is right there and it looks serious — it says it figures out your columns and categorizes automatically. Chase and Amex both export a CSV in about two clicks. I am not doing that on my phone at 6pm, but I am doing it Saturday morning, and that is the first realistic plan I've had for this in years. Before I put the phone down I went to the Richard tab and asked him straight out: if I stopped working for three months, am I fine? He gave me an answer — three and a half months of runway based on what I'd told him — and it was thoughtful, not the canned 'build an emergency fund' speech. But it was a sentence in a chat window. There was no screen anywhere in the app that tracks that, no dial, nothing I could check next month. That's the one thing I actually came here to know, and the app can only talk about it. I'm keeping it, but I'm keeping it on the strength of what I think Saturday will look like, not what tonight looked like.",
+      "npsScore": 3,
+      "pwaInstallLikelihood": 4,
+      "maxWTPPerMonth": 20,
+      "likelihoodToBuyAt5": 55
+    },
+    {
+      "persona": "Tomer Alkalai (33, Debt-focused)",
+      "shortName": "Tomer",
+      "archetype": "Debt-focused",
+      "country": "Israel",
+      "firstImpressionScore": 5,
+      "aiUsefulnessScore": 7,
+      "wouldGiveUp": false,
+      "giveUpReason": "",
+      "minutesBeforeDecision": 19,
+      "missingFeatures": [
+        "A place to enter each debt separately and be told which to attack first",
+        "Something comparing total minimum payments against what I actually have",
+        "A real answer on whether consolidating into one more loan is smart",
+        "Bank connection that works with Israeli banks",
+        "Somewhere honest to put the ₪9,000 I owe my brother"
+      ],
+      "favoriteThing": "The math story after the questions — the five-year number it showed me was almost exactly what I owe, and I had to sit there for a minute",
+      "fullOpinion": "I downloaded this at two in the morning after an hour of reading blogs about debt consolidation that I did not understand, so I was not in a picky mood. The signup and the ten questions were fine, better than fine actually — it asks in a normal way, and every screen has a \"skip\" so I did not have to pretend I know my exact numbers. I tried עברית on the language screen out of habit and then all the questions stayed in English anyway and the text sat on the wrong side of the screen, so I put it back to English after ten seconds. Not a big deal for me. Then it did the little calculation animation and told me what my leaks come to over five years, and the number was within a thousand shekels of what I owe. I know it is just multiplication. It still did something to me. That is the moment I stopped treating it like another app.\n\nAnd then it let me down on the exact thing I came for. I chose \"paying off debt\" as my problem, I typed in ₪71,000, and the plan Richard wrote me said, politely, that Richy does not have debt payoff tracking yet and suggested I make a savings goal called \"debt\" and treat it that way. So the one number I care about most in my life is a single flat figure sitting in a settings page somewhere, and I am supposed to fake it as a goal. I did it, because what else. I also looked at the Bank Sync thing and closed it — it is not a bank connection at all, it is you setting up seven steps on your phone so it can catch card taps. My overdraft is not a card tap. The standing orders are not card taps. Half my life is not a card tap.\n\nWhat saved it was talking to Richard directly. I asked him plainly what to do with an overdraft plus a Max card plus a loan I took to cover an earlier overdraft, and he explained the difference between killing the highest interest first and killing the smallest balance first better than any of the blogs did, and he did not lecture me about emergency funds. That was worth the twenty minutes. But he could not tell me the thing I actually needed, which is whether I can put down a wedding hall deposit in March without lying to my fiancée again, and he could not tell me if my minimums are already bigger than what I have. I am keeping it, mostly because Richard is there and because I do not have anywhere better to put this. But I went in with one question and I still have it.",
+      "npsScore": 2,
+      "pwaInstallLikelihood": 6,
+      "maxWTPPerMonth": 4,
+      "likelihoodToBuyAt5": 30
+    },
+    {
+      "persona": "Avigail Sror (52, Small business owner)",
+      "shortName": "Avigail",
+      "archetype": "Small business owner",
+      "country": "Israel",
+      "firstImpressionScore": 3,
+      "aiUsefulnessScore": 3,
+      "wouldGiveUp": true,
+      "giveUpReason": "The setup asked for 'monthly income' and 'monthly essentials' as if she were an employee, which is the exact number she does not know, and everything past the language screen was in English with the Hebrew running the wrong direction. When she finally found the business card it wanted her to type in her own revenue history, and none of it answered whether she can pay the stylist on the 9th.",
+      "minutesBeforeDecision": 11,
+      "missingFeatures": [
+        "Payroll — knowing what is owed to employees and when",
+        "A way to get numbers OUT of the app to send to my bookkeeper",
+        "VAT / ma'am and invoice tracking for the business",
+        "A real separation of business and personal money without typing years of history",
+        "Actual Hebrew — right-to-left text and a translated business section"
+      ],
+      "favoriteThing": "nothing",
+      "fullOpinion": "My daughter told me this would fix everything, and after eleven minutes I can tell you it does not. I chose Hebrew on the first screen and then almost every screen after that was in English, and the Hebrew that did appear was written backwards, starting on the wrong side like something broken. I am 52, I cut hair, I do not have patience at ten at night to read English on a small screen. Then it asked me to choose if I am a teenager, a student, working, or a parent. I have two salons and four employees. Which one am I supposed to press.\n\nThe worst part was that it asked me my monthly income and my monthly essentials. That is the exact thing I do not know. That is why I downloaded it. If I knew which money was mine and which belonged to the business I would not need any app, I would just pay the girl on the ninth and sleep. I saw there was something for business on the main screen, I pressed it, and it wanted me to open an account and choose categories and then fill in my own revenue, in English, by hand. I have twenty years of receipts. And when I looked for a way to send something to my bookkeeper — a file, a page, anything she could open — there is nothing. Nothing comes out of this app. So what did I do here exactly. I closed it and I will call the accountant in the morning like a normal person.",
+      "npsScore": -7,
+      "pwaInstallLikelihood": 1,
+      "maxWTPPerMonth": 0,
+      "likelihoodToBuyAt5": 3
+    },
+    {
+      "persona": "Lukas Vogel (27, Newly married)",
+      "shortName": "Lukas",
+      "archetype": "Newly married",
+      "country": "Germany",
+      "firstImpressionScore": 6,
+      "aiUsefulnessScore": 5,
+      "wouldGiveUp": false,
+      "giveUpReason": "",
+      "minutesBeforeDecision": 16,
+      "missingFeatures": [
+        "A two-person view — two incomes, and who actually paid for what",
+        "Installment / BNPL plan tracking (Klarna-style three-month splits)",
+        "Data export, so the numbers can leave the app",
+        "Real recurring transactions — 'repeat' is only a label",
+        "The Debts screen surfaced somewhere visible instead of Profile → Account → Debts"
+      ],
+      "favoriteThing": "The Debts screen. I typed in €19,000 at 0% and it gave me a month-by-month payoff and an actual date. That is a thing I can put on the table on Sunday.",
+      "fullOpinion": "I downloaded this standing at the luggage belt in Schönefeld because I needed something concrete to show Ines on Sunday, and by that narrow measure it worked. Signup was clean, EUR was right there on the currency screen with proper two decimals, and question three asked what my biggest frustration is and one of the seven options was literally 'Planning finances with a partner.' I selected it and thought, good, this app knows what I am. Then the very next screen asked me for my monthly income. Singular. One number. I sat there for a moment trying to decide whether to type my net or our net, and the fact that I had to decide told me the app had already forgotten what I'd said one screen earlier.\n\nThe part after the questions was worse in a specific way. It ran a little loading ring, said Richard was doing the math, and then told me I was probably leaking around €370 a month, €4,400 a year, €22,000 over five years — 'that's a car.' I skipped the overspend question because I genuinely don't overspend. I have never carried a balance. So it invented a number, presented it as insight, and then offered to give me 60% of it back. For someone who reads municipal budget forecasts for a living, that is not a wow moment, it's a tell. My problem isn't a leak. My problem is that I married someone whose money instincts I don't understand yet, and the whole story sequence is built for a person with an unexamined Lieferando habit.\n\nWhat saved it was digging. I went into Profile to check the language setting — I switched to German for ten seconds, saw that half of it including the entire questionnaire is still English, and switched back — and while I was in there I found Debts under Account. Balance, APR, minimum, avalanche versus snowball, debt-free date. Nothing anywhere in the app points you to it, which is strange, because for me it is the single most useful screen in the thing. I entered Ines's €19,000 and got a projection. That is the artifact. I'll pull a CSV from my Sparkasse account on Saturday — the import looks properly built, delimiters and comma decimals and all — and we'll have real numbers next to it. I skipped Bank Sync entirely; it's a nine-step phone automation that only catches wallet taps, and half of what we spend in Leipzig is Girocard or cash, so it would show us a fiction.\n\nThe couples side is thinner than the onboarding implied. Ines will have to install it and accept an invite, which is fine, she's on board. But what you get is shared budgets, shared goals, shared categories, and a toggle on a transaction that marks it as household. There's no view that says he put in this, she put in that, and here's the difference. And her three-month installments — the actual thing keeping me up — have nowhere to live at all. I'll keep it through Sunday because it gives us one page to look at together instead of an empty table, but I'm not convinced it's built for two people yet.",
+      "npsScore": 2,
+      "pwaInstallLikelihood": 6,
+      "maxWTPPerMonth": 3,
+      "likelihoodToBuyAt5": 20
+    }
+  ]
+};
+
+/* ---------------- Design tokens (JS mirror) ---------------- */
+const T = {
+  accent:'#C8673A', accentLight:'#E07848', text:'#F0EBE3', muted:'#9E9690',
+  green:'#27A85F', red:'#E03030', gold:'#C8983A', purple:'#9B6DB5',
+  grid:'rgba(255,255,255,0.07)', card:'#1E1B18', border:'rgba(255,255,255,0.12)'
+};
+
+const R = DATA.results;
+const S = DATA.summary;
+const names = R.map(r => r.shortName);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+/* ---------------- Section 1: header + stat cards ---------------- */
+document.getElementById('subtitle').textContent = DATA.dateLabel + ' — ' + DATA.cohortLabel;
+
+const stats = [
+  { label:'Avg First Impression', value: S.avgFirstImpression.toFixed(1) + ' / 10',
+    cls: S.avgFirstImpression >= 6 ? 'c-accent' : 'c-red', sub:'across ' + S.totalCount + ' personas' },
+  { label:'Users Kept', value: S.keptCount + ' / ' + S.totalCount + ' · ' + S.keptPct.toFixed(0) + '%',
+    cls: S.keptCount > 0 ? 'c-green' : 'c-red', sub:'first-session retention' },
+  { label:'Avg NPS', value: (S.avgNPS > 0 ? '+' : '') + S.avgNPS.toFixed(1),
+    cls: S.avgNPS >= 0 ? 'c-green' : 'c-red', sub:'scale −10 to +10' },
+  { label:'Avg Max WTP', value: '$' + S.avgMaxWTP.toFixed(2) + ' / mo',
+    cls:'c-muted', sub:'willingness to pay' },
+  { label:'Buy @ $5', value: S.avgBuyAt5.toFixed(1) + '%',
+    cls: S.avgBuyAt5 >= 50 ? 'c-green' : 'c-red', sub:'avg likelihood' }
+];
+document.getElementById('statRow').innerHTML = stats.map(s =>
+  '<div class="stat"><div class="label">' + esc(s.label) + '</div>' +
+  '<div class="value ' + s.cls + '">' + esc(s.value) + '</div>' +
+  '<div class="sub">' + esc(s.sub) + '</div></div>'
+).join('');
+
+/* ---------------- Section 3: summary table ---------------- */
+function impClass(v){ return v <= 4 ? 'imp-low' : (v <= 6 ? 'imp-mid' : 'imp-high'); }
+document.getElementById('tableBody').innerHTML = R.map(r =>
+  '<tr>' +
+  '<td class="name">' + esc(r.shortName) + '</td>' +
+  '<td class="arch">' + esc(r.archetype) + '</td>' +
+  '<td class="country">' + esc(r.country) + '</td>' +
+  '<td><span class="cell-score ' + impClass(r.firstImpressionScore) + '">' + r.firstImpressionScore + '</span></td>' +
+  '<td>' + r.aiUsefulnessScore + '</td>' +
+  '<td style="color:' + (r.npsScore >= 0 ? T.green : T.red) + ';font-weight:700">' + (r.npsScore > 0 ? '+' : '') + r.npsScore + '</td>' +
+  '<td>$' + r.maxWTPPerMonth + '</td>' +
+  '<td>' + r.likelihoodToBuyAt5 + '%</td>' +
+  '<td>' + (r.wouldGiveUp ? '<span class="pill pill-gave">Gave Up</span>' : '<span class="pill pill-kept">Kept</span>') + '</td>' +
+  '</tr>'
+).join('');
+
+/* ---------------- Section 4: accordion ---------------- */
+const CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+
+document.getElementById('accordion').innerHTML = R.map(function(r){
+  const paras = r.fullOpinion.split('\n').filter(p => p.trim().length)
+    .map(p => '<p class="op">' + esc(p.trim()) + '</p>').join('');
+  const tags = r.missingFeatures.map(f => '<span class="tag">' + esc(f) + '</span>').join('');
+  const giveUp = (r.wouldGiveUp && r.giveUpReason)
+    ? '<div class="field give"><div class="k">Gave up because</div><div class="v">' + esc(r.giveUpReason) + '</div></div>'
+    : '';
+  const impColor = r.firstImpressionScore >= 7 ? T.green : (r.firstImpressionScore >= 5 ? T.gold : T.red);
+  return '' +
+  '<div class="acc-item">' +
+    '<div class="acc-head">' +
+      '<div class="acc-who">' +
+        '<div class="acc-name">' + esc(r.persona) + '</div>' +
+        '<div class="acc-arch">' + esc(r.archetype) + ' · ' + esc(r.country) + '</div>' +
+      '</div>' +
+      '<div class="badges">' +
+        '<span class="badge">IMP <b style="color:' + impColor + '">' + r.firstImpressionScore + '</b></span>' +
+        '<span class="badge">AI <b style="color:' + T.accentLight + '">' + r.aiUsefulnessScore + '</b></span>' +
+        '<span class="badge">NPS <b style="color:' + (r.npsScore >= 0 ? T.green : T.red) + '">' + (r.npsScore > 0 ? '+' : '') + r.npsScore + '</b></span>' +
+      '</div>' + CHEV +
+    '</div>' +
+    '<div class="acc-body"><div class="acc-inner">' +
+      paras +
+      '<div class="field"><div class="k">Favorite thing</div><div class="v">' + esc(r.favoriteThing) + '</div></div>' +
+      giveUp +
+      '<div class="field"><div class="k">Missing features</div><div class="tags">' + tags + '</div></div>' +
+    '</div></div>' +
+  '</div>';
+}).join('');
+
+document.querySelectorAll('.acc-head').forEach(function(head){
+  head.addEventListener('click', function(){
+    const item = head.parentElement;
+    const body = item.querySelector('.acc-body');
+    if (item.classList.contains('open')) {
+      body.style.maxHeight = body.scrollHeight + 'px';
+      requestAnimationFrame(function(){ body.style.maxHeight = '0px'; });
+      item.classList.remove('open');
+    } else {
+      item.classList.add('open');
+      body.style.maxHeight = body.scrollHeight + 'px';
+      setTimeout(function(){
+        if (item.classList.contains('open')) body.style.maxHeight = 'none';
+      }, 400);
+    }
+  });
+});
+
+document.getElementById('footer').textContent =
+  'Richy user-simulation study · ' + DATA.dateLabel + ' · ' + R.length +
+  ' simulated first sessions · avg time to decide ' + S.avgMinutesBeforeDecision + ' min';
+
+/* ---------------- Chart helpers ---------------- */
+function baseOpts(extra){
+  return Object.assign({
+    responsive:true,
+    maintainAspectRatio:false,
+    animation:{ duration:600 },
+    plugins:{
+      legend:{ display:false },
+      tooltip:{ backgroundColor:'#252218', borderColor:T.border, borderWidth:1,
+                titleColor:T.text, bodyColor:T.text, padding:10 }
+    }
+  }, extra || {});
+}
+function axis(opts){
+  return Object.assign({
+    grid:{ color:T.grid, drawBorder:false },
+    ticks:{ color:T.muted, font:{ size:11 } }
+  }, opts || {});
+}
+const TT = { backgroundColor:'#252218', borderColor:T.border, borderWidth:1,
+             titleColor:T.text, bodyColor:T.text, padding:10 };
+
+/* Plugin: dashed horizontal reference line at a y value, optional label */
+function hLinePlugin(id, yValue, color, label){
+  return {
+    id: id,
+    afterDatasetsDraw: function(chart){
+      const ys = chart.scales.y, xs = chart.scales.x;
+      if (!ys || !xs) return;
+      const py = ys.getPixelForValue(yValue);
+      const ctx = chart.ctx;
+      ctx.save();
+      ctx.setLineDash([5,5]);
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(xs.left, py);
+      ctx.lineTo(xs.right, py);
+      ctx.stroke();
+      if (label){
+        ctx.setLineDash([]);
+        ctx.fillStyle = color;
+        ctx.font = '600 10px -apple-system, system-ui, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(label, xs.right - 2, py - 4);
+      }
+      ctx.restore();
+    }
+  };
+}
+
+/* Plugin: draw shortName labels next to scatter points */
+const scatterLabels = {
+  id:'scatterLabels',
+  afterDatasetsDraw: function(chart){
+    const ctx = chart.ctx;
+    const meta = chart.getDatasetMeta(0);
+    if (!meta || !meta.data) return;
+    ctx.save();
+    ctx.fillStyle = T.text;
+    ctx.font = '600 10px -apple-system, system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    meta.data.forEach(function(pt, i){
+      const raw = chart.data.datasets[0].data[i];
+      if (raw && raw.label) ctx.fillText(raw.label, pt.x, pt.y - 9);
+    });
+    ctx.restore();
+  }
+};
+
+/* ---------------- Build all 8 charts ---------------- */
+document.addEventListener('DOMContentLoaded', function(){
+  Chart.defaults.color = T.muted;
+  Chart.defaults.font.family = '-apple-system, system-ui, sans-serif';
+
+  /* 1 — First Impression Scores */
+  new Chart(document.getElementById('c1'), {
+    type:'bar',
+    data:{ labels:names, datasets:[{ data:R.map(r=>r.firstImpressionScore),
+      backgroundColor:T.accent, borderRadius:5, barPercentage:0.78 }] },
+    options: baseOpts({
+      indexAxis:'y',
+      scales:{
+        x: axis({ min:0, max:10, ticks:{ color:T.muted, stepSize:2, font:{ size:11 } } }),
+        y: axis({ grid:{ display:false }, ticks:{ color:T.muted, font:{ size:11 } } })
+      }
+    })
+  });
+
+  /* 2 — AI Advisor Usefulness */
+  new Chart(document.getElementById('c2'), {
+    type:'bar',
+    data:{ labels:names, datasets:[{ data:R.map(r=>r.aiUsefulnessScore),
+      backgroundColor:T.accentLight, borderRadius:5, barPercentage:0.78 }] },
+    options: baseOpts({
+      indexAxis:'y',
+      scales:{
+        x: axis({ min:0, max:10, ticks:{ color:T.muted, stepSize:2, font:{ size:11 } } }),
+        y: axis({ grid:{ display:false }, ticks:{ color:T.muted, font:{ size:11 } } })
+      }
+    })
+  });
+
+  /* 3 — Impression vs. Time to Decide */
+  new Chart(document.getElementById('c3'), {
+    type:'scatter',
+    data:{ datasets:[{
+      data: R.map(r => ({ x:r.minutesBeforeDecision, y:r.firstImpressionScore,
+                          label:r.shortName, kept:!r.wouldGiveUp })),
+      backgroundColor: R.map(r => r.wouldGiveUp ? T.red : T.green),
+      borderColor: R.map(r => r.wouldGiveUp ? T.red : T.green),
+      pointRadius:6, pointHoverRadius:9
+    }]},
+    options: baseOpts({
+      plugins:{
+        legend:{ display:false },
+        tooltip: Object.assign({}, TT, { callbacks:{
+          label: function(c){
+            return c.raw.label + ': ' + c.raw.x + ' min · impression ' + c.raw.y +
+                   (c.raw.kept ? ' (kept)' : ' (gave up)');
+          }
+        }})
+      },
+      scales:{
+        x: axis({ min:0, max:30, ticks:{ color:T.muted, stepSize:5, font:{ size:11 } },
+                  title:{ display:true, text:'Minutes', color:T.muted, font:{ size:11 } } }),
+        y: axis({ min:0, max:10, ticks:{ color:T.muted, stepSize:2, font:{ size:11 } },
+                  title:{ display:true, text:'First Impression', color:T.muted, font:{ size:11 } } })
+      }
+    }),
+    plugins:[ scatterLabels ]
+  });
+
+  /* 4 — Kept vs. Gave Up */
+  const keptN = R.filter(r => !r.wouldGiveUp).length;
+  const gaveN = R.length - keptN;
+  const pctOf = n => Math.round(n / R.length * 100);
+  new Chart(document.getElementById('c4'), {
+    type:'doughnut',
+    data:{
+      labels:[ 'Kept — ' + keptN + ' (' + pctOf(keptN) + '%)',
+               'Gave Up — ' + gaveN + ' (' + pctOf(gaveN) + '%)' ],
+      datasets:[{ data:[keptN, gaveN], backgroundColor:[T.green, T.red],
+                  borderColor:T.card, borderWidth:3, hoverOffset:6 }]
+    },
+    options: baseOpts({
+      cutout:'58%',
+      plugins:{
+        legend:{ display:true, position:'bottom',
+                 labels:{ color:T.text, boxWidth:12, boxHeight:12, padding:14, font:{ size:12 } } },
+        tooltip: TT
+      }
+    })
+  });
+
+  /* 5 — NPS Scores */
+  new Chart(document.getElementById('c5'), {
+    type:'bar',
+    data:{ labels:names, datasets:[{
+      data: R.map(r=>r.npsScore),
+      backgroundColor: R.map(r => r.npsScore >= 0 ? T.green : T.red),
+      borderRadius:5, barPercentage:0.78
+    }]},
+    options: baseOpts({
+      scales:{
+        x: axis({ grid:{ display:false },
+                  ticks:{ color:T.muted, font:{ size:10 }, maxRotation:60, minRotation:45 } }),
+        y: axis({ min:-10, max:10, ticks:{ color:T.muted, stepSize:5, font:{ size:11 } } })
+      }
+    }),
+    plugins:[ hLinePlugin('npsZeroLine', 0, 'rgba(240,235,227,0.5)', null) ]
+  });
+
+  /* 6 — Missing Feature Frequency */
+  const themes = DATA.missingFeatureThemes.slice().sort(function(a,b){ return b.count - a.count; });
+  new Chart(document.getElementById('c6'), {
+    type:'bar',
+    data:{ labels: themes.map(t=>t.theme),
+           datasets:[{ data: themes.map(t=>t.count), backgroundColor:T.purple,
+                       borderRadius:4, barPercentage:0.82 }] },
+    options: baseOpts({
+      indexAxis:'y',
+      plugins:{
+        legend:{ display:false },
+        tooltip: Object.assign({}, TT, { callbacks:{
+          title: function(items){ return themes[items[0].dataIndex].theme; },
+          label: function(c){ return c.parsed.x + ' mention' + (c.parsed.x === 1 ? '' : 's'); }
+        }})
+      },
+      scales:{
+        x: axis({ min:0, ticks:{ color:T.muted, stepSize:1, precision:0, font:{ size:11 } } }),
+        y: axis({ grid:{ display:false }, ticks:{ color:T.muted, font:{ size:9 }, autoSkip:false,
+          callback: function(v){
+            const s = this.getLabelForValue(v);
+            return s.length > 32 ? s.slice(0,31) + '…' : s;
+          } } })
+      }
+    })
+  });
+
+  /* 7 — Max Willingness to Pay */
+  const maxWtp = Math.max.apply(null, R.map(r=>r.maxWTPPerMonth));
+  new Chart(document.getElementById('c7'), {
+    type:'bar',
+    data:{ labels:names, datasets:[{ data:R.map(r=>r.maxWTPPerMonth),
+      backgroundColor:T.accent, borderRadius:5, barPercentage:0.78 }] },
+    options: baseOpts({
+      plugins:{
+        legend:{ display:false },
+        tooltip: Object.assign({}, TT, { callbacks:{ label: c => '$' + c.parsed.y + ' / mo' } })
+      },
+      scales:{
+        x: axis({ grid:{ display:false },
+                  ticks:{ color:T.muted, font:{ size:10 }, maxRotation:60, minRotation:45 } }),
+        y: axis({ min:0, max: maxWtp + 2,
+                  ticks:{ color:T.muted, font:{ size:11 }, callback: v => '$' + v } })
+      }
+    })
+  });
+
+  /* 8 — Likelihood to Buy at $5/mo */
+  new Chart(document.getElementById('c8'), {
+    type:'bar',
+    data:{ labels:names, datasets:[{
+      data: R.map(r=>r.likelihoodToBuyAt5),
+      backgroundColor: R.map(function(r){
+        return r.likelihoodToBuyAt5 >= 50 ? T.green : (r.likelihoodToBuyAt5 >= 25 ? T.gold : T.red);
+      }),
+      borderRadius:5, barPercentage:0.78
+    }]},
+    options: baseOpts({
+      plugins:{
+        legend:{ display:false },
+        tooltip: Object.assign({}, TT, { callbacks:{ label: c => c.parsed.y + '%' } })
+      },
+      scales:{
+        x: axis({ grid:{ display:false },
+                  ticks:{ color:T.muted, font:{ size:10 }, maxRotation:60, minRotation:45 } }),
+        y: axis({ min:0, max:100,
+                  ticks:{ color:T.muted, stepSize:25, font:{ size:11 }, callback: v => v + '%' } })
+      }
+    }),
+    plugins:[ hLinePlugin('buyThresholdLine', 50, T.gold, '50% threshold') ]
+  });
+});
+</script>
+</body>
+</html>
