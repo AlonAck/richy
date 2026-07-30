@@ -213,6 +213,21 @@ fetchSource(1).then(function(src){
       );
     }
     el = React.createElement(AdvisorHarness, {});
+  } else if (view === "analysis") {
+    // The Full Analysis page behind the Advisor tab's Claude-marked button.
+    el = React.createElement(FullAnalysisView, {
+      tx: mockTx, categories: mockCats, goals: mockGoals, username: "Alon",
+      budgets: [{ catId: "c1", limit: 1500 }, { catId: "c2", limit: 500 }, { catId: "c3", limit: 150 }, { catId: "c6", limit: 200 }],
+      analysis: {
+        score: 72, scoreLabel: "Solid",
+        insights: [
+          { type: "strength", title: "Savings rate held above 15%", body: "Three months running. That consistency is worth more than any single big cut." },
+          { type: "warning", title: "Food is climbing", body: "Up 22% against your own average. Mostly delivery, mostly weeknights." },
+          { type: "tip", title: "Put your surplus to work", body: "You have money left over. Automate it into savings before it drifts into spending." }
+        ]
+      },
+      onBack: function(){ window.__clicked = "back"; }
+    });
   } else if (view === "privacy") {
     var mockBlob = { displayName: "Alon", email: "alon@example.com", dob: "1995-03-14", lang: "en", currency: "$", theme: "purple", onboardingData: { lifeStage: "Early Career", income: "6000", essentials: "2200", savings: "5000", debt: "0", goalName: "Emergency Fund", goalAmt: "10000", timeline: "12 months" } };
     el = React.createElement(PrivacyView, { blob: mockBlob, hasPw: qs.get("haspw") === "1", onBack: function(){}, onViewPassword: function(){}, onEditEmail: function(){}, onEditName: function(){}, onEditDob: function(){}, onEditLanguage: function(){}, onEditCurrency: function(){}, onEditTheme: function(){}, onEditFinancial: function(){} });

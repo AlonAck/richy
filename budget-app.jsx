@@ -2615,6 +2615,29 @@ function SVGIcon(props) {
   );
 }
 
+// The Claude sunburst, for surfaces that are explicitly Claude-powered (right
+// now: the entry into Richard's Full Analysis). Built from evenly spaced rays
+// rather than a baked path so it stays crisp at any size and inherits color.
+function ClaudeMark(props) {
+  var size = props.size || 20;
+  var color = props.color || "#D97757";
+  var rays = [];
+  for (var i = 0; i < 11; i++) {
+    var rad = (i * (360 / 11) - 90) * Math.PI / 180;
+    rays.push(
+      <line key={i}
+        x1={12 + Math.cos(rad) * 1.6} y1={12 + Math.sin(rad) * 1.6}
+        x2={12 + Math.cos(rad) * 10.2} y2={12 + Math.sin(rad) * 10.2} />
+    );
+  }
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke={color} strokeWidth="2.7" strokeLinecap="round" style={{ flexShrink: 0 }}>
+      {rays}
+    </svg>
+  );
+}
+
 function ProgressBar(props) {
   var pct = Math.min(100, (props.value / (props.max || 1)) * 100);
   return (
@@ -11159,6 +11182,22 @@ function Advisor(props) {
             })}
           </div>
 
+          {/* Gateway into the Full Analysis page: Claude-marked so it reads as
+              the AI read-out, with a chevron so it's obviously a way in. */}
+          <button onClick={props.onOpenFullAnalysis}
+            style={{ width: "100%", marginTop: 14, textAlign: "left", cursor: "pointer", fontFamily: UI, background: T.card, border: "0.5px solid " + T.sep, borderRadius: 18, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.07)", padding: "15px 16px", display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{ width: 42, height: 42, borderRadius: 13, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <ClaudeMark size={22} color={T.orange} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 15.5, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>Full Analysis</div>
+              <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.4, marginTop: 2 }}>
+                Your health score, key numbers, every budget line and what Richard would fix first - all on one page.
+              </div>
+            </div>
+            <SVGIcon id="chevron" size={20} color={T.orange} />
+          </button>
+
         </div>
       )}
 
@@ -11561,6 +11600,177 @@ function SubViewBack(props) {
       <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={T.orange} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
       {props.label || "Profile"}
     </button>
+  );
+}
+
+// ── Full Analysis ───────────────────────────────────────────────────────────
+// The page behind the Advisor tab's "Full Analysis" button. It re-reads the
+// user's real numbers (never the LLM's) for the score card, the four headline
+// metrics and every budget line, then splits Richard's saved insight list into
+// what's going well and what's worth watching. Read-only: refreshing the
+// analysis stays in the Advisor tab, which owns that call.
+function FullAnalysisView(props) {
+  var a = props.analysis || {};
+  var cats = props.categories || [];
+  var tx = props.tx || [];
+  var ym = curMonth();
+
+  function catSpend(c) {
+    return tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); })
+      .reduce(function(s, t) { return s + t.amount; }, 0);
+  }
+
+  var income = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && inMonth(t, ym); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var expense = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && inMonth(t, ym); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var netWorth = tx.reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0) + savingsTotal(props.savings || []) + businessTotal(props.businesses || []);
+  var reviewed = tx.filter(function(t) { return inMonth(t, ym) && !isTransfer(t); }).length;
+
+  var savRate = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
+  var net = Math.round(income - expense);
+  var bufferMonths = expense > 0 ? (netWorth / expense) : (netWorth > 0 ? 12 : 0);
+  var bufferTxt = bufferMonths >= 12 ? "12+" : bufferMonths > 0 ? (Math.round(bufferMonths * 10) / 10) + "" : "0";
+  var totalLimit = (props.budgets || []).reduce(function(s, b) { return s + (b.limit || 0); }, 0);
+  var budgetPct = totalLimit > 0 ? Math.round((expense / totalLimit) * 100) : 0;
+
+  var score = typeof a.score === "number" ? a.score : 0;
+  var ringColor = score >= 80 ? T.advGreen : score >= 60 ? T.gold : T.advRingLow;
+  var name = (props.username || "").trim() || "there";
+  var headline = score >= 80 ? "You're in good shape, " + name + "." : score >= 60 ? "You're on the right track, " + name + "." : "Let's tighten things up, " + name + ".";
+  var monthLabel = new Date().toLocaleString(undefined, { month: "long" }) + " " + new Date().getFullYear();
+
+  var lines = (props.budgets || []).map(function(b) {
+    var c = catById(cats, b.catId) || catByName(cats, b.category) || { name: b.category || "?", icon: "box", color: T.orange };
+    return { name: c.name, icon: c.icon || "box", color: c.color || T.orange, spent: catSpend(c), limit: b.limit || 0 };
+  }).sort(function(x, y) { return y.spent - x.spent; });
+
+  var insights = a.insights || [];
+  var strengths = insights.filter(function(i) { return i.type === "strength"; });
+  var watchouts = insights.filter(function(i) { return i.type !== "strength"; });
+
+  function metric(value, label, sub, color) {
+    return (
+      <Card style={{ flex: 1, minWidth: 0, padding: "14px 14px 13px" }}>
+        <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.03em", color: color || T.ink, lineHeight: 1.1 }}>{value}</div>
+        <div style={{ fontSize: 12.5, fontWeight: 600, color: T.ink2, marginTop: 5 }}>{label}</div>
+        <div style={{ fontSize: 11, color: T.ink3, marginTop: 2, lineHeight: 1.35 }}>{sub}</div>
+      </Card>
+    );
+  }
+
+  function section(title, meta) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 2px 11px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+          <span style={{ width: 3, height: 15, borderRadius: 2, background: T.orange }} />
+          <span style={{ fontSize: 16, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>{title}</span>
+        </div>
+        {meta ? <span style={{ fontSize: 12, color: T.ink3 }}>{meta}</span> : null}
+      </div>
+    );
+  }
+
+  // Strengths and watch-outs share one card shape; only the accent differs.
+  function insightCard(ins, i, meta) {
+    return (
+      <Card key={i} style={{ padding: 16, marginBottom: 12 }}>
+        <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+          <CatBadge icon={meta.icon} color={meta.color} size={44} soft={true} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 5 }}>
+              <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.01em", color: T.ink }}>{ins.title}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.02em", padding: "3px 8px", borderRadius: 7, whiteSpace: "nowrap", color: meta.color, background: meta.color + "1F" }}>{meta.tag}</span>
+            </div>
+            <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: T.ink2 }}>{ins.body}</p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  var insMeta = { strength: { icon: "chart", color: T.green, tag: "Strength" }, warning: { icon: "credit", color: T.red, tag: "Watch" }, tip: { icon: "coins", color: T.gold, tag: "Tip" } };
+
+  if (!a.score && !insights.length) {
+    return (
+      <div>
+        <SubViewBack onBack={props.onBack} label="Richard" />
+        <Card style={{ padding: "46px 24px", textAlign: "center" }}>
+          <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+            <ClaudeMark size={24} color={T.orange} />
+          </div>
+          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>No analysis yet</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>Head back to Richard and let him read your month first.</div>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} label="Richard" />
+
+      {/* Score summary - the same read as the Advisor hero, condensed */}
+      <div style={{ background: T.heroBg, borderRadius: 22, boxShadow: T.heroShadow, padding: 20, display: "flex", alignItems: "center", gap: 18, marginBottom: 24 }}>
+        <div style={{ position: "relative", width: 72, height: 72, flexShrink: 0 }}>
+          <DrawRing size={72} stroke={7} value={score} max={100} color={ringColor} track={T.heroTrack} />
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 700, letterSpacing: "-0.03em", color: T.heroInk }}>{score}</div>
+        </div>
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 5 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: ringColor }}>{a.scoreLabel || "Health"}</span>
+          <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.01em", color: T.heroInk }}>{headline}</span>
+          <span style={{ fontSize: 12.5, color: T.heroMut, lineHeight: 1.45 }}>{"Reviewed " + reviewed + " transaction" + (reviewed === 1 ? "" : "s") + " across " + monthLabel + "."}</span>
+        </div>
+      </div>
+
+      {section("Key Metrics")}
+      <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+        {metric(savRate + "%", "Savings Rate", savRate >= 20 ? "Above 20% target" : "Below 20% target", savRate >= 20 ? T.green : savRate >= 0 ? T.gold : T.red)}
+        {metric(totalLimit > 0 ? budgetPct + "%" : "--", "Of Budget", totalLimit > 0 ? (expense > totalLimit ? dollars(Math.round(expense - totalLimit)) + " over limit" : dollars(Math.round(totalLimit - expense)) + " left") : "No budgets set", totalLimit > 0 && expense > totalLimit ? T.red : T.ink)}
+      </div>
+      <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
+        {metric(bufferTxt, "Months Buffer", "Emergency runway", bufferMonths >= 3 ? T.green : bufferMonths >= 1 ? T.gold : T.red)}
+        {metric((net >= 0 ? "+" : "-") + dollars(Math.abs(net)), "Net This Month", "Income - spending", net >= 0 ? T.green : T.red)}
+      </div>
+
+      {lines.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          {section("Spending Breakdown", lines.length + (lines.length === 1 ? " category" : " categories"))}
+          <Card style={{ overflow: "hidden" }}>
+            {lines.map(function(l, i) {
+              var over = l.limit > 0 && l.spent > l.limit;
+              return (
+                <div key={l.name + i} style={{ padding: "14px 16px", borderBottom: i < lines.length - 1 ? "0.5px solid " + T.sep : "none" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 9 }}>
+                    <CatBadge icon={l.icon} color={l.color} size={34} soft={true} />
+                    <span style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 600, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.name}</span>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: over ? T.red : T.ink, letterSpacing: "-0.01em" }}>{dollars(Math.round(l.spent))}</span>
+                    <span style={{ fontSize: 12, color: T.ink3 }}>{"/ " + dollars(l.limit)}</span>
+                  </div>
+                  <ProgressBar value={l.spent} max={l.limit || 1} color={l.color} h={5} />
+                </div>
+              );
+            })}
+          </Card>
+        </div>
+      )}
+
+      {strengths.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          {section("Strengths", "" + strengths.length)}
+          {strengths.map(function(ins, i) { return insightCard(ins, i, insMeta.strength); })}
+        </div>
+      )}
+
+      {watchouts.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          {section("Tips & Watch-outs", "" + watchouts.length)}
+          {watchouts.map(function(ins, i) { return insightCard(ins, i, insMeta[ins.type] || insMeta.tip); })}
+        </div>
+      )}
+
+      <div style={{ textAlign: "center", fontSize: 11.5, color: T.ink3, lineHeight: 1.5, padding: "0 14px 6px" }}>
+        Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.
+      </div>
+    </div>
   );
 }
 
@@ -20422,7 +20632,7 @@ export default function App() {
     if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
-    if (id === "advisor") return <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={monthAnalysis ? monthAnalysis.data : null} analysisStale={!!(monthAnalysis && monthAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} />;
+    if (id === "advisor") return <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={monthAnalysis ? monthAnalysis.data : null} analysisStale={!!(monthAnalysis && monthAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} />;
     return null;
   }
   applyTheme(theme);      // keep the live T palette in sync with the chosen design every render
@@ -20440,7 +20650,7 @@ export default function App() {
             <div style={{ background: T.orangeDim, borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em" }}>{monthLabel}</div>
           </div>
           <span style={{ flex: 1, fontSize: 20, fontWeight: 700, color: T.ink, textAlign: "center", letterSpacing: "-0.02em" }}>
-            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
+            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "analysis" ? "Full Analysis" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
           <div style={{ width: 86, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
             {HAS_FAB.indexOf(currentTab) !== -1 && (
@@ -20489,6 +20699,7 @@ export default function App() {
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} richardInstructions={richardInstructions} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "profile"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} bankSync={bankSync} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} debtCount={debts.length} onViewDebts={function() { prevTabRef.current = "profile"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} trips={trips} onViewTripHistory={function() { setTab("tripHistory"); }} />}
+        {currentTab === "analysis" && <FullAnalysisView tx={tx} categories={categories} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} username={user} analysis={monthAnalysis ? monthAnalysis.data : null} onBack={function() { setTab("advisor"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
         {currentTab === "editEmail" && <EditEmailView currentEmail={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onSave={function(email) { onSaveEmail(email); setTab("privacy"); }} />}
