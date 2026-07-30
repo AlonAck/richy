@@ -1,0 +1,360 @@
+{
+  "name": "Richy Design System",
+  "version": "2.0.0",
+  "description": "Premium financial app design system — expensive, warm, understated wealth. Apple-inspired with data-dense Bloomberg terminal aesthetic.",
+  "updated": "2026-07-26",
+  "philosophy": {
+    "feeling": "Smart and calm — not stressful, not gamified, not cluttered",
+    "warmth": "Cream tones and warm materials, never gray or sterile white",
+    "wealth": "Like a real wealth tool — the kind a rich person would actually use",
+    "personality": "Personal and conversational — knows your name, greets you like a person",
+    "density": "Numbers ARE the decoration. Typography and data density create richness",
+    "restraint": "Wealth implied by restraint, not decoration. Premium banking meets Bloomberg terminal"
+  },
+  "principles": [
+    "NO emojis. Anywhere. Ever. Not in UI, greetings, categories, or copy",
+    "Buttons are short: 'Sign In' not 'Click here to sign in'",
+    "Greetings are human and casual: 'Good morning, Alon.' NOT exclamatory",
+    "Fill space with information and data, not whitespace and decoration",
+    "Shadows are barely-there but present — depth reads as substance",
+    "borderRadius: 20-22px on everything — generous, Apple-style, never square"
+  ],
+  "themes": {
+    "purple": {
+      "displayName": "Mika's Violet",
+      "description": "Lavender hero with violet accents and dark text — default theme",
+      "isDefault": true,
+      "colors": {
+        "primary": "#8970C6",
+        "primaryHi": "#C8B1FF",
+        "primaryDim": "rgba(137,112,198,0.13)",
+        "primaryGlow": "rgba(137,112,198,0.30)",
+        "hero": {
+          "bg": "linear-gradient(160deg,#9D78E8 0%,#B493F2 50%,#CBB6FA 100%)",
+          "bg2": "linear-gradient(135deg,#9D78E8 0%,#B493F2 55%,#CBB6FA 100%)",
+          "text": "#2A1F4D",
+          "mutedText": "rgba(42,31,77,0.6)",
+          "faintText": "rgba(42,31,77,0.45)",
+          "separator": "rgba(42,31,77,0.12)",
+          "track": "rgba(42,31,77,0.09)",
+          "positive": "#188A4A",
+          "negative": "#C73A36",
+          "shadow": "0 12px 40px rgba(137,112,198,0.32), 0 2px 8px rgba(137,112,198,0.16)",
+          "glow1": "rgba(255,255,255,0.34)",
+          "glow2": "rgba(255,255,255,0.16)",
+          "pillBg": "#FFFFFF",
+          "pillText": "#1A1410",
+          "rangeBg": "rgba(42,31,77,0.08)"
+        },
+        "trends": {
+          "lineA": "#5E44A8",
+          "lineB": "#8E73D6",
+          "area": "#6A4FB5",
+          "dot": "#5E44A8",
+          "dotStroke": "#CFBBFF",
+          "glow": "#6A4FB5"
+        },
+        "grid": {
+          "strong": "rgba(42,31,77,0.12)",
+          "mid": "rgba(42,31,77,0.08)",
+          "faint": "rgba(42,31,77,0.06)"
+        },
+        "ring": "#5E44A8",
+        "advisorGreen": "#188A4A",
+        "advisorRingLow": "#E03030",
+        "categoryNameHero": "rgba(42,31,77,0.82)",
+        "merchandiseNameHero": "rgba(42,31,77,0.85)",
+        "merchandiseBar": "linear-gradient(90deg,#6A4FB5,#9277D6)"
+      }
+    },
+    "classic": {
+      "displayName": "Dark Ember",
+      "description": "Dark hero with warm orange accents and white text — original theme",
+      "isDefault": false,
+      "colors": {
+        "primary": "#C8673A",
+        "primaryHi": "#E07848",
+        "primaryDim": "rgba(200,103,58,0.13)",
+        "primaryGlow": "rgba(200,103,58,0.30)",
+        "hero": {
+          "bg": "linear-gradient(155deg,#272118 0%,#1E1A16 52%,#131110 100%)",
+          "bg2": "linear-gradient(135deg,#E07848,#C8673A)",
+          "text": "#FFFFFF",
+          "mutedText": "rgba(255,255,255,0.5)",
+          "faintText": "rgba(255,255,255,0.4)",
+          "separator": "rgba(255,255,255,0.1)",
+          "track": "rgba(255,255,255,0.08)",
+          "positive": "#4ADE80",
+          "negative": "#FF7A6B",
+          "shadow": "0 1px 1px rgba(0,0,0,0.06), 0 14px 34px rgba(40,28,16,0.34)",
+          "glow1": "rgba(224,120,72,0.30)",
+          "glow2": "rgba(200,152,58,0.16)",
+          "pillBg": "rgba(255,255,255,0.92)",
+          "pillText": "#141210",
+          "rangeBg": "rgba(255,255,255,0.08)"
+        },
+        "trends": {
+          "lineA": "#E07848",
+          "lineB": "#F0AE80",
+          "area": "#E07848",
+          "dot": "#F3B488",
+          "dotStroke": "#1E1A16",
+          "glow": "#E07848"
+        },
+        "grid": {
+          "strong": "rgba(255,255,255,0.07)",
+          "mid": "rgba(255,255,255,0.05)",
+          "faint": "rgba(255,255,255,0.04)"
+        },
+        "ring": "#E07848",
+        "advisorGreen": "#4ADE80",
+        "advisorRingLow": "#E07848",
+        "categoryNameHero": "rgba(255,255,255,0.82)",
+        "merchandiseNameHero": "rgba(255,255,255,0.9)",
+        "merchandiseBar": "linear-gradient(90deg,#C8673A99,#E07848)"
+      }
+    },
+    "blue": {
+      "displayName": "Cornflower Ocean",
+      "description": "Light periwinkle hero with deep navy accents and dark text",
+      "isDefault": false,
+      "colors": {
+        "primary": "#3C4C82",
+        "primaryHi": "#5C7AE3",
+        "primaryDim": "rgba(92,122,227,0.15)",
+        "primaryGlow": "rgba(92,122,227,0.30)",
+        "hero": {
+          "bg": "linear-gradient(160deg,#5C7AE3 0%,#8493E2 50%,#B2BEED 100%)",
+          "bg2": "linear-gradient(135deg,#5C7AE3 0%,#4C5E9C 55%,#3C4C82 100%)",
+          "text": "#242C52",
+          "mutedText": "rgba(36,44,82,0.62)",
+          "faintText": "rgba(36,44,82,0.46)",
+          "separator": "rgba(36,44,82,0.13)",
+          "track": "rgba(36,44,82,0.10)",
+          "positive": "#188A4A",
+          "negative": "#C73A36",
+          "shadow": "0 12px 40px rgba(60,76,130,0.30), 0 2px 8px rgba(60,76,130,0.16)",
+          "glow1": "rgba(255,255,255,0.36)",
+          "glow2": "rgba(255,255,255,0.16)",
+          "pillBg": "#FFFFFF",
+          "pillText": "#1B2140",
+          "rangeBg": "rgba(36,44,82,0.08)"
+        },
+        "trends": {
+          "lineA": "#2E3A66",
+          "lineB": "#5C7AE3",
+          "area": "#3C4C82",
+          "dot": "#2E3A66",
+          "dotStroke": "#C3CDF0",
+          "glow": "#3C4C82"
+        },
+        "grid": {
+          "strong": "rgba(36,44,82,0.12)",
+          "mid": "rgba(36,44,82,0.08)",
+          "faint": "rgba(36,44,82,0.06)"
+        },
+        "ring": "#3C4C82",
+        "advisorGreen": "#188A4A",
+        "advisorRingLow": "#E03030",
+        "categoryNameHero": "rgba(36,44,82,0.82)",
+        "merchandiseNameHero": "rgba(36,44,82,0.85)",
+        "merchandiseBar": "linear-gradient(90deg,#3C4C82,#5C7AE3)"
+      }
+    }
+  },
+  "baseColors": {
+    "light": {
+      "bg": "#F7F3EE",
+      "card": "#FFFFFF",
+      "ink": "#1A1410",
+      "ink2": "#6B5C4E",
+      "ink3": "#B0A396",
+      "separator": "rgba(0,0,0,0.06)",
+      "inputBg": "rgba(0,0,0,0.04)",
+      "sheetBg": "#F8F6F1"
+    },
+    "dark": {
+      "bg": "#131110",
+      "card": "#1C1915",
+      "ink": "#EDE8E2",
+      "ink2": "#A09080",
+      "ink3": "#6B5C4E",
+      "separator": "rgba(255,255,255,0.07)",
+      "inputBg": "rgba(255,255,255,0.06)",
+      "sheetBg": "#1C1915"
+    }
+  },
+  "semanticColors": {
+    "green": "#27A85F",
+    "greenDim": "rgba(39,168,95,0.15)",
+    "greenGlow": "rgba(39,168,95,0.25)",
+    "red": "#E03030",
+    "redDim": "rgba(224,48,48,0.13)",
+    "gold": "#C8983A",
+    "goldDim": "rgba(200,152,58,0.15)",
+    "goldGlow": "rgba(200,152,58,0.25)",
+    "blue": "#2E7DD6",
+    "blueDim": "rgba(46,125,214,0.15)",
+    "blueGlow": "rgba(46,125,214,0.25)",
+    "purple": "#9B6DB5",
+    "purpleDim": "rgba(155,109,181,0.15)"
+  },
+  "glass": {
+    "description": "iOS 26-style Liquid Glass material system for nav bars and sheets",
+    "mechanism": "blur + saturate + specular edge (bright inset top) + soft lift shadow",
+    "light": {
+      "sheet": "rgba(255,255,255,0.78)",
+      "spec": "rgba(0,0,0,0.07)",
+      "border": "rgba(0,0,0,0.08)",
+      "liftUp": "0 -12px 36px rgba(40,28,16,0.20), 0 -2px 8px rgba(40,28,16,0.10)",
+      "liftDown": "0 12px 36px rgba(40,28,16,0.18), 0 2px 8px rgba(40,28,16,0.08)",
+      "pillBg": "rgba(255,255,255,0.78)"
+    },
+    "dark": {
+      "sheet": "rgba(28,25,21,0.75)",
+      "spec": "rgba(255,255,255,0.18)",
+      "border": "rgba(255,255,255,0.14)",
+      "liftUp": "0 -16px 48px rgba(0,0,0,0.55)",
+      "liftDown": "0 16px 48px rgba(0,0,0,0.55)",
+      "pillBg": "rgba(22,19,17,0.76)"
+    },
+    "navGlass": {
+      "light": "rgba(255,255,255,0.50)",
+      "dark": "rgba(26,23,20,0.52)"
+    },
+    "navRim": {
+      "light": {
+        "top": "rgba(255,255,255,0.90)",
+        "bottom": "rgba(0,0,0,0.05)"
+      },
+      "dark": {
+        "top": "rgba(255,255,255,0.30)",
+        "bottom": "rgba(0,0,0,0.35)"
+      }
+    },
+    "navSheen": {
+      "light": "rgba(255,255,255,0.65)",
+      "dark": "rgba(255,255,255,0.12)"
+    },
+    "navPillGlass": {
+      "light": "rgba(255,255,255,0.62)",
+      "dark": "rgba(255,255,255,0.14)"
+    },
+    "navPillRim": {
+      "light": "rgba(255,255,255,0.95)",
+      "dark": "rgba(255,255,255,0.40)"
+    },
+    "navPillShade": {
+      "light": "rgba(0,0,0,0.07)",
+      "dark": "rgba(0,0,0,0.30)"
+    }
+  },
+  "typography": {
+    "fontStack": "-apple-system, system-ui, sans-serif",
+    "scales": {
+      "hero": {
+        "size": "44px",
+        "weight": 700,
+        "letterSpacing": "tight"
+      },
+      "headline": {
+        "size": "28-34px",
+        "weight": 700,
+        "letterSpacing": "-0.03em"
+      },
+      "label": {
+        "size": "10-12px",
+        "weight": "600-700",
+        "letterSpacing": "0.12em",
+        "textTransform": "uppercase"
+      },
+      "numbers": {
+        "weight": 700,
+        "letterSpacing": "tight",
+        "formatter": "dollars()"
+      }
+    }
+  },
+  "heroCard": {
+    "description": "Centerpiece of the app — premium banking aesthetic",
+    "layout": {
+      "gradient": "theme-dependent gradient background",
+      "shadow": "theme-dependent shadow",
+      "balanceLabel": "NET BALANCE — tiny all-caps white/40% opacity",
+      "balanceNumber": "44px bold white balance number",
+      "savingsRate": "green pill badge if ≥20%, orange otherwise",
+      "metrics": "Income vs Spent side-by-side with separator",
+      "footer": "Bottom strip: 'Top spend → [Category] — $X.XX' (Bloomberg terminal readout)"
+    },
+    "interactions": {
+      "tapToToggle": "Net Worth vs Balance via hero pill interaction",
+      "darkMode": "Gradients and text colors adapt via theme system"
+    }
+  },
+  "components": {
+    "card": {
+      "bg": "T.card (theme-aware)",
+      "borderRadius": "20-22px",
+      "shadow": "0 1px 3px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04)"
+    },
+    "button": {
+      "background": "theme-specific gradient (T.btn)",
+      "borderRadius": "16-18px",
+      "padding": "12px 20px",
+      "fontWeight": 600,
+      "fontSize": "14-16px"
+    },
+    "input": {
+      "bg": "T.inputBg (rgba-based, dark-aware)",
+      "border": "1px solid T.sep",
+      "borderRadius": "12px",
+      "padding": "12px 16px"
+    },
+    "navBar": {
+      "material": "Liquid Glass (iOS 26)",
+      "blur": "30px + saturate(180%)",
+      "glassSpec": "inset bright top rim + soft lift shadow",
+      "backdrop": "content refraction through glass",
+      "activeTabs": "frosted capsule lens behind selected icon"
+    },
+    "sheet": {
+      "bg": "T.sheetBg or T.sheetGlass",
+      "material": "Liquid Glass with 30px blur + saturate(180%)",
+      "borderRadius": "24px top (iOS-style)",
+      "dimBackdrop": "blur(4px) saturate(120%)"
+    }
+  },
+  "darkMode": {
+    "description": "Adaptive light/dark mode that respects theme-specific hero colors",
+    "implementation": "applyDarkMode(dark) called on every render, toggles entire glass/nav/sheet system",
+    "scrimBlur": "4px blur with 120% saturation on dim backdrop",
+    "navBarBehavior": "frosted glass with adaptive rim highlights and specular sheen"
+  },
+  "constraints": {
+    "doNotChange": [
+      "Cream background #F7F3EE (light mode)",
+      "Dark hero balance card (classic theme) or light hero gradients (purple/blue themes)",
+      "Primary action colors per theme (orange #C8673A classic, purple #8970C6 for violet, navy #3C4C82 for blue)",
+      "Apple system font stack (no web fonts)",
+      "Casual greeting format",
+      "Bottom tab bar with SVG icons",
+      "Richard's name and personality"
+    ],
+    "warnings": [
+      "Light-hero themes (purple, blue): hero text is dark, not the primary accent color. #3C4C82 alone is only ~2.3:1 on periwinkle — always check contrast when adding new light-hero themes",
+      "Liquid glass effect is subtle by design — avoid increasing blur or saturation beyond documented values",
+      "Nav bar behavior requires careful shadow and specular rim tuning per light/dark mode to maintain the lens effect"
+    ]
+  },
+  "statusBar": {
+    "description": "iOS 26-style status bar appearance mode",
+    "light": "light content (white text, light icons on dark nav)",
+    "dark": "dark content (dark text, dark icons on light nav)"
+  },
+  "notes": {
+    "themeSystem": "Themes are runtime-switchable via Profile > Appearance. User choice persisted as 'theme' in Firestore. Three palettes supported: purple (default), classic, blue. Add new themes by extending THEMES object and THEME_LABELS map.",
+    "glassSystem": "Comprehensive Liquid Glass material system for iOS 26-style nav bar refraction, pill-shaped active-tab lens, frosted sheets, and adaptive light/dark glass tokens. Never apply static 30% opacity to nav bars — use the glass system tokens instead.",
+    "darkMode": "Full dark mode support via applyDarkMode(). Glass tokens adapt (bright specs in dark, dark borders in light) to maintain visibility.",
+    "accessibility": "All text has been checked for WCAG contrast. Light-hero themes use darkened ink (e.g., #242C52) on hero, not the primary color."
+  }
+}
