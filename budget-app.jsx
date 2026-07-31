@@ -5136,6 +5136,10 @@ function Overview(props) {
   var _hd = useState(false); var hidden = _hd[0];   var setHidden = _hd[1];
   var _dp = useState(0);    var dp = _dp[0];       var setDp = _dp[1];
   var _nw = useState(false); var showNet = _nw[0];  var setShowNet = _nw[1];
+  // Trend scrubber: index into the daily series the finger is currently parked on,
+  // -1 when nobody is scrubbing. Drives the crosshair on the chart and swaps the
+  // footer readout to that day's balance.
+  var _sc = useState(-1);   var scrub = _sc[0];    var setScrub = _sc[1];
   var rafRef = useRef(null);
   var dragRef = useRef({ active: false, startX: 0, vw: 366 });
   var scrollRef = useRef(null);
@@ -5162,6 +5166,7 @@ function Overview(props) {
       if (t < 1) rafRef.current = requestAnimationFrame(tick);
     }
     setDp(0);
+    setScrub(-1);   // a new panel or range redraws the line; drop any live crosshair
     rafRef.current = requestAnimationFrame(tick);
     return function() { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
   }, [page, range]);
@@ -5321,6 +5326,12 @@ function Overview(props) {
   var nPts = series.length;
   var trendNet = series[series.length - 1] - (showNet ? netStart : startBal);
   var trendUp = trendNet >= 0;
+  // Switching range shortens the series a render before the reset effect fires,
+  // so clamp here rather than trusting the raw index anywhere downstream.
+  var scrubIdx = (scrub >= 0 && scrub < nPts) ? scrub : -1;
+  // Same figure as trendNet, but stopped at the scrubbed day when the crosshair is up.
+  var scrubNet = (scrubIdx >= 0 ? series[scrubIdx] : series[series.length - 1]) - (showNet ? netStart : startBal);
+  var scrubUp = scrubNet >= 0;
 
   var MONTHS3 = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   function compactMoney(v) {
@@ -5376,6 +5387,9 @@ function Overview(props) {
     }
     return d;
   }
+  // Date under the crosshair - shares the app's "Today / Monday, Jul 14" wording.
+  function scrubDateLabel(i) { return dateLabel(isoAgo(winDays - i)); }
+
   function trendChart() {
     var W = 318, H = 108, topY = 12, botY = 74;
     var mn = Math.min.apply(null, series), mx = Math.max.apply(null, series);
@@ -5403,8 +5417,38 @@ function Overview(props) {
     var lineB = hasNeg ? HNEG : T.trendLineB;
     // Show $0 label at the zero line only when it's not already shown as min/max
     var zeroIsMin = mn === 0, zeroIsMax = mx === 0;
+
+    // Scrubbing: map the pointer's x across the plotted width onto a day index.
+    // Snapping to a real point (never an interpolated one) keeps the readout
+    // honest - the dot always sits on a balance the account actually had.
+    function idxAt(e) {
+      var r = e.currentTarget.getBoundingClientRect();
+      if (!r.width) return 0;
+      var f = (e.clientX - r.left) / r.width;
+      return Math.max(0, Math.min(nPts - 1, Math.round(f * (nPts - 1))));
+    }
+    function beginScrub(e) {
+      if (nPts < 2) return;
+      e.stopPropagation();                       // never let this start a panel swipe
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+      setScrub(idxAt(e));
+    }
+    function moveScrub(e) {
+      if (scrub < 0) return;
+      e.stopPropagation();
+      var i = idxAt(e);
+      if (i !== scrub) setScrub(i);
+    }
+    function endScrub() { if (scrub >= 0) setScrub(-1); }
+
+    var sc = scrubIdx >= 0 ? pts[scrubIdx] : null;
+
+    // touchAction pan-y keeps the page scrollable through the chart while claiming
+    // the horizontal axis, so a sideways drag scrubs instead of flipping panels.
     return (
-      <svg width={W} height={H} viewBox={"0 0 " + W + " " + H} style={{ display: "block", overflow: "visible" }}>
+      <svg width={W} height={H} viewBox={"0 0 " + W + " " + H}
+        onPointerDown={beginScrub} onPointerMove={moveScrub} onPointerUp={endScrub} onPointerCancel={endScrub} onPointerLeave={endScrub}
+        style={{ display: "block", overflow: "visible", touchAction: "pan-y", cursor: nPts > 1 ? "ew-resize" : "default" }}>
         <defs>
           <linearGradient id="rcArea" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={areaColor} stopOpacity={0.28} />
@@ -5427,8 +5471,16 @@ function Overview(props) {
         )}
         <path d={area} fill="url(#rcArea)" opacity={dp} />
         <path d={line} fill="none" stroke="url(#rcLine)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" pathLength={1} strokeDasharray={1} strokeDashoffset={1 - dp} />
-        <circle cx={last.x} cy={last.y} r={6} fill={T.trendGlow} opacity={0.20 * dp} />
-        <circle cx={last.x} cy={last.y} r={3.4} fill={T.trendDot} stroke={T.trendDotStroke} strokeWidth={2} opacity={dp} />
+        <circle cx={last.x} cy={last.y} r={6} fill={T.trendGlow} opacity={(sc ? 0 : 0.20) * dp} />
+        <circle cx={last.x} cy={last.y} r={3.4} fill={T.trendDot} stroke={T.trendDotStroke} strokeWidth={2} opacity={sc ? 0 : dp} />
+        {/* Crosshair: a stem rising from the floor to meet a dot riding the line. */}
+        {sc && (
+          <g pointerEvents="none">
+            <line x1={sc.x} y1={sc.y} x2={sc.x} y2={botY} stroke={HINK} strokeWidth={1} strokeDasharray="3 3" opacity={0.45} />
+            <circle cx={sc.x} cy={sc.y} r={9} fill={T.trendGlow} opacity={0.22} />
+            <circle cx={sc.x} cy={sc.y} r={4.5} fill={T.trendDot} stroke={T.trendDotStroke} strokeWidth={2.5} />
+          </g>
+        )}
         <text x={3} y={yOf(mx) - 4} fontSize={9} fontFamily={UI} fill={HMUT}>{compactMoney(mx)}</text>
         <text x={3} y={yOf(mn) - 4} fontSize={9} fontFamily={UI} fill={HMUT}>{compactMoney(mn)}</text>
         {ticks.map(function(tk, i) {
@@ -5577,14 +5629,16 @@ function Overview(props) {
                 {rangeRow()}
               </div>
               <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>{trendChart()}</div>
+              {/* While scrubbing this reads that day instead of today - same two
+                  slots, same meaning, so nothing jumps around under your finger. */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: 4 }}>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: trendUp ? HPOS : HNEG }}>{(trendUp ? "+" : "-") + dollars(Math.abs(trendNet))}</div>
-                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>{"net change - " + rangeLong[range]}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: scrubUp ? HPOS : HNEG }}>{(scrubUp ? "+" : "-") + dollars(Math.abs(scrubNet))}</div>
+                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>{scrubIdx >= 0 ? "net change - through then" : ("net change - " + rangeLong[range])}</div>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: HINK, letterSpacing: "-0.02em" }}>{dollars(series[series.length - 1])}</div>
-                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>{(showNet ? tr("netWorth") : tr("balance")).toLowerCase() + " now"}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: HINK, letterSpacing: "-0.02em" }}>{dollars(scrubIdx >= 0 ? series[scrubIdx] : series[series.length - 1])}</div>
+                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>{scrubIdx >= 0 ? scrubDateLabel(scrubIdx) : ((showNet ? tr("netWorth") : tr("balance")).toLowerCase() + " now")}</div>
                 </div>
               </div>
             </div>
