@@ -569,7 +569,27 @@ fetchSource(1).then(function(src){
         { id: 3, kind: "deposit", amount: 260, date: "2026-07-01", fromMain: false, label: "Revenue: Online orders", revenue: true }
       ]
     }] : [];
-    el = React.createElement(Overview, { tx: mockTx, goals: mockGoals, budgets: [], categories: mockCats, businesses: ovBiz, trips: mockTrips, username: "Alon", plan: "", onCategories: function(){}, onOpenBusiness: function(id){ window.__clicked = "biz_" + id; }, onOpenTrip: function(id){ window.__clicked = "trip_" + id; } });
+    // ?fresh=1 renders a brand-new account (no tx) so the "Get the most from
+    // Richy" suggestions show in their up-top position; ?used=1 marks debts +
+    // household + sync as already in use so they retire themselves.
+    function OverviewHarness() {
+      var _dt = React.useState([]); var dismissedTips = _dt[0]; var setDt = _dt[1];
+      var used = !!qs.get("used");
+      window.__dismissedTips = function(){ return dismissedTips; };
+      return React.createElement(Overview, {
+        tx: qs.get("fresh") ? [] : mockTx, goals: mockGoals, budgets: [], categories: mockCats, businesses: ovBiz, trips: mockTrips, username: "Alon", plan: "",
+        debts: used ? [{ id: "d1", name: "Visa card", balance: 4200, apr: 22, minPayment: 120 }] : [],
+        householdId: used ? "hh_mock" : null,
+        bankSync: used ? { enabled: true } : null,
+        dismissedTips: dismissedTips,
+        onDismissTip: function(id){ setDt(dismissedTips.concat([id])); window.__clicked = "dismissTip_" + id; },
+        onOpenDebts: function(){ window.__clicked = "debts"; },
+        onOpenCollab: function(){ window.__clicked = "collab"; },
+        onSetupSync: function(){ window.__clicked = "sync"; },
+        onCategories: function(){}, onOpenBusiness: function(id){ window.__clicked = "biz_" + id; }, onOpenTrip: function(id){ window.__clicked = "trip_" + id; }
+      });
+    }
+    el = React.createElement(OverviewHarness, {});
   }
   var fullBleed = view === "auth" || view === "onboarding" || view === "mathstory" || view === "quickamount";
   ReactDOM.createRoot(document.getElementById("root")).render(

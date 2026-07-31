@@ -5073,6 +5073,54 @@ function Overview(props) {
   var recent = tx.filter(function(t) { return !isTransfer(t); }).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,4);
   var monthTxCount = tx.filter(function(t) { return inMonth(t, ym) && !isTransfer(t); }).length;
 
+  // "Get the most from Richy" - invitations to features this account hasn't taken
+  // up yet. Each one retires itself the moment the feature is actually in use, and
+  // can be waved off by hand, so a settled user never keeps staring at a pitch for
+  // something they already know about. When none are left the section disappears.
+  var tipsOff = props.dismissedTips || [];
+  function dropTip(id) {
+    if (props.onDismissTip) props.onDismissTip(id);
+  }
+  var tips = [
+    { id: "debts",  icon: "credit",  title: "Crush your debt",  sub: "Payoff plan + debt-free date", used: (props.debts || []).length > 0,                       go: function() { if (props.onOpenDebts) props.onOpenDebts(); else nav("debts"); } },
+    { id: "collab", icon: "user",    title: "Add your partner", sub: "Share budgets & goals",        used: !!props.householdId,                                  go: function() { if (props.onOpenCollab) props.onOpenCollab(); else nav("collab"); } },
+    { id: "sync",   icon: "refresh", title: "Sync your bank",   sub: "Auto-import transactions",     used: !!(props.bankSync && props.bankSync.enabled),         go: function() { if (props.onSetupSync) props.onSetupSync(); else nav("bankSync"); } }
+  ].filter(function(a) { return !a.used && tipsOff.indexOf(a.id) < 0; });
+  // A brand-new account still needs to find these, so they sit high on the page.
+  // Once there's a real month of activity they move below the numbers - the
+  // dashboard is for your money first, feature pitches second.
+  var tipsUpTop = tx.filter(function(t) { return !isOpening(t); }).length < 5;
+
+  function tipsCard(delay) {
+    return (
+      <div style={{ marginBottom: 20, animation: "rcFadeUp 0.6s ease " + delay + "s both" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, fontFamily: UI }}>{"Get the most from Richy"}</div>
+        <Card style={{ overflow: "hidden" }}>
+          {tips.map(function(a, i) {
+            return (
+              <div key={a.id} onClick={a.go}
+                style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 14px 13px 16px", borderBottom: i < tips.length - 1 ? "0.5px solid " + T.sep : "none", cursor: "pointer" }}>
+                <div style={{ width: 34, height: 34, borderRadius: 11, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <SVGIcon id={a.icon} size={17} color={T.orange} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: T.ink, lineHeight: 1.3 }}>{a.title}</div>
+                  <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1, lineHeight: 1.35 }}>{a.sub}</div>
+                </div>
+                {/* The row itself opens the feature, so the only control it needs is
+                    a quiet way to say "I know, not for me" and get it off the page. */}
+                <div onClick={function(e) { e.stopPropagation(); dropTip(a.id); }} title="Not interested"
+                  style={{ width: 32, height: 32, borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer", opacity: 0.4 }}>
+                  <SVGIcon id="close" size={13} color={T.ink3} />
+                </div>
+              </div>
+            );
+          })}
+        </Card>
+      </div>
+    );
+  }
+
   var budgetRows = budgets.map(function(b) {
     var c = catById(cats, b.catId) || catByName(cats, b.category) || { id: b.catId, name: b.category || "Budget", color: T.orange, icon: "box" };
     var s = spentInCat(c);
@@ -5632,26 +5680,7 @@ function Overview(props) {
         </div>
       )}
 
-      <div style={{ marginBottom: 20, animation: "rcFadeUp 0.6s ease 0.05s both" }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, fontFamily: UI }}>{"Get the most from Richy"}</div>
-        <div style={{ display: "flex", gap: 10 }}>
-          {[
-            { icon: "credit",  title: "Crush your debt", sub: "Payoff plan + debt-free date", go: function() { if (props.onOpenDebts) props.onOpenDebts(); else nav("debts"); } },
-            { icon: "user",    title: "Add your partner", sub: "Share budgets & goals",       go: function() { if (props.onOpenCollab) props.onOpenCollab(); else nav("collab"); } },
-            { icon: "refresh", title: "Sync your bank",   sub: "Auto-import transactions",     go: function() { if (props.onSetupSync) props.onSetupSync(); else nav("bankSync"); } }
-          ].map(function(a, i) {
-            return (
-              <div key={i} onClick={a.go} style={{ flex: 1, background: T.card, borderRadius: 16, padding: "14px 12px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer", textAlign: "center" }}>
-                <div style={{ width: 38, height: 38, borderRadius: 12, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 8px" }}>
-                  <SVGIcon id={a.icon} size={18} color={T.orange} />
-                </div>
-                <div style={{ fontSize: 12.5, fontWeight: 700, color: T.ink, lineHeight: 1.25 }}>{a.title}</div>
-                <div style={{ fontSize: 10.5, color: T.ink3, marginTop: 3, lineHeight: 1.3 }}>{a.sub}</div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {tips.length > 0 && tipsUpTop && tipsCard(0.05)}
 
       {tx.length === 0 && (
         <Card style={{ padding: "36px 24px", textAlign: "center", marginBottom: 20 }}>
@@ -5886,6 +5915,10 @@ function Overview(props) {
             })}
           </Card>
         </div>
+      )}
+
+      {tips.length > 0 && !tipsUpTop && (
+        <div style={{ marginTop: 20 }}>{tipsCard(0.2)}</div>
       )}
 
     </div>
@@ -19894,6 +19927,11 @@ export default function App() {
   // raw markup - rendered by CustomBanners under the header on every tab.
   var _cbn = useState([]);
   var customBanners = _cbn[0]; var setCustomBanners = _cbn[1];
+  // Ids of the Overview "Get the most from Richy" suggestions the user waved off.
+  // Suggestions for features already in use hide themselves; this is for the ones
+  // they know about and simply don't want.
+  var _dt = useState([]);
+  var dismissedTips = _dt[0]; var setDismissedTips = _dt[1];
   // Found Money: only the user's DECISIONS persist (the running tally, dismissed
   // finding ids, and a log of acted items). Findings themselves are recomputed
   // from tx each session by findMoney().
@@ -19971,6 +20009,7 @@ export default function App() {
     setBankSync(data.bankSync || null);
     setLeumiFinteka(data.leumiFinteka || null);
     setCustomBanners(data.customBanners || []);
+    setDismissedTips(data.dismissedTips || []);
     setHouseholdId(data.householdId || null);
     setUserDob(data.dob || "");
     _lang.code = data.lang || "en"; setLang(data.lang || "en");
@@ -20161,6 +20200,11 @@ export default function App() {
   function onSaveChats(next) { setRichardChats(next); save({ richardChats: next }); }
   function onSaveNotes(next) { setNotes(next); save({ notes: next }); }
   function onSaveBanners(next) { setCustomBanners(next); save({ customBanners: next }); }
+  function onDismissTip(id) {
+    if (dismissedTips.indexOf(id) >= 0) return;
+    var next = dismissedTips.concat([id]);
+    setDismissedTips(next); save({ dismissedTips: next });
+  }
   function onSettleNote(nextTx, nextNotes) { setTx(nextTx); setNotes(nextNotes); save({ tx: nextTx, notes: nextNotes }); }
   function onSaveTrips(next) { setTrips(next); save({ trips: next }); }
   // Atomic two-array write (mirrors onSettleNote) so reserving a trip can't clobber tx.
@@ -20699,7 +20743,7 @@ export default function App() {
   // The five swipeable main tabs, produced by id so both the visible page and the
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
-    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} investing={investing} trips={trips} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} />;
+    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} />;
     if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;

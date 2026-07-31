@@ -1,73 +1,45 @@
-# Connect Richy to Bank Leumi via Open Banking (one-time setup)
+# Connect Richy to Bank Leumi via FinTeka (one-time setup)
 
 Richy can now connect directly to a user's real **Bank Leumi** account through
-Leumi's **Open Banking Portal** (the platform originally launched under the
-"FinTeka" name; the live portal today is at leumiopenbanking.co.il). Once
+**FinTeka**, Leumi's Open Banking subsidiary and API marketplace. Once
 connected, transactions sync automatically - no phone automation needed (that
 older method, plain "Bank Sync", still exists separately for every other
 bank).
 
 I've written all the app code (client UI, OAuth2 + PKCE handshake, token
-storage, transaction sync) - the plumbing should work as-is. But registration
-here is a bigger step than Firebase's "paste your config" - see below.
+storage, transaction sync) - you only need to register with Leumi and paste
+the config, the same way you did for Firebase.
 
-**The portal, verified live:** https://www.leumiopenbanking.co.il
-- API catalog (viewable without registration): https://www.leumiopenbanking.co.il/apis
-- How to start: https://www.leumiopenbanking.co.il/how-to-start
-- Registration form: https://www.leumiopenbanking.co.il/register
-- Real base URLs from the catalog: sandbox `https://api.sbxleumiob.co.il/dev/sandbox`,
-  production `https://leumiopenbanking.co.il/prd` (separate gateways per
-  product: Accounts, Consents, Cards, Savings, Loans, Securities, Payments,
-  RTP, Mandates).
-- Downloadable implementation guides (no login needed): "How-To" info
-  services guide, payments guide, mandates guide, and RTP guide are all
-  linked from the API catalog page.
-
-**Important caveat - registration is not self-serve for a hobby app.** The
-"How to start" page and the registration form both confirm this requires
-being a licensed Third-Party Provider: you need an Israeli company
-registration number (ח״פ), and before you can even submit the registration
-form you must already hold **two eIDAS-standard regulatory certificates**
-issued by an approved regulator CA:
-- **QWAC** (Qualified Website Authentication Certificate) - proves your
-  fintech's identity and sets up mTLS.
-- **QSEAL** (Qualified Electronic Seal) - signs your API request headers.
-
-Without both certificates you cannot register, cannot touch the sandbox, and
-cannot reach production. This is the same eIDAS/PSD2-style TPP licensing
-model used across EU Open Banking - it's a formal regulatory step (usually
-via a qualified trust service provider), not a developer signup form. If
-Richy is a personal/hobby project rather than a licensed fintech entity,
-getting a real Bank Leumi connection working end-to-end will depend on
-clearing that certification first - worth confirming that's a step you
-actually want to take before investing more time here.
-
-Everything below assumes you've cleared that and have real values to plug
-in. If you'd rather not pursue the formal TPP route, the phone-automation
-Bank Sync (already shipped) remains the practical option for every bank
-including Leumi.
+**Important caveat:** FinTeka's exact API is published only inside their own
+developer portal (it isn't public), so I built this against the standard
+Open Banking / Berlin Group shape their platform is modeled on. The OAuth2
+flow itself is standard and should work as-is. Two things will likely need a
+small tweak once you're registered and can see real responses:
+1. The exact authorize/token/API URLs (you'll get these from the portal).
+2. The transaction field names in `mapFinTekaTransaction()` inside
+   `api/leumi-fintaka.js` - if Leumi's sandbox returns transactions shaped
+   differently than expected, send me one sample transaction JSON object and
+   I'll adjust the mapping in a minute.
 
 ---
 
-## 1. Register as a licensed TPP on the Open Banking Portal
+## 1. Register as a FinTeka developer / TPP
 
-1. Obtain your QWAC + QSEAL certificates from an approved eIDAS regulator CA
-   (see "How to start" on the portal for the current process/list).
-2. Go to https://www.leumiopenbanking.co.il/register and fill in the company
-   details, upload your public QSEAL certificate, and set a username/password
-   (one login covers all your applications).
-3. You'll need a **redirect URI** on file for the OAuth flow - use exactly
-   this:
+1. Go to Bank Leumi's FinTeka developer portal and create an account
+   (search "Bank Leumi FinTeka developer portal" if you don't have the link
+   handy - I can't sign up on your behalf).
+2. Register a new application. You'll need to give them a **redirect URI** -
+   use exactly this:
    ```
    https://richy-mgkl.vercel.app/api/leumi-fintaka?flow=callback
    ```
-4. Request the **Accounts** (AISP) scope/product at minimum.
-5. Once approved, pull from the portal / your developer area:
+3. Request the **Accounts** and **Transactions** (AISP) scopes.
+4. Once approved (sandbox access is usually instant, production may take
+   longer), the portal will show you:
    - A **Client ID** and **Client Secret**
    - The **authorization endpoint** URL (where users log in and consent)
    - The **token endpoint** URL (where codes are exchanged for tokens)
-   - The **API base URL** for your target environment (sandbox or production,
-     see the real base URLs above)
+   - The **API base URL** (where accounts/transactions are fetched)
    - The exact **scope** string they expect
 
 ## 2. Set environment variables in Vercel
@@ -81,7 +53,7 @@ Add each of these (Production, and Preview if you test there too):
 | `LEUMI_FINTEKA_CLIENT_SECRET` | from the portal |
 | `LEUMI_FINTEKA_AUTH_URL` | the authorization endpoint from the portal |
 | `LEUMI_FINTEKA_TOKEN_URL` | the token endpoint from the portal |
-| `LEUMI_FINTEKA_API_BASE` | sandbox `https://api.sbxleumiob.co.il/dev/sandbox`, or production `https://leumiopenbanking.co.il/prd` - confirm the exact path suffix for the Accounts product against your portal login |
+| `LEUMI_FINTEKA_API_BASE` | the API base URL from the portal (e.g. `https://api.fintaka.leumi.co.il/open-banking/v1`) |
 | `LEUMI_FINTEKA_SCOPE` | the scope string the portal expects (defaults to `accounts transactions` if unset) |
 | `LEUMI_FINTEKA_REDIRECT_URI` | `https://richy-mgkl.vercel.app/api/leumi-fintaka?flow=callback` (must match step 1 exactly) |
 | `LEUMI_FINTEKA_APP_URL` | `https://richy-mgkl.vercel.app/` (defaults to this if unset) |
@@ -135,9 +107,3 @@ want faster syncing later.
   heuristic.
 - The OAuth flow uses PKCE (`code_challenge`/`code_verifier`), which most
   Open Banking implementations require or at least accept.
-- Each product on https://www.leumiopenbanking.co.il/apis (Accounts, Consents,
-  Cards, etc.) has a "Download Yaml" button on its spec page giving the exact
-  OpenAPI/Swagger definition - once you're in, pull the Accounts one and send
-  it to me (or paste the transaction schema) so I can line up
-  `mapFinTekaTransaction()` in `api/leumi-fintaka.js` with the real field
-  names instead of the generic Berlin-Group-style guess it uses now.
