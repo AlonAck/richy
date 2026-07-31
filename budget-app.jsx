@@ -5143,6 +5143,7 @@ function Overview(props) {
   // How many whole windows back in time the carousel is looking. 0 = up to today.
   var _sh = useState(0);    var shift = _sh[0];    var setShift = _sh[1];
   var rafRef = useRef(null);
+  var chartRef = useRef(null);   // the trend svg, so the scrubber can measure it
   var dragRef = useRef({ active: false, startX: 0, vw: 366 });
   var scrollRef = useRef(null);
 
@@ -5342,6 +5343,33 @@ function Overview(props) {
   // Switching range shortens the series a render before the reset effect fires,
   // so clamp here rather than trusting the raw index anywhere downstream.
   var scrubIdx = (scrub >= 0 && scrub < nPts) ? scrub : -1;
+
+  // Scrubbing. The handlers live on a padded wrapper rather than the svg so you
+  // can grab the line without hitting it exactly, but the x always maps against
+  // the chart's own box - press left of the chart and you get its first day.
+  // Snapping to a real point (never an interpolated one) keeps the readout
+  // honest: the dot always sits on a balance the account actually had.
+  function idxAt(e) {
+    var el = chartRef.current;
+    if (!el) return 0;
+    var r = el.getBoundingClientRect();
+    if (!r.width) return 0;
+    var f = (e.clientX - r.left) / r.width;
+    return Math.max(0, Math.min(nPts - 1, Math.round(f * (nPts - 1))));
+  }
+  function beginScrub(e) {
+    if (nPts < 2) return;
+    e.stopPropagation();                       // never let this start a panel swipe
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+    setScrub(idxAt(e));
+  }
+  function moveScrub(e) {
+    if (scrub < 0) return;
+    e.stopPropagation();
+    var i = idxAt(e);
+    if (i !== scrub) setScrub(i);
+  }
+  function endScrub() { if (scrub >= 0) setScrub(-1); }
   // The balance the footer is reporting: the scrubbed day, else the window's last.
   // dollars() renders magnitude only (callers own the sign app-wide), so an
   // overdrawn balance needs its minus put back or it reads as money you have.
@@ -5435,37 +5463,11 @@ function Overview(props) {
     // Show $0 label at the zero line only when it's not already shown as min/max
     var zeroIsMin = mn === 0, zeroIsMax = mx === 0;
 
-    // Scrubbing: map the pointer's x across the plotted width onto a day index.
-    // Snapping to a real point (never an interpolated one) keeps the readout
-    // honest - the dot always sits on a balance the account actually had.
-    function idxAt(e) {
-      var r = e.currentTarget.getBoundingClientRect();
-      if (!r.width) return 0;
-      var f = (e.clientX - r.left) / r.width;
-      return Math.max(0, Math.min(nPts - 1, Math.round(f * (nPts - 1))));
-    }
-    function beginScrub(e) {
-      if (nPts < 2) return;
-      e.stopPropagation();                       // never let this start a panel swipe
-      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
-      setScrub(idxAt(e));
-    }
-    function moveScrub(e) {
-      if (scrub < 0) return;
-      e.stopPropagation();
-      var i = idxAt(e);
-      if (i !== scrub) setScrub(i);
-    }
-    function endScrub() { if (scrub >= 0) setScrub(-1); }
-
     var sc = scrubIdx >= 0 ? pts[scrubIdx] : null;
 
-    // touchAction pan-y keeps the page scrollable through the chart while claiming
-    // the horizontal axis, so a sideways drag scrubs instead of flipping panels.
     return (
-      <svg width={W} height={H} viewBox={"0 0 " + W + " " + H}
-        onPointerDown={beginScrub} onPointerMove={moveScrub} onPointerUp={endScrub} onPointerCancel={endScrub} onPointerLeave={endScrub}
-        style={{ display: "block", overflow: "visible", touchAction: "pan-y", cursor: nPts > 1 ? "ew-resize" : "default" }}>
+      <svg ref={chartRef} width={W} height={H} viewBox={"0 0 " + W + " " + H}
+        style={{ display: "block", overflow: "visible" }}>
         <defs>
           <linearGradient id="rcArea" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={areaColor} stopOpacity={0.28} />
@@ -5487,16 +5489,13 @@ function Overview(props) {
           <text x={3} y={zeroY - 3} fontSize={9} fontFamily={UI} fill={HMUT} opacity={0.7}>$0</text>
         )}
         <path d={area} fill="url(#rcArea)" opacity={dp} />
-        {/* Soft wide copy under the stroke: gives the curve real weight and stops
-            the daily zig-zag from reading as a string of little segments. */}
-        <path d={line} fill="none" stroke="url(#rcLine)" strokeWidth={9} strokeLinecap="round" strokeLinejoin="round" opacity={0.13 * dp} />
-        <path d={line} fill="none" stroke="url(#rcLine)" strokeWidth={3.6} strokeLinecap="round" strokeLinejoin="round" pathLength={1} strokeDasharray={1} strokeDashoffset={1 - dp} />
+        <path d={line} fill="none" stroke="url(#rcLine)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" pathLength={1} strokeDasharray={1} strokeDashoffset={1 - dp} />
         <circle cx={last.x} cy={last.y} r={6} fill={T.trendGlow} opacity={(sc ? 0 : 0.20) * dp} />
         <circle cx={last.x} cy={last.y} r={3.4} fill={T.trendDot} stroke={T.trendDotStroke} strokeWidth={2} opacity={sc ? 0 : dp} />
         {/* Crosshair: a stem rising from the floor to meet a dot riding the line. */}
         {sc && (
           <g pointerEvents="none">
-            <line x1={sc.x} y1={sc.y} x2={sc.x} y2={botY} stroke={HINK} strokeWidth={1} strokeDasharray="3 3" opacity={0.45} />
+            <line x1={sc.x} y1={sc.y} x2={sc.x} y2={botY} stroke={HINK} strokeWidth={2} strokeLinecap="round" opacity={0.55} />
             <circle cx={sc.x} cy={sc.y} r={9} fill={T.trendGlow} opacity={0.22} />
             <circle cx={sc.x} cy={sc.y} r={4.5} fill={T.trendDot} stroke={T.trendDotStroke} strokeWidth={2.5} />
           </g>
@@ -5662,7 +5661,13 @@ function Overview(props) {
                 <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>{(showNet ? tr("netWorth") : tr("balance")).toUpperCase() + " TREND"}</span>
                 {rangeRow()}
               </div>
-              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>{trendChart()}</div>
+              {/* Negative margin + matching padding widen the grab area out to the
+                  panel edges without moving the chart: touchAction pan-y keeps the
+                  page scrollable while claiming the horizontal axis for scrubbing. */}
+              <div onPointerDown={beginScrub} onPointerMove={moveScrub} onPointerUp={endScrub} onPointerCancel={endScrub} onPointerLeave={endScrub}
+                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 -22px", padding: "0 22px", touchAction: "pan-y", cursor: nPts > 1 ? "ew-resize" : "default" }}>
+                {trendChart()}
+              </div>
               {/* While scrubbing this reads that day instead of today - same two
                   slots, same meaning, so nothing jumps around under your finger. */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: 4 }}>
