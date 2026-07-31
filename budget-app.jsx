@@ -5140,6 +5140,8 @@ function Overview(props) {
   // -1 when nobody is scrubbing. Drives the crosshair on the chart and swaps the
   // footer readout to that day's balance.
   var _sc = useState(-1);   var scrub = _sc[0];    var setScrub = _sc[1];
+  // How many whole windows back in time the carousel is looking. 0 = up to today.
+  var _sh = useState(0);    var shift = _sh[0];    var setShift = _sh[1];
   var rafRef = useRef(null);
   var dragRef = useRef({ active: false, startX: 0, vw: 366 });
   var scrollRef = useRef(null);
@@ -5166,10 +5168,10 @@ function Overview(props) {
       if (t < 1) rafRef.current = requestAnimationFrame(tick);
     }
     setDp(0);
-    setScrub(-1);   // a new panel or range redraws the line; drop any live crosshair
+    setScrub(-1);   // a new panel, range or window redraws the line; drop the crosshair
     rafRef.current = requestAnimationFrame(tick);
     return function() { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [page, range]);
+  }, [page, range, shift]);
 
   function goPage(i) {
     setPage(i);
@@ -5190,7 +5192,9 @@ function Overview(props) {
       if (i !== page) setPage(i);
     }, 100);
   }
-  function pickRange(r) { if (r !== range) setRange(r); }
+  function pickRange(r) { if (r !== range) { setRange(r); setShift(0); } }
+  // Step the window a whole period back (or forward, never past today).
+  function stepWindow(d) { setShift(function(s) { return Math.max(0, s + d); }); }
   function stopDrag(e) { e.stopPropagation(); }
   function onDown(e) {
     var d = dragRef.current;
@@ -5251,14 +5255,21 @@ function Overview(props) {
   var rangeOpts = ["7D", "1M", "3M", "1Y"];
   function isoAgo(d) { return new Date(Date.now() - d * 86400000).toISOString().slice(0, 10); }
   var todayISO = new Date().toISOString().slice(0, 10);
-  var winStart = isoAgo(rangeDays[range]);
+  // The window normally ends today; each step back moves it a whole period into
+  // the past (shift 1 on 1M = the 30 days before the last 30). Every panel in the
+  // carousel reads the same window, so stepping back moves all of them together.
+  var winDays = rangeDays[range];
+  var winEndAgo = shift * winDays;
+  var winStart = isoAgo(winDays + winEndAgo);
+  var winEnd = isoAgo(winEndAgo);
+  function inWin(d) { return d >= winStart && d <= winEnd; }
   var monthNet = income - expense;
 
   function winExpenseInCat(c) {
-    return tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && t.date >= winStart && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    return tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inWin(t.date) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
   }
-  var winExpenseTot = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && t.date >= winStart; }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var winIncomeTot  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && t.date >= winStart; }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var winExpenseTot = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && inWin(t.date); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var winIncomeTot  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && inWin(t.date); }).reduce(function(s, t) { return s + t.amount; }, 0);
   var winSav = winIncomeTot > 0 ? Math.round(((winIncomeTot - winExpenseTot) / winIncomeTot) * 100) : 0;
   var winKept = Math.max(0, winIncomeTot - winExpenseTot);
   var winCats = cats.map(function(c) { return { name: c.name, color: c.color, val: winExpenseInCat(c) }; })
@@ -5267,7 +5278,7 @@ function Overview(props) {
     .slice(0, 6);
 
   var labelTotals = {};
-  tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && t.date >= winStart; }).forEach(function(t) {
+  tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && inWin(t.date); }).forEach(function(t) {
     var k = t.label || "Other";
     labelTotals[k] = (labelTotals[k] || 0) + t.amount;
   });
@@ -5277,11 +5288,10 @@ function Overview(props) {
 
   // Daily running-balance series across the window - one true point per day, no
   // sampling gaps and no smoothing overshoot, so the line reflects real balances.
-  var winDays = rangeDays[range];
   var startBal = tx.filter(function(t) { return t.date < winStart; }).reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0);
   var dayDelta = {};
   tx.forEach(function(t) {
-    if (t.date >= winStart && t.date <= todayISO) {
+    if (inWin(t.date)) {
       dayDelta[t.date] = (dayDelta[t.date] || 0) + (t.type === "income" ? t.amount : -t.amount);
     }
   });
@@ -5314,7 +5324,7 @@ function Overview(props) {
   var balSeries = [], netSeries = [];
   var run = startBal, netRun = netStart;
   for (var di = 0; di <= winDays; di++) {
-    var dISO = isoAgo(winDays - di);
+    var dISO = isoAgo(winDays + winEndAgo - di);
     var md = dayDelta[dISO] || 0;
     var pd = potDeltaByDate[dISO] || 0;
     run += md;
@@ -5326,11 +5336,18 @@ function Overview(props) {
   var nPts = series.length;
   var trendNet = series[series.length - 1] - (showNet ? netStart : startBal);
   var trendUp = trendNet >= 0;
+  // "past 30 days" only stays true while the window ends today; once it's stepped
+  // back, name the actual span so nothing on the card is quietly lying.
+  var winLabel = shift === 0 ? rangeLong[range] : (axisLabel(winStart) + " - " + axisLabel(winEnd));
   // Switching range shortens the series a render before the reset effect fires,
   // so clamp here rather than trusting the raw index anywhere downstream.
   var scrubIdx = (scrub >= 0 && scrub < nPts) ? scrub : -1;
+  // The balance the footer is reporting: the scrubbed day, else the window's last.
+  // dollars() renders magnitude only (callers own the sign app-wide), so an
+  // overdrawn balance needs its minus put back or it reads as money you have.
+  var shownBal = scrubIdx >= 0 ? series[scrubIdx] : series[series.length - 1];
   // Same figure as trendNet, but stopped at the scrubbed day when the crosshair is up.
-  var scrubNet = (scrubIdx >= 0 ? series[scrubIdx] : series[series.length - 1]) - (showNet ? netStart : startBal);
+  var scrubNet = shownBal - (showNet ? netStart : startBal);
   var scrubUp = scrubNet >= 0;
 
   var MONTHS3 = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -5348,7 +5365,7 @@ function Overview(props) {
     var n = range === "1Y" ? 5 : 4, out = [];
     for (var k = 0; k < n; k++) {
       var frac = n > 1 ? k / (n - 1) : 0;
-      out.push({ frac: frac, label: axisLabel(isoAgo(Math.round(winDays * (1 - frac)))) });
+      out.push({ frac: frac, label: axisLabel(isoAgo(winEndAgo + Math.round(winDays * (1 - frac)))) });
     }
     return out;
   }
@@ -5388,7 +5405,7 @@ function Overview(props) {
     return d;
   }
   // Date under the crosshair - shares the app's "Today / Monday, Jul 14" wording.
-  function scrubDateLabel(i) { return dateLabel(isoAgo(winDays - i)); }
+  function scrubDateLabel(i) { return dateLabel(isoAgo(winDays + winEndAgo - i)); }
 
   function trendChart() {
     var W = 318, H = 108, topY = 12, botY = 74;
@@ -5470,7 +5487,10 @@ function Overview(props) {
           <text x={3} y={zeroY - 3} fontSize={9} fontFamily={UI} fill={HMUT} opacity={0.7}>$0</text>
         )}
         <path d={area} fill="url(#rcArea)" opacity={dp} />
-        <path d={line} fill="none" stroke="url(#rcLine)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" pathLength={1} strokeDasharray={1} strokeDashoffset={1 - dp} />
+        {/* Soft wide copy under the stroke: gives the curve real weight and stops
+            the daily zig-zag from reading as a string of little segments. */}
+        <path d={line} fill="none" stroke="url(#rcLine)" strokeWidth={9} strokeLinecap="round" strokeLinejoin="round" opacity={0.13 * dp} />
+        <path d={line} fill="none" stroke="url(#rcLine)" strokeWidth={3.6} strokeLinecap="round" strokeLinejoin="round" pathLength={1} strokeDasharray={1} strokeDashoffset={1 - dp} />
         <circle cx={last.x} cy={last.y} r={6} fill={T.trendGlow} opacity={(sc ? 0 : 0.20) * dp} />
         <circle cx={last.x} cy={last.y} r={3.4} fill={T.trendDot} stroke={T.trendDotStroke} strokeWidth={2} opacity={sc ? 0 : dp} />
         {/* Crosshair: a stem rising from the floor to meet a dot riding the line. */}
@@ -5527,9 +5547,22 @@ function Overview(props) {
       </svg>
     );
   }
+  // Chevrons that walk the window through time: left points at older windows
+  // (shift up), right comes back toward today and greys out once it's there.
+  function stepArrow(delta) {
+    var older = delta > 0;
+    var off = !older && shift === 0;
+    return (
+      <div onPointerDown={stopDrag} onClick={function() { if (!off) stepWindow(delta); }}
+        style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 20, height: 22, borderRadius: 7, cursor: off ? "default" : "pointer", opacity: off ? 0.28 : 0.75, transform: older ? "rotate(180deg)" : "none" }}>
+        <SVGIcon id="chevron" size={13} color={HMUT} />
+      </div>
+    );
+  }
   function rangeRow() {
     return (
-      <div onPointerDown={stopDrag} style={{ display: "flex", gap: 2, background: T.heroRangeBg, borderRadius: 9, padding: 3 }}>
+      <div onPointerDown={stopDrag} style={{ display: "flex", alignItems: "center", gap: 2, background: T.heroRangeBg, borderRadius: 9, padding: 3 }}>
+        {stepArrow(1)}
         {rangeOpts.map(function(r) {
           var on = r === range;
           return (
@@ -5539,6 +5572,7 @@ function Overview(props) {
             </div>
           );
         })}
+        {stepArrow(-1)}
       </div>
     );
   }
@@ -5634,11 +5668,11 @@ function Overview(props) {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: 4 }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 600, color: scrubUp ? HPOS : HNEG }}>{(scrubUp ? "+" : "-") + dollars(Math.abs(scrubNet))}</div>
-                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>{scrubIdx >= 0 ? "net change - through then" : ("net change - " + rangeLong[range])}</div>
+                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>{scrubIdx >= 0 ? "net change - through then" : ("net change - " + winLabel)}</div>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: HINK, letterSpacing: "-0.02em" }}>{dollars(scrubIdx >= 0 ? series[scrubIdx] : series[series.length - 1])}</div>
-                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>{scrubIdx >= 0 ? scrubDateLabel(scrubIdx) : ((showNet ? tr("netWorth") : tr("balance")).toLowerCase() + " now")}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: shownBal < 0 ? HNEG : HINK, letterSpacing: "-0.02em" }}>{(shownBal < 0 ? "-" : "") + dollars(shownBal)}</div>
+                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>{scrubIdx >= 0 ? scrubDateLabel(scrubIdx) : (shift > 0 ? dateLabel(winEnd) : ((showNet ? tr("netWorth") : tr("balance")).toLowerCase() + " now"))}</div>
                 </div>
               </div>
             </div>
