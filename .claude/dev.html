@@ -359,16 +359,46 @@ fetchSource(1).then(function(src){
         },
         analyses: {}, chats: {}, priceSnapshotDate: ""
       }] : [];
+      // ?plan=balanced starts the account already on a curated plan; ?auto=1
+      // also switches auto-invest on and back-dates the last run so the
+      // "cycle is due" path renders without waiting a month.
+      if (seedInv.length && qs.get("plan")) {
+        seedInv[0].plan = qs.get("plan");
+        seedInv[0].planSetAt = "2026-06-01";
+      }
+      if (seedInv.length && qs.get("auto")) {
+        seedInv[0].auto = { on: true, cadence: "monthly", amount: 200, roundUps: true, startedAt: "2026-01-01", lastRunAt: "2026-01-01" };
+      }
       var _iv = React.useState(seedInv); var iv = _iv[0]; var setIv = _iv[1];
       var _tx = React.useState(mockTx); var tx = _tx[0]; var setTx = _tx[1];
+      // The plan questionnaire is a full screen in the real app; here it swaps in
+      // over the page so the whole build-a-plan loop is walkable in the harness.
+      var _po = React.useState(false); var planOpen = _po[0]; var setPlanOpen = _po[1];
       window.__invState = function(){ return { investing: iv, tx: tx }; };
+      if (planOpen) {
+        return React.createElement(InvestPlanOnboard, {
+          acct: iv[0] || null, username: "Alon",
+          onCancel: function(){ setPlanOpen(false); },
+          onSave: function(r){
+            window.__savedPlan = r;
+            setIv(iv.map(function(a){
+              var n = {}; for (var k in a) n[k] = a[k];
+              n.plan = r.plan; n.planSetAt = "2026-08-02"; n.planGoal = r.goal; n.planHorizon = r.horizon;
+              n.auto = Object.assign({ on: false, cadence: "monthly", roundUps: false }, n.auto, { amount: r.monthly, startedAt: "2026-08-02" });
+              return n;
+            }));
+            setPlanOpen(false);
+          }
+        });
+      }
       return React.createElement(InvestingView, {
-        investing: iv, tx: tx, openInvId: "inv_1", username: "Alon", lang: "en", richardInstructions: "",
+        investing: iv, tx: tx, goals: mockGoals, openInvId: "inv_1", username: "Alon", lang: "en", richardInstructions: "",
         investorProfile: qs.get("profile") ? { experience: "never", involvement: "monthly", amount: "few", risk: "hold", generatedAt: "2026-07-08" } : null,
         onSaveInvesting: function(n){ setIv(n); },
         onMove: function(ntx, ni){ setTx(ntx); setIv(ni); },
         onOpenInvestorOnboard: function(){ window.__clicked = "onboard"; },
         onOpenScout: function(){ window.location.href = "/.claude/dev.html?view=scout&profile=" + (qs.get("profile")||"") + "&seed=1"; },
+        onOpenPlanOnboard: function(){ setPlanOpen(true); },
         onBack: function(){ window.__clicked = "back"; }, backLabel: "Accounts",
         onOpenStock: function(acctId, symbol){ window.__clicked = "stock_" + symbol; }
       });

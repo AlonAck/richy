@@ -370,6 +370,11 @@ function fmtCur(sym, n) {
 function dollars(n) {
   return fmtCur(_currency.sym, n);
 }
+// Whole-unit money, for round figures where cents are noise rather than
+// information: preset chips, contribution amounts, long-range projections.
+function dollarsWhole(n) {
+  return (_currency.sym || "$") + Math.round(Math.abs(n || 0)).toLocaleString("en-US");
+}
 
 function round2(n) {
   return Math.round((n + Number.EPSILON) * 100) / 100;
@@ -768,7 +773,14 @@ var MOCK_STOCKS = {
   "AMZN": { name: "Amazon.com Inc.", exchange: "NASDAQ", currency: "USD", price: 238.4, prevClose: 240.2 },
   "META": { name: "Meta Platforms Inc.", exchange: "NASDAQ", currency: "USD", price: 742.1, prevClose: 728.5 },
   "TSLA": { name: "Tesla Inc.", exchange: "NASDAQ", currency: "USD", price: 412.8, prevClose: 421.0 },
-  "PLTR": { name: "Palantir Technologies", exchange: "NASDAQ", currency: "USD", price: 92.6, prevClose: 88.9 }
+  "PLTR": { name: "Palantir Technologies", exchange: "NASDAQ", currency: "USD", price: 92.6, prevClose: 88.9 },
+  // The funds behind Richard's curated plans, so a plan buy is exercisable in
+  // the harness with no keys and no network.
+  "VTI":  { name: "Vanguard Total Stock Market ETF", exchange: "NYSE ARCA", currency: "USD", price: 312.8, prevClose: 310.4 },
+  "QQQ":  { name: "Invesco QQQ Trust", exchange: "NASDAQ", currency: "USD", price: 604.2, prevClose: 598.7 },
+  "VXUS": { name: "Vanguard Total International Stock ETF", exchange: "NASDAQ", currency: "USD", price: 74.9, prevClose: 74.6 },
+  "BND":  { name: "Vanguard Total Bond Market ETF", exchange: "NASDAQ", currency: "USD", price: 73.1, prevClose: 73.2 },
+  "IBIT": { name: "iShares Bitcoin Trust ETF", exchange: "NASDAQ", currency: "USD", price: 58.4, prevClose: 56.9 }
 };
 function _mockSeries(symbol, rangeKey) {
   var m = MOCK_STOCKS[symbol] || { price: 100, prevClose: 99, currency: "USD" };
@@ -12199,6 +12211,198 @@ var POPULAR_FUNDS = [
   { symbol: "GLD", label: "Gold", sub: "SPDR Gold", name: "SPDR Gold Shares" }
 ];
 
+// === RICHARD-MANAGED INVESTING ===
+// The managed side of the investing account: a risk-matched plan Richard builds
+// from real, buyable US-listed funds, an auto-invest habit, plain-English
+// lessons and a coach that reads the live portfolio. Everything here is a pure
+// function over the SAME trade/cash ledger the manual flow writes, so "invest
+// into my plan" is just a batch of ordinary buys - nothing is simulated and
+// nothing bypasses the cash checks in saveTrade().
+
+// Asset classes -> the low-fee fund that expresses them. Crypto uses a spot
+// bitcoin ETF, not a coin, so it quotes, charts and trades through exactly the
+// same pipeline as every other holding.
+var INVEST_SLEEVES = {
+  us:     { sym: "VTI",  name: "Vanguard Total Stock Market ETF",        cls: "stocks", label: "US stocks" },
+  growth: { sym: "QQQ",  name: "Invesco QQQ Trust",                      cls: "stocks", label: "US growth" },
+  intl:   { sym: "VXUS", name: "Vanguard Total International Stock ETF", cls: "stocks", label: "International" },
+  bonds:  { sym: "BND",  name: "Vanguard Total Bond Market ETF",         cls: "bonds",  label: "Bonds" },
+  crypto: { sym: "IBIT", name: "iShares Bitcoin Trust ETF",              cls: "crypto", label: "Bitcoin (ETF)" }
+};
+var INVEST_CLASS = {
+  stocks: { label: "Stocks", color: "#2799C8" },
+  bonds:  { label: "Bonds",  color: "#8B6CEF" },
+  crypto: { label: "Crypto", color: "#C8983A" },
+  cash:   { label: "Cash",   color: "#B0A396" }
+};
+// Which class an arbitrary ticker counts as when measuring the real portfolio
+// against its plan. Anything unrecognised counts as stocks - the honest default
+// for a single company or an equity fund.
+var INVEST_SYM_CLASS = (function() {
+  var m = {};
+  for (var k in INVEST_SLEEVES) m[INVEST_SLEEVES[k].sym] = INVEST_SLEEVES[k].cls;
+  ["BND", "AGG", "BNDX", "TLT", "IEF", "SHY", "VGIT", "VCIT", "LQD", "MUB"].forEach(function(s) { m[s] = "bonds"; });
+  ["IBIT", "FBTC", "GBTC", "ETHA", "BITO", "BTC-USD", "ETH-USD"].forEach(function(s) { m[s] = "crypto"; });
+  return m;
+})();
+function investClassOf(symbol) { return INVEST_SYM_CLASS[symbol] || "stocks"; }
+
+// The three curated plans. `alloc` is what the user sees (the four asset classes
+// from the plan card); `mix` is how Richard actually buys it. Both describe the
+// same portfolio - mix just splits the Stocks slice across three funds so a
+// single plan buy lands diversified. Everything not in `mix` stays as cash.
+var INVEST_PLANS = {
+  conservative: {
+    id: "conservative", name: "Steady Saver", risk: "Lower", ret: "4-6%", mid: 0.05, stock: 35,
+    pitch: "Mostly bonds with a steady slice of stocks. Built to grow gently, without the stomach drops.",
+    alloc: [{ k: "Bonds", cls: "bonds", pct: 50 }, { k: "Stocks", cls: "stocks", pct: 35 }, { k: "Cash", cls: "cash", pct: 12 }, { k: "Crypto", cls: "crypto", pct: 3 }],
+    mix: [{ key: "bonds", pct: 50 }, { key: "us", pct: 20 }, { key: "intl", pct: 10 }, { key: "growth", pct: 5 }, { key: "crypto", pct: 3 }]
+  },
+  balanced: {
+    id: "balanced", name: "Balanced Growth", risk: "Medium", ret: "7-9%", mid: 0.08, stock: 60,
+    pitch: "A broad stock core cushioned by bonds. The middle road most long-term money sits in.",
+    alloc: [{ k: "Stocks", cls: "stocks", pct: 60 }, { k: "Bonds", cls: "bonds", pct: 25 }, { k: "Crypto", cls: "crypto", pct: 8 }, { k: "Cash", cls: "cash", pct: 7 }],
+    mix: [{ key: "us", pct: 32 }, { key: "growth", pct: 16 }, { key: "intl", pct: 12 }, { key: "bonds", pct: 25 }, { key: "crypto", pct: 8 }]
+  },
+  bold: {
+    id: "bold", name: "Bold Builder", risk: "Higher", ret: "9-13%", mid: 0.11, stock: 75,
+    pitch: "Growth-tilted and deliberately spiky. Only worth it if you can leave it alone for years.",
+    alloc: [{ k: "Stocks", cls: "stocks", pct: 75 }, { k: "Crypto", cls: "crypto", pct: 15 }, { k: "Bonds", cls: "bonds", pct: 7 }, { k: "Cash", cls: "cash", pct: 3 }],
+    mix: [{ key: "us", pct: 35 }, { key: "growth", pct: 25 }, { key: "intl", pct: 15 }, { key: "bonds", pct: 7 }, { key: "crypto", pct: 15 }]
+  }
+};
+var INVEST_PLAN_IDS = ["conservative", "balanced", "bold"];
+function investPlanOf(acct) {
+  var id = acct && acct.plan;
+  return (id && INVEST_PLANS[id]) ? INVEST_PLANS[id] : null;
+}
+// Donut segments for a plan's four visible classes, as pathLength-100 arcs.
+function investDonut(alloc) {
+  var acc = 0;
+  return alloc.map(function(a) {
+    var seg = { color: INVEST_CLASS[a.cls].color, k: a.k, pct: a.pct, len: a.pct.toFixed(2), off: (-acc).toFixed(2) };
+    acc += a.pct;
+    return seg;
+  });
+}
+// Where the account's money actually sits right now, by class, in app currency.
+// priceOf(symbol, avgCost) lets the caller feed live quotes in; without it the
+// persisted mirror is used, so this works offline too.
+function investActualMix(acct, priceOf) {
+  var out = { stocks: 0, bonds: 0, crypto: 0, cash: 0, total: 0 };
+  if (!acct) return out;
+  var pos = positionsOf(acct);
+  for (var s in pos) {
+    var p = pos[s];
+    if (p.shares <= 0) continue;
+    var px = priceOf ? priceOf(s, p.avgCost) : investingPriceOf(acct, s, p.avgCost);
+    out[investClassOf(s)] += invConvert(p.shares * px, p.currency);
+  }
+  out.cash = investingCash(acct);
+  out.total = round2(out.stocks + out.bonds + out.crypto + out.cash);
+  return out;
+}
+// Target vs actual per class, worst drift first. Only meaningful once there's
+// money in the account, so an empty account reports no drift rather than 100%.
+function investDrift(acct, priceOf) {
+  var plan = investPlanOf(acct);
+  var mix = investActualMix(acct, priceOf);
+  if (!plan || mix.total <= 0) return [];
+  return plan.alloc.map(function(a) {
+    var actual = round2((mix[a.cls] || 0) / mix.total * 100);
+    return { k: a.k, cls: a.cls, color: INVEST_CLASS[a.cls].color, target: a.pct, actual: actual, delta: round2(actual - a.pct) };
+  }).sort(function(x, y) { return Math.abs(y.delta) - Math.abs(x.delta); });
+}
+// Turn "invest $X into my plan" into concrete orders. Whole-cent amounts per
+// sleeve, shares derived from the live price; the cash slice is simply left in
+// cash. Sleeves with no usable price are skipped and reported back so the UI can
+// say so rather than silently under-investing.
+function investPlanOrders(plan, amount, priceOf) {
+  var orders = [], skipped = [], invested = 0;
+  if (!plan || !(amount > 0)) return { orders: orders, skipped: skipped, invested: 0, cash: round2(amount || 0) };
+  plan.mix.forEach(function(m) {
+    var sl = INVEST_SLEEVES[m.key];
+    var slice = round2(amount * m.pct / 100);
+    var price = priceOf ? priceOf(sl.sym) : 0;
+    if (!(price > 0) || slice <= 0) { skipped.push(sl.sym); return; }
+    // Fractional shares to 4dp, then the cash cost derived BACK from them, so
+    // the ledger's cash side and its share side always agree to the cent.
+    var shares = Math.round((slice / price) * 10000) / 10000;
+    if (!(shares > 0)) { skipped.push(sl.sym); return; }
+    var cost = round2(shares * price);
+    invested += cost;
+    orders.push({ key: m.key, symbol: sl.sym, name: sl.name, label: sl.label, cls: sl.cls, pct: m.pct, amount: cost, price: price, shares: shares });
+  });
+  return { orders: orders, skipped: skipped, invested: round2(invested), cash: round2(amount - invested) };
+}
+
+// --- auto-invest schedule ---
+// No server runs trades while you sleep, so "auto-invest" means Richard tracks
+// the schedule and asks for one tap when a cycle comes due. investAutoNext()
+// is the date that tap is owed.
+// Date maths in UTC on both ends: parsing as local and formatting via
+// toISOString() shifts the result a day for anyone east of Greenwich.
+function investAutoAdd(iso, days) {
+  var d = new Date(iso + "T00:00:00Z");
+  if (isNaN(d.getTime())) return iso;
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+function investAutoNext(acct) {
+  var a = acct && acct.auto;
+  if (!a || !a.on) return null;
+  var last = a.lastRunAt || a.startedAt || (acct && acct.createdAt) || new Date().toISOString().slice(0, 10);
+  return investAutoAdd(last, a.cadence === "weekly" ? 7 : 30);
+}
+function investAutoDue(acct, today) {
+  var next = investAutoNext(acct);
+  return !!next && next <= (today || new Date().toISOString().slice(0, 10));
+}
+function investAutoMonthly(acct) {
+  var a = acct && acct.auto;
+  if (!a || !a.on) return 0;
+  return round2((a.amount || 0) * (a.cadence === "weekly" ? 4.33 : 1));
+}
+// Spare change from real spending in a month: what each settled expense would
+// round up to the next whole unit. Transfers and pending rows never count.
+function investRoundUps(tx, ym) {
+  var total = 0;
+  (tx || []).forEach(function(t) {
+    if (!t || t.type !== "expense" || t.pending || t.transfer) return;
+    if (ym && !inMonth(t, ym)) return;
+    var amt = t.amount || 0;
+    if (amt <= 0) return;
+    var up = Math.ceil(amt) - amt;
+    if (up > 0 && up < 1) total += up;
+  });
+  return round2(total);
+}
+
+// A 0-100 read on how well the account is actually set up, from five things
+// Richard can check without guessing: is there a plan, is the money spread out,
+// is it drifting, is cash sitting idle, and is money arriving on a schedule.
+function investHealth(acct, priceOf) {
+  if (!acct) return { score: 0, parts: [] };
+  var plan = investPlanOf(acct);
+  var mix = investActualMix(acct, priceOf);
+  var pos = positionsOf(acct);
+  var heldCount = 0;
+  for (var s in pos) { if (pos[s].shares > 0) heldCount++; }
+  var drift = investDrift(acct, priceOf);
+  var worst = drift.length ? Math.abs(drift[0].delta) : 0;
+  var cashPct = mix.total > 0 ? mix.cash / mix.total * 100 : 100;
+  var targetCash = plan ? (plan.alloc.filter(function(a) { return a.cls === "cash"; })[0] || { pct: 8 }).pct : 8;
+  var parts = [
+    { k: "A plan to follow", pts: plan ? 25 : 0, max: 25, note: plan ? plan.name : "No plan picked yet" },
+    { k: "Spread across holdings", pts: Math.min(25, heldCount * 5), max: 25, note: heldCount + (heldCount === 1 ? " holding" : " holdings") },
+    { k: "Close to target mix", pts: plan ? Math.max(0, 20 - Math.round(worst)) : 0, max: 20, note: plan ? (worst < 1 ? "On target" : worst.toFixed(0) + "% off on " + drift[0].k) : "Needs a plan first" },
+    { k: "Cash put to work", pts: Math.max(0, 15 - Math.round(Math.max(0, cashPct - targetCash) / 2)), max: 15, note: Math.round(cashPct) + "% in cash" },
+    { k: "Investing on a schedule", pts: (acct.auto && acct.auto.on) ? 15 : 0, max: 15, note: (acct.auto && acct.auto.on) ? "Auto-invest on" : "Auto-invest off" }
+  ];
+  var score = parts.reduce(function(n, p) { return n + p.pts; }, 0);
+  return { score: Math.max(0, Math.min(100, Math.round(score))), parts: parts };
+}
+
 // Business Account look-and-feel banks.
 var BIZ_ICONS = ["briefcase", "chart", "building", "cart", "laptop", "tool", "coins", "coffee", "leaf", "star"];
 // A broad, curated identity palette for a business (drives its banner, cards
@@ -13313,12 +13517,427 @@ function SavingsView(props) {
   );
 }
 
+// === TEACHER MODE ===
+// Six short lessons, written the way Richard talks: no jargon without a plain
+// translation right next to it. Progress lives on the account (acct.lessons) so
+// it follows the portfolio, not the device.
+var INVEST_LESSONS = [
+  { id: "stock", title: "What is a stock, really?", mins: 4, level: "Basics", icon: "coins",
+    blurb: "A share is a slice of a real company. Own it, own a piece of the profits.",
+    intro: "A share of stock is a small piece of a real business. Buy one share of a coffee chain and you own a (very) small part of every store, every machine and every future profit. That's it - no magic.",
+    body: [
+      { h: "You make money two ways", p: "The business gets more valuable, so your slice is worth more. Or it hands out some profit as a dividend - cash straight into your account." },
+      { h: "Prices move because opinions move", p: "The price is just what someone will pay today. Good news, bad news and plain mood swings move it around a company that hasn't changed overnight." },
+      { h: "Which is why time matters", p: "Over a day the price is mostly noise. Over years it tends to follow how the business actually did." }
+    ],
+    close: "If you can't explain what a company sells in one sentence, that's a reason to pause - not a reason to feel behind." },
+  { id: "funds", title: "Stocks vs. funds vs. ETFs", mins: 5, level: "Basics", icon: "box",
+    blurb: "One basket, many companies - and why most people start with funds.",
+    intro: "A fund is a basket. Instead of picking one company, you buy a slice of hundreds at once. An ETF is just a fund that trades like a stock, so you can buy it any time the market is open.",
+    body: [
+      { h: "One ticker, hundreds of companies", p: "A total-market fund like VTI holds thousands of US companies. If one goes under, it barely registers." },
+      { h: "Fees are the quiet part", p: "Funds charge a yearly slice, shown as an expense ratio. 0.03% is three cents a year per $100 - broad index funds are that cheap. 1%+ is worth questioning." },
+      { h: "Why beginners start here", p: "You get the market's return without needing to be right about any single company." }
+    ],
+    close: "Your plan is built out of funds for exactly this reason. Single stocks are the seasoning, not the meal." },
+  { id: "good", title: "Spot a good stock from a bad one", mins: 6, level: "Core", icon: "search",
+    blurb: "Richard's 5-question checklist for sizing up any company.",
+    intro: "There's no crystal ball, but great companies share a few traits. Here's the five-question check I run on anything before it goes near your plan.",
+    checklist: [
+      { q: "Does it actually make money?", good: "Growing revenue and real profits", bad: "Burning cash with no path to profit" },
+      { q: "Can it defend its turf?", good: "A brand, network or tech rivals can't easily copy", bad: "Competes on price alone" },
+      { q: "Is the balance sheet healthy?", good: "More cash than debt, room to breathe", bad: "Drowning in loans it can't service" },
+      { q: "Is it priced sanely?", good: "Valuation in line with its growth", bad: "Priced for perfection on hype" },
+      { q: "Do you understand it?", good: "You can explain how it earns in a sentence", bad: "You're buying because it's trending" }
+    ],
+    close: "Clear four of five and it's worth a look. Fail 'does it make money' or 'do you understand it' and I usually pass - no matter how good the story sounds." },
+  { id: "div", title: "Why diversification wins", mins: 4, level: "Core", icon: "categories",
+    blurb: "Don't put all your eggs in one ticker - the only free lunch in investing.",
+    intro: "Spreading money across many things lowers your risk without lowering your expected return. That trade is rare enough that it gets called the only free lunch in investing.",
+    body: [
+      { h: "One company can go to zero", p: "A whole market basically can't. Owning hundreds means no single failure can sink you." },
+      { h: "Different things zig and zag", p: "Bonds often hold steady exactly when stocks wobble. That's why your plan holds both." },
+      { h: "It's boring on purpose", p: "You'll never have the best year on the internet. You'll also never have the worst." }
+    ],
+    close: "If one holding is big enough to ruin your year, it's big enough to trim." },
+  { id: "risk", title: "Risk & return, explained", mins: 5, level: "Core", icon: "shield",
+    blurb: "Bigger hoped-for returns come with bigger swings. Match them to your timeline.",
+    intro: "Risk isn't a number on a form - it's how far your balance can fall before you need the money. That's why I asked when you might need it.",
+    body: [
+      { h: "Return is payment for discomfort", p: "Stocks have paid more than bonds over long stretches precisely because they drop harder along the way." },
+      { h: "Your timeline sets your limit", p: "Money you need in two years shouldn't be somewhere that can halve. Money you won't touch for twenty can ride it out." },
+      { h: "The real risk is selling low", p: "A drop only becomes a loss when you sell. Picking a mix you can actually sit through is most of the job." }
+    ],
+    close: "If your plan's worst month would make you sell, it's the wrong plan - and that's a fixable problem, not a failure." },
+  { id: "compound", title: "The magic of compounding", mins: 3, level: "Basics", icon: "spark",
+    blurb: "Small amounts, left alone, snowball. Time does the heavy lifting.",
+    intro: "Compounding is growth on top of growth. Your gains start earning gains, and after enough years that curve gets steep.",
+    body: [
+      { h: "The last years do the most", p: "Most of the total usually arrives late. That's why starting small today beats starting big later." },
+      { h: "Regular beats large", p: "Adding a set amount every month quietly buys more when prices are low and less when they're high." },
+      { h: "Interruptions cost the most", p: "Cashing out mid-way resets the snowball. Keep an emergency cushion in cash so you never have to." }
+    ],
+    close: "You don't need to be clever here. You need to be consistent and patient - those are learnable." }
+];
+function investLessonById(id) {
+  for (var i = 0; i < INVEST_LESSONS.length; i++) { if (INVEST_LESSONS[i].id === id) return INVEST_LESSONS[i]; }
+  return null;
+}
+function investLessonProgress(acct) { return (acct && acct.lessons) || {}; }
+function investLessonsDone(acct) {
+  var m = investLessonProgress(acct), n = 0;
+  INVEST_LESSONS.forEach(function(l) { if ((m[l.id] || 0) >= 100) n++; });
+  return n;
+}
+
+// === RICHARD, THE PORTFOLIO COACH ===
+// The Richard tab's insight cards. Every one of these is derived from the real
+// account - drift measured against the plan, real idle cash, the real auto-invest
+// schedule - so nothing here is a canned "tip".
+function investInsights(acct, ctx) {
+  var out = [];
+  var plan = investPlanOf(acct);
+  var mix = ctx.mix, drift = ctx.drift;
+  if (!plan) {
+    out.push({ id: "plan", tone: "orange", icon: "spark", title: "You don't have a plan yet",
+      text: "Answer four quick questions and I'll build a mix matched to your goal and timeline, then keep it balanced for you.",
+      cta: "Build my plan", action: "plan" });
+  } else if (drift.length && Math.abs(drift[0].delta) >= 5) {
+    var d = drift[0];
+    out.push({ id: "drift", tone: "orange", icon: "refresh", title: "Time to rebalance",
+      text: "Your " + d.k.toLowerCase() + " slice sits at " + Math.round(d.actual) + "% against a " + d.target + "% target. " + (d.delta > 0 ? "Trimming a little and topping up the rest" : "Topping this up on your next plan buy") + " brings you back in line.",
+      cta: "See the drift", action: "portfolios" });
+  }
+  if (ctx.cash > 0 && mix.total > 0 && (ctx.cash / mix.total) * 100 > (ctx.targetCash + 5)) {
+    out.push({ id: "cash", tone: "gold", icon: "coins", title: dollars(ctx.cash) + " is sitting idle",
+      text: "That's " + Math.round(ctx.cash / mix.total * 100) + "% in cash against a " + ctx.targetCash + "% target. Cash is safe, but it isn't working - "
+        + (plan ? "I can spread it across your " + plan.name + " mix." : "pick a plan and I'll spread it out for you."),
+      cta: plan ? "Put it to work" : "Build my plan", action: plan ? "planbuy" : "plan" });
+  }
+  if (ctx.autoDue) {
+    out.push({ id: "auto", tone: "green", icon: "refresh", title: "Your auto-invest is due",
+      text: dollarsWhole(ctx.autoAmount) + " was scheduled for " + ctx.autoNext + ". I never move money without you - one tap and it goes in.",
+      cta: "Invest it now", action: "auto-run" });
+  } else if (acct && acct.auto && acct.auto.on) {
+    out.push({ id: "autoOn", tone: "green", icon: "check", title: "Auto-invest is working",
+      text: "You're adding " + dollarsWhole(investAutoMonthly(acct)) + " a month" + (acct.auto.roundUps ? " plus round-ups" : "") + ". That habit, not clever picks, is what builds this.",
+      cta: null, action: null });
+  } else {
+    out.push({ id: "autoOff", tone: "green", icon: "refresh", title: "Turn on auto-invest",
+      text: "Investing a set amount on a schedule beats trying to time the market, and it takes the decision off your plate entirely.",
+      cta: "Set it up", action: "auto" });
+  }
+  if (ctx.scoutCount > 0) {
+    out.push({ id: "scout", tone: "gold", icon: "search", title: "Scout found " + ctx.scoutCount + (ctx.scoutCount === 1 ? " idea" : " ideas"),
+      text: "I read the market's movers and the headlines and came back with " + (ctx.scoutCount === 1 ? "one idea that fits" : "ideas that fit") + " your plan. They're suggestions, never automatic buys.",
+      cta: "See Scout picks", action: "scout" });
+  }
+  if (ctx.heldCount === 1) {
+    out.push({ id: "conc", tone: "orange", icon: "shield", title: "Everything is in one holding",
+      text: "One position means one company's bad week is your bad week. Adding a broad fund alongside it is the cheapest risk reduction there is.",
+      cta: "Learn why", action: "lesson:div" });
+  }
+  return out;
+}
+// Offline answer for the coach chat: honest, specific to their numbers, and
+// clear that it's the local read rather than a fresh one.
+function localInvestCoach(ctx) {
+  var bits = [];
+  bits.push(ctx.plan ? "You're on the " + ctx.plan.name + " plan, targeting " + ctx.plan.ret + " a year." : "You haven't picked a plan yet, so there's no target mix to hold you to.");
+  bits.push("Right now that's " + dollars(ctx.worth) + " across " + ctx.heldCount + (ctx.heldCount === 1 ? " holding" : " holdings") + ", with " + dollars(ctx.cash) + " in cash.");
+  if (ctx.drift && ctx.drift.length && Math.abs(ctx.drift[0].delta) >= 5) bits.push("The one thing I'd fix is " + ctx.drift[0].k + " at " + Math.round(ctx.drift[0].actual) + "% against a " + ctx.drift[0].target + "% target.");
+  bits.push("I can't reach my full brain right now, so that's the read straight off your numbers - ask again in a moment for the longer answer.");
+  return bits.join(" ");
+}
+function sendInvestCoach(ctx, history, cb) {
+  var langName = LANGUAGE_NAMES[ctx.lang] || "English";
+  var langLine = langName !== "English" ? " Reply entirely in " + langName + "." : "";
+  var lines = [];
+  lines.push("PORTFOLIO SNAPSHOT (real, live numbers - never invent figures, only use these):");
+  lines.push("- Plan: " + (ctx.plan ? ctx.plan.name + " (" + ctx.plan.risk + " risk, target " + ctx.plan.ret + "/yr)" : "none picked yet"));
+  lines.push("- Portfolio value: " + dollars(ctx.worth) + " (" + dollars(ctx.cash) + " uninvested cash)");
+  lines.push("- Holdings: " + (ctx.holdingsLine || "none yet"));
+  if (ctx.drift && ctx.drift.length) lines.push("- Target vs actual: " + ctx.drift.map(function(d) { return d.k + " " + Math.round(d.actual) + "% vs " + d.target + "%"; }).join(", "));
+  lines.push("- Auto-invest: " + (ctx.autoOn ? dollars(ctx.autoAmount) + " " + ctx.cadence + (ctx.roundUps ? " plus round-ups" : "") : "off"));
+  lines.push("- All-time gain: " + (ctx.gain >= 0 ? "+" : "") + dollars(ctx.gain));
+  lines.push("- Main spending balance outside investing: " + dollars(ctx.balance));
+  var system = richardUserCtx(ctx.richardInstructions) +
+    "You are Richard, the user's investing coach inside their budgeting app. You manage a curated, fund-based portfolio for them. Warm, direct, plain English, 2-4 sentences unless they ask for depth." +
+    investorGlossary(ctx.profile) +
+    " Ground every answer in the snapshot below - quote their real figures. Never promise or predict returns, never guarantee anything, and say plainly when something is uncertain. You are not a licensed financial advisor; if they ask for a personalised recommendation about a specific security, give the general principle and the tradeoff rather than an instruction. Never output JSON or markdown headings - just talk." + langLine +
+    "\n\n" + lines.join("\n");
+  callClaude(history, system, 500, function(err, text) {
+    if (err || !text) { cb(null, localInvestCoach(ctx)); return; }
+    cb(null, text);
+  });
+}
+
+// === PLAN ONBOARDING ===
+// The four questions that decide the mix, then Richard building it. Goal and
+// horizon shape the recommendation; the drop-reaction question is the one that
+// actually sets risk, because how someone behaves in a fall matters more than
+// what they say they can tolerate.
+var IPO_GOALS = [
+  { v: "wealth", label: "Grow my wealth", sub: "Build long-term net worth", icon: "chart" },
+  { v: "retire", label: "Retire comfortably", sub: "Invest for the long haul", icon: "leaf" },
+  { v: "purchase", label: "Save for something big", sub: "A home, a wedding, a trip", icon: "home" },
+  { v: "learn", label: "Learn as I invest", sub: "Start small, understand more", icon: "book" }
+];
+var IPO_HORIZONS = [
+  { v: "short", label: "Under 3 years", sub: "I may need it soon", icon: "calendar" },
+  { v: "mid", label: "3 - 10 years", sub: "A medium-term plan", icon: "goals" },
+  { v: "long", label: "10+ years", sub: "I'm in no rush", icon: "spark" }
+];
+var IPO_REACTIONS = [
+  { v: "conservative", label: "Sell to stop the loss", sub: "A steadier, lower-risk mix", icon: "shield" },
+  { v: "balanced", label: "Hold and wait it out", sub: "A balanced mix", icon: "activity" },
+  { v: "bold", label: "Buy more on sale", sub: "A bold, growth-tilted mix", icon: "up" }
+];
+// The reaction answer picks the plan; a short horizon caps it, because a mix you
+// might have to sell into in two years shouldn't be the spiky one.
+function investPlanFor(reaction, horizon) {
+  var id = INVEST_PLANS[reaction] ? reaction : "balanced";
+  if (horizon === "short") id = "conservative";
+  else if (horizon === "mid" && id === "bold") id = "balanced";
+  return id;
+}
+function investProjection(monthly, rate, years) {
+  var r = rate / 12, n = years * 12;
+  if (!(monthly > 0)) return 0;
+  return Math.round(monthly * ((Math.pow(1 + r, n) - 1) / r));
+}
+
+function InvestPlanOnboard(props) {
+  var acct = props.acct || null;
+  var _st = useState(1); var step = _st[0]; var setStep = _st[1];
+  var _dr = useState("fwd"); var dir = _dr[0]; var setDir = _dr[1];
+  var _gl = useState(""); var goal = _gl[0]; var setGoal = _gl[1];
+  var _hz = useState(""); var horizon = _hz[0]; var setHorizon = _hz[1];
+  var _rx = useState(""); var reaction = _rx[0]; var setReaction = _rx[1];
+  var _mo = useState(200); var monthly = _mo[0]; var setMonthly = _mo[1];
+  var _bz = useState(false); var building = _bz[0]; var setBuilding = _bz[1];
+  var _dn = useState(false); var done = _dn[0]; var setDone = _dn[1];
+  var advRef = useRef(false);
+  useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
+  var firstName = String(props.username || "").trim().split(" ")[0] || "there";
+  var planId = investPlanFor(reaction, horizon);
+  var plan = INVEST_PLANS[planId];
+
+  function back() {
+    if (done) { setDone(false); setDir("back"); setStep(4); return; }
+    if (step <= 1) { props.onCancel(); return; }
+    setDir("back"); setStep(step - 1);
+  }
+  function next() {
+    setDir("fwd");
+    if (step < 4) { setStep(step + 1); return; }
+    build();
+  }
+  function autoNext() {
+    if (advRef.current) return;
+    advRef.current = true;
+    setTimeout(function() { advRef.current = false; next(); }, 240);
+  }
+  function build() {
+    setBuilding(true);
+    setTimeout(function() { setBuilding(false); setDone(true); }, 1900);
+  }
+  function finish() {
+    props.onSave({ plan: planId, goal: goal, horizon: horizon, reaction: reaction, monthly: monthly });
+  }
+
+  var QS = [
+    null,
+    { h: "What are you investing for?", s: "This shapes how I balance growth against safety.", opts: IPO_GOALS, val: goal, set: setGoal },
+    { h: "When might you need this money?", s: "Your time horizon decides how much risk makes sense.", opts: IPO_HORIZONS, val: horizon, set: setHorizon },
+    { h: "Your " + dollarsWhole(1000) + " drops to " + dollarsWhole(800) + " in a month. You...", s: "Be honest - there's no wrong answer. It tunes your risk.", opts: IPO_REACTIONS, val: reaction, set: setReaction },
+    { h: "How much can you invest monthly?", s: "Start anywhere. Auto-invest keeps the habit going.", opts: null }
+  ];
+  var q = QS[step] || QS[1];
+
+  function optCard(sel) {
+    return { width: "100%", background: sel ? T.orangeDim : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "15px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px " + T.orangeGlow : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", marginBottom: 11, transition: "box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease" };
+  }
+
+  // --- plan reveal ---
+  if (done) {
+    var donut = investDonut(plan.alloc);
+    var proj = investProjection(monthly, plan.mid, 10);
+    return (
+      <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, overflowY: "auto", position: "relative", zIndex: 0, overflowX: "hidden" }}>
+        <ScoutBeamsBg opacity={0.42} />
+        <div style={{ padding: "22px 22px 44px", maxWidth: 428, margin: "0 auto", boxSizing: "border-box", position: "relative" }}>
+          <button onClick={back} style={{ width: 34, height: 34, borderRadius: 11, border: "none", background: "rgba(0,0,0,0.05)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", marginBottom: 18, padding: 0 }}>
+            <span style={{ display: "inline-flex", transform: "rotate(180deg)" }}><SVGIcon id="chevron" size={16} color={T.ink} /></span>
+          </button>
+          <div style={{ animation: "rclPhrase 0.5s ease both" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 6 }}>
+              <RichyLogo size={26} />
+              <span style={{ fontSize: 12, fontWeight: 600, color: T.ink2 }}>Richard's recommendation</span>
+            </div>
+            <div style={{ fontSize: 27, fontWeight: 800, color: T.ink, letterSpacing: "-0.03em", lineHeight: 1.12 }}>{plan.name}</div>
+            <div style={{ fontSize: 14, color: T.ink2, marginTop: 6, lineHeight: 1.5 }}>{plan.pitch}</div>
+
+            <Card style={{ padding: 20, marginTop: 18 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+                <div style={{ position: "relative", width: 118, height: 118, flexShrink: 0 }}>
+                  <svg width={118} height={118} viewBox="0 0 118 118" style={{ transform: "rotate(-90deg)" }}>
+                    <circle cx={59} cy={59} r={50} fill="none" stroke="rgba(0,0,0,0.05)" strokeWidth={15} />
+                    {donut.map(function(s, i) {
+                      return <circle key={i} cx={59} cy={59} r={50} fill="none" stroke={s.color} strokeWidth={15} pathLength={100} strokeDasharray={s.len + " 100"} strokeDashoffset={s.off} />;
+                    })}
+                  </svg>
+                  <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ fontSize: 20, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em" }}>{plan.stock + "%"}</span>
+                    <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: T.ink3 }}>Stocks</span>
+                  </div>
+                </div>
+                <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 9 }}>
+                  {plan.alloc.map(function(a) {
+                    return (
+                      <div key={a.k} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ width: 9, height: 9, borderRadius: 3, background: INVEST_CLASS[a.cls].color, flexShrink: 0 }} />
+                        <span style={{ fontSize: 13, color: T.ink2, flex: 1 }}>{a.k}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: T.ink }}>{a.pct + "%"}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </Card>
+
+            <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
+              <Card style={{ flex: 1, padding: "15px 16px", borderRadius: 16 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: T.ink3 }}>In 10 years</div>
+                <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.03em", color: T.gold, marginTop: 6 }}>{dollarsWhole(proj)}</div>
+                <div style={{ fontSize: 11, color: T.ink3, marginTop: 2 }}>{"if " + dollarsWhole(monthly) + "/mo grew at " + (plan.mid * 100).toFixed(0) + "%"}</div>
+              </Card>
+              <Card style={{ flex: 1, padding: "15px 16px", borderRadius: 16 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: T.ink3 }}>Typical range</div>
+                <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.03em", color: T.ink, marginTop: 6 }}>{plan.ret}</div>
+                <div style={{ fontSize: 11, color: T.ink3, marginTop: 2 }}>{plan.risk + " risk"}</div>
+              </Card>
+            </div>
+
+            <div style={{ display: "flex", gap: 10, alignItems: "flex-start", background: T.orangeDim, borderRadius: 14, padding: "13px 14px", marginTop: 14 }}>
+              <SVGIcon id="refresh" size={18} color={T.orange} />
+              <div style={{ fontSize: 12.5, color: T.ink, lineHeight: 1.5 }}>
+                <b>Richard keeps it in shape.</b> I'll track your mix against these targets and tell you when it drifts - but nothing is bought or sold without you tapping first.
+              </div>
+            </div>
+
+            <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.5, marginTop: 14, textAlign: "center" }}>
+              That 10-year figure is an illustration of steady growth, not a forecast. Real returns swing, and some years are negative.
+            </div>
+
+            <BigBtn label={acct ? "Open my portfolio" : "Save my plan"} onPress={finish} />
+            <button onClick={function() { setDone(false); setDir("back"); setStep(3); }}
+              style={{ width: "100%", marginTop: 10, background: "none", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.orange, padding: "5px 0" }}>Pick a different risk level</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- building ---
+  if (building) {
+    return (
+      <div style={{ minHeight: "100vh", background: JR_BG, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI, position: "relative", zIndex: 0 }}>
+        <ScoutBeamsBg opacity={0.42} />
+        <div style={{ width: "100%", maxWidth: 320, padding: "0 32px" }}>
+          <AIWorking bare title="Building your plan..." sub={"Matching a " + plan.risk.toLowerCase() + "-risk mix to your goal and timeline."} expectedMs={1900}
+            steps={["Reading your answers", "Choosing your asset mix", "Picking the funds behind it", "Setting your targets"]} />
+        </div>
+      </div>
+    );
+  }
+
+  // --- questions ---
+  var canNext = step === 4 ? monthly > 0 : !!q.val;
+  return (
+    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column", position: "relative", zIndex: 0 }}>
+      <ScoutBeamsBg opacity={0.42} />
+      <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0" }}>
+        <JrIconBtn icon="chevron" rotate={180} onPress={back} />
+        <JourneyBar pct={(step / 4) * 100} />
+        <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: T.ink3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{step + "/4"}</div>
+      </div>
+
+      <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "28px 24px 8px" }}>
+        <div style={{ maxWidth: 380, margin: "0 auto" }}>
+          <JrStepShell k={step} dir={dir}>
+            <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 14 }}>
+              <RichyLogo size={26} />
+              <span style={{ fontSize: 12, fontWeight: 600, color: T.ink2 }}>{step === 1 ? "Richard asks, " + firstName : "Richard asks"}</span>
+            </div>
+            <div style={{ fontSize: 23, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", lineHeight: 1.22, marginBottom: 8 }}>
+              <WordReveal text={q.h} base={0.04} step={0.045} />
+            </div>
+            <div style={{ fontSize: 14, color: T.ink2, marginBottom: 24, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>{q.s}</div>
+
+            {q.opts && (
+              <Stagger k={"ipo" + step} step={0.06}>
+                {q.opts.map(function(o) {
+                  var sel = q.val === o.v;
+                  return (
+                    <button key={o.v} onClick={function() { q.set(o.v); autoNext(); }} style={optCard(sel)}>
+                      <div style={{ width: 42, height: 42, borderRadius: 12, background: sel ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: sel ? "0 5px 14px " + T.orangeGlow : "none" }}>
+                        <SVGIcon id={o.icon} size={20} color={sel ? "#fff" : T.ink3} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>{o.label}</div>
+                        <div style={{ fontSize: 12.5, color: T.ink2, marginTop: 2 }}>{o.sub}</div>
+                      </div>
+                      {sel && <SVGIcon id="check" size={20} color={T.orange} />}
+                    </button>
+                  );
+                })}
+              </Stagger>
+            )}
+
+            {step === 4 && (
+              <div>
+                <div style={{ textAlign: "center", fontSize: 44, fontWeight: 800, color: T.ink, letterSpacing: "-0.04em" }}>
+                  {dollarsWhole(monthly)}<span style={{ fontSize: 17, fontWeight: 600, color: T.ink3, letterSpacing: 0 }}>/mo</span>
+                </div>
+                <div style={{ display: "flex", gap: 9, marginTop: 18 }}>
+                  {[50, 100, 200, 500].map(function(v) {
+                    var sel = monthly === v;
+                    return (
+                      <button key={v} onClick={function() { setMonthly(v); }}
+                        style={{ flex: 1, padding: "11px 0", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.09)"), background: sel ? T.orangeDim : "#fff", borderRadius: 13, fontFamily: UI, fontSize: 14, fontWeight: 700, color: sel ? T.orange : T.ink2, cursor: "pointer" }}>
+                        {dollarsWhole(v)}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginTop: 14, textAlign: "center" }}>
+                  Nothing is locked in - you can change this, or skip a month, any time.
+                </div>
+              </div>
+            )}
+          </JrStepShell>
+        </div>
+      </div>
+
+      <div style={{ padding: "14px 24px calc(26px + env(safe-area-inset-bottom, 0px))" }}>
+        <div style={{ maxWidth: 380, margin: "0 auto" }}>
+          <BigBtn label={step === 4 ? "Build my plan" : "Continue"} disabled={!canNext} onPress={next} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // The Investing account page: a brokerage-style view of one account. Portfolio
 // hero with a value trend, cash available, holdings at live prices, allocation
 // donut, watchlist, recent activity, and the buy/sell/dividend/deposit/withdraw
 // sheets. Quotes poll every 60s while the page is visible; fresh prices are
 // mirrored onto acct.meta in state and persisted at most once per day (they
 // also piggyback on any trade save), so Firestore isn't written per poll.
+// It is also the hub for Richard's managed side: the Portfolio / Scout / Learn /
+// Richard tabs all live here so the plan, the ideas and the coach read from one
+// account object.
 function InvestingView(props) {
   var accts = props.investing || [];
   var tx = props.tx || [];
@@ -13353,11 +13972,25 @@ function InvestingView(props) {
   var _cSrc = useState("balance"); var cashSrc = _cSrc[0]; var setCashSrc = _cSrc[1];
   var _allA = useState(false); var allAct = _allA[0]; var setAllAct = _allA[1];
   var _delConfirm = useState(false); var delConfirm = _delConfirm[0]; var setDelConfirm = _delConfirm[1];
+  // --- managed-side state (plan, auto-invest, lessons, coach) ---
+  var _hub = useState("portfolio"); var hubTab = _hub[0]; var setHubTab = _hub[1];
+  var _pamt = useState(""); var planAmt = _pamt[0]; var setPlanAmt = _pamt[1];
+  var _pbusy = useState(false); var planBusy = _pbusy[0]; var setPlanBusy = _pbusy[1];
+  var _pdone = useState(null); var planDone = _pdone[0]; var setPlanDone = _pdone[1];
+  var _perr = useState(""); var planErr = _perr[0]; var setPlanErr = _perr[1];
+  var _lsn = useState(null); var openLesson = _lsn[0]; var setOpenLesson = _lsn[1];
+  var _cin = useState(""); var coachInput = _cin[0]; var setCoachInput = _cin[1];
+  var _cbz = useState(false); var coachBusy = _cbz[0]; var setCoachBusy = _cbz[1];
+  var _cfr = useState(-1); var coachFresh = _cfr[0]; var setCoachFresh = _cfr[1];
+  var _hlt = useState(false); var healthOpen = _hlt[0]; var setHealthOpen = _hlt[1];
+  var coachEndRef = useRef(null);
 
   var pos = acct ? positionsOf(acct) : {};
   var held = [];
   for (var hk in pos) { if (pos[hk].shares > 0) held.push(hk); }
   var watchlist = (acct && acct.watchlist) || [];
+  var plan = investPlanOf(acct);
+  var planSymbols = plan ? plan.mix.map(function(m) { return INVEST_SLEEVES[m.key].sym; }) : [];
 
   // Live price for display: fresh quote -> persisted mirror -> manual -> avg cost.
   function curPrice(symbol, fallbackAvg) {
@@ -13401,6 +14034,9 @@ function InvestingView(props) {
       if (stop || document.visibilityState === "hidden") return;
       var symbols = held.slice();
       watchlist.forEach(function(w) { if (symbols.indexOf(w) === -1) symbols.push(w); });
+      // The funds behind the chosen plan need live prices too - a plan buy sizes
+      // its orders off them, and the drift read prices them alongside holdings.
+      planSymbols.forEach(function(w) { if (symbols.indexOf(w) === -1) symbols.push(w); });
       if (!symbols.length) return;
       stockQuotes(symbols, function(map) {
         if (stop) return;
@@ -13415,7 +14051,7 @@ function InvestingView(props) {
     function onVis() { if (document.visibilityState === "visible") refresh(); }
     document.addEventListener("visibilitychange", onVis);
     return function() { stop = true; clearInterval(iv); document.removeEventListener("visibilitychange", onVis); };
-  }, [acct ? acct.id : null, held.join(","), watchlist.join(",")]);
+  }, [acct ? acct.id : null, held.join(","), watchlist.join(","), planSymbols.join(",")]);
 
   function mirrorQuotes(map) {
     if (!acct) return;
@@ -13480,6 +14116,11 @@ function InvestingView(props) {
     }, 350);
     return function() { clearTimeout(t); };
   }, [searchQ]);
+
+  // Keep the coach conversation pinned to the newest message.
+  useEffect(function() {
+    if (coachEndRef.current && coachEndRef.current.scrollIntoView) coachEndRef.current.scrollIntoView({ block: "end" });
+  }, [(acct && acct.coachChat ? acct.coachChat.length : 0), coachBusy]);
 
   function transferTxInv(type, amount, suffix, dateOverride) {
     return { id: Date.now() + 1, type: type, amount: round2(amount), label: (type === "expense" ? "→ " : "← ") + acct.name + (suffix || ""), catId: "savings-transfer", category: "Investing transfer", transfer: true, date: dateOverride || today, repeat: "none", pending: false };
@@ -13574,6 +14215,154 @@ function InvestingView(props) {
     }));
   }
   function openStock(symbol) { if (props.onOpenStock) props.onOpenStock(acct.id, symbol); }
+
+  // --- Richard's managed side -------------------------------------------------
+  // Every number below is measured off the same ledger the manual flow writes.
+  function livePrice(symbol) {
+    var q = quotes[symbol];
+    if (q && q.price > 0) return q.price;
+    var p = pos[symbol];
+    return investingPriceOf(acct, symbol, p ? p.avgCost : 0);
+  }
+  var mix = acct ? investActualMix(acct, livePrice) : { stocks: 0, bonds: 0, crypto: 0, cash: 0, total: 0 };
+  var drift = acct ? investDrift(acct, livePrice) : [];
+  var autoCfg = (acct && acct.auto) || { on: false, cadence: "monthly", amount: 200, roundUps: false };
+  var autoNextDate = investAutoNext(acct);
+  var autoIsDue = investAutoDue(acct, today);
+  var health = acct ? investHealth(acct, livePrice) : { score: 0, parts: [] };
+  var scoutCount = (acct && acct.scout && acct.scout.picks) ? acct.scout.picks.length : 0;
+  var targetCashPct = plan ? (plan.alloc.filter(function(a) { return a.cls === "cash"; })[0] || { pct: 8 }).pct : 8;
+  var roundUpPool = investRoundUps(tx, curMonth());
+  var lessonsDone = investLessonsDone(acct);
+  var coachMsgs = (acct && acct.coachChat) || [];
+
+  // One save for a whole plan buy: all the sleeve orders land as ordinary trades
+  // in a single mutation, so cash is debited once and Firestore sees one write.
+  // Returns an error string (never throws) exactly like saveTrade.
+  // `alsoMutate` folds extra account changes (e.g. stamping the auto-invest
+  // schedule) into the SAME save - two separate onSaveInvesting calls would both
+  // start from this render's stale array and the second would drop the trades.
+  function savePlanBuy(amount, alsoMutate, priceFn) {
+    if (!plan) return "Pick a plan first.";
+    var amt = round2(parseFloat(amount) || 0);
+    if (!(amt > 0)) return "Enter an amount to invest.";
+    if (amt > cash) return "Not enough cash: that needs " + dollars(amt) + " and the account holds " + dollars(cash) + ". Deposit first.";
+    var built = investPlanOrders(plan, amt, priceFn || livePrice);
+    if (!built.orders.length) return "No live prices for your plan's funds right now. Try again in a moment.";
+    var stamp = Date.now();
+    var rate = invRateOf("USD");
+    var trades = built.orders.map(function(o, i) {
+      return { id: stamp + i, kind: "buy", symbol: o.symbol, name: o.name, shares: o.shares, price: o.price, fees: 0,
+        date: today, currency: "USD", cashAmount: o.amount, fxRate: rate, viaPlan: plan.id };
+    });
+    props.onSaveInvesting(withAcct(function(n) {
+      n.trades = (n.trades || []).concat(trades);
+      n.meta = Object.assign({}, n.meta);
+      trades.forEach(function(t2) {
+        var old = n.meta[t2.symbol] || {};
+        n.meta[t2.symbol] = Object.assign({}, old, { name: t2.name, currency: "USD", lastPrice: old.lastPrice || t2.price, prevClose: old.prevClose, lastPriceAt: old.lastPriceAt || Date.now() });
+      });
+      n.priceSnapshotDate = today;
+      if (alsoMutate) alsoMutate(n);
+    }));
+    setPlanDone({ invested: built.invested, left: round2(amt - built.invested), orders: built.orders, skipped: built.skipped });
+    return null;
+  }
+  // Fresh quotes for the plan's funds, on demand. The 60s poll is paused while
+  // the tab is hidden, so anything that has to SIZE an order asks for prices
+  // itself rather than trusting whatever the poll last happened to see.
+  function fetchPlanPrices(cb) {
+    if (!planSymbols.length) { if (cb) cb(livePrice); return; }
+    stockQuotes(planSymbols, function(map) {
+      var good = {};
+      for (var s in map) { if (map[s]) good[s] = map[s]; }
+      setQuotes(function(prev) { return Object.assign({}, prev, good); });
+      if (cb) cb(function(symbol) { return (good[symbol] && good[symbol].price > 0) ? good[symbol].price : livePrice(symbol); });
+    });
+  }
+  // Running a due auto-invest cycle is that same plan buy, plus stamping the
+  // schedule forward so the same cycle isn't offered twice.
+  function runAutoCycle() {
+    var amt = Math.min(round2(autoCfg.amount || 0), cash);
+    setPlanDone(null); setPlanErr(""); setPlanAmt(String(amt || "")); setPlanBusy(true);
+    setSheet("planbuy");
+    if (!(amt > 0)) { setPlanBusy(false); setPlanErr("There's no cash in the account to invest yet - deposit first, then run the cycle."); return; }
+    fetchPlanPrices(function(priceFn) {
+      setPlanBusy(false);
+      var err = savePlanBuy(amt, function(n) { n.auto = Object.assign({}, n.auto, { lastRunAt: today }); }, priceFn);
+      if (err) setPlanErr(err);
+    });
+  }
+  function saveAutoCfg(next) {
+    props.onSaveInvesting(withAcct(function(n) {
+      n.auto = Object.assign({ cadence: "monthly", amount: 200, roundUps: false, startedAt: today }, n.auto, next);
+      if (n.auto.on && !n.auto.startedAt) n.auto.startedAt = today;
+    }));
+  }
+  function selectPlan(id) {
+    props.onSaveInvesting(withAcct(function(n) { n.plan = id; n.planSetAt = today; }));
+  }
+  function markLesson(id, pct) {
+    props.onSaveInvesting(withAcct(function(n) {
+      n.lessons = Object.assign({}, n.lessons);
+      n.lessons[id] = pct;
+    }));
+  }
+  function saveCoach(msgs) {
+    props.onSaveInvesting(withAcct(function(n) { n.coachChat = msgs; }));
+  }
+  function coachCtx() {
+    var holdLine = held.map(function(s) {
+      return s + " " + dollars(invConvert(pos[s].shares * livePrice(s), pos[s].currency));
+    }).join(", ");
+    var gain = 0;
+    held.forEach(function(s) { gain += invConvert(pos[s].shares * (livePrice(s) - pos[s].avgCost), pos[s].currency); });
+    var balance = mainSpendBalance(tx);
+    return { plan: plan, worth: worth, cash: cash, gain: round2(gain), heldCount: held.length, holdingsLine: holdLine,
+      drift: drift, autoOn: !!autoCfg.on, autoAmount: autoCfg.amount, cadence: autoCfg.cadence, roundUps: !!autoCfg.roundUps,
+      balance: balance, profile: props.investorProfile, lang: props.lang, richardInstructions: props.richardInstructions };
+  }
+  function sendCoach(text) {
+    var msg = (text != null ? text : coachInput).trim();
+    if (!msg || coachBusy) return;
+    setCoachInput("");
+    var history = coachMsgs.concat([{ role: "user", text: msg }]);
+    saveCoach(history);
+    setCoachBusy(true);
+    var apiHist = history.map(function(m) { return { role: m.role === "richard" ? "assistant" : "user", content: m.text }; });
+    sendInvestCoach(coachCtx(), apiHist, function(err, reply) {
+      setCoachBusy(false);
+      var next = history.concat([{ role: "richard", text: reply }]);
+      setCoachFresh(next.length - 1);
+      saveCoach(next);
+    });
+  }
+  // The insight cards' CTAs, routed to the surface that actually fixes the thing.
+  function runInsight(action) {
+    if (!action) return;
+    if (action === "plan") { if (props.onOpenPlanOnboard) props.onOpenPlanOnboard(acct.id); return; }
+    if (action === "portfolios") { setHubTab("portfolio"); setSheet("portfolios"); return; }
+    if (action === "planbuy") { openPlanBuy(); return; }
+    if (action === "auto") { setSheet("auto"); return; }
+    if (action === "auto-run") { runAutoCycle(); return; }
+    if (action === "scout") { setHubTab("scout"); return; }
+    if (action.indexOf("lesson:") === 0) { setHubTab("learn"); setOpenLesson(action.slice(7)); return; }
+  }
+  function openPlanBuy() {
+    if (!plan) { if (props.onOpenPlanOnboard) props.onOpenPlanOnboard(acct.id); return; }
+    setPlanAmt(""); setPlanDone(null); setPlanErr(""); setPlanBusy(false); setSheet("planbuy");
+    fetchPlanPrices(null);
+  }
+  function planKey(k) {
+    setPlanErr("");
+    setPlanAmt(function(a) {
+      if (k === "del") return a.slice(0, -1);
+      if (k === ".") return a.indexOf(".") === -1 ? (a || "0") + "." : a;
+      if (a === "0") return k;
+      if (a.indexOf(".") !== -1 && a.split(".")[1].length >= 2) return a;
+      return a.length >= 9 ? a : a + k;
+    });
+  }
 
   // --- portfolio trend chart (self-contained; hero-token styling) ---
   function invSmooth(pts) {
@@ -13747,11 +14536,37 @@ function InvestingView(props) {
   var inputBox = { width: "100%", background: "rgba(0,0,0,0.04)", border: "none", borderRadius: 12, padding: "12px 14px", fontSize: 15, fontFamily: UI, color: T.ink, fontWeight: 600, outline: "none", boxSizing: "border-box" };
   var lbl = { fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 };
 
+  var HUB_TABS = [
+    { id: "portfolio", label: "Portfolio", icon: "chart" },
+    { id: "scout", label: "Scout", icon: "search" },
+    { id: "learn", label: "Learn", icon: "book" },
+    { id: "richard", label: "Richard", icon: "advisor" }
+  ];
+  var HUB_SUB = { portfolio: "Managed by Richard", scout: "News-driven ideas", learn: "Investing, explained", richard: "Your AI money coach" };
+
   return (
     <div style={{ position: "relative", zIndex: 0 }}>
       <ScoutBeamsBg />
       <SubViewBack onBack={props.onBack} label={props.backLabel || "Accounts"} />
 
+      {/* hub tabs - the four surfaces of the investing account. A segmented row
+          rather than a second floating bar, so it never fights the app's nav pill. */}
+      <div style={{ display: "flex", gap: 4, background: "rgba(0,0,0,0.05)", borderRadius: 14, padding: 4, marginBottom: 16 }}>
+        {HUB_TABS.map(function(h) {
+          var on = hubTab === h.id;
+          return (
+            <button key={h.id} onClick={function() { setHubTab(h.id); }}
+              style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, padding: "9px 2px", borderRadius: 10, background: on ? T.card : "transparent", color: on ? T.ink : T.ink2, boxShadow: on ? "0 2px 8px rgba(0,0,0,0.08)" : "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, transition: "background 0.2s ease" }}>
+              <SVGIcon id={h.icon} size={15} color={on ? T.orange : T.ink3} />
+              {h.label}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ fontSize: 11.5, color: T.ink3, margin: "-8px 2px 14px" }}>{HUB_SUB[hubTab]}</div>
+
+      {hubTab === "portfolio" && (
+      <div>
       {/* hero */}
       <Card style={{ padding: "18px 20px 14px", marginBottom: 14, background: T.heroBg, boxShadow: T.heroShadow }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
@@ -13802,17 +14617,132 @@ function InvestingView(props) {
         )}
       </Card>
 
-      {/* actions */}
+      {/* actions - the managed pair first, then the manual controls */}
+      <div style={{ display: "flex", gap: 10, marginBottom: 9 }}>
+        <button onClick={openPlanBuy}
+          style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 15, fontWeight: 800, padding: "13px 0", borderRadius: 14, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 4px 14px " + T.orangeGlow }}>
+          <SVGIcon id="plus" size={17} color="#fff" />{plan ? "Invest" : "Build my plan"}
+        </button>
+        <button onClick={function() { setSheet("auto"); }}
+          style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 15, fontWeight: 700, padding: "13px 0", borderRadius: 14, background: T.ink, color: "#fff", boxShadow: "0 4px 14px rgba(20,18,16,0.2)" }}>
+          <SVGIcon id="refresh" size={16} color="#fff" />Auto-invest
+        </button>
+      </div>
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         <button onClick={function() { openSheet("buy"); }}
-          style={{ flex: 1.4, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 14, fontWeight: 800, padding: "12px 0", borderRadius: 13, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 4px 12px " + T.orangeGlow }}>Buy</button>
+          style={{ flex: 1.4, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "11px 0", borderRadius: 13, background: "none", color: T.orange }}>Buy a stock</button>
         <button onClick={function() { openSheet("deposit"); }}
-          style={{ flex: 1, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 13, background: "none", color: T.orange }}>Deposit</button>
+          style={{ flex: 1, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "11px 0", borderRadius: 13, background: "none", color: T.orange }}>Deposit</button>
         <button onClick={function() { openSheet("withdraw"); }} disabled={cash <= 0}
-          style={{ flex: 1, border: "1.5px solid " + (cash <= 0 ? "rgba(0,0,0,0.08)" : T.orange), cursor: cash <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 13, background: "none", color: cash <= 0 ? T.ink3 : T.orange }}>Withdraw</button>
+          style={{ flex: 1, border: "1.5px solid " + (cash <= 0 ? "rgba(0,0,0,0.08)" : T.orange), cursor: cash <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "11px 0", borderRadius: 13, background: "none", color: cash <= 0 ? T.ink3 : T.orange }}>Withdraw</button>
       </div>
 
-      {/* New to investing? - same card format as the scout entry below */}
+      {/* auto-invest cycle due - Richard never moves money on his own, so a due
+          cycle is an offer with one tap, not a silent trade. */}
+      {autoIsDue && (
+        <Card style={{ padding: "15px 17px", marginBottom: 12, border: "1.5px solid " + T.green + "55" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 13, background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <SVGIcon id="refresh" size={20} color={T.green} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14.5, fontWeight: 800, color: T.ink }}>{"Your " + dollarsWhole(autoCfg.amount) + " " + (autoCfg.cadence === "weekly" ? "weekly" : "monthly") + " cycle is due"}</div>
+              <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>
+                {!plan ? "Scheduled for " + autoNextDate + ", but there's no plan to invest it into yet."
+                  : cash > 0 ? "Scheduled for " + autoNextDate + ". One tap and I spread it across your " + plan.name + " mix."
+                  : "Scheduled for " + autoNextDate + ", but there's no cash in the account yet."}
+              </div>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <button onClick={function() { saveAutoCfg({ lastRunAt: today }); }}
+              style={{ flex: 1, border: "1.5px solid rgba(0,0,0,0.09)", background: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "10px 0", borderRadius: 11, color: T.ink2 }}>Skip this one</button>
+            <button onClick={!plan ? function() { if (props.onOpenPlanOnboard) props.onOpenPlanOnboard(acct.id); } : cash > 0 ? runAutoCycle : function() { openSheet("deposit"); }}
+              style={{ flex: 1.4, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 800, padding: "10px 0", borderRadius: 11, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow }}>{!plan ? "Build my plan" : cash > 0 ? "Invest " + dollars(Math.min(autoCfg.amount, cash)) : "Deposit first"}</button>
+          </div>
+        </Card>
+      )}
+
+      {/* managed by Richard - the plan, its target mix, and how far off you are */}
+      {plan ? (
+        <Card style={{ padding: 18, marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 15 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <RichyLogo size={28} />
+              <div>
+                <div style={{ fontSize: 14.5, fontWeight: 800, color: T.ink, letterSpacing: "-0.01em" }}>{"Managed by Richard"}</div>
+                <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1 }}>{plan.name + " · target " + plan.ret + "/yr"}</div>
+              </div>
+            </div>
+            <button onClick={function() { setSheet("portfolios"); }} style={{ fontSize: 12.5, fontWeight: 700, color: T.orange, background: "none", border: "none", cursor: "pointer", padding: 6, fontFamily: UI }}>Change</button>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            <div style={{ position: "relative", width: 96, height: 96, flexShrink: 0 }}>
+              <svg width={96} height={96} viewBox="0 0 96 96" style={{ transform: "rotate(-90deg)" }}>
+                <circle cx={48} cy={48} r={40} fill="none" stroke="rgba(0,0,0,0.05)" strokeWidth={13} />
+                {investDonut(plan.alloc).map(function(s, i) {
+                  return <circle key={i} cx={48} cy={48} r={40} fill="none" stroke={s.color} strokeWidth={13} pathLength={100} strokeDasharray={s.len + " 100"} strokeDashoffset={s.off} />;
+                })}
+              </svg>
+              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ fontSize: 12, fontWeight: 800, color: T.ink }}>{plan.stock + "%"}</span>
+                <span style={{ fontSize: 8.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: T.ink3 }}>stocks</span>
+              </div>
+            </div>
+            <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+              {plan.alloc.map(function(a) {
+                var row = null;
+                drift.forEach(function(d) { if (d.k === a.k) row = d; });
+                return (
+                  <div key={a.k} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ width: 9, height: 9, borderRadius: 3, background: INVEST_CLASS[a.cls].color, flexShrink: 0 }} />
+                    <span style={{ fontSize: 12.5, color: T.ink2, flex: 1 }}>{a.k}</span>
+                    {row && <span style={{ fontSize: 11, fontWeight: 700, color: Math.abs(row.delta) >= 5 ? T.gold : T.ink3 }}>{Math.round(row.actual) + "%"}</span>}
+                    <span style={{ fontSize: 12.5, fontWeight: 700, color: T.ink, minWidth: 34, textAlign: "right" }}>{a.pct + "%"}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          {drift.length > 0 && (
+            <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 12, lineHeight: 1.45, paddingTop: 11, borderTop: "0.5px solid " + T.sep }}>
+              {Math.abs(drift[0].delta) < 5
+                ? "You're within 5% of every target - nothing to do."
+                : "You're " + Math.abs(Math.round(drift[0].delta)) + "% " + (drift[0].delta > 0 ? "over" : "under") + " target on " + drift[0].k.toLowerCase() + ". Your next plan buy nudges this back."}
+              <span style={{ color: T.ink3, marginLeft: 6 }}>Left number is where you are, right is the target.</span>
+            </div>
+          )}
+        </Card>
+      ) : (
+        <button onClick={function() { if (props.onOpenPlanOnboard) props.onOpenPlanOnboard(acct.id); }}
+          style={{ width: "100%", marginBottom: 12, cursor: "pointer", fontFamily: UI, textAlign: "left", display: "flex", alignItems: "center", gap: 13, padding: "16px 17px", borderRadius: 18, background: T.card, border: "1.5px solid " + T.orange + "44", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 6px 20px rgba(0,0,0,0.05)", boxSizing: "border-box" }}>
+          <RichyLogo size={44} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: T.ink }}>Let Richard build your plan</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Four questions, and he'll match a fund mix to your goal and timeline - then keep an eye on it.</div>
+          </div>
+          <SVGIcon id="chevron" size={18} color={T.ink3} />
+        </button>
+      )}
+
+      {/* auto-invest status */}
+      <button onClick={function() { setSheet("auto"); }}
+        style={{ width: "100%", marginBottom: 12, cursor: "pointer", fontFamily: UI, textAlign: "left", display: "flex", alignItems: "center", gap: 13, padding: "15px 17px", borderRadius: 18, background: T.card, border: "none", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.07)", boxSizing: "border-box" }}>
+        <div style={{ width: 42, height: 42, borderRadius: 13, background: autoCfg.on ? T.greenDim : "rgba(0,0,0,0.05)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <SVGIcon id="refresh" size={20} color={autoCfg.on ? T.green : T.ink3} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: T.ink }}>Auto-invest</div>
+          <div style={{ fontSize: 12, color: T.ink2, marginTop: 2, lineHeight: 1.4 }}>
+            {autoCfg.on
+              ? dollarsWhole(autoCfg.amount) + "/" + (autoCfg.cadence === "weekly" ? "wk" : "mo") + (autoCfg.roundUps ? " + round-ups" : "") + (plan ? " → " + plan.name : "") + (autoNextDate && !autoIsDue ? " · next " + autoNextDate : "")
+              : "Turn it on to invest on a schedule"}
+          </div>
+        </div>
+        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", padding: "4px 9px", borderRadius: 999, background: autoCfg.on ? T.greenDim : "rgba(0,0,0,0.05)", color: autoCfg.on ? T.green : T.ink3, flexShrink: 0 }}>{autoCfg.on ? "On" : "Off"}</span>
+      </button>
+
+      {/* Investing basics - Richard's tailored starter guide */}
       {props.onOpenInvestorOnboard && (
         <button onClick={props.onOpenInvestorOnboard}
           style={{ width: "100%", marginBottom: 16, cursor: "pointer", fontFamily: UI, textAlign: "left", display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 16, background: T.card, border: "1.5px solid " + T.orange + "44", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 6px 20px rgba(0,0,0,0.05)", boxSizing: "border-box" }}>
@@ -13827,42 +14757,38 @@ function InvestingView(props) {
         </button>
       )}
 
-      {/* Searching for a new stock? - Richard's deep Opus scout */}
-      {props.onOpenScout && (
-        <button onClick={props.onOpenScout}
-          style={{ width: "100%", marginBottom: 16, cursor: "pointer", fontFamily: UI, textAlign: "left", display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 16, background: T.card, border: "1.5px solid " + T.orange + "44", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 6px 20px rgba(0,0,0,0.05)", boxSizing: "border-box" }}>
-          <div style={{ width: 42, height: 42, borderRadius: 13, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 5px 14px " + T.orangeGlow }}>
-            <SVGIcon id="search" size={20} color="#fff" />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: T.ink }}>Searching for a new stock?</div>
-            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Richard thinks his hardest across the market to find your next big pick.</div>
-          </div>
-          <SVGIcon id="chevron" size={18} color={T.ink3} />
-        </button>
-      )}
-
       {/* holdings */}
       <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
           <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Holdings</span>
         </div>
-        {held.length > 0 && (
-          <button onClick={function() { openSheet("dividend"); }} style={{ background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 12.5, fontWeight: 700, fontFamily: UI }}>Log dividend</button>
-        )}
+        <span style={{ fontSize: 12, color: T.ink3 }}>{held.length + (held.length === 1 ? " holding · " : " holdings · ") + dollars(holdingsValue)}</span>
       </div>
       {held.length === 0 ? (
         <Card style={{ padding: "22px 20px", marginBottom: 18, textAlign: "center" }}>
           <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, marginBottom: 5 }}>Your first position starts here</div>
-          <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginBottom: 12 }}>{cash > 0 ? "You have " + dollars(cash) + " ready to invest. Search any US or Tel Aviv stock and ETF." : "Deposit cash, then buy your first stock or ETF - live prices included."}</div>
-          <BigBtn label={cash > 0 ? "Buy your first stock" : "Deposit cash"} onPress={function() { openSheet(cash > 0 ? "buy" : "deposit"); }} />
+          <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginBottom: 12 }}>{cash > 0 ? (plan ? "You have " + dollars(cash) + " ready. Richard can spread it across your " + plan.name + " mix, or pick something yourself." : "You have " + dollars(cash) + " ready to invest. Search any US or Tel Aviv stock and ETF.") : "Deposit cash, then let Richard build your plan - or buy something yourself."}</div>
+          <BigBtn label={cash <= 0 ? "Deposit cash" : plan ? "Invest into my plan" : "Buy your first stock"} onPress={function() { if (cash <= 0) openSheet("deposit"); else if (plan) openPlanBuy(); else openSheet("buy"); }} />
         </Card>
       ) : (
         <Card style={{ overflow: "hidden", marginBottom: 18 }}>
           {held.sort(function(a, b) { return invConvert(pos[b].shares * curPrice(b, pos[b].avgCost), pos[b].currency) - invConvert(pos[a].shares * curPrice(a, pos[a].avgCost), pos[a].currency); }).map(holdingRow)}
+          {/* cash to invest - the design's "ready for Richard to deploy" row */}
+          <button onClick={cash > 0 ? openPlanBuy : function() { openSheet("deposit"); }}
+            style={{ width: "100%", textAlign: "left", background: "none", border: "none", borderBottom: "0.5px solid " + T.sep, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
+            <div style={{ width: 38, height: 38, borderRadius: 12, background: "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <SVGIcon id="coins" size={19} color={T.ink2} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: T.ink }}>Cash to invest</div>
+              <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 2 }}>{cash > 0 ? (plan ? "Ready for Richard to deploy" : "Pick a plan and put it to work") : "Deposit to get started"}</div>
+            </div>
+            <span style={{ fontSize: 14, fontWeight: 800, color: cash > 0 ? T.gold : T.ink3 }}>{dollars(cash)}</span>
+          </button>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: T.orangeDim }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: T.ink2, textTransform: "uppercase", letterSpacing: "0.08em" }}>Holdings value</span>
+            <button onClick={function() { openSheet("dividend"); }} style={{ background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 11.5, fontWeight: 700, fontFamily: UI, padding: 0, marginLeft: "auto", marginRight: 12 }}>Log dividend</button>
             <span style={{ fontSize: 15, fontWeight: 800, color: T.orange }}>{dollars(holdingsValue)}</span>
           </div>
         </Card>
@@ -13944,6 +14870,192 @@ function InvestingView(props) {
               );
             })}
           </Card>
+        </div>
+      )}
+
+      {/* scout teaser */}
+      <button onClick={function() { setHubTab("scout"); }}
+        style={{ width: "100%", marginBottom: 8, cursor: "pointer", fontFamily: UI, textAlign: "left", display: "flex", alignItems: "center", gap: 14, padding: "17px 18px", borderRadius: 20, background: T.heroBg, border: "none", boxShadow: T.heroShadow, boxSizing: "border-box" }}>
+        <div style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(255,255,255,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <SVGIcon id="search" size={22} color={T.heroText} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14.5, fontWeight: 800, color: T.heroText }}>{scoutCount > 0 ? "Scout found " + scoutCount + (scoutCount === 1 ? " idea" : " ideas") : "Let Scout read the market"}</div>
+          <div style={{ fontSize: 12, color: T.heroMut, marginTop: 2 }}>Richard scans live prices and the news for you</div>
+        </div>
+        <SVGIcon id="chevron" size={18} color={T.heroMut} />
+      </button>
+
+      <div style={{ textAlign: "center", fontSize: 11, color: T.ink3, margin: "14px 12px 4px", lineHeight: 1.5 }}>
+        Richard is an AI assistant, not a licensed financial advisor. Investing involves risk, including possible loss of principal, and past performance doesn't guarantee future results.
+      </div>
+      </div>
+      )}
+
+      {/* ===== SCOUT TAB ===== */}
+      {hubTab === "scout" && (
+        <StockScoutView embedded investing={props.investing} openInvId={acct.id} tx={tx} goals={props.goals}
+          username={props.username} lang={props.lang} richardInstructions={props.richardInstructions}
+          investorProfile={props.investorProfile} onSaveInvesting={props.onSaveInvesting}
+          onOpenStock={function(acctId, symbol) { openStock(symbol); }}
+          onTrade={function(acctId, symbol) { openSheet("buy", { symbol: symbol }); }} />
+      )}
+
+      {/* ===== LEARN TAB ===== */}
+      {hubTab === "learn" && (
+        <div>
+          <Card style={{ padding: "18px 20px", marginBottom: 18, background: T.heroBg, boxShadow: T.heroShadow }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+              <RichyLogo size={38} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 16, fontWeight: 800, color: T.heroText, letterSpacing: "-0.01em" }}>Teacher mode</div>
+                <div style={{ fontSize: 12, color: T.heroMut, marginTop: 1 }}>Richard explains investing, plainly</div>
+              </div>
+            </div>
+            <div style={{ marginTop: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11.5, color: T.heroMut, marginBottom: 7 }}>
+                <span>Your progress</span>
+                <span style={{ fontWeight: 800, color: T.heroText }}>{lessonsDone + "/" + INVEST_LESSONS.length + " lessons"}</span>
+              </div>
+              <div style={{ height: 7, borderRadius: 4, background: T.heroTrack, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: (lessonsDone / INVEST_LESSONS.length * 100) + "%", background: T.gold, borderRadius: 4, transition: "width 0.4s ease" }} />
+              </div>
+            </div>
+          </Card>
+
+          <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+            <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Lessons</span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 11, marginBottom: 18 }}>
+            {INVEST_LESSONS.map(function(l) {
+              var prog = investLessonProgress(acct)[l.id] || 0;
+              var col = l.level === "Basics" ? T.gold : T.orange;
+              return (
+                <button key={l.id} onClick={function() { setOpenLesson(l.id); }}
+                  style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, background: T.card, borderRadius: 18, padding: "15px 16px", border: "none", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.07)", boxSizing: "border-box" }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 14, background: col + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <SVGIcon id={l.icon} size={21} color={col} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                      <span style={{ fontSize: 14.5, fontWeight: 800, color: T.ink, letterSpacing: "-0.01em" }}>{l.title}</span>
+                      {prog >= 100 && <SVGIcon id="check" size={14} color={T.green} />}
+                    </div>
+                    <div style={{ fontSize: 12, color: T.ink3, marginTop: 3 }}>
+                      {l.level + " · " + l.mins + " min"}
+                      {prog > 0 && prog < 100 && <span style={{ color: T.orange, fontWeight: 700 }}>{" · " + prog + "% in"}</span>}
+                    </div>
+                  </div>
+                  <SVGIcon id="chevron" size={18} color={T.ink3} />
+                </button>
+              );
+            })}
+          </div>
+          {props.onOpenInvestorOnboard && (
+            <button onClick={props.onOpenInvestorOnboard}
+              style={{ width: "100%", cursor: "pointer", fontFamily: UI, textAlign: "left", display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 16, background: T.card, border: "1.5px solid " + T.orange + "44", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 6px 20px rgba(0,0,0,0.05)", boxSizing: "border-box" }}>
+              <div style={{ width: 42, height: 42, borderRadius: 13, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 5px 14px " + T.orangeGlow }}>
+                <SVGIcon id="spark" size={20} color="#fff" />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: T.ink }}>{props.investorProfile ? "Your personal starter guide" : "Get the basics tuned to you"}</div>
+                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Four questions and Richard writes the guide for your level.</div>
+              </div>
+              <SVGIcon id="chevron" size={18} color={T.ink3} />
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* ===== RICHARD TAB ===== */}
+      {hubTab === "richard" && (
+        <div>
+          <Card style={{ padding: "18px 20px", marginBottom: 18, background: T.heroBg, boxShadow: T.heroShadow }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
+              <RichyLogo size={46} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 17, fontWeight: 800, color: T.heroText, letterSpacing: "-0.01em" }}>Richard</div>
+                <div style={{ fontSize: 12, color: T.heroMut, marginTop: 1 }}>{plan ? "Watching your " + plan.name + " mix" : "Ready to build your plan"}</div>
+              </div>
+              <button onClick={function() { setHealthOpen(true); }} style={{ textAlign: "center", flexShrink: 0, background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: UI }}>
+                <div style={{ fontSize: 22, fontWeight: 800, color: T.heroText, letterSpacing: "-0.02em" }}>{health.score}</div>
+                <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: T.heroMut }}>health</div>
+              </button>
+            </div>
+          </Card>
+
+          <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+            <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>What Richard noticed</span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 11, marginBottom: 20 }}>
+            {investInsights(acct, { mix: mix, drift: drift, cash: cash, targetCash: targetCashPct, autoDue: autoIsDue,
+              autoAmount: autoCfg.amount, autoNext: autoNextDate, scoutCount: scoutCount, heldCount: held.length }).map(function(x) {
+              var tone = { orange: { c: T.orange, bg: T.orangeDim }, gold: { c: T.gold, bg: T.goldDim }, green: { c: T.green, bg: T.greenDim } }[x.tone];
+              return (
+                <Card key={x.id} style={{ padding: 16 }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                    <div style={{ width: 38, height: 38, borderRadius: 12, background: tone.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <SVGIcon id={x.icon} size={19} color={tone.c} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14.5, fontWeight: 800, color: T.ink, letterSpacing: "-0.01em" }}>{x.title}</div>
+                      <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginTop: 4 }}>{x.text}</div>
+                      {x.cta && (
+                        <button onClick={function() { runInsight(x.action); }}
+                          style={{ marginTop: 11, background: tone.bg, color: tone.c, border: "none", borderRadius: 11, padding: "9px 15px", fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>{x.cta}</button>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+
+          <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 3, height: 16, borderRadius: 2, background: T.gold, flexShrink: 0 }} />
+            <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Ask Richard</span>
+          </div>
+          <Card style={{ padding: "14px 16px" }}>
+            {coachMsgs.length === 0 && !coachBusy && (
+              <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 12 }}>He can see your real positions, your cash and your target mix. Ask him anything about them.</div>
+            )}
+            {coachMsgs.map(function(m, i) {
+              var mine = m.role === "user";
+              return (
+                <div key={i} style={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start", marginBottom: 9 }}>
+                  <div style={{ maxWidth: "85%", background: mine ? T.btn : "rgba(0,0,0,0.05)", color: mine ? "#fff" : T.ink, borderRadius: mine ? "14px 14px 4px 14px" : "14px 14px 14px 4px", padding: "9px 13px", fontSize: 13.5, lineHeight: 1.5, fontFamily: UI }}>
+                    {mine ? m.text : <TypeReveal fade animate={i === coachFresh} text={m.text} size={13.5} color={T.ink} />}
+                  </div>
+                </div>
+              );
+            })}
+            {coachBusy && (
+              <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 9 }}>
+                <div style={{ background: "rgba(0,0,0,0.05)", borderRadius: "14px 14px 14px 4px", padding: "11px 14px" }}><ThinkingDots size={4.5} color={T.ink3} /></div>
+              </div>
+            )}
+            <div ref={coachEndRef} />
+            {coachMsgs.length === 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 12 }}>
+                {["Am I taking too much risk?", "What are my fees?", "What should I do next?"].map(function(q2) {
+                  return <button key={q2} onClick={function() { sendCoach(q2); }} style={{ border: "1px solid " + T.sep, background: T.card, borderRadius: 999, padding: "7px 13px", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.ink2 }}>{q2}</button>;
+                })}
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
+              <input value={coachInput} onChange={function(e) { setCoachInput(e.target.value); }} onKeyDown={function(e) { if (e.key === "Enter") sendCoach(); }}
+                placeholder="Ask Richard about your portfolio..." style={{ flex: 1, background: "rgba(0,0,0,0.04)", border: "none", borderRadius: 12, padding: "11px 14px", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box" }} />
+              <button onClick={function() { sendCoach(); }} disabled={!coachInput.trim() || coachBusy}
+                style={{ border: "none", cursor: coachInput.trim() && !coachBusy ? "pointer" : "default", background: coachInput.trim() && !coachBusy ? T.btn : "rgba(0,0,0,0.08)", borderRadius: 12, width: 42, height: 42, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <SVGIcon id="up" size={17} color={coachInput.trim() && !coachBusy ? "#fff" : T.ink3} />
+              </button>
+            </div>
+          </Card>
+          <div style={{ textAlign: "center", fontSize: 11, color: T.ink3, margin: "16px 12px 4px", lineHeight: 1.5 }}>
+            Richard is an AI assistant and can make mistakes. This isn't licensed financial advice.
+          </div>
         </div>
       )}
 
@@ -14143,6 +15255,298 @@ function InvestingView(props) {
             </div>
           );
         })}
+      </Overlay>
+
+      {/* ===== INVEST INTO MY PLAN ===== */}
+      {/* A dollar amount, spread across the plan's funds as real buys. The orders
+          are shown before confirming, so nothing is a black box. */}
+      <Overlay open={sheet === "planbuy"} onClose={function() { setSheet(null); setPlanDone(null); }} title={planDone ? "Done" : "Invest into " + (plan ? plan.name : "your plan")}>
+        {planDone ? (
+          <div style={{ textAlign: "center", padding: "18px 6px 6px" }}>
+            <div style={{ width: 70, height: 70, borderRadius: "50%", background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+              <SVGIcon id="check" size={34} color={T.green} />
+            </div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(planDone.invested) + " invested"}</div>
+            <div style={{ fontSize: 13.5, color: T.ink2, marginTop: 6, lineHeight: 1.5 }}>{"Spread across your " + plan.name + " mix" + (planDone.left > 0.01 ? ", with " + dollars(planDone.left) + " left as cash by design." : ".")}</div>
+            <div style={{ background: "rgba(0,0,0,0.035)", borderRadius: 14, padding: "12px 14px", marginTop: 16, textAlign: "left" }}>
+              {planDone.orders.map(function(o) {
+                return (
+                  <div key={o.symbol} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0" }}>
+                    <span style={{ fontSize: 12.5, color: T.ink2, fontWeight: 600 }}>{o.symbol + " · " + o.label}</span>
+                    <span style={{ fontSize: 13, color: T.ink, fontWeight: 700 }}>{dollars(o.amount)}</span>
+                  </div>
+                );
+              })}
+            </div>
+            {planDone.skipped.length > 0 && (
+              <div style={{ fontSize: 12, color: T.gold, marginTop: 10, lineHeight: 1.45, textAlign: "left" }}>{"No live price for " + planDone.skipped.join(", ") + " just now, so that slice stayed in cash. Run it again later to top up."}</div>
+            )}
+            <BigBtn label="Back to my portfolio" onPress={function() { setSheet(null); setPlanDone(null); }} />
+          </div>
+        ) : !plan ? (
+          <div style={{ padding: "6px 0 4px" }}>
+            <div style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.55, marginBottom: 4 }}>You don't have a plan yet. Answer four questions and Richard will build one, then this button invests straight into it.</div>
+            <BigBtn label="Build my plan" onPress={function() { setSheet(null); if (props.onOpenPlanOnboard) props.onOpenPlanOnboard(acct.id); }} />
+          </div>
+        ) : (
+          <div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 12 }}>{dollars(cash) + " cash available · $0 commission"}</div>
+            <div style={{ textAlign: "center", padding: "6px 0 2px" }}>
+              <div style={{ fontSize: 46, fontWeight: 800, color: T.ink, letterSpacing: "-0.04em", lineHeight: 1 }}>{sym + (planAmt || "0")}</div>
+              <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 8 }}>
+                {parseFloat(planAmt) > 0 ? "Richard spreads this across your " + plan.name + " mix" : "Enter an amount to invest"}
+              </div>
+            </div>
+            {parseFloat(planAmt) > 0 && (function() {
+              var preview = investPlanOrders(plan, parseFloat(planAmt), livePrice);
+              return (
+                <div style={{ background: "rgba(0,0,0,0.035)", borderRadius: 14, padding: "10px 14px", margin: "14px 0 2px" }}>
+                  {preview.orders.length === 0 ? (
+                    <div style={{ fontSize: 12, color: T.ink3, padding: "4px 0" }}>Getting live prices for your funds...</div>
+                  ) : preview.orders.map(function(o) {
+                    return (
+                      <div key={o.symbol} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 0" }}>
+                        <span style={{ fontSize: 12, color: T.ink3, fontWeight: 600 }}>{o.symbol + " · " + o.pct + "%"}</span>
+                        <span style={{ fontSize: 12.5, color: T.ink2, fontWeight: 700 }}>{dollars(o.amount)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+            <div style={{ display: "flex", gap: 8, margin: "16px 0 6px" }}>
+              {[50, 100, 250, 500].map(function(v) {
+                return (
+                  <button key={v} onClick={function() { setPlanErr(""); setPlanAmt(String(v)); }}
+                    style={{ flex: 1, padding: "10px 0", border: "1.5px solid rgba(0,0,0,0.09)", background: T.card, borderRadius: 12, fontFamily: UI, fontSize: 13.5, fontWeight: 700, color: T.ink2, cursor: "pointer" }}>{dollarsWhole(v)}</button>
+                );
+              })}
+            </div>
+            {cash > 0 && (
+              <button onClick={function() { setPlanErr(""); setPlanAmt(String(Math.floor(cash * 100) / 100)); }}
+                style={{ width: "100%", background: "none", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.orange, padding: "4px 0 0" }}>{"Invest all " + dollars(cash)}</button>
+            )}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 2, margin: "8px 0 6px" }}>
+              {["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "del"].map(function(k) {
+                return (
+                  <button key={k} onClick={function() { planKey(k); }}
+                    style={{ padding: "13px 0", border: "none", background: "none", fontFamily: UI, fontSize: 22, fontWeight: 600, color: T.ink, cursor: "pointer" }}>{k === "del" ? "⌫" : k}</button>
+                );
+              })}
+            </div>
+            {planErr && <div style={{ fontSize: 12.5, color: T.red, marginBottom: 8, lineHeight: 1.45 }}>{planErr}</div>}
+            <BigBtn label={planBusy ? "Working..." : parseFloat(planAmt) > 0 ? "Invest " + dollars(parseFloat(planAmt)) : "Invest"} disabled={!(parseFloat(planAmt) > 0) || planBusy}
+              onPress={function() {
+                setPlanBusy(true); setPlanErr("");
+                fetchPlanPrices(function(priceFn) {
+                  setPlanBusy(false);
+                  var err = savePlanBuy(planAmt, null, priceFn);
+                  if (err) setPlanErr(err);
+                });
+              }} />
+            <div style={{ fontSize: 11, color: T.ink3, marginTop: 10, lineHeight: 1.45, textAlign: "center" }}>
+              These are real buys recorded against this account's cash. Richard never trades without this tap.
+            </div>
+          </div>
+        )}
+      </Overlay>
+
+      {/* ===== AUTO-INVEST ===== */}
+      <Overlay open={sheet === "auto"} onClose={function() { setSheet(null); }} title="Auto-invest">
+        <div style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.55, marginBottom: 16 }}>
+          Set it once and Richard tracks the schedule for you. When a cycle comes due he asks for one tap - he never moves your money on his own.
+        </div>
+        <Card style={{ padding: 16, marginBottom: 16, display: "flex", alignItems: "center", gap: 13 }}>
+          <div style={{ width: 42, height: 42, borderRadius: 13, background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <SVGIcon id="refresh" size={20} color={T.green} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14.5, fontWeight: 800, color: T.ink }}>Recurring investing</div>
+            <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>Invest into your plan, every cycle</div>
+          </div>
+          <button onClick={function() { saveAutoCfg({ on: !autoCfg.on }); }}
+            style={{ width: 44, height: 26, borderRadius: 20, position: "relative", cursor: "pointer", border: "none", padding: 0, flexShrink: 0, background: autoCfg.on ? T.green : "rgba(0,0,0,0.15)", transition: "background 0.2s ease" }}>
+            <span style={{ position: "absolute", top: 3, left: 3, width: 20, height: 20, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.3)", transform: autoCfg.on ? "translateX(18px)" : "translateX(0)", transition: "transform 0.2s ease" }} />
+          </button>
+        </Card>
+        <div style={lbl}>Frequency</div>
+        <div style={{ display: "flex", gap: 9, marginBottom: 16 }}>
+          {[["weekly", "Weekly"], ["monthly", "Monthly"]].map(function(c) {
+            var on = autoCfg.cadence === c[0];
+            return (
+              <button key={c[0]} onClick={function() { saveAutoCfg({ cadence: c[0] }); }}
+                style={{ flex: 1, padding: "12px 0", borderRadius: 13, border: "1.5px solid " + (on ? T.orange : "rgba(0,0,0,0.09)"), background: on ? T.orangeDim : T.card, fontFamily: UI, fontSize: 14, fontWeight: 700, color: on ? T.orange : T.ink2, cursor: "pointer" }}>{c[1]}</button>
+            );
+          })}
+        </div>
+        <div style={lbl}>Amount per cycle</div>
+        <div style={{ display: "flex", gap: 9, marginBottom: 16 }}>
+          {[100, 200, 400, 800].map(function(v) {
+            var on = autoCfg.amount === v;
+            return (
+              <button key={v} onClick={function() { saveAutoCfg({ amount: v }); }}
+                style={{ flex: 1, padding: "11px 0", borderRadius: 13, border: "1.5px solid " + (on ? T.orange : "rgba(0,0,0,0.09)"), background: on ? T.orangeDim : T.card, fontFamily: UI, fontSize: 14, fontWeight: 700, color: on ? T.orange : T.ink2, cursor: "pointer" }}>{dollarsWhole(v)}</button>
+            );
+          })}
+        </div>
+        <Card style={{ padding: 16, marginBottom: 14, display: "flex", alignItems: "center", gap: 13 }}>
+          <div style={{ width: 42, height: 42, borderRadius: 13, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <SVGIcon id="coins" size={20} color={T.orange} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14.5, fontWeight: 800, color: T.ink }}>Round-ups</div>
+            <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>{"Spare change from this month's spending: " + dollars(roundUpPool)}</div>
+          </div>
+          <button onClick={function() { saveAutoCfg({ roundUps: !autoCfg.roundUps }); }}
+            style={{ width: 44, height: 26, borderRadius: 20, position: "relative", cursor: "pointer", border: "none", padding: 0, flexShrink: 0, background: autoCfg.roundUps ? T.orange : "rgba(0,0,0,0.15)", transition: "background 0.2s ease" }}>
+            <span style={{ position: "absolute", top: 3, left: 3, width: 20, height: 20, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.3)", transform: autoCfg.roundUps ? "translateX(18px)" : "translateX(0)", transition: "transform 0.2s ease" }} />
+          </button>
+        </Card>
+        {autoCfg.roundUps && roundUpPool > 0 && (
+          <button onClick={function() { setSheet("deposit"); setCashAmt(String(roundUpPool)); setCashSrc("balance"); }}
+            style={{ width: "100%", marginBottom: 14, border: "1.5px solid " + T.orange, background: "none", color: T.orange, borderRadius: 13, padding: "11px 0", fontFamily: UI, fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>{"Sweep " + dollars(roundUpPool) + " into this account"}</button>
+        )}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, background: T.goldDim, borderRadius: 14, padding: "13px 15px", marginBottom: 4 }}>
+          <SVGIcon id="spark" size={18} color={T.gold} />
+          <div style={{ fontSize: 12.5, color: T.ink, lineHeight: 1.45 }}>
+            {autoCfg.on
+              ? ["About ", dollarsWhole(investAutoMonthly(acct)), "/mo", autoCfg.roundUps ? " plus round-ups" : "", plan ? " into " + plan.name : " once you pick a plan", autoNextDate ? " · next " + autoNextDate : ""].join("")
+              : "Turn it on and Richard will remind you every cycle. Investing on a schedule beats trying to pick the moment."}
+          </div>
+        </div>
+        <BigBtn label="Done" onPress={function() { setSheet(null); }} />
+      </Overlay>
+
+      {/* ===== CURATED PORTFOLIOS ===== */}
+      <Overlay open={sheet === "portfolios"} onClose={function() { setSheet(null); }} title="Curated portfolios">
+        <div style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.55, marginBottom: 16 }}>
+          Pick a risk level. Richard builds it from low-fee funds, then tells you when your real mix drifts away from it.
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {INVEST_PLAN_IDS.map(function(id) {
+            var pl = INVEST_PLANS[id];
+            var on = plan && plan.id === id;
+            return (
+              <button key={id} onClick={function() { selectPlan(id); setSheet(null); }}
+                style={{ position: "relative", width: "100%", textAlign: "left", borderRadius: 18, padding: 16, cursor: "pointer", fontFamily: UI, boxSizing: "border-box", border: on ? "2px solid " + T.gold : "1.5px solid rgba(0,0,0,0.09)", background: on ? T.goldDim : T.card }}>
+                {on && <span style={{ position: "absolute", top: 12, right: 12, fontSize: 10, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "#fff", background: T.gold, padding: "3px 9px", borderRadius: 999 }}>Current</span>}
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                  <div style={{ position: "relative", width: 70, height: 70, flexShrink: 0 }}>
+                    <svg width={70} height={70} viewBox="0 0 70 70" style={{ transform: "rotate(-90deg)" }}>
+                      <circle cx={35} cy={35} r={29} fill="none" stroke="rgba(0,0,0,0.05)" strokeWidth={10} />
+                      {investDonut(pl.alloc).map(function(s, i) {
+                        return <circle key={i} cx={35} cy={35} r={29} fill="none" stroke={s.color} strokeWidth={10} pathLength={100} strokeDasharray={s.len + " 100"} strokeDashoffset={s.off} />;
+                      })}
+                    </svg>
+                    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontSize: 12, fontWeight: 800, color: T.ink2 }}>{pl.stock + "%"}</span>
+                    </div>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: T.ink, letterSpacing: "-0.01em" }}>{pl.name}</div>
+                    <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3 }}>{pl.risk + " risk"}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: T.gold, marginTop: 5 }}>{"Target " + pl.ret + "/yr"}</div>
+                  </div>
+                </div>
+                <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 12 }}>{pl.pitch}</div>
+                <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.45, marginTop: 8 }}>{"Built from " + pl.mix.map(function(m) { return INVEST_SLEEVES[m.key].sym; }).join(" · ")}</div>
+              </button>
+            );
+          })}
+        </div>
+        {props.onOpenPlanOnboard && (
+          <button onClick={function() { setSheet(null); props.onOpenPlanOnboard(acct.id); }}
+            style={{ width: "100%", marginTop: 14, background: "none", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.orange, padding: "6px 0" }}>Not sure? Let Richard ask me four questions</button>
+        )}
+        <div style={{ fontSize: 11, color: T.ink3, marginTop: 12, lineHeight: 1.5, textAlign: "center" }}>
+          Target returns are long-run illustrations, not promises. Changing your plan doesn't buy or sell anything on its own.
+        </div>
+      </Overlay>
+
+      {/* ===== LESSON ===== */}
+      <Overlay open={!!openLesson} onClose={function() { setOpenLesson(null); }} title="Richard teaches">
+        {(function() {
+          var L = openLesson ? investLessonById(openLesson) : null;
+          if (!L) return null;
+          var doneAlready = (investLessonProgress(acct)[L.id] || 0) >= 100;
+          return (
+            <div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", lineHeight: 1.22 }}>{L.title}</div>
+              <div style={{ fontSize: 12, color: T.ink3, marginTop: 4 }}>{L.level + " · " + L.mins + " min read"}</div>
+              <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.6, marginTop: 12 }}>{L.intro}</div>
+
+              {L.checklist && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 18 }}>
+                  {L.checklist.map(function(c, i) {
+                    return (
+                      <Card key={i} style={{ padding: "15px 16px" }}>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: T.ink, letterSpacing: "-0.01em", marginBottom: 10 }}>{c.q}</div>
+                        <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 7 }}>
+                          <SVGIcon id="check" size={16} color={T.green} />
+                          <span style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.45 }}>{c.good}</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                          <SVGIcon id="close" size={16} color={T.red} />
+                          <span style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.45 }}>{c.bad}</span>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+
+              {L.body && (
+                <div style={{ marginTop: 16 }}>
+                  {L.body.map(function(b, i) {
+                    return (
+                      <div key={i} style={{ marginBottom: 14 }}>
+                        <div style={{ fontSize: 14.5, fontWeight: 800, color: T.ink, marginBottom: 3 }}>{b.h}</div>
+                        <div style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.55 }}>{b.p}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 10, background: T.orangeDim, borderRadius: 14, padding: "14px 15px", marginTop: 12 }}>
+                <SVGIcon id="spark" size={18} color={T.orange} />
+                <div style={{ fontSize: 12.5, color: T.ink, lineHeight: 1.5 }}>{L.close}</div>
+              </div>
+
+              <BigBtn label={doneAlready ? "Done - close" : "Mark as complete"} onPress={function() {
+                if (!doneAlready) markLesson(L.id, 100);
+                setOpenLesson(null);
+              }} />
+              {doneAlready && (
+                <button onClick={function() { markLesson(L.id, 0); setOpenLesson(null); }}
+                  style={{ width: "100%", marginTop: 8, background: "none", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.ink3, padding: "5px 0" }}>Mark as not read</button>
+              )}
+            </div>
+          );
+        })()}
+      </Overlay>
+
+      {/* ===== HEALTH BREAKDOWN ===== */}
+      <Overlay open={healthOpen} onClose={function() { setHealthOpen(false); }} title={"Portfolio health · " + health.score}>
+        <div style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.55, marginBottom: 16 }}>
+          Five things Richard can check without guessing. This is about how the account is set up - not a prediction about returns.
+        </div>
+        {health.parts.map(function(p, i) {
+          var pct = p.max > 0 ? (p.pts / p.max) * 100 : 0;
+          return (
+            <div key={i} style={{ marginBottom: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+                <span style={{ fontSize: 13.5, fontWeight: 700, color: T.ink }}>{p.k}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: T.ink3 }}>{p.pts + "/" + p.max}</span>
+              </div>
+              <div style={{ height: 7, borderRadius: 4, background: "rgba(0,0,0,0.06)", overflow: "hidden" }}>
+                <div style={{ height: "100%", width: pct + "%", borderRadius: 4, background: pct >= 75 ? T.green : pct >= 40 ? T.gold : T.orange }} />
+              </div>
+              <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 4 }}>{p.note}</div>
+            </div>
+          );
+        })}
+        <BigBtn label="Got it" onPress={function() { setHealthOpen(false); }} />
       </Overlay>
     </div>
   );
@@ -15667,7 +17071,7 @@ function StockScoutView(props) {
   if (!acct) {
     return (
       <div>
-        <SubViewBack onBack={props.onBack} label={props.backLabel || "Investing"} />
+        {!props.embedded && <SubViewBack onBack={props.onBack} label={props.backLabel || "Investing"} />}
         <div style={{ textAlign: "center", padding: "60px 20px", color: T.ink3, fontSize: 14 }}>Open an investing account first, then let Richard scout for you.</div>
       </div>
     );
@@ -15677,9 +17081,9 @@ function StockScoutView(props) {
 
   return (
     <div style={{ position: "relative", zIndex: 0 }}>
-      <ScoutBeamsBg />
+      {!props.embedded && <ScoutBeamsBg />}
       {acct && !acct.scoutIntroSeen && <ScoutCinema scenes={RICHARD_CINEMA} onDone={markIntroSeen} />}
-      <SubViewBack onBack={props.onBack} label={props.backLabel || "Investing"} />
+      {!props.embedded && <SubViewBack onBack={props.onBack} label={props.backLabel || "Investing"} />}
 
       <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 6, padding: "0 2px" }}>
         <div style={{ position: "relative", width: 40, height: 40, flexShrink: 0 }}>
@@ -20347,6 +21751,34 @@ export default function App() {
   function onSaveInvesting(next) { setInvesting(next); save({ investing: next }); }
   function onInvestingMove(nextTx, nextInvesting) { setTx(nextTx); setInvesting(nextInvesting); save({ tx: nextTx, investing: nextInvesting }); }
   function onSaveInvestorProfile(next) { setInvestorProfile(next); save({ investorProfile: next }); }
+  // Richard's plan questionnaire writes in two places: the curated plan and the
+  // auto-invest default land on the investing ACCOUNT (that's where the money
+  // lives), while the goal/horizon/risk answers extend the investor PROFILE so
+  // every other Richard surface reasons with the same picture. One save each.
+  function onSaveInvestPlan(result) {
+    var today = new Date().toISOString().slice(0, 10);
+    var target = (investing || []).filter(function(a) { return a.id === openInv; })[0] || (investing || [])[0] || null;
+    var nextInvesting = (investing || []).map(function(a) {
+      if (!target || a.id !== target.id) return a;
+      var n = {}; for (var k in a) n[k] = a[k];
+      n.plan = result.plan;
+      n.planSetAt = today;
+      n.planGoal = result.goal;
+      n.planHorizon = result.horizon;
+      // Seed auto-invest with the amount they just chose, but leave it OFF -
+      // turning on a recurring money habit is the user's call, not ours.
+      n.auto = Object.assign({ on: false, cadence: "monthly", roundUps: false }, n.auto, { amount: result.monthly, startedAt: (n.auto && n.auto.startedAt) || today });
+      return n;
+    });
+    // `risk` on the profile belongs to the basics questionnaire's own vocabulary
+    // (sell/hold/buy) - keep this answer under its own key so neither prompt
+    // reads the other's values.
+    var nextProfile = Object.assign({}, investorProfile || {}, { goal: result.goal, horizon: result.horizon, planRisk: result.reaction, monthly: result.monthly, plan: result.plan });
+    setInvesting(nextInvesting);
+    setInvestorProfile(nextProfile);
+    save({ investing: nextInvesting, investorProfile: nextProfile });
+    setTab("investing");
+  }
 
   // ---- Bank Sync ingestion ----------------------------------------------------
   // While either sync method is active, listen to users/{uid}/syncInbox (filled
@@ -20885,7 +22317,7 @@ export default function App() {
             <div style={{ background: T.orangeDim, borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em" }}>{monthLabel}</div>
           </div>
           <span style={{ flex: 1, fontSize: 20, fontWeight: 700, color: T.ink, textAlign: "center", letterSpacing: "-0.02em" }}>
-            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "analysis" ? "Full Analysis" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
+            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "analysis" ? "Full Analysis" : currentTab === "investPlan" ? "Your investing plan" : currentTab === "investorOnboard" ? "Investing basics" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
           <div style={{ width: 86, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
             {HAS_FAB.indexOf(currentTab) !== -1 && (
@@ -20947,7 +22379,8 @@ export default function App() {
         {currentTab === "bankSync" && <BankSyncView bankSync={bankSync} onEnable={onEnableBankSync} onDisable={onDisableBankSync} leumiFinteka={leumiFinteka} onConnectLeumi={onConnectLeumiFinteka} onDisconnectLeumi={onDisconnectLeumiFinteka} onSyncLeumiNow={onSyncLeumiFintekaNow} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} />}
         {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Overview" : "Savings"} onBack={function() { setTab(prevTabRef.current || "overview"); }} />}
-        {currentTab === "investing" && <InvestingView investing={investing} tx={tx} openInvId={openInv} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} onOpenInvestorOnboard={function() { prevTabRef.current = "investing"; setTab("investorOnboard"); }} onOpenScout={function() { prevTabRef.current = "investing"; setTab("scout"); }} backLabel={prevTabRef.current === "overview" ? "Overview" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
+        {currentTab === "investing" && <InvestingView investing={investing} tx={tx} goals={goals} openInvId={openInv} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} onOpenInvestorOnboard={function() { prevTabRef.current = "investing"; setTab("investorOnboard"); }} onOpenScout={function() { prevTabRef.current = "investing"; setTab("scout"); }} onOpenPlanOnboard={function(acctId) { prevTabRef.current = "investing"; setOpenInv(acctId || null); setTab("investPlan"); }} backLabel={prevTabRef.current === "overview" ? "Overview" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
+        {currentTab === "investPlan" && <InvestPlanOnboard acct={(investing || []).filter(function(a) { return a.id === openInv; })[0] || (investing || [])[0] || null} username={user} onCancel={function() { setTab("investing"); }} onSave={onSaveInvestPlan} />}
         {currentTab === "scout" && <StockScoutView investing={investing} openInvId={openInv} tx={tx} goals={goals} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} backLabel="Investing" onBack={function() { setTab("investing"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} onTrade={function(acctId, symbol) { setOpenInv(acctId); setInvSheetReq({ kind: "buy", symbol: symbol }); setTab("investing"); }} />}
         {currentTab === "stock" && <StockView investing={investing} tx={tx} goals={goals} openStock={openStock} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onOpenInvestorOnboard={function() { prevTabRef.current = "stock"; setTab("investorOnboard"); }} backLabel="Investing" onBack={function() { setTab("investing"); }} onTrade={function(symbol, kind) { setOpenInv(openStock ? openStock.acctId : null); setInvSheetReq({ kind: kind, symbol: symbol }); setTab("investing"); }} />}
         {currentTab === "investorOnboard" && <InvestorOnboardScreen investorProfile={investorProfile} username={user} lang={lang} richardInstructions={richardCtx} today={new Date().toISOString().slice(0, 10)} onSave={onSaveInvestorProfile} onDone={function() { setTab(prevTabRef.current || "investing"); }} />}
