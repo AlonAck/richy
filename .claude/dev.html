@@ -180,9 +180,11 @@ fetchSource(1).then(function(src){
     var endedTrip2 = { id: 88, name: "Paris Weekend", destination: "Paris", days: 3, startDate: "2026-06-01", style: "comfort", total: 1200, icon: "umbrella", ended: true, endedAt: "2026-06-05", reserved: false, reserveTxId: null, advisorTips: [], allocations: [{ key: "food", label: "Food", icon: "food", color: "#27A85F", planned: 300, spent: 210, entries: [] }] };
     el = React.createElement(TripHistoryView, { trips: [endedTrip2], onBack: function(){}, onOpenTrip: function(id){ window.__clicked = "trip_" + id; } });
   } else if (view === "advisor") {
-    // Wrapper mirrors the App's cache: holds monthAnalysis { data, sig }, derives a
-    // fresh cache by tx signature, and a "Leave & return" button unmounts/remounts
-    // Advisor to prove the analysis survives leaving the tab.
+    // Wrapper mirrors the App's cache: holds monthAnalysis { data, sig, ym },
+    // derives a fresh cache by tx signature, and a "Leave & return" button
+    // unmounts/remounts Advisor to prove the analysis survives leaving the tab.
+    // "Age to last month" back-dates the record's ym so the monthly expiry can
+    // be exercised without waiting for a real month boundary.
     function AdvisorHarness() {
       // ?cached=1 seeds a finished analysis so the hero carousel renders without
       // a live LLM round trip - the only way to eyeball the analysis panels here.
@@ -194,21 +196,25 @@ fetchSource(1).then(function(src){
           { type: "watch", title: "Food is climbing", body: "Up 22% against your own average. Mostly delivery, mostly weeknights." }
         ],
         expertQuote: { quote: "Do not save what is left after spending; spend what is left after saving.", author: "Warren Buffett" }
-      }, sig: mockTx.length + ":" + ((mockTx[mockTx.length-1]||{}).id||"") } : null;
+      }, sig: mockTx.length + ":" + ((mockTx[mockTx.length-1]||{}).id||""), ym: curMonth() } : null;
       var _ma = React.useState(seeded); var ma = _ma[0]; var setMa = _ma[1];
       var _tx = React.useState(mockTx); var tx = _tx[0]; var setTx = _tx[1];
       var _on = React.useState(true); var on = _on[0]; var setOn = _on[1];
       function sig(){ return tx.length + ":" + ((tx[tx.length-1]||{}).id||""); }
-      function onSaveAnalysis(next){ setMa(next ? { data: next, sig: sig() } : null); }
-      // Mirrors the App: the saved analysis is ALWAYS handed back (it survives
-      // tx changes); analysisStale flags that the numbers moved on since it ran.
-      var cached = ma ? ma.data : null;
-      var stale = !!(ma && ma.sig !== sig());
+      function onSaveAnalysis(next){ setMa(next ? { data: next, sig: sig(), ym: curMonth() } : null); }
+      // Mirrors the App: within its own month the saved analysis is ALWAYS handed
+      // back (it survives tx changes) and analysisStale flags that the numbers
+      // moved on since it ran - but a record stamped with an earlier month has
+      // expired, so it is withheld entirely and Richard re-reads from scratch.
+      var fresh = (ma && ma.ym === curMonth()) ? ma : null;
+      var cached = fresh ? fresh.data : null;
+      var stale = !!(fresh && fresh.sig !== sig());
       return React.createElement("div", null,
         React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 12 } },
           React.createElement("button", { id: "harness-toggle", onClick: function(){ setOn(!on); }, style: { padding: "6px 12px" } }, on ? "Leave tab" : "Return to tab"),
           React.createElement("button", { id: "harness-addtx", onClick: function(){ setTx(tx.concat([{ id: 999, type: "expense", amount: 5, label: "Coffee", catId: "c2", category: "Food", date: "2026-06-25" }])); }, style: { padding: "6px 12px" } }, "Add transaction"),
-          React.createElement("span", { id: "harness-cache", style: { padding: "6px 0", fontSize: 12 } }, (cached ? "CACHE: present" : "CACHE: empty") + (stale ? " (stale)" : ""))
+          React.createElement("button", { id: "harness-agemonth", onClick: function(){ if (ma) setMa(Object.assign({}, ma, { ym: ymShift(curMonth(), 1) })); }, style: { padding: "6px 12px" } }, "Age to last month"),
+          React.createElement("span", { id: "harness-cache", style: { padding: "6px 0", fontSize: 12 } }, (cached ? "CACHE: present" : "CACHE: empty") + (stale ? " (stale)" : "") + (ma ? " [" + ma.ym + "]" : ""))
         ),
         on ? React.createElement(Advisor, { tx: tx, budgets: [], goals: mockGoals, categories: mockCats, username: "Alon", plan: "", lang: "en", cachedAnalysis: cached, analysisStale: stale, onSaveAnalysis: onSaveAnalysis }) : React.createElement("div", { style: { padding: 24, opacity: 0.6 } }, "(advisor tab unmounted)")
       );
