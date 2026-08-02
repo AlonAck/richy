@@ -21380,6 +21380,33 @@ function GlassTabBar(props) {
   );
 }
 
+// The same glass banner as the tab bar, but carrying a single exit control
+// instead of the five tabs. Used by screens you're *inside* rather than
+// switching between - the business account is one, so the bar that normally
+// moves you around the app becomes the way back out of it.
+function GlassBackBar(props) {
+  var _pressed = useState(false); var pressed = _pressed[0]; var setPressed = _pressed[1];
+  return (
+    <div style={{ position: "relative", display: "flex", padding: "10px 12px 12px" }}>
+      <button onClick={props.onPress}
+        onPointerDown={function() { setPressed(true); }}
+        onPointerUp={function() { setPressed(false); }}
+        onPointerLeave={function() { setPressed(false); }}
+        onPointerCancel={function() { setPressed(false); }}
+        aria-label={props.label}
+        style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
+          background: T.navPillGlass, border: "none", borderRadius: 22, padding: "12px 16px", cursor: "pointer",
+          fontFamily: UI, fontSize: 14.5, fontWeight: 700, color: T.orange, letterSpacing: "-0.01em",
+          WebkitTapHighlightColor: "transparent",
+          boxShadow: "inset 0 1px 0.5px " + T.navPillRim + ", inset 0 -1px 1px " + T.navPillShade + ", 0 2px 7px rgba(0,0,0,0.12)",
+          transform: pressed ? "scale(0.97)" : "scale(1)", transition: "transform 0.34s cubic-bezier(0.34,1.56,0.64,1)" }}>
+        <span style={{ display: "flex", transform: "rotate(180deg)" }}><SVGIcon id="chevron" size={19} color={T.orange} /></span>
+        {props.label}
+      </button>
+    </div>
+  );
+}
+
 export default function App() {
   var _user = useState(null);
   var user = _user[0]; var setUser = _user[1];
@@ -22325,6 +22352,16 @@ export default function App() {
   }
 
   var currentTab = tab;
+  // Leaving the business account. One handler so the row at the top of the page
+  // and the bar at the bottom of the screen can never disagree about where back
+  // goes; the label names the account you're stepping out of when one is open.
+  function exitBusiness() { setTab(prevTabRef.current || "overview"); setSheet(false); }
+  var openBizName = (function() {
+    var b = (businesses || []).filter(function(x) { return String(x.id) === String(openBiz); })[0];
+    if (!b || !b.name) return "";
+    return b.name.length > 22 ? b.name.slice(0, 21) + "…" : b.name;
+  })();
+  var exitBusinessLabel = openBizName ? "Exit " + openBizName : ("Back to " + (prevTabRef.current === "overview" ? "Overview" : "Savings"));
   var MAIN_TAB_IDS = TABS.map(function(t) { return t.id; });
   // Feed the native drag handlers fresh values without re-subscribing each render.
   liveRef.current = { currentTab: currentTab, sheet: sheet, order: MAIN_TAB_IDS, mainSet: MAIN_TABS_SET };
@@ -22447,7 +22484,7 @@ export default function App() {
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "bankSync" && <BankSyncView bankSync={bankSync} onEnable={onEnableBankSync} onDisable={onDisableBankSync} leumiFinteka={leumiFinteka} onConnectLeumi={onConnectLeumiFinteka} onDisconnectLeumi={onDisconnectLeumiFinteka} onSyncLeumiNow={onSyncLeumiFintekaNow} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} />}
-        {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Overview" : "Savings"} onBack={function() { setTab(prevTabRef.current || "overview"); }} />}
+        {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Overview" : "Savings"} onBack={exitBusiness} />}
         {currentTab === "investing" && <InvestingView investing={investing} tx={tx} goals={goals} openInvId={openInv} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} onOpenInvestorOnboard={function() { prevTabRef.current = "investing"; setTab("investorOnboard"); }} onOpenScout={function() { prevTabRef.current = "investing"; setTab("scout"); }} onOpenPlanOnboard={function(acctId) { prevTabRef.current = "investing"; setOpenInv(acctId || null); setTab("investPlan"); }} backLabel={prevTabRef.current === "overview" ? "Overview" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
         {currentTab === "investPlan" && <InvestPlanOnboard acct={(investing || []).filter(function(a) { return a.id === openInv; })[0] || (investing || [])[0] || null} username={user} onCancel={function() { setTab("investing"); }} onSave={onSaveInvestPlan} />}
         {currentTab === "scout" && <StockScoutView investing={investing} openInvId={openInv} tx={tx} goals={goals} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} backLabel="Investing" onBack={function() { setTab("investing"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} onTrade={function(acctId, symbol) { setOpenInv(acctId); setInvSheetReq({ kind: "buy", symbol: symbol }); setTab("investing"); }} />}
@@ -22474,7 +22511,9 @@ export default function App() {
               via its own border radius (no overflow:hidden, so the active lens shadow
               isn't cropped). Sits below the buttons in paint order. */}
           <div style={{ position: "absolute", inset: 0, borderRadius: 34, pointerEvents: "none", background: "linear-gradient(180deg, " + T.navSheen + " 0%, rgba(255,255,255,0) 42%, rgba(255,255,255,0) 100%)" }} />
-          <GlassTabBar tabs={TABS} current={currentTab} onSelect={function(id) { setTab(id); setSheet(false); }} />
+          {currentTab === "business"
+            ? <GlassBackBar label={exitBusinessLabel} onPress={exitBusiness} />
+            : <GlassTabBar tabs={TABS} current={currentTab} onSelect={function(id) { setTab(id); setSheet(false); }} />}
         </div>
       </div>
     </div>
