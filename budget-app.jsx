@@ -385,6 +385,26 @@ function round2(n) {
 // a new month simply has no matching transactions). Net worth stays all-time.
 function curMonth() { return new Date().toISOString().slice(0, 7); }   // "2026-06"
 function inMonth(t, ym) { return !!(t && t.date) && t.date.slice(0, 7) === ym; }
+// Monday-start ISO date of the current calendar week (UTC terms, matching
+// stored dates and curMonth()).
+function curWeekStart() {
+  var now = new Date();
+  var d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  var day = d.getUTCDay();                      // 0=Sun..6=Sat
+  d.setUTCDate(d.getUTCDate() - ((day + 6) % 7)); // roll back to Monday
+  return d.toISOString().slice(0, 10);
+}
+function curYear() { return new Date().toISOString().slice(0, 4); }
+// The dashboard-wide timeframe toggle ("week" | "month" | "year" | "all").
+// Unlike curMonth()/inMonth() (which stay fixed to the calendar month for
+// budgets), this scopes whichever period the user has picked from the header.
+function inTimeframe(t, timeframe) {
+  if (!t || !t.date) return false;
+  if (timeframe === "all") return true;
+  if (timeframe === "week") return t.date >= curWeekStart();
+  if (timeframe === "year") return t.date.slice(0, 4) === curYear();
+  return t.date.slice(0, 7) === curMonth();      // "month" (default)
+}
 // Month-key arithmetic done as pure string math so it can never be skewed by
 // the local-time vs toISOString (UTC) mismatch. Dates in the app are stored
 // as UTC ISO strings, so month keys derived from curMonth() stay consistent.
@@ -5052,7 +5072,12 @@ function Overview(props) {
   var greeting = pairs[idx].g;
   var subtitle = pairs[idx].s;
 
-  var ym = curMonth();
+  // The header's timeframe toggle ("week" | "month" | "year" | "all") scopes
+  // every cash-flow stat below - money in/out, savings rate, expenses,
+  // transaction count and per-category spend. Net worth/balance stay all-time
+  // regardless (see below), since a net worth reset every "week" would be nonsense.
+  var timeframe = props.timeframe || "month";
+  var tfLabel = timeframe === "week" ? "this week" : timeframe === "year" ? "this year" : timeframe === "all" ? "all time" : "this month";
   // Net Balance is net worth: ALL income (incl. opening balance) minus ALL
   // expense, all-time. It must carry over month to month, so it is NOT scoped.
   // Transactions with a future date or marked pending haven't happened yet —
@@ -5071,19 +5096,19 @@ function Overview(props) {
   var invAccts = props.investing || [];
   var invTotal = investingTotal(invAccts);
   var netWorth = balance + savTotal + bizTotal + invTotal;
-  // Cash-flow stats are THIS MONTH only. Opening balance is net worth, not income,
-  // so it is excluded here (else the savings rate reads 100%). Internal transfers
-  // to/from savings pots are excluded too - moving your own money isn't earning or
-  // spending it.
-  var income  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && isSettled(t) && inMonth(t, ym); }).reduce(function(s,t) { return s+t.amount; }, 0);
-  var expense = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && isSettled(t) && inMonth(t, ym); }).reduce(function(s,t) { return s+t.amount; }, 0);
+  // Cash-flow stats follow the selected timeframe. Opening balance is net worth,
+  // not income, so it is excluded here (else the savings rate reads 100%).
+  // Internal transfers to/from savings pots are excluded too - moving your own
+  // money isn't earning or spending it.
+  var income  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && isSettled(t) && inTimeframe(t, timeframe); }).reduce(function(s,t) { return s+t.amount; }, 0);
+  var expense = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && isSettled(t) && inTimeframe(t, timeframe); }).reduce(function(s,t) { return s+t.amount; }, 0);
   var hasIncome = income > 0;
   var savRate = hasIncome ? Math.round(((income - expense) / income) * 100) : 0;
   function spentInCat(c) {
-    return tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s,t){return s+t.amount;}, 0);
+    return tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inTimeframe(t, timeframe) && (t.catId === c.id || t.category === c.name); }).reduce(function(s,t){return s+t.amount;}, 0);
   }
   var recent = tx.filter(function(t) { return !isTransfer(t); }).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,4);
-  var monthTxCount = tx.filter(function(t) { return inMonth(t, ym) && !isTransfer(t); }).length;
+  var monthTxCount = tx.filter(function(t) { return inTimeframe(t, timeframe) && !isTransfer(t); }).length;
 
   // "Get the most from Richy" - invitations to features this account hasn't taken
   // up yet. Each one retires itself the moment the feature is actually in use, and
@@ -5148,6 +5173,11 @@ function Overview(props) {
   var _hd = useState(false); var hidden = _hd[0];   var setHidden = _hd[1];
   var _dp = useState(0);    var dp = _dp[0];       var setDp = _dp[1];
   var _nw = useState(false); var showNet = _nw[0];  var setShowNet = _nw[1];
+  // The hero panel's headline figure - balance or net worth, whichever is showing.
+  // Negative reads as "-$X" in red rather than a plain magnitude (which used to
+  // read like money you have).
+  var heroVal = showNet ? netWorth : balance;
+  var heroValNeg = heroVal < 0;
   // Trend scrubber: index into the daily series the finger is currently parked on,
   // -1 when nobody is scrubbing. Drives the crosshair on the chart and swaps the
   // footer readout to that day's balance.
@@ -5641,7 +5671,7 @@ function Overview(props) {
               </div>
               <div>
                 <div style={{ filter: hidden ? "blur(11px)" : "none", userSelect: "none" }}>
-                  <span style={{ fontSize: 42, fontWeight: 700, color: HINK, letterSpacing: "-0.03em", lineHeight: 1 }}>{dollars((showNet ? netWorth : balance) * dp)}</span>
+                  <span style={{ fontSize: 42, fontWeight: 700, color: heroValNeg ? HNEG : HINK, letterSpacing: "-0.03em", lineHeight: 1 }}>{(heroValNeg ? "-" : "") + dollars(Math.abs(heroVal * dp))}</span>
                 </div>
                 {showNet ? (
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 9 }}>
@@ -5650,7 +5680,7 @@ function Overview(props) {
                 ) : (
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 9 }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: monthNet >= 0 ? HPOS : HNEG }}>{(monthNet >= 0 ? "+" : "-") + dollars(Math.abs(monthNet))}</span>
-                    <span style={{ fontSize: 12, color: HFNT }}>this month</span>
+                    <span style={{ fontSize: 12, color: HFNT }}>{tfLabel}</span>
                   </div>
                 )}
               </div>
@@ -21355,6 +21385,13 @@ export default function App() {
   var user = _user[0]; var setUser = _user[1];
   var _tab = useState("overview");
   var tab = _tab[0]; var setTab = _tab[1];
+  // Dashboard-wide timeframe toggle (the header's period badge): "week" | "month"
+  // | "year" | "all". Scopes Overview's cash-flow stats - money in/out, savings
+  // rate, expenses, transaction count. Not persisted; always starts on "month".
+  var _tf = useState("month");
+  var timeframe = _tf[0]; var setTimeframe = _tf[1];
+  var _tfMenu = useState(false);
+  var timeframeMenuOpen = _tfMenu[0]; var setTimeframeMenuOpen = _tfMenu[1];
   var _tx = useState([]);
   var tx = _tx[0]; var setTx = _tx[1];
   var _bud = useState([]);
@@ -22295,7 +22332,7 @@ export default function App() {
   // The five swipeable main tabs, produced by id so both the visible page and the
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
-    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} />;
+    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} />;
     if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
@@ -22307,6 +22344,15 @@ export default function App() {
   var _localeMap = { en: "en-US", he: "he-IL", es: "es-ES", fr: "fr-FR", ar: "ar-SA", ru: "ru-RU", de: "de-DE", pt: "pt-BR" };
   var _locale = _localeMap[lang] || "en-US";
   var monthLabel = new Date().toLocaleString(_locale, { month: "short" }) + " " + new Date().getFullYear();
+  // The header badge doubles as the dashboard's timeframe toggle - tap it to
+  // switch how Overview scopes money in/out, savings rate and expenses.
+  var TIMEFRAME_OPTIONS = [
+    { id: "week",  label: "This Week" },
+    { id: "month", label: "This Month" },
+    { id: "year",  label: "This Year" },
+    { id: "all",   label: "All Time" }
+  ];
+  var timeframeLabel = timeframe === "week" ? "This Week" : timeframe === "year" ? String(new Date().getFullYear()) : timeframe === "all" ? "All Time" : monthLabel;
 
   return (
     <div style={{ background: T.bg, minHeight: "100vh", maxWidth: 430, margin: "0 auto", fontFamily: UI, paddingBottom: "calc(110px + env(safe-area-inset-bottom, 0px))" }}>
@@ -22314,7 +22360,11 @@ export default function App() {
       <div style={{ position: "sticky", top: 0, zIndex: 40, background: T.navBg, backdropFilter: "blur(24px) saturate(180%)", WebkitBackdropFilter: "blur(24px) saturate(180%)", borderBottom: "0.5px solid " + T.sep, boxShadow: "inset 0 1px 0 " + T.glassSpec + ", " + T.glassLiftDown }}>
         <div style={{ display: "flex", alignItems: "center", padding: "14px 20px 14px" }}>
           <div style={{ width: 86, display: "flex", alignItems: "center" }}>
-            <div style={{ background: T.orangeDim, borderRadius: 40, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em" }}>{monthLabel}</div>
+            <button onClick={function() { setTimeframeMenuOpen(true); }}
+              style={{ background: T.orangeDim, border: "none", borderRadius: 40, padding: "7px 12px 7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 3, whiteSpace: "nowrap" }}>
+              {timeframeLabel}
+              <span style={{ display: "flex", transform: "rotate(90deg)" }}><SVGIcon id="chevron" size={9} color={T.orange} /></span>
+            </button>
           </div>
           <span style={{ flex: 1, fontSize: 20, fontWeight: 700, color: T.ink, textAlign: "center", letterSpacing: "-0.02em" }}>
             {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "analysis" ? "Full Analysis" : currentTab === "investPlan" ? "Your investing plan" : currentTab === "investorOnboard" ? "Investing basics" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
@@ -22333,6 +22383,25 @@ export default function App() {
           </div>
         </div>
       </div>
+
+      <Overlay open={timeframeMenuOpen} onClose={function() { setTimeframeMenuOpen(false); }} title="Timeframe">
+        <div style={{ paddingBottom: 4 }}>
+          {TIMEFRAME_OPTIONS.map(function(opt, i) {
+            var sel = timeframe === opt.id;
+            return (
+              <button key={opt.id} onClick={function() { setTimeframe(opt.id); setTimeframeMenuOpen(false); }}
+                style={{ width: "100%", background: sel ? "rgba(137,112,198,0.05)" : "none", border: "none", borderBottom: i < TIMEFRAME_OPTIONS.length - 1 ? "0.5px solid " + T.sep : "none", padding: "15px 4px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", fontFamily: UI }}>
+                <div style={{ flex: 1, textAlign: "left", fontSize: 15.5, fontWeight: sel ? 700 : 600, color: sel ? T.ink : T.ink2 }}>{opt.label}</div>
+                {sel && (
+                  <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <SVGIcon id="check" size={12} color="#fff" />
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </Overlay>
 
       <CustomBanners banners={customBanners} onSave={onSaveBanners} />
 
