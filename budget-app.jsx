@@ -1038,8 +1038,35 @@ function hashPass(pw) {
 
 // New accounts start with no budgets - the user adds them with the + button.
 var DEFAULT_BUDGETS = [];
-function freshCategories() { return DEFAULT_CATEGORIES.map(function(c) { return { id: c.id, name: c.name, color: c.color, icon: c.icon, folderId: c.folderId }; }); }
-function freshFolders() { return DEFAULT_FOLDERS.map(function(f) { return { id: f.id, name: f.name }; }); }
+
+// Two special categories that mirror money already living in Business and
+// Investing accounts (Savings > Business/Investing) instead of being tagged
+// onto real transactions - moving capital into one of those pots isn't a
+// real expense (see isTransfer), so nothing would ever land on a normal
+// category for it. Their "spent" is computed live from those pots wherever
+// budgets read it (see spentForCat in Budgets), keyed by the `synced` marker
+// rather than id/name so a renamed tag is still recognized.
+var SYNCED_TAG_FOLDER = { id: "f-wealth", name: "Business & Investing" };
+var SYNCED_TAGS = [
+  { id: "tag-business",  name: "Business",   color: "#C8673A", icon: "briefcase", folderId: "f-wealth", synced: "business" },
+  { id: "tag-investing", name: "Investment", color: "#C8983A", icon: "chart",     folderId: "f-wealth", synced: "investing" }
+];
+// Adds the folder and whichever synced tags are missing to an existing
+// account's categories/folders. Called once per login (see the accountKey
+// effect in App) so accounts created before this feature pick them up too,
+// and re-checked whenever categories/folders change so a household's shared
+// list (which fully replaces categories on every live update) heals back to
+// having them. No-ops once both are present, so it never loops or duplicates.
+function ensureSyncedTags(categories, folders) {
+  var cats = categories || [];
+  var flds = folders || [];
+  var missing = SYNCED_TAGS.filter(function(t) { return !cats.some(function(c) { return c.synced === t.synced; }); });
+  if (!missing.length) return { changed: false, categories: cats, folders: flds };
+  var nextFolders = flds.some(function(f) { return f.id === SYNCED_TAG_FOLDER.id; }) ? flds : flds.concat([SYNCED_TAG_FOLDER]);
+  return { changed: true, categories: cats.concat(missing), folders: nextFolders };
+}
+function freshCategories() { return DEFAULT_CATEGORIES.map(function(c) { return { id: c.id, name: c.name, color: c.color, icon: c.icon, folderId: c.folderId }; }).concat(SYNCED_TAGS); }
+function freshFolders() { return DEFAULT_FOLDERS.map(function(f) { return { id: f.id, name: f.name }; }).concat([SYNCED_TAG_FOLDER]); }
 
 // Cloud backend: Firebase Authentication owns identity + sessions, and Cloud
 // Firestore stores one document per user (collection "users", keyed by the
@@ -7914,7 +7941,13 @@ function Budgets(props) {
   var _vc = useState(null);
   var viewCat = _vc[0]; var setViewCat = _vc[1];
 
+  // The Business/Investment tags never see real expense transactions - money
+  // moving into those pots is a transfer, not spending (see isTransfer) - so
+  // their "spent" instead mirrors what's actually sitting in those accounts
+  // right now, live from the same totals Savings shows.
   function spentForCat(c) {
+    if (c.synced === "business") return businessTotal(props.businesses);
+    if (c.synced === "investing") return investingTotal(props.investing);
     var ym = curMonth();
     return props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
   }
@@ -7938,7 +7971,9 @@ function Budgets(props) {
   var avail = cats.filter(function(c) { return !used[c.id]; });
 
   var viewRow = viewCat ? rows.filter(function(r) { return r.catId === viewCat; })[0] : null;
-  var viewTxs = viewRow ? props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, curMonth()) && (t.catId === viewRow.catId || t.category === viewRow.cat.name); }).sort(function(a, b) { return b.date.localeCompare(a.date); }) : [];
+  var viewTxs = (viewRow && !viewRow.cat.synced) ? props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, curMonth()) && (t.catId === viewRow.catId || t.category === viewRow.cat.name); }).sort(function(a, b) { return b.date.localeCompare(a.date); }) : [];
+  // How many pots the synced tag being viewed is drawn from, just for "account" vs "accounts".
+  var viewSyncedCount = viewRow && viewRow.cat.synced ? ((viewRow.cat.synced === "business" ? props.businesses : props.investing) || []).length : 0;
 
   return (
     <div>
@@ -7976,8 +8011,15 @@ function Budgets(props) {
         </button>
       </Overlay>
 
-      <Overlay open={!!viewCat} onClose={function() { setViewCat(null); }} title={viewRow ? viewRow.cat.name + " this month" : ""}>
-        {viewTxs.length === 0 ? (
+      <Overlay open={!!viewCat} onClose={function() { setViewCat(null); }} title={viewRow ? (viewRow.cat.synced ? viewRow.cat.name : viewRow.cat.name + " this month") : ""}>
+        {viewRow && viewRow.cat.synced ? (
+          <div style={{ padding: "8px 4px 6px", textAlign: "center" }}>
+            <div style={{ fontSize: 30, fontWeight: 700, color: T.ink, letterSpacing: "-0.03em" }}>{dollars(viewRow.spent)}</div>
+            <div style={{ fontSize: 13, color: T.ink3, marginTop: 10, lineHeight: 1.5 }}>
+              {"Currently sitting in your " + (viewRow.cat.synced === "business" ? "business" : "investing") + " account" + (viewSyncedCount === 1 ? "" : "s") + " - this tracks live, not just this month. Open Savings to see the breakdown."}
+            </div>
+          </div>
+        ) : viewTxs.length === 0 ? (
           <div style={{ padding: "20px 4px 8px", textAlign: "center", color: T.ink3, fontSize: 14 }}>No expenses in this category yet.</div>
         ) : (
           <div>
@@ -11870,6 +11912,15 @@ function Categories(props) {
   function txCount(c) {
     return props.tx.filter(function(t) { return t.catId === c.id || t.category === c.name; }).length;
   }
+  // Business/Investment mirror pot totals instead of transactions (see
+  // spentForCat in Budgets) - "0 transactions" would read as broken for a tag
+  // that's actually holding real money, so show the live total instead.
+  function subtitleFor(c) {
+    if (c.synced === "business") return dollars(businessTotal(props.businesses)) + " in business accounts";
+    if (c.synced === "investing") return dollars(investingTotal(props.investing)) + " in investing accounts";
+    var n = txCount(c);
+    return n + (n === 1 ? " transaction" : " transactions");
+  }
 
   // Group categories by folder, preserving folder order, with a trailing "Unfiled".
   var groups = folders.map(function(f) {
@@ -11940,7 +11991,7 @@ function Categories(props) {
                       <CatBadge icon={c.icon} color={c.color} size={38} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 15, color: T.ink, fontWeight: 600 }}>{c.name}</div>
-                        <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>{txCount(c)} {txCount(c) === 1 ? "transaction" : "transactions"}</div>
+                        <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>{subtitleFor(c)}</div>
                       </div>
                       <SVGIcon id="chevron" size={16} color={T.ink3} />
                     </button>
@@ -21846,6 +21897,21 @@ export default function App() {
     CLOUD.findInvites(email).then(function(list) { setInvites(list || []); }).catch(function() {});
   }, [accountKey, householdId]);
 
+  // Back-fills the synced Business/Investment tags (see ensureSyncedTags)
+  // into accounts created before this feature. Re-checks on every
+  // categories/folders change too, so a household's shared category list -
+  // which fully replaces categories on every live update above - heals back
+  // to having them; ensureSyncedTags no-ops once both exist, so this settles
+  // after one extra render and never loops.
+  useEffect(function() {
+    if (!accountKey) return;
+    var synced = ensureSyncedTags(categories, folders);
+    if (!synced.changed) return;
+    setCategories(synced.categories);
+    setFolders(synced.folders);
+    save({ categories: synced.categories, folders: synced.folders });
+  }, [accountKey, categories, folders]);
+
   function myEmail() {
     var cu = cloudReady() ? _auth().currentUser : null;
     return ((cu && cu.email) || (blobRef.current && blobRef.current.email) || "").toLowerCase();
@@ -22550,7 +22616,7 @@ export default function App() {
   function mainTabEl(id) {
     if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
     if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
-    if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
+    if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} businesses={businesses} investing={investing} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
     if (id === "advisor") return <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} />;
     return null;
@@ -22649,7 +22715,7 @@ export default function App() {
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} richardInstructions={richardCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
-        {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
+        {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} businesses={businesses} investing={investing} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} richardInstructions={richardInstructions} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "profile"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "profile"; setTab("periodMode"); }} bankSync={bankSync} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} debtCount={debts.length} onViewDebts={function() { prevTabRef.current = "profile"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} trips={trips} onViewTripHistory={function() { setTab("tripHistory"); }} />}
         {currentTab === "analysis" && <FullAnalysisView tx={tx} categories={categories} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} username={user} analysis={freshAnalysis ? freshAnalysis.data : null} onBack={function() { setTab("advisor"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} />}
