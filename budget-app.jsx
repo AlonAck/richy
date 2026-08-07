@@ -395,6 +395,26 @@ function curWeekStart() {
   return d.toISOString().slice(0, 10);
 }
 function curYear() { return new Date().toISOString().slice(0, 4); }
+// Calendar-window helpers for the Overview balance chart's range picker (see
+// periodMode) - let "week" / "month" / "year" snap to real calendar boundaries
+// (Monday-Sunday, 1st-to-last-day, Jan-Dec) instead of a rolling N-day window.
+function addDaysISO(iso, days) {
+  var d = new Date(iso + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+function daysBetweenISO(a, b) { return Math.round((new Date(b + "T00:00:00Z") - new Date(a + "T00:00:00Z")) / 86400000); }
+function weekStartOf(iso) {
+  var d = new Date(iso + "T00:00:00Z");
+  var day = d.getUTCDay();
+  d.setUTCDate(d.getUTCDate() - ((day + 6) % 7));
+  return d.toISOString().slice(0, 10);
+}
+function monthStartOf(ym) { return ym + "-01"; }
+function monthEndOf(ym) {
+  var p = ym.split("-");
+  return new Date(Date.UTC(parseInt(p[0], 10), parseInt(p[1], 10), 0)).toISOString().slice(0, 10);
+}
 // The dashboard-wide timeframe toggle ("week" | "month" | "year" | "all").
 // Unlike curMonth()/inMonth() (which stay fixed to the calendar month for
 // budgets), this scopes whichever period the user has picked from the header.
@@ -4274,6 +4294,12 @@ function OnboardingScreen(props) {
   // own currency; App persists them to the blob on completion.
   var _plc = useState(_lang.code || "en"); var prefLang = _plc[0]; var setPrefLang = _plc[1];
   var _pcc = useState(_currency.sym || "$"); var prefCur = _pcc[0]; var setPrefCur = _pcc[1];
+  // Date Range preference, same three modes as Profile > Money > Date Range -
+  // asked here too so it lands in the account from day one instead of only
+  // being discoverable after the fact. Calendar ("This Month") is the default.
+  var _ppm = useState("calendar"); var prefPeriodMode = _ppm[0]; var setPrefPeriodMode = _ppm[1];
+  var _ppcs = useState(""); var prefPeriodStart = _ppcs[0]; var setPrefPeriodStart = _ppcs[1];
+  var _ppce = useState(""); var prefPeriodEnd = _ppce[0]; var setPrefPeriodEnd = _ppce[1];
   var advRef = useRef(false);
   useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
 
@@ -4302,7 +4328,7 @@ function OnboardingScreen(props) {
         var plan = (planErr || !text)
           ? ("Start here, " + props.username + ". For your challenge of " + (coreProblem || "managing your money") + ": Track every dollar you spend this month - awareness is step one. Set aside 10% of whatever you earn before you touch anything else. Build one month of essential expenses as a buffer. Then pour your focus into your goal: " + (goalName || "financial freedom") + ". Small consistent actions, repeated every month, compound into real wealth.")
           : text;
-        var oData = { lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: ageStr, coreProblem: coreProblem, moneyLeaks: leakLabels.join(", "), overspendEst: overspend, prefLang: prefLang, prefCurrency: prefCur };
+        var oData = { lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: ageStr, coreProblem: coreProblem, moneyLeaks: leakLabels.join(", "), overspendEst: overspend, prefLang: prefLang, prefCurrency: prefCur, prefPeriodMode: prefPeriodMode, prefPeriodStart: prefPeriodStart, prefPeriodEnd: prefPeriodEnd };
         setGenPlan(plan);
         setGenOData(oData);
         setStep(6);
@@ -4580,11 +4606,37 @@ function OnboardingScreen(props) {
                     );
                   })}
                 </div>
-                <div key={prefCur} style={{ marginTop: 22, textAlign: "center", animation: "rclPhrase 0.35s ease both" }}>
+                <div key={prefCur} style={{ marginTop: 22, textAlign: "center", animation: "rclPhrase 0.35s ease both", marginBottom: 22 }}>
                   <span style={{ display: "inline-block", background: "rgba(255,255,255,0.85)", border: "1px solid rgba(0,0,0,0.06)", borderRadius: 999, padding: "8px 16px", fontSize: 13, fontWeight: 700, color: JINK2, boxShadow: "0 2px 8px rgba(0,0,0,0.04)", boxSizing: "border-box" }}>
                     Your coffee: {fmtCur(prefCur, 4.5)}
                   </span>
                 </div>
+                <div style={labelJ}>Date Range</div>
+                <div style={{ fontSize: 12.5, color: JINK3, marginTop: -8, marginBottom: 14, lineHeight: 1.5 }}>How Richy measures "this week/month/year." Defaults to the current calendar month - change it anytime in Profile.</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {[
+                    { id: "calendar", label: "This Month" },
+                    { id: "rolling", label: "Past Month" },
+                    { id: "custom", label: "Custom Range" }
+                  ].map(function(o, i) {
+                    return (
+                      <JrChip key={o.id} label={o.label} selected={prefPeriodMode === o.id} delay={0.4 + i * 0.05}
+                        onPress={function() { setPrefPeriodMode(o.id); }} />
+                    );
+                  })}
+                </div>
+                {prefPeriodMode === "custom" && (
+                  <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={labelStyle}>From</div>
+                      <input type="date" value={prefPeriodStart} onChange={function(e) { setPrefPeriodStart(e.target.value); }} className="jr-field" style={fieldStyle} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={labelStyle}>To</div>
+                      <input type="date" value={prefPeriodEnd} onChange={function(e) { setPrefPeriodEnd(e.target.value); }} className="jr-field" style={fieldStyle} />
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -5296,16 +5348,53 @@ function Overview(props) {
   // ===== Carousel data, scoped to the selected range =====
   var rangeDays = { "7D": 7, "1M": 30, "3M": 91, "1Y": 365 };
   var rangeLong = { "7D": "past 7 days", "1M": "past 30 days", "3M": "past 3 months", "1Y": "past 12 months" };
+  var rangeLongCalendar = { "7D": "this week", "1M": "this month", "3M": "this quarter", "1Y": "this year" };
   var rangeOpts = ["7D", "1M", "3M", "1Y"];
+  // periodMode ("calendar" | "rolling" | "custom", set in Settings > Date
+  // Range) decides whether week/month/year snap to real calendar boundaries,
+  // stay a rolling N-day window, or the whole carousel just reads one fixed
+  // start-to-end span the user picked. Calendar is the default.
+  var calendarMode = props.periodMode !== "rolling";
+  // A custom span only takes over once both ends are actually set - a bare
+  // mode switch with no dates yet falls back to calendar so the chart never
+  // renders an empty window.
+  var customWin = props.periodMode === "custom" && props.periodCustomStart && props.periodCustomEnd;
   function isoAgo(d) { return new Date(Date.now() - d * 86400000).toISOString().slice(0, 10); }
   var todayISO = new Date().toISOString().slice(0, 10);
   // The window normally ends today; each step back moves it a whole period into
-  // the past (shift 1 on 1M = the 30 days before the last 30). Every panel in the
-  // carousel reads the same window, so stepping back moves all of them together.
-  var winDays = rangeDays[range];
-  var winEndAgo = shift * winDays;
-  var winStart = isoAgo(winDays + winEndAgo);
-  var winEnd = isoAgo(winEndAgo);
+  // the past (shift 1 on 1M = the 30 days before the last 30, or the calendar
+  // month before this one in calendar mode). Every panel in the carousel reads
+  // the same window, so stepping back moves all of them together. A custom
+  // span ignores range/shift entirely - it's the same fixed window always.
+  var winStart, winEnd;
+  if (customWin) {
+    winStart = props.periodCustomStart; winEnd = props.periodCustomEnd;
+    if (winStart > winEnd) { var _tmp = winStart; winStart = winEnd; winEnd = _tmp; }
+    if (winEnd > todayISO) winEnd = todayISO;
+  } else if (calendarMode) {
+    if (range === "7D") {
+      winStart = weekStartOf(addDaysISO(todayISO, -7 * shift));
+      winEnd = addDaysISO(winStart, 6);
+    } else if (range === "1M") {
+      var _ym1 = ymShift(curMonth(), shift);
+      winStart = monthStartOf(_ym1); winEnd = monthEndOf(_ym1);
+    } else if (range === "3M") {
+      var _ymEnd = ymShift(curMonth(), shift * 3);
+      winStart = monthStartOf(ymShift(_ymEnd, 2)); winEnd = monthEndOf(_ymEnd);
+    } else { // "1Y"
+      var _yr = parseInt(curYear(), 10) - shift;
+      winStart = _yr + "-01-01"; winEnd = _yr + "-12-31";
+    }
+    // A period still in progress (shift 0) can't run past today - there's no
+    // balance data for days that haven't happened yet.
+    if (winEnd > todayISO) winEnd = todayISO;
+  } else {
+    var winDays = rangeDays[range];
+    var winEndAgo = shift * winDays;
+    winStart = isoAgo(winDays + winEndAgo);
+    winEnd = isoAgo(winEndAgo);
+  }
+  var winSpanDays = daysBetweenISO(winStart, winEnd);
   function inWin(d) { return d >= winStart && d <= winEnd; }
   var monthNet = income - expense;
 
@@ -5367,8 +5456,8 @@ function Overview(props) {
   var netStart = startBal + potCashBefore + holdingsBaseline;
   var balSeries = [], netSeries = [];
   var run = startBal, netRun = netStart;
-  for (var di = 0; di <= winDays; di++) {
-    var dISO = isoAgo(winDays + winEndAgo - di);
+  for (var di = 0; di <= winSpanDays; di++) {
+    var dISO = addDaysISO(winStart, di);
     var md = dayDelta[dISO] || 0;
     var pd = potDeltaByDate[dISO] || 0;
     run += md;
@@ -5380,9 +5469,12 @@ function Overview(props) {
   var nPts = series.length;
   var trendNet = series[series.length - 1] - (showNet ? netStart : startBal);
   var trendUp = trendNet >= 0;
-  // "past 30 days" only stays true while the window ends today; once it's stepped
-  // back, name the actual span so nothing on the card is quietly lying.
-  var winLabel = shift === 0 ? rangeLong[range] : (axisLabel(winStart) + " - " + axisLabel(winEnd));
+  // "past 30 days" / "this month" only stays true while the window ends today;
+  // once it's stepped back, name the actual span so nothing on the card is
+  // quietly lying. A custom span always names its actual dates - there's no
+  // "this month" to fall back to.
+  var winLabel = customWin ? (axisLabel(winStart) + " - " + axisLabel(winEnd))
+    : shift === 0 ? (calendarMode ? rangeLongCalendar[range] : rangeLong[range]) : (axisLabel(winStart) + " - " + axisLabel(winEnd));
   // Switching range shortens the series a render before the reset effect fires,
   // so clamp here rather than trusting the raw index anywhere downstream.
   var scrubIdx = (scrub >= 0 && scrub < nPts) ? scrub : -1;
@@ -5436,7 +5528,7 @@ function Overview(props) {
     var n = range === "1Y" ? 5 : 4, out = [];
     for (var k = 0; k < n; k++) {
       var frac = n > 1 ? k / (n - 1) : 0;
-      out.push({ frac: frac, label: axisLabel(isoAgo(winEndAgo + Math.round(winDays * (1 - frac)))) });
+      out.push({ frac: frac, label: axisLabel(addDaysISO(winStart, Math.round(winSpanDays * frac))) });
     }
     return out;
   }
@@ -5476,7 +5568,7 @@ function Overview(props) {
     return d;
   }
   // Date under the crosshair - shares the app's "Today / Monday, Jul 14" wording.
-  function scrubDateLabel(i) { return dateLabel(isoAgo(winDays + winEndAgo - i)); }
+  function scrubDateLabel(i) { return dateLabel(addDaysISO(winStart, i)); }
 
   function trendChart() {
     var W = 318, H = 108, topY = 12, botY = 74;
@@ -5602,6 +5694,16 @@ function Overview(props) {
     );
   }
   function rangeRow() {
+    // A custom span is one fixed window, not a unit to page through - swap the
+    // 7D/1M/3M/1Y tabs and step arrows for a plain label naming the mode.
+    if (customWin) {
+      return (
+        <div onPointerDown={stopDrag} style={{ display: "flex", alignItems: "center", gap: 6, background: T.heroRangeBg, borderRadius: 9, padding: "5px 10px" }}>
+          <SVGIcon id="calendar" size={11} color={HMUT} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: HMUT }}>Custom range</span>
+        </div>
+      );
+    }
     return (
       <div onPointerDown={stopDrag} style={{ display: "flex", alignItems: "center", gap: 2, background: T.heroRangeBg, borderRadius: 9, padding: 3 }}>
         {stepArrow(1)}
@@ -19461,6 +19563,53 @@ function EntryMethodView(props) {
   );
 }
 
+function PeriodModeView(props) {
+  var opts = [
+    { id: "calendar", label: "This Month", sub: "Week, month and year follow real calendar boundaries - Monday to Sunday, the 1st to the last day, Jan to Dec.", icon: "calendar" },
+    { id: "rolling", label: "Past Month", sub: "Week, month and year are a rolling window that always ends today - the last 7, 30 or 365 days.", icon: "refresh" },
+    { id: "custom", label: "Custom Range", sub: "Pick your own start and end date - one fixed window, until you change it here.", icon: "edit" }
+  ];
+  var mode = props.periodMode || "calendar";
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+      <Card style={{ overflow: "hidden", marginBottom: 16 }}>
+        {opts.map(function(opt, i) {
+          var sel = mode === opt.id;
+          return (
+            <button key={opt.id} onClick={function() { props.onPeriodModeChange(opt.id); }}
+              style={{ width: "100%", background: sel ? T.orangeDim : "none", border: "none", borderBottom: i < opts.length - 1 ? "0.5px solid " + T.sep : "none", padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", fontFamily: UI }}>
+              <div style={{ width: 46, height: 46, borderRadius: 13, background: sel ? T.orange : "rgba(0,0,0,0.05)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <SVGIcon id={opt.icon} size={20} color={sel ? "#fff" : T.ink3} />
+              </div>
+              <div style={{ flex: 1, textAlign: "left" }}>
+                <div style={{ fontSize: 16, fontWeight: sel ? 700 : 600, color: T.ink }}>{opt.label}</div>
+                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{opt.sub}</div>
+              </div>
+              {sel && (
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <SVGIcon id="check" size={12} color="#fff" />
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </Card>
+      {mode === "custom" && (
+        <Card style={{ padding: "14px 14px 7px", marginBottom: 16 }}>
+          <FormRow label="From" type="date" value={props.periodCustomStart || ""}
+            onChange={function(e) { props.onPeriodCustomChange("start", e.target.value); }} />
+          <FormRow label="To" type="date" value={props.periodCustomEnd || ""} last={true}
+            onChange={function(e) { props.onPeriodCustomChange("end", e.target.value); }} />
+        </Card>
+      )}
+      <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.55, padding: "0 6px" }}>
+        This decides how the balance chart's week/month/year ranges are measured on the Overview tab.
+      </div>
+    </div>
+  );
+}
+
 // Where the phone automations (and the in-app test button) POST transactions.
 // Always the absolute production URL - the phone can't use a relative path.
 var BANK_SYNC_ENDPOINT = "https://richy-mgkl.vercel.app/api/bank-sync";
@@ -21240,6 +21389,7 @@ function Profile(props) {
         <ProfileRow icon="briefcase" iconBg={T.greenDim} iconColor={T.green} label="Opening Balance" onClick={props.onViewEditOpeningBalance} />
         <ProfileRow icon="activity" iconBg={T.greenDim} iconColor={T.green} label="Log This Month" onClick={props.onViewLogMonth} />
         <ProfileRow icon="edit" iconBg={T.greenDim} iconColor={T.green} label="Adding Transactions" value={props.entryMethod === "import" ? "CSV import" : "Manual"} onClick={props.onViewEntryMethod} />
+        <ProfileRow icon="calendar" iconBg={T.greenDim} iconColor={T.green} label="Date Range" value={props.periodMode === "rolling" ? "Past Month" : props.periodMode === "custom" ? "Custom" : "This Month"} onClick={props.onViewPeriodMode} />
         <ProfileRow icon="refresh" iconBg={T.greenDim} iconColor={T.green} label="Bank Sync" value={props.bankSync && props.bankSync.enabled ? "On" : "Off"} onClick={props.onViewBankSync} last />
       </ProfileSection>
 
@@ -21493,6 +21643,17 @@ export default function App() {
   var onboardingData = _oda[0]; var setOnboardingData = _oda[1];
   var _em = useState("manual");
   var entryMethod = _em[0]; var setEntryMethod = _em[1];
+  // Date Range mode ("calendar" | "rolling" | "custom"): whether the Overview
+  // balance chart's week/month/year ranges snap to real calendar boundaries,
+  // stay a rolling window ending today, or read one fixed span the user
+  // picked. Calendar is the default. periodCustomStart/End only matter in
+  // "custom" mode.
+  var _pm = useState("calendar");
+  var periodMode = _pm[0]; var setPeriodMode = _pm[1];
+  var _pcs = useState("");
+  var periodCustomStart = _pcs[0]; var setPeriodCustomStart = _pcs[1];
+  var _pce = useState("");
+  var periodCustomEnd = _pce[0]; var setPeriodCustomEnd = _pce[1];
   // Bank Sync (Apple Pay / Google Pay via phone automations): { enabled, key,
   // createdAt, lastSyncAt, count }. The key doubles as the credential the
   // phone automation sends to api/bank-sync.js; null until first enabled.
@@ -21588,6 +21749,9 @@ export default function App() {
     setOnboardingData(data.onboardingData || {});
     setMonthAnalysis(data.monthAnalysis || null);
     setEntryMethod(data.entryMethod === "import" ? "import" : "manual");
+    setPeriodMode(data.periodMode === "rolling" ? "rolling" : data.periodMode === "custom" ? "custom" : "calendar");
+    setPeriodCustomStart(data.periodCustomStart || "");
+    setPeriodCustomEnd(data.periodCustomEnd || "");
     setBankSync(data.bankSync || null);
     setLeumiFinteka(data.leumiFinteka || null);
     setCustomBanners(data.customBanners || []);
@@ -22050,6 +22214,11 @@ export default function App() {
   function onSaveEmail(email) { save({ email: email }); }
   function onSaveFinancial(oData) { save({ onboardingData: oData }); }
   function onSaveEntryMethod(m) { var v = m === "import" ? "import" : "manual"; setEntryMethod(v); save({ entryMethod: v }); }
+  function onSavePeriodMode(m) { var v = m === "rolling" ? "rolling" : m === "custom" ? "custom" : "calendar"; setPeriodMode(v); save({ periodMode: v }); }
+  function onSavePeriodCustom(field, val) {
+    if (field === "start") { setPeriodCustomStart(val); save({ periodCustomStart: val }); }
+    else { setPeriodCustomEnd(val); save({ periodCustomEnd: val }); }
+  }
   // Enabling mints a fresh random key and registers it in syncKeys BEFORE it's
   // shown to the user (a key the endpoint can't resolve would be useless).
   // Disabling deletes the mapping, which is the revocation: the phone automation
@@ -22157,6 +22326,15 @@ export default function App() {
     }
     if (oData && oData.prefCurrency) {
       merged.currency = oData.prefCurrency; _currency.sym = oData.prefCurrency; setCurrency(oData.prefCurrency);
+    }
+    // Date Range preference, same idea - asked in the questionnaire, applied
+    // here so the Overview chart already reads it on the very first render.
+    if (oData && oData.prefPeriodMode) {
+      merged.periodMode = oData.prefPeriodMode; setPeriodMode(oData.prefPeriodMode);
+      if (oData.prefPeriodMode === "custom") {
+        merged.periodCustomStart = oData.prefPeriodStart || ""; setPeriodCustomStart(oData.prefPeriodStart || "");
+        merged.periodCustomEnd = oData.prefPeriodEnd || ""; setPeriodCustomEnd(oData.prefPeriodEnd || "");
+      }
     }
     if (suggestedBudgets && suggestedBudgets.length) {
       setBudgets(suggestedBudgets);
@@ -22370,7 +22548,7 @@ export default function App() {
   // The five swipeable main tabs, produced by id so both the visible page and the
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
-    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
+    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
     if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
@@ -22405,7 +22583,7 @@ export default function App() {
             </button>
           </div>
           <span style={{ flex: 1, fontSize: 20, fontWeight: 700, color: T.ink, textAlign: "center", letterSpacing: "-0.02em" }}>
-            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "analysis" ? "Full Analysis" : currentTab === "investPlan" ? "Your investing plan" : currentTab === "investorOnboard" ? "Investing basics" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
+            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "periodMode" ? "Date Range" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "analysis" ? "Full Analysis" : currentTab === "investPlan" ? "Your investing plan" : currentTab === "investorOnboard" ? "Investing basics" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
           <div style={{ width: 86, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
             {HAS_FAB.indexOf(currentTab) !== -1 && (
@@ -22472,7 +22650,7 @@ export default function App() {
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} richardInstructions={richardCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} richardInstructions={richardInstructions} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "profile"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} bankSync={bankSync} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} debtCount={debts.length} onViewDebts={function() { prevTabRef.current = "profile"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} trips={trips} onViewTripHistory={function() { setTab("tripHistory"); }} />}
+        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} richardInstructions={richardInstructions} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "profile"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "profile"; setTab("periodMode"); }} bankSync={bankSync} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} debtCount={debts.length} onViewDebts={function() { prevTabRef.current = "profile"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} trips={trips} onViewTripHistory={function() { setTab("tripHistory"); }} />}
         {currentTab === "analysis" && <FullAnalysisView tx={tx} categories={categories} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} username={user} analysis={freshAnalysis ? freshAnalysis.data : null} onBack={function() { setTab("advisor"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
@@ -22483,6 +22661,7 @@ export default function App() {
         {currentTab === "language" && <LanguageView lang={lang} onLangChange={onSaveLang} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "appearance" && <AppearanceView theme={theme} onThemeChange={onSaveTheme} darkMode={darkMode} onDarkModeChange={onSaveDarkMode} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "periodMode" && <PeriodModeView periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onPeriodModeChange={onSavePeriodMode} onPeriodCustomChange={onSavePeriodCustom} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "bankSync" && <BankSyncView bankSync={bankSync} onEnable={onEnableBankSync} onDisable={onDisableBankSync} leumiFinteka={leumiFinteka} onConnectLeumi={onConnectLeumiFinteka} onDisconnectLeumi={onDisconnectLeumiFinteka} onSyncLeumiNow={onSyncLeumiFintekaNow} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} />}
         {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Overview" : "Savings"} onBack={exitBusiness} />}
