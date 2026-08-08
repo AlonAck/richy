@@ -445,6 +445,23 @@ function monthDayFrac() {
   return d.getUTCDate() / daysIn;
 }
 
+// A gently-smoothed SVG path through a small set of points (quadratic curves
+// through each segment's midpoint). Good enough for compact card sparklines
+// that don't need the full scrub/animation machinery of the main trend chart.
+function quadSmooth(pts) {
+  if (!pts || !pts.length) return "";
+  if (pts.length === 1) return "M " + pts[0].x.toFixed(1) + " " + pts[0].y.toFixed(1);
+  var d = "M " + pts[0].x.toFixed(1) + " " + pts[0].y.toFixed(1);
+  for (var i = 0; i < pts.length - 1; i++) {
+    var p0 = pts[i], p1 = pts[i + 1];
+    var mx = (p0.x + p1.x) / 2, my = (p0.y + p1.y) / 2;
+    d += " Q " + p0.x.toFixed(1) + " " + p0.y.toFixed(1) + " " + mx.toFixed(1) + " " + my.toFixed(1);
+  }
+  var last = pts[pts.length - 1];
+  d += " L " + last.x.toFixed(1) + " " + last.y.toFixed(1);
+  return d;
+}
+
 // The starting/opening balance is NET WORTH the user already had, not money
 // earned this month - so it must be excluded from income and savings-rate math
 // (otherwise the savings rate reads ~100%). We detect it defensively: the boolean
@@ -1068,12 +1085,23 @@ function ensureSyncedTags(categories, folders) {
 function freshCategories() { return DEFAULT_CATEGORIES.map(function(c) { return { id: c.id, name: c.name, color: c.color, icon: c.icon, folderId: c.folderId }; }).concat(SYNCED_TAGS); }
 function freshFolders() { return DEFAULT_FOLDERS.map(function(f) { return { id: f.id, name: f.name }; }).concat([SYNCED_TAG_FOLDER]); }
 
-// Cloud backend: Firebase Authentication owns identity + sessions, and Cloud
-// Firestore stores one document per user (collection "users", keyed by the
-// Firebase uid) holding their whole data blob. The web config lives in
-// firebase-init.js and is loaded by preview.html before this app runs; security
-// is enforced by Firestore rules, not by hiding the config. cloudReady() guards
-// every call so the app can still boot and explain itself before setup is done.
+// Cloud backend: Clerk owns identity + sessions (sign-up, sign-in, password,
+// email), and Cloud Firestore stores one document per user (collection
+// "users", keyed by the Clerk user id) holding their whole data blob.
+//
+// Firestore's security rules only trust Firebase's own request.auth, which a
+// Clerk session token means nothing to on its own. So after every Clerk
+// sign-in, the app silently exchanges the Clerk session for a Firebase custom
+// token (minted server-side in api/clerk-firebase-token.js, keyed to the same
+// Clerk user id) and signs in to Firebase Auth with it too - see
+// _bridgeToFirebase() below. This is invisible to the user: Clerk is the only
+// auth UI/UX they ever see; Firebase Auth here exists purely so Firestore's
+// rules keep working unchanged.
+//
+// Config: Clerk's publishable key lives in clerk-init.js, Firebase's web
+// config lives in firebase-init.js - both loaded by preview.html before this
+// app runs. cloudReady()/clerkConfigured() guard every call so the app can
+// still boot and explain itself before setup is done.
 function _fb() {
   return (typeof window !== "undefined" && window.firebase) ? window.firebase : null;
 }
@@ -1081,44 +1109,132 @@ function cloudReady() {
   var f = _fb();
   return !!(f && f.apps && f.apps.length);
 }
-// True once real keys are in firebase-init.js, regardless of whether the SDK
-// scripts actually loaded - lets cloudErrorMsg() tell "never configured" apart
-// from "SDK failed to load this time" (ad blocker, flaky connection).
+// True once real keys are in firebase-init.js AND clerk-init.js, regardless of
+// whether the SDKs actually loaded - lets cloudErrorMsg() tell "never
+// configured" apart from "SDK failed to load this time" (ad blocker, flaky
+// connection).
 function cloudConfigured() {
-  return typeof window !== "undefined" && window.__RICHY_FB_CONFIGURED__ === true;
+  return typeof window !== "undefined" && window.__RICHY_FB_CONFIGURED__ === true && window.__RICHY_CLERK_CONFIGURED__ === true;
 }
 function cloudErrorMsg() {
   return cloudConfigured() ? CLOUD_CONNECT_MSG : CLOUD_SETUP_MSG;
 }
 function _auth() { return _fb().auth(); }
 function _fsdb() { return _fb().firestore(); }
+function _clerk() {
+  return (typeof window !== "undefined" && window.Clerk) ? window.Clerk : null;
+}
+// Clerk.load() is an async network call (unlike Firebase's synchronous
+// initializeApp), so anything that touches Clerk waits on this promise first.
+function _clerkReady() {
+  return (typeof window !== "undefined" && window.__RICHY_CLERK_READY__) || Promise.reject(new Error("Clerk is not configured."));
+}
+// See the big comment above: keeps Firestore's request.auth populated with
+// the Clerk user id after every sign-in, without the user ever seeing it.
+function _bridgeToFirebase() {
+  var c = _clerk();
+  var cu = c && c.session;
+  if (!cu) return cloudReady() ? _auth().signOut().catch(function() {}) : Promise.resolve();
+  return c.session.getToken().then(function(token) {
+    return fetch("/api/clerk-firebase-token", { headers: { Authorization: "Bearer " + token } });
+  }).then(function(r) { return r.json(); }).then(function(j) {
+    if (!j || !j.ok || !j.token) throw new Error((j && j.error && j.error.message) || "Could not establish a database session.");
+    return _auth().signInWithCustomToken(j.token);
+  });
+}
+// Normalizes a Clerk error into the same { code: "auth/...", message } shape
+// Firebase errors used to have, so the many existing `err.code === "auth/..."`
+// checks throughout the sign-in/account-settings UI keep working unchanged.
+function _clerkErr(e) {
+  var first = (e && e.errors && e.errors[0]) || null;
+  var code = first ? first.code : "";
+  var mapped = "";
+  if (code === "form_password_incorrect") mapped = "auth/wrong-password";
+  else if (code === "form_identifier_not_found") mapped = "auth/user-not-found";
+  else if (code === "form_identifier_exists") mapped = "auth/email-already-in-use";
+  else if (code === "form_password_pwned" || code === "form_password_length_too_short" || code === "form_password_validation_failed") mapped = "auth/weak-password";
+  else if (code === "form_param_format_invalid" || code === "form_identifier_invalid") mapped = "auth/invalid-email";
+  else if (code === "too_many_requests") mapped = "auth/too-many-requests";
+  else if (code === "network_error") mapped = "auth/network-request-failed";
+  var msg = (first && (first.longMessage || first.message)) || (e && e.message) || "Something went wrong. Please try again.";
+  var out = new Error(msg);
+  out.code = mapped;
+  out.message = msg;
+  throw out;
+}
 
 var CLOUD = {
-  // Subscribe to sign-in state. cb receives the Firebase user (or null). Returns
-  // an unsubscribe function. Fires once immediately with the restored session.
+  // Subscribe to sign-in state. cb receives the Clerk user (or null). Returns
+  // an unsubscribe function. Fires once immediately with the restored session -
+  // after first silently bridging to Firebase so Firestore calls are authorized.
   onAuth: function(cb) {
     if (!cloudReady()) { cb(null); return function () {}; }
-    return _auth().onAuthStateChanged(cb);
+    var cancelled = false;
+    var unsub = function() {};
+    _clerkReady().then(function() {
+      if (cancelled) return;
+      var c = _clerk();
+      if (!c) { cb(null); return; }
+      var fire = function() {
+        if (!c.user) { cb(null); return; }
+        _bridgeToFirebase().then(function() { cb(c.user); }).catch(function() { cb(null); });
+      };
+      fire();
+      unsub = c.addListener(fire);
+    }).catch(function() { if (!cancelled) cb(null); });
+    return function() { cancelled = true; unsub(); };
   },
   signUp: function(email, password) {
-    return _auth().createUserWithEmailAndPassword(email, password);
+    return _clerkReady().then(function() {
+      return _clerk().client.signUp.create({ emailAddress: email, password: password });
+    }).then(function(su) {
+      if (su.status !== "complete") {
+        // Clerk's dashboard has "verify at sign-up" turned off per
+        // CLERK_SETUP.md so this should always complete immediately, same as
+        // Firebase's createUserWithEmailAndPassword did.
+        var e = new Error("Sign up could not complete."); e.code = "auth/operation-not-allowed"; throw e;
+      }
+      return _clerk().setActive({ session: su.createdSessionId }).then(function() {
+        // Bridge to Firebase now (not just via the onAuth listener, which fires
+        // asynchronously on its own) - finishSignup() writes the new user's doc
+        // to Firestore right after this resolves, and that write needs
+        // request.auth already populated or the security rules reject it.
+        return _bridgeToFirebase();
+      }).then(function() {
+        return { user: { uid: su.createdUserId } };
+      });
+    }).catch(_clerkErr);
   },
   signIn: function(email, password) {
-    return _auth().signInWithEmailAndPassword(email, password);
+    return _clerkReady().then(function() {
+      return _clerk().client.signIn.create({ identifier: email, password: password });
+    }).then(function(si) {
+      if (si.status !== "complete") {
+        var e = new Error("Sign in could not complete."); e.code = "auth/wrong-password"; throw e;
+      }
+      return _clerk().setActive({ session: si.createdSessionId }).then(function() {
+        return _bridgeToFirebase();
+      });
+    }).catch(_clerkErr);
   },
+  // Google sign-in via Clerk is a full-page redirect (not a popup like
+  // Firebase's signInWithPopup) - the page navigates away to Google and back;
+  // CLOUD.onAuth picks up the new session once Clerk completes the redirect.
   signInGoogle: function() {
-    var provider = new (_fb().auth.GoogleAuthProvider)();
-    return _auth().signInWithPopup(provider);
+    return _clerkReady().then(function() {
+      return _clerk().client.signIn.authenticateWithRedirect({
+        strategy: "oauth_google",
+        redirectUrl: window.location.href,
+        redirectUrlComplete: window.location.href
+      });
+    }).catch(_clerkErr);
   },
   signOut: function() {
-    return cloudReady() ? _auth().signOut() : Promise.resolve();
-  },
-  // A fresh Firebase ID token, used to authenticate the user's own calls to
-  // api/leumi-fintaka.js (the server verifies it and derives uid itself - the
-  // client never gets to assert its own uid to that endpoint).
-  getIdToken: function() {
-    var cu = cloudReady() ? _auth().currentUser : null;
-    return cu ? cu.getIdToken() : Promise.resolve(null);
+    var c = _clerk();
+    var p = c ? c.signOut() : Promise.resolve();
+    return p.catch(function() {}).then(function() {
+      return cloudReady() ? _auth().signOut().catch(function() {}) : Promise.resolve();
+    });
   },
   loadUser: function(uid) {
     return _fsdb().collection("users").doc(uid).get().then(function (snap) {
@@ -1162,32 +1278,41 @@ var CLOUD = {
   },
 
   hasPasswordProvider: function() {
-    var cu = cloudReady() ? _auth().currentUser : null;
-    if (!cu) return false;
-    var pd = cu.providerData || [];
-    for (var i = 0; i < pd.length; i++) {
-      if (pd[i].providerId === "password") return true;
-    }
-    return false;
+    var c = _clerk();
+    var cu = c ? c.user : null;
+    return !!(cu && cu.passwordEnabled);
   },
-  reauthenticate: function(email, oldPw) {
-    var cu = _auth().currentUser;
-    var cred = _fb().auth.EmailAuthProvider.credential(email, oldPw);
-    return cu.reauthenticateWithCredential(cred);
-  },
-  updatePassword: function(newPw) {
-    return _auth().currentUser.updatePassword(newPw);
+  // Clerk verifies the current password AND sets the new one in one call - no
+  // separate reauthenticate step needed the way Firebase required.
+  updatePassword: function(newPw, oldPw) {
+    return _clerkReady().then(function() {
+      var cu = _clerk().user;
+      return cu.updatePassword({ currentPassword: oldPw, newPassword: newPw });
+    }).catch(_clerkErr);
   },
   linkPassword: function(email, pw) {
-    var cu = _auth().currentUser;
-    var cred = _fb().auth.EmailAuthProvider.credential(email, pw);
-    return cu.linkWithCredential(cred);
+    return _clerkReady().then(function() {
+      var cu = _clerk().user;
+      // No currentPassword: this account is Google-only so far.
+      return cu.updatePassword({ newPassword: pw });
+    }).catch(_clerkErr);
   },
   sendPasswordReset: function(email) {
-    return _auth().sendPasswordResetEmail(email);
+    return _clerkReady().then(function() {
+      return _clerk().client.signIn.create({ identifier: email, strategy: "reset_password_email_code" });
+    }).catch(_clerkErr);
   },
+  // NOTE: Clerk requires a newly-added email to be verified (one-time code)
+  // before it can become primary - unlike Firebase's old immediate updateEmail.
+  // This starts that flow; EditEmailView (budget-app.jsx) currently has no
+  // code-entry step, so wire one up before shipping email changes for real.
   updateEmail: function(newEmail) {
-    return _auth().currentUser.updateEmail(newEmail);
+    return _clerkReady().then(function() {
+      var cu = _clerk().user;
+      return cu.createEmailAddress({ email: newEmail });
+    }).then(function(ea) {
+      return ea.prepareVerification({ strategy: "email_code" }).then(function() { return ea; });
+    }).catch(_clerkErr);
   },
 
   // ---- Households (Collab / couples mode) ------------------------------------
@@ -3213,10 +3338,11 @@ function isEmail(s) {
   return t.indexOf("@") > 0 && t.indexOf(".", t.indexOf("@")) > t.indexOf("@") + 1 && t.length >= 6;
 }
 
-var CLOUD_SETUP_MSG = "Cloud sign-in is not configured yet. Add your Firebase keys in firebase-init.js.";
+var CLOUD_SETUP_MSG = "Cloud sign-in is not configured yet. Add your keys in clerk-init.js and firebase-init.js.";
 var CLOUD_CONNECT_MSG = "Couldn't connect to the server. Check your internet connection (or disable any ad blocker/VPN) and try again.";
 
-// Turn a Firebase auth error into a short, human message.
+// Turn a (Clerk error, normalized to Firebase's old "auth/..." codes by
+// _clerkErr) into a short, human message.
 function authMsg(err) {
   var c = (err && err.code) ? err.code : "";
   if (c === "auth/wrong-password" || c === "auth/invalid-credential") return "Wrong email or password.";
@@ -3226,8 +3352,7 @@ function authMsg(err) {
   if (c === "auth/weak-password") return "Password must be at least 6 characters.";
   if (c === "auth/too-many-requests") return "Too many attempts. Wait a moment and try again.";
   if (c === "auth/network-request-failed") return "Network error. Check your connection and try again.";
-  if (c === "auth/popup-blocked") return "Your browser blocked the Google popup. Allow popups and retry.";
-  if (c === "auth/operation-not-allowed") return "This sign-in method isn't enabled in Firebase yet.";
+  if (c === "auth/operation-not-allowed") return "This sign-in method isn't enabled yet.";
   return (err && err.message) ? err.message : "Something went wrong. Please try again.";
 }
 
@@ -3584,17 +3709,16 @@ function AuthScreen(props) {
     });
   }
 
-  // Google sign-in via Firebase popup. First-time Google users get a default
-  // document created by the App's auth listener.
+  // Google sign-in via Clerk - a full-page redirect to Google and back (not a
+  // popup), so the .then below only runs if it fails before the redirect even
+  // starts. First-time Google users get a default document created by the
+  // App's auth listener once they land back here signed in.
   function googleSignIn() {
     setError("");
     if (!cloudReady()) { setError(cloudErrorMsg()); return; }
     setBusy(true);
-    CLOUD.signInGoogle().then(function() {
+    CLOUD.signInGoogle().catch(function(err) {
       setBusy(false);
-    }).catch(function(err) {
-      setBusy(false);
-      if (err && err.code === "auth/popup-closed-by-user") return;
       setError(authMsg(err));
     });
   }
@@ -12777,6 +12901,36 @@ function bizRevenueTrend(biz) {
   if (recent === 0 && prior === 0) verdict = "flat";
   return { recent: round2(recent), prior: round2(prior), verdict: verdict };
 }
+// Cash on hand at the end of each of the last `months` months (oldest first),
+// reconstructed from the dated entry ledger - the same source of truth as
+// businessCash, just sampled at each month-end instead of only "now".
+function bizCashSeries(biz, months) {
+  var n = months || 6;
+  var ents = (biz && biz.entries) || [];
+  var out = [];
+  for (var i = n - 1; i >= 0; i--) {
+    var ym = ymShift(curMonth(), i);
+    var cutoff = ym + "-32";                          // no valid day exceeds 31
+    var bal = ents.reduce(function(s, e) {
+      if ((e.date || "9999") >= cutoff) return s;
+      return s + (e.kind === "withdraw" ? -(e.amount || 0) : (e.amount || 0));
+    }, 0);
+    out.push({ ym: ym, val: round2(bal) });
+  }
+  return out;
+}
+// Revenue booked so far in the current calendar quarter, for the tax set-aside
+// estimate (quarterRevenue * profile.taxRate).
+function bizQuarterRevenue(biz) {
+  var now = new Date();
+  var qStartMonth = Math.floor(now.getUTCMonth() / 3) * 3;
+  var qStart = new Date(Date.UTC(now.getUTCFullYear(), qStartMonth, 1)).toISOString().slice(0, 10);
+  var qNum = Math.floor(now.getUTCMonth() / 3) + 1;
+  var rev = ((biz && biz.entries) || []).reduce(function(s, e) {
+    return s + ((e.kind === "deposit" && e.revenue && (e.date || "") >= qStart) ? (e.amount || 0) : 0);
+  }, 0);
+  return { revenue: round2(rev), quarter: qNum, qStart: qStart };
+}
 
 // ---- Business roadmap -------------------------------------------------------
 // A stage-tuned milestone checklist Richard drafts for every business. The
@@ -17481,6 +17635,12 @@ function BusinessView(props) {
   var _rp2 = useState(false); var replanning = _rp2[0]; var setReplanning = _rp2[1];
   var _del = useState(null); var deleteConfirm = _del[0]; var setDeleteConfirm = _del[1];
   var _delOut = useState(null); var deleteOutrightConfirm = _delOut[0]; var setDeleteOutrightConfirm = _delOut[1];
+  // Overview rebuild: invoices ("Needs attention" / Unpaid stat) and the
+  // editable tax set-aside rate behind the Tax pot stat.
+  var _invAdd = useState(false); var addInvoiceOpen = _invAdd[0]; var setAddInvoiceOpen = _invAdd[1];
+  var _invList = useState(false); var invoicesOpen = _invList[0]; var setInvoicesOpen = _invList[1];
+  var _invForm = useState({ client: "", amount: "", dueDate: "" }); var invForm = _invForm[0]; var setInvForm = _invForm[1];
+  var _taxSheet = useState(false); var taxSheetOpen = _taxSheet[0]; var setTaxSheetOpen = _taxSheet[1];
 
   // Fresh-props ref so async AI callbacks never patch from a stale snapshot
   // (a reply can land after another save has already advanced the array).
@@ -17748,7 +17908,7 @@ function BusinessView(props) {
     var biz = {
       id: "biz_" + Date.now(), name: form.name || "My Business", what: form.what || "",
       icon: form.icon || "briefcase", color: form.color || BIZ_COLORS[0], createdAt: today,
-      profile: profile, plan: plan, categories: categories, entries: entries,
+      profile: profile, plan: plan, categories: categories, entries: entries, invoices: [],
       // Carry the wizard conversation into the account's CFO thread so the
       // owner's setup questions and Richard's answers aren't lost.
       chat: wizChat.slice(-30)
@@ -17869,6 +18029,34 @@ function BusinessView(props) {
     if (!biz || v <= 0) { setRevFor(null); return; }
     props.onSaveBusinesses(patchBiz(bizId, buildRevenuePatch(biz, revForm.label, v, Date.now())));
     setRevFor(null); setRevForm({ label: "", amount: "" });
+  }
+  // ---- Invoices (Needs attention / Unpaid stat) -----------------------------
+  function invField(k, v) { setInvForm(function(p) { var n = {}; for (var kk in p) n[kk] = p[kk]; n[k] = v; return n; }); }
+  function addInvoice(bizId) {
+    var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
+    var amt2 = parseFloat(invForm.amount) || 0;
+    if (!biz || !invForm.client.trim() || amt2 <= 0) return;
+    var inv = { id: Date.now(), client: invForm.client.trim(), amount: round2(amt2), dueDate: invForm.dueDate || today, status: "unpaid" };
+    props.onSaveBusinesses(patchBiz(bizId, { invoices: (biz.invoices || []).concat([inv]) }));
+    setInvForm({ client: "", amount: "", dueDate: "" }); setAddInvoiceOpen(false);
+  }
+  function toggleInvoicePaid(bizId, invId) {
+    var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
+    if (!biz) return;
+    var next = (biz.invoices || []).map(function(inv) { return inv.id === invId ? Object.assign({}, inv, { status: inv.status === "paid" ? "unpaid" : "paid" }) : inv; });
+    props.onSaveBusinesses(patchBiz(bizId, { invoices: next }));
+  }
+  function deleteInvoice(bizId, invId) {
+    var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
+    if (!biz) return;
+    props.onSaveBusinesses(patchBiz(bizId, { invoices: (biz.invoices || []).filter(function(inv) { return inv.id !== invId; }) }));
+  }
+  // ---- Tax set-aside rate (Tax pot stat) -------------------------------------
+  function updateTaxRate(bizId, rawVal) {
+    var n = rawVal === "" ? 0 : Math.max(0, Math.min(100, parseFloat(rawVal) || 0));
+    var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
+    if (!biz) return;
+    props.onSaveBusinesses(patchBiz(bizId, { profile: Object.assign({}, biz.profile, { taxRate: n }) }));
   }
   function updatePlanned(bizId, key, rawVal) {
     var n = rawVal === "" ? 0 : Math.max(0, parseFloat(rawVal) || 0);
@@ -18673,104 +18861,79 @@ function BusinessView(props) {
     var plan = biz.plan || {};
     var health = bizHealth(biz);
     var pl = bizMonthProfit(biz, ym);
-    var pace = bizPace(biz);
     var runway = bizRunway(biz);
     var stage = (biz.profile && biz.profile.stage) || "idea";
     var heroKick = { fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut };
-    var heroCellLbl = { fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut };
-    var heroPanelSt = { flex: "0 0 100%", width: "100%", overflow: "hidden", scrollSnapAlign: "start", padding: "18px 22px", boxSizing: "border-box", position: "relative", display: "flex", flexDirection: "column" };
-    var heroDotOff = (T.bg === DARK_BG) ? "rgba(255,255,255,0.26)" : "rgba(0,0,0,0.16)";
+    var heroKick2 = { fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.orange };
     return (
       <div>
         {backRow("Business", function() { setView("list"); setActiveId(null); })}
-        <div style={{ marginBottom: 4, animation: "rcFadeUp 0.55s ease both" }}>
-          <div style={{ position: "relative", borderRadius: 22, overflow: "hidden", background: T.heroBg, boxShadow: T.heroShadow, height: 206 }}>
-            <div style={{ position: "absolute", top: -70, right: -60, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none", zIndex: 0 }} />
-            <div style={{ position: "absolute", bottom: -70, left: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow2 + ",transparent 65%)", pointerEvents: "none", zIndex: 0 }} />
-            <div ref={heroScrollRef} onScroll={heroOnScroll} className="rc-hero-scroll"
-              style={{ position: "relative", zIndex: 1, display: "flex", height: "100%", width: "100%", overflowX: "auto", overflowY: "hidden", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
 
-              <div style={heroPanelSt}>
-                <div style={{ position: "absolute", top: 16, right: 18, width: 44, height: 44, borderRadius: 14, background: "rgba(255,255,255,0.28)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <SVGIcon id={biz.icon || "briefcase"} size={22} color={T.heroInk} />
-                </div>
-                <div style={heroKick}>{labelOf(STRUCTURES, biz.profile && biz.profile.structure) + " - " + labelOf(STAGES, stage)}</div>
-                <div style={{ fontSize: 24, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.02em", marginTop: 4, paddingRight: 52, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{biz.name}</div>
-                <div style={{ fontSize: 12.5, color: T.heroMut, marginTop: 2, paddingRight: 52, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{biz.what || ""}</div>
-                <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginTop: "auto" }}>
-                  <div>
-                    <div style={{ fontSize: 32, fontWeight: 700, color: bal < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em" }}><CountUp value={bal} /></div>
-                    <div style={{ fontSize: 12, color: T.heroMut, marginTop: 2 }}>cash on hand</div>
-                  </div>
-                  <div style={{ textAlign: "center" }}>
-                    <div style={{ position: "relative", width: 54, height: 54, margin: "0 auto" }}>
-                      <DrawRing size={54} stroke={5} value={health.score} max={100} color={health.color} track="rgba(255,255,255,0.25)" />
-                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: T.heroInk }}>{health.score}</div>
-                    </div>
-                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.heroMut, marginTop: 4 }}>{health.label}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div style={heroPanelSt}>
-                <div style={heroKick}>{"This month - " + ymLabel(ym)}</div>
-                {stage === "idea" ? (
-                  <div style={{ marginTop: 10 }}>
-                    <div style={{ fontSize: 30, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.03em" }}><CountUp value={pl.spend} /></div>
-                    <div style={{ fontSize: 12, color: T.heroMut, marginTop: 2 }}>{"spent of " + dollars(monthly) + " planned - keep the idea stage lean"}</div>
-                  </div>
-                ) : (
-                  <div style={{ marginTop: 10 }}>
-                    <div style={{ fontSize: 30, fontWeight: 700, color: pl.profit < 0 ? T.heroNeg : T.heroPos, letterSpacing: "-0.03em" }}><CountUp value={pl.profit} /></div>
-                    <div style={{ fontSize: 12, color: T.heroMut, marginTop: 2 }}>{"profit this month" + (pl.margin !== null ? " - " + Math.round(pl.margin * 100) + "% margin" : (stage === "launching" && pl.revenue === 0 ? " - your first sale changes everything" : ""))}</div>
-                  </div>
-                )}
-                <div style={{ display: "flex", gap: 14, marginTop: "auto", borderTop: "0.5px solid " + T.heroSep, paddingTop: 10 }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={heroCellLbl}>Revenue</div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: pl.revenue > 0 ? T.heroPos : T.heroInk, marginTop: 3 }}>{dollars(pl.revenue)}</div>
-                  </div>
-                  <div style={{ width: "0.5px", background: T.heroSep }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={heroCellLbl}>Spent</div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: T.heroInk, marginTop: 3 }}>{dollars(pl.spend)}</div>
-                  </div>
-                  <div style={{ width: "0.5px", background: T.heroSep }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={heroCellLbl}>Budget</div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: T.heroInk, marginTop: 3 }}>{dollars(monthly)}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div style={heroPanelSt}>
-                <div style={heroKick}>Runway & pace</div>
-                <div style={{ marginTop: 10 }}>
-                  {runway === null ? (
-                    <div style={{ fontSize: 25, fontWeight: 700, color: T.heroPos, letterSpacing: "-0.02em" }}>Self-sustaining</div>
-                  ) : (
-                    <div style={{ fontSize: 30, fontWeight: 700, color: runway < 2 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em" }}>
-                      <CountUp value={runway} format={function(v) { return (Math.round(v * 10) / 10).toFixed(1); }} />
-                      <span style={{ fontSize: 16, fontWeight: 600 }}> months</span>
-                    </div>
-                  )}
-                  <div style={{ fontSize: 12, color: T.heroMut, marginTop: 2 }}>{runway === null ? "revenue is covering your spending" : "of runway at your current burn"}</div>
-                </div>
-                <div style={{ marginTop: "auto", borderTop: "0.5px solid " + T.heroSep, paddingTop: 10 }}>
-                  <div style={{ fontSize: 12, lineHeight: 1.5, color: pace ? (pace.verdict === "over" ? T.heroNeg : pace.verdict === "under" ? T.heroPos : T.heroInk) : T.heroMut }}>
-                    {pace ? pace.text : "Set a monthly budget to track your spending pace."}
-                  </div>
-                </div>
-              </div>
-
-            </div>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 16, animation: "rcFadeUp 0.5s ease both" }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={heroKick2}>{labelOf(STRUCTURES, biz.profile && biz.profile.structure) + " · " + labelOf(STAGES, stage)}</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.15, marginTop: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{biz.name}</div>
+            {biz.what ? <div style={{ fontSize: 13, color: T.ink2, marginTop: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{biz.what}</div> : null}
           </div>
-          <div style={{ display: "flex", justifyContent: "center", gap: 7, padding: "10px 0 8px" }}>
-            {[0, 1, 2].map(function(i) {
-              return <div key={i} onClick={function() { heroGoPage(i); }} style={{ width: i === heroPage ? 18 : 6, height: 6, borderRadius: 3, cursor: "pointer", transition: "all 0.3s cubic-bezier(0.22,1,0.36,1)", background: i === heroPage ? T.orange : heroDotOff }} />;
-            })}
+          <div style={{ flexShrink: 0, width: 46, height: 46, borderRadius: "50%", background: biz.color || T.orange, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px " + (biz.color || T.orange) + "55" }}>
+            <SVGIcon id={biz.icon || "briefcase"} size={22} color="#fff" />
           </div>
         </div>
+
+        {(function() {
+          var prevPl = bizMonthProfit(biz, ymOffset(1));
+          var momPct = (stage !== "idea" && prevPl.profit !== 0 && isFinite(prevPl.profit)) ? Math.round(((pl.profit - prevPl.profit) / Math.abs(prevPl.profit)) * 100) : null;
+          return (
+            <div style={{ position: "relative", overflow: "hidden", borderRadius: 22, background: T.heroBg, boxShadow: T.heroShadow, padding: "22px 22px 20px", marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.02s both" }}>
+              <div style={{ position: "absolute", top: -70, right: -60, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
+              <div style={{ position: "relative" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span style={heroKick}>{"This month · " + ymLabel(ym)}</span>
+                  {momPct !== null && (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 700, color: momPct >= 0 ? T.heroPos : T.heroNeg, background: T.heroPillBg, padding: "3px 9px", borderRadius: 20 }}>
+                      {(momPct >= 0 ? "+" : "") + momPct + "% MoM"}
+                    </span>
+                  )}
+                </div>
+                {stage === "idea" ? (
+                  <div>
+                    <div style={{ fontSize: 40, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.03em", margin: "11px 0 3px" }}><CountUp value={pl.spend} /></div>
+                    <div style={{ fontSize: 12.5, color: T.heroMut }}>{"spent of " + dollars(monthly) + " planned - keep the idea stage lean"}</div>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ fontSize: 40, fontWeight: 700, color: pl.profit < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em", margin: "11px 0 3px" }}><CountUp value={pl.profit} /></div>
+                    <div style={{ fontSize: 12.5, color: T.heroMut }}>{"after " + dollars(pl.spend) + " in expenses" + (pl.margin !== null ? " · " + Math.round(pl.margin * 100) + "% margin" : "")}</div>
+                  </div>
+                )}
+                <div style={{ height: 1, background: T.heroSep, margin: "16px 0 14px" }} />
+                <div style={{ display: "flex", gap: 14 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: T.heroMut, marginBottom: 4 }}><span style={{ width: 7, height: 7, borderRadius: 2, background: T.heroPos, flexShrink: 0 }} />Income in</div>
+                    <div style={{ fontSize: 17, fontWeight: 700, color: T.heroInk }}>{dollars(pl.revenue)}</div>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: T.heroMut, marginBottom: 4 }}><span style={{ width: 7, height: 7, borderRadius: 2, background: T.heroMut, flexShrink: 0 }} />Money out</div>
+                    <div style={{ fontSize: 17, fontWeight: 700, color: T.heroInk }}>{dollars(pl.spend)}</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14, paddingTop: 12, borderTop: "0.5px solid " + T.heroSep }}>
+                  <div>
+                    <div style={{ fontSize: 20, fontWeight: 700, color: bal < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.02em" }}><CountUp value={bal} /></div>
+                    <div style={{ fontSize: 11, color: T.heroMut, marginTop: 1 }}>cash on hand</div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ position: "relative", width: 34, height: 34 }}>
+                      <DrawRing size={34} stroke={3.5} value={health.score} max={100} color={health.color} track="rgba(255,255,255,0.25)" />
+                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: T.heroInk }}>{health.score}</div>
+                    </div>
+                    <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: T.heroMut }}>{health.label}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         <div style={{ display: "flex", gap: 8, marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.05s both" }}>
           <button onClick={function() { openAction(biz.id, "add"); }}
@@ -18780,6 +18943,42 @@ function BusinessView(props) {
           <button onClick={function() { openAction(biz.id, "withdraw"); }} disabled={bal <= 0}
             style={{ flex: 1, border: "1.5px solid " + (bal <= 0 ? "rgba(0,0,0,0.08)" : T.orange), cursor: bal <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 12, background: "none", color: bal <= 0 ? T.ink3 : T.orange }}>Withdraw</button>
         </div>
+
+        {(function() {
+          var qInfo = bizQuarterRevenue(biz);
+          var taxRate = (biz.profile && biz.profile.taxRate != null) ? biz.profile.taxRate : 25;
+          var taxOwed = round2(qInfo.revenue * (taxRate / 100));
+          var invoices = biz.invoices || [];
+          var unpaidInvoices = invoices.filter(function(i) { return i.status !== "paid"; });
+          var unpaidTotal = round2(unpaidInvoices.reduce(function(s, i) { return s + (i.amount || 0); }, 0));
+          var overdueInvoices = unpaidInvoices.filter(function(i) { return (i.dueDate || "") < today; });
+          var statCardSt = { flex: 1, textAlign: "left", background: T.card, border: "none", borderRadius: 16, padding: "14px 13px", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.07)", fontFamily: UI, cursor: "pointer", minWidth: 0 };
+          var statLabelSt = { fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 9 };
+          var statNumSt = { fontSize: 21, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" };
+          var statSubSt = { fontSize: 10.5, color: T.ink3, marginTop: 4 };
+          return (
+            <div style={{ display: "flex", gap: 8, marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.06s both" }}>
+              <div style={Object.assign({}, statCardSt, { cursor: "default" })}>
+                <div style={statLabelSt}>Runway</div>
+                {runway === null ? <div style={statNumSt}>Self-sustaining</div> : <div style={statNumSt}>{(Math.round(runway * 10) / 10)}<span style={{ fontSize: 12, fontWeight: 600, color: T.ink3 }}> mo</span></div>}
+                <div style={statSubSt}>if income paused</div>
+              </div>
+              <button onClick={function() { setInvoicesOpen(true); }} style={statCardSt}>
+                <div style={statLabelSt}>Unpaid</div>
+                <div style={statNumSt}>{dollars(unpaidTotal)}</div>
+                <div style={Object.assign({}, statSubSt, { color: overdueInvoices.length ? T.red : T.ink3, display: "flex", alignItems: "center", gap: 4 })}>
+                  {overdueInvoices.length > 0 && <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.red, flexShrink: 0 }} />}
+                  {overdueInvoices.length > 0 ? (overdueInvoices.length + " overdue") : (unpaidInvoices.length ? "due soon" : "all caught up")}
+                </div>
+              </button>
+              <button onClick={function() { setTaxSheetOpen(true); }} style={statCardSt}>
+                <div style={statLabelSt}>Tax pot</div>
+                <div style={statNumSt}>{dollars(taxOwed)}</div>
+                <div style={statSubSt}>{"for Q" + qInfo.quarter + " at " + taxRate + "%"}</div>
+              </button>
+            </div>
+          );
+        })()}
 
         {(function() {
           var reviews = biz.reviews || [];
@@ -18889,6 +19088,56 @@ function BusinessView(props) {
                   )}
                 </div>
               )}
+            </Card>
+          );
+        })()}
+
+        {(function() {
+          var series = bizCashSeries(biz, 6);
+          var vals = series.map(function(s) { return s.val; });
+          var mn = Math.min.apply(null, vals.concat([0]));
+          var mx = Math.max.apply(null, vals.concat([0]));
+          var span = (mx - mn) || 1;
+          var lo = mn - span * 0.1, hi = mx + span * 0.1;
+          var W = 300, H = 58;
+          function xOf(i) { return series.length > 1 ? (i / (series.length - 1)) * W : 0; }
+          function yOf(v) { return H - ((v - lo) / (hi - lo)) * H; }
+          var pts = series.map(function(s, i) { return { x: xOf(i), y: yOf(s.val) }; });
+          var line = quadSmooth(pts);
+          var area = line + " L " + W + " " + H + " L 0 " + H + " Z";
+          var last = pts[pts.length - 1];
+          var burn = bizBurn(biz);
+          var gradId = "bizCashG" + biz.id;
+          return (
+            <Card style={{ padding: "16px 18px", marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.07s both" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 3, height: 15, borderRadius: 2, background: T.orange }} />
+                  <span style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>Cash flow</span>
+                </div>
+                <span style={{ fontSize: 12, color: T.ink3 }}>{(runway === null ? "Self-sustaining" : (Math.round(runway * 10) / 10) + " mo runway")}</span>
+              </div>
+              <svg viewBox={"0 0 " + W + " " + H} width="100%" height={H} preserveAspectRatio="none" style={{ display: "block", overflow: "visible" }}>
+                <defs>
+                  <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor={T.orange} stopOpacity="0.22" />
+                    <stop offset="1" stopColor={T.orange} stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <path d={area} fill={"url(#" + gradId + ")"} />
+                <path d={line} fill="none" stroke={T.orange} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                {last && <circle cx={last.x} cy={last.y} r="3.5" fill={T.orange} stroke={T.card} strokeWidth="2" />}
+              </svg>
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 9 }}>
+                <div>
+                  <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em", color: T.ink3, fontWeight: 700 }}>On hand</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: T.ink, marginTop: 2 }}>{dollars(bal)}</div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em", color: T.ink3, fontWeight: 700 }}>Avg burn</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: T.ink, marginTop: 2 }}>{dollars(burn)}<span style={{ fontSize: 11, color: T.ink3, fontWeight: 600 }}>/mo</span></div>
+                </div>
+              </div>
             </Card>
           );
         })()}
@@ -19016,7 +19265,9 @@ function BusinessView(props) {
           var revGoal = (biz.profile && biz.profile.revenueGoal) || 0;
           var catRows = biz.categories.filter(function(c) { return (c.planned || 0) > 0 || bizCatMonthSpent(biz, c.key, ymSel) > 0; });
           var stepSt = function(disabled) { return { width: 26, height: 26, borderRadius: 8, border: "none", background: "rgba(0,0,0,0.05)", cursor: disabled ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: disabled ? 0.35 : 1, padding: 0 }; };
-          var rowSt = { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0" };
+          var maxRE = Math.max(mpl.revenue, mpl.spend, 1);
+          var incBarPct = Math.min(100, (mpl.revenue / maxRE) * 100);
+          var expBarPct = Math.min(100, (mpl.spend / maxRE) * 100);
           return (
             <Card style={{ padding: "16px 18px", marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.08s both" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
@@ -19031,13 +19282,19 @@ function BusinessView(props) {
                   </button>
                 </div>
               </div>
-              <div style={rowSt}>
-                <span style={{ fontSize: 13.5, color: T.ink2 }}>Revenue</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: mpl.revenue > 0 ? T.green : T.ink }}>{dollars(mpl.revenue)}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 11 }}>
+                <span style={{ width: 68, fontSize: 12.5, color: T.ink2, flexShrink: 0 }}>Revenue</span>
+                <div style={{ flex: 1, height: 8, background: "rgba(0,0,0,0.05)", borderRadius: 8, overflow: "hidden" }}>
+                  <div style={{ width: incBarPct + "%", height: "100%", background: T.green, borderRadius: 8, transition: "width 0.5s ease" }} />
+                </div>
+                <span style={{ width: 64, textAlign: "right", fontSize: 13, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(mpl.revenue)}</span>
               </div>
-              <div style={rowSt}>
-                <span style={{ fontSize: 13.5, color: T.ink2 }}>Expenses</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>{dollars(mpl.spend)}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 13 }}>
+                <span style={{ width: 68, fontSize: 12.5, color: T.ink2, flexShrink: 0 }}>Expenses</span>
+                <div style={{ flex: 1, height: 8, background: "rgba(0,0,0,0.05)", borderRadius: 8, overflow: "hidden" }}>
+                  <div style={{ width: expBarPct + "%", height: "100%", background: T.ink3, borderRadius: 8, transition: "width 0.5s ease" }} />
+                </div>
+                <span style={{ width: 64, textAlign: "right", fontSize: 13, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(mpl.spend)}</span>
               </div>
               <div style={{ borderTop: "0.5px solid " + T.sep, marginTop: 4, paddingTop: 8, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <span style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>Profit</span>
@@ -19081,6 +19338,86 @@ function BusinessView(props) {
                 </div>
               )}
             </Card>
+          );
+        })()}
+
+        {(function() {
+          var invoices = biz.invoices || [];
+          var unpaid = invoices.filter(function(i) { return i.status !== "paid"; });
+          var top = unpaid.slice().sort(function(a, b) { return (a.dueDate || "").localeCompare(b.dueDate || ""); }).slice(0, 3);
+          return (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 2px 10px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange }} />
+                  <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Needs attention</span>
+                </div>
+                <button onClick={function() { setInvoicesOpen(true); }} style={{ border: "none", background: "none", fontSize: 12, color: T.ink3, cursor: "pointer", fontFamily: UI }}>Invoices ›</button>
+              </div>
+              {top.length === 0 ? (
+                <Card style={{ padding: "16px 18px", display: "flex", alignItems: "center", gap: 12 }}>
+                  <CatBadge icon="flag" color={T.orange} size={40} soft={true} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>No unpaid invoices</div>
+                    <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Track client invoices and see what's overdue at a glance.</div>
+                  </div>
+                  <button onClick={function() { setAddInvoiceOpen(true); }} style={{ background: T.orangeDim, border: "none", borderRadius: 10, padding: "9px 12px", fontSize: 12, fontWeight: 700, color: T.orange, cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>+ Add</button>
+                </Card>
+              ) : (
+                <Card style={{ padding: "2px 16px" }}>
+                  {top.map(function(inv, i) {
+                    var isOver = (inv.dueDate || "") < today;
+                    var stColor = isOver ? T.red : T.orange;
+                    var stBg = isOver ? T.redDim : T.orangeDim;
+                    var stLabel = isOver ? "Overdue" : "Unpaid";
+                    return (
+                      <button key={inv.id} onClick={function() { setInvoicesOpen(true); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", background: "none", border: "none", padding: "13px 0", cursor: "pointer", textAlign: "left", fontFamily: UI, borderTop: i > 0 ? "0.5px solid " + T.sep : "none" }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 14.5, fontWeight: 600, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{inv.client}</div>
+                          <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>{isOver ? "Was due " + inv.dueDate : "Due " + inv.dueDate}</div>
+                        </div>
+                        <span style={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: stColor, background: stBg, padding: "3px 8px", borderRadius: 7, flexShrink: 0 }}>{stLabel}</span>
+                        <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, whiteSpace: "nowrap", flexShrink: 0, minWidth: 56, textAlign: "right" }}>{dollars(inv.amount)}</div>
+                      </button>
+                    );
+                  })}
+                </Card>
+              )}
+            </div>
+          );
+        })()}
+
+        {(function() {
+          var rows = (biz.entries || []).slice().sort(function(a, b) { return (b.date || "").localeCompare(a.date || "") || ((b.id || 0) - (a.id || 0)); }).slice(0, 6);
+          if (!rows.length) return null;
+          return (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 2px 10px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange }} />
+                  <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Recent activity</span>
+                </div>
+              </div>
+              <Card style={{ padding: "2px 16px" }}>
+                {rows.map(function(e, i) {
+                  var cat = e.catKey ? (biz.categories.filter(function(c) { return c.key === e.catKey; })[0] || null) : null;
+                  var icon = cat ? cat.icon : (e.revenue ? "up" : (e.kind === "withdraw" ? "down" : "up"));
+                  var color = cat ? cat.color : (e.revenue ? T.green : T.ink3);
+                  var neg = e.kind === "withdraw";
+                  var amtColor = e.revenue ? T.green : (neg ? T.ink : T.green);
+                  return (
+                    <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderTop: i > 0 ? "0.5px solid " + T.sep : "none" }}>
+                      <CatBadge icon={icon} color={color} size={38} soft={true} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 14.5, fontWeight: 600, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{e.label || (neg ? "Withdraw" : "Deposit")}</div>
+                        <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>{e.date}</div>
+                      </div>
+                      <div style={{ fontSize: 14.5, fontWeight: 700, color: amtColor, letterSpacing: "-0.02em", whiteSpace: "nowrap", flexShrink: 0 }}>{(neg ? "-" : "+") + dollars(e.amount)}</div>
+                    </div>
+                  );
+                })}
+              </Card>
+            </div>
           );
         })()}
 
@@ -19305,6 +19642,44 @@ function BusinessView(props) {
           <FormRow label="Source (optional)" value={revForm.label} onChange={function(e) { setRevField("label", e.target.value); }} />
           <FormRow label="Amount" value={revForm.amount} onChange={function(e) { setRevField("amount", e.target.value); }} type="number" last={true} />
           <BigBtn label="Record revenue" disabled={!(parseFloat(revForm.amount) > 0)} onPress={function() { if (revFor) logRevenue(revFor); }} />
+        </Overlay>
+
+        <Overlay open={addInvoiceOpen} onClose={function() { setAddInvoiceOpen(false); }} title="Add invoice">
+          <FormRow label="Client" value={invForm.client} onChange={function(e) { invField("client", e.target.value); }} placeholder="Client name" />
+          <FormRow label="Amount" value={invForm.amount} onChange={function(e) { invField("amount", e.target.value); }} type="number" />
+          <FormRow label="Due date" value={invForm.dueDate} onChange={function(e) { invField("dueDate", e.target.value); }} type="date" last={true} />
+          <BigBtn label="Add invoice" disabled={!(invForm.client.trim() && parseFloat(invForm.amount) > 0)} onPress={function() { addInvoice(biz.id); }} />
+        </Overlay>
+
+        <Overlay open={invoicesOpen} onClose={function() { setInvoicesOpen(false); }} title={"Invoices" + (biz ? " - " + biz.name : "")}>
+          <button onClick={function() { setAddInvoiceOpen(true); }}
+            style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 12, padding: "11px 0", marginBottom: 12, background: T.orangeDim, color: T.orange, fontSize: 13.5, fontWeight: 700, fontFamily: UI }}>+ Add invoice</button>
+          {(biz.invoices || []).length === 0 ? (
+            <div style={{ fontSize: 13, color: T.ink3, padding: "10px 2px 16px", lineHeight: 1.5 }}>No invoices yet.</div>
+          ) : (
+            (biz.invoices || []).slice().sort(function(a, b) { return ((a.status === "paid") - (b.status === "paid")) || (a.dueDate || "").localeCompare(b.dueDate || ""); }).map(function(inv, i) {
+              var isOver = inv.status !== "paid" && (inv.dueDate || "") < today;
+              return (
+                <div key={inv.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 0", borderTop: i > 0 ? "0.5px solid " + T.sep : "none" }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: T.ink, textDecoration: inv.status === "paid" ? "line-through" : "none" }}>{inv.client}</div>
+                    <div style={{ fontSize: 11.5, color: isOver ? T.red : T.ink3, marginTop: 1 }}>{inv.status === "paid" ? "Paid" : (isOver ? "Overdue since " + inv.dueDate : "Due " + inv.dueDate)}</div>
+                  </div>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(inv.amount)}</span>
+                  <button onClick={function() { toggleInvoicePaid(biz.id, inv.id); }}
+                    style={{ background: inv.status === "paid" ? "rgba(0,0,0,0.06)" : T.greenDim, border: "none", borderRadius: 8, padding: "6px 10px", fontSize: 11.5, fontWeight: 700, color: inv.status === "paid" ? T.ink2 : T.green, cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>{inv.status === "paid" ? "Unpay" : "Mark paid"}</button>
+                  <button onClick={function() { deleteInvoice(biz.id, inv.id); }} style={{ background: "none", border: "none", padding: 4, cursor: "pointer", display: "flex", flexShrink: 0 }}><SVGIcon id="trash" size={14} color={T.ink3} /></button>
+                </div>
+              );
+            })
+          )}
+        </Overlay>
+
+        <Overlay open={taxSheetOpen} onClose={function() { setTaxSheetOpen(false); }} title="Tax set-aside">
+          <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginBottom: 10 }}>The share of revenue Richard estimates you should set aside for taxes each quarter.</div>
+          <FormRow label="Set-aside rate (%)" value={getDetailEdit(biz.id, "taxRate", (biz.profile && biz.profile.taxRate != null) ? biz.profile.taxRate : 25)}
+            onChange={function(e) { setDetailEdit(biz.id, "taxRate", e.target.value); }} type="number" last={true} />
+          <BigBtn label="Save" onPress={function() { updateTaxRate(biz.id, getDetailEdit(biz.id, "taxRate", 25)); clearDetailEdit(biz.id, "taxRate"); setTaxSheetOpen(false); }} />
         </Overlay>
       </div>
     );
@@ -20869,20 +21244,29 @@ function EditEmailView(props) {
   var _em = useState(props.currentEmail || ""); var newEmail = _em[0]; var setNewEmail = _em[1];
   var _op = useState(""); var oldPw = _op[0]; var setOldPw = _op[1];
   var _err = useState(""); var err = _err[0]; var setErr = _err[1];
+  var _nt = useState(""); var notice = _nt[0]; var setNotice = _nt[1];
   var _ld = useState(false); var loading = _ld[0]; var setLoading = _ld[1];
   var _sh = useState(false); var showPw = _sh[0]; var setShowPw = _sh[1];
   var hasPw = props.hasPw;
 
-  function doUpdate(em) {
+  function handleSubmit() {
+    setErr(""); setNotice("");
+    var em = newEmail.trim().toLowerCase();
+    if (!isEmail(em)) { setErr("Enter a valid email address."); return; }
+    if (em === (props.currentEmail || "").toLowerCase()) { props.onBack(); return; }
+    if (hasPw && !oldPw) { setErr("Enter your current password to confirm."); return; }
+    setLoading(true);
+    // Clerk sends a verification code to the new address before it becomes the
+    // account's primary email - unlike Firebase's old instant updateEmail, this
+    // doesn't take effect the moment the request succeeds, so tell the user to
+    // expect the email rather than claiming the change already happened.
     CLOUD.updateEmail(em).then(function() {
       setLoading(false);
-      props.onSave(em);
+      setNotice("We sent a verification code to " + em + ". Check your inbox to finish changing your email.");
     }).catch(function(e) {
       setLoading(false);
       var code = e && e.code;
-      if (code === "auth/requires-recent-login") {
-        setErr("Please sign out and sign back in, then try again.");
-      } else if (code === "auth/email-already-in-use") {
+      if (code === "auth/email-already-in-use") {
         setErr("That email is already in use.");
       } else if (code === "auth/invalid-email") {
         setErr("That doesn't look like a valid email.");
@@ -20890,30 +21274,6 @@ function EditEmailView(props) {
         setErr("Something went wrong. Please try again.");
       }
     });
-  }
-
-  function handleSubmit() {
-    setErr("");
-    var em = newEmail.trim().toLowerCase();
-    if (!isEmail(em)) { setErr("Enter a valid email address."); return; }
-    if (em === (props.currentEmail || "").toLowerCase()) { props.onBack(); return; }
-    if (hasPw && !oldPw) { setErr("Enter your current password to confirm."); return; }
-    setLoading(true);
-    if (hasPw) {
-      CLOUD.reauthenticate(props.currentEmail, oldPw).then(function() {
-        doUpdate(em);
-      }).catch(function(e) {
-        setLoading(false);
-        var code = e && e.code;
-        if (code === "auth/wrong-password" || code === "auth/invalid-credential") {
-          setErr("Current password is incorrect.");
-        } else {
-          setErr("Something went wrong. Please try again.");
-        }
-      });
-    } else {
-      doUpdate(em);
-    }
   }
 
   var inputStyle = { width: "100%", fontSize: 16, color: T.ink, background: "none", border: "none", outline: "none", fontFamily: UI, padding: 0, boxSizing: "border-box" };
@@ -20944,6 +21304,7 @@ function EditEmailView(props) {
           </div>
         ) : null}
         {err ? <div style={{ color: T.red, fontSize: 13, marginTop: 14 }}>{err}</div> : null}
+        {notice ? <div style={{ color: T.green, fontSize: 13, marginTop: 14 }}>{notice}</div> : null}
       </Card>
       <BigBtn label={loading ? "Saving..." : "Save email"} onPress={handleSubmit} disabled={loading || !newEmail.trim()} />
     </div>
@@ -21045,9 +21406,7 @@ function PasswordView(props) {
     if (hasPw && !oldPw) { setErr("Enter your current password."); return; }
     setLoading(true);
     if (hasPw) {
-      CLOUD.reauthenticate(props.email, oldPw).then(function() {
-        return CLOUD.updatePassword(newPw);
-      }).then(function() {
+      CLOUD.updatePassword(newPw, oldPw).then(function() {
         setLoading(false);
         props.onDone(false);
       }).catch(function(e) {
@@ -21824,22 +22183,23 @@ export default function App() {
     return { tx: [], budgets: [], goals: [], trips: [], savings: [], businesses: [], investing: [], debts: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: email, theme: "blue" };
   }
 
-  // Firebase Auth is the single source of truth for the session. It restores the
+  // Clerk is the single source of truth for the session. It restores the
   // signed-in user on reload and fires whenever they sign in or out.
   useEffect(function() {
     if (!cloudReady()) { setAuthChecked(true); return function () {}; }
-    var unsub = CLOUD.onAuth(function(fbUser) {
+    var unsub = CLOUD.onAuth(function(cu) {
       // Signed out, or email signup (which builds its own doc): reveal the UI now.
-      if (!fbUser) { setAuthChecked(true); return; }       // -> AuthScreen shows
+      if (!cu) { setAuthChecked(true); return; }       // -> AuthScreen shows
       if (window.__cbSignup) { setAuthChecked(true); return; }
+      var email = (cu.primaryEmailAddress && cu.primaryEmailAddress.emailAddress) || "";
       // A session exists. Keep showing the loading screen (NOT the AuthScreen)
       // until the user's data + theme are loaded, so we never flash "sign in"
       // or the default light theme to an already-signed-in user.
-      CLOUD.loadUser(fbUser.uid).then(function(data) {
+      CLOUD.loadUser(cu.id).then(function(data) {
         if (!data) {
-          var nm = fbUser.displayName || (fbUser.email ? fbUser.email.split("@")[0] : "there");
-          data = defaultBlob(nm, fbUser.email || "");
-          CLOUD.saveUser(fbUser.uid, data);
+          var nm = cu.fullName || (email ? email.split("@")[0] : "there");
+          data = defaultBlob(nm, email);
+          CLOUD.saveUser(cu.id, data);
         }
         blobRef.current = data;
         // If user is in a household, load and merge shared data.
@@ -21850,14 +22210,9 @@ export default function App() {
         } else {
           loadData(data);
         }
-        setUser(data.displayName || fbUser.email || "there");
-        setAccountKey(fbUser.uid);
-        var _pd = fbUser.providerData || [];
-        var _hasPwProv = false;
-        for (var _pi = 0; _pi < _pd.length; _pi++) {
-          if (_pd[_pi].providerId === "password") { _hasPwProv = true; break; }
-        }
-        setHasPw(_hasPwProv);
+        setUser(data.displayName || email || "there");
+        setAccountKey(cu.id);
+        setHasPw(!!cu.passwordEnabled);
         setAuthChecked(true);
       }).catch(function() { setAuthChecked(true); });
     });
@@ -21913,8 +22268,10 @@ export default function App() {
   }, [accountKey, categories, folders]);
 
   function myEmail() {
-    var cu = cloudReady() ? _auth().currentUser : null;
-    return ((cu && cu.email) || (blobRef.current && blobRef.current.email) || "").toLowerCase();
+    var c = _clerk();
+    var cu = c ? c.user : null;
+    var em = cu && cu.primaryEmailAddress && cu.primaryEmailAddress.emailAddress;
+    return (em || (blobRef.current && blobRef.current.email) || "").toLowerCase();
   }
   function meAsMember() {
     return { uid: accountKey, name: user || "", email: myEmail() };
