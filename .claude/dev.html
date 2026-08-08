@@ -176,6 +176,13 @@ fetchSource(1).then(function(src){
     el = React.createElement(GoalsTripsWrapper, {});
   } else if (view === "appearance") {
     el = React.createElement(AppearanceView, { theme: qs.get("theme") || "purple", onThemeChange: function(){}, onBack: function(){} });
+  } else if (view === "periodMode") {
+    function PeriodModeHarness() {
+      var _pm = React.useState(qs.get("pm") || "calendar"); var pm = _pm[0]; var setPm = _pm[1];
+      window.__periodMode = function(){ return pm; };
+      return React.createElement(PeriodModeView, { periodMode: pm, onPeriodModeChange: function(v){ setPm(v); }, onBack: function(){ window.__clicked = "back"; } });
+    }
+    el = React.createElement(PeriodModeHarness, {});
   } else if (view === "profile") {
     var endedTrip = { id: 88, name: "Paris Weekend", destination: "Paris", days: 3, startDate: "2026-06-01", style: "comfort", total: 1200, icon: "umbrella", ended: true, endedAt: "2026-06-05", reserved: false, reserveTxId: null, advisorTips: [], allocations: [{ key: "food", label: "Food", icon: "food", color: "#27A85F", planned: 300, spent: 210, entries: [] }] };
     var profileTrips = mockTrips.concat(qs.get("seed") ? [endedTrip] : []);
@@ -632,6 +639,9 @@ fetchSource(1).then(function(src){
       window.__dismissedTips = function(){ return dismissedTips; };
       return React.createElement(Overview, {
         tx: qs.get("fresh") ? [] : mockTx, goals: mockGoals, budgets: [], categories: mockCats, businesses: ovBiz, trips: mockTrips, username: "Alon", plan: "",
+        periodMode: qs.get("pm") || "calendar",
+        periodCustomStart: qs.get("pcs") || "",
+        periodCustomEnd: qs.get("pce") || "",
         debts: used ? [{ id: "d1", name: "Visa card", balance: 4200, apr: 22, minPayment: 120 }] : [],
         householdId: used ? "hh_mock" : null,
         bankSync: used ? { enabled: true } : null,

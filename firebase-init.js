@@ -35,4 +35,12 @@ var firebaseConfig = {
   if (!firebase.apps || !firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
   }
+  // Offline data: Firestore mirrors the user's documents into IndexedDB, so a
+  // signed-in user can open the app with no connection - reads come from the
+  // local copy and writes queue up and sync when the network returns. Must run
+  // before the first Firestore call. Failures (private browsing, unsupported
+  // browser, many open tabs) are fine: the app just stays online-only.
+  try {
+    firebase.firestore().enablePersistence({ synchronizeTabs: true }).catch(function () {});
+  } catch (e) {}
 })();

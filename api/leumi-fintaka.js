@@ -21,13 +21,14 @@
 // and persists that itself through its own normal save() path.
 //
 // One-time OAuth handshake, all against this single endpoint:
-//   GET  ?action=connect              (auth: Firebase ID token) -> { ok, url }
+//   GET  ?action=connect              (auth: Clerk session token) -> { ok, url }
 //        client redirects the whole page to `url`
 //   GET  ?flow=callback&code=&state=  (Leumi redirects here)     -> 302 back to the app
-//   GET  ?action=status               (auth: Firebase ID token) -> safe status only
-//   POST ?action=sync                 (auth: Firebase ID token, or cron secret + cron=1)
-//   POST ?action=disconnect           (auth: Firebase ID token)
+//   GET  ?action=status               (auth: Clerk session token) -> safe status only
+//   POST ?action=sync                 (auth: Clerk session token, or cron secret + cron=1)
+//   POST ?action=disconnect           (auth: Clerk session token)
 var admin = require("firebase-admin");
+var clerk = require("@clerk/backend");
 var nodeCrypto = require("crypto");
 
 function initAdmin() {
@@ -76,15 +77,19 @@ function pkcePair() {
 
 // ---- auth: who is calling us -------------------------------------------------
 // Every user-triggered action (connect/status/sync/disconnect) is authenticated
-// by verifying the caller's own Firebase ID token, so a client can only ever
-// act on its own uid - the uid is never trusted from the request body/query.
+// by verifying the caller's own Clerk session token, so a client can only ever
+// act on its own uid - the uid (the Clerk user id, same id space users/{uid}
+// docs are keyed by - see api/clerk-firebase-token.js) is never trusted from
+// the request body/query.
 async function uidFromRequest(req) {
   var hdr = req.headers.authorization || "";
   var m = /^Bearer (.+)$/.exec(hdr);
   if (!m) return null;
+  var secretKey = process.env.CLERK_SECRET_KEY;
+  if (!secretKey) return null;
   try {
-    var decoded = await admin.auth().verifyIdToken(m[1]);
-    return decoded.uid;
+    var verified = await clerk.verifyToken(m[1], { secretKey: secretKey });
+    return verified.sub || null;
   } catch (e) {
     return null;
   }
@@ -205,8 +210,19 @@ async function syncOneConnection(db, c, uid, conn) {
   return fresh.length;
 }
 
+// CORS: reflect only trusted origins (prod, Vercel previews, local dev harness).
+var PROD_ORIGIN = "https://richy-mgkl.vercel.app";
+function corsOrigin(req) {
+  var o = req.headers.origin || "";
+  if (o === PROD_ORIGIN) return o;
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(o)) return o;
+  if (/^https:\/\/richy-[a-z0-9]+(-[a-z0-9-]+)?\.vercel\.app$/.test(o)) return o;
+  return PROD_ORIGIN;
+}
+
 module.exports = async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", corsOrigin(req));
+  res.setHeader("Vary", "Origin");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   if (req.method === "OPTIONS") { res.status(200).end(); return; }

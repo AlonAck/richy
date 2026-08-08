@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<!-- DEV HARNESS ONLY. Production serves index.html + the precompiled
+     /dist/app.js written by build.mjs - this file's runtime Babel + eval
+     pipeline exists so local dev (no node on this machine) still works. -->
 <title>Richy - Preview</title>
 <link rel="manifest" href="/manifest.webmanifest"/>
 <meta name="theme-color" content="#8970C6"/>
@@ -45,6 +48,9 @@
       var tc = document.querySelector('meta[name="theme-color"]');
       if (tc) tc.setAttribute("content", bg);
     }
+    // Mirror of applyLangDir(): RTL users never see an LTR flash on boot.
+    var lang = localStorage.getItem("cb_lang");
+    if (lang === "he" || lang === "ar") document.documentElement.dir = "rtl";
   } catch (e) {}
 })();
 </script>
@@ -69,11 +75,18 @@ if ("serviceWorker" in navigator) {
   });
 }
 </script>
-<!-- Firebase (compat build exposes a global "firebase" the app uses for auth + Firestore). -->
+<!-- Firebase (compat build exposes a global "firebase"). Auth here is used only
+     by the invisible Clerk->Firebase bridge below (signInWithCustomToken) so
+     Firestore's security rules keep working; Firestore is the real database. -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="/firebase-init.js"></script>
+<!-- Clerk (exposes a global "Clerk") - this is the auth UI/UX the user actually sees.
+     Not async/defer: clerk-init.js (next) needs window.Clerk to exist the
+     instant it runs, same as the Firebase scripts above. -->
+<script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" crossorigin="anonymous"></script>
+<script src="/clerk-init.js"></script>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
@@ -121,7 +134,10 @@ fetchApp(0).then(function(src){
   var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
   var PieChart = RC.PieChart, Pie = RC.Pie, Cell = RC.Cell, ResponsiveContainer = RC.ResponsiveContainer;
   eval(out);
-  ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+  var tree = (typeof ErrorBoundary !== "undefined")
+    ? React.createElement(ErrorBoundary, null, React.createElement(App))
+    : React.createElement(App);
+  ReactDOM.createRoot(document.getElementById("root")).render(tree);
 }).catch(function(e){
   document.getElementById("err").textContent = "Preview error:\n" + (e && e.stack ? e.stack : e);
 });

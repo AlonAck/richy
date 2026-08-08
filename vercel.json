@@ -1,8 +1,7 @@
 {
-  "version": 2,
-  "rewrites": [
-    { "source": "/", "destination": "/preview.html" }
-  ],
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
+  "outputDirectory": "public",
   "crons": [
     { "path": "/api/leumi-fintaka?action=sync&cron=1", "schedule": "0 6 * * *" }
   ]

@@ -1,21 +1,77 @@
+// Anthropic proxy for Richard (the AI advisor). Locked down: every request must
+// carry a valid Clerk session token (same verifyToken pattern as
+// api/clerk-firebase-token.js), so only signed-in Richy users can spend the
+// API key - an anonymous caller who finds this URL gets a 401, not a free relay.
+var clerk = require("@clerk/backend");
+
+// CORS: reflect only trusted origins. Production + Vercel previews + the local
+// dev harness (which calls the deployed API cross-origin - see callClaude()).
+var PROD_ORIGIN = "https://richy-mgkl.vercel.app";
+function corsOrigin(req) {
+  var o = req.headers.origin || "";
+  if (o === PROD_ORIGIN) return o;
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(o)) return o;
+  if (/^https:\/\/richy-[a-z0-9]+(-[a-z0-9-]+)?\.vercel\.app$/.test(o)) return o;
+  return PROD_ORIGIN;
+}
+
+// Best-effort per-user rate limit. In-memory, so it resets per warm serverless
+// instance - not a hard guarantee, but it turns "unlimited" into "bounded" for
+// the common single-instance case. 30 requests per 5 minutes per user.
+var RATE_MAX = 30;
+var RATE_WINDOW_MS = 5 * 60 * 1000;
+var hits = {};
+function rateLimited(uid) {
+  var now = Date.now();
+  var arr = (hits[uid] || []).filter(function (t) { return now - t < RATE_WINDOW_MS; });
+  arr.push(now);
+  hits[uid] = arr;
+  return arr.length > RATE_MAX;
+}
+
 module.exports = async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", corsOrigin(req));
+  res.setHeader("Vary", "Origin");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
   if (req.method === "OPTIONS") { res.status(200).end(); return; }
-  if (req.method !== "POST") { res.status(405).json({ error: "Method not allowed" }); return; }
+  if (req.method !== "POST") { res.status(405).json({ error: { type: "method_not_allowed", message: "Method not allowed" } }); return; }
 
   var apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     res.status(500).json({ error: { type: "config_error", message: "ANTHROPIC_API_KEY is not set in environment variables." } });
     return;
   }
+  var secretKey = process.env.CLERK_SECRET_KEY;
+  if (!secretKey) {
+    res.status(500).json({ error: { type: "config_error", message: "CLERK_SECRET_KEY is not set." } });
+    return;
+  }
+
+  // ---- who is calling ---------------------------------------------------------
+  var hdr = req.headers.authorization || "";
+  var m = /^Bearer (.+)$/.exec(hdr);
+  if (!m) { res.status(401).json({ error: { type: "unauthenticated", message: "Sign in to talk to Richard." } }); return; }
+  var uid;
+  try {
+    var verified = await clerk.verifyToken(m[1], { secretKey: secretKey });
+    uid = verified.sub;
+    if (!uid) throw new Error("Token had no subject.");
+  } catch (e) {
+    res.status(401).json({ error: { type: "unauthenticated", message: "Your session expired. Sign in again." } });
+    return;
+  }
+  if (rateLimited(uid)) {
+    res.status(429).json({ error: { type: "rate_limited", message: "Richard needs a short breather - try again in a few minutes." } });
+    return;
+  }
 
   var body = req.body;
   var messages = body.messages || [];
   var system = body.system || "";
-  var maxTokens = body.maxTokens || 800;
+  // Hard cap so a tampered client can't request unbounded output on our bill.
+  var maxTokens = Math.min(Math.max(parseInt(body.maxTokens, 10) || 800, 1), 2000);
   // Callers may request a specific model (e.g. Opus for the deep stock scout,
   // Sonnet for everything else). Whitelist to keep the proxy from being turned
   // into an open relay for arbitrary model strings.

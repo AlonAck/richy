@@ -1,0 +1,18 @@
+{
+  "appId": "com.richy.app",
+  "appName": "Richy",
+  "webDir": "public",
+  "backgroundColor": "#F7F3EE",
+  "ios": {
+    "contentInset": "automatic",
+    "backgroundColor": "#F7F3EE"
+  },
+  "server": {
+    "allowNavigation": [
+      "richy-mgkl.vercel.app",
+      "www.gstatic.com",
+      "cdn.jsdelivr.net",
+      "unpkg.com"
+    ]
+  }
+}
