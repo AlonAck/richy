@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Richy - App Store screenshot harness</title>
+<!--
+  DEV TOOL, never shipped (build.mjs copies an explicit file list into public/).
+
+  Renders the real app, signed in, with a realistic demo account so App Store
+  screenshots can be captured without touching production data or needing a
+  Clerk login. Firebase and Clerk are deliberately NOT loaded, so cloudReady()
+  is false and every CLOUD write is a no-op - this harness physically cannot
+  reach the live database.
+
+  USE:
+    .claude/serve.ps1  ->  http://localhost:8899/.claude/shots.html
+    Add ?screen=overview|activity|budgets|goals|advisor|notes to jump tabs.
+    Add &dark=1 for dark mode.
+    Add &device=67|55 to frame at App Store aspect ratios.
+
+  On the Mac, capture the final PNGs from the iOS Simulator instead (exact
+  pixel sizes, real status bar) - see NATIVE_BUILD.md. This harness is for
+  composing and reviewing the shots.
+
+  NOTE: the hero balance counts up 0 -> value via requestAnimationFrame. In a
+  headless or backgrounded browser rAF never ticks, so the big number can sit
+  at $0.00 - that is the environment, not the app. In a normal visible window
+  (and in the Simulator) it lands on the real figure. Give it ~1s before
+  capturing.
+-->
+<style>
+  html,body{margin:0;background:#5a5148;font-family:-apple-system,system-ui,sans-serif;}
+  body.plain{background:#F7F3EE;}
+  #stage{margin:0 auto;background:#F7F3EE;overflow:hidden;position:relative;}
+  #stage.dark{background:#131110;}
+  #root{width:100%;height:100%;overflow-y:auto;}
+  #err{white-space:pre-wrap;font-family:monospace;color:#fff;padding:16px;font-size:12px;}
+  #bar{position:fixed;left:0;right:0;bottom:0;background:rgba(0,0,0,0.82);color:#fff;font-size:12px;padding:8px 12px;z-index:99999;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  #bar a{color:#F0C46A;text-decoration:none;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,0.08);}
+  #bar b{color:#9aa;font-weight:600;}
+</style>
+</head>
+<body>
+<div id="stage"><div id="root"></div></div>
+<div id="err"></div>
+<div id="bar">
+  <b>screen:</b>
+  <a href="?screen=overview">overview</a>
+  <a href="?screen=activity">activity</a>
+  <a href="?screen=budgets">budgets</a>
+  <a href="?screen=goals">goals</a>
+  <a href="?screen=advisor">advisor</a>
+  <a href="?screen=notes">notes</a>
+  <b>| mode:</b>
+  <a href="?screen=overview&dark=1">dark</a>
+  <b>| frame:</b>
+  <a href="?screen=overview&device=67">6.7"</a>
+  <a href="?screen=overview&device=55">5.5"</a>
+  <a href="?screen=overview&device=free">free</a>
+</div>
+
+<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+<script>
+var Q = new URLSearchParams(location.search);
+var SCREEN = Q.get("screen") || "overview";
+var DARK = Q.get("dark") === "1";
+var DEVICE = Q.get("device") || "67";
+
+// Frame the stage at the App Store aspect ratios (logical points; capture at
+// 3x in the Simulator for the exact 1290x2796 / 1242x2208 pixel sizes).
+var FRAMES = { "67": [430, 932], "55": [414, 736] };
+(function () {
+  var stage = document.getElementById("stage");
+  if (DARK) { stage.className = "dark"; localStorage.setItem("cb_dark", "1"); }
+  else { localStorage.setItem("cb_dark", "0"); }
+  if (FRAMES[DEVICE]) {
+    stage.style.width = FRAMES[DEVICE][0] + "px";
+    stage.style.height = FRAMES[DEVICE][1] + "px";
+    stage.style.marginTop = "24px";
+    stage.style.boxShadow = "0 20px 60px rgba(0,0,0,0.45)";
+  } else {
+    document.body.className = "plain";
+    stage.style.width = "100%";
+    stage.style.height = "100vh";
+  }
+})();
+
+// ---- Demo account -----------------------------------------------------------
+// Realistic but obviously fictional. Dates are generated relative to today so
+// the shots never look stale.
+//
+// Everything is anchored INSIDE the current month: the dashboard's headline
+// figures (income, spent, savings rate, budget progress) are all month-scoped,
+// so a salary dated "21 days ago" would land in last month and render $0
+// income. dom(f) spreads a transaction across the part of this month that has
+// actually elapsed, so the shots look right on the 3rd or the 28th.
+var TODAY = new Date();
+var DAY_OF_MONTH = TODAY.getDate();
+// Format LOCAL Y-M-D. toISOString() would convert to UTC first, which in any
+// timezone ahead of UTC pushes local midnight back into the previous day (and,
+// on the 1st, the previous month) - that silently emptied the month totals.
+function ymd(t) {
+  var m = String(t.getMonth() + 1), day = String(t.getDate());
+  return t.getFullYear() + "-" + (m.length < 2 ? "0" + m : m) + "-" + (day.length < 2 ? "0" + day : day);
+}
+function dom(f) {                       // f: 0 = 1st of month, 1 = today
+  var day = Math.max(1, Math.round(1 + f * (DAY_OF_MONTH - 1)));
+  return ymd(new Date(TODAY.getFullYear(), TODAY.getMonth(), day));
+}
+function d(daysAgo) {                   // for dates that may sit outside the month
+  var t = new Date(); t.setDate(t.getDate() - daysAgo);
+  return ymd(t);
+}
+var CATS = [
+  { id: "c_food", name: "Food", color: "#C8673A", icon: "food", folderId: "f_living" },
+  { id: "c_home", name: "Home", color: "#5A7D9A", icon: "home", folderId: "f_living" },
+  { id: "c_transport", name: "Transport", color: "#2799C8", icon: "car", folderId: "f_living" },
+  { id: "c_fun", name: "Fun", color: "#AF52DE", icon: "film", folderId: "f_life" },
+  { id: "c_health", name: "Health", color: "#27A85F", icon: "heart", folderId: "f_life" },
+  { id: "c_shop", name: "Shopping", color: "#E0556E", icon: "cart", folderId: "f_life" },
+  { id: "c_coffee", name: "Coffee", color: "#B0894E", icon: "coffee", folderId: "f_life" },
+  { id: "c_income", name: "Salary", color: "#27A85F", icon: "coins", folderId: "f_income" }
+];
+var FOLDERS = [
+  { id: "f_living", name: "Living" }, { id: "f_life", name: "Lifestyle" }, { id: "f_income", name: "Income" }
+];
+var TX = [
+  { type: "income", amount: 5200, label: "Monthly salary", catId: "c_income", category: "Salary", date: dom(0), id: 1001, repeat: "monthly", pending: false },
+  { type: "expense", amount: 1450, label: "Rent", catId: "c_home", category: "Home", date: dom(0.02), id: 1002, repeat: "monthly", pending: false },
+  { type: "expense", amount: 240, label: "Gym membership", catId: "c_health", category: "Health", date: dom(0.08), id: 1006, repeat: "monthly", pending: false },
+  { type: "expense", amount: 15.99, label: "Netflix", catId: "c_fun", category: "Fun", date: dom(0.14), id: 1008, repeat: "monthly", pending: false },
+  { type: "expense", amount: 128.4, label: "Whole Foods", catId: "c_food", category: "Food", date: dom(0.25), id: 1003, repeat: "none", pending: false },
+  { type: "expense", amount: 62.15, label: "Shell", catId: "c_transport", category: "Transport", date: dom(0.36), id: 1004, repeat: "none", pending: false },
+  { type: "expense", amount: 18.9, label: "Blue Bottle", catId: "c_coffee", category: "Coffee", date: dom(0.45), id: 1005, repeat: "none", pending: false },
+  { type: "expense", amount: 89, label: "Uniqlo", catId: "c_shop", category: "Shopping", date: dom(0.55), id: 1009, repeat: "none", pending: false },
+  { type: "expense", amount: 74.5, label: "Trader Joe's", catId: "c_food", category: "Food", date: dom(0.66), id: 1007, repeat: "none", pending: false },
+  { type: "expense", amount: 32.7, label: "Dinner - Nori", catId: "c_food", category: "Food", date: dom(0.78), id: 1010, repeat: "none", pending: false },
+  { type: "expense", amount: 5.4, label: "Blue Bottle", catId: "c_coffee", category: "Coffee", date: dom(0.88), id: 1011, repeat: "none", pending: false },
+  { type: "expense", amount: 46.2, label: "Metro card", catId: "c_transport", category: "Transport", date: dom(0.95), id: 1012, repeat: "none", pending: false },
+  { type: "expense", amount: 12.8, label: "Lunch", catId: "c_food", category: "Food", date: dom(1), id: 1013, repeat: "none", pending: false }
+];
+var DEMO = {
+  displayName: "Alon",
+  email: "demo@richy.app",
+  dob: "1996-04-12",
+  lang: "en",
+  currency: "$",
+  theme: "blue",
+  darkMode: DARK,
+  onboardingDone: true,
+  tx: TX,
+  categories: CATS,
+  folders: FOLDERS,
+  budgets: [
+    { catId: "c_food", limit: 600 },
+    { catId: "c_transport", limit: 250 },
+    { catId: "c_fun", limit: 150 },
+    { catId: "c_coffee", limit: 80 },
+    { catId: "c_shop", limit: 300 }
+  ],
+  goals: [
+    { id: 2001, name: "Emergency fund", target: 12000, saved: 7400, deadline: "", icon: "shield", color: "#27A85F" },
+    { id: 2002, name: "Japan trip", target: 4500, saved: 1850, deadline: d(-180), icon: "plane", color: "#2799C8" },
+    { id: 2003, name: "New laptop", target: 2400, saved: 2400, deadline: "", icon: "laptop", color: "#8B6CEF" }
+  ],
+  notes: [
+    { id: 3001, dir: "owed", amount: 240, label: "Dana - concert tickets", date: dom(0.3) },
+    { id: 3002, dir: "owe", amount: 85, label: "Yoni - dinner", date: dom(0.7) }
+  ],
+  savings: [
+    { id: 4001, name: "Emergency Fund", icon: "shield", color: "#27A85F", entries: [
+      { id: 1, kind: "deposit", amount: 7400, label: "Built up over time", date: d(60) }
+    ] }
+  ],
+  trips: [], businesses: [], investing: [], decisions: [],
+  foundMoney: { tally: 0, dismissed: [], acted: [] },
+  richardNotes: "Saving for a Japan trip, wants to stop eating out so much."
+};
+
+// ---- Boot the real app, signed in -------------------------------------------
+fetch("/budget-app.jsx?t=" + Date.now()).then(function (r) { return r.text(); }).then(function (src) {
+  var code = src
+    .replace(/^\s*import[^\n]*\n/gm, "")
+    .replace(/export default function App/, "function App");
+
+  // Auto sign-in: on the first render with no user, hand the demo blob to the
+  // app's own handleLogin, then jump to the requested tab. Uses the real code
+  // path, so what gets screenshotted is genuinely the app.
+  var gate = "if (!user) return <AuthScreen onLogin={handleLogin} />;";
+  if (code.indexOf(gate) === -1) throw new Error("Auth gate not found - budget-app.jsx changed, update shots.html");
+  code = code.replace(gate,
+    "if (!user) { if (!window.__shotFired) { window.__shotFired = 1; " +
+    "setTimeout(function(){ handleLogin(window.__DEMO.displayName, window.__DEMO, 'demo-account'); " +
+    "setTimeout(function(){ try { setTab(window.__SCREEN); } catch(e) {} }, 260); }, 0); } " +
+    "return <AuthScreen onLogin={handleLogin} />; }");
+
+  var out = Babel.transform(code, { presets: ["react"] }).code;
+  var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
+
+  // Minimal Recharts stand-in (same as preview.html) so the donut renders.
+  var RC = (function () {
+    function ResponsiveContainer(p) { return React.createElement("div", { style: { width: p.width, height: p.height } }, p.children); }
+    function PieChart(p) { return React.createElement("svg", { viewBox: "0 0 100 100", width: "100%", height: "100%" }, p.children); }
+    function Pie(p) {
+      var data = p.data || [], total = data.reduce(function (s, x) { return s + (x.value || 0); }, 0) || 1;
+      var R = 42, r = 24, cx = 50, cy = 50, ang = -90;
+      return React.createElement("g", null, data.map(function (x, i) {
+        var frac = (x.value || 0) / total, a0 = ang, a1 = ang + frac * 360; ang = a1;
+        var rad = function (a) { return (a * Math.PI) / 180; };
+        var x0 = cx + R * Math.cos(rad(a0)), y0 = cy + R * Math.sin(rad(a0));
+        var x1 = cx + R * Math.cos(rad(a1)), y1 = cy + R * Math.sin(rad(a1));
+        var xi1 = cx + r * Math.cos(rad(a1)), yi1 = cy + r * Math.sin(rad(a1));
+        var xi0 = cx + r * Math.cos(rad(a0)), yi0 = cy + r * Math.sin(rad(a0));
+        var lg = frac > 0.5 ? 1 : 0;
+        var dd = "M" + x0 + " " + y0 + " A" + R + " " + R + " 0 " + lg + " 1 " + x1 + " " + y1 +
+                 " L" + xi1 + " " + yi1 + " A" + r + " " + r + " 0 " + lg + " 0 " + xi0 + " " + yi0 + " Z";
+        var fill = (p.children && p.children[i] && p.children[i].props.fill) || (data[i] && data[i].color) || "#ccc";
+        return React.createElement("path", { key: i, d: dd, fill: fill });
+      }));
+    }
+    function Cell() { return null; }
+    return { ResponsiveContainer: ResponsiveContainer, PieChart: PieChart, Pie: Pie, Cell: Cell };
+  })();
+  var PieChart = RC.PieChart, Pie = RC.Pie, Cell = RC.Cell, ResponsiveContainer = RC.ResponsiveContainer;
+
+  window.__DEMO = DEMO;
+  window.__SCREEN = SCREEN;
+  eval(out);
+  ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+}).catch(function (e) {
+  document.getElementById("err").textContent = "Harness error:\n" + (e && e.stack ? e.stack : e);
+});
+</script>
+</body>
+</html>

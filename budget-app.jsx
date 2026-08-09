@@ -160,8 +160,55 @@ function lastLook() {
 }
 function rememberLook(theme, dark) {
   try { localStorage.setItem("cb_theme", theme); localStorage.setItem("cb_dark", dark ? "1" : "0"); } catch (e) {}
+  // Native shells only: keep the OS status bar legible against the new theme.
+  // Defined below this point in the file, so guard for the boot-time call.
+  try { if (typeof nativeStatusBar === "function") nativeStatusBar(dark); } catch (e) {}
 }
 (function () { var l = lastLook(); applyTheme(l.theme); applyDarkMode(l.dark); })();
+
+// ===== NATIVE BRIDGE (Capacitor) =============================================
+// Inside the iOS/Android shell, Capacitor injects window.Capacitor. Every helper
+// below degrades to a no-op (or the existing web behavior) in a browser, so one
+// code path serves web and native and nothing here can break the PWA.
+//
+// The reminder scheduling is the one that genuinely matters: on the web a note
+// reminder is a setTimeout that dies the moment the tab closes (see the
+// remTimers effect), so a reminder only fires if the app happens to be open.
+// On native we hand the reminder to the OS, which fires it even when Richy is
+// fully closed - the behavior users actually expect from a reminder.
+function nativeOn() {
+  try {
+    return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  } catch (e) { return false; }
+}
+function nativePlugin(name) {
+  try { return (nativeOn() && window.Capacitor.Plugins && window.Capacitor.Plugins[name]) || null; }
+  catch (e) { return null; }
+}
+// iOS notification ids must be a 32-bit signed int; note ids are Date.now()
+// millisecond stamps, which overflow. Fold to a stable positive 31-bit int.
+function nativeNotifId(id) {
+  var s = String(id), h = 0;
+  for (var i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
+  return Math.abs(h) % 2147483647;
+}
+// Light tap feedback on primary controls. Silent no-op on web.
+function nativeHaptic(style) {
+  var H = nativePlugin("Haptics");
+  if (!H) return;
+  try { H.impact({ style: style || "LIGHT" }); } catch (e) {}
+}
+// Keep the native status bar legible against the current theme.
+function nativeStatusBar(dark) {
+  var S = nativePlugin("StatusBar");
+  if (!S) return;
+  try {
+    S.setStyle({ style: dark ? "DARK" : "LIGHT" });
+    if (window.Capacitor.getPlatform && window.Capacitor.getPlatform() === "android") {
+      S.setBackgroundColor({ color: dark ? DARK_BG : LIGHT_BG });
+    }
+  } catch (e) {}
+}
 
 // Curated icon set for category "banners" - line icons in the app's style.
 // Each id maps to an SVG path in SVGIcon.
@@ -7710,6 +7757,19 @@ function toLocalInput(ms) {
 // Ask for notification permission lazily (only when a reminder is first set).
 // Calls cb(granted). Never throws on browsers without the API.
 function ensureNotifyPermission(cb) {
+  // Native: iOS/Android permission lives with the LocalNotifications plugin,
+  // not the web Notification API (which doesn't exist in the WKWebView shell).
+  var LN = nativePlugin("LocalNotifications");
+  if (LN) {
+    try {
+      LN.checkPermissions().then(function(res) {
+        if (res && res.display === "granted") { cb(true); return; }
+        if (res && res.display === "denied") { cb(false); return; }
+        return LN.requestPermissions().then(function(r) { cb(!!(r && r.display === "granted")); });
+      }).catch(function() { cb(false); });
+    } catch (e) { cb(false); }
+    return;
+  }
   if (typeof window === "undefined" || !("Notification" in window)) { cb(false); return; }
   if (Notification.permission === "granted") { cb(true); return; }
   if (Notification.permission === "denied") { cb(false); return; }
@@ -7718,11 +7778,45 @@ function ensureNotifyPermission(cb) {
   } catch (e) { cb(false); }
 }
 
+// Hand a note's reminder to the OS so it fires even when Richy is closed.
+// Web: no-op - the in-page remTimers effect still covers the open-app case.
+function scheduleNativeReminder(n) {
+  var LN = nativePlugin("LocalNotifications");
+  if (!LN || !n || !n.reminder || n.reminder.fired || !n.reminder.due) return;
+  if (n.reminder.due <= Date.now()) return;
+  try {
+    LN.schedule({
+      notifications: [{
+        id: nativeNotifId(n.id),
+        title: "Richy",
+        body: (n.dir === "owed" ? "They owe you " : "You owe ") + dollars(n.amount) + " - " + n.label,
+        schedule: { at: new Date(n.reminder.due), allowWhileIdle: true },
+        extra: { noteId: n.id }
+      }]
+    }).catch(function() {});
+  } catch (e) {}
+}
+function cancelNativeReminder(id) {
+  var LN = nativePlugin("LocalNotifications");
+  if (!LN) return;
+  try { LN.cancel({ notifications: [{ id: nativeNotifId(id) }] }).catch(function() {}); } catch (e) {}
+}
+
 // Fire a reminder notification for a note. Prefers the service worker (so it
 // survives the page and supports mobile), falling back to a plain Notification.
 function fireReminder(n) {
-  if (typeof window === "undefined" || !("Notification" in window) || Notification.permission !== "granted") return;
   var body = (n.dir === "owed" ? "They owe you " : "You owe ") + dollars(n.amount) + " - " + n.label;
+  // Native: the OS-scheduled copy may already have fired while the app was
+  // closed, so cancel it before showing this one - never notify twice.
+  var LN = nativePlugin("LocalNotifications");
+  if (LN) {
+    cancelNativeReminder(n.id);
+    try {
+      LN.schedule({ notifications: [{ id: nativeNotifId(n.id), title: "Richy", body: body }] }).catch(function() {});
+    } catch (e) {}
+    return;
+  }
+  if (typeof window === "undefined" || !("Notification" in window) || Notification.permission !== "granted") return;
   function plain() { try { new Notification("Richy", { body: body }); } catch (e) {} }
   if ("serviceWorker" in navigator && navigator.serviceWorker.getRegistration) {
     navigator.serviceWorker.getRegistration().then(function(reg) {
@@ -7735,6 +7829,11 @@ function fireReminder(n) {
 // Business notifications share the reminder plumbing but NEVER prompt for
 // permission - they only fire if the user already granted it elsewhere.
 function fireBizNotification(title, body, tag) {
+  var LN = nativePlugin("LocalNotifications");
+  if (LN) {
+    try { LN.schedule({ notifications: [{ id: nativeNotifId(tag || title), title: title, body: body }] }).catch(function() {}); } catch (e) {}
+    return;
+  }
   if (typeof window === "undefined" || !("Notification" in window) || Notification.permission !== "granted") return;
   function plain() { try { new Notification(title, { body: body }); } catch (e) {} }
   if ("serviceWorker" in navigator && navigator.serviceWorker.getRegistration) {
@@ -22075,7 +22174,7 @@ function GlassTabBar(props) {
         return (
           <button key={t.id}
             ref={function(el) { btnRefs.current[idx] = el; }}
-            onClick={function() { onSelect(t.id); }}
+            onClick={function() { nativeHaptic("LIGHT"); onSelect(t.id); }}
             onPointerDown={function() { setPress(idx); }}
             onPointerUp={function() { setPress(-1); }}
             onPointerLeave={function() { setPress(-1); }}
@@ -22727,9 +22826,13 @@ export default function App() {
     var now = Date.now();
     var dueNow = [];
     notes.forEach(function(n) {
-      if (!n.reminder || n.reminder.fired) return;
+      if (!n.reminder || n.reminder.fired) { cancelNativeReminder(n.id); return; }
       var delay = n.reminder.due - now;
       if (delay <= 0) { dueNow.push(n.id); return; }
+      // Native: hand it to the OS so it fires even with the app closed. The
+      // in-page timer below still runs for the app-is-open case, and
+      // fireReminder cancels the OS copy so only one notification appears.
+      scheduleNativeReminder(n);
       if (delay < 2147483647) {
         (function(id) {
           remTimers.current[id] = setTimeout(function() { fireDue([id]); }, delay);
@@ -23167,7 +23270,7 @@ export default function App() {
           </span>
           <div style={{ width: 86, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
             {HAS_FAB.indexOf(currentTab) !== -1 && (
-              <button onClick={function() { setSheet(function(v) { return !v; }); }}
+              <button onClick={function() { nativeHaptic("MEDIUM"); setSheet(function(v) { return !v; }); }}
                 aria-label={sheet ? "Close add menu" : "Add new"}
                 style={{ background: sheet ? T.ink : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", border: "none", borderRadius: 40, width: 36, height: 36, cursor: "pointer", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: sheet ? "none" : "0 4px 12px " + T.orangeGlow, transition: "all 0.2s" }}>
                 <SVGIcon id="plus" size={16} color="#fff" />

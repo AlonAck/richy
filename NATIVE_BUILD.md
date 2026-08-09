@@ -44,23 +44,41 @@ In Xcode (App target → Signing & Capabilities / General):
    (Xcode 14+ accepts one 1024×1024 icon — upscale icon-512.png).
 5. **Deployment target**: iOS 15.0 is a comfortable floor.
 
-## 4. Native niceties worth adding (guideline 4.2 — minimum functionality)
+## 4. Native integrations (guideline 4.2 — minimum functionality)
 
-A bare webview risks a 4.2 rejection. These are small and make the app feel
-native; add at least the first two:
+A bare webview risks a 4.2 rejection. **The app code for this is already
+written** — see the "NATIVE BRIDGE (Capacitor)" block near the top of
+`budget-app.jsx`. Every helper detects `window.Capacitor` at runtime and is a
+no-op in a browser, so the PWA is unaffected. All that's left is installing the
+plugins:
 
 ```bash
 npm install @capacitor/splash-screen @capacitor/status-bar @capacitor/haptics @capacitor/local-notifications
 npx cap sync ios
 ```
 
-- **Splash screen**: mirrors the in-app `rc-splash` (dark `#0D0C18` logo tile on
-  `#F7F3EE`).
-- **Status bar**: match the app theme (style dark on cream, light on dark mode).
-- **Local notifications**: wire the existing note reminders (`sw.js` handles the
-  web path; on native, call `LocalNotifications.schedule` from the same place
-  the app calls `registration.showNotification`).
-- **Haptics**: tap feedback on the tab bar and Add button.
+That activates:
+
+- **Local notifications — the one that matters.** On the web, a note reminder is
+  a `setTimeout` that dies when the tab closes, so it only fires if the app
+  happens to be open. On native, `scheduleNativeReminder()` hands the reminder
+  to iOS, which fires it **even when Richy is fully closed**. `fireReminder()`
+  cancels the OS copy before showing an in-app one, so a user never gets the
+  same reminder twice. This is a real capability the web version cannot match —
+  the strongest single answer to a 4.2 challenge.
+- **Haptics**: tab bar (light) and the Add button (medium).
+- **Status bar**: `nativeStatusBar()` runs from `rememberLook()`, so it follows
+  the user's theme and dark-mode choice automatically.
+- **Splash screen**: configure in Xcode to mirror the in-app `rc-splash` — dark
+  `#0D0C18` rounded logo tile on `#F7F3EE`.
+
+On first launch iOS will ask for notification permission the first time a user
+sets a reminder (`ensureNotifyPermission()` handles the native path). Add a
+usage string in Xcode if the review team asks for one.
+
+**Worth adding while you're there** (not yet wired): Face ID / Touch ID app lock
+via `@capacitor-community/biometric-auth`. A finance app that can lock behind
+biometrics is both a genuine native feature and something users expect.
 
 ## 5. Test on a real device
 
@@ -73,14 +91,14 @@ npx cap sync ios
 Create the app at https://appstoreconnect.apple.com (My Apps → + → New App,
 bundle ID `com.richy.app`).
 
+**All the listing copy is pre-written** — app name, subtitle, keywords,
+description, What's New, category, screenshot plan, and the full App Review
+notes are in [APP_STORE_LISTING.md](APP_STORE_LISTING.md). Paste from there;
+the only blank to fill is the demo account's email and password.
+
 **Required URLs** (already live):
 - Privacy Policy URL: `https://richy-mgkl.vercel.app/privacy.html`
 - Support URL: `https://richy-mgkl.vercel.app` (or a contact page)
-
-**Category**: Finance. **Age rating**: answer the questionnaire honestly — no
-objectionable content; unrestricted web access = NO (the app is not a browser);
-result is typically 4+, and you may optionally restrict to 17+ if you prefer
-given the finance context. Richy's own Terms set a 16+ minimum regardless.
 
 **App Privacy (nutrition labels)** — declare exactly this, matching privacy.html:
 
