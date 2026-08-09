@@ -107,6 +107,10 @@ function applyTheme(name) {
   for (var k in p) { T[k] = p[k]; }
   T.heroInk = p.heroText;
   _theme.name = THEMES[name] ? name : "blue";
+  // The one token the motion stylesheet needs at runtime: keyframes can't read
+  // the mutated T object, so the row-flash tint is published as a CSS variable
+  // and re-published whenever the palette changes.
+  if (typeof document !== "undefined") document.documentElement.style.setProperty("--m-flash", p.orangeDim);
 }
 applyTheme("blue");
 
@@ -1529,6 +1533,101 @@ function ensureLoadingCss() {
   document.head.appendChild(st);
 }
 
+// === MOTION SYSTEM ===
+// One vocabulary for everything that moves, from the "Richy Motion" design pass.
+// Two ideas hold it together:
+//
+//   1. Durations and curves are CSS custom properties, never literals. A single
+//      --m-scale retimes the whole app, and prefers-reduced-motion collapses it
+//      to nothing without every call site having to check.
+//   2. Motion only ever does one of three jobs - content arriving (rcRise),
+//      a value changing (rcGrow / rcRowIn / rcNudge / rcFlash), or a moment
+//      that has actually earned a celebration (rcPop / rcSweep).
+//
+// The rule that keeps it calm: nothing loops forever except a genuine
+// in-progress state - Richard's typing dots, the analyzing pulse, the refresh
+// spinner. When the work stops, the motion stops.
+function ensureMotionCss() {
+  var id = "richy-motion-css";
+  if (document.getElementById(id)) return;
+  var st = document.createElement("style"); st.id = id;
+  st.textContent = [
+    ":root{",
+      "--m-scale:1;--m-stagger:55ms;",
+      "--m-press:calc(0.12s * var(--m-scale));",   // tap feedback
+      "--m-quick:calc(0.22s * var(--m-scale));",   // colour / background
+      "--m-enter:calc(0.42s * var(--m-scale));",   // content arriving
+      "--m-settle:calc(0.52s * var(--m-scale));",  // spring, overshoot
+      "--m-value:calc(0.60s * var(--m-scale));",   // bars, rings, rows
+      "--m-ease:cubic-bezier(0.22,1,0.36,1);",     // fast in, slow out
+      "--m-spring:cubic-bezier(0.34,1.32,0.5,1);", // weighted settle
+    "}",
+    // Collapsing the scale (rather than !important-ing every duration) keeps the
+    // token maths intact while making every derived time effectively zero.
+    "@media (prefers-reduced-motion:reduce){:root{--m-scale:0.0001;--m-stagger:0ms}}",
+    "@keyframes rcRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}",
+    "@keyframes rcGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}",
+    "@keyframes rcPop{0%{transform:scale(.45);opacity:0}62%{transform:scale(1.09);opacity:1}100%{transform:scale(1);opacity:1}}",
+    // In-progress states (spinners, typing dots, the analyzing pulse) are the
+    // only looping motion in the app and already live in ensureLoadingCss - they
+    // are deliberately not duplicated here.
+    // --m-flash follows the active accent (see applyTheme) so the highlight
+    // belongs to whichever palette is on.
+    "@keyframes rcFlash{0%{background:var(--m-flash,rgba(92,122,227,0.16))}100%{background:transparent}}",
+    "@keyframes rcRowIn{from{opacity:0;transform:translateY(-8px);max-height:0}to{opacity:1;transform:none;max-height:120px}}",
+    "@keyframes rcSweep{from{transform:translateX(-130%) skewX(-14deg)}to{transform:translateX(360%) skewX(-14deg)}}",
+    "@keyframes rcNudge{0%{transform:none}38%{transform:translateY(-5px)}100%{transform:none}}",
+  ].join("");
+  document.head.appendChild(st);
+}
+if (typeof document !== "undefined") ensureMotionCss();
+
+// Content arriving, staggered by source order. The stagger caps at six steps so
+// the tail of a long list never waits a noticeable beat behind its head.
+function riseIn(i) {
+  var step = Math.min(Math.max(i || 0, 0), 6);
+  return "rcRise var(--m-enter) var(--m-ease) calc(var(--m-stagger) * " + step + ") both";
+}
+// Press feedback: the same pair of transitions on every tappable surface.
+var PRESS_T = "transform var(--m-press) ease, box-shadow var(--m-quick) ease";
+// Fill a bar or ring from zero on first paint. Render at 0, flip on the next
+// frame, and the element's own transition does the rest. The timer is a backstop
+// for a hidden tab, where rAF is paused: without it a screen rendered in the
+// background would sit on empty bars until it was looked at.
+function useGrowIn() {
+  var _m = useState(false); var on = _m[0]; var setOn = _m[1];
+  useEffect(function() {
+    var r = requestAnimationFrame(function() { setOn(true); });
+    var t = setTimeout(function() { setOn(true); }, 50);
+    return function() { cancelAnimationFrame(r); clearTimeout(t); };
+  }, []);
+  return on;
+}
+// Ids that appeared in `list` since the last render, so a row can announce
+// itself exactly once. Returns {} on first mount - an initial load is content
+// arriving, not a value changing, and rcRise already covers that.
+function useArrivals(list, keyOf, holdMs) {
+  var _a = useState({}); var fresh = _a[0]; var setFresh = _a[1];
+  var seenRef = useRef(null);
+  var timerRef = useRef(null);
+  useEffect(function() {
+    var now = {};
+    for (var i = 0; i < list.length; i++) { now[keyOf(list[i])] = true; }
+    var prev = seenRef.current;
+    seenRef.current = now;
+    if (!prev) return;                       // first pass: just take the baseline
+    var added = {};
+    var any = false;
+    for (var k in now) { if (!prev[k]) { added[k] = true; any = true; } }
+    if (!any) return;
+    setFresh(added);
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(function() { setFresh({}); }, holdMs || 1800);
+  }, [list]);
+  useEffect(function() { return function() { clearTimeout(timerRef.current); }; }, []);
+  return fresh;
+}
+
 // iMessage-style typing dots.
 function ThinkingDots(props) {
   useEffect(function() { ensureLoadingCss(); }, []);
@@ -2949,32 +3048,38 @@ function ClaudeMark(props) {
   );
 }
 
+// Bars fill from empty on first paint, then track their value. Both the initial
+// draw and every later change ride the same --m-value token, so a bar that grows
+// because a screen opened and one that grows because you just spent money move
+// at exactly the same speed.
 function ProgressBar(props) {
+  var grown = useGrowIn();
   var pct = Math.min(100, (props.value / (props.max || 1)) * 100);
   return (
     <div style={{ background: "rgba(0,0,0,0.07)", borderRadius: props.h || 4, height: props.h || 4, overflow: "hidden" }}>
       <div style={{
-        width: pct + "%",
+        width: (grown ? pct : 0) + "%",
         height: "100%",
         borderRadius: props.h || 4,
         background: props.value > props.max ? T.red : (props.color || T.orange),
-        transition: "width 0.5s ease",
+        transition: "width var(--m-value) var(--m-ease), background var(--m-quick) ease",
       }} />
     </div>
   );
 }
 
 function RingChart(props) {
+  var grown = useGrowIn();
   var size = props.size || 60;
   var stroke = props.stroke || 5;
   var r = (size - stroke * 2) / 2;
   var circ = 2 * Math.PI * r;
-  var pct = Math.min(1, props.value / (props.max || 1));
+  var pct = grown ? Math.min(1, props.value / (props.max || 1)) : 0;
   return (
     <svg width={size} height={size} style={{ transform: "rotate(-90deg)", flexShrink: 0 }}>
       <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={props.track || "rgba(0,0,0,0.07)"} strokeWidth={stroke} />
       <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={props.color || T.orange} strokeWidth={stroke}
-        strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} strokeLinecap="round" style={{ transition: "stroke-dashoffset 0.9s ease" }} />
+        strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} strokeLinecap="round" style={{ transition: "stroke-dashoffset var(--m-value) var(--m-ease), stroke var(--m-quick) ease" }} />
     </svg>
   );
 }
@@ -3006,16 +3111,10 @@ function CountUp(props) {
   return <span>{(props.format || dollars)(shown)}</span>;
 }
 
-// A RingChart that draws itself from zero on first paint (the ring already
-// transitions stroke-dashoffset, so mounting at 0 and then setting the real
-// value one frame later animates the sweep).
+// Kept as a name callers already reach for; RingChart itself now draws from zero
+// on first paint, so this is a plain pass-through.
 function DrawRing(props) {
-  var _m = useState(false); var mounted = _m[0]; var setMounted = _m[1];
-  useEffect(function() {
-    var t = setTimeout(function() { setMounted(true); }, 40);
-    return function() { clearTimeout(t); };
-  }, []);
-  return <RingChart size={props.size} stroke={props.stroke} value={mounted ? props.value : 0} max={props.max} color={props.color} track={props.track} />;
+  return <RingChart size={props.size} stroke={props.stroke} value={props.value} max={props.max} color={props.color} track={props.track} />;
 }
 
 // Animated check circle for task rows: the circle fills and the check stroke
@@ -3130,8 +3229,14 @@ function FormRow(props) {
 }
 
 function BigBtn(props) {
+  var _p = useState(false); var pressed = _p[0]; var setPressed = _p[1];
+  var live = !props.disabled;
   return (
     <button onClick={props.disabled ? undefined : props.onPress}
+      onPointerDown={function() { if (live) setPressed(true); }}
+      onPointerUp={function() { setPressed(false); }}
+      onPointerLeave={function() { setPressed(false); }}
+      onPointerCancel={function() { setPressed(false); }}
       style={{
         width: "100%",
         background: props.disabled ? "rgba(0,0,0,0.10)" : (props.color || T.btn),
@@ -3141,7 +3246,9 @@ function BigBtn(props) {
         fontSize: 16, fontFamily: UI, fontWeight: 700,
         cursor: props.disabled ? "default" : "pointer",
         marginTop: 10,
-        boxShadow: props.disabled ? "none" : "0 4px 14px " + T.orangeGlow,
+        boxShadow: props.disabled ? "none" : (pressed ? "0 2px 8px " + T.orangeGlow : "0 4px 14px " + T.orangeGlow),
+        transform: pressed ? "scale(0.975)" : "scale(1)",
+        transition: PRESS_T,
       }}>
       {props.label}
     </button>
@@ -5149,7 +5256,7 @@ function FoundMoney(props) {
   var cardShadow = "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)";
 
   return (
-    <div style={{ animation: "rcFadeUp 0.6s ease 0.12s both", marginBottom: 20 }}>
+    <div style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.12s both", marginBottom: 20 }}>
       <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
@@ -5268,7 +5375,7 @@ function BusinessPulse(props) {
   if (!bizes.length || !props.onOpenBusiness) return null;
   var shown = bizes.slice(0, 2);
   return (
-    <div style={{ animation: "rcFadeUp 0.6s ease 0.08s both" }}>
+    <div style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.08s both" }}>
       {shown.map(function(b) {
         var health = bizHealth(b);
         var pl = bizMonthProfit(b, curMonth());
@@ -5439,7 +5546,7 @@ function Overview(props) {
 
   function tipsCard(delay) {
     return (
-      <div style={{ marginBottom: 20, animation: "rcFadeUp 0.6s ease " + delay + "s both" }}>
+      <div style={{ marginBottom: 20, animation: "rcFadeUp var(--m-enter) var(--m-ease) " + delay + "s both" }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, fontFamily: UI }}>{"Get the most from Richy"}</div>
         <Card style={{ overflow: "hidden" }}>
           {tips.map(function(a, i) {
@@ -5994,7 +6101,7 @@ function Overview(props) {
         </button>
       </div>
 
-      <div style={{ marginBottom: 16, animation: "rcFadeUp 0.6s ease both" }}>
+      <div style={{ marginBottom: 16, animation: "rcFadeUp var(--m-enter) var(--m-ease) both" }}>
         <div style={{ display: "flex", justifyContent: "center", gap: 7, padding: "0 0 11px" }}>
           {[0,1,2,3,4].map(function(i) {
             return <div key={i} onClick={function() { goPage(i); }} style={{ width: i === page ? 18 : 6, height: 6, borderRadius: 3, cursor: "pointer", transition: "all 0.3s cubic-bezier(0.22,1,0.36,1)", background: i === page ? T.orange : "rgba(0,0,0,0.16)" }} />;
@@ -6164,7 +6271,7 @@ function Overview(props) {
       </div>
 
       {props.plan && (
-        <div style={{ background: "rgba(137,112,198,0.04)", borderRadius: 18, padding: "20px 22px", marginBottom: 16, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.04)", borderLeft: "3px solid " + T.orange, animation: "rcFadeUp 0.6s ease 0.09s both" }}>
+        <div style={{ background: "rgba(137,112,198,0.04)", borderRadius: 18, padding: "20px 22px", marginBottom: 16, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.04)", borderLeft: "3px solid " + T.orange, animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.09s both" }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: UI, marginBottom: 10 }}>
             {tr("yourPlanByRichard")}
           </div>
@@ -6187,7 +6294,7 @@ function Overview(props) {
       )}
 
       {(income > 0 || expense > 0) && (
-        <div style={{ display: "flex", gap: 10, marginBottom: 20, animation: "rcFadeUp 0.6s ease 0.06s both" }}>
+        <div style={{ display: "flex", gap: 10, marginBottom: 20, animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.06s both" }}>
           <div onClick={function() { nav("advisor"); }} style={{ flex: 1, background: !hasIncome ? T.card : (savRate >= 20 ? T.greenDim : savRate > 0 ? T.orangeDim : "rgba(200,152,58,0.10)"), borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer" }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{tr("savingsRate")}</div>
             <div style={{ fontSize: 26, fontWeight: 700, color: !hasIncome ? T.ink3 : (savRate >= 20 ? T.green : savRate > 0 ? T.orange : T.gold), letterSpacing: "-0.02em" }}>{!hasIncome ? "-" : savRate + "%"}</div>
@@ -6212,7 +6319,7 @@ function Overview(props) {
         var left = t.total - spent;
         return (
           <div key={t.id} onClick={function() { props.onOpenTrip(t.id); }}
-            style={{ position: "relative", overflow: "hidden", borderRadius: 20, padding: "18px 20px", marginBottom: 16, background: T.heroBg, boxShadow: T.heroShadow, cursor: "pointer", animation: "rcFadeUp 0.6s ease 0.03s both" }}>
+            style={{ position: "relative", overflow: "hidden", borderRadius: 20, padding: "18px 20px", marginBottom: 16, background: T.heroBg, boxShadow: T.heroShadow, cursor: "pointer", animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.03s both" }}>
             <div style={{ position: "absolute", top: -60, right: -50, width: 180, height: 180, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
             <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ width: 42, height: 42, borderRadius: 13, background: "rgba(255,255,255,0.28)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -6248,7 +6355,7 @@ function Overview(props) {
 
       <BusinessPulse businesses={bizAccts} onOpenBusiness={props.onOpenBusiness} />
 
-      <div style={{ animation: "rcFadeUp 0.6s ease 0.09s both" }}>
+      <div style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.09s both" }}>
         <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
@@ -6319,7 +6426,7 @@ function Overview(props) {
       </div>
 
       {budgetRows.length > 0 && (
-        <div onClick={function() { nav("budgets"); }} style={{ animation: "rcFadeUp 0.6s ease 0.12s both", cursor: "pointer" }}>
+        <div onClick={function() { nav("budgets"); }} style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.12s both", cursor: "pointer" }}>
           <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
@@ -6349,7 +6456,7 @@ function Overview(props) {
       )}
 
       {goals.length > 0 && (
-        <div onClick={function() { nav("goals"); }} style={{ animation: "rcFadeUp 0.6s ease 0.15s both", cursor: "pointer" }}>
+        <div onClick={function() { nav("goals"); }} style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.15s both", cursor: "pointer" }}>
           <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
@@ -6384,7 +6491,7 @@ function Overview(props) {
       )}
 
       {recent.length > 0 && (
-        <div onClick={function() { nav("activity"); }} style={{ animation: "rcFadeUp 0.6s ease 0.18s both", cursor: "pointer" }}>
+        <div onClick={function() { nav("activity"); }} style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.18s both", cursor: "pointer" }}>
           <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
             <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("recent")}</span>
@@ -7379,6 +7486,19 @@ function Activity(props) {
   });
   var dates = Object.keys(groups).sort(function(a, b) { return b.localeCompare(a); });
 
+  // Rows that weren't in the feed a render ago - whether they came from the add
+  // sheet, an import, or a bank sync. They expand in and flash once so the entry
+  // you just made is findable without hunting, and the Money out tile nudges to
+  // say the total moved because of it. Watching the feed itself (rather than
+  // being told about a save) means every route into the ledger gets the same
+  // acknowledgement for free.
+  var freshRows = useArrivals(combined, function(t) { return t.id; }, 1800);
+  var hasFreshSpend = false;
+  for (var fi = 0; fi < combined.length; fi++) {
+    if (freshRows[combined[fi].id] && combined[fi].type === "expense") { hasFreshSpend = true; break; }
+  }
+  var ROW_IN = "rcRowIn var(--m-value) var(--m-ease) both, rcFlash 1.4s var(--m-ease) both";
+
   var totalIn  = sorted.filter(function(t){return t.type==="income";}).reduce(function(s,t){return s+t.amount;},0);
   var totalOut = sorted.filter(function(t){return t.type==="expense";}).reduce(function(s,t){return s+t.amount;},0);
 
@@ -7661,7 +7781,7 @@ function Activity(props) {
           </div>
           <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "14px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{tr("moneyOut")}</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(totalOut)}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", animation: hasFreshSpend ? "rcNudge 0.6s var(--m-ease) 0.2s both" : "none" }}>{dollars(totalOut)}</div>
           </div>
         </div>
       )}
@@ -7688,7 +7808,7 @@ function Activity(props) {
                   var dep = t.moveKind === "deposit";
                   return (
                     <div key={t.id} onClick={t.openAccount}
-                      style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 16px", borderBottom: notLast ? "0.5px solid " + T.sep : "none", cursor: "pointer", userSelect: "none", WebkitUserSelect: "none" }}>
+                      style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 16px", borderBottom: notLast ? "0.5px solid " + T.sep : "none", cursor: "pointer", userSelect: "none", WebkitUserSelect: "none", overflow: "hidden", animation: freshRows[t.id] ? ROW_IN : "none" }}>
                       <CatBadge icon={t.accountIcon} color={t.accountColor} size={40} soft={true} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 15, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
@@ -7717,7 +7837,7 @@ function Activity(props) {
                     onTouchEnd={cancelLongPress}
                     onTouchMove={cancelLongPress}
                     onContextMenu={function(e) { e.preventDefault(); }}
-                    style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 16px", borderBottom: i < dayItems.length - 1 ? "0.5px solid " + T.sep : "none", opacity: t.pending ? 0.62 : 1, cursor: "pointer", userSelect: "none", WebkitUserSelect: "none" }}>
+                    style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 16px", borderBottom: i < dayItems.length - 1 ? "0.5px solid " + T.sep : "none", opacity: t.pending ? 0.62 : 1, cursor: "pointer", userSelect: "none", WebkitUserSelect: "none", overflow: "hidden", animation: freshRows[t.id] ? ROW_IN : "none" }}>
                     <CatBadge icon={t.type === "income" ? "up" : c.icon} color={t.type === "income" ? T.green : c.color} size={40} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 15, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
@@ -8243,6 +8363,12 @@ function Budgets(props) {
   var totalLimit = rows.reduce(function(s, r) { return s + r.limit; }, 0);
   var totalPct = totalLimit > 0 ? Math.round((totalSpent / totalLimit) * 100) : 0;
 
+  // Going over a limit is news, so the row that just crossed flushes once. Reuse
+  // the arrivals hook by feeding it only the rows that are currently over: a
+  // category that flips from under to over "arrives" in that list, and one that
+  // was already over on open stays quiet.
+  var justOver = useArrivals(rows.filter(function(r) { return r.over; }), function(r) { return r.catId; }, 1800);
+
   // Storage-style segmented bar: each category's share of total spend.
   var segs = rows.slice().filter(function(r){ return r.spent > 0; }).sort(function(a,b){ return b.spent - a.spent; });
   var segTotal = segs.reduce(function(s, r){ return s + r.spent; }, 0);
@@ -8330,7 +8456,7 @@ function Budgets(props) {
       )}
 
       {props.budgets.length > 0 && (
-        <Card style={{ padding: "20px", marginBottom: 20 }}>
+        <Card style={{ padding: "20px", marginBottom: 20, animation: riseIn(0) }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>{tr("totalSpent")}</div>
@@ -8349,15 +8475,15 @@ function Budgets(props) {
 
           <div style={{ marginTop: 18 }}>
             <div style={{ display: "flex", height: 12, borderRadius: 8, overflow: "hidden", gap: 2, background: "rgba(0,0,0,0.05)" }}>
-              {segTotal > 0 ? segs.map(function(r) {
-                return <div key={r.cat.id} title={r.cat.name} style={{ width: (r.spent / segTotal * 100) + "%", background: r.cat.color, height: "100%" }} />;
+              {segTotal > 0 ? segs.map(function(r, si) {
+                return <div key={r.cat.id} title={r.cat.name} style={{ width: (r.spent / segTotal * 100) + "%", background: r.cat.color, height: "100%", transformOrigin: "left center", animation: "rcGrow var(--m-value) var(--m-ease) calc(var(--m-stagger) * " + Math.min(si + 1, 6) + ") both" }} />;
               }) : <div style={{ width: "100%" }} />}
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", marginTop: 12 }}>
-              {segs.slice(0, 6).map(function(r) {
+              {segs.slice(0, 6).map(function(r, si) {
                 var pct = Math.round(r.spent / segTotal * 100);
                 return (
-                  <div key={r.cat.id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <div key={r.cat.id} style={{ display: "flex", alignItems: "center", gap: 6, animation: riseIn(si + 1) }}>
                     <span style={{ width: 8, height: 8, borderRadius: 3, background: r.cat.color, display: "inline-block" }} />
                     <span style={{ fontSize: 12, color: T.ink2, fontWeight: 500 }}>{r.cat.name}</span>
                     <span style={{ fontSize: 12, color: T.ink3 }}>{pct}%</span>
@@ -8371,21 +8497,21 @@ function Budgets(props) {
 
       {props.budgets.length > 0 && (
         <div>
-          <div style={{ padding: "0 4px 10px" }}>
+          <div style={{ padding: "0 4px 10px", animation: riseIn(2) }}>
             <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("byCategory")}</span>
           </div>
-          <Card style={{ overflow: "hidden" }}>
+          <Card style={{ overflow: "hidden", animation: riseIn(3) }}>
             {rows.map(function(r, i) {
               var pct = r.limit > 0 ? Math.round((r.spent / r.limit) * 100) : 0;
               return (
-                <div key={r.catId || i} style={{ borderBottom: i < rows.length - 1 ? "0.5px solid " + T.sep : "none" }}>
+                <div key={r.catId || i} style={{ borderBottom: i < rows.length - 1 ? "0.5px solid " + T.sep : "none", animation: justOver[r.catId] ? "rcFlash 1.8s var(--m-ease) both" : "none" }}>
                   <div onClick={function() { setViewCat(r.catId); }} style={{ padding: "14px 16px 12px", cursor: "pointer" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 9 }}>
                       <CatBadge icon={r.cat.icon} color={r.cat.color} size={34} soft={true} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <span style={{ fontSize: 15, color: T.ink, fontWeight: 600 }}>{r.cat.name}</span>
                       </div>
-                      {r.over && <span style={{ fontSize: 10, fontWeight: 700, color: T.red, background: T.red + "1A", borderRadius: 7, padding: "2px 8px", letterSpacing: "0.02em" }}>OVER</span>}
+                      {r.over && <span style={{ fontSize: 10, fontWeight: 700, color: T.red, background: T.red + "1A", borderRadius: 7, padding: "2px 8px", letterSpacing: "0.02em", animation: "rcPop var(--m-settle) var(--m-spring) both" }}>OVER</span>}
                       <span style={{ color: T.orange, fontSize: 14, fontWeight: 700 }}>{dollars(r.limit)}</span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -8497,6 +8623,17 @@ function Goals(props) {
     var acct = linkedAccountOf(g);
     return acct ? acct.name : "";
   }
+
+  // Reaching a target is the one moment in Goals that has earned a celebration:
+  // one sweep of green across the card and a check that pops in, then it stops.
+  // Goals that were already complete when the screen opened stay still - the
+  // arrivals hook only fires for a goal that crosses the line while you watch,
+  // which also covers a linked account growing into its target on its own.
+  var completedGoals = (props.goals || []).filter(function(g) {
+    var lb = linkedBalanceOf(g);
+    return (lb != null ? lb : (g.saved || 0)) >= g.target;
+  });
+  var justDone = useArrivals(completedGoals, function(g) { return g.id; }, 3200);
   function syncSelectRow(value, onChange) {
     return (
       <div style={{ background: T.inputBg, borderRadius: 13, padding: "9px 14px", marginBottom: 7 }}>
@@ -8644,12 +8781,13 @@ function Goals(props) {
         </Card>
       )}
 
-      {props.goals.map(function(g) {
+      {props.goals.map(function(g, gi) {
         var linkedBal = linkedBalanceOf(g);
         var isLinked = linkedBal != null;
         var saved = isLinked ? linkedBal : (g.saved || 0);
         var pct = Math.max(0, Math.min(100, Math.round((saved / g.target) * 100)));
         var done = saved >= g.target;
+        var celebrate = !!justDone[g.id];
         var deadlineBadge = null;
         if (g.deadline) {
           var todayISOg = new Date().toISOString().slice(0, 10);
@@ -8659,7 +8797,12 @@ function Goals(props) {
           if (dText) deadlineBadge = { text: dText, overdue: overdueGoal };
         }
         return (
-          <Card key={g.id} style={{ marginBottom: 14, overflow: "hidden" }}>
+          <Card key={g.id} style={{ marginBottom: 14, overflow: "hidden", position: "relative", animation: riseIn(gi) }}>
+            {celebrate && (
+              <div aria-hidden="true" style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "38%", pointerEvents: "none", zIndex: 2,
+                background: "linear-gradient(90deg,transparent," + T.green + "38,transparent)",
+                animation: "rcSweep 1.1s var(--m-ease) both" }} />
+            )}
             <div style={{ padding: "18px 18px 14px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
                 <div>
@@ -8682,10 +8825,17 @@ function Goals(props) {
                     </div>
                   )}
                 </div>
-                <div style={{ position: "relative" }}>
-                  <RingChart value={saved} max={g.target} size={60} color={done ? T.green : T.orange} stroke={5} />
-                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: done ? T.green : T.orange }}>
-                    {pct}%
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  {celebrate && (
+                    <span style={{ width: 26, height: 26, borderRadius: "50%", background: T.green, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 12px " + T.greenGlow, animation: "rcPop var(--m-settle) var(--m-spring) calc(var(--m-stagger) * 4) both" }}>
+                      <SVGIcon id="check" size={13} color="#fff" />
+                    </span>
+                  )}
+                  <div style={{ position: "relative" }}>
+                    <RingChart value={saved} max={g.target} size={60} color={done ? T.green : T.orange} stroke={5} />
+                    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: done ? T.green : T.orange }}>
+                      {pct}%
+                    </div>
                   </div>
                 </div>
               </div>
@@ -11843,23 +11993,27 @@ function Advisor(props) {
         />
       )}
 
+      {/* Richard's read arrives in reading order rather than all at once: the
+          greeting, then the score, then each note. The wait itself is AIWorking
+          above - the only thing here that loops - so by the time this renders
+          the work is genuinely done and nothing keeps moving after it lands. */}
       {advice && !advice.error && (
         <div>
-          <div style={{ padding: "16px 4px 0" }}>
+          <div style={{ padding: "16px 4px 0", animation: riseIn(0) }}>
             <h1 style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.12, color: T.ink }}>{greeting}</h1>
             <p style={{ margin: "7px 0 0", fontSize: 14.5, lineHeight: 1.45, color: T.ink2 }}>{subGreeting}</p>
           </div>
 
-          {renderAnalysisHero()}
+          <div style={{ animation: riseIn(1) }}>{renderAnalysisHero()}</div>
 
-          <div style={{ marginTop: 26 }}>
+          <div style={{ marginTop: 26, animation: riseIn(2) }}>
             {sectionHead("What Richard sees", (advice.insights || []).length + " notes")}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {(advice.insights || []).map(function(ins, i) {
               var m = insMeta[ins.type] || insMeta.tip;
               return (
-                <Card key={i} style={{ padding: 16 }}>
+                <Card key={i} style={{ padding: 16, animation: riseIn(i + 3) }}>
                   <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
                     <CatBadge icon={m.icon} color={m.color} size={44} soft={true} />
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -22162,7 +22316,7 @@ function GlassTabBar(props) {
     backdropFilter: "blur(8px) saturate(200%) brightness(1.18)", WebkitBackdropFilter: "blur(8px) saturate(200%) brightness(1.18)",
     boxShadow: "inset 0 1px 0.5px " + T.navPillRim + ", inset 0 -1px 1px " + T.navPillShade + ", 0 2px 7px rgba(0,0,0,0.12)",
     // Spring-glide: a touch of overshoot so it settles like liquid, not a slide.
-    transition: "transform 0.52s cubic-bezier(0.34,1.32,0.5,1), width 0.52s cubic-bezier(0.34,1.32,0.5,1)",
+    transition: "transform var(--m-settle) var(--m-spring), width var(--m-settle) var(--m-spring)",
     pointerEvents: "none", zIndex: 0
   } : { display: "none" };
   return (
@@ -22181,7 +22335,7 @@ function GlassTabBar(props) {
             onPointerCancel={function() { setPress(-1); }}
             style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "4px 4px", flex: 1, minWidth: 0, WebkitTapHighlightColor: "transparent" }}>
             {/* Constant padding so icons never shift - only the lens moves under them. */}
-            <div style={{ borderRadius: 22, padding: "6px 12px", display: "flex", alignItems: "center", justifyContent: "center", transform: pressed ? "scale(0.8)" : "scale(1)", transition: "transform 0.34s cubic-bezier(0.34,1.56,0.64,1)" }}>
+            <div style={{ borderRadius: 22, padding: "6px 12px", display: "flex", alignItems: "center", justifyContent: "center", transform: pressed ? "scale(0.8)" : "scale(1)", transition: "transform var(--m-settle) var(--m-spring)" }}>
               <SVGIcon id={t.id} size={21} color={active ? T.orange : T.ink3} />
             </div>
             <span style={{ fontSize: 9.5, fontWeight: active ? 700 : 400, color: active ? T.orange : T.ink3, letterSpacing: "0.005em", whiteSpace: "nowrap", transition: "color 0.4s ease" }}>
@@ -23429,7 +23583,7 @@ export default function App() {
             {HAS_FAB.indexOf(currentTab) !== -1 && (
               <button onClick={function() { nativeHaptic("MEDIUM"); setSheet(function(v) { return !v; }); }}
                 aria-label={sheet ? "Close add menu" : "Add new"}
-                style={{ background: sheet ? T.ink : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", border: "none", borderRadius: 40, width: 36, height: 36, cursor: "pointer", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: sheet ? "none" : "0 4px 12px " + T.orangeGlow, transition: "all 0.2s" }}>
+                style={{ background: sheet ? T.ink : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", border: "none", borderRadius: 40, width: 36, height: 36, cursor: "pointer", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: sheet ? "none" : "0 4px 12px " + T.orangeGlow, transform: sheet ? "rotate(45deg)" : "none", transition: "background var(--m-quick) ease, box-shadow var(--m-quick) ease, transform var(--m-settle) var(--m-spring)" }}>
                 <SVGIcon id="plus" size={16} color="#fff" />
               </button>
             )}
@@ -23481,7 +23635,7 @@ export default function App() {
             // already parked in place; animating it would double up the motion.
             var entryAnim;
             if (skipEntryAnimRef.current) { skipEntryAnimRef.current = false; entryAnim = "none"; }
-            else { entryAnim = animDir === "right" ? "navSlideRight 0.42s cubic-bezier(0.22,1,0.36,1) both" : animDir === "left" ? "navSlideLeft 0.42s cubic-bezier(0.22,1,0.36,1) both" : "navFade 0.38s cubic-bezier(0.22,1,0.36,1) both"; }
+            else { entryAnim = animDir === "right" ? "navSlideRight var(--m-enter) var(--m-ease) both" : animDir === "left" ? "navSlideLeft var(--m-enter) var(--m-ease) both" : "navFade var(--m-enter) var(--m-ease) both"; }
             return (
               // Track is transform-driven imperatively during a drag (see the native
               // touch effect); no transform in JSX so React never fights those writes.
@@ -23498,7 +23652,7 @@ export default function App() {
             );
           })()
         ) : (
-        <div key={animKey} style={{ padding: "8px 16px 16px", animation: animDir === "right" ? "navSlideRight 0.42s cubic-bezier(0.22,1,0.36,1) both" : animDir === "left" ? "navSlideLeft 0.42s cubic-bezier(0.22,1,0.36,1) both" : "navFade 0.38s cubic-bezier(0.22,1,0.36,1) both" }}>
+        <div key={animKey} style={{ padding: "8px 16px 16px", animation: animDir === "right" ? "navSlideRight var(--m-enter) var(--m-ease) both" : animDir === "left" ? "navSlideLeft var(--m-enter) var(--m-ease) both" : "navFade var(--m-enter) var(--m-ease) both" }}>
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} richardInstructions={richardCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
