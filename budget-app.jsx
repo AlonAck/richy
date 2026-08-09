@@ -22221,6 +22221,42 @@ function GlassBackBar(props) {
   );
 }
 
+// The whole account is ONE Firestore document, and Firestore caps a document at
+// 1 MiB. Richard's chat archive was the only unbounded thing in it: every "New
+// chat" appended a full transcript and nothing ever trimmed. Once the blob
+// crossed the ceiling every subsequent write failed - silently, because the save
+// promise was unhandled - and the user quietly stopped being saved at all.
+// Business chats were already capped (see patchBiz callers, .slice(-30)); this
+// applies the same discipline to the advisor archive. Newest sessions win.
+var CHAT_ARCHIVE_MAX = 20;    // sessions kept
+var CHAT_MSGS_MAX = 40;       // messages kept per session
+var CHAT_TEXT_MAX = 4000;     // characters kept per message
+function trimChatArchive(list) {
+  return (list || []).slice(0, CHAT_ARCHIVE_MAX).map(function(s) {
+    var msgs = (s && s.messages) || [];
+    return Object.assign({}, s, {
+      messages: msgs.slice(-CHAT_MSGS_MAX).map(function(m) {
+        if (!m || typeof m.text !== "string" || m.text.length <= CHAT_TEXT_MAX) return m;
+        return Object.assign({}, m, { text: m.text.slice(0, CHAT_TEXT_MAX) + "…" });
+      }),
+    });
+  });
+}
+
+// Turns a Firestore write rejection into something a person can act on. The
+// size case is the one that matters: it is permanent until data is removed, so
+// "we'll keep retrying" would be a lie.
+function saveErrorMsg(err) {
+  var m = String((err && (err.message || err.code)) || "");
+  if (/1048487|too large|longer than|invalid-argument|INVALID_ARGUMENT/i.test(m)) {
+    return "This account has more history than Richy can store in one record, so new changes aren't saving. Delete some old Richard chats to free up room.";
+  }
+  if (/permission|PERMISSION_DENIED|unauthenticated/i.test(m)) {
+    return "Richy can't save right now - your session may have expired. Sign out and back in.";
+  }
+  return "Your latest changes haven't saved yet. Richy is retrying.";
+}
+
 export default function App() {
   var _user = useState(null);
   var user = _user[0]; var setUser = _user[1];
@@ -22361,6 +22397,11 @@ export default function App() {
   // can merge against it without an async read-before-write each time.
   var blobRef = useRef({});
   var saveTimerRef = useRef(null);
+  // Non-empty while the last cloud write is failing. Rendered as a banner above
+  // every tab, because a budgeting app that has silently stopped saving is worse
+  // than one that is honestly broken.
+  var _serr = useState(""); var saveError = _serr[0]; var setSaveError = _serr[1];
+  var saveRetryRef = useRef(null);
   var prevTabRef = useRef("profile");
   var _hp = useState(false); var hasPw = _hp[0]; var setHasPw = _hp[1];
 
@@ -22390,7 +22431,9 @@ export default function App() {
     setNotes(data.notes || []);
     setFoundMoney(data.foundMoney || { tally: 0, dismissed: [], acted: [] });
     setDecisions(data.decisions || []);
-    setRichardChats(data.richardChats || []);
+    // Trim on load too, so an account that already grew past the limit heals
+    // itself on its next write instead of staying permanently unsaveable.
+    setRichardChats(trimChatArchive(data.richardChats || []));
     setFolders((data.folders && data.folders.length) ? data.folders : freshFolders());
     setCategories(allCategories.length ? allCategories : ((data.categories && data.categories.length) ? data.categories : freshCategories()));
     var sym = data.currency || "$";
@@ -22452,7 +22495,12 @@ export default function App() {
         if (!data) {
           var nm = cu.fullName || (email ? email.split("@")[0] : "there");
           data = defaultBlob(nm, email);
-          CLOUD.saveUser(cu.id, data);
+          // First write for a brand-new account, before accountKey is set, so it
+          // can't go through flushSave. If it fails the user still gets the app
+          // and the banner appears on their next edit - just don't swallow it.
+          CLOUD.saveUser(cu.id, data).catch(function(err) {
+            try { console.error("Richy initial save failed:", err); } catch (e) {}
+          });
         }
         blobRef.current = data;
         // If user is in a household, load and merge shared data.
@@ -22579,6 +22627,8 @@ export default function App() {
     // Kill any queued debounced save - after account deletion a late write
     // would resurrect the just-erased users/{uid} doc as a ghost.
     if (saveTimerRef.current) { clearTimeout(saveTimerRef.current); saveTimerRef.current = null; }
+    if (saveRetryRef.current) { clearTimeout(saveRetryRef.current); saveRetryRef.current = null; }
+    setSaveError("");
     CLOUD.signOut();
     blobRef.current = {};
     setUser(null); setAccountKey(null); setTab("overview");
@@ -22601,12 +22651,37 @@ export default function App() {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(function() {
       saveTimerRef.current = null;
-      CLOUD.saveUser(accountKey, blobRef.current);
-      if (householdId && household) {
-        var sharedTx = blobRef.current.tx ? blobRef.current.tx.filter(function(t) { return t.shared; }) : [];
-        CLOUD.saveHousehold(householdId, { budgets: blobRef.current.budgets, goals: blobRef.current.goals, categories: blobRef.current.categories, tx: sharedTx });
-      }
+      flushSave();
     }, 800);
+  }
+
+  // The actual write. Previously this was a bare CLOUD.saveUser() whose promise
+  // was never awaited or caught, so ANY failure - an oversized document, an
+  // expired session, a rules change - was completely invisible: the UI kept
+  // accepting edits and the user only found out when a reload rolled them back.
+  // Now a failure raises a banner and retries, and success clears it.
+  function flushSave() {
+    if (!accountKey) return;
+    CLOUD.saveUser(accountKey, blobRef.current).then(function() {
+      setSaveError("");
+      if (saveRetryRef.current) { clearTimeout(saveRetryRef.current); saveRetryRef.current = null; }
+    }).catch(function(err) {
+      try { console.error("Richy save failed:", err); } catch (e) {}
+      setSaveError(saveErrorMsg(err));
+      // One retry in flight at a time. Any further user action re-enters save()
+      // and re-arms this anyway, so a simple fixed delay is enough.
+      if (!saveRetryRef.current) {
+        saveRetryRef.current = setTimeout(function() {
+          saveRetryRef.current = null;
+          flushSave();
+        }, 8000);
+      }
+    });
+    if (householdId && household) {
+      var sharedTx = blobRef.current.tx ? blobRef.current.tx.filter(function(t) { return t.shared; }) : [];
+      CLOUD.saveHousehold(householdId, { budgets: blobRef.current.budgets, goals: blobRef.current.goals, categories: blobRef.current.categories, tx: sharedTx })
+        .catch(function(err) { try { console.error("Richy household save failed:", err); } catch (e) {} });
+    }
   }
 
   // Signature of the current transactions; any add/remove changes it, which is
@@ -22629,7 +22704,10 @@ export default function App() {
   function onSaveGoals(next) { setGoals(next); save({ goals: next }); }
   function onSaveFoundMoney(next) { setFoundMoney(next); save({ foundMoney: next }); }
   function onSaveDecisions(next) { setDecisions(next); save({ decisions: next }); }
-  function onSaveChats(next) { setRichardChats(next); save({ richardChats: next }); }
+  // Trim at the save boundary rather than inside Advisor, so every caller
+  // (archive-on-new-chat, delete, reopen) is covered by one rule and the state
+  // in memory always matches what's persisted.
+  function onSaveChats(next) { var t = trimChatArchive(next); setRichardChats(t); save({ richardChats: t }); }
   function onSaveNotes(next) { setNotes(next); save({ notes: next }); }
   function onSaveBanners(next) { setCustomBanners(next); save({ customBanners: next }); }
   function onDismissTip(id) {
@@ -22760,7 +22838,7 @@ export default function App() {
     for (var k in existing) blob[k] = existing[k];
     blob.notes = nextNotes;
     blobRef.current = blob;
-    CLOUD.saveUser(accountKey, blob);
+    flushSave();   // routed through flushSave so a failure raises the banner, not silence
   }
   // Fire one or more due reminders and mark them all fired in a SINGLE state
   // update, computed from the freshest notes. Doing all due notes in one pass
@@ -23035,7 +23113,7 @@ export default function App() {
       merged.savings = [ef];
     }
     blobRef.current = merged;
-    CLOUD.saveUser(accountKey, merged);
+    flushSave();
   }
 
   // The mid-month catch-up step. Appends the user's already-spent transactions
@@ -23188,6 +23266,85 @@ export default function App() {
     };
   }, [authChecked, user, onboardingDone, catchUpDone]);
 
+  // ---- BACK NAVIGATION ------------------------------------------------------
+  // Richy had no back handling at all, so Android's hardware Back quit the app
+  // from anywhere - out of an open sheet, out of a sub-view, out of the middle
+  // of onboarding - and browser Back unloaded the PWA. Both destroy a session
+  // with the gesture users reach for most.
+  //
+  // Navigation here is a single `tab` string with ~30 sub-view values, and each
+  // sub-view already encodes its own "back" target in its onBack prop. Rather
+  // than re-derive a parent for each one (and drift from those props), we record
+  // the tabs actually visited and pop that stack - so Back reverses the route
+  // the user really took. These hooks must stay above the early returns below.
+  var navStackRef = useRef([]);
+  var poppingRef = useRef(false);
+  var lastTabRef = useRef(tab);
+  useEffect(function() {
+    if (lastTabRef.current === tab) return;
+    if (poppingRef.current) poppingRef.current = false;   // this change WAS a back
+    else {
+      navStackRef.current.push(lastTabRef.current);
+      if (navStackRef.current.length > 50) navStackRef.current.shift();
+    }
+    lastTabRef.current = tab;
+  }, [tab]);
+
+  // Both handlers are read through refs so the listeners below can register once
+  // and still see current state instead of a stale first-render closure.
+  var closeTopRef = useRef(null);
+  closeTopRef.current = function closeTopLayer() {
+    if (sheet) { setSheet(false); return true; }
+    if (timeframeMenuOpen) { setTimeframeMenuOpen(false); return true; }
+    return false;
+  };
+  var backRef = useRef(null);
+  backRef.current = function goBack() {
+    if (!user) return false;                              // auth screen - let Back leave
+    if (!onboardingDone || !catchUpDone) return true;     // mid-setup - swallow, never lose progress
+    if (closeTopRef.current()) return true;
+    if (navStackRef.current.length) {
+      poppingRef.current = true;
+      setTab(navStackRef.current.pop());
+      setSheet(false);
+      return true;
+    }
+    if (tab !== "overview") { poppingRef.current = true; setTab("overview"); return true; }
+    return false;                                         // true root - let the platform exit
+  };
+
+  useEffect(function() {
+    var appPlugin = nativePlugin("App");
+    var handle = null;
+    if (appPlugin && appPlugin.addListener) {
+      try {
+        // Capacitor 5+ resolves a promise; older versions return the handle.
+        handle = appPlugin.addListener("backButton", function() {
+          if (backRef.current()) return;
+          try { appPlugin.exitApp(); } catch (e) {}       // only ever at the root
+        });
+      } catch (e) { handle = null; }
+    }
+    // Web/PWA: park a spare history entry so Back fires popstate here instead of
+    // unloading the app, and re-park each time we consume a press. When we don't
+    // consume one we leave the entry spent, so a second Back exits normally.
+    function park() { try { window.history.pushState({ richy: 1 }, ""); } catch (e) {} }
+    function onPop() { if (backRef.current()) park(); }
+    if (!appPlugin) { park(); window.addEventListener("popstate", onPop); }
+    // Escape closes the top layer only - it must not navigate, which would be
+    // surprising on a desktop keyboard.
+    function onKey(e) { if (e.key === "Escape") closeTopRef.current(); }
+    window.addEventListener("keydown", onKey);
+    return function() {
+      if (handle) {
+        if (typeof handle.then === "function") handle.then(function(h) { try { h.remove(); } catch (e) {} }).catch(function() {});
+        else if (handle.remove) { try { handle.remove(); } catch (e) {} }
+      }
+      window.removeEventListener("popstate", onPop);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
   if (cloudReady() && !authChecked) {
     return <BootSplash />;
   }
@@ -23210,7 +23367,7 @@ export default function App() {
     for (var k in current) merged[k] = current[k];
     merged.onboardingDone = false;
     blobRef.current = merged;
-    CLOUD.saveUser(accountKey, merged);
+    flushSave();
   }
 
   var currentTab = tab;
@@ -23303,6 +23460,17 @@ export default function App() {
           })}
         </div>
       </Overlay>
+
+      {saveError && (
+        <div role="alert" style={{ margin: "0 16px 10px", padding: "11px 14px", borderRadius: 14, background: "rgba(224,48,48,0.10)", border: "1px solid rgba(224,48,48,0.28)", display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: T.red, fontFamily: UI, letterSpacing: "-0.01em" }}>Not saved</div>
+            <div style={{ fontSize: 12.5, color: T.ink2, fontFamily: UI, lineHeight: 1.45, marginTop: 2 }}>{saveError}</div>
+          </div>
+          <button onClick={function() { flushSave(); }} aria-label="Retry saving"
+            style={{ flexShrink: 0, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "7px 12px", borderRadius: 9, background: T.red, color: "#fff" }}>Retry</button>
+        </div>
+      )}
 
       <CustomBanners banners={customBanners} onSave={onSaveBanners} />
 

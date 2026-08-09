@@ -9,10 +9,7 @@
   },
   "server": {
     "allowNavigation": [
-      "richy-mgkl.vercel.app",
-      "www.gstatic.com",
-      "cdn.jsdelivr.net",
-      "unpkg.com"
+      "richy-mgkl.vercel.app"
     ]
   }
 }

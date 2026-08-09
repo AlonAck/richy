@@ -1,10 +1,15 @@
 // Richy service worker.
 //
 // 1) OFFLINE SHELL - the app opens with no connection once it has been visited:
-//    the shell (index.html, compiled bundle, icons) is precached at install,
-//    navigations are network-first with cache fallback (deploys arrive
-//    immediately; offline still boots), static assets are cache-first, and the
-//    CDN scripts (React, Firebase, Clerk) are cached as they stream in.
+//    the shell (index.html, the compiled bundle, the vendored React/Firebase/
+//    Clerk runtime, icons) is precached at install, navigations are network-first
+//    with cache fallback (deploys arrive immediately; offline still boots), and
+//    static assets are cache-first.
+//    NOTE: this file is the web/PWA offline story only. iOS native does NOT run
+//    it - Capacitor serves from the capacitor:// scheme, where service workers
+//    are unavailable. iOS boots offline because the runtime is bundled into the
+//    app, not because of anything here. Don't move assets back off-origin on the
+//    assumption that this file will catch them.
 //    Data itself comes back offline via Firestore's IndexedDB persistence
 //    (enabled in firebase-init.js) - this file only covers the shell.
 //
@@ -23,13 +28,20 @@ var SHELL = [
   "/",
   "/index.html",
   "/dist/app.js?v=" + BUILD,
-  "/firebase-init.js",
-  "/clerk-init.js",
+  "/firebase-init.js?v=" + BUILD,
+  "/clerk-init.js?v=" + BUILD,
+  // The browser runtime. These are same-origin now (build.mjs copies them out of
+  // node_modules) - precaching them is what lets the PWA boot with no network.
+  "/vendor/react.production.min.js?v=" + BUILD,
+  "/vendor/react-dom.production.min.js?v=" + BUILD,
+  "/vendor/firebase-app-compat.js?v=" + BUILD,
+  "/vendor/firebase-auth-compat.js?v=" + BUILD,
+  "/vendor/firebase-firestore-compat.js?v=" + BUILD,
+  "/vendor/clerk.browser.js?v=" + BUILD,
   "/manifest.webmanifest",
   "/icon-180.png",
   "/icon-512.png"
 ];
-var CDN_HOSTS = ["www.gstatic.com", "cdn.jsdelivr.net", "unpkg.com"];
 
 self.addEventListener("install", function (event) {
   self.skipWaiting();
@@ -60,8 +72,10 @@ self.addEventListener("fetch", function (event) {
   var sameOrigin = url.origin === self.location.origin;
 
   // Never touch API calls or Firestore/Clerk traffic - live data must stay live.
+  // Everything the shell needs is same-origin now (the CDN script tags are gone),
+  // so cross-origin requests are all live data and are left entirely alone.
   if (sameOrigin && url.pathname.indexOf("/api/") === 0) return;
-  if (!sameOrigin && CDN_HOSTS.indexOf(url.hostname) === -1) return;
+  if (!sameOrigin) return;
 
   // Navigations: network-first so a new deploy shows immediately; fall back to
   // the cached shell when offline.
@@ -91,7 +105,7 @@ self.addEventListener("fetch", function (event) {
     return;
   }
 
-  // Everything else (icons, init scripts, CDN libraries): cache-first,
+  // Everything else (icons, init scripts, the vendored runtime): cache-first,
   // filling the cache from the network on first sight.
   event.respondWith(
     caches.match(req).then(function (hit) {

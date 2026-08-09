@@ -14,7 +14,20 @@
 <meta name="description" content="Personal budgeting, made calm. A beautiful budget paired with Richard, an AI advisor who knows your numbers."/>
 <style>
   html,body,#root{margin:0;background:#F7F3EE;font-family:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
-  #err{white-space:pre-wrap;font-family:monospace;color:#b00;padding:16px;font-size:13px;}
+  /* Boot-failure screen. Hidden until something goes wrong before React mounts.
+     This is the only UI a user can reach when the bundle itself won't run, and
+     in the native shell there is no address bar or pull-to-refresh behind it -
+     so it has to carry its own way out. */
+  #err{display:none;position:fixed;inset:0;background:#F7F3EE;align-items:center;justify-content:center;padding:24px;font-family:-apple-system,system-ui,sans-serif;}
+  html.rc-dark #err{background:#131110;}
+  #err .rc-err-in{text-align:center;max-width:340px;}
+  #err .rc-err-logo{width:56px;height:56px;border-radius:18px;background:#0D0C18;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;}
+  #err .rc-err-logo span{font-family:Georgia,'Times New Roman',serif;font-size:34px;font-weight:700;color:#C8973A;line-height:1;}
+  #err h1{font-size:19px;font-weight:800;color:#1A1410;margin:0 0 8px;}
+  #err p{font-size:13.5px;line-height:1.5;color:#6E6259;margin:0 0 18px;}
+  html.rc-dark #err h1{color:#F2EDE6;}
+  html.rc-dark #err p{color:#B0A396;}
+  #err button{border:none;cursor:pointer;background:#C8973A;color:#fff;font-size:14.5px;font-weight:700;padding:12px 28px;border-radius:12px;font-family:inherit;}
   /* Native launch splash: painted by the browser the instant HTML arrives, long
      before the app bundle is fetched and parsed. React replaces it on mount. */
   .rc-splash{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-family:-apple-system,system-ui,sans-serif;}
@@ -62,7 +75,14 @@
     </div>
   </div>
 </div>
-<div id="err"></div>
+<div id="err">
+  <div class="rc-err-in">
+    <div class="rc-err-logo"><span>R</span></div>
+    <h1>Richy couldn't start</h1>
+    <p id="err-msg">Something went wrong while loading. Your data is safe — nothing has been lost.</p>
+    <button type="button" onclick="location.reload()">Try again</button>
+  </div>
+</div>
 <script>
 // Register the service worker: reminder notifications + the offline shell cache.
 if ("serviceWorker" in navigator) {
@@ -71,36 +91,60 @@ if ("serviceWorker" in navigator) {
   });
 }
 </script>
+<!-- EVERY script below is same-origin, copied out of node_modules at deploy time
+     by build.mjs (see its "Vendor the browser runtime" step). They were third-
+     party CDN tags until we found that a single CDN failure left the app unable
+     to boot at all - permanently on iOS, where Capacitor's capacitor:// scheme
+     means the service worker never runs and nothing is ever cached. Keep them
+     local: it is what makes the app launch offline and what makes our App Store
+     Guideline 2.5.2 answer ("no code downloaded at runtime") true.
+     Versions are pinned in package.json, not here. -->
 <!-- Firebase (compat build exposes a global "firebase"). Auth here is used only
      by the invisible Clerk->Firebase bridge (signInWithCustomToken) so
      Firestore's security rules keep working; Firestore is the real database. -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="/firebase-init.js"></script>
+<script src="/vendor/firebase-app-compat.js?v=__RICHY_BUILD__"></script>
+<script src="/vendor/firebase-auth-compat.js?v=__RICHY_BUILD__"></script>
+<script src="/vendor/firebase-firestore-compat.js?v=__RICHY_BUILD__"></script>
+<script src="/firebase-init.js?v=__RICHY_BUILD__"></script>
 <!-- Clerk (exposes a global "Clerk") - the auth UI/UX the user actually sees.
-     Pinned to the v5 major so a breaking clerk-js release can never land in
-     production silently. Not async/defer: clerk-init.js needs window.Clerk the
-     instant it runs, same as the Firebase scripts above. -->
-<script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js" crossorigin="anonymous"></script>
-<script src="/clerk-init.js"></script>
-<!-- React, pinned exact - no redirect hop, no surprise upgrades. -->
-<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+     Not async/defer: clerk-init.js needs window.Clerk the instant it runs, same
+     as the Firebase scripts above. -->
+<script src="/vendor/clerk.browser.js?v=__RICHY_BUILD__"></script>
+<script src="/clerk-init.js?v=__RICHY_BUILD__"></script>
+<!-- React. -->
+<script src="/vendor/react.production.min.js?v=__RICHY_BUILD__"></script>
+<script src="/vendor/react-dom.production.min.js?v=__RICHY_BUILD__"></script>
 <!-- The app, precompiled at deploy time by build.mjs. No Babel, no eval. -->
 <script src="/dist/app.js?v=__RICHY_BUILD__"></script>
 <script>
 (function () {
-  var App = window.RichyApp;
-  var Boundary = window.RichyErrorBoundary;
-  if (!App) {
-    document.getElementById("err").textContent = "Richy failed to load its application bundle. Please reload.";
+  function fail(msg) {
+    var box = document.getElementById("err");
+    if (!box) return;
+    if (msg) { var m = document.getElementById("err-msg"); if (m) m.textContent = msg; }
+    var root = document.getElementById("root");
+    if (root) root.style.display = "none";
+    box.style.display = "flex";
+  }
+  // React and ReactDOM are same-origin now, so this should be unreachable - but
+  // an unreachable branch that renders a Try again button costs nothing, and the
+  // alternative is the user staring at a frozen splash with no way forward.
+  if (typeof React === "undefined" || typeof ReactDOM === "undefined") {
+    fail("Richy couldn't load part of itself. Check your connection and try again.");
     return;
   }
-  var tree = Boundary
-    ? React.createElement(Boundary, null, React.createElement(App))
-    : React.createElement(App);
-  ReactDOM.createRoot(document.getElementById("root")).render(tree);
+  var App = window.RichyApp;
+  var Boundary = window.RichyErrorBoundary;
+  if (!App) { fail(); return; }
+  try {
+    var tree = Boundary
+      ? React.createElement(Boundary, null, React.createElement(App))
+      : React.createElement(App);
+    ReactDOM.createRoot(document.getElementById("root")).render(tree);
+  } catch (e) {
+    try { console.error("Richy failed to mount:", e); } catch (e2) {}
+    fail();
+  }
 })();
 </script>
 </body>

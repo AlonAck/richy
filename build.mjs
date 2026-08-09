@@ -7,7 +7,7 @@
 // imports, unwrap the default export, JSX -> React.createElement), so the
 // production bundle behaves identically to what the dev harness runs - just
 // compiled once at deploy time instead of on every visitor's phone.
-import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, copyFileSync, existsSync } from "fs";
 import { transformSync } from "@babel/core";
 import presetReact from "@babel/preset-react";
 
@@ -84,10 +84,55 @@ const staticFiles = [
 ];
 for (const f of staticFiles) copyFileSync(f, "public/" + f);
 
+// ---- 3. Vendor the browser runtime ------------------------------------------
+// React, Firebase and Clerk used to be <script src="https://unpkg.com/...">
+// tags. That made every cold launch depend on three third-party CDNs: if any of
+// them failed, `React` was undefined, the bundle's IIFE threw on its first line,
+// and the user got a blank page. On iOS this was permanent, not intermittent -
+// Capacitor serves from the capacitor:// scheme, where service workers don't
+// run, so sw.js never cached them and every launch re-fetched from the network.
+//
+// Copying them out of node_modules makes the shipped app fully self-contained:
+// same-origin, precached by the service worker, and honest about Guideline
+// 2.5.2 (nothing is downloaded or executed at runtime).
+//
+// Each entry lists candidate paths because the exact file moves between major
+// versions. A miss throws and fails the build - loudly and at deploy time,
+// which is the correct place to find out. Never silently fall back to a CDN.
+const vendor = [
+  ["react.production.min.js",       ["node_modules/react/umd/react.production.min.js"]],
+  ["react-dom.production.min.js",   ["node_modules/react-dom/umd/react-dom.production.min.js"]],
+  ["firebase-app-compat.js",        ["node_modules/firebase/firebase-app-compat.js",
+                                     "node_modules/firebase/compat/app/dist/index.umd.js"]],
+  ["firebase-auth-compat.js",       ["node_modules/firebase/firebase-auth-compat.js",
+                                     "node_modules/firebase/compat/auth/dist/index.umd.js"]],
+  ["firebase-firestore-compat.js",  ["node_modules/firebase/firebase-firestore-compat.js",
+                                     "node_modules/firebase/compat/firestore/dist/index.umd.js"]],
+  ["clerk.browser.js",              ["node_modules/@clerk/clerk-js/dist/clerk.browser.js"]],
+];
+
+mkdirSync("public/vendor", { recursive: true });
+for (const [name, candidates] of vendor) {
+  const hit = candidates.find((p) => existsSync(p));
+  if (!hit) {
+    throw new Error(
+      "Vendor asset not found: " + name + "\n" +
+      "Looked in:\n  " + candidates.join("\n  ") + "\n" +
+      "The package is probably installed at a different path in this version. " +
+      "Add the correct path to the `vendor` list in build.mjs - do NOT go back " +
+      "to loading it from a CDN (see the comment above)."
+    );
+  }
+  copyFileSync(hit, "public/vendor/" + name);
+}
+
 // index.html and sw.js get the build id stamped in, so each deploy busts both
 // the browser HTTP cache (?v=) and the service-worker cache (new cache name).
 for (const f of ["index.html", "sw.js"]) {
   writeFileSync("public/" + f, readFileSync(f, "utf8").replace(/__RICHY_BUILD__/g, BUILD_ID));
 }
 
-console.log("Built public/ (app.js " + Math.round(bundle.length / 1024) + " KB, build " + BUILD_ID + ")");
+console.log(
+  "Built public/ (app.js " + Math.round(bundle.length / 1024) + " KB, " +
+  vendor.length + " vendor files, build " + BUILD_ID + ")"
+);
