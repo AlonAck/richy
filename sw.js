@@ -1,8 +1,8 @@
 // Richy service worker.
 //
 // 1) OFFLINE SHELL - the app opens with no connection once it has been visited:
-//    the shell (index.html, the compiled bundle, the vendored React/Firebase/
-//    Clerk runtime, icons) is precached at install, navigations are network-first
+//    the shell (index.html, the compiled bundle, the vendored React/Firebase
+//    runtime, icons) is precached at install, navigations are network-first
 //    with cache fallback (deploys arrive immediately; offline still boots), and
 //    static assets are cache-first.
 //    NOTE: this file is the web/PWA offline story only. iOS native does NOT run
@@ -29,7 +29,6 @@ var SHELL = [
   "/index.html",
   "/dist/app.js?v=" + BUILD,
   "/firebase-init.js?v=" + BUILD,
-  "/clerk-init.js?v=" + BUILD,
   // The browser runtime. These are same-origin now (build.mjs copies them out of
   // node_modules) - precaching them is what lets the PWA boot with no network.
   "/vendor/react.production.min.js?v=" + BUILD,
@@ -37,7 +36,6 @@ var SHELL = [
   "/vendor/firebase-app-compat.js?v=" + BUILD,
   "/vendor/firebase-auth-compat.js?v=" + BUILD,
   "/vendor/firebase-firestore-compat.js?v=" + BUILD,
-  "/vendor/clerk.browser.js?v=" + BUILD,
   "/manifest.webmanifest",
   "/icon-180.png",
   "/icon-512.png"
@@ -71,7 +69,8 @@ self.addEventListener("fetch", function (event) {
   var url = new URL(req.url);
   var sameOrigin = url.origin === self.location.origin;
 
-  // Never touch API calls or Firestore/Clerk traffic - live data must stay live.
+  // Never touch API calls or Firebase Auth/Firestore traffic - live data must
+  // stay live.
   // Everything the shell needs is same-origin now (the CDN script tags are gone),
   // so cross-origin requests are all live data and are left entirely alone.
   if (sameOrigin && url.pathname.indexOf("/api/") === 0) return;

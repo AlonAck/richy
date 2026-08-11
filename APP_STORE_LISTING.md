@@ -163,12 +163,12 @@ execute transactions.
 
 NO DOWNLOADED CODE (Guideline 2.5.2)
 All executable code ships inside the app bundle. The app is a precompiled
-JavaScript bundle plus its runtime libraries (React, the Firebase web SDK and
-Clerk), all served from the app's own bundle - there are no remote script tags
-and no code is fetched, installed or evaluated at runtime. The app launches with
-no network connection at all; you can verify this in Airplane Mode from a cold
+JavaScript bundle plus its runtime libraries (React and the Firebase web SDK),
+all served from the app's own bundle - there are no remote script tags and no
+code is fetched, installed or evaluated at runtime. The app launches with no
+network connection at all; you can verify this in Airplane Mode from a cold
 start. Network requests are data only: our own API on richy-mgkl.vercel.app,
-Firestore, and Clerk's auth endpoints.
+and Firebase Authentication / Firestore.
 
 DATA COLLECTION
 Richy collects only what the app needs to function: email, name, date of birth

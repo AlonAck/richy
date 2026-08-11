@@ -75,18 +75,13 @@ if ("serviceWorker" in navigator) {
   });
 }
 </script>
-<!-- Firebase (compat build exposes a global "firebase"). Auth here is used only
-     by the invisible Clerk->Firebase bridge below (signInWithCustomToken) so
-     Firestore's security rules keep working; Firestore is the real database. -->
+<!-- Firebase (compat build exposes a global "firebase"). Firebase Auth owns
+     sign-in; Firestore is the database. Dev harness only - production serves
+     these same-origin from /vendor/ (see build.mjs). -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="/firebase-init.js"></script>
-<!-- Clerk (exposes a global "Clerk") - this is the auth UI/UX the user actually sees.
-     Not async/defer: clerk-init.js (next) needs window.Clerk to exist the
-     instant it runs, same as the Firebase scripts above. -->
-<script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" crossorigin="anonymous"></script>
-<script src="/clerk-init.js"></script>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>

@@ -44,7 +44,7 @@
   <ul>
     <li><strong>Email address and name</strong> — to create and identify your account.</li>
     <li><strong>Date of birth</strong> — to verify you meet our minimum age (16) and to let Richard, the AI advisor, give age-appropriate guidance.</li>
-    <li><strong>Password</strong> — handled entirely by our authentication provider, Clerk. We never see or store your password. If you sign in with Google, Google confirms your identity and we receive your email and name.</li>
+    <li><strong>Password</strong> — handled entirely by Firebase Authentication (Google). We never see or store your password. If you sign in with Google, Google confirms your identity and we receive your email and name.</li>
   </ul>
   <h3>Financial data you enter</h3>
   <ul>
@@ -75,7 +75,7 @@
   <table>
     <tr><th>Provider</th><th>What it does</th><th>What it receives</th></tr>
     <tr><td>Google Firebase (Firestore)</td><td>Database that stores your account data</td><td>All data described in section 1 that syncs to the cloud</td></tr>
-    <tr><td>Clerk</td><td>Authentication (sign-up, sign-in, passwords)</td><td>Email, name, password (never visible to us)</td></tr>
+    <tr><td>Google Firebase Authentication</td><td>Sign-up, sign-in and passwords</td><td>Email, name, password (never visible to us)</td></tr>
     <tr><td>Anthropic</td><td>Generates Richard's responses</td><td>Your chat messages and a summary of your financial figures, when you use AI features</td></tr>
     <tr><td>Vercel</td><td>Hosts the app and its server functions</td><td>Standard web-request data (IP address, request logs)</td></tr>
     <tr><td>Frankfurter</td><td>Currency exchange rates</td><td>Nothing personal — only which currencies to convert</td></tr>

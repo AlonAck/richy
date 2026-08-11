@@ -9,7 +9,7 @@
 
   Renders the real app, signed in, with a realistic demo account so App Store
   screenshots can be captured without touching production data or needing a
-  Clerk login. Firebase and Clerk are deliberately NOT loaded, so cloudReady()
+  real login. Firebase is deliberately NOT loaded, so cloudReady()
   is false and every CLOUD write is a no-op - this harness physically cannot
   reach the live database.
 

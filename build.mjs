@@ -78,16 +78,15 @@ const staticFiles = [
   "icon-512.png",
   "manifest.webmanifest",
   "firebase-init.js",
-  "clerk-init.js",
   "terms.html",
   "privacy.html",
 ];
 for (const f of staticFiles) copyFileSync(f, "public/" + f);
 
 // ---- 3. Vendor the browser runtime ------------------------------------------
-// React, Firebase and Clerk used to be <script src="https://unpkg.com/...">
-// tags. That made every cold launch depend on three third-party CDNs: if any of
-// them failed, `React` was undefined, the bundle's IIFE threw on its first line,
+// React and Firebase used to be <script src="https://unpkg.com/..."> tags.
+// That made every cold launch depend on third-party CDNs: if any of them
+// failed, `React` was undefined, the bundle's IIFE threw on its first line,
 // and the user got a blank page. On iOS this was permanent, not intermittent -
 // Capacitor serves from the capacitor:// scheme, where service workers don't
 // run, so sw.js never cached them and every launch re-fetched from the network.
@@ -108,7 +107,6 @@ const vendor = [
                                      "node_modules/firebase/compat/auth/dist/index.umd.js"]],
   ["firebase-firestore-compat.js",  ["node_modules/firebase/firebase-firestore-compat.js",
                                      "node_modules/firebase/compat/firestore/dist/index.umd.js"]],
-  ["clerk.browser.js",              ["node_modules/@clerk/clerk-js/dist/clerk.browser.js"]],
 ];
 
 mkdirSync("public/vendor", { recursive: true });

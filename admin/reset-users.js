@@ -2,13 +2,9 @@
 // documents in the Firestore "users" collection for project richy-91667.
 // Everyone starts from zero: accounts gone, data gone. This cannot be undone.
 //
-// NOTE (post-Clerk-migration): real accounts now live in Clerk, not Firebase
-// Auth - deleteAllAuthUsers() below only wipes the shadow Firebase users
-// created by the Clerk->Firebase custom-token bridge (see
-// api/clerk-firebase-token.js), which is harmless/self-healing (they're
-// recreated on next sign-in). To actually delete real accounts, use Clerk's
-// dashboard or Backend API instead. The Firestore "users" doc deletion below
-// is still the real, meaningful part of a reset.
+// Firebase Auth is the real identity store, so both halves below matter: the
+// Firestore "users" documents hold everyone's data, and the Auth accounts are
+// the sign-ins themselves. Deleting both is a genuine reset to zero.
 //
 // It will NOT run without an explicit confirmation flag, so you can't trigger
 // it by accident:

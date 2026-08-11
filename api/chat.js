@@ -1,8 +1,17 @@
 // Anthropic proxy for Richard (the AI advisor). Locked down: every request must
-// carry a valid Clerk session token (same verifyToken pattern as
-// api/clerk-firebase-token.js), so only signed-in Richy users can spend the
+// carry a valid Firebase ID token, so only signed-in Richy users can spend the
 // API key - an anonymous caller who finds this URL gets a 401, not a free relay.
-var clerk = require("@clerk/backend");
+var admin = require("firebase-admin");
+
+function initAdmin() {
+  if (admin.apps.length) return true;
+  var raw = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (!raw) return false;
+  raw = raw.trim();
+  var svc = JSON.parse(raw[0] === "{" ? raw : Buffer.from(raw, "base64").toString("utf8"));
+  admin.initializeApp({ credential: admin.credential.cert(svc) });
+  return true;
+}
 
 // CORS: reflect only trusted origins. Production + Vercel previews + the local
 // dev harness (which calls the deployed API cross-origin - see callClaude()).
@@ -43,9 +52,13 @@ module.exports = async function handler(req, res) {
     res.status(500).json({ error: { type: "config_error", message: "ANTHROPIC_API_KEY is not set in environment variables." } });
     return;
   }
-  var secretKey = process.env.CLERK_SECRET_KEY;
-  if (!secretKey) {
-    res.status(500).json({ error: { type: "config_error", message: "CLERK_SECRET_KEY is not set." } });
+  try {
+    if (!initAdmin()) {
+      res.status(500).json({ error: { type: "config_error", message: "FIREBASE_SERVICE_ACCOUNT is not set." } });
+      return;
+    }
+  } catch (e) {
+    res.status(500).json({ error: { type: "config_error", message: "FIREBASE_SERVICE_ACCOUNT could not be parsed." } });
     return;
   }
 
@@ -55,8 +68,8 @@ module.exports = async function handler(req, res) {
   if (!m) { res.status(401).json({ error: { type: "unauthenticated", message: "Sign in to talk to Richard." } }); return; }
   var uid;
   try {
-    var verified = await clerk.verifyToken(m[1], { secretKey: secretKey });
-    uid = verified.sub;
+    var decoded = await admin.auth().verifyIdToken(m[1]);
+    uid = decoded.uid;
     if (!uid) throw new Error("Token had no subject.");
   } catch (e) {
     res.status(401).json({ error: { type: "unauthenticated", message: "Your session expired. Sign in again." } });

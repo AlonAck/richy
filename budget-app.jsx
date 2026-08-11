@@ -1147,23 +1147,21 @@ function ensureSyncedTags(categories, folders) {
 function freshCategories() { return DEFAULT_CATEGORIES.map(function(c) { return { id: c.id, name: c.name, color: c.color, icon: c.icon, folderId: c.folderId }; }).concat(SYNCED_TAGS); }
 function freshFolders() { return DEFAULT_FOLDERS.map(function(f) { return { id: f.id, name: f.name }; }).concat([SYNCED_TAG_FOLDER]); }
 
-// Cloud backend: Clerk owns identity + sessions (sign-up, sign-in, password,
-// email), and Cloud Firestore stores one document per user (collection
-// "users", keyed by the Clerk user id) holding their whole data blob.
+// Cloud backend: Firebase Auth owns identity + sessions (sign-up, sign-in,
+// password, email), and Cloud Firestore stores one document per user
+// (collection "users", keyed by the Firebase uid) holding their whole data blob.
 //
-// Firestore's security rules only trust Firebase's own request.auth, which a
-// Clerk session token means nothing to on its own. So after every Clerk
-// sign-in, the app silently exchanges the Clerk session for a Firebase custom
-// token (minted server-side in api/clerk-firebase-token.js, keyed to the same
-// Clerk user id) and signs in to Firebase Auth with it too - see
-// _bridgeToFirebase() below. This is invisible to the user: Clerk is the only
-// auth UI/UX they ever see; Firebase Auth here exists purely so Firestore's
-// rules keep working unchanged.
+// Firestore's security rules authorize on request.auth, which Firebase Auth
+// populates directly - so the client signs in and the rules just work, with no
+// bridge or token exchange in between.
 //
-// Config: Clerk's publishable key lives in clerk-init.js, Firebase's web
-// config lives in firebase-init.js - both loaded by preview.html before this
-// app runs. cloudReady()/clerkConfigured() guard every call so the app can
-// still boot and explain itself before setup is done.
+// Config: Firebase's web config lives in firebase-init.js, loaded by the page
+// shell before this app runs. cloudReady()/cloudConfigured() guard every call
+// so the app can still boot and explain itself before setup is done.
+//
+// (An earlier build put Clerk in front of this and bridged Clerk sessions into
+// Firebase custom tokens. That whole implementation is preserved as the
+// `clerk-auth-integration` skill in .claude/skills/ if it is ever wanted back.)
 function _fb() {
   return (typeof window !== "undefined" && window.firebase) ? window.firebase : null;
 }
@@ -1171,132 +1169,45 @@ function cloudReady() {
   var f = _fb();
   return !!(f && f.apps && f.apps.length);
 }
-// True once real keys are in firebase-init.js AND clerk-init.js, regardless of
-// whether the SDKs actually loaded - lets cloudErrorMsg() tell "never
-// configured" apart from "SDK failed to load this time" (ad blocker, flaky
-// connection).
+// True once real keys are in firebase-init.js, regardless of whether the SDK
+// scripts actually loaded - lets cloudErrorMsg() tell "never configured" apart
+// from "SDK failed to load this time" (ad blocker, flaky connection).
 function cloudConfigured() {
-  return typeof window !== "undefined" && window.__RICHY_FB_CONFIGURED__ === true && window.__RICHY_CLERK_CONFIGURED__ === true;
+  return typeof window !== "undefined" && window.__RICHY_FB_CONFIGURED__ === true;
 }
 function cloudErrorMsg() {
   return cloudConfigured() ? CLOUD_CONNECT_MSG : CLOUD_SETUP_MSG;
 }
 function _auth() { return _fb().auth(); }
 function _fsdb() { return _fb().firestore(); }
-function _clerk() {
-  return (typeof window !== "undefined" && window.Clerk) ? window.Clerk : null;
-}
-// Clerk.load() is an async network call (unlike Firebase's synchronous
-// initializeApp), so anything that touches Clerk waits on this promise first.
-function _clerkReady() {
-  return (typeof window !== "undefined" && window.__RICHY_CLERK_READY__) || Promise.reject(new Error("Clerk is not configured."));
-}
-// See the big comment above: keeps Firestore's request.auth populated with
-// the Clerk user id after every sign-in, without the user ever seeing it.
-function _bridgeToFirebase() {
-  var c = _clerk();
-  var cu = c && c.session;
-  if (!cu) return cloudReady() ? _auth().signOut().catch(function() {}) : Promise.resolve();
-  return c.session.getToken().then(function(token) {
-    return fetch("/api/clerk-firebase-token", { headers: { Authorization: "Bearer " + token } });
-  }).then(function(r) { return r.json(); }).then(function(j) {
-    if (!j || !j.ok || !j.token) throw new Error((j && j.error && j.error.message) || "Could not establish a database session.");
-    return _auth().signInWithCustomToken(j.token);
-  });
-}
-// Normalizes a Clerk error into the same { code: "auth/...", message } shape
-// Firebase errors used to have, so the many existing `err.code === "auth/..."`
-// checks throughout the sign-in/account-settings UI keep working unchanged.
-function _clerkErr(e) {
-  var first = (e && e.errors && e.errors[0]) || null;
-  var code = first ? first.code : "";
-  var mapped = "";
-  if (code === "form_password_incorrect") mapped = "auth/wrong-password";
-  else if (code === "form_identifier_not_found") mapped = "auth/user-not-found";
-  else if (code === "form_identifier_exists") mapped = "auth/email-already-in-use";
-  else if (code === "form_password_pwned" || code === "form_password_length_too_short" || code === "form_password_validation_failed") mapped = "auth/weak-password";
-  else if (code === "form_param_format_invalid" || code === "form_identifier_invalid") mapped = "auth/invalid-email";
-  else if (code === "too_many_requests") mapped = "auth/too-many-requests";
-  else if (code === "network_error") mapped = "auth/network-request-failed";
-  var msg = (first && (first.longMessage || first.message)) || (e && e.message) || "Something went wrong. Please try again.";
-  var out = new Error(msg);
-  out.code = mapped;
-  out.message = msg;
-  throw out;
-}
 
 var CLOUD = {
-  // Subscribe to sign-in state. cb receives the Clerk user (or null). Returns
-  // an unsubscribe function. Fires once immediately with the restored session -
-  // after first silently bridging to Firebase so Firestore calls are authorized.
+  // Subscribe to sign-in state. cb receives the Firebase user (or null).
+  // Returns an unsubscribe function. Fires once immediately with the restored
+  // session.
   onAuth: function(cb) {
     if (!cloudReady()) { cb(null); return function () {}; }
-    var cancelled = false;
-    var unsub = function() {};
-    _clerkReady().then(function() {
-      if (cancelled) return;
-      var c = _clerk();
-      if (!c) { cb(null); return; }
-      var fire = function() {
-        if (!c.user) { cb(null); return; }
-        _bridgeToFirebase().then(function() { cb(c.user); }).catch(function() { cb(null); });
-      };
-      fire();
-      unsub = c.addListener(fire);
-    }).catch(function() { if (!cancelled) cb(null); });
-    return function() { cancelled = true; unsub(); };
+    return _auth().onAuthStateChanged(cb);
   },
   signUp: function(email, password) {
-    return _clerkReady().then(function() {
-      return _clerk().client.signUp.create({ emailAddress: email, password: password });
-    }).then(function(su) {
-      if (su.status !== "complete") {
-        // Clerk's dashboard has "verify at sign-up" turned off per
-        // CLERK_SETUP.md so this should always complete immediately, same as
-        // Firebase's createUserWithEmailAndPassword did.
-        var e = new Error("Sign up could not complete."); e.code = "auth/operation-not-allowed"; throw e;
-      }
-      return _clerk().setActive({ session: su.createdSessionId }).then(function() {
-        // Bridge to Firebase now (not just via the onAuth listener, which fires
-        // asynchronously on its own) - finishSignup() writes the new user's doc
-        // to Firestore right after this resolves, and that write needs
-        // request.auth already populated or the security rules reject it.
-        return _bridgeToFirebase();
-      }).then(function() {
-        return { user: { uid: su.createdUserId } };
-      });
-    }).catch(_clerkErr);
+    return _auth().createUserWithEmailAndPassword(email, password);
   },
   signIn: function(email, password) {
-    return _clerkReady().then(function() {
-      return _clerk().client.signIn.create({ identifier: email, password: password });
-    }).then(function(si) {
-      if (si.status !== "complete") {
-        var e = new Error("Sign in could not complete."); e.code = "auth/wrong-password"; throw e;
-      }
-      return _clerk().setActive({ session: si.createdSessionId }).then(function() {
-        return _bridgeToFirebase();
-      });
-    }).catch(_clerkErr);
+    return _auth().signInWithEmailAndPassword(email, password);
   },
-  // Google sign-in via Clerk is a full-page redirect (not a popup like
-  // Firebase's signInWithPopup) - the page navigates away to Google and back;
-  // CLOUD.onAuth picks up the new session once Clerk completes the redirect.
   signInGoogle: function() {
-    return _clerkReady().then(function() {
-      return _clerk().client.signIn.authenticateWithRedirect({
-        strategy: "oauth_google",
-        redirectUrl: window.location.href,
-        redirectUrlComplete: window.location.href
-      });
-    }).catch(_clerkErr);
+    var provider = new (_fb().auth.GoogleAuthProvider)();
+    return _auth().signInWithPopup(provider);
   },
   signOut: function() {
-    var c = _clerk();
-    var p = c ? c.signOut() : Promise.resolve();
-    return p.catch(function() {}).then(function() {
-      return cloudReady() ? _auth().signOut().catch(function() {}) : Promise.resolve();
-    });
+    return cloudReady() ? _auth().signOut() : Promise.resolve();
+  },
+  // A fresh Firebase ID token, used to authenticate the user's own calls to our
+  // API functions (the server verifies it and derives uid itself - the client
+  // never gets to assert its own uid to those endpoints).
+  getIdToken: function() {
+    var cu = cloudReady() ? _auth().currentUser : null;
+    return cu ? cu.getIdToken() : Promise.resolve(null);
   },
   loadUser: function(uid) {
     return _fsdb().collection("users").doc(uid).get().then(function (snap) {
@@ -1340,41 +1251,34 @@ var CLOUD = {
   },
 
   hasPasswordProvider: function() {
-    var c = _clerk();
-    var cu = c ? c.user : null;
-    return !!(cu && cu.passwordEnabled);
+    var cu = cloudReady() ? _auth().currentUser : null;
+    if (!cu) return false;
+    var pd = cu.providerData || [];
+    for (var i = 0; i < pd.length; i++) {
+      if (pd[i].providerId === "password") return true;
+    }
+    return false;
   },
-  // Clerk verifies the current password AND sets the new one in one call - no
-  // separate reauthenticate step needed the way Firebase required.
-  updatePassword: function(newPw, oldPw) {
-    return _clerkReady().then(function() {
-      var cu = _clerk().user;
-      return cu.updatePassword({ currentPassword: oldPw, newPassword: newPw });
-    }).catch(_clerkErr);
+  // Firebase requires a recent sign-in before changing a password or email, so
+  // callers reauthenticate() first and then call the setter.
+  reauthenticate: function(email, oldPw) {
+    var cu = _auth().currentUser;
+    var cred = _fb().auth.EmailAuthProvider.credential(email, oldPw);
+    return cu.reauthenticateWithCredential(cred);
+  },
+  updatePassword: function(newPw) {
+    return _auth().currentUser.updatePassword(newPw);
   },
   linkPassword: function(email, pw) {
-    return _clerkReady().then(function() {
-      var cu = _clerk().user;
-      // No currentPassword: this account is Google-only so far.
-      return cu.updatePassword({ newPassword: pw });
-    }).catch(_clerkErr);
+    var cu = _auth().currentUser;
+    var cred = _fb().auth.EmailAuthProvider.credential(email, pw);
+    return cu.linkWithCredential(cred);
   },
   sendPasswordReset: function(email) {
-    return _clerkReady().then(function() {
-      return _clerk().client.signIn.create({ identifier: email, strategy: "reset_password_email_code" });
-    }).catch(_clerkErr);
+    return _auth().sendPasswordResetEmail(email);
   },
-  // NOTE: Clerk requires a newly-added email to be verified (one-time code)
-  // before it can become primary - unlike Firebase's old immediate updateEmail.
-  // This starts that flow; EditEmailView (budget-app.jsx) currently has no
-  // code-entry step, so wire one up before shipping email changes for real.
   updateEmail: function(newEmail) {
-    return _clerkReady().then(function() {
-      var cu = _clerk().user;
-      return cu.createEmailAddress({ email: newEmail });
-    }).then(function(ea) {
-      return ea.prepareVerification({ strategy: "email_code" }).then(function() { return ea; });
-    }).catch(_clerkErr);
+    return _auth().currentUser.updateEmail(newEmail);
   },
 
   // ---- Households (Collab / couples mode) ------------------------------------
@@ -3530,11 +3434,10 @@ function isEmail(s) {
   return t.indexOf("@") > 0 && t.indexOf(".", t.indexOf("@")) > t.indexOf("@") + 1 && t.length >= 6;
 }
 
-var CLOUD_SETUP_MSG = "Cloud sign-in is not configured yet. Add your keys in clerk-init.js and firebase-init.js.";
+var CLOUD_SETUP_MSG = "Cloud sign-in is not configured yet. Add your keys in firebase-init.js.";
 var CLOUD_CONNECT_MSG = "Couldn't connect to the server. Check your internet connection (or disable any ad blocker/VPN) and try again.";
 
-// Turn a (Clerk error, normalized to Firebase's old "auth/..." codes by
-// _clerkErr) into a short, human message.
+// Turn a Firebase auth error ("auth/..." code) into a short, human message.
 function authMsg(err) {
   var c = (err && err.code) ? err.code : "";
   if (c === "auth/wrong-password" || c === "auth/invalid-credential") return "Wrong email or password.";
@@ -3908,16 +3811,19 @@ function AuthScreen(props) {
     });
   }
 
-  // Google sign-in via Clerk - a full-page redirect to Google and back (not a
-  // popup), so the .then below only runs if it fails before the redirect even
-  // starts. First-time Google users get a default document created by the
-  // App's auth listener once they land back here signed in.
+  // Google sign-in opens a popup; on success the App's auth listener picks the
+  // session up and creates a default document for a first-time Google user.
   function googleSignIn() {
     setError("");
     if (!cloudReady()) { setError(cloudErrorMsg()); return; }
     setBusy(true);
-    CLOUD.signInGoogle().catch(function(err) {
+    CLOUD.signInGoogle().then(function() {
       setBusy(false);
+    }).catch(function(err) {
+      setBusy(false);
+      // Closing the popup is a deliberate cancel, not an error worth shouting about.
+      var c = err && err.code;
+      if (c === "auth/popup-closed-by-user" || c === "auth/cancelled-popup-request") return;
       setError(authMsg(err));
     });
   }
@@ -10168,10 +10074,8 @@ function Trips(props) {
 function callClaude(messages, system, maxTokens, callback, model) {
   var apiUrl = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "data:" || location.protocol === "file:") ? "https://richy-mgkl.vercel.app/api/chat" : "/api/chat";
   // The proxy refuses anonymous requests (so the Anthropic key can't be farmed
-  // by strangers) - attach the caller's own Clerk session token.
-  var c = (typeof window !== "undefined" && window.Clerk) ? window.Clerk : null;
-  Promise.resolve()
-    .then(function() { return (c && c.session) ? c.session.getToken() : null; })
+  // by strangers) - attach the caller's own Firebase ID token.
+  CLOUD.getIdToken()
     .catch(function() { return null; })
     .then(function(token) {
       var headers = { "Content-Type": "application/json" };
@@ -21539,14 +21443,12 @@ function PrivacyView(props) {
   }
 
   // Permanent account deletion - server erases Firestore + bank keys + the
-  // Clerk account itself (api/delete-account.js), then we sign out locally.
+  // Firebase Auth account itself (api/delete-account.js), then we sign out.
   function deleteAccount() {
     if (delBusy) return;
     setDelErr(""); setDelBusy(true);
     var apiUrl = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "data:" || location.protocol === "file:") ? "https://richy-mgkl.vercel.app/api/delete-account" : "/api/delete-account";
-    var c = (typeof window !== "undefined" && window.Clerk) ? window.Clerk : null;
-    Promise.resolve()
-      .then(function() { return (c && c.session) ? c.session.getToken() : null; })
+    CLOUD.getIdToken()
       .then(function(token) {
         if (!token) throw new Error("Your session expired. Sign out and back in, then try again.");
         return fetch(apiUrl, { method: "POST", headers: { Authorization: "Bearer " + token } });
@@ -21655,24 +21557,18 @@ function EditEmailView(props) {
   var _sh = useState(false); var showPw = _sh[0]; var setShowPw = _sh[1];
   var hasPw = props.hasPw;
 
-  function handleSubmit() {
-    setErr(""); setNotice("");
-    var em = newEmail.trim().toLowerCase();
-    if (!isEmail(em)) { setErr("Enter a valid email address."); return; }
-    if (em === (props.currentEmail || "").toLowerCase()) { props.onBack(); return; }
-    if (hasPw && !oldPw) { setErr("Enter your current password to confirm."); return; }
-    setLoading(true);
-    // Clerk sends a verification code to the new address before it becomes the
-    // account's primary email - unlike Firebase's old instant updateEmail, this
-    // doesn't take effect the moment the request succeeds, so tell the user to
-    // expect the email rather than claiming the change already happened.
+  // Firebase applies the new email immediately, but only if the sign-in is
+  // recent - so a password account reauthenticates first.
+  function doUpdate(em) {
     CLOUD.updateEmail(em).then(function() {
       setLoading(false);
-      setNotice("We sent a verification code to " + em + ". Check your inbox to finish changing your email.");
+      props.onSave(em);
     }).catch(function(e) {
       setLoading(false);
       var code = e && e.code;
-      if (code === "auth/email-already-in-use") {
+      if (code === "auth/requires-recent-login") {
+        setErr("Please sign out and sign back in, then try again.");
+      } else if (code === "auth/email-already-in-use") {
         setErr("That email is already in use.");
       } else if (code === "auth/invalid-email") {
         setErr("That doesn't look like a valid email.");
@@ -21680,6 +21576,30 @@ function EditEmailView(props) {
         setErr("Something went wrong. Please try again.");
       }
     });
+  }
+
+  function handleSubmit() {
+    setErr(""); setNotice("");
+    var em = newEmail.trim().toLowerCase();
+    if (!isEmail(em)) { setErr("Enter a valid email address."); return; }
+    if (em === (props.currentEmail || "").toLowerCase()) { props.onBack(); return; }
+    if (hasPw && !oldPw) { setErr("Enter your current password to confirm."); return; }
+    setLoading(true);
+    if (hasPw) {
+      CLOUD.reauthenticate(props.currentEmail, oldPw).then(function() {
+        doUpdate(em);
+      }).catch(function(e) {
+        setLoading(false);
+        var code = e && e.code;
+        if (code === "auth/wrong-password" || code === "auth/invalid-credential") {
+          setErr("Current password is incorrect.");
+        } else {
+          setErr("Something went wrong. Please try again.");
+        }
+      });
+    } else {
+      doUpdate(em);
+    }
   }
 
   var inputStyle = { width: "100%", fontSize: 16, color: T.ink, background: "none", border: "none", outline: "none", fontFamily: UI, padding: 0, boxSizing: "border-box" };
@@ -21813,7 +21733,11 @@ function PasswordView(props) {
     if (hasPw && !oldPw) { setErr("Enter your current password."); return; }
     setLoading(true);
     if (hasPw) {
-      CLOUD.updatePassword(newPw, oldPw).then(function() {
+      // Firebase needs a recent sign-in to change a password, so confirm the
+      // current one first and only then set the new one.
+      CLOUD.reauthenticate(props.email, oldPw).then(function() {
+        return CLOUD.updatePassword(newPw);
+      }).then(function() {
         setLoading(false);
         props.onDone(false);
       }).catch(function(e) {
@@ -21821,6 +21745,8 @@ function PasswordView(props) {
         var code = e && e.code;
         if (code === "auth/wrong-password" || code === "auth/invalid-credential") {
           setErr("Current password is incorrect.");
+        } else if (code === "auth/weak-password") {
+          setErr("That password is too weak. Try a longer one.");
         } else {
           setErr("Something went wrong. Please try again.");
         }
@@ -22633,26 +22559,26 @@ export default function App() {
     return { tx: [], budgets: [], goals: [], trips: [], savings: [], businesses: [], investing: [], debts: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: email, theme: "blue" };
   }
 
-  // Clerk is the single source of truth for the session. It restores the
-  // signed-in user on reload and fires whenever they sign in or out.
+  // Firebase Auth is the single source of truth for the session. It restores
+  // the signed-in user on reload and fires whenever they sign in or out.
   useEffect(function() {
     if (!cloudReady()) { setAuthChecked(true); return function () {}; }
     var unsub = CLOUD.onAuth(function(cu) {
       // Signed out, or email signup (which builds its own doc): reveal the UI now.
       if (!cu) { setAuthChecked(true); return; }       // -> AuthScreen shows
       if (window.__cbSignup) { setAuthChecked(true); return; }
-      var email = (cu.primaryEmailAddress && cu.primaryEmailAddress.emailAddress) || "";
+      var email = cu.email || "";
       // A session exists. Keep showing the loading screen (NOT the AuthScreen)
       // until the user's data + theme are loaded, so we never flash "sign in"
       // or the default light theme to an already-signed-in user.
-      CLOUD.loadUser(cu.id).then(function(data) {
+      CLOUD.loadUser(cu.uid).then(function(data) {
         if (!data) {
-          var nm = cu.fullName || (email ? email.split("@")[0] : "there");
+          var nm = cu.displayName || (email ? email.split("@")[0] : "there");
           data = defaultBlob(nm, email);
           // First write for a brand-new account, before accountKey is set, so it
           // can't go through flushSave. If it fails the user still gets the app
           // and the banner appears on their next edit - just don't swallow it.
-          CLOUD.saveUser(cu.id, data).catch(function(err) {
+          CLOUD.saveUser(cu.uid, data).catch(function(err) {
             try { console.error("Richy initial save failed:", err); } catch (e) {}
           });
         }
@@ -22666,8 +22592,8 @@ export default function App() {
           loadData(data);
         }
         setUser(data.displayName || email || "there");
-        setAccountKey(cu.id);
-        setHasPw(!!cu.passwordEnabled);
+        setAccountKey(cu.uid);
+        setHasPw(CLOUD.hasPasswordProvider());
         setAuthChecked(true);
       }).catch(function() { setAuthChecked(true); });
     });
@@ -22723,9 +22649,8 @@ export default function App() {
   }, [accountKey, categories, folders]);
 
   function myEmail() {
-    var c = _clerk();
-    var cu = c ? c.user : null;
-    var em = cu && cu.primaryEmailAddress && cu.primaryEmailAddress.emailAddress;
+    var cu = cloudReady() ? _auth().currentUser : null;
+    var em = cu && cu.email;
     return (em || (blobRef.current && blobRef.current.email) || "").toLowerCase();
   }
   function meAsMember() {

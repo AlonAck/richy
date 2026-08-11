@@ -1,5 +1,5 @@
 // Permanent account deletion (App Store guideline 5.1.1(v) / GDPR erasure).
-// POST, auth: Authorization: Bearer <Firebase ID token>. The caller can only
+// POST, auth: Authorization: Bearer <Clerk session token>. The caller can only
 // ever delete THEMSELVES - the uid comes from the verified token, never the body.
 //
 // Erases, in order:
@@ -9,13 +9,14 @@
 //   4. leumiFinteka/{uid}             (bank connection tokens, best-effort revoke first)
 //   5. households: removes the caller from memberUids/members of any household
 //      they belong to (the household itself survives for the other member)
-//   6. The Firebase Auth user itself  (the sign-in account) - last, so a failure
-//      above never strands a live sign-in pointing at half-erased data
+//   6. Firebase Auth shadow user      (created by the Clerk->Firebase bridge)
+//   7. The Clerk user itself          (the real sign-in account)
 //
 // If a late step fails the earlier deletions stand - the endpoint reports which
 // steps failed so the client can tell the user to contact support rather than
 // silently pretending everything is gone.
 var admin = require("firebase-admin");
+var clerk = require("@clerk/backend");
 
 function initAdmin() {
   if (admin.apps.length) return true;
@@ -45,6 +46,8 @@ module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") { res.status(200).end(); return; }
   if (req.method !== "POST") { res.status(405).json({ ok: false, error: { code: "method_not_allowed" } }); return; }
 
+  var secretKey = process.env.CLERK_SECRET_KEY;
+  if (!secretKey) { res.status(500).json({ ok: false, error: { code: "config_error", message: "CLERK_SECRET_KEY is not set." } }); return; }
   try {
     if (!initAdmin()) { res.status(500).json({ ok: false, error: { code: "config_error", message: "FIREBASE_SERVICE_ACCOUNT is not set." } }); return; }
   } catch (e) {
@@ -58,8 +61,8 @@ module.exports = async function handler(req, res) {
   if (!m) { res.status(401).json({ ok: false, error: { code: "unauthenticated" } }); return; }
   var uid;
   try {
-    var decoded = await admin.auth().verifyIdToken(m[1]);
-    uid = decoded.uid;
+    var verified = await clerk.verifyToken(m[1], { secretKey: secretKey });
+    uid = verified.sub;
     if (!uid) throw new Error("Token had no subject.");
   } catch (e) {
     res.status(401).json({ ok: false, error: { code: "unauthenticated" } });
@@ -133,9 +136,15 @@ module.exports = async function handler(req, res) {
     }
   } catch (e) { failed.push("households"); }
 
-  // 6. The Firebase Auth account itself - last, so a failure above never
-  //    strands a live sign-in pointing at half-deleted data.
-  try { await admin.auth().deleteUser(uid); } catch (e) { failed.push("authUser"); }
+  // 6. Firebase shadow auth user (harmless if it never existed).
+  try { await admin.auth().deleteUser(uid); } catch (e) { /* not_found is fine */ }
+
+  // 7. The Clerk account - last, so a failure above never strands a sign-in
+  //    that points at half-deleted data without the user knowing.
+  try {
+    var client = clerk.createClerkClient({ secretKey: secretKey });
+    await client.users.deleteUser(uid);
+  } catch (e) { failed.push("clerkUser"); }
 
   if (failed.length) {
     res.status(207).json({ ok: false, partial: true, failed: failed, message: "Some data could not be removed automatically. Email richysupport@gmail.com and we'll finish the deletion manually." });

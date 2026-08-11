@@ -99,18 +99,13 @@ if ("serviceWorker" in navigator) {
      local: it is what makes the app launch offline and what makes our App Store
      Guideline 2.5.2 answer ("no code downloaded at runtime") true.
      Versions are pinned in package.json, not here. -->
-<!-- Firebase (compat build exposes a global "firebase"). Auth here is used only
-     by the invisible Clerk->Firebase bridge (signInWithCustomToken) so
-     Firestore's security rules keep working; Firestore is the real database. -->
+<!-- Firebase (compat build exposes a global "firebase"). Firebase Auth owns
+     sign-in and Firestore is the database; its security rules authorize on
+     request.auth, which Firebase Auth populates directly. -->
 <script src="/vendor/firebase-app-compat.js?v=__RICHY_BUILD__"></script>
 <script src="/vendor/firebase-auth-compat.js?v=__RICHY_BUILD__"></script>
 <script src="/vendor/firebase-firestore-compat.js?v=__RICHY_BUILD__"></script>
 <script src="/firebase-init.js?v=__RICHY_BUILD__"></script>
-<!-- Clerk (exposes a global "Clerk") - the auth UI/UX the user actually sees.
-     Not async/defer: clerk-init.js needs window.Clerk the instant it runs, same
-     as the Firebase scripts above. -->
-<script src="/vendor/clerk.browser.js?v=__RICHY_BUILD__"></script>
-<script src="/clerk-init.js?v=__RICHY_BUILD__"></script>
 <!-- React. -->
 <script src="/vendor/react.production.min.js?v=__RICHY_BUILD__"></script>
 <script src="/vendor/react-dom.production.min.js?v=__RICHY_BUILD__"></script>
