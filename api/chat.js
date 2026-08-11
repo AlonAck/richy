@@ -91,6 +91,14 @@ module.exports = async function handler(req, res) {
   var ALLOWED_MODELS = { "claude-sonnet-4-6": 1, "claude-opus-4-8": 1, "claude-sonnet-5": 1 };
   var model = (body.model && ALLOWED_MODELS[body.model]) ? body.model : "claude-sonnet-4-6";
 
+  // Deadline cascade, innermost first: this abort (45s) < the client's own
+  // timeout in callClaude (55s) < maxDuration in vercel.json (60s). Ordered that
+  // way, a slow upstream always loses to THIS timer, so the caller gets clean
+  // JSON it can parse. Widen any one of them without the others and either the
+  // platform kills the function mid-flight (browser gets an HTML error page and
+  // JSON.parse throws) or the client gives up on a reply that was already coming.
+  var ctrl = new AbortController();
+  var timer = setTimeout(function () { ctrl.abort(); }, 45000);
   try {
     var response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -104,12 +112,19 @@ module.exports = async function handler(req, res) {
         max_tokens: maxTokens,
         system: system,
         messages: messages
-      })
+      }),
+      signal: ctrl.signal
     });
 
     var data = await response.json();
     res.status(response.status).json(data);
   } catch (err) {
+    if (err && err.name === "AbortError") {
+      res.status(504).json({ error: { type: "timeout", message: "Richard took too long to answer. Please try again." } });
+      return;
+    }
     res.status(500).json({ error: { type: "proxy_error", message: err.message || "Unknown error" } });
+  } finally {
+    clearTimeout(timer);
   }
 };

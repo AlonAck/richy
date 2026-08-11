@@ -2,6 +2,9 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
   "outputDirectory": "public",
+  "functions": {
+    "api/chat.js": { "maxDuration": 60 }
+  },
   "crons": [
     { "path": "/api/leumi-fintaka?action=sync&cron=1", "schedule": "0 6 * * *" }
   ]

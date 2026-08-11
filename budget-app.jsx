@@ -432,6 +432,14 @@ function fmtCur(sym, n) {
 function dollars(n) {
   return fmtCur(_currency.sym, n);
 }
+// fmtCur() is unsigned by design - the ~40 UI call sites that can go negative
+// each prepend their own "-" alongside a red colour, so a signed fmtCur would
+// render "--$50" there. Strings built for Richard have no such colour cue and
+// no such prefix, so an unsigned amount silently reads a loss as a profit and
+// an overdraft as savings. Every money value in an AI prompt goes through here.
+function dollarsSigned(n) {
+  return ((n || 0) < 0 ? "-" : "") + fmtCur(_currency.sym, n);
+}
 // Whole-unit money, for round figures where cents are noise rather than
 // information: preset chips, contribution amounts, long-range projections.
 function dollarsWhole(n) {
@@ -1469,6 +1477,12 @@ function ensureMotionCss() {
     // Collapsing the scale (rather than !important-ing every duration) keeps the
     // token maths intact while making every derived time effectively zero.
     "@media (prefers-reduced-motion:reduce){:root{--m-scale:0.0001;--m-stagger:0ms}}",
+    // Keyboard focus. The app styles every control inline and sets outline:none
+    // in a lot of places, which left keyboard users with no idea where they were
+    // (WCAG 2.4.7). :focus-visible only paints for keyboard/AT navigation, so
+    // this is invisible to mouse and touch users - no design change, one rule.
+    "*:focus-visible{outline:2.5px solid #8970C6;outline-offset:2px;border-radius:4px}",
+    "@media (prefers-contrast:more){*:focus-visible{outline-width:3.5px}}",
     "@keyframes rcRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}",
     "@keyframes rcGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}",
     "@keyframes rcPop{0%{transform:scale(.45);opacity:0}62%{transform:scale(1.09);opacity:1}100%{transform:scale(1);opacity:1}}",
@@ -4575,7 +4589,34 @@ function OnboardingScreen(props) {
   var age = computeAge(props.dob);
   var firstName = String(props.username || "").trim().split(" ")[0] || "there";
 
+  // Guards the one-way move to step 6. The plan can be applied either by the
+  // API callback or by the user tapping "Continue without waiting" - whichever
+  // happens first wins, and a late response can't yank the screen back.
+  var planAppliedRef = useRef(false);
+
+  // The offline plan. Not a degraded experience - it's the same advice Richard
+  // gives for the generic case, so a user who never reaches the API still lands
+  // in the app with a usable plan instead of a dead screen.
+  function localPlan() {
+    return "Start here, " + props.username + ". For your challenge of " + (coreProblem || "managing your money") + ": Track every dollar you spend this month - awareness is step one. Set aside 10% of whatever you earn before you touch anything else. Build one month of essential expenses as a buffer. Then pour your focus into your goal: " + (goalName || "financial freedom") + ". Small consistent actions, repeated every month, compound into real wealth.";
+  }
+
+  function applyPlan(planText) {
+    if (planAppliedRef.current) return;
+    planAppliedRef.current = true;
+    var ageStr = age !== null ? String(age) : "not provided";
+    var leakLabels2 = leaks.map(function(id) {
+      var hit = LEAK_OPTIONS.filter(function(o) { return o.id === id; })[0];
+      return hit ? hit.label : id;
+    });
+    setLoading(false);
+    setGenPlan(planText || localPlan());
+    setGenOData({ lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: ageStr, coreProblem: coreProblem, moneyLeaks: leakLabels2.join(", "), overspendEst: overspend, prefLang: prefLang, prefCurrency: prefCur, prefPeriodMode: prefPeriodMode, prefPeriodStart: prefPeriodStart, prefPeriodEnd: prefPeriodEnd });
+    setStep(6);
+  }
+
   function buildPlan() {
+    planAppliedRef.current = false;
     setLoading(true);
     setErr("");
     var ageStr = age !== null ? String(age) : "not provided";
@@ -4593,14 +4634,7 @@ function OnboardingScreen(props) {
       system,
       400,
       function(planErr, text) {
-        setLoading(false);
-        var plan = (planErr || !text)
-          ? ("Start here, " + props.username + ". For your challenge of " + (coreProblem || "managing your money") + ": Track every dollar you spend this month - awareness is step one. Set aside 10% of whatever you earn before you touch anything else. Build one month of essential expenses as a buffer. Then pour your focus into your goal: " + (goalName || "financial freedom") + ". Small consistent actions, repeated every month, compound into real wealth.")
-          : text;
-        var oData = { lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: ageStr, coreProblem: coreProblem, moneyLeaks: leakLabels.join(", "), overspendEst: overspend, prefLang: prefLang, prefCurrency: prefCur, prefPeriodMode: prefPeriodMode, prefPeriodStart: prefPeriodStart, prefPeriodEnd: prefPeriodEnd };
-        setGenPlan(plan);
-        setGenOData(oData);
-        setStep(6);
+        applyPlan((planErr || !text) ? null : text);
       }
     );
   }
@@ -4618,6 +4652,15 @@ function OnboardingScreen(props) {
             sub="Tailored to your answers - not a template."
             expectedMs={12000}
             steps={["Reading your answers", "Shaping your monthly budgets", "Stress-testing the numbers", "Polishing your plan"]} />
+          {/* This is the only full-screen blocker a brand-new user meets, and it
+              stands between them and the app. callClaude's deadline already
+              guarantees it resolves, but the way out stays visible regardless -
+              nothing here should ever be the reason someone can't get in. */}
+          <button onClick={function() { applyPlan(null); }}
+            aria-label="Continue without waiting for your plan"
+            style={{ display: "block", margin: "26px auto 0", background: "none", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 600, color: T.ink3, textDecoration: "underline", textUnderlineOffset: 3, padding: 8 }}>
+            Continue without waiting
+          </button>
         </div>
       </div>
     );
@@ -10071,8 +10114,34 @@ function Trips(props) {
 // Optional 5th arg `model` picks a specific model (e.g. "claude-opus-4-8" for the
 // deep stock scout). Omitted -> the proxy's default Sonnet. The proxy whitelists
 // model strings, so an unknown value simply falls back to Sonnet.
-function callClaude(messages, system, maxTokens, callback, model) {
+// Optional 6th arg `timeoutMs` overrides the default deadline. Every call is
+// bounded: a fetch that stalls without erroring (backgrounded tab, cell handoff,
+// captive portal) never settles on its own, which would leave the caller's
+// loading state stuck on forever. Every caller already has an error path - the
+// deadline is what makes that path reachable.
+function callClaude(messages, system, maxTokens, callback, model, timeoutMs) {
   var apiUrl = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "data:" || location.protocol === "file:") ? "https://richy-mgkl.vercel.app/api/chat" : "/api/chat";
+  // Exactly one of {success, error, timeout} may reach the caller, and the timer
+  // is always cleared - so a late-arriving response can't re-fire a callback the
+  // timeout already settled.
+  var done = false;
+  var timer = null;
+  function finish(err, text) {
+    if (done) return;
+    done = true;
+    if (timer) clearTimeout(timer);
+    callback(err, text);
+  }
+  var ctrl = null;
+  try { ctrl = new AbortController(); } catch (e) {}
+  // 55s: deliberately LONGER than the proxy's own 45s abort (api/chat.js), so a
+  // slow upstream surfaces as the proxy's clean 504 JSON rather than this
+  // client-side guess. This timer is the backstop for the case the proxy can't
+  // cover - a fetch that never settles at all, so no response ever arrives.
+  timer = setTimeout(function() {
+    if (ctrl) { try { ctrl.abort(); } catch (e) {} }
+    finish(new Error("Timed out: Richard took too long to answer."), null);
+  }, timeoutMs || 55000);
   // The proxy refuses anonymous requests (so the Anthropic key can't be farmed
   // by strangers) - attach the caller's own Firebase ID token.
   CLOUD.getIdToken()
@@ -10080,7 +10149,7 @@ function callClaude(messages, system, maxTokens, callback, model) {
     .then(function(token) {
       var headers = { "Content-Type": "application/json" };
       if (token) headers.Authorization = "Bearer " + token;
-      return fetch(apiUrl, {
+      var opts = {
         method: "POST",
         headers: headers,
         body: JSON.stringify({
@@ -10089,26 +10158,32 @@ function callClaude(messages, system, maxTokens, callback, model) {
           maxTokens: maxTokens || 800,
           model: model || undefined,
         }),
-      });
+      };
+      if (ctrl) opts.signal = ctrl.signal;
+      return fetch(apiUrl, opts);
     }).then(function(res) {
     return res.text().then(function(raw) {
       var data;
       try { data = JSON.parse(raw); } catch(e) {
-        callback(new Error("Bad JSON from server: " + raw.slice(0, 100)), null); return;
+        // A non-JSON body is almost always an infrastructure error page (a
+        // serverless timeout or a 5xx), not something the user can act on -
+        // so it must never be shown verbatim. Keep the detail in the console.
+        try { console.warn("callClaude: non-JSON response", raw.slice(0, 300)); } catch (e2) {}
+        finish(new Error("Richard is unavailable right now. Please try again."), null); return;
       }
       if (data.error) {
-        callback(new Error(data.error.type + ": " + data.error.message), null); return;
+        finish(new Error(data.error.type + ": " + data.error.message), null); return;
       }
       if (!data.content || !Array.isArray(data.content)) {
-        callback(new Error("Unexpected response: " + JSON.stringify(data).slice(0, 100)), null); return;
+        finish(new Error("Unexpected response: " + JSON.stringify(data).slice(0, 100)), null); return;
       }
       var text = "";
       for (var i = 0; i < data.content.length; i++) {
         if (data.content[i].type === "text") text += data.content[i].text;
       }
-      callback(null, text.trim());
+      finish(null, text.trim());
     });
-  }).catch(function(err) { callback(new Error("Fetch failed: " + err.message), null); });
+  }).catch(function(err) { finish(new Error("Fetch failed: " + ((err && err.message) || "network error")), null); });
 }
 
 // Big-Decision CFO: the user poses a high-stakes money question ("can I afford
@@ -10549,14 +10624,16 @@ function Advisor(props) {
   var totalActual = 0;
   var budgetsOnTrack = 0;
   var budgetsOver = 0;
+  // The user's own currency symbol - see the CURRENCY note in ctx below.
+  var cs = _currency.sym || "$";
   (props.budgets || []).forEach(function(b) {
     var c = catById(cats, b.catId) || catByName(cats, b.category) || { name: b.category || "?" };
     var spent = catSpend(c);
     var limit = b.limit || 0;
     totalBudgeted += limit;
     totalActual += spent;
-    var status = spent > limit ? "OVER by $" + Math.round(spent - limit) : "on track, $" + Math.round(limit - spent) + " left";
-    budgetAnalysis.push(c.name + ": $" + Math.round(spent) + "/$" + limit + " (" + status + ")");
+    var status = spent > limit ? "OVER by " + cs + Math.round(spent - limit) : "on track, " + cs + Math.round(limit - spent) + " left";
+    budgetAnalysis.push(c.name + ": " + cs + Math.round(spent) + "/" + cs + limit + " (" + status + ")");
     if (spent <= limit) budgetsOnTrack++; else budgetsOver++;
   });
 
@@ -10569,31 +10646,36 @@ function Advisor(props) {
   var goalProgress = (props.goals || []).map(function(g) {
     var saved = goalSavedAmount(g, props.tx, props.savings, props.businesses, props.investing);
     var pct = g.target > 0 ? Math.round((saved / g.target) * 100) : 0;
-    return g.name + ": $" + Math.round(saved) + "/$" + g.target + " (" + pct + "%)";
+    return g.name + ": " + cs + Math.round(saved) + "/" + cs + g.target + " (" + pct + "%)";
   });
 
+  // Every amount below is in the user's OWN currency, not dollars. The symbol
+  // used to be hardcoded "$" here, which told Richard an Israeli user's shekels
+  // were dollars - so he'd answer in the wrong currency on the app's most-used
+  // AI surface. State it once up front, then use the real symbol throughout.
   var ctx = "=== USER FINANCIAL DATA ===\n"
     + "Name: " + props.username + "\n"
+    + "CURRENCY: every amount below is in " + cs + " (" + (SYM_TO_CODE[cs] || "USD") + "). Use " + cs + " for every amount you quote back - never convert, never assume dollars.\n"
     + "Primary challenge: " + (coreProblem || "general budgeting") + "\n\n"
     + "=== THIS MONTH'S CASH FLOW ===\n"
-    + "Income: $" + Math.round(income) + "\n"
-    + "Total Spent: $" + Math.round(expense) + "\n"
+    + "Income: " + cs + Math.round(income) + "\n"
+    + "Total Spent: " + cs + Math.round(expense) + "\n"
     + "Savings Rate: " + savings + "%\n"
-    + "Net this month: $" + Math.round(income - expense) + "\n\n"
-    + "=== BUDGETS (Total: $" + totalBudgeted + " budgeted, $" + Math.round(totalActual) + " spent) ===\n"
+    + "Net this month: " + (income - expense < 0 ? "-" : "") + cs + Math.abs(Math.round(income - expense)) + (income - expense < 0 ? " (NEGATIVE - spending exceeded income this month)" : "") + "\n\n"
+    + "=== BUDGETS (Total: " + cs + totalBudgeted + " budgeted, " + cs + Math.round(totalActual) + " spent) ===\n"
     + (budgetAnalysis.length > 0
       ? budgetAnalysis.join("\n") + "\nBudgets on track: " + budgetsOnTrack + "/" + (props.budgets || []).length + ", over budget: " + budgetsOver
       : "No budgets set") + "\n\n"
     + "=== SPENDING BY CATEGORY (All time this month) ===\n"
     + (allCats.length > 0
-      ? allCats.map(function(c) { return c.name + ": $" + Math.round(c.spent); }).join("\n")
+      ? allCats.map(function(c) { return c.name + ": " + cs + Math.round(c.spent); }).join("\n")
       : "No spending yet") + "\n\n"
     + "=== FINANCIAL GOALS ===\n"
     + (goalProgress.length > 0
       ? goalProgress.join("\n")
       : "No goals set") + "\n\n"
     + "=== ALL-TIME STATS ===\n"
-    + "Net Worth (all-time): $" + Math.round(netWorth) + "\n"
+    + "Net Worth (all-time): " + (netWorth < 0 ? "-" : "") + cs + Math.abs(Math.round(netWorth)) + (netWorth < 0 ? " (NEGATIVE - debts exceed assets)" : "") + "\n"
     + "Personalized Plan: " + (props.plan ? props.plan.slice(0, 200) + "..." : "not yet created")
     + "\n\n=== CATEGORIES (exact names, use these when referencing/renaming/deleting) ===\n"
     + (cats.length ? cats.map(function(c) { return c.name; }).join(", ") : "none")
@@ -10601,7 +10683,7 @@ function Advisor(props) {
     + ((props.folders || []).length ? props.folders.map(function(f) { return f.name; }).join(", ") : "none")
     + "\n\n=== SAVINGS POTS (exact names, with balance) ===\n"
     + ((props.savings || []).length
-      ? props.savings.map(function(a) { return a.name + ": $" + Math.round((a.entries || []).reduce(function(s, e) { return s + (e.kind === "deposit" ? e.amount : -e.amount); }, 0)); }).join("\n")
+      ? props.savings.map(function(a) { return a.name + ": " + cs + Math.round((a.entries || []).reduce(function(s, e) { return s + (e.kind === "deposit" ? e.amount : -e.amount); }, 0)); }).join("\n")
       : "none")
     + "\n\n=== OPEN NOTES / DEBTS (who owes whom - use the exact label to settle one) ===\n"
     + ((props.notes || []).length
@@ -13206,7 +13288,7 @@ function buildRoadmap(biz, richardInstructions, lang, cb) {
   var sys = custom + "You are Richard, a sharp, warm, honest business CFO inside the Richy app. Build a step-by-step roadmap that takes this owner from where they are today to a working, growing business. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"milestones\":[{\"title\":\"short milestone name\",\"tasks\":[{\"label\":\"one concrete action\"}]}]}. Exactly 3 or 4 milestones, 2 or 3 tasks each, ordered as a path from today to the 12-month goal. Every task must be a single concrete action the owner can physically do, MAXIMUM 16 words - include a number or deliverable where possible (like: talk to 5 potential customers, list 3 competitors and their prices). Keep the whole reply compact enough to never get cut off. Tune it to the stage: idea = validate demand before spending money (talk to real customers, define the offer, land the first paying customer); launching = make it real (legal and fees, set prices, pick one launch channel, first 10 customers, track every sale); running = sharpen the machine (review margins, double down on the best channel, keep customers coming back, systemize the busywork)." + langSuffix;
   var pl = bizMonthProfit(biz, curMonth());
   var usr = "Business: " + (biz.name || "my business") + " - " + (biz.what || "unspecified") + ". Stage: " + stage + ". Scale: " + (pf.size || "side") + ". "
-    + "Monthly budget " + dollars(pf.monthly || 0) + ", revenue goal " + dollars(pf.revenueGoal || 0) + ", cash on hand " + dollars(businessCash(biz)) + ". "
+    + "Monthly budget " + dollars(pf.monthly || 0) + ", revenue goal " + dollars(pf.revenueGoal || 0) + ", cash on hand " + dollarsSigned(businessCash(biz)) + ". "
     + "This month so far: " + dollars(pl.revenue) + " revenue, " + dollars(pl.spend) + " spent. "
     + "12-month goal: " + (pf.goal || "unspecified") + ". "
     + richardNotesBlock("NOTES FROM THE OWNER", pf.notes)
@@ -13318,7 +13400,7 @@ function bizWeeklyDigest(biz) {
   var dayFrac = monthDayFrac();
   return richardNotesBlock("NOTES FROM THE OWNER", pf.notes)
     + "Business: " + (biz.name || "my business") + " - " + (biz.what || "unspecified") + ". Stage: " + (pf.stage || "idea") + ". "
-    + "This month: revenue " + dollars(pl.revenue) + " (monthly goal " + dollars(pf.revenueGoal || 0) + ", month is " + Math.round(dayFrac * 100) + "% done), spent " + dollars(pl.spend) + " of " + dollars(pf.monthly || 0) + " budget, profit " + dollars(pl.profit) + ". "
+    + "This month: revenue " + dollars(pl.revenue) + " (monthly goal " + dollars(pf.revenueGoal || 0) + ", month is " + Math.round(dayFrac * 100) + "% done), spent " + dollars(pl.spend) + " of " + dollars(pf.monthly || 0) + " budget, profit " + dollarsSigned(pl.profit) + (pl.profit < 0 ? " (a LOSS - the business is spending more than it earns)" : "") + ". "
     + "Cash " + dollars(businessCash(biz)) + ", runway " + (runway === null ? "self-sustaining" : runway + " months") + ", health " + health.score + " of 100 (" + health.label + "). "
     + (pace ? ("Pace: " + pace.text + " ") : "")
     + "Budget buckets (spent of planned): " + (catLine || "none") + ". "
@@ -13410,8 +13492,8 @@ function bizContextLine(biz) {
   for (var i = 0; i < mss.length; i++) { if (!mss[i].done) { cur = mss[i]; break; } }
   var nextTask = null;
   if (cur) { for (var j = 0; j < (cur.tasks || []).length; j++) { if (!cur.tasks[j].done) { nextTask = cur.tasks[j].label; break; } } }
-  return (biz.name || "Business") + " (" + (pf.stage || "idea") + " stage): cash " + dollars(businessCash(biz))
-    + ", this month " + dollars(pl.revenue) + " revenue / " + dollars(pl.spend) + " spent / " + dollars(pl.profit) + " profit"
+  return (biz.name || "Business") + " (" + (pf.stage || "idea") + " stage): cash " + dollarsSigned(businessCash(biz))
+    + ", this month " + dollars(pl.revenue) + " revenue / " + dollars(pl.spend) + " spent / " + dollarsSigned(pl.profit) + (pl.profit < 0 ? " profit (a LOSS)" : " profit")
     + ", runway " + (runway === null ? "self-sustaining" : runway + " months")
     + ", health " + health.label
     + (biz.roadmap ? (", roadmap " + prog.done + " of " + prog.total + " tasks done" + (nextTask ? (", next task: " + nextTask) : "")) : "")
@@ -14222,7 +14304,7 @@ function sendInvestCoach(ctx, history, cb) {
   if (ctx.drift && ctx.drift.length) lines.push("- Target vs actual: " + ctx.drift.map(function(d) { return d.k + " " + Math.round(d.actual) + "% vs " + d.target + "%"; }).join(", "));
   lines.push("- Auto-invest: " + (ctx.autoOn ? dollars(ctx.autoAmount) + " " + ctx.cadence + (ctx.roundUps ? " plus round-ups" : "") : "off"));
   lines.push("- All-time gain: " + (ctx.gain >= 0 ? "+" : "") + dollars(ctx.gain));
-  lines.push("- Main spending balance outside investing: " + dollars(ctx.balance));
+  lines.push("- Main spending balance outside investing: " + dollarsSigned(ctx.balance) + (ctx.balance < 0 ? " (NEGATIVE - they are overdrawn; do not advise investing more until this is fixed)" : ""));
   var system = richardUserCtx(ctx.richardInstructions) +
     "You are Richard, the user's investing coach inside their budgeting app. You manage a curated, fund-based portfolio for them. Warm, direct, plain English, 2-4 sentences unless they ask for depth." +
     investorGlossary(ctx.profile) +
@@ -22472,7 +22554,11 @@ export default function App() {
   var _hid = useState(null); var householdId = _hid[0]; var setHouseholdId = _hid[1];
   var _hh = useState(null); var household = _hh[0]; var setHousehold = _hh[1];
   var _shd = useState(null); var sharedData = _shd[0]; var setSharedData = _shd[1];
-  var _inv = useState([]); var invites = _inv[0]; var setInvites = _inv[1];
+  // _ivt, not _inv: `var _inv` is already the investing-accounts state further up
+  // in this same function. It only worked because each destructured immediately
+  // before the redeclaration ran - reorder either one and the portfolio silently
+  // becomes the invite list.
+  var _ivt = useState([]); var invites = _ivt[0]; var setInvites = _ivt[1];
   // In-memory mirror of the signed-in user's full Firestore document, so writes
   // can merge against it without an async read-before-write each time.
   var blobRef = useRef({});
