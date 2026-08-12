@@ -124,6 +124,9 @@ var LIGHT_CARD = "#FFFFFF";
 var DARK_BG = "#131110";
 var DARK_CARD = "#1C1915";
 function applyDarkMode(dark) {
+  // Published on T so anything reading the palette can branch on ground without
+  // re-deriving it from a colour value (the rarity ramp needs exactly this).
+  T.isDark  = !!dark;
   T.bg      = dark ? DARK_BG   : LIGHT_BG;
   T.card    = dark ? DARK_CARD : LIGHT_CARD;
   T.sep     = dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
@@ -1238,16 +1241,49 @@ function freshFolders() { return DEFAULT_FOLDERS.map(function(f) { return Object
 
 var FOLDER_FALLBACK_COLORS = ["#2799C8", "#AF52DE", "#27A85F", "#D97941", "#E0556E", "#8B6CEF", "#C8983A", "#3B82B8"];
 
-// The 50/30/20 rule, as folder roles. `target` is the share of income the rule
-// wants in that bucket; Richy grades the user's real split against it rather
-// than assuming any particular set of category names.
+// The three roles a folder can carry. `target` is the DEFAULT share of income
+// wanted in that bucket; the live number comes from the user's own split plan
+// (see splitPlanOf), because a target nobody chose is a rule being imposed
+// rather than a budget being kept. Richy grades the user's real split against
+// whatever they picked, rather than assuming any set of category names.
 var FOLDER_ROLES = [
-  { key: "need",    label: "Needs",   color: "#2799C8", target: 0.50, blurb: "Rent, food, transport, bills - the ones that don't ask." },
-  { key: "want",    label: "Wants",   color: "#AF52DE", target: 0.30, blurb: "Eating out, shopping, fun. Life, not survival." },
-  { key: "savings", label: "Savings", color: "#27A85F", target: 0.20, blurb: "Money you keep: savings, investments, extra debt payoff." },
+  { key: "need",    label: "Needs",   color: "#2799C8", target: 0.50, icon: "home",  blurb: "Rent, food, transport, bills - the ones that don't ask." },
+  { key: "want",    label: "Wants",   color: "#AF52DE", target: 0.30, icon: "coffee", blurb: "Eating out, shopping, fun. Life, not survival." },
+  { key: "savings", label: "Savings", color: "#27A85F", target: 0.20, icon: "coins", blurb: "Money you keep: savings, investments, extra debt payoff." },
 ];
 function roleMeta(key) {
   for (var i = 0; i < FOLDER_ROLES.length; i++) if (FOLDER_ROLES[i].key === key) return FOLDER_ROLES[i];
+  return null;
+}
+
+// ── The split plan ──────────────────────────────────────────────────────────
+// How the user wants their income divided across the three roles, in whole
+// percents that sum to 100. 50/30/20 is a famous default, not a law: someone
+// paying big-city rent is not overspending because Elizabeth Warren said 50,
+// so the number they are graded against is theirs to set (SplitPlanSheet asks
+// for it, once, right after the folders are sorted). A stored plan that fails
+// the sum check is treated as absent, so a corrupt document degrades to the
+// default rather than to nonsense percentages.
+var SPLIT_DEFAULT = { need: 50, want: 30, savings: 20 };
+var SPLIT_PRESETS = [
+  { need: 50, want: 30, savings: 20, name: "The classic",   blurb: "Balanced, and what most money advice quietly assumes." },
+  { need: 60, want: 20, savings: 20, name: "Rent is heavy", blurb: "Housing eats more than half. Still keeping a fifth." },
+  { need: 70, want: 20, savings: 10, name: "Tight month",   blurb: "Expensive city, or a lean stretch. Save what's real." },
+  { need: 40, want: 30, savings: 30, name: "Saver",         blurb: "Needs are under control and you want the gap working." },
+];
+function splitPlanOf(p) {
+  if (!p) return SPLIT_DEFAULT;
+  var n = Math.round(p.need), w = Math.round(p.want), s = Math.round(p.savings);
+  if (!(n >= 0) || !(w >= 0) || !(s >= 0) || n + w + s !== 100) return SPLIT_DEFAULT;
+  return { need: n, want: w, savings: s };
+}
+function splitPlanLabel(p) { var x = splitPlanOf(p); return x.need + "/" + x.want + "/" + x.savings; }
+function splitPresetFor(p) {
+  var x = splitPlanOf(p);
+  for (var i = 0; i < SPLIT_PRESETS.length; i++) {
+    var q = SPLIT_PRESETS[i];
+    if (q.need === x.need && q.want === x.want && q.savings === x.savings) return q;
+  }
   return null;
 }
 function folderRole(f) {
@@ -1507,11 +1543,13 @@ function budgetOffTrack(r) {
   return r.dir === "target" ? r.amount < r.limit : r.amount > r.limit;
 }
 
-// ── The 50/30/20 read ───────────────────────────────────────────────────────
+// ── The split read ──────────────────────────────────────────────────────────
 // Once folders carry roles, the split falls out of data the user already has -
 // no separate tagging pass, no guessing at category names. A category is
 // counted once, in the first roled folder that claims it, so overlapping rule
-// folders can't inflate a bucket.
+// folders can't inflate a bucket. `ctx.splitPlan` carries the user's own
+// targets; every consumer passes it, so the Budgets card, the Advisor's
+// context block and the Full Analysis all grade against the same promise.
 function roleSplit(ctx) {
   var folders = ctx.folders || [];
   var buckets = { need: 0, want: 0, savings: 0 };
@@ -1538,15 +1576,48 @@ function roleSplit(ctx) {
   }).reduce(function(s, t) { return s + t.amount; }, 0));
   var base = income > 0 ? income : round2(buckets.need + buckets.want + buckets.savings + unsorted);
   function pct(v) { return base > 0 ? Math.round((v / base) * 100) : 0; }
+  var plan = splitPlanOf(ctx.splitPlan);
+  var rows = FOLDER_ROLES.map(function(r) {
+    var targetPct = plan[r.key];
+    // The share turned into money, so a row can read like every other budget
+    // ("$1,800 of $2,000") instead of asking anyone to compare two percentages
+    // in their head.
+    var targetAmount = round2(base * (targetPct / 100));
+    var amount = buckets[r.key];
+    var over = r.key === "savings" ? false : pct(amount) > targetPct;
+    var short = r.key === "savings" && pct(amount) < targetPct;
+    return { key: r.key, label: r.label, color: r.color, icon: r.icon,
+      target: targetPct / 100, targetPct: targetPct,
+      targetAmount: targetAmount, amount: amount, pct: pct(amount),
+      // A Needs bucket over its share is a problem; a Savings bucket over its
+      // share is a win. Only the two spending buckets can be "over".
+      over: over,
+      // Savings is the one row that reads as a target rather than a cap.
+      short: short,
+      ok: !over && !short,
+      // How much of THIS line's own allowance is gone - what its bar fills to.
+      // Filling toward income instead made a barely-touched Wants budget look
+      // like a goal being missed, when it was a cap being kept.
+      usedPct: targetAmount > 0 ? Math.round((amount / targetAmount) * 100) : 0,
+      // Positive means room left on a cap, or distance still to go on a target.
+      gap: round2(targetAmount - amount) };
+  });
+  // "Am I okay?" is the only question this card exists to answer, and three
+  // bars do not answer it on their own - so it gets answered in a sentence,
+  // above everything else.
+  var verdict = (function() {
+    if (base <= 0) return { tone: "info", text: "Nothing has moved yet this month." };
+    var worst = rows.filter(function(r) { return r.over; }).sort(function(a, b) { return a.gap - b.gap; })[0];
+    if (worst) return { tone: "bad", text: worst.label + " is over by " + dollars(Math.abs(worst.gap)) + "." };
+    var sav = rows.filter(function(r) { return r.key === "savings"; })[0];
+    if (sav && sav.short) return { tone: "warn", text: dollars(sav.gap) + " short of your savings target." };
+    return { tone: "good", text: "You're inside your split." };
+  })();
   return {
     income: income, base: base, unsorted: unsorted, unsortedPct: pct(unsorted),
-    rows: FOLDER_ROLES.map(function(r) {
-      return { key: r.key, label: r.label, color: r.color, target: r.target,
-        amount: buckets[r.key], pct: pct(buckets[r.key]),
-        // A Needs bucket over 50% is a problem; a Savings bucket over 20% is a
-        // win. Only the two spending buckets can be "over".
-        over: r.key === "savings" ? false : pct(buckets[r.key]) > Math.round(r.target * 100) };
-    }),
+    plan: plan, planLabel: splitPlanLabel(plan),
+    moved: round2(buckets.need + buckets.want + buckets.savings + unsorted),
+    rows: rows, verdict: verdict,
     graded: income > 0,
   };
 }
@@ -1557,6 +1628,492 @@ function foldersNeedingRole(folders, cats, tx) {
     if (folderRole(f)) return false;
     return folderCategoryIds(f, cats, folders, tx).length > 0;
   });
+}
+
+// ── MOTIVATION: streaks, levels and badges ──────────────────────────────────
+// The implementation of MOTIVATION_SYSTEM.md. Three rules from that document
+// govern every line below and are worth restating, because they are easy to
+// erode later:
+//
+//   1. Never punish an emergency. XP never decreases, levels never drop, and a
+//      broken streak is described in neutral words, never as a failure.
+//   2. Fair across incomes. The level number is earned by behaviour measured
+//      against the user's OWN past. Anything that is really a readout of income
+//      lives in badges, where rarity carries the flex.
+//   3. No XP for engagement. Opening the app, chatting with Richard and reading
+//      a lesson are all worth zero. XP is for money moving the right way and for
+//      the books being true.
+//
+// Everything here is a pure function of data the app already stores plus one
+// small persisted record (see motivDefault). Nothing is computed on a timer and
+// nothing is written on read, so a user who never opens the Profile tab is
+// scored identically to one who opens it hourly.
+var MOTIV = {
+  // Every tunable number in the system, in one object, exactly as the design
+  // document promised. Changing a value here re-scores everyone on next render.
+  xp: {
+    cleanWeek: 15,
+    greenMonth: 100,
+    budgetHeld: 10, budgetHeldCap: 60,   // per period
+    goalDone: 80,
+    beatAverage: 30                       // savings rate beat your own 3-period average
+  },
+  rarityXp: { common: 10, uncommon: 25, rare: 60, epic: 150, legendary: 400, mythic: 1000 },
+  maxLevel: 50,
+  shieldEvery: 4,       // one shield per 4 consecutive clean weeks
+  shieldMax: 2,         // never hold more than two
+  backConfirmWeeks: 2   // you may confirm at most 2 past weeks - see anti-gaming, §1
+};
+
+// Rarity is the one axis the user scans by, so its colours must NOT follow the
+// theme accent: if Epic were T.orange it would be navy in Cornflower Ocean and
+// purple in Mika's Violet, and the ramp would mean something different per
+// theme. Common/Uncommon/Rare/Legendary borrow product tokens that keep their
+// meaning across themes; Epic is pinned to the purple the design document uses.
+// Mythic has no flat colour at all - it is a gradient, per §3.
+// On a dark ground the ramp LIGHTENS rather than inverting: the tiers must keep
+// their relative order and stay legible on both grounds. Without this, Common
+// resolves to T.ink3, which in dark mode is #6B5C4E - near-invisible as an 8.5px
+// uppercase label on a #1C1915 card. Values match the dark ramp in
+// design-system/motivation-doc/tokens.css.
+function mythicGrad() {
+  return T.isDark
+    ? "linear-gradient(100deg,#C8B1FF 0%,#5B9CF5 24%,#4FC97F 46%,#E0B45C 70%,#F0A0D8 100%)"
+    : "linear-gradient(100deg,#8970C6 0%,#2E7DD6 24%,#27A85F 46%,#C8983A 70%,#B4519B 100%)";
+}
+function rarityColor(r) {
+  var d = !!T.isDark;
+  if (r === "uncommon")  return d ? "#4FC97F" : T.green;
+  if (r === "rare")      return d ? "#5B9CF5" : T.blue;
+  if (r === "epic")      return d ? "#C8B1FF" : "#8970C6";
+  if (r === "legendary") return d ? "#E0B45C" : T.gold;
+  if (r === "mythic")    return d ? "#C8B1FF" : "#8970C6";
+  return d ? "#A2958A" : T.ink3;
+}
+function rarityDim(r) {
+  var d = !!T.isDark;
+  if (r === "uncommon")  return d ? "rgba(79,201,127,0.13)"  : T.greenDim;
+  if (r === "rare")      return d ? "rgba(91,156,245,0.13)"  : T.blueDim;
+  if (r === "epic")      return d ? "rgba(200,177,255,0.13)" : "rgba(137,112,198,0.14)";
+  if (r === "legendary") return d ? "rgba(224,180,92,0.13)"  : T.goldDim;
+  if (r === "mythic")    return d ? "rgba(200,177,255,0.10)" : "rgba(137,112,198,0.10)";
+  return d ? "rgba(162,149,138,0.14)" : "rgba(176,163,150,0.14)";
+}
+var RARITY_LABEL = { common: "COMMON", uncommon: "UNCOMMON", rare: "RARE", epic: "EPIC", legendary: "LEGENDARY", mythic: "MYTHIC" };
+
+// The persisted record. Deliberately tiny: the whole account is a single
+// Firestore document with a 1 MiB ceiling (see the CHAT_ARCHIVE_MAX note), so
+// this must stay bounded no matter how long someone uses the app. weekConfirms
+// holds week keys, not transactions; badges hold an id and a date, not a copy of
+// the badge definition.
+function motivDefault() {
+  return { weekConfirms: [], pauses: [], badges: [], seen: [] };
+}
+function motivOf(data) {
+  var m = (data && data.motivation) || {};
+  return {
+    weekConfirms: m.weekConfirms || [],
+    pauses: m.pauses || [],
+    badges: m.badges || [],
+    seen: m.seen || []
+  };
+}
+
+// ── Week keys ───────────────────────────────────────────────────────────────
+// A week is identified by the ISO date of its Monday. That is sortable, has no
+// year-boundary edge cases (unlike ISO week NUMBERS, where 1 Jan can be week 53
+// of the previous year) and reads back to the user as a real date range.
+function isoDay(d) {
+  var m = d.getMonth() + 1, day = d.getDate();
+  return d.getFullYear() + "-" + (m < 10 ? "0" : "") + m + "-" + (day < 10 ? "0" : "") + day;
+}
+function parseDay(s) {
+  var p = String(s || "").slice(0, 10).split("-");
+  return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+}
+function weekStart(d) {
+  var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  var dow = x.getDay();                          // 0 = Sunday
+  x.setDate(x.getDate() - (dow === 0 ? 6 : dow - 1));   // back to Monday
+  return x;
+}
+function weekKey(dateStr) { return isoDay(weekStart(parseDay(dateStr))); }
+// Overview has an isSettled() but it is a local function inside that component,
+// so it cannot be reached from here. Same rule, at module scope: a row counts
+// once it is not pending and its date has arrived.
+function motivSettled(t, todayIso) { return !!t && !t.pending && String(t.date || "") <= todayIso; }
+function weekAdd(key, n) {
+  var d = parseDay(key); d.setDate(d.getDate() + n * 7); return isoDay(d);
+}
+// "4-10 Aug" / "28 Jul - 3 Aug" - the label the confirm prompt uses.
+function weekLabel(key) {
+  var a = parseDay(key), b = parseDay(weekAdd(key, 1)); b.setDate(b.getDate() - 1);
+  var MO = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  if (a.getMonth() === b.getMonth()) return a.getDate() + "-" + b.getDate() + " " + MO[b.getMonth()];
+  return a.getDate() + " " + MO[a.getMonth()] + " - " + b.getDate() + " " + MO[b.getMonth()];
+}
+
+// ── Layer 1: Clean Week ─────────────────────────────────────────────────────
+// Not "log something every day". A quiet day with no spending is not a failure.
+// A week is Clean when the user has confirmed the week's books are true - one
+// tap, once a week - and a week with zero transactions still counts, because the
+// claim is "this is everything", not "I spent money".
+//
+// The run is walked FORWARDS from the first confirmation, because that is the
+// direction shields are earned in: you cannot spend a shield you had not yet
+// banked when the week was missed.
+function cleanWeekState(motiv, today) {
+  var confirms = {}, i;
+  for (i = 0; i < motiv.weekConfirms.length; i++) confirms[motiv.weekConfirms[i]] = true;
+  var paused = {};
+  for (i = 0; i < motiv.pauses.length; i++) paused[motiv.pauses[i]] = true;
+
+  var thisWeek = weekKey(isoDay(today));
+  var lastDone = weekAdd(thisWeek, -1);          // the newest week that can be judged
+  var keys = motiv.weekConfirms.slice().sort();
+  var out = { run: 0, shields: 0, total: keys.length, shielded: [], pending: null, thisWeek: thisWeek };
+  if (!keys.length) { out.pending = { key: lastDone, label: weekLabel(lastDone) }; return out; }
+
+  var cur = keys[0], since = 0;
+  while (cur <= lastDone) {
+    if (paused[cur]) { cur = weekAdd(cur, 1); continue; }   // paused: neither breaks nor counts
+    if (confirms[cur]) {
+      out.run++; since++;
+      if (since >= MOTIV.shieldEvery && out.shields < MOTIV.shieldMax) { out.shields++; since = 0; }
+    } else if (out.shields > 0) {
+      out.shields--; out.run++; out.shielded.push(cur);     // silently spent, never announced as a loss
+    } else {
+      out.run = 0; since = 0;
+    }
+    cur = weekAdd(cur, 1);
+  }
+  // What we are still waiting on: the most recent finished week, if unconfirmed
+  // and still inside the back-confirm window.
+  var oldest = weekAdd(lastDone, -(MOTIV.backConfirmWeeks - 1));
+  var scan = oldest;
+  while (scan <= lastDone) {
+    if (!confirms[scan] && !paused[scan]) { out.pending = { key: scan, label: weekLabel(scan) }; break; }
+    scan = weekAdd(scan, 1);
+  }
+  return out;
+}
+
+// ── Layer 2: Green Month ────────────────────────────────────────────────────
+// The period ended with a savings rate at or above the user's own target. With
+// no target the bar is simply "spent less than you earned".
+//
+// Calendar months are used even when the user's period mode is rolling or
+// custom: a rolling window slides every day and a custom range is a single
+// arbitrary span, so neither produces the discrete, non-overlapping series a
+// streak needs. The month boundary is the only honest unit here.
+function monthStats(tx) {
+  var map = {}, i, t, k;
+  var todayIso = isoDay(new Date());
+  for (i = 0; i < (tx || []).length; i++) {
+    t = tx[i];
+    if (!t || !t.date || isTransfer(t) || isOpening(t)) continue;   // own-money moves can't manufacture a green month
+    if (!motivSettled(t, todayIso)) continue;
+    k = String(t.date).slice(0, 7);
+    if (!map[k]) map[k] = { income: 0, expense: 0 };
+    if (t.type === "income") map[k].income += (t.amount || 0);
+    else if (t.type === "expense" && !isTrip(t)) map[k].expense += (t.amount || 0);
+  }
+  for (k in map) {
+    map[k].rate = map[k].income > 0 ? Math.round(((map[k].income - map[k].expense) / map[k].income) * 100) : null;
+  }
+  return map;
+}
+function greenMonthState(tx, motiv, targetPct) {
+  var stats = monthStats(tx);
+  var keys = [], k;
+  for (k in stats) keys.push(k);
+  keys.sort();
+  var now = new Date();
+  var thisMonth = isoDay(now).slice(0, 7);
+  var bar = targetPct > 0 ? targetPct : 0;
+  var paused = {}, i;
+  for (i = 0; i < motiv.pauses.length; i++) paused[motiv.pauses[i]] = true;
+
+  var run = 0, total = 0, thisYear = 0, months = [];
+  var yr = String(now.getFullYear());
+  for (i = 0; i < keys.length; i++) {
+    k = keys[i];
+    if (k >= thisMonth) continue;                 // the current month is not finished
+    var s = stats[k];
+    var green = s.rate !== null && s.rate >= bar;
+    months.push({ key: k, rate: s.rate, green: green, paused: !!paused[k] });
+    if (paused[k]) continue;
+    if (green) { run++; total++; if (k.slice(0, 4) === yr) thisYear++; }
+    else run = 0;
+  }
+  return { run: run, total: total, thisYear: thisYear, months: months, target: bar, stats: stats, current: stats[thisMonth] || null };
+}
+
+// ── Layer 3: Budget runs ────────────────────────────────────────────────────
+// Consecutive months a cap budget finished at or under its limit, resolved
+// through the same resolveBudget() every budget row uses - so a folder budget,
+// a synced category and a plain category all score by the rules they display by.
+//
+// One honest limitation: budgets carry no creation date, so the run is measured
+// against the budget's CURRENT limit applied to past months. Raising a limit can
+// therefore lengthen a run retroactively. The alternative - refusing to show a
+// run until a budget has a year of its own history - tells a new user nothing,
+// and this is a motivational read, not an audited figure.
+function budgetRunState(budgets, ctx) {
+  var out = { runs: [], best: 0, onTrack: 0 };
+  var now = new Date();
+  var months = [], d = new Date(now.getFullYear(), now.getMonth(), 1), i, j;
+  for (i = 1; i <= 12; i++) {                     // the 12 finished months before this one
+    d.setMonth(d.getMonth() - 1);
+    months.push(isoDay(d).slice(0, 7));
+  }
+  // Bucket the ledger by month ONCE. Filtering the whole tx array inside the
+  // budget loop is the same work repeated budgets x 12 times, and this function
+  // runs against accounts with thousands of rows.
+  var byMonth = {};
+  for (i = 0; i < (ctx.tx || []).length; i++) {
+    var t = ctx.tx[i];
+    if (!t || !t.date) continue;
+    var mk0 = String(t.date).slice(0, 7);
+    if (!byMonth[mk0]) byMonth[mk0] = [];
+    byMonth[mk0].push(t);
+  }
+  for (i = 0; i < (budgets || []).length; i++) {
+    var b = budgets[i];
+    if (!b || !b.limit || budgetDir(b) === "target") continue;   // targets are a different question
+    var run = 0;
+    for (j = 0; j < months.length; j++) {
+      var mk = months[j];
+      var r = resolveBudget(b, { tx: byMonth[mk] || [], categories: ctx.categories, folders: ctx.folders });
+      if (!r.amount) break;                       // no spend at all: the budget probably didn't exist yet
+      if (r.amount > r.limit) break;
+      run++;
+    }
+    var live = resolveBudget(b, ctx);
+    if (!budgetOffTrack(live)) out.onTrack++;
+    if (run > 0) out.runs.push({ name: live.name, run: run });
+    if (run > out.best) out.best = run;
+  }
+  out.runs.sort(function(a, b2) { return b2.run - a.run; });
+  return out;
+}
+
+// ── Levels ──────────────────────────────────────────────────────────────────
+// Cumulative XP to REACH level L. A gentle exponent so the early levels arrive
+// quickly and level 50 stays a multi-year proposition, per §2.
+function xpForLevel(L) { return L <= 1 ? 0 : Math.round(40 * Math.pow(L - 1, 1.5)); }
+function levelFor(xp) {
+  var L = 1;
+  while (L < MOTIV.maxLevel && xp >= xpForLevel(L + 1)) L++;
+  return L;
+}
+// Titles lag; they never block. If you reach level 27 without the wealth gate
+// for that band you display level 27 with the highest title you HAVE earned.
+var RANKS = [
+  { name: "Copper Counter",     min: 1,  gate: function() { return true; } },
+  { name: "Purse Keeper",       min: 6,  gate: function(c) { return c.hasOpening && c.budgetBest >= 1; } },
+  { name: "Lean Purse Mender",  min: 11, gate: function(c) { return c.greenTotal >= 1; } },
+  { name: "Seed Sower",         min: 16, gate: function(c) { return c.goalsDone >= 1 || c.savTotal >= 1000; } },
+  { name: "Wall Builder",       min: 21, gate: function(c) { return c.cushionMonths >= 1; } },
+  { name: "Gold Streamer",      min: 26, gate: function(c) { return c.greenTotal >= 3; } },
+  { name: "Debt Breaker",       min: 31, gate: function(c) { return c.debtsCleared >= 1 || c.cushionMonths >= 3; } },
+  { name: "Caravan Master",     min: 36, gate: function(c) { return c.netWorth >= c.opening * 2 && c.opening > 0; } },
+  { name: "Vault Keeper",       min: 41, gate: function(c) { return c.greenTotal >= 6 && c.opening > 0 && c.netWorth >= c.opening * 3; } },
+  { name: "Richest in Babylon", min: 46, gate: function(c) { return c.greenTotal >= 12 && c.opening > 0 && c.netWorth >= c.opening * 5; } }
+];
+function rankFor(level, c) {
+  var best = RANKS[0].name;
+  for (var i = 0; i < RANKS.length; i++) {
+    if (level >= RANKS[i].min && RANKS[i].gate(c)) best = RANKS[i].name;
+  }
+  return best;
+}
+
+// ── Badges ──────────────────────────────────────────────────────────────────
+// The first slice of the 158: families A, C, D, E, F and G. The remaining
+// families land once the list in MOTIVATION_SYSTEM.md has been edited (§8).
+//
+// `reveals` is on every row from day one and is the reason this shipped before
+// the friends page: under Amendment 13 financial data is very likely מידע בעל
+// רגישות מיוחדת, so a badge that discloses net worth or income must be
+// individually opt-in on any shared profile, defaulted OFF, with the sharing
+// state stored per badge rather than as one global flag.
+//   none   - reveals nothing about your money
+//   habit  - reveals consistency only
+//   wealth - reveals or strongly implies income or net worth
+var BADGES = [
+  // A. First steps
+  { id: "a1", fam: "A. First steps", name: "First Coin",      desc: "Logged your first transaction.",        r: "common",    reveals: "none",   glyph: "coins",     test: function(c) { return c.txCount >= 1; } },
+  { id: "a2", fam: "A. First steps", name: "Opening Act",     desc: "Recorded what you started with.",        r: "common",    reveals: "none",   glyph: "flag",      test: function(c) { return c.hasOpening; } },
+  { id: "a3", fam: "A. First steps", name: "Shape of It",     desc: "Sorted spending into your own categories.", r: "common", reveals: "none",   glyph: "categories", test: function(c) { return c.catCount >= 5; } },
+  { id: "a4", fam: "A. First steps", name: "First Line",      desc: "Set your first budget.",                 r: "common",    reveals: "none",   glyph: "budgets",   test: function(c) { return c.budgetCount >= 1; } },
+  { id: "a5", fam: "A. First steps", name: "Somewhere to Go", desc: "Opened your first budget book.",         r: "common",    reveals: "none",   glyph: "goals",     test: function(c) { return c.goalCount >= 1; } },
+  { id: "a6", fam: "A. First steps", name: "Tidy Drawer",     desc: "Gave a folder a job.",                   r: "common",    reveals: "none",   glyph: "folder",    test: function(c) { return c.folderRoles >= 1; } },
+  { id: "a7", fam: "A. First steps", name: "Hundred Entries", desc: "A hundred transactions logged by hand.", r: "uncommon",  reveals: "habit",  glyph: "note",      test: function(c) { return c.txCount >= 100; } },
+  { id: "a8", fam: "A. First steps", name: "Thousand Entries",desc: "A thousand. The ledger is a habit now.", r: "rare",      reveals: "habit",  glyph: "book",      test: function(c) { return c.txCount >= 1000; } },
+
+  // C. Green month
+  { id: "c1", fam: "C. Green month", name: "First Green",     desc: "One month that ended better than it started.", r: "uncommon", reveals: "habit", glyph: "leaf",   test: function(c) { return c.greenTotal >= 1; } },
+  { id: "c2", fam: "C. Green month", name: "Twice Over",      desc: "Two green months.",                      r: "uncommon",  reveals: "habit",  glyph: "leaf",      test: function(c) { return c.greenTotal >= 2; } },
+  { id: "c3", fam: "C. Green month", name: "Three Deep",      desc: "Three in a row. Not luck any more.",     r: "rare",      reveals: "habit",  glyph: "flame",     test: function(c) { return c.greenRun >= 3; } },
+  { id: "c4", fam: "C. Green month", name: "Half a Year",     desc: "Six consecutive green months.",          r: "epic",      reveals: "habit",  glyph: "flame",     test: function(c) { return c.greenRun >= 6; } },
+  { id: "c5", fam: "C. Green month", name: "Full Year Green", desc: "Twelve straight. The maximum in a year.", r: "legendary", reveals: "habit",  glyph: "crown",     test: function(c) { return c.greenRun >= 12; } },
+  { id: "c6", fam: "C. Green month", name: "Two Years Green", desc: "Twenty-four consecutive green months.",  r: "legendary", reveals: "habit",  glyph: "crown",     test: function(c) { return c.greenRun >= 24; } },
+  { id: "c7", fam: "C. Green month", name: "Made It Good",    desc: "A red month repaired by the next one.",  r: "rare",      reveals: "habit",  glyph: "tool",      test: function(c) { return c.repaired >= 1; } },
+  { id: "c8", fam: "C. Green month", name: "Half Kept",       desc: "A month where you kept half of what came in.", r: "epic", reveals: "wealth", glyph: "medal",   test: function(c) { return c.bestRate >= 50; } },
+  { id: "c9", fam: "C. Green month", name: "Ten Years Green", desc: "One hundred and twenty consecutive green months.", r: "mythic", reveals: "habit", glyph: "diamond", test: function(c) { return c.greenRun >= 120; } },
+
+  // D. Clean weeks
+  { id: "d1", fam: "D. Clean weeks", name: "Clean Sheet",     desc: "Confirmed your first week.",             r: "common",    reveals: "none",   glyph: "check",     test: function(c) { return c.cleanTotal >= 1; } },
+  { id: "d2", fam: "D. Clean weeks", name: "Clean Sweep",     desc: "Four clean weeks in a row.",             r: "uncommon",  reveals: "habit",  glyph: "calendar",  test: function(c) { return c.cleanRun >= 4; } },
+  { id: "d3", fam: "D. Clean weeks", name: "Shielded",        desc: "Banked your first shield.",              r: "uncommon",  reveals: "none",   glyph: "shield",    test: function(c) { return c.shieldsEarned >= 1; } },
+  { id: "d4", fam: "D. Clean weeks", name: "Quarter Clean",   desc: "Thirteen consecutive clean weeks.",      r: "rare",      reveals: "habit",  glyph: "calendar",  test: function(c) { return c.cleanRun >= 13; } },
+  { id: "d5", fam: "D. Clean weeks", name: "Half Year Clean", desc: "Twenty-six weeks of true books.",        r: "epic",      reveals: "habit",  glyph: "medal",     test: function(c) { return c.cleanRun >= 26; } },
+  { id: "d6", fam: "D. Clean weeks", name: "Year of Truth",   desc: "Fifty-two consecutive clean weeks.",     r: "legendary", reveals: "habit",  glyph: "crown",     test: function(c) { return c.cleanRun >= 52; } },
+  { id: "d7", fam: "D. Clean weeks", name: "Quiet Week",      desc: "A confirmed week with nothing to report.", r: "common",  reveals: "habit",  glyph: "droplet",   test: function(c) { return c.quietWeeks >= 1; } },
+  { id: "d8", fam: "D. Clean weeks", name: "Hundred Weeks",   desc: "A hundred weeks confirmed, in total.",   r: "epic",      reveals: "habit",  glyph: "book",      test: function(c) { return c.cleanTotal >= 100; } },
+  { id: "d9", fam: "D. Clean weeks", name: "Never Missed",    desc: "Two hundred and sixty weeks. Five years, unbroken.", r: "mythic", reveals: "habit", glyph: "diamond", test: function(c) { return c.cleanRun >= 260; } },
+
+  // E. Budgets
+  { id: "e1", fam: "E. Budgets", name: "Under the Line",      desc: "Held a budget for a whole month.",       r: "common",    reveals: "none",   glyph: "budgets",   test: function(c) { return c.budgetBest >= 1; } },
+  { id: "e2", fam: "E. Budgets", name: "Three Months Held",   desc: "One budget, three months, never over.",  r: "uncommon",  reveals: "habit",  glyph: "budgets",   test: function(c) { return c.budgetBest >= 3; } },
+  { id: "e3", fam: "E. Budgets", name: "Six Months Held",     desc: "Half a year inside the same line.",      r: "rare",      reveals: "habit",  glyph: "shield",    test: function(c) { return c.budgetBest >= 6; } },
+  { id: "e4", fam: "E. Budgets", name: "Twelve Months Held",  desc: "A budget kept for a full year.",         r: "epic",      reveals: "habit",  glyph: "medal",     test: function(c) { return c.budgetBest >= 12; } },
+  { id: "e5", fam: "E. Budgets", name: "Clean Board",         desc: "Every budget on track at once.",         r: "uncommon",  reveals: "none",   glyph: "check",     test: function(c) { return c.budgetCount >= 3 && c.budgetOnTrack === c.budgetCount; } },
+  { id: "e6", fam: "E. Budgets", name: "Fully Ruled",         desc: "Five budgets running at the same time.", r: "uncommon",  reveals: "none",   glyph: "budgets",   test: function(c) { return c.budgetCount >= 5; } },
+  { id: "e7", fam: "E. Budgets", name: "Balanced Books",      desc: "Every folder carrying a role.",          r: "rare",      reveals: "none",   glyph: "folder",    test: function(c) { return c.folderCount >= 3 && c.folderRoles === c.folderCount; } },
+  { id: "e8", fam: "E. Budgets", name: "The Whole Board",     desc: "Every budget held, for a year.",         r: "legendary", reveals: "habit",  glyph: "crown",     test: function(c) { return c.budgetCount >= 4 && c.budgetWorst >= 12; } },
+
+  // F. Goals
+  { id: "f1", fam: "F. Goals", name: "Funded",                desc: "Put the first shekel into a budget book.", r: "common",  reveals: "none",   glyph: "gift",      test: function(c) { return c.goalFunded >= 1; } },
+  { id: "f2", fam: "F. Goals", name: "Closed the Book",       desc: "Reached a goal in full.",                r: "uncommon",  reveals: "none",   glyph: "check",     test: function(c) { return c.goalsDone >= 1; } },
+  { id: "f3", fam: "F. Goals", name: "Three Closed",          desc: "Three budget books completed.",          r: "rare",      reveals: "habit",  glyph: "medal",     test: function(c) { return c.goalsDone >= 3; } },
+  { id: "f4", fam: "F. Goals", name: "Ten Closed",            desc: "Ten goals, all the way to the end.",     r: "epic",      reveals: "habit",  glyph: "trophy",    test: function(c) { return c.goalsDone >= 10; } },
+  { id: "f5", fam: "F. Goals", name: "Three at Once",         desc: "Three books open and all of them moving.", r: "uncommon", reveals: "none",  glyph: "goals",     test: function(c) { return c.goalsMoving >= 3; } },
+  { id: "f6", fam: "F. Goals", name: "Ahead of Schedule",     desc: "Closed a goal before its deadline.",     r: "rare",      reveals: "none",   glyph: "spark",     test: function(c) { return c.goalsEarly >= 1; } },
+  { id: "f7", fam: "F. Goals", name: "Long Game",             desc: "A goal you funded for two years straight.", r: "legendary", reveals: "habit", glyph: "crown",  test: function(c) { return c.goalLongest >= 24; } },
+
+  // G. Savings and cushion
+  { id: "g1", fam: "G. Savings and cushion", name: "First Pot",     desc: "Opened a savings pot.",            r: "common",    reveals: "none",   glyph: "coins",     test: function(c) { return c.potCount >= 1; } },
+  { id: "g2", fam: "G. Savings and cushion", name: "One Month Deep",desc: "A cushion worth a month of essentials.", r: "uncommon", reveals: "wealth", glyph: "shield", test: function(c) { return c.cushionMonths >= 1; } },
+  { id: "g3", fam: "G. Savings and cushion", name: "Three Months",  desc: "Three months of essentials, set aside.", r: "rare",  reveals: "wealth", glyph: "shield",   test: function(c) { return c.cushionMonths >= 3; } },
+  { id: "g4", fam: "G. Savings and cushion", name: "Six Months",    desc: "Half a year of runway.",           r: "epic",      reveals: "wealth", glyph: "shield",    test: function(c) { return c.cushionMonths >= 6; } },
+  { id: "g5", fam: "G. Savings and cushion", name: "The Thousand",  desc: "A thousand saved.",                r: "uncommon",  reveals: "wealth", glyph: "coins",     test: function(c) { return c.savTotal >= 1000; } },
+  { id: "g6", fam: "G. Savings and cushion", name: "Five Figures",  desc: "Ten thousand, held.",              r: "rare",      reveals: "wealth", glyph: "coins",     test: function(c) { return c.savTotal >= 10000; } },
+  { id: "g7", fam: "G. Savings and cushion", name: "Six Figures",   desc: "A hundred thousand in net worth.", r: "epic",      reveals: "wealth", glyph: "building",  test: function(c) { return c.netWorth >= 100000; } },
+  { id: "g8", fam: "G. Savings and cushion", name: "Seven Figures", desc: "A million.",                       r: "legendary", reveals: "wealth", glyph: "diamond",   test: function(c) { return c.netWorth >= 1000000; } },
+  { id: "g9", fam: "G. Savings and cushion", name: "Doubled",       desc: "Twice the net worth you opened with.", r: "epic",  reveals: "wealth", glyph: "up",        test: function(c) { return c.opening > 0 && c.netWorth >= c.opening * 2; } },
+  { id: "g10",fam: "G. Savings and cushion", name: "Three Pots",    desc: "Three pots, each with a job.",     r: "uncommon",  reveals: "none",   glyph: "folder",    test: function(c) { return c.potCount >= 3; } },
+  { id: "g11",fam: "G. Savings and cushion", name: "Never Dipped",  desc: "A year of saving without a withdrawal.", r: "epic", reveals: "habit", glyph: "lock",      test: function(c) { return c.potNoDipMonths >= 12; } }
+];
+
+// The single entry point. Everything the Profile screen renders comes out of
+// this one call, so the numbers on the header, the streak card, the badge
+// scroller and the activity feed can never disagree with each other.
+function motivSnapshot(data) {
+  var motiv = motivOf(data);
+  var tx = data.tx || [];
+  var today = new Date();
+
+  var clean = cleanWeekState(motiv, today);
+  var target = Number((data.onboardingData || {}).savingsTargetPct || 0);
+  var green = greenMonthState(tx, motiv, target);
+  var bctx = { tx: tx, categories: data.categories || [], folders: data.folders || [] };
+  var bud = budgetRunState(data.budgets || [], bctx);
+
+  // Money reads, all through the existing helpers so Profile can never disagree
+  // with Overview about what the user is worth.
+  var savTotal = savingsTotal(data.savings || []);
+  var todayIso = isoDay(today);
+  var allIncome = tx.filter(function(t) { return t.type === "income" && !isTransfer(t) && motivSettled(t, todayIso); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var allExpense = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && motivSettled(t, todayIso); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var netWorth = round2(allIncome - allExpense + savTotal + businessTotal(data.businesses || []) + investingTotal(data.investing || []));
+  var openingTx = tx.filter(function(t) { return isOpening(t); })[0];
+  var opening = openingTx ? (openingTx.amount || 0) : 0;
+  var essentials = Number((data.onboardingData || {}).monthlyEssentials || 0);
+  var cushionMonths = essentials > 0 ? savTotal / essentials : 0;
+
+  var goals = data.goals || [];
+  var goalsDone = goals.filter(function(g) {
+    return g.target > 0 && goalSavedAmount(g, tx, data.savings, data.businesses, data.investing) >= g.target;
+  }).length;
+  var goalFunded = goals.filter(function(g) {
+    return goalSavedAmount(g, tx, data.savings, data.businesses, data.investing) > 0;
+  }).length;
+
+  var months = green.months;
+  var bestRate = 0, repaired = 0, i;
+  for (i = 0; i < months.length; i++) {
+    if (months[i].rate !== null && months[i].rate > bestRate) bestRate = months[i].rate;
+    // "Made it good": a red month immediately followed by a green one that beat
+    // the target by at least as much as the red one missed it.
+    if (i > 0 && !months[i - 1].green && months[i].green && months[i].rate !== null && months[i - 1].rate !== null) {
+      if ((months[i].rate - green.target) >= (green.target - months[i - 1].rate)) repaired++;
+    }
+  }
+
+  // Weeks confirmed that had no transactions at all - the design says a quiet
+  // week still counts, and there is a badge that says so out loud.
+  var quiet = 0;
+  for (i = 0; i < motiv.weekConfirms.length; i++) {
+    var wk = motiv.weekConfirms[i], wkEnd = weekAdd(wk, 1);
+    var any = tx.some(function(t) { return t.date >= wk && t.date < wkEnd && !isOpening(t); });
+    if (!any) quiet++;
+  }
+
+  var folders = data.folders || [];
+  var ctx = {
+    txCount: tx.filter(function(t) { return !isOpening(t); }).length,
+    hasOpening: !!openingTx,
+    catCount: (data.categories || []).length,
+    budgetCount: (data.budgets || []).length,
+    budgetOnTrack: bud.onTrack,
+    budgetBest: bud.best,
+    budgetWorst: bud.runs.length === (data.budgets || []).length && bud.runs.length ? bud.runs[bud.runs.length - 1].run : 0,
+    folderCount: folders.length,
+    folderRoles: folders.filter(function(f) { return !!folderRole(f); }).length,
+    goalCount: goals.length, goalsDone: goalsDone, goalFunded: goalFunded,
+    goalsMoving: goalFunded, goalsEarly: 0, goalLongest: 0,
+    potCount: (data.savings || []).length, potNoDipMonths: 0,
+    savTotal: savTotal, netWorth: netWorth, opening: opening, cushionMonths: cushionMonths,
+    debtsCleared: (data.debts || []).filter(function(d) { return d && d.cleared; }).length,
+    cleanRun: clean.run, cleanTotal: clean.total, shieldsEarned: clean.shields, quietWeeks: quiet,
+    greenRun: green.run, greenTotal: green.total, bestRate: bestRate, repaired: repaired
+  };
+
+  // Which badges are currently satisfied. A badge, once earned, is kept forever
+  // even if the condition later stops holding - rule 1: XP never decreases.
+  var held = {}, sharedOn = {};
+  for (i = 0; i < motiv.badges.length; i++) { held[motiv.badges[i].id] = motiv.badges[i]; sharedOn[motiv.badges[i].id] = !!motiv.badges[i].shared; }
+  var earned = [], newly = [], badgeXp = 0;
+  for (i = 0; i < BADGES.length; i++) {
+    var b = BADGES[i];
+    var rec = held[b.id];
+    var on = rec || b.test(ctx);
+    if (!on) continue;
+    badgeXp += MOTIV.rarityXp[b.r] || 0;
+    var row = { def: b, at: rec ? rec.at : isoDay(today), early: rec ? !!rec.early : false, shared: !!sharedOn[b.id] };
+    earned.push(row);
+    if (!rec) newly.push(row);
+  }
+
+  // XP. Behaviour first, then badges. Nothing here can go negative.
+  var xp = clean.total * MOTIV.xp.cleanWeek
+         + green.total * MOTIV.xp.greenMonth
+         + Math.min(bud.onTrack * MOTIV.xp.budgetHeld, MOTIV.xp.budgetHeldCap)
+         + goalsDone * MOTIV.xp.goalDone
+         + badgeXp;
+  var level = levelFor(xp);
+  var cur = xpForLevel(level), next = level >= MOTIV.maxLevel ? cur : xpForLevel(level + 1);
+  var pct = next > cur ? Math.round(((xp - cur) / (next - cur)) * 100) : 100;
+
+  return {
+    motiv: motiv, ctx: ctx, clean: clean, green: green, budgets: bud,
+    xp: xp, level: level, pctToNext: Math.max(0, Math.min(100, pct)),
+    xpToNext: Math.max(0, next - xp), rank: rankFor(level, ctx),
+    badges: earned, newBadges: newly, badgeTotal: BADGES.length,
+    hiddenOnShare: earned.filter(function(e) { return e.def.reveals === "wealth" && !e.shared; }).length
+  };
 }
 
 // Cloud backend: Firebase Auth owns identity + sessions (sign-up, sign-in,
@@ -3579,6 +4136,13 @@ function SVGIcon(props) {
     calendar: "M3 5h18v16H3zM3 9h18M8 3v4M16 3v4",
     note:     "M6 2h9l5 5v15H6zM14 2v5h5M9 13h6M9 17h4",
     shield:   "M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z",
+    // Badge glyphs (motivation layer). Kept in the same flat single-stroke
+    // language as everything above so a badge tile never looks pasted in.
+    crown:    "M3 8l4 3 5-6 5 6 4-3-2 11H5L3 8zM5 19h14",
+    flame:    "M12 22c4 0 6-2.7 6-6 0-4-3-5.5-3-9 0 0-2 1.5-2 4 0-2.5-2-5-4-5 .8 2 .3 3.6-1 5.4C6.7 13 6 14.4 6 16c0 3.3 2 6 6 6z",
+    medal:    "M8 2l4 6 4-6M12 22a6 6 0 100-12 6 6 0 000 12zm0-8.5l1.2 2.4 2.6.4-1.9 1.8.5 2.6-2.4-1.3-2.4 1.3.5-2.6L7.2 16l2.6-.4z",
+    diamond:  "M6 3h12l4 6-10 12L2 9zM2 9h20M9 3l-3 6 6 12M15 3l3 6-6 12",
+    trophy:   "M7 3h10v6a5 5 0 01-10 0zM7 5H4v2a3 3 0 003 3M17 5h3v2a3 3 0 01-3 3M12 14v4m-3 3h6",
     // Category banner icons
     home:     "M3 10.5L12 3l9 7.5M5 9.2V20h14V9.2",
     food:     "M7 3v4m-2-4v4a2 2 0 004 0V3M6 8v13M16 3v18M19 8h-6",
@@ -3662,6 +4226,24 @@ function ProgressBar(props) {
         background: props.value > props.max ? T.red : (props.color || T.orange),
         transition: "width var(--m-value) var(--m-ease), background var(--m-quick) ease",
       }} />
+    </div>
+  );
+}
+
+// A ProgressBar that also carries a marker where the promise sits, for bars
+// measured as a share of income rather than against a limit of their own. The
+// fill answers "how much", the marker answers "how much was meant to" - so
+// being over the line is a glance instead of a subtraction.
+function SplitBar(props) {
+  var grown = useGrowIn();
+  var h = props.h || 6;
+  var pct = Math.max(0, Math.min(100, props.pct || 0));
+  var mark = Math.max(0, Math.min(100, props.target || 0));
+  return (
+    <div style={{ position: "relative", height: h, borderRadius: h, background: "rgba(0,0,0,0.07)", overflow: "hidden" }}>
+      <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: (grown ? pct : 0) + "%", borderRadius: h,
+        background: props.color || T.orange, transition: "width var(--m-value) var(--m-ease), background var(--m-quick) ease" }} />
+      <div style={{ position: "absolute", top: -1, bottom: -1, left: mark + "%", width: 2, background: T.ink2, opacity: 0.55 }} />
     </div>
   );
 }
@@ -3834,9 +4416,11 @@ function SegRow(props) {
   opts.forEach(function(o) { if (o.value === props.value) sel = o; });
   return (
     <div style={{ background: T.inputBg, borderRadius: 13, padding: "9px 14px", marginBottom: props.last ? 0 : 7 }}>
-      <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, marginBottom: 6 }}>
-        {props.label}
-      </div>
+      {props.label ? (
+        <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI, marginBottom: 6 }}>
+          {props.label}
+        </div>
+      ) : null}
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
         {opts.map(function(o) {
           var on = o.value === props.value;
@@ -9073,18 +9657,114 @@ function Notes(props) {
   );
 }
 
+// The sheet where the user is ASKED what their split should be instead of being
+// told. The presets cover the shapes real lives take; the three fields below
+// let anyone dial in their own. Save stays shut until the percentages add to a
+// whole income - a split that doesn't sum to 100 isn't a plan, it's a typo.
+function SplitPlanSheet(props) {
+  var _v = useState(splitPlanOf(props.plan));
+  var val = _v[0]; var setVal = _v[1];
+  // Reopening always starts from what's actually saved, never from a half-typed
+  // number left behind by a sheet the user closed without saving.
+  useEffect(function() {
+    if (props.open) setVal(splitPlanOf(props.plan));
+  }, [props.open]);
+
+  function set(k, raw) {
+    var n = parseInt(String(raw).replace(/[^0-9]/g, ""), 10);
+    var next = {}; for (var q in val) next[q] = val[q];
+    next[k] = isFinite(n) ? Math.min(100, n) : 0;
+    setVal(next);
+  }
+  var sum = val.need + val.want + val.savings;
+  var ok = sum === 100;
+  // Matched against the raw fields, not the normalised plan - a half-typed 95%
+  // must not light up "The classic" just because the fallback happens to be it.
+  var picked = ok ? splitPresetFor(val) : null;
+
+  return (
+    <Overlay open={props.open} onClose={props.onClose} title="Your split">
+      <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, padding: "0 2px 14px" }}>
+        How you want each month's income divided. Richy grades you against this - so make it a promise you'd actually keep, not the one a book prints.
+      </div>
+
+      {/* The answer, drawn before it's saved. */}
+      <div style={{ display: "flex", height: 12, borderRadius: 8, overflow: "hidden", gap: 2, background: "rgba(0,0,0,0.05)", marginBottom: 9 }}>
+        {FOLDER_ROLES.map(function(r) {
+          return <div key={r.key} style={{ width: (sum > 0 ? (val[r.key] / sum) * 100 : 0) + "%", background: r.color, height: "100%", transition: "width var(--m-quick) var(--m-ease)" }} />;
+        })}
+      </div>
+      <div style={{ display: "flex", gap: "6px 14px", flexWrap: "wrap", marginBottom: 16 }}>
+        {FOLDER_ROLES.map(function(r) {
+          return (
+            <div key={r.key} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ width: 8, height: 8, borderRadius: 3, background: r.color, display: "inline-block" }} />
+              <span style={{ fontSize: 12, color: T.ink2, fontWeight: 500 }}>{r.label}</span>
+              <span style={{ fontSize: 12, color: T.ink3 }}>{val[r.key] + "%"}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7, marginBottom: 14 }}>
+        {SPLIT_PRESETS.map(function(p) {
+          var on = !!picked && picked.need === p.need && picked.want === p.want && picked.savings === p.savings;
+          return (
+            <button key={splitPlanLabel(p)} onClick={function() { setVal({ need: p.need, want: p.want, savings: p.savings }); }}
+              style={{ textAlign: "left", padding: "11px 12px", borderRadius: 13, cursor: "pointer", fontFamily: UI,
+                background: on ? T.orangeDim : "rgba(0,0,0,0.04)",
+                border: on ? "1.5px solid " + T.orange : "1.5px solid transparent", transition: PRESS_T }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: on ? T.orange : T.ink, letterSpacing: "-0.02em" }}>{splitPlanLabel(p)}</div>
+              <div style={{ fontSize: 11.5, fontWeight: 600, color: T.ink2, marginTop: 2 }}>{p.name}</div>
+              <div style={{ fontSize: 10.5, color: T.ink3, marginTop: 3, lineHeight: 1.35 }}>{p.blurb}</div>
+            </button>
+          );
+        })}
+      </div>
+
+      {FOLDER_ROLES.map(function(r, i) {
+        return (
+          <FormRow key={r.key} label={r.label + " %"} type="number" value={String(val[r.key])}
+            onChange={function(e) { set(r.key, e.target.value); }} last={i === FOLDER_ROLES.length - 1} />
+        );
+      })}
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 4px 0" }}>
+        <span style={{ fontSize: 12.5, color: ok ? T.ink3 : T.red, fontWeight: ok ? 500 : 700 }}>
+          {ok ? "Adds up to 100%." : "Adds up to " + sum + "% - needs to be 100%."}
+        </span>
+        {sum !== 100 && (
+          <button onClick={function() { setVal({ need: SPLIT_DEFAULT.need, want: SPLIT_DEFAULT.want, savings: SPLIT_DEFAULT.savings }); }}
+            style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: T.orange, fontSize: 12.5, fontWeight: 600, fontFamily: UI }}>
+            Reset
+          </button>
+        )}
+      </div>
+
+      <BigBtn label="Save split" disabled={!ok} onPress={function() { props.onSave(val); props.onClose(); }} />
+    </Overlay>
+  );
+}
+
 // ── Folder roles: the ask, then the read ────────────────────────────────────
 // Folders are the only place in the app that already knows how the user thinks
-// about their money, so the 50/30/20 rule is one question per folder away
-// instead of a whole separate tagging exercise. Richy asks once, in plain
-// language, and every folder can be answered "not spending" - an Income folder
-// shouldn't be forced into a bucket it doesn't belong in.
+// about their money, so the split is one question per folder away instead of a
+// whole separate tagging exercise. Richy asks once, in plain language, and
+// every folder can be answered "not spending" - an Income folder shouldn't be
+// forced into a bucket it doesn't belong in. Then it asks the second question
+// the app used to answer on the user's behalf: what the split should BE.
 function FolderRolesCard(props) {
   var folders = props.folders || [];
   var cats = props.categories || [];
   var _h = useState(false); var hidden = _h[0]; var setHidden = _h[1];
+  // The split question is asked once. "Not now" hides it for the session and
+  // leaves the default standing - never a blocker, never asked twice.
+  var _ph = useState(false); var planHidden = _ph[0]; var setPlanHidden = _ph[1];
+  var _pe = useState(false); var planEdit = _pe[0]; var setPlanEdit = _pe[1];
+  var _re = useState(false); var roleEdit = _re[0]; var setRoleEdit = _re[1];
+  var _or = useState({}); var openRow = _or[0]; var setOpenRow = _or[1];
 
-  var ctx = { tx: props.tx || [], categories: cats, folders: folders, businesses: props.businesses, investing: props.investing, ym: curMonth() };
+  var ctx = { tx: props.tx || [], categories: cats, folders: folders, businesses: props.businesses, investing: props.investing, ym: curMonth(), splitPlan: props.splitPlan };
   var todo = foldersNeedingRole(folders, cats, props.tx);
   var anyRole = folders.some(function(f) { return folderRole(f); });
   if (!folders.length) return null;
@@ -9094,11 +9774,14 @@ function FolderRolesCard(props) {
     if (!props.onSaveFolders) return;
     props.onSaveFolders(folders.map(function(f) { return f.id === folder.id ? Object.assign({}, f, { role: role }) : f; }));
   }
-  function resort() {
-    if (!props.onSaveFolders) return;
-    props.onSaveFolders(folders.map(function(f) { return Object.assign({}, f, { role: "" }); }));
-    setHidden(false);
-  }
+  function savePlan(p) { if (props.onSaveSplitPlan) props.onSaveSplitPlan(p); }
+  var planSheet = (
+    <React.Fragment>
+      <SplitPlanSheet open={planEdit} plan={props.splitPlan} onClose={function() { setPlanEdit(false); }} onSave={savePlan} />
+      <SplitRolesSheet open={roleEdit} folders={folders} categories={cats} tx={props.tx}
+        onClose={function() { setRoleEdit(false); }} onSetRole={setRole} />
+    </React.Fragment>
+  );
 
   // Ask mode. The list shrinks itself: answering the folder on screen removes it
   // from `todo`, and the next one takes its place, so there is no wizard state
@@ -9114,7 +9797,7 @@ function FolderRolesCard(props) {
           <RichyLogo size={26} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 14.5, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.01em" }}>Let's make your folders mean something</div>
-            <div style={{ fontSize: 11.5, color: T.heroMut, marginTop: 1 }}>{"Sort each one and I can grade your 50/30/20 split. " + (done + 1) + " of " + folders.length + "."}</div>
+            <div style={{ fontSize: 11.5, color: T.heroMut, marginTop: 1 }}>{"Sort each one and I can grade your split. " + (done + 1) + " of " + folders.length + "."}</div>
           </div>
           <button onClick={function() { setHidden(true); }} title="Not now"
             style={{ background: "none", border: "none", padding: 6, cursor: "pointer", opacity: 0.5, display: "flex" }}>
@@ -9163,65 +9846,279 @@ function FolderRolesCard(props) {
 
   if (!anyRole) return null;
 
-  // Read mode.
   var split = roleSplit(ctx);
-  var stack = split.rows.map(function(r) { return { key: r.key, v: r.amount, color: r.color }; })
-    .concat([{ key: "unsorted", v: split.unsorted, color: T.ink3 }])
-    .filter(function(s) { return s.v > 0; });
+
+  // Ask mode, part two: the split itself. The folders are sorted, so the only
+  // thing left to decide is what "on track" should mean - and that is the
+  // user's call, not a default the app quietly grades them against forever.
+  if (!props.splitPlan && !planHidden) {
+    return (
+      <div style={{ background: T.heroBg, borderRadius: 22, boxShadow: T.heroShadow, padding: "18px 18px 16px", marginBottom: 20, animation: riseIn(1) }}>
+        {planSheet}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 13 }}>
+          <RichyLogo size={26} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14.5, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.01em" }}>Now - how should it divide?</div>
+            <div style={{ fontSize: 11.5, color: T.heroMut, marginTop: 1 }}>Pick the share each side gets. I'll grade you against your number, not a textbook's.</div>
+          </div>
+          <button onClick={function() { setPlanHidden(true); }} title="Not now"
+            style={{ background: "none", border: "none", padding: 6, cursor: "pointer", opacity: 0.5, display: "flex" }}>
+            <SVGIcon id="close" size={13} color={T.heroMut} />
+          </button>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7, marginBottom: 11 }}>
+          {SPLIT_PRESETS.map(function(p) {
+            return (
+              <button key={splitPlanLabel(p)} onClick={function() { savePlan(p); }} className="jr-press"
+                style={{ textAlign: "left", padding: "12px 13px", borderRadius: 14, cursor: "pointer", fontFamily: UI,
+                  background: "rgba(255,255,255,0.10)", border: "1.5px solid rgba(255,255,255,0.18)", transition: PRESS_T }}>
+                <div style={{ fontSize: 16, fontWeight: 800, color: T.heroInk, letterSpacing: "-0.02em" }}>{splitPlanLabel(p)}</div>
+                <div style={{ fontSize: 11, color: T.heroMut, marginTop: 3, lineHeight: 1.35 }}>{p.name}</div>
+                <div style={{ display: "flex", height: 5, borderRadius: 4, overflow: "hidden", gap: 1.5, marginTop: 8 }}>
+                  {FOLDER_ROLES.map(function(r) {
+                    return <div key={r.key} style={{ width: p[r.key] + "%", background: r.color, height: "100%" }} />;
+                  })}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <button onClick={function() { setPlanEdit(true); }}
+          style={{ width: "100%", background: "none", border: "1px dashed rgba(255,255,255,0.28)", borderRadius: 12, padding: "10px 0", cursor: "pointer", color: T.heroInk, fontSize: 13, fontWeight: 600, fontFamily: UI }}>
+          Set my own numbers
+        </button>
+      </div>
+    );
+  }
+
+  // Read mode. Three rewrites' worth of lesson sits in this layout, so the
+  // reasoning is worth keeping:
+  //
+  //   The bar fills toward THIS line's own allowance, not toward income. The
+  //   old bar filled toward income with a notch at the target, which meant a
+  //   barely-touched Wants budget rendered as a nearly-empty bar sitting well
+  //   short of its mark - a cap being kept beautifully, drawn as a goal being
+  //   missed. Nobody could read that, including people who know the rule.
+  //
+  //   Each line answers one question, in money first. "$1,807 of $2,600" is a
+  //   sentence anyone can finish; "35% / of 50%" is two numbers and a puzzle.
+  //
+  //   The verdict goes on top. "Am I okay?" is the whole reason this card
+  //   exists, and three bars never answered it on their own.
+  // The bar divides up income, not "money moved" - including whatever is still
+  // unspent. An earlier version divided up money moved, so its legend read
+  // "Needs 83%" next to a Needs row reading 69%: two different denominators,
+  // both spelled "%". The legend now shows money, which cannot be read against
+  // the wrong whole.
+  var stack = split.rows.map(function(r) { return { key: r.key, label: r.label, v: r.amount, color: r.color }; })
+    .concat([{ key: "unsorted", label: "Unsorted", v: split.unsorted, color: T.ink3 }]);
+  var leftOver = round2(split.base - split.moved);
+  if (split.graded && leftOver > 0) stack = stack.concat([{ key: "left", label: "Still unspent", v: leftOver, color: "rgba(0,0,0,0.10)" }]);
+  stack = stack.filter(function(s) { return s.v > 0; });
   var stackTotal = stack.reduce(function(s, x) { return s + x.v; }, 0);
+  var vTone = split.verdict.tone;
+  var vColor = vTone === "bad" ? T.red : vTone === "warn" ? T.gold : vTone === "good" ? T.green : T.ink3;
+
+  // Same sentence shape as a category budget's remainder line, so the two read
+  // as one family. Savings is a target; the other two are caps.
+  function splitRemainder(r) {
+    if (split.base <= 0) return "";
+    if (r.key === "savings") return r.gap > 0 ? dollars(r.gap) + " " + tr("bToGo") : tr("bReached");
+    return r.gap >= 0 ? dollars(r.gap) + " " + tr("bLeft") : dollars(Math.abs(r.gap)) + " " + tr("bOver").toLowerCase();
+  }
+  // Same pill vocabulary as a budget row: silence when a cap is being kept,
+  // OVER when it isn't, and BEHIND/REACHED on the one line that is a target.
+  function splitPill(r) {
+    if (split.base <= 0) return null;
+    if (r.key === "savings") return r.short ? { text: tr("bBehind"), color: T.gold } : { text: tr("bReached"), color: T.green };
+    return r.over ? { text: tr("bOver"), color: T.red } : null;
+  }
+  // Which folders feed a bucket - the answer to "why is Needs that big?", one
+  // tap away instead of a trip to Categories to work it out by hand.
+  function foldersIn(key) {
+    return folders.filter(function(f) { return folderRole(f) === key; });
+  }
 
   return (
-    <Card style={{ padding: "18px 18px 16px", marginBottom: 20, animation: riseIn(1) }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-        <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>Your 50/30/20</span>
-        <button onClick={resort} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: T.orange, fontSize: 12, fontWeight: 600, fontFamily: UI }}>Re-sort</button>
-      </div>
-      <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.4, marginBottom: 13 }}>
-        {split.graded
-          ? "Share of this month's " + dollars(split.income) + " income."
-          : "No income logged this month yet, so this is a share of what's moved, not of income."}
+    <Card style={{ padding: "20px 20px 0", marginBottom: 20, overflow: "hidden", animation: riseIn(1) }}>
+      {planSheet}
+
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 9 }}>
+        <span style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>Your split</span>
+        <span style={{ fontSize: 10, fontWeight: 800, color: T.orange, background: T.orangeDim, borderRadius: 7, padding: "2px 7px", letterSpacing: "0.02em" }}>{split.planLabel}</span>
       </div>
 
-      <div style={{ display: "flex", height: 10, borderRadius: 6, overflow: "hidden", gap: 2, background: "rgba(0,0,0,0.05)", marginBottom: 14 }}>
-        {stackTotal > 0 ? stack.map(function(s, si) {
-          return <div key={s.key} style={{ width: (s.v / stackTotal * 100) + "%", background: s.color, height: "100%", transformOrigin: "left center", animation: "rcGrow var(--m-value) var(--m-ease) calc(var(--m-stagger) * " + (si + 1) + ") both" }} />;
-        }) : <div style={{ width: "100%" }} />}
+      {/* The answer, before any of the evidence for it. */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 9 }}>
+        <span style={{ width: 9, height: 9, borderRadius: 5, background: vColor, flexShrink: 0, marginTop: 6 }} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.3 }}>
+            {split.verdict.text}
+          </div>
+          <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3, lineHeight: 1.4 }}>
+            {split.graded
+              ? "Out of the " + dollars(split.income) + " that came in this month."
+              : "No income logged this month yet, so these are shares of the " + dollars(split.moved) + " that moved."}
+          </div>
+        </div>
       </div>
 
-      {split.rows.map(function(r) {
-        var targetPct = Math.round(r.target * 100);
+      <div style={{ marginTop: 15 }}>
+        <div style={{ display: "flex", height: 12, borderRadius: 8, overflow: "hidden", gap: 2, background: "rgba(0,0,0,0.05)" }}>
+          {stackTotal > 0 ? stack.map(function(s, si) {
+            return <div key={s.key} title={s.label} style={{ width: (s.v / stackTotal * 100) + "%", background: s.color, height: "100%", transformOrigin: "left center", animation: "rcGrow var(--m-value) var(--m-ease) calc(var(--m-stagger) * " + (si + 1) + ") both" }} />;
+          }) : <div style={{ width: "100%" }} />}
+        </div>
+        {/* A stacked bar without a key is decoration. */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "5px 13px", marginTop: 10 }}>
+          {stack.map(function(s) {
+            return (
+              <div key={s.key} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <span style={{ width: 8, height: 8, borderRadius: 3, background: s.color, display: "inline-block" }} />
+                <span style={{ fontSize: 12, color: T.ink2, fontWeight: 500 }}>{s.label}</span>
+                <span style={{ fontSize: 12, color: T.ink3 }}>{dollars(s.v)}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div style={{ marginTop: 16, marginLeft: -20, marginRight: -20 }}>
+        {split.rows.map(function(r) {
+          var pill = splitPill(r);
+          var open = !!openRow[r.key];
+          var mine = foldersIn(r.key);
+          return (
+            <div key={r.key} style={{ borderTop: "0.5px solid " + T.sep }}>
+              <div onClick={function() { var nx = Object.assign({}, openRow); nx[r.key] = !nx[r.key]; setOpenRow(nx); }}
+                style={{ padding: "14px 20px 12px", cursor: "pointer" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 9 }}>
+                  <CatBadge icon={r.icon} color={r.color} size={34} soft={true} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ fontSize: 15, color: T.ink, fontWeight: 600 }}>{r.label}</span>
+                    {/* Money first, and the whole comparison in one sentence. */}
+                    <div style={{ fontSize: 12.5, color: T.ink2, marginTop: 2, fontWeight: 500 }}>
+                      {split.base > 0
+                        ? dollars(r.amount) + " of " + dollars(r.targetAmount)
+                        : dollars(r.amount)}
+                    </div>
+                  </div>
+                  {pill && (
+                    <span style={{ fontSize: 10, fontWeight: 700, color: pill.color, background: pill.color + "1A", borderRadius: 7, padding: "2px 8px", letterSpacing: "0.02em" }}>
+                      {pill.text}
+                    </span>
+                  )}
+                  <span style={{ display: "flex", flexShrink: 0, transform: open ? "rotate(-90deg)" : "rotate(90deg)", transition: "transform var(--m-quick) ease" }}>
+                    <SVGIcon id="chevron" size={13} color={T.ink3} />
+                  </span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ flex: 1 }}>
+                    {/* Fills toward this line's own allowance - full means the
+                        cap is spent, or the savings target is met. */}
+                    <ProgressBar value={r.amount} max={r.targetAmount || 1} color={r.over ? T.red : r.short ? T.gold : r.color} h={6} />
+                  </div>
+                  <span style={{ fontSize: 12, minWidth: 42, textAlign: "right", fontWeight: 600, color: r.over ? T.red : r.short ? T.gold : T.ink3 }}>
+                    {(split.base > 0 ? r.usedPct : 0) + "%"}
+                  </span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 6 }}>
+                  <span style={{ fontSize: 11.5, color: T.ink3 }}>{splitRemainder(r)}</span>
+                  <span style={{ fontSize: 11.5, color: T.ink3 }}>
+                    {(r.key === "savings" ? "target " : "cap ") + r.targetPct + "% of income"}
+                  </span>
+                </div>
+              </div>
+
+              {open && (
+                <div style={{ padding: "0 20px 12px" }}>
+                  {mine.length === 0 ? (
+                    <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.45 }}>
+                      {"No folder is sorted as " + r.label.toLowerCase() + " yet, so this line is empty."}
+                    </div>
+                  ) : mine.map(function(f) {
+                    var amt = folderAmount(f, ctx, "month");
+                    return (
+                      <div key={f.id} onClick={props.onManageCategories}
+                        style={{ display: "flex", alignItems: "center", gap: 9, padding: "7px 0", cursor: props.onManageCategories ? "pointer" : "default" }}>
+                        <CatBadge icon={folderGlyph(f)} color={folderTint(f)} size={22} soft={true} />
+                        <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: T.ink2, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</span>
+                        <span style={{ fontSize: 12.5, color: T.ink3, fontWeight: 600 }}>{dollars(amt)}</span>
+                      </div>
+                    );
+                  })}
+                  <button onClick={function() { setRoleEdit(true); }}
+                    style={{ background: "none", border: "none", padding: "6px 0 0", cursor: "pointer", color: T.orange, fontSize: 12, fontWeight: 600, fontFamily: UI }}>
+                    Move a folder
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {split.unsorted > 0 && (
+        <div style={{ borderTop: "0.5px solid " + T.sep, marginLeft: -20, marginRight: -20, padding: "12px 20px 2px" }}>
+          <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.45 }}>
+            {dollars(split.unsorted) + " (" + split.unsortedPct + "%) is in categories no sorted folder covers, so it counts against none of the three."}
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: "flex", borderTop: "0.5px solid " + T.sep, marginLeft: -20, marginRight: -20, marginTop: 12 }}>
+        <button onClick={function() { setPlanEdit(true); }}
+          style={{ flex: 1, background: "none", border: "none", borderRight: "0.5px solid " + T.sep, padding: "11px 0", color: T.orange, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
+          {"Change " + split.planLabel}
+        </button>
+        {/* Was "Re-sort folders", which wiped every role and made you walk the
+            whole wizard again to fix one folder. This edits them in place. */}
+        <button onClick={todo.length > 0 ? function() { setHidden(false); } : function() { setRoleEdit(true); }}
+          style={{ flex: 1, background: "none", border: "none", padding: "11px 0", color: todo.length > 0 ? T.orange : T.ink2, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
+          {todo.length > 0 ? (todo.length + (todo.length === 1 ? " folder to sort" : " folders to sort")) : "Folder roles"}
+        </button>
+      </div>
+    </Card>
+  );
+}
+
+// Changing one folder's mind, without wiping the other answers. The old path
+// out of the split card was "Re-sort folders", which cleared every role and
+// re-ran the whole one-at-a-time ask - far too much ceremony for "Health is a
+// need, not a want".
+function SplitRolesSheet(props) {
+  var folders = props.folders || [];
+  var cats = props.categories || [];
+  return (
+    <Overlay open={props.open} onClose={props.onClose} title="Folder roles">
+      <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, padding: "2px 2px 12px" }}>
+        Each folder counts toward one side of your split. "Neither" keeps a folder out of it entirely - that's the honest answer for income.
+      </div>
+      {folders.length === 0 ? (
+        <div style={{ padding: "16px 2px", textAlign: "center", color: T.ink3, fontSize: 14 }}>No folders yet.</div>
+      ) : folders.map(function(f, i) {
+        var members = folderCategories(f, cats, folders, props.tx);
         return (
-          <div key={r.key} style={{ marginBottom: 11 }}>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 5 }}>
-              <span style={{ width: 8, height: 8, borderRadius: 3, background: r.color, display: "inline-block" }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: T.ink }}>{r.label}</span>
-              <span style={{ flex: 1 }} />
-              <span style={{ fontSize: 13, fontWeight: 700, color: r.over ? T.red : T.ink }}>{r.pct + "%"}</span>
-              <span style={{ fontSize: 11.5, color: T.ink3 }}>{"of " + targetPct + "%"}</span>
+          <div key={f.id} style={{ paddingBottom: 10, marginBottom: 10, borderBottom: i < folders.length - 1 ? "0.5px solid " + T.sep : "none" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 8 }}>
+              <CatBadge icon={folderGlyph(f)} color={folderTint(f)} size={28} soft={true} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14.5, fontWeight: 600, color: T.ink }}>{f.name}</div>
+                <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {members.length ? members.map(function(c) { return c.name; }).join(", ") : "Empty"}
+                </div>
+              </div>
             </div>
-            {/* The track carries a marker at the rule's target, so "how far off"
-                is a glance rather than a subtraction. */}
-            <div style={{ position: "relative", height: 6, borderRadius: 4, background: "rgba(0,0,0,0.06)", overflow: "hidden" }}>
-              <div style={{ position: "absolute", inset: 0, width: Math.min(100, r.pct) + "%", background: r.over ? T.red : r.color, borderRadius: 4 }} />
-              <div style={{ position: "absolute", top: -1, bottom: -1, left: targetPct + "%", width: 2, background: T.ink2, opacity: 0.55 }} />
-            </div>
-            <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>{dollars(r.amount)}</div>
+            <SegRow label="" value={folderRole(f)} last={true}
+              onChange={function(v) { props.onSetRole(f, v); }}
+              options={FOLDER_ROLES.map(function(r) { return { value: r.key, label: r.label, color: r.color }; })
+                .concat([{ value: "none", label: "Neither" }])} />
           </div>
         );
       })}
-
-      {split.unsorted > 0 && (
-        <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 10, lineHeight: 1.45 }}>
-          {dollars(split.unsorted) + " (" + split.unsortedPct + "%) sits in categories no sorted folder covers."}
-        </div>
-      )}
-      {todo.length > 0 && (
-        <button onClick={function() { setHidden(false); }}
-          style={{ background: "none", border: "none", padding: "8px 0 0", cursor: "pointer", color: T.orange, fontSize: 12, fontWeight: 600, fontFamily: UI }}>
-          {todo.length + (todo.length === 1 ? " folder still needs sorting" : " folders still need sorting")}
-        </button>
-      )}
-    </Card>
+    </Overlay>
   );
 }
 
@@ -9571,7 +10468,8 @@ function Budgets(props) {
       )}
 
       <FolderRolesCard folders={folders} categories={cats} tx={props.tx} businesses={props.businesses}
-        investing={props.investing} onSaveFolders={props.onSaveFolders} onManageCategories={props.onManageCategories} />
+        investing={props.investing} splitPlan={props.splitPlan} onSaveSplitPlan={props.onSaveSplitPlan}
+        onSaveFolders={props.onSaveFolders} onManageCategories={props.onManageCategories} />
 
       {budgetSection(tr("byCategory"), capRows, 2)}
       {targetRows.length > 0 && budgetSection("Targets", targetRows, 4)}
@@ -11886,11 +12784,11 @@ function Advisor(props) {
           + (fb ? " | folder budget: " + cs + fb.limit + " " + (budgetDir(fb) === "target" ? "growth target" : "spending cap") : "");
       }).join("\n") : "none")
     + (function() {
-        var fctx = { tx: props.tx || [], categories: cats, folders: props.folders || [], businesses: props.businesses, investing: props.investing, ym: curMonth() };
+        var fctx = { tx: props.tx || [], categories: cats, folders: props.folders || [], businesses: props.businesses, investing: props.investing, ym: curMonth(), splitPlan: props.splitPlan };
         if (!(props.folders || []).some(function(f) { return folderRole(f); })) return "\n(No folders sorted into needs/wants/savings yet - you can offer to do it with the folderRole action.)";
         var sp = roleSplit(fctx);
-        return "\n\n=== 50/30/20 SPLIT (from those folder roles) ===\n"
-          + sp.rows.map(function(r) { return r.label + ": " + cs + Math.round(r.amount) + " (" + r.pct + "% of " + (sp.graded ? "income" : "money moved") + ", rule says " + Math.round(r.target * 100) + "%)"; }).join("\n")
+        return "\n\n=== " + sp.planLabel + " SPLIT (from those folder roles; the user chose these targets" + (props.splitPlan ? "" : " - actually still on the 50/30/20 default, they have not picked yet") + ") ===\n"
+          + sp.rows.map(function(r) { return r.label + ": " + cs + Math.round(r.amount) + " (" + r.pct + "% of " + (sp.graded ? "income" : "money moved") + ", their target is " + r.targetPct + "%)"; }).join("\n")
           + (sp.unsorted > 0 ? "\nUnsorted (in no roled folder): " + cs + Math.round(sp.unsorted) : "");
       })()
     + "\n\n=== SAVINGS POTS (exact names, with balance) ===\n"
@@ -13601,9 +14499,9 @@ function FolderForm(props) {
         <ColorGrid value={col} onChange={setCol} />
       </div>
 
-      <SegRow label="50/30/20 role" value={role} onChange={setRole}
+      <SegRow label="Split role" value={role} onChange={setRole}
         options={FOLDER_ROLES.map(function(r) { return { value: r.key, label: r.label, hint: r.blurb, color: r.color }; })
-          .concat([{ value: "none", label: "Neither", hint: "Kept out of the 50/30/20 split - income folders, mostly." }])} />
+          .concat([{ value: "none", label: "Neither", hint: "Kept out of your split - income folders, mostly." }])} />
 
       {locked ? (
         <div style={{ background: "rgba(0,0,0,0.04)", borderRadius: 13, padding: "9px 14px", marginBottom: 9 }}>
@@ -13905,7 +14803,7 @@ function FullAnalysisView(props) {
   var headline = score >= 80 ? "You're in good shape, " + name + "." : score >= 60 ? "You're on the right track, " + name + "." : "Let's tighten things up, " + name + ".";
   var monthLabel = new Date().toLocaleString(undefined, { month: "long" }) + " " + new Date().getFullYear();
 
-  var anaCtx = { tx: tx, categories: cats, folders: props.folders || [], businesses: props.businesses, investing: props.investing, ym: ym };
+  var anaCtx = { tx: tx, categories: cats, folders: props.folders || [], businesses: props.businesses, investing: props.investing, ym: ym, splitPlan: props.splitPlan };
   var lines = (props.budgets || []).map(function(b) {
     var r = resolveBudget(b, anaCtx);
     return { name: r.name, icon: r.icon, color: r.color, spent: r.amount, limit: r.limit, dir: r.dir, off: budgetOffTrack(r) };
@@ -14062,22 +14960,34 @@ function FullAnalysisView(props) {
 
       {anySorted && (
         <div style={{ marginBottom: 24 }}>
-          {section("The 50/30/20 Rule", split.graded ? "of " + dollars(Math.round(split.income)) + " income" : "no income logged")}
-          <Card style={{ padding: "16px 16px 8px" }}>
+          {section("Your " + split.planLabel + " Split", split.graded ? "of " + dollars(Math.round(split.income)) + " income" : "no income logged")}
+          {/* Same grammar as the Budgets card: the verdict first, then each
+              line as money against its own allowance. */}
+          <Card style={{ padding: "16px 16px 10px" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 9, marginBottom: 15 }}>
+              <span style={{ width: 8, height: 8, borderRadius: 4, flexShrink: 0, marginTop: 6,
+                background: split.verdict.tone === "bad" ? T.red : split.verdict.tone === "warn" ? T.gold : split.verdict.tone === "good" ? T.green : T.ink3 }} />
+              <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em", lineHeight: 1.35 }}>{split.verdict.text}</span>
+            </div>
             {split.rows.map(function(r) {
-              var targetPct = Math.round(r.target * 100);
               return (
-                <div key={r.key} style={{ marginBottom: 12 }}>
+                <div key={r.key} style={{ marginBottom: 13 }}>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 5 }}>
                     <span style={{ width: 8, height: 8, borderRadius: 3, background: r.color, display: "inline-block" }} />
                     <span style={{ fontSize: 13.5, fontWeight: 600, color: T.ink }}>{r.label}</span>
                     <span style={{ flex: 1 }} />
-                    <span style={{ fontSize: 13.5, fontWeight: 700, color: r.over ? T.red : T.ink }}>{r.pct + "%"}</span>
-                    <span style={{ fontSize: 11.5, color: T.ink3 }}>{"target " + targetPct + "%"}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: r.over ? T.red : r.short ? T.gold : T.ink }}>
+                      {split.base > 0 ? dollars(Math.round(r.amount)) + " of " + dollars(Math.round(r.targetAmount)) : dollars(Math.round(r.amount))}
+                    </span>
                   </div>
-                  <div style={{ position: "relative", height: 6, borderRadius: 4, background: "rgba(0,0,0,0.06)", overflow: "hidden" }}>
-                    <div style={{ position: "absolute", inset: 0, width: Math.min(100, r.pct) + "%", background: r.over ? T.red : r.color, borderRadius: 4 }} />
-                    <div style={{ position: "absolute", top: -1, bottom: -1, left: targetPct + "%", width: 2, background: T.ink2, opacity: 0.55 }} />
+                  <ProgressBar value={r.amount} max={r.targetAmount || 1} color={r.over ? T.red : r.short ? T.gold : r.color} h={6} />
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 4 }}>
+                    <span style={{ fontSize: 11, color: T.ink3 }}>
+                      {split.base <= 0 ? "" : r.key === "savings"
+                        ? (r.gap > 0 ? dollars(Math.round(r.gap)) + " to go" : "Target reached")
+                        : (r.gap >= 0 ? dollars(Math.round(r.gap)) + " left" : dollars(Math.round(Math.abs(r.gap))) + " over")}
+                    </span>
+                    <span style={{ fontSize: 11, color: T.ink3 }}>{(r.key === "savings" ? "target " : "cap ") + r.targetPct + "% of income"}</span>
                   </div>
                 </div>
               );
@@ -23601,17 +24511,46 @@ function ProfileRow(props) {
   return (
     <button onClick={props.onClick}
       style={{ width: "100%", background: "none", border: "none", borderBottom: props.last ? "none" : "0.5px solid " + T.sep, padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", fontFamily: UI, boxSizing: "border-box" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 13, minWidth: 0 }}>
         <div style={{ width: 34, height: 34, borderRadius: 10, background: props.iconBg || T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <SVGIcon id={props.icon} size={16} color={props.iconColor || T.orange} />
         </div>
-        <span style={{ fontSize: 15, fontWeight: 500, color: T.ink }}>{props.label}</span>
+        <div style={{ minWidth: 0, textAlign: "left" }}>
+          <div style={{ fontSize: 15, fontWeight: props.sub ? 600 : 500, color: T.ink }}>{props.label}</div>
+          {/* The subtitle line is what turns a settings list into a screen that
+              tells you something. Optional, so every existing caller is
+              unchanged and still renders exactly as it did. */}
+          {props.sub && <div style={{ fontSize: 12, color: T.ink3, marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{props.sub}</div>}
+        </div>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+        {props.right}
         {props.value && <span style={{ fontSize: 13, color: T.ink3, fontFamily: UI }}>{props.value}</span>}
         <SVGIcon id="chevron" size={15} color={T.ink3} />
       </div>
     </button>
+  );
+}
+
+// Stacked initial-circles, the way every row that involves other people shows
+// who they are. The app has no avatar images anywhere - Google sign-in provides
+// a photoURL but it has never been read - so an initial on a tinted disc is the
+// honest representation, not a placeholder for one.
+var FACE_TINTS = ["#5C7AE3", "#27A85F", "#C8983A", "#8970C6", "#2E7DD6"];
+function FaceStack(props) {
+  var people = (props.people || []).slice(0, 3);
+  if (!people.length) return null;
+  return (
+    <div style={{ display: "flex" }}>
+      {people.map(function(p, i) {
+        var nm = (p.name || p.email || "?");
+        return (
+          <div key={i} style={{ width: 23, height: 23, borderRadius: "50%", background: FACE_TINTS[i % FACE_TINTS.length], border: "1.5px solid " + T.card, marginLeft: i ? -8 : 0, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, fontFamily: UI, flexShrink: 0 }}>
+            {nm[0].toUpperCase()}
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -23676,35 +24615,364 @@ function TripHistoryView(props) {
   );
 }
 
+// The identity mark: an initial on the accent gradient, wrapped in a ring that
+// fills as the level does. The ring is the reason this is a circle and not the
+// old rounded square - a progress arc needs a constant radius to read.
+function LevelMark(props) {
+  var R = 48, C = 2 * Math.PI * R;
+  var pct = Math.max(0, Math.min(100, props.pct || 0));
+  return (
+    <div style={{ position: "relative", width: 104, height: 104, margin: "0 auto 12px" }}>
+      <svg width="104" height="104" viewBox="0 0 104 104">
+        <circle cx="52" cy="52" r={R} fill="none" stroke={T.sep} strokeWidth="5" />
+        <circle cx="52" cy="52" r={R} fill="none" stroke={T.orange} strokeWidth="5" strokeLinecap="round"
+          strokeDasharray={C} strokeDashoffset={C - (C * pct) / 100} transform="rotate(-90 52 52)"
+          style={{ transition: "stroke-dashoffset var(--m-settle) var(--m-ease)" }} />
+      </svg>
+      <div style={{ position: "absolute", top: 12, left: 12, width: 80, height: 80, borderRadius: "50%", background: T.btn, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 34, fontWeight: 800, color: "#fff", fontFamily: DISP, letterSpacing: "-0.02em" }}>
+        {props.initial}
+      </div>
+      <div style={{ position: "absolute", bottom: -2, left: "50%", transform: "translateX(-50%)", background: T.orange, color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99, border: "2.5px solid " + T.bg, fontFamily: UI, letterSpacing: "0.03em", whiteSpace: "nowrap" }}>
+        {"LV " + props.level}
+      </div>
+    </div>
+  );
+}
+
+function StatCell(props) {
+  return (
+    <button onClick={props.onClick} style={{ flex: 1, background: "none", border: "none", padding: "2px 0", cursor: props.onClick ? "pointer" : "default", fontFamily: UI }}>
+      <div style={{ fontSize: 20, fontWeight: 700, color: props.color || T.ink, letterSpacing: "-0.02em" }}>{props.value}</div>
+      <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 2 }}>{props.label}</div>
+    </button>
+  );
+}
+
+// Badge art is one PNG per badge, dropped into badges/ and named after the
+// badge - see badges/README.md for the list and the size spec.
+//
+// The rarity colour deliberately lives on the tile BEHIND the art rather than
+// in the art: a bitmap can't be re-tinted per theme, so putting chroma in the
+// PNG would break the ramp in dark mode and across the three palettes. The
+// wash, the border and the label carry rarity; the art carries identity.
+function badgeImgName(b) {
+  return b.img || String(b.name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+// Falls back to the SVG glyph when a PNG is missing, so the set can be filled
+// in one file at a time without ever showing a broken image.
+function BadgeGlyph(props) {
+  var _f = useState(false); var failed = _f[0]; var setFailed = _f[1];
+  var size = props.size || 28;
+  var b = props.badge || {};
+  if (failed) return <SVGIcon id={b.glyph || "star"} size={size} color={props.color} />;
+  return (
+    <img src={"badges/" + badgeImgName(b) + ".png"} alt="" width={size} height={size}
+      onError={function() { setFailed(true); }}
+      style={{ width: size, height: size, objectFit: "contain", display: "block" }} />
+  );
+}
+
+// One badge, at tile size. Locked badges keep their shape but lose their colour
+// and their name - you can see there is something there without being told what.
+function BadgeTile(props) {
+  var b = props.badge, locked = props.locked;
+  var col = locked ? T.ink3 : rarityColor(b.r);
+  var mythic = !locked && b.r === "mythic";
+  return (
+    <button onClick={props.onClick} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", width: 62, flexShrink: 0, fontFamily: UI, opacity: locked ? 0.4 : 1 }}>
+      <div style={{ width: 56, height: 56, borderRadius: 17, margin: "0 auto", background: locked ? T.inputBg : rarityDim(b.r), border: locked ? "none" : "1.5px solid " + col + "55", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        {locked ? <SVGIcon id="lock" size={24} color={col} /> : <BadgeGlyph badge={b} size={30} color={col} />}
+      </div>
+      {/* Mythic is the one tier with no flat colour - the spec calls it
+          iridescent, so the name carries the gradient itself. */}
+      <div style={mythic
+        ? { fontSize: 10, fontWeight: 700, marginTop: 6, lineHeight: 1.2, backgroundImage: mythicGrad(), WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }
+        : { fontSize: 10, fontWeight: 700, marginTop: 6, lineHeight: 1.2, color: T.ink }}>
+        {locked ? "Locked" : b.name}
+      </div>
+      {!locked && (
+        <div style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: "0.09em", color: col, marginTop: 3 }}>
+          {RARITY_LABEL[b.r]}
+        </div>
+      )}
+    </button>
+  );
+}
+
 function Profile(props) {
+  var snap = props.snap;
+  var initial = (props.user || "?")[0].toUpperCase();
+  var hh = props.household;
+  var members = hh && hh.members ? hh.members : [];
+  var clean = snap.clean, green = snap.green;
+  var cur = green.current;
+  var curRate = cur && cur.income > 0 ? Math.round(((cur.income - cur.expense) / cur.income) * 100) : null;
+  var onTrack = curRate !== null && curRate >= green.target;
+  var underBy = cur ? round2(cur.income - cur.expense) : 0;
+  // Neutral copy is non-negotiable here: a month that came in red is described
+  // as a fact, never as a failure and never with a broken-streak flourish.
+  var monthWord = curRate === null ? "No income logged" : onTrack ? "On track" : "Came in red";
+  var monthColor = curRate === null ? T.ink2 : onTrack ? T.green : T.gold;
+  var RC = 34, RCIRC = 2 * Math.PI * RC;
+  var ringPct = Math.max(0, Math.min(100, curRate === null ? 0 : curRate));
+
+  var recent = snap.badges.slice().sort(function(a, b) { return (b.at || "").localeCompare(a.at || ""); });
+  var goalsSaved = (props.goals || []).reduce(function(s, g) { return s + goalSavedAmount(g, props.tx, props.savings, props.businesses, props.investing); }, 0);
+  var goalsTarget = (props.goals || []).reduce(function(s, g) { return s + (g.target || 0); }, 0);
+
+  return (
+    <div>
+      {/* ── Identity ── */}
+      <div style={{ textAlign: "center", padding: "6px 0 2px" }}>
+        <LevelMark initial={initial} level={snap.level} pct={snap.pctToNext} />
+        <div style={{ fontSize: 26, fontWeight: 700, color: T.ink, letterSpacing: "-0.03em", fontFamily: DISP }}>{props.user}</div>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 9, background: T.orangeDim, borderRadius: 20, padding: "5px 13px" }}>
+          <SVGIcon id="shield" size={11} color={T.orange} />
+          <span style={{ fontSize: 12, fontWeight: 700, color: T.orange, fontFamily: UI }}>{snap.rank}</span>
+        </div>
+        <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 8, fontFamily: UI }}>
+          {props.email || ""}{props.email ? "  ·  " : ""}
+          {snap.level >= MOTIV.maxLevel ? "Level 50" : snap.pctToNext + "% to level " + (snap.level + 1)}
+        </div>
+        <button onClick={props.onViewNickname}
+          style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 11, border: "1px solid " + T.sep, background: "none", borderRadius: 20, padding: "6px 14px", fontSize: 12.5, fontWeight: 600, color: T.ink2, cursor: "pointer", fontFamily: UI }}>
+          <SVGIcon id="edit" size={12} color={T.ink2} />Edit profile
+        </button>
+      </div>
+
+      {/* ── The three numbers ── */}
+      <div style={{ display: "flex", alignItems: "center", margin: "20px 0 4px", padding: "0 8px" }}>
+        <StatCell value={snap.xp.toLocaleString()} label="XP" />
+        <div style={{ width: "0.5px", alignSelf: "stretch", background: T.sep }} />
+        <StatCell value={snap.badges.length} label="badges" onClick={props.onViewBadges} />
+        <div style={{ width: "0.5px", alignSelf: "stretch", background: T.sep }} />
+        <StatCell value={clean.run} label={clean.run === 1 ? "clean week" : "clean weeks"} color={clean.run ? T.green : T.ink} />
+      </div>
+
+      {/* ── This month (Green Month, layer 2) ── */}
+      <Card style={{ padding: "17px 17px 15px", marginTop: 18 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 12.5, color: T.ink3 }}>This month</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 5 }}>
+              <span style={{ fontSize: 23, fontWeight: 700, color: monthColor, letterSpacing: "-0.02em", fontFamily: DISP }}>{monthWord}</span>
+              {onTrack && <SVGIcon id="check" size={17} color={T.green} />}
+            </div>
+            {curRate !== null && (
+              <div style={{ fontSize: 15, fontWeight: 600, color: T.ink, marginTop: 5 }}>
+                {dollars(Math.abs(underBy)) + (underBy >= 0 ? " kept" : " over")}
+              </div>
+            )}
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 6, lineHeight: 1.45 }}>
+              {curRate === null
+                ? "Log some income and this fills in."
+                : green.target > 0
+                  ? "You've kept " + curRate + "% of what came in. Your target is " + green.target + "%."
+                  : "You've kept " + curRate + "% of what came in."}
+            </div>
+          </div>
+          <svg width="82" height="82" viewBox="0 0 82 82" style={{ flexShrink: 0, marginLeft: 6 }}>
+            <circle cx="41" cy="41" r={RC} fill="none" stroke={T.greenDim} strokeWidth="8" />
+            <circle cx="41" cy="41" r={RC} fill="none" stroke={onTrack ? T.green : T.gold} strokeWidth="8" strokeLinecap="round"
+              strokeDasharray={RCIRC} strokeDashoffset={RCIRC - (RCIRC * ringPct) / 100} transform="rotate(-90 41 41)" />
+            <text x="41" y="40" textAnchor="middle" fontSize="18" fontWeight="700" fill={T.ink} fontFamily={UI}>{curRate === null ? "--" : curRate + "%"}</text>
+            <text x="41" y="53" textAnchor="middle" fontSize="9" fill={T.ink3} fontFamily={UI}>kept</text>
+          </svg>
+        </div>
+        {green.total > 0 && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, borderTop: "0.5px solid " + T.sep, marginTop: 14, paddingTop: 12 }}>
+            <SVGIcon id="flame" size={15} color={T.gold} />
+            <span style={{ fontSize: 12.5, color: T.ink2, fontWeight: 600 }}>
+              {green.run > 0 ? "Green month " + green.run + " in a row" : green.total + " green month" + (green.total === 1 ? "" : "s") + " so far"}
+            </span>
+            <span style={{ marginLeft: "auto", display: "flex", gap: 3 }}>
+              {[0,1,2,3,4,5].map(function(i) {
+                return <span key={i} style={{ width: 11, height: 11, borderRadius: 4, background: i < Math.min(6, green.run) ? T.green : T.sep }} />;
+              })}
+            </span>
+          </div>
+        )}
+      </Card>
+
+      {/* ── Streaks ── */}
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, padding: "0 4px", margin: "22px 0 9px", fontFamily: UI }}>STREAKS</div>
+      <Card style={{ overflow: "hidden" }}>
+        <div style={{ padding: "15px 16px", borderBottom: "0.5px solid " + T.sep }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+              <div style={{ width: 34, height: 34, borderRadius: 10, background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <SVGIcon id="calendar" size={16} color={T.green} />
+              </div>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: T.ink }}>Clean week</div>
+                <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>Books confirmed true</div>
+              </div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 21, fontWeight: 700, color: clean.run ? T.green : T.ink3, letterSpacing: "-0.02em" }}>{clean.run}</div>
+              <div style={{ fontSize: 10.5, color: T.ink3 }}>in a row</div>
+            </div>
+          </div>
+          {(clean.total > 0 || clean.shields > 0) && (
+            <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 13 }}>
+              {[0,1,2,3,4,5,6,7,8,9].map(function(i) {
+                return <span key={i} style={{ width: 11, height: 11, borderRadius: 4, background: i < Math.min(10, clean.run) ? T.green : T.sep }} />;
+              })}
+              {clean.shields > 0 && (
+                <span style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: T.blue, fontWeight: 700 }}>
+                  <SVGIcon id="shield" size={13} color={T.blue} />{clean.shields + " shield" + (clean.shields === 1 ? "" : "s")}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* One tap, once a week. This is the whole of layer 1. */}
+        {clean.pending && (
+          <div style={{ padding: "13px 16px", background: T.orangeDim, display: "flex", alignItems: "center", gap: 11, borderBottom: "0.5px solid " + T.sep }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13.5, fontWeight: 700, color: T.orange }}>Is this everything?</div>
+              <div style={{ fontSize: 11.5, color: T.ink2, marginTop: 2 }}>{"Week of " + clean.pending.label + " · " + props.pendingCount + " logged"}</div>
+            </div>
+            <button onClick={function() { props.onConfirmWeek(clean.pending.key); }}
+              style={{ flexShrink: 0, background: T.orange, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, padding: "8px 15px", borderRadius: 12, cursor: "pointer", fontFamily: UI }}>
+              Confirm
+            </button>
+          </div>
+        )}
+
+        <ProfileRow icon="flame" iconBg={T.goldDim} iconColor={T.gold} label="Green month"
+          sub={green.thisYear + " of 12 this year"} value={green.total + " total"} onClick={props.onViewStreaks} />
+        <ProfileRow icon="budgets" iconBg={T.orangeDim} iconColor={T.orange} label="Budget runs"
+          sub={snap.budgets.runs.length ? snap.budgets.runs.slice(0, 3).map(function(r) { return r.name + " " + r.run; }).join(" · ") : "No runs going yet"}
+          value={String(snap.budgets.onTrack)} onClick={props.onViewStreaks} last />
+      </Card>
+
+      {/* ── Badges ── */}
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", margin: "22px 0 9px", padding: "0 4px" }}>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, fontFamily: UI }}>BADGES</span>
+        <button onClick={props.onViewBadges} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12.5, color: T.orange, fontWeight: 600, fontFamily: UI, display: "flex", alignItems: "center", gap: 3 }}>
+          {snap.badges.length + " of " + snap.badgeTotal}<SVGIcon id="chevron" size={12} color={T.orange} />
+        </button>
+      </div>
+      <Card style={{ padding: "15px 0 13px" }}>
+        {recent.length === 0 ? (
+          <div style={{ padding: "6px 18px 4px", fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>
+            Nothing earned yet. Log a transaction, set a budget, confirm a week - they start arriving quickly.
+          </div>
+        ) : (
+          <div style={{ display: "flex", gap: 13, padding: "0 16px", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+            {recent.slice(0, 8).map(function(e) {
+              return <BadgeTile key={e.def.id} badge={e.def} onClick={props.onViewBadges} />;
+            })}
+          </div>
+        )}
+        {snap.hiddenOnShare > 0 && (
+          <button onClick={props.onViewBadges} style={{ width: "100%", background: "none", border: "none", borderTop: "0.5px solid " + T.sep, marginTop: 14, padding: "11px 16px 0", display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontFamily: UI }}>
+            <SVGIcon id="lock" size={14} color={T.ink3} />
+            <span style={{ fontSize: 12, color: T.ink3 }}>{snap.hiddenOnShare + " badge" + (snap.hiddenOnShare === 1 ? "" : "s") + " hidden on shared profiles"}</span>
+            <span style={{ marginLeft: "auto", display: "flex" }}><SVGIcon id="chevron" size={14} color={T.ink3} /></span>
+          </button>
+        )}
+      </Card>
+
+      {/* ── Manage ── */}
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, padding: "0 4px", margin: "22px 0 9px", fontFamily: UI }}>MANAGE</div>
+      <Card style={{ overflow: "hidden" }}>
+        <ProfileRow icon="home" iconBg={T.greenDim} iconColor={T.green} label="Shared budgets"
+          sub={hh ? hh.name : "Not sharing with anyone"}
+          right={<FaceStack people={members} />}
+          onClick={props.onViewCollab} />
+        <ProfileRow icon="goals" iconBg={T.greenDim} iconColor={T.green} label="Budget books"
+          sub={(props.goals || []).length + " active goal" + ((props.goals || []).length === 1 ? "" : "s")}
+          right={goalsTarget > 0 ? (
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: T.green }}>{dollars(goalsSaved)}</div>
+              <div style={{ fontSize: 10.5, color: T.ink3 }}>{"of " + dollars(goalsTarget)}</div>
+            </div>
+          ) : null}
+          onClick={props.onViewGoals} />
+        <ProfileRow icon="user" iconBg={T.blueDim} iconColor={T.blue} label="Collab"
+          sub={hh ? (members.length + " member" + (members.length === 1 ? "" : "s")) : "Off"}
+          right={props.inviteCount ? (
+            <span style={{ background: T.red, color: "#fff", fontSize: 10.5, fontWeight: 700, borderRadius: 99, padding: "2px 7px" }}>{props.inviteCount}</span>
+          ) : null}
+          onClick={props.onViewCollab} />
+        <ProfileRow icon="credit" iconBg={"rgba(224,48,48,0.12)"} iconColor={T.red} label="Debts"
+          sub={props.debtCount ? (props.debtCount + " tracked") : "Nothing tracked"} onClick={props.onViewDebts} />
+        <ProfileRow icon="plane" iconBg={T.orangeDim} iconColor={T.orange} label="Trip history"
+          sub={(props.trips || []).filter(function(t) { return t.ended; }).length + " ended"} onClick={props.onViewTripHistory} last />
+      </Card>
+
+      {/* ── Your data ── */}
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, padding: "0 4px", margin: "22px 0 9px", fontFamily: UI }}>YOUR DATA</div>
+      <Card style={{ overflow: "hidden" }}>
+        <ProfileRow icon="spark" iconBg={T.goldDim} iconColor={T.gold} label="Your plan" sub="Richard's read on your money" onClick={props.onViewPlan} />
+        <ProfileRow icon="refresh" iconBg={T.greenDim} iconColor={T.green} label="Bank sync"
+          sub={props.bankSync && props.bankSync.enabled ? "On" : "Off"}
+          right={props.bankSync && props.bankSync.enabled ? <span style={{ width: 7, height: 7, borderRadius: "50%", background: T.green }} /> : null}
+          onClick={props.onViewBankSync} />
+        <ProfileRow icon="shield" iconBg={T.blueDim} iconColor={T.blue} label="Privacy and data" sub="Export, sharing, delete" onClick={props.onViewPrivacy} last />
+      </Card>
+
+      {/* ── Recent activity ──
+          Built only from events the app genuinely records: badges with an earn
+          date, weeks the user confirmed, and household members. No invented
+          feed items and no attribution the data cannot support. */}
+      {(recent.length > 0 || clean.total > 0) && (
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, padding: "0 4px", margin: "22px 0 9px", fontFamily: UI }}>RECENT ACTIVITY</div>
+          <Card style={{ overflow: "hidden" }}>
+            {props.feed.map(function(f, i) {
+              return (
+                <div key={i} style={{ display: "flex", gap: 11, padding: "13px 16px", borderBottom: i < props.feed.length - 1 ? "0.5px solid " + T.sep : "none", alignItems: "flex-start" }}>
+                  <div style={{ position: "relative", flexShrink: 0 }}>
+                    <div style={{ width: 38, height: 38, borderRadius: "50%", background: T.btn, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: UI }}>{initial}</div>
+                    <div style={{ position: "absolute", bottom: -2, left: -3, width: 17, height: 17, borderRadius: "50%", background: f.tint, border: "2px solid " + T.card, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <SVGIcon id={f.icon} size={8} color="#fff" />
+                    </div>
+                  </div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontSize: 13.5, color: T.ink, lineHeight: 1.4 }}>
+                      {f.text}{f.accent && <span style={{ color: f.tint, fontWeight: 600 }}>{f.accent}</span>}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 3 }}>{f.meta}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </Card>
+        </div>
+      )}
+
+      <button onClick={props.onLogout}
+        style={{ width: "100%", background: T.card, color: T.red, border: "none", borderRadius: 18, padding: "15px 0", fontSize: 15.5, fontFamily: UI, fontWeight: 700, cursor: "pointer", marginTop: 24, display: "flex", alignItems: "center", justifyContent: "center", gap: 9 }}>
+        <SVGIcon id="logout" size={17} color={T.red} />Sign out
+      </button>
+      <div style={{ textAlign: "center", fontSize: 12, color: T.ink3, marginTop: 14, fontFamily: UI }}>
+        {props.email ? "Signed in as " + props.email : ""}
+      </div>
+    </div>
+  );
+}
+
+// Everything that configures the app, moved off Profile and behind the gear.
+// Nothing was dropped in the move: every row that used to be on Profile is
+// either here or in the Manage group on the new Profile.
+function SettingsView(props) {
   var cur = props.currency || "$";
   var lang = props.lang || "en";
   var langLabel = (LANGUAGE_OPTIONS.filter(function(o) { return o.code === lang; })[0] || {}).label || "English";
   var curLabel = (CURRENCY_OPTIONS.filter(function(o) { return o.sym === cur; })[0] || {}).label || cur;
-  var themeLabel = themeLabelOf(props.theme);
-  var initial = (props.user || "?")[0].toUpperCase();
   return (
     <div>
+      <SubViewBack onBack={props.onBack} />
 
-      {/* ── Header ── */}
-      <div style={{ textAlign: "center", padding: "12px 0 30px" }}>
-        <div style={{ width: 82, height: 82, borderRadius: 28, background: T.btn, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", boxShadow: "0 6px 28px " + T.orangeGlow, fontSize: 38, fontWeight: 800, color: "#fff", fontFamily: DISP, letterSpacing: "-0.02em", flexShrink: 0 }}>
-          {initial}
-        </div>
-        <div style={{ fontSize: 24, fontWeight: 700, color: T.ink, letterSpacing: "-0.025em", fontFamily: DISP }}>{props.user}</div>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 9, background: T.orangeDim, borderRadius: 20, padding: "5px 13px" }}>
-          <SVGIcon id="spark" size={11} color={T.orange} />
-          <span style={{ fontSize: 12, fontWeight: 600, color: T.orange, fontFamily: UI }}>Richy Member</span>
-        </div>
-      </div>
-
-      {/* ── AI & Richard ── */}
       <ProfileSection icon="spark" title="AI & Richard" bg={T.goldDim} color={T.gold} glow={T.goldGlow}>
         <ProfileRow icon="spark" iconBg={T.goldDim} iconColor={T.gold} label="Your Plan" onClick={props.onViewPlan} />
         <ProfileRow icon="note" iconBg={T.goldDim} iconColor={T.gold} label="Richard's Instructions" value={props.richardInstructions ? "Custom" : "Default"} onClick={props.onViewInstructions} last />
       </ProfileSection>
 
-      {/* ── Money ── */}
       <ProfileSection icon="coins" title="Money" bg={T.greenDim} color={T.green} glow={T.greenGlow}>
         <ProfileRow icon="credit" iconBg={T.greenDim} iconColor={T.green} label="Currency" value={curLabel} onClick={props.onViewCurrency} />
         <ProfileRow icon="briefcase" iconBg={T.greenDim} iconColor={T.green} label="Opening Balance" onClick={props.onViewEditOpeningBalance} />
@@ -23714,29 +24982,88 @@ function Profile(props) {
         <ProfileRow icon="refresh" iconBg={T.greenDim} iconColor={T.green} label="Bank Sync" value={props.bankSync && props.bankSync.enabled ? "On" : "Off"} onClick={props.onViewBankSync} last />
       </ProfileSection>
 
-      {/* ── Visual ── */}
       <ProfileSection icon="sun" title="Visual" bg={T.orangeDim} color={T.orange} glow={T.orangeGlow}>
-        <ProfileRow icon="star" iconBg={T.orangeDim} iconColor={T.orange} label="Appearance" value={themeLabel} onClick={props.onViewAppearance} />
+        <ProfileRow icon="star" iconBg={T.orangeDim} iconColor={T.orange} label="Appearance" value={themeLabelOf(props.theme)} onClick={props.onViewAppearance} />
         <ProfileRow icon="book" iconBg={T.orangeDim} iconColor={T.orange} label="Language" value={langLabel} onClick={props.onViewLanguage} last />
       </ProfileSection>
 
-      {/* ── Travel ── */}
-      <ProfileSection icon="plane" title="Travel" bg={T.orangeDim} color={T.orange} glow={T.orangeGlow}>
-        <ProfileRow icon="plane" iconBg={T.orangeDim} iconColor={T.orange} label="Trip History" value={(props.trips || []).filter(function(t) { return t.ended; }).length + " ended"} onClick={props.onViewTripHistory} last />
-      </ProfileSection>
-
-      {/* ── Account ── */}
       <ProfileSection icon="user" title="Account" bg={T.blueDim} color={T.blue} glow={T.blueGlow}>
         <ProfileRow icon="edit" iconBg={T.blueDim} iconColor={T.blue} label="Your Name" value={props.user} onClick={props.onViewNickname} />
         <ProfileRow icon="home" iconBg={T.blueDim} iconColor={T.blue} label="Collab" value={props.householdName || (props.inviteCount ? props.inviteCount + " invite" + (props.inviteCount === 1 ? "" : "s") : "Off")} onClick={props.onViewCollab} />
         <ProfileRow icon="credit" iconBg={"rgba(224,48,48,0.12)"} iconColor={T.red} label="Debts" value={props.debtCount ? (props.debtCount + " tracked") : "Off"} onClick={props.onViewDebts} />
         <ProfileRow icon="shield" iconBg={T.blueDim} iconColor={T.blue} label="Privacy & Data" onClick={props.onViewPrivacy} last />
       </ProfileSection>
+    </div>
+  );
+}
 
-      <button onClick={props.onLogout}
-        style={{ width: "100%", background: "rgba(224,48,48,0.08)", color: T.red, border: "1px solid rgba(224,48,48,0.14)", borderRadius: 16, padding: "15px 0", fontSize: 16, fontFamily: UI, fontWeight: 600, cursor: "pointer", marginBottom: 8 }}>
-        Sign out
-      </button>
+// The badge index, grouped by family exactly as the design document lists them.
+// Locked rows are shown but not named - the shape of what is left to earn is
+// motivating, a spoiler list is not.
+function BadgesView(props) {
+  var snap = props.snap;
+  var _f = useState("all"); var filter = _f[0]; var setFilter = _f[1];
+  var earnedIds = {};
+  snap.badges.forEach(function(e) { earnedIds[e.def.id] = e; });
+
+  var fams = [], seen = {};
+  BADGES.forEach(function(b) { if (!seen[b.fam]) { seen[b.fam] = []; fams.push(b.fam); } seen[b.fam].push(b); });
+
+  var CHIPS = [
+    { id: "all",    label: "All " + snap.badges.length },
+    { id: "locked", label: "Locked" },
+    { id: "habit",  label: "Habit" },
+    { id: "wealth", label: "Wealth" }
+  ];
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+
+      <div style={{ display: "flex", gap: 7, overflowX: "auto", padding: "2px 0 14px", WebkitOverflowScrolling: "touch" }}>
+        {CHIPS.map(function(c) {
+          var on = filter === c.id;
+          return (
+            <button key={c.id} onClick={function() { setFilter(c.id); }}
+              style={{ flexShrink: 0, border: on ? "none" : "1px solid " + T.sep, background: on ? T.ink : "none", color: on ? T.bg : T.ink2, borderRadius: 20, padding: "6px 13px", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
+              {c.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {fams.map(function(fam) {
+        var list = seen[fam].filter(function(b) {
+          if (filter === "locked") return !earnedIds[b.id];
+          if (filter === "habit")  return b.reveals === "habit";
+          if (filter === "wealth") return b.reveals === "wealth";
+          return true;
+        });
+        if (!list.length) return null;
+        var got = seen[fam].filter(function(b) { return !!earnedIds[b.id]; }).length;
+        var anyWealth = list.some(function(b) { return b.reveals === "wealth"; });
+        return (
+          <Card key={fam} style={{ padding: "16px 14px", marginBottom: 14 }}>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 13 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: T.ink, fontFamily: UI }}>{fam}</span>
+              <span style={{ fontSize: 11, color: T.ink3, fontFamily: UI }}>{got + " of " + seen[fam].length}</span>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "14px 8px", justifyItems: "center" }}>
+              {list.map(function(b) {
+                return <BadgeTile key={b.id} badge={b} locked={!earnedIds[b.id]} onClick={function() { props.onOpen(b, !!earnedIds[b.id]); }} />;
+              })}
+            </div>
+            {anyWealth && (
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 8, borderTop: "0.5px solid " + T.sep, marginTop: 14, paddingTop: 11 }}>
+                <span style={{ flexShrink: 0, display: "flex", marginTop: 1 }}><SVGIcon id="lock" size={13} color={T.gold} /></span>
+                <span style={{ fontSize: 11.5, color: T.ink2, lineHeight: 1.4, fontFamily: UI }}>
+                  Wealth badges stay off shared profiles until you turn each one on.
+                </span>
+              </div>
+            )}
+          </Card>
+        );
+      })}
     </div>
   );
 }
@@ -24007,6 +25334,16 @@ export default function App() {
   // "custom" mode.
   var _pm = useState("calendar");
   var periodMode = _pm[0]; var setPeriodMode = _pm[1];
+  // The user's own needs/wants/savings split, in whole percents. Deliberately
+  // null until they answer: null is what tells the Budgets tab to ask instead
+  // of assuming, and every grader falls back to 50/30/20 meanwhile.
+  var _spl = useState(null);
+  var splitPlan = _spl[0]; var setSplitPlan = _spl[1];
+  // The motivation record: week confirmations, paused periods and earned
+  // badges. Deliberately the only thing the streak/level system persists -
+  // every other number is derived from tx/budgets/goals on read.
+  var _mot = useState(motivDefault());
+  var motivation = _mot[0]; var setMotivation = _mot[1];
   var _pcs = useState("");
   var periodCustomStart = _pcs[0]; var setPeriodCustomStart = _pcs[1];
   var _pce = useState("");
@@ -24118,6 +25455,8 @@ export default function App() {
     setMonthAnalysis(data.monthAnalysis || null);
     setEntryMethod(data.entryMethod === "import" ? "import" : "manual");
     setPeriodMode(data.periodMode === "rolling" ? "rolling" : data.periodMode === "custom" ? "custom" : "calendar");
+    setSplitPlan(data.splitPlan ? splitPlanOf(data.splitPlan) : null);
+    setMotivation(motivOf(data));
     setPeriodCustomStart(data.periodCustomStart || "");
     setPeriodCustomEnd(data.periodCustomEnd || "");
     setBankSync(data.bankSync || null);
@@ -24136,9 +25475,22 @@ export default function App() {
     if (tab !== "overview") setPlanJustCreated(false);
   }, [tab]);
 
+  // Recording a newly-earned badge is what makes its earn date real: the date
+  // stored is the day the condition was first met, not the day the user next
+  // happened to open Profile.
+  //
+  // This must live up here with the other effects, above the early returns for
+  // the auth, loading and onboarding screens. A hook after a conditional return
+  // changes the hook count between renders, which React rejects outright.
+  useEffect(function() {
+    if (!accountKey) return;
+    var snap = motivSnapshot(motivData());
+    if (snap.newBadges.length) commitBadges(snap.newBadges);
+  }, [accountKey, tx.length, budgets.length, goals.length, savings.length, motivation.weekConfirms.length]);
+
   // Build the starting document for a brand-new account (e.g. first Google sign-in).
   function defaultBlob(name, email) {
-    return { tx: [], budgets: [], goals: [], trips: [], savings: [], businesses: [], investing: [], debts: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: email, theme: "blue" };
+    return { tx: [], budgets: [], goals: [], trips: [], savings: [], businesses: [], investing: [], debts: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: email, theme: "blue", motivation: motivDefault() };
   }
 
   // Firebase Auth is the single source of truth for the session. It restores
@@ -24294,7 +25646,7 @@ export default function App() {
     blobRef.current = {};
     setUser(null); setAccountKey(null); setTab("overview");
     setHouseholdId(null); setHousehold(null); setInvites([]);
-    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setInvestorProfile(null); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]); setBankSync(null); setLeumiFinteka(null); setCustomBanners([]);
+    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setInvestorProfile(null); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]); setBankSync(null); setLeumiFinteka(null); setCustomBanners([]); setMotivation(motivDefault());
     applyLangDir("en"); setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang("en"); applyTheme("blue"); setTheme("blue");
   }
 
@@ -24303,7 +25655,7 @@ export default function App() {
     var existing = blobRef.current || {};
     var blob = {};
     for (var ek in existing) blob[ek] = existing[ek];
-    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.savings = savings; blob.businesses = businesses; blob.investing = investing; blob.investorProfile = investorProfile; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme; blob.foundMoney = foundMoney; blob.decisions = decisions; blob.monthAnalysis = monthAnalysis;
+    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.savings = savings; blob.businesses = businesses; blob.investing = investing; blob.investorProfile = investorProfile; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme; blob.foundMoney = foundMoney; blob.decisions = decisions; blob.monthAnalysis = monthAnalysis; blob.motivation = motivation;
     for (var k in next) blob[k] = next[k];
     blobRef.current = blob;
     // Debounce Firestore writes: coalesce rapid successive saves (e.g. typing)
@@ -24637,6 +25989,33 @@ export default function App() {
   function onSaveFinancial(oData) { save({ onboardingData: oData }); }
   function onSaveEntryMethod(m) { var v = m === "import" ? "import" : "manual"; setEntryMethod(v); save({ entryMethod: v }); }
   function onSavePeriodMode(m) { var v = m === "rolling" ? "rolling" : m === "custom" ? "custom" : "calendar"; setPeriodMode(v); save({ periodMode: v }); }
+  function onSaveSplitPlan(p) { var v = splitPlanOf(p); setSplitPlan(v); save({ splitPlan: v }); }
+  // Layer 1 of the streak system, in full: the user says "yes, that was
+  // everything" for one week. Guarded against double-confirming the same week,
+  // and against back-confirming further than the anti-gaming window allows -
+  // you cannot reconstruct six months of "yes, that was everything".
+  function onConfirmWeek(key) {
+    if (!key) return;
+    var m = motivOf({ motivation: motivation });
+    if (m.weekConfirms.indexOf(key) !== -1) return;
+    var oldest = weekAdd(weekKey(isoDay(new Date())), -MOTIV.backConfirmWeeks);
+    if (key < oldest) return;
+    var next = { weekConfirms: m.weekConfirms.concat([key]).sort(), pauses: m.pauses, badges: m.badges, seen: m.seen };
+    setMotivation(next);
+    save({ motivation: next });
+    nativeHaptic("MEDIUM");
+  }
+  // Badges are granted on read but must be recorded once, so the earn DATE is
+  // real rather than "whenever you last opened the app". Called from the render
+  // pass below when the snapshot finds something new.
+  function commitBadges(newly) {
+    if (!newly || !newly.length) return;
+    var m = motivOf({ motivation: motivation });
+    var add = newly.map(function(n) { return { id: n.def.id, at: n.at, early: n.early, shared: false }; });
+    var next = { weekConfirms: m.weekConfirms, pauses: m.pauses, badges: m.badges.concat(add), seen: m.seen };
+    setMotivation(next);
+    save({ motivation: next });
+  }
   function onSavePeriodCustom(field, val) {
     if (field === "start") { setPeriodCustomStart(val); save({ periodCustomStart: val }); }
     else { setPeriodCustomEnd(val); save({ periodCustomEnd: val }); }
@@ -25051,13 +26430,43 @@ export default function App() {
   function mainTabEl(id) {
     if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
     if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
-    if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
+    if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
-    if (id === "advisor") return <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} />;
+    if (id === "advisor") return <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} />;
     return null;
   }
   applyTheme(theme);      // keep the live T palette in sync with the chosen design every render
   applyDarkMode(darkMode); // re-apply dark/light mode tokens on every render so T stays consistent
+
+  // ── Motivation ────────────────────────────────────────────────────────────
+  // The snapshot re-scores the whole ledger, so it is built only for the two
+  // screens that display it rather than on every keystroke anywhere in the app.
+  function motivData() {
+    return { tx: tx, budgets: budgets, goals: goals, savings: savings, businesses: businesses, investing: investing, categories: categories, folders: folders, debts: debts, onboardingData: onboardingData, motivation: motivation };
+  }
+  var motivTab = currentTab === "profile" || currentTab === "badges";
+  var motivSnap = motivTab ? motivSnapshot(motivData()) : null;
+
+  // The activity feed. Every row is an event the app genuinely recorded: a
+  // badge with an earn date, a week the user confirmed, a member who joined.
+  // Nothing here is inferred or invented.
+  function motivFeed(snap) {
+    if (!snap) return [];
+    var out = [];
+    snap.badges.slice().sort(function(a, b) { return (b.at || "").localeCompare(a.at || ""); }).slice(0, 3).forEach(function(e) {
+      out.push({ at: e.at, icon: e.def.glyph, tint: rarityColor(e.def.r),
+        text: "You earned ", accent: e.def.name,
+        meta: RARITY_LABEL[e.def.r].charAt(0) + RARITY_LABEL[e.def.r].slice(1).toLowerCase() + " · +" + MOTIV.rarityXp[e.def.r] + " XP" });
+    });
+    motivation.weekConfirms.slice().sort().reverse().slice(0, 2).forEach(function(k) {
+      out.push({ at: k, icon: "check", tint: T.blue, text: "Clean week confirmed ", accent: weekLabel(k), meta: "+" + MOTIV.xp.cleanWeek + " XP" });
+    });
+    (household && household.members ? household.members : []).forEach(function(m) {
+      if (m.uid === accountKey) return;
+      out.push({ at: "", icon: "user", tint: T.orange, text: (m.name || m.email || "A member") + " is in ", accent: household.name, meta: "Shared budgets" });
+    });
+    return out.sort(function(a, b) { return (b.at || "").localeCompare(a.at || ""); }).slice(0, 5);
+  }
   var _localeMap = { en: "en-US", he: "he-IL", es: "es-ES", fr: "fr-FR", ar: "ar-SA", ru: "ru-RU", de: "de-DE", pt: "pt-BR" };
   var _locale = _localeMap[lang] || "en-US";
   var monthLabel = new Date().toLocaleString(_locale, { month: "short" }) + " " + new Date().getFullYear();
@@ -25084,7 +26493,7 @@ export default function App() {
             </button>
           </div>
           <span style={{ flex: 1, fontSize: 20, fontWeight: 700, color: T.ink, textAlign: "center", letterSpacing: "-0.02em" }}>
-            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "periodMode" ? "Date Range" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "analysis" ? "Full Analysis" : currentTab === "investPlan" ? "Your investing plan" : currentTab === "investorOnboard" ? "Investing basics" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
+            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "periodMode" ? "Date Range" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "badges" ? "Badges" : currentTab === "settings" ? "Settings" : currentTab === "analysis" ? "Full Analysis" : currentTab === "investPlan" ? "Your investing plan" : currentTab === "investorOnboard" ? "Investing basics" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
           <div style={{ width: 86, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
             {HAS_FAB.indexOf(currentTab) !== -1 && (
@@ -25092,6 +26501,16 @@ export default function App() {
                 aria-label={sheet ? "Close add menu" : "Add new"}
                 style={{ background: sheet ? T.ink : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", border: "none", borderRadius: 40, width: 36, height: 36, cursor: "pointer", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: sheet ? "none" : "0 4px 12px " + T.orangeGlow, transform: sheet ? "rotate(45deg)" : "none", transition: "background var(--m-quick) ease, box-shadow var(--m-quick) ease, transform var(--m-settle) var(--m-spring)" }}>
                 <SVGIcon id="plus" size={16} color="#fff" />
+              </button>
+            )}
+            {/* Settings is reachable only from Profile, so its entry point
+                lives in the header the way the reference design has it - the
+                gear appears when you are looking at your own profile. */}
+            {currentTab === "profile" && (
+              <button onClick={function() { prevTabRef.current = "profile"; setTab("settings"); }}
+                aria-label="Settings"
+                style={{ background: "none", border: "none", cursor: "pointer", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>
+                <SVGIcon id="tool" size={19} color={T.ink2} />
               </button>
             )}
             <button onClick={function() { setTab("profile"); }}
@@ -25164,8 +26583,10 @@ export default function App() {
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} richardInstructions={richardCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} budgets={budgets} businesses={businesses} investing={investing} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "profile" && <Profile user={user} onLogout={handleLogout} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} richardInstructions={richardInstructions} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "profile"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "profile"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "profile"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "profile"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "profile"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "profile"; setTab("periodMode"); }} bankSync={bankSync} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "profile"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "profile"; setTab("editOpeningBalance"); }} householdName={household ? household.name : null} inviteCount={invites.length} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} debtCount={debts.length} onViewDebts={function() { prevTabRef.current = "profile"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} trips={trips} onViewTripHistory={function() { setTab("tripHistory"); }} />}
-        {currentTab === "analysis" && <FullAnalysisView tx={tx} categories={categories} folders={folders} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} username={user} analysis={freshAnalysis ? freshAnalysis.data : null} onBack={function() { setTab("advisor"); }} />}
+        {currentTab === "profile" && motivSnap && <Profile user={user} email={blobRef.current.email || ""} snap={motivSnap} feed={motivFeed(motivSnap)} onLogout={handleLogout} tx={tx} goals={goals} savings={savings} businesses={businesses} investing={investing} trips={trips} bankSync={bankSync} household={household} inviteCount={invites.length} debtCount={debts.length} pendingCount={motivSnap.clean.pending ? tx.filter(function(t) { return t.date >= motivSnap.clean.pending.key && t.date < weekAdd(motivSnap.clean.pending.key, 1) && !isOpening(t); }).length : 0} onConfirmWeek={onConfirmWeek} onViewBadges={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewStreaks={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewGoals={function() { setTab("goals"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewPlan={function() { setTab("plan"); }} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "profile"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} onViewTripHistory={function() { setTab("tripHistory"); }} />}
+        {currentTab === "badges" && motivSnap && <BadgesView snap={motivSnap} onOpen={function() {}} onBack={function() { setTab("profile"); }} />}
+        {currentTab === "settings" && <SettingsView user={user} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} richardInstructions={richardInstructions} bankSync={bankSync} householdName={household ? household.name : null} inviteCount={invites.length} debtCount={debts.length} onBack={function() { setTab("profile"); }} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "settings"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "settings"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "settings"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "settings"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "settings"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "settings"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "settings"; setTab("periodMode"); }} onViewBankSync={function() { prevTabRef.current = "settings"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "settings"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "settings"; setTab("editOpeningBalance"); }} onViewCollab={function() { prevTabRef.current = "settings"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "settings"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
+        {currentTab === "analysis" && <FullAnalysisView tx={tx} categories={categories} folders={folders} splitPlan={splitPlan} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} username={user} analysis={freshAnalysis ? freshAnalysis.data : null} onBack={function() { setTab("advisor"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} onAccountDeleted={handleLogout} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
         {currentTab === "editEmail" && <EditEmailView currentEmail={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onSave={function(email) { onSaveEmail(email); setTab("privacy"); }} />}

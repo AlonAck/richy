@@ -7,7 +7,7 @@
 // imports, unwrap the default export, JSX -> React.createElement), so the
 // production bundle behaves identically to what the dev harness runs - just
 // compiled once at deploy time instead of on every visitor's phone.
-import { readFileSync, writeFileSync, mkdirSync, copyFileSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, copyFileSync, existsSync, readdirSync } from "fs";
 import { transformSync } from "@babel/core";
 import presetReact from "@babel/preset-react";
 
@@ -82,6 +82,17 @@ const staticFiles = [
   "privacy.html",
 ];
 for (const f of staticFiles) copyFileSync(f, "public/" + f);
+
+// Badge art: one PNG per badge (see badges/README.md). Copied wholesale rather
+// than listed file by file, so adding a badge icon is a drag-and-drop into the
+// folder and never an edit to this script. A missing file is not a build error -
+// the app falls back to the badge's SVG glyph, so a half-finished set still ships.
+if (existsSync("badges")) {
+  mkdirSync("public/badges", { recursive: true });
+  for (const f of readdirSync("badges")) {
+    if (/\.png$/i.test(f)) copyFileSync("badges/" + f, "public/badges/" + f);
+  }
+}
 
 // ---- 3. Vendor the browser runtime ------------------------------------------
 // React and Firebase used to be <script src="https://unpkg.com/..."> tags.
