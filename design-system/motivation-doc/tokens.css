@@ -1,0 +1,216 @@
+/* ===========================================================================
+   Richy — Motivation Doc design system
+   Extracted from the "Streaks, Levels & Badges" artifact.
+
+   A document/reference theme, distinct from the in-app component styles in
+   ../src. It reuses Richy's real product palette (budget-app.jsx `T`) so the
+   rarity ramp previews true, but applies it to long-form reading rather than
+   to app chrome.
+
+   Governing rule — ONE SOURCE OF CHROMA:
+   Page furniture (rules, borders, headings, links, active states) is
+   monochrome ink. The six rarity hues are the only saturated colour on the
+   page. Do not introduce a seventh accent: rarity is the axis readers scan
+   by, and any competing hue makes the ramp harder to read at a glance.
+   Interactive "on" states invert (ink ground, paper text) instead of tinting.
+   =========================================================================== */
+
+:root {
+  /* --- ground & ink (light) --------------------------------------------- */
+  --bg:        #F7F3EE;   /* T.bg      */
+  --surface:   #FFFFFF;   /* T.card    */
+  --surface2:  #FBF8F4;   /* subtle raised/inset fill, table headers */
+  --ink:       #1A1410;   /* T.ink     */
+  --ink2:      #6B5C4E;   /* T.ink2 — secondary prose, table body */
+  --ink3:      #9C8E80;   /* labels, captions, mono metadata */
+  --sep:       rgba(26,20,16,0.10);
+  --sep2:      rgba(26,20,16,0.05);
+
+  /* Inverted pair drives every "active/selected" affordance. */
+  --inv-bg:    #1A1410;
+  --inv-ink:   #F7F3EE;
+
+  /* --- rarity ramp (the only chroma) ------------------------------------
+     Darkened from the raw product tokens for body-text contrast on paper.
+     Product token in the comment; doc value on the left.                   */
+  --r-c: #9A8D80;  /* Common     — T.ink3  #B0A396 */
+  --r-u: #1F8F4E;  /* Uncommon   — T.green #27A85F */
+  --r-r: #2467BE;  /* Rare       — T.blue  #2E7DD6 */
+  --r-e: #7457B8;  /* Epic       — T.orange#8970C6 (the purple accent) */
+  --r-l: #A87B22;  /* Legendary  — T.gold  #C8983A */
+  /* Mythic has no flat value — it is a gradient. See --grad-mythic. */
+
+  --r-c-bg: rgba(154,141,128,0.12);
+  --r-u-bg: rgba(31,143,78,0.11);
+  --r-r-bg: rgba(36,103,190,0.10);
+  --r-e-bg: rgba(116,87,184,0.11);
+  --r-l-bg: rgba(168,123,34,0.12);
+  --r-m-bg: rgba(116,87,184,0.09);
+
+  --grad-mythic: linear-gradient(100deg,#7457B8 0%,#2467BE 24%,#1F8F4E 46%,#C8983A 70%,#B4519B 100%);
+
+  --shadow: 0 1px 2px rgba(26,20,16,.05), 0 8px 24px -14px rgba(26,20,16,.18);
+
+  /* --- type roles -------------------------------------------------------
+     Three roles, each doing a job. No webfonts: the Artifact CSP blocks font
+     CDNs, and a silent fallback is worse than a considered system stack.    */
+  --f-display: "Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Georgia,"Times New Roman",serif;
+  --f-body:    -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --f-mono:    ui-monospace,"SF Mono","Cascadia Mono","Segoe UI Mono",Consolas,"Liberation Mono",monospace;
+}
+
+/* --- dark ---------------------------------------------------------------
+   Rarity hues LIGHTEN rather than invert; the ramp must stay legible and
+   keep the same relative order on both grounds.                            */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:#141210; --surface:#1E1A16; --surface2:#252018;   /* T.dark / T.darkCard / T.darkCard2 */
+    --ink:#F2EBE3; --ink2:#B0A396; --ink3:#847768;
+    --sep:rgba(242,235,227,0.13); --sep2:rgba(242,235,227,0.07);
+    --inv-bg:#F2EBE3; --inv-ink:#141210;
+    --r-c:#A2958A; --r-u:#4FC97F; --r-r:#5B9CF5; --r-e:#C8B1FF; --r-l:#E0B45C;
+    --r-c-bg:rgba(162,149,138,0.14); --r-u-bg:rgba(79,201,127,0.13);
+    --r-r-bg:rgba(91,156,245,0.13);  --r-e-bg:rgba(200,177,255,0.13);
+    --r-l-bg:rgba(224,180,92,0.13);  --r-m-bg:rgba(200,177,255,0.10);
+    --grad-mythic: linear-gradient(100deg,#C8B1FF 0%,#5B9CF5 24%,#4FC97F 46%,#E0B45C 70%,#F0A0D8 100%);
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -16px rgba(0,0,0,.6);
+  }
+}
+
+/* Explicit overrides must beat the media query in BOTH directions — the
+   Artifact viewer's theme toggle stamps data-theme on the root element.
+   Style components through the tokens only; never inside the media query. */
+:root[data-theme="light"] {
+  --bg:#F7F3EE; --surface:#FFFFFF; --surface2:#FBF8F4;
+  --ink:#1A1410; --ink2:#6B5C4E; --ink3:#9C8E80;
+  --sep:rgba(26,20,16,0.10); --sep2:rgba(26,20,16,0.05);
+  --inv-bg:#1A1410; --inv-ink:#F7F3EE;
+  --r-c:#9A8D80; --r-u:#1F8F4E; --r-r:#2467BE; --r-e:#7457B8; --r-l:#A87B22;
+  --r-c-bg:rgba(154,141,128,0.12); --r-u-bg:rgba(31,143,78,0.11);
+  --r-r-bg:rgba(36,103,190,0.10);  --r-e-bg:rgba(116,87,184,0.11);
+  --r-l-bg:rgba(168,123,34,0.12);  --r-m-bg:rgba(116,87,184,0.09);
+  --grad-mythic: linear-gradient(100deg,#7457B8 0%,#2467BE 24%,#1F8F4E 46%,#C8983A 70%,#B4519B 100%);
+  --shadow: 0 1px 2px rgba(26,20,16,.05), 0 8px 24px -14px rgba(26,20,16,.18);
+}
+:root[data-theme="dark"] {
+  --bg:#141210; --surface:#1E1A16; --surface2:#252018;
+  --ink:#F2EBE3; --ink2:#B0A396; --ink3:#847768;
+  --sep:rgba(242,235,227,0.13); --sep2:rgba(242,235,227,0.07);
+  --inv-bg:#F2EBE3; --inv-ink:#141210;
+  --r-c:#A2958A; --r-u:#4FC97F; --r-r:#5B9CF5; --r-e:#C8B1FF; --r-l:#E0B45C;
+  --r-c-bg:rgba(162,149,138,0.14); --r-u-bg:rgba(79,201,127,0.13);
+  --r-r-bg:rgba(91,156,245,0.13);  --r-e-bg:rgba(200,177,255,0.13);
+  --r-l-bg:rgba(224,180,92,0.13);  --r-m-bg:rgba(200,177,255,0.10);
+  --grad-mythic: linear-gradient(100deg,#C8B1FF 0%,#5B9CF5 24%,#4FC97F 46%,#E0B45C 70%,#F0A0D8 100%);
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -16px rgba(0,0,0,.6);
+}
+
+/* ===========================================================================
+   TYPE SCALE
+   Display carries hierarchy; body carries density; mono carries data.
+   Mono is semantic here, not decorative: it marks machine-checkable values
+   (triggers, XP figures, level numbers, reward grants).
+   =========================================================================== */
+.t-h1     { font-family:var(--f-display); font-weight:700; letter-spacing:-.035em; line-height:.94;
+            font-size:clamp(46px,9.5vw,96px); text-wrap:balance; }
+.t-h2     { font-family:var(--f-display); font-weight:700; letter-spacing:-.028em; line-height:1.05;
+            font-size:clamp(29px,4.4vw,42px); text-wrap:balance; }
+.t-h3     { font-family:var(--f-display); font-weight:700; letter-spacing:-.018em; font-size:22px; }
+.t-lede   { font-family:var(--f-display); font-size:19px; line-height:1.55; color:var(--ink2); max-width:56ch; }
+.t-body   { font-family:var(--f-body); font-size:16px; line-height:1.62; max-width:66ch; text-wrap:pretty; }
+.t-label  { font-size:13px; text-transform:uppercase; letter-spacing:.11em; color:var(--ink2); font-weight:600; }
+.t-eyebrow{ font-family:var(--f-mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink3); }
+.t-data   { font-family:var(--f-mono); font-size:12.5px; font-variant-numeric:tabular-nums; }
+.t-micro  { font-family:var(--f-mono); font-size:10px; letter-spacing:.04em; }
+
+/* Measure: running prose stays near 65ch. Tables and the badge index are
+   exempt — they are scanned, not read. */
+
+/* ===========================================================================
+   RARITY — chips, text, gradient
+   =========================================================================== */
+.c-c{color:var(--r-c)} .c-u{color:var(--r-u)} .c-r{color:var(--r-r)}
+.c-e{color:var(--r-e)} .c-l{color:var(--r-l)}
+.b-c{background:var(--r-c)} .b-u{background:var(--r-u)} .b-r{background:var(--r-r)}
+.b-e{background:var(--r-e)} .b-l{background:var(--r-l)} .b-m{background:var(--grad-mythic)}
+
+/* Mythic text: gradient clipped to glyphs, slow shimmer. The one deliberate
+   motion flourish on the page — earned, because the spec literally calls the
+   tier "iridescent". Disabled under reduced-motion. */
+.c-m{
+  background-image:var(--grad-mythic); background-size:220% 100%;
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  animation:ds-shimmer 9s linear infinite;
+}
+@keyframes ds-shimmer{ to{ background-position:220% 0 } }
+@media (prefers-reduced-motion:reduce){ .c-m{ animation:none } }
+
+.rpill{ font-family:var(--f-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+        padding:3px 8px; border-radius:999px; display:inline-flex; align-items:center;
+        white-space:nowrap; font-weight:600; }
+.rpill.p-c{color:var(--r-c); background:var(--r-c-bg)}
+.rpill.p-u{color:var(--r-u); background:var(--r-u-bg)}
+.rpill.p-r{color:var(--r-r); background:var(--r-r-bg)}
+.rpill.p-e{color:var(--r-e); background:var(--r-e-bg)}
+.rpill.p-l{color:var(--r-l); background:var(--r-l-bg)}
+.rpill.p-m{background:var(--r-m-bg)}   /* pair with .c-m for the text */
+
+/* ===========================================================================
+   REWARD CURRENCIES
+   Each currency borrows a rarity hue so the page still holds one palette.
+   XP is ink — it is the universal currency and must not read as a tier.
+   =========================================================================== */
+.pay{ font-family:var(--f-mono); font-size:10px; letter-spacing:.04em; white-space:nowrap;
+      border:1px solid var(--sep); border-radius:4px; padding:2px 6px;
+      color:var(--ink2); background:var(--surface2); }
+.pay.xp      { border-color:var(--ink);  color:var(--ink); font-weight:600; background:transparent }
+.pay.shield  { border-color:var(--r-r);  color:var(--r-r) }   /* blue   */
+.pay.repair  { border-color:var(--r-u);  color:var(--r-u) }   /* green  */
+.pay.pause   { border-color:var(--r-e);  color:var(--r-e) }   /* purple */
+.pay.capacity{ border-color:var(--r-l);  color:var(--r-l) }   /* gold — permanent */
+.pay.title   { border-color:var(--r-l);  color:var(--r-l); font-weight:600 }
+.pay.boost   { border-style:dashed }                           /* temporary = dashed */
+
+/* ===========================================================================
+   SURFACES & CONTROLS
+   =========================================================================== */
+.ds-card{ background:var(--surface); border:1px solid var(--sep); border-radius:13px;
+          padding:22px; box-shadow:var(--shadow); }
+
+/* Hairline-separated stack: 1px gap over a --sep ground reads as a ruled
+   list without per-row borders that double up at the seams. */
+.ds-stack{ display:grid; gap:1px; background:var(--sep);
+           border:1px solid var(--sep); border-radius:12px; overflow:hidden; }
+.ds-stack > *{ background:var(--surface) }
+
+/* Wide content scrolls inside its own container — the body never scrolls
+   sideways. Applies to every table, code block and diagram. */
+.ds-scroller{ overflow-x:auto; border:1px solid var(--sep); border-radius:12px; background:var(--surface) }
+
+.ds-chip{ font-family:var(--f-body); font-size:12.5px; line-height:1; cursor:pointer;
+          border:1px solid var(--sep); background:var(--surface); color:var(--ink2);
+          border-radius:999px; padding:7px 12px; display:inline-flex; align-items:center; gap:6px;
+          transition:background .13s, color .13s, border-color .13s; }
+.ds-chip:hover{ border-color:var(--ink3); color:var(--ink) }
+/* Selected state INVERTS rather than tinting — keeps chroma reserved. */
+.ds-chip[aria-pressed="true"]{ background:var(--inv-bg); color:var(--inv-ink); border-color:var(--inv-bg) }
+
+.ds-note{ background:var(--surface); border:1px solid var(--sep); border-left:3px solid var(--ink);
+          border-radius:0 11px 11px 0; padding:18px 20px; }
+.ds-note.is-gold{ border-left-color:var(--r-l) }   /* legal / privacy emphasis */
+
+:focus-visible{ outline:2px solid var(--ink); outline-offset:3px; border-radius:2px }
+
+/* ===========================================================================
+   LAYOUT
+   Two columns: a sticky scroll-spy rail and the content well. The rail is a
+   desktop affordance only — below 1140px it collapses to a sticky <select>,
+   which is a better jump control on touch than a cramped horizontal list.
+   =========================================================================== */
+.ds-shell{ max-width:1360px; margin:0 auto; padding:0 24px 120px; display:grid; grid-template-columns:1fr }
+@media (min-width:1140px){
+  .ds-shell{ grid-template-columns:216px minmax(0,1fr); gap:56px; padding-right:40px }
+}
+
+/* Sibling groups get gap, never per-element margins — margins collapse and
+   double unpredictably across the section/callout boundary. */
