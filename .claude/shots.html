@@ -180,6 +180,38 @@ var DEMO = {
   richardNotes: "Saving for a Japan trip, wants to stop eating out so much."
 };
 
+// ---- Optional demo household (?hh=1) ----------------------------------------
+// The social layer on Profile only has anything to show when the user is in a
+// household, and cloudReady() is false here so the live Firestore subscription
+// that normally supplies one never fires. This seeds a fake one, plus a few
+// shared transactions carrying real owner uids, so the people strip, a member's
+// shared profile and Collab can all be composed and reviewed offline.
+if (new URLSearchParams(location.search).get("hh") === "1") {
+  window.__DEMO_HH = {
+    name: "Acker household",
+    createdBy: "demo-account",
+    memberUids: ["demo-account", "uid-sam", "uid-jordan"],
+    members: [
+      { uid: "demo-account", name: "Alon",   email: "demo@richy.app" },
+      { uid: "uid-sam",      name: "Sam Taylor",  email: "sam@richy.app" },
+      { uid: "uid-jordan",   name: "Jordan Lee",  email: "jordan@richy.app" }
+    ],
+    pendingEmails: ["dana@richy.app"]
+  };
+  DEMO.householdId = "demo-hh";
+  // Shared rows live in the HOUSEHOLD document, never the personal blob -
+  // loadData() drops any tx marked shared from the user doc on purpose. So they
+  // are planted separately, the same way the live subscription would deliver them.
+  window.__DEMO_SHARED_TX = ([
+    { id: "sh1", type: "expense", amount: 320,  label: "Weekly shop",  catId: "groceries", date: d(2),  shared: true, owner: "uid-sam" },
+    { id: "sh2", type: "expense", amount: 88.5, label: "Electricity",  catId: "bills",     date: d(5),  shared: true, owner: "uid-sam" },
+    { id: "sh3", type: "income",  amount: 500,  label: "Into the pot", catId: "salary",    date: d(6),  shared: true, owner: "uid-jordan" },
+    { id: "sh4", type: "expense", amount: 145,  label: "Dinner out",   catId: "dining",    date: d(9),  shared: true, owner: "uid-jordan" },
+    { id: "sh5", type: "expense", amount: 210,  label: "Shared fuel",  catId: "transport", date: d(12), shared: true, owner: "demo-account" }
+  ]);
+  window.__DEMO_HH.tx = window.__DEMO_SHARED_TX;
+}
+
 // ---- Boot the real app, signed in -------------------------------------------
 fetch("/budget-app.jsx?t=" + Date.now()).then(function (r) { return r.text(); }).then(function (src) {
   var code = src
@@ -194,7 +226,13 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function (r) { return r.text(); })
   code = code.replace(gate,
     "if (!user) { if (!window.__shotFired) { window.__shotFired = 1; " +
     "setTimeout(function(){ handleLogin(window.__DEMO.displayName, window.__DEMO, 'demo-account'); " +
-    "setTimeout(function(){ try { setTab(window.__SCREEN); } catch(e) {} }, 260); }, 0); } " +
+    "setTimeout(function(){ try { setTab(window.__SCREEN); } catch(e) {} " +
+    // The household subscription effect calls setHousehold(null) whenever
+    // cloudReady() is false, which it always is here - so the demo household
+    // has to be planted AFTER that effect has settled, not before it.
+    "try { if (window.__DEMO_HH) { setHousehold(window.__DEMO_HH); " +
+    "setSharedData({ budgets: [], goals: [], categories: [], tx: window.__DEMO_SHARED_TX }); " +
+    "setTx(function(p){ return window.__DEMO_SHARED_TX.concat(p); }); } } catch(e) {} }, 260); }, 0); } " +
     "return <AuthScreen onLogin={handleLogin} />; }");
 
   var out = Babel.transform(code, { presets: ["react"] }).code;

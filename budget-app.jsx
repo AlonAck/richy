@@ -4138,6 +4138,7 @@ function SVGIcon(props) {
     shield:   "M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z",
     // Badge glyphs (motivation layer). Kept in the same flat single-stroke
     // language as everything above so a badge tile never looks pasted in.
+    gear:     "M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1zM15 12a3 3 0 11-6 0 3 3 0 016 0z",
     crown:    "M3 8l4 3 5-6 5 6 4-3-2 11H5L3 8zM5 19h14",
     flame:    "M12 22c4 0 6-2.7 6-6 0-4-3-5.5-3-9 0 0-2 1.5-2 4 0-2.5-2-5-4-5 .8 2 .3 3.6-1 5.4C6.7 13 6 14.4 6 16c0 3.3 2 6 6 6z",
     medal:    "M8 2l4 6 4-6M12 22a6 6 0 100-12 6 6 0 000 12zm0-8.5l1.2 2.4 2.6.4-1.9 1.8.5 2.6-2.4-1.3-2.4 1.3.5-2.6L7.2 16l2.6-.4z",
@@ -24699,6 +24700,181 @@ function BadgeTile(props) {
   );
 }
 
+// ── The social layer ────────────────────────────────────────────────────────
+// Richy has no follow graph. There is no followers collection, no follow
+// request and no directional edge anywhere in the data model. What it does have
+// is households: a mutual, invite-based group that already shares budgets,
+// goals and transactions. That is the real social graph here, so this is built
+// on it rather than on a follower list that would have to be invented.
+//
+// The governing rule, and the reason this screen is deliberately narrow: only
+// what a person actually shares into the household is shown. A shared
+// transaction carries an owner uid - Activity stamps it whenever `shared` is
+// ticked - so contributions are genuinely attributable. Everything else
+// (personal balances, savings pots, net worth, level, badges) is not read here,
+// because the household document does not contain it in the first place.
+function sharedTxOf(tx, uid) {
+  return (tx || []).filter(function(t) { return t && t.shared && t.owner === uid && !isTransfer(t); });
+}
+function memberTotals(tx, uid) {
+  var rows = sharedTxOf(tx, uid);
+  var spent = rows.filter(function(t) { return t.type === "expense"; }).reduce(function(s, t) { return s + (t.amount || 0); }, 0);
+  var put   = rows.filter(function(t) { return t.type === "income"; }).reduce(function(s, t) { return s + (t.amount || 0); }, 0);
+  var dates = rows.map(function(t) { return t.date; }).sort();
+  return { count: rows.length, spent: round2(spent), put: round2(put), since: dates[0] || "", rows: rows };
+}
+
+function SocialStrip(props) {
+  var hh = props.household;
+  var members = (hh && hh.members) ? hh.members : [];
+
+  // No household: say so plainly and offer the one action that changes it.
+  // Inventing a "0 followers" row here would be inventing a feature.
+  if (!hh || !members.length) {
+    return (
+      <Card style={{ padding: "17px 17px 15px", marginTop: 18 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 38, height: 38, borderRadius: 12, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <SVGIcon id="user" size={18} color={T.orange} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>No one here yet</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Share a budget and the people in it show up here.</div>
+          </div>
+        </div>
+        <button onClick={props.onManage}
+          style={{ width: "100%", marginTop: 14, background: T.orangeDim, color: T.orange, border: "none", borderRadius: 13, padding: "11px 0", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI }}>
+          Share a budget
+        </button>
+      </Card>
+    );
+  }
+
+  var totalShared = (props.tx || []).filter(function(t) { return t && t.shared && !isTransfer(t); });
+  return (
+    <div style={{ marginTop: 18 }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", margin: "0 0 9px", padding: "0 4px" }}>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, fontFamily: UI }}>SHARED WITH</span>
+        <button onClick={props.onManage} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12.5, color: T.orange, fontWeight: 600, fontFamily: UI, display: "flex", alignItems: "center", gap: 3 }}>
+          {hh.name}<SVGIcon id="chevron" size={12} color={T.orange} />
+        </button>
+      </div>
+      <Card style={{ padding: "15px 0 13px" }}>
+        <div style={{ display: "flex", gap: 14, padding: "0 16px", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+          {members.map(function(m, i) {
+            var t = memberTotals(props.tx, m.uid);
+            var me = m.uid === props.myUid;
+            return (
+              <button key={m.uid || i} onClick={function() { props.onOpen(m.uid); }}
+                style={{ background: "none", border: "none", padding: 0, cursor: "pointer", width: 62, flexShrink: 0, fontFamily: UI }}>
+                <div style={{ width: 52, height: 52, borderRadius: "50%", margin: "0 auto", background: FACE_TINTS[i % FACE_TINTS.length], display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 20, fontWeight: 700, border: me ? "2px solid " + T.orange : "none" }}>
+                  {(m.name || m.email || "?")[0].toUpperCase()}
+                </div>
+                <div style={{ fontSize: 11.5, fontWeight: 700, color: T.ink, marginTop: 6, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {me ? "You" : String(m.name || m.email || "").split(" ")[0]}
+                </div>
+                <div style={{ fontSize: 10, color: T.ink3, marginTop: 1 }}>{t.count ? t.count + " shared" : "-"}</div>
+              </button>
+            );
+          })}
+          {props.canInvite && (
+            <button onClick={props.onManage} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", width: 62, flexShrink: 0, fontFamily: UI }}>
+              <div style={{ width: 52, height: 52, borderRadius: "50%", margin: "0 auto", border: "1.5px dashed " + T.ink3, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <SVGIcon id="plus" size={18} color={T.ink3} />
+              </div>
+              <div style={{ fontSize: 11.5, fontWeight: 700, color: T.ink3, marginTop: 6 }}>Invite</div>
+            </button>
+          )}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, borderTop: "0.5px solid " + T.sep, marginTop: 14, padding: "11px 16px 0" }}>
+          <SVGIcon id="activity" size={14} color={T.ink3} />
+          <span style={{ fontSize: 12, color: T.ink3, fontFamily: UI }}>
+            {totalShared.length ? totalShared.length + " shared entr" + (totalShared.length === 1 ? "y" : "ies") + " between you" : "Nothing shared yet"}
+          </span>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// One person's profile, limited to what they have actually shared. Anything
+// this screen cannot source from the household document is not shown at all -
+// there are no empty rows for private figures, because an empty row still
+// discloses that the figure exists.
+function FriendView(props) {
+  var hh = props.household;
+  var members = (hh && hh.members) ? hh.members : [];
+  var m = members.filter(function(x) { return x.uid === props.uid; })[0];
+  if (!m) return <div><SubViewBack onBack={props.onBack} /><Card style={{ padding: 24 }}><div style={{ fontSize: 14, color: T.ink3 }}>This person is no longer in the household.</div></Card></div>;
+
+  var idx = members.indexOf(m);
+  var t = memberTotals(props.tx, m.uid);
+  var me = m.uid === props.myUid;
+  var owner = hh.createdBy === m.uid;
+  var recent = t.rows.slice().sort(function(a, b) { return (b.date || "").localeCompare(a.date || ""); }).slice(0, 8);
+  var cats = props.categories || [];
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+
+      <div style={{ textAlign: "center", padding: "2px 0 6px" }}>
+        <div style={{ width: 84, height: 84, borderRadius: "50%", margin: "0 auto 14px", background: FACE_TINTS[(idx < 0 ? 0 : idx) % FACE_TINTS.length], display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 34, fontWeight: 700, fontFamily: DISP }}>
+          {(m.name || m.email || "?")[0].toUpperCase()}
+        </div>
+        <div style={{ fontSize: 24, fontWeight: 700, color: T.ink, letterSpacing: "-0.025em", fontFamily: DISP }}>{me ? "You" : (m.name || m.email)}</div>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 9, background: owner ? T.orangeDim : T.inputBg, borderRadius: 20, padding: "5px 13px" }}>
+          <SVGIcon id={owner ? "home" : "user"} size={11} color={owner ? T.orange : T.ink2} />
+          <span style={{ fontSize: 12, fontWeight: 700, color: owner ? T.orange : T.ink2, fontFamily: UI }}>{owner ? "Owner" : "Member"} of {hh.name}</span>
+        </div>
+        {m.email && <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 8, fontFamily: UI }}>{m.email}</div>}
+      </div>
+
+      <Card style={{ padding: "15px 8px", marginTop: 16 }}>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <StatCell value={t.count} label={t.count === 1 ? "shared entry" : "shared entries"} />
+          <div style={{ width: "0.5px", alignSelf: "stretch", background: T.sep }} />
+          <StatCell value={dollars(t.spent)} label="spent" />
+          <div style={{ width: "0.5px", alignSelf: "stretch", background: T.sep }} />
+          <StatCell value={dollars(t.put)} label="put in" color={t.put > 0 ? T.green : T.ink} />
+        </div>
+      </Card>
+
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, padding: "0 4px", margin: "22px 0 9px", fontFamily: UI }}>SHARED ACTIVITY</div>
+      <Card style={{ overflow: "hidden" }}>
+        {recent.length === 0 ? (
+          <div style={{ padding: "20px 18px", fontSize: 13, color: T.ink3, lineHeight: 1.5, fontFamily: UI }}>
+            Nothing shared yet. Entries only appear here when they are marked shared in Activity.
+          </div>
+        ) : recent.map(function(r, i) {
+          var c = catById(cats, r.catId);
+          return (
+            <div key={r.id || i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderBottom: i < recent.length - 1 ? "0.5px solid " + T.sep : "none" }}>
+              <div style={{ width: 34, height: 34, borderRadius: 10, background: T.inputBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <SVGIcon id={(c && c.icon) || "box"} size={16} color={(c && c.color) || T.ink3} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontFamily: UI }}>{r.label || (c && c.name) || "Entry"}</div>
+                <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 2, fontFamily: UI }}>{r.date}</div>
+              </div>
+              <div style={{ fontSize: 14.5, fontWeight: 700, color: r.type === "income" ? T.green : T.ink, fontFamily: UI, flexShrink: 0 }}>
+                {(r.type === "income" ? "+" : "-") + dollars(r.amount || 0)}
+              </div>
+            </div>
+          );
+        })}
+      </Card>
+
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 9, marginTop: 16, padding: "0 4px" }}>
+        <span style={{ flexShrink: 0, display: "flex", marginTop: 1 }}><SVGIcon id="lock" size={13} color={T.ink3} /></span>
+        <span style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.45, fontFamily: UI }}>
+          Only what {me ? "you share" : "they share"} into {hh.name} is shown here. Personal budgets, balances, savings and badges are never part of the household record.
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function Profile(props) {
   var snap = props.snap;
   var initial = (props.user || "?")[0].toUpperCase();
@@ -24722,9 +24898,30 @@ function Profile(props) {
 
   return (
     <div>
-      {/* ── Identity ── */}
+      {/* ── Identity ──
+          XP sits to the left of the mark and settings to the right, so the two
+          things you reach for most often flank the avatar instead of competing
+          with the social row below. XP moved here when the stats triple was
+          replaced by the people strip - it is the one number from that row that
+          is not already stated elsewhere on the screen. */}
       <div style={{ textAlign: "center", padding: "6px 0 2px" }}>
-        <LevelMark initial={initial} level={snap.level} pct={snap.pctToNext} />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+          <button onClick={props.onViewBadges}
+            style={{ flex: 1, minWidth: 0, background: "none", border: "none", cursor: "pointer", fontFamily: UI, padding: 0 }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{snap.xp.toLocaleString()}</div>
+            <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 2 }}>XP</div>
+          </button>
+          <div style={{ flexShrink: 0 }}>
+            <LevelMark initial={initial} level={snap.level} pct={snap.pctToNext} />
+          </div>
+          <button onClick={props.onViewSettings} aria-label="Settings"
+            style={{ flex: 1, minWidth: 0, background: "none", border: "none", cursor: "pointer", fontFamily: UI, padding: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+            <div style={{ width: 40, height: 40, borderRadius: "50%", background: T.inputBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <SVGIcon id="gear" size={19} color={T.ink2} />
+            </div>
+            <div style={{ fontSize: 11.5, color: T.ink3 }}>Settings</div>
+          </button>
+        </div>
         <div style={{ fontSize: 26, fontWeight: 700, color: T.ink, letterSpacing: "-0.03em", fontFamily: DISP }}>{props.user}</div>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 9, background: T.orangeDim, borderRadius: 20, padding: "5px 13px" }}>
           <SVGIcon id="shield" size={11} color={T.orange} />
@@ -24740,14 +24937,9 @@ function Profile(props) {
         </button>
       </div>
 
-      {/* ── The three numbers ── */}
-      <div style={{ display: "flex", alignItems: "center", margin: "20px 0 4px", padding: "0 8px" }}>
-        <StatCell value={snap.xp.toLocaleString()} label="XP" />
-        <div style={{ width: "0.5px", alignSelf: "stretch", background: T.sep }} />
-        <StatCell value={snap.badges.length} label="badges" onClick={props.onViewBadges} />
-        <div style={{ width: "0.5px", alignSelf: "stretch", background: T.sep }} />
-        <StatCell value={clean.run} label={clean.run === 1 ? "clean week" : "clean weeks"} color={clean.run ? T.green : T.ink} />
-      </div>
+      {/* ── The people you share with ── */}
+      <SocialStrip household={hh} tx={props.tx} myUid={props.myUid} canInvite={!!hh}
+        onOpen={props.onOpenPerson} onManage={props.onViewCollab} />
 
       {/* ── This month (Green Month, layer 2) ── */}
       <Card style={{ padding: "17px 17px 15px", marginTop: 18 }}>
@@ -25276,6 +25468,8 @@ export default function App() {
   var investorProfile = _ivp[0]; var setInvestorProfile = _ivp[1];
   var _otr = useState(null);
   var openTrip = _otr[0]; var setOpenTrip = _otr[1];
+  // Which household member's shared profile is open, by uid.
+  var _op = useState(null); var openPerson = _op[0]; var setOpenPerson = _op[1];
   var _obz = useState(null);
   var openBiz = _obz[0]; var setOpenBiz = _obz[1];
   var _oiv = useState(null);
@@ -26479,6 +26673,9 @@ export default function App() {
     { id: "all",   label: "All Time" }
   ];
   var timeframeLabel = timeframe === "week" ? "This Week" : timeframe === "year" ? String(new Date().getFullYear()) : timeframe === "all" ? "All Time" : monthLabel;
+  // A member's shared profile is titled with their name, so the header doesn't
+  // read "Profile" twice next to the back button that already says it.
+  var personName = ((((household && household.members) || []).filter(function(m) { return m.uid === openPerson; })[0]) || {}).name || "Profile";
 
   return (
     <div style={{ background: T.bg, minHeight: "100vh", maxWidth: 430, margin: "0 auto", fontFamily: UI, paddingBottom: "calc(110px + env(safe-area-inset-bottom, 0px))" }}>
@@ -26493,7 +26690,7 @@ export default function App() {
             </button>
           </div>
           <span style={{ flex: 1, fontSize: 20, fontWeight: 700, color: T.ink, textAlign: "center", letterSpacing: "-0.02em" }}>
-            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "periodMode" ? "Date Range" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "badges" ? "Badges" : currentTab === "settings" ? "Settings" : currentTab === "analysis" ? "Full Analysis" : currentTab === "investPlan" ? "Your investing plan" : currentTab === "investorOnboard" ? "Investing basics" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
+            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "periodMode" ? "Date Range" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "badges" ? "Badges" : currentTab === "settings" ? "Settings" : currentTab === "person" ? personName : currentTab === "analysis" ? "Full Analysis" : currentTab === "investPlan" ? "Your investing plan" : currentTab === "investorOnboard" ? "Investing basics" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
           <div style={{ width: 86, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
             {HAS_FAB.indexOf(currentTab) !== -1 && (
@@ -26501,16 +26698,6 @@ export default function App() {
                 aria-label={sheet ? "Close add menu" : "Add new"}
                 style={{ background: sheet ? T.ink : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", border: "none", borderRadius: 40, width: 36, height: 36, cursor: "pointer", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: sheet ? "none" : "0 4px 12px " + T.orangeGlow, transform: sheet ? "rotate(45deg)" : "none", transition: "background var(--m-quick) ease, box-shadow var(--m-quick) ease, transform var(--m-settle) var(--m-spring)" }}>
                 <SVGIcon id="plus" size={16} color="#fff" />
-              </button>
-            )}
-            {/* Settings is reachable only from Profile, so its entry point
-                lives in the header the way the reference design has it - the
-                gear appears when you are looking at your own profile. */}
-            {currentTab === "profile" && (
-              <button onClick={function() { prevTabRef.current = "profile"; setTab("settings"); }}
-                aria-label="Settings"
-                style={{ background: "none", border: "none", cursor: "pointer", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>
-                <SVGIcon id="tool" size={19} color={T.ink2} />
               </button>
             )}
             <button onClick={function() { setTab("profile"); }}
@@ -26583,8 +26770,9 @@ export default function App() {
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} richardInstructions={richardCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} budgets={budgets} businesses={businesses} investing={investing} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "profile" && motivSnap && <Profile user={user} email={blobRef.current.email || ""} snap={motivSnap} feed={motivFeed(motivSnap)} onLogout={handleLogout} tx={tx} goals={goals} savings={savings} businesses={businesses} investing={investing} trips={trips} bankSync={bankSync} household={household} inviteCount={invites.length} debtCount={debts.length} pendingCount={motivSnap.clean.pending ? tx.filter(function(t) { return t.date >= motivSnap.clean.pending.key && t.date < weekAdd(motivSnap.clean.pending.key, 1) && !isOpening(t); }).length : 0} onConfirmWeek={onConfirmWeek} onViewBadges={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewStreaks={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewGoals={function() { setTab("goals"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewPlan={function() { setTab("plan"); }} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "profile"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} onViewTripHistory={function() { setTab("tripHistory"); }} />}
+        {currentTab === "profile" && motivSnap && <Profile user={user} email={blobRef.current.email || ""} snap={motivSnap} feed={motivFeed(motivSnap)} onLogout={handleLogout} tx={tx} goals={goals} savings={savings} businesses={businesses} investing={investing} trips={trips} bankSync={bankSync} household={household} inviteCount={invites.length} debtCount={debts.length} pendingCount={motivSnap.clean.pending ? tx.filter(function(t) { return t.date >= motivSnap.clean.pending.key && t.date < weekAdd(motivSnap.clean.pending.key, 1) && !isOpening(t); }).length : 0} onConfirmWeek={onConfirmWeek} myUid={accountKey} categories={categories} onOpenPerson={function(uid) { prevTabRef.current = "profile"; setOpenPerson(uid); setTab("person"); }} onViewSettings={function() { prevTabRef.current = "profile"; setTab("settings"); }} onViewBadges={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewStreaks={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewGoals={function() { setTab("goals"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewPlan={function() { setTab("plan"); }} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "profile"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} onViewTripHistory={function() { setTab("tripHistory"); }} />}
         {currentTab === "badges" && motivSnap && <BadgesView snap={motivSnap} onOpen={function() {}} onBack={function() { setTab("profile"); }} />}
+        {currentTab === "person" && <FriendView uid={openPerson} household={household} myUid={accountKey} tx={tx} categories={categories} onBack={function() { setTab("profile"); }} />}
         {currentTab === "settings" && <SettingsView user={user} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} richardInstructions={richardInstructions} bankSync={bankSync} householdName={household ? household.name : null} inviteCount={invites.length} debtCount={debts.length} onBack={function() { setTab("profile"); }} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "settings"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "settings"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "settings"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "settings"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "settings"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "settings"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "settings"; setTab("periodMode"); }} onViewBankSync={function() { prevTabRef.current = "settings"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "settings"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "settings"; setTab("editOpeningBalance"); }} onViewCollab={function() { prevTabRef.current = "settings"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "settings"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
         {currentTab === "analysis" && <FullAnalysisView tx={tx} categories={categories} folders={folders} splitPlan={splitPlan} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} username={user} analysis={freshAnalysis ? freshAnalysis.data : null} onBack={function() { setTab("advisor"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} onAccountDeleted={handleLogout} />}
