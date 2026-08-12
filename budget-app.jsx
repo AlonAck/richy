@@ -1964,6 +1964,272 @@ function ThinkingDots(props) {
   );
 }
 
+// === GRADIENT SHIMMER ===
+// Port of the shadcn-format component in components/ui/gradient-shimmer.tsx.
+// A multi-stop highlight band sweeps across a line of text: the text is filled
+// with a gradient clipped to the glyphs, and the Web Animations API slides that
+// gradient layer across it. Everything outside the band is the plain base color,
+// so a still frame looks exactly like normal text.
+//
+// Used for waits (see ThinkingPhrase) - a sentence that shimmers reads as work
+// in progress without another spinner competing with the typing dots.
+//
+// Departures from upstream, all forced by this app's shape:
+//   1. ES5 and only useState/useEffect/useRef - the preview shells alias nothing
+//      else into scope, so no useMemo (the gradient string is rebuilt per render,
+//      which is a handful of string joins on a component that renders rarely).
+//   2. color-mix() is feature-gated. Upstream assumes it. If it is missing the
+//      whole linear-gradient declaration is invalid, no background paints, and
+//      -webkit-text-fill-color:transparent leaves the text INVISIBLE. We fall
+//      back to the raw edge stop colors instead.
+//   3. Inline styles, no className/Tailwind, and no `as` element switch - every
+//      call site here wants a span.
+var GS_PRESETS = {
+  sunrise: [
+    { color: "#B6D3EF", position: 0 }, { color: "#CAD1D7", position: 0.153 }, { color: "#D7CFC8", position: 0.252 },
+    { color: "#E1CDB9", position: 0.341 }, { color: "#EAC6A5", position: 0.424 }, { color: "#EDB185", position: 0.505 },
+    { color: "#EF9B62", position: 0.586 }, { color: "#F18F60", position: 0.669 }, { color: "#F48D7A", position: 0.758 },
+    { color: "#F78A94", position: 0.857 }, { color: "#F888A0", position: 1 },
+  ],
+  bubble: [
+    { color: "#F5EBD9", position: 0 }, { color: "#F2D4DB", position: 0.31 }, { color: "#EBBDDE", position: 0.5 },
+    { color: "#CCBAE3", position: 0.65 }, { color: "#8CBFF0", position: 0.82 }, { color: "#78B0FF", position: 1 },
+  ],
+  peach: [
+    { color: "#D9F5FA", position: 0 }, { color: "#FCD9D6", position: 0.31 },
+    { color: "#FCBAC9", position: 0.61 }, { color: "#F0B3F5", position: 1 },
+  ],
+  tonic: [
+    { color: "#E3EDF0", position: 0 }, { color: "#E8EBB8", position: 0.27 }, { color: "#F0DEA3", position: 0.43 },
+    { color: "#E8B078", position: 0.75 }, { color: "#F29682", position: 1 },
+  ],
+  mint: [
+    { color: "#DECEE8", position: 0 }, { color: "#CBBAEE", position: 0.21 },
+    { color: "#7DC0FB", position: 0.46 }, { color: "#00C7A6", position: 1 },
+  ],
+  spring: [
+    { color: "#F7D5C5", position: 0.07 }, { color: "#46A8C0", position: 0.58 }, { color: "#43AE7D", position: 1 },
+  ],
+  twilight: [
+    { color: "#E3CCE6", position: 0 }, { color: "#4E8CD5", position: 0.35 },
+    { color: "#6068C2", position: 0.64 }, { color: "#38364E", position: 1 },
+  ],
+  bay: [
+    { color: "#DBE3D0", position: 0 }, { color: "#8DB8A7", position: 0.23 }, { color: "#2D8E9A", position: 0.42 },
+    { color: "#076492", position: 0.59 }, { color: "#154288", position: 0.79 }, { color: "#262C81", position: 1 },
+  ],
+};
+
+var GS_EASINGS = {
+  smooth: "cubic-bezier(0.45, 0, 0.55, 1)",   // dwells off-text at the ends
+  gentle: "cubic-bezier(0.76, 0, 0.24, 1)",   // softer, longer dwell
+  snappy: "cubic-bezier(0.3, 0, 0.2, 1)",     // quicker pass across the text
+};
+
+var GS_CORE_RATIO = 0.44;        // saturated core half-width, as a share of --gs-spread-mid
+var GS_MID_RATIO = 0.72;         // soft-edge radius, as a share of --gs-spread
+var GS_MAX_SPREAD = 48;          // px, at the reference font size
+var GS_BASE_FONT = 14;           // font size the per-character spread is tuned for
+var GS_FALLBACK_W = 96;          // px, when the element has not been laid out yet
+var GS_ROOT_MARGIN = "160px";
+var GS_SCROLL_IDLE = 120;
+
+// The theme accent as a shimmer band. Read at render time so it follows the
+// active theme (T is mutated in place when the palette changes).
+function gsThemeStops() {
+  return [
+    { color: T.orangeHi, position: 0 },
+    { color: T.orange, position: 0.5 },
+    { color: T.gold, position: 1 },
+  ];
+}
+
+var gsMixCache = null;
+function gsSupportsMix() {
+  if (gsMixCache !== null) return gsMixCache;
+  gsMixCache = !!(window.CSS && window.CSS.supports && window.CSS.supports("color", "color-mix(in oklab, red 42%, blue)"));
+  return gsMixCache;
+}
+
+function gsSupportsClipText() {
+  if (!(window.CSS && window.CSS.supports)) return false;
+  return window.CSS.supports("background-clip", "text") || window.CSS.supports("-webkit-background-clip", "text");
+}
+
+function gsReducedMotion() {
+  return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+}
+
+// Build the moving band's background-image. Stops are packed into the saturated
+// core, then faded out to the base text color through a soft edge. Reads the
+// runtime vars --gs-base / --gs-spread / --gs-spread-mid, which the component
+// sets after measuring, so the band scales with font size.
+function gsBandGradient(stops, angle) {
+  var sorted = stops.slice().sort(function(a, b) { return a.position - b.position; });
+  var first = (sorted[0] && sorted[0].color) || "white";
+  var last = (sorted[sorted.length - 1] && sorted[sorted.length - 1].color) || "white";
+  var core = sorted.map(function(s) {
+    var f = (s.position - 0.5) * 2 * GS_CORE_RATIO;
+    return s.color + " calc(50% + var(--gs-spread-mid) * " + f.toFixed(4) + ")";
+  }).join(", ");
+  var mix = gsSupportsMix();
+  var edgeIn = mix ? "color-mix(in oklab, var(--gs-base) 42%, " + first + ")" : first;
+  var edgeOut = mix ? "color-mix(in oklab, var(--gs-base) 42%, " + last + ")" : last;
+  return [
+    "linear-gradient(" + angle + "deg",
+    "var(--gs-base) calc(50% - var(--gs-spread))",
+    edgeIn + " calc(50% - var(--gs-spread-mid))",
+    core,
+    edgeOut + " calc(50% + var(--gs-spread-mid))",
+    "var(--gs-base) calc(50% + var(--gs-spread)))",
+  ].join(", ");
+}
+
+// Pause the sweep while off-screen, while the tab is hidden, and while the page
+// is scrolling. Returns a teardown.
+function gsObserveActive(el, opts, onChange) {
+  var inView = !opts.pauseWhenOffscreen || typeof IntersectionObserver === "undefined";
+  var visible = !document.hidden;
+  var idle = true;
+  function compute() { onChange(inView && visible && idle); }
+
+  var io = null;
+  if (opts.pauseWhenOffscreen && typeof IntersectionObserver !== "undefined") {
+    io = new IntersectionObserver(function(entries) {
+      var e = entries[entries.length - 1];
+      if (!e) return;
+      inView = e.isIntersecting;
+      compute();
+    }, { rootMargin: GS_ROOT_MARGIN });
+    io.observe(el);
+  }
+
+  function onVis() { visible = !document.hidden; compute(); }
+  document.addEventListener("visibilitychange", onVis);
+
+  var idleTimer = null;
+  function onScroll() {
+    idle = false; compute();
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(function() { idle = true; compute(); }, GS_SCROLL_IDLE);
+  }
+  if (opts.pauseOnScroll) window.addEventListener("scroll", onScroll, { passive: true, capture: true });
+
+  compute();
+
+  return function() {
+    if (io) io.disconnect();
+    document.removeEventListener("visibilitychange", onVis);
+    if (opts.pauseOnScroll) window.removeEventListener("scroll", onScroll, { capture: true });
+    clearTimeout(idleTimer);
+  };
+}
+
+// props: children (a plain string), gradient (preset name or stop array; defaults
+// to the theme accent), easing, duration (seconds per sweep), spread (px per
+// character), angle, pauseBetween (ms), baseColor, pauseOnScroll,
+// pauseWhenOffscreen, style.
+function GradientShimmer(props) {
+  var text = props.children == null ? "" : String(props.children);
+  var ref = useRef(null);
+
+  var duration = isFinite(props.duration) && props.duration > 0 ? props.duration : 1.45;
+  var spread = isFinite(props.spread) && props.spread >= 0 ? props.spread : 3;
+  var angle = isFinite(props.angle) ? props.angle : 105;
+  var pauseBetween = isFinite(props.pauseBetween) ? Math.max(0, props.pauseBetween) : 1000;
+  var pauseOnScroll = props.pauseOnScroll !== false;
+  var pauseWhenOffscreen = props.pauseWhenOffscreen !== false;
+  var easing = GS_EASINGS[props.easing] || GS_EASINGS.smooth;
+
+  var stops = typeof props.gradient === "string"
+    ? (GS_PRESETS[props.gradient] || GS_PRESETS.sunrise)
+    : (props.gradient && props.gradient.length ? props.gradient : gsThemeStops());
+
+  // Seed for the first paint, before the element has been measured.
+  var seed = Math.min(text.length * spread, GS_MAX_SPREAD);
+
+  useEffect(function() {
+    var el = ref.current;
+    if (!el) return;
+
+    // Without background-clip:text the transparent text-fill would hide the
+    // text outright. Drop both and let it render as ordinary text.
+    if (!gsSupportsClipText()) {
+      el.style.removeProperty("background-image");
+      el.style.removeProperty("-webkit-text-fill-color");
+      return;
+    }
+
+    function measure() {
+      var w = el.getBoundingClientRect().width || GS_FALLBACK_W;
+      var fs = parseFloat(getComputedStyle(el).fontSize) || GS_BASE_FONT;
+      var scale = fs / GS_BASE_FONT;
+      var px = Math.min(text.length * spread * scale, GS_MAX_SPREAD * scale);
+      var layer = Math.max(1, w + px * 2);
+      el.style.setProperty("--gs-spread", px + "px");
+      el.style.setProperty("--gs-spread-mid", (px * GS_MID_RATIO) + "px");
+      el.style.backgroundSize = layer + "px 100%";
+      // The sweep time is literal, not width-derived, so every shimmer on
+      // screen runs at the same frequency.
+      return { start: -px - layer / 2, end: w + px - layer / 2, ms: duration * 1000 };
+    }
+
+    measure();
+    if (props.respectReducedMotion !== false && gsReducedMotion()) return; // static band
+    if (typeof el.animate !== "function") return;                          // static band
+
+    var anim = null, pauseTimer = null, active = true, cancelled = false;
+
+    function sweep() {
+      if (cancelled) return;
+      var m = measure();
+      var next = el.animate(
+        [{ backgroundPosition: m.start + "px center" }, { backgroundPosition: m.end + "px center" }],
+        { duration: m.ms, easing: easing, fill: "forwards" }
+      );
+      if (!active) next.pause();
+      // Cancel the finished sweep only once the next one owns the property,
+      // otherwise fill:forwards animations pile up on the element.
+      if (anim) anim.cancel();
+      anim = next;
+      next.onfinish = function() { pauseTimer = setTimeout(sweep, pauseBetween); };
+    }
+
+    var stopGates = gsObserveActive(el, { pauseOnScroll: pauseOnScroll, pauseWhenOffscreen: pauseWhenOffscreen }, function(on) {
+      active = on;
+      if (anim) { if (on) anim.play(); else anim.pause(); }
+    });
+
+    sweep();
+
+    return function() {
+      cancelled = true;
+      if (anim) anim.cancel();
+      clearTimeout(pauseTimer);
+      stopGates();
+    };
+  }, [text, spread, duration, easing, pauseBetween, pauseOnScroll, pauseWhenOffscreen]);
+
+  var st = {
+    display: "inline-block",
+    backgroundImage: gsBandGradient(stops, angle),
+    backgroundRepeat: "no-repeat",
+    backgroundSize: "100% 100%",   // swapped for the px layer once measured
+    backgroundColor: "var(--gs-base)",
+    WebkitBackgroundClip: "text",
+    backgroundClip: "text",
+    // text-fill-color rather than color:transparent, so currentColor in
+    // --gs-base still resolves to the real text color.
+    WebkitTextFillColor: "transparent",
+    "--gs-base": props.baseColor || "currentColor",
+    "--gs-spread": seed + "px",
+    "--gs-spread-mid": (seed * GS_MID_RATIO) + "px",
+  };
+  if (props.style) for (var k in props.style) st[k] = props.style[k];
+
+  return <span ref={ref} style={st}>{text}</span>;
+}
+
 // Cycles through short status phrases so a wait reads as visible work.
 function ThinkingPhrase(props) {
   var phrases = (props.phrases && props.phrases.length) ? props.phrases : [tr("thinkP1"), tr("thinkP2"), tr("thinkP3"), tr("thinkP4")];
@@ -1973,7 +2239,17 @@ function ThinkingPhrase(props) {
     var iv = setInterval(function() { setI(function(n) { return n + 1; }); }, props.interval || 2100);
     return function() { clearInterval(iv); };
   }, [phrases.length]);
-  return <span key={i} style={{ display: "inline-block", animation: "rclPhrase 0.4s ease both" }}>{phrases[i % phrases.length]}</span>;
+  // The phrase shimmers while it is up: a highlight sweeping the words says
+  // "still working" between swaps, when nothing else on screen is moving.
+  // Pass shimmer={false} where the surrounding copy is already busy.
+  var body = phrases[i % phrases.length];
+  return (
+    <span key={i} style={{ display: "inline-block", animation: "rclPhrase 0.4s ease both" }}>
+      {props.shimmer === false
+        ? body
+        : <GradientShimmer duration={1.6} pauseBetween={380} spread={2.4}>{body}</GradientShimmer>}
+    </span>
+  );
 }
 
 // Chat-bubble thinking indicator: typing dots plus a live status phrase.

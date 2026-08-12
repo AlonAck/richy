@@ -19,6 +19,17 @@ folder if the migration never happens.
 | `demo.tsx` | prompt-kit fade-mode demo | — |
 | `amount-slider.tsx` | 21st.dev `AmountSlider` / `AmountReadout` | `AmountSlider` / `AmountSettingRow` |
 | `amount-slider-demo.tsx` | 21st.dev membership-amount demo | — |
+| `gradient-shimmer.tsx` | 21st.dev `GradientShimmer` | `GradientShimmer` (+ `gsBandGradient`, `GS_PRESETS`) |
+| `gradient-shimmer-demo.tsx` | 21st.dev sweep demo | — |
+
+The gradient shimmer's port drops the `as`/`className` props (every call site
+wants a span with inline styles), swaps `useMemo` for a per-render rebuild, and
+adds a `color-mix()` feature gate — without that gate, a browser missing
+`color-mix` invalidates the whole gradient and the transparent text-fill leaves
+the text invisible. It powers `ThinkingPhrase`, so every "Richard is thinking"
+wait shimmers; pass `shimmer={false}` to opt a call site out. The band defaults
+to the live theme accent (`T.orangeHi → T.orange → T.gold`) rather than
+`sunrise`, so it re-tints with the theme.
 
 The amount slider is the one port that deliberately diverges from its upstream:
 no Radix (pointer/keyboard handling is hand-rolled), the readout reuses the
