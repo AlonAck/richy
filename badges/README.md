@@ -1,111 +1,53 @@
 # Badge art
 
-One PNG per badge. Drop files in this folder — `build.mjs` copies the whole
-directory into `public/badges/`, so adding art is never a code change.
+The Richy Signature Collection: 157 individually composed achievement badges,
+one per row in `BADGES` (in `budget-app.jsx`).
 
-## Spec
+```
+badges/
+  light/<id>.svg    pearl glass, for light surfaces
+  dark/<id>.svg     onyx glass, for dark surfaces
+  catalog.json      the source the badge table was generated from
+```
 
-- **Format:** PNG, transparent background
-- **Size:** 256 × 256 (drawn at 30px, so this covers 3× displays with room spare)
-- **Padding:** keep ~10% clear on all sides — the art sits inside a 56px rounded
-  tile and needs to breathe
-- **Colour:** bake in whatever colours the badge wants. Do **not** try to match
-  the rarity colour — the tile behind the art already carries the rarity wash,
-  border and label, and it re-tints per theme. Art that also encoded rarity
-  would fight it.
-- **Light and dark:** one file serves both. The tile is a translucent wash over
-  the card, so mid-tone art reads on either ground; pure white or pure black
-  silhouettes will disappear on one of them.
+## How it hangs together
+
+`id` is both the badge key and its filename — `a-01-opening-balance` is
+`light/a-01-opening-balance.svg`. That is deliberate: the table and the art
+cannot drift apart, and there is no separate mapping to keep in sync.
+
+`BadgeGlyph` picks the appearance from `T.isDark` at render time. Two files
+rather than one re-tinted asset, because the glass is built from baked
+gradients that CSS cannot recolour.
+
+**Nothing is drawn behind the art.** Each SVG is already a rounded-square glass
+tile carrying its own rarity ring and Richy's gold signature arc. An earlier
+version sat these inside a tinted container, which doubled the tile and fought
+the ring for the rarity signal.
+
+`build.mjs` copies both folders wholesale into `public/`, so replacing art is a
+drag-and-drop and never a code change.
+
+## Replacing or adding art
+
+Keep the filename equal to the badge `id`. Ship both appearances — a badge with
+only a light file will show nothing in dark mode. SVG masters are 72×72 and
+scale to any size; the app draws them at 56px in grids and can go larger for an
+earned-badge reveal without loss.
+
+If you add a badge that isn't in `BADGES` yet, add the row there too — art
+alone will never appear.
 
 ## Naming
 
-Filename is the badge name, lowercased, non-alphanumerics collapsed to hyphens.
-`First Coin` → `first-coin.png`. If a badge is ever renamed, either rename the
-file or set an explicit `img:` on that badge in `BADGES` (in `budget-app.jsx`).
+Display names are in the Minecraft advancement register: wry, short, a pun
+where one is available. The literal condition lives in each badge's `trig`
+field, so the joke never has to carry the meaning — `Ledgerdemain` is the name,
+"1,000 transactions" is the trigger.
 
-A missing file is safe: the app falls back to that badge's SVG glyph, so the
-set can be filled in one file at a time.
+## What can actually be earned
 
-## The 52 files
-
-### A. First steps
-```
-first-coin.png
-opening-act.png
-shape-of-it.png
-first-line.png
-somewhere-to-go.png
-tidy-drawer.png
-hundred-entries.png
-thousand-entries.png
-```
-
-### C. Green month
-```
-first-green.png
-twice-over.png
-three-deep.png
-half-a-year.png
-full-year-green.png
-two-years-green.png
-made-it-good.png
-half-kept.png
-ten-years-green.png
-```
-
-### D. Clean weeks
-```
-clean-sheet.png
-clean-sweep.png
-shielded.png
-quarter-clean.png
-half-year-clean.png
-year-of-truth.png
-quiet-week.png
-hundred-weeks.png
-never-missed.png
-```
-
-### E. Budgets
-```
-under-the-line.png
-three-months-held.png
-six-months-held.png
-twelve-months-held.png
-clean-board.png
-fully-ruled.png
-balanced-books.png
-the-whole-board.png
-```
-
-### F. Goals
-```
-funded.png
-closed-the-book.png
-three-closed.png
-ten-closed.png
-three-at-once.png
-ahead-of-schedule.png
-long-game.png
-```
-
-### G. Savings and cushion
-```
-first-pot.png
-one-month-deep.png
-three-months.png
-six-months.png
-the-thousand.png
-five-figures.png
-six-figures.png
-seven-figures.png
-doubled.png
-three-pots.png
-never-dipped.png
-```
-
-## Still to come
-
-This is families A, C, D, E, F and G — the first slice of the 158 in
-`MOTIVATION_SYSTEM.md`. The remaining 13 families land once that badge list is
-edited (§8), and they will follow the same naming rule.
+`BADGE_TESTS` in `budget-app.jsx` holds the computable triggers. A badge with
+no entry there is listed and drawn but can never be granted yet — visible as
+locked. That is deliberate: showing the whole collection is the point, and
+quietly hiding the undecidable ones would misrepresent how much is left.

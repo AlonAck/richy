@@ -1930,82 +1930,296 @@ function rankFor(level, c) {
 }
 
 // ── Badges ──────────────────────────────────────────────────────────────────
-// The first slice of the 158: families A, C, D, E, F and G. The remaining
-// families land once the list in MOTIVATION_SYSTEM.md has been edited (§8).
+// The full 157-badge collection from MOTIVATION_SYSTEM.md, generated from the
+// art pack's catalog.json so the table and the artwork can never drift apart:
+// `id` is both the badge key and its SVG filename.
 //
-// `reveals` is on every row from day one and is the reason this shipped before
-// the friends page: under Amendment 13 financial data is very likely מידע בעל
-// רגישות מיוחדת, so a badge that discloses net worth or income must be
-// individually opt-in on any shared profile, defaulted OFF, with the sharing
-// state stored per badge rather than as one global flag.
+// Names are deliberately in the Minecraft advancement register - wry, short, a
+// pun where a pun is available - because the alternative for a money app is a
+// list that reads like a compliance report. The trigger stays literal in
+// `trig`, so the joke never has to carry the meaning.
+//
+// `reveals` is on every row and is why this could ship before the friends page:
+// financial data is very likely sensitive personal information under Amendment
+// 13, so `wealth` badges - anything disclosing or implying net worth or income
+// - are individually opt-in on a shared profile and default to hidden.
 //   none   - reveals nothing about your money
 //   habit  - reveals consistency only
 //   wealth - reveals or strongly implies income or net worth
+var BADGE_FAMILIES = {
+  A: "First steps",         B: "Savings rate",       C: "Green month",
+  D: "Clean weeks",         E: "Budgets",            F: "Budget books",
+  G: "Savings and cushion", H: "Multipliers",        I: "Debt",
+  J: "Investing",           K: "Trips",              L: "Notes",
+  M: "Found money",         N: "Business",           O: "Household",
+  P: "Time served",         Q: "Restraint",          R: "Recovery",
+  S: "Mythic"
+};
+var BADGE_FAMILY_ORDER = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S"];
+
 var BADGES = [
-  // A. First steps
-  { id: "a1", fam: "A. First steps", name: "First Coin",      desc: "Logged your first transaction.",        r: "common",    reveals: "none",   glyph: "coins",     test: function(c) { return c.txCount >= 1; } },
-  { id: "a2", fam: "A. First steps", name: "Opening Act",     desc: "Recorded what you started with.",        r: "common",    reveals: "none",   glyph: "flag",      test: function(c) { return c.hasOpening; } },
-  { id: "a3", fam: "A. First steps", name: "Shape of It",     desc: "Sorted spending into your own categories.", r: "common", reveals: "none",   glyph: "categories", test: function(c) { return c.catCount >= 5; } },
-  { id: "a4", fam: "A. First steps", name: "First Line",      desc: "Set your first budget.",                 r: "common",    reveals: "none",   glyph: "budgets",   test: function(c) { return c.budgetCount >= 1; } },
-  { id: "a5", fam: "A. First steps", name: "Somewhere to Go", desc: "Opened your first budget book.",         r: "common",    reveals: "none",   glyph: "goals",     test: function(c) { return c.goalCount >= 1; } },
-  { id: "a6", fam: "A. First steps", name: "Tidy Drawer",     desc: "Gave a folder a job.",                   r: "common",    reveals: "none",   glyph: "folder",    test: function(c) { return c.folderRoles >= 1; } },
-  { id: "a7", fam: "A. First steps", name: "Hundred Entries", desc: "A hundred transactions logged by hand.", r: "uncommon",  reveals: "habit",  glyph: "note",      test: function(c) { return c.txCount >= 100; } },
-  { id: "a8", fam: "A. First steps", name: "Thousand Entries",desc: "A thousand. The ledger is a habit now.", r: "rare",      reveals: "habit",  glyph: "book",      test: function(c) { return c.txCount >= 1000; } },
-
-  // C. Green month
-  { id: "c1", fam: "C. Green month", name: "First Green",     desc: "One month that ended better than it started.", r: "uncommon", reveals: "habit", glyph: "leaf",   test: function(c) { return c.greenTotal >= 1; } },
-  { id: "c2", fam: "C. Green month", name: "Twice Over",      desc: "Two green months.",                      r: "uncommon",  reveals: "habit",  glyph: "leaf",      test: function(c) { return c.greenTotal >= 2; } },
-  { id: "c3", fam: "C. Green month", name: "Three Deep",      desc: "Three in a row. Not luck any more.",     r: "rare",      reveals: "habit",  glyph: "flame",     test: function(c) { return c.greenRun >= 3; } },
-  { id: "c4", fam: "C. Green month", name: "Half a Year",     desc: "Six consecutive green months.",          r: "epic",      reveals: "habit",  glyph: "flame",     test: function(c) { return c.greenRun >= 6; } },
-  { id: "c5", fam: "C. Green month", name: "Full Year Green", desc: "Twelve straight. The maximum in a year.", r: "legendary", reveals: "habit",  glyph: "crown",     test: function(c) { return c.greenRun >= 12; } },
-  { id: "c6", fam: "C. Green month", name: "Two Years Green", desc: "Twenty-four consecutive green months.",  r: "legendary", reveals: "habit",  glyph: "crown",     test: function(c) { return c.greenRun >= 24; } },
-  { id: "c7", fam: "C. Green month", name: "Made It Good",    desc: "A red month repaired by the next one.",  r: "rare",      reveals: "habit",  glyph: "tool",      test: function(c) { return c.repaired >= 1; } },
-  { id: "c8", fam: "C. Green month", name: "Half Kept",       desc: "A month where you kept half of what came in.", r: "epic", reveals: "wealth", glyph: "medal",   test: function(c) { return c.bestRate >= 50; } },
-  { id: "c9", fam: "C. Green month", name: "Ten Years Green", desc: "One hundred and twenty consecutive green months.", r: "mythic", reveals: "habit", glyph: "diamond", test: function(c) { return c.greenRun >= 120; } },
-
-  // D. Clean weeks
-  { id: "d1", fam: "D. Clean weeks", name: "Clean Sheet",     desc: "Confirmed your first week.",             r: "common",    reveals: "none",   glyph: "check",     test: function(c) { return c.cleanTotal >= 1; } },
-  { id: "d2", fam: "D. Clean weeks", name: "Clean Sweep",     desc: "Four clean weeks in a row.",             r: "uncommon",  reveals: "habit",  glyph: "calendar",  test: function(c) { return c.cleanRun >= 4; } },
-  { id: "d3", fam: "D. Clean weeks", name: "Shielded",        desc: "Banked your first shield.",              r: "uncommon",  reveals: "none",   glyph: "shield",    test: function(c) { return c.shieldsEarned >= 1; } },
-  { id: "d4", fam: "D. Clean weeks", name: "Quarter Clean",   desc: "Thirteen consecutive clean weeks.",      r: "rare",      reveals: "habit",  glyph: "calendar",  test: function(c) { return c.cleanRun >= 13; } },
-  { id: "d5", fam: "D. Clean weeks", name: "Half Year Clean", desc: "Twenty-six weeks of true books.",        r: "epic",      reveals: "habit",  glyph: "medal",     test: function(c) { return c.cleanRun >= 26; } },
-  { id: "d6", fam: "D. Clean weeks", name: "Year of Truth",   desc: "Fifty-two consecutive clean weeks.",     r: "legendary", reveals: "habit",  glyph: "crown",     test: function(c) { return c.cleanRun >= 52; } },
-  { id: "d7", fam: "D. Clean weeks", name: "Quiet Week",      desc: "A confirmed week with nothing to report.", r: "common",  reveals: "habit",  glyph: "droplet",   test: function(c) { return c.quietWeeks >= 1; } },
-  { id: "d8", fam: "D. Clean weeks", name: "Hundred Weeks",   desc: "A hundred weeks confirmed, in total.",   r: "epic",      reveals: "habit",  glyph: "book",      test: function(c) { return c.cleanTotal >= 100; } },
-  { id: "d9", fam: "D. Clean weeks", name: "Never Missed",    desc: "Two hundred and sixty weeks. Five years, unbroken.", r: "mythic", reveals: "habit", glyph: "diamond", test: function(c) { return c.cleanRun >= 260; } },
-
-  // E. Budgets
-  { id: "e1", fam: "E. Budgets", name: "Under the Line",      desc: "Held a budget for a whole month.",       r: "common",    reveals: "none",   glyph: "budgets",   test: function(c) { return c.budgetBest >= 1; } },
-  { id: "e2", fam: "E. Budgets", name: "Three Months Held",   desc: "One budget, three months, never over.",  r: "uncommon",  reveals: "habit",  glyph: "budgets",   test: function(c) { return c.budgetBest >= 3; } },
-  { id: "e3", fam: "E. Budgets", name: "Six Months Held",     desc: "Half a year inside the same line.",      r: "rare",      reveals: "habit",  glyph: "shield",    test: function(c) { return c.budgetBest >= 6; } },
-  { id: "e4", fam: "E. Budgets", name: "Twelve Months Held",  desc: "A budget kept for a full year.",         r: "epic",      reveals: "habit",  glyph: "medal",     test: function(c) { return c.budgetBest >= 12; } },
-  { id: "e5", fam: "E. Budgets", name: "Clean Board",         desc: "Every budget on track at once.",         r: "uncommon",  reveals: "none",   glyph: "check",     test: function(c) { return c.budgetCount >= 3 && c.budgetOnTrack === c.budgetCount; } },
-  { id: "e6", fam: "E. Budgets", name: "Fully Ruled",         desc: "Five budgets running at the same time.", r: "uncommon",  reveals: "none",   glyph: "budgets",   test: function(c) { return c.budgetCount >= 5; } },
-  { id: "e7", fam: "E. Budgets", name: "Balanced Books",      desc: "Every folder carrying a role.",          r: "rare",      reveals: "none",   glyph: "folder",    test: function(c) { return c.folderCount >= 3 && c.folderRoles === c.folderCount; } },
-  { id: "e8", fam: "E. Budgets", name: "The Whole Board",     desc: "Every budget held, for a year.",         r: "legendary", reveals: "habit",  glyph: "crown",     test: function(c) { return c.budgetCount >= 4 && c.budgetWorst >= 12; } },
-
-  // F. Goals
-  { id: "f1", fam: "F. Goals", name: "Funded",                desc: "Put the first shekel into a budget book.", r: "common",  reveals: "none",   glyph: "gift",      test: function(c) { return c.goalFunded >= 1; } },
-  { id: "f2", fam: "F. Goals", name: "Closed the Book",       desc: "Reached a goal in full.",                r: "uncommon",  reveals: "none",   glyph: "check",     test: function(c) { return c.goalsDone >= 1; } },
-  { id: "f3", fam: "F. Goals", name: "Three Closed",          desc: "Three budget books completed.",          r: "rare",      reveals: "habit",  glyph: "medal",     test: function(c) { return c.goalsDone >= 3; } },
-  { id: "f4", fam: "F. Goals", name: "Ten Closed",            desc: "Ten goals, all the way to the end.",     r: "epic",      reveals: "habit",  glyph: "trophy",    test: function(c) { return c.goalsDone >= 10; } },
-  { id: "f5", fam: "F. Goals", name: "Three at Once",         desc: "Three books open and all of them moving.", r: "uncommon", reveals: "none",  glyph: "goals",     test: function(c) { return c.goalsMoving >= 3; } },
-  { id: "f6", fam: "F. Goals", name: "Ahead of Schedule",     desc: "Closed a goal before its deadline.",     r: "rare",      reveals: "none",   glyph: "spark",     test: function(c) { return c.goalsEarly >= 1; } },
-  { id: "f7", fam: "F. Goals", name: "Long Game",             desc: "A goal you funded for two years straight.", r: "legendary", reveals: "habit", glyph: "crown",  test: function(c) { return c.goalLongest >= 24; } },
-
-  // G. Savings and cushion
-  { id: "g1", fam: "G. Savings and cushion", name: "First Pot",     desc: "Opened a savings pot.",            r: "common",    reveals: "none",   glyph: "coins",     test: function(c) { return c.potCount >= 1; } },
-  { id: "g2", fam: "G. Savings and cushion", name: "One Month Deep",desc: "A cushion worth a month of essentials.", r: "uncommon", reveals: "wealth", glyph: "shield", test: function(c) { return c.cushionMonths >= 1; } },
-  { id: "g3", fam: "G. Savings and cushion", name: "Three Months",  desc: "Three months of essentials, set aside.", r: "rare",  reveals: "wealth", glyph: "shield",   test: function(c) { return c.cushionMonths >= 3; } },
-  { id: "g4", fam: "G. Savings and cushion", name: "Six Months",    desc: "Half a year of runway.",           r: "epic",      reveals: "wealth", glyph: "shield",    test: function(c) { return c.cushionMonths >= 6; } },
-  { id: "g5", fam: "G. Savings and cushion", name: "The Thousand",  desc: "A thousand saved.",                r: "uncommon",  reveals: "wealth", glyph: "coins",     test: function(c) { return c.savTotal >= 1000; } },
-  { id: "g6", fam: "G. Savings and cushion", name: "Five Figures",  desc: "Ten thousand, held.",              r: "rare",      reveals: "wealth", glyph: "coins",     test: function(c) { return c.savTotal >= 10000; } },
-  { id: "g7", fam: "G. Savings and cushion", name: "Six Figures",   desc: "A hundred thousand in net worth.", r: "epic",      reveals: "wealth", glyph: "building",  test: function(c) { return c.netWorth >= 100000; } },
-  { id: "g8", fam: "G. Savings and cushion", name: "Seven Figures", desc: "A million.",                       r: "legendary", reveals: "wealth", glyph: "diamond",   test: function(c) { return c.netWorth >= 1000000; } },
-  { id: "g9", fam: "G. Savings and cushion", name: "Doubled",       desc: "Twice the net worth you opened with.", r: "epic",  reveals: "wealth", glyph: "up",        test: function(c) { return c.opening > 0 && c.netWorth >= c.opening * 2; } },
-  { id: "g10",fam: "G. Savings and cushion", name: "Three Pots",    desc: "Three pots, each with a job.",     r: "uncommon",  reveals: "none",   glyph: "folder",    test: function(c) { return c.potCount >= 3; } },
-  { id: "g11",fam: "G. Savings and cushion", name: "Never Dipped",  desc: "A year of saving without a withdrawal.", r: "epic", reveals: "habit", glyph: "lock",      test: function(c) { return c.potNoDipMonths >= 12; } }
+  { id: "a-01-opening-balance", fam: "A", name: "Taking Inventory", desc: "Every ledger starts with one honest number.", trig: "opening balance recorded", r: "common", reveals: "none", stage: 0 },
+  { id: "a-02-first-coin", fam: "A", name: "Loose Change", desc: "The Richest Man in Babylon started by tracking a single coin.", trig: "first transaction logged", r: "common", reveals: "none", stage: 0 },
+  { id: "a-03-named", fam: "A", name: "Name Tag", desc: "Richard knows what to call you.", trig: "nickname set", r: "common", reveals: "none", stage: 0 },
+  { id: "a-04-the-plan", fam: "A", name: "The Best Laid Plans", desc: "You answered the hard questions.", trig: "onboarding questionnaire completed", r: "common", reveals: "none", stage: 0 },
+  { id: "a-05-categorised", fam: "A", name: "Sorting Things Out", desc: "You made the app fit your life, not the other way round.", trig: "first custom category created", r: "common", reveals: "none", stage: 0 },
+  { id: "a-06-filed", fam: "A", name: "Everything In Its Place", desc: "A place for everything.", trig: "first folder created", r: "common", reveals: "none", stage: 0 },
+  { id: "a-07-books-open", fam: "A", name: "Open Book", desc: "Your first true week.", trig: "first Clean Week", r: "common", reveals: "habit", stage: 0 },
+  { id: "a-08-ledger-literate-stage-1", fam: "A", name: "Light Reading", desc: "Twenty-five entries. The habit is forming.", trig: "25 transactions", r: "common", reveals: "habit", stage: 1 },
+  { id: "a-09-hundred-coins-stage-2", fam: "A", name: "Pocket Change", desc: "One hundred entries. The habit has formed.", trig: "100 transactions", r: "uncommon", reveals: "habit", stage: 2 },
+  { id: "a-10-thousand-coins-stage-3", fam: "A", name: "Ledgerdemain", desc: "A thousand entries. This is who you are now.", trig: "1,000 transactions", r: "rare", reveals: "habit", stage: 3 },
+  { id: "a-11-ten-thousand-coins", fam: "A", name: "Bookkeeping It Real", desc: "Ten thousand. Richard is genuinely impressed.", trig: "10,000 transactions", r: "epic", reveals: "habit", stage: 0 },
+  { id: "b-01-pay-yourself-first-stage-1", fam: "B", name: "Skimming Off the Top", desc: "A tenth of what you earned stayed yours.", trig: "savings rate ≥ 10% in a P", r: "uncommon", reveals: "habit", stage: 1 },
+  { id: "b-02-pay-yourself-first-stage-2", fam: "B", name: "Taking a Cut", desc: "A fifth kept. That’s a real margin.", trig: "≥ 20% in a P", r: "rare", reveals: "habit", stage: 2 },
+  { id: "b-03-pay-yourself-first-stage-3", fam: "B", name: "Third Time's the Charm", desc: "Nearly a third. Very few people manage this.", trig: "≥ 30% in a P", r: "epic", reveals: "habit", stage: 3 },
+  { id: "b-04-half-of-it", fam: "B", name: "Better Half", desc: "You kept half of everything you earned.", trig: "≥ 50% in a P", r: "legendary", reveals: "habit", stage: 0 },
+  { id: "b-05-the-monk", fam: "B", name: "Vow of Poverty", desc: "Seventy percent. We had to check the maths twice.", trig: "≥ 70% in a P", r: "mythic", reveals: "habit", stage: 0 },
+  { id: "b-06-steady-hand-stage-1", fam: "B", name: "Steady as She Goes", desc: "Three periods above your own bar.", trig: "3 consecutive P above target", r: "uncommon", reveals: "habit", stage: 1 },
+  { id: "b-07-steady-hand-stage-2", fam: "B", name: "Creature of Habit", desc: "Six periods. Not luck any more.", trig: "6 consecutive", r: "rare", reveals: "habit", stage: 2 },
+  { id: "b-08-steady-hand-stage-3", fam: "B", name: "Clockwork", desc: "Twelve periods. A full year of holding the line.", trig: "12 consecutive", r: "epic", reveals: "habit", stage: 3 },
+  { id: "b-09-the-unbroken", fam: "B", name: "Unbreakable III", desc: "Two years without a single miss.", trig: "24 consecutive", r: "mythic", reveals: "habit", stage: 0 },
+  { id: "b-10-better-than-before-stage-1", fam: "B", name: "New Personal Best", desc: "You beat your own average. That’s the only race.", trig: "savings rate +5pp vs own trailing 3-P average", r: "uncommon", reveals: "habit", stage: 1 },
+  { id: "b-11-better-than-before-stage-2", fam: "B", name: "Personal Best, Again", desc: "Ten points better than the you of three months ago.", trig: "+10pp", r: "rare", reveals: "habit", stage: 2 },
+  { id: "b-12-better-than-before-stage-3", fam: "B", name: "Lapping Yourself", desc: "Twenty points. You changed something real.", trig: "+20pp", r: "epic", reveals: "habit", stage: 3 },
+  { id: "b-13-from-nothing", fam: "B", name: "From Zero to Hero", desc: "You went from saving nothing to saving something.", trig: "first P with positive savings rate after ≥3 P at ≤0", r: "rare", reveals: "habit", stage: 0 },
+  { id: "b-14-the-raise-you-gave-yourself", fam: "B", name: "Asked the Boss for a Raise", desc: "You cut enough to equal a pay rise, without one.", trig: "expenses down ≥10% over 3 P, income flat or lower", r: "rare", reveals: "habit", stage: 0 },
+  { id: "c-01-first-green", fam: "C", name: "It's Not Easy Being Green", desc: "You finished a period in the green.", trig: "1 green month", r: "common", reveals: "habit", stage: 0 },
+  { id: "c-02-two-in-a-row", fam: "C", name: "Two by Two", desc: "Twice is a pattern.", trig: "2 consecutive", r: "uncommon", reveals: "habit", stage: 0 },
+  { id: "c-03-quarter-green-stage-1", fam: "C", name: "Hat Trick", desc: "Three straight periods in the black.", trig: "3 consecutive", r: "uncommon", reveals: "habit", stage: 1 },
+  { id: "c-04-half-year-green-stage-2", fam: "C", name: "Six Feet Under Budget", desc: "Six months. Halfway to a perfect year.", trig: "6 consecutive", r: "rare", reveals: "habit", stage: 2 },
+  { id: "c-05-full-year-green-stage-3", fam: "C", name: "Evergreen", desc: "Twelve consecutive green months.", trig: "12 consecutive", r: "epic", reveals: "habit", stage: 3 },
+  { id: "c-06-two-years-green", fam: "C", name: "Perennial", desc: "Twenty-four. This is rarefied air.", trig: "24 consecutive", r: "legendary", reveals: "habit", stage: 0 },
+  { id: "c-07-five-years-green", fam: "C", name: "Old Growth", desc: "Sixty consecutive green months.", trig: "60 consecutive", r: "mythic", reveals: "habit", stage: 0 },
+  { id: "c-08-repaired", fam: "C", name: "Mending", desc: "A red month, made good the next. It still counts.", trig: "streak stitched via “make it good”", r: "rare", reveals: "habit", stage: 0 },
+  { id: "c-09-back-on-the-horse", fam: "C", name: "Respawn", desc: "You lost a streak and started another straight away.", trig: "new green month within 1 P of losing a streak ≥3", r: "uncommon", reveals: "habit", stage: 0 },
+  { id: "d-01-clean-run-stage-1", fam: "D", name: "Spring Cleaning", desc: "Four true weeks in a row.", trig: "4 consecutive Clean Weeks", r: "common", reveals: "habit", stage: 1 },
+  { id: "d-02-clean-run-stage-2", fam: "D", name: "Squeaky Clean", desc: "Twelve weeks of honest books.", trig: "12 consecutive", r: "uncommon", reveals: "habit", stage: 2 },
+  { id: "d-03-clean-run-stage-3", fam: "D", name: "Spotless Record", desc: "Twenty-six weeks. Half a year of the truth.", trig: "26 consecutive", r: "rare", reveals: "habit", stage: 3 },
+  { id: "d-04-year-of-truth", fam: "D", name: "The Whole Truth", desc: "Fifty-two consecutive clean weeks.", trig: "52 consecutive", r: "epic", reveals: "habit", stage: 0 },
+  { id: "d-05-shieldless", fam: "D", name: "Shields Down", desc: "Half a year clean, and you never once needed a shield.", trig: "26 consecutive with 0 shields spent", r: "epic", reveals: "habit", stage: 0 },
+  { id: "d-06-same-day-scribe", fam: "D", name: "Same Day Delivery", desc: "Thirty transactions logged the day they happened.", trig: "30 tx logged on their own date", r: "uncommon", reveals: "habit", stage: 0 },
+  { id: "d-07-no-ghosts", fam: "D", name: "Ghostbuster", desc: "A whole period, nothing uncategorised.", trig: "0 uncategorised tx in a P", r: "uncommon", reveals: "habit", stage: 0 },
+  { id: "d-08-nothing-hidden", fam: "D", name: "Nothing to See Here", desc: "Six periods, every transaction categorised, every week confirmed.", trig: "6 P with 0 uncategorised + all weeks clean", r: "rare", reveals: "habit", stage: 0 },
+  { id: "e-01-first-limit", fam: "E", name: "Drawing the Line", desc: "You told your money where to go.", trig: "first budget created", r: "common", reveals: "none", stage: 0 },
+  { id: "e-02-under-the-line-stage-1", fam: "E", name: "Toeing the Line", desc: "Every budget, under, for a whole period.", trig: "1 P under all caps", r: "uncommon", reveals: "habit", stage: 1 },
+  { id: "e-03-under-the-line-stage-2", fam: "E", name: "Holding the Line", desc: "Three periods, nothing over.", trig: "3 consecutive", r: "rare", reveals: "habit", stage: 2 },
+  { id: "e-04-under-the-line-stage-3", fam: "E", name: "The Line Holds", desc: "Six periods. Every limit, every time.", trig: "6 consecutive", r: "epic", reveals: "habit", stage: 3 },
+  { id: "e-05-the-whole-board", fam: "E", name: "Sweeping the Board", desc: "A full year without a single budget overrun.", trig: "12 consecutive", r: "legendary", reveals: "habit", stage: 0 },
+  { id: "e-06-tight-rope", fam: "E", name: "Tightrope Walker", desc: "Within two percent of the cap. Under it.", trig: "finished a P within 2% of a cap, not over", r: "rare", reveals: "habit", stage: 0 },
+  { id: "e-07-six-under", fam: "E", name: "Six Under Par", desc: "Six budgets, all under, same period.", trig: "≥6 budgets under cap in one P", r: "uncommon", reveals: "habit", stage: 0 },
+  { id: "e-08-folder-discipline", fam: "E", name: "Folder Knows Best", desc: "The folder held — and so did everything inside it.", trig: "folder budget met with all child categories under", r: "rare", reveals: "habit", stage: 0 },
+  { id: "e-09-cut-it-down-stage-1", fam: "E", name: "Trimming the Fat", desc: "A tenth off a category, against your own average.", trig: "category spend −10% vs own 3-P average", r: "uncommon", reveals: "habit", stage: 1 },
+  { id: "e-10-cut-it-down-stage-2", fam: "E", name: "Deep Cuts", desc: "A quarter off.", trig: "−25%", r: "rare", reveals: "habit", stage: 2 },
+  { id: "e-11-cut-it-down-stage-3", fam: "E", name: "Halving It All", desc: "Half. You genuinely changed a habit.", trig: "−50%", r: "epic", reveals: "habit", stage: 3 },
+  { id: "e-12-the-big-cut", fam: "E", name: "Slash and Burn", desc: "Total spending down a quarter, and your income didn’t drop.", trig: "total spend −25% vs own 6-P average, income ≥ flat", r: "epic", reveals: "habit", stage: 0 },
+  { id: "f-01-first-book", fam: "F", name: "Chapter One", desc: "A goal with a deadline is a plan, not a wish.", trig: "first budget book created", r: "common", reveals: "none", stage: 0 },
+  { id: "f-02-goal-getter-stage-1", fam: "F", name: "Go Getter", desc: "One goal, finished.", trig: "1 goal completed", r: "uncommon", reveals: "none", stage: 1 },
+  { id: "f-03-goal-getter-stage-2", fam: "F", name: "Three's Company", desc: "Three goals, finished.", trig: "3 completed", r: "rare", reveals: "none", stage: 2 },
+  { id: "f-04-goal-getter-stage-3", fam: "F", name: "Perfect Ten", desc: "Ten goals. You finish what you start.", trig: "10 completed", r: "epic", reveals: "none", stage: 3 },
+  { id: "f-05-twenty-books", fam: "F", name: "Shelf Life", desc: "Twenty completed goals.", trig: "20 completed", r: "legendary", reveals: "none", stage: 0 },
+  { id: "f-06-ahead-of-schedule", fam: "F", name: "Ahead of the Curve", desc: "Done before the deadline.", trig: "goal completed before its deadline", r: "uncommon", reveals: "none", stage: 0 },
+  { id: "f-07-way-ahead", fam: "F", name: "Time to Spare", desc: "Done in half the time you gave yourself.", trig: "completed in ≤50% of planned span", r: "rare", reveals: "none", stage: 0 },
+  { id: "f-08-never-dipped", fam: "F", name: "Look, Don't Touch", desc: "Funded to the finish, never once raided.", trig: "goal completed with 0 withdrawals", r: "rare", reveals: "none", stage: 0 },
+  { id: "f-09-three-at-once", fam: "F", name: "Juggling Act", desc: "Three goals funded in parallel.", trig: "3 goals simultaneously ≥50% funded", r: "rare", reveals: "none", stage: 0 },
+  { id: "f-10-big-book", fam: "F", name: "Heavy Reading", desc: "A goal worth three months of your income.", trig: "goal completed, target ≥ 3× monthly income", r: "epic", reveals: "wealth", stage: 0 },
+  { id: "f-11-the-dream", fam: "F", name: "The Long Read", desc: "A goal worth a year of your income. Finished.", trig: "goal completed, target ≥ 12× monthly income", r: "legendary", reveals: "wealth", stage: 0 },
+  { id: "g-01-first-pot", fam: "G", name: "Piggy Bank", desc: "Money you’ve decided not to touch.", trig: "first savings account opened", r: "common", reveals: "none", stage: 0 },
+  { id: "g-02-thousand-stage-1", fam: "G", name: "Grand Opening", desc: "A thousand set aside.", trig: "total savings ≥ 1,000", r: "common", reveals: "wealth", stage: 1 },
+  { id: "g-03-five-figures-stage-2", fam: "G", name: "Five Digits", desc: "Ten thousand.", trig: "≥ 10,000", r: "uncommon", reveals: "wealth", stage: 2 },
+  { id: "g-04-six-figures-stage-3", fam: "G", name: "Six of the Best", desc: "A hundred thousand.", trig: "≥ 100,000", r: "rare", reveals: "wealth", stage: 3 },
+  { id: "g-05-seven-figures", fam: "G", name: "Lucky Seven", desc: "A million, set aside.", trig: "≥ 1,000,000", r: "legendary", reveals: "wealth", stage: 0 },
+  { id: "g-06-cushion-stage-1", fam: "G", name: "Soft Landing", desc: "One month of essentials, covered.", trig: "savings ≥ 1× monthly essentials", r: "uncommon", reveals: "wealth", stage: 1 },
+  { id: "g-07-cushion-stage-2", fam: "G", name: "Sleeping Soundly", desc: "Three months. You can absorb a shock.", trig: "≥ 3×", r: "rare", reveals: "wealth", stage: 2 },
+  { id: "g-08-cushion-stage-3", fam: "G", name: "Nothing Can Touch Me", desc: "Six months. You can absorb a bad year.", trig: "≥ 6×", r: "epic", reveals: "wealth", stage: 3 },
+  { id: "g-09-the-fortress", fam: "G", name: "Fort Knox", desc: "Twelve months of essentials in reserve.", trig: "≥ 12×", r: "legendary", reveals: "wealth", stage: 0 },
+  { id: "g-10-untouched", fam: "G", name: "Hands Off", desc: "Six periods without a single withdrawal.", trig: "6 P, 0 savings withdrawals", r: "rare", reveals: "habit", stage: 0 },
+  { id: "g-11-automatic", fam: "G", name: "Set and Forget", desc: "Twelve periods, funded every single one.", trig: "12 consecutive P with a savings contribution", r: "rare", reveals: "habit", stage: 0 },
+  { id: "h-01-the-first-extra", fam: "H", name: "Above Water", desc: "You have more than you started with.", trig: "net worth > opening balance, first time", r: "common", reveals: "wealth", stage: 0 },
+  { id: "h-02-doubled-stage-1", fam: "H", name: "Double or Nothing", desc: "Twice what you started with.", trig: "net worth ≥ 2× opening balance", r: "rare", reveals: "wealth", stage: 1 },
+  { id: "h-03-tripled-stage-2", fam: "H", name: "Triple Threat", desc: "Three times over.", trig: "≥ 3×", r: "epic", reveals: "wealth", stage: 2 },
+  { id: "h-04-fivefold-stage-3", fam: "H", name: "High Five", desc: "Five times what you walked in with.", trig: "≥ 5×", r: "legendary", reveals: "wealth", stage: 3 },
+  { id: "h-05-tenfold", fam: "H", name: "Ten Times the Charm", desc: "Ten times. Richard has removed his hat.", trig: "≥ 10×", r: "mythic", reveals: "wealth", stage: 0 },
+  { id: "h-06-hundredfold", fam: "H", name: "How Did We Get Here?", desc: "One hundred times your opening balance.", trig: "≥ 100×", r: "mythic", reveals: "wealth", stage: 0 },
+  { id: "h-07-held-the-line", fam: "H", name: "Steady Ground", desc: "Twelve periods and you never once dropped below where you began.", trig: "net worth ≥ opening balance for 12 consecutive P", r: "rare", reveals: "wealth", stage: 0 },
+  { id: "i-01-faced-it", fam: "I", name: "Facing the Music", desc: "Writing it down is the hardest part.", trig: "first debt logged", r: "common", reveals: "habit", stage: 0 },
+  { id: "i-02-chipped-stage-1", fam: "I", name: "Chip Off the Old Block", desc: "A tenth of it, gone.", trig: "10% of a debt repaid", r: "common", reveals: "habit", stage: 1 },
+  { id: "i-03-chipped-stage-2", fam: "I", name: "Halfway Out", desc: "Halfway.", trig: "50% repaid", r: "uncommon", reveals: "habit", stage: 2 },
+  { id: "i-04-chipped-stage-3", fam: "I", name: "Cleared the Slate", desc: "One debt, gone entirely.", trig: "a debt cleared to zero", r: "rare", reveals: "habit", stage: 3 },
+  { id: "i-05-debt-free", fam: "I", name: "Free and Clear", desc: "Nothing owed. Nothing at all.", trig: "all tracked debts at zero", r: "epic", reveals: "wealth", stage: 0 },
+  { id: "i-06-avalanche", fam: "I", name: "Downhill From Here", desc: "You killed the expensive one first. That’s the right order.", trig: "highest-APR debt cleared first", r: "rare", reveals: "habit", stage: 0 },
+  { id: "i-07-snowball", fam: "I", name: "Snowball's Chance", desc: "Three debts cleared.", trig: "3 debts cleared", r: "rare", reveals: "habit", stage: 0 },
+  { id: "i-08-crossed-zero", fam: "I", name: "Back From the Brink", desc: "Your net worth turned positive.", trig: "net worth crossed from negative to positive", r: "epic", reveals: "wealth", stage: 0 },
+  { id: "i-09-interest-slayer", fam: "I", name: "Compound Fracture", desc: "Thousands you’ll never pay in interest.", trig: "≥5,000 projected interest saved vs minimums", r: "epic", reveals: "wealth", stage: 0 },
+  { id: "i-10-never-again", fam: "I", name: "Fool Me Twice", desc: "Twelve periods and not one new debt.", trig: "12 consecutive P, no new debt added", r: "rare", reveals: "habit", stage: 0 },
+  { id: "j-01-opened-the-door", fam: "J", name: "Foot in the Door", desc: "You started learning how this works.", trig: "investing account created", r: "common", reveals: "none", stage: 0 },
+  { id: "j-02-learned-it", fam: "J", name: "Read the Manual", desc: "All six lessons, read.", trig: "all Basics + Core lessons completed", r: "uncommon", reveals: "none", stage: 0 },
+  { id: "j-03-the-long-game-stage-1", fam: "J", name: "Playing the Long Game", desc: "Six periods, no panic.", trig: "held 6 P with no sells", r: "uncommon", reveals: "habit", stage: 1 },
+  { id: "j-04-the-long-game-stage-2", fam: "J", name: "Patience Is a Virtue", desc: "A year of sitting still.", trig: "12 P", r: "rare", reveals: "habit", stage: 2 },
+  { id: "j-05-the-long-game-stage-3", fam: "J", name: "Time in the Market", desc: "Three years. Patience is the whole strategy.", trig: "36 P", r: "epic", reveals: "habit", stage: 3 },
+  { id: "j-06-steady-contributor", fam: "J", name: "Drip Feed", desc: "Twelve periods, contributed every one.", trig: "12 consecutive P with a contribution", r: "rare", reveals: "habit", stage: 0 },
+  { id: "j-07-didn-t-flinch", fam: "J", name: "Not Today, Thank You", desc: "It dropped ten percent and you didn’t move.", trig: "held through a P with ≥10% portfolio decline", r: "epic", reveals: "habit", stage: 0 },
+  { id: "k-01-first-trip", fam: "K", name: "Adventuring Time", desc: "A holiday with a plan attached.", trig: "first trip created", r: "common", reveals: "none", stage: 0 },
+  { id: "k-02-under-budget-abroad", fam: "K", name: "Hot Tourist Destinations", desc: "You came home under budget.", trig: "trip completed under total budget", r: "rare", reveals: "none", stage: 0 },
+  { id: "k-03-half-the-trip", fam: "K", name: "Half Price Holiday", desc: "Half the budget, all of the holiday.", trig: "trip completed at ≤50% of budget", r: "epic", reveals: "none", stage: 0 },
+  { id: "k-04-souvenir-discipline", fam: "K", name: "No Fridge Magnets", desc: "Every category, inside its split.", trig: "trip completed, all categories under", r: "rare", reveals: "none", stage: 0 },
+  { id: "k-05-the-grand-tour", fam: "K", name: "World Tour", desc: "Five trips. Five times under budget.", trig: "5 trips completed, all under", r: "legendary", reveals: "none", stage: 0 },
+  { id: "l-01-kept-track", fam: "L", name: "I O U", desc: "You wrote it down instead of hoping you’d remember.", trig: "first note created", r: "common", reveals: "none", stage: 0 },
+  { id: "l-02-settled-up", fam: "L", name: "We're Square", desc: "Squared away.", trig: "first note settled", r: "common", reveals: "none", stage: 0 },
+  { id: "l-03-clean-slate-stage-1", fam: "L", name: "All Square", desc: "Five settled.", trig: "5 notes settled", r: "uncommon", reveals: "none", stage: 1 },
+  { id: "l-04-clean-slate-stage-2", fam: "L", name: "Nothing Between Us", desc: "Twenty-five settled.", trig: "25 settled", r: "rare", reveals: "none", stage: 2 },
+  { id: "l-05-clean-slate-stage-3", fam: "L", name: "The Honest Broker", desc: "A hundred. Nobody keeps books like you.", trig: "100 settled", r: "epic", reveals: "none", stage: 3 },
+  { id: "l-06-nobody-owes-nobody", fam: "L", name: "Best Friends Forever", desc: "A whole period with nothing outstanding, either way.", trig: "0 open notes for a full P", r: "uncommon", reveals: "none", stage: 0 },
+  { id: "l-07-the-bank-of-you", fam: "L", name: "Bank of Mum and Dad", desc: "Five thousand lent and returned.", trig: "≥5,000 repaid to you across settled notes", r: "rare", reveals: "wealth", stage: 0 },
+  { id: "m-01-first-find", fam: "M", name: "Buried Treasure", desc: "Richard found money and you went and got it.", trig: "first Found Money item acted on", r: "common", reveals: "habit", stage: 0 },
+  { id: "m-02-treasure-hunter-stage-1", fam: "M", name: "Finders Keepers", desc: "Five hundred recovered.", trig: "foundMoney.tally ≥ 500", r: "uncommon", reveals: "wealth", stage: 1 },
+  { id: "m-03-treasure-hunter-stage-2", fam: "M", name: "X Marks the Spot", desc: "Five thousand recovered.", trig: "≥ 5,000", r: "rare", reveals: "wealth", stage: 2 },
+  { id: "m-04-treasure-hunter-stage-3", fam: "M", name: "Sunken Treasure", desc: "Twenty-five thousand, found in your own accounts.", trig: "≥ 25,000", r: "epic", reveals: "wealth", stage: 3 },
+  { id: "m-05-subscription-slayer", fam: "M", name: "Unsubscribed", desc: "Five recurring charges, cancelled.", trig: "5 recurring charges ended after being surfaced", r: "rare", reveals: "habit", stage: 0 },
+  { id: "m-06-thought-it-through", fam: "M", name: "Second Thoughts", desc: "You took a decision to a verdict instead of a vibe.", trig: "first Big Decision resolved", r: "common", reveals: "habit", stage: 0 },
+  { id: "m-07-walked-away", fam: "M", name: "The One That Got Away", desc: "The maths said no, and you listened.", trig: "declined a purchase after an unaffordable verdict", r: "rare", reveals: "habit", stage: 0 },
+  { id: "m-08-ten-decisions", fam: "M", name: "Decision Fatigue", desc: "Ten big calls, all thought through.", trig: "10 decisions resolved", r: "rare", reveals: "habit", stage: 0 },
+  { id: "n-01-open-for-business", fam: "N", name: "Shop Front", desc: "Business money, kept separate. Finally.", trig: "business account created", r: "common", reveals: "none", stage: 0 },
+  { id: "n-02-in-the-black", fam: "N", name: "Black Ink", desc: "A profitable month.", trig: "business P with positive profit", r: "uncommon", reveals: "wealth", stage: 0 },
+  { id: "n-03-runway-stage-1", fam: "N", name: "Cleared for Takeoff", desc: "Three months of runway.", trig: "runway ≥ 3 months", r: "uncommon", reveals: "wealth", stage: 1 },
+  { id: "n-04-runway-stage-2", fam: "N", name: "Gaining Altitude", desc: "Six months. You can plan now.", trig: "≥ 6 months", r: "rare", reveals: "wealth", stage: 2 },
+  { id: "n-05-runway-stage-3", fam: "N", name: "Cruising Altitude", desc: "A year of runway.", trig: "≥ 12 months", r: "epic", reveals: "wealth", stage: 3 },
+  { id: "n-06-tax-pot-ready", fam: "N", name: "Taxman Cometh", desc: "The tax bill holds no fear.", trig: "tax pot ≥ estimated liability", r: "rare", reveals: "wealth", stage: 0 },
+  { id: "n-07-paid-in-full", fam: "N", name: "Everybody Paid", desc: "Every invoice collected, nothing overdue.", trig: "full P, 0 overdue invoices, all collected", r: "rare", reveals: "habit", stage: 0 },
+  { id: "n-08-doubled-the-business", fam: "N", name: "Growth Spurt", desc: "Twice the revenue of your first full month.", trig: "revenue ≥ 2× first full month", r: "epic", reveals: "wealth", stage: 0 },
+  { id: "o-01-two-purses", fam: "O", name: "Shared Wallet", desc: "Money, shared honestly.", trig: "joined a household", r: "common", reveals: "none", stage: 0 },
+  { id: "o-02-aligned", fam: "O", name: "With Our Powers Combined", desc: "Both of you, logging, same period.", trig: "both members logged tx in one P", r: "uncommon", reveals: "habit", stage: 0 },
+  { id: "o-03-green-together", fam: "O", name: "Team Green", desc: "A green month as a household.", trig: "household green month", r: "rare", reveals: "habit", stage: 0 },
+  { id: "o-04-a-year-together", fam: "O", name: "Happy Anniversary", desc: "Twelve green months, together.", trig: "12 consecutive household green months", r: "legendary", reveals: "habit", stage: 0 },
+  { id: "p-01-one-month-in", fam: "P", name: "New Kid", desc: "Thirty days.", trig: "30 days since signup", r: "common", reveals: "none", stage: 0 },
+  { id: "p-02-one-season", fam: "P", name: "Seasoned", desc: "Ninety days.", trig: "90 days", r: "common", reveals: "none", stage: 0 },
+  { id: "p-03-half-a-year", fam: "P", name: "Halfway Habit", desc: "Six months with Richy.", trig: "180 days", r: "uncommon", reveals: "none", stage: 0 },
+  { id: "p-04-one-year", fam: "P", name: "Year One", desc: "A full year.", trig: "365 days", r: "rare", reveals: "none", stage: 0 },
+  { id: "p-05-two-years", fam: "P", name: "The Sequel", desc: "Two years.", trig: "730 days", r: "epic", reveals: "none", stage: 0 },
+  { id: "p-06-five-years", fam: "P", name: "Five Year Plan", desc: "Five years of honest books.", trig: "1,825 days", r: "legendary", reveals: "none", stage: 0 },
+  { id: "p-07-ten-years", fam: "P", name: "Ten Year Veteran", desc: "A decade. Richard has no words.", trig: "3,650 days", r: "mythic", reveals: "none", stage: 0 },
+  { id: "p-08-early-earner", fam: "P", name: "Was Here First", desc: "You were here before the badges were.", trig: "holds ≥1 backfilled badge", r: "rare", reveals: "none", stage: 0 },
+  { id: "q-01-slept-on-it", fam: "Q", name: "Sleep On It", desc: "You waited a week. The urge passed.", trig: "≥7 days between flagging a large purchase and deciding", r: "uncommon", reveals: "habit", stage: 0 },
+  { id: "q-02-said-no", fam: "Q", name: "Just Say No", desc: "The best purchase is sometimes the one you don’t make.", trig: "3 flagged purchases declined", r: "rare", reveals: "habit", stage: 0 },
+  { id: "q-03-the-empty-cart", fam: "Q", name: "Abandoned Cart", desc: "A whole period, nothing spent in a category you normally can’t resist.", trig: "0 tx in a category with ≥3-P spending history", r: "uncommon", reveals: "habit", stage: 0 },
+  { id: "q-04-quiet-quarter", fam: "Q", name: "Radio Silence", desc: "Three periods, no impulse spending at all.", trig: "3 consecutive P with 0 flagged impulse tx", r: "rare", reveals: "habit", stage: 0 },
+  { id: "r-01-came-back", fam: "R", name: "Long Time No See", desc: "You came back. That’s the hard part.", trig: "logged a tx after ≥30 days away", r: "uncommon", reveals: "habit", stage: 0 },
+  { id: "r-02-caught-up", fam: "R", name: "Playing Catch-Up", desc: "A month of gaps, filled in honestly.", trig: "backfilled ≥30 days of missing tx", r: "uncommon", reveals: "habit", stage: 0 },
+  { id: "r-03-rebuilt", fam: "R", name: "Rise From the Ashes", desc: "Three red months, and then you turned it around.", trig: "green month after ≥3 consecutive red", r: "epic", reveals: "habit", stage: 0 },
+  { id: "r-04-out-of-the-hole", fam: "R", name: "Climbing Out", desc: "You climbed all the way back.", trig: "net worth returns to its previous peak after ≥25% drawdown", r: "epic", reveals: "wealth", stage: 0 },
+  { id: "r-05-second-wind", fam: "R", name: "Second Wind", desc: "A new streak, longer than the one you lost.", trig: "streak exceeds a previously broken one", r: "rare", reveals: "habit", stage: 0 },
+  { id: "s-01-the-perfect-period", fam: "S", name: "Flawless Victory", desc: "Every budget under. Half your income saved. Nothing uncategorised. One period, everything right.", trig: "all caps under + savings rate ≥50% + 0 uncategorised in one P", r: "mythic", reveals: "habit", stage: 0 },
+  { id: "s-02-perfect-year", fam: "S", name: "Untouchable", desc: "Twelve green months. Fifty-two clean weeks. Not one budget overrun.", trig: "12 green + 52 clean + 0 overruns in 12 P", r: "mythic", reveals: "habit", stage: 0 },
+  { id: "s-03-the-ascetic", fam: "S", name: "Bare Necessities", desc: "You lived on a tenth of what you earned.", trig: "expenses ≤10% of income for a full P", r: "mythic", reveals: "habit", stage: 0 },
+  { id: "s-04-ghost-month", fam: "S", name: "Barely There", desc: "A whole month, essentials only. Nothing else.", trig: "full P with 0 discretionary-category spend", r: "legendary", reveals: "habit", stage: 0 },
+  { id: "s-05-nothing-left-to-find", fam: "S", name: "Richard Gives Up", desc: "Twelve periods. No overruns. And Richard could not find you a single wasted shekel.", trig: "12 consecutive P, 0 overruns, 0 open Found Money findings", r: "mythic", reveals: "habit", stage: 0 },
+  { id: "s-06-millionaire-s-ledger", fam: "S", name: "Seven Figures, Still Counting", desc: "Seven figures — and still logging every coin.", trig: "net worth ≥ 1,000,000 in a green month", r: "legendary", reveals: "wealth", stage: 0 },
+  { id: "s-07-ten-years-green", fam: "S", name: "The Long Green", desc: "One hundred and twenty consecutive green months.", trig: "120 consecutive", r: "mythic", reveals: "habit", stage: 0 },
+  { id: "s-08-the-babylonian", fam: "S", name: "The End?", desc: "Level 50, every gate passed. There is nothing left to earn.", trig: "max level + all rank gates", r: "mythic", reveals: "wealth", stage: 0 },
 ];
+
+// Which badges Richy can actually decide yet. A badge with no entry here is
+// real, listed and drawn - it simply cannot be earned until its trigger is
+// computable, which is honest in a way that quietly dropping it from the grid
+// would not be. Everything below reads the context built in motivSnapshot().
+var BADGE_TESTS = {
+  "a-01-opening-balance":            function(c) { return c.hasOpening; },
+  "a-02-first-coin":                 function(c) { return c.txCount >= 1; },
+  "a-04-the-plan":                   function(c) { return c.onboarded; },
+  "a-05-categorised":                function(c) { return c.catCount >= 5; },
+  "a-06-filed":                      function(c) { return c.folderCount >= 1; },
+  "a-07-books-open":                 function(c) { return c.cleanTotal >= 1; },
+  "a-08-ledger-literate-stage-1":    function(c) { return c.txCount >= 25; },
+  "a-09-hundred-coins-stage-2":      function(c) { return c.txCount >= 100; },
+  "a-10-thousand-coins-stage-3":     function(c) { return c.txCount >= 1000; },
+  "a-11-ten-thousand-coins":         function(c) { return c.txCount >= 10000; },
+
+  "b-01-pay-yourself-first-stage-1": function(c) { return c.bestRate >= 10; },
+  "b-02-pay-yourself-first-stage-2": function(c) { return c.bestRate >= 20; },
+  "b-03-pay-yourself-first-stage-3": function(c) { return c.bestRate >= 30; },
+  "b-04-half-of-it":                 function(c) { return c.bestRate >= 50; },
+  "b-05-the-monk":                   function(c) { return c.bestRate >= 70; },
+  "b-06-steady-hand-stage-1":        function(c) { return c.greenRun >= 3; },
+  "b-07-steady-hand-stage-2":        function(c) { return c.greenRun >= 6; },
+  "b-08-steady-hand-stage-3":        function(c) { return c.greenRun >= 12; },
+  "b-09-the-unbroken":               function(c) { return c.greenRun >= 24; },
+
+  "c-01-first-green":                function(c) { return c.greenTotal >= 1; },
+  "c-02-two-in-a-row":               function(c) { return c.greenRun >= 2; },
+  "c-03-quarter-green-stage-1":      function(c) { return c.greenRun >= 3; },
+  "c-04-half-year-green-stage-2":    function(c) { return c.greenRun >= 6; },
+  "c-05-full-year-green-stage-3":    function(c) { return c.greenRun >= 12; },
+  "c-06-two-years-green":            function(c) { return c.greenRun >= 24; },
+  "c-07-five-years-green":           function(c) { return c.greenRun >= 60; },
+  "c-08-repaired":                   function(c) { return c.repaired >= 1; },
+
+  "d-01-clean-run-stage-1":          function(c) { return c.cleanRun >= 4; },
+  "d-02-clean-run-stage-2":          function(c) { return c.cleanRun >= 12; },
+  "d-03-clean-run-stage-3":          function(c) { return c.cleanRun >= 26; },
+  "d-04-year-of-truth":              function(c) { return c.cleanRun >= 52; },
+  "d-05-shieldless":                 function(c) { return c.cleanRun >= 26 && c.shieldsSpent === 0; },
+
+  "e-01-first-limit":                function(c) { return c.budgetCount >= 1; },
+  "e-02-under-the-line-stage-1":     function(c) { return c.budgetWorst >= 1; },
+  "e-03-under-the-line-stage-2":     function(c) { return c.budgetWorst >= 3; },
+  "e-04-under-the-line-stage-3":     function(c) { return c.budgetWorst >= 6; },
+  "e-05-the-whole-board":            function(c) { return c.budgetWorst >= 12; },
+  "e-07-six-under":                  function(c) { return c.budgetOnTrack >= 6; },
+  "e-08-folder-discipline":          function(c) { return c.folderCount >= 3 && c.folderRoles === c.folderCount; },
+
+  "f-01-first-book":                 function(c) { return c.goalCount >= 1; },
+  "f-02-goal-getter-stage-1":        function(c) { return c.goalsDone >= 1; },
+  "f-03-goal-getter-stage-2":        function(c) { return c.goalsDone >= 3; },
+  "f-04-goal-getter-stage-3":        function(c) { return c.goalsDone >= 10; },
+  "f-05-twenty-books":               function(c) { return c.goalsDone >= 20; },
+  "f-09-three-at-once":              function(c) { return c.goalsMoving >= 3; },
+
+  "g-01-first-pot":                  function(c) { return c.potCount >= 1; },
+  "g-02-thousand-stage-1":           function(c) { return c.savTotal >= 1000; },
+  "g-03-five-figures-stage-2":       function(c) { return c.savTotal >= 10000; },
+  "g-04-six-figures-stage-3":        function(c) { return c.savTotal >= 100000; },
+  "g-05-seven-figures":              function(c) { return c.savTotal >= 1000000; },
+  "g-06-cushion-stage-1":            function(c) { return c.cushionMonths >= 1; },
+  "g-07-cushion-stage-2":            function(c) { return c.cushionMonths >= 3; },
+  "g-08-cushion-stage-3":            function(c) { return c.cushionMonths >= 6; },
+  "g-09-the-fortress":               function(c) { return c.cushionMonths >= 12; },
+
+  "h-01-the-first-extra":            function(c) { return c.opening > 0 && c.netWorth > c.opening; },
+  "h-02-doubled-stage-1":            function(c) { return c.opening > 0 && c.netWorth >= c.opening * 2; },
+  "h-03-tripled-stage-2":            function(c) { return c.opening > 0 && c.netWorth >= c.opening * 3; },
+  "h-04-fivefold-stage-3":           function(c) { return c.opening > 0 && c.netWorth >= c.opening * 5; },
+  "h-05-tenfold":                    function(c) { return c.opening > 0 && c.netWorth >= c.opening * 10; },
+  "h-06-hundredfold":                function(c) { return c.opening > 0 && c.netWorth >= c.opening * 100; },
+
+  "i-01-faced-it":                   function(c) { return c.debtCount >= 1; },
+  "i-04-chipped-stage-3":            function(c) { return c.debtsCleared >= 1; },
+  "i-05-debt-free":                  function(c) { return c.debtCount >= 1 && c.debtsCleared === c.debtCount; },
+  "i-07-snowball":                   function(c) { return c.debtsCleared >= 3; },
+
+  "j-01-opened-the-door":            function(c) { return c.invCount >= 1; },
+
+  "k-01-first-trip":                 function(c) { return c.tripCount >= 1; },
+  "k-05-the-grand-tour":             function(c) { return c.tripsEnded >= 5; },
+
+  "l-01-kept-track":                 function(c) { return c.noteCount >= 1; },
+  "l-02-settled-up":                 function(c) { return c.notesSettled >= 1; },
+  "l-03-clean-slate-stage-1":        function(c) { return c.notesSettled >= 5; },
+  "l-04-clean-slate-stage-2":        function(c) { return c.notesSettled >= 25; },
+  "l-05-clean-slate-stage-3":        function(c) { return c.notesSettled >= 100; },
+
+  "n-01-open-for-business":          function(c) { return c.bizCount >= 1; },
+
+  "o-01-two-purses":                 function(c) { return c.inHousehold; },
+
+  "p-01-one-month-in":               function(c) { return c.daysActive >= 30; },
+  "p-02-one-season":                 function(c) { return c.daysActive >= 90; },
+  "p-03-half-a-year":                function(c) { return c.daysActive >= 180; },
+  "p-04-one-year":                   function(c) { return c.daysActive >= 365; },
+  "p-05-two-years":                  function(c) { return c.daysActive >= 730; },
+  "p-06-five-years":                 function(c) { return c.daysActive >= 1825; },
+  "p-07-ten-years":                  function(c) { return c.daysActive >= 3650; },
+
+  "s-07-ten-years-green":            function(c) { return c.greenRun >= 120; }
+};
 
 // The single entry point. Everything the Profile screen renders comes out of
 // this one call, so the numbers on the header, the streak card, the badge
@@ -2062,9 +2276,27 @@ function motivSnapshot(data) {
   }
 
   var folders = data.folders || [];
+  var notes = data.notes || [];
+  var trips = data.trips || [];
+  // Days since the account existed. New accounts stamp createdAt; older ones
+  // fall back to their earliest transaction, which is the closest honest proxy
+  // for "how long have you been doing this" that the data can supply.
+  var firstDay = data.createdAt || (tx.map(function(t) { return t.date; }).sort()[0] || todayIso);
+  var daysActive = Math.max(0, Math.round((parseDay(todayIso) - parseDay(firstDay)) / 86400000));
   var ctx = {
     txCount: tx.filter(function(t) { return !isOpening(t); }).length,
     hasOpening: !!openingTx,
+    onboarded: data.onboardingDone === true,
+    daysActive: daysActive,
+    debtCount: (data.debts || []).length,
+    invCount: (data.investing || []).length,
+    bizCount: (data.businesses || []).length,
+    tripCount: trips.length,
+    tripsEnded: trips.filter(function(t) { return t.ended; }).length,
+    noteCount: notes.length,
+    notesSettled: notes.filter(function(n) { return n && n.settled; }).length,
+    inHousehold: !!data.householdId,
+    shieldsSpent: clean.shielded.length,
     catCount: (data.categories || []).length,
     budgetCount: (data.budgets || []).length,
     budgetOnTrack: bud.onTrack,
@@ -2089,7 +2321,10 @@ function motivSnapshot(data) {
   for (i = 0; i < BADGES.length; i++) {
     var b = BADGES[i];
     var rec = held[b.id];
-    var on = rec || b.test(ctx);
+    // A badge with no entry in BADGE_TESTS cannot be decided yet. It still
+    // appears in the collection, drawn and named - it simply never grants.
+    var t = BADGE_TESTS[b.id];
+    var on = rec || (t ? t(ctx) : false);
     if (!on) continue;
     badgeXp += MOTIV.rarityXp[b.r] || 0;
     var row = { def: b, at: rec ? rec.at : isoDay(today), early: rec ? !!rec.early : false, shared: !!sharedOn[b.id] };
@@ -24656,34 +24891,41 @@ function StatCell(props) {
 // in the art: a bitmap can't be re-tinted per theme, so putting chroma in the
 // PNG would break the ramp in dark mode and across the three palettes. The
 // wash, the border and the label carry rarity; the art carries identity.
-function badgeImgName(b) {
-  return b.img || String(b.name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-}
-// Falls back to the SVG glyph when a PNG is missing, so the set can be filled
-// in one file at a time without ever showing a broken image.
+// The art already IS the tile: each badge is a pearl-glass (or onyx, in dark)
+// rounded square carrying its own rarity ring and Richy's gold signature arc.
+// So nothing is drawn behind it - the tinted container this used to sit in
+// would have doubled the tile and fought the ring for the rarity signal.
+//
+// Light and dark are two separate files rather than one re-tinted asset,
+// because the glass is built from baked gradients that cannot be recoloured
+// by CSS. `id` is the filename, so the table and the art cannot drift.
 function BadgeGlyph(props) {
-  var _f = useState(false); var failed = _f[0]; var setFailed = _f[1];
-  var size = props.size || 28;
+  var size = props.size || 56;
   var b = props.badge || {};
-  if (failed) return <SVGIcon id={b.glyph || "star"} size={size} color={props.color} />;
   return (
-    <img src={"badges/" + badgeImgName(b) + ".png"} alt="" width={size} height={size}
-      onError={function() { setFailed(true); }}
+    <img src={"/badges/" + (T.isDark ? "dark" : "light") + "/" + b.id + ".svg"} alt=""
+      width={size} height={size}
       style={{ width: size, height: size, objectFit: "contain", display: "block" }} />
   );
 }
 
-// One badge, at tile size. Locked badges keep their shape but lose their colour
-// and their name - you can see there is something there without being told what.
+// One badge, at tile size. A locked badge keeps its silhouette but loses its
+// art and its name: you can see that something is there without being told
+// what, which is the whole point of a collection you have not finished.
 function BadgeTile(props) {
   var b = props.badge, locked = props.locked;
   var col = locked ? T.ink3 : rarityColor(b.r);
   var mythic = !locked && b.r === "mythic";
+  var size = props.size || 56;
   return (
-    <button onClick={props.onClick} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", width: 62, flexShrink: 0, fontFamily: UI, opacity: locked ? 0.4 : 1 }}>
-      <div style={{ width: 56, height: 56, borderRadius: 17, margin: "0 auto", background: locked ? T.inputBg : rarityDim(b.r), border: locked ? "none" : "1.5px solid " + col + "55", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        {locked ? <SVGIcon id="lock" size={24} color={col} /> : <BadgeGlyph badge={b} size={30} color={col} />}
-      </div>
+    <button onClick={props.onClick} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", width: size + 6, flexShrink: 0, fontFamily: UI }}>
+      {locked ? (
+        <div style={{ width: size, height: size, borderRadius: Math.round(size * 0.3), margin: "0 auto", background: T.inputBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <SVGIcon id="lock" size={Math.round(size * 0.36)} color={T.ink3} />
+        </div>
+      ) : (
+        <div style={{ width: size, margin: "0 auto" }}><BadgeGlyph badge={b} size={size} /></div>
+      )}
       {/* Mythic is the one tier with no flat colour - the spec calls it
           iridescent, so the name carries the gradient itself. */}
       <div style={mythic
@@ -25198,8 +25440,9 @@ function BadgesView(props) {
   var earnedIds = {};
   snap.badges.forEach(function(e) { earnedIds[e.def.id] = e; });
 
-  var fams = [], seen = {};
-  BADGES.forEach(function(b) { if (!seen[b.fam]) { seen[b.fam] = []; fams.push(b.fam); } seen[b.fam].push(b); });
+  var seen = {};
+  BADGES.forEach(function(b) { if (!seen[b.fam]) seen[b.fam] = []; seen[b.fam].push(b); });
+  var fams = BADGE_FAMILY_ORDER.filter(function(k) { return !!seen[k]; });
 
   var CHIPS = [
     { id: "all",    label: "All " + snap.badges.length },
@@ -25237,7 +25480,7 @@ function BadgesView(props) {
         return (
           <Card key={fam} style={{ padding: "16px 14px", marginBottom: 14 }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 13 }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: T.ink, fontFamily: UI }}>{fam}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: T.ink, fontFamily: UI }}>{fam + ". " + BADGE_FAMILIES[fam]}</span>
               <span style={{ fontSize: 11, color: T.ink3, fontFamily: UI }}>{got + " of " + seen[fam].length}</span>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "14px 8px", justifyItems: "center" }}>

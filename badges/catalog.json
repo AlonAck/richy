@@ -1,0 +1,3613 @@
+[
+  {
+    "family": "A",
+    "name": "Opening Balance",
+    "description": "Every ledger starts with one honest number.",
+    "trigger": "opening balance recorded",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "Scale",
+    "light": {
+      "svg": "light/svg-master/a-01-opening-balance.svg",
+      "ios48pt2x": "light/ios-48pt-2x/a-01-opening-balance.png",
+      "ios48pt3x": "light/ios-48pt-3x/a-01-opening-balance.png",
+      "ios72pt2x": "light/ios-72pt-2x/a-01-opening-balance.png",
+      "ios72pt3x": "light/ios-72pt-3x/a-01-opening-balance.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/a-01-opening-balance.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/a-01-opening-balance.png",
+      "ios48pt3x": "dark/ios-48pt-3x/a-01-opening-balance.png",
+      "ios72pt2x": "dark/ios-72pt-2x/a-01-opening-balance.png",
+      "ios72pt3x": "dark/ios-72pt-3x/a-01-opening-balance.png"
+    }
+  },
+  {
+    "family": "A",
+    "name": "First Coin",
+    "description": "The Richest Man in Babylon started by tracking a single coin.",
+    "trigger": "first transaction logged",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "ReceiptText",
+    "light": {
+      "svg": "light/svg-master/a-02-first-coin.svg",
+      "ios48pt2x": "light/ios-48pt-2x/a-02-first-coin.png",
+      "ios48pt3x": "light/ios-48pt-3x/a-02-first-coin.png",
+      "ios72pt2x": "light/ios-72pt-2x/a-02-first-coin.png",
+      "ios72pt3x": "light/ios-72pt-3x/a-02-first-coin.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/a-02-first-coin.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/a-02-first-coin.png",
+      "ios48pt3x": "dark/ios-48pt-3x/a-02-first-coin.png",
+      "ios72pt2x": "dark/ios-72pt-2x/a-02-first-coin.png",
+      "ios72pt3x": "dark/ios-72pt-3x/a-02-first-coin.png"
+    }
+  },
+  {
+    "family": "A",
+    "name": "Named",
+    "description": "Richard knows what to call you.",
+    "trigger": "nickname set",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "Signature",
+    "light": {
+      "svg": "light/svg-master/a-03-named.svg",
+      "ios48pt2x": "light/ios-48pt-2x/a-03-named.png",
+      "ios48pt3x": "light/ios-48pt-3x/a-03-named.png",
+      "ios72pt2x": "light/ios-72pt-2x/a-03-named.png",
+      "ios72pt3x": "light/ios-72pt-3x/a-03-named.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/a-03-named.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/a-03-named.png",
+      "ios48pt3x": "dark/ios-48pt-3x/a-03-named.png",
+      "ios72pt2x": "dark/ios-72pt-2x/a-03-named.png",
+      "ios72pt3x": "dark/ios-72pt-3x/a-03-named.png"
+    }
+  },
+  {
+    "family": "A",
+    "name": "The Plan",
+    "description": "You answered the hard questions.",
+    "trigger": "onboarding questionnaire completed",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "ClipboardCheck",
+    "light": {
+      "svg": "light/svg-master/a-04-the-plan.svg",
+      "ios48pt2x": "light/ios-48pt-2x/a-04-the-plan.png",
+      "ios48pt3x": "light/ios-48pt-3x/a-04-the-plan.png",
+      "ios72pt2x": "light/ios-72pt-2x/a-04-the-plan.png",
+      "ios72pt3x": "light/ios-72pt-3x/a-04-the-plan.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/a-04-the-plan.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/a-04-the-plan.png",
+      "ios48pt3x": "dark/ios-48pt-3x/a-04-the-plan.png",
+      "ios72pt2x": "dark/ios-72pt-2x/a-04-the-plan.png",
+      "ios72pt3x": "dark/ios-72pt-3x/a-04-the-plan.png"
+    }
+  },
+  {
+    "family": "A",
+    "name": "Categorised",
+    "description": "You made the app fit your life, not the other way round.",
+    "trigger": "first custom category created",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "Tags",
+    "light": {
+      "svg": "light/svg-master/a-05-categorised.svg",
+      "ios48pt2x": "light/ios-48pt-2x/a-05-categorised.png",
+      "ios48pt3x": "light/ios-48pt-3x/a-05-categorised.png",
+      "ios72pt2x": "light/ios-72pt-2x/a-05-categorised.png",
+      "ios72pt3x": "light/ios-72pt-3x/a-05-categorised.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/a-05-categorised.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/a-05-categorised.png",
+      "ios48pt3x": "dark/ios-48pt-3x/a-05-categorised.png",
+      "ios72pt2x": "dark/ios-72pt-2x/a-05-categorised.png",
+      "ios72pt3x": "dark/ios-72pt-3x/a-05-categorised.png"
+    }
+  },
+  {
+    "family": "A",
+    "name": "Filed",
+    "description": "A place for everything.",
+    "trigger": "first folder created",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "Folder",
+    "light": {
+      "svg": "light/svg-master/a-06-filed.svg",
+      "ios48pt2x": "light/ios-48pt-2x/a-06-filed.png",
+      "ios48pt3x": "light/ios-48pt-3x/a-06-filed.png",
+      "ios72pt2x": "light/ios-72pt-2x/a-06-filed.png",
+      "ios72pt3x": "light/ios-72pt-3x/a-06-filed.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/a-06-filed.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/a-06-filed.png",
+      "ios48pt3x": "dark/ios-48pt-3x/a-06-filed.png",
+      "ios72pt2x": "dark/ios-72pt-2x/a-06-filed.png",
+      "ios72pt3x": "dark/ios-72pt-3x/a-06-filed.png"
+    }
+  },
+  {
+    "family": "A",
+    "name": "Books Open",
+    "description": "Your first true week.",
+    "trigger": "first Clean Week",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "BookOpenCheck",
+    "light": {
+      "svg": "light/svg-master/a-07-books-open.svg",
+      "ios48pt2x": "light/ios-48pt-2x/a-07-books-open.png",
+      "ios48pt3x": "light/ios-48pt-3x/a-07-books-open.png",
+      "ios72pt2x": "light/ios-72pt-2x/a-07-books-open.png",
+      "ios72pt3x": "light/ios-72pt-3x/a-07-books-open.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/a-07-books-open.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/a-07-books-open.png",
+      "ios48pt3x": "dark/ios-48pt-3x/a-07-books-open.png",
+      "ios72pt2x": "dark/ios-72pt-2x/a-07-books-open.png",
+      "ios72pt3x": "dark/ios-72pt-3x/a-07-books-open.png"
+    }
+  },
+  {
+    "family": "A",
+    "name": "Ledger Literate",
+    "description": "Twenty-five entries. The habit is forming.",
+    "trigger": "25 transactions",
+    "rarity": "Common",
+    "stage": 1,
+    "iconName": "ReceiptText",
+    "light": {
+      "svg": "light/svg-master/a-08-ledger-literate-stage-1.svg",
+      "ios48pt2x": "light/ios-48pt-2x/a-08-ledger-literate-stage-1.png",
+      "ios48pt3x": "light/ios-48pt-3x/a-08-ledger-literate-stage-1.png",
+      "ios72pt2x": "light/ios-72pt-2x/a-08-ledger-literate-stage-1.png",
+      "ios72pt3x": "light/ios-72pt-3x/a-08-ledger-literate-stage-1.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/a-08-ledger-literate-stage-1.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/a-08-ledger-literate-stage-1.png",
+      "ios48pt3x": "dark/ios-48pt-3x/a-08-ledger-literate-stage-1.png",
+      "ios72pt2x": "dark/ios-72pt-2x/a-08-ledger-literate-stage-1.png",
+      "ios72pt3x": "dark/ios-72pt-3x/a-08-ledger-literate-stage-1.png"
+    }
+  },
+  {
+    "family": "A",
+    "name": "Hundred Coins",
+    "description": "One hundred entries. The habit has formed.",
+    "trigger": "100 transactions",
+    "rarity": "Uncommon",
+    "stage": 2,
+    "iconName": "ReceiptText",
+    "light": {
+      "svg": "light/svg-master/a-09-hundred-coins-stage-2.svg",
+      "ios48pt2x": "light/ios-48pt-2x/a-09-hundred-coins-stage-2.png",
+      "ios48pt3x": "light/ios-48pt-3x/a-09-hundred-coins-stage-2.png",
+      "ios72pt2x": "light/ios-72pt-2x/a-09-hundred-coins-stage-2.png",
+      "ios72pt3x": "light/ios-72pt-3x/a-09-hundred-coins-stage-2.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/a-09-hundred-coins-stage-2.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/a-09-hundred-coins-stage-2.png",
+      "ios48pt3x": "dark/ios-48pt-3x/a-09-hundred-coins-stage-2.png",
+      "ios72pt2x": "dark/ios-72pt-2x/a-09-hundred-coins-stage-2.png",
+      "ios72pt3x": "dark/ios-72pt-3x/a-09-hundred-coins-stage-2.png"
+    }
+  },
+  {
+    "family": "A",
+    "name": "Thousand Coins",
+    "description": "A thousand entries. This is who you are now.",
+    "trigger": "1,000 transactions",
+    "rarity": "Rare",
+    "stage": 3,
+    "iconName": "ReceiptText",
+    "light": {
+      "svg": "light/svg-master/a-10-thousand-coins-stage-3.svg",
+      "ios48pt2x": "light/ios-48pt-2x/a-10-thousand-coins-stage-3.png",
+      "ios48pt3x": "light/ios-48pt-3x/a-10-thousand-coins-stage-3.png",
+      "ios72pt2x": "light/ios-72pt-2x/a-10-thousand-coins-stage-3.png",
+      "ios72pt3x": "light/ios-72pt-3x/a-10-thousand-coins-stage-3.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/a-10-thousand-coins-stage-3.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/a-10-thousand-coins-stage-3.png",
+      "ios48pt3x": "dark/ios-48pt-3x/a-10-thousand-coins-stage-3.png",
+      "ios72pt2x": "dark/ios-72pt-2x/a-10-thousand-coins-stage-3.png",
+      "ios72pt3x": "dark/ios-72pt-3x/a-10-thousand-coins-stage-3.png"
+    }
+  },
+  {
+    "family": "A",
+    "name": "Ten Thousand Coins",
+    "description": "Ten thousand. Richard is genuinely impressed.",
+    "trigger": "10,000 transactions",
+    "rarity": "Epic",
+    "stage": 0,
+    "iconName": "ReceiptText",
+    "light": {
+      "svg": "light/svg-master/a-11-ten-thousand-coins.svg",
+      "ios48pt2x": "light/ios-48pt-2x/a-11-ten-thousand-coins.png",
+      "ios48pt3x": "light/ios-48pt-3x/a-11-ten-thousand-coins.png",
+      "ios72pt2x": "light/ios-72pt-2x/a-11-ten-thousand-coins.png",
+      "ios72pt3x": "light/ios-72pt-3x/a-11-ten-thousand-coins.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/a-11-ten-thousand-coins.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/a-11-ten-thousand-coins.png",
+      "ios48pt3x": "dark/ios-48pt-3x/a-11-ten-thousand-coins.png",
+      "ios72pt2x": "dark/ios-72pt-2x/a-11-ten-thousand-coins.png",
+      "ios72pt3x": "dark/ios-72pt-3x/a-11-ten-thousand-coins.png"
+    }
+  },
+  {
+    "family": "B",
+    "name": "Pay Yourself First",
+    "description": "A tenth of what you earned stayed yours.",
+    "trigger": "savings rate ≥ 10% in a P",
+    "rarity": "Uncommon",
+    "stage": 1,
+    "iconName": "Percent",
+    "light": {
+      "svg": "light/svg-master/b-01-pay-yourself-first-stage-1.svg",
+      "ios48pt2x": "light/ios-48pt-2x/b-01-pay-yourself-first-stage-1.png",
+      "ios48pt3x": "light/ios-48pt-3x/b-01-pay-yourself-first-stage-1.png",
+      "ios72pt2x": "light/ios-72pt-2x/b-01-pay-yourself-first-stage-1.png",
+      "ios72pt3x": "light/ios-72pt-3x/b-01-pay-yourself-first-stage-1.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/b-01-pay-yourself-first-stage-1.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/b-01-pay-yourself-first-stage-1.png",
+      "ios48pt3x": "dark/ios-48pt-3x/b-01-pay-yourself-first-stage-1.png",
+      "ios72pt2x": "dark/ios-72pt-2x/b-01-pay-yourself-first-stage-1.png",
+      "ios72pt3x": "dark/ios-72pt-3x/b-01-pay-yourself-first-stage-1.png"
+    }
+  },
+  {
+    "family": "B",
+    "name": "Pay Yourself First",
+    "description": "A fifth kept. That’s a real margin.",
+    "trigger": "≥ 20% in a P",
+    "rarity": "Rare",
+    "stage": 2,
+    "iconName": "Percent",
+    "light": {
+      "svg": "light/svg-master/b-02-pay-yourself-first-stage-2.svg",
+      "ios48pt2x": "light/ios-48pt-2x/b-02-pay-yourself-first-stage-2.png",
+      "ios48pt3x": "light/ios-48pt-3x/b-02-pay-yourself-first-stage-2.png",
+      "ios72pt2x": "light/ios-72pt-2x/b-02-pay-yourself-first-stage-2.png",
+      "ios72pt3x": "light/ios-72pt-3x/b-02-pay-yourself-first-stage-2.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/b-02-pay-yourself-first-stage-2.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/b-02-pay-yourself-first-stage-2.png",
+      "ios48pt3x": "dark/ios-48pt-3x/b-02-pay-yourself-first-stage-2.png",
+      "ios72pt2x": "dark/ios-72pt-2x/b-02-pay-yourself-first-stage-2.png",
+      "ios72pt3x": "dark/ios-72pt-3x/b-02-pay-yourself-first-stage-2.png"
+    }
+  },
+  {
+    "family": "B",
+    "name": "Pay Yourself First",
+    "description": "Nearly a third. Very few people manage this.",
+    "trigger": "≥ 30% in a P",
+    "rarity": "Epic",
+    "stage": 3,
+    "iconName": "Percent",
+    "light": {
+      "svg": "light/svg-master/b-03-pay-yourself-first-stage-3.svg",
+      "ios48pt2x": "light/ios-48pt-2x/b-03-pay-yourself-first-stage-3.png",
+      "ios48pt3x": "light/ios-48pt-3x/b-03-pay-yourself-first-stage-3.png",
+      "ios72pt2x": "light/ios-72pt-2x/b-03-pay-yourself-first-stage-3.png",
+      "ios72pt3x": "light/ios-72pt-3x/b-03-pay-yourself-first-stage-3.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/b-03-pay-yourself-first-stage-3.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/b-03-pay-yourself-first-stage-3.png",
+      "ios48pt3x": "dark/ios-48pt-3x/b-03-pay-yourself-first-stage-3.png",
+      "ios72pt2x": "dark/ios-72pt-2x/b-03-pay-yourself-first-stage-3.png",
+      "ios72pt3x": "dark/ios-72pt-3x/b-03-pay-yourself-first-stage-3.png"
+    }
+  },
+  {
+    "family": "B",
+    "name": "Half of It",
+    "description": "You kept half of everything you earned.",
+    "trigger": "≥ 50% in a P",
+    "rarity": "Legendary",
+    "stage": 0,
+    "iconName": "Percent",
+    "light": {
+      "svg": "light/svg-master/b-04-half-of-it.svg",
+      "ios48pt2x": "light/ios-48pt-2x/b-04-half-of-it.png",
+      "ios48pt3x": "light/ios-48pt-3x/b-04-half-of-it.png",
+      "ios72pt2x": "light/ios-72pt-2x/b-04-half-of-it.png",
+      "ios72pt3x": "light/ios-72pt-3x/b-04-half-of-it.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/b-04-half-of-it.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/b-04-half-of-it.png",
+      "ios48pt3x": "dark/ios-48pt-3x/b-04-half-of-it.png",
+      "ios72pt2x": "dark/ios-72pt-2x/b-04-half-of-it.png",
+      "ios72pt3x": "dark/ios-72pt-3x/b-04-half-of-it.png"
+    }
+  },
+  {
+    "family": "B",
+    "name": "The Monk",
+    "description": "Seventy percent. We had to check the maths twice.",
+    "trigger": "≥ 70% in a P",
+    "rarity": "Mythic",
+    "stage": 0,
+    "iconName": "Percent",
+    "light": {
+      "svg": "light/svg-master/b-05-the-monk.svg",
+      "ios48pt2x": "light/ios-48pt-2x/b-05-the-monk.png",
+      "ios48pt3x": "light/ios-48pt-3x/b-05-the-monk.png",
+      "ios72pt2x": "light/ios-72pt-2x/b-05-the-monk.png",
+      "ios72pt3x": "light/ios-72pt-3x/b-05-the-monk.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/b-05-the-monk.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/b-05-the-monk.png",
+      "ios48pt3x": "dark/ios-48pt-3x/b-05-the-monk.png",
+      "ios72pt2x": "dark/ios-72pt-2x/b-05-the-monk.png",
+      "ios72pt3x": "dark/ios-72pt-3x/b-05-the-monk.png"
+    }
+  },
+  {
+    "family": "B",
+    "name": "Steady Hand",
+    "description": "Three periods above your own bar.",
+    "trigger": "3 consecutive P above target",
+    "rarity": "Uncommon",
+    "stage": 1,
+    "iconName": "ShieldCheck",
+    "light": {
+      "svg": "light/svg-master/b-06-steady-hand-stage-1.svg",
+      "ios48pt2x": "light/ios-48pt-2x/b-06-steady-hand-stage-1.png",
+      "ios48pt3x": "light/ios-48pt-3x/b-06-steady-hand-stage-1.png",
+      "ios72pt2x": "light/ios-72pt-2x/b-06-steady-hand-stage-1.png",
+      "ios72pt3x": "light/ios-72pt-3x/b-06-steady-hand-stage-1.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/b-06-steady-hand-stage-1.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/b-06-steady-hand-stage-1.png",
+      "ios48pt3x": "dark/ios-48pt-3x/b-06-steady-hand-stage-1.png",
+      "ios72pt2x": "dark/ios-72pt-2x/b-06-steady-hand-stage-1.png",
+      "ios72pt3x": "dark/ios-72pt-3x/b-06-steady-hand-stage-1.png"
+    }
+  },
+  {
+    "family": "B",
+    "name": "Steady Hand",
+    "description": "Six periods. Not luck any more.",
+    "trigger": "6 consecutive",
+    "rarity": "Rare",
+    "stage": 2,
+    "iconName": "ShieldCheck",
+    "light": {
+      "svg": "light/svg-master/b-07-steady-hand-stage-2.svg",
+      "ios48pt2x": "light/ios-48pt-2x/b-07-steady-hand-stage-2.png",
+      "ios48pt3x": "light/ios-48pt-3x/b-07-steady-hand-stage-2.png",
+      "ios72pt2x": "light/ios-72pt-2x/b-07-steady-hand-stage-2.png",
+      "ios72pt3x": "light/ios-72pt-3x/b-07-steady-hand-stage-2.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/b-07-steady-hand-stage-2.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/b-07-steady-hand-stage-2.png",
+      "ios48pt3x": "dark/ios-48pt-3x/b-07-steady-hand-stage-2.png",
+      "ios72pt2x": "dark/ios-72pt-2x/b-07-steady-hand-stage-2.png",
+      "ios72pt3x": "dark/ios-72pt-3x/b-07-steady-hand-stage-2.png"
+    }
+  },
+  {
+    "family": "B",
+    "name": "Steady Hand",
+    "description": "Twelve periods. A full year of holding the line.",
+    "trigger": "12 consecutive",
+    "rarity": "Epic",
+    "stage": 3,
+    "iconName": "ShieldCheck",
+    "light": {
+      "svg": "light/svg-master/b-08-steady-hand-stage-3.svg",
+      "ios48pt2x": "light/ios-48pt-2x/b-08-steady-hand-stage-3.png",
+      "ios48pt3x": "light/ios-48pt-3x/b-08-steady-hand-stage-3.png",
+      "ios72pt2x": "light/ios-72pt-2x/b-08-steady-hand-stage-3.png",
+      "ios72pt3x": "light/ios-72pt-3x/b-08-steady-hand-stage-3.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/b-08-steady-hand-stage-3.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/b-08-steady-hand-stage-3.png",
+      "ios48pt3x": "dark/ios-48pt-3x/b-08-steady-hand-stage-3.png",
+      "ios72pt2x": "dark/ios-72pt-2x/b-08-steady-hand-stage-3.png",
+      "ios72pt3x": "dark/ios-72pt-3x/b-08-steady-hand-stage-3.png"
+    }
+  },
+  {
+    "family": "B",
+    "name": "The Unbroken",
+    "description": "Two years without a single miss.",
+    "trigger": "24 consecutive",
+    "rarity": "Mythic",
+    "stage": 0,
+    "iconName": "ShieldCheck",
+    "light": {
+      "svg": "light/svg-master/b-09-the-unbroken.svg",
+      "ios48pt2x": "light/ios-48pt-2x/b-09-the-unbroken.png",
+      "ios48pt3x": "light/ios-48pt-3x/b-09-the-unbroken.png",
+      "ios72pt2x": "light/ios-72pt-2x/b-09-the-unbroken.png",
+      "ios72pt3x": "light/ios-72pt-3x/b-09-the-unbroken.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/b-09-the-unbroken.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/b-09-the-unbroken.png",
+      "ios48pt3x": "dark/ios-48pt-3x/b-09-the-unbroken.png",
+      "ios72pt2x": "dark/ios-72pt-2x/b-09-the-unbroken.png",
+      "ios72pt3x": "dark/ios-72pt-3x/b-09-the-unbroken.png"
+    }
+  },
+  {
+    "family": "B",
+    "name": "Better Than Before",
+    "description": "You beat your own average. That’s the only race.",
+    "trigger": "savings rate +5pp vs own trailing 3-P average",
+    "rarity": "Uncommon",
+    "stage": 1,
+    "iconName": "TrendingUp",
+    "light": {
+      "svg": "light/svg-master/b-10-better-than-before-stage-1.svg",
+      "ios48pt2x": "light/ios-48pt-2x/b-10-better-than-before-stage-1.png",
+      "ios48pt3x": "light/ios-48pt-3x/b-10-better-than-before-stage-1.png",
+      "ios72pt2x": "light/ios-72pt-2x/b-10-better-than-before-stage-1.png",
+      "ios72pt3x": "light/ios-72pt-3x/b-10-better-than-before-stage-1.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/b-10-better-than-before-stage-1.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/b-10-better-than-before-stage-1.png",
+      "ios48pt3x": "dark/ios-48pt-3x/b-10-better-than-before-stage-1.png",
+      "ios72pt2x": "dark/ios-72pt-2x/b-10-better-than-before-stage-1.png",
+      "ios72pt3x": "dark/ios-72pt-3x/b-10-better-than-before-stage-1.png"
+    }
+  },
+  {
+    "family": "B",
+    "name": "Better Than Before",
+    "description": "Ten points better than the you of three months ago.",
+    "trigger": "+10pp",
+    "rarity": "Rare",
+    "stage": 2,
+    "iconName": "TrendingUp",
+    "light": {
+      "svg": "light/svg-master/b-11-better-than-before-stage-2.svg",
+      "ios48pt2x": "light/ios-48pt-2x/b-11-better-than-before-stage-2.png",
+      "ios48pt3x": "light/ios-48pt-3x/b-11-better-than-before-stage-2.png",
+      "ios72pt2x": "light/ios-72pt-2x/b-11-better-than-before-stage-2.png",
+      "ios72pt3x": "light/ios-72pt-3x/b-11-better-than-before-stage-2.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/b-11-better-than-before-stage-2.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/b-11-better-than-before-stage-2.png",
+      "ios48pt3x": "dark/ios-48pt-3x/b-11-better-than-before-stage-2.png",
+      "ios72pt2x": "dark/ios-72pt-2x/b-11-better-than-before-stage-2.png",
+      "ios72pt3x": "dark/ios-72pt-3x/b-11-better-than-before-stage-2.png"
+    }
+  },
+  {
+    "family": "B",
+    "name": "Better Than Before",
+    "description": "Twenty points. You changed something real.",
+    "trigger": "+20pp",
+    "rarity": "Epic",
+    "stage": 3,
+    "iconName": "TrendingUp",
+    "light": {
+      "svg": "light/svg-master/b-12-better-than-before-stage-3.svg",
+      "ios48pt2x": "light/ios-48pt-2x/b-12-better-than-before-stage-3.png",
+      "ios48pt3x": "light/ios-48pt-3x/b-12-better-than-before-stage-3.png",
+      "ios72pt2x": "light/ios-72pt-2x/b-12-better-than-before-stage-3.png",
+      "ios72pt3x": "light/ios-72pt-3x/b-12-better-than-before-stage-3.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/b-12-better-than-before-stage-3.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/b-12-better-than-before-stage-3.png",
+      "ios48pt3x": "dark/ios-48pt-3x/b-12-better-than-before-stage-3.png",
+      "ios72pt2x": "dark/ios-72pt-2x/b-12-better-than-before-stage-3.png",
+      "ios72pt3x": "dark/ios-72pt-3x/b-12-better-than-before-stage-3.png"
+    }
+  },
+  {
+    "family": "B",
+    "name": "From Nothing",
+    "description": "You went from saving nothing to saving something.",
+    "trigger": "first P with positive savings rate after ≥3 P at ≤0",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "Sprout",
+    "light": {
+      "svg": "light/svg-master/b-13-from-nothing.svg",
+      "ios48pt2x": "light/ios-48pt-2x/b-13-from-nothing.png",
+      "ios48pt3x": "light/ios-48pt-3x/b-13-from-nothing.png",
+      "ios72pt2x": "light/ios-72pt-2x/b-13-from-nothing.png",
+      "ios72pt3x": "light/ios-72pt-3x/b-13-from-nothing.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/b-13-from-nothing.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/b-13-from-nothing.png",
+      "ios48pt3x": "dark/ios-48pt-3x/b-13-from-nothing.png",
+      "ios72pt2x": "dark/ios-72pt-2x/b-13-from-nothing.png",
+      "ios72pt3x": "dark/ios-72pt-3x/b-13-from-nothing.png"
+    }
+  },
+  {
+    "family": "B",
+    "name": "The Raise You Gave Yourself",
+    "description": "You cut enough to equal a pay rise, without one.",
+    "trigger": "expenses down ≥10% over 3 P, income flat or lower",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "ChartNoAxesColumnDecreasing",
+    "light": {
+      "svg": "light/svg-master/b-14-the-raise-you-gave-yourself.svg",
+      "ios48pt2x": "light/ios-48pt-2x/b-14-the-raise-you-gave-yourself.png",
+      "ios48pt3x": "light/ios-48pt-3x/b-14-the-raise-you-gave-yourself.png",
+      "ios72pt2x": "light/ios-72pt-2x/b-14-the-raise-you-gave-yourself.png",
+      "ios72pt3x": "light/ios-72pt-3x/b-14-the-raise-you-gave-yourself.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/b-14-the-raise-you-gave-yourself.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/b-14-the-raise-you-gave-yourself.png",
+      "ios48pt3x": "dark/ios-48pt-3x/b-14-the-raise-you-gave-yourself.png",
+      "ios72pt2x": "dark/ios-72pt-2x/b-14-the-raise-you-gave-yourself.png",
+      "ios72pt3x": "dark/ios-72pt-3x/b-14-the-raise-you-gave-yourself.png"
+    }
+  },
+  {
+    "family": "C",
+    "name": "First Green",
+    "description": "You finished a period in the green.",
+    "trigger": "1 green month",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "CalendarCheck",
+    "light": {
+      "svg": "light/svg-master/c-01-first-green.svg",
+      "ios48pt2x": "light/ios-48pt-2x/c-01-first-green.png",
+      "ios48pt3x": "light/ios-48pt-3x/c-01-first-green.png",
+      "ios72pt2x": "light/ios-72pt-2x/c-01-first-green.png",
+      "ios72pt3x": "light/ios-72pt-3x/c-01-first-green.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/c-01-first-green.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/c-01-first-green.png",
+      "ios48pt3x": "dark/ios-48pt-3x/c-01-first-green.png",
+      "ios72pt2x": "dark/ios-72pt-2x/c-01-first-green.png",
+      "ios72pt3x": "dark/ios-72pt-3x/c-01-first-green.png"
+    }
+  },
+  {
+    "family": "C",
+    "name": "Two in a Row",
+    "description": "Twice is a pattern.",
+    "trigger": "2 consecutive",
+    "rarity": "Uncommon",
+    "stage": 0,
+    "iconName": "CalendarCheck",
+    "light": {
+      "svg": "light/svg-master/c-02-two-in-a-row.svg",
+      "ios48pt2x": "light/ios-48pt-2x/c-02-two-in-a-row.png",
+      "ios48pt3x": "light/ios-48pt-3x/c-02-two-in-a-row.png",
+      "ios72pt2x": "light/ios-72pt-2x/c-02-two-in-a-row.png",
+      "ios72pt3x": "light/ios-72pt-3x/c-02-two-in-a-row.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/c-02-two-in-a-row.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/c-02-two-in-a-row.png",
+      "ios48pt3x": "dark/ios-48pt-3x/c-02-two-in-a-row.png",
+      "ios72pt2x": "dark/ios-72pt-2x/c-02-two-in-a-row.png",
+      "ios72pt3x": "dark/ios-72pt-3x/c-02-two-in-a-row.png"
+    }
+  },
+  {
+    "family": "C",
+    "name": "Quarter Green",
+    "description": "Three straight periods in the black.",
+    "trigger": "3 consecutive",
+    "rarity": "Uncommon",
+    "stage": 1,
+    "iconName": "CalendarCheck",
+    "light": {
+      "svg": "light/svg-master/c-03-quarter-green-stage-1.svg",
+      "ios48pt2x": "light/ios-48pt-2x/c-03-quarter-green-stage-1.png",
+      "ios48pt3x": "light/ios-48pt-3x/c-03-quarter-green-stage-1.png",
+      "ios72pt2x": "light/ios-72pt-2x/c-03-quarter-green-stage-1.png",
+      "ios72pt3x": "light/ios-72pt-3x/c-03-quarter-green-stage-1.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/c-03-quarter-green-stage-1.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/c-03-quarter-green-stage-1.png",
+      "ios48pt3x": "dark/ios-48pt-3x/c-03-quarter-green-stage-1.png",
+      "ios72pt2x": "dark/ios-72pt-2x/c-03-quarter-green-stage-1.png",
+      "ios72pt3x": "dark/ios-72pt-3x/c-03-quarter-green-stage-1.png"
+    }
+  },
+  {
+    "family": "C",
+    "name": "Half Year Green",
+    "description": "Six months. Halfway to a perfect year.",
+    "trigger": "6 consecutive",
+    "rarity": "Rare",
+    "stage": 2,
+    "iconName": "CalendarCheck",
+    "light": {
+      "svg": "light/svg-master/c-04-half-year-green-stage-2.svg",
+      "ios48pt2x": "light/ios-48pt-2x/c-04-half-year-green-stage-2.png",
+      "ios48pt3x": "light/ios-48pt-3x/c-04-half-year-green-stage-2.png",
+      "ios72pt2x": "light/ios-72pt-2x/c-04-half-year-green-stage-2.png",
+      "ios72pt3x": "light/ios-72pt-3x/c-04-half-year-green-stage-2.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/c-04-half-year-green-stage-2.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/c-04-half-year-green-stage-2.png",
+      "ios48pt3x": "dark/ios-48pt-3x/c-04-half-year-green-stage-2.png",
+      "ios72pt2x": "dark/ios-72pt-2x/c-04-half-year-green-stage-2.png",
+      "ios72pt3x": "dark/ios-72pt-3x/c-04-half-year-green-stage-2.png"
+    }
+  },
+  {
+    "family": "C",
+    "name": "Full Year Green",
+    "description": "Twelve consecutive green months.",
+    "trigger": "12 consecutive",
+    "rarity": "Epic",
+    "stage": 3,
+    "iconName": "CalendarCheck",
+    "light": {
+      "svg": "light/svg-master/c-05-full-year-green-stage-3.svg",
+      "ios48pt2x": "light/ios-48pt-2x/c-05-full-year-green-stage-3.png",
+      "ios48pt3x": "light/ios-48pt-3x/c-05-full-year-green-stage-3.png",
+      "ios72pt2x": "light/ios-72pt-2x/c-05-full-year-green-stage-3.png",
+      "ios72pt3x": "light/ios-72pt-3x/c-05-full-year-green-stage-3.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/c-05-full-year-green-stage-3.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/c-05-full-year-green-stage-3.png",
+      "ios48pt3x": "dark/ios-48pt-3x/c-05-full-year-green-stage-3.png",
+      "ios72pt2x": "dark/ios-72pt-2x/c-05-full-year-green-stage-3.png",
+      "ios72pt3x": "dark/ios-72pt-3x/c-05-full-year-green-stage-3.png"
+    }
+  },
+  {
+    "family": "C",
+    "name": "Two Years Green",
+    "description": "Twenty-four. This is rarefied air.",
+    "trigger": "24 consecutive",
+    "rarity": "Legendary",
+    "stage": 0,
+    "iconName": "CalendarCheck",
+    "light": {
+      "svg": "light/svg-master/c-06-two-years-green.svg",
+      "ios48pt2x": "light/ios-48pt-2x/c-06-two-years-green.png",
+      "ios48pt3x": "light/ios-48pt-3x/c-06-two-years-green.png",
+      "ios72pt2x": "light/ios-72pt-2x/c-06-two-years-green.png",
+      "ios72pt3x": "light/ios-72pt-3x/c-06-two-years-green.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/c-06-two-years-green.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/c-06-two-years-green.png",
+      "ios48pt3x": "dark/ios-48pt-3x/c-06-two-years-green.png",
+      "ios72pt2x": "dark/ios-72pt-2x/c-06-two-years-green.png",
+      "ios72pt3x": "dark/ios-72pt-3x/c-06-two-years-green.png"
+    }
+  },
+  {
+    "family": "C",
+    "name": "Five Years Green",
+    "description": "Sixty consecutive green months.",
+    "trigger": "60 consecutive",
+    "rarity": "Mythic",
+    "stage": 0,
+    "iconName": "CalendarCheck",
+    "light": {
+      "svg": "light/svg-master/c-07-five-years-green.svg",
+      "ios48pt2x": "light/ios-48pt-2x/c-07-five-years-green.png",
+      "ios48pt3x": "light/ios-48pt-3x/c-07-five-years-green.png",
+      "ios72pt2x": "light/ios-72pt-2x/c-07-five-years-green.png",
+      "ios72pt3x": "light/ios-72pt-3x/c-07-five-years-green.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/c-07-five-years-green.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/c-07-five-years-green.png",
+      "ios48pt3x": "dark/ios-48pt-3x/c-07-five-years-green.png",
+      "ios72pt2x": "dark/ios-72pt-2x/c-07-five-years-green.png",
+      "ios72pt3x": "dark/ios-72pt-3x/c-07-five-years-green.png"
+    }
+  },
+  {
+    "family": "C",
+    "name": "Repaired",
+    "description": "A red month, made good the next. It still counts.",
+    "trigger": "streak stitched via “make it good”",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "Link2",
+    "light": {
+      "svg": "light/svg-master/c-08-repaired.svg",
+      "ios48pt2x": "light/ios-48pt-2x/c-08-repaired.png",
+      "ios48pt3x": "light/ios-48pt-3x/c-08-repaired.png",
+      "ios72pt2x": "light/ios-72pt-2x/c-08-repaired.png",
+      "ios72pt3x": "light/ios-72pt-3x/c-08-repaired.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/c-08-repaired.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/c-08-repaired.png",
+      "ios48pt3x": "dark/ios-48pt-3x/c-08-repaired.png",
+      "ios72pt2x": "dark/ios-72pt-2x/c-08-repaired.png",
+      "ios72pt3x": "dark/ios-72pt-3x/c-08-repaired.png"
+    }
+  },
+  {
+    "family": "C",
+    "name": "Back on the Horse",
+    "description": "You lost a streak and started another straight away.",
+    "trigger": "new green month within 1 P of losing a streak ≥3",
+    "rarity": "Uncommon",
+    "stage": 0,
+    "iconName": "RotateCcw",
+    "light": {
+      "svg": "light/svg-master/c-09-back-on-the-horse.svg",
+      "ios48pt2x": "light/ios-48pt-2x/c-09-back-on-the-horse.png",
+      "ios48pt3x": "light/ios-48pt-3x/c-09-back-on-the-horse.png",
+      "ios72pt2x": "light/ios-72pt-2x/c-09-back-on-the-horse.png",
+      "ios72pt3x": "light/ios-72pt-3x/c-09-back-on-the-horse.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/c-09-back-on-the-horse.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/c-09-back-on-the-horse.png",
+      "ios48pt3x": "dark/ios-48pt-3x/c-09-back-on-the-horse.png",
+      "ios72pt2x": "dark/ios-72pt-2x/c-09-back-on-the-horse.png",
+      "ios72pt3x": "dark/ios-72pt-3x/c-09-back-on-the-horse.png"
+    }
+  },
+  {
+    "family": "D",
+    "name": "Clean Run",
+    "description": "Four true weeks in a row.",
+    "trigger": "4 consecutive Clean Weeks",
+    "rarity": "Common",
+    "stage": 1,
+    "iconName": "CalendarCheck",
+    "light": {
+      "svg": "light/svg-master/d-01-clean-run-stage-1.svg",
+      "ios48pt2x": "light/ios-48pt-2x/d-01-clean-run-stage-1.png",
+      "ios48pt3x": "light/ios-48pt-3x/d-01-clean-run-stage-1.png",
+      "ios72pt2x": "light/ios-72pt-2x/d-01-clean-run-stage-1.png",
+      "ios72pt3x": "light/ios-72pt-3x/d-01-clean-run-stage-1.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/d-01-clean-run-stage-1.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/d-01-clean-run-stage-1.png",
+      "ios48pt3x": "dark/ios-48pt-3x/d-01-clean-run-stage-1.png",
+      "ios72pt2x": "dark/ios-72pt-2x/d-01-clean-run-stage-1.png",
+      "ios72pt3x": "dark/ios-72pt-3x/d-01-clean-run-stage-1.png"
+    }
+  },
+  {
+    "family": "D",
+    "name": "Clean Run",
+    "description": "Twelve weeks of honest books.",
+    "trigger": "12 consecutive",
+    "rarity": "Uncommon",
+    "stage": 2,
+    "iconName": "CalendarCheck",
+    "light": {
+      "svg": "light/svg-master/d-02-clean-run-stage-2.svg",
+      "ios48pt2x": "light/ios-48pt-2x/d-02-clean-run-stage-2.png",
+      "ios48pt3x": "light/ios-48pt-3x/d-02-clean-run-stage-2.png",
+      "ios72pt2x": "light/ios-72pt-2x/d-02-clean-run-stage-2.png",
+      "ios72pt3x": "light/ios-72pt-3x/d-02-clean-run-stage-2.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/d-02-clean-run-stage-2.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/d-02-clean-run-stage-2.png",
+      "ios48pt3x": "dark/ios-48pt-3x/d-02-clean-run-stage-2.png",
+      "ios72pt2x": "dark/ios-72pt-2x/d-02-clean-run-stage-2.png",
+      "ios72pt3x": "dark/ios-72pt-3x/d-02-clean-run-stage-2.png"
+    }
+  },
+  {
+    "family": "D",
+    "name": "Clean Run",
+    "description": "Twenty-six weeks. Half a year of the truth.",
+    "trigger": "26 consecutive",
+    "rarity": "Rare",
+    "stage": 3,
+    "iconName": "CalendarCheck",
+    "light": {
+      "svg": "light/svg-master/d-03-clean-run-stage-3.svg",
+      "ios48pt2x": "light/ios-48pt-2x/d-03-clean-run-stage-3.png",
+      "ios48pt3x": "light/ios-48pt-3x/d-03-clean-run-stage-3.png",
+      "ios72pt2x": "light/ios-72pt-2x/d-03-clean-run-stage-3.png",
+      "ios72pt3x": "light/ios-72pt-3x/d-03-clean-run-stage-3.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/d-03-clean-run-stage-3.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/d-03-clean-run-stage-3.png",
+      "ios48pt3x": "dark/ios-48pt-3x/d-03-clean-run-stage-3.png",
+      "ios72pt2x": "dark/ios-72pt-2x/d-03-clean-run-stage-3.png",
+      "ios72pt3x": "dark/ios-72pt-3x/d-03-clean-run-stage-3.png"
+    }
+  },
+  {
+    "family": "D",
+    "name": "Year of Truth",
+    "description": "Fifty-two consecutive clean weeks.",
+    "trigger": "52 consecutive",
+    "rarity": "Epic",
+    "stage": 0,
+    "iconName": "CalendarCheck",
+    "light": {
+      "svg": "light/svg-master/d-04-year-of-truth.svg",
+      "ios48pt2x": "light/ios-48pt-2x/d-04-year-of-truth.png",
+      "ios48pt3x": "light/ios-48pt-3x/d-04-year-of-truth.png",
+      "ios72pt2x": "light/ios-72pt-2x/d-04-year-of-truth.png",
+      "ios72pt3x": "light/ios-72pt-3x/d-04-year-of-truth.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/d-04-year-of-truth.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/d-04-year-of-truth.png",
+      "ios48pt3x": "dark/ios-48pt-3x/d-04-year-of-truth.png",
+      "ios72pt2x": "dark/ios-72pt-2x/d-04-year-of-truth.png",
+      "ios72pt3x": "dark/ios-72pt-3x/d-04-year-of-truth.png"
+    }
+  },
+  {
+    "family": "D",
+    "name": "Shieldless",
+    "description": "Half a year clean, and you never once needed a shield.",
+    "trigger": "26 consecutive with 0 shields spent",
+    "rarity": "Epic",
+    "stage": 0,
+    "iconName": "ShieldOff",
+    "light": {
+      "svg": "light/svg-master/d-05-shieldless.svg",
+      "ios48pt2x": "light/ios-48pt-2x/d-05-shieldless.png",
+      "ios48pt3x": "light/ios-48pt-3x/d-05-shieldless.png",
+      "ios72pt2x": "light/ios-72pt-2x/d-05-shieldless.png",
+      "ios72pt3x": "light/ios-72pt-3x/d-05-shieldless.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/d-05-shieldless.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/d-05-shieldless.png",
+      "ios48pt3x": "dark/ios-48pt-3x/d-05-shieldless.png",
+      "ios72pt2x": "dark/ios-72pt-2x/d-05-shieldless.png",
+      "ios72pt3x": "dark/ios-72pt-3x/d-05-shieldless.png"
+    }
+  },
+  {
+    "family": "D",
+    "name": "Same-Day Scribe",
+    "description": "Thirty transactions logged the day they happened.",
+    "trigger": "30 tx logged on their own date",
+    "rarity": "Uncommon",
+    "stage": 0,
+    "iconName": "NotebookPen",
+    "light": {
+      "svg": "light/svg-master/d-06-same-day-scribe.svg",
+      "ios48pt2x": "light/ios-48pt-2x/d-06-same-day-scribe.png",
+      "ios48pt3x": "light/ios-48pt-3x/d-06-same-day-scribe.png",
+      "ios72pt2x": "light/ios-72pt-2x/d-06-same-day-scribe.png",
+      "ios72pt3x": "light/ios-72pt-3x/d-06-same-day-scribe.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/d-06-same-day-scribe.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/d-06-same-day-scribe.png",
+      "ios48pt3x": "dark/ios-48pt-3x/d-06-same-day-scribe.png",
+      "ios72pt2x": "dark/ios-72pt-2x/d-06-same-day-scribe.png",
+      "ios72pt3x": "dark/ios-72pt-3x/d-06-same-day-scribe.png"
+    }
+  },
+  {
+    "family": "D",
+    "name": "No Ghosts",
+    "description": "A whole period, nothing uncategorised.",
+    "trigger": "0 uncategorised tx in a P",
+    "rarity": "Uncommon",
+    "stage": 0,
+    "iconName": "Tags",
+    "light": {
+      "svg": "light/svg-master/d-07-no-ghosts.svg",
+      "ios48pt2x": "light/ios-48pt-2x/d-07-no-ghosts.png",
+      "ios48pt3x": "light/ios-48pt-3x/d-07-no-ghosts.png",
+      "ios72pt2x": "light/ios-72pt-2x/d-07-no-ghosts.png",
+      "ios72pt3x": "light/ios-72pt-3x/d-07-no-ghosts.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/d-07-no-ghosts.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/d-07-no-ghosts.png",
+      "ios48pt3x": "dark/ios-48pt-3x/d-07-no-ghosts.png",
+      "ios72pt2x": "dark/ios-72pt-2x/d-07-no-ghosts.png",
+      "ios72pt3x": "dark/ios-72pt-3x/d-07-no-ghosts.png"
+    }
+  },
+  {
+    "family": "D",
+    "name": "Nothing Hidden",
+    "description": "Six periods, every transaction categorised, every week confirmed.",
+    "trigger": "6 P with 0 uncategorised + all weeks clean",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "ListChecks",
+    "light": {
+      "svg": "light/svg-master/d-08-nothing-hidden.svg",
+      "ios48pt2x": "light/ios-48pt-2x/d-08-nothing-hidden.png",
+      "ios48pt3x": "light/ios-48pt-3x/d-08-nothing-hidden.png",
+      "ios72pt2x": "light/ios-72pt-2x/d-08-nothing-hidden.png",
+      "ios72pt3x": "light/ios-72pt-3x/d-08-nothing-hidden.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/d-08-nothing-hidden.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/d-08-nothing-hidden.png",
+      "ios48pt3x": "dark/ios-48pt-3x/d-08-nothing-hidden.png",
+      "ios72pt2x": "dark/ios-72pt-2x/d-08-nothing-hidden.png",
+      "ios72pt3x": "dark/ios-72pt-3x/d-08-nothing-hidden.png"
+    }
+  },
+  {
+    "family": "E",
+    "name": "First Limit",
+    "description": "You told your money where to go.",
+    "trigger": "first budget created",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "Gauge",
+    "light": {
+      "svg": "light/svg-master/e-01-first-limit.svg",
+      "ios48pt2x": "light/ios-48pt-2x/e-01-first-limit.png",
+      "ios48pt3x": "light/ios-48pt-3x/e-01-first-limit.png",
+      "ios72pt2x": "light/ios-72pt-2x/e-01-first-limit.png",
+      "ios72pt3x": "light/ios-72pt-3x/e-01-first-limit.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/e-01-first-limit.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/e-01-first-limit.png",
+      "ios48pt3x": "dark/ios-48pt-3x/e-01-first-limit.png",
+      "ios72pt2x": "dark/ios-72pt-2x/e-01-first-limit.png",
+      "ios72pt3x": "dark/ios-72pt-3x/e-01-first-limit.png"
+    }
+  },
+  {
+    "family": "E",
+    "name": "Under the Line",
+    "description": "Every budget, under, for a whole period.",
+    "trigger": "1 P under all caps",
+    "rarity": "Uncommon",
+    "stage": 1,
+    "iconName": "Gauge",
+    "light": {
+      "svg": "light/svg-master/e-02-under-the-line-stage-1.svg",
+      "ios48pt2x": "light/ios-48pt-2x/e-02-under-the-line-stage-1.png",
+      "ios48pt3x": "light/ios-48pt-3x/e-02-under-the-line-stage-1.png",
+      "ios72pt2x": "light/ios-72pt-2x/e-02-under-the-line-stage-1.png",
+      "ios72pt3x": "light/ios-72pt-3x/e-02-under-the-line-stage-1.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/e-02-under-the-line-stage-1.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/e-02-under-the-line-stage-1.png",
+      "ios48pt3x": "dark/ios-48pt-3x/e-02-under-the-line-stage-1.png",
+      "ios72pt2x": "dark/ios-72pt-2x/e-02-under-the-line-stage-1.png",
+      "ios72pt3x": "dark/ios-72pt-3x/e-02-under-the-line-stage-1.png"
+    }
+  },
+  {
+    "family": "E",
+    "name": "Under the Line",
+    "description": "Three periods, nothing over.",
+    "trigger": "3 consecutive",
+    "rarity": "Rare",
+    "stage": 2,
+    "iconName": "Gauge",
+    "light": {
+      "svg": "light/svg-master/e-03-under-the-line-stage-2.svg",
+      "ios48pt2x": "light/ios-48pt-2x/e-03-under-the-line-stage-2.png",
+      "ios48pt3x": "light/ios-48pt-3x/e-03-under-the-line-stage-2.png",
+      "ios72pt2x": "light/ios-72pt-2x/e-03-under-the-line-stage-2.png",
+      "ios72pt3x": "light/ios-72pt-3x/e-03-under-the-line-stage-2.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/e-03-under-the-line-stage-2.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/e-03-under-the-line-stage-2.png",
+      "ios48pt3x": "dark/ios-48pt-3x/e-03-under-the-line-stage-2.png",
+      "ios72pt2x": "dark/ios-72pt-2x/e-03-under-the-line-stage-2.png",
+      "ios72pt3x": "dark/ios-72pt-3x/e-03-under-the-line-stage-2.png"
+    }
+  },
+  {
+    "family": "E",
+    "name": "Under the Line",
+    "description": "Six periods. Every limit, every time.",
+    "trigger": "6 consecutive",
+    "rarity": "Epic",
+    "stage": 3,
+    "iconName": "Gauge",
+    "light": {
+      "svg": "light/svg-master/e-04-under-the-line-stage-3.svg",
+      "ios48pt2x": "light/ios-48pt-2x/e-04-under-the-line-stage-3.png",
+      "ios48pt3x": "light/ios-48pt-3x/e-04-under-the-line-stage-3.png",
+      "ios72pt2x": "light/ios-72pt-2x/e-04-under-the-line-stage-3.png",
+      "ios72pt3x": "light/ios-72pt-3x/e-04-under-the-line-stage-3.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/e-04-under-the-line-stage-3.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/e-04-under-the-line-stage-3.png",
+      "ios48pt3x": "dark/ios-48pt-3x/e-04-under-the-line-stage-3.png",
+      "ios72pt2x": "dark/ios-72pt-2x/e-04-under-the-line-stage-3.png",
+      "ios72pt3x": "dark/ios-72pt-3x/e-04-under-the-line-stage-3.png"
+    }
+  },
+  {
+    "family": "E",
+    "name": "The Whole Board",
+    "description": "A full year without a single budget overrun.",
+    "trigger": "12 consecutive",
+    "rarity": "Legendary",
+    "stage": 0,
+    "iconName": "LayoutDashboard",
+    "light": {
+      "svg": "light/svg-master/e-05-the-whole-board.svg",
+      "ios48pt2x": "light/ios-48pt-2x/e-05-the-whole-board.png",
+      "ios48pt3x": "light/ios-48pt-3x/e-05-the-whole-board.png",
+      "ios72pt2x": "light/ios-72pt-2x/e-05-the-whole-board.png",
+      "ios72pt3x": "light/ios-72pt-3x/e-05-the-whole-board.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/e-05-the-whole-board.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/e-05-the-whole-board.png",
+      "ios48pt3x": "dark/ios-48pt-3x/e-05-the-whole-board.png",
+      "ios72pt2x": "dark/ios-72pt-2x/e-05-the-whole-board.png",
+      "ios72pt3x": "dark/ios-72pt-3x/e-05-the-whole-board.png"
+    }
+  },
+  {
+    "family": "E",
+    "name": "Tight Rope",
+    "description": "Within two percent of the cap. Under it.",
+    "trigger": "finished a P within 2% of a cap, not over",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "Gauge",
+    "light": {
+      "svg": "light/svg-master/e-06-tight-rope.svg",
+      "ios48pt2x": "light/ios-48pt-2x/e-06-tight-rope.png",
+      "ios48pt3x": "light/ios-48pt-3x/e-06-tight-rope.png",
+      "ios72pt2x": "light/ios-72pt-2x/e-06-tight-rope.png",
+      "ios72pt3x": "light/ios-72pt-3x/e-06-tight-rope.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/e-06-tight-rope.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/e-06-tight-rope.png",
+      "ios48pt3x": "dark/ios-48pt-3x/e-06-tight-rope.png",
+      "ios72pt2x": "dark/ios-72pt-2x/e-06-tight-rope.png",
+      "ios72pt3x": "dark/ios-72pt-3x/e-06-tight-rope.png"
+    }
+  },
+  {
+    "family": "E",
+    "name": "Six Under",
+    "description": "Six budgets, all under, same period.",
+    "trigger": "≥6 budgets under cap in one P",
+    "rarity": "Uncommon",
+    "stage": 0,
+    "iconName": "ListChecks",
+    "light": {
+      "svg": "light/svg-master/e-07-six-under.svg",
+      "ios48pt2x": "light/ios-48pt-2x/e-07-six-under.png",
+      "ios48pt3x": "light/ios-48pt-3x/e-07-six-under.png",
+      "ios72pt2x": "light/ios-72pt-2x/e-07-six-under.png",
+      "ios72pt3x": "light/ios-72pt-3x/e-07-six-under.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/e-07-six-under.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/e-07-six-under.png",
+      "ios48pt3x": "dark/ios-48pt-3x/e-07-six-under.png",
+      "ios72pt2x": "dark/ios-72pt-2x/e-07-six-under.png",
+      "ios72pt3x": "dark/ios-72pt-3x/e-07-six-under.png"
+    }
+  },
+  {
+    "family": "E",
+    "name": "Folder Discipline",
+    "description": "The folder held — and so did everything inside it.",
+    "trigger": "folder budget met with all child categories under",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "FolderTree",
+    "light": {
+      "svg": "light/svg-master/e-08-folder-discipline.svg",
+      "ios48pt2x": "light/ios-48pt-2x/e-08-folder-discipline.png",
+      "ios48pt3x": "light/ios-48pt-3x/e-08-folder-discipline.png",
+      "ios72pt2x": "light/ios-72pt-2x/e-08-folder-discipline.png",
+      "ios72pt3x": "light/ios-72pt-3x/e-08-folder-discipline.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/e-08-folder-discipline.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/e-08-folder-discipline.png",
+      "ios48pt3x": "dark/ios-48pt-3x/e-08-folder-discipline.png",
+      "ios72pt2x": "dark/ios-72pt-2x/e-08-folder-discipline.png",
+      "ios72pt3x": "dark/ios-72pt-3x/e-08-folder-discipline.png"
+    }
+  },
+  {
+    "family": "E",
+    "name": "Cut It Down",
+    "description": "A tenth off a category, against your own average.",
+    "trigger": "category spend −10% vs own 3-P average",
+    "rarity": "Uncommon",
+    "stage": 1,
+    "iconName": "ChartNoAxesColumnDecreasing",
+    "light": {
+      "svg": "light/svg-master/e-09-cut-it-down-stage-1.svg",
+      "ios48pt2x": "light/ios-48pt-2x/e-09-cut-it-down-stage-1.png",
+      "ios48pt3x": "light/ios-48pt-3x/e-09-cut-it-down-stage-1.png",
+      "ios72pt2x": "light/ios-72pt-2x/e-09-cut-it-down-stage-1.png",
+      "ios72pt3x": "light/ios-72pt-3x/e-09-cut-it-down-stage-1.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/e-09-cut-it-down-stage-1.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/e-09-cut-it-down-stage-1.png",
+      "ios48pt3x": "dark/ios-48pt-3x/e-09-cut-it-down-stage-1.png",
+      "ios72pt2x": "dark/ios-72pt-2x/e-09-cut-it-down-stage-1.png",
+      "ios72pt3x": "dark/ios-72pt-3x/e-09-cut-it-down-stage-1.png"
+    }
+  },
+  {
+    "family": "E",
+    "name": "Cut It Down",
+    "description": "A quarter off.",
+    "trigger": "−25%",
+    "rarity": "Rare",
+    "stage": 2,
+    "iconName": "ChartNoAxesColumnDecreasing",
+    "light": {
+      "svg": "light/svg-master/e-10-cut-it-down-stage-2.svg",
+      "ios48pt2x": "light/ios-48pt-2x/e-10-cut-it-down-stage-2.png",
+      "ios48pt3x": "light/ios-48pt-3x/e-10-cut-it-down-stage-2.png",
+      "ios72pt2x": "light/ios-72pt-2x/e-10-cut-it-down-stage-2.png",
+      "ios72pt3x": "light/ios-72pt-3x/e-10-cut-it-down-stage-2.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/e-10-cut-it-down-stage-2.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/e-10-cut-it-down-stage-2.png",
+      "ios48pt3x": "dark/ios-48pt-3x/e-10-cut-it-down-stage-2.png",
+      "ios72pt2x": "dark/ios-72pt-2x/e-10-cut-it-down-stage-2.png",
+      "ios72pt3x": "dark/ios-72pt-3x/e-10-cut-it-down-stage-2.png"
+    }
+  },
+  {
+    "family": "E",
+    "name": "Cut It Down",
+    "description": "Half. You genuinely changed a habit.",
+    "trigger": "−50%",
+    "rarity": "Epic",
+    "stage": 3,
+    "iconName": "ChartNoAxesColumnDecreasing",
+    "light": {
+      "svg": "light/svg-master/e-11-cut-it-down-stage-3.svg",
+      "ios48pt2x": "light/ios-48pt-2x/e-11-cut-it-down-stage-3.png",
+      "ios48pt3x": "light/ios-48pt-3x/e-11-cut-it-down-stage-3.png",
+      "ios72pt2x": "light/ios-72pt-2x/e-11-cut-it-down-stage-3.png",
+      "ios72pt3x": "light/ios-72pt-3x/e-11-cut-it-down-stage-3.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/e-11-cut-it-down-stage-3.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/e-11-cut-it-down-stage-3.png",
+      "ios48pt3x": "dark/ios-48pt-3x/e-11-cut-it-down-stage-3.png",
+      "ios72pt2x": "dark/ios-72pt-2x/e-11-cut-it-down-stage-3.png",
+      "ios72pt3x": "dark/ios-72pt-3x/e-11-cut-it-down-stage-3.png"
+    }
+  },
+  {
+    "family": "E",
+    "name": "The Big Cut",
+    "description": "Total spending down a quarter, and your income didn’t drop.",
+    "trigger": "total spend −25% vs own 6-P average, income ≥ flat",
+    "rarity": "Epic",
+    "stage": 0,
+    "iconName": "ChartNoAxesColumnDecreasing",
+    "light": {
+      "svg": "light/svg-master/e-12-the-big-cut.svg",
+      "ios48pt2x": "light/ios-48pt-2x/e-12-the-big-cut.png",
+      "ios48pt3x": "light/ios-48pt-3x/e-12-the-big-cut.png",
+      "ios72pt2x": "light/ios-72pt-2x/e-12-the-big-cut.png",
+      "ios72pt3x": "light/ios-72pt-3x/e-12-the-big-cut.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/e-12-the-big-cut.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/e-12-the-big-cut.png",
+      "ios48pt3x": "dark/ios-48pt-3x/e-12-the-big-cut.png",
+      "ios72pt2x": "dark/ios-72pt-2x/e-12-the-big-cut.png",
+      "ios72pt3x": "dark/ios-72pt-3x/e-12-the-big-cut.png"
+    }
+  },
+  {
+    "family": "F",
+    "name": "First Book",
+    "description": "A goal with a deadline is a plan, not a wish.",
+    "trigger": "first budget book created",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "BookOpenCheck",
+    "light": {
+      "svg": "light/svg-master/f-01-first-book.svg",
+      "ios48pt2x": "light/ios-48pt-2x/f-01-first-book.png",
+      "ios48pt3x": "light/ios-48pt-3x/f-01-first-book.png",
+      "ios72pt2x": "light/ios-72pt-2x/f-01-first-book.png",
+      "ios72pt3x": "light/ios-72pt-3x/f-01-first-book.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/f-01-first-book.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/f-01-first-book.png",
+      "ios48pt3x": "dark/ios-48pt-3x/f-01-first-book.png",
+      "ios72pt2x": "dark/ios-72pt-2x/f-01-first-book.png",
+      "ios72pt3x": "dark/ios-72pt-3x/f-01-first-book.png"
+    }
+  },
+  {
+    "family": "F",
+    "name": "Goal Getter",
+    "description": "One goal, finished.",
+    "trigger": "1 goal completed",
+    "rarity": "Uncommon",
+    "stage": 1,
+    "iconName": "Target",
+    "light": {
+      "svg": "light/svg-master/f-02-goal-getter-stage-1.svg",
+      "ios48pt2x": "light/ios-48pt-2x/f-02-goal-getter-stage-1.png",
+      "ios48pt3x": "light/ios-48pt-3x/f-02-goal-getter-stage-1.png",
+      "ios72pt2x": "light/ios-72pt-2x/f-02-goal-getter-stage-1.png",
+      "ios72pt3x": "light/ios-72pt-3x/f-02-goal-getter-stage-1.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/f-02-goal-getter-stage-1.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/f-02-goal-getter-stage-1.png",
+      "ios48pt3x": "dark/ios-48pt-3x/f-02-goal-getter-stage-1.png",
+      "ios72pt2x": "dark/ios-72pt-2x/f-02-goal-getter-stage-1.png",
+      "ios72pt3x": "dark/ios-72pt-3x/f-02-goal-getter-stage-1.png"
+    }
+  },
+  {
+    "family": "F",
+    "name": "Goal Getter",
+    "description": "Three goals, finished.",
+    "trigger": "3 completed",
+    "rarity": "Rare",
+    "stage": 2,
+    "iconName": "Target",
+    "light": {
+      "svg": "light/svg-master/f-03-goal-getter-stage-2.svg",
+      "ios48pt2x": "light/ios-48pt-2x/f-03-goal-getter-stage-2.png",
+      "ios48pt3x": "light/ios-48pt-3x/f-03-goal-getter-stage-2.png",
+      "ios72pt2x": "light/ios-72pt-2x/f-03-goal-getter-stage-2.png",
+      "ios72pt3x": "light/ios-72pt-3x/f-03-goal-getter-stage-2.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/f-03-goal-getter-stage-2.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/f-03-goal-getter-stage-2.png",
+      "ios48pt3x": "dark/ios-48pt-3x/f-03-goal-getter-stage-2.png",
+      "ios72pt2x": "dark/ios-72pt-2x/f-03-goal-getter-stage-2.png",
+      "ios72pt3x": "dark/ios-72pt-3x/f-03-goal-getter-stage-2.png"
+    }
+  },
+  {
+    "family": "F",
+    "name": "Goal Getter",
+    "description": "Ten goals. You finish what you start.",
+    "trigger": "10 completed",
+    "rarity": "Epic",
+    "stage": 3,
+    "iconName": "Target",
+    "light": {
+      "svg": "light/svg-master/f-04-goal-getter-stage-3.svg",
+      "ios48pt2x": "light/ios-48pt-2x/f-04-goal-getter-stage-3.png",
+      "ios48pt3x": "light/ios-48pt-3x/f-04-goal-getter-stage-3.png",
+      "ios72pt2x": "light/ios-72pt-2x/f-04-goal-getter-stage-3.png",
+      "ios72pt3x": "light/ios-72pt-3x/f-04-goal-getter-stage-3.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/f-04-goal-getter-stage-3.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/f-04-goal-getter-stage-3.png",
+      "ios48pt3x": "dark/ios-48pt-3x/f-04-goal-getter-stage-3.png",
+      "ios72pt2x": "dark/ios-72pt-2x/f-04-goal-getter-stage-3.png",
+      "ios72pt3x": "dark/ios-72pt-3x/f-04-goal-getter-stage-3.png"
+    }
+  },
+  {
+    "family": "F",
+    "name": "Twenty Books",
+    "description": "Twenty completed goals.",
+    "trigger": "20 completed",
+    "rarity": "Legendary",
+    "stage": 0,
+    "iconName": "Target",
+    "light": {
+      "svg": "light/svg-master/f-05-twenty-books.svg",
+      "ios48pt2x": "light/ios-48pt-2x/f-05-twenty-books.png",
+      "ios48pt3x": "light/ios-48pt-3x/f-05-twenty-books.png",
+      "ios72pt2x": "light/ios-72pt-2x/f-05-twenty-books.png",
+      "ios72pt3x": "light/ios-72pt-3x/f-05-twenty-books.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/f-05-twenty-books.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/f-05-twenty-books.png",
+      "ios48pt3x": "dark/ios-48pt-3x/f-05-twenty-books.png",
+      "ios72pt2x": "dark/ios-72pt-2x/f-05-twenty-books.png",
+      "ios72pt3x": "dark/ios-72pt-3x/f-05-twenty-books.png"
+    }
+  },
+  {
+    "family": "F",
+    "name": "Ahead of Schedule",
+    "description": "Done before the deadline.",
+    "trigger": "goal completed before its deadline",
+    "rarity": "Uncommon",
+    "stage": 0,
+    "iconName": "CalendarClock",
+    "light": {
+      "svg": "light/svg-master/f-06-ahead-of-schedule.svg",
+      "ios48pt2x": "light/ios-48pt-2x/f-06-ahead-of-schedule.png",
+      "ios48pt3x": "light/ios-48pt-3x/f-06-ahead-of-schedule.png",
+      "ios72pt2x": "light/ios-72pt-2x/f-06-ahead-of-schedule.png",
+      "ios72pt3x": "light/ios-72pt-3x/f-06-ahead-of-schedule.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/f-06-ahead-of-schedule.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/f-06-ahead-of-schedule.png",
+      "ios48pt3x": "dark/ios-48pt-3x/f-06-ahead-of-schedule.png",
+      "ios72pt2x": "dark/ios-72pt-2x/f-06-ahead-of-schedule.png",
+      "ios72pt3x": "dark/ios-72pt-3x/f-06-ahead-of-schedule.png"
+    }
+  },
+  {
+    "family": "F",
+    "name": "Way Ahead",
+    "description": "Done in half the time you gave yourself.",
+    "trigger": "completed in ≤50% of planned span",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "FastForward",
+    "light": {
+      "svg": "light/svg-master/f-07-way-ahead.svg",
+      "ios48pt2x": "light/ios-48pt-2x/f-07-way-ahead.png",
+      "ios48pt3x": "light/ios-48pt-3x/f-07-way-ahead.png",
+      "ios72pt2x": "light/ios-72pt-2x/f-07-way-ahead.png",
+      "ios72pt3x": "light/ios-72pt-3x/f-07-way-ahead.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/f-07-way-ahead.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/f-07-way-ahead.png",
+      "ios48pt3x": "dark/ios-48pt-3x/f-07-way-ahead.png",
+      "ios72pt2x": "dark/ios-72pt-2x/f-07-way-ahead.png",
+      "ios72pt3x": "dark/ios-72pt-3x/f-07-way-ahead.png"
+    }
+  },
+  {
+    "family": "F",
+    "name": "Never Dipped",
+    "description": "Funded to the finish, never once raided.",
+    "trigger": "goal completed with 0 withdrawals",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "LockKeyhole",
+    "light": {
+      "svg": "light/svg-master/f-08-never-dipped.svg",
+      "ios48pt2x": "light/ios-48pt-2x/f-08-never-dipped.png",
+      "ios48pt3x": "light/ios-48pt-3x/f-08-never-dipped.png",
+      "ios72pt2x": "light/ios-72pt-2x/f-08-never-dipped.png",
+      "ios72pt3x": "light/ios-72pt-3x/f-08-never-dipped.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/f-08-never-dipped.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/f-08-never-dipped.png",
+      "ios48pt3x": "dark/ios-48pt-3x/f-08-never-dipped.png",
+      "ios72pt2x": "dark/ios-72pt-2x/f-08-never-dipped.png",
+      "ios72pt3x": "dark/ios-72pt-3x/f-08-never-dipped.png"
+    }
+  },
+  {
+    "family": "F",
+    "name": "Three at Once",
+    "description": "Three goals funded in parallel.",
+    "trigger": "3 goals simultaneously ≥50% funded",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "Layers3",
+    "light": {
+      "svg": "light/svg-master/f-09-three-at-once.svg",
+      "ios48pt2x": "light/ios-48pt-2x/f-09-three-at-once.png",
+      "ios48pt3x": "light/ios-48pt-3x/f-09-three-at-once.png",
+      "ios72pt2x": "light/ios-72pt-2x/f-09-three-at-once.png",
+      "ios72pt3x": "light/ios-72pt-3x/f-09-three-at-once.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/f-09-three-at-once.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/f-09-three-at-once.png",
+      "ios48pt3x": "dark/ios-48pt-3x/f-09-three-at-once.png",
+      "ios72pt2x": "dark/ios-72pt-2x/f-09-three-at-once.png",
+      "ios72pt3x": "dark/ios-72pt-3x/f-09-three-at-once.png"
+    }
+  },
+  {
+    "family": "F",
+    "name": "Big Book",
+    "description": "A goal worth three months of your income.",
+    "trigger": "goal completed, target ≥ 3× monthly income",
+    "rarity": "Epic",
+    "stage": 0,
+    "iconName": "BookMarked",
+    "light": {
+      "svg": "light/svg-master/f-10-big-book.svg",
+      "ios48pt2x": "light/ios-48pt-2x/f-10-big-book.png",
+      "ios48pt3x": "light/ios-48pt-3x/f-10-big-book.png",
+      "ios72pt2x": "light/ios-72pt-2x/f-10-big-book.png",
+      "ios72pt3x": "light/ios-72pt-3x/f-10-big-book.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/f-10-big-book.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/f-10-big-book.png",
+      "ios48pt3x": "dark/ios-48pt-3x/f-10-big-book.png",
+      "ios72pt2x": "dark/ios-72pt-2x/f-10-big-book.png",
+      "ios72pt3x": "dark/ios-72pt-3x/f-10-big-book.png"
+    }
+  },
+  {
+    "family": "F",
+    "name": "The Dream",
+    "description": "A goal worth a year of your income. Finished.",
+    "trigger": "goal completed, target ≥ 12× monthly income",
+    "rarity": "Legendary",
+    "stage": 0,
+    "iconName": "Star",
+    "light": {
+      "svg": "light/svg-master/f-11-the-dream.svg",
+      "ios48pt2x": "light/ios-48pt-2x/f-11-the-dream.png",
+      "ios48pt3x": "light/ios-48pt-3x/f-11-the-dream.png",
+      "ios72pt2x": "light/ios-72pt-2x/f-11-the-dream.png",
+      "ios72pt3x": "light/ios-72pt-3x/f-11-the-dream.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/f-11-the-dream.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/f-11-the-dream.png",
+      "ios48pt3x": "dark/ios-48pt-3x/f-11-the-dream.png",
+      "ios72pt2x": "dark/ios-72pt-2x/f-11-the-dream.png",
+      "ios72pt3x": "dark/ios-72pt-3x/f-11-the-dream.png"
+    }
+  },
+  {
+    "family": "G",
+    "name": "First Pot",
+    "description": "Money you’ve decided not to touch.",
+    "trigger": "first savings account opened",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "PiggyBank",
+    "light": {
+      "svg": "light/svg-master/g-01-first-pot.svg",
+      "ios48pt2x": "light/ios-48pt-2x/g-01-first-pot.png",
+      "ios48pt3x": "light/ios-48pt-3x/g-01-first-pot.png",
+      "ios72pt2x": "light/ios-72pt-2x/g-01-first-pot.png",
+      "ios72pt3x": "light/ios-72pt-3x/g-01-first-pot.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/g-01-first-pot.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/g-01-first-pot.png",
+      "ios48pt3x": "dark/ios-48pt-3x/g-01-first-pot.png",
+      "ios72pt2x": "dark/ios-72pt-2x/g-01-first-pot.png",
+      "ios72pt3x": "dark/ios-72pt-3x/g-01-first-pot.png"
+    }
+  },
+  {
+    "family": "G",
+    "name": "Thousand",
+    "description": "A thousand set aside.",
+    "trigger": "total savings ≥ 1,000",
+    "rarity": "Common",
+    "stage": 1,
+    "iconName": "Banknote",
+    "light": {
+      "svg": "light/svg-master/g-02-thousand-stage-1.svg",
+      "ios48pt2x": "light/ios-48pt-2x/g-02-thousand-stage-1.png",
+      "ios48pt3x": "light/ios-48pt-3x/g-02-thousand-stage-1.png",
+      "ios72pt2x": "light/ios-72pt-2x/g-02-thousand-stage-1.png",
+      "ios72pt3x": "light/ios-72pt-3x/g-02-thousand-stage-1.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/g-02-thousand-stage-1.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/g-02-thousand-stage-1.png",
+      "ios48pt3x": "dark/ios-48pt-3x/g-02-thousand-stage-1.png",
+      "ios72pt2x": "dark/ios-72pt-2x/g-02-thousand-stage-1.png",
+      "ios72pt3x": "dark/ios-72pt-3x/g-02-thousand-stage-1.png"
+    }
+  },
+  {
+    "family": "G",
+    "name": "Five Figures",
+    "description": "Ten thousand.",
+    "trigger": "≥ 10,000",
+    "rarity": "Uncommon",
+    "stage": 2,
+    "iconName": "Banknote",
+    "light": {
+      "svg": "light/svg-master/g-03-five-figures-stage-2.svg",
+      "ios48pt2x": "light/ios-48pt-2x/g-03-five-figures-stage-2.png",
+      "ios48pt3x": "light/ios-48pt-3x/g-03-five-figures-stage-2.png",
+      "ios72pt2x": "light/ios-72pt-2x/g-03-five-figures-stage-2.png",
+      "ios72pt3x": "light/ios-72pt-3x/g-03-five-figures-stage-2.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/g-03-five-figures-stage-2.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/g-03-five-figures-stage-2.png",
+      "ios48pt3x": "dark/ios-48pt-3x/g-03-five-figures-stage-2.png",
+      "ios72pt2x": "dark/ios-72pt-2x/g-03-five-figures-stage-2.png",
+      "ios72pt3x": "dark/ios-72pt-3x/g-03-five-figures-stage-2.png"
+    }
+  },
+  {
+    "family": "G",
+    "name": "Six Figures",
+    "description": "A hundred thousand.",
+    "trigger": "≥ 100,000",
+    "rarity": "Rare",
+    "stage": 3,
+    "iconName": "Banknote",
+    "light": {
+      "svg": "light/svg-master/g-04-six-figures-stage-3.svg",
+      "ios48pt2x": "light/ios-48pt-2x/g-04-six-figures-stage-3.png",
+      "ios48pt3x": "light/ios-48pt-3x/g-04-six-figures-stage-3.png",
+      "ios72pt2x": "light/ios-72pt-2x/g-04-six-figures-stage-3.png",
+      "ios72pt3x": "light/ios-72pt-3x/g-04-six-figures-stage-3.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/g-04-six-figures-stage-3.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/g-04-six-figures-stage-3.png",
+      "ios48pt3x": "dark/ios-48pt-3x/g-04-six-figures-stage-3.png",
+      "ios72pt2x": "dark/ios-72pt-2x/g-04-six-figures-stage-3.png",
+      "ios72pt3x": "dark/ios-72pt-3x/g-04-six-figures-stage-3.png"
+    }
+  },
+  {
+    "family": "G",
+    "name": "Seven Figures",
+    "description": "A million, set aside.",
+    "trigger": "≥ 1,000,000",
+    "rarity": "Legendary",
+    "stage": 0,
+    "iconName": "Banknote",
+    "light": {
+      "svg": "light/svg-master/g-05-seven-figures.svg",
+      "ios48pt2x": "light/ios-48pt-2x/g-05-seven-figures.png",
+      "ios48pt3x": "light/ios-48pt-3x/g-05-seven-figures.png",
+      "ios72pt2x": "light/ios-72pt-2x/g-05-seven-figures.png",
+      "ios72pt3x": "light/ios-72pt-3x/g-05-seven-figures.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/g-05-seven-figures.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/g-05-seven-figures.png",
+      "ios48pt3x": "dark/ios-48pt-3x/g-05-seven-figures.png",
+      "ios72pt2x": "dark/ios-72pt-2x/g-05-seven-figures.png",
+      "ios72pt3x": "dark/ios-72pt-3x/g-05-seven-figures.png"
+    }
+  },
+  {
+    "family": "G",
+    "name": "Cushion",
+    "description": "One month of essentials, covered.",
+    "trigger": "savings ≥ 1× monthly essentials",
+    "rarity": "Uncommon",
+    "stage": 1,
+    "iconName": "ShieldCheck",
+    "light": {
+      "svg": "light/svg-master/g-06-cushion-stage-1.svg",
+      "ios48pt2x": "light/ios-48pt-2x/g-06-cushion-stage-1.png",
+      "ios48pt3x": "light/ios-48pt-3x/g-06-cushion-stage-1.png",
+      "ios72pt2x": "light/ios-72pt-2x/g-06-cushion-stage-1.png",
+      "ios72pt3x": "light/ios-72pt-3x/g-06-cushion-stage-1.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/g-06-cushion-stage-1.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/g-06-cushion-stage-1.png",
+      "ios48pt3x": "dark/ios-48pt-3x/g-06-cushion-stage-1.png",
+      "ios72pt2x": "dark/ios-72pt-2x/g-06-cushion-stage-1.png",
+      "ios72pt3x": "dark/ios-72pt-3x/g-06-cushion-stage-1.png"
+    }
+  },
+  {
+    "family": "G",
+    "name": "Cushion",
+    "description": "Three months. You can absorb a shock.",
+    "trigger": "≥ 3×",
+    "rarity": "Rare",
+    "stage": 2,
+    "iconName": "ShieldCheck",
+    "light": {
+      "svg": "light/svg-master/g-07-cushion-stage-2.svg",
+      "ios48pt2x": "light/ios-48pt-2x/g-07-cushion-stage-2.png",
+      "ios48pt3x": "light/ios-48pt-3x/g-07-cushion-stage-2.png",
+      "ios72pt2x": "light/ios-72pt-2x/g-07-cushion-stage-2.png",
+      "ios72pt3x": "light/ios-72pt-3x/g-07-cushion-stage-2.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/g-07-cushion-stage-2.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/g-07-cushion-stage-2.png",
+      "ios48pt3x": "dark/ios-48pt-3x/g-07-cushion-stage-2.png",
+      "ios72pt2x": "dark/ios-72pt-2x/g-07-cushion-stage-2.png",
+      "ios72pt3x": "dark/ios-72pt-3x/g-07-cushion-stage-2.png"
+    }
+  },
+  {
+    "family": "G",
+    "name": "Cushion",
+    "description": "Six months. You can absorb a bad year.",
+    "trigger": "≥ 6×",
+    "rarity": "Epic",
+    "stage": 3,
+    "iconName": "ShieldCheck",
+    "light": {
+      "svg": "light/svg-master/g-08-cushion-stage-3.svg",
+      "ios48pt2x": "light/ios-48pt-2x/g-08-cushion-stage-3.png",
+      "ios48pt3x": "light/ios-48pt-3x/g-08-cushion-stage-3.png",
+      "ios72pt2x": "light/ios-72pt-2x/g-08-cushion-stage-3.png",
+      "ios72pt3x": "light/ios-72pt-3x/g-08-cushion-stage-3.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/g-08-cushion-stage-3.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/g-08-cushion-stage-3.png",
+      "ios48pt3x": "dark/ios-48pt-3x/g-08-cushion-stage-3.png",
+      "ios72pt2x": "dark/ios-72pt-2x/g-08-cushion-stage-3.png",
+      "ios72pt3x": "dark/ios-72pt-3x/g-08-cushion-stage-3.png"
+    }
+  },
+  {
+    "family": "G",
+    "name": "The Fortress",
+    "description": "Twelve months of essentials in reserve.",
+    "trigger": "≥ 12×",
+    "rarity": "Legendary",
+    "stage": 0,
+    "iconName": "ShieldCheck",
+    "light": {
+      "svg": "light/svg-master/g-09-the-fortress.svg",
+      "ios48pt2x": "light/ios-48pt-2x/g-09-the-fortress.png",
+      "ios48pt3x": "light/ios-48pt-3x/g-09-the-fortress.png",
+      "ios72pt2x": "light/ios-72pt-2x/g-09-the-fortress.png",
+      "ios72pt3x": "light/ios-72pt-3x/g-09-the-fortress.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/g-09-the-fortress.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/g-09-the-fortress.png",
+      "ios48pt3x": "dark/ios-48pt-3x/g-09-the-fortress.png",
+      "ios72pt2x": "dark/ios-72pt-2x/g-09-the-fortress.png",
+      "ios72pt3x": "dark/ios-72pt-3x/g-09-the-fortress.png"
+    }
+  },
+  {
+    "family": "G",
+    "name": "Untouched",
+    "description": "Six periods without a single withdrawal.",
+    "trigger": "6 P, 0 savings withdrawals",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "LockKeyhole",
+    "light": {
+      "svg": "light/svg-master/g-10-untouched.svg",
+      "ios48pt2x": "light/ios-48pt-2x/g-10-untouched.png",
+      "ios48pt3x": "light/ios-48pt-3x/g-10-untouched.png",
+      "ios72pt2x": "light/ios-72pt-2x/g-10-untouched.png",
+      "ios72pt3x": "light/ios-72pt-3x/g-10-untouched.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/g-10-untouched.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/g-10-untouched.png",
+      "ios48pt3x": "dark/ios-48pt-3x/g-10-untouched.png",
+      "ios72pt2x": "dark/ios-72pt-2x/g-10-untouched.png",
+      "ios72pt3x": "dark/ios-72pt-3x/g-10-untouched.png"
+    }
+  },
+  {
+    "family": "G",
+    "name": "Automatic",
+    "description": "Twelve periods, funded every single one.",
+    "trigger": "12 consecutive P with a savings contribution",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "Repeat2",
+    "light": {
+      "svg": "light/svg-master/g-11-automatic.svg",
+      "ios48pt2x": "light/ios-48pt-2x/g-11-automatic.png",
+      "ios48pt3x": "light/ios-48pt-3x/g-11-automatic.png",
+      "ios72pt2x": "light/ios-72pt-2x/g-11-automatic.png",
+      "ios72pt3x": "light/ios-72pt-3x/g-11-automatic.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/g-11-automatic.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/g-11-automatic.png",
+      "ios48pt3x": "dark/ios-48pt-3x/g-11-automatic.png",
+      "ios72pt2x": "dark/ios-72pt-2x/g-11-automatic.png",
+      "ios72pt3x": "dark/ios-72pt-3x/g-11-automatic.png"
+    }
+  },
+  {
+    "family": "H",
+    "name": "The First Extra",
+    "description": "You have more than you started with.",
+    "trigger": "net worth > opening balance, first time",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "TrendingUp",
+    "light": {
+      "svg": "light/svg-master/h-01-the-first-extra.svg",
+      "ios48pt2x": "light/ios-48pt-2x/h-01-the-first-extra.png",
+      "ios48pt3x": "light/ios-48pt-3x/h-01-the-first-extra.png",
+      "ios72pt2x": "light/ios-72pt-2x/h-01-the-first-extra.png",
+      "ios72pt3x": "light/ios-72pt-3x/h-01-the-first-extra.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/h-01-the-first-extra.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/h-01-the-first-extra.png",
+      "ios48pt3x": "dark/ios-48pt-3x/h-01-the-first-extra.png",
+      "ios72pt2x": "dark/ios-72pt-2x/h-01-the-first-extra.png",
+      "ios72pt3x": "dark/ios-72pt-3x/h-01-the-first-extra.png"
+    }
+  },
+  {
+    "family": "H",
+    "name": "Doubled",
+    "description": "Twice what you started with.",
+    "trigger": "net worth ≥ 2× opening balance",
+    "rarity": "Rare",
+    "stage": 1,
+    "iconName": "TrendingUp",
+    "light": {
+      "svg": "light/svg-master/h-02-doubled-stage-1.svg",
+      "ios48pt2x": "light/ios-48pt-2x/h-02-doubled-stage-1.png",
+      "ios48pt3x": "light/ios-48pt-3x/h-02-doubled-stage-1.png",
+      "ios72pt2x": "light/ios-72pt-2x/h-02-doubled-stage-1.png",
+      "ios72pt3x": "light/ios-72pt-3x/h-02-doubled-stage-1.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/h-02-doubled-stage-1.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/h-02-doubled-stage-1.png",
+      "ios48pt3x": "dark/ios-48pt-3x/h-02-doubled-stage-1.png",
+      "ios72pt2x": "dark/ios-72pt-2x/h-02-doubled-stage-1.png",
+      "ios72pt3x": "dark/ios-72pt-3x/h-02-doubled-stage-1.png"
+    }
+  },
+  {
+    "family": "H",
+    "name": "Tripled",
+    "description": "Three times over.",
+    "trigger": "≥ 3×",
+    "rarity": "Epic",
+    "stage": 2,
+    "iconName": "TrendingUp",
+    "light": {
+      "svg": "light/svg-master/h-03-tripled-stage-2.svg",
+      "ios48pt2x": "light/ios-48pt-2x/h-03-tripled-stage-2.png",
+      "ios48pt3x": "light/ios-48pt-3x/h-03-tripled-stage-2.png",
+      "ios72pt2x": "light/ios-72pt-2x/h-03-tripled-stage-2.png",
+      "ios72pt3x": "light/ios-72pt-3x/h-03-tripled-stage-2.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/h-03-tripled-stage-2.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/h-03-tripled-stage-2.png",
+      "ios48pt3x": "dark/ios-48pt-3x/h-03-tripled-stage-2.png",
+      "ios72pt2x": "dark/ios-72pt-2x/h-03-tripled-stage-2.png",
+      "ios72pt3x": "dark/ios-72pt-3x/h-03-tripled-stage-2.png"
+    }
+  },
+  {
+    "family": "H",
+    "name": "Fivefold",
+    "description": "Five times what you walked in with.",
+    "trigger": "≥ 5×",
+    "rarity": "Legendary",
+    "stage": 3,
+    "iconName": "TrendingUp",
+    "light": {
+      "svg": "light/svg-master/h-04-fivefold-stage-3.svg",
+      "ios48pt2x": "light/ios-48pt-2x/h-04-fivefold-stage-3.png",
+      "ios48pt3x": "light/ios-48pt-3x/h-04-fivefold-stage-3.png",
+      "ios72pt2x": "light/ios-72pt-2x/h-04-fivefold-stage-3.png",
+      "ios72pt3x": "light/ios-72pt-3x/h-04-fivefold-stage-3.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/h-04-fivefold-stage-3.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/h-04-fivefold-stage-3.png",
+      "ios48pt3x": "dark/ios-48pt-3x/h-04-fivefold-stage-3.png",
+      "ios72pt2x": "dark/ios-72pt-2x/h-04-fivefold-stage-3.png",
+      "ios72pt3x": "dark/ios-72pt-3x/h-04-fivefold-stage-3.png"
+    }
+  },
+  {
+    "family": "H",
+    "name": "Tenfold",
+    "description": "Ten times. Richard has removed his hat.",
+    "trigger": "≥ 10×",
+    "rarity": "Mythic",
+    "stage": 0,
+    "iconName": "TrendingUp",
+    "light": {
+      "svg": "light/svg-master/h-05-tenfold.svg",
+      "ios48pt2x": "light/ios-48pt-2x/h-05-tenfold.png",
+      "ios48pt3x": "light/ios-48pt-3x/h-05-tenfold.png",
+      "ios72pt2x": "light/ios-72pt-2x/h-05-tenfold.png",
+      "ios72pt3x": "light/ios-72pt-3x/h-05-tenfold.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/h-05-tenfold.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/h-05-tenfold.png",
+      "ios48pt3x": "dark/ios-48pt-3x/h-05-tenfold.png",
+      "ios72pt2x": "dark/ios-72pt-2x/h-05-tenfold.png",
+      "ios72pt3x": "dark/ios-72pt-3x/h-05-tenfold.png"
+    }
+  },
+  {
+    "family": "H",
+    "name": "Hundredfold",
+    "description": "One hundred times your opening balance.",
+    "trigger": "≥ 100×",
+    "rarity": "Mythic",
+    "stage": 0,
+    "iconName": "TrendingUp",
+    "light": {
+      "svg": "light/svg-master/h-06-hundredfold.svg",
+      "ios48pt2x": "light/ios-48pt-2x/h-06-hundredfold.png",
+      "ios48pt3x": "light/ios-48pt-3x/h-06-hundredfold.png",
+      "ios72pt2x": "light/ios-72pt-2x/h-06-hundredfold.png",
+      "ios72pt3x": "light/ios-72pt-3x/h-06-hundredfold.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/h-06-hundredfold.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/h-06-hundredfold.png",
+      "ios48pt3x": "dark/ios-48pt-3x/h-06-hundredfold.png",
+      "ios72pt2x": "dark/ios-72pt-2x/h-06-hundredfold.png",
+      "ios72pt3x": "dark/ios-72pt-3x/h-06-hundredfold.png"
+    }
+  },
+  {
+    "family": "H",
+    "name": "Held the Line",
+    "description": "Twelve periods and you never once dropped below where you began.",
+    "trigger": "net worth ≥ opening balance for 12 consecutive P",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "Anchor",
+    "light": {
+      "svg": "light/svg-master/h-07-held-the-line.svg",
+      "ios48pt2x": "light/ios-48pt-2x/h-07-held-the-line.png",
+      "ios48pt3x": "light/ios-48pt-3x/h-07-held-the-line.png",
+      "ios72pt2x": "light/ios-72pt-2x/h-07-held-the-line.png",
+      "ios72pt3x": "light/ios-72pt-3x/h-07-held-the-line.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/h-07-held-the-line.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/h-07-held-the-line.png",
+      "ios48pt3x": "dark/ios-48pt-3x/h-07-held-the-line.png",
+      "ios72pt2x": "dark/ios-72pt-2x/h-07-held-the-line.png",
+      "ios72pt3x": "dark/ios-72pt-3x/h-07-held-the-line.png"
+    }
+  },
+  {
+    "family": "I",
+    "name": "Faced It",
+    "description": "Writing it down is the hardest part.",
+    "trigger": "first debt logged",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "ShieldAlert",
+    "light": {
+      "svg": "light/svg-master/i-01-faced-it.svg",
+      "ios48pt2x": "light/ios-48pt-2x/i-01-faced-it.png",
+      "ios48pt3x": "light/ios-48pt-3x/i-01-faced-it.png",
+      "ios72pt2x": "light/ios-72pt-2x/i-01-faced-it.png",
+      "ios72pt3x": "light/ios-72pt-3x/i-01-faced-it.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/i-01-faced-it.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/i-01-faced-it.png",
+      "ios48pt3x": "dark/ios-48pt-3x/i-01-faced-it.png",
+      "ios72pt2x": "dark/ios-72pt-2x/i-01-faced-it.png",
+      "ios72pt3x": "dark/ios-72pt-3x/i-01-faced-it.png"
+    }
+  },
+  {
+    "family": "I",
+    "name": "Chipped",
+    "description": "A tenth of it, gone.",
+    "trigger": "10% of a debt repaid",
+    "rarity": "Common",
+    "stage": 1,
+    "iconName": "Hammer",
+    "light": {
+      "svg": "light/svg-master/i-02-chipped-stage-1.svg",
+      "ios48pt2x": "light/ios-48pt-2x/i-02-chipped-stage-1.png",
+      "ios48pt3x": "light/ios-48pt-3x/i-02-chipped-stage-1.png",
+      "ios72pt2x": "light/ios-72pt-2x/i-02-chipped-stage-1.png",
+      "ios72pt3x": "light/ios-72pt-3x/i-02-chipped-stage-1.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/i-02-chipped-stage-1.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/i-02-chipped-stage-1.png",
+      "ios48pt3x": "dark/ios-48pt-3x/i-02-chipped-stage-1.png",
+      "ios72pt2x": "dark/ios-72pt-2x/i-02-chipped-stage-1.png",
+      "ios72pt3x": "dark/ios-72pt-3x/i-02-chipped-stage-1.png"
+    }
+  },
+  {
+    "family": "I",
+    "name": "Chipped",
+    "description": "Halfway.",
+    "trigger": "50% repaid",
+    "rarity": "Uncommon",
+    "stage": 2,
+    "iconName": "Hammer",
+    "light": {
+      "svg": "light/svg-master/i-03-chipped-stage-2.svg",
+      "ios48pt2x": "light/ios-48pt-2x/i-03-chipped-stage-2.png",
+      "ios48pt3x": "light/ios-48pt-3x/i-03-chipped-stage-2.png",
+      "ios72pt2x": "light/ios-72pt-2x/i-03-chipped-stage-2.png",
+      "ios72pt3x": "light/ios-72pt-3x/i-03-chipped-stage-2.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/i-03-chipped-stage-2.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/i-03-chipped-stage-2.png",
+      "ios48pt3x": "dark/ios-48pt-3x/i-03-chipped-stage-2.png",
+      "ios72pt2x": "dark/ios-72pt-2x/i-03-chipped-stage-2.png",
+      "ios72pt3x": "dark/ios-72pt-3x/i-03-chipped-stage-2.png"
+    }
+  },
+  {
+    "family": "I",
+    "name": "Chipped",
+    "description": "One debt, gone entirely.",
+    "trigger": "a debt cleared to zero",
+    "rarity": "Rare",
+    "stage": 3,
+    "iconName": "Hammer",
+    "light": {
+      "svg": "light/svg-master/i-04-chipped-stage-3.svg",
+      "ios48pt2x": "light/ios-48pt-2x/i-04-chipped-stage-3.png",
+      "ios48pt3x": "light/ios-48pt-3x/i-04-chipped-stage-3.png",
+      "ios72pt2x": "light/ios-72pt-2x/i-04-chipped-stage-3.png",
+      "ios72pt3x": "light/ios-72pt-3x/i-04-chipped-stage-3.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/i-04-chipped-stage-3.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/i-04-chipped-stage-3.png",
+      "ios48pt3x": "dark/ios-48pt-3x/i-04-chipped-stage-3.png",
+      "ios72pt2x": "dark/ios-72pt-2x/i-04-chipped-stage-3.png",
+      "ios72pt3x": "dark/ios-72pt-3x/i-04-chipped-stage-3.png"
+    }
+  },
+  {
+    "family": "I",
+    "name": "Debt Free",
+    "description": "Nothing owed. Nothing at all.",
+    "trigger": "all tracked debts at zero",
+    "rarity": "Epic",
+    "stage": 0,
+    "iconName": "CircleCheckBig",
+    "light": {
+      "svg": "light/svg-master/i-05-debt-free.svg",
+      "ios48pt2x": "light/ios-48pt-2x/i-05-debt-free.png",
+      "ios48pt3x": "light/ios-48pt-3x/i-05-debt-free.png",
+      "ios72pt2x": "light/ios-72pt-2x/i-05-debt-free.png",
+      "ios72pt3x": "light/ios-72pt-3x/i-05-debt-free.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/i-05-debt-free.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/i-05-debt-free.png",
+      "ios48pt3x": "dark/ios-48pt-3x/i-05-debt-free.png",
+      "ios72pt2x": "dark/ios-72pt-2x/i-05-debt-free.png",
+      "ios72pt3x": "dark/ios-72pt-3x/i-05-debt-free.png"
+    }
+  },
+  {
+    "family": "I",
+    "name": "Avalanche",
+    "description": "You killed the expensive one first. That’s the right order.",
+    "trigger": "highest-APR debt cleared first",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "ArrowDownWideNarrow",
+    "light": {
+      "svg": "light/svg-master/i-06-avalanche.svg",
+      "ios48pt2x": "light/ios-48pt-2x/i-06-avalanche.png",
+      "ios48pt3x": "light/ios-48pt-3x/i-06-avalanche.png",
+      "ios72pt2x": "light/ios-72pt-2x/i-06-avalanche.png",
+      "ios72pt3x": "light/ios-72pt-3x/i-06-avalanche.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/i-06-avalanche.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/i-06-avalanche.png",
+      "ios48pt3x": "dark/ios-48pt-3x/i-06-avalanche.png",
+      "ios72pt2x": "dark/ios-72pt-2x/i-06-avalanche.png",
+      "ios72pt3x": "dark/ios-72pt-3x/i-06-avalanche.png"
+    }
+  },
+  {
+    "family": "I",
+    "name": "Snowball",
+    "description": "Three debts cleared.",
+    "trigger": "3 debts cleared",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "ArrowUpNarrowWide",
+    "light": {
+      "svg": "light/svg-master/i-07-snowball.svg",
+      "ios48pt2x": "light/ios-48pt-2x/i-07-snowball.png",
+      "ios48pt3x": "light/ios-48pt-3x/i-07-snowball.png",
+      "ios72pt2x": "light/ios-72pt-2x/i-07-snowball.png",
+      "ios72pt3x": "light/ios-72pt-3x/i-07-snowball.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/i-07-snowball.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/i-07-snowball.png",
+      "ios48pt3x": "dark/ios-48pt-3x/i-07-snowball.png",
+      "ios72pt2x": "dark/ios-72pt-2x/i-07-snowball.png",
+      "ios72pt3x": "dark/ios-72pt-3x/i-07-snowball.png"
+    }
+  },
+  {
+    "family": "I",
+    "name": "Crossed Zero",
+    "description": "Your net worth turned positive.",
+    "trigger": "net worth crossed from negative to positive",
+    "rarity": "Epic",
+    "stage": 0,
+    "iconName": "TrendingUp",
+    "light": {
+      "svg": "light/svg-master/i-08-crossed-zero.svg",
+      "ios48pt2x": "light/ios-48pt-2x/i-08-crossed-zero.png",
+      "ios48pt3x": "light/ios-48pt-3x/i-08-crossed-zero.png",
+      "ios72pt2x": "light/ios-72pt-2x/i-08-crossed-zero.png",
+      "ios72pt3x": "light/ios-72pt-3x/i-08-crossed-zero.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/i-08-crossed-zero.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/i-08-crossed-zero.png",
+      "ios48pt3x": "dark/ios-48pt-3x/i-08-crossed-zero.png",
+      "ios72pt2x": "dark/ios-72pt-2x/i-08-crossed-zero.png",
+      "ios72pt3x": "dark/ios-72pt-3x/i-08-crossed-zero.png"
+    }
+  },
+  {
+    "family": "I",
+    "name": "Interest Slayer",
+    "description": "Thousands you’ll never pay in interest.",
+    "trigger": "≥5,000 projected interest saved vs minimums",
+    "rarity": "Epic",
+    "stage": 0,
+    "iconName": "Percent",
+    "light": {
+      "svg": "light/svg-master/i-09-interest-slayer.svg",
+      "ios48pt2x": "light/ios-48pt-2x/i-09-interest-slayer.png",
+      "ios48pt3x": "light/ios-48pt-3x/i-09-interest-slayer.png",
+      "ios72pt2x": "light/ios-72pt-2x/i-09-interest-slayer.png",
+      "ios72pt3x": "light/ios-72pt-3x/i-09-interest-slayer.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/i-09-interest-slayer.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/i-09-interest-slayer.png",
+      "ios48pt3x": "dark/ios-48pt-3x/i-09-interest-slayer.png",
+      "ios72pt2x": "dark/ios-72pt-2x/i-09-interest-slayer.png",
+      "ios72pt3x": "dark/ios-72pt-3x/i-09-interest-slayer.png"
+    }
+  },
+  {
+    "family": "I",
+    "name": "Never Again",
+    "description": "Twelve periods and not one new debt.",
+    "trigger": "12 consecutive P, no new debt added",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "Ban",
+    "light": {
+      "svg": "light/svg-master/i-10-never-again.svg",
+      "ios48pt2x": "light/ios-48pt-2x/i-10-never-again.png",
+      "ios48pt3x": "light/ios-48pt-3x/i-10-never-again.png",
+      "ios72pt2x": "light/ios-72pt-2x/i-10-never-again.png",
+      "ios72pt3x": "light/ios-72pt-3x/i-10-never-again.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/i-10-never-again.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/i-10-never-again.png",
+      "ios48pt3x": "dark/ios-48pt-3x/i-10-never-again.png",
+      "ios72pt2x": "dark/ios-72pt-2x/i-10-never-again.png",
+      "ios72pt3x": "dark/ios-72pt-3x/i-10-never-again.png"
+    }
+  },
+  {
+    "family": "J",
+    "name": "Opened the Door",
+    "description": "You started learning how this works.",
+    "trigger": "investing account created",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "ChartCandlestick",
+    "light": {
+      "svg": "light/svg-master/j-01-opened-the-door.svg",
+      "ios48pt2x": "light/ios-48pt-2x/j-01-opened-the-door.png",
+      "ios48pt3x": "light/ios-48pt-3x/j-01-opened-the-door.png",
+      "ios72pt2x": "light/ios-72pt-2x/j-01-opened-the-door.png",
+      "ios72pt3x": "light/ios-72pt-3x/j-01-opened-the-door.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/j-01-opened-the-door.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/j-01-opened-the-door.png",
+      "ios48pt3x": "dark/ios-48pt-3x/j-01-opened-the-door.png",
+      "ios72pt2x": "dark/ios-72pt-2x/j-01-opened-the-door.png",
+      "ios72pt3x": "dark/ios-72pt-3x/j-01-opened-the-door.png"
+    }
+  },
+  {
+    "family": "J",
+    "name": "Learned It",
+    "description": "All six lessons, read.",
+    "trigger": "all Basics + Core lessons completed",
+    "rarity": "Uncommon",
+    "stage": 0,
+    "iconName": "GraduationCap",
+    "light": {
+      "svg": "light/svg-master/j-02-learned-it.svg",
+      "ios48pt2x": "light/ios-48pt-2x/j-02-learned-it.png",
+      "ios48pt3x": "light/ios-48pt-3x/j-02-learned-it.png",
+      "ios72pt2x": "light/ios-72pt-2x/j-02-learned-it.png",
+      "ios72pt3x": "light/ios-72pt-3x/j-02-learned-it.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/j-02-learned-it.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/j-02-learned-it.png",
+      "ios48pt3x": "dark/ios-48pt-3x/j-02-learned-it.png",
+      "ios72pt2x": "dark/ios-72pt-2x/j-02-learned-it.png",
+      "ios72pt3x": "dark/ios-72pt-3x/j-02-learned-it.png"
+    }
+  },
+  {
+    "family": "J",
+    "name": "The Long Game",
+    "description": "Six periods, no panic.",
+    "trigger": "held 6 P with no sells",
+    "rarity": "Uncommon",
+    "stage": 1,
+    "iconName": "Hourglass",
+    "light": {
+      "svg": "light/svg-master/j-03-the-long-game-stage-1.svg",
+      "ios48pt2x": "light/ios-48pt-2x/j-03-the-long-game-stage-1.png",
+      "ios48pt3x": "light/ios-48pt-3x/j-03-the-long-game-stage-1.png",
+      "ios72pt2x": "light/ios-72pt-2x/j-03-the-long-game-stage-1.png",
+      "ios72pt3x": "light/ios-72pt-3x/j-03-the-long-game-stage-1.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/j-03-the-long-game-stage-1.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/j-03-the-long-game-stage-1.png",
+      "ios48pt3x": "dark/ios-48pt-3x/j-03-the-long-game-stage-1.png",
+      "ios72pt2x": "dark/ios-72pt-2x/j-03-the-long-game-stage-1.png",
+      "ios72pt3x": "dark/ios-72pt-3x/j-03-the-long-game-stage-1.png"
+    }
+  },
+  {
+    "family": "J",
+    "name": "The Long Game",
+    "description": "A year of sitting still.",
+    "trigger": "12 P",
+    "rarity": "Rare",
+    "stage": 2,
+    "iconName": "Hourglass",
+    "light": {
+      "svg": "light/svg-master/j-04-the-long-game-stage-2.svg",
+      "ios48pt2x": "light/ios-48pt-2x/j-04-the-long-game-stage-2.png",
+      "ios48pt3x": "light/ios-48pt-3x/j-04-the-long-game-stage-2.png",
+      "ios72pt2x": "light/ios-72pt-2x/j-04-the-long-game-stage-2.png",
+      "ios72pt3x": "light/ios-72pt-3x/j-04-the-long-game-stage-2.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/j-04-the-long-game-stage-2.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/j-04-the-long-game-stage-2.png",
+      "ios48pt3x": "dark/ios-48pt-3x/j-04-the-long-game-stage-2.png",
+      "ios72pt2x": "dark/ios-72pt-2x/j-04-the-long-game-stage-2.png",
+      "ios72pt3x": "dark/ios-72pt-3x/j-04-the-long-game-stage-2.png"
+    }
+  },
+  {
+    "family": "J",
+    "name": "The Long Game",
+    "description": "Three years. Patience is the whole strategy.",
+    "trigger": "36 P",
+    "rarity": "Epic",
+    "stage": 3,
+    "iconName": "Hourglass",
+    "light": {
+      "svg": "light/svg-master/j-05-the-long-game-stage-3.svg",
+      "ios48pt2x": "light/ios-48pt-2x/j-05-the-long-game-stage-3.png",
+      "ios48pt3x": "light/ios-48pt-3x/j-05-the-long-game-stage-3.png",
+      "ios72pt2x": "light/ios-72pt-2x/j-05-the-long-game-stage-3.png",
+      "ios72pt3x": "light/ios-72pt-3x/j-05-the-long-game-stage-3.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/j-05-the-long-game-stage-3.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/j-05-the-long-game-stage-3.png",
+      "ios48pt3x": "dark/ios-48pt-3x/j-05-the-long-game-stage-3.png",
+      "ios72pt2x": "dark/ios-72pt-2x/j-05-the-long-game-stage-3.png",
+      "ios72pt3x": "dark/ios-72pt-3x/j-05-the-long-game-stage-3.png"
+    }
+  },
+  {
+    "family": "J",
+    "name": "Steady Contributor",
+    "description": "Twelve periods, contributed every one.",
+    "trigger": "12 consecutive P with a contribution",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "CalendarPlus",
+    "light": {
+      "svg": "light/svg-master/j-06-steady-contributor.svg",
+      "ios48pt2x": "light/ios-48pt-2x/j-06-steady-contributor.png",
+      "ios48pt3x": "light/ios-48pt-3x/j-06-steady-contributor.png",
+      "ios72pt2x": "light/ios-72pt-2x/j-06-steady-contributor.png",
+      "ios72pt3x": "light/ios-72pt-3x/j-06-steady-contributor.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/j-06-steady-contributor.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/j-06-steady-contributor.png",
+      "ios48pt3x": "dark/ios-48pt-3x/j-06-steady-contributor.png",
+      "ios72pt2x": "dark/ios-72pt-2x/j-06-steady-contributor.png",
+      "ios72pt3x": "dark/ios-72pt-3x/j-06-steady-contributor.png"
+    }
+  },
+  {
+    "family": "J",
+    "name": "Didn’t Flinch",
+    "description": "It dropped ten percent and you didn’t move.",
+    "trigger": "held through a P with ≥10% portfolio decline",
+    "rarity": "Epic",
+    "stage": 0,
+    "iconName": "Shield",
+    "light": {
+      "svg": "light/svg-master/j-07-didn-t-flinch.svg",
+      "ios48pt2x": "light/ios-48pt-2x/j-07-didn-t-flinch.png",
+      "ios48pt3x": "light/ios-48pt-3x/j-07-didn-t-flinch.png",
+      "ios72pt2x": "light/ios-72pt-2x/j-07-didn-t-flinch.png",
+      "ios72pt3x": "light/ios-72pt-3x/j-07-didn-t-flinch.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/j-07-didn-t-flinch.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/j-07-didn-t-flinch.png",
+      "ios48pt3x": "dark/ios-48pt-3x/j-07-didn-t-flinch.png",
+      "ios72pt2x": "dark/ios-72pt-2x/j-07-didn-t-flinch.png",
+      "ios72pt3x": "dark/ios-72pt-3x/j-07-didn-t-flinch.png"
+    }
+  },
+  {
+    "family": "K",
+    "name": "First Trip",
+    "description": "A holiday with a plan attached.",
+    "trigger": "first trip created",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "Plane",
+    "light": {
+      "svg": "light/svg-master/k-01-first-trip.svg",
+      "ios48pt2x": "light/ios-48pt-2x/k-01-first-trip.png",
+      "ios48pt3x": "light/ios-48pt-3x/k-01-first-trip.png",
+      "ios72pt2x": "light/ios-72pt-2x/k-01-first-trip.png",
+      "ios72pt3x": "light/ios-72pt-3x/k-01-first-trip.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/k-01-first-trip.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/k-01-first-trip.png",
+      "ios48pt3x": "dark/ios-48pt-3x/k-01-first-trip.png",
+      "ios72pt2x": "dark/ios-72pt-2x/k-01-first-trip.png",
+      "ios72pt3x": "dark/ios-72pt-3x/k-01-first-trip.png"
+    }
+  },
+  {
+    "family": "K",
+    "name": "Under Budget Abroad",
+    "description": "You came home under budget.",
+    "trigger": "trip completed under total budget",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "Wallet",
+    "light": {
+      "svg": "light/svg-master/k-02-under-budget-abroad.svg",
+      "ios48pt2x": "light/ios-48pt-2x/k-02-under-budget-abroad.png",
+      "ios48pt3x": "light/ios-48pt-3x/k-02-under-budget-abroad.png",
+      "ios72pt2x": "light/ios-72pt-2x/k-02-under-budget-abroad.png",
+      "ios72pt3x": "light/ios-72pt-3x/k-02-under-budget-abroad.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/k-02-under-budget-abroad.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/k-02-under-budget-abroad.png",
+      "ios48pt3x": "dark/ios-48pt-3x/k-02-under-budget-abroad.png",
+      "ios72pt2x": "dark/ios-72pt-2x/k-02-under-budget-abroad.png",
+      "ios72pt3x": "dark/ios-72pt-3x/k-02-under-budget-abroad.png"
+    }
+  },
+  {
+    "family": "K",
+    "name": "Half the Trip",
+    "description": "Half the budget, all of the holiday.",
+    "trigger": "trip completed at ≤50% of budget",
+    "rarity": "Epic",
+    "stage": 0,
+    "iconName": "CircleGauge",
+    "light": {
+      "svg": "light/svg-master/k-03-half-the-trip.svg",
+      "ios48pt2x": "light/ios-48pt-2x/k-03-half-the-trip.png",
+      "ios48pt3x": "light/ios-48pt-3x/k-03-half-the-trip.png",
+      "ios72pt2x": "light/ios-72pt-2x/k-03-half-the-trip.png",
+      "ios72pt3x": "light/ios-72pt-3x/k-03-half-the-trip.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/k-03-half-the-trip.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/k-03-half-the-trip.png",
+      "ios48pt3x": "dark/ios-48pt-3x/k-03-half-the-trip.png",
+      "ios72pt2x": "dark/ios-72pt-2x/k-03-half-the-trip.png",
+      "ios72pt3x": "dark/ios-72pt-3x/k-03-half-the-trip.png"
+    }
+  },
+  {
+    "family": "K",
+    "name": "Souvenir Discipline",
+    "description": "Every category, inside its split.",
+    "trigger": "trip completed, all categories under",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "ShoppingBag",
+    "light": {
+      "svg": "light/svg-master/k-04-souvenir-discipline.svg",
+      "ios48pt2x": "light/ios-48pt-2x/k-04-souvenir-discipline.png",
+      "ios48pt3x": "light/ios-48pt-3x/k-04-souvenir-discipline.png",
+      "ios72pt2x": "light/ios-72pt-2x/k-04-souvenir-discipline.png",
+      "ios72pt3x": "light/ios-72pt-3x/k-04-souvenir-discipline.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/k-04-souvenir-discipline.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/k-04-souvenir-discipline.png",
+      "ios48pt3x": "dark/ios-48pt-3x/k-04-souvenir-discipline.png",
+      "ios72pt2x": "dark/ios-72pt-2x/k-04-souvenir-discipline.png",
+      "ios72pt3x": "dark/ios-72pt-3x/k-04-souvenir-discipline.png"
+    }
+  },
+  {
+    "family": "K",
+    "name": "The Grand Tour",
+    "description": "Five trips. Five times under budget.",
+    "trigger": "5 trips completed, all under",
+    "rarity": "Legendary",
+    "stage": 0,
+    "iconName": "Globe2",
+    "light": {
+      "svg": "light/svg-master/k-05-the-grand-tour.svg",
+      "ios48pt2x": "light/ios-48pt-2x/k-05-the-grand-tour.png",
+      "ios48pt3x": "light/ios-48pt-3x/k-05-the-grand-tour.png",
+      "ios72pt2x": "light/ios-72pt-2x/k-05-the-grand-tour.png",
+      "ios72pt3x": "light/ios-72pt-3x/k-05-the-grand-tour.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/k-05-the-grand-tour.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/k-05-the-grand-tour.png",
+      "ios48pt3x": "dark/ios-48pt-3x/k-05-the-grand-tour.png",
+      "ios72pt2x": "dark/ios-72pt-2x/k-05-the-grand-tour.png",
+      "ios72pt3x": "dark/ios-72pt-3x/k-05-the-grand-tour.png"
+    }
+  },
+  {
+    "family": "L",
+    "name": "Kept Track",
+    "description": "You wrote it down instead of hoping you’d remember.",
+    "trigger": "first note created",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "NotebookTabs",
+    "light": {
+      "svg": "light/svg-master/l-01-kept-track.svg",
+      "ios48pt2x": "light/ios-48pt-2x/l-01-kept-track.png",
+      "ios48pt3x": "light/ios-48pt-3x/l-01-kept-track.png",
+      "ios72pt2x": "light/ios-72pt-2x/l-01-kept-track.png",
+      "ios72pt3x": "light/ios-72pt-3x/l-01-kept-track.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/l-01-kept-track.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/l-01-kept-track.png",
+      "ios48pt3x": "dark/ios-48pt-3x/l-01-kept-track.png",
+      "ios72pt2x": "dark/ios-72pt-2x/l-01-kept-track.png",
+      "ios72pt3x": "dark/ios-72pt-3x/l-01-kept-track.png"
+    }
+  },
+  {
+    "family": "L",
+    "name": "Settled Up",
+    "description": "Squared away.",
+    "trigger": "first note settled",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "Handshake",
+    "light": {
+      "svg": "light/svg-master/l-02-settled-up.svg",
+      "ios48pt2x": "light/ios-48pt-2x/l-02-settled-up.png",
+      "ios48pt3x": "light/ios-48pt-3x/l-02-settled-up.png",
+      "ios72pt2x": "light/ios-72pt-2x/l-02-settled-up.png",
+      "ios72pt3x": "light/ios-72pt-3x/l-02-settled-up.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/l-02-settled-up.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/l-02-settled-up.png",
+      "ios48pt3x": "dark/ios-48pt-3x/l-02-settled-up.png",
+      "ios72pt2x": "dark/ios-72pt-2x/l-02-settled-up.png",
+      "ios72pt3x": "dark/ios-72pt-3x/l-02-settled-up.png"
+    }
+  },
+  {
+    "family": "L",
+    "name": "Clean Slate",
+    "description": "Five settled.",
+    "trigger": "5 notes settled",
+    "rarity": "Uncommon",
+    "stage": 1,
+    "iconName": "Eraser",
+    "light": {
+      "svg": "light/svg-master/l-03-clean-slate-stage-1.svg",
+      "ios48pt2x": "light/ios-48pt-2x/l-03-clean-slate-stage-1.png",
+      "ios48pt3x": "light/ios-48pt-3x/l-03-clean-slate-stage-1.png",
+      "ios72pt2x": "light/ios-72pt-2x/l-03-clean-slate-stage-1.png",
+      "ios72pt3x": "light/ios-72pt-3x/l-03-clean-slate-stage-1.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/l-03-clean-slate-stage-1.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/l-03-clean-slate-stage-1.png",
+      "ios48pt3x": "dark/ios-48pt-3x/l-03-clean-slate-stage-1.png",
+      "ios72pt2x": "dark/ios-72pt-2x/l-03-clean-slate-stage-1.png",
+      "ios72pt3x": "dark/ios-72pt-3x/l-03-clean-slate-stage-1.png"
+    }
+  },
+  {
+    "family": "L",
+    "name": "Clean Slate",
+    "description": "Twenty-five settled.",
+    "trigger": "25 settled",
+    "rarity": "Rare",
+    "stage": 2,
+    "iconName": "Eraser",
+    "light": {
+      "svg": "light/svg-master/l-04-clean-slate-stage-2.svg",
+      "ios48pt2x": "light/ios-48pt-2x/l-04-clean-slate-stage-2.png",
+      "ios48pt3x": "light/ios-48pt-3x/l-04-clean-slate-stage-2.png",
+      "ios72pt2x": "light/ios-72pt-2x/l-04-clean-slate-stage-2.png",
+      "ios72pt3x": "light/ios-72pt-3x/l-04-clean-slate-stage-2.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/l-04-clean-slate-stage-2.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/l-04-clean-slate-stage-2.png",
+      "ios48pt3x": "dark/ios-48pt-3x/l-04-clean-slate-stage-2.png",
+      "ios72pt2x": "dark/ios-72pt-2x/l-04-clean-slate-stage-2.png",
+      "ios72pt3x": "dark/ios-72pt-3x/l-04-clean-slate-stage-2.png"
+    }
+  },
+  {
+    "family": "L",
+    "name": "Clean Slate",
+    "description": "A hundred. Nobody keeps books like you.",
+    "trigger": "100 settled",
+    "rarity": "Epic",
+    "stage": 3,
+    "iconName": "Eraser",
+    "light": {
+      "svg": "light/svg-master/l-05-clean-slate-stage-3.svg",
+      "ios48pt2x": "light/ios-48pt-2x/l-05-clean-slate-stage-3.png",
+      "ios48pt3x": "light/ios-48pt-3x/l-05-clean-slate-stage-3.png",
+      "ios72pt2x": "light/ios-72pt-2x/l-05-clean-slate-stage-3.png",
+      "ios72pt3x": "light/ios-72pt-3x/l-05-clean-slate-stage-3.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/l-05-clean-slate-stage-3.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/l-05-clean-slate-stage-3.png",
+      "ios48pt3x": "dark/ios-48pt-3x/l-05-clean-slate-stage-3.png",
+      "ios72pt2x": "dark/ios-72pt-2x/l-05-clean-slate-stage-3.png",
+      "ios72pt3x": "dark/ios-72pt-3x/l-05-clean-slate-stage-3.png"
+    }
+  },
+  {
+    "family": "L",
+    "name": "Nobody Owes Nobody",
+    "description": "A whole period with nothing outstanding, either way.",
+    "trigger": "0 open notes for a full P",
+    "rarity": "Uncommon",
+    "stage": 0,
+    "iconName": "Equal",
+    "light": {
+      "svg": "light/svg-master/l-06-nobody-owes-nobody.svg",
+      "ios48pt2x": "light/ios-48pt-2x/l-06-nobody-owes-nobody.png",
+      "ios48pt3x": "light/ios-48pt-3x/l-06-nobody-owes-nobody.png",
+      "ios72pt2x": "light/ios-72pt-2x/l-06-nobody-owes-nobody.png",
+      "ios72pt3x": "light/ios-72pt-3x/l-06-nobody-owes-nobody.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/l-06-nobody-owes-nobody.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/l-06-nobody-owes-nobody.png",
+      "ios48pt3x": "dark/ios-48pt-3x/l-06-nobody-owes-nobody.png",
+      "ios72pt2x": "dark/ios-72pt-2x/l-06-nobody-owes-nobody.png",
+      "ios72pt3x": "dark/ios-72pt-3x/l-06-nobody-owes-nobody.png"
+    }
+  },
+  {
+    "family": "L",
+    "name": "The Bank of You",
+    "description": "Five thousand lent and returned.",
+    "trigger": "≥5,000 repaid to you across settled notes",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "Landmark",
+    "light": {
+      "svg": "light/svg-master/l-07-the-bank-of-you.svg",
+      "ios48pt2x": "light/ios-48pt-2x/l-07-the-bank-of-you.png",
+      "ios48pt3x": "light/ios-48pt-3x/l-07-the-bank-of-you.png",
+      "ios72pt2x": "light/ios-72pt-2x/l-07-the-bank-of-you.png",
+      "ios72pt3x": "light/ios-72pt-3x/l-07-the-bank-of-you.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/l-07-the-bank-of-you.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/l-07-the-bank-of-you.png",
+      "ios48pt3x": "dark/ios-48pt-3x/l-07-the-bank-of-you.png",
+      "ios72pt2x": "dark/ios-72pt-2x/l-07-the-bank-of-you.png",
+      "ios72pt3x": "dark/ios-72pt-3x/l-07-the-bank-of-you.png"
+    }
+  },
+  {
+    "family": "M",
+    "name": "First Find",
+    "description": "Richard found money and you went and got it.",
+    "trigger": "first Found Money item acted on",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "SearchCheck",
+    "light": {
+      "svg": "light/svg-master/m-01-first-find.svg",
+      "ios48pt2x": "light/ios-48pt-2x/m-01-first-find.png",
+      "ios48pt3x": "light/ios-48pt-3x/m-01-first-find.png",
+      "ios72pt2x": "light/ios-72pt-2x/m-01-first-find.png",
+      "ios72pt3x": "light/ios-72pt-3x/m-01-first-find.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/m-01-first-find.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/m-01-first-find.png",
+      "ios48pt3x": "dark/ios-48pt-3x/m-01-first-find.png",
+      "ios72pt2x": "dark/ios-72pt-2x/m-01-first-find.png",
+      "ios72pt3x": "dark/ios-72pt-3x/m-01-first-find.png"
+    }
+  },
+  {
+    "family": "M",
+    "name": "Treasure Hunter",
+    "description": "Five hundred recovered.",
+    "trigger": "foundMoney.tally ≥ 500",
+    "rarity": "Uncommon",
+    "stage": 1,
+    "iconName": "SearchCheck",
+    "light": {
+      "svg": "light/svg-master/m-02-treasure-hunter-stage-1.svg",
+      "ios48pt2x": "light/ios-48pt-2x/m-02-treasure-hunter-stage-1.png",
+      "ios48pt3x": "light/ios-48pt-3x/m-02-treasure-hunter-stage-1.png",
+      "ios72pt2x": "light/ios-72pt-2x/m-02-treasure-hunter-stage-1.png",
+      "ios72pt3x": "light/ios-72pt-3x/m-02-treasure-hunter-stage-1.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/m-02-treasure-hunter-stage-1.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/m-02-treasure-hunter-stage-1.png",
+      "ios48pt3x": "dark/ios-48pt-3x/m-02-treasure-hunter-stage-1.png",
+      "ios72pt2x": "dark/ios-72pt-2x/m-02-treasure-hunter-stage-1.png",
+      "ios72pt3x": "dark/ios-72pt-3x/m-02-treasure-hunter-stage-1.png"
+    }
+  },
+  {
+    "family": "M",
+    "name": "Treasure Hunter",
+    "description": "Five thousand recovered.",
+    "trigger": "≥ 5,000",
+    "rarity": "Rare",
+    "stage": 2,
+    "iconName": "SearchCheck",
+    "light": {
+      "svg": "light/svg-master/m-03-treasure-hunter-stage-2.svg",
+      "ios48pt2x": "light/ios-48pt-2x/m-03-treasure-hunter-stage-2.png",
+      "ios48pt3x": "light/ios-48pt-3x/m-03-treasure-hunter-stage-2.png",
+      "ios72pt2x": "light/ios-72pt-2x/m-03-treasure-hunter-stage-2.png",
+      "ios72pt3x": "light/ios-72pt-3x/m-03-treasure-hunter-stage-2.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/m-03-treasure-hunter-stage-2.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/m-03-treasure-hunter-stage-2.png",
+      "ios48pt3x": "dark/ios-48pt-3x/m-03-treasure-hunter-stage-2.png",
+      "ios72pt2x": "dark/ios-72pt-2x/m-03-treasure-hunter-stage-2.png",
+      "ios72pt3x": "dark/ios-72pt-3x/m-03-treasure-hunter-stage-2.png"
+    }
+  },
+  {
+    "family": "M",
+    "name": "Treasure Hunter",
+    "description": "Twenty-five thousand, found in your own accounts.",
+    "trigger": "≥ 25,000",
+    "rarity": "Epic",
+    "stage": 3,
+    "iconName": "SearchCheck",
+    "light": {
+      "svg": "light/svg-master/m-04-treasure-hunter-stage-3.svg",
+      "ios48pt2x": "light/ios-48pt-2x/m-04-treasure-hunter-stage-3.png",
+      "ios48pt3x": "light/ios-48pt-3x/m-04-treasure-hunter-stage-3.png",
+      "ios72pt2x": "light/ios-72pt-2x/m-04-treasure-hunter-stage-3.png",
+      "ios72pt3x": "light/ios-72pt-3x/m-04-treasure-hunter-stage-3.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/m-04-treasure-hunter-stage-3.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/m-04-treasure-hunter-stage-3.png",
+      "ios48pt3x": "dark/ios-48pt-3x/m-04-treasure-hunter-stage-3.png",
+      "ios72pt2x": "dark/ios-72pt-2x/m-04-treasure-hunter-stage-3.png",
+      "ios72pt3x": "dark/ios-72pt-3x/m-04-treasure-hunter-stage-3.png"
+    }
+  },
+  {
+    "family": "M",
+    "name": "Subscription Slayer",
+    "description": "Five recurring charges, cancelled.",
+    "trigger": "5 recurring charges ended after being surfaced",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "ReceiptText",
+    "light": {
+      "svg": "light/svg-master/m-05-subscription-slayer.svg",
+      "ios48pt2x": "light/ios-48pt-2x/m-05-subscription-slayer.png",
+      "ios48pt3x": "light/ios-48pt-3x/m-05-subscription-slayer.png",
+      "ios72pt2x": "light/ios-72pt-2x/m-05-subscription-slayer.png",
+      "ios72pt3x": "light/ios-72pt-3x/m-05-subscription-slayer.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/m-05-subscription-slayer.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/m-05-subscription-slayer.png",
+      "ios48pt3x": "dark/ios-48pt-3x/m-05-subscription-slayer.png",
+      "ios72pt2x": "dark/ios-72pt-2x/m-05-subscription-slayer.png",
+      "ios72pt3x": "dark/ios-72pt-3x/m-05-subscription-slayer.png"
+    }
+  },
+  {
+    "family": "M",
+    "name": "Thought It Through",
+    "description": "You took a decision to a verdict instead of a vibe.",
+    "trigger": "first Big Decision resolved",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "Brain",
+    "light": {
+      "svg": "light/svg-master/m-06-thought-it-through.svg",
+      "ios48pt2x": "light/ios-48pt-2x/m-06-thought-it-through.png",
+      "ios48pt3x": "light/ios-48pt-3x/m-06-thought-it-through.png",
+      "ios72pt2x": "light/ios-72pt-2x/m-06-thought-it-through.png",
+      "ios72pt3x": "light/ios-72pt-3x/m-06-thought-it-through.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/m-06-thought-it-through.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/m-06-thought-it-through.png",
+      "ios48pt3x": "dark/ios-48pt-3x/m-06-thought-it-through.png",
+      "ios72pt2x": "dark/ios-72pt-2x/m-06-thought-it-through.png",
+      "ios72pt3x": "dark/ios-72pt-3x/m-06-thought-it-through.png"
+    }
+  },
+  {
+    "family": "M",
+    "name": "Walked Away",
+    "description": "The maths said no, and you listened.",
+    "trigger": "declined a purchase after an unaffordable verdict",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "ShoppingCart",
+    "light": {
+      "svg": "light/svg-master/m-07-walked-away.svg",
+      "ios48pt2x": "light/ios-48pt-2x/m-07-walked-away.png",
+      "ios48pt3x": "light/ios-48pt-3x/m-07-walked-away.png",
+      "ios72pt2x": "light/ios-72pt-2x/m-07-walked-away.png",
+      "ios72pt3x": "light/ios-72pt-3x/m-07-walked-away.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/m-07-walked-away.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/m-07-walked-away.png",
+      "ios48pt3x": "dark/ios-48pt-3x/m-07-walked-away.png",
+      "ios72pt2x": "dark/ios-72pt-2x/m-07-walked-away.png",
+      "ios72pt3x": "dark/ios-72pt-3x/m-07-walked-away.png"
+    }
+  },
+  {
+    "family": "M",
+    "name": "Ten Decisions",
+    "description": "Ten big calls, all thought through.",
+    "trigger": "10 decisions resolved",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "ListChecks",
+    "light": {
+      "svg": "light/svg-master/m-08-ten-decisions.svg",
+      "ios48pt2x": "light/ios-48pt-2x/m-08-ten-decisions.png",
+      "ios48pt3x": "light/ios-48pt-3x/m-08-ten-decisions.png",
+      "ios72pt2x": "light/ios-72pt-2x/m-08-ten-decisions.png",
+      "ios72pt3x": "light/ios-72pt-3x/m-08-ten-decisions.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/m-08-ten-decisions.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/m-08-ten-decisions.png",
+      "ios48pt3x": "dark/ios-48pt-3x/m-08-ten-decisions.png",
+      "ios72pt2x": "dark/ios-72pt-2x/m-08-ten-decisions.png",
+      "ios72pt3x": "dark/ios-72pt-3x/m-08-ten-decisions.png"
+    }
+  },
+  {
+    "family": "N",
+    "name": "Open for Business",
+    "description": "Business money, kept separate. Finally.",
+    "trigger": "business account created",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "BriefcaseBusiness",
+    "light": {
+      "svg": "light/svg-master/n-01-open-for-business.svg",
+      "ios48pt2x": "light/ios-48pt-2x/n-01-open-for-business.png",
+      "ios48pt3x": "light/ios-48pt-3x/n-01-open-for-business.png",
+      "ios72pt2x": "light/ios-72pt-2x/n-01-open-for-business.png",
+      "ios72pt3x": "light/ios-72pt-3x/n-01-open-for-business.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/n-01-open-for-business.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/n-01-open-for-business.png",
+      "ios48pt3x": "dark/ios-48pt-3x/n-01-open-for-business.png",
+      "ios72pt2x": "dark/ios-72pt-2x/n-01-open-for-business.png",
+      "ios72pt3x": "dark/ios-72pt-3x/n-01-open-for-business.png"
+    }
+  },
+  {
+    "family": "N",
+    "name": "In the Black",
+    "description": "A profitable month.",
+    "trigger": "business P with positive profit",
+    "rarity": "Uncommon",
+    "stage": 0,
+    "iconName": "ChartNoAxesCombined",
+    "light": {
+      "svg": "light/svg-master/n-02-in-the-black.svg",
+      "ios48pt2x": "light/ios-48pt-2x/n-02-in-the-black.png",
+      "ios48pt3x": "light/ios-48pt-3x/n-02-in-the-black.png",
+      "ios72pt2x": "light/ios-72pt-2x/n-02-in-the-black.png",
+      "ios72pt3x": "light/ios-72pt-3x/n-02-in-the-black.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/n-02-in-the-black.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/n-02-in-the-black.png",
+      "ios48pt3x": "dark/ios-48pt-3x/n-02-in-the-black.png",
+      "ios72pt2x": "dark/ios-72pt-2x/n-02-in-the-black.png",
+      "ios72pt3x": "dark/ios-72pt-3x/n-02-in-the-black.png"
+    }
+  },
+  {
+    "family": "N",
+    "name": "Runway",
+    "description": "Three months of runway.",
+    "trigger": "runway ≥ 3 months",
+    "rarity": "Uncommon",
+    "stage": 1,
+    "iconName": "Gauge",
+    "light": {
+      "svg": "light/svg-master/n-03-runway-stage-1.svg",
+      "ios48pt2x": "light/ios-48pt-2x/n-03-runway-stage-1.png",
+      "ios48pt3x": "light/ios-48pt-3x/n-03-runway-stage-1.png",
+      "ios72pt2x": "light/ios-72pt-2x/n-03-runway-stage-1.png",
+      "ios72pt3x": "light/ios-72pt-3x/n-03-runway-stage-1.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/n-03-runway-stage-1.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/n-03-runway-stage-1.png",
+      "ios48pt3x": "dark/ios-48pt-3x/n-03-runway-stage-1.png",
+      "ios72pt2x": "dark/ios-72pt-2x/n-03-runway-stage-1.png",
+      "ios72pt3x": "dark/ios-72pt-3x/n-03-runway-stage-1.png"
+    }
+  },
+  {
+    "family": "N",
+    "name": "Runway",
+    "description": "Six months. You can plan now.",
+    "trigger": "≥ 6 months",
+    "rarity": "Rare",
+    "stage": 2,
+    "iconName": "Gauge",
+    "light": {
+      "svg": "light/svg-master/n-04-runway-stage-2.svg",
+      "ios48pt2x": "light/ios-48pt-2x/n-04-runway-stage-2.png",
+      "ios48pt3x": "light/ios-48pt-3x/n-04-runway-stage-2.png",
+      "ios72pt2x": "light/ios-72pt-2x/n-04-runway-stage-2.png",
+      "ios72pt3x": "light/ios-72pt-3x/n-04-runway-stage-2.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/n-04-runway-stage-2.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/n-04-runway-stage-2.png",
+      "ios48pt3x": "dark/ios-48pt-3x/n-04-runway-stage-2.png",
+      "ios72pt2x": "dark/ios-72pt-2x/n-04-runway-stage-2.png",
+      "ios72pt3x": "dark/ios-72pt-3x/n-04-runway-stage-2.png"
+    }
+  },
+  {
+    "family": "N",
+    "name": "Runway",
+    "description": "A year of runway.",
+    "trigger": "≥ 12 months",
+    "rarity": "Epic",
+    "stage": 3,
+    "iconName": "Gauge",
+    "light": {
+      "svg": "light/svg-master/n-05-runway-stage-3.svg",
+      "ios48pt2x": "light/ios-48pt-2x/n-05-runway-stage-3.png",
+      "ios48pt3x": "light/ios-48pt-3x/n-05-runway-stage-3.png",
+      "ios72pt2x": "light/ios-72pt-2x/n-05-runway-stage-3.png",
+      "ios72pt3x": "light/ios-72pt-3x/n-05-runway-stage-3.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/n-05-runway-stage-3.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/n-05-runway-stage-3.png",
+      "ios48pt3x": "dark/ios-48pt-3x/n-05-runway-stage-3.png",
+      "ios72pt2x": "dark/ios-72pt-2x/n-05-runway-stage-3.png",
+      "ios72pt3x": "dark/ios-72pt-3x/n-05-runway-stage-3.png"
+    }
+  },
+  {
+    "family": "N",
+    "name": "Tax Pot Ready",
+    "description": "The tax bill holds no fear.",
+    "trigger": "tax pot ≥ estimated liability",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "ReceiptText",
+    "light": {
+      "svg": "light/svg-master/n-06-tax-pot-ready.svg",
+      "ios48pt2x": "light/ios-48pt-2x/n-06-tax-pot-ready.png",
+      "ios48pt3x": "light/ios-48pt-3x/n-06-tax-pot-ready.png",
+      "ios72pt2x": "light/ios-72pt-2x/n-06-tax-pot-ready.png",
+      "ios72pt3x": "light/ios-72pt-3x/n-06-tax-pot-ready.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/n-06-tax-pot-ready.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/n-06-tax-pot-ready.png",
+      "ios48pt3x": "dark/ios-48pt-3x/n-06-tax-pot-ready.png",
+      "ios72pt2x": "dark/ios-72pt-2x/n-06-tax-pot-ready.png",
+      "ios72pt3x": "dark/ios-72pt-3x/n-06-tax-pot-ready.png"
+    }
+  },
+  {
+    "family": "N",
+    "name": "Paid In Full",
+    "description": "Every invoice collected, nothing overdue.",
+    "trigger": "full P, 0 overdue invoices, all collected",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "Stamp",
+    "light": {
+      "svg": "light/svg-master/n-07-paid-in-full.svg",
+      "ios48pt2x": "light/ios-48pt-2x/n-07-paid-in-full.png",
+      "ios48pt3x": "light/ios-48pt-3x/n-07-paid-in-full.png",
+      "ios72pt2x": "light/ios-72pt-2x/n-07-paid-in-full.png",
+      "ios72pt3x": "light/ios-72pt-3x/n-07-paid-in-full.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/n-07-paid-in-full.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/n-07-paid-in-full.png",
+      "ios48pt3x": "dark/ios-48pt-3x/n-07-paid-in-full.png",
+      "ios72pt2x": "dark/ios-72pt-2x/n-07-paid-in-full.png",
+      "ios72pt3x": "dark/ios-72pt-3x/n-07-paid-in-full.png"
+    }
+  },
+  {
+    "family": "N",
+    "name": "Doubled the Business",
+    "description": "Twice the revenue of your first full month.",
+    "trigger": "revenue ≥ 2× first full month",
+    "rarity": "Epic",
+    "stage": 0,
+    "iconName": "TrendingUp",
+    "light": {
+      "svg": "light/svg-master/n-08-doubled-the-business.svg",
+      "ios48pt2x": "light/ios-48pt-2x/n-08-doubled-the-business.png",
+      "ios48pt3x": "light/ios-48pt-3x/n-08-doubled-the-business.png",
+      "ios72pt2x": "light/ios-72pt-2x/n-08-doubled-the-business.png",
+      "ios72pt3x": "light/ios-72pt-3x/n-08-doubled-the-business.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/n-08-doubled-the-business.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/n-08-doubled-the-business.png",
+      "ios48pt3x": "dark/ios-48pt-3x/n-08-doubled-the-business.png",
+      "ios72pt2x": "dark/ios-72pt-2x/n-08-doubled-the-business.png",
+      "ios72pt3x": "dark/ios-72pt-3x/n-08-doubled-the-business.png"
+    }
+  },
+  {
+    "family": "O",
+    "name": "Two Purses",
+    "description": "Money, shared honestly.",
+    "trigger": "joined a household",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "WalletCards",
+    "light": {
+      "svg": "light/svg-master/o-01-two-purses.svg",
+      "ios48pt2x": "light/ios-48pt-2x/o-01-two-purses.png",
+      "ios48pt3x": "light/ios-48pt-3x/o-01-two-purses.png",
+      "ios72pt2x": "light/ios-72pt-2x/o-01-two-purses.png",
+      "ios72pt3x": "light/ios-72pt-3x/o-01-two-purses.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/o-01-two-purses.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/o-01-two-purses.png",
+      "ios48pt3x": "dark/ios-48pt-3x/o-01-two-purses.png",
+      "ios72pt2x": "dark/ios-72pt-2x/o-01-two-purses.png",
+      "ios72pt3x": "dark/ios-72pt-3x/o-01-two-purses.png"
+    }
+  },
+  {
+    "family": "O",
+    "name": "Aligned",
+    "description": "Both of you, logging, same period.",
+    "trigger": "both members logged tx in one P",
+    "rarity": "Uncommon",
+    "stage": 0,
+    "iconName": "HeartHandshake",
+    "light": {
+      "svg": "light/svg-master/o-02-aligned.svg",
+      "ios48pt2x": "light/ios-48pt-2x/o-02-aligned.png",
+      "ios48pt3x": "light/ios-48pt-3x/o-02-aligned.png",
+      "ios72pt2x": "light/ios-72pt-2x/o-02-aligned.png",
+      "ios72pt3x": "light/ios-72pt-3x/o-02-aligned.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/o-02-aligned.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/o-02-aligned.png",
+      "ios48pt3x": "dark/ios-48pt-3x/o-02-aligned.png",
+      "ios72pt2x": "dark/ios-72pt-2x/o-02-aligned.png",
+      "ios72pt3x": "dark/ios-72pt-3x/o-02-aligned.png"
+    }
+  },
+  {
+    "family": "O",
+    "name": "Green Together",
+    "description": "A green month as a household.",
+    "trigger": "household green month",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "Heart",
+    "light": {
+      "svg": "light/svg-master/o-03-green-together.svg",
+      "ios48pt2x": "light/ios-48pt-2x/o-03-green-together.png",
+      "ios48pt3x": "light/ios-48pt-3x/o-03-green-together.png",
+      "ios72pt2x": "light/ios-72pt-2x/o-03-green-together.png",
+      "ios72pt3x": "light/ios-72pt-3x/o-03-green-together.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/o-03-green-together.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/o-03-green-together.png",
+      "ios48pt3x": "dark/ios-48pt-3x/o-03-green-together.png",
+      "ios72pt2x": "dark/ios-72pt-2x/o-03-green-together.png",
+      "ios72pt3x": "dark/ios-72pt-3x/o-03-green-together.png"
+    }
+  },
+  {
+    "family": "O",
+    "name": "A Year Together",
+    "description": "Twelve green months, together.",
+    "trigger": "12 consecutive household green months",
+    "rarity": "Legendary",
+    "stage": 0,
+    "iconName": "CalendarHeart",
+    "light": {
+      "svg": "light/svg-master/o-04-a-year-together.svg",
+      "ios48pt2x": "light/ios-48pt-2x/o-04-a-year-together.png",
+      "ios48pt3x": "light/ios-48pt-3x/o-04-a-year-together.png",
+      "ios72pt2x": "light/ios-72pt-2x/o-04-a-year-together.png",
+      "ios72pt3x": "light/ios-72pt-3x/o-04-a-year-together.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/o-04-a-year-together.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/o-04-a-year-together.png",
+      "ios48pt3x": "dark/ios-48pt-3x/o-04-a-year-together.png",
+      "ios72pt2x": "dark/ios-72pt-2x/o-04-a-year-together.png",
+      "ios72pt3x": "dark/ios-72pt-3x/o-04-a-year-together.png"
+    }
+  },
+  {
+    "family": "P",
+    "name": "One Month In",
+    "description": "Thirty days.",
+    "trigger": "30 days since signup",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "CalendarDays",
+    "light": {
+      "svg": "light/svg-master/p-01-one-month-in.svg",
+      "ios48pt2x": "light/ios-48pt-2x/p-01-one-month-in.png",
+      "ios48pt3x": "light/ios-48pt-3x/p-01-one-month-in.png",
+      "ios72pt2x": "light/ios-72pt-2x/p-01-one-month-in.png",
+      "ios72pt3x": "light/ios-72pt-3x/p-01-one-month-in.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/p-01-one-month-in.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/p-01-one-month-in.png",
+      "ios48pt3x": "dark/ios-48pt-3x/p-01-one-month-in.png",
+      "ios72pt2x": "dark/ios-72pt-2x/p-01-one-month-in.png",
+      "ios72pt3x": "dark/ios-72pt-3x/p-01-one-month-in.png"
+    }
+  },
+  {
+    "family": "P",
+    "name": "One Season",
+    "description": "Ninety days.",
+    "trigger": "90 days",
+    "rarity": "Common",
+    "stage": 0,
+    "iconName": "CalendarDays",
+    "light": {
+      "svg": "light/svg-master/p-02-one-season.svg",
+      "ios48pt2x": "light/ios-48pt-2x/p-02-one-season.png",
+      "ios48pt3x": "light/ios-48pt-3x/p-02-one-season.png",
+      "ios72pt2x": "light/ios-72pt-2x/p-02-one-season.png",
+      "ios72pt3x": "light/ios-72pt-3x/p-02-one-season.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/p-02-one-season.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/p-02-one-season.png",
+      "ios48pt3x": "dark/ios-48pt-3x/p-02-one-season.png",
+      "ios72pt2x": "dark/ios-72pt-2x/p-02-one-season.png",
+      "ios72pt3x": "dark/ios-72pt-3x/p-02-one-season.png"
+    }
+  },
+  {
+    "family": "P",
+    "name": "Half a Year",
+    "description": "Six months with Richy.",
+    "trigger": "180 days",
+    "rarity": "Uncommon",
+    "stage": 0,
+    "iconName": "CalendarDays",
+    "light": {
+      "svg": "light/svg-master/p-03-half-a-year.svg",
+      "ios48pt2x": "light/ios-48pt-2x/p-03-half-a-year.png",
+      "ios48pt3x": "light/ios-48pt-3x/p-03-half-a-year.png",
+      "ios72pt2x": "light/ios-72pt-2x/p-03-half-a-year.png",
+      "ios72pt3x": "light/ios-72pt-3x/p-03-half-a-year.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/p-03-half-a-year.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/p-03-half-a-year.png",
+      "ios48pt3x": "dark/ios-48pt-3x/p-03-half-a-year.png",
+      "ios72pt2x": "dark/ios-72pt-2x/p-03-half-a-year.png",
+      "ios72pt3x": "dark/ios-72pt-3x/p-03-half-a-year.png"
+    }
+  },
+  {
+    "family": "P",
+    "name": "One Year",
+    "description": "A full year.",
+    "trigger": "365 days",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "CalendarDays",
+    "light": {
+      "svg": "light/svg-master/p-04-one-year.svg",
+      "ios48pt2x": "light/ios-48pt-2x/p-04-one-year.png",
+      "ios48pt3x": "light/ios-48pt-3x/p-04-one-year.png",
+      "ios72pt2x": "light/ios-72pt-2x/p-04-one-year.png",
+      "ios72pt3x": "light/ios-72pt-3x/p-04-one-year.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/p-04-one-year.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/p-04-one-year.png",
+      "ios48pt3x": "dark/ios-48pt-3x/p-04-one-year.png",
+      "ios72pt2x": "dark/ios-72pt-2x/p-04-one-year.png",
+      "ios72pt3x": "dark/ios-72pt-3x/p-04-one-year.png"
+    }
+  },
+  {
+    "family": "P",
+    "name": "Two Years",
+    "description": "Two years.",
+    "trigger": "730 days",
+    "rarity": "Epic",
+    "stage": 0,
+    "iconName": "CalendarDays",
+    "light": {
+      "svg": "light/svg-master/p-05-two-years.svg",
+      "ios48pt2x": "light/ios-48pt-2x/p-05-two-years.png",
+      "ios48pt3x": "light/ios-48pt-3x/p-05-two-years.png",
+      "ios72pt2x": "light/ios-72pt-2x/p-05-two-years.png",
+      "ios72pt3x": "light/ios-72pt-3x/p-05-two-years.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/p-05-two-years.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/p-05-two-years.png",
+      "ios48pt3x": "dark/ios-48pt-3x/p-05-two-years.png",
+      "ios72pt2x": "dark/ios-72pt-2x/p-05-two-years.png",
+      "ios72pt3x": "dark/ios-72pt-3x/p-05-two-years.png"
+    }
+  },
+  {
+    "family": "P",
+    "name": "Five Years",
+    "description": "Five years of honest books.",
+    "trigger": "1,825 days",
+    "rarity": "Legendary",
+    "stage": 0,
+    "iconName": "CalendarDays",
+    "light": {
+      "svg": "light/svg-master/p-06-five-years.svg",
+      "ios48pt2x": "light/ios-48pt-2x/p-06-five-years.png",
+      "ios48pt3x": "light/ios-48pt-3x/p-06-five-years.png",
+      "ios72pt2x": "light/ios-72pt-2x/p-06-five-years.png",
+      "ios72pt3x": "light/ios-72pt-3x/p-06-five-years.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/p-06-five-years.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/p-06-five-years.png",
+      "ios48pt3x": "dark/ios-48pt-3x/p-06-five-years.png",
+      "ios72pt2x": "dark/ios-72pt-2x/p-06-five-years.png",
+      "ios72pt3x": "dark/ios-72pt-3x/p-06-five-years.png"
+    }
+  },
+  {
+    "family": "P",
+    "name": "Ten Years",
+    "description": "A decade. Richard has no words.",
+    "trigger": "3,650 days",
+    "rarity": "Mythic",
+    "stage": 0,
+    "iconName": "CalendarDays",
+    "light": {
+      "svg": "light/svg-master/p-07-ten-years.svg",
+      "ios48pt2x": "light/ios-48pt-2x/p-07-ten-years.png",
+      "ios48pt3x": "light/ios-48pt-3x/p-07-ten-years.png",
+      "ios72pt2x": "light/ios-72pt-2x/p-07-ten-years.png",
+      "ios72pt3x": "light/ios-72pt-3x/p-07-ten-years.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/p-07-ten-years.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/p-07-ten-years.png",
+      "ios48pt3x": "dark/ios-48pt-3x/p-07-ten-years.png",
+      "ios72pt2x": "dark/ios-72pt-2x/p-07-ten-years.png",
+      "ios72pt3x": "dark/ios-72pt-3x/p-07-ten-years.png"
+    }
+  },
+  {
+    "family": "P",
+    "name": "Early Earner",
+    "description": "You were here before the badges were.",
+    "trigger": "holds ≥1 backfilled badge",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "History",
+    "light": {
+      "svg": "light/svg-master/p-08-early-earner.svg",
+      "ios48pt2x": "light/ios-48pt-2x/p-08-early-earner.png",
+      "ios48pt3x": "light/ios-48pt-3x/p-08-early-earner.png",
+      "ios72pt2x": "light/ios-72pt-2x/p-08-early-earner.png",
+      "ios72pt3x": "light/ios-72pt-3x/p-08-early-earner.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/p-08-early-earner.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/p-08-early-earner.png",
+      "ios48pt3x": "dark/ios-48pt-3x/p-08-early-earner.png",
+      "ios72pt2x": "dark/ios-72pt-2x/p-08-early-earner.png",
+      "ios72pt3x": "dark/ios-72pt-3x/p-08-early-earner.png"
+    }
+  },
+  {
+    "family": "Q",
+    "name": "Slept On It",
+    "description": "You waited a week. The urge passed.",
+    "trigger": "≥7 days between flagging a large purchase and deciding",
+    "rarity": "Uncommon",
+    "stage": 0,
+    "iconName": "Hourglass",
+    "light": {
+      "svg": "light/svg-master/q-01-slept-on-it.svg",
+      "ios48pt2x": "light/ios-48pt-2x/q-01-slept-on-it.png",
+      "ios48pt3x": "light/ios-48pt-3x/q-01-slept-on-it.png",
+      "ios72pt2x": "light/ios-72pt-2x/q-01-slept-on-it.png",
+      "ios72pt3x": "light/ios-72pt-3x/q-01-slept-on-it.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/q-01-slept-on-it.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/q-01-slept-on-it.png",
+      "ios48pt3x": "dark/ios-48pt-3x/q-01-slept-on-it.png",
+      "ios72pt2x": "dark/ios-72pt-2x/q-01-slept-on-it.png",
+      "ios72pt3x": "dark/ios-72pt-3x/q-01-slept-on-it.png"
+    }
+  },
+  {
+    "family": "Q",
+    "name": "Said No",
+    "description": "The best purchase is sometimes the one you don’t make.",
+    "trigger": "3 flagged purchases declined",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "OctagonX",
+    "light": {
+      "svg": "light/svg-master/q-02-said-no.svg",
+      "ios48pt2x": "light/ios-48pt-2x/q-02-said-no.png",
+      "ios48pt3x": "light/ios-48pt-3x/q-02-said-no.png",
+      "ios72pt2x": "light/ios-72pt-2x/q-02-said-no.png",
+      "ios72pt3x": "light/ios-72pt-3x/q-02-said-no.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/q-02-said-no.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/q-02-said-no.png",
+      "ios48pt3x": "dark/ios-48pt-3x/q-02-said-no.png",
+      "ios72pt2x": "dark/ios-72pt-2x/q-02-said-no.png",
+      "ios72pt3x": "dark/ios-72pt-3x/q-02-said-no.png"
+    }
+  },
+  {
+    "family": "Q",
+    "name": "The Empty Cart",
+    "description": "A whole period, nothing spent in a category you normally can’t resist.",
+    "trigger": "0 tx in a category with ≥3-P spending history",
+    "rarity": "Uncommon",
+    "stage": 0,
+    "iconName": "ShoppingCart",
+    "light": {
+      "svg": "light/svg-master/q-03-the-empty-cart.svg",
+      "ios48pt2x": "light/ios-48pt-2x/q-03-the-empty-cart.png",
+      "ios48pt3x": "light/ios-48pt-3x/q-03-the-empty-cart.png",
+      "ios72pt2x": "light/ios-72pt-2x/q-03-the-empty-cart.png",
+      "ios72pt3x": "light/ios-72pt-3x/q-03-the-empty-cart.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/q-03-the-empty-cart.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/q-03-the-empty-cart.png",
+      "ios48pt3x": "dark/ios-48pt-3x/q-03-the-empty-cart.png",
+      "ios72pt2x": "dark/ios-72pt-2x/q-03-the-empty-cart.png",
+      "ios72pt3x": "dark/ios-72pt-3x/q-03-the-empty-cart.png"
+    }
+  },
+  {
+    "family": "Q",
+    "name": "Quiet Quarter",
+    "description": "Three periods, no impulse spending at all.",
+    "trigger": "3 consecutive P with 0 flagged impulse tx",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "ShieldCheck",
+    "light": {
+      "svg": "light/svg-master/q-04-quiet-quarter.svg",
+      "ios48pt2x": "light/ios-48pt-2x/q-04-quiet-quarter.png",
+      "ios48pt3x": "light/ios-48pt-3x/q-04-quiet-quarter.png",
+      "ios72pt2x": "light/ios-72pt-2x/q-04-quiet-quarter.png",
+      "ios72pt3x": "light/ios-72pt-3x/q-04-quiet-quarter.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/q-04-quiet-quarter.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/q-04-quiet-quarter.png",
+      "ios48pt3x": "dark/ios-48pt-3x/q-04-quiet-quarter.png",
+      "ios72pt2x": "dark/ios-72pt-2x/q-04-quiet-quarter.png",
+      "ios72pt3x": "dark/ios-72pt-3x/q-04-quiet-quarter.png"
+    }
+  },
+  {
+    "family": "R",
+    "name": "Came Back",
+    "description": "You came back. That’s the hard part.",
+    "trigger": "logged a tx after ≥30 days away",
+    "rarity": "Uncommon",
+    "stage": 0,
+    "iconName": "RotateCcw",
+    "light": {
+      "svg": "light/svg-master/r-01-came-back.svg",
+      "ios48pt2x": "light/ios-48pt-2x/r-01-came-back.png",
+      "ios48pt3x": "light/ios-48pt-3x/r-01-came-back.png",
+      "ios72pt2x": "light/ios-72pt-2x/r-01-came-back.png",
+      "ios72pt3x": "light/ios-72pt-3x/r-01-came-back.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/r-01-came-back.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/r-01-came-back.png",
+      "ios48pt3x": "dark/ios-48pt-3x/r-01-came-back.png",
+      "ios72pt2x": "dark/ios-72pt-2x/r-01-came-back.png",
+      "ios72pt3x": "dark/ios-72pt-3x/r-01-came-back.png"
+    }
+  },
+  {
+    "family": "R",
+    "name": "Caught Up",
+    "description": "A month of gaps, filled in honestly.",
+    "trigger": "backfilled ≥30 days of missing tx",
+    "rarity": "Uncommon",
+    "stage": 0,
+    "iconName": "ClockCheck",
+    "light": {
+      "svg": "light/svg-master/r-02-caught-up.svg",
+      "ios48pt2x": "light/ios-48pt-2x/r-02-caught-up.png",
+      "ios48pt3x": "light/ios-48pt-3x/r-02-caught-up.png",
+      "ios72pt2x": "light/ios-72pt-2x/r-02-caught-up.png",
+      "ios72pt3x": "light/ios-72pt-3x/r-02-caught-up.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/r-02-caught-up.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/r-02-caught-up.png",
+      "ios48pt3x": "dark/ios-48pt-3x/r-02-caught-up.png",
+      "ios72pt2x": "dark/ios-72pt-2x/r-02-caught-up.png",
+      "ios72pt3x": "dark/ios-72pt-3x/r-02-caught-up.png"
+    }
+  },
+  {
+    "family": "R",
+    "name": "Rebuilt",
+    "description": "Three red months, and then you turned it around.",
+    "trigger": "green month after ≥3 consecutive red",
+    "rarity": "Epic",
+    "stage": 0,
+    "iconName": "TrendingUp",
+    "light": {
+      "svg": "light/svg-master/r-03-rebuilt.svg",
+      "ios48pt2x": "light/ios-48pt-2x/r-03-rebuilt.png",
+      "ios48pt3x": "light/ios-48pt-3x/r-03-rebuilt.png",
+      "ios72pt2x": "light/ios-72pt-2x/r-03-rebuilt.png",
+      "ios72pt3x": "light/ios-72pt-3x/r-03-rebuilt.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/r-03-rebuilt.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/r-03-rebuilt.png",
+      "ios48pt3x": "dark/ios-48pt-3x/r-03-rebuilt.png",
+      "ios72pt2x": "dark/ios-72pt-2x/r-03-rebuilt.png",
+      "ios72pt3x": "dark/ios-72pt-3x/r-03-rebuilt.png"
+    }
+  },
+  {
+    "family": "R",
+    "name": "Out of the Hole",
+    "description": "You climbed all the way back.",
+    "trigger": "net worth returns to its previous peak after ≥25% drawdown",
+    "rarity": "Epic",
+    "stage": 0,
+    "iconName": "TrendingUp",
+    "light": {
+      "svg": "light/svg-master/r-04-out-of-the-hole.svg",
+      "ios48pt2x": "light/ios-48pt-2x/r-04-out-of-the-hole.png",
+      "ios48pt3x": "light/ios-48pt-3x/r-04-out-of-the-hole.png",
+      "ios72pt2x": "light/ios-72pt-2x/r-04-out-of-the-hole.png",
+      "ios72pt3x": "light/ios-72pt-3x/r-04-out-of-the-hole.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/r-04-out-of-the-hole.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/r-04-out-of-the-hole.png",
+      "ios48pt3x": "dark/ios-48pt-3x/r-04-out-of-the-hole.png",
+      "ios72pt2x": "dark/ios-72pt-2x/r-04-out-of-the-hole.png",
+      "ios72pt3x": "dark/ios-72pt-3x/r-04-out-of-the-hole.png"
+    }
+  },
+  {
+    "family": "R",
+    "name": "Second Wind",
+    "description": "A new streak, longer than the one you lost.",
+    "trigger": "streak exceeds a previously broken one",
+    "rarity": "Rare",
+    "stage": 0,
+    "iconName": "RefreshCw",
+    "light": {
+      "svg": "light/svg-master/r-05-second-wind.svg",
+      "ios48pt2x": "light/ios-48pt-2x/r-05-second-wind.png",
+      "ios48pt3x": "light/ios-48pt-3x/r-05-second-wind.png",
+      "ios72pt2x": "light/ios-72pt-2x/r-05-second-wind.png",
+      "ios72pt3x": "light/ios-72pt-3x/r-05-second-wind.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/r-05-second-wind.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/r-05-second-wind.png",
+      "ios48pt3x": "dark/ios-48pt-3x/r-05-second-wind.png",
+      "ios72pt2x": "dark/ios-72pt-2x/r-05-second-wind.png",
+      "ios72pt3x": "dark/ios-72pt-3x/r-05-second-wind.png"
+    }
+  },
+  {
+    "family": "S",
+    "name": "The Perfect Period",
+    "description": "Every budget under. Half your income saved. Nothing uncategorised. One period, everything right.",
+    "trigger": "all caps under + savings rate ≥50% + 0 uncategorised in one P",
+    "rarity": "Mythic",
+    "stage": 0,
+    "iconName": "BadgeCheck",
+    "light": {
+      "svg": "light/svg-master/s-01-the-perfect-period.svg",
+      "ios48pt2x": "light/ios-48pt-2x/s-01-the-perfect-period.png",
+      "ios48pt3x": "light/ios-48pt-3x/s-01-the-perfect-period.png",
+      "ios72pt2x": "light/ios-72pt-2x/s-01-the-perfect-period.png",
+      "ios72pt3x": "light/ios-72pt-3x/s-01-the-perfect-period.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/s-01-the-perfect-period.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/s-01-the-perfect-period.png",
+      "ios48pt3x": "dark/ios-48pt-3x/s-01-the-perfect-period.png",
+      "ios72pt2x": "dark/ios-72pt-2x/s-01-the-perfect-period.png",
+      "ios72pt3x": "dark/ios-72pt-3x/s-01-the-perfect-period.png"
+    }
+  },
+  {
+    "family": "S",
+    "name": "Perfect Year",
+    "description": "Twelve green months. Fifty-two clean weeks. Not one budget overrun.",
+    "trigger": "12 green + 52 clean + 0 overruns in 12 P",
+    "rarity": "Mythic",
+    "stage": 0,
+    "iconName": "CalendarCheck",
+    "light": {
+      "svg": "light/svg-master/s-02-perfect-year.svg",
+      "ios48pt2x": "light/ios-48pt-2x/s-02-perfect-year.png",
+      "ios48pt3x": "light/ios-48pt-3x/s-02-perfect-year.png",
+      "ios72pt2x": "light/ios-72pt-2x/s-02-perfect-year.png",
+      "ios72pt3x": "light/ios-72pt-3x/s-02-perfect-year.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/s-02-perfect-year.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/s-02-perfect-year.png",
+      "ios48pt3x": "dark/ios-48pt-3x/s-02-perfect-year.png",
+      "ios72pt2x": "dark/ios-72pt-2x/s-02-perfect-year.png",
+      "ios72pt3x": "dark/ios-72pt-3x/s-02-perfect-year.png"
+    }
+  },
+  {
+    "family": "S",
+    "name": "The Ascetic",
+    "description": "You lived on a tenth of what you earned.",
+    "trigger": "expenses ≤10% of income for a full P",
+    "rarity": "Mythic",
+    "stage": 0,
+    "iconName": "Percent",
+    "light": {
+      "svg": "light/svg-master/s-03-the-ascetic.svg",
+      "ios48pt2x": "light/ios-48pt-2x/s-03-the-ascetic.png",
+      "ios48pt3x": "light/ios-48pt-3x/s-03-the-ascetic.png",
+      "ios72pt2x": "light/ios-72pt-2x/s-03-the-ascetic.png",
+      "ios72pt3x": "light/ios-72pt-3x/s-03-the-ascetic.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/s-03-the-ascetic.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/s-03-the-ascetic.png",
+      "ios48pt3x": "dark/ios-48pt-3x/s-03-the-ascetic.png",
+      "ios72pt2x": "dark/ios-72pt-2x/s-03-the-ascetic.png",
+      "ios72pt3x": "dark/ios-72pt-3x/s-03-the-ascetic.png"
+    }
+  },
+  {
+    "family": "S",
+    "name": "Ghost Month",
+    "description": "A whole month, essentials only. Nothing else.",
+    "trigger": "full P with 0 discretionary-category spend",
+    "rarity": "Legendary",
+    "stage": 0,
+    "iconName": "ShoppingBag",
+    "light": {
+      "svg": "light/svg-master/s-04-ghost-month.svg",
+      "ios48pt2x": "light/ios-48pt-2x/s-04-ghost-month.png",
+      "ios48pt3x": "light/ios-48pt-3x/s-04-ghost-month.png",
+      "ios72pt2x": "light/ios-72pt-2x/s-04-ghost-month.png",
+      "ios72pt3x": "light/ios-72pt-3x/s-04-ghost-month.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/s-04-ghost-month.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/s-04-ghost-month.png",
+      "ios48pt3x": "dark/ios-48pt-3x/s-04-ghost-month.png",
+      "ios72pt2x": "dark/ios-72pt-2x/s-04-ghost-month.png",
+      "ios72pt3x": "dark/ios-72pt-3x/s-04-ghost-month.png"
+    }
+  },
+  {
+    "family": "S",
+    "name": "Nothing Left to Find",
+    "description": "Twelve periods. No overruns. And Richard could not find you a single wasted shekel.",
+    "trigger": "12 consecutive P, 0 overruns, 0 open Found Money findings",
+    "rarity": "Mythic",
+    "stage": 0,
+    "iconName": "ScanSearch",
+    "light": {
+      "svg": "light/svg-master/s-05-nothing-left-to-find.svg",
+      "ios48pt2x": "light/ios-48pt-2x/s-05-nothing-left-to-find.png",
+      "ios48pt3x": "light/ios-48pt-3x/s-05-nothing-left-to-find.png",
+      "ios72pt2x": "light/ios-72pt-2x/s-05-nothing-left-to-find.png",
+      "ios72pt3x": "light/ios-72pt-3x/s-05-nothing-left-to-find.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/s-05-nothing-left-to-find.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/s-05-nothing-left-to-find.png",
+      "ios48pt3x": "dark/ios-48pt-3x/s-05-nothing-left-to-find.png",
+      "ios72pt2x": "dark/ios-72pt-2x/s-05-nothing-left-to-find.png",
+      "ios72pt3x": "dark/ios-72pt-3x/s-05-nothing-left-to-find.png"
+    }
+  },
+  {
+    "family": "S",
+    "name": "Millionaire’s Ledger",
+    "description": "Seven figures — and still logging every coin.",
+    "trigger": "net worth ≥ 1,000,000 in a green month",
+    "rarity": "Legendary",
+    "stage": 0,
+    "iconName": "BookMarked",
+    "light": {
+      "svg": "light/svg-master/s-06-millionaire-s-ledger.svg",
+      "ios48pt2x": "light/ios-48pt-2x/s-06-millionaire-s-ledger.png",
+      "ios48pt3x": "light/ios-48pt-3x/s-06-millionaire-s-ledger.png",
+      "ios72pt2x": "light/ios-72pt-2x/s-06-millionaire-s-ledger.png",
+      "ios72pt3x": "light/ios-72pt-3x/s-06-millionaire-s-ledger.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/s-06-millionaire-s-ledger.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/s-06-millionaire-s-ledger.png",
+      "ios48pt3x": "dark/ios-48pt-3x/s-06-millionaire-s-ledger.png",
+      "ios72pt2x": "dark/ios-72pt-2x/s-06-millionaire-s-ledger.png",
+      "ios72pt3x": "dark/ios-72pt-3x/s-06-millionaire-s-ledger.png"
+    }
+  },
+  {
+    "family": "S",
+    "name": "Ten Years Green",
+    "description": "One hundred and twenty consecutive green months.",
+    "trigger": "120 consecutive",
+    "rarity": "Mythic",
+    "stage": 0,
+    "iconName": "CalendarCheck",
+    "light": {
+      "svg": "light/svg-master/s-07-ten-years-green.svg",
+      "ios48pt2x": "light/ios-48pt-2x/s-07-ten-years-green.png",
+      "ios48pt3x": "light/ios-48pt-3x/s-07-ten-years-green.png",
+      "ios72pt2x": "light/ios-72pt-2x/s-07-ten-years-green.png",
+      "ios72pt3x": "light/ios-72pt-3x/s-07-ten-years-green.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/s-07-ten-years-green.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/s-07-ten-years-green.png",
+      "ios48pt3x": "dark/ios-48pt-3x/s-07-ten-years-green.png",
+      "ios72pt2x": "dark/ios-72pt-2x/s-07-ten-years-green.png",
+      "ios72pt3x": "dark/ios-72pt-3x/s-07-ten-years-green.png"
+    }
+  },
+  {
+    "family": "S",
+    "name": "The Babylonian",
+    "description": "Level 50, every gate passed. There is nothing left to earn.",
+    "trigger": "max level + all rank gates",
+    "rarity": "Mythic",
+    "stage": 0,
+    "iconName": "Columns3",
+    "light": {
+      "svg": "light/svg-master/s-08-the-babylonian.svg",
+      "ios48pt2x": "light/ios-48pt-2x/s-08-the-babylonian.png",
+      "ios48pt3x": "light/ios-48pt-3x/s-08-the-babylonian.png",
+      "ios72pt2x": "light/ios-72pt-2x/s-08-the-babylonian.png",
+      "ios72pt3x": "light/ios-72pt-3x/s-08-the-babylonian.png"
+    },
+    "dark": {
+      "svg": "dark/svg-master/s-08-the-babylonian.svg",
+      "ios48pt2x": "dark/ios-48pt-2x/s-08-the-babylonian.png",
+      "ios48pt3x": "dark/ios-48pt-3x/s-08-the-babylonian.png",
+      "ios72pt2x": "dark/ios-72pt-2x/s-08-the-babylonian.png",
+      "ios72pt3x": "dark/ios-72pt-3x/s-08-the-babylonian.png"
+    }
+  }
+]

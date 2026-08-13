@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 72 72">
+<defs>
+  <linearGradient id="base" x1="14" y1="7" x2="58" y2="66" gradientUnits="userSpaceOnUse"><stop stop-color="#FFFFFF"/><stop offset=".48" stop-color="#F8F4EF"/><stop offset="1" stop-color="#DED6CE"/></linearGradient>
+  <linearGradient id="edge" x1="15" y1="6" x2="57" y2="66" gradientUnits="userSpaceOnUse"><stop stop-color="#FFFFFF"/><stop offset=".5" stop-color="#B8D9FA"/><stop offset="1" stop-color="#968A80"/></linearGradient>
+  <linearGradient id="spectrum" x1="10" y1="12" x2="62" y2="60"><stop stop-color="#7359D5"/><stop offset=".25" stop-color="#3B82D4"/><stop offset=".5" stop-color="#26A06B"/><stop offset=".75" stop-color="#D2A33F"/><stop offset="1" stop-color="#B5579C"/></linearGradient>
+  <linearGradient id="shine" x1="14" y1="8" x2="54" y2="54"><stop stop-color="#FFFFFF" stop-opacity=".8"/><stop offset=".35" stop-color="#FFFFFF" stop-opacity=".14"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient>
+  <filter id="shadow" x="-40%" y="-40%" width="180%" height="190%"><feDropShadow dx="0" dy="3" stdDeviation="3.2" flood-color="#271C15" flood-opacity=".2"/></filter>
+  <filter id="symbol" x="-60%" y="-60%" width="220%" height="220%"><feDropShadow dx="0" dy=".7" stdDeviation=".55" flood-color="#FFFFFF" flood-opacity=".8"/></filter>
+  <clipPath id="clip"><rect x="7.4" y="6.4" width="57.2" height="58.2" rx="19"/></clipPath>
+</defs>
+<g filter="url(#shadow)">
+  <rect x="6" y="5" width="60" height="61" rx="20.5" fill="url(#edge)"/>
+  <rect x="7.4" y="6.4" width="57.2" height="58.2" rx="19" fill="url(#base)"/>
+  <g clip-path="url(#clip)">
+    <rect x="13" y="16" width="13" height="28" rx="6.5" fill="#B8D9FA" opacity=".3"/><rect x="16" y="19" width="7" height="10" rx="3.5" fill="#3478C9" opacity=".76"/><circle cx="52" cy="49" r="2.2" fill="#3478C9" opacity=".64"/>
+    <path d="M9 18C23 5 48 5 63 17C50 13 31 15 18 27Z" fill="url(#shine)" opacity=".5"/>
+  </g>
+  <rect x="10.3" y="9.3" width="51.4" height="52.4" rx="16.8" fill="none" stroke="#3478C9" stroke-width=".95" stroke-opacity=".68"/>
+  <g transform="translate(23 19) rotate(8 12 12) scale(1.1)" fill="none" stroke="#1A1410" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" filter="url(#symbol)"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></g>
+  <g transform="translate(13 43) scale(.47)" fill="none" stroke="#1B4A82" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity=".72"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></g>
+  <circle cx="18" cy="18" r="1.4" fill="#C8983A"/>
+  <rect x="18" y="57.4" width="36" height="2.4" rx="1.2" fill="#B8D9FA" opacity=".32"/><rect x="18" y="57.4" width="9.333333333333334" height="2.4" rx="1.2" fill="#3478C9" opacity=".95"/><rect x="31.333333333333336" y="57.4" width="9.333333333333334" height="2.4" rx="1.2" fill="#3478C9" opacity=".95"/><rect x="44.66666666666667" y="57.4" width="9.333333333333334" height="2.4" rx="1.2" fill="#FFFFFF" opacity=".5"/>
+</g>
+</svg>

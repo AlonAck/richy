@@ -83,14 +83,15 @@ const staticFiles = [
 ];
 for (const f of staticFiles) copyFileSync(f, "public/" + f);
 
-// Badge art: one PNG per badge (see badges/README.md). Copied wholesale rather
-// than listed file by file, so adding a badge icon is a drag-and-drop into the
-// folder and never an edit to this script. A missing file is not a build error -
-// the app falls back to the badge's SVG glyph, so a half-finished set still ships.
-if (existsSync("badges")) {
-  mkdirSync("public/badges", { recursive: true });
-  for (const f of readdirSync("badges")) {
-    if (/\.png$/i.test(f)) copyFileSync("badges/" + f, "public/badges/" + f);
+// Badge art: one SVG per badge per appearance (see badges/README.md). Copied
+// wholesale rather than listed file by file, so adding art is a drag-and-drop
+// into the folder and never an edit to this script.
+for (const appearance of ["light", "dark"]) {
+  const dir = "badges/" + appearance;
+  if (!existsSync(dir)) continue;
+  mkdirSync("public/" + dir, { recursive: true });
+  for (const f of readdirSync(dir)) {
+    if (/\.svg$/i.test(f)) copyFileSync(dir + "/" + f, "public/" + dir + "/" + f);
   }
 }
 
