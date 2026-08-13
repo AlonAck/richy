@@ -62,6 +62,82 @@ service cloud.firestore {
       allow delete: if isMember();
     }
 
+    // ── The social graph (friends / following) ───────────────────────────────
+    // Independent of households: following someone shares nothing financial and
+    // joining a household is not following. The two never read each other.
+    //
+    // The split between profiles/ and profileStats/ is the whole privacy design
+    // and must not be collapsed into one document:
+    //   profiles/{uid}      identity only - handle, display name. Any signed-in
+    //                       user may read it, because you cannot send a follow
+    //                       request to someone you cannot find.
+    //   profileStats/{uid}  level, rank, streaks, shared badge ids. Readable
+    //                       ONLY by an approved follower.
+    // Amounts are never written to either. Under Amendment 13 financial data is
+    // very likely sensitive personal information, so nothing that discloses or
+    // implies net worth or income belongs in a document another person can read.
+    function followId(a, b) { return a + "__" + b; }
+    function follows(follower, target) {
+      return exists(/databases/$(database)/documents/follows/$(followId(follower, target)));
+    }
+
+    // Handle -> uid index. `get` only: list is denied so the directory cannot be
+    // scraped for every handle in the app. Claiming is create-only, so a handle
+    // can never be stolen from its owner by overwrite.
+    match /handles/{handle} {
+      allow get: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow list, update, delete: if false;
+    }
+
+    match /profiles/{uid} {
+      // Identity card. Readable by any signed-in user so handle lookup and
+      // invite links work; list denied so the user base cannot be enumerated.
+      allow get: if request.auth != null;
+      allow list: if false;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /profileStats/{uid} {
+      // Your own, or someone who has approved you. Everything else is invisible.
+      allow get: if request.auth != null
+        && (request.auth.uid == uid || follows(request.auth.uid, uid));
+      allow list: if false;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // A pending request, id "<from>__<to>". Either party can see it; only the
+    // sender can create it, and it must name them honestly as the sender.
+    // Deleting is how both accept and decline resolve - the target creates the
+    // follow edge first, then removes the request.
+    match /followRequests/{reqId} {
+      allow get, list: if request.auth != null
+        && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
+      allow create: if request.auth != null
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.to != request.auth.uid
+        && reqId == followId(request.auth.uid, request.resource.data.to);
+      allow delete: if request.auth != null
+        && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
+      allow update: if false;
+    }
+
+    // The edge itself, id "<follower>__<target>". Created ONLY by the target -
+    // this is what "you approve each one" means in the data: a follower cannot
+    // grant themselves access. Either party may delete it (unfollow, or remove
+    // a follower), so consent stays revocable from both ends.
+    match /follows/{edgeId} {
+      allow get, list: if request.auth != null
+        && (resource.data.follower == request.auth.uid || resource.data.target == request.auth.uid);
+      allow create: if request.auth != null
+        && request.resource.data.target == request.auth.uid
+        && request.resource.data.follower != request.auth.uid
+        && edgeId == followId(request.resource.data.follower, request.auth.uid);
+      allow delete: if request.auth != null
+        && (resource.data.follower == request.auth.uid || resource.data.target == request.auth.uid);
+      allow update: if false;
+    }
+
     // Bank Leumi FinTeka (direct Open Banking connect, api/leumi-fintaka.js):
     // leumiFinteka/{uid} holds access/refresh tokens, and leumiOAuthState/{state}
     // holds a one-time PKCE verifier during the OAuth handshake. Neither is

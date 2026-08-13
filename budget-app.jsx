@@ -2558,6 +2558,100 @@ var CLOUD = {
   saveHousehold: function(hid, data) {
     if (!cloudReady() || !hid) return Promise.resolve();
     return _fsdb().collection("households").doc(hid).set(data, { merge: true });
+  },
+
+  // ── The social graph ──────────────────────────────────────────────────────
+  // Following is not household membership and shares nothing financial. See
+  // firestore.rules for why identity (profiles) and progress (profileStats)
+  // are two documents: anyone signed in can find you by handle, but only an
+  // approved follower can read your level, streaks or badges. No amount is
+  // ever written to either one.
+  publishProfile: function(uid, card, stats) {
+    if (!cloudReady() || !uid) return Promise.resolve();
+    var db = _fsdb();
+    return Promise.all([
+      db.collection("profiles").doc(uid).set(card, { merge: true }),
+      db.collection("profileStats").doc(uid).set(stats, { merge: true })
+    ]);
+  },
+  // Handles are create-only in the rules, so a claim fails loudly if taken
+  // rather than silently stealing someone's name.
+  claimHandle: function(handle, uid) {
+    if (!cloudReady()) return Promise.reject(new Error("offline"));
+    return _fsdb().collection("handles").doc(handle).get().then(function(d) {
+      if (d.exists) {
+        if (d.data().uid === uid) return handle;      // already yours - no-op
+        throw new Error("taken");
+      }
+      return _fsdb().collection("handles").doc(handle).set({ uid: uid }).then(function() { return handle; });
+    });
+  },
+  findByHandle: function(handle) {
+    if (!cloudReady() || !handle) return Promise.resolve(null);
+    return _fsdb().collection("handles").doc(handle).get().then(function(d) {
+      if (!d.exists) return null;
+      return CLOUD.loadProfile(d.data().uid);
+    });
+  },
+  loadProfile: function(uid) {
+    if (!cloudReady() || !uid) return Promise.resolve(null);
+    return _fsdb().collection("profiles").doc(uid).get().then(function(d) {
+      return d.exists ? Object.assign({ uid: uid }, d.data()) : null;
+    });
+  },
+  // Only ever succeeds for someone who has approved you - the rules enforce it,
+  // this just surfaces the refusal as null instead of an exception.
+  loadProfileStats: function(uid) {
+    if (!cloudReady() || !uid) return Promise.resolve(null);
+    return _fsdb().collection("profileStats").doc(uid).get()
+      .then(function(d) { return d.exists ? d.data() : null; })
+      .catch(function() { return null; });
+  },
+  sendFollowRequest: function(from, to, card) {
+    if (!cloudReady() || !from || !to || from === to) return Promise.resolve();
+    return _fsdb().collection("followRequests").doc(from + "__" + to).set({
+      from: from, to: to,
+      handle: (card && card.handle) || "", name: (card && card.name) || "",
+      at: new Date().toISOString()
+    });
+  },
+  incomingRequests: function(uid) {
+    if (!cloudReady() || !uid) return Promise.resolve([]);
+    return _fsdb().collection("followRequests").where("to", "==", uid).get().then(function(s) {
+      return s.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+    }).catch(function() { return []; });
+  },
+  // Approval. The edge is created by the TARGET - a follower cannot grant
+  // themselves access - and the request is cleared once the edge exists.
+  acceptRequest: function(followerUid, myUid) {
+    if (!cloudReady()) return Promise.resolve();
+    var db = _fsdb();
+    return db.collection("follows").doc(followerUid + "__" + myUid).set({
+      follower: followerUid, target: myUid, at: new Date().toISOString()
+    }).then(function() {
+      return db.collection("followRequests").doc(followerUid + "__" + myUid).delete();
+    });
+  },
+  declineRequest: function(followerUid, myUid) {
+    if (!cloudReady()) return Promise.resolve();
+    return _fsdb().collection("followRequests").doc(followerUid + "__" + myUid).delete();
+  },
+  // Both directions, and both revocable: unfollow someone, or remove a follower.
+  listFollowing: function(uid) {
+    if (!cloudReady() || !uid) return Promise.resolve([]);
+    return _fsdb().collection("follows").where("follower", "==", uid).get().then(function(s) {
+      return s.docs.map(function(d) { return d.data().target; });
+    }).catch(function() { return []; });
+  },
+  listFollowers: function(uid) {
+    if (!cloudReady() || !uid) return Promise.resolve([]);
+    return _fsdb().collection("follows").where("target", "==", uid).get().then(function(s) {
+      return s.docs.map(function(d) { return d.data().follower; });
+    }).catch(function() { return []; });
+  },
+  removeFollow: function(followerUid, targetUid) {
+    if (!cloudReady()) return Promise.resolve();
+    return _fsdb().collection("follows").doc(followerUid + "__" + targetUid).delete();
   }
 };
 
@@ -24966,13 +25060,25 @@ function memberTotals(tx, uid) {
   return { count: rows.length, spent: round2(spent), put: round2(put), since: dates[0] || "", rows: rows };
 }
 
-function SocialStrip(props) {
-  var hh = props.household;
-  var members = (hh && hh.members) ? hh.members : [];
+// A person's disc, used everywhere someone appears. Initials only: the app has
+// no avatar images and Google's photoURL is deliberately never read.
+function Disc(props) {
+  var n = props.name || props.handle || "?";
+  var size = props.size || 52;
+  return (
+    <div style={{ width: size, height: size, borderRadius: "50%", background: FACE_TINTS[(props.i || 0) % FACE_TINTS.length], display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: Math.round(size * 0.38), fontWeight: 700, fontFamily: UI, flexShrink: 0, border: props.ring ? "2px solid " + T.orange : "none" }}>
+      {String(n).replace("@", "")[0].toUpperCase()}
+    </div>
+  );
+}
 
-  // No household: say so plainly and offer the one action that changes it.
-  // Inventing a "0 followers" row here would be inventing a feature.
-  if (!hh || !members.length) {
+// The people row on Profile. This is the follow graph, NOT the household -
+// following someone shares no money and joining a household is not following.
+function SocialStrip(props) {
+  var people = props.people || [];
+  var reqs = props.requestCount || 0;
+
+  if (!people.length) {
     return (
       <Card style={{ padding: "17px 17px 15px", marginTop: 18 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -24980,109 +25086,322 @@ function SocialStrip(props) {
             <SVGIcon id="user" size={18} color={T.orange} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>No one here yet</div>
-            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Share a budget and the people in it show up here.</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>{reqs ? (reqs + " waiting on you") : "Not following anyone"}</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>
+              {reqs ? "Someone asked to follow you." : "Follow people to see their streaks and badges. Never their money."}
+            </div>
           </div>
         </div>
         <button onClick={props.onManage}
           style={{ width: "100%", marginTop: 14, background: T.orangeDim, color: T.orange, border: "none", borderRadius: 13, padding: "11px 0", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI }}>
-          Share a budget
+          {reqs ? "Review requests" : "Find people"}
         </button>
       </Card>
     );
   }
 
-  var totalShared = (props.tx || []).filter(function(t) { return t && t.shared && !isTransfer(t); });
   return (
     <div style={{ marginTop: 18 }}>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", margin: "0 0 9px", padding: "0 4px" }}>
-        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, fontFamily: UI }}>SHARED WITH</span>
-        <button onClick={props.onManage} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12.5, color: T.orange, fontWeight: 600, fontFamily: UI, display: "flex", alignItems: "center", gap: 3 }}>
-          {hh.name}<SVGIcon id="chevron" size={12} color={T.orange} />
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, fontFamily: UI }}>FOLLOWING</span>
+        <button onClick={props.onManage} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12.5, color: T.orange, fontWeight: 600, fontFamily: UI, display: "flex", alignItems: "center", gap: 4 }}>
+          {reqs > 0 && <span style={{ background: T.red, color: "#fff", fontSize: 10.5, fontWeight: 700, borderRadius: 99, padding: "1px 6px" }}>{reqs}</span>}
+          Manage<SVGIcon id="chevron" size={12} color={T.orange} />
         </button>
       </div>
-      <Card style={{ padding: "15px 0 13px" }}>
+      <Card style={{ padding: "15px 0" }}>
         <div style={{ display: "flex", gap: 14, padding: "0 16px", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-          {members.map(function(m, i) {
-            var t = memberTotals(props.tx, m.uid);
-            var me = m.uid === props.myUid;
+          {people.map(function(p, i) {
             return (
-              <button key={m.uid || i} onClick={function() { props.onOpen(m.uid); }}
+              <button key={p.uid} onClick={function() { props.onOpen(p.uid); }}
                 style={{ background: "none", border: "none", padding: 0, cursor: "pointer", width: 62, flexShrink: 0, fontFamily: UI }}>
-                <div style={{ width: 52, height: 52, borderRadius: "50%", margin: "0 auto", background: FACE_TINTS[i % FACE_TINTS.length], display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 20, fontWeight: 700, border: me ? "2px solid " + T.orange : "none" }}>
-                  {(m.name || m.email || "?")[0].toUpperCase()}
-                </div>
+                <div style={{ display: "flex", justifyContent: "center" }}><Disc name={p.name} handle={p.handle} i={i} /></div>
                 <div style={{ fontSize: 11.5, fontWeight: 700, color: T.ink, marginTop: 6, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {me ? "You" : String(m.name || m.email || "").split(" ")[0]}
+                  {String(p.name || p.handle || "").split(" ")[0]}
                 </div>
-                <div style={{ fontSize: 10, color: T.ink3, marginTop: 1 }}>{t.count ? t.count + " shared" : "-"}</div>
+                <div style={{ fontSize: 10, color: T.ink3, marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {p.stats ? ("Lv " + p.stats.level) : "@" + (p.handle || "")}
+                </div>
               </button>
             );
           })}
-          {props.canInvite && (
-            <button onClick={props.onManage} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", width: 62, flexShrink: 0, fontFamily: UI }}>
-              <div style={{ width: 52, height: 52, borderRadius: "50%", margin: "0 auto", border: "1.5px dashed " + T.ink3, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <SVGIcon id="plus" size={18} color={T.ink3} />
-              </div>
-              <div style={{ fontSize: 11.5, fontWeight: 700, color: T.ink3, marginTop: 6 }}>Invite</div>
-            </button>
-          )}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, borderTop: "0.5px solid " + T.sep, marginTop: 14, padding: "11px 16px 0" }}>
-          <SVGIcon id="activity" size={14} color={T.ink3} />
-          <span style={{ fontSize: 12, color: T.ink3, fontFamily: UI }}>
-            {totalShared.length ? totalShared.length + " shared entr" + (totalShared.length === 1 ? "y" : "ies") + " between you" : "Nothing shared yet"}
-          </span>
+          <button onClick={props.onManage} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", width: 62, flexShrink: 0, fontFamily: UI }}>
+            <div style={{ width: 52, height: 52, borderRadius: "50%", margin: "0 auto", border: "1.5px dashed " + T.ink3, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <SVGIcon id="plus" size={18} color={T.ink3} />
+            </div>
+            <div style={{ fontSize: 11.5, fontWeight: 700, color: T.ink3, marginTop: 6 }}>Find</div>
+          </button>
         </div>
       </Card>
     </div>
   );
 }
 
-// One person's profile, limited to what they have actually shared. Anything
-// this screen cannot source from the household document is not shown at all -
-// there are no empty rows for private figures, because an empty row still
-// discloses that the figure exists.
+// Requests, following, followers - the whole graph in one screen. Requests sit
+// at the top because they are the only part that is waiting on the user.
+function SocialView(props) {
+  var s = props.social;
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+
+      <button onClick={props.onFind}
+        style={{ width: "100%", background: T.orangeDim, color: T.orange, border: "none", borderRadius: 16, padding: "14px 0", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 20 }}>
+        <SVGIcon id="search" size={16} color={T.orange} />Find people
+      </button>
+
+      {s.requests.length > 0 && (
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, padding: "0 4px", margin: "0 0 9px", fontFamily: UI }}>ASKED TO FOLLOW YOU</div>
+          <Card style={{ overflow: "hidden", marginBottom: 22 }}>
+            {s.requests.map(function(r, i) {
+              return (
+                <div key={r.from} style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderBottom: i < s.requests.length - 1 ? "0.5px solid " + T.sep : "none" }}>
+                  <Disc name={r.name} handle={r.handle} i={i} size={40} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, fontFamily: UI }}>{r.name || ("@" + r.handle)}</div>
+                    <div style={{ fontSize: 12, color: T.ink3, fontFamily: UI }}>{"@" + (r.handle || "")}</div>
+                  </div>
+                  <button onClick={function() { props.onDecline(r.from); }} aria-label="Decline"
+                    style={{ background: "none", border: "1px solid " + T.sep, borderRadius: 10, padding: "7px 11px", fontSize: 12.5, fontWeight: 600, color: T.ink2, cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Decline</button>
+                  <button onClick={function() { props.onAccept(r.from); }}
+                    style={{ background: T.orange, border: "none", borderRadius: 10, padding: "8px 13px", fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Accept</button>
+                </div>
+              );
+            })}
+          </Card>
+        </div>
+      )}
+
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, padding: "0 4px", margin: "0 0 9px", fontFamily: UI }}>
+        {"FOLLOWING · " + s.following.length}
+      </div>
+      <Card style={{ overflow: "hidden", marginBottom: 22 }}>
+        {s.following.length === 0 ? (
+          <div style={{ padding: "20px 18px", fontSize: 13, color: T.ink3, lineHeight: 1.5, fontFamily: UI }}>Nobody yet. Find someone by their handle or an invite link.</div>
+        ) : s.following.map(function(p, i) {
+          return (
+            <ProfileRow key={p.uid} icon="user" iconBg={T.orangeDim} iconColor={T.orange}
+              label={p.name || ("@" + p.handle)} sub={p.stats ? (p.stats.rank + " · Level " + p.stats.level) : "Waiting for approval"}
+              onClick={function() { props.onOpen(p.uid); }} last={i === s.following.length - 1} />
+          );
+        })}
+      </Card>
+
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, padding: "0 4px", margin: "0 0 9px", fontFamily: UI }}>
+        {"FOLLOWERS · " + s.followers.length}
+      </div>
+      <Card style={{ overflow: "hidden" }}>
+        {s.followers.length === 0 ? (
+          <div style={{ padding: "20px 18px", fontSize: 13, color: T.ink3, lineHeight: 1.5, fontFamily: UI }}>Nobody follows you yet.</div>
+        ) : s.followers.map(function(p, i) {
+          return (
+            <ProfileRow key={p.uid} icon="user" iconBg={T.blueDim} iconColor={T.blue}
+              label={p.name || ("@" + p.handle)} sub={"@" + (p.handle || "")}
+              right={<button onClick={function(e) { e.stopPropagation(); props.onRemoveFollower(p.uid); }}
+                style={{ background: "none", border: "1px solid " + T.sep, borderRadius: 9, padding: "5px 9px", fontSize: 11.5, fontWeight: 600, color: T.ink2, cursor: "pointer", fontFamily: UI }}>Remove</button>}
+              onClick={function() { props.onOpen(p.uid); }} last={i === s.followers.length - 1} />
+          );
+        })}
+      </Card>
+
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 9, marginTop: 18, padding: "0 4px" }}>
+        <span style={{ flexShrink: 0, display: "flex", marginTop: 1 }}><SVGIcon id="lock" size={13} color={T.ink3} /></span>
+        <span style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.45, fontFamily: UI }}>
+          Followers see your level, rank, streaks and the badges you share. They never see any amount - no balance, income, savings or net worth.
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// Claim a handle, share a link, look someone up. Handle lookup is a direct
+// get by id, never a query: the rules deny listing so the directory cannot be
+// scraped, which also means there is no "browse people" and never will be.
+function FindPeopleView(props) {
+  var _h = useState(props.myHandle || ""); var handle = _h[0]; var setHandle = _h[1];
+  var _q = useState(""); var q = _q[0]; var setQ = _q[1];
+  var _r = useState(null); var found = _r[0]; var setFound = _r[1];
+  var _m = useState(""); var msg = _m[0]; var setMsg = _m[1];
+  var _b = useState(false); var busy = _b[0]; var setBusy = _b[1];
+
+  function clean(v) { return String(v || "").toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 20); }
+
+  function doClaim() {
+    var h = clean(handle);
+    if (h.length < 3) { setMsg("Handles are at least 3 characters."); return; }
+    setBusy(true); setMsg("");
+    props.onClaimHandle(h).then(function() { setMsg("Handle set to @" + h); })
+      .catch(function(e) { setMsg(String(e && e.message) === "taken" ? "@" + h + " is taken." : "Couldn't save that handle."); })
+      .then(function() { setBusy(false); });
+  }
+  function doSearch() {
+    var h = clean(q);
+    if (!h) return;
+    setBusy(true); setMsg(""); setFound(null);
+    props.onFind(h).then(function(p) {
+      if (!p) setMsg("No one is using @" + h + ".");
+      else if (p.uid === props.myUid) setMsg("That's you.");
+      else setFound(p);
+    }).catch(function() { setMsg("Search failed. Check your connection."); })
+      .then(function() { setBusy(false); });
+  }
+
+  var link = props.myHandle ? ((typeof location !== "undefined" ? location.origin : "https://richy.app") + "/?add=" + props.myHandle) : "";
+  var already = found && props.followingUids.indexOf(found.uid) !== -1;
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, padding: "0 4px", margin: "0 0 9px", fontFamily: UI }}>YOUR HANDLE</div>
+      <Card style={{ padding: 16, marginBottom: 22 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 17, fontWeight: 700, color: T.ink3, fontFamily: UI }}>@</span>
+          <input value={handle} onChange={function(e) { setHandle(clean(e.target.value)); }} placeholder="yourname"
+            style={{ flex: 1, minWidth: 0, background: T.inputBg, border: "none", borderRadius: 11, padding: "11px 12px", fontSize: 15, color: T.ink, fontFamily: UI, outline: "none" }} />
+          <button onClick={doClaim} disabled={busy}
+            style={{ background: T.orange, color: "#fff", border: "none", borderRadius: 11, padding: "11px 15px", fontSize: 13.5, fontWeight: 700, cursor: busy ? "default" : "pointer", fontFamily: UI, opacity: busy ? 0.6 : 1, flexShrink: 0 }}>
+            {props.myHandle ? "Update" : "Claim"}
+          </button>
+        </div>
+        <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 10, lineHeight: 1.45, fontFamily: UI }}>
+          This is how people find you. It is the only thing about you that is publicly readable.
+        </div>
+        {link && (
+          <button onClick={function() { props.onCopy(link); setMsg("Invite link copied."); }}
+            style={{ width: "100%", marginTop: 12, background: T.inputBg, border: "none", borderRadius: 11, padding: "10px 12px", fontSize: 12.5, color: T.ink2, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 8, textAlign: "left" }}>
+            <SVGIcon id="tag" size={14} color={T.ink3} />
+            <span style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{link}</span>
+            <span style={{ fontWeight: 700, color: T.orange, flexShrink: 0 }}>Copy</span>
+          </button>
+        )}
+      </Card>
+
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, padding: "0 4px", margin: "0 0 9px", fontFamily: UI }}>FIND SOMEONE</div>
+      <Card style={{ padding: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 17, fontWeight: 700, color: T.ink3, fontFamily: UI }}>@</span>
+          <input value={q} onChange={function(e) { setQ(clean(e.target.value)); }} placeholder="theirhandle"
+            onKeyDown={function(e) { if (e.key === "Enter") doSearch(); }}
+            style={{ flex: 1, minWidth: 0, background: T.inputBg, border: "none", borderRadius: 11, padding: "11px 12px", fontSize: 15, color: T.ink, fontFamily: UI, outline: "none" }} />
+          <button onClick={doSearch} disabled={busy}
+            style={{ background: T.ink, color: T.bg, border: "none", borderRadius: 11, padding: "11px 15px", fontSize: 13.5, fontWeight: 700, cursor: busy ? "default" : "pointer", fontFamily: UI, opacity: busy ? 0.6 : 1, flexShrink: 0 }}>Search</button>
+        </div>
+
+        {found && (
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16, borderTop: "0.5px solid " + T.sep, paddingTop: 16 }}>
+            <Disc name={found.name} handle={found.handle} i={0} size={44} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, fontFamily: UI }}>{found.name || ("@" + found.handle)}</div>
+              <div style={{ fontSize: 12.5, color: T.ink3, fontFamily: UI }}>{"@" + found.handle}</div>
+            </div>
+            <button onClick={function() { props.onRequest(found); setMsg("Request sent to @" + found.handle + "."); setFound(null); }}
+              disabled={already}
+              style={{ background: already ? T.inputBg : T.orange, color: already ? T.ink3 : "#fff", border: "none", borderRadius: 11, padding: "10px 14px", fontSize: 13, fontWeight: 700, cursor: already ? "default" : "pointer", fontFamily: UI, flexShrink: 0 }}>
+              {already ? "Following" : "Request"}
+            </button>
+          </div>
+        )}
+        {msg && <div style={{ fontSize: 12.5, color: T.ink2, marginTop: 14, fontFamily: UI, lineHeight: 1.45 }}>{msg}</div>}
+      </Card>
+
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 9, marginTop: 18, padding: "0 4px" }}>
+        <span style={{ flexShrink: 0, display: "flex", marginTop: 1 }}><SVGIcon id="shield" size={13} color={T.ink3} /></span>
+        <span style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.45, fontFamily: UI }}>
+          Following is a request, never automatic. Until you accept, the other person sees nothing but your name and handle.
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// One person's profile. Two independent sources, and each is shown only if it
+// genuinely exists: their public progress if they have approved you, and their
+// shared household entries if you happen to also share a budget with them.
+// Following and households are separate systems - one does not imply the other.
 function FriendView(props) {
   var hh = props.household;
   var members = (hh && hh.members) ? hh.members : [];
-  var m = members.filter(function(x) { return x.uid === props.uid; })[0];
-  if (!m) return <div><SubViewBack onBack={props.onBack} /><Card style={{ padding: 24 }}><div style={{ fontSize: 14, color: T.ink3 }}>This person is no longer in the household.</div></Card></div>;
+  var m = members.filter(function(x) { return x.uid === props.uid; })[0] || null;
+  var person = props.person || m || null;
+  var stats = props.stats || null;
+  if (!person) return <div><SubViewBack onBack={props.onBack} /><Card style={{ padding: 24 }}><div style={{ fontSize: 14, color: T.ink3, fontFamily: UI }}>This person is no longer reachable.</div></Card></div>;
 
-  var idx = members.indexOf(m);
-  var t = memberTotals(props.tx, m.uid);
-  var me = m.uid === props.myUid;
-  var owner = hh.createdBy === m.uid;
+  var idx = m ? members.indexOf(m) : 0;
+  var t = m ? memberTotals(props.tx, m.uid) : { count: 0, spent: 0, put: 0, rows: [] };
+  var me = person.uid === props.myUid;
+  var owner = hh && hh.createdBy === person.uid;
   var recent = t.rows.slice().sort(function(a, b) { return (b.date || "").localeCompare(a.date || ""); }).slice(0, 8);
   var cats = props.categories || [];
+  var name = person.name || person.email || ("@" + (person.handle || ""));
 
   return (
     <div>
       <SubViewBack onBack={props.onBack} />
 
       <div style={{ textAlign: "center", padding: "2px 0 6px" }}>
-        <div style={{ width: 84, height: 84, borderRadius: "50%", margin: "0 auto 14px", background: FACE_TINTS[(idx < 0 ? 0 : idx) % FACE_TINTS.length], display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 34, fontWeight: 700, fontFamily: DISP }}>
-          {(m.name || m.email || "?")[0].toUpperCase()}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+          <Disc name={name} handle={person.handle} i={idx < 0 ? 0 : idx} size={84} />
         </div>
-        <div style={{ fontSize: 24, fontWeight: 700, color: T.ink, letterSpacing: "-0.025em", fontFamily: DISP }}>{me ? "You" : (m.name || m.email)}</div>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 9, background: owner ? T.orangeDim : T.inputBg, borderRadius: 20, padding: "5px 13px" }}>
-          <SVGIcon id={owner ? "home" : "user"} size={11} color={owner ? T.orange : T.ink2} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: owner ? T.orange : T.ink2, fontFamily: UI }}>{owner ? "Owner" : "Member"} of {hh.name}</span>
-        </div>
-        {m.email && <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 8, fontFamily: UI }}>{m.email}</div>}
+        <div style={{ fontSize: 24, fontWeight: 700, color: T.ink, letterSpacing: "-0.025em", fontFamily: DISP }}>{me ? "You" : name}</div>
+        {stats && (
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 9, background: T.orangeDim, borderRadius: 20, padding: "5px 13px" }}>
+            <SVGIcon id="shield" size={11} color={T.orange} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: T.orange, fontFamily: UI }}>{stats.rank + " · Level " + stats.level}</span>
+          </div>
+        )}
+        {person.handle && <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 8, fontFamily: UI }}>{"@" + person.handle}</div>}
+        {owner && <div style={{ fontSize: 12, color: T.ink3, marginTop: 4, fontFamily: UI }}>{"Owner of " + hh.name}</div>}
       </div>
 
-      <Card style={{ padding: "15px 8px", marginTop: 16 }}>
+      {/* Public progress - only if they have approved you. Habit numbers only:
+          streaks and levels, never an amount. */}
+      {stats ? (
+        <div>
+          <Card style={{ padding: "15px 8px", marginTop: 16 }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <StatCell value={stats.cleanRun} label={stats.cleanRun === 1 ? "clean week" : "clean weeks"} color={stats.cleanRun ? T.green : T.ink} />
+              <div style={{ width: "0.5px", alignSelf: "stretch", background: T.sep }} />
+              <StatCell value={stats.greenRun} label="green months" color={stats.greenRun ? T.green : T.ink} />
+              <div style={{ width: "0.5px", alignSelf: "stretch", background: T.sep }} />
+              <StatCell value={(stats.badges || []).length} label="badges" />
+            </div>
+          </Card>
+          {(stats.badges || []).length > 0 && (
+            <Card style={{ padding: "15px 0", marginTop: 14 }}>
+              <div style={{ display: "flex", gap: 13, padding: "0 16px", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+                {stats.badges.map(function(id) {
+                  var def = BADGES.filter(function(x) { return x.id === id; })[0];
+                  return def ? <BadgeTile key={id} badge={def} /> : null;
+                })}
+              </div>
+            </Card>
+          )}
+        </div>
+      ) : !me && (
+        <Card style={{ padding: "18px 18px", marginTop: 16 }}>
+          <div style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.5, fontFamily: UI }}>
+            You'll see their level, streaks and badges once they accept your request.
+          </div>
+        </Card>
+      )}
+
+      {/* Shared household entries, only when you actually share a budget with
+          them. Following someone does not create this, and being in a household
+          together does not create the section above. */}
+      {m && (
+      <div>
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, padding: "0 4px", margin: "22px 0 9px", fontFamily: UI }}>{"SHARED IN " + String(hh.name).toUpperCase()}</div>
+      <Card style={{ padding: "15px 8px", marginBottom: 14 }}>
         <div style={{ display: "flex", alignItems: "center" }}>
-          <StatCell value={t.count} label={t.count === 1 ? "shared entry" : "shared entries"} />
+          <StatCell value={t.count} label={t.count === 1 ? "entry" : "entries"} />
           <div style={{ width: "0.5px", alignSelf: "stretch", background: T.sep }} />
           <StatCell value={dollars(t.spent)} label="spent" />
           <div style={{ width: "0.5px", alignSelf: "stretch", background: T.sep }} />
           <StatCell value={dollars(t.put)} label="put in" color={t.put > 0 ? T.green : T.ink} />
         </div>
       </Card>
-
-      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, padding: "0 4px", margin: "22px 0 9px", fontFamily: UI }}>SHARED ACTIVITY</div>
       <Card style={{ overflow: "hidden" }}>
         {recent.length === 0 ? (
           <div style={{ padding: "20px 18px", fontSize: 13, color: T.ink3, lineHeight: 1.5, fontFamily: UI }}>
@@ -25107,10 +25426,15 @@ function FriendView(props) {
         })}
       </Card>
 
+      </div>
+      )}
+
       <div style={{ display: "flex", alignItems: "flex-start", gap: 9, marginTop: 16, padding: "0 4px" }}>
         <span style={{ flexShrink: 0, display: "flex", marginTop: 1 }}><SVGIcon id="lock" size={13} color={T.ink3} /></span>
         <span style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.45, fontFamily: UI }}>
-          Only what {me ? "you share" : "they share"} into {hh.name} is shown here. Personal budgets, balances, savings and badges are never part of the household record.
+          {m
+            ? "Progress is what " + (me ? "you share" : "they share") + " as a follower; the entries below are what " + (me ? "you have" : "they have") + " shared into " + hh.name + ". No balance, income, savings or net worth appears in either."
+            : "Levels, streaks and badges only. No balance, income, savings or net worth is ever shared."}
         </span>
       </div>
     </div>
@@ -25179,9 +25503,9 @@ function Profile(props) {
         </button>
       </div>
 
-      {/* ── The people you share with ── */}
-      <SocialStrip household={hh} tx={props.tx} myUid={props.myUid} canInvite={!!hh}
-        onOpen={props.onOpenPerson} onManage={props.onViewCollab} />
+      {/* ── The people you follow ── */}
+      <SocialStrip people={props.following} requestCount={props.requestCount}
+        onOpen={props.onOpenPerson} onManage={props.onViewSocial} />
 
       {/* ── This month (Green Month, layer 2) ── */}
       <Card style={{ padding: "17px 17px 15px", marginTop: 18 }}>
@@ -25711,8 +26035,13 @@ export default function App() {
   var investorProfile = _ivp[0]; var setInvestorProfile = _ivp[1];
   var _otr = useState(null);
   var openTrip = _otr[0]; var setOpenTrip = _otr[1];
-  // Which household member's shared profile is open, by uid.
+  // Which person's profile is open, by uid.
   var _op = useState(null); var openPerson = _op[0]; var setOpenPerson = _op[1];
+  // The follow graph. Loaded from Firestore, never from the account blob - it
+  // is other people's data and does not belong in users/{uid}. `handle` is the
+  // one piece that IS ours, mirrored into the blob so it survives a cold start.
+  var _soc = useState({ handle: "", following: [], followers: [], requests: [] });
+  var social = _soc[0]; var setSocial = _soc[1];
   var _obz = useState(null);
   var openBiz = _obz[0]; var setOpenBiz = _obz[1];
   var _oiv = useState(null);
@@ -25894,6 +26223,7 @@ export default function App() {
     setPeriodMode(data.periodMode === "rolling" ? "rolling" : data.periodMode === "custom" ? "custom" : "calendar");
     setSplitPlan(data.splitPlan ? splitPlanOf(data.splitPlan) : null);
     setMotivation(motivOf(data));
+    setSocial(function(p) { return { handle: data.handle || "", following: p.following, followers: p.followers, requests: p.requests }; });
     setPeriodCustomStart(data.periodCustomStart || "");
     setPeriodCustomEnd(data.periodCustomEnd || "");
     setBankSync(data.bankSync || null);
@@ -25925,9 +26255,74 @@ export default function App() {
     if (snap.newBadges.length) commitBadges(snap.newBadges);
   }, [accountKey, tx.length, budgets.length, goals.length, savings.length, motivation.weekConfirms.length]);
 
+  // ── Follow graph ──────────────────────────────────────────────────────────
+  // Load the whole graph on sign-in and after any change to it. Each person is
+  // fetched as an identity card plus, if they have approved us, their stats -
+  // loadProfileStats resolves to null rather than throwing when the rules say no,
+  // so an unapproved follow simply renders without progress.
+  function refreshSocial() {
+    if (!accountKey || !cloudReady()) return;
+    Promise.all([
+      CLOUD.listFollowing(accountKey),
+      CLOUD.listFollowers(accountKey),
+      CLOUD.incomingRequests(accountKey)
+    ]).then(function(r) {
+      var followingUids = r[0], followerUids = r[1], requests = r[2];
+      function hydrate(uids, withStats) {
+        return Promise.all(uids.map(function(u) {
+          return CLOUD.loadProfile(u).then(function(card) {
+            if (!card) return null;
+            if (!withStats) return card;
+            return CLOUD.loadProfileStats(u).then(function(st) { card.stats = st; return card; });
+          });
+        })).then(function(list) { return list.filter(Boolean); });
+      }
+      return Promise.all([hydrate(followingUids, true), hydrate(followerUids, false)]).then(function(h) {
+        setSocial(function(prev) {
+          return { handle: prev.handle, following: h[0], followers: h[1], requests: requests };
+        });
+      });
+    }).catch(function() {});
+  }
+  useEffect(function() { refreshSocial(); }, [accountKey]);
+
+  // Publish our own card and stats whenever the numbers behind them move. Only
+  // habit data and shared badge ids are written - never an amount. Skipped
+  // entirely until a handle exists, because a profile nobody can find is just
+  // an unnecessary copy of personal data sitting in a readable collection.
+  useEffect(function() {
+    if (!accountKey || !social.handle || !cloudReady()) return;
+    var snap = motivSnapshot(motivData());
+    CLOUD.publishProfile(accountKey,
+      { handle: social.handle, name: user || "", uid: accountKey },
+      {
+        level: snap.level, rank: snap.rank, xp: snap.xp,
+        cleanRun: snap.clean.run, greenRun: snap.green.run,
+        badges: snap.badges.filter(function(b) { return b.def.reveals !== "wealth" || b.shared; })
+                           .map(function(b) { return b.def.id; }),
+        updatedAt: new Date().toISOString()
+      }
+    ).catch(function() {});
+  }, [accountKey, social.handle, user, motivation.badges.length, motivation.weekConfirms.length]);
+
+  function onClaimHandle(h) {
+    return CLOUD.claimHandle(h, accountKey).then(function(saved) {
+      setSocial(function(p) { return { handle: saved, following: p.following, followers: p.followers, requests: p.requests }; });
+      save({ handle: saved });
+      return saved;
+    });
+  }
+  function onRequestFollow(card) {
+    return CLOUD.sendFollowRequest(accountKey, card.uid, { handle: social.handle, name: user || "" });
+  }
+  function onAcceptFollow(fromUid) { CLOUD.acceptRequest(fromUid, accountKey).then(refreshSocial); }
+  function onDeclineFollow(fromUid) { CLOUD.declineRequest(fromUid, accountKey).then(refreshSocial); }
+  function onRemoveFollower(fromUid) { CLOUD.removeFollow(fromUid, accountKey).then(refreshSocial); }
+  function copyText(s) { try { navigator.clipboard.writeText(s); } catch (e) {} }
+
   // Build the starting document for a brand-new account (e.g. first Google sign-in).
   function defaultBlob(name, email) {
-    return { tx: [], budgets: [], goals: [], trips: [], savings: [], businesses: [], investing: [], debts: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: email, theme: "blue", motivation: motivDefault() };
+    return { tx: [], budgets: [], goals: [], trips: [], savings: [], businesses: [], investing: [], debts: [], notes: [], folders: freshFolders(), categories: freshCategories(), displayName: name, email: email, theme: "blue", motivation: motivDefault(), createdAt: isoDay(new Date()) };
   }
 
   // Firebase Auth is the single source of truth for the session. It restores
@@ -26083,7 +26478,7 @@ export default function App() {
     blobRef.current = {};
     setUser(null); setAccountKey(null); setTab("overview");
     setHouseholdId(null); setHousehold(null); setInvites([]);
-    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setInvestorProfile(null); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]); setBankSync(null); setLeumiFinteka(null); setCustomBanners([]); setMotivation(motivDefault());
+    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setInvestorProfile(null); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]); setBankSync(null); setLeumiFinteka(null); setCustomBanners([]); setMotivation(motivDefault()); setSocial({ handle: "", following: [], followers: [], requests: [] });
     applyLangDir("en"); setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang("en"); applyTheme("blue"); setTheme("blue");
   }
 
@@ -26918,7 +27313,7 @@ export default function App() {
   var timeframeLabel = timeframe === "week" ? "This Week" : timeframe === "year" ? String(new Date().getFullYear()) : timeframe === "all" ? "All Time" : monthLabel;
   // A member's shared profile is titled with their name, so the header doesn't
   // read "Profile" twice next to the back button that already says it.
-  var personName = ((((household && household.members) || []).filter(function(m) { return m.uid === openPerson; })[0]) || {}).name || "Profile";
+  var personName = ((social.following.concat(social.followers).concat(((household && household.members) || [])).filter(function(m) { return m.uid === openPerson; })[0]) || {}).name || "Profile";
 
   return (
     <div style={{ background: T.bg, minHeight: "100vh", maxWidth: 430, margin: "0 auto", fontFamily: UI, paddingBottom: "calc(110px + env(safe-area-inset-bottom, 0px))" }}>
@@ -26933,7 +27328,7 @@ export default function App() {
             </button>
           </div>
           <span style={{ flex: 1, fontSize: 20, fontWeight: 700, color: T.ink, textAlign: "center", letterSpacing: "-0.02em" }}>
-            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "periodMode" ? "Date Range" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "badges" ? "Badges" : currentTab === "settings" ? "Settings" : currentTab === "person" ? personName : currentTab === "analysis" ? "Full Analysis" : currentTab === "investPlan" ? "Your investing plan" : currentTab === "investorOnboard" ? "Investing basics" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
+            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "periodMode" ? "Date Range" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "badges" ? "Badges" : currentTab === "settings" ? "Settings" : currentTab === "person" ? personName : currentTab === "social" ? "Friends" : currentTab === "findPeople" ? "Find people" : currentTab === "analysis" ? "Full Analysis" : currentTab === "investPlan" ? "Your investing plan" : currentTab === "investorOnboard" ? "Investing basics" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
           <div style={{ width: 86, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
             {HAS_FAB.indexOf(currentTab) !== -1 && (
@@ -27013,9 +27408,11 @@ export default function App() {
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} richardInstructions={richardCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} budgets={budgets} businesses={businesses} investing={investing} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "profile" && motivSnap && <Profile user={user} email={blobRef.current.email || ""} snap={motivSnap} feed={motivFeed(motivSnap)} onLogout={handleLogout} tx={tx} goals={goals} savings={savings} businesses={businesses} investing={investing} trips={trips} bankSync={bankSync} household={household} inviteCount={invites.length} debtCount={debts.length} pendingCount={motivSnap.clean.pending ? tx.filter(function(t) { return t.date >= motivSnap.clean.pending.key && t.date < weekAdd(motivSnap.clean.pending.key, 1) && !isOpening(t); }).length : 0} onConfirmWeek={onConfirmWeek} myUid={accountKey} categories={categories} onOpenPerson={function(uid) { prevTabRef.current = "profile"; setOpenPerson(uid); setTab("person"); }} onViewSettings={function() { prevTabRef.current = "profile"; setTab("settings"); }} onViewBadges={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewStreaks={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewGoals={function() { setTab("goals"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewPlan={function() { setTab("plan"); }} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "profile"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} onViewTripHistory={function() { setTab("tripHistory"); }} />}
+        {currentTab === "profile" && motivSnap && <Profile user={user} email={blobRef.current.email || ""} snap={motivSnap} feed={motivFeed(motivSnap)} onLogout={handleLogout} tx={tx} goals={goals} savings={savings} businesses={businesses} investing={investing} trips={trips} bankSync={bankSync} household={household} inviteCount={invites.length} debtCount={debts.length} pendingCount={motivSnap.clean.pending ? tx.filter(function(t) { return t.date >= motivSnap.clean.pending.key && t.date < weekAdd(motivSnap.clean.pending.key, 1) && !isOpening(t); }).length : 0} onConfirmWeek={onConfirmWeek} myUid={accountKey} categories={categories} following={social.following} requestCount={social.requests.length} onViewSocial={function() { prevTabRef.current = "profile"; setTab("social"); }} onOpenPerson={function(uid) { prevTabRef.current = "profile"; setOpenPerson(uid); setTab("person"); }} onViewSettings={function() { prevTabRef.current = "profile"; setTab("settings"); }} onViewBadges={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewStreaks={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewGoals={function() { setTab("goals"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewPlan={function() { setTab("plan"); }} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "profile"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} onViewTripHistory={function() { setTab("tripHistory"); }} />}
         {currentTab === "badges" && motivSnap && <BadgesView snap={motivSnap} onOpen={function() {}} onBack={function() { setTab("profile"); }} />}
-        {currentTab === "person" && <FriendView uid={openPerson} household={household} myUid={accountKey} tx={tx} categories={categories} onBack={function() { setTab("profile"); }} />}
+        {currentTab === "person" && <FriendView uid={openPerson} person={social.following.concat(social.followers).filter(function(p) { return p.uid === openPerson; })[0] || null} stats={(social.following.filter(function(p) { return p.uid === openPerson; })[0] || {}).stats || null} household={household} myUid={accountKey} tx={tx} categories={categories} onBack={function() { setTab(prevTabRef.current === "social" ? "social" : "profile"); }} />}
+        {currentTab === "social" && <SocialView social={social} onOpen={function(uid) { prevTabRef.current = "social"; setOpenPerson(uid); setTab("person"); }} onFind={function() { prevTabRef.current = "social"; setTab("findPeople"); }} onAccept={onAcceptFollow} onDecline={onDeclineFollow} onRemoveFollower={onRemoveFollower} onBack={function() { setTab("profile"); }} />}
+        {currentTab === "findPeople" && <FindPeopleView myHandle={social.handle} myUid={accountKey} followingUids={social.following.map(function(p) { return p.uid; })} onClaimHandle={onClaimHandle} onFind={CLOUD.findByHandle} onRequest={onRequestFollow} onCopy={copyText} onBack={function() { setTab("social"); }} />}
         {currentTab === "settings" && <SettingsView user={user} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} richardInstructions={richardInstructions} bankSync={bankSync} householdName={household ? household.name : null} inviteCount={invites.length} debtCount={debts.length} onBack={function() { setTab("profile"); }} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "settings"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "settings"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "settings"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "settings"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "settings"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "settings"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "settings"; setTab("periodMode"); }} onViewBankSync={function() { prevTabRef.current = "settings"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "settings"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "settings"; setTab("editOpeningBalance"); }} onViewCollab={function() { prevTabRef.current = "settings"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "settings"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
         {currentTab === "analysis" && <FullAnalysisView tx={tx} categories={categories} folders={folders} splitPlan={splitPlan} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} username={user} analysis={freshAnalysis ? freshAnalysis.data : null} onBack={function() { setTab("advisor"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} onAccountDeleted={handleLogout} />}
