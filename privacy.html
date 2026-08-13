@@ -35,7 +35,7 @@
 <div class="wrap">
   <div class="logo"><span>R</span></div>
   <h1>Privacy Policy</h1>
-  <div class="meta">Richy · Last updated: August 8, 2026 · <a href="/terms.html">Terms of Service</a> · <a href="/">Back to Richy</a></div>
+  <div class="meta">Richy · Last updated: August 14, 2026 · <a href="/terms.html">Terms of Service</a> · <a href="/">Back to Richy</a></div>
 
   <p>Richy ("Richy", "we", "us") is a personal budgeting app operated by <strong>Alon Acker</strong>, an individual developer. This policy explains what data Richy collects, why, where it goes, and the controls you have over it. The short version: your financial data exists so the app can work for <em>you</em>; we do not sell it, we do not show ads, and you can export or permanently delete everything yourself, at any time, from inside the app.</p>
 
@@ -52,6 +52,17 @@
     <li>If you enable Bank Sync, purchase notifications forwarded from your own phone (merchant, amount, date). Bank Sync never has your bank credentials — it only receives what your phone's automation sends it.</li>
     <li>If you connect a bank account through an official Open Banking connection (where available), transaction records supplied by your bank after you approve access on your bank's own pages. We never see your bank password. You can disconnect at any time, which also deletes the access tokens.</li>
   </ul>
+  <h3>Achievements and progress</h3>
+  <ul>
+    <li><strong>Derived from data you already entered</strong> — your level, rank, XP, streaks (weeks you confirmed as complete, months you met your savings target) and which badges you have earned. We do not collect anything new for this; it is calculated from your own transactions, budgets and goals.</li>
+    <li><strong>Week confirmations</strong> — when you confirm "yes, that was everything" for a week, we store that week's date so the streak survives across devices.</li>
+  </ul>
+  <h3>Your handle and public profile</h3>
+  <ul>
+    <li><strong>Handle</strong> — if you claim one (e.g. <em>@yourname</em>), it is stored together with your display name in a record that <strong>any signed-in Richy user can read</strong>. This is deliberate and unavoidable: it is how someone finds you in order to send a follow request. Nobody can browse or list all handles — a handle can only be looked up if it is already known — but you should treat your handle and display name as public. If you never claim a handle, no such record is created for you at all.</li>
+    <li><strong>Progress shared with followers</strong> — your level, rank, streaks and the badges you share are stored separately and are readable <strong>only</strong> by people whose follow request you have accepted.</li>
+  </ul>
+
   <h3>Conversations with Richard</h3>
   <ul>
     <li>Messages you send to Richard (the AI advisor) and a summary of your financial situation are processed by Anthropic (the AI provider) to generate responses. Chat history is stored with your account so you can revisit past conversations.</li>
@@ -67,6 +78,7 @@
     <li>To provide the service: storing your records, syncing them across your devices, and showing you your own numbers.</li>
     <li>To generate personalized guidance from Richard, using your real figures.</li>
     <li>To share a household budget with people you explicitly invite (see section 4).</li>
+    <li>To calculate your streaks, level and badges from figures you already recorded, and — only if you claim a handle — to show that progress to followers you have approved (see section 5).</li>
     <li>To respond when you contact support.</li>
   </ul>
   <p>We do not sell or rent your data, do not use it for advertising, and do not share it with anyone except the service providers below, who process it only on our instructions to run the app.</p>
@@ -81,32 +93,50 @@
     <tr><td>Frankfurter</td><td>Currency exchange rates</td><td>Nothing personal — only which currencies to convert</td></tr>
     <tr><td>Finnhub / Yahoo Finance / Twelve Data</td><td>Stock market prices for the Investing feature</td><td>Nothing personal — only ticker symbols</td></tr>
   </table>
-  <p>These providers store data on infrastructure that may be located in the United States or the European Union.</p>
+  <p>These providers store data on infrastructure that may be located in the United States or the European Union, which means your data is transferred outside Israel. We rely on the contractual protections in our agreements with these providers for that transfer.</p>
+  <p>Financial information is treated as data of special sensitivity under Israeli privacy law. In practice that means a higher security bar, tighter access control, and that we send Anthropic only what a request actually needs — your message and a summary of the relevant figures — rather than your whole account. Your data is not used to train any AI model.</p>
 
   <h2>4. Households</h2>
   <p>If you create or join a household, the data you explicitly mark as shared (shared budgets, goals, categories, and transactions you choose to share) is visible to the other members of that household. Transactions you keep private stay in your own account and are never visible to other members. You can leave a household at any time.</p>
 
-  <h2>5. Your rights and controls</h2>
+  <h2>5. Friends and following</h2>
+  <p>Following is a separate system from households. Following someone shares no money data, and being in a household with someone does not make either of you a follower of the other.</p>
+  <h3>What a follower can see</h3>
+  <p>Only after you accept their request, and only this: your display name and handle, your level and rank, your current streaks, and the badges you have chosen to share.</p>
+  <h3>What a follower can never see</h3>
+  <p>Any amount. Your balance, income, savings, net worth, transactions, budgets, goals, notes, debts, investments and conversations with Richard are not part of the shared record and are not readable by anyone you follow or who follows you. This is enforced by database security rules, not only by the app's screens.</p>
+  <h3>Badges that could imply wealth</h3>
+  <p>Some badges would disclose or strongly imply your income or net worth (for example, one awarded for reaching a savings figure). Every badge carries a marker for this, and badges marked that way are <strong>excluded from your shared profile by default</strong>. They are shared only if you turn on that specific badge yourself. There is no single switch that shares them all.</p>
+  <h3>Requests and revoking</h3>
+  <ul>
+    <li>Following always requires your approval. Until you accept, the other person sees only your display name and handle.</li>
+    <li>When you send a request, your handle and display name are visible to the person you sent it to.</li>
+    <li>You can stop following someone, or remove a follower, at any time. Either action immediately revokes that person's access to your progress.</li>
+    <li>Deleting your account removes your handle, your public profile and every follow connection.</li>
+  </ul>
+
+  <h2>6. Your rights and controls</h2>
   <ul>
     <li><strong>Export</strong> — Profile → "Export my data" downloads a complete copy of your data as a JSON file, anytime.</li>
     <li><strong>Delete</strong> — Profile → "Delete account &amp; data" permanently erases your account: your database records, bank-sync keys, bank connection tokens, and your sign-in account itself. This is immediate and cannot be undone.</li>
     <li><strong>Correct</strong> — everything you've entered can be edited or removed in the app directly.</li>
+    <li><strong>Stop sharing</strong> — remove a follower or unfollow someone at any time from Profile → Friends. Wealth-implying badges are never shared unless you switch on that specific badge. Deleting your account also deletes your handle, your public profile and every follow connection.</li>
     <li><strong>Ask us</strong> — for any privacy request you can't do in-app (access, correction, deletion, objection), email <a href="mailto:richysupport@gmail.com">richysupport@gmail.com</a>. We respond within 30 days. If you are in the EU/EEA or another jurisdiction with a data-protection authority, you also have the right to lodge a complaint with that authority.</li>
   </ul>
 
-  <h2>6. Retention</h2>
+  <h2>7. Retention</h2>
   <p>Your data is kept for as long as your account exists. When you delete your account, it is removed from the live database immediately. Provider-level backups (e.g. Firebase's infrastructure backups) age out on their standard schedules. Server request logs are retained briefly by Vercel per its standard policy.</p>
 
-  <h2>7. Security</h2>
+  <h2>8. Security</h2>
   <p>All traffic is encrypted in transit (TLS). Database access is enforced by per-user security rules: your records are readable and writable only by your own authenticated session. Bank-sync keys are stored only as one-way hashes. Access tokens for optional bank connections are held server-side and are never exposed to the browser.</p>
 
-  <h2>8. Minimum age</h2>
+  <h2>9. Minimum age</h2>
   <p>Richy is for people aged <strong>16 and over</strong>. We check the date of birth you provide at sign-up and do not accept accounts for anyone younger. If we learn an account belongs to someone under 16, we will delete it.</p>
 
-  <h2>9. Changes to this policy</h2>
+  <h2>10. Changes to this policy</h2>
   <p>If this policy changes materially, we will note the new date at the top of this page and highlight the change in the app. Continued use after a change means you accept the updated policy.</p>
 
-  <h2>10. Contact</h2>
+  <h2>11. Contact</h2>
   <p>Alon Acker · <a href="mailto:richysupport@gmail.com">richysupport@gmail.com</a></p>
 
   <div class="foot">Richy · <a href="/terms.html">Terms of Service</a> · <a href="/">Back to the app</a></div>

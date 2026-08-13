@@ -25027,11 +25027,12 @@ function BadgeTile(props) {
         : { fontSize: 10, fontWeight: 700, marginTop: 6, lineHeight: 1.2, color: T.ink }}>
         {locked ? "Locked" : b.name}
       </div>
-      {!locked && (
-        <div style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: "0.09em", color: col, marginTop: 3 }}>
-          {RARITY_LABEL[b.r]}
-        </div>
-      )}
+      {/* Locked tiles keep the rarity line as empty space rather than dropping
+          it. Without this a grid row mixing earned and locked badges sits on
+          two different baselines and the whole column drifts. */}
+      <div style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: "0.09em", color: locked ? "transparent" : col, marginTop: 3 }}>
+        {locked ? " " : RARITY_LABEL[b.r]}
+      </div>
     </button>
   );
 }
