@@ -1165,24 +1165,30 @@ function hashPass(pw) {
 // New accounts start with no budgets - the user adds them with the + button.
 var DEFAULT_BUDGETS = [];
 
-// Two special categories that mirror money already living in Business and
-// Investing accounts (Savings > Business/Investing) instead of being tagged
-// onto real transactions - moving capital into one of those pots isn't a
-// real expense (see isTransfer), so nothing would ever land on a normal
-// category for it. Their "spent" is computed live from those pots wherever
-// budgets read it (see spentForCat in Budgets), keyed by the `synced` marker
-// rather than id/name so a renamed tag is still recognized.
-// The wealth folder isn't hand-filed: its `rule` makes it follow the Business
-// and Investing accounts themselves (see folderCategoryIds), and `locked` keeps
-// it from being deleted or re-ruled out of existence. Everything else about it -
-// name, colour, icon, role, its budget - is the user's to change.
+// Three special categories that mirror money already living in Business,
+// Investing and Savings accounts (Savings tab) instead of being tagged onto
+// real transactions - moving capital into one of those pots isn't a real
+// expense (see isTransfer), so nothing would ever land on a normal category
+// for it. Their "spent" is computed live from those pots wherever budgets
+// read it (see spentForCat in Budgets), keyed by the `synced` marker rather
+// than id/name so a renamed tag is still recognized.
+// This is also what keeps a folder role="savings" honest against real money:
+// without a synced Savings tag, the split's Savings bucket could only ever
+// count categories the user tagged by hand, never what actually sits in a
+// savings pot (see syncedCatAmount / roleSplit).
+// The wealth folder isn't hand-filed: its `rule` makes it follow the Business,
+// Investing and Savings accounts themselves (see folderCategoryIds), and
+// `locked` keeps it from being deleted or re-ruled out of existence.
+// Everything else about it - name, colour, icon, role, its budget - is the
+// user's to change.
 var SYNCED_TAG_FOLDER = {
-  id: "f-wealth", name: "Business & Investing", color: "#C8983A", icon: "briefcase",
-  rule: { kind: "accounts", accounts: ["business", "investing"] }, locked: true
+  id: "f-wealth", name: "Business, Investing & Savings", color: "#C8983A", icon: "briefcase",
+  rule: { kind: "accounts", accounts: ["business", "investing", "savings"] }, locked: true
 };
 var SYNCED_TAGS = [
   { id: "tag-business",  name: "Business",   color: "#C8673A", icon: "briefcase", folderId: "f-wealth", synced: "business" },
-  { id: "tag-investing", name: "Investment", color: "#C8983A", icon: "chart",     folderId: "f-wealth", synced: "investing" }
+  { id: "tag-investing", name: "Investment", color: "#C8983A", icon: "chart",     folderId: "f-wealth", synced: "investing" },
+  { id: "tag-savings",   name: "Savings",    color: "#8970C6", icon: "coins",     folderId: "f-wealth", synced: "savings" }
 ];
 // Adds the folder and whichever synced tags are missing to an existing
 // account's categories/folders, and back-fills the colour/icon/rule that
@@ -1214,6 +1220,13 @@ function ensureSyncedTags(categories, folders) {
     // The wealth folder is defined by its rule - an older account that has the
     // folder but not the rule would otherwise show it as an empty hand-filed one.
     if (f.id === SYNCED_TAG_FOLDER.id && !f.rule) { patch = patch || {}; patch.rule = SYNCED_TAG_FOLDER.rule; patch.locked = true; }
+    // An account that had this folder before the Savings tag existed carries a
+    // rule that only follows business/investing - heal it so the new tag (and
+    // the split's Savings bucket, once it's synced) actually picks up real
+    // savings pots instead of silently excluding them forever.
+    if (f.id === SYNCED_TAG_FOLDER.id && f.rule && f.rule.kind === "accounts" && (f.rule.accounts || []).indexOf("savings") < 0) {
+      patch = patch || {}; patch.rule = Object.assign({}, f.rule, { accounts: (f.rule.accounts || []).concat(["savings"]) });
+    }
     if (!patch) return f;
     changed = true;
     return Object.assign({}, f, patch);
@@ -1309,7 +1322,7 @@ function suggestFolderRole(folder, cats) {
 // from the folderId stamped on each category.
 var FOLDER_RULE_KINDS = [
   { kind: "",          label: "Hand-filed",     hint: "You choose which categories live here." },
-  { kind: "accounts",  label: "Follows accounts", hint: "Mirrors your Business and Investing accounts." },
+  { kind: "accounts",  label: "Follows accounts", hint: "Mirrors your Savings, Business and Investing accounts." },
   { kind: "recurring", label: "Recurring spend",  hint: "Any category with subscriptions or repeating charges." },
   { kind: "keywords",  label: "Keyword match",    hint: "Categories whose transactions mention words you pick." },
   { kind: "unfiled",   label: "Everything else",  hint: "Whatever isn't filed in a hand-filed folder." },
@@ -1367,7 +1380,7 @@ function folderCategoryIds(folder, cats, folders, tx) {
     return cats.filter(function(c) { return c.folderId === folder.id; }).map(function(c) { return c.id; });
   }
   if (kind === "accounts") {
-    var want = (folder.rule.accounts || ["business", "investing"]);
+    var want = (folder.rule.accounts || ["business", "investing", "savings"]);
     return cats.filter(function(c) { return c.synced && want.indexOf(c.synced) >= 0; }).map(function(c) { return c.id; });
   }
   if (kind === "recurring") {
@@ -1474,15 +1487,22 @@ function businessNetInMonth(list, ym) {
 function investingNetInMonth(list, ym) {
   return round2((list || []).reduce(function(s, a) { return s + acctNetInMonth(a, ym, "cashEntries"); }, 0));
 }
+// Savings pots keep the same shape as a business account's cash ledger, so
+// this is businessNetInMonth in every way but name - kept separate so callers
+// reading "how much moved into savings this month" don't have to know that.
+function savingsNetInMonth(list, ym) {
+  return round2((list || []).reduce(function(s, a) { return s + acctNetInMonth(a, ym, "entries"); }, 0));
+}
 
 // Everything that reads "how much has landed against this budget" goes through
 // here, so the Budgets tab, the dashboard rollup and the Full Analysis can
 // never drift apart. ctx supplies { tx, categories, folders, businesses,
-// investing, ym }.
+// investing, savings, ym }.
 function syncedCatAmount(c, ctx, track) {
   var live = track !== "month";
   if (c.synced === "business") return live ? businessTotal(ctx.businesses) : businessNetInMonth(ctx.businesses, ctx.ym || curMonth());
   if (c.synced === "investing") return live ? investingTotal(ctx.investing) : investingNetInMonth(ctx.investing, ctx.ym || curMonth());
+  if (c.synced === "savings") return live ? savingsTotal(ctx.savings) : savingsNetInMonth(ctx.savings, ctx.ym || curMonth());
   return 0;
 }
 function catSpendAmount(c, ctx) {
@@ -7213,7 +7233,7 @@ function Overview(props) {
   // FOLDER_BUDGET_PREFIX). Category spend keeps following the dashboard's own
   // timeframe selector rather than being pinned to the month; only the synced
   // tags, which have no expense rows to count, fall back to account totals.
-  var syncCtx = { businesses: bizAccts, investing: invAccts, ym: curMonth() };
+  var syncCtx = { businesses: bizAccts, investing: invAccts, savings: savAccts, ym: curMonth() };
   var budgetRows = budgets.map(function(b) {
     var isF = isFolderBudget(b);
     var f = isF ? folderById(props.folders || [], budgetFolderId(b)) : null;
@@ -10094,7 +10114,7 @@ function FolderRolesCard(props) {
   var _re = useState(false); var roleEdit = _re[0]; var setRoleEdit = _re[1];
   var _or = useState({}); var openRow = _or[0]; var setOpenRow = _or[1];
 
-  var ctx = { tx: props.tx || [], categories: cats, folders: folders, businesses: props.businesses, investing: props.investing, ym: curMonth(), splitPlan: props.splitPlan };
+  var ctx = { tx: props.tx || [], categories: cats, folders: folders, businesses: props.businesses, investing: props.investing, savings: props.savings, ym: curMonth(), splitPlan: props.splitPlan };
   var todo = foldersNeedingRole(folders, cats, props.tx);
   var anyRole = folders.some(function(f) { return folderRole(f); });
   if (!folders.length) return null;
@@ -10160,6 +10180,11 @@ function FolderRolesCard(props) {
               </button>
             );
           })}
+        </div>
+        {/* What each of the three actually means - the ask itself, not just the
+            guess, since this is most people's first look at Needs/Wants/Savings. */}
+        <div style={{ fontSize: 10.5, color: T.heroMut, lineHeight: 1.4, marginTop: 8 }}>
+          {FOLDER_ROLES.map(function(r) { return r.label + ": " + r.blurb; }).join("  ·  ")}
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
           <span style={{ fontSize: 11, color: T.heroMut, flex: 1, minWidth: 0, paddingRight: 10, lineHeight: 1.35 }}>
@@ -10275,9 +10300,16 @@ function FolderRolesCard(props) {
     <Card style={{ padding: "20px 20px 0", marginBottom: 20, overflow: "hidden", animation: riseIn(1) }}>
       {planSheet}
 
-      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 9 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
         <span style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>Your split</span>
         <span style={{ fontSize: 10, fontWeight: 800, color: T.orange, background: T.orangeDim, borderRadius: 7, padding: "2px 7px", letterSpacing: "0.02em" }}>{split.planLabel}</span>
+      </div>
+      {/* The card is seen every visit, but the concept behind it - Needs/Wants/
+          Savings, graded against a plan the user picked once - is only explained
+          during the one-time ask flow. A returning user shouldn't have to
+          remember it, so the short version lives here too. */}
+      <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.4, marginBottom: 13 }}>
+        {"How each dollar in splits three ways - Needs, Wants, Savings - based on which folder you filed it under. " + split.planLabel + " is the target you set; tap a row below for what counts toward it."}
       </div>
 
       {/* The answer, before any of the evidence for it. */}
@@ -10364,6 +10396,10 @@ function FolderRolesCard(props) {
 
               {open && (
                 <div style={{ padding: "0 20px 12px" }}>
+                  <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.45, marginBottom: mine.length === 0 ? 0 : 9 }}>
+                    {(roleMeta(r.key) || {}).blurb}
+                    {r.key === "savings" ? " Includes money moved into your savings pots, and business/investing accounts." : ""}
+                  </div>
                   {mine.length === 0 ? (
                     <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.45 }}>
                       {"No folder is sorted as " + r.label.toLowerCase() + " yet, so this line is empty."}
@@ -10466,7 +10502,7 @@ function Budgets(props) {
   var _ex = useState({});
   var expanded = _ex[0]; var setExpanded = _ex[1];
 
-  var ctx = { tx: props.tx || [], categories: cats, folders: folders, businesses: props.businesses, investing: props.investing, ym: curMonth() };
+  var ctx = { tx: props.tx || [], categories: cats, folders: folders, businesses: props.businesses, investing: props.investing, savings: props.savings, ym: curMonth() };
   function nbPatch(patch) { setNb(function(p) { return Object.assign({}, p, patch); }); }
 
   // Every row - category or folder - is resolved by the same helper, so what
@@ -10544,7 +10580,9 @@ function Budgets(props) {
   var viewTxs = (viewRow && !viewRow.isFolder && !viewRow.cat.synced) ? props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, curMonth()) && (t.catId === viewRow.key || t.category === viewRow.name); }).sort(function(a, b) { return b.date.localeCompare(a.date); }) : [];
   // How many pots the synced tag being viewed is drawn from, just for "account" vs "accounts".
   var viewSynced = viewRow && !viewRow.isFolder ? viewRow.cat.synced : "";
-  var viewSyncedCount = viewSynced ? ((viewSynced === "business" ? props.businesses : props.investing) || []).length : 0;
+  var viewSyncedLists = { business: props.businesses, investing: props.investing, savings: props.savings };
+  var viewSyncedCount = viewSynced ? (viewSyncedLists[viewSynced] || []).length : 0;
+  var viewSyncedLabel = viewSynced === "business" ? "business" : viewSynced === "investing" ? "investing" : "savings";
 
   // The sum of the limits set on the categories inside a folder budget. Past
   // the folder's own limit, the two are quietly contradicting each other.
@@ -10724,8 +10762,8 @@ function Budgets(props) {
             <div style={{ fontSize: 30, fontWeight: 700, color: T.ink, letterSpacing: "-0.03em" }}>{dollars(viewRow.amount)}</div>
             <div style={{ fontSize: 13, color: T.ink3, marginTop: 10, lineHeight: 1.5 }}>
               {viewRow.track === "live"
-                ? "Currently sitting in your " + (viewSynced === "business" ? "business" : "investing") + " account" + (viewSyncedCount === 1 ? "" : "s") + " - this tracks live, not just this month. Open Savings to see the breakdown."
-                : "Moved into your " + (viewSynced === "business" ? "business" : "investing") + " account" + (viewSyncedCount === 1 ? "" : "s") + " this month. Open Savings to see the breakdown."}
+                ? "Currently sitting in your " + viewSyncedLabel + " account" + (viewSyncedCount === 1 ? "" : "s") + " - this tracks live, not just this month. Open Savings to see the breakdown."
+                : "Moved into your " + viewSyncedLabel + " account" + (viewSyncedCount === 1 ? "" : "s") + " this month. Open Savings to see the breakdown."}
             </div>
           </div>
         ) : viewTxs.length === 0 ? (
@@ -10798,7 +10836,7 @@ function Budgets(props) {
       )}
 
       <FolderRolesCard folders={folders} categories={cats} tx={props.tx} businesses={props.businesses}
-        investing={props.investing} splitPlan={props.splitPlan} onSaveSplitPlan={props.onSaveSplitPlan}
+        investing={props.investing} savings={props.savings} splitPlan={props.splitPlan} onSaveSplitPlan={props.onSaveSplitPlan}
         onSaveFolders={props.onSaveFolders} onManageCategories={props.onManageCategories} />
 
       {budgetSection(tr("byCategory"), capRows, 2)}
@@ -13101,7 +13139,7 @@ function Advisor(props) {
     + (cats.length ? cats.map(function(c) { return c.name; }).join(", ") : "none")
     + "\n\n=== CATEGORY FOLDERS (exact names, with what's inside and this month's total) ===\n"
     + ((props.folders || []).length ? props.folders.map(function(f) {
-        var fctx = { tx: props.tx || [], categories: cats, folders: props.folders, businesses: props.businesses, investing: props.investing, ym: curMonth() };
+        var fctx = { tx: props.tx || [], categories: cats, folders: props.folders, businesses: props.businesses, investing: props.investing, savings: props.savings, ym: curMonth() };
         var members = folderCategories(f, cats, props.folders, props.tx);
         var role = folderRole(f);
         var rm = roleMeta(role);
@@ -13114,7 +13152,7 @@ function Advisor(props) {
           + (fb ? " | folder budget: " + cs + fb.limit + " " + (budgetDir(fb) === "target" ? "growth target" : "spending cap") : "");
       }).join("\n") : "none")
     + (function() {
-        var fctx = { tx: props.tx || [], categories: cats, folders: props.folders || [], businesses: props.businesses, investing: props.investing, ym: curMonth(), splitPlan: props.splitPlan };
+        var fctx = { tx: props.tx || [], categories: cats, folders: props.folders || [], businesses: props.businesses, investing: props.investing, savings: props.savings, ym: curMonth(), splitPlan: props.splitPlan };
         if (!(props.folders || []).some(function(f) { return folderRole(f); })) return "\n(No folders sorted into needs/wants/savings yet - you can offer to do it with the folderRole action.)";
         var sp = roleSplit(fctx);
         return "\n\n=== " + sp.planLabel + " SPLIT (from those folder roles; the user chose these targets" + (props.splitPlan ? "" : " - actually still on the 50/30/20 default, they have not picked yet") + ") ===\n"
@@ -14810,7 +14848,7 @@ function FolderForm(props) {
   function ruleOut() {
     if (!kind) return null;
     if (kind === "keywords") return { kind: "keywords", words: words.split(",").map(function(w) { return w.trim(); }).filter(Boolean) };
-    if (kind === "accounts") return (init.rule && init.rule.kind === "accounts") ? init.rule : { kind: "accounts", accounts: ["business", "investing"] };
+    if (kind === "accounts") return (init.rule && init.rule.kind === "accounts") ? init.rule : { kind: "accounts", accounts: ["business", "investing", "savings"] };
     return { kind: kind };
   }
 
@@ -14837,7 +14875,7 @@ function FolderForm(props) {
         <div style={{ background: "rgba(0,0,0,0.04)", borderRadius: 13, padding: "9px 14px", marginBottom: 9 }}>
           <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 4 }}>Fills itself</div>
           <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.45 }}>
-            This folder follows your Business and Investing accounts. That's what it's for, so the rule stays put - everything else about it is yours.
+            This folder follows your Savings, Business and Investing accounts. That's what it's for, so the rule stays put - everything else about it is yours.
           </div>
         </div>
       ) : (
@@ -14879,17 +14917,18 @@ function Categories(props) {
   var _ec = useState(null);
   var editCat = _ec[0]; var setEditCat = _ec[1];
 
-  var ctx = { tx: props.tx || [], categories: cats, folders: folders, businesses: props.businesses, investing: props.investing, ym: curMonth() };
+  var ctx = { tx: props.tx || [], categories: cats, folders: folders, businesses: props.businesses, investing: props.investing, savings: props.savings, ym: curMonth() };
 
   function txCount(c) {
     return props.tx.filter(function(t) { return t.catId === c.id || t.category === c.name; }).length;
   }
-  // Business/Investment mirror pot totals instead of transactions (see
+  // Business/Investment/Savings mirror pot totals instead of transactions (see
   // categoryAmount) - "0 transactions" would read as broken for a tag that's
   // actually holding real money, so show the live total instead.
   function subtitleFor(c) {
     if (c.synced === "business") return dollars(businessTotal(props.businesses)) + " in business accounts";
     if (c.synced === "investing") return dollars(investingTotal(props.investing)) + " in investing accounts";
+    if (c.synced === "savings") return dollars(savingsTotal(props.savings)) + " in savings accounts";
     var n = txCount(c);
     return n + (n === 1 ? " transaction" : " transactions");
   }
@@ -15133,7 +15172,7 @@ function FullAnalysisView(props) {
   var headline = score >= 80 ? "You're in good shape, " + name + "." : score >= 60 ? "You're on the right track, " + name + "." : "Let's tighten things up, " + name + ".";
   var monthLabel = new Date().toLocaleString(undefined, { month: "long" }) + " " + new Date().getFullYear();
 
-  var anaCtx = { tx: tx, categories: cats, folders: props.folders || [], businesses: props.businesses, investing: props.investing, ym: ym, splitPlan: props.splitPlan };
+  var anaCtx = { tx: tx, categories: cats, folders: props.folders || [], businesses: props.businesses, investing: props.investing, savings: props.savings, ym: ym, splitPlan: props.splitPlan };
   var lines = (props.budgets || []).map(function(b) {
     var r = resolveBudget(b, anaCtx);
     return { name: r.name, icon: r.icon, color: r.color, spent: r.amount, limit: r.limit, dir: r.dir, off: budgetOffTrack(r) };
@@ -27263,7 +27302,7 @@ export default function App() {
   function mainTabEl(id) {
     if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
     if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
-    if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
+    if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
     if (id === "advisor") return <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} />;
     return null;
@@ -27408,7 +27447,7 @@ export default function App() {
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} richardInstructions={richardCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
-        {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} budgets={budgets} businesses={businesses} investing={investing} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} />}
+        {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} budgets={budgets} businesses={businesses} investing={investing} savings={savings} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "profile" && motivSnap && <Profile user={user} email={blobRef.current.email || ""} snap={motivSnap} feed={motivFeed(motivSnap)} onLogout={handleLogout} tx={tx} goals={goals} savings={savings} businesses={businesses} investing={investing} trips={trips} bankSync={bankSync} household={household} inviteCount={invites.length} debtCount={debts.length} pendingCount={motivSnap.clean.pending ? tx.filter(function(t) { return t.date >= motivSnap.clean.pending.key && t.date < weekAdd(motivSnap.clean.pending.key, 1) && !isOpening(t); }).length : 0} onConfirmWeek={onConfirmWeek} myUid={accountKey} categories={categories} following={social.following} requestCount={social.requests.length} onViewSocial={function() { prevTabRef.current = "profile"; setTab("social"); }} onOpenPerson={function(uid) { prevTabRef.current = "profile"; setOpenPerson(uid); setTab("person"); }} onViewSettings={function() { prevTabRef.current = "profile"; setTab("settings"); }} onViewBadges={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewStreaks={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewGoals={function() { setTab("goals"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewPlan={function() { setTab("plan"); }} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "profile"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} onViewTripHistory={function() { setTab("tripHistory"); }} />}
         {currentTab === "badges" && motivSnap && <BadgesView snap={motivSnap} onOpen={function() {}} onBack={function() { setTab("profile"); }} />}
         {currentTab === "person" && <FriendView uid={openPerson} person={social.following.concat(social.followers).filter(function(p) { return p.uid === openPerson; })[0] || null} stats={(social.following.filter(function(p) { return p.uid === openPerson; })[0] || {}).stats || null} household={household} myUid={accountKey} tx={tx} categories={categories} onBack={function() { setTab(prevTabRef.current === "social" ? "social" : "profile"); }} />}
