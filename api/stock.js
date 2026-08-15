@@ -5,7 +5,72 @@
 // CORS and blocks default Node user agents - hence this proxy. All provider payloads
 // are normalized HERE so the client never sees a raw Finnhub/Yahoo/TwelveData shape
 // and the edge cache stores small JSON. GET (not POST like chat.js) because Vercel's
-// edge cache only honors s-maxage on GET - that cache is the rate-limit shield.
+// edge cache only honors s-maxage on GET.
+//
+// AUTH: every request must carry a valid Firebase ID token, exactly like
+// api/chat.js. The edge cache alone was never a rate-limit shield - it only
+// absorbs repeats of the SAME url, so an attacker asking for a stream of
+// distinct symbols (?symbol=AAAA, ABAA, ...) misses the cache every time and
+// bills a Finnhub/Twelve Data call on each miss. The cache protects us from
+// our own popular symbols; the token is what stops a stranger draining the
+// quota. Accepted tradeoff: a 200 is still cached as `public`, and the CDN
+// cache key ignores the Authorization header, so an anonymous caller CAN be
+// served an already-cached quote. That is fine - it is public market data, and
+// they still cannot cause an origin fetch, which is the part that costs money.
+var admin = require("firebase-admin");
+
+function initAdmin() {
+  if (admin.apps.length) return true;
+  var raw = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (!raw) return false;
+  raw = raw.trim();
+  var svc = JSON.parse(raw[0] === "{" ? raw : Buffer.from(raw, "base64").toString("utf8"));
+  admin.initializeApp({ credential: admin.credential.cert(svc) });
+  return true;
+}
+
+// CORS: an exact allowlist, never a pattern. An earlier version of this idea
+// (still in chat.js/delete-account.js at time of writing) matched
+// /^https:\/\/richy-[a-z0-9]+...\.vercel\.app$/ - but ANY Vercel user can
+// create a project called richy-something, so that pattern trusts origins we
+// do not control. Instead: production, localhost for the dev harness, and this
+// deployment's own VERCEL_URL (injected by Vercel, so previews authorize
+// themselves without widening the rule). EXTRA_ALLOWED_ORIGINS covers branch
+// aliases that differ from VERCEL_URL - comma-separated, opt-in, ours only.
+var PROD_ORIGIN = "https://richy-mgkl.vercel.app";
+function allowedOrigins() {
+  var list = [PROD_ORIGIN];
+  if (process.env.VERCEL_URL) list.push("https://" + process.env.VERCEL_URL);
+  (process.env.EXTRA_ALLOWED_ORIGINS || "").split(",").forEach(function (o) {
+    o = o.trim();
+    if (o) list.push(o);
+  });
+  return list;
+}
+function corsOrigin(req) {
+  var o = req.headers.origin || "";
+  if (allowedOrigins().indexOf(o) !== -1) return o;
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(o)) return o;
+  return PROD_ORIGIN;
+}
+
+// Per-user ceiling. In-memory, so it resets per warm instance and several
+// concurrent instances each get their own budget - this bounds the common case
+// rather than guaranteeing a global cap. The durable protection against a
+// determined attacker is the token check above plus a spend cap set on the
+// Finnhub/Twelve Data accounts themselves; set those, do not rely on this.
+// 120/min is far above real use (a chart view is a handful of calls) and far
+// below what it takes to burn a daily quota.
+var RATE_MAX = 120;
+var RATE_WINDOW_MS = 60 * 1000;
+var hits = {};
+function rateLimited(uid) {
+  var now = Date.now();
+  var arr = (hits[uid] || []).filter(function (t) { return now - t < RATE_WINDOW_MS; });
+  arr.push(now);
+  hits[uid] = arr;
+  return arr.length > RATE_MAX;
+}
 
 var UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
 var SYM_RE = /^[A-Z0-9.\-^]{1,12}$/;
@@ -123,12 +188,36 @@ async function yahooQuote(symbol) {
 }
 
 module.exports = async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", corsOrigin(req));
+  res.setHeader("Vary", "Origin");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
   if (req.method === "OPTIONS") { res.status(200).end(); return; }
   if (req.method !== "GET") { sendErr(res, 405, "bad_request", "Method not allowed"); return; }
+
+  // ---- who is calling ---------------------------------------------------------
+  // Before any upstream provider is touched, so an unauthenticated request can
+  // never cost a Finnhub/Twelve Data call.
+  try {
+    if (!initAdmin()) { sendErr(res, 500, "config_error", "FIREBASE_SERVICE_ACCOUNT is not set."); return; }
+  } catch (e) {
+    sendErr(res, 500, "config_error", "FIREBASE_SERVICE_ACCOUNT could not be parsed."); return;
+  }
+  var hdr = req.headers.authorization || "";
+  var m = /^Bearer (.+)$/.exec(hdr);
+  if (!m) { sendErr(res, 401, "unauthenticated", "Sign in to load market data."); return; }
+  var uid;
+  try {
+    var decoded = await admin.auth().verifyIdToken(m[1]);
+    uid = decoded.uid;
+    if (!uid) throw new Error("Token had no subject.");
+  } catch (e) {
+    sendErr(res, 401, "unauthenticated", "Your session expired. Sign in again."); return;
+  }
+  if (rateLimited(uid)) {
+    sendErr(res, 429, "rate_limited", "Too many market-data requests - try again in a minute."); return;
+  }
 
   var fn = String(req.query.fn || "");
   if (["quote", "series", "series2", "search", "profile", "news"].indexOf(fn) === -1) {
