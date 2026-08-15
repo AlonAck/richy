@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Richy — App Store privacy manifest.
+
+  Apple requires this file for every app that touches a "required reason" API.
+  Without it, App Store Connect rejects the upload by email (ITMS-91053,
+  "Missing API declaration") before a human ever sees the build.
+
+  WHERE THIS GOES: copy to ios/App/App/PrivacyInfo.xcprivacy after
+  `npx cap add ios`, and add it to the App target in Xcode (see NATIVE_BUILD.md
+  step 3a). The ios/ directory is generated, not committed, so this file lives
+  here as the source of truth and gets copied in on each fresh checkout.
+
+  KEEP IN SYNC with two other places, or Apple's review will find the mismatch:
+    - privacy.html          (the user-facing policy)
+    - App Store Connect     (the App Privacy questionnaire)
+  Every entry below traces to a specific line in privacy.html.
+-->
+<plist version="1.0">
+<dict>
+  <!-- No tracking. privacy.html: "Richy does not collect advertising
+       identifiers, location data, or contacts, and does not use analytics
+       trackers." No data is linked to third-party data for ad targeting, so
+       NSPrivacyTracking is false and the domain list stays empty. If an
+       analytics or attribution SDK is ever added, BOTH must change. -->
+  <key>NSPrivacyTracking</key>
+  <false/>
+  <key>NSPrivacyTrackingDomains</key>
+  <array/>
+
+  <key>NSPrivacyCollectedDataTypes</key>
+  <array>
+    <!-- Email address — Firebase Authentication. privacy.html §1:
+         "Email address and name — to create and identify your account." -->
+    <dict>
+      <key>NSPrivacyCollectedDataType</key>
+      <string>NSPrivacyCollectedDataTypeEmailAddress</string>
+      <key>NSPrivacyCollectedDataTypeLinked</key>
+      <true/>
+      <key>NSPrivacyCollectedDataTypeTracking</key>
+      <false/>
+      <key>NSPrivacyCollectedDataTypePurposes</key>
+      <array>
+        <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+      </array>
+    </dict>
+
+    <!-- Name — account identity, and the display name on a social profile. -->
+    <dict>
+      <key>NSPrivacyCollectedDataType</key>
+      <string>NSPrivacyCollectedDataTypeName</string>
+      <key>NSPrivacyCollectedDataTypeLinked</key>
+      <true/>
+      <key>NSPrivacyCollectedDataTypeTracking</key>
+      <false/>
+      <key>NSPrivacyCollectedDataTypePurposes</key>
+      <array>
+        <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+      </array>
+    </dict>
+
+    <!-- Financial data the user enters: transactions, budgets, goals, pots.
+         privacy.html §1 "Financial data you enter", and §"Financial
+         information is treated as data of special sensitivity under Israeli
+         privacy law." This is the core of the product; it is stored per-user
+         in Firestore and never sold or shared for advertising. -->
+    <dict>
+      <key>NSPrivacyCollectedDataType</key>
+      <string>NSPrivacyCollectedDataTypeOtherFinancialInfo</string>
+      <key>NSPrivacyCollectedDataTypeLinked</key>
+      <true/>
+      <key>NSPrivacyCollectedDataTypeTracking</key>
+      <false/>
+      <key>NSPrivacyCollectedDataTypePurposes</key>
+      <array>
+        <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+      </array>
+    </dict>
+
+    <!-- Firebase Auth uid — the key everything else hangs off. -->
+    <dict>
+      <key>NSPrivacyCollectedDataType</key>
+      <string>NSPrivacyCollectedDataTypeUserID</string>
+      <key>NSPrivacyCollectedDataTypeLinked</key>
+      <true/>
+      <key>NSPrivacyCollectedDataTypeTracking</key>
+      <false/>
+      <key>NSPrivacyCollectedDataTypePurposes</key>
+      <array>
+        <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+      </array>
+    </dict>
+
+    <!-- Chat messages to Richard, stored with the account so the user can
+         revisit past conversations. privacy.html §1: "Messages you send to
+         Richard ... Chat history is stored with your account." Declared as
+         user content rather than a financial type because the message body is
+         free text the user wrote. -->
+    <dict>
+      <key>NSPrivacyCollectedDataType</key>
+      <string>NSPrivacyCollectedDataTypeOtherUserContent</string>
+      <key>NSPrivacyCollectedDataTypeLinked</key>
+      <true/>
+      <key>NSPrivacyCollectedDataTypeTracking</key>
+      <false/>
+      <key>NSPrivacyCollectedDataTypePurposes</key>
+      <array>
+        <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+      </array>
+    </dict>
+  </array>
+
+  <!-- Required-reason APIs used by the app target itself.
+
+       UserDefaults is the one that matters for a Capacitor app: Capacitor core
+       reads and writes the app's own preferences through it. CA92.1 is the
+       reason code for "access info from the app itself, per documentation" —
+       which is exactly this, and is the correct code whenever the app is only
+       touching its own container.
+
+       Capacitor 6+ plugins ship their own PrivacyInfo.xcprivacy inside each
+       pod, so file-timestamp / disk-space / boot-time declarations come from
+       the plugins rather than from here. Do NOT pre-emptively add categories
+       you cannot justify — a wrong reason code is itself grounds for rejection.
+       If App Store Connect emails ITMS-91053 naming a category not listed
+       below, add that category with the reason code Apple's email cites. -->
+  <key>NSPrivacyAccessedAPITypes</key>
+  <array>
+    <dict>
+      <key>NSPrivacyAccessedAPIType</key>
+      <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+      <key>NSPrivacyAccessedAPITypeReasons</key>
+      <array>
+        <string>CA92.1</string>
+      </array>
+    </dict>
+  </array>
+</dict>
+</plist>

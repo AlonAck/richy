@@ -80,9 +80,49 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  var body = req.body;
+  var body = req.body || {};
   var messages = body.messages || [];
   var system = body.system || "";
+
+  // ---- input ceiling ----------------------------------------------------------
+  // maxTokens below bounds the OUTPUT only. Input was previously unbounded, so a
+  // tampered client could post a multi-hundred-thousand-token payload and be
+  // billed for it 30 times per 5-minute window - output caps do nothing about
+  // that, because input is where the volume is. These limits sit well above any
+  // real Richard conversation (the largest genuine prompt is a portfolio
+  // snapshot plus a short history) and well below anything that costs real
+  // money. Reject rather than truncate: silently trimming a prompt produces a
+  // confidently wrong answer built on half the user's numbers, which is worse
+  // than a visible error.
+  var MAX_MESSAGES = 40;
+  var MAX_SYSTEM_CHARS = 20000;
+  var MAX_TOTAL_CHARS = 100000;
+
+  if (!Array.isArray(messages) || messages.length === 0) {
+    res.status(400).json({ error: { type: "invalid_request", message: "No messages provided." } });
+    return;
+  }
+  if (messages.length > MAX_MESSAGES) {
+    res.status(413).json({ error: { type: "request_too_large", message: "That conversation is too long for Richard to take in one go." } });
+    return;
+  }
+  if (typeof system !== "string" || system.length > MAX_SYSTEM_CHARS) {
+    res.status(413).json({ error: { type: "request_too_large", message: "That request is too large." } });
+    return;
+  }
+  // Measure what we will actually send, so nested content blocks are counted too.
+  var totalChars = system.length;
+  try {
+    totalChars += JSON.stringify(messages).length;
+  } catch (e) {
+    res.status(400).json({ error: { type: "invalid_request", message: "Messages could not be read." } });
+    return;
+  }
+  if (totalChars > MAX_TOTAL_CHARS) {
+    res.status(413).json({ error: { type: "request_too_large", message: "That request is too large for Richard to take in one go." } });
+    return;
+  }
+
   // Hard cap so a tampered client can't request unbounded output on our bill.
   var maxTokens = Math.min(Math.max(parseInt(body.maxTokens, 10) || 800, 1), 2000);
   // Callers may request a specific model (e.g. Opus for the deep stock scout,

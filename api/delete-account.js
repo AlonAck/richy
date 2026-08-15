@@ -9,7 +9,11 @@
 //   4. leumiFinteka/{uid}             (bank connection tokens, best-effort revoke first)
 //   5. households: removes the caller from memberUids/members of any household
 //      they belong to (the household itself survives for the other member)
-//   6. The Firebase Auth user itself  (the sign-in account) - last, so a failure
+//   6. The social graph            (profiles, profileStats, handles, follows,
+//      followRequests) - see the note on that step; the handle in particular
+//      MUST be released here because firestore.rules denies handle deletes to
+//      every client, so this endpoint is the only thing that can free it
+//   7. The Firebase Auth user itself  (the sign-in account) - last, so a failure
 //      above never strands a live sign-in pointing at half-erased data
 //
 // If a late step fails the earlier deletions stand - the endpoint reports which
@@ -133,7 +137,47 @@ module.exports = async function handler(req, res) {
     }
   } catch (e) { failed.push("households"); }
 
-  // 6. The Firebase Auth account itself - last, so a failure above never
+  // 6. The social graph. This endpoint predates the social layer (added in
+  //    cd72ed5), so for a while a "delete everything" left the user's profile
+  //    card, stats, handle and every follow edge behind - visible to anyone
+  //    still following them, and counted as an incomplete erasure under both
+  //    App Store guideline 5.1.1(v) and GDPR art. 17.
+  //
+  //    The handle is the one that cannot wait: firestore.rules has
+  //    `allow list, update, delete: if false` on handles/{handle}, so NO client
+  //    can ever release one. Without this step a deleted account's handle stays
+  //    claimed forever - the user cannot even take their own name back if they
+  //    sign up again.
+  //
+  //    Two queries per edge collection rather than one Filter.or(): the pair is
+  //    obviously correct at a glance and does not depend on the Admin SDK
+  //    version. All of this runs through the Admin SDK, which bypasses the
+  //    rules above.
+  try {
+    // Chunked so a user with a large following can't exceed the 500-op batch cap.
+    var deleteRefs = async function (refs) {
+      for (var i = 0; i < refs.length; i += 400) {
+        var b = db.batch();
+        refs.slice(i, i + 400).forEach(function (r) { b.delete(r); });
+        await b.commit();
+      }
+    };
+    var refsOf = function (snap) { return snap.empty ? [] : snap.docs.map(function (d) { return d.ref; }); };
+
+    var social = [];
+    social.push(db.collection("profiles").doc(uid));
+    social.push(db.collection("profileStats").doc(uid));
+    // Handles are keyed by the handle string, with { uid } inside - so find by field.
+    social = social.concat(refsOf(await db.collection("handles").where("uid", "==", uid).get()));
+    // Edges point both ways; delete the ones where the caller is either end.
+    social = social.concat(refsOf(await db.collection("follows").where("follower", "==", uid).get()));
+    social = social.concat(refsOf(await db.collection("follows").where("target", "==", uid).get()));
+    social = social.concat(refsOf(await db.collection("followRequests").where("from", "==", uid).get()));
+    social = social.concat(refsOf(await db.collection("followRequests").where("to", "==", uid).get()));
+    await deleteRefs(social);
+  } catch (e) { failed.push("social"); }
+
+  // 7. The Firebase Auth account itself - last, so a failure above never
   //    strands a live sign-in pointing at half-deleted data.
   try { await admin.auth().deleteUser(uid); } catch (e) { failed.push("authUser"); }
 
