@@ -713,7 +713,17 @@ function _stockGet(key, ttl, params, cb) {
   if (hit && (Date.now() - hit.at) < ttl) { cb(null, hit.data); return; }
   if (_stockInflight[key]) { _stockInflight[key].push(cb); return; }
   _stockInflight[key] = [cb];
-  fetch(stockApiUrl(params))
+  // api/stock.js refuses anonymous requests (the Finnhub/Twelve Data keys are
+  // ours to pay for) - attach the caller's own Firebase ID token, exactly like
+  // callClaude does. A failed token lookup still sends the request so the
+  // server, not the client, decides what an unauthenticated caller gets back.
+  CLOUD.getIdToken()
+    .catch(function() { return null; })
+    .then(function(token) {
+      var headers = {};
+      if (token) headers.Authorization = "Bearer " + token;
+      return fetch(stockApiUrl(params), { headers: headers });
+    })
     .then(function(r) { return r.text(); })
     .then(function(raw) {
       var data = null;
@@ -16550,6 +16560,7 @@ function SavingsView(props) {
   var _exp = useState(null); var expanded = _exp[0]; var setExpanded = _exp[1];
   var _ren = useState(""); var renameVal = _ren[0]; var setRenameVal = _ren[1];
   var _del = useState(null); var deleteConfirm = _del[0]; var setDeleteConfirm = _del[1];
+  var _delEnt = useState(null); var delEntryConfirm = _delEnt[0]; var setDelEntryConfirm = _delEnt[1];
 
   var total = savingsTotal(accts);
   var actAcct = act ? accts.filter(function(a) { return a.id === act.id; })[0] : null;
@@ -16639,6 +16650,33 @@ function SavingsView(props) {
     setExpanded(null);
     setDeleteConfirm(null);
   }
+  // Deleting a single history entry has to undo whatever it did to the main
+  // balance, not just vanish from the pot - a deposit that came fromMain
+  // subtracted from balance when it was made, so removing it here pushes an
+  // offsetting transfer back; a withdraw that went toMain does the reverse.
+  // Entries that never touched balance (external money, spend/remove) just
+  // disappear from history with no ledger side effect.
+  function deleteEntry(acctId, entryId) {
+    var acct = null;
+    for (var i = 0; i < accts.length; i++) { if (accts[i].id === acctId) { acct = accts[i]; break; } }
+    if (!acct) return;
+    var entry = null;
+    (acct.entries || []).forEach(function(e) { if (e.id === entryId) entry = e; });
+    if (!entry) return;
+    var nextSav = accts.map(function(a) {
+      if (a.id !== acctId) return a;
+      var n = {}; for (var k in a) n[k] = a[k];
+      n.entries = (a.entries || []).filter(function(e) { return e.id !== entryId; });
+      return n;
+    });
+    if (entry.fromMain) {
+      var reverseType = entry.kind === "withdraw" ? "expense" : "income";
+      props.onMove(tx.concat([transferTx(reverseType, entry.amount, acct.name, " (entry removed)")]), nextSav);
+    } else {
+      props.onSaveSavings(nextSav);
+    }
+    setDelEntryConfirm(null);
+  }
 
   function seg(value, setter, options) {
     return (
@@ -16708,16 +16746,36 @@ function SavingsView(props) {
                   <div style={{ marginBottom: 12 }}>
                     {entries.map(function(e) {
                       var dep = e.kind !== "withdraw";
+                      var entryKey = a.id + "_" + e.id;
+                      var confirming = delEntryConfirm === entryKey;
                       return (
-                        <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", borderBottom: "0.5px solid " + T.sep }}>
-                          <div style={{ width: 26, height: 26, borderRadius: 8, background: (dep ? T.green : T.ink3) + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                            <SVGIcon id={dep ? "down" : "up"} size={13} color={dep ? T.green : T.ink2} />
+                        <div key={e.id} style={{ padding: "7px 0", borderBottom: "0.5px solid " + T.sep }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <div style={{ width: 26, height: 26, borderRadius: 8, background: (dep ? T.green : T.ink3) + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <SVGIcon id={dep ? "down" : "up"} size={13} color={dep ? T.green : T.ink2} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 13, color: T.ink, fontWeight: 500 }}>{e.label || (dep ? tr("addMoney") : tr("withdraw"))}</div>
+                              <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{e.date}</div>
+                            </div>
+                            <span style={{ fontSize: 13.5, fontWeight: 700, color: dep ? T.green : T.ink2, flexShrink: 0 }}>{(dep ? "+" : "-") + dollars(e.amount)}</span>
+                            <button onClick={function() { setDelEntryConfirm(confirming ? null : entryKey); }} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex", flexShrink: 0 }}>
+                              <SVGIcon id="trash" size={13} color={T.ink3} />
+                            </button>
                           </div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 13, color: T.ink, fontWeight: 500 }}>{e.label || (dep ? tr("addMoney") : tr("withdraw"))}</div>
-                            <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{e.date}</div>
-                          </div>
-                          <span style={{ fontSize: 13.5, fontWeight: 700, color: dep ? T.green : T.ink2, flexShrink: 0 }}>{(dep ? "+" : "-") + dollars(e.amount)}</span>
+                          {confirming && (
+                            <div style={{ marginTop: 6, background: "rgba(220,50,50,0.07)", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+                              <span style={{ flex: 1, fontSize: 12, color: T.ink2 }}>{"Delete this entry?"}</span>
+                              <button onClick={function() { deleteEntry(a.id, e.id); }}
+                                style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "6px 12px", borderRadius: 8, background: T.red, color: "#fff" }}>
+                                Delete
+                              </button>
+                              <button onClick={function() { setDelEntryConfirm(null); }}
+                                style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, padding: "6px 12px", borderRadius: 8, background: "rgba(0,0,0,0.07)", color: T.ink2 }}>
+                                Cancel
+                              </button>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -17391,6 +17449,7 @@ function InvestingView(props) {
   var _cSrc = useState("balance"); var cashSrc = _cSrc[0]; var setCashSrc = _cSrc[1];
   var _allA = useState(false); var allAct = _allA[0]; var setAllAct = _allA[1];
   var _delConfirm = useState(false); var delConfirm = _delConfirm[0]; var setDelConfirm = _delConfirm[1];
+  var _delActC = useState(null); var delActConfirm = _delActC[0]; var setDelActConfirm = _delActC[1];
   // --- managed-side state (plan, auto-invest, lessons, coach) ---
   var _hub = useState("portfolio"); var hubTab = _hub[0]; var setHubTab = _hub[1];
   var _pamt = useState(""); var planAmt = _pamt[0]; var setPlanAmt = _pamt[1];
@@ -17624,6 +17683,30 @@ function InvestingView(props) {
       else props.onSaveInvesting(next2);
     }
     setSheet(null);
+  }
+  // One handler for every row in the merged activity feed. Cash entries can
+  // carry money to/from the main balance (fromMain), so removing one has to
+  // push an offsetting transfer, same as Savings/Business. Trades and
+  // dividends only move money between this account's own cash and positions,
+  // so deleting one is a plain removal - it never touches the main ledger.
+  function deleteActivity(ev) {
+    if (ev.kind === "cash") {
+      var entry = null;
+      (acct.cashEntries || []).forEach(function(e) { if (("c" + e.id) === ev.id) entry = e; });
+      if (!entry) { setDelActConfirm(null); return; }
+      var next = withAcct(function(n) { n.cashEntries = (n.cashEntries || []).filter(function(e) { return e.id !== entry.id; }); });
+      if (entry.fromMain) {
+        var reverseType = entry.kind === "withdraw" ? "expense" : "income";
+        props.onMove(tx.concat([transferTxInv(reverseType, entry.amount)]), next);
+      } else {
+        props.onSaveInvesting(next);
+      }
+    } else if (ev.kind === "trade") {
+      props.onSaveInvesting(withAcct(function(n) { n.trades = (n.trades || []).filter(function(t) { return ("t" + t.id) !== ev.id; }); }));
+    } else if (ev.kind === "div") {
+      props.onSaveInvesting(withAcct(function(n) { n.dividends = (n.dividends || []).filter(function(d) { return ("d" + d.id) !== ev.id; }); }));
+    }
+    setDelActConfirm(null);
   }
   function toggleWatch(symbol) {
     props.onSaveInvesting(withAcct(function(n) {
@@ -18662,15 +18745,34 @@ function InvestingView(props) {
       </Overlay>
 
       {/* full activity sheet */}
-      <Overlay open={allAct} onClose={function() { setAllAct(false); }} title={"Activity · " + acct.name}>
+      <Overlay open={allAct} onClose={function() { setAllAct(false); setDelActConfirm(null); }} title={"Activity · " + acct.name}>
         {activity.map(function(ev) {
+          var confirming = delActConfirm === ev.id;
           return (
-            <div key={ev.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 2px", borderBottom: "0.5px solid " + T.sep }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, color: T.ink, fontWeight: 500 }}>{ev.label}</div>
-                <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{ev.date}</div>
+            <div key={ev.id} style={{ padding: "10px 2px", borderBottom: "0.5px solid " + T.sep }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, color: T.ink, fontWeight: 500 }}>{ev.label}</div>
+                  <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{ev.date}</div>
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 700, color: ev.sign > 0 ? T.green : T.ink2, flexShrink: 0 }}>{(ev.sign > 0 ? "+" : "-") + dollars(ev.amount)}</span>
+                <button onClick={function() { setDelActConfirm(confirming ? null : ev.id); }} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex", flexShrink: 0 }}>
+                  <SVGIcon id="trash" size={13} color={T.ink3} />
+                </button>
               </div>
-              <span style={{ fontSize: 13, fontWeight: 700, color: ev.sign > 0 ? T.green : T.ink2 }}>{(ev.sign > 0 ? "+" : "-") + dollars(ev.amount)}</span>
+              {confirming && (
+                <div style={{ marginTop: 6, background: "rgba(220,50,50,0.07)", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ flex: 1, fontSize: 12, color: T.ink2 }}>{ev.kind === "trade" ? "Delete this trade? Your position math won't be recalculated." : "Delete this entry?"}</span>
+                  <button onClick={function() { deleteActivity(ev); }}
+                    style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "6px 12px", borderRadius: 8, background: T.red, color: "#fff" }}>
+                    Delete
+                  </button>
+                  <button onClick={function() { setDelActConfirm(null); }}
+                    style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, padding: "6px 12px", borderRadius: 8, background: "rgba(0,0,0,0.07)", color: T.ink2 }}>
+                    Cancel
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}
@@ -20716,6 +20818,7 @@ function BusinessView(props) {
   var _rp2 = useState(false); var replanning = _rp2[0]; var setReplanning = _rp2[1];
   var _del = useState(null); var deleteConfirm = _del[0]; var setDeleteConfirm = _del[1];
   var _delOut = useState(null); var deleteOutrightConfirm = _delOut[0]; var setDeleteOutrightConfirm = _delOut[1];
+  var _delCap = useState(null); var delCapConfirm = _delCap[0]; var setDelCapConfirm = _delCap[1];
   // Overview rebuild: invoices ("Needs attention" / Unpaid stat) and the
   // editable tax set-aside rate behind the Tax pot stat.
   var _invAdd = useState(false); var addInvoiceOpen = _invAdd[0]; var setAddInvoiceOpen = _invAdd[1];
@@ -21103,6 +21206,25 @@ function BusinessView(props) {
     });
     var ents = (biz.entries || []).filter(function(e) { return e.id !== eid; });
     props.onSaveBusinesses(patchBiz(bizId, { categories: cats, entries: ents }));
+  }
+  // Capital history entries (deposits/withdrawals of owner capital, plus
+  // revenue) aren't bizExpense rows, so they skip the category math above -
+  // but a capital entry that moved fromMain still needs its balance effect
+  // undone with an offsetting transfer, same as deleteEntry in Savings.
+  function deleteCapEntry(bizId, eid) {
+    var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
+    if (!biz) return;
+    var entry = null;
+    (biz.entries || []).forEach(function(e) { if (e.id === eid) entry = e; });
+    if (!entry) return;
+    var next = patchBiz(bizId, { entries: (biz.entries || []).filter(function(e) { return e.id !== eid; }) });
+    if (entry.fromMain) {
+      var reverseType = entry.kind === "withdraw" ? "expense" : "income";
+      props.onBusinessMove(tx.concat([transferTx(reverseType, entry.amount, biz.name, " (entry removed)")]), next);
+    } else {
+      props.onSaveBusinesses(next);
+    }
+    setDelCapConfirm(null);
   }
   function logRevenue(bizId) {
     var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
@@ -22605,16 +22727,36 @@ function BusinessView(props) {
             <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Capital history</div>
             {capHistory.map(function(e) {
               var dep = e.kind !== "withdraw";
+              var entryKey = biz.id + "_" + e.id;
+              var confirming = delCapConfirm === entryKey;
               return (
-                <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", borderBottom: "0.5px solid " + T.sep }}>
-                  <div style={{ width: 26, height: 26, borderRadius: 8, background: (dep ? T.green : T.ink3) + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <SVGIcon id={dep ? "down" : "up"} size={13} color={dep ? T.green : T.ink2} />
+                <div key={e.id} style={{ padding: "7px 0", borderBottom: "0.5px solid " + T.sep }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ width: 26, height: 26, borderRadius: 8, background: (dep ? T.green : T.ink3) + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <SVGIcon id={dep ? "down" : "up"} size={13} color={dep ? T.green : T.ink2} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, color: T.ink, fontWeight: 500 }}>{e.label || (dep ? "Capital" : "Withdraw")}</div>
+                      <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{e.date}</div>
+                    </div>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: dep ? T.green : T.ink2, flexShrink: 0 }}>{(dep ? "+" : "-") + dollars(e.amount)}</span>
+                    <button onClick={function() { setDelCapConfirm(confirming ? null : entryKey); }} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex", flexShrink: 0 }}>
+                      <SVGIcon id="trash" size={13} color={T.ink3} />
+                    </button>
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, color: T.ink, fontWeight: 500 }}>{e.label || (dep ? "Capital" : "Withdraw")}</div>
-                    <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{e.date}</div>
-                  </div>
-                  <span style={{ fontSize: 13.5, fontWeight: 700, color: dep ? T.green : T.ink2, flexShrink: 0 }}>{(dep ? "+" : "-") + dollars(e.amount)}</span>
+                  {confirming && (
+                    <div style={{ marginTop: 6, background: "rgba(220,50,50,0.07)", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ flex: 1, fontSize: 12, color: T.ink2 }}>{"Delete this entry?"}</span>
+                      <button onClick={function() { deleteCapEntry(biz.id, e.id); }}
+                        style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "6px 12px", borderRadius: 8, background: T.red, color: "#fff" }}>
+                        Delete
+                      </button>
+                      <button onClick={function() { setDelCapConfirm(null); }}
+                        style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, padding: "6px 12px", borderRadius: 8, background: "rgba(0,0,0,0.07)", color: T.ink2 }}>
+                        Cancel
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })}
