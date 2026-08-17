@@ -175,6 +175,16 @@ var DEMO = {
       { id: 1, kind: "deposit", amount: 7400, label: "Built up over time", date: d(60) }
     ] }
   ],
+  // One of each widget shape, the way Richard builds them from chat, so the
+  // Overview widget section can be composed and reviewed offline.
+  widgets: [
+    { id: "wg_1", title: "Coffee watch", metric: "categorySpend", target: "Coffee", shape: "ring", timeframe: "month", goal: 80, color: "#B0894E", icon: "coffee" },
+    { id: "wg_2", title: "Eating out", metric: "categorySpend", target: "Food", shape: "bar", timeframe: "month", goal: 600, color: "#C8673A", icon: "food" },
+    { id: "wg_3", title: "Where it went", metric: "expense", target: "", shape: "list", timeframe: "month", goal: null, color: "#8B6CEF", icon: "cart" },
+    { id: "wg_4", title: "Spending trend", metric: "expense", target: "", shape: "trend", timeframe: "month", goal: null, color: "#2799C8", icon: "chart" },
+    { id: "wg_5", title: "Month vs last", metric: "net", target: "", shape: "compare", timeframe: "month", goal: null, color: "#27A85F", icon: "up" },
+    { id: "wg_6", title: "Emergency fund", metric: "savingsPot", target: "Emergency Fund", shape: "stat", timeframe: "month", goal: null, color: "#27A85F", icon: "shield" }
+  ],
   trips: [], businesses: [], investing: [], decisions: [],
   foundMoney: { tally: 0, dismissed: [], acted: [] },
   richardNotes: "Saving for a Japan trip, wants to stop eating out so much."

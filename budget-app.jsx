@@ -626,17 +626,25 @@ function isTrip(t) {
   return !!(t && t.trip === true);
 }
 
-// Resolves a bulk-delete action's filters (category exact name, merchant
-// substring on the label, type, date range) against the real transaction list.
-// Opening balance, savings/business transfers and trip lump-sums are always
-// excluded - they're structural ledger entries, not things a "delete my Food
-// spending" request should ever be able to reach. At least one filter is
-// required by the caller (validateAction); this just applies whichever were given.
-function matchDeleteTx(a, tx) {
+// Resolves an action's transaction filters (category exact name, merchant
+// substring on the label, type, date range, exact amount) against the real
+// transaction list. Opening balance, savings/business transfers and trip
+// lump-sums are always excluded - they're structural ledger entries, not things
+// a "delete my Food spending" or "fix my salary" request should ever be able to
+// reach sideways. (The opening balance has its own dedicated action, which is
+// the only way to touch it.) At least one filter is required by the caller
+// (validateAction); this just applies whichever were given.
+//
+// Shared by deleteTx and editTx so "which rows did you mean" is answered the
+// same way whether Richard is removing them or correcting them.
+function matchTxFilters(a, tx) {
   var cat = a.category ? (a.category + "").trim().toLowerCase() : null;
   var merchant = a.merchant ? (a.merchant + "").trim().toLowerCase() : null;
   var type = (a.type === "income" || a.type === "expense") ? a.type : null;
   var from = a.dateFrom || null, to = a.dateTo || null;
+  // An exact amount is how the user usually identifies the row they mean ("the
+  // 4880 income is wrong"), so it's the filter that makes a correction precise.
+  var amt = (a.amount != null && a.amount !== "" && !isNaN(parseFloat(a.amount))) ? round2(parseFloat(a.amount)) : null;
   return (tx || []).filter(function(t) {
     if (isOpening(t) || isTransfer(t) || isTrip(t)) return false;
     if (cat && (t.category || "").trim().toLowerCase() !== cat) return false;
@@ -644,8 +652,16 @@ function matchDeleteTx(a, tx) {
     if (type && t.type !== type) return false;
     if (from && (t.date || "") < from) return false;
     if (to && (t.date || "") > to) return false;
+    if (amt !== null && round2(t.amount || 0) !== amt) return false;
     return true;
   });
+}
+function matchDeleteTx(a, tx) { return matchTxFilters(a, tx); }
+// Does an action carry at least one real filter? Guards both the irreversible
+// bulk delete and the bulk correction against a scope-free "everything" tag.
+function hasTxFilter(a) {
+  return !!(a && (a.category || a.merchant || a.dateFrom || a.dateTo || a.type ||
+    (a.amount != null && a.amount !== "" && !isNaN(parseFloat(a.amount)))));
 }
 
 // Offline fallback rates, expressed as approximate units of each currency per 1 USD.
@@ -713,6 +729,22 @@ function _stockGet(key, ttl, params, cb) {
   if (hit && (Date.now() - hit.at) < ttl) { cb(null, hit.data); return; }
   if (_stockInflight[key]) { _stockInflight[key].push(cb); return; }
   _stockInflight[key] = [cb];
+  // A fetch that never settles used to leave `key` in _stockInflight for the
+  // life of the page - every later caller (including "go back and re-enter")
+  // would push onto a dead array and get nothing, forever. `settled` plus this
+  // 15s timer mirror callClaude: exactly one outcome reaches the waiters, the
+  // map entry always gets cleared, and a stuck request can be retried.
+  var settled = false;
+  var ctrl = null;
+  try { ctrl = new AbortController(); } catch (e) {}
+  var timer = setTimeout(function() {
+    if (settled) return;
+    settled = true;
+    if (ctrl) { try { ctrl.abort(); } catch (e) {} }
+    var waiting = _stockInflight[key] || []; delete _stockInflight[key];
+    var err = new Error("timeout: stock data took too long"); err.code = "timeout";
+    waiting.forEach(function(w) { w(err, null); });
+  }, 15000);
   // api/stock.js refuses anonymous requests (the Finnhub/Twelve Data keys are
   // ours to pay for) - attach the caller's own Firebase ID token, exactly like
   // callClaude does. A failed token lookup still sends the request so the
@@ -722,10 +754,12 @@ function _stockGet(key, ttl, params, cb) {
     .then(function(token) {
       var headers = {};
       if (token) headers.Authorization = "Bearer " + token;
-      return fetch(stockApiUrl(params), { headers: headers });
+      return fetch(stockApiUrl(params), { headers: headers, signal: ctrl ? ctrl.signal : undefined });
     })
     .then(function(r) { return r.text(); })
     .then(function(raw) {
+      if (settled) return;
+      settled = true; clearTimeout(timer);
       var data = null;
       try { data = JSON.parse(raw); } catch (e) { /* handled below */ }
       var waiting = _stockInflight[key] || []; delete _stockInflight[key];
@@ -740,6 +774,8 @@ function _stockGet(key, ttl, params, cb) {
       }
     })
     .catch(function(e) {
+      if (settled) return;
+      settled = true; clearTimeout(timer);
       var waiting = _stockInflight[key] || []; delete _stockInflight[key];
       var err = new Error("network: " + e.message); err.code = "network";
       waiting.forEach(function(w) { w(err, null); });
@@ -2450,7 +2486,11 @@ var CLOUD = {
   },
   saveUser: function(uid, data) {
     if (!cloudReady() || !uid) return Promise.resolve();
-    return _fsdb().collection("users").doc(uid).set(data);
+    // Firestore v8 throws SYNCHRONOUSLY on any undefined field value, before a
+    // promise even exists - so a single stray `undefined` (e.g. a merge that
+    // drops a key) can silently kill saving instead of raising the normal
+    // error banner. Stripping undefined here means no field can ever do that.
+    return _fsdb().collection("users").doc(uid).set(JSON.parse(JSON.stringify(data)));
   },
   // ---- Bank Sync (Apple Pay / Google Pay via phone automations) ----------------
   // syncKeys/{sha256(key)} maps a per-user random token to their uid so
@@ -3272,6 +3312,24 @@ function BootSplash() {
         <div style={{ marginTop: 14, animation: "rclPhrase 0.6s ease 0.3s both" }}>
           <ThinkingDots size={5} color={T.ink3} />
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Shown when a signed-in session's data never finished loading (see the 8s
+// fallback in the onAuth effect). A stuck BootSplash was the top "app won't
+// open" complaint - this gives an actual exit instead of force-quit.
+function BootRetryScreen(props) {
+  useEffect(function() { ensureLoadingCss(); }, []);
+  return (
+    <div style={{ minHeight: "100vh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI, padding: 24 }}>
+      <div style={{ textAlign: "center", maxWidth: 300 }}>
+        <SVGIcon id="spark" size={30} color={T.ink3} />
+        <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginTop: 14 }}>Can't reach your data</div>
+        <div style={{ fontSize: 14, color: T.ink3, marginTop: 6, lineHeight: 1.4 }}>Check your connection and try again.</div>
+        <button onClick={props.onRetry} style={{ marginTop: 18, width: "100%", padding: "13px 0", borderRadius: 12, border: "none", background: T.orange, color: "#fff", fontFamily: UI, fontWeight: 700, fontSize: 15, cursor: "pointer" }}>Retry</button>
+        <button onClick={props.onSignOut} style={{ marginTop: 10, width: "100%", padding: "13px 0", borderRadius: 12, border: "none", background: "transparent", color: T.ink3, fontFamily: UI, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Sign out</button>
       </div>
     </div>
   );
@@ -7098,6 +7156,475 @@ function BusinessPulse(props) {
   );
 }
 
+// ===== RICHARD'S OVERVIEW WIDGETS =====
+// "Make me a widget that follows my coffee spending, and make it a ring."
+//
+// Richard never writes markup. A widget is a small STRUCTURED spec - what to
+// follow, what shape to draw it in, over what period, against what goal - that
+// is checked against the user's real categories, folders, pots and goals before
+// it can be saved, and then drawn by the components below. Same bargain as
+// customBanners: Richard picks the subject and the shape, the app owns the
+// pixels. That is what keeps "build me a widget" from meaning "let the model
+// put HTML on the dashboard".
+//
+// Widgets live on Overview and nowhere else, deliberately. It is the screen the
+// user lands on, and AI-built cards scattered across every tab would make the
+// app look different every time it opened.
+
+// WHAT a widget can follow.
+//   needs    what w.target must resolve to (validated before the widget saves)
+//   unit     how the number is formatted
+//   better   which direction is good news - the one field that lets the same
+//            "goal" number mean "stay under 400" for coffee and "get past 1000"
+//            for a savings pot without the user ever saying which
+//   scope    for the per-transaction flows, which side of the ledger to read
+//   running  a balance carried forward, so a trend of it is a level over time
+//   snapshot a position with no reconstructable history - always reads "now"
+var WIDGET_METRICS = {
+  categorySpend: { title: "Spent",        unit: "money",   needs: "category", better: "lower",  scope: "expense" },
+  folderSpend:   { title: "Spent",        unit: "money",   needs: "folder",   better: "lower",  scope: "expense" },
+  merchantSpend: { title: "Spent",        unit: "money",   needs: "text",     better: "lower",  scope: "expense" },
+  expense:       { title: "Spent",        unit: "money",   needs: null,       better: "lower",  scope: "expense" },
+  income:        { title: "Earned",       unit: "money",   needs: null,       better: "higher", scope: "income" },
+  budgetLeft:    { title: "Left",         unit: "money",   needs: "budget",   better: "higher" },
+  net:           { title: "Left over",    unit: "money",   needs: null,       better: "higher" },
+  savingsRate:   { title: "Savings rate", unit: "percent", needs: null,       better: "higher" },
+  txCount:       { title: "Transactions", unit: "count",   needs: null,       better: "lower" },
+  balance:       { title: "Balance",      unit: "money",   needs: null,       better: "higher", running: true },
+  savingsPot:    { title: "Saved",        unit: "money",   needs: "savings",  better: "higher", running: true },
+  netWorth:      { title: "Net worth",    unit: "money",   needs: null,       better: "higher", snapshot: true },
+  goalProgress:  { title: "Saved",        unit: "money",   needs: "goal",     better: "higher", snapshot: true }
+};
+// HOW it looks. "Shape" is the word people actually reach for ("make it a
+// ring"), so it is the word the spec uses.
+//   stat     one big number, with the change since last period
+//   bar      a progress bar against the goal
+//   ring     the same, drawn as a gauge
+//   list     the biggest rows behind the number
+//   trend    six periods as mini bars
+//   compare  this period against the last one
+var WIDGET_SHAPES = { stat: 1, bar: 1, ring: 1, list: 1, trend: 1, compare: 1 };
+var WIDGET_TIMEFRAMES = { week: 1, month: 1, year: 1, all: 1 };
+// An unknown SVGIcon id renders an empty path - an invisible icon - so the set
+// Richard may choose from is an allowlist, not a free string.
+var WIDGET_ICONS = ["box", "coins", "chart", "coffee", "food", "car", "home", "cart", "heart", "plane",
+  "gift", "book", "music", "film", "dumbbell", "phone", "laptop", "leaf", "star", "spark", "flame",
+  "shield", "flag", "goals", "credit", "briefcase", "building", "bike", "shirt", "tv", "wifi", "sun",
+  "droplet", "tool", "clock", "calendar", "up", "down", "search", "tag", "trophy", "medal", "diamond", "crown"];
+// The dashboard is a dashboard, not a wall. Six is enough for every real ask
+// and keeps Overview scrollable on a phone.
+var MAX_WIDGETS = 6;
+
+// The date window a timeframe covers, `back` periods ago (0 = the current one).
+// null means "all time", i.e. no bound.
+function widgetWindow(timeframe, back) {
+  back = back || 0;
+  if (timeframe === "all") return null;
+  if (timeframe === "week") {
+    var ws = addDaysISO(curWeekStart(), -7 * back);
+    return { from: ws, to: addDaysISO(ws, 6) };
+  }
+  if (timeframe === "year") {
+    var y = String(parseInt(curYear(), 10) - back);
+    return { from: y + "-01-01", to: y + "-12-31" };
+  }
+  var ym = ymShift(curMonth(), back);
+  return { from: monthStartOf(ym), to: monthEndOf(ym) };
+}
+function inWidgetWindow(t, win) {
+  if (!win) return true;
+  var d = (t && t.date) || "";
+  return d >= win.from && d <= win.to;
+}
+// Human label for a window. `terse` drops the "this/last" wording, which reads
+// well on its own but turns a six-bar axis into a mix of prose and dates.
+function widgetPeriodLabel(timeframe, back, terse) {
+  if (timeframe === "all") return "all time";
+  if (!terse && back === 0) return timeframe === "week" ? "this week" : timeframe === "year" ? "this year" : "this month";
+  if (!terse && back === 1) return timeframe === "week" ? "last week" : timeframe === "year" ? "last year" : "last month";
+  var win = widgetWindow(timeframe, back);
+  if (timeframe === "year") return win.from.slice(0, 4);
+  if (timeframe === "month") {
+    var MO = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return MO[(parseInt(win.from.slice(5, 7), 10) || 1) - 1];
+  }
+  return win.from.slice(5).replace("-", "/");
+}
+
+// The per-transaction filter behind a flow metric: which side of the ledger,
+// and which rows on it. Returns null for the metrics that aren't a simple flow
+// (net, savings rate, running balances, snapshots) - those are computed
+// directly in widgetValueAt.
+function widgetScope(w, wc) {
+  var meta = WIDGET_METRICS[w.metric];
+  if (!meta) return null;
+  var cats = wc.categories || [];
+  if (w.metric === "categorySpend" || w.metric === "budgetLeft") {
+    var c = catByName(cats, w.target) || catById(cats, w.target);
+    if (!c) return null;
+    return { type: "expense", test: function(t) { return t.catId === c.id || t.category === c.name; }, cat: c };
+  }
+  if (w.metric === "folderSpend") {
+    var f = folderByName(wc.folders || [], w.target);
+    if (!f) return null;
+    var ids = {}, names = {};
+    folderCategories(f, cats, wc.folders || [], wc.tx || []).forEach(function(m) { ids[m.id] = 1; names[m.name] = 1; });
+    return { type: "expense", test: function(t) { return !!(ids[t.catId] || names[t.category]); }, folder: f };
+  }
+  if (w.metric === "merchantSpend") {
+    var q = String(w.target || "").trim().toLowerCase();
+    if (!q) return null;
+    return { type: "expense", test: function(t) { return (t.label || "").toLowerCase().indexOf(q) !== -1; } };
+  }
+  if (meta.scope) return { type: meta.scope, test: null };
+  return null;
+}
+
+// Every widget reads the ledger through this one filter, so a widget can never
+// quietly disagree with the figures printed directly above it on the same
+// screen: unsettled rows, the opening balance, internal transfers and trip
+// lump-sums are ledger plumbing, not cash flow.
+function widgetFlowTx(wc) {
+  var today = new Date().toISOString().slice(0, 10);
+  return (wc.tx || []).filter(function(t) {
+    return !t.pending && !t.catchUp && (t.date || "") <= today && !isOpening(t) && !isTransfer(t) && !isTrip(t);
+  });
+}
+function widgetSum(list) {
+  return round2(list.reduce(function(s, t) { return s + (t.amount || 0); }, 0));
+}
+
+// One widget's number for one window. `back` walks it into the past for the
+// trend and compare shapes.
+function widgetValueAt(w, wc, back) {
+  var metric = WIDGET_METRICS[w.metric] ? w.metric : "expense";
+  var meta = WIDGET_METRICS[metric];
+  var tf = WIDGET_TIMEFRAMES[w.timeframe] ? w.timeframe : "month";
+  var win = widgetWindow(tf, back || 0);
+  var flows = widgetFlowTx(wc);
+  function inWin(t) { return inWidgetWindow(t, win); }
+  function side(type) { return flows.filter(function(t) { return t.type === type && inWin(t); }); }
+
+  if (metric === "net") return round2(widgetSum(side("income")) - widgetSum(side("expense")));
+  if (metric === "savingsRate") {
+    var inc = widgetSum(side("income"));
+    return inc > 0 ? Math.round(((inc - widgetSum(side("expense"))) / inc) * 100) : 0;
+  }
+  if (metric === "txCount") return flows.filter(inWin).length;
+  // Running balances answer "where did this stand at the END of the window", so
+  // a trend of one reads as a level over time rather than a period's flow.
+  if (metric === "balance") {
+    var today = new Date().toISOString().slice(0, 10);
+    var upTo = (wc.tx || []).filter(function(t) {
+      return !t.pending && !t.catchUp && (t.date || "") <= today && (!win || (t.date || "") <= win.to);
+    });
+    return round2(widgetSum(upTo.filter(function(t) { return t.type === "income"; }))
+      - widgetSum(upTo.filter(function(t) { return t.type === "expense"; })));
+  }
+  if (metric === "savingsPot") {
+    var pot = (wc.savings || []).filter(function(s) { return s.name === w.target; })[0];
+    if (!pot) return 0;
+    return round2((pot.entries || []).filter(function(e) { return !win || (e.date || "") <= win.to; })
+      .reduce(function(s, e) { return s + (e.kind === "withdraw" ? -(e.amount || 0) : (e.amount || 0)); }, 0));
+  }
+  // Snapshots: no history to walk honestly, so they always read "right now".
+  if (metric === "netWorth") {
+    var t2 = new Date().toISOString().slice(0, 10);
+    var all = (wc.tx || []).filter(function(t) { return !t.pending && !t.catchUp && (t.date || "") <= t2; });
+    return round2(widgetSum(all.filter(function(t) { return t.type === "income"; }))
+      - widgetSum(all.filter(function(t) { return t.type === "expense"; }))
+      + savingsTotal(wc.savings || []) + businessTotal(wc.businesses || []) + investingTotal(wc.investing || []));
+  }
+  if (metric === "goalProgress") {
+    var g = (wc.goals || []).filter(function(x) { return x.name === w.target; })[0];
+    if (!g) return 0;
+    return round2(goalSavedAmount(g, wc.tx || [], wc.savings, wc.businesses, wc.investing));
+  }
+
+  var sc = widgetScope(w, wc);
+  if (!sc) return 0;
+  var rows = flows.filter(function(t) { return t.type === sc.type && inWin(t) && (!sc.test || sc.test(t)); });
+  var total = widgetSum(rows);
+  if (metric === "budgetLeft") {
+    var b = (wc.budgets || []).filter(function(x) { return sc.cat && (x.catId === sc.cat.id || x.category === sc.cat.name); })[0];
+    return round2(((b && b.limit) || 0) - total);
+  }
+  return total;
+}
+
+// The biggest rows behind the number, so a list widget explains its own total
+// instead of just restating it. Folder widgets break down by category (the
+// useful cut); everything else by transaction.
+function widgetRows(w, wc) {
+  var tf = WIDGET_TIMEFRAMES[w.timeframe] ? w.timeframe : "month";
+  var win = widgetWindow(tf, 0);
+  var cats = wc.categories || [];
+  var sc = widgetScope(w, wc);
+  if (!sc) return [];
+  var rows = widgetFlowTx(wc).filter(function(t) {
+    return t.type === sc.type && inWidgetWindow(t, win) && (!sc.test || sc.test(t));
+  });
+  // Group by category when the widget covers many of them; otherwise the
+  // individual purchases are what the user is actually asking to see.
+  var byCat = w.metric === "folderSpend" || w.metric === "expense" || w.metric === "income";
+  if (byCat) {
+    var acc = {};
+    rows.forEach(function(t) {
+      var c = catById(cats, t.catId) || catByName(cats, t.category) || { name: t.category || "Other", color: T.orange, icon: "box" };
+      var k = c.name;
+      if (!acc[k]) acc[k] = { name: k, amount: 0, color: c.color || T.orange, icon: c.icon || "box" };
+      acc[k].amount = round2(acc[k].amount + (t.amount || 0));
+    });
+    return Object.keys(acc).map(function(k) { return acc[k]; })
+      .sort(function(a, b) { return b.amount - a.amount; }).slice(0, 4);
+  }
+  return rows.sort(function(a, b) { return (b.amount || 0) - (a.amount || 0); }).slice(0, 4).map(function(t) {
+    var c = catById(cats, t.catId) || catByName(cats, t.category) || { color: T.orange, icon: "box" };
+    return { name: t.label || t.category || "-", amount: t.amount || 0, color: c.color || T.orange, icon: c.icon || "box", sub: t.date };
+  });
+}
+
+// Everything a shape could need, in one pass. Cheap at these data sizes, and it
+// keeps the renderer free of per-metric special cases.
+function widgetCompute(w, wc) {
+  var metric = WIDGET_METRICS[w.metric] ? w.metric : "expense";
+  var meta = WIDGET_METRICS[metric];
+  var tf = WIDGET_TIMEFRAMES[w.timeframe] ? w.timeframe : "month";
+  var shape = WIDGET_SHAPES[w.shape] ? w.shape : "stat";
+  // A shape that needs history can't be drawn for a metric that has none, and a
+  // gauge with nothing to measure against is just a number - fall back rather
+  // than draw something misleading.
+  if (meta.snapshot && (shape === "trend" || shape === "compare")) shape = "stat";
+  if (tf === "all" && (shape === "trend" || shape === "compare")) shape = "stat";
+  // A list breaks a total into the rows behind it, so it needs a total made of
+  // rows. A savings rate or a net worth has none.
+  if (shape === "list" && !widgetScope(w, wc)) shape = "stat";
+
+  var value = widgetValueAt(w, wc, 0);
+  var prev = meta.snapshot || tf === "all" ? null : widgetValueAt(w, wc, 1);
+
+  // The reference line. An explicit goal wins; otherwise borrow the one the app
+  // already knows about, so "a ring for my Food budget" needs no number typed.
+  var goal = null;
+  if (w.goal != null && parseFloat(w.goal) > 0) goal = parseFloat(w.goal);
+  else if (metric === "goalProgress") {
+    var g = (wc.goals || []).filter(function(x) { return x.name === w.target; })[0];
+    if (g && g.target > 0) goal = g.target;
+  } else if (metric === "categorySpend") {
+    var sc = widgetScope(w, wc);
+    var b = sc && sc.cat ? (wc.budgets || []).filter(function(x) { return x.catId === sc.cat.id || x.category === sc.cat.name; })[0] : null;
+    if (b && b.limit > 0) goal = b.limit;
+  }
+  if ((shape === "bar" || shape === "ring") && !(goal > 0)) shape = "stat";
+
+  var series = null;
+  if (shape === "trend") {
+    series = [];
+    for (var i = 5; i >= 0; i--) series.push({ value: widgetValueAt(w, wc, i), label: widgetPeriodLabel(tf, i, true) });
+  }
+  return {
+    shape: shape, metric: metric, meta: meta, timeframe: tf,
+    value: value, prev: prev, goal: goal,
+    series: series,
+    rows: shape === "list" ? widgetRows(w, wc) : null,
+    // Over a spending cap is bad; over a savings target is good. One flag, both
+    // readings, so the card colours itself correctly either way.
+    bad: goal > 0 && (meta.better === "lower" ? value > goal : value < goal)
+  };
+}
+
+function widgetFormat(v, unit) {
+  if (unit === "percent") return Math.round(v) + "%";
+  if (unit === "count") return String(Math.round(v));
+  return dollars(v);
+}
+// One line of plain English under the title, so a widget always says what it is
+// measuring and over what period without the user having to remember.
+function widgetCaption(w, res) {
+  var tfWord = res.timeframe === "week" ? "this week" : res.timeframe === "year" ? "this year" : res.timeframe === "all" ? "all time" : "this month";
+  var subject = w.target ? String(w.target) : res.meta.title;
+  var base = res.metric === "merchantSpend" ? "“" + subject + "”"
+    : res.meta.needs ? subject : res.meta.title;
+  if (res.meta.snapshot) return base + " · right now";
+  if (res.meta.running) return base + " · " + (res.timeframe === "all" ? "all time" : "as of " + tfWord);
+  return base + " · " + tfWord;
+}
+
+// A single Richard-built card. Every shape shares the same header so the set
+// reads as one family however different the bodies are.
+function WidgetCard(props) {
+  var w = props.widget;
+  var res = props.result;
+  var color = props.color;
+  var unit = res.meta.unit;
+  var big = widgetFormat(res.value, unit);
+  var delta = res.prev == null ? null : round2(res.value - res.prev);
+  // "Good" is direction-aware: spending less is up, saving less is down.
+  var deltaGood = delta == null || delta === 0 ? null : (res.meta.better === "lower" ? delta < 0 : delta > 0);
+
+  function body() {
+    if (res.shape === "ring") {
+      var pct = Math.min(100, Math.round((res.value / res.goal) * 100));
+      return (
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ position: "relative", width: 74, height: 74, flexShrink: 0 }}>
+            <RingChart size={74} stroke={7} value={Math.min(res.value, res.goal)} max={res.goal} color={res.bad ? T.red : color} />
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: res.bad ? T.red : T.ink }}>{pct + "%"}</div>
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{big}</div>
+            <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>
+              {(res.meta.better === "lower" ? "of " : "toward ") + widgetFormat(res.goal, unit)}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    if (res.shape === "bar") {
+      var left = round2(res.goal - res.value);
+      return (
+        <div>
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 9 }}>
+            <span style={{ fontSize: 24, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{big}</span>
+            <span style={{ fontSize: 12, color: T.ink3 }}>{"of " + widgetFormat(res.goal, unit)}</span>
+          </div>
+          <ProgressBar value={res.value} max={res.goal} color={res.bad ? T.red : color} h={6} />
+          <div style={{ fontSize: 11.5, color: res.bad ? T.red : T.ink3, marginTop: 6, fontWeight: res.bad ? 600 : 400 }}>
+            {res.meta.better === "lower"
+              ? (left >= 0 ? widgetFormat(left, unit) + " left" : widgetFormat(-left, unit) + " over")
+              : (left > 0 ? widgetFormat(left, unit) + " to go" : "Target reached")}
+          </div>
+        </div>
+      );
+    }
+    if (res.shape === "compare") {
+      var pctChg = res.prev ? Math.round(((res.value - res.prev) / Math.abs(res.prev)) * 100) : null;
+      return (
+        <div style={{ display: "flex", alignItems: "stretch", gap: 14 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em" }}>{widgetPeriodLabel(res.timeframe, 0)}</div>
+            <div style={{ fontSize: 23, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", marginTop: 3 }}>{big}</div>
+          </div>
+          <div style={{ width: 1, background: T.sep, flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em" }}>{widgetPeriodLabel(res.timeframe, 1)}</div>
+            <div style={{ fontSize: 23, fontWeight: 700, color: T.ink3, letterSpacing: "-0.02em", marginTop: 3 }}>{widgetFormat(res.prev || 0, unit)}</div>
+          </div>
+          {pctChg != null && (
+            <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: deltaGood === null ? T.ink3 : deltaGood ? T.green : T.red, background: (deltaGood === null ? T.ink3 : deltaGood ? T.green : T.red) + "1A", borderRadius: 20, padding: "3px 9px" }}>
+                {(pctChg > 0 ? "+" : "") + pctChg + "%"}
+              </span>
+            </div>
+          )}
+        </div>
+      );
+    }
+    if (res.shape === "trend") {
+      var peak = res.series.reduce(function(m, p) { return Math.max(m, Math.abs(p.value)); }, 0) || 1;
+      return (
+        <div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", marginBottom: 12 }}>{big}</div>
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 7, height: 56 }}>
+            {res.series.map(function(p, i) {
+              var isNow = i === res.series.length - 1;
+              return (
+                <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+                  <div style={{ width: "100%", height: Math.max(3, Math.round((Math.abs(p.value) / peak) * 42)), borderRadius: 4,
+                    background: isNow ? color : color + "3D", transition: "height var(--m-value) var(--m-ease)" }} />
+                  <span style={{ fontSize: 9.5, color: isNow ? T.ink2 : T.ink3, fontWeight: isNow ? 700 : 500, whiteSpace: "nowrap" }}>{p.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+    if (res.shape === "list") {
+      if (!res.rows || !res.rows.length) {
+        return <div style={{ fontSize: 13, color: T.ink3 }}>{"Nothing logged here yet."}</div>;
+      }
+      return (
+        <div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", marginBottom: 10 }}>{big}</div>
+          {res.rows.map(function(r, i) {
+            return (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0", borderTop: "0.5px solid " + T.sep }}>
+                <CatBadge icon={r.icon} color={r.color} size={26} soft />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, color: T.ink, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</div>
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{widgetFormat(r.amount, "money")}</span>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+    // stat
+    return (
+      <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+        <span style={{ fontSize: 30, fontWeight: 700, color: T.ink, letterSpacing: "-0.03em" }}>{big}</span>
+        {delta != null && delta !== 0 && (
+          <span style={{ fontSize: 12, fontWeight: 700, color: deltaGood ? T.green : T.red }}>
+            {(delta > 0 ? "↑ " : "↓ ") + widgetFormat(Math.abs(delta), unit) + " vs " + widgetPeriodLabel(res.timeframe, 1)}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <Card style={{ padding: "15px 17px", marginBottom: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+        <CatBadge icon={w.icon || "box"} color={color} size={30} soft />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: T.ink, lineHeight: 1.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.title}</div>
+          <div style={{ fontSize: 11, color: T.ink3, marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{widgetCaption(w, res)}</div>
+        </div>
+        {/* Richard made it, so the user needs a way to unmake it without asking. */}
+        <div onClick={function(e) { e.stopPropagation(); props.onRemove(); }} title="Remove widget"
+          style={{ width: 30, height: 30, borderRadius: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer", opacity: 0.35 }}>
+          <SVGIcon id="close" size={13} color={T.ink3} />
+        </div>
+      </div>
+      {body()}
+    </Card>
+  );
+}
+
+// The Overview section. Hidden entirely when the user has no widgets, so nobody
+// is advertised a feature by an empty box.
+function OverviewWidgets(props) {
+  var list = (props.widgets || []).slice(0, MAX_WIDGETS);
+  if (!list.length) return null;
+  var wc = {
+    tx: props.tx || [], categories: props.categories || [], folders: props.folders || [],
+    savings: props.savings || [], businesses: props.businesses || [], investing: props.investing || [],
+    goals: props.goals || [], budgets: props.budgets || []
+  };
+  return (
+    <div style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.165s both" }}>
+      <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+        <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{"Your widgets"}</span>
+        <div style={{ flex: 1 }} />
+        <span style={{ fontSize: 11, color: T.ink3 }}>{"Built by Richard"}</span>
+      </div>
+      <div style={{ marginBottom: 20 }}>
+        {list.map(function(w) {
+          var res = widgetCompute(w, wc);
+          var color = /^#[0-9a-fA-F]{6}$/.test(w.color || "") ? w.color : T.orange;
+          return (
+            <WidgetCard key={w.id} widget={w} result={res} color={color}
+              onRemove={function() { if (props.onRemove) props.onRemove(w.id); }} />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function Overview(props) {
   var tx       = props.tx;
   // Navigate to another main tab/menu. Most summary cards are tappable and jump
@@ -7565,8 +8092,9 @@ function Overview(props) {
   var MONTHS3 = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   function compactMoney(v) {
     var a = Math.abs(v), sign = v < 0 ? "-" : "";
-    if (a >= 1000) { var k = a / 1000; return sign + "$" + (k >= 10 ? Math.round(k) : k.toFixed(1)) + "k"; }
-    return sign + "$" + Math.round(a);
+    var sym = _currency.sym || "$";
+    if (a >= 1000) { var k = a / 1000; return sign + sym + (k >= 10 ? Math.round(k) : k.toFixed(1)) + "k"; }
+    return sign + sym + Math.round(a);
   }
   function axisLabel(dISO) {
     var dd = new Date(dISO + "T12:00:00");
@@ -8175,6 +8703,12 @@ function Overview(props) {
           </Card>
         </div>
       )}
+
+      {/* Widgets Richard built on request. Overview is the only screen that
+          renders these - see the note above WIDGET_METRICS. */}
+      <OverviewWidgets widgets={props.widgets} tx={tx} categories={cats} folders={props.folders}
+        savings={savAccts} businesses={bizAccts} investing={invAccts} goals={goals} budgets={budgets}
+        onRemove={props.onRemoveWidget} />
 
       {recent.length > 0 && (
         <div onClick={function() { nav("activity"); }} style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.18s both", cursor: "pointer" }}>
@@ -9107,15 +9641,25 @@ function Activity(props) {
 
   function saveEdit() {
     if (!editForm.amount || !editForm.label || !editTx) return;
-    var c = catById(cats, editForm.catId) || cats[0] || { id: "", name: "Other" };
+    // Structural rows (opening balance, trip lump-sums) use catIds - "opening",
+    // "c7" - that intentionally aren't in the real category list, so they never
+    // show up as something a user can pick for a normal transaction. catById
+    // correctly returns null for them; falling back to cats[0] here would
+    // silently reassign the row to "Housing" and corrupt it. Keep the row's own
+    // catId/category whenever the picker's choice isn't a real category.
+    var c = catById(cats, editForm.catId) || { id: editForm.catId || editTx.catId, name: editTx.category || "Other" };
     var entered = parseFloat(editForm.amount);
     var foreign = editForm.cur && editForm.cur !== mainSym;
     var rate = foreign ? (editForm.rate || fxStaticRate(editForm.cur, mainSym)) : 1;
     var mainAmount = round2(entered * rate);
     props.onSaveTx(props.tx.map(function(t) {
       if (t.id !== editTx.id) return t;
-      var nt = { id: t.id, type: editForm.type, amount: mainAmount, label: editForm.label, catId: c.id, category: c.name, date: editForm.date, repeat: editForm.repeat, pending: editForm.pending, shared: editForm.shared || false, owner: editForm.owner || t.owner || props.accountKey };
+      // Merge onto the existing row rather than rebuilding it - t may carry
+      // flags this form never shows (opening, trip, catchUp, transfer,
+      // bizExpense, syncSource), and a from-scratch object silently drops them.
+      var nt = Object.assign({}, t, { type: editForm.type, amount: mainAmount, label: editForm.label, catId: c.id, category: c.name, date: editForm.date, repeat: editForm.repeat, pending: editForm.pending, shared: editForm.shared || false, owner: editForm.owner || t.owner || props.accountKey });
       if (foreign) { nt.origAmount = entered; nt.origCur = editForm.cur; nt.rate = rate; }
+      else { delete nt.origAmount; delete nt.origCur; delete nt.rate; }
       return nt;
     }));
     setEditTx(null);
@@ -12911,16 +13455,128 @@ function validateAction(a, ctx) {
     case "deleteTx":
       // Requires at least one real filter - never allow a scope-free "delete
       // everything" tag through, even if the model were to emit one.
-      if (!a.category && !a.merchant && !a.dateFrom && !a.dateTo && !a.type) return { ok: false, reason: "delete needs at least one filter" };
+      if (!hasTxFilter(a)) return { ok: false, reason: "delete needs at least one filter" };
       if (a.category && !hasCat(a.category)) return { ok: false, reason: "unknown category \"" + a.category + "\"" };
       if (a.type && a.type !== "expense" && a.type !== "income") return { ok: false, reason: "unknown type" };
       if (a.dateFrom && !/^\d{4}-\d{2}-\d{2}$/.test(a.dateFrom)) return { ok: false, reason: "invalid dateFrom" };
       if (a.dateTo && !/^\d{4}-\d{2}-\d{2}$/.test(a.dateTo)) return { ok: false, reason: "invalid dateTo" };
       var delMatches = matchDeleteTx(a, ctx.tx);
       return delMatches.length > 0 ? { ok: true } : { ok: false, reason: "no transactions match that" };
+
+    // ---- corrections: the figures every other number is computed FROM --------
+    case "opening":
+      // The starting balance. Zero is a legitimate value ("I actually started
+      // from nothing"), so this is the one amount that may be 0.
+      if (!isNum(a.amount) || parseFloat(a.amount) < 0 || parseFloat(a.amount) >= 10000000) return { ok: false, reason: "invalid opening balance" };
+      return { ok: true };
+    case "editTx":
+      if (!hasTxFilter(a)) return { ok: false, reason: "a correction needs at least one filter" };
+      if (a.category && !hasCat(a.category)) return { ok: false, reason: "unknown category \"" + a.category + "\"" };
+      if (a.type && a.type !== "expense" && a.type !== "income") return { ok: false, reason: "unknown type" };
+      if (a.dateFrom && !/^\d{4}-\d{2}-\d{2}$/.test(a.dateFrom)) return { ok: false, reason: "invalid dateFrom" };
+      if (a.dateTo && !/^\d{4}-\d{2}-\d{2}$/.test(a.dateTo)) return { ok: false, reason: "invalid dateTo" };
+      var set = a.set;
+      if (!set || typeof set !== "object") return { ok: false, reason: "correction says nothing to change" };
+      var touches = 0;
+      if (set.amount != null) { if (!positiveAmount(set.amount)) return { ok: false, reason: "invalid new amount" }; touches++; }
+      if (set.label != null) { if (!textOk(set.label, 80)) return { ok: false, reason: "invalid new label" }; touches++; }
+      if (set.category != null) { if (!hasCat(set.category)) return { ok: false, reason: "unknown category \"" + set.category + "\"" }; touches++; }
+      if (set.date != null) { if (!/^\d{4}-\d{2}-\d{2}$/.test(set.date)) return { ok: false, reason: "invalid new date" }; touches++; }
+      if (set.type != null) { if (set.type !== "expense" && set.type !== "income") return { ok: false, reason: "invalid new type" }; touches++; }
+      if (!touches) return { ok: false, reason: "correction says nothing to change" };
+      var editMatches = matchTxFilters(a, ctx.tx);
+      return editMatches.length > 0 ? { ok: true } : { ok: false, reason: "no transactions match that" };
+
+    // ---- widgets ------------------------------------------------------------
+    case "widget":
+      if (a.op === "remove") return textOk(a.title, 60) ? { ok: true } : { ok: false, reason: "which widget?" };
+      if (a.op !== "add" && a.op !== "update") return { ok: false, reason: "unknown widget op" };
+      if (!textOk(a.title, 40)) return { ok: false, reason: "invalid widget title" };
+      if (!WIDGET_METRICS[a.metric]) return { ok: false, reason: "a widget can't follow \"" + a.metric + "\"" };
+      if (a.shape && !WIDGET_SHAPES[a.shape]) return { ok: false, reason: "unknown widget shape \"" + a.shape + "\"" };
+      if (a.timeframe && !WIDGET_TIMEFRAMES[a.timeframe]) return { ok: false, reason: "unknown widget timeframe" };
+      if (a.goal != null && a.goal !== "" && !positiveAmount(a.goal)) return { ok: false, reason: "invalid widget goal" };
+      if (a.color && !/^#[0-9a-fA-F]{6}$/.test(a.color)) return { ok: false, reason: "invalid widget color" };
+      if (a.icon && WIDGET_ICONS.indexOf(a.icon) < 0) return { ok: false, reason: "unknown widget icon \"" + a.icon + "\"" };
+      // A widget that points at a category, folder, pot or goal the user doesn't
+      // have would render a permanent, confident zero. Resolve it now instead.
+      var needs = WIDGET_METRICS[a.metric].needs;
+      if (needs === "category" && !hasCat(a.target)) return { ok: false, reason: "unknown category \"" + a.target + "\"" };
+      if (needs === "folder" && !hasFolder(a.target)) return { ok: false, reason: "unknown folder \"" + a.target + "\"" };
+      if (needs === "savings" && !hasSavings(a.target)) return { ok: false, reason: "unknown savings pot \"" + a.target + "\"" };
+      if (needs === "goal" && !(ctx.goals || []).some(function(g) { return g.name === a.target; })) return { ok: false, reason: "unknown goal \"" + a.target + "\"" };
+      if (needs === "text" && !textOk(a.target, 40)) return { ok: false, reason: "invalid widget subject" };
+      if (needs === "budget") {
+        var wbc = catByName(cats, a.target) || catById(cats, a.target);
+        if (!wbc) return { ok: false, reason: "unknown category \"" + a.target + "\"" };
+        if (!(ctx.budgets || []).some(function(b) { return b.catId === wbc.id || b.category === wbc.name; })) return { ok: false, reason: "\"" + a.target + "\" has no budget to count down from" };
+      }
+      // Only the ADD path can hit the ceiling; an update replaces in place.
+      if (a.op === "add" && (ctx.widgets || []).length >= MAX_WIDGETS && !(ctx.widgets || []).some(function(x) { return x.title === a.title; })) {
+        return { ok: false, reason: "the dashboard is already at " + MAX_WIDGETS + " widgets" };
+      }
+      return { ok: true };
     default:
       return { ok: false, reason: "unknown action kind \"" + a.kind + "\"" };
   }
+}
+
+// ===== THE NUMBERS BEHIND THE NUMBERS =====
+// Richy's headline figures - savings rate, the monthly analysis, every budget
+// judged as a share of income - are all computed from a handful of raw inputs.
+// When one of those inputs is wrong, every derived figure is confidently wrong
+// with it, and the user has no way to tell which. ("My income says 4880, but
+// 3254 of that was money I already had.")
+//
+// So Richard is handed two things: the raw inputs themselves, and a short list
+// of things that look off about them. He can't fix what he can't see, and a
+// savings rate is not evidence about the row that produced it.
+function incomeAudit(tx, oData) {
+  var ym = curMonth();
+  var today = new Date().toISOString().slice(0, 10);
+  var openingTx = (tx || []).filter(function(t) { return isOpening(t); })[0];
+  var rows = (tx || []).filter(function(t) {
+    return t.type === "income" && !isOpening(t) && !isTransfer(t) && !t.catchUp
+      && !t.pending && (t.date || "") <= today && (t.date || "").slice(0, 7) === ym;
+  }).sort(function(a, b) { return (b.amount || 0) - (a.amount || 0); });
+  var total = round2(rows.reduce(function(s, t) { return s + (t.amount || 0); }, 0));
+
+  var flags = [];
+  if (!openingTx) {
+    flags.push("No opening balance is recorded. If they had money before they started using Richy, it is either missing from their net worth or sitting inside an income row where it inflates this month's income and deflates their savings rate.");
+  }
+  // The questionnaire figure is the user's own statement of what they earn, so a
+  // logged month far above it is the single strongest signal that something
+  // that was NOT income got logged as income.
+  var stated = oData && oData.income != null ? parseFloat(String(oData.income).replace(/[^0-9.]/g, "")) : NaN;
+  if (!isNaN(stated) && stated > 0 && total > stated * 1.4) {
+    flags.push("Logged income this month (" + dollars(total) + ") is well above the " + dollars(stated) + " a month they reported at signup. A starting balance or a transfer may have been logged as earnings.");
+  }
+  // Two identical income rows in one month is nearly always one event entered
+  // twice - and it silently doubles the denominator of the savings rate.
+  var seen = {};
+  rows.forEach(function(t) {
+    var k = round2(t.amount || 0) + "|" + (t.label || "").toLowerCase().trim();
+    if (seen[k]) { if (seen[k] === 1) flags.push("Two income rows this month are identical (" + dollars(t.amount) + " - \"" + (t.label || "no label") + "\"). One may be a duplicate."); seen[k]++; }
+    else seen[k] = 1;
+  });
+  return { openingTx: openingTx, rows: rows, total: total, flags: flags, stated: isNaN(stated) ? null : stated };
+}
+// Render the audit as the prompt block Richard reads.
+function incomeAuditBlock(tx, oData, cs) {
+  var a = incomeAudit(tx, oData);
+  var out = "\n\n=== THE RAW NUMBERS EVERYTHING ELSE IS COMPUTED FROM ===\n"
+    + "Savings rate, the monthly analysis, and every budget measured against income all derive from the rows below. If one of these is wrong, every figure above is wrong too - and the user usually cannot see which. When they tell you a figure is wrong, fix the ROW, not the summary.\n"
+    + "Opening balance (money they already had; excluded from income and savings rate): "
+    + (a.openingTx ? cs + Math.round(a.openingTx.amount) + " (recorded " + a.openingTx.date + ")" : "NOT SET")
+    + "\nIncome rows logged this month (these ARE counted as earnings): "
+    + (a.rows.length
+      ? "\n" + a.rows.map(function(t) { return "- " + cs + Math.round(t.amount) + " \"" + (t.label || "no label") + "\" [" + (t.category || "?") + "] on " + t.date; }).join("\n")
+      : "none");
+  if (a.stated) out += "\nAt signup they said they earn about " + cs + Math.round(a.stated) + " a month.";
+  if (a.flags.length) out += "\n\n=== THINGS THAT LOOK OFF ===\n" + a.flags.map(function(f) { return "- " + f; }).join("\n")
+    + "\nDo not lecture them about these unasked. Raise one only if it is relevant to what they asked, or if they tell you a number is wrong - then it is the first place to look.";
+  return out;
 }
 
 function Advisor(props) {
@@ -13082,7 +13738,7 @@ function Advisor(props) {
   var budgetLines = props.budgets.map(function(b) {
     var c = catById(cats, b.catId) || catByName(cats, b.category) || { name: b.category || "?" };
     var sp = catSpend(c);
-    return c.name + " $" + sp + "/$" + b.limit;
+    return c.name + " " + dollars(sp) + "/" + dollars(b.limit);
   });
   var coreProblem = (props.onboardingData && props.onboardingData.coreProblem) || "";
 
@@ -13180,7 +13836,16 @@ function Advisor(props) {
     + ((props.businesses || []).length
       ? "\n\n=== BUSINESSES (managed in Savings -> Business Account, Richard is their CFO) ===\n"
         + props.businesses.map(bizContextLine).join("\n")
-      : "");
+      : "")
+    + "\n\n=== OVERVIEW WIDGETS (cards you built; the exact titles, use them to update or remove one) ===\n"
+    + ((props.widgets || []).length
+      ? props.widgets.map(function(w) {
+          var wm = WIDGET_METRICS[w.metric] || {};
+          return "\"" + w.title + "\": " + (w.shape || "stat") + " following " + w.metric + (w.target ? " (" + w.target + ")" : "")
+            + ", " + (w.timeframe || "month") + (w.goal ? ", goal " + cs + w.goal : "");
+        }).join("\n") + "\n(" + (props.widgets || []).length + " of " + MAX_WIDGETS + " slots used)"
+      : "none yet")
+    + incomeAuditBlock(props.tx, props.onboardingData, cs);
 
   function catSpend(c) {
     return props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ymA) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
@@ -13632,6 +14297,39 @@ function Advisor(props) {
     if (a.kind === "noteSettle") return "Settle: " + a.label;
     if (a.kind === "instructions") return (a.op === "append" ? "Add to Richard's instructions: " : "Set Richard's instructions to: ") + "“" + a.text + "”";
     if (a.kind === "banner") return "Show banner: “" + a.text + "”";
+    if (a.kind === "opening") {
+      var openTx = (props.tx || []).filter(function(t) { return isOpening(t); })[0];
+      var was = openTx ? openTx.amount : 0;
+      return "Set your opening balance to " + dollars(parseFloat(a.amount) || 0)
+        + (openTx ? " (was " + dollars(was) + ")" : " (none set yet)")
+        + ". This is money you already had, so it stops counting as income earned - your savings rate and monthly analysis will change.";
+    }
+    if (a.kind === "editTx") {
+      var editMatches = matchTxFilters(a, props.tx);
+      var set = a.set || {};
+      var changes = [];
+      if (set.amount != null) changes.push("amount to " + dollars(parseFloat(set.amount) || 0));
+      if (set.label != null) changes.push("label to “" + set.label + "”");
+      if (set.category != null) changes.push("category to " + set.category);
+      if (set.date != null) changes.push("date to " + set.date);
+      if (set.type != null) changes.push("type to " + set.type);
+      // Name the row when it's a single unambiguous one - that's the case the
+      // user is almost always in, and "Correct Salary (4880)" reads far better
+      // than "Correct 1 transaction".
+      var what = editMatches.length === 1
+        ? "“" + (editMatches[0].label || editMatches[0].category || "transaction") + "” (" + dollars(editMatches[0].amount) + ")"
+        : editMatches.length + " transactions";
+      return "Correct " + what + ": set " + changes.join(", ");
+    }
+    if (a.kind === "widget") {
+      if (a.op === "remove") return "Remove the “" + a.title + "” widget from your Overview";
+      var wm = WIDGET_METRICS[a.metric] || {};
+      var shapeWord = { stat: "a number", bar: "a progress bar", ring: "a ring", list: "a list", trend: "a trend chart", compare: "a period comparison" }[a.shape || "stat"] || "a number";
+      var tfWord = { week: "this week", month: "this month", year: "this year", all: "all time" }[a.timeframe || "month"];
+      return (a.op === "update" ? "Update" : "Add") + " the “" + a.title + "” widget on your Overview - "
+        + shapeWord + " following " + (a.target ? a.target : (wm.title || "your numbers")).toString().toLowerCase()
+        + " " + tfWord + (a.goal ? ", against " + dollars(parseFloat(a.goal)) : "");
+    }
     if (a.kind === "deleteTx") {
       var delMatches = matchDeleteTx(a, props.tx);
       var delTotal = delMatches.reduce(function(s, t) { return s + t.amount; }, 0);
@@ -13657,10 +14355,16 @@ function Advisor(props) {
     var nextSavings = (props.savings || []).slice();
     var nextNotes = (props.notes || []).slice();
     var nextBanners = (props.customBanners || []).slice();
+    var nextWidgets = (props.widgets || []).slice();
     var newInstructions = null;
     var removeTxIds = {};
+    // Corrections rewrite rows in place rather than adding new ones, so they're
+    // collected as id -> patch and folded in at the end alongside the deletes.
+    var editPatch = {};
+    // null = leave the opening balance alone; a number = the corrected figure.
+    var openingTo = null;
     var deletedCount = 0, deletedTotal = 0;
-    var txChanged = false, budChanged = false, goalChanged = false, catChanged = false, folderChanged = false, savChanged = false, noteChanged = false, noteSettled = false, bannerChanged = false;
+    var txChanged = false, budChanged = false, goalChanged = false, catChanged = false, folderChanged = false, savChanged = false, noteChanged = false, noteSettled = false, bannerChanged = false, widgetChanged = false;
     actions.forEach(function(a, i) {
       if (a.kind === "expense" || a.kind === "income") {
         var wantName = a.category || (a.kind === "income" ? "Salary" : "Other");
@@ -13743,12 +14447,80 @@ function Advisor(props) {
           if (!removeTxIds[t.id]) { removeTxIds[t.id] = true; deletedCount++; deletedTotal += t.amount; }
         });
         if (delMatches.length) txChanged = true;
+      } else if (a.kind === "opening") {
+        openingTo = round2(parseFloat(a.amount) || 0);
+        txChanged = true;
+      } else if (a.kind === "editTx") {
+        var set = a.set || {};
+        matchTxFilters(a, props.tx).forEach(function(t) {
+          var patch = editPatch[t.id] || (editPatch[t.id] = {});
+          if (set.amount != null) patch.amount = round2(parseFloat(set.amount) || 0);
+          if (set.label != null) patch.label = String(set.label);
+          if (set.date != null) patch.date = set.date;
+          if (set.type != null) patch.type = set.type;
+          if (set.category != null) {
+            // Move the id across with the name, or the row keeps reporting under
+            // its old category everywhere that reads catId first.
+            var ec = catByName(cats, set.category) || catById(cats, set.category);
+            if (ec) { patch.catId = ec.id; patch.category = ec.name; }
+          }
+          txChanged = true;
+        });
+      } else if (a.kind === "widget") {
+        if (a.op === "remove") {
+          var before = nextWidgets.length;
+          nextWidgets = nextWidgets.filter(function(x) { return x.title !== a.title; });
+          if (nextWidgets.length !== before) widgetChanged = true;
+        } else {
+          var spec = {
+            id: "wg_" + (base + i),
+            title: String(a.title).trim(),
+            metric: a.metric,
+            target: a.target != null ? String(a.target) : "",
+            shape: WIDGET_SHAPES[a.shape] ? a.shape : "stat",
+            timeframe: WIDGET_TIMEFRAMES[a.timeframe] ? a.timeframe : "month",
+            goal: a.goal != null && a.goal !== "" ? round2(parseFloat(a.goal)) : null,
+            // null, not T.orange: T is the LIVE theme, so baking its hex in here
+            // would freeze a widget to whatever theme was active when Richard
+            // built it. The renderer falls back to the current accent instead.
+            color: /^#[0-9a-fA-F]{6}$/.test(a.color || "") ? a.color : null,
+            icon: WIDGET_ICONS.indexOf(a.icon) >= 0 ? a.icon : "box",
+            createdAt: Date.now()
+          };
+          // Same title = the same widget. "Update" and a re-issued "add" both
+          // replace in place, so asking twice can't leave two copies behind.
+          var atIdx = -1;
+          for (var wi = 0; wi < nextWidgets.length; wi++) { if (nextWidgets[wi].title === spec.title) { atIdx = wi; break; } }
+          if (atIdx >= 0) { spec.id = nextWidgets[atIdx].id; spec.createdAt = nextWidgets[atIdx].createdAt || spec.createdAt; nextWidgets[atIdx] = spec; }
+          else nextWidgets = nextWidgets.concat([spec]);
+          nextWidgets = nextWidgets.slice(0, MAX_WIDGETS);
+          widgetChanged = true;
+        }
       }
     });
     // A settle touches tx + notes together - write them atomically (mirrors the
     // manual Settle button) so one save can't land without the other. Otherwise
     // tx and notes are independent and save separately.
-    var survivingTx = (props.tx || []).filter(function(t) { return !removeTxIds[t.id]; });
+    var survivingTx = (props.tx || []).filter(function(t) { return !removeTxIds[t.id]; })
+      .map(function(t) {
+        var patch = editPatch[t.id];
+        return patch ? Object.assign({}, t, patch) : t;
+      });
+    // The opening balance is a single tx flagged opening=true (see isOpening).
+    // Correcting it is the lever behind "I didn't earn that, I already had it":
+    // it moves money out of this month's income, which is what savings rate,
+    // the monthly analysis and every income-shaped budget are computed from.
+    if (openingTo !== null) {
+      var hadOpening = false;
+      survivingTx = survivingTx.map(function(t) {
+        if (!isOpening(t)) return t;
+        hadOpening = true;
+        return Object.assign({}, t, { type: "income", amount: openingTo, label: "Opening balance", catId: "opening", category: "Opening balance", opening: true, repeat: "none", pending: false });
+      });
+      if (!hadOpening && openingTo > 0) {
+        survivingTx = [{ type: "income", amount: openingTo, label: "Opening balance", catId: "opening", category: "Opening balance", opening: true, date: today, id: base + 5000, repeat: "none", pending: false }].concat(survivingTx);
+      }
+    }
     if (noteSettled && props.onSettleNote) {
       props.onSettleNote(survivingTx.concat(newTx), nextNotes);
     } else {
@@ -13761,6 +14533,7 @@ function Advisor(props) {
     if (folderChanged && props.onSaveFolders) props.onSaveFolders(nextFolders);
     if (savChanged && props.onSaveSavings) props.onSaveSavings(nextSavings);
     if (bannerChanged && props.onSaveBanners) props.onSaveBanners(nextBanners);
+    if (widgetChanged && props.onSaveWidgets) props.onSaveWidgets(nextWidgets);
     if (newInstructions !== null && props.onSaveInstructions) props.onSaveInstructions(newInstructions);
     return { deletedCount: deletedCount, deletedTotal: deletedTotal };
   }
@@ -13833,7 +14606,15 @@ function Advisor(props) {
       + "[ACTION:{\"kind\":\"instructions\",\"op\":\"append\",\"text\":\"I hate subscriptions, always flag them\"}] (op is append or set) updates YOUR OWN custom instructions for how to advise this user going forward - use only when the user directly asks you to remember/always do something; "
       + "[ACTION:{\"kind\":\"banner\",\"text\":\"Rent is due Friday\",\"tone\":\"info\",\"icon\":\"spark\",\"dismissible\":true}] (tone is info, success, or warn) puts a small banner message at the top of the app, visible on every tab, until the user dismisses it - use ONLY when the user directly and explicitly asks you to put up/create/show a banner or reminder message; never on your own initiative. "
       + "[ACTION:{\"kind\":\"deleteTx\",\"category\":\"Food\",\"merchant\":\"Starbucks\",\"dateFrom\":\"2026-07-01\",\"dateTo\":\"2026-07-31\",\"type\":\"expense\"}] bulk-deletes every transaction matching the filters you give (category is an exact category name, merchant is a substring matched against the transaction label, type is expense or income, dateFrom/dateTo are YYYY-MM-DD and inclusive) - ALL fields are optional but you MUST include at least one, and only the filters the user actually specified; never invent a date range or category to narrow it. This is IRREVERSIBLE and deletes real logged data, so use it ONLY when the user explicitly asks to delete/remove/clear transactions (never on your own initiative, never as part of a broader cleanup you suggested), and never target their whole history with zero filters - if they say \"delete everything\" ask them to confirm a scope (a category, merchant, or date range) first instead of proposing the tag. The confirmation card will show exactly how many transactions and how much money match before anything is removed, so you don't need to state the count yourself. "
-      + "Use the EXACT category, folder, savings pot, and note-label names given in the data below - never invent or guess a name. "
+      + "[ACTION:{\"kind\":\"opening\",\"amount\":3254}] sets their OPENING BALANCE - the money they already had when they started using Richy. It is stored outside income on purpose, so it never counts as earnings and never inflates the savings rate. Use it whenever the user says they already had money, started the month/period with an amount, or that some of their logged income was not actually earned. "
+      + "[ACTION:{\"kind\":\"editTx\",\"merchant\":\"Salary\",\"type\":\"income\",\"amount\":4880,\"set\":{\"amount\":1626}}] CORRECTS transactions already logged. The top-level fields are filters that pick the rows (category = exact category name, merchant = substring of the label, type = expense or income, amount = the exact current amount, dateFrom/dateTo = YYYY-MM-DD inclusive); \"set\" holds the new values and may contain amount, label, category, date, and type. At least one filter is required. Prefer the exact amount plus one more filter so you hit precisely the row the user means. "
+      + "THESE TWO ARE HOW YOU FIX THE APP'S OVERALL NUMBERS. The user cannot edit a savings rate, a monthly analysis or a budget's verdict directly - those are all computed from the raw rows in the data below. So when the user says a headline figure is wrong (\"my income says 4880 but that isn't right\", \"I already started this month with 3254\", \"that was money I had, not money I made\"), do not just agree or explain: find the ROW that produced it in the data below, say plainly which figure was wrong and what it should be, and emit the tags that fix it. That often means TWO tags together - correct the income row down to what was really earned AND set the opening balance to the part they already had - because moving money from income to opening balance is exactly what makes the savings rate, the monthly analysis and the budgets recompute correctly. State what will change as a result (\"your savings rate goes from 12% to 48%\") so they can check your arithmetic before they tap Apply. If their correction doesn't add up against the rows you can see, say so and ask, rather than guessing at a split. "
+      + "[ACTION:{\"kind\":\"widget\",\"op\":\"add\",\"title\":\"Coffee watch\",\"metric\":\"categorySpend\",\"target\":\"Food\",\"shape\":\"ring\",\"timeframe\":\"month\",\"goal\":200,\"icon\":\"coffee\",\"color\":\"#C8973A\"}] BUILDS A WIDGET on their Overview screen (op is add, update, or remove - for remove, pass only the exact title). This is a real feature: the user can ask for a card that follows anything below, drawn in whichever shape they ask for, and you fill in the template. "
+      + "metric (what it follows) is one of: categorySpend (target = exact category name), folderSpend (target = exact folder name), merchantSpend (target = a word matched against transaction labels, e.g. \"Starbucks\"), expense, income, net, savingsRate, txCount, budgetLeft (target = a category that HAS a budget), balance, savingsPot (target = exact pot name), netWorth, goalProgress (target = exact goal name). "
+      + "shape (how it looks) is one of: stat (one big number plus the change since last period), bar (a progress bar toward the goal), ring (the same as a gauge), list (the biggest rows behind the total), trend (six periods as mini bars), compare (this period beside the last one). timeframe is week, month, year, or all. "
+      + "goal is optional and only means something for bar and ring; leave it out and they fall back to a plain number, except that a category with a budget or a goal with a target borrows that automatically. For spending metrics the goal reads as a ceiling to stay under, for saving and income metrics as a target to get past - you don't need to say which. icon must be one of: " + WIDGET_ICONS.join(", ") + ". color is a #rrggbb hex. Up to " + MAX_WIDGETS + " widgets total; adding one with the title of an existing widget replaces it. "
+      + "Match the user's words to the template: \"track my coffee\" is merchantSpend or a category, \"as a ring/circle/gauge\" is ring, \"a bar\" is bar, \"show me the biggest ones\" is list, \"over the last few months\" is trend, \"versus last month\" is compare. Pick a sensible icon and a short title yourself rather than asking. If they ask for something no metric covers, say plainly what you can follow instead and offer the closest one - never invent a metric name, and never promise a widget on any screen other than Overview, which is the only place they appear. "
+      + "Use the EXACT category, folder, savings pot, goal, note-label and widget-title names given in the data below - never invent or guess a name. "
       + "If the user mentions several things at once, emit several tags. Only emit a tag for a concrete event, or a direct explicit request to change/create something, with real values the user actually stated - never for hypotheticals, plans, or general advice. Do not mention the word ACTION or the tag syntax in your spoken reply; just speak naturally and let the tags do the work."
       + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a CFO who builds a business plan - send business owners there. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (phone-automation Bank Sync is the real automatic option), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : ""),
       500,
@@ -13845,7 +14626,7 @@ function Advisor(props) {
         // against the user's real current data before it's allowed anywhere near
         // the confirm card. Invalid/unresolvable ones are silently dropped, not
         // shown broken - the user only ever sees things that will actually work.
-        var validationCtx = { categories: cats, folders: props.folders, savings: props.savings, notes: props.notes, tx: props.tx };
+        var validationCtx = { categories: cats, folders: props.folders, savings: props.savings, notes: props.notes, tx: props.tx, goals: props.goals, budgets: props.budgets, widgets: props.widgets };
         var updates = [], rejectedCount = 0;
         rawUpdates.forEach(function(a) {
           if (validateAction(a, validationCtx).ok) updates.push(a); else rejectedCount++;
@@ -14591,13 +15372,22 @@ function Advisor(props) {
           // A batch containing a delete gets a red warning treatment instead of
           // the usual mild orange "update" card - this one can't be undone.
           var hasDelete = pendingUpdates.some(function(a) { return a.kind === "deleteTx"; });
+          // Corrections rewrite numbers that are already there, and every derived
+          // figure moves with them - so they're named for what they are rather
+          // than folded into the generic "update your app".
+          var allFixes = !hasDelete && pendingUpdates.every(function(a) { return a.kind === "opening" || a.kind === "editTx"; });
+          var allWidgets = !hasDelete && pendingUpdates.every(function(a) { return a.kind === "widget"; });
           var tint = hasDelete ? T.redDim : T.orangeDim;
           var accent = hasDelete ? T.red : T.orange;
+          var heading = hasDelete ? "Richard wants to delete transactions"
+            : allFixes ? "Richard wants to correct your numbers"
+            : allWidgets ? "Richard wants to change your Overview"
+            : "Richard wants to update your app";
           return (
             <div style={{ padding: "13px 13px 11px", borderTop: "0.5px solid " + T.sep, background: tint, marginTop: 10, borderRadius: 10 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: accent, marginBottom: 9, display: "flex", alignItems: "center", gap: 6 }}>
-                <SVGIcon id={hasDelete ? "trash" : "spark"} size={15} color={accent} />
-                {hasDelete ? "Richard wants to delete transactions" : "Richard wants to update your app"}
+                <SVGIcon id={hasDelete ? "trash" : allFixes ? "edit" : allWidgets ? "overview" : "spark"} size={15} color={accent} />
+                {heading}
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 11 }}>
                 {pendingUpdates.map(function(a, i) {
@@ -14618,6 +15408,12 @@ function Advisor(props) {
                     msg = "Done - I've deleted " + summary.deletedCount + " transaction" + (summary.deletedCount === 1 ? "" : "s") + " (" + dollars(summary.deletedTotal) + " total). You'll see it reflected across Overview, Activity, Budgets and Goals.";
                   } else if (summary && summary.deletedCount > 0) {
                     msg = "Done - I've updated your app with " + n + " changes, including deleting " + summary.deletedCount + " transaction" + (summary.deletedCount === 1 ? "" : "s") + " (" + dollars(summary.deletedTotal) + " total). You'll see it reflected across Overview, Activity, Budgets and Goals.";
+                  } else if (allFixes) {
+                    // Say where to look: the whole point of a correction is that
+                    // the numbers they were doubting have now moved.
+                    msg = "Fixed - your numbers are recomputed from the corrected figures. Your savings rate, this month's analysis and any budget measured against income will all read differently now, so take a look at Overview.";
+                  } else if (allWidgets) {
+                    msg = "Done - it's on your Overview screen now.";
                   } else {
                     msg = "Done - I've updated your app with " + n + " change" + (n > 1 ? "s" : "") + ". You'll see it reflected across Overview, Activity, Budgets and Goals.";
                   }
@@ -16357,7 +17153,8 @@ function DebtView(props) {
   function openEdit(d) { setForm({ id: d.id, name: d.name, balance: String(d.balance), apr: String(d.apr), minPayment: String(d.minPayment) }); }
   function saveForm() {
     if (!form || !form.name.trim() || !(parseFloat(form.balance) > 0)) return;
-    var rec = { id: form.id || ("debt_" + Date.now()), name: form.name.trim(), balance: round2(parseFloat(form.balance) || 0), apr: Math.max(0, parseFloat(form.apr) || 0), minPayment: Math.max(0, parseFloat(form.minPayment) || 0), createdAt: form.id ? undefined : today };
+    var existing = form.id ? debts.filter(function(d) { return d.id === form.id; })[0] : null;
+    var rec = { id: form.id || ("debt_" + Date.now()), name: form.name.trim(), balance: round2(parseFloat(form.balance) || 0), apr: Math.max(0, parseFloat(form.apr) || 0), minPayment: Math.max(0, parseFloat(form.minPayment) || 0), createdAt: existing ? existing.createdAt : today };
     var next = form.id ? debts.map(function(d) { return d.id === form.id ? Object.assign({}, d, rec) : d; }) : debts.concat([rec]);
     props.onSaveDebts(next);
     setForm(null);
@@ -24482,10 +25279,10 @@ function PrivacyView(props) {
   rows.push({ label: "Currency",          value: curLabel,                 onClick: props.onEditCurrency });
   rows.push({ label: "Theme",             value: themeLabel,               onClick: props.onEditTheme });
   rows.push({ label: "Life stage",        value: oData.lifeStage || "",    onClick: props.onEditFinancial });
-  rows.push({ label: "Monthly income",    value: oData.income ? "$" + oData.income : "",    onClick: props.onEditFinancial });
-  rows.push({ label: "Monthly essentials",value: oData.essentials ? "$" + oData.essentials : "", onClick: props.onEditFinancial });
-  rows.push({ label: "Savings",           value: oData.savings ? "$" + oData.savings : "",  onClick: props.onEditFinancial });
-  rows.push({ label: "Total debt",        value: oData.debt ? "$" + oData.debt : "",        onClick: props.onEditFinancial });
+  rows.push({ label: "Monthly income",    value: oData.income ? dollars(oData.income) : "",    onClick: props.onEditFinancial });
+  rows.push({ label: "Monthly essentials",value: oData.essentials ? dollars(oData.essentials) : "", onClick: props.onEditFinancial });
+  rows.push({ label: "Savings",           value: oData.savings ? dollars(oData.savings) : "",  onClick: props.onEditFinancial });
+  rows.push({ label: "Total debt",        value: oData.debt ? dollars(oData.debt) : "",        onClick: props.onEditFinancial });
   rows.push({ label: "Top goal",          value: oData.goalName || "",     onClick: props.onEditFinancial });
 
   return (
@@ -26266,6 +27063,12 @@ export default function App() {
   var darkMode = _dm[0]; var setDarkMode = _dm[1];
   var _ack = useState(false);
   var authChecked = _ack[0]; var setAuthChecked = _ack[1];
+  // True when a signed-in session's data never finished loading (a stalled
+  // Firestore long-poll behind a captive portal, a cold cache). Distinct from
+  // "signed out" so the boot gate offers Retry/Sign out instead of falsely
+  // showing the sign-in screen to somebody who is signed in.
+  var _lf = useState(false);
+  var loadFailed = _lf[0]; var setLoadFailed = _lf[1];
   // Cached "Analyze your month" result: { data, sig }. Persisted in the user blob
   // and tagged with a transaction signature so it survives leaving the advisor
   // tab (and reloads), but is discarded once the user logs a new transaction.
@@ -26312,6 +27115,11 @@ export default function App() {
   // raw markup - rendered by CustomBanners under the header on every tab.
   var _cbn = useState([]);
   var customBanners = _cbn[0]; var setCustomBanners = _cbn[1];
+  // Overview widgets Richard builds on request ("a ring that follows my coffee
+  // spending"). Structured specs only - metric, shape, target, timeframe, goal -
+  // never markup, and rendered by OverviewWidgets on the Overview tab alone.
+  var _wgt = useState([]);
+  var widgets = _wgt[0]; var setWidgets = _wgt[1];
   // Ids of the Overview "Get the most from Richy" suggestions the user waved off.
   // Suggestions for features already in use hide themselves; this is for the ones
   // they know about and simply don't want.
@@ -26411,6 +27219,7 @@ export default function App() {
     setBankSync(data.bankSync || null);
     setLeumiFinteka(data.leumiFinteka || null);
     setCustomBanners(data.customBanners || []);
+    setWidgets(data.widgets || []);
     setDismissedTips(data.dismissedTips || []);
     setHouseholdId(data.householdId || null);
     setUserDob(data.dob || "");
@@ -26511,15 +27320,29 @@ export default function App() {
   // the signed-in user on reload and fires whenever they sign in or out.
   useEffect(function() {
     if (!cloudReady()) { setAuthChecked(true); return function () {}; }
+    var fallbackTimer = null;
     var unsub = CLOUD.onAuth(function(cu) {
+      if (fallbackTimer) { clearTimeout(fallbackTimer); fallbackTimer = null; }
       // Signed out, or email signup (which builds its own doc): reveal the UI now.
-      if (!cu) { setAuthChecked(true); return; }       // -> AuthScreen shows
-      if (window.__cbSignup) { setAuthChecked(true); return; }
+      if (!cu) { setLoadFailed(false); setAuthChecked(true); return; }       // -> AuthScreen shows
+      if (window.__cbSignup) { setLoadFailed(false); setAuthChecked(true); return; }
       var email = cu.email || "";
+      var settled = false;
       // A session exists. Keep showing the loading screen (NOT the AuthScreen)
       // until the user's data + theme are loaded, so we never flash "sign in"
       // or the default light theme to an already-signed-in user.
+      //
+      // A stalled Firestore long-poll (captive portal, cold cache) can leave
+      // this promise never settling either way - .then and .catch both silent,
+      // BootSplash spinning forever with no escape. This fallback still lets
+      // the UI render; IndexedDB persistence usually makes a follow-up Retry
+      // succeed straight from cache.
+      fallbackTimer = setTimeout(function() {
+        if (!settled) { settled = true; setLoadFailed(true); setAuthChecked(true); }
+      }, 8000);
       CLOUD.loadUser(cu.uid).then(function(data) {
+        if (settled) return;   // fallback already fired
+        settled = true;
         if (!data) {
           var nm = cu.displayName || (email ? email.split("@")[0] : "there");
           data = defaultBlob(nm, email);
@@ -26542,10 +27365,16 @@ export default function App() {
         setUser(data.displayName || email || "there");
         setAccountKey(cu.uid);
         setHasPw(CLOUD.hasPasswordProvider());
+        setLoadFailed(false);
         setAuthChecked(true);
-      }).catch(function() { setAuthChecked(true); });
+      }).catch(function() {
+        if (settled) return;
+        settled = true;
+        setLoadFailed(true);
+        setAuthChecked(true);
+      });
     });
-    return function() { if (typeof unsub === "function") unsub(); };
+    return function() { if (typeof unsub === "function") unsub(); if (fallbackTimer) clearTimeout(fallbackTimer); };
   }, []);
 
   // Single subscription for all household live updates: members, invites, and
@@ -26737,6 +27566,8 @@ export default function App() {
   function onSaveChats(next) { var t = trimChatArchive(next); setRichardChats(t); save({ richardChats: t }); }
   function onSaveNotes(next) { setNotes(next); save({ notes: next }); }
   function onSaveBanners(next) { setCustomBanners(next); save({ customBanners: next }); }
+  function onSaveWidgets(next) { var v = (next || []).slice(0, MAX_WIDGETS); setWidgets(v); save({ widgets: v }); }
+  function onRemoveWidget(id) { onSaveWidgets((widgets || []).filter(function(w) { return w.id !== id; })); }
   function onDismissTip(id) {
     if (dismissedTips.indexOf(id) >= 0) return;
     var next = dismissedTips.concat([id]);
@@ -27403,6 +28234,10 @@ export default function App() {
     return <BootSplash />;
   }
 
+  if (loadFailed) {
+    return <BootRetryScreen onRetry={function() { window.location.reload(); }} onSignOut={function() { setLoadFailed(false); handleLogout(); }} />;
+  }
+
   if (!user) return <AuthScreen onLogin={handleLogin} />;
 
   if (!onboardingDone) {
@@ -27442,11 +28277,11 @@ export default function App() {
   // The five swipeable main tabs, produced by id so both the visible page and the
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
-    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
+    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
     if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
-    if (id === "advisor") return <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} />;
+    if (id === "advisor") return <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} widgets={widgets} onSaveWidgets={onSaveWidgets} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} />;
     return null;
   }
   applyTheme(theme);      // keep the live T palette in sync with the chosen design every render
