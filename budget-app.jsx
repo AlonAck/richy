@@ -1609,6 +1609,27 @@ function budgetOffTrack(r) {
   return r.dir === "target" ? r.amount < r.limit : r.amount > r.limit;
 }
 
+// Real income for one month - the same predicate roleSplit grades against,
+// factored out so its fallback below can check other months without
+// repeating it.
+function monthIncome(tx, ym) {
+  return round2((tx || []).filter(function(t) {
+    return t.type === "income" && !isOpening(t) && !isTransfer(t) && inMonth(t, ym);
+  }).reduce(function(s, t) { return s + t.amount; }, 0));
+}
+// The most recent month, looking back up to a year, that actually had income
+// logged. A stand-in for salary when this month doesn't have one yet - never
+// a stand-in for everything the user owns.
+function lastKnownIncome(tx, ym) {
+  var d = new Date((ym || curMonth()) + "-01T00:00:00Z");
+  for (var i = 0; i < 12; i++) {
+    d.setUTCMonth(d.getUTCMonth() - 1);
+    var amt = monthIncome(tx, d.toISOString().slice(0, 7));
+    if (amt > 0) return amt;
+  }
+  return 0;
+}
+
 // ── The split read ──────────────────────────────────────────────────────────
 // Once folders carry roles, the split falls out of data the user already has -
 // no separate tagging pass, no guessing at category names. A category is
@@ -1637,10 +1658,14 @@ function roleSplit(ctx) {
     return s + categoryAmount(c, ctx, "month");
   }, 0));
   var ym = ctx.ym || curMonth();
-  var income = round2((ctx.tx || []).filter(function(t) {
-    return t.type === "income" && !isOpening(t) && !isTransfer(t) && inMonth(t, ym);
-  }).reduce(function(s, t) { return s + t.amount; }, 0));
-  var base = income > 0 ? income : round2(buckets.need + buckets.want + buckets.savings + unsorted);
+  var income = monthIncome(ctx.tx, ym);
+  // No paycheck logged yet this month shouldn't mean grading against "whole
+  // net worth" - a pot-funding transfer or a big one-off purchase can dwarf a
+  // real salary. Reach back for the last month that had one instead; only
+  // once that comes up empty too does the split fall back to money moved.
+  var priorIncome = income > 0 ? 0 : lastKnownIncome(ctx.tx, ym);
+  var base = income > 0 ? income : priorIncome > 0 ? priorIncome
+    : round2(buckets.need + buckets.want + buckets.savings + unsorted);
   function pct(v) { return base > 0 ? Math.round((v / base) * 100) : 0; }
   var plan = splitPlanOf(ctx.splitPlan);
   var rows = FOLDER_ROLES.map(function(r) {
@@ -1684,7 +1709,10 @@ function roleSplit(ctx) {
     plan: plan, planLabel: splitPlanLabel(plan),
     moved: round2(buckets.need + buckets.want + buckets.savings + unsorted),
     rows: rows, verdict: verdict,
-    graded: income > 0,
+    // Graded whenever the base is an actual salary figure - this month's or
+    // the last month that had one - never when it's the money-moved fallback.
+    graded: income > 0 || priorIncome > 0,
+    usingLastIncome: income <= 0 && priorIncome > 0,
   };
 }
 // Folders Richy would like sorted: real ones that hold something and haven't
@@ -10875,8 +10903,10 @@ function FolderRolesCard(props) {
           </div>
           <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3, lineHeight: 1.4 }}>
             {split.graded
-              ? "Out of the " + dollars(split.income) + " that came in this month."
-              : "No income logged this month yet, so these are shares of the " + dollars(split.moved) + " that moved."}
+              ? (split.usingLastIncome
+                  ? "No income logged yet this month, so this is graded against last month's " + dollars(split.base) + "."
+                  : "Out of the " + dollars(split.income) + " that came in this month.")
+              : "No income logged, so these are shares of the " + dollars(split.moved) + " that moved."}
           </div>
         </div>
       </div>
@@ -16135,7 +16165,7 @@ function FullAnalysisView(props) {
 
       {anySorted && (
         <div style={{ marginBottom: 24 }}>
-          {section("Your " + split.planLabel + " Split", split.graded ? "of " + dollars(Math.round(split.income)) + " income" : "no income logged")}
+          {section("Your " + split.planLabel + " Split", split.graded ? "of " + dollars(Math.round(split.base)) + (split.usingLastIncome ? " income, last month" : " income") : "no income logged")}
           {/* Same grammar as the Budgets card: the verdict first, then each
               line as money against its own allowance. */}
           <Card style={{ padding: "16px 16px 10px" }}>
