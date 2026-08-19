@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>ריצ'י — תקציב בעברית, בלי לחבר את הבנק</title>
+<meta name="description" content="ריצ'י בונה לך תקציב חודשי בעברית ובשקלים, בלי למסור לאף אחד את חשבון הבנק שלך. ריצ'רד, היועץ שבפנים, כבר קרא את החודש שלך."/>
+<link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..800&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --bg:#F7F3EE; --card:#FFFFFF; --ink:#1A1410; --ink2:#6B5C4E; --ink3:#B0A396;
+    --sep:rgba(0,0,0,0.08); --purple:#8970C6; --purple-hi:#C8B1FF; --gold:#C8973A;
+    /* GT Alpina named first for when licensed .woff2 files + an @font-face
+       block are added; Fraunces (linked above) is the free stand-in until
+       then. Ends in a system serif so nothing renders blank while loading. */
+    --font-display:"GT Alpina","Fraunces",Georgia,serif;
+    --font-ui:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  html.rc-dark{--bg:#131110;--card:#1D1A17;--ink:#F2EDE6;--ink2:#C9BFB4;--ink3:#8F8478;--sep:rgba(255,255,255,0.10);}
+  @media (prefers-color-scheme: dark){ html:not(.rc-light){--bg:#131110;--card:#1D1A17;--ink:#F2EDE6;--ink2:#C9BFB4;--ink3:#8F8478;--sep:rgba(255,255,255,0.10);} }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--bg);}
+  body{font-family:var(--font-ui);color:var(--ink2);line-height:1.6;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:28px 20px 60px;}
+  header.top{display:flex;align-items:center;gap:10px;margin-bottom:56px;}
+  .mark{width:38px;height:38px;border-radius:12px;background:#0D0C18;display:flex;align-items:center;justify-content:center;flex:none;}
+  .mark span{font-family:Georgia,'Times New Roman',serif;font-size:23px;font-weight:700;color:var(--gold);line-height:1;transform:translateY(1px);}
+  .wordmark{font-size:17px;font-weight:800;color:var(--ink);letter-spacing:-0.01em;}
+
+  .hero{text-align:center;padding:12px 0 8px;}
+  .kicker{font-size:13.5px;font-weight:700;color:var(--purple);letter-spacing:0.02em;margin-bottom:18px;}
+  h1{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:clamp(34px,7vw,58px);
+    line-height:1.14;
+    letter-spacing:-0.01em;
+    color:var(--ink);
+    margin:0 0 22px;
+  }
+  h1 em{font-style:italic;color:var(--purple);}
+  .sub{font-size:17px;color:var(--ink2);max-width:520px;margin:0 auto 36px;}
+
+  form.waitlist{display:flex;gap:8px;max-width:420px;margin:0 auto;flex-wrap:wrap;justify-content:center;}
+  form.waitlist input[type=email]{
+    flex:1 1 240px;min-width:0;background:var(--card);border:1.5px solid var(--sep);border-radius:13px;
+    padding:14px 16px;font-size:15px;font-family:var(--font-ui);color:var(--ink);outline:none;
+  }
+  form.waitlist input[type=email]:focus{border-color:var(--purple);}
+  form.waitlist button{
+    flex:0 0 auto;border:none;cursor:pointer;border-radius:13px;padding:14px 26px;
+    background:linear-gradient(135deg,#9D78E8 0%,#B493F2 55%,#CBB6FA 100%);
+    color:#fff;font-size:15px;font-weight:700;font-family:var(--font-ui);
+  }
+  form.waitlist button:disabled{opacity:0.6;cursor:default;}
+  .form-note{font-size:12.5px;color:var(--ink3);margin-top:12px;}
+  .form-msg{font-size:13.5px;font-weight:600;margin-top:14px;min-height:1.2em;}
+  .form-msg.ok{color:#27A85F;}
+  .form-msg.err{color:#E03030;}
+
+  .cards{display:flex;gap:14px;margin:64px 0 8px;flex-wrap:wrap;}
+  .card{flex:1 1 260px;background:var(--card);border:0.5px solid var(--sep);border-radius:16px;padding:22px 20px;}
+  .card .ico{font-size:22px;margin-bottom:10px;display:block;}
+  .card h3{font-size:15.5px;color:var(--ink);margin:0 0 6px;font-weight:800;letter-spacing:-0.01em;}
+  .card p{font-size:13.5px;color:var(--ink2);margin:0;line-height:1.55;}
+
+  .foot{margin-top:64px;padding-top:20px;border-top:0.5px solid var(--sep);}
+  .disclaimer{font-size:12px;color:var(--ink3);line-height:1.6;margin:0 0 14px;}
+  .footlinks{font-size:12.5px;color:var(--ink3);}
+  .footlinks a{color:var(--ink3);text-decoration:underline;}
+</style>
+<script>try{if(localStorage.getItem("cb_dark")==="1")document.documentElement.classList.add("rc-dark");else if(localStorage.getItem("cb_dark")==="0")document.documentElement.classList.add("rc-light");}catch(e){}</script>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="mark"><span>R</span></div>
+    <div class="wordmark">ריצ'י</div>
+  </header>
+
+  <section class="hero">
+    <div class="kicker">תקציב חודשי, בעברית ובשקלים</div>
+    <h1>בלי למסור <em>לאף אחד</em><br/>את חשבון הבנק שלך</h1>
+    <p class="sub">ריצ'י בונה לך תקציב חודשי בעברית ובשקלים — בלי להתחבר לבנק ובלי למסור סיסמאות לאף גורם. ריצ'רד, היועץ שבפנים, כבר קרא את החודש שלך.</p>
+
+    <form class="waitlist" id="waitlistForm" novalidate>
+      <input type="email" id="waitlistEmail" name="email" placeholder="האימייל שלך" required autocomplete="email" dir="ltr"/>
+      <button type="submit" id="waitlistBtn">הצטרפו לרשימת ההמתנה</button>
+    </form>
+    <div class="form-msg" id="waitlistMsg" role="status" aria-live="polite"></div>
+    <div class="form-note">נשלח לכם הודעה אחת ביום ההשקה. בלי ספאם, בלי שיתוף עם צד שלישי.</div>
+  </section>
+
+  <section class="cards">
+    <div class="card">
+      <span class="ico">🔒</span>
+      <h3>הנתונים שלך נשארים שלך</h3>
+      <p>אין חיבור לחשבון הבנק ואין בקשה לסיסמאות. אתם מזינים, ריצ'י מסדר.</p>
+    </div>
+    <div class="card">
+      <span class="ico">💬</span>
+      <h3>ריצ'רד, היועץ שבפנים</h3>
+      <p>שואלים אותו על ההוצאות שלכם והוא עונה על סמך המספרים האמיתיים שלכם — לא תשובות כלליות.</p>
+    </div>
+    <div class="card">
+      <span class="ico">🇮🇱</span>
+      <h3>נבנה בעברית, לא מתורגם</h3>
+      <p>ממשק RTL אמיתי בשקלים, לקהל הישראלי — לא אפליקציה אמריקאית עם תרגום.</p>
+    </div>
+  </section>
+
+  <div class="foot">
+    <p class="disclaimer">התוכן באתר ובאפליקציה מיועד לניהול תקציב ומעקב הוצאות בלבד, ואינו מהווה ייעוץ השקעות ואינו תחליף לייעוץ המותאם אישית.</p>
+    <div class="footlinks">ריצ'י · <a href="/privacy.html">מדיניות פרטיות</a> · <a href="/terms.html">תנאי שימוש</a></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var form = document.getElementById("waitlistForm");
+  var emailEl = document.getElementById("waitlistEmail");
+  var btn = document.getElementById("waitlistBtn");
+  var msg = document.getElementById("waitlistMsg");
+
+  function setMsg(text, kind) {
+    msg.textContent = text || "";
+    msg.className = "form-msg" + (kind ? " " + kind : "");
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var email = (emailEl.value || "").trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setMsg("כתובת אימייל לא תקינה.", "err");
+      return;
+    }
+    btn.disabled = true;
+    setMsg("שולח…", "");
+    fetch("/api/waitlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email }),
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (r) {
+        btn.disabled = false;
+        if (r.ok) {
+          setMsg("נרשמתם! נדבר אחרי החגים 🎉", "ok");
+          form.reset();
+        } else {
+          setMsg((r.data && r.data.error && r.data.error.message) || "משהו השתבש. נסו שוב.", "err");
+        }
+      })
+      .catch(function () {
+        btn.disabled = false;
+        setMsg("בעיית רשת. נסו שוב.", "err");
+      });
+  });
+})();
+</script>
+</body>
+</html>

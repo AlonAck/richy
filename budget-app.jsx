@@ -309,7 +309,13 @@ function resolveCat(cats, t) {
 }
 
 const UI = "-apple-system, system-ui, sans-serif";
-const DISP = "-apple-system, system-ui, sans-serif";
+// Big-title/display stack. GT Alpina is a licensed Grilli Type face with no
+// free CDN - named first so licensed .woff2 files can be dropped in later via
+// an @font-face block with no other change. Fraunces (linked in index.html /
+// preview.html) is the free stand-in until then. Neither covers Hebrew, so the
+// stack still ends in the system UI fonts - RTL titles fall through to those
+// instead of rendering in a mismatched Latin serif.
+const DISP = '"GT Alpina", "Fraunces", Georgia, -apple-system, system-ui, sans-serif';
 
 var _currency = { sym: "$" };
 var _lang = { code: "en" };
@@ -5284,7 +5290,7 @@ function WelcomeHero(props) {
       <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", padding: "54px 24px 30px", position: "relative", zIndex: 2 }}>
         <Stagger step={0.09} style={{ width: "100%", maxWidth: 380, display: "flex", flexDirection: "column", alignItems: "center" }}>
           <RichyLogo size={74} style={{ display: "block", margin: "0 auto", borderRadius: 21, boxShadow: "0 12px 32px rgba(0,0,0,0.22), 0 4px 12px rgba(0,0,0,0.14)" }} />
-          <div style={{ fontSize: 31, fontWeight: 800, color: JINK, letterSpacing: "-0.03em", lineHeight: 1.14, textAlign: "center", marginTop: 20 }}>
+          <div style={{ fontSize: 34, fontWeight: 600, fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.12, textAlign: "center", marginTop: 20 }}>
             Your money has a<br />manager now.
           </div>
           <div style={{ fontSize: 15, color: JINK2, textAlign: "center", lineHeight: 1.55, marginTop: 10, maxWidth: 320 }}>

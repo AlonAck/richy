@@ -80,6 +80,7 @@ const staticFiles = [
   "firebase-init.js",
   "terms.html",
   "privacy.html",
+  "landing.html",
 ];
 for (const f of staticFiles) copyFileSync(f, "public/" + f);
 

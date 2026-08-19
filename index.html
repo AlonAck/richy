@@ -12,7 +12,17 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="apple-mobile-web-app-title" content="Richy"/>
 <meta name="description" content="Personal budgeting, made calm. A beautiful budget paired with Richard, an AI advisor who knows your numbers."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..800&display=swap" rel="stylesheet"/>
 <style>
+  /* Display/title stack for "big titles". GT Alpina is a licensed Grilli Type
+     face with no free CDN - it is named first so dropping licensed .woff2
+     files into /fonts and adding an @font-face block later needs no other
+     change. Fraunces (Google Fonts) is the free stand-in until then. Hebrew
+     text isn't covered by either, so the stack still ends in the system UI
+     fonts - RTL titles fall through to those, not to a mismatched Latin serif. */
+  :root{--font-display:"GT Alpina","Fraunces",Georgia,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;}
   html,body,#root{margin:0;background:#F7F3EE;font-family:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
   /* Boot-failure screen. Hidden until something goes wrong before React mounts.
      This is the only UI a user can reach when the bundle itself won't run, and
