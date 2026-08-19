@@ -318,7 +318,13 @@ const UI = "-apple-system, system-ui, sans-serif";
 const DISP = '"GT Alpina", "Fraunces", Georgia, -apple-system, system-ui, sans-serif';
 
 var _currency = { sym: "$" };
-var _lang = { code: "en" };
+// Seeds from the device's last-picked language (mirrored by applyLangDir())
+// so pre-login screens - AuthScreen, the welcome/intro carousel - render in
+// the user's language on a fresh load, instead of always starting English
+// and only catching up once a signed-in user's saved data loads.
+var _lang = { code: (function() {
+  try { return localStorage.getItem("cb_lang") || "en"; } catch (e) { return "en"; }
+})() };
 // Full currency list. Symbols MUST be unique because the app keys the active
 // currency by its symbol (SYM_TO_CODE / _currency.sym), so dollar- and
 // yen-family currencies use distinct marks (A$, C$, CN¥, ...). dec = minor-unit
@@ -462,6 +468,624 @@ var FOLDER_STRINGS = {
 for (var _flc in FOLDER_STRINGS) {
   if (!TRANSLATIONS[_flc]) continue;
   for (var _fk in FOLDER_STRINGS[_flc]) TRANSLATIONS[_flc][_fk] = FOLDER_STRINGS[_flc][_fk];
+}
+
+// Onboarding-funnel strings (AuthScreen through FoundMoney) - kept in their own
+// block for the same reason as FOLDER_STRINGS: the four language objects above
+// are already enormous single lines. tr() falls back to English per key.
+var ONBOARD_STRINGS = {
+  en: {
+    tsQuote1:"It's the first budget I didn't abandon in week two.", tsQuote1Who:"early user",
+    tsQuote2:"Richard caught a subscription I'd been paying for a year.", tsQuote2Who:"early user",
+    tsQuote3:"Feels like a private banker, not a spreadsheet.", tsQuote3Who:"family tester",
+    whTitle1:"Your money has a", whTitle2:"manager now.",
+    whSub:"A beautiful budget, paired with Richard — an advisor who actually knows your numbers.",
+    whBadge1Sub:"Your personal CFO", whBadge2Stat:"50 currencies", whBadge2Sub:"4 languages",
+    whBarTitle:"A typical month of spending", whBarUntrackedLabel:"Untracked", whBarUntrackedValue:"~15% vanishes",
+    whBarRichyLabel:"With Richy", whBarRichyValue:"seen & planned",
+    whBarFootnote:"Illustrative — commonly cited estimates of untracked personal spending.",
+    whGetStarted:"Get started", whSignIn:"I already have an account",
+
+    icSkip:"Skip", icCreateAccount:"Create my account",
+    icBalance:"Balance", icCatFood:"Food", icCatTransport:"Transport", icCatFun:"Fun",
+    icChipSalary:"Salary", icChipSalaryAmt:"+$3,000", icChipCoffee:"Coffee", icChipCoffeeAmt:"-$4.50",
+    icSlide1Head:"Every move, seen.", icSlide1Sub:"Log in seconds, in any currency. Your month organizes itself while you live it.",
+    icChatQ:"Can I afford a weekend trip?", icChatA:"Yes — if food stays under $180 this week. Want me to watch it for you?",
+    icRichardChecking:"Richard is checking your numbers",
+    icChipLeak:"Found a leak", icChipLeakSub:"unused subscription", icChipPrivate:"Private", icChipPrivateSub:"your data stays yours",
+    icSlide2Head:"Richard works for you.", icSlide2Sub:"A personal CFO who reviews your month, hunts down leaks, and answers straight questions with straight numbers.",
+    icYourGoal:"Your goal", icGoalProgress:"$3,500 of $10,000", icGoalPace:"On pace for October. Richard will nudge you if you drift.",
+    icChipTrip:"Trip planned", icChipTripSub:"Tokyo · $5,000", icChipBudget:"Under budget", icChipBudgetSub:"3 weeks straight",
+    icSlide3Head:"Goals that actually land.", icSlide3Sub:"Budgets shaped to your real numbers — plus trips, savings pots, and a plan that updates as life happens.",
+
+    continueBtn:"Continue",
+    auWelcomeBack:"Welcome back", auSignInSub:"Sign in to your account",
+    auCheckEmail:"Check your email", auCodeSentTo:"We sent a 6-digit code to {email}",
+    auEnterEmailBegin:"Enter your email to begin",
+    auAlmostThere:"Almost there", auFewDetails:"A few details to finish your account",
+    auMeetRichard:"Meet Richard", auTellHimBit:"Tell him a little about you (optional)",
+    auResetPassword:"Reset password", auResetPasswordSub:"Enter your email and we'll send a reset link",
+    auErrEmailPw:"Enter your email and password.", auErrValidEmail:"Enter a valid email address.",
+    auErrFullName:"Enter your full name.", auErrPwLen:"Password must be at least 6 characters.",
+    auErrPwMatch:"Those passwords don't match.", auErrDob:"Enter your date of birth.",
+    auErrAgeMin:"Richy is for ages 16 and up - we can't create your account yet.",
+    auErrAgeMax:"That date of birth doesn't look right - please check it.",
+    auErrConsent:"Please agree to the Terms of Service and Privacy Policy to continue.",
+    auErrEmailTaken:"You already have an account with this email. Sign in below.",
+    auErrEmailAddr:"Enter your email address.", auNoticeResetSent:"Check your email for a reset link.",
+    auOrContinueWith:"or continue with", auContinueGoogle:"Continue with Google",
+    auEmailPlaceholder:"Email", auPasswordPlaceholder:"Password", auForgotPassword:"Forgot password?",
+    auYourEmailPlaceholder:"Your email address", auNextSetPassword:"Next you'll set a password and a few details.",
+    auFullNamePlaceholder:"Full name", auSetPasswordPlaceholder:"Set a password", auRepeatPasswordPlaceholder:"Repeat password",
+    auDobLabel:"Date of birth", auStartBalPlaceholder:"Starting balance (optional)",
+    auAgreeToPrefix:"I agree to the ", auAgreeToAnd:" and ", auTermsLink:"Terms of Service", auPrivacyLink:"Privacy Policy",
+    auOptionalRichardIntro:"Optional — a line or two so Richard starts out knowing you. You'll pick your language and currency right after this.",
+    auNotesForRichard:"Notes for Richard",
+    auNotesPlaceholder:"Anything Richard should know about you — your goals, money habits, what you're saving for…",
+    auShowPassword:"Show password", auHidePassword:"Hide password",
+    auSignInBtn:"Sign In", auSendResetLink:"Send reset link", auCreateAccountBtn:"Create Account",
+    auByContinuingPre:"By continuing you agree to the ", auByContinuingPost:", and confirm you are 16 or older.",
+    auRememberIt:"Remember it? ", auNewHere:"New here? ", auHaveAccount:"Have an account? ",
+    auBackToSignIn:"Back to sign in", auCreateAccountLink:"Create account", auSignInLink:"Sign in",
+    auSyncedSecurely:"Synced securely to your account",
+
+    cuHeadline:"You're partway through {month}.",
+    cuSpentEarlier:"Spent earlier this {month}", cuMonthIncome:"{month} income",
+    cuIntro:"This is optional. A rough total is enough to make your budgets feel real from day one — no need to remember every purchase. You can skip it entirely, or edit anything later in Activity.",
+    cuIncomeReceived:"Income received this {month}", cuQuickTotal:"Quick total", cuByCategory:"By category",
+    cuRoughlySpent:"Roughly spent so far this {month}",
+    cuBallpark:"A single ballpark number. Switch to \"By category\" any time you want the breakdown.",
+    cuSpentSoFar:"Spent so far this {month}", cuAddToMonth:"Add to my month",
+    cuSkipFresh:"Skip — start fresh", cuPreferAuto:"Prefer automatic? Connect your bank instead",
+    cmPact:"The pact", cmReadyTakeBack:"Ready to take it back?", cmReadyTakeBackName:"Ready to take it back, {name}?",
+    cmItem1:"I'll log what I spend - it takes seconds", cmItem2:"I'll give every {sym} a job each month",
+    cmItem3:"I'll let Richard flag what I'd miss", cmYesImIn:"YES — I'm in", cmLookAround:"I'll just look around first",
+
+    msLeakKicker:"Let's be honest", msLeakHeadline:"Every month, this quietly slips through the cracks.", msLeakSuffix:" /mo",
+    msLeakSubDerived:"You said you weren't sure - so I used what's typical: about 12% of income goes untracked.",
+    msLeakSubPlain:"That's your own estimate.",
+    msLeakSubSource:"That's your own estimate, across {n} leak source you named yourself.",
+    msLeakSubSources:"That's your own estimate, across {n} leak sources you named yourself.",
+    msYearKicker:"Twelve months from now", msYearHeadline:"In a year, that adds up to",
+    msYearSub:"Gone - without a single real decision being made.",
+    msFiveKicker:"Keep drifting", msFiveHeadline:"Five years of drifting costs you",
+    msFiveSubGoal:"That's {x}x your {goal}.", msFiveSubGeneric:"That's a car. A year of rent. A serious head start.",
+    msBar1Year:"1 year", msBar5Year:"5 years",
+    msGoodKicker:"Now the good news", msGoodHeadline:"People who see their money get most of it back.", msGoodSuffix:" /yr",
+    msGoodSub:"Tracking and a real plan typically recover about 60% of the leak - roughly {amt} a month back in your pocket.",
+    msGoalKicker:"Your goal", msGoalHeadline:"{goal}: suddenly within reach.", msGoalSuffix:" months",
+    msGoalSub:"At {rec} recovered monthly, {amt} stops being a dream and becomes a date. Richard will pace you.",
+    msMinKicker:"Here's the plan", msMinHeadline:"You told me where it leaks. I'll find the numbers.",
+    msMinSub:"Log as you go and Richard connects the dots - most people spot their first recoverable expense in the first week.",
+    msMethodKicker:"How it works", msMethodHeadline:"No magic. Just visibility.", msMethodCta:"Sounds right",
+    msMethodItem1:"See every expense the moment it happens", msMethodItem2:"Budgets shaped to your real numbers",
+    msMethodItem3:"Richard reviews your month with you",
+    msRingTitle:"Richard is doing the math", msRingPhrase1:"Reading your answers", msRingPhrase2:"Tracing the leaks",
+    msRingPhrase3:"Pricing the next five years",
+
+    obLoadingTitle:"Richard is building your plan", obLoadingSub:"Tailored to your answers - not a template.",
+    obLoadingStep1:"Reading your answers", obLoadingStep2:"Shaping your monthly budgets",
+    obLoadingStep3:"Stress-testing the numbers", obLoadingStep4:"Polishing your plan",
+    obContinueNoWait:"Continue without waiting", obContinueNoWaitAria:"Continue without waiting for your plan",
+    obPlanReady:"Your plan is ready.", obPlanBuiltForYou:"Richard built this just for you.",
+    obHowAddTx:"How do you want to add transactions?", obChangeAnytimeProfile:"You can change this anytime in Profile.",
+    obManualEntry:"Enter them manually", obManualEntrySub:"Log each transaction yourself - full control",
+    obImportCsv:"Import from a CSV file", obImportCsvSub:"Upload a bank or card statement to fill them in",
+    obSetupBudgetsQ:"Set up your budgets automatically?",
+    obBasedOnNumbers:"Based on your numbers, Richard suggests these monthly limits:",
+    obYesSetUp:"Yes, set them up", obSetUpMyself:"I'll set them up myself", obGetStarted:"Get Started",
+    obQ1Head:"Make Richy yours.", obQ1Sub:"Language and currency — everything adapts, right now.",
+    obQ2Head:"Hi {name} — where are you in life?", obQ2Sub:"So the plan fits your reality, not a template.",
+    obQ3Head:"What's your biggest money frustration?", obQ3Sub:"Richard builds your whole plan around this.",
+    obQ4Head:"What lands in your account each month?", obQ4Sub:"Roughly is fine — salary, allowance, side income, all of it.",
+    obQ5Head:"What do the essentials cost you?", obQ5Sub:"Rent, food, utilities, transport. The must-pays.",
+    obQ6Head:"Where does your money leak?", obQ6Sub:"Pick all that apply. Richard doesn't judge.",
+    obQ7Head:"How much slips away each month?", obQ7Sub:"Money spent that you can't quite account for.",
+    obQ8Head:"Where do you stand today?", obQ8Sub:"Honest numbers make a better plan.",
+    obQ9Head:"One goal. Make it real.", obQ9Sub:"Something specific you're going for.",
+    obGreeting:"Hi {name}. I'm **Richard** — your money's new manager. Nine quick questions, and then I'll show you something most people never see about their own money.",
+    obYourCoffee:"Your coffee: {price}", obDateRangeLabel:"Date Range",
+    obDateRangeExplain:"How Richy measures \"this week/month/year.\" Defaults to the current calendar month - change it anytime in Profile.",
+    obThisMonth:"This Month", obPastMonth:"Past Month", obCustomRange:"Custom Range", obFrom:"From", obTo:"To",
+    obStageTeen:"Teenager", obStageStudent:"Student", obStageWorking:"Working", obStageParent:"Parent",
+    obProb1:"Saving for a specific goal", obProb2:"Managing irregular or variable income", obProb3:"Paying off debt",
+    obProb4:"Understanding where my money goes", obProb5:"Planning finances with a partner",
+    obProb6:"Building financial confidence", obProb7:"Just getting started with budgeting",
+    obIncomeLabel:"Monthly income", obEssentialsLabel:"Monthly essentials",
+    obLeakDelivery:"Food delivery", obLeakSubs:"Subscriptions", obLeakImpulse:"Impulse buys",
+    obLeakGoingOut:"Going out", obLeakShopping:"Shopping", obLeakNoIdea:"Honestly, no idea",
+    obOverspendLabel:"Unaccounted spending each month",
+    obHintGuessTag:"Take a guess", obHintGuessTxt:"Most people underestimate this.",
+    obHintModestTag:"Modest", obHintModestTxt:"Careful — or optimistic. We'll find out.",
+    obHintTypicalTag:"That's typical", obHintTypicalTxt:"Right in the common range — and very fixable.",
+    obHintBoldTag:"Bold and honest", obHintBoldTxt:"Big number, big upside.",
+    obSavedUpLabel:"Saved up", obTotalDebtLabel:"Total debt",
+    obGoalNameLabel:"Goal name", obGoalNamePlaceholder:"e.g. Emergency fund, first apartment",
+    obGoalTravel:"Travel", obGoalLaptop:"New laptop", obGoalApartment:"First apartment",
+    obTargetAmountLabel:"Target amount", obTimelineLabel:"Timeline",
+    obTl1:"6 months", obTl2:"1 year", obTl3:"2 years", obTl4:"5+ years",
+    obLetsGo:"Let's go", obTapOption:"Tap an option to continue",
+    obPickAtLeastOne:"Pick at least one — or skip below.",
+    obReallyDontKnow:"I really don't know", obSkipForNow:"Skip for now", obDoTheMath:"Do the math",
+
+    fmTitle:"Found Money", fmRecovered:"Recovered {amt}",
+    fmSpottedLeakSing:"Richard spotted {n} possible leak", fmSpottedLeakPl:"Richard spotted {n} possible leaks",
+    fmAboutAmtYear:"About {amt} a year to recover", fmTapReview:"Tap to review what he found",
+    fmAllClear:"All clear for now", fmNoNewLeaks:"No new leaks. Richard keeps watching.",
+    fmRecoverableYear:"Recoverable / year", fmRecoveredSoFar:"Recovered so far",
+    fmThink1:"Reviewing your spending", fmThink2:"Cross-checking the charges", fmThink3:"Writing it up",
+    fmDraftThink1:"Drafting your message", fmDraftThink2:"Keeping it polite but firm", fmDraftThink3:"Almost there",
+    fmFallbackSingle:"I went through your spending and found one charge worth a second look.",
+    fmFallbackMultiNoAmt:"I went through your spending and found {n} things worth a look.",
+    fmFallbackMultiAmt:"I went through your spending and found {n} things worth a look - around {amt} a year if you act on them.",
+    fmDraftPriceMatch:"Draft price-match", fmDraftCancellation:"Draft cancellation", fmCountRecovered:"Count as recovered",
+    fmKeepIt:"Keep it", fmLooksFine:"Looks fine", fmGotIt:"Got it",
+    fmCopied:"Copied", fmCopyMessage:"Copy message", fmIDidIt:"I did it (+{amt})",
+    fmReviewedEverything:"You've reviewed everything", fmKeepsWatching:"Richard keeps watching as new spending comes in.",
+    fmFooterNote:"Spotted from your logged spending - always confirm before you cancel. Richard drafts the message; you send it.",
+    fmHikeFallback:"Hello, I've been a customer for a while and noticed my price recently rose to {new}. I'd like to keep my previous rate of {old} - can you match it? If not, please treat this as notice that I'll be cancelling. Thank you, [Your Name]",
+    fmCancelFallback:"Hello, I'd like to cancel my {merchant} subscription effective immediately. Please confirm in writing that the cancellation is processed and that no further charges will be made. Thank you, [Your Name]",
+  },
+  he: {
+    tsQuote1:"זאת התקציב הראשון שלא נטשתי אחרי שבועיים.", tsQuote1Who:"משתמש ותיק",
+    tsQuote2:"ריצ'רד תפס לי מנוי ששילמתי עליו במשך שנה.", tsQuote2Who:"משתמש ותיק",
+    tsQuote3:"מרגיש כמו בנקאי פרטי, לא גיליון אקסל.", tsQuote3Who:"בודק משפחתי",
+    whTitle1:"לכסף שלך יש", whTitle2:"מנהל עכשיו.",
+    whSub:"תקציב יפהפה, יחד עם ריצ'רד - יועץ שבאמת מכיר את המספרים שלך.",
+    whBadge1Sub:"המנכ\"ל הפיננסי האישי שלך", whBadge2Stat:"50 מטבעות", whBadge2Sub:"4 שפות",
+    whBarTitle:"חודש טיפוסי של הוצאות", whBarUntrackedLabel:"לא במעקב", whBarUntrackedValue:"כ-15% נעלמים",
+    whBarRichyLabel:"עם Richy", whBarRichyValue:"רואים ומתכננים",
+    whBarFootnote:"להמחשה בלבד - אומדנים נפוצים של הוצאות אישיות שאינן במעקב.",
+    whGetStarted:"בואו נתחיל", whSignIn:"כבר יש לי חשבון",
+
+    icSkip:"דלג", icCreateAccount:"צור את החשבון שלי",
+    icBalance:"יתרה", icCatFood:"אוכל", icCatTransport:"תחבורה", icCatFun:"בילויים",
+    icChipSalary:"משכורת", icChipSalaryAmt:"+3,000$", icChipCoffee:"קפה", icChipCoffeeAmt:"-4.50$",
+    icSlide1Head:"כל תנועה, נראית.", icSlide1Sub:"רשום תוך שניות, בכל מטבע. החודש שלך מסתדר לבד תוך כדי שאתה חי אותו.",
+    icChatQ:"אני יכול להרשות לעצמי טיול לסוף שבוע?", icChatA:"כן - אם ההוצאות על אוכל יישארו מתחת ל-180$ השבוע. רוצה שאעקוב אחרי זה בשבילך?",
+    icRichardChecking:"ריצ'רד בודק את המספרים שלך",
+    icChipLeak:"נמצאה דליפה", icChipLeakSub:"מנוי לא בשימוש", icChipPrivate:"פרטי", icChipPrivateSub:"הנתונים שלך נשארים שלך",
+    icSlide2Head:"ריצ'רד עובד בשבילך.", icSlide2Sub:"מנכ\"ל פיננסי אישי שסוקר את החודש שלך, מאתר דליפות, ועונה על שאלות ישירות עם מספרים ישירים.",
+    icYourGoal:"היעד שלך", icGoalProgress:"3,500$ מתוך 10,000$", icGoalPace:"בקצב טוב ליעד באוקטובר. ריצ'רד ידחוף אותך אם תסטה.",
+    icChipTrip:"טיול מתוכנן", icChipTripSub:"טוקיו · 5,000$", icChipBudget:"מתחת לתקציב", icChipBudgetSub:"3 שבועות ברצף",
+    icSlide3Head:"יעדים שבאמת מתגשמים.", icSlide3Sub:"תקציבים שמותאמים למספרים האמיתיים שלך - בתוספת טיולים, קופות חיסכון, ותוכנית שמתעדכנת עם החיים.",
+
+    continueBtn:"המשך",
+    auWelcomeBack:"ברוך שובך", auSignInSub:"התחבר לחשבון שלך",
+    auCheckEmail:"בדוק את האימייל שלך", auCodeSentTo:"שלחנו קוד בן 6 ספרות אל {email}",
+    auEnterEmailBegin:"הזן את האימייל שלך כדי להתחיל",
+    auAlmostThere:"כמעט שם", auFewDetails:"עוד כמה פרטים לסיום החשבון שלך",
+    auMeetRichard:"הכר את ריצ'רד", auTellHimBit:"ספר לו קצת על עצמך (רשות)",
+    auResetPassword:"איפוס סיסמה", auResetPasswordSub:"הזן את האימייל שלך ונשלח לך קישור לאיפוס",
+    auErrEmailPw:"הזן אימייל וסיסמה.", auErrValidEmail:"הזן כתובת אימייל תקינה.",
+    auErrFullName:"הזן את שמך המלא.", auErrPwLen:"הסיסמה חייבת להכיל לפחות 6 תווים.",
+    auErrPwMatch:"הסיסמאות לא תואמות.", auErrDob:"הזן את תאריך הלידה שלך.",
+    auErrAgeMin:"Richy מיועד לגילאי 16 ומעלה - עדיין לא נוכל ליצור את החשבון שלך.",
+    auErrAgeMax:"תאריך הלידה לא נראה תקין - אנא בדוק אותו.",
+    auErrConsent:"אנא אשר את תנאי השימוש ומדיניות הפרטיות כדי להמשיך.",
+    auErrEmailTaken:"כבר יש לך חשבון עם האימייל הזה. התחבר למטה.",
+    auErrEmailAddr:"הזן את כתובת האימייל שלך.", auNoticeResetSent:"בדוק את האימייל שלך לקישור איפוס.",
+    auOrContinueWith:"או המשך עם", auContinueGoogle:"המשך עם Google",
+    auEmailPlaceholder:"אימייל", auPasswordPlaceholder:"סיסמה", auForgotPassword:"שכחת סיסמה?",
+    auYourEmailPlaceholder:"כתובת האימייל שלך", auNextSetPassword:"בשלב הבא תגדיר סיסמה ועוד כמה פרטים.",
+    auFullNamePlaceholder:"שם מלא", auSetPasswordPlaceholder:"הגדר סיסמה", auRepeatPasswordPlaceholder:"חזור על הסיסמה",
+    auDobLabel:"תאריך לידה", auStartBalPlaceholder:"יתרת פתיחה (רשות)",
+    auAgreeToPrefix:"אני מסכים ל", auAgreeToAnd:" ול", auTermsLink:"תנאי השימוש", auPrivacyLink:"מדיניות הפרטיות",
+    auOptionalRichardIntro:"רשות - שורה או שתיים כדי שריצ'רד יכיר אותך מההתחלה. תבחר שפה ומטבע מיד אחרי זה.",
+    auNotesForRichard:"הערות לריצ'רד",
+    auNotesPlaceholder:"כל דבר שריצ'רד צריך לדעת עליך - היעדים שלך, הרגלי הכסף, למה אתה חוסך...",
+    auShowPassword:"הצג סיסמה", auHidePassword:"הסתר סיסמה",
+    auSignInBtn:"התחבר", auSendResetLink:"שלח קישור איפוס", auCreateAccountBtn:"צור חשבון",
+    auByContinuingPre:"בהמשך אתה מסכים ל", auByContinuingPost:", ומאשר שאתה בן 16 ומעלה.",
+    auRememberIt:"נזכרת בה? ", auNewHere:"חדש כאן? ", auHaveAccount:"כבר יש לך חשבון? ",
+    auBackToSignIn:"חזרה להתחברות", auCreateAccountLink:"צור חשבון", auSignInLink:"התחבר",
+    auSyncedSecurely:"מסונכרן בבטחה לחשבון שלך",
+
+    cuHeadline:"אתה באמצע {month}.",
+    cuSpentEarlier:"הוצא מוקדם יותר ב{month}", cuMonthIncome:"הכנסת {month}",
+    cuIntro:"זה רשות. סכום כללי מספיק כדי שהתקציבים שלך ירגישו אמיתיים מהיום הראשון - אין צורך לזכור כל קנייה. אפשר לדלג לגמרי, או לערוך הכל מאוחר יותר בפעילות.",
+    cuIncomeReceived:"הכנסות שהתקבלו ב{month} הזה", cuQuickTotal:"סכום כולל", cuByCategory:"לפי קטגוריה",
+    cuRoughlySpent:"בערך הוצאת עד כה ב{month} הזה",
+    cuBallpark:"מספר גס אחד. אפשר לעבור ל\"לפי קטגוריה\" בכל רגע לפירוט.",
+    cuSpentSoFar:"הוצאת עד כה ב{month} הזה", cuAddToMonth:"הוסף לחודש שלי",
+    cuSkipFresh:"דלג - התחל מאפס", cuPreferAuto:"מעדיף אוטומטי? חבר את הבנק שלך במקום",
+    cmPact:"ההתחייבות", cmReadyTakeBack:"מוכן לקחת שליטה בחזרה?", cmReadyTakeBackName:"מוכן לקחת שליטה בחזרה, {name}?",
+    cmItem1:"ארשום מה שאני מוציא - זה לוקח שניות", cmItem2:"אתן לכל {sym} תפקיד בכל חודש",
+    cmItem3:"אתן לריצ'רד לסמן מה שהייתי מפספס", cmYesImIn:"כן - אני בפנים", cmLookAround:"אני רק אסתכל קודם",
+
+    msLeakKicker:"בואו נהיה כנים", msLeakHeadline:"כל חודש, זה מתגנב לך בין האצבעות בלי שתשים לב.", msLeakSuffix:" לחודש",
+    msLeakSubDerived:"אמרת שאתה לא בטוח - אז השתמשתי במה שטיפוסי: כ-12% מההכנסה לא במעקב.",
+    msLeakSubPlain:"זה האומדן שלך.",
+    msLeakSubSource:"זה האומדן שלך, על סמך מקור דליפה {n} שציינת בעצמך.",
+    msLeakSubSources:"זה האומדן שלך, על סמך {n} מקורות דליפה שציינת בעצמך.",
+    msYearKicker:"בעוד שנים עשר חודשים", msYearHeadline:"תוך שנה, זה מצטבר ל",
+    msYearSub:"נעלם - בלי שום החלטה אמיתית אחת.",
+    msFiveKicker:"המשך לסחוף", msFiveHeadline:"חמש שנים של סחיפה עולות לך",
+    msFiveSubGoal:"זה פי {x} מ{goal} שלך.", msFiveSubGeneric:"זה מחיר של מכונית. שנה של שכירות. התחלה רצינית.",
+    msBar1Year:"שנה אחת", msBar5Year:"5 שנים",
+    msGoodKicker:"עכשיו החדשות הטובות", msGoodHeadline:"אנשים שרואים את הכסף שלהם מקבלים בחזרה את רובו.", msGoodSuffix:" לשנה",
+    msGoodSub:"מעקב ותוכנית אמיתית בדרך כלל משיבים כ-60% מהדליפה - בערך {amt} בחודש חזרה לכיס שלך.",
+    msGoalKicker:"היעד שלך", msGoalHeadline:"{goal}: פתאום בהישג יד.", msGoalSuffix:" חודשים",
+    msGoalSub:"בקצב של {rec} מושבים בחודש, {amt} מפסיק להיות חלום והופך לתאריך. ריצ'רד ילווה אותך בקצב.",
+    msMinKicker:"הנה התוכנית", msMinHeadline:"סיפרת לי איפה זה דולף. אני אמצא את המספרים.",
+    msMinSub:"תעד תוך כדי תנועה וריצ'רד יחבר את הנקודות - רוב האנשים מזהים את ההוצאה הראשונה שאפשר להשיב כבר בשבוע הראשון.",
+    msMethodKicker:"איך זה עובד", msMethodHeadline:"בלי קסמים. רק ראייה ברורה.", msMethodCta:"נשמע נכון",
+    msMethodItem1:"לראות כל הוצאה ברגע שהיא קורית", msMethodItem2:"תקציבים שמותאמים למספרים האמיתיים שלך",
+    msMethodItem3:"ריצ'רד סוקר את החודש שלך יחד איתך",
+    msRingTitle:"ריצ'רד עושה את החישוב", msRingPhrase1:"קורא את התשובות שלך", msRingPhrase2:"מאתר את הדליפות",
+    msRingPhrase3:"מתמחר את חמש השנים הבאות",
+
+    obLoadingTitle:"ריצ'רד בונה את התוכנית שלך", obLoadingSub:"מותאמת לתשובות שלך - לא תבנית כללית.",
+    obLoadingStep1:"קורא את התשובות שלך", obLoadingStep2:"מעצב את התקציבים החודשיים שלך",
+    obLoadingStep3:"בודק את המספרים בלחץ", obLoadingStep4:"מלטש את התוכנית שלך",
+    obContinueNoWait:"המשך בלי לחכות", obContinueNoWaitAria:"המשך בלי לחכות לתוכנית שלך",
+    obPlanReady:"התוכנית שלך מוכנה.", obPlanBuiltForYou:"ריצ'רד בנה את זה במיוחד בשבילך.",
+    obHowAddTx:"איך תרצה להוסיף עסקאות?", obChangeAnytimeProfile:"אפשר לשנות את זה בכל עת בפרופיל.",
+    obManualEntry:"הזן ידנית", obManualEntrySub:"רשום כל עסקה בעצמך - שליטה מלאה",
+    obImportCsv:"ייבא מקובץ CSV", obImportCsvSub:"העלה דף חשבון בנק או אשראי כדי למלא אותן",
+    obSetupBudgetsQ:"להגדיר תקציבים אוטומטית?",
+    obBasedOnNumbers:"על סמך המספרים שלך, ריצ'רד מציע את המגבלות החודשיות האלה:",
+    obYesSetUp:"כן, הגדר אותם", obSetUpMyself:"אני אגדיר אותם בעצמי", obGetStarted:"בואו נתחיל",
+    obQ1Head:"התאם את Richy אליך.", obQ1Sub:"שפה ומטבע - הכל מסתגל, עכשיו.",
+    obQ2Head:"היי {name} - איפה אתה בחיים?", obQ2Sub:"כדי שהתוכנית תתאים למציאות שלך, לא לתבנית.",
+    obQ3Head:"מה התסכול הכספי הכי גדול שלך?", obQ3Sub:"ריצ'רד בונה את כל התוכנית שלך סביב זה.",
+    obQ4Head:"מה נכנס לחשבון שלך כל חודש?", obQ4Sub:"בערך זה בסדר גמור - משכורת, קצבה, הכנסה נוספת, הכל.",
+    obQ5Head:"כמה עולים לך הדברים ההכרחיים?", obQ5Sub:"שכירות, אוכל, חשבונות, תחבורה. מה שחייבים לשלם.",
+    obQ6Head:"איפה הכסף שלך דולף?", obQ6Sub:"בחר את כל מה שמתאים. ריצ'רד לא שופט.",
+    obQ7Head:"כמה בערך נעלם כל חודש?", obQ7Sub:"כסף שהוצאת ולא ממש יודע להסביר על מה.",
+    obQ8Head:"איפה אתה עומד היום?", obQ8Sub:"מספרים כנים בונים תוכנית טובה יותר.",
+    obQ9Head:"יעד אחד. תעשה אותו אמיתי.", obQ9Sub:"משהו ספציפי שאתה שואף אליו.",
+    obGreeting:"היי {name}. אני **ריצ'רד** - המנהל החדש של הכסף שלך. תשע שאלות קצרות, ואז אני אראה לך משהו שרוב האנשים אף פעם לא רואים על הכסף שלהם.",
+    obYourCoffee:"הקפה שלך: {price}", obDateRangeLabel:"טווח תאריכים",
+    obDateRangeExplain:"איך Richy מודד \"השבוע/החודש/השנה הזו\". ברירת המחדל היא החודש הקלנדרי הנוכחי - אפשר לשנות בכל עת בפרופיל.",
+    obThisMonth:"החודש הזה", obPastMonth:"החודש האחרון", obCustomRange:"טווח מותאם אישית", obFrom:"מ-", obTo:"עד",
+    obStageTeen:"בן/בת נוער", obStageStudent:"סטודנט/ית", obStageWorking:"עובד/ת", obStageParent:"הורה",
+    obProb1:"לחסוך ליעד ספציפי", obProb2:"לנהל הכנסה לא סדירה או משתנה", obProb3:"לפרוע חוב",
+    obProb4:"להבין לאן הכסף שלי הולך", obProb5:"לתכנן כספים עם בן/בת זוג",
+    obProb6:"לבנות ביטחון פיננסי", obProb7:"רק מתחיל/ה עם תקצוב",
+    obIncomeLabel:"הכנסה חודשית", obEssentialsLabel:"הוצאות חודשיות הכרחיות",
+    obLeakDelivery:"משלוחי אוכל", obLeakSubs:"מנויים", obLeakImpulse:"קניות אימפולסיביות",
+    obLeakGoingOut:"יציאות", obLeakShopping:"קניות", obLeakNoIdea:"בכנות, אין לי מושג",
+    obOverspendLabel:"הוצאה לא מתועדת בכל חודש",
+    obHintGuessTag:"נחש בערך", obHintGuessTxt:"רוב האנשים מעריכים את זה בחסר.",
+    obHintModestTag:"צנוע", obHintModestTxt:"זהיר - או אופטימי. נגלה.",
+    obHintTypicalTag:"זה טיפוסי", obHintTypicalTxt:"בדיוק בטווח הנפוץ - וקל מאוד לתקן.",
+    obHintBoldTag:"נועז וכנה", obHintBoldTxt:"מספר גדול, פוטנציאל גדול.",
+    obSavedUpLabel:"נחסך עד כה", obTotalDebtLabel:"סך החוב",
+    obGoalNameLabel:"שם היעד", obGoalNamePlaceholder:"לדוגמה: קרן חירום, דירה ראשונה",
+    obGoalTravel:"טיול", obGoalLaptop:"מחשב נייד חדש", obGoalApartment:"דירה ראשונה",
+    obTargetAmountLabel:"סכום יעד", obTimelineLabel:"ציר זמן",
+    obTl1:"6 חודשים", obTl2:"שנה", obTl3:"שנתיים", obTl4:"5+ שנים",
+    obLetsGo:"בואו נתחיל", obTapOption:"הקש על אפשרות כדי להמשיך",
+    obPickAtLeastOne:"בחר לפחות אחת - או דלג למטה.",
+    obReallyDontKnow:"באמת אין לי מושג", obSkipForNow:"דלג לעכשיו", obDoTheMath:"בצע את החישוב",
+
+    fmTitle:"כסף שנמצא", fmRecovered:"הושב {amt}",
+    fmSpottedLeakSing:"ריצ'רד איתר דליפה אפשרית אחת", fmSpottedLeakPl:"ריצ'רד איתר {n} דליפות אפשריות",
+    fmAboutAmtYear:"כ-{amt} בשנה להשבה", fmTapReview:"הקש כדי לסקור מה הוא מצא",
+    fmAllClear:"הכל תקין לעת עתה", fmNoNewLeaks:"אין דליפות חדשות. ריצ'רד ממשיך לעקוב.",
+    fmRecoverableYear:"ניתן להשבה / שנה", fmRecoveredSoFar:"הושב עד כה",
+    fmThink1:"סוקר את ההוצאות שלך", fmThink2:"בודק צולב את החיובים", fmThink3:"כותב את זה",
+    fmDraftThink1:"מנסח את ההודעה שלך", fmDraftThink2:"שומר על נימוס אך תקיפות", fmDraftThink3:"כמעט שם",
+    fmFallbackSingle:"עברתי על ההוצאות שלך ומצאתי חיוב אחד שכדאי לבדוק שוב.",
+    fmFallbackMultiNoAmt:"עברתי על ההוצאות שלך ומצאתי {n} דברים שכדאי לבדוק.",
+    fmFallbackMultiAmt:"עברתי על ההוצאות שלך ומצאתי {n} דברים שכדאי לבדוק - בערך {amt} בשנה אם תפעל לפיהם.",
+    fmDraftPriceMatch:"נסח בקשת התאמת מחיר", fmDraftCancellation:"נסח ביטול", fmCountRecovered:"ספור כהושב",
+    fmKeepIt:"השאר את זה", fmLooksFine:"נראה תקין", fmGotIt:"הבנתי",
+    fmCopied:"הועתק", fmCopyMessage:"העתק הודעה", fmIDidIt:"עשיתי את זה (+{amt})",
+    fmReviewedEverything:"סקרת הכל", fmKeepsWatching:"ריצ'רד ממשיך לעקוב כשיש הוצאות חדשות.",
+    fmFooterNote:"אותר מתוך ההוצאות שרשמת - תמיד אשר לפני שאתה מבטל. ריצ'רד מנסח את ההודעה; אתה שולח אותה.",
+    fmHikeFallback:"שלום, אני לקוח/ה כבר תקופה ושמתי לב שהמחיר עלה לאחרונה ל-{new}. אשמח לשמור על התעריף הקודם שלי, {old} - תוכלו להתאים? אם לא, נא להתייחס לזה כהודעה על ביטול. תודה, [שמך]",
+    fmCancelFallback:"שלום, אני מעוניין/ת לבטל את המנוי שלי ל-{merchant} באופן מיידי. נא לאשר בכתב שהביטול בוצע ושלא יבוצעו חיובים נוספים. תודה, [שמך]",
+  },
+  ar: {
+    tsQuote1:"هذه أول ميزانية لم أتخلَّ عنها في الأسبوع الثاني.", tsQuote1Who:"مستخدم مبكر",
+    tsQuote2:"ريتشارد اكتشف اشتراكاً كنت أدفع مقابله منذ سنة.", tsQuote2Who:"مستخدم مبكر",
+    tsQuote3:"يبدو وكأنه مصرفي خاص، وليس جدول بيانات.", tsQuote3Who:"مختبر عائلي",
+    whTitle1:"لأموالك الآن", whTitle2:"مدير.",
+    whSub:"ميزانية جميلة، مع ريتشارد - مستشار يعرف أرقامك فعلاً.",
+    whBadge1Sub:"مديرك المالي الشخصي", whBadge2Stat:"50 عملة", whBadge2Sub:"4 لغات",
+    whBarTitle:"شهر نموذجي من الإنفاق", whBarUntrackedLabel:"غير متابَع", whBarUntrackedValue:"~15% يختفي",
+    whBarRichyLabel:"مع Richy", whBarRichyValue:"مرئي ومخطط له",
+    whBarFootnote:"للتوضيح فقط - تقديرات شائعة للإنفاق الشخصي غير المتابَع.",
+    whGetStarted:"ابدأ الآن", whSignIn:"لدي حساب بالفعل",
+
+    icSkip:"تخطي", icCreateAccount:"إنشاء حسابي",
+    icBalance:"الرصيد", icCatFood:"طعام", icCatTransport:"مواصلات", icCatFun:"ترفيه",
+    icChipSalary:"راتب", icChipSalaryAmt:"+3,000$", icChipCoffee:"قهوة", icChipCoffeeAmt:"-4.50$",
+    icSlide1Head:"كل حركة، مرئية.", icSlide1Sub:"سجّل خلال ثوانٍ، بأي عملة. شهرك ينظم نفسه بينما تعيشه.",
+    icChatQ:"هل يمكنني تحمل رحلة نهاية أسبوع؟", icChatA:"نعم - إذا بقي إنفاق الطعام أقل من 180$ هذا الأسبوع. تريدني أن أراقب ذلك من أجلك؟",
+    icRichardChecking:"ريتشارد يتحقق من أرقامك",
+    icChipLeak:"وُجد تسرب", icChipLeakSub:"اشتراك غير مستخدم", icChipPrivate:"خاص", icChipPrivateSub:"بياناتك تبقى ملكك",
+    icSlide2Head:"ريتشارد يعمل لصالحك.", icSlide2Sub:"مدير مالي شخصي يراجع شهرك، يكتشف التسريبات، ويجيب على الأسئلة المباشرة بأرقام مباشرة.",
+    icYourGoal:"هدفك", icGoalProgress:"3,500$ من 10,000$", icGoalPace:"بوتيرة جيدة لأكتوبر. ريتشارد سينبهك إذا انحرفت.",
+    icChipTrip:"رحلة مخططة", icChipTripSub:"طوكيو · 5,000$", icChipBudget:"ضمن الميزانية", icChipBudgetSub:"3 أسابيع متتالية",
+    icSlide3Head:"أهداف تتحقق فعلاً.", icSlide3Sub:"ميزانيات مصممة حسب أرقامك الحقيقية - بالإضافة إلى الرحلات، صناديق الادخار، وخطة تتغير مع الحياة.",
+
+    continueBtn:"متابعة",
+    auWelcomeBack:"مرحباً بعودتك", auSignInSub:"سجّل الدخول إلى حسابك",
+    auCheckEmail:"تحقق من بريدك الإلكتروني", auCodeSentTo:"أرسلنا رمزاً من 6 أرقام إلى {email}",
+    auEnterEmailBegin:"أدخل بريدك الإلكتروني للبدء",
+    auAlmostThere:"على وشك الانتهاء", auFewDetails:"بضعة تفاصيل لإكمال حسابك",
+    auMeetRichard:"تعرّف على ريتشارد", auTellHimBit:"أخبره قليلاً عن نفسك (اختياري)",
+    auResetPassword:"إعادة تعيين كلمة المرور", auResetPasswordSub:"أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين",
+    auErrEmailPw:"أدخل بريدك الإلكتروني وكلمة المرور.", auErrValidEmail:"أدخل عنوان بريد إلكتروني صالحاً.",
+    auErrFullName:"أدخل اسمك الكامل.", auErrPwLen:"يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.",
+    auErrPwMatch:"كلمتا المرور غير متطابقتين.", auErrDob:"أدخل تاريخ ميلادك.",
+    auErrAgeMin:"Richy مخصص لمن هم في سن 16 وما فوق - لا يمكننا إنشاء حسابك بعد.",
+    auErrAgeMax:"تاريخ الميلاد هذا لا يبدو صحيحاً - يرجى التحقق منه.",
+    auErrConsent:"يرجى الموافقة على شروط الخدمة وسياسة الخصوصية للمتابعة.",
+    auErrEmailTaken:"لديك حساب بالفعل بهذا البريد الإلكتروني. سجّل الدخول أدناه.",
+    auErrEmailAddr:"أدخل عنوان بريدك الإلكتروني.", auNoticeResetSent:"تحقق من بريدك الإلكتروني للحصول على رابط إعادة التعيين.",
+    auOrContinueWith:"أو تابع باستخدام", auContinueGoogle:"المتابعة باستخدام Google",
+    auEmailPlaceholder:"البريد الإلكتروني", auPasswordPlaceholder:"كلمة المرور", auForgotPassword:"نسيت كلمة المرور؟",
+    auYourEmailPlaceholder:"عنوان بريدك الإلكتروني", auNextSetPassword:"بعد ذلك ستقوم بتعيين كلمة مرور وبضعة تفاصيل.",
+    auFullNamePlaceholder:"الاسم الكامل", auSetPasswordPlaceholder:"عيّن كلمة مرور", auRepeatPasswordPlaceholder:"أعد كتابة كلمة المرور",
+    auDobLabel:"تاريخ الميلاد", auStartBalPlaceholder:"الرصيد الافتتاحي (اختياري)",
+    auAgreeToPrefix:"أوافق على ", auAgreeToAnd:" و", auTermsLink:"شروط الخدمة", auPrivacyLink:"سياسة الخصوصية",
+    auOptionalRichardIntro:"اختياري - سطر أو اثنان ليتعرف ريتشارد عليك من البداية. ستختار لغتك وعملتك مباشرة بعد ذلك.",
+    auNotesForRichard:"ملاحظات لريتشارد",
+    auNotesPlaceholder:"أي شيء يجب أن يعرفه ريتشارد عنك - أهدافك، عاداتك المالية، ما الذي تدخر من أجله...",
+    auShowPassword:"إظهار كلمة المرور", auHidePassword:"إخفاء كلمة المرور",
+    auSignInBtn:"تسجيل الدخول", auSendResetLink:"إرسال رابط إعادة التعيين", auCreateAccountBtn:"إنشاء حساب",
+    auByContinuingPre:"بالمتابعة، أنت توافق على ", auByContinuingPost:"، وتؤكد أن عمرك 16 عاماً أو أكثر.",
+    auRememberIt:"تتذكرها؟ ", auNewHere:"جديد هنا؟ ", auHaveAccount:"لديك حساب؟ ",
+    auBackToSignIn:"العودة لتسجيل الدخول", auCreateAccountLink:"إنشاء حساب", auSignInLink:"تسجيل الدخول",
+    auSyncedSecurely:"متزامن بأمان مع حسابك",
+
+    cuHeadline:"أنت في منتصف {month}.",
+    cuSpentEarlier:"أُنفق سابقاً هذا {month}", cuMonthIncome:"دخل {month}",
+    cuIntro:"هذا اختياري. رقم تقريبي كافٍ لجعل ميزانياتك تبدو حقيقية من اليوم الأول - لا داعٍ لتذكر كل عملية شراء. يمكنك تخطي هذا كلياً، أو تعديل أي شيء لاحقاً في النشاط.",
+    cuIncomeReceived:"الدخل المستلم هذا {month}", cuQuickTotal:"إجمالي سريع", cuByCategory:"حسب الفئة",
+    cuRoughlySpent:"أُنفق تقريباً حتى الآن هذا {month}",
+    cuBallpark:"رقم تقريبي واحد. يمكنك التبديل إلى \"حسب الفئة\" في أي وقت للحصول على التفاصيل.",
+    cuSpentSoFar:"أُنفق حتى الآن هذا {month}", cuAddToMonth:"أضف إلى شهري",
+    cuSkipFresh:"تخطَّ - ابدأ من جديد", cuPreferAuto:"تفضل التلقائي؟ اربط بنكك بدلاً من ذلك",
+    cmPact:"الميثاق", cmReadyTakeBack:"مستعد لاستعادة السيطرة؟", cmReadyTakeBackName:"مستعد لاستعادة السيطرة، {name}؟",
+    cmItem1:"سأسجل ما أنفقه - يستغرق ثوانٍ فقط", cmItem2:"سأمنح كل {sym} مهمة كل شهر",
+    cmItem3:"سأدع ريتشارد يشير إلى ما قد أفوته", cmYesImIn:"نعم - أنا موافق", cmLookAround:"سأتفقد الأمر أولاً فقط",
+
+    msLeakKicker:"لنكن صادقين", msLeakHeadline:"كل شهر، هذا يتسرب بهدوء بين يديك.", msLeakSuffix:" شهرياً",
+    msLeakSubDerived:"قلت إنك لست متأكداً - لذا استخدمت ما هو معتاد: حوالي 12% من الدخل غير متابَع.",
+    msLeakSubPlain:"هذا تقديرك الخاص.",
+    msLeakSubSource:"هذا تقديرك الخاص، بناءً على مصدر تسرب {n} ذكرته بنفسك.",
+    msLeakSubSources:"هذا تقديرك الخاص، بناءً على {n} مصادر تسرب ذكرتها بنفسك.",
+    msYearKicker:"بعد اثني عشر شهراً من الآن", msYearHeadline:"خلال عام، هذا يتراكم إلى",
+    msYearSub:"يختفي - دون أي قرار حقيقي واحد.",
+    msFiveKicker:"الاستمرار في الانجراف", msFiveHeadline:"خمس سنوات من الانجراف تكلفك",
+    msFiveSubGoal:"هذا يعادل {x} أضعاف {goal} الخاص بك.", msFiveSubGeneric:"هذا ثمن سيارة. سنة من الإيجار. بداية جادة.",
+    msBar1Year:"سنة واحدة", msBar5Year:"5 سنوات",
+    msGoodKicker:"الآن الأخبار الجيدة", msGoodHeadline:"الأشخاص الذين يرون أموالهم يستعيدون معظمها.", msGoodSuffix:" سنوياً",
+    msGoodSub:"المتابعة والخطة الحقيقية عادة ما تستعيد حوالي 60% من التسرب - أي ما يقارب {amt} شهرياً يعود إلى جيبك.",
+    msGoalKicker:"هدفك", msGoalHeadline:"{goal}: أصبح فجأة في متناول اليد.", msGoalSuffix:" أشهر",
+    msGoalSub:"باستعادة {rec} شهرياً، {amt} يتوقف عن كونه حلماً ويصبح موعداً. ريتشارد سيحدد لك الوتيرة.",
+    msMinKicker:"إليك الخطة", msMinHeadline:"أخبرتني أين يتسرب. سأجد الأرقام.",
+    msMinSub:"سجّل أولاً بأول وريتشارد سيربط الأمور ببعضها - معظم الناس يكتشفون أول نفقة قابلة للاستعادة في الأسبوع الأول.",
+    msMethodKicker:"كيف يعمل الأمر", msMethodHeadline:"لا سحر. فقط وضوح.", msMethodCta:"يبدو منطقياً",
+    msMethodItem1:"رؤية كل نفقة لحظة حدوثها", msMethodItem2:"ميزانيات مصممة حسب أرقامك الحقيقية",
+    msMethodItem3:"ريتشارد يراجع شهرك معك",
+    msRingTitle:"ريتشارد يجري الحسابات", msRingPhrase1:"يقرأ إجاباتك", msRingPhrase2:"يتتبع التسريبات",
+    msRingPhrase3:"يقدّر السنوات الخمس القادمة",
+
+    obLoadingTitle:"ريتشارد يبني خطتك", obLoadingSub:"مصممة حسب إجاباتك - وليست نموذجاً جاهزاً.",
+    obLoadingStep1:"يقرأ إجاباتك", obLoadingStep2:"يصمم ميزانياتك الشهرية",
+    obLoadingStep3:"يختبر الأرقام تحت الضغط", obLoadingStep4:"يلمّع خطتك",
+    obContinueNoWait:"المتابعة دون انتظار", obContinueNoWaitAria:"المتابعة دون انتظار خطتك",
+    obPlanReady:"خطتك جاهزة.", obPlanBuiltForYou:"ريتشارد بنى هذا خصيصاً لك.",
+    obHowAddTx:"كيف تريد إضافة المعاملات؟", obChangeAnytimeProfile:"يمكنك تغيير هذا في أي وقت من الملف الشخصي.",
+    obManualEntry:"أدخلها يدوياً", obManualEntrySub:"سجّل كل معاملة بنفسك - سيطرة كاملة",
+    obImportCsv:"استيراد من ملف CSV", obImportCsvSub:"ارفع كشف حساب بنكي أو بطاقة لملئها",
+    obSetupBudgetsQ:"إعداد ميزانياتك تلقائياً؟",
+    obBasedOnNumbers:"بناءً على أرقامك، يقترح ريتشارد هذه الحدود الشهرية:",
+    obYesSetUp:"نعم، أعدّها", obSetUpMyself:"سأعدّها بنفسي", obGetStarted:"ابدأ الآن",
+    obQ1Head:"اجعل Richy خاصاً بك.", obQ1Sub:"اللغة والعملة - كل شيء يتكيف، الآن.",
+    obQ2Head:"مرحباً {name} - أين أنت في الحياة؟", obQ2Sub:"لتلائم الخطة واقعك، وليس نموذجاً جاهزاً.",
+    obQ3Head:"ما أكبر إحباط مالي لديك؟", obQ3Sub:"ريتشارد يبني خطتك بالكامل حول هذا.",
+    obQ4Head:"ماذا يصل إلى حسابك كل شهر؟", obQ4Sub:"التقريب مقبول - راتب، مصروف، دخل إضافي، كل ذلك.",
+    obQ5Head:"كم تكلفك الأساسيات؟", obQ5Sub:"الإيجار، الطعام، الفواتير، المواصلات. ما يجب دفعه.",
+    obQ6Head:"أين تتسرب أموالك؟", obQ6Sub:"اختر كل ما ينطبق. ريتشارد لا يحكم عليك.",
+    obQ7Head:"كم يختفي تقريباً كل شهر؟", obQ7Sub:"أموال أنفقتها ولا يمكنك تفسيرها تماماً.",
+    obQ8Head:"أين تقف اليوم؟", obQ8Sub:"الأرقام الصادقة تصنع خطة أفضل.",
+    obQ9Head:"هدف واحد. اجعله حقيقياً.", obQ9Sub:"شيء محدد تسعى إليه.",
+    obGreeting:"مرحباً {name}. أنا **ريتشارد** - مدير أموالك الجديد. تسعة أسئلة سريعة، ثم سأريك شيئاً لا يراه معظم الناس أبداً عن أموالهم.",
+    obYourCoffee:"قهوتك: {price}", obDateRangeLabel:"النطاق الزمني",
+    obDateRangeExplain:"كيف يقيس Richy \"هذا الأسبوع/الشهر/السنة\". الافتراضي هو الشهر التقويمي الحالي - يمكن تغييره في أي وقت من الملف الشخصي.",
+    obThisMonth:"هذا الشهر", obPastMonth:"الشهر الماضي", obCustomRange:"نطاق مخصص", obFrom:"من", obTo:"إلى",
+    obStageTeen:"مراهق", obStageStudent:"طالب", obStageWorking:"موظف", obStageParent:"والد/ة",
+    obProb1:"الادخار لهدف محدد", obProb2:"إدارة دخل غير منتظم أو متغير", obProb3:"سداد الديون",
+    obProb4:"فهم أين تذهب أموالي", obProb5:"التخطيط المالي مع شريك",
+    obProb6:"بناء الثقة المالية", obProb7:"بدء التخطيط للميزانية للتو",
+    obIncomeLabel:"الدخل الشهري", obEssentialsLabel:"الأساسيات الشهرية",
+    obLeakDelivery:"توصيل الطعام", obLeakSubs:"الاشتراكات", obLeakImpulse:"مشتريات اندفاعية",
+    obLeakGoingOut:"الخروج", obLeakShopping:"التسوق", obLeakNoIdea:"بصراحة، لا فكرة لدي",
+    obOverspendLabel:"الإنفاق غير المحسوب كل شهر",
+    obHintGuessTag:"خمّن تقريباً", obHintGuessTxt:"معظم الناس يقللون من تقدير هذا.",
+    obHintModestTag:"متواضع", obHintModestTxt:"حذر - أو متفائل. سنكتشف ذلك.",
+    obHintTypicalTag:"هذا معتاد", obHintTypicalTxt:"بالضبط في النطاق الشائع - وقابل للإصلاح بسهولة.",
+    obHintBoldTag:"جريء وصادق", obHintBoldTxt:"رقم كبير، إمكانية كبيرة.",
+    obSavedUpLabel:"المدخر حتى الآن", obTotalDebtLabel:"إجمالي الديون",
+    obGoalNameLabel:"اسم الهدف", obGoalNamePlaceholder:"مثال: صندوق طوارئ، شقة أولى",
+    obGoalTravel:"سفر", obGoalLaptop:"لابتوب جديد", obGoalApartment:"شقة أولى",
+    obTargetAmountLabel:"المبلغ المستهدف", obTimelineLabel:"الجدول الزمني",
+    obTl1:"6 أشهر", obTl2:"سنة واحدة", obTl3:"سنتان", obTl4:"5+ سنوات",
+    obLetsGo:"لنبدأ", obTapOption:"اضغط على خيار للمتابعة",
+    obPickAtLeastOne:"اختر واحداً على الأقل - أو تخطَّ أدناه.",
+    obReallyDontKnow:"لا فكرة لدي حقاً", obSkipForNow:"تخطَّ الآن", obDoTheMath:"احسب الأرقام",
+
+    fmTitle:"أموال مستعادة", fmRecovered:"تمت استعادة {amt}",
+    fmSpottedLeakSing:"اكتشف ريتشارد تسرباً محتملاً واحداً", fmSpottedLeakPl:"اكتشف ريتشارد {n} تسريبات محتملة",
+    fmAboutAmtYear:"حوالي {amt} سنوياً قابلة للاستعادة", fmTapReview:"اضغط لمراجعة ما وجده",
+    fmAllClear:"كل شيء واضح الآن", fmNoNewLeaks:"لا تسريبات جديدة. ريتشارد يستمر بالمراقبة.",
+    fmRecoverableYear:"قابل للاستعادة / سنوياً", fmRecoveredSoFar:"المستعاد حتى الآن",
+    fmThink1:"يراجع إنفاقك", fmThink2:"يتحقق من الرسوم بشكل متقاطع", fmThink3:"يكتبها",
+    fmDraftThink1:"يصيغ رسالتك", fmDraftThink2:"يحافظ على اللباقة مع الحزم", fmDraftThink3:"على وشك الانتهاء",
+    fmFallbackSingle:"راجعت إنفاقك ووجدت رسوماً واحدة تستحق نظرة ثانية.",
+    fmFallbackMultiNoAmt:"راجعت إنفاقك ووجدت {n} أشياء تستحق النظر.",
+    fmFallbackMultiAmt:"راجعت إنفاقك ووجدت {n} أشياء تستحق النظر - حوالي {amt} سنوياً إذا تصرفت بشأنها.",
+    fmDraftPriceMatch:"صياغة طلب مطابقة السعر", fmDraftCancellation:"صياغة إلغاء", fmCountRecovered:"اعتبرها مستعادة",
+    fmKeepIt:"احتفظ به", fmLooksFine:"يبدو جيداً", fmGotIt:"فهمت",
+    fmCopied:"تم النسخ", fmCopyMessage:"نسخ الرسالة", fmIDidIt:"قمت بذلك (+{amt})",
+    fmReviewedEverything:"لقد راجعت كل شيء", fmKeepsWatching:"ريتشارد يستمر بالمراقبة عند وصول إنفاق جديد.",
+    fmFooterNote:"اكتُشف من إنفاقك المسجل - تأكد دائماً قبل الإلغاء. ريتشارد يصيغ الرسالة؛ وأنت ترسلها.",
+    fmHikeFallback:"مرحباً، أنا عميل منذ فترة ولاحظت أن سعري ارتفع مؤخراً إلى {new}. أود الاحتفاظ بسعري السابق البالغ {old} - هل يمكنكم مطابقته؟ إن لم يكن ذلك ممكناً، يرجى اعتبار هذه إشعاراً بأنني سأقوم بالإلغاء. شكراً، [اسمك]",
+    fmCancelFallback:"مرحباً، أود إلغاء اشتراكي في {merchant} فوراً. يرجى التأكيد كتابياً بأن الإلغاء قد تم وأنه لن يتم أي خصم إضافي. شكراً، [اسمك]",
+  },
+  ru: {
+    tsQuote1:"Это первый бюджет, который я не бросил через две недели.", tsQuote1Who:"первый пользователь",
+    tsQuote2:"Ричард заметил подписку, за которую я платил целый год.", tsQuote2Who:"первый пользователь",
+    tsQuote3:"Ощущается как личный банкир, а не таблица.", tsQuote3Who:"тестировщик из семьи",
+    whTitle1:"У ваших денег теперь", whTitle2:"есть менеджер.",
+    whSub:"Прекрасный бюджет вместе с Ричардом - советником, который действительно знает ваши цифры.",
+    whBadge1Sub:"Ваш личный финансовый директор", whBadge2Stat:"50 валют", whBadge2Sub:"4 языка",
+    whBarTitle:"Типичный месяц расходов", whBarUntrackedLabel:"Без учёта", whBarUntrackedValue:"~15% исчезает",
+    whBarRichyLabel:"С Richy", whBarRichyValue:"видно и спланировано",
+    whBarFootnote:"Иллюстративно - распространённые оценки неучтённых личных расходов.",
+    whGetStarted:"Начать", whSignIn:"У меня уже есть аккаунт",
+
+    icSkip:"Пропустить", icCreateAccount:"Создать аккаунт",
+    icBalance:"Баланс", icCatFood:"Еда", icCatTransport:"Транспорт", icCatFun:"Развлечения",
+    icChipSalary:"Зарплата", icChipSalaryAmt:"+3 000$", icChipCoffee:"Кофе", icChipCoffeeAmt:"-4,50$",
+    icSlide1Head:"Каждое движение под контролем.", icSlide1Sub:"Записывайте за секунды, в любой валюте. Ваш месяц организуется сам, пока вы живёте им.",
+    icChatQ:"Могу ли я позволить себе поездку на выходные?", icChatA:"Да - если расходы на еду останутся ниже 180$ на этой неделе. Хотите, я буду за этим следить?",
+    icRichardChecking:"Ричард проверяет ваши цифры",
+    icChipLeak:"Найдена утечка", icChipLeakSub:"неиспользуемая подписка", icChipPrivate:"Конфиденциально", icChipPrivateSub:"ваши данные остаются вашими",
+    icSlide2Head:"Ричард работает на вас.", icSlide2Sub:"Личный финансовый директор, который анализирует ваш месяц, находит утечки и отвечает на прямые вопросы прямыми цифрами.",
+    icYourGoal:"Ваша цель", icGoalProgress:"3 500$ из 10 000$", icGoalPace:"В графике к октябрю. Ричард подтолкнёт вас, если собьётесь с курса.",
+    icChipTrip:"Поездка спланирована", icChipTripSub:"Токио · 5 000$", icChipBudget:"В рамках бюджета", icChipBudgetSub:"3 недели подряд",
+    icSlide3Head:"Цели, которые действительно достигаются.", icSlide3Sub:"Бюджеты, подстроенные под ваши реальные цифры - плюс поездки, копилки и план, который меняется вместе с жизнью.",
+
+    continueBtn:"Продолжить",
+    auWelcomeBack:"С возвращением", auSignInSub:"Войдите в свой аккаунт",
+    auCheckEmail:"Проверьте почту", auCodeSentTo:"Мы отправили 6-значный код на {email}",
+    auEnterEmailBegin:"Введите email, чтобы начать",
+    auAlmostThere:"Почти готово", auFewDetails:"Ещё немного деталей, чтобы завершить регистрацию",
+    auMeetRichard:"Познакомьтесь с Ричардом", auTellHimBit:"Расскажите ему немного о себе (необязательно)",
+    auResetPassword:"Сброс пароля", auResetPasswordSub:"Введите email, и мы отправим ссылку для сброса",
+    auErrEmailPw:"Введите email и пароль.", auErrValidEmail:"Введите действительный email-адрес.",
+    auErrFullName:"Введите ваше полное имя.", auErrPwLen:"Пароль должен содержать не менее 6 символов.",
+    auErrPwMatch:"Пароли не совпадают.", auErrDob:"Введите дату рождения.",
+    auErrAgeMin:"Richy предназначен для пользователей от 16 лет - мы пока не можем создать ваш аккаунт.",
+    auErrAgeMax:"Эта дата рождения выглядит некорректно - проверьте её.",
+    auErrConsent:"Пожалуйста, примите Условия использования и Политику конфиденциальности, чтобы продолжить.",
+    auErrEmailTaken:"У вас уже есть аккаунт с этим email. Войдите ниже.",
+    auErrEmailAddr:"Введите ваш email-адрес.", auNoticeResetSent:"Проверьте почту - там ссылка для сброса.",
+    auOrContinueWith:"или продолжить с", auContinueGoogle:"Продолжить с Google",
+    auEmailPlaceholder:"Email", auPasswordPlaceholder:"Пароль", auForgotPassword:"Забыли пароль?",
+    auYourEmailPlaceholder:"Ваш email-адрес", auNextSetPassword:"Далее вы зададите пароль и укажете ещё немного данных.",
+    auFullNamePlaceholder:"Полное имя", auSetPasswordPlaceholder:"Задайте пароль", auRepeatPasswordPlaceholder:"Повторите пароль",
+    auDobLabel:"Дата рождения", auStartBalPlaceholder:"Начальный баланс (необязательно)",
+    auAgreeToPrefix:"Я согласен с ", auAgreeToAnd:" и ", auTermsLink:"Условиями использования", auPrivacyLink:"Политикой конфиденциальности",
+    auOptionalRichardIntro:"Необязательно - пара строк, чтобы Ричард сразу узнал вас получше. Язык и валюту вы выберете сразу после этого.",
+    auNotesForRichard:"Заметки для Ричарда",
+    auNotesPlaceholder:"Всё, что Ричарду стоит знать о вас - ваши цели, финансовые привычки, на что вы копите…",
+    auShowPassword:"Показать пароль", auHidePassword:"Скрыть пароль",
+    auSignInBtn:"Войти", auSendResetLink:"Отправить ссылку для сброса", auCreateAccountBtn:"Создать аккаунт",
+    auByContinuingPre:"Продолжая, вы соглашаетесь с ", auByContinuingPost:" и подтверждаете, что вам 16 лет или больше.",
+    auRememberIt:"Вспомнили? ", auNewHere:"Впервые здесь? ", auHaveAccount:"Уже есть аккаунт? ",
+    auBackToSignIn:"Назад ко входу", auCreateAccountLink:"Создать аккаунт", auSignInLink:"Войти",
+    auSyncedSecurely:"Надёжно синхронизировано с вашим аккаунтом",
+
+    cuHeadline:"Вы уже в середине {month}.",
+    cuSpentEarlier:"Потрачено ранее в {month}", cuMonthIncome:"Доход за {month}",
+    cuIntro:"Это необязательно. Примерной суммы достаточно, чтобы бюджеты сразу выглядели реалистично - не нужно вспоминать каждую покупку. Можно полностью пропустить это или отредактировать позже в Активности.",
+    cuIncomeReceived:"Доход, полученный в {month}", cuQuickTotal:"Общая сумма", cuByCategory:"По категориям",
+    cuRoughlySpent:"Примерно потрачено в {month}",
+    cuBallpark:"Одна приблизительная цифра. В любой момент можно переключиться на \"По категориям\" для детализации.",
+    cuSpentSoFar:"Потрачено в {month}", cuAddToMonth:"Добавить в мой месяц",
+    cuSkipFresh:"Пропустить - начать с чистого листа", cuPreferAuto:"Предпочитаете автоматически? Подключите банк вместо этого",
+    cmPact:"Договор", cmReadyTakeBack:"Готовы вернуть контроль?", cmReadyTakeBackName:"Готовы вернуть контроль, {name}?",
+    cmItem1:"Я буду записывать свои траты - это займёт секунды", cmItem2:"Я дам каждому {sym} задачу каждый месяц",
+    cmItem3:"Я позволю Ричарду отмечать то, что я мог бы упустить", cmYesImIn:"ДА - я в деле", cmLookAround:"Сначала просто осмотрюсь",
+
+    msLeakKicker:"Будем честны", msLeakHeadline:"Каждый месяц эта сумма незаметно утекает у вас между пальцев.", msLeakSuffix:" /мес",
+    msLeakSubDerived:"Вы сказали, что не уверены - поэтому я использовал типичное значение: около 12% дохода остаётся неучтённым.",
+    msLeakSubPlain:"Это ваша собственная оценка.",
+    msLeakSubSource:"Это ваша собственная оценка, основанная на {n} источнике утечки, который вы назвали сами.",
+    msLeakSubSources:"Это ваша собственная оценка, основанная на {n} источниках утечки, которые вы назвали сами.",
+    msYearKicker:"Через двенадцать месяцев", msYearHeadline:"За год это складывается в",
+    msYearSub:"Исчезло - без единого реального решения.",
+    msFiveKicker:"Продолжать дрейфовать", msFiveHeadline:"Пять лет дрейфа обходятся вам в",
+    msFiveSubGoal:"Это в {x} раз больше вашей цели «{goal}».", msFiveSubGeneric:"Это стоимость машины. Год аренды жилья. Серьёзный старт.",
+    msBar1Year:"1 год", msBar5Year:"5 лет",
+    msGoodKicker:"А теперь хорошие новости", msGoodHeadline:"Те, кто видит свои деньги, возвращают большую их часть.", msGoodSuffix:" /год",
+    msGoodSub:"Учёт и реальный план обычно возвращают около 60% утечки - примерно {amt} в месяц обратно в ваш карман.",
+    msGoalKicker:"Ваша цель", msGoalHeadline:"«{goal}»: внезапно в пределах досягаемости.", msGoalSuffix:" мес.",
+    msGoalSub:"При {rec} возвращаемых ежемесячно, {amt} перестаёт быть мечтой и становится датой. Ричард задаст вам темп.",
+    msMinKicker:"Вот план", msMinHeadline:"Вы рассказали мне, где утечка. Я найду цифры.",
+    msMinSub:"Записывайте по ходу дела, и Ричард соединит всё воедино - большинство людей замечают первую возвращаемую трату уже в первую неделю.",
+    msMethodKicker:"Как это работает", msMethodHeadline:"Никакой магии. Просто наглядность.", msMethodCta:"Звучит верно",
+    msMethodItem1:"Видеть каждую трату в момент, когда она происходит", msMethodItem2:"Бюджеты, подстроенные под ваши реальные цифры",
+    msMethodItem3:"Ричард разбирает ваш месяц вместе с вами",
+    msRingTitle:"Ричард производит расчёты", msRingPhrase1:"Читает ваши ответы", msRingPhrase2:"Отслеживает утечки",
+    msRingPhrase3:"Оценивает следующие пять лет",
+
+    obLoadingTitle:"Ричард составляет ваш план", obLoadingSub:"Основан на ваших ответах - а не на шаблоне.",
+    obLoadingStep1:"Читает ваши ответы", obLoadingStep2:"Формирует ваши месячные бюджеты",
+    obLoadingStep3:"Проверяет цифры на прочность", obLoadingStep4:"Полирует ваш план",
+    obContinueNoWait:"Продолжить, не дожидаясь", obContinueNoWaitAria:"Продолжить, не дожидаясь плана",
+    obPlanReady:"Ваш план готов.", obPlanBuiltForYou:"Ричард составил его специально для вас.",
+    obHowAddTx:"Как вы хотите добавлять транзакции?", obChangeAnytimeProfile:"Вы можете изменить это в любой момент в Профиле.",
+    obManualEntry:"Вводить вручную", obManualEntrySub:"Записывайте каждую транзакцию сами - полный контроль",
+    obImportCsv:"Импортировать из CSV-файла", obImportCsvSub:"Загрузите выписку банка или карты, чтобы заполнить их",
+    obSetupBudgetsQ:"Настроить бюджеты автоматически?",
+    obBasedOnNumbers:"Исходя из ваших цифр, Ричард предлагает следующие месячные лимиты:",
+    obYesSetUp:"Да, настроить", obSetUpMyself:"Я настрою их сам", obGetStarted:"Начать",
+    obQ1Head:"Настройте Richy под себя.", obQ1Sub:"Язык и валюта - всё подстраивается прямо сейчас.",
+    obQ2Head:"Привет, {name} - на каком вы этапе жизни?", obQ2Sub:"Чтобы план подходил вашей реальности, а не шаблону.",
+    obQ3Head:"Что вас больше всего раздражает в деньгах?", obQ3Sub:"Ричард строит весь ваш план вокруг этого.",
+    obQ4Head:"Сколько поступает на ваш счёт каждый месяц?", obQ4Sub:"Примерно - это нормально: зарплата, пособие, побочный доход, всё вместе.",
+    obQ5Head:"Сколько стоят вам необходимые расходы?", obQ5Sub:"Аренда, еда, коммунальные, транспорт. То, что нужно платить обязательно.",
+    obQ6Head:"Где утекают ваши деньги?", obQ6Sub:"Выберите всё, что подходит. Ричард не осуждает.",
+    obQ7Head:"Сколько ускользает каждый месяц?", obQ7Sub:"Деньги, которые потрачены, а куда - не совсем понятно.",
+    obQ8Head:"На каком этапе вы сейчас?", obQ8Sub:"Честные цифры дают лучший план.",
+    obQ9Head:"Одна цель. Сделайте её реальной.", obQ9Sub:"Что-то конкретное, к чему вы стремитесь.",
+    obGreeting:"Привет, {name}. Я **Ричард** - новый менеджер ваших денег. Девять коротких вопросов, а затем я покажу вам то, что большинство людей никогда не видят в своих деньгах.",
+    obYourCoffee:"Ваш кофе: {price}", obDateRangeLabel:"Период",
+    obDateRangeExplain:"Как Richy измеряет «эту неделю/месяц/год». По умолчанию - текущий календарный месяц, изменить можно в любой момент в Профиле.",
+    obThisMonth:"Этот месяц", obPastMonth:"Прошедший месяц", obCustomRange:"Свой период", obFrom:"С", obTo:"По",
+    obStageTeen:"Подросток", obStageStudent:"Студент", obStageWorking:"Работаю", obStageParent:"Родитель",
+    obProb1:"Накопить на конкретную цель", obProb2:"Управлять нерегулярным или переменным доходом", obProb3:"Погасить долг",
+    obProb4:"Понять, куда уходят мои деньги", obProb5:"Планировать финансы с партнёром",
+    obProb6:"Обрести финансовую уверенность", obProb7:"Только начинаю вести бюджет",
+    obIncomeLabel:"Месячный доход", obEssentialsLabel:"Месячные необходимые расходы",
+    obLeakDelivery:"Доставка еды", obLeakSubs:"Подписки", obLeakImpulse:"Импульсивные покупки",
+    obLeakGoingOut:"Выходы в свет", obLeakShopping:"Шопинг", obLeakNoIdea:"Честно, понятия не имею",
+    obOverspendLabel:"Неучтённые траты каждый месяц",
+    obHintGuessTag:"Прикиньте примерно", obHintGuessTxt:"Большинство людей недооценивают эту цифру.",
+    obHintModestTag:"Скромно", obHintModestTxt:"Осторожно - или оптимистично. Скоро узнаем.",
+    obHintTypicalTag:"Это типично", obHintTypicalTxt:"Прямо в обычном диапазоне - и легко исправимо.",
+    obHintBoldTag:"Смело и честно", obHintBoldTxt:"Большая цифра, большой потенциал.",
+    obSavedUpLabel:"Накоплено", obTotalDebtLabel:"Общий долг",
+    obGoalNameLabel:"Название цели", obGoalNamePlaceholder:"напр. Резервный фонд, первая квартира",
+    obGoalTravel:"Путешествие", obGoalLaptop:"Новый ноутбук", obGoalApartment:"Первая квартира",
+    obTargetAmountLabel:"Целевая сумма", obTimelineLabel:"Срок",
+    obTl1:"6 месяцев", obTl2:"1 год", obTl3:"2 года", obTl4:"5+ лет",
+    obLetsGo:"Поехали", obTapOption:"Нажмите на вариант, чтобы продолжить",
+    obPickAtLeastOne:"Выберите хотя бы один вариант - или пропустите ниже.",
+    obReallyDontKnow:"Правда понятия не имею", obSkipForNow:"Пропустить пока", obDoTheMath:"Произвести расчёт",
+
+    fmTitle:"Найденные деньги", fmRecovered:"Возвращено {amt}",
+    fmSpottedLeakSing:"Ричард обнаружил одну возможную утечку", fmSpottedLeakPl:"Ричард обнаружил {n} возможных утечек",
+    fmAboutAmtYear:"Около {amt} в год можно вернуть", fmTapReview:"Нажмите, чтобы посмотреть, что он нашёл",
+    fmAllClear:"Пока всё чисто", fmNoNewLeaks:"Новых утечек нет. Ричард продолжает следить.",
+    fmRecoverableYear:"К возврату / год", fmRecoveredSoFar:"Возвращено на данный момент",
+    fmThink1:"Просматривает ваши траты", fmThink2:"Перепроверяет списания", fmThink3:"Составляет отчёт",
+    fmDraftThink1:"Составляет ваше сообщение", fmDraftThink2:"Сохраняет вежливость, но твёрдость", fmDraftThink3:"Почти готово",
+    fmFallbackSingle:"Я просмотрел ваши траты и нашёл одно списание, на которое стоит взглянуть ещё раз.",
+    fmFallbackMultiNoAmt:"Я просмотрел ваши траты и нашёл {n} моментов, на которые стоит обратить внимание.",
+    fmFallbackMultiAmt:"Я просмотрел ваши траты и нашёл {n} моментов, на которые стоит обратить внимание - около {amt} в год, если вы примете меры.",
+    fmDraftPriceMatch:"Составить запрос о снижении цены", fmDraftCancellation:"Составить отмену", fmCountRecovered:"Засчитать как возвращённое",
+    fmKeepIt:"Оставить", fmLooksFine:"Всё в порядке", fmGotIt:"Понятно",
+    fmCopied:"Скопировано", fmCopyMessage:"Скопировать сообщение", fmIDidIt:"Я сделал это (+{amt})",
+    fmReviewedEverything:"Вы всё просмотрели", fmKeepsWatching:"Ричард продолжает следить за новыми тратами.",
+    fmFooterNote:"Обнаружено по вашим записанным тратам - всегда проверяйте перед отменой. Ричард составляет сообщение, а отправляете его вы.",
+    fmHikeFallback:"Здравствуйте, я являюсь клиентом уже некоторое время и заметил, что моя цена недавно выросла до {new}. Я хотел бы сохранить прежний тариф в {old} - можете ли вы его предоставить? Если нет, пожалуйста, считайте это уведомлением об отмене. Спасибо, [Ваше имя]",
+    fmCancelFallback:"Здравствуйте, я хотел бы немедленно отменить подписку {merchant}. Пожалуйста, подтвердите письменно, что отмена произведена и дальнейшие списания не будут производиться. Спасибо, [Ваше имя]",
+  },
+};
+for (var _obc in ONBOARD_STRINGS) {
+  if (!TRANSLATIONS[_obc]) continue;
+  for (var _obk in ONBOARD_STRINGS[_obc]) TRANSLATIONS[_obc][_obk] = ONBOARD_STRINGS[_obc][_obk];
 }
 
 function tr(key) {
@@ -5253,9 +5877,9 @@ function authMsg(err) {
 function TestimonialLine() {
   useEffect(function() { ensureLoadingCss(); }, []);
   var quotes = [
-    { q: "“It's the first budget I didn't abandon in week two.”", who: "early user" },
-    { q: "“Richard caught a subscription I'd been paying for a year.”", who: "early user" },
-    { q: "“Feels like a private banker, not a spreadsheet.”", who: "family tester" },
+    { q: "“" + tr("tsQuote1") + "”", who: tr("tsQuote1Who") },
+    { q: "“" + tr("tsQuote2") + "”", who: tr("tsQuote2Who") },
+    { q: "“" + tr("tsQuote3") + "”", who: tr("tsQuote3Who") },
   ];
   var _i = useState(0); var i = _i[0]; var setI = _i[1];
   useEffect(function() {
@@ -5291,22 +5915,22 @@ function WelcomeHero(props) {
         <Stagger step={0.09} style={{ width: "100%", maxWidth: 380, display: "flex", flexDirection: "column", alignItems: "center" }}>
           <RichyLogo size={74} style={{ display: "block", margin: "0 auto", borderRadius: 21, boxShadow: "0 12px 32px rgba(0,0,0,0.22), 0 4px 12px rgba(0,0,0,0.14)" }} />
           <div style={{ fontSize: 34, fontWeight: 600, fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.12, textAlign: "center", marginTop: 20 }}>
-            Your money has a<br />manager now.
+            {tr("whTitle1")}<br />{tr("whTitle2")}
           </div>
           <div style={{ fontSize: 15, color: JINK2, textAlign: "center", lineHeight: 1.55, marginTop: 10, maxWidth: 320 }}>
-            A beautiful budget, paired with Richard — an advisor who actually knows your numbers.
+            {tr("whSub")}
           </div>
           <div style={{ display: "flex", justifyContent: "center", gap: 10, marginTop: 22 }}>
-            <LaurelBadge stat="Richard" sub="Your personal CFO" />
-            <LaurelBadge stat="50 currencies" sub="4 languages" />
+            <LaurelBadge stat="Richard" sub={tr("whBadge1Sub")} />
+            <LaurelBadge stat={tr("whBadge2Stat")} sub={tr("whBadge2Sub")} />
           </div>
           <div style={{ width: "100%", background: "rgba(255,255,255,0.72)", border: "1px solid rgba(0,0,0,0.05)", borderRadius: 20, padding: "18px 16px 14px", marginTop: 22, boxShadow: "0 8px 28px rgba(40,28,16,0.08)", boxSizing: "border-box", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", textAlign: "center", marginBottom: 14 }}>A typical month of spending</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", textAlign: "center", marginBottom: 14 }}>{tr("whBarTitle")}</div>
             <BarCompare height={96} delay={650} items={[
-              { label: "Untracked", value: "~15% vanishes", pct: 86, color: "rgba(224,48,48,0.72)", glow: "rgba(224,48,48,0.18)" },
-              { label: "With Richy", value: "seen & planned", pct: 30, color: T.green, glow: T.greenGlow },
+              { label: tr("whBarUntrackedLabel"), value: tr("whBarUntrackedValue"), pct: 86, color: "rgba(224,48,48,0.72)", glow: "rgba(224,48,48,0.18)" },
+              { label: tr("whBarRichyLabel"), value: tr("whBarRichyValue"), pct: 30, color: T.green, glow: T.greenGlow },
             ]} />
-            <div style={{ fontSize: 10.5, color: JINK3, textAlign: "center", marginTop: 10, lineHeight: 1.4 }}>Illustrative — commonly cited estimates of untracked personal spending.</div>
+            <div style={{ fontSize: 10.5, color: JINK3, textAlign: "center", marginTop: 10, lineHeight: 1.4 }}>{tr("whBarFootnote")}</div>
           </div>
           <div style={{ marginTop: 20, width: "100%" }}>
             <TestimonialLine />
@@ -5316,10 +5940,10 @@ function WelcomeHero(props) {
 
       <div style={{ padding: "6px 24px 34px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box", position: "relative", zIndex: 2 }}>
         <div style={{ animation: "rclPhrase 0.5s ease 0.75s both" }}>
-          <JrBtn label="Get started" onPress={props.onGetStarted} />
+          <JrBtn label={tr("whGetStarted")} onPress={props.onGetStarted} />
           <button onClick={props.onSignIn}
             style={{ width: "100%", background: "none", border: "none", color: JINK2, fontSize: 14.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "15px 0 0" }}>
-            I already have an account
+            {tr("whSignIn")}
           </button>
         </div>
       </div>
@@ -5374,7 +5998,7 @@ function IntroCarousel(props) {
   return (
     <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
       <div style={{ display: "flex", justifyContent: "flex-end", padding: "18px 20px 0" }}>
-        <button onClick={props.onDone} style={{ background: "none", border: "none", color: JINK3, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: 6 }}>Skip</button>
+        <button onClick={props.onDone} style={{ background: "none", border: "none", color: JINK3, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: 6 }}>{tr("icSkip")}</button>
       </div>
 
       <div ref={trackRef} onScroll={onScroll} onPointerDown={function() { touchedRef.current = true; }} className="jr-scroll"
@@ -5383,12 +6007,12 @@ function IntroCarousel(props) {
         <div style={slideWrap}>
           <div style={{ position: "relative", paddingBottom: 26 }}>
             <div style={mockCard}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em" }}>Balance</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em" }}>{tr("icBalance")}</div>
               <div style={{ fontSize: 30, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", marginTop: 3 }}>$2,840</div>
               {[
-                { label: "Food", pct: 62, color: T.green, amt: "$412" },
-                { label: "Transport", pct: 38, color: T.blue, amt: "$95" },
-                { label: "Fun", pct: 81, color: T.orange, amt: "$203" },
+                { label: tr("icCatFood"), pct: 62, color: T.green, amt: "$412" },
+                { label: tr("icCatTransport"), pct: 38, color: T.blue, amt: "$95" },
+                { label: tr("icCatFun"), pct: 81, color: T.orange, amt: "$203" },
               ].map(function(r) {
                 return (
                   <div key={r.label} style={{ marginTop: 12 }}>
@@ -5402,11 +6026,11 @@ function IntroCarousel(props) {
                 );
               })}
             </div>
-            <JrMockChip top={-16} right={-30} icon="up" tint={T.green} line1="Salary" line2="+$3,000" line2Color={T.green} dur="4.2s" />
-            <JrMockChip bottom={0} left={-26} icon="coffee" tint={T.gold} line1="Coffee" line2="-$4.50" delay="0.9s" />
+            <JrMockChip top={-16} right={-30} icon="up" tint={T.green} line1={tr("icChipSalary")} line2={tr("icChipSalaryAmt")} line2Color={T.green} dur="4.2s" />
+            <JrMockChip bottom={0} left={-26} icon="coffee" tint={T.gold} line1={tr("icChipCoffee")} line2={tr("icChipCoffeeAmt")} delay="0.9s" />
           </div>
-          <div style={h2}>Every move, seen.</div>
-          <div style={sub}>Log in seconds, in any currency. Your month organizes itself while you live it.</div>
+          <div style={h2}>{tr("icSlide1Head")}</div>
+          <div style={sub}>{tr("icSlide1Sub")}</div>
         </div>
 
         <div style={slideWrap}>
@@ -5414,37 +6038,37 @@ function IntroCarousel(props) {
             <div style={mockCard}>
               <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
                 <div style={{ background: T.orangeDim, borderRadius: "16px 4px 16px 16px", padding: "9px 13px", fontSize: 12, fontWeight: 600, color: JINK, maxWidth: 190 }}>
-                  Can I afford a weekend trip?
+                  {tr("icChatQ")}
                 </div>
               </div>
               <div style={{ display: "flex", marginBottom: 10 }}>
                 <div style={{ background: "rgba(0,0,0,0.045)", borderRadius: "4px 16px 16px 16px", padding: "9px 13px", fontSize: 12, fontWeight: 500, color: JINK, lineHeight: 1.5, maxWidth: 205 }}>
-                  Yes — if food stays under $180 this week. Want me to watch it for you?
+                  {tr("icChatA")}
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 7, paddingLeft: 4 }}>
                 <ThinkingDots size={4} color={T.orange} />
-                <span style={{ fontSize: 10.5, fontWeight: 600, color: JINK3 }}>Richard is checking your numbers</span>
+                <span style={{ fontSize: 10.5, fontWeight: 600, color: JINK3 }}>{tr("icRichardChecking")}</span>
               </div>
             </div>
-            <JrMockChip top={-16} left={-24} icon="search" tint={T.orange} line1="Found a leak" line2="unused subscription" dur="4.4s" />
-            <JrMockChip bottom={0} right={-24} icon="shield" tint={T.blue} line1="Private" line2="your data stays yours" delay="1.1s" />
+            <JrMockChip top={-16} left={-24} icon="search" tint={T.orange} line1={tr("icChipLeak")} line2={tr("icChipLeakSub")} dur="4.4s" />
+            <JrMockChip bottom={0} right={-24} icon="shield" tint={T.blue} line1={tr("icChipPrivate")} line2={tr("icChipPrivateSub")} delay="1.1s" />
           </div>
-          <div style={h2}>Richard works for you.</div>
-          <div style={sub}>A personal CFO who reviews your month, hunts down leaks, and answers straight questions with straight numbers.</div>
+          <div style={h2}>{tr("icSlide2Head")}</div>
+          <div style={sub}>{tr("icSlide2Sub")}</div>
         </div>
 
         <div style={slideWrap}>
           <div style={{ position: "relative", paddingBottom: 26 }}>
             <div style={mockCard}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Your goal</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>{tr("icYourGoal")}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 40, height: 40, borderRadius: 13, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 16px " + T.orangeGlow }}>
                   <SVGIcon id="goals" size={20} color="#fff" />
                 </div>
                 <div>
-                  <div style={{ fontSize: 14.5, fontWeight: 800, color: JINK }}>Emergency fund</div>
-                  <div style={{ fontSize: 11.5, fontWeight: 600, color: JINK3 }}>$3,500 of $10,000</div>
+                  <div style={{ fontSize: 14.5, fontWeight: 800, color: JINK }}>{tr("emergencyFund")}</div>
+                  <div style={{ fontSize: 11.5, fontWeight: 600, color: JINK3 }}>{tr("icGoalProgress")}</div>
                 </div>
               </div>
               <div style={{ height: 8, borderRadius: 999, background: "rgba(0,0,0,0.06)", overflow: "hidden", marginTop: 14, position: "relative" }}>
@@ -5452,13 +6076,13 @@ function IntroCarousel(props) {
                   <div style={{ position: "absolute", top: 0, bottom: 0, width: "40%", background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent)", animation: "rclSheen 1.8s ease-in-out infinite" }} />
                 </div>
               </div>
-              <div style={{ fontSize: 11.5, fontWeight: 600, color: JINK2, marginTop: 12, lineHeight: 1.5 }}>On pace for October. Richard will nudge you if you drift.</div>
+              <div style={{ fontSize: 11.5, fontWeight: 600, color: JINK2, marginTop: 12, lineHeight: 1.5 }}>{tr("icGoalPace")}</div>
             </div>
-            <JrMockChip top={-16} right={-28} icon="plane" tint={T.blue} line1="Trip planned" line2="Tokyo · $5,000" dur="4s" />
-            <JrMockChip bottom={0} left={-26} icon="check" tint={T.green} line1="Under budget" line2="3 weeks straight" delay="0.8s" />
+            <JrMockChip top={-16} right={-28} icon="plane" tint={T.blue} line1={tr("icChipTrip")} line2={tr("icChipTripSub")} dur="4s" />
+            <JrMockChip bottom={0} left={-26} icon="check" tint={T.green} line1={tr("icChipBudget")} line2={tr("icChipBudgetSub")} delay="0.8s" />
           </div>
-          <div style={h2}>Goals that actually land.</div>
-          <div style={sub}>Budgets shaped to your real numbers — plus trips, savings pots, and a plan that updates as life happens.</div>
+          <div style={h2}>{tr("icSlide3Head")}</div>
+          <div style={sub}>{tr("icSlide3Sub")}</div>
         </div>
       </div>
 
@@ -5468,7 +6092,7 @@ function IntroCarousel(props) {
             return <div key={n} style={{ width: n === idx ? 20 : 6, height: 6, borderRadius: 999, background: n === idx ? T.orange : "rgba(137,112,198,0.25)", transition: "width 0.3s ease, background 0.3s ease" }} />;
           })}
         </div>
-        <JrBtn label="Create my account" onPress={props.onDone} />
+        <JrBtn label={tr("icCreateAccount")} onPress={props.onDone} />
       </div>
     </div>
   );
@@ -5532,7 +6156,7 @@ function AuthScreen(props) {
   function login() {
     setError("");
     var em = email.trim().toLowerCase();
-    if (!isEmail(em) || !password) { setError("Enter your email and password."); return; }
+    if (!isEmail(em) || !password) { setError(tr("auErrEmailPw")); return; }
     if (!cloudReady()) { setError(cloudErrorMsg()); return; }
     setBusy(true);
     CLOUD.signIn(em, password).then(function() {
@@ -5550,21 +6174,21 @@ function AuthScreen(props) {
   function sendCode() {
     setError(""); setNotice("");
     var em = email.trim().toLowerCase();
-    if (!isEmail(em)) { setError("Enter a valid email address."); return; }
+    if (!isEmail(em)) { setError(tr("auErrValidEmail")); return; }
     setStep("signup_details");
   }
 
   function goToPrefs() {
     setError("");
-    if (!fullName.trim()) { setError("Enter your full name."); return; }
-    if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
-    if (password !== password2) { setError("Those passwords don't match."); return; }
-    if (!dob) { setError("Enter your date of birth."); return; }
+    if (!fullName.trim()) { setError(tr("auErrFullName")); return; }
+    if (password.length < 6) { setError(tr("auErrPwLen")); return; }
+    if (password !== password2) { setError(tr("auErrPwMatch")); return; }
+    if (!dob) { setError(tr("auErrDob")); return; }
     // Age gate: Richy is 16+ (see terms.html section 2 / privacy.html section 8).
     var age = computeAge(dob);
-    if (age != null && age < 16) { setError("Richy is for ages 16 and up - we can't create your account yet."); return; }
-    if (age != null && age > 120) { setError("That date of birth doesn't look right - please check it."); return; }
-    if (!consent) { setError("Please agree to the Terms of Service and Privacy Policy to continue."); return; }
+    if (age != null && age < 16) { setError(tr("auErrAgeMin")); return; }
+    if (age != null && age > 120) { setError(tr("auErrAgeMax")); return; }
+    if (!consent) { setError(tr("auErrConsent")); return; }
     setStep("signup_prefs");
   }
 
@@ -5598,7 +6222,7 @@ function AuthScreen(props) {
       if (err && err.code === "auth/email-already-in-use") {
         setPW(""); setPW2("");
         setStep("login");
-        setError("You already have an account with this email. Sign in below.");
+        setError(tr("auErrEmailTaken"));
         return;
       }
       setError(authMsg(err));
@@ -5629,12 +6253,12 @@ function AuthScreen(props) {
   function sendPasswordReset() {
     setError(""); setNotice("");
     var em = email.trim().toLowerCase();
-    if (!isEmail(em)) { setError("Enter your email address."); return; }
+    if (!isEmail(em)) { setError(tr("auErrEmailAddr")); return; }
     if (!cloudReady()) { setError(cloudErrorMsg()); return; }
     setBusy(true);
     CLOUD.sendPasswordReset(em).then(function() {
       setBusy(false);
-      setNotice("Check your email for a reset link.");
+      setNotice(tr("auNoticeResetSent"));
     }).catch(function(err) {
       setBusy(false);
       setError(authMsg(err));
@@ -5656,13 +6280,13 @@ function AuthScreen(props) {
   }
 
   var titles = {
-    login:            { t: "Welcome back",    s: "Sign in to your account" },
-    login_verify:     { t: "Check your email", s: "We sent a 6-digit code to " + email },
-    signup_email:     { t: "Get started",     s: "Enter your email to begin" },
-    signup_verify:    { t: "Check your email", s: "We sent a 6-digit code to " + email },
-    signup_details:   { t: "Almost there",    s: "A few details to finish your account" },
-    signup_prefs:     { t: "Meet Richard",    s: "Tell him a little about you (optional)" },
-    forgot_password:  { t: "Reset password",  s: "Enter your email and we'll send a reset link" },
+    login:            { t: tr("auWelcomeBack"),   s: tr("auSignInSub") },
+    login_verify:     { t: tr("auCheckEmail"),     s: tr("auCodeSentTo").replace("{email}", email) },
+    signup_email:     { t: tr("whGetStarted"),     s: tr("auEnterEmailBegin") },
+    signup_verify:    { t: tr("auCheckEmail"),     s: tr("auCodeSentTo").replace("{email}", email) },
+    signup_details:   { t: tr("auAlmostThere"),    s: tr("auFewDetails") },
+    signup_prefs:     { t: tr("auMeetRichard"),    s: tr("auTellHimBit") },
+    forgot_password:  { t: tr("auResetPassword"),  s: tr("auResetPasswordSub") },
   };
   var head = titles[step] || titles.login;
 
@@ -5682,7 +6306,7 @@ function AuthScreen(props) {
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0 16px" }}>
         <div style={{ flex: 1, height: "0.5px", background: "rgba(0,0,0,0.12)" }} />
-        <span style={{ fontSize: 12, color: T.ink3, fontWeight: 500 }}>or continue with</span>
+        <span style={{ fontSize: 12, color: T.ink3, fontWeight: 500 }}>{tr("auOrContinueWith")}</span>
         <div style={{ flex: 1, height: "0.5px", background: "rgba(0,0,0,0.12)" }} />
       </div>
       <button onClick={googleSignIn} disabled={busy} className="jr-press"
@@ -5693,7 +6317,7 @@ function AuthScreen(props) {
           <path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33z" />
           <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z" />
         </svg>
-        Continue with Google
+        {tr("auContinueGoogle")}
       </button>
     </div>
   );
@@ -5726,7 +6350,7 @@ function AuthScreen(props) {
             <div>
               {fieldWrap("mail",
                 <input value={email} onChange={function(e) { setEmail(e.target.value); }}
-                  placeholder="Email" type="email" autoComplete="email"
+                  placeholder={tr("auEmailPlaceholder")} type="email" autoComplete="email"
                   onKeyDown={function(e) { if (e.key === "Enter") login(); }}
                   className="jr-field" style={fieldStyle} />, 12)}
               <div style={{ position: "relative", marginBottom: 0 }}>
@@ -5734,11 +6358,11 @@ function AuthScreen(props) {
                   <SVGIcon id="lock" size={17} color={T.ink3} />
                 </div>
                 <input value={password} onChange={function(e) { setPW(e.target.value); }}
-                  type={showPw ? "text" : "password"} placeholder="Password" autoComplete="current-password"
+                  type={showPw ? "text" : "password"} placeholder={tr("auPasswordPlaceholder")} autoComplete="current-password"
                   onKeyDown={function(e) { if (e.key === "Enter") login(); }}
                   className="jr-field" style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 46px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
                 <button onClick={function() { setShowPw(function(v) { return !v; }); }}
-                  aria-label={showPw ? "Hide password" : "Show password"}
+                  aria-label={showPw ? tr("auHidePassword") : tr("auShowPassword")}
                   style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                   <SVGIcon id={showPw ? "eyeoff" : "eye"} size={17} color={T.ink3} />
                 </button>
@@ -5746,7 +6370,7 @@ function AuthScreen(props) {
               <div style={{ textAlign: "right", marginTop: 8 }}>
                 <button onClick={function() { goTo("forgot_password"); }}
                   style={{ background: "none", border: "none", color: T.orange, fontSize: 13, fontFamily: UI, cursor: "pointer", padding: 0 }}>
-                  Forgot password?
+                  {tr("auForgotPassword")}
                 </button>
               </div>
             </div>
@@ -5756,7 +6380,7 @@ function AuthScreen(props) {
             <div>
               {fieldWrap("mail",
                 <input value={email} onChange={function(e) { setEmail(e.target.value); }}
-                  placeholder="Your email address" type="email" autoComplete="email" autoFocus={true}
+                  placeholder={tr("auYourEmailPlaceholder")} type="email" autoComplete="email" autoFocus={true}
                   onKeyDown={function(e) { if (e.key === "Enter") sendPasswordReset(); }}
                   className="jr-field" style={fieldStyle} />, 0)}
             </div>
@@ -5766,11 +6390,11 @@ function AuthScreen(props) {
             <div>
               {fieldWrap("mail",
                 <input value={email} onChange={function(e) { setEmail(e.target.value); }}
-                  placeholder="Email" type="email" autoComplete="email" autoFocus
+                  placeholder={tr("auEmailPlaceholder")} type="email" autoComplete="email" autoFocus
                   onKeyDown={function(e) { if (e.key === "Enter") sendCode(); }}
                   className="jr-field" style={fieldStyle} />, 0)}
               <div style={{ fontSize: 12.5, color: T.ink3, padding: "10px 4px 0", lineHeight: 1.5 }}>
-                Next you'll set a password and a few details.
+                {tr("auNextSetPassword")}
               </div>
             </div>
           )}
@@ -5779,26 +6403,26 @@ function AuthScreen(props) {
             <div>
               {fieldWrap("user",
                 <input value={fullName} onChange={function(e) { setFullName(e.target.value); }}
-                  placeholder="Full name" autoComplete="name" autoFocus
+                  placeholder={tr("auFullNamePlaceholder")} autoComplete="name" autoFocus
                   className="jr-field" style={fieldStyle} />, 12)}
               <div style={{ position: "relative", marginBottom: 12 }}>
                 <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)" }}>
                   <SVGIcon id="lock" size={17} color={T.ink3} />
                 </div>
                 <input value={password} onChange={function(e) { setPW(e.target.value); }}
-                  type={showPw ? "text" : "password"} placeholder="Set a password" autoComplete="new-password"
+                  type={showPw ? "text" : "password"} placeholder={tr("auSetPasswordPlaceholder")} autoComplete="new-password"
                   className="jr-field" style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 46px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
                 <button onClick={function() { setShowPw(function(v) { return !v; }); }}
-                  aria-label={showPw ? "Hide password" : "Show password"}
+                  aria-label={showPw ? tr("auHidePassword") : tr("auShowPassword")}
                   style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                   <SVGIcon id={showPw ? "eyeoff" : "eye"} size={17} color={T.ink3} />
                 </button>
               </div>
               {fieldWrap("lock",
                 <input value={password2} onChange={function(e) { setPW2(e.target.value); }}
-                  type={showPw ? "text" : "password"} placeholder="Repeat password" autoComplete="new-password"
+                  type={showPw ? "text" : "password"} placeholder={tr("auRepeatPasswordPlaceholder")} autoComplete="new-password"
                   className="jr-field" style={fieldStyle} />, 12)}
-              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", padding: "2px 4px 7px" }}>Date of birth</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", padding: "2px 4px 7px" }}>{tr("auDobLabel")}</div>
               {fieldWrap("calendar",
                 <input value={dob} onChange={function(e) { setDob(e.target.value); }}
                   type="date"
@@ -5806,23 +6430,23 @@ function AuthScreen(props) {
                   className="jr-field" style={fieldStyle} />, 12)}
               {fieldWrap("coins",
                 <input value={startBal} onChange={function(e) { setStartBal(e.target.value); }}
-                  type="number" placeholder="Starting balance (optional)"
+                  type="number" placeholder={tr("auStartBalPlaceholder")}
                   onKeyDown={function(e) { if (e.key === "Enter") finishSignup(); }}
                   className="jr-field" style={fieldStyle} />, 0)}
               <label style={{ display: "flex", alignItems: "flex-start", gap: 10, marginTop: 14, cursor: "pointer", fontSize: 13, color: T.ink2, lineHeight: 1.5 }}>
                 <input type="checkbox" checked={consent} onChange={function(e) { setConsent(e.target.checked); }}
                   style={{ marginTop: 2, width: 16, height: 16, accentColor: T.orange, cursor: "pointer", flexShrink: 0 }} />
-                <span>I agree to the <a href="/terms.html" target="_blank" rel="noopener" style={{ color: T.orange, fontWeight: 700, textDecoration: "none" }}>Terms of Service</a> and <a href="/privacy.html" target="_blank" rel="noopener" style={{ color: T.orange, fontWeight: 700, textDecoration: "none" }}>Privacy Policy</a>.</span>
+                <span>{tr("auAgreeToPrefix")}<a href="/terms.html" target="_blank" rel="noopener" style={{ color: T.orange, fontWeight: 700, textDecoration: "none" }}>{tr("auTermsLink")}</a>{tr("auAgreeToAnd")}<a href="/privacy.html" target="_blank" rel="noopener" style={{ color: T.orange, fontWeight: 700, textDecoration: "none" }}>{tr("auPrivacyLink")}</a>.</span>
               </label>
             </div>
           )}
 
           {step === "signup_prefs" && (
             <div>
-              <div style={{ fontSize: 13, color: T.ink3, marginBottom: 14, lineHeight: 1.5 }}>Optional — a line or two so Richard starts out knowing you. You'll pick your language and currency right after this.</div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Notes for Richard</div>
+              <div style={{ fontSize: 13, color: T.ink3, marginBottom: 14, lineHeight: 1.5 }}>{tr("auOptionalRichardIntro")}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>{tr("auNotesForRichard")}</div>
               <textarea value={richardNotes} onChange={function(e) { setRichardNotes(e.target.value); }}
-                placeholder="Anything Richard should know about you — your goals, money habits, what you're saving for…"
+                placeholder={tr("auNotesPlaceholder")}
                 rows={3}
                 className="jr-field" style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "13px 16px", fontSize: 15, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", resize: "vertical", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
             </div>
@@ -5845,11 +6469,11 @@ function AuthScreen(props) {
             <JrBtn
               onPress={step === "login" ? login : step === "signup_email" ? sendCode : step === "signup_details" ? goToPrefs : step === "forgot_password" ? sendPasswordReset : finishSignup}
               busy={busy}
-              label={step === "login" ? "Sign In"
-                : step === "signup_email" ? "Continue"
-                : step === "signup_details" ? "Continue"
-                : step === "forgot_password" ? "Send reset link"
-                : "Create Account"}
+              label={step === "login" ? tr("auSignInBtn")
+                : step === "signup_email" ? tr("continueBtn")
+                : step === "signup_details" ? tr("continueBtn")
+                : step === "forgot_password" ? tr("auSendResetLink")
+                : tr("auCreateAccountBtn")}
               style={{ marginTop: 16 }} />
           )}
 
@@ -5857,23 +6481,23 @@ function AuthScreen(props) {
 
           {(step === "login" || step === "signup_email") && (
             <div style={{ textAlign: "center", marginTop: 14, fontSize: 11.5, color: T.ink3, lineHeight: 1.55 }}>
-              By continuing you agree to the <a href="/terms.html" target="_blank" rel="noopener" style={{ color: T.ink3, fontWeight: 700, textDecoration: "underline" }}>Terms of Service</a> and <a href="/privacy.html" target="_blank" rel="noopener" style={{ color: T.ink3, fontWeight: 700, textDecoration: "underline" }}>Privacy Policy</a>, and confirm you are 16 or older.
+              {tr("auByContinuingPre")}<a href="/terms.html" target="_blank" rel="noopener" style={{ color: T.ink3, fontWeight: 700, textDecoration: "underline" }}>{tr("auTermsLink")}</a>{tr("auAgreeToAnd")}<a href="/privacy.html" target="_blank" rel="noopener" style={{ color: T.ink3, fontWeight: 700, textDecoration: "underline" }}>{tr("auPrivacyLink")}</a>{tr("auByContinuingPost")}
             </div>
           )}
 
           {step !== "signup_prefs" && (
             <div style={{ textAlign: "center", marginTop: 20, fontSize: 14, color: T.ink2 }}>
-              {step === "forgot_password" ? "Remember it? " : step === "login" ? "New here? " : "Have an account? "}
+              {step === "forgot_password" ? tr("auRememberIt") : step === "login" ? tr("auNewHere") : tr("auHaveAccount")}
               <button onClick={function() { goTo(step === "login" ? "signup_email" : "login"); }}
                 style={{ background: "none", border: "none", color: T.orange, fontWeight: 700, fontSize: 14, fontFamily: UI, cursor: "pointer" }}>
-                {step === "forgot_password" ? "Back to sign in" : step === "login" ? "Create account" : "Sign in"}
+                {step === "forgot_password" ? tr("auBackToSignIn") : step === "login" ? tr("auCreateAccountLink") : tr("auSignInLink")}
               </button>
             </div>
           )}
         </div>
       </div>
 
-      <div style={{ textAlign: "center", padding: "0 0 32px", fontSize: 12, color: T.ink3 }}>Synced securely to your account</div>
+      <div style={{ textAlign: "center", padding: "0 0 32px", fontSize: 12, color: T.ink3 }}>{tr("auSyncedSecurely")}</div>
     </div>
   );
 }
@@ -5911,7 +6535,7 @@ function CatchUpScreen(props) {
       var qv = parseFloat(quickTotal);
       if (qv > 0) {
         var misc = cats.filter(function(c) { return /other|misc/i.test(c.name); })[0] || cats[cats.length - 1] || cats[0] || { id: "", name: "Other" };
-        out.push({ type: "expense", amount: round2(qv), label: "Spent earlier this " + monthName, catId: misc.id, category: misc.name, date: today, id: base + (i++), repeat: "none", pending: false });
+        out.push({ type: "expense", amount: round2(qv), label: tr("cuSpentEarlier").replace("{month}", monthName), catId: misc.id, category: misc.name, date: today, id: base + (i++), repeat: "none", pending: false });
       }
     } else {
       cats.forEach(function(c) {
@@ -5923,7 +6547,7 @@ function CatchUpScreen(props) {
     }
     var iv = parseFloat(inc);
     if (iv > 0) {
-      out.push({ type: "income", amount: round2(iv), label: monthName + " income", catId: "c8", category: "Salary", date: today, id: base + (i++), repeat: "none", pending: false });
+      out.push({ type: "income", amount: round2(iv), label: tr("cuMonthIncome").replace("{month}", monthName), catId: "c8", category: "Salary", date: today, id: base + (i++), repeat: "none", pending: false });
     }
     return out;
   }
@@ -5950,17 +6574,17 @@ function CatchUpScreen(props) {
           </div>
           <div>
             <div style={{ fontSize: 22, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.2 }}>
-              <WordReveal text={"You're partway through " + monthName + "."} base={0.1} step={0.06} />
+              <WordReveal text={tr("cuHeadline").replace("{month}", monthName)} base={0.1} step={0.06} />
             </div>
           </div>
         </div>
 
         <div style={{ fontSize: 14.5, color: JINK2, lineHeight: 1.55, marginBottom: 22, animation: "rclPhrase 0.5s ease 0.35s both" }}>
-          This is optional. A rough total is enough to make your budgets feel real from day one — no need to remember every purchase. You can skip it entirely, or edit anything later in Activity.
+          {tr("cuIntro")}
         </div>
 
         <div style={{ background: "#fff", borderRadius: 16, padding: "14px 16px", marginBottom: 14, boxShadow: "0 6px 20px rgba(40,28,16,0.07)", animation: "rcjChipIn 0.45s cubic-bezier(0.34,1.56,0.64,1) 0.45s both", boxSizing: "border-box" }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Income received this {monthName}</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>{tr("cuIncomeReceived").replace("{month}", monthName)}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <span style={{ fontSize: 22, color: JINK3, fontWeight: 600 }}>{sym}</span>
             <input value={inc} onChange={function(e) { setInc(e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 22, fontFamily: UI, color: JINK, fontWeight: 700 }} />
@@ -5968,7 +6592,7 @@ function CatchUpScreen(props) {
         </div>
 
         <div style={{ display: "flex", gap: 7, marginBottom: 12, animation: "rclPhrase 0.45s ease 0.5s both" }}>
-          {[{ id: "quick", label: "Quick total" }, { id: "detail", label: "By category" }].map(function(m) {
+          {[{ id: "quick", label: tr("cuQuickTotal") }, { id: "detail", label: tr("cuByCategory") }].map(function(m) {
             var on = mode === m.id;
             return (
               <button key={m.id} onClick={function() { setMode(m.id); }}
@@ -5982,16 +6606,16 @@ function CatchUpScreen(props) {
 
         {mode === "quick" ? (
           <div style={{ background: "#fff", borderRadius: 16, padding: "14px 16px", boxShadow: "0 6px 20px rgba(40,28,16,0.07)", animation: "rcjChipIn 0.45s cubic-bezier(0.34,1.56,0.64,1) 0.6s both", boxSizing: "border-box" }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Roughly spent so far this {monthName}</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>{tr("cuRoughlySpent").replace("{month}", monthName)}</div>
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
               <span style={{ fontSize: 22, color: JINK3, fontWeight: 600 }}>{sym}</span>
               <input value={quickTotal} onChange={function(e) { setQuickTotal(e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 22, fontFamily: UI, color: JINK, fontWeight: 700 }} />
             </div>
-            <div style={{ fontSize: 12, color: JINK3, marginTop: 6, lineHeight: 1.45 }}>A single ballpark number. Switch to "By category" any time you want the breakdown.</div>
+            <div style={{ fontSize: 12, color: JINK3, marginTop: 6, lineHeight: 1.45 }}>{tr("cuBallpark")}</div>
           </div>
         ) : (
           <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "4px 2px 8px" }}>Spent so far this {monthName}</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "4px 2px 8px" }}>{tr("cuSpentSoFar").replace("{month}", monthName)}</div>
             <div style={{ background: "#fff", borderRadius: 16, overflow: "hidden", boxShadow: "0 6px 20px rgba(40,28,16,0.07)", animation: "rcjChipIn 0.45s cubic-bezier(0.34,1.56,0.64,1) 0.6s both" }}>
               {cats.map(function(c, i) {
                 return (
@@ -6012,16 +6636,16 @@ function CatchUpScreen(props) {
       </div>
 
       <div style={{ padding: "14px 22px 40px", borderTop: "0.5px solid rgba(0,0,0,0.06)", background: "rgba(253,245,236,0.85)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", position: "relative", zIndex: 2 }}>
-        <JrBtn label={canAdd ? "Add to my month" : "Continue"} onPress={function() { props.onComplete(buildTxs()); }} style={{ padding: "16px 0", fontSize: 16 }} />
+        <JrBtn label={canAdd ? tr("cuAddToMonth") : tr("continueBtn")} onPress={function() { props.onComplete(buildTxs()); }} style={{ padding: "16px 0", fontSize: 16 }} />
         <button onClick={function() { props.onComplete([]); }} className="jr-press"
           style={{ width: "100%", background: "none", border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 14, fontSize: 14.5, fontWeight: 700, color: JINK2, cursor: "pointer", fontFamily: UI, padding: "13px 0", display: "block", textAlign: "center", marginTop: 10 }}>
-          Skip — start fresh
+          {tr("cuSkipFresh")}
         </button>
         {props.onSyncInstead && (
           <button onClick={function() { props.onSyncInstead(); }} className="jr-press"
             style={{ width: "100%", background: "none", border: "none", fontSize: 13.5, fontWeight: 600, color: T.orange, cursor: "pointer", fontFamily: UI, padding: "13px 0 0", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
             <SVGIcon id="refresh" size={15} color={T.orange} />
-            Prefer automatic? Connect your bank instead
+            {tr("cuPreferAuto")}
           </button>
         )}
       </div>
@@ -6036,25 +6660,29 @@ function CatchUpScreen(props) {
 // 25% of income) and copy hedges with "about" - honest storytelling, not
 // scare math.
 
+// label stays the canonical English value (stored in state / sent to the AI
+// prompt); tKey is the tr() lookup used only for what's rendered on screen -
+// module-level arrays are built once at load, before a language is picked, so
+// they can't hold tr() output directly.
 var LEAK_OPTIONS = [
-  { id: "delivery", label: "Food delivery",     icon: "food" },
-  { id: "subs",     label: "Subscriptions",     icon: "tv" },
-  { id: "impulse",  label: "Impulse buys",      icon: "cart" },
-  { id: "goingout", label: "Going out",         icon: "coffee" },
-  { id: "shopping", label: "Shopping",          icon: "shirt" },
-  { id: "noidea",   label: "Honestly, no idea", icon: "search" },
+  { id: "delivery", label: "Food delivery",     tKey: "obLeakDelivery", icon: "food" },
+  { id: "subs",     label: "Subscriptions",     tKey: "obLeakSubs",     icon: "tv" },
+  { id: "impulse",  label: "Impulse buys",      tKey: "obLeakImpulse",  icon: "cart" },
+  { id: "goingout", label: "Going out",         tKey: "obLeakGoingOut", icon: "coffee" },
+  { id: "shopping", label: "Shopping",          tKey: "obLeakShopping", icon: "shirt" },
+  { id: "noidea",   label: "Honestly, no idea", tKey: "obLeakNoIdea",   icon: "search" },
 ];
 
 // EXACT existing coreProblem strings - Advisor matches on them. Only the
 // icons are new.
 var PROBLEM_OPTIONS = [
-  { label: "Saving for a specific goal",             icon: "goals" },
-  { label: "Managing irregular or variable income",  icon: "activity" },
-  { label: "Paying off debt",                        icon: "credit" },
-  { label: "Understanding where my money goes",      icon: "search" },
-  { label: "Planning finances with a partner",       icon: "heart" },
-  { label: "Building financial confidence",          icon: "shield" },
-  { label: "Just getting started with budgeting",    icon: "spark" },
+  { label: "Saving for a specific goal",             tKey: "obProb1", icon: "goals" },
+  { label: "Managing irregular or variable income",  tKey: "obProb2", icon: "activity" },
+  { label: "Paying off debt",                        tKey: "obProb3", icon: "credit" },
+  { label: "Understanding where my money goes",      tKey: "obProb4", icon: "search" },
+  { label: "Planning finances with a partner",       tKey: "obProb5", icon: "heart" },
+  { label: "Building financial confidence",          tKey: "obProb6", icon: "shield" },
+  { label: "Just getting started with budgeting",    tKey: "obProb7", icon: "spark" },
 ];
 
 function deriveMoneyStory(d) {
@@ -6131,7 +6759,7 @@ function StoryBeat(props) {
       </div>
       <div style={{ padding: "18px 24px 40px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box" }}>
         <div style={{ opacity: st >= 3 ? 1 : 0, pointerEvents: st >= 3 ? "auto" : "none", transition: "opacity 0.5s ease" }}>
-          <JrBtn label={b.cta || "Continue"} onPress={props.onNext} />
+          <JrBtn label={b.cta || tr("continueBtn")} onPress={props.onNext} />
         </div>
       </div>
     </div>
@@ -6143,9 +6771,9 @@ function StoryBeat(props) {
 function CommitScreen(props) {
   useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
   var items = [
-    "I'll log what I spend - it takes seconds",
-    "I'll give every " + ((_currency.sym || "$")) + " a job each month",
-    "I'll let Richard flag what I'd miss",
+    tr("cmItem1"),
+    tr("cmItem2").replace("{sym}", (_currency.sym || "$")),
+    tr("cmItem3"),
   ];
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: UI, position: "relative", overflow: "hidden" }}>
@@ -6153,10 +6781,10 @@ function CommitScreen(props) {
       <div style={{ position: "absolute", bottom: 30, left: -80, width: 250, height: 250, borderRadius: "50%", background: "radial-gradient(circle,rgba(39,168,95,0.13) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift2 11s ease-in-out infinite" }} />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 30px 0", position: "relative" }}>
         <div style={{ fontSize: 11.5, fontWeight: 800, color: T.orange, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14, animation: "rclPhrase 0.5s ease both" }}>
-          The pact
+          {tr("cmPact")}
         </div>
         <div style={{ fontSize: 26, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.25, textAlign: "center", maxWidth: 320 }}>
-          <WordReveal text={"Ready to take it back" + (props.username ? ", " + props.username : "") + "?"} />
+          <WordReveal text={props.username ? tr("cmReadyTakeBackName").replace("{name}", props.username) : tr("cmReadyTakeBack")} />
         </div>
         <div style={{ marginTop: 30, display: "flex", flexDirection: "column", gap: 16, width: "100%", maxWidth: 330 }}>
           {items.map(function(label, i) {
@@ -6174,10 +6802,10 @@ function CommitScreen(props) {
       </div>
       <div style={{ padding: "18px 24px 40px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box" }}>
         <div style={{ animation: "rclPhrase 0.5s ease 2.4s both" }}>
-          <JrBtn label="YES — I'm in" pulse onPress={props.onCommit} />
+          <JrBtn label={tr("cmYesImIn")} pulse onPress={props.onCommit} />
           <button onClick={props.onCommit}
             style={{ width: "100%", background: "none", border: "none", color: JINK3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0" }}>
-            I'll just look around first
+            {tr("cmLookAround")}
           </button>
         </div>
       </div>
@@ -6198,64 +6826,66 @@ function MathStoryScreen(props) {
   var beats = [];
   if (s.mode === "full") {
     beats.push({
-      key: "leak", kicker: "Let's be honest", color: T.orange,
-      headline: "Every month, this quietly slips through the cracks.",
-      big: { value: s.monthlyLeak, suffix: " /mo" },
+      key: "leak", kicker: tr("msLeakKicker"), color: T.orange,
+      headline: tr("msLeakHeadline"),
+      big: { value: s.monthlyLeak, suffix: tr("msLeakSuffix") },
       sub: s.derived
-        ? "You said you weren't sure - so I used what's typical: about 12% of income goes untracked."
-        : "That's your own estimate" + (s.leakCount > 0 ? ", across " + s.leakCount + " leak source" + (s.leakCount > 1 ? "s" : "") + " you named yourself." : "."),
+        ? tr("msLeakSubDerived")
+        : (s.leakCount > 0
+          ? tr(s.leakCount > 1 ? "msLeakSubSources" : "msLeakSubSource").replace("{n}", s.leakCount)
+          : tr("msLeakSubPlain")),
     });
     beats.push({
-      key: "year", kicker: "Twelve months from now", color: T.orange,
-      headline: "In a year, that adds up to",
+      key: "year", kicker: tr("msYearKicker"), color: T.orange,
+      headline: tr("msYearHeadline"),
       big: { value: s.yearlyLeak, duration: 1800 },
-      sub: "Gone - without a single real decision being made.",
+      sub: tr("msYearSub"),
     });
     beats.push({
-      key: "five", kicker: "Keep drifting", color: T.orange,
-      headline: "Five years of drifting costs you",
+      key: "five", kicker: tr("msFiveKicker"), color: T.orange,
+      headline: tr("msFiveHeadline"),
       big: { value: s.fiveYear, duration: 2000 },
       sub: (s.goalAmt > 0 && goalName)
-        ? "That's " + Math.max(1, Math.floor(s.fiveYear / s.goalAmt)) + "x your " + goalName + "."
-        : "That's a car. A year of rent. A serious head start.",
+        ? tr("msFiveSubGoal").replace("{x}", Math.max(1, Math.floor(s.fiveYear / s.goalAmt))).replace("{goal}", goalName)
+        : tr("msFiveSubGeneric"),
       extra: (
         <BarCompare height={72} delay={250} items={[
-          { label: "1 year", value: jrCur(s.yearlyLeak), pct: 24, color: "rgba(224,48,48,0.55)", glow: "rgba(224,48,48,0.15)" },
-          { label: "5 years", value: jrCur(s.fiveYear), pct: 92, color: "rgba(224,48,48,0.8)", glow: "rgba(224,48,48,0.2)" },
+          { label: tr("msBar1Year"), value: jrCur(s.yearlyLeak), pct: 24, color: "rgba(224,48,48,0.55)", glow: "rgba(224,48,48,0.15)" },
+          { label: tr("msBar5Year"), value: jrCur(s.fiveYear), pct: 92, color: "rgba(224,48,48,0.8)", glow: "rgba(224,48,48,0.2)" },
         ]} />
       ),
     });
     beats.push({
-      key: "good", kicker: "Now the good news", color: T.green,
-      headline: "People who see their money get most of it back.",
-      big: { value: s.recoverYr, suffix: " /yr", color: T.green },
-      sub: "Tracking and a real plan typically recover about 60% of the leak - roughly " + jrCur(s.recoverMo) + " a month back in your pocket.",
+      key: "good", kicker: tr("msGoodKicker"), color: T.green,
+      headline: tr("msGoodHeadline"),
+      big: { value: s.recoverYr, suffix: tr("msGoodSuffix"), color: T.green },
+      sub: tr("msGoodSub").replace("{amt}", jrCur(s.recoverMo)),
     });
     if (s.goalMonths && goalName) {
       beats.push({
-        key: "goal", kicker: "Your goal", color: T.green,
-        headline: goalName + ": suddenly within reach.",
-        big: { value: s.goalMonths, format: function(v) { return "~" + Math.max(1, Math.round(v)); }, suffix: " months", color: T.green, duration: 1300 },
-        sub: "At " + jrCur(s.recoverMo) + " recovered monthly, " + jrCur(s.goalAmt) + " stops being a dream and becomes a date. Richard will pace you.",
+        key: "goal", kicker: tr("msGoalKicker"), color: T.green,
+        headline: tr("msGoalHeadline").replace("{goal}", goalName),
+        big: { value: s.goalMonths, format: function(v) { return "~" + Math.max(1, Math.round(v)); }, suffix: tr("msGoalSuffix"), color: T.green, duration: 1300 },
+        sub: tr("msGoalSub").replace("{rec}", jrCur(s.recoverMo)).replace("{amt}", jrCur(s.goalAmt)),
       });
     }
   } else {
     beats.push({
-      key: "min", kicker: "Here's the plan", color: T.orange,
-      headline: "You told me where it leaks. I'll find the numbers.",
-      sub: "Log as you go and Richard connects the dots - most people spot their first recoverable expense in the first week.",
+      key: "min", kicker: tr("msMinKicker"), color: T.orange,
+      headline: tr("msMinHeadline"),
+      sub: tr("msMinSub"),
     });
   }
   beats.push({
-    key: "method", kicker: "How it works", color: T.orange,
-    headline: "No magic. Just visibility.",
-    cta: "Sounds right",
+    key: "method", kicker: tr("msMethodKicker"), color: T.orange,
+    headline: tr("msMethodHeadline"),
+    cta: tr("msMethodCta"),
     extra: (
       <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left" }}>
         {[
-          { icon: "eye",     t: "See every expense the moment it happens" },
-          { icon: "budgets", t: "Budgets shaped to your real numbers" },
-          { icon: "advisor", t: "Richard reviews your month with you" },
+          { icon: "eye",     t: tr("msMethodItem1") },
+          { icon: "budgets", t: tr("msMethodItem2") },
+          { icon: "advisor", t: tr("msMethodItem3") },
         ].map(function(r, i) {
           return (
             <div key={r.icon} style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(255,255,255,0.8)", border: "1px solid rgba(0,0,0,0.05)", borderRadius: 15, padding: "13px 15px", boxShadow: "0 3px 12px rgba(40,28,16,0.06)", animation: "rclPhrase 0.45s ease " + (0.25 + i * 0.16).toFixed(2) + "s both", boxSizing: "border-box" }}>
@@ -6290,9 +6920,9 @@ function MathStoryScreen(props) {
         <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 32px" }}>
           <div style={{ textAlign: "center" }}>
             <ProgressRing size={150} duration={2800} onDone={function() { setPh("beats"); }} />
-            <div style={{ fontSize: 17, fontWeight: 800, color: JINK, letterSpacing: "-0.01em", marginTop: 24 }}>Richard is doing the math</div>
+            <div style={{ fontSize: 17, fontWeight: 800, color: JINK, letterSpacing: "-0.01em", marginTop: 24 }}>{tr("msRingTitle")}</div>
             <div style={{ fontSize: 13.5, fontWeight: 600, color: JINK3, marginTop: 8 }}>
-              <ThinkingPhrase phrases={["Reading your answers", "Tracing the leaks", "Pricing the next five years"]} interval={950} />
+              <ThinkingPhrase phrases={[tr("msRingPhrase1"), tr("msRingPhrase2"), tr("msRingPhrase3")]} interval={950} />
             </div>
           </div>
         </div>
@@ -6317,12 +6947,13 @@ function MathStoryScreen(props) {
 }
 
 var STAGES = [
-  { label: "Teenager",  icon: "star" },
-  { label: "Student",   icon: "book" },
-  { label: "Working",   icon: "briefcase" },
-  { label: "Parent",    icon: "home" },
+  { label: "Teenager",  tKey: "obStageTeen",    icon: "star" },
+  { label: "Student",   tKey: "obStageStudent", icon: "book" },
+  { label: "Working",   tKey: "obStageWorking", icon: "briefcase" },
+  { label: "Parent",    tKey: "obStageParent",  icon: "home" },
 ];
 var TIMELINES = ["6 months", "1 year", "2 years", "5+ years"];
+var TIMELINE_TKEYS = { "6 months": "obTl1", "1 year": "obTl2", "2 years": "obTl3", "5+ years": "obTl4" };
 
 function OnboardingScreen(props) {
   var _s = useState(1); var step = _s[0]; var setStep = _s[1];
@@ -6428,18 +7059,18 @@ function OnboardingScreen(props) {
       <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI }}>
         <div style={{ width: "100%", maxWidth: 320, padding: "0 32px" }}>
           <AIWorking bare
-            title="Richard is building your plan"
-            sub="Tailored to your answers - not a template."
+            title={tr("obLoadingTitle")}
+            sub={tr("obLoadingSub")}
             expectedMs={12000}
-            steps={["Reading your answers", "Shaping your monthly budgets", "Stress-testing the numbers", "Polishing your plan"]} />
+            steps={[tr("obLoadingStep1"), tr("obLoadingStep2"), tr("obLoadingStep3"), tr("obLoadingStep4")]} />
           {/* This is the only full-screen blocker a brand-new user meets, and it
               stands between them and the app. callClaude's deadline already
               guarantees it resolves, but the way out stays visible regardless -
               nothing here should ever be the reason someone can't get in. */}
           <button onClick={function() { applyPlan(null); }}
-            aria-label="Continue without waiting for your plan"
+            aria-label={tr("obContinueNoWaitAria")}
             style={{ display: "block", margin: "26px auto 0", background: "none", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 600, color: T.ink3, textDecoration: "underline", textUnderlineOffset: 3, padding: 8 }}>
-            Continue without waiting
+            {tr("obContinueNoWait")}
           </button>
         </div>
       </div>
@@ -6484,25 +7115,25 @@ function OnboardingScreen(props) {
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: JINK, letterSpacing: "-0.02em" }}><WordReveal text="Your plan is ready." base={0.15} step={0.07} /></div>
-              <div style={{ fontSize: 13, color: JINK3, marginTop: 2 }}>Richard built this just for you.</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: JINK, letterSpacing: "-0.02em" }}><WordReveal text={tr("obPlanReady")} base={0.15} step={0.07} /></div>
+              <div style={{ fontSize: 13, color: JINK3, marginTop: 2 }}>{tr("obPlanBuiltForYou")}</div>
             </div>
           </div>
 
           <div style={{ background: "#fff", borderRadius: 18, padding: "20px 20px", marginBottom: 20, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 12 }}>
               <ThinkingDots size={4} color={T.orange} />
-              <span style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em" }}>Your Plan by Richard</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em" }}>{tr("yourPlanByRichard")}</span>
             </div>
             <TypeReveal fade animate text={genPlan} size={14} color={JINK} />
           </div>
 
           <div style={{ background: "#fff", borderRadius: 18, padding: "20px 20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: JINK, marginBottom: 6 }}>How do you want to add transactions?</div>
-            <div style={{ fontSize: 13, color: JINK3, marginBottom: 16, lineHeight: 1.55 }}>You can change this anytime in Profile.</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: JINK, marginBottom: 6 }}>{tr("obHowAddTx")}</div>
+            <div style={{ fontSize: 13, color: JINK3, marginBottom: 16, lineHeight: 1.55 }}>{tr("obChangeAnytimeProfile")}</div>
             {[
-              { id: "manual", label: "Enter them manually", sub: "Log each transaction yourself - full control" },
-              { id: "import", label: "Import from a CSV file", sub: "Upload a bank or card statement to fill them in" }
+              { id: "manual", label: tr("obManualEntry"), sub: tr("obManualEntrySub") },
+              { id: "import", label: tr("obImportCsv"), sub: tr("obImportCsvSub") }
             ].map(function(opt) {
               var sel = entryMethod === opt.id;
               return (
@@ -6520,8 +7151,8 @@ function OnboardingScreen(props) {
 
           {proposed.length > 0 && (
             <div style={{ background: "#fff", borderRadius: 18, padding: "20px 20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: JINK, marginBottom: 6 }}>Set up your budgets automatically?</div>
-              <div style={{ fontSize: 13, color: JINK3, marginBottom: 18, lineHeight: 1.55 }}>Based on your numbers, Richard suggests these monthly limits:</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: JINK, marginBottom: 6 }}>{tr("obSetupBudgetsQ")}</div>
+              <div style={{ fontSize: 13, color: JINK3, marginBottom: 18, lineHeight: 1.55 }}>{tr("obBasedOnNumbers")}</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 13, marginBottom: 20 }}>
                 {proposed.map(function(b, i) {
                   var pct = Math.max(8, Math.round((b.limit / maxLimit) * 100));
@@ -6541,16 +7172,16 @@ function OnboardingScreen(props) {
                   );
                 })}
               </div>
-              <JrBtn label="Yes, set them up" onPress={function() { props.onComplete(genPlan, genOData, proposed, entryMethod); }} style={{ marginBottom: 10, padding: "15px 0", fontSize: 16 }} />
+              <JrBtn label={tr("obYesSetUp")} onPress={function() { props.onComplete(genPlan, genOData, proposed, entryMethod); }} style={{ marginBottom: 10, padding: "15px 0", fontSize: 16 }} />
               <button onClick={function() { props.onComplete(genPlan, genOData, null, entryMethod); }} className="jr-press"
                 style={{ width: "100%", background: "none", border: "none", fontSize: 14, color: JINK3, cursor: "pointer", fontFamily: UI, padding: "8px 0" }}>
-                I'll set them up myself
+                {tr("obSetUpMyself")}
               </button>
             </div>
           )}
 
           {proposed.length === 0 && (
-            <JrBtn label="Get Started" onPress={function() { props.onComplete(genPlan, genOData, null, entryMethod); }} />
+            <JrBtn label={tr("obGetStarted")} onPress={function() { props.onComplete(genPlan, genOData, null, entryMethod); }} />
           )}
 
           </Stagger>
@@ -6562,15 +7193,15 @@ function OnboardingScreen(props) {
   var Q_TOTAL = 10;
   var QUESTIONS = [
     { h: "", s: "" }, // 0: Richard's greeting - custom body
-    { h: "Make Richy yours.", s: "Language and currency — everything adapts, right now." },
-    { h: "Hi " + firstName + " — where are you in life?", s: "So the plan fits your reality, not a template." },
-    { h: "What's your biggest money frustration?", s: "Richard builds your whole plan around this." },
-    { h: "What lands in your account each month?", s: "Roughly is fine — salary, allowance, side income, all of it." },
-    { h: "What do the essentials cost you?", s: "Rent, food, utilities, transport. The must-pays." },
-    { h: "Where does your money leak?", s: "Pick all that apply. Richard doesn't judge." },
-    { h: "How much slips away each month?", s: "Money spent that you can't quite account for." },
-    { h: "Where do you stand today?", s: "Honest numbers make a better plan." },
-    { h: "One goal. Make it real.", s: "Something specific you're going for." },
+    { h: tr("obQ1Head"), s: tr("obQ1Sub") },
+    { h: tr("obQ2Head").replace("{name}", firstName), s: tr("obQ2Sub") },
+    { h: tr("obQ3Head"), s: tr("obQ3Sub") },
+    { h: tr("obQ4Head"), s: tr("obQ4Sub") },
+    { h: tr("obQ5Head"), s: tr("obQ5Sub") },
+    { h: tr("obQ6Head"), s: tr("obQ6Sub") },
+    { h: tr("obQ7Head"), s: tr("obQ7Sub") },
+    { h: tr("obQ8Head"), s: tr("obQ8Sub") },
+    { h: tr("obQ9Head"), s: tr("obQ9Sub") },
   ];
 
   function advance() {
@@ -6602,13 +7233,13 @@ function OnboardingScreen(props) {
   function overspendHint() {
     var o = parseFloat(overspend) || 0;
     var I = parseFloat(income) || 0;
-    if (o <= 0) return { tag: "Take a guess", txt: "Most people underestimate this." };
+    if (o <= 0) return { tag: tr("obHintGuessTag"), txt: tr("obHintGuessTxt") };
     var band;
     if (I > 0) { var p = o / I; band = p < 0.05 ? 0 : p <= 0.15 ? 1 : 2; }
     else { band = o < 150 ? 0 : o <= 600 ? 1 : 2; }
-    if (band === 0) return { tag: "Modest", txt: "Careful — or optimistic. We'll find out." };
-    if (band === 1) return { tag: "That's typical", txt: "Right in the common range — and very fixable." };
-    return { tag: "Bold and honest", txt: "Big number, big upside." };
+    if (band === 0) return { tag: tr("obHintModestTag"), txt: tr("obHintModestTxt") };
+    if (band === 1) return { tag: tr("obHintTypicalTag"), txt: tr("obHintTypicalTxt") };
+    return { tag: tr("obHintBoldTag"), txt: tr("obHintBoldTxt") };
   }
 
   if (phase === "story") {
@@ -6672,7 +7303,7 @@ function OnboardingScreen(props) {
                 </div>
                 <div style={{ background: "#fff", borderRadius: "4px 20px 20px 20px", padding: "16px 18px", boxShadow: "0 6px 22px rgba(40,28,16,0.09)", maxWidth: 330, boxSizing: "border-box" }}>
                   <TypeReveal fade animate color={JINK} size={15.5}
-                    text={"Hi " + firstName + ". I'm **Richard** — your money's new manager. Nine quick questions, and then I'll show you something most people never see about their own money."}
+                    text={tr("obGreeting").replace("{name}", firstName)}
                     onDone={function() { setGreetDone(true); }} />
                 </div>
               </div>
@@ -6680,7 +7311,7 @@ function OnboardingScreen(props) {
 
             {qIndex === 1 && (
               <div>
-                <div style={labelJ}>Language</div>
+                <div style={labelJ}>{tr("language")}</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 22 }}>
                   {LANGUAGE_OPTIONS.map(function(o, i) {
                     return (
@@ -6689,7 +7320,7 @@ function OnboardingScreen(props) {
                     );
                   })}
                 </div>
-                <div style={labelJ}>Currency</div>
+                <div style={labelJ}>{tr("currency")}</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {CURRENCY_OPTIONS.slice(0, 16).map(function(c, i) {
                     return (
@@ -6700,16 +7331,16 @@ function OnboardingScreen(props) {
                 </div>
                 <div key={prefCur} style={{ marginTop: 22, textAlign: "center", animation: "rclPhrase 0.35s ease both", marginBottom: 22 }}>
                   <span style={{ display: "inline-block", background: "rgba(255,255,255,0.85)", border: "1px solid rgba(0,0,0,0.06)", borderRadius: 999, padding: "8px 16px", fontSize: 13, fontWeight: 700, color: JINK2, boxShadow: "0 2px 8px rgba(0,0,0,0.04)", boxSizing: "border-box" }}>
-                    Your coffee: {fmtCur(prefCur, 4.5)}
+                    {tr("obYourCoffee").replace("{price}", fmtCur(prefCur, 4.5))}
                   </span>
                 </div>
-                <div style={labelJ}>Date Range</div>
-                <div style={{ fontSize: 12.5, color: JINK3, marginTop: -8, marginBottom: 14, lineHeight: 1.5 }}>How Richy measures "this week/month/year." Defaults to the current calendar month - change it anytime in Profile.</div>
+                <div style={labelJ}>{tr("obDateRangeLabel")}</div>
+                <div style={{ fontSize: 12.5, color: JINK3, marginTop: -8, marginBottom: 14, lineHeight: 1.5 }}>{tr("obDateRangeExplain")}</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {[
-                    { id: "calendar", label: "This Month" },
-                    { id: "rolling", label: "Past Month" },
-                    { id: "custom", label: "Custom Range" }
+                    { id: "calendar", label: tr("obThisMonth") },
+                    { id: "rolling", label: tr("obPastMonth") },
+                    { id: "custom", label: tr("obCustomRange") }
                   ].map(function(o, i) {
                     return (
                       <JrChip key={o.id} label={o.label} selected={prefPeriodMode === o.id} delay={0.4 + i * 0.05}
@@ -6720,11 +7351,11 @@ function OnboardingScreen(props) {
                 {prefPeriodMode === "custom" && (
                   <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
                     <div style={{ flex: 1 }}>
-                      <div style={labelStyle}>From</div>
+                      <div style={labelStyle}>{tr("obFrom")}</div>
                       <input type="date" value={prefPeriodStart} onChange={function(e) { setPrefPeriodStart(e.target.value); }} className="jr-field" style={fieldStyle} />
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={labelStyle}>To</div>
+                      <div style={labelStyle}>{tr("obTo")}</div>
                       <input type="date" value={prefPeriodEnd} onChange={function(e) { setPrefPeriodEnd(e.target.value); }} className="jr-field" style={fieldStyle} />
                     </div>
                   </div>
@@ -6741,7 +7372,7 @@ function OnboardingScreen(props) {
                       <div style={optIconTile(sel, 38)}>
                         <SVGIcon id={st.icon} size={18} color={sel ? "#fff" : JINK3} />
                       </div>
-                      <span style={{ fontSize: 17, fontWeight: sel ? 700 : 500, color: sel ? JINK : JINK2 }}>{st.label}</span>
+                      <span style={{ fontSize: 17, fontWeight: sel ? 700 : 500, color: sel ? JINK : JINK2 }}>{tr(st.tKey)}</span>
                       {sel && optCheck}
                     </button>
                   );
@@ -6758,7 +7389,7 @@ function OnboardingScreen(props) {
                       <div style={optIconTile(sel, 36)}>
                         <SVGIcon id={opt.icon} size={17} color={sel ? "#fff" : JINK3} />
                       </div>
-                      <span style={{ fontSize: 15, fontWeight: sel ? 700 : 500, color: sel ? JINK : JINK2, lineHeight: 1.35 }}>{opt.label}</span>
+                      <span style={{ fontSize: 15, fontWeight: sel ? 700 : 500, color: sel ? JINK : JINK2, lineHeight: 1.35 }}>{tr(opt.tKey)}</span>
                       {sel && optCheck}
                     </button>
                   );
@@ -6768,13 +7399,13 @@ function OnboardingScreen(props) {
 
             {qIndex === 4 && (
               <div style={{ paddingTop: 14 }}>
-                <QuickAmount label="Monthly income" value={income} onChange={setIncome} picks={[1500, 3000, 5000, 8000]} />
+                <QuickAmount label={tr("obIncomeLabel")} value={income} onChange={setIncome} picks={[1500, 3000, 5000, 8000]} />
               </div>
             )}
 
             {qIndex === 5 && (
               <div style={{ paddingTop: 14 }}>
-                <QuickAmount label="Monthly essentials" value={essentials} onChange={setEssentials} picks={essPicks} />
+                <QuickAmount label={tr("obEssentialsLabel")} value={essentials} onChange={setEssentials} picks={essPicks} />
               </div>
             )}
 
@@ -6782,7 +7413,7 @@ function OnboardingScreen(props) {
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                 {LEAK_OPTIONS.map(function(o, i) {
                   return (
-                    <JrChip key={o.id} icon={o.icon} label={o.label} selected={leaks.indexOf(o.id) >= 0} delay={0.05 + i * 0.07}
+                    <JrChip key={o.id} icon={o.icon} label={tr(o.tKey)} selected={leaks.indexOf(o.id) >= 0} delay={0.05 + i * 0.07}
                       style={{ padding: "11px 16px" }}
                       onPress={function() { toggleLeak(o.id); }} />
                   );
@@ -6792,7 +7423,7 @@ function OnboardingScreen(props) {
 
             {qIndex === 7 && (
               <div style={{ paddingTop: 14 }}>
-                <QuickAmount label="Unaccounted spending each month" value={overspend} onChange={setOverspend} picks={[100, 250, 500, 1000]} />
+                <QuickAmount label={tr("obOverspendLabel")} value={overspend} onChange={setOverspend} picks={[100, 250, 500, 1000]} />
                 <div key={hint.tag} style={{ textAlign: "center", marginTop: 18, animation: "rclPhrase 0.35s ease both" }}>
                   <span style={{ display: "inline-block", background: T.orangeDim, color: T.orange, fontSize: 12.5, fontWeight: 800, padding: "7px 14px", borderRadius: 999, letterSpacing: "0.02em" }}>{hint.tag}</span>
                   <div style={{ fontSize: 13, color: JINK2, marginTop: 8, lineHeight: 1.5 }}>{hint.txt}</div>
@@ -6802,35 +7433,35 @@ function OnboardingScreen(props) {
 
             {qIndex === 8 && (
               <div style={{ textAlign: "center", paddingTop: 6 }}>
-                <div style={labelJ}>Saved up</div>
-                <QuickAmount compact label="Saved up" value={savings} onChange={setSavings} picks={[500, 2000, 10000]} />
-                <div style={Object.assign({}, labelJ, { marginTop: 30 })}>Total debt</div>
-                <QuickAmount compact label="Total debt" value={debt} onChange={setDebt} picks={[0, 1000, 5000]} />
+                <div style={labelJ}>{tr("obSavedUpLabel")}</div>
+                <QuickAmount compact label={tr("obSavedUpLabel")} value={savings} onChange={setSavings} picks={[500, 2000, 10000]} />
+                <div style={Object.assign({}, labelJ, { marginTop: 30 })}>{tr("obTotalDebtLabel")}</div>
+                <QuickAmount compact label={tr("obTotalDebtLabel")} value={debt} onChange={setDebt} picks={[0, 1000, 5000]} />
               </div>
             )}
 
             {qIndex === 9 && (
               <div>
-                <div style={labelJ}>Goal name</div>
-                <input value={goalName} onChange={function(e) { setGoalName(e.target.value); }} type="text" placeholder="e.g. Emergency fund, first apartment"
+                <div style={labelJ}>{tr("obGoalNameLabel")}</div>
+                <input value={goalName} onChange={function(e) { setGoalName(e.target.value); }} type="text" placeholder={tr("obGoalNamePlaceholder")}
                   className="jr-field" style={Object.assign({}, fieldStyle, { color: JINK })} />
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 6 }}>
-                  {["Emergency fund", "Travel", "New laptop", "First apartment"].map(function(g, i) {
+                  {[tr("emergencyFund"), tr("obGoalTravel"), tr("obGoalLaptop"), tr("obGoalApartment")].map(function(g, i) {
                     return (
                       <JrChip key={g} small label={g} selected={goalName === g} delay={0.1 + i * 0.06}
                         onPress={function() { setGoalName(g); }} />
                     );
                   })}
                 </div>
-                <div style={Object.assign({}, labelJ, { marginTop: 20, textAlign: "center" })}>Target amount</div>
+                <div style={Object.assign({}, labelJ, { marginTop: 20, textAlign: "center" })}>{tr("obTargetAmountLabel")}</div>
                 <div style={{ textAlign: "center" }}>
-                  <QuickAmount compact label="Goal target amount" value={goalAmt} onChange={setGoalAmt} picks={[2000, 5000, 10000]} />
+                  <QuickAmount compact label={tr("obTargetAmountLabel")} value={goalAmt} onChange={setGoalAmt} picks={[2000, 5000, 10000]} />
                 </div>
-                <div style={Object.assign({}, labelJ, { marginTop: 22 })}>Timeline</div>
+                <div style={Object.assign({}, labelJ, { marginTop: 22 })}>{tr("obTimelineLabel")}</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                   {TIMELINES.map(function(t, i) {
                     return (
-                      <JrChip key={t} label={t} selected={timeline === t} delay={0.15 + i * 0.06}
+                      <JrChip key={t} label={tr(TIMELINE_TKEYS[t])} selected={timeline === t} delay={0.15 + i * 0.06}
                         onPress={function() { setTimeline(t); }} />
                     );
                   })}
@@ -6842,16 +7473,16 @@ function OnboardingScreen(props) {
       </div>
 
       <div style={{ padding: "12px 24px 40px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box" }}>
-        {qIndex === 0 && <JrBtn label="Let's go" disabled={!greetDone} onPress={advance} />}
-        {qIndex === 1 && <JrBtn label="Continue" onPress={advance} />}
+        {qIndex === 0 && <JrBtn label={tr("obLetsGo")} disabled={!greetDone} onPress={advance} />}
+        {qIndex === 1 && <JrBtn label={tr("continueBtn")} onPress={advance} />}
         {(qIndex === 2 || qIndex === 3) && (
-          <div style={{ textAlign: "center", fontSize: 12.5, color: JINK3, fontWeight: 600, padding: "14px 0" }}>Tap an option to continue</div>
+          <div style={{ textAlign: "center", fontSize: 12.5, color: JINK3, fontWeight: 600, padding: "14px 0" }}>{tr("obTapOption")}</div>
         )}
         {qIndex >= 4 && qIndex <= 8 && (
           <div>
-            <JrBtn label="Continue"
+            <JrBtn label={tr("continueBtn")}
               onPress={function() {
-                if (qIndex === 6 && leaks.length === 0) { setToast("Pick at least one — or skip below."); return; }
+                if (qIndex === 6 && leaks.length === 0) { setToast(tr("obPickAtLeastOne")); return; }
                 advance();
               }} />
             <button onClick={function() {
@@ -6860,11 +7491,11 @@ function OnboardingScreen(props) {
                 advance();
               }}
               style={{ width: "100%", background: "none", border: "none", color: JINK3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0" }}>
-              {qIndex === 7 ? "I really don't know" : "Skip for now"}
+              {qIndex === 7 ? tr("obReallyDontKnow") : tr("obSkipForNow")}
             </button>
           </div>
         )}
-        {qIndex === 9 && <JrBtn label="Do the math" onPress={advance} />}
+        {qIndex === 9 && <JrBtn label={tr("obDoTheMath")} onPress={advance} />}
       </div>
 
       <JrToast msg={toast} onDone={function() { setToast(""); }} />
@@ -6913,8 +7544,10 @@ function FoundMoney(props) {
       setNarrLoading(false);
       if (err || !text) {
         setNarr(leakCount === 1
-          ? "I went through your spending and found one charge worth a second look."
-          : "I went through your spending and found " + leakCount + " things worth a look" + (recoverable > 0 ? " - around " + dollars(recoverable) + " a year if you act on them." : "."));
+          ? tr("fmFallbackSingle")
+          : (recoverable > 0
+            ? tr("fmFallbackMultiAmt").replace("{n}", leakCount).replace("{amt}", dollars(recoverable))
+            : tr("fmFallbackMultiNoAmt").replace("{n}", leakCount)));
       } else { setNarr(text); }
     });
   }, [open]);
@@ -6946,8 +7579,8 @@ function FoundMoney(props) {
     callClaude([{ role: "user", content: ask }], system, 260, function(err, text) {
       if (err || !text) {
         setDraft({ id: f.id, loading: false, text: isHike
-          ? ("Hello, I've been a customer for a while and noticed my price recently rose to " + dollars(m.newAmt) + ". I'd like to keep my previous rate of " + dollars(m.oldAmt) + " - can you match it? If not, please treat this as notice that I'll be cancelling. Thank you, [Your Name]")
-          : ("Hello, I'd like to cancel my " + f.merchant + " subscription effective immediately. Please confirm in writing that the cancellation is processed and that no further charges will be made. Thank you, [Your Name]") });
+          ? tr("fmHikeFallback").replace("{new}", dollars(m.newAmt)).replace("{old}", dollars(m.oldAmt))
+          : tr("fmCancelFallback").replace("{merchant}", f.merchant) });
       } else { setDraft({ id: f.id, text: text, loading: false }); }
     });
   }
@@ -6970,10 +7603,10 @@ function FoundMoney(props) {
     return { icon: "chart", color: T.btn };   // jump
   }
   function dismissLabel(t) {
-    if (t === "recurring") return "Keep it";
-    if (t === "duplicate") return "Looks fine";
-    if (t === "jump") return "Got it";
-    return "Dismiss";
+    if (t === "recurring") return tr("fmKeepIt");
+    if (t === "duplicate") return tr("fmLooksFine");
+    if (t === "jump") return tr("fmGotIt");
+    return tr("dismiss");
   }
 
   // Nothing to show and nothing ever found -> stay out of the way entirely.
@@ -6989,10 +7622,10 @@ function FoundMoney(props) {
       <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-          <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Found Money</span>
+          <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("fmTitle")}</span>
         </div>
         {tally > 0 && (
-          <span style={{ fontSize: 12.5, fontWeight: 700, color: T.green }}>{"Recovered " + dollars(tally)}</span>
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: T.green }}>{tr("fmRecovered").replace("{amt}", dollars(tally))}</span>
         )}
       </div>
 
@@ -7000,8 +7633,8 @@ function FoundMoney(props) {
         <button onClick={function() { setOpen(true); }} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 18, background: T.card, border: "none", boxShadow: cardShadow }}>
           <CatBadge icon="search" color={T.orange} size={40} soft={true} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>{"Richard spotted " + leakCount + " possible " + (leakCount === 1 ? "leak" : "leaks")}</div>
-            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{recoverable > 0 ? ("About " + dollars(recoverable) + " a year to recover") : "Tap to review what he found"}</div>
+            <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>{tr(leakCount === 1 ? "fmSpottedLeakSing" : "fmSpottedLeakPl").replace("{n}", leakCount)}</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{recoverable > 0 ? tr("fmAboutAmtYear").replace("{amt}", dollars(recoverable)) : tr("fmTapReview")}</div>
           </div>
           <SVGIcon id="chevron" size={18} color={T.ink3} />
         </button>
@@ -7009,20 +7642,20 @@ function FoundMoney(props) {
         <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 18, background: T.card, boxShadow: cardShadow }}>
           <CatBadge icon="check" color={T.green} size={40} soft={true} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>All clear for now</div>
-            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>No new leaks. Richard keeps watching.</div>
+            <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>{tr("fmAllClear")}</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{tr("fmNoNewLeaks")}</div>
           </div>
         </div>
       )}
 
-      <Overlay open={open} onClose={function() { setOpen(false); }} title="Found Money">
+      <Overlay open={open} onClose={function() { setOpen(false); }} title={tr("fmTitle")}>
         <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
           <div style={{ flex: 1, background: T.greenDim, borderRadius: 14, padding: "12px 14px" }}>
-            <div style={{ fontSize: 9.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em" }}>Recoverable / year</div>
+            <div style={{ fontSize: 9.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em" }}>{tr("fmRecoverableYear")}</div>
             <div style={{ fontSize: 22, fontWeight: 700, color: T.green, letterSpacing: "-0.02em", marginTop: 3 }}>{dollars(recoverable)}</div>
           </div>
           <div style={{ flex: 1, background: "rgba(0,0,0,0.04)", borderRadius: 14, padding: "12px 14px" }}>
-            <div style={{ fontSize: 9.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em" }}>Recovered so far</div>
+            <div style={{ fontSize: 9.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em" }}>{tr("fmRecoveredSoFar")}</div>
             <div style={{ fontSize: 22, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", marginTop: 3 }}>{dollars(tally)}</div>
           </div>
         </div>
@@ -7033,7 +7666,7 @@ function FoundMoney(props) {
             {narrLoading
               ? <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, color: T.ink3, fontWeight: 600 }}>
                   <ThinkingDots size={4} color={T.orange} />
-                  <ThinkingPhrase phrases={["Reviewing your spending", "Cross-checking the charges", "Writing it up"]} />
+                  <ThinkingPhrase phrases={[tr("fmThink1"), tr("fmThink2"), tr("fmThink3")]} />
                 </div>
               : <RichardText text={narr} size={13.5} />}
           </div>
@@ -7054,8 +7687,8 @@ function FoundMoney(props) {
                   <div style={{ fontSize: 12, color: T.ink3, marginTop: 3, lineHeight: 1.45 }}>{f.subtitle}</div>
 
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 10 }}>
-                    {canDraft && <button onClick={function() { makeDraft(f); }} style={primaryBtn}>{f.type === "hike" ? "Draft price-match" : "Draft cancellation"}</button>}
-                    {f.type === "duplicate" && <button onClick={function() { resolve(f, f.amount); }} style={primaryBtn}>Count as recovered</button>}
+                    {canDraft && <button onClick={function() { makeDraft(f); }} style={primaryBtn}>{f.type === "hike" ? tr("fmDraftPriceMatch") : tr("fmDraftCancellation")}</button>}
+                    {f.type === "duplicate" && <button onClick={function() { resolve(f, f.amount); }} style={primaryBtn}>{tr("fmCountRecovered")}</button>}
                     <button onClick={function() { resolve(f, 0); }} style={ghostBtn}>{dismissLabel(f.type)}</button>
                   </div>
 
@@ -7064,13 +7697,13 @@ function FoundMoney(props) {
                       {draft.loading
                         ? <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: T.ink3, fontWeight: 600 }}>
                             <ThinkingDots size={3.5} color={T.orange} />
-                            <ThinkingPhrase phrases={["Drafting your message", "Keeping it polite but firm", "Almost there"]} />
+                            <ThinkingPhrase phrases={[tr("fmDraftThink1"), tr("fmDraftThink2"), tr("fmDraftThink3")]} />
                           </div>
                         : <div>
                             <div style={{ fontSize: 13, color: T.ink, lineHeight: 1.55, whiteSpace: "pre-wrap" }}>{draft.text}</div>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 10 }}>
-                              <button onClick={copyDraft} style={primaryBtn}>{copied ? "Copied" : "Copy message"}</button>
-                              <button onClick={function() { resolve(f, creditOf(f)); }} style={ghostBtn}>{"I did it (+" + dollars(creditOf(f)) + ")"}</button>
+                              <button onClick={copyDraft} style={primaryBtn}>{copied ? tr("fmCopied") : tr("fmCopyMessage")}</button>
+                              <button onClick={function() { resolve(f, creditOf(f)); }} style={ghostBtn}>{tr("fmIDidIt").replace("{amt}", dollars(creditOf(f)))}</button>
                             </div>
                           </div>}
                     </div>
@@ -7083,13 +7716,13 @@ function FoundMoney(props) {
 
         {findings.length === 0 && (
           <div style={{ textAlign: "center", padding: "24px 10px", color: T.ink3 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, marginBottom: 4 }}>You've reviewed everything</div>
-            <div style={{ fontSize: 13 }}>Richard keeps watching as new spending comes in.</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{tr("fmReviewedEverything")}</div>
+            <div style={{ fontSize: 13 }}>{tr("fmKeepsWatching")}</div>
           </div>
         )}
 
         <div style={{ fontSize: 11, color: T.ink3, lineHeight: 1.5, margin: "6px 2px 0", textAlign: "center" }}>
-          Spotted from your logged spending - always confirm before you cancel. Richard drafts the message; you send it.
+          {tr("fmFooterNote")}
         </div>
       </Overlay>
     </div>
@@ -27496,7 +28129,11 @@ export default function App() {
     setUser(null); setAccountKey(null); setTab("overview");
     setHouseholdId(null); setHousehold(null); setInvites([]);
     setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setInvestorProfile(null); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]); setBankSync(null); setLeumiFinteka(null); setCustomBanners([]); setMotivation(motivDefault()); setSocial({ handle: "", following: [], followers: [], requests: [] });
-    applyLangDir("en"); setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang("en"); applyTheme("blue"); setTheme("blue");
+    // Language is deliberately NOT reset here (unlike theme) - it's a device
+    // preference AuthScreen itself now renders in, and wiping it back to "en"
+    // would force a Hebrew/Arabic/Russian user back to English on their own
+    // sign-in screen every time they log out.
+    setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang(_lang.code); applyTheme("blue"); setTheme("blue");
   }
 
   function save(next) {
