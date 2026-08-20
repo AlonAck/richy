@@ -1920,6 +1920,32 @@ function ensureSyncedTags(categories, folders) {
 function freshCategories() { return DEFAULT_CATEGORIES.map(function(c) { return { id: c.id, name: c.name, color: c.color, icon: c.icon, folderId: c.folderId }; }).concat(SYNCED_TAGS); }
 function freshFolders() { return DEFAULT_FOLDERS.map(function(f) { return Object.assign({}, f); }).concat([SYNCED_TAG_FOLDER]); }
 
+// Default categories shipped with the old, pre-palette colors below - keyed by
+// id so an account's Food (c2) and Salary (c8), which happened to share a
+// color, repaint independently. Only a category that still carries this exact
+// legacy hex gets repainted to the current DEFAULT_CATEGORIES color; anything
+// a user has since recolored (even coincidentally to the same legacy hex) no
+// longer matches after the first repaint, so this settles after one run.
+var LEGACY_DEFAULT_CATEGORY_COLORS = {
+  c1: "#8B6CEF", c2: "#27A85F", c3: "#D97941", c4: "#E0556E", c5: "#2799C8",
+  c6: "#AF52DE", c8: "#27A85F", c9: "#C8983A", c10: "#C8673A", c11: "#6B5C4E",
+};
+function healDefaultCategoryColors(categories) {
+  var cats = categories || [];
+  var currentColor = {};
+  DEFAULT_CATEGORIES.forEach(function(c) { currentColor[c.id] = c.color; });
+  var changed = false;
+  var next = cats.map(function(c) {
+    var legacy = LEGACY_DEFAULT_CATEGORY_COLORS[c.id];
+    if (legacy && c.color === legacy && currentColor[c.id] && currentColor[c.id] !== legacy) {
+      changed = true;
+      return Object.assign({}, c, { color: currentColor[c.id] });
+    }
+    return c;
+  });
+  return { changed: changed, categories: next };
+}
+
 // ── Folder intelligence ─────────────────────────────────────────────────────
 // A folder used to be {id, name} and nothing else: a header in the Categories
 // screen with no consequence anywhere else in the app. It now carries
@@ -28064,10 +28090,11 @@ export default function App() {
   useEffect(function() {
     if (!accountKey) return;
     var synced = ensureSyncedTags(categories, folders);
-    if (!synced.changed) return;
-    setCategories(synced.categories);
+    var healed = healDefaultCategoryColors(synced.categories);
+    if (!synced.changed && !healed.changed) return;
+    setCategories(healed.categories);
     setFolders(synced.folders);
-    save({ categories: synced.categories, folders: synced.folders });
+    save({ categories: healed.categories, folders: synced.folders });
   }, [accountKey, categories, folders]);
 
   function myEmail() {
