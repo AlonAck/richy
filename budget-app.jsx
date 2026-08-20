@@ -226,17 +226,23 @@ var ICON_BANK = [
   "sun", "star", "droplet", "tool", "credit", "building", "bike", "shirt", "wifi", "tv", "umbrella",
 ];
 
-// Refined, wealth-adjacent palette. Warm tones first, then jewel tones, then pastels/darks.
+// Curated tag/category palette (warm -> cool gradient): Papaya Whip, Tangerine
+// Dream, Light Coral, Powder Blue, Mauve, Wisteria Blue, Steel Azure.
 var COLOR_BANK = [
-  "#C8673A", "#C8983A", "#8B6CEF", "#2799C8", "#27A85F", "#00B4A0",
-  "#D97941", "#AF52DE", "#E0556E", "#5A7D9A", "#B0894E", "#6B5C4E",
-  "#FF6B6B", "#FF9F1C", "#FFCB47", "#06D6A0", "#118AB2", "#9B5DE5",
-  "#F72585", "#3A86FF", "#8AC926", "#F4A261", "#E76F51", "#264653",
-  "#E91E8C", "#7C3AED", "#0891B2", "#059669", "#DC2626", "#D97706",
-  "#7C2D12", "#1E3A5F", "#14532D", "#4A044E", "#134E4A", "#78350F",
-  "#FDA4AF", "#FCD34D", "#6EE7B7", "#93C5FD", "#C4B5FD", "#FCA5A5",
-  "#86EFAC", "#67E8F9", "#F9A8D4", "#FDE68A", "#A5B4FC", "#BAE6FD",
+  "#FFEED6", "#F79A78", "#F49292", "#A7C2DC", "#DBBCF1", "#7E8EC8", "#004A8F",
 ];
+
+// Picks readable icon ink for a solid-fill badge: dark ink on light/pastel
+// colors, white on darker/more saturated ones (YIQ perceived-brightness split).
+function contrastIconColor(hex) {
+  var c = (hex || "").replace("#", "");
+  if (c.length === 3) c = c.split("").map(function(ch) { return ch + ch; }).join("");
+  var r = parseInt(c.substr(0, 2), 16) || 0;
+  var g = parseInt(c.substr(2, 2), 16) || 0;
+  var b = parseInt(c.substr(4, 2), 16) || 0;
+  var yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 160 ? T.ink : "#fff";
+}
 
 // Folders are more than headers - see the "Folder intelligence" block below for
 // the full shape (colour, icon, 50/30/20 role, auto-fill rule).
@@ -5530,7 +5536,7 @@ function CatBadge(props) {
       display: "flex", alignItems: "center", justifyContent: "center",
       boxShadow: soft ? "none" : "0 2px 8px " + props.color + "55",
     }}>
-      <SVGIcon id={props.icon || "box"} size={Math.round(size * 0.5)} color={soft ? props.color : "#fff"} />
+      <SVGIcon id={props.icon || "box"} size={Math.round(size * 0.5)} color={soft ? props.color : contrastIconColor(props.color)} />
     </div>
   );
 }
