@@ -253,16 +253,16 @@ var DEFAULT_FOLDERS = [
 ];
 
 var DEFAULT_CATEGORIES = [
-  { id: "c1",  name: "Housing",       color: "#8B6CEF", icon: "home",      folderId: "f1" },
-  { id: "c2",  name: "Food",          color: "#27A85F", icon: "food",      folderId: "f1" },
-  { id: "c3",  name: "Transport",     color: "#D97941", icon: "car",       folderId: "f1" },
-  { id: "c4",  name: "Health",        color: "#E0556E", icon: "heart",     folderId: "f1" },
-  { id: "c5",  name: "Entertainment", color: "#2799C8", icon: "film",      folderId: "f2" },
-  { id: "c6",  name: "Shopping",      color: "#AF52DE", icon: "cart",      folderId: "f2" },
-  { id: "c8",  name: "Salary",        color: "#27A85F", icon: "briefcase", folderId: "f3" },
-  { id: "c9",  name: "Investments",   color: "#C8983A", icon: "chart",     folderId: "f3" },
-  { id: "c10", name: "Savings",       color: "#C8673A", icon: "coins",     folderId: "f3" },
-  { id: "c11", name: "Other",         color: "#6B5C4E", icon: "box",       folderId: "f2" },
+  { id: "c1",  name: "Housing",       color: "#7E8EC8", icon: "home",      folderId: "f1" },
+  { id: "c2",  name: "Food",          color: "#F79A78", icon: "food",      folderId: "f1" },
+  { id: "c3",  name: "Transport",     color: "#A7C2DC", icon: "car",       folderId: "f1" },
+  { id: "c4",  name: "Health",        color: "#F49292", icon: "heart",     folderId: "f1" },
+  { id: "c5",  name: "Entertainment", color: "#DBBCF1", icon: "film",      folderId: "f2" },
+  { id: "c6",  name: "Shopping",      color: "#004A8F", icon: "cart",      folderId: "f2" },
+  { id: "c8",  name: "Salary",        color: "#7E8EC8", icon: "briefcase", folderId: "f3" },
+  { id: "c9",  name: "Investments",   color: "#004A8F", icon: "chart",     folderId: "f3" },
+  { id: "c10", name: "Savings",       color: "#F79A78", icon: "coins",     folderId: "f3" },
+  { id: "c11", name: "Other",         color: "#FFEED6", icon: "box",       folderId: "f2" },
 ];
 
 // Trip budget buckets. Richard splits the total across these; the pct map is the
