@@ -173,8 +173,8 @@ var CASES = [
 // needs a reason: the point of this tool is that an UNEXPLAINED difference is a
 // bug, so the list is the record of what was changed on purpose.
 var INTENDED = {
-  advisorChat: "Phase 2 removed the Bank Leumi DEMO from Richard's capability tour.",
-  planChat:    "Phase 2 removed the Bank Leumi DEMO from Richard's capability tour."
+  advisorChat: "Phase 2 removed the Bank Leumi DEMO; Phase 7 renamed CSV import to the name users see on screen.",
+  planChat:    "Phase 2 removed the Bank Leumi DEMO; Phase 7 renamed CSV import to the name users see on screen."
 };
 
 var fails = 0;

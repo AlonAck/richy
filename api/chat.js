@@ -96,7 +96,7 @@ module.exports = async function handler(req, res) {
   // word of instruction text. An unknown id is a 400 rather than a silent
   // fallback, so a client/server version skew fails loudly instead of quietly
   // sending Richard out with no persona.
-  var system = PROMPTS.build(body.promptId, body.vars, body.userInstructions, body.lang);
+  var system = PROMPTS.build(body.promptId, body.vars, body.userInstructions, body.lang, body.situation);
   if (system == null) {
     res.status(400).json({ error: { type: "invalid_request", message: "Unknown prompt id." } });
     return;

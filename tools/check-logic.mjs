@@ -378,4 +378,79 @@ ok("onboarding's rows still do not move the balance",
 ok("the weekly close's rows do", W.skipCatchUp({ catchUp: true, catchUpCounts: true }), false);
 ok("an ordinary row is unaffected", W.skipCatchUp({}), false);
 
+// ---------------------------------------------------------------------------
+// Suggestions: what earns a place on the home screen, and what buys silence.
+// ---------------------------------------------------------------------------
+const SG = build(["suggestionContext", "pickSuggestion"], `
+  var SUGGEST_MAX_SHOWS = 3, SUGGEST_MIN_GAP_DAYS = 7, SUGGEST_QUIET_DAYS = 30;
+  function isoDay(d){return d.toISOString().slice(0,10);}
+  function round2(n){return Math.round(n*100)/100;}
+  function isOpening(t){return !!t.opening;}
+  function isTransfer(t){return !!t.transfer||t.catId==="savings-transfer";}
+  function isTrip(t){return !!t.trip;}
+  function addDaysISO(iso,n){var d=new Date(iso+"T00:00:00Z");d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);}
+  function daysBetweenISO(a,b){return Math.round((new Date(b+"T00:00:00Z")-new Date(a+"T00:00:00Z"))/86400000);}
+  var SUGGESTIONS = [
+    { id:"statement", trigger:function(c){ if(c.daysSinceLastLog>=4) return true;
+        return c.expectedRecurring>0 && c.loggedThisWeek < c.expectedRecurring*0.75; },
+      used:function(c){ return !!c.hasImported; } },
+    { id:"debts", trigger:function(c){ return c.negativeDays>=2 || c.debtWords; },
+      used:function(c){ return c.debtCount>0; } },
+    { id:"collab", trigger:function(){ return true; }, used:function(c){ return !!c.householdId; } }
+  ];\n`);
+
+const TODAY = "2026-08-21";
+const ctxOf = (tx, extra) => SG.suggestionContext(Object.assign({ tx, todayIso: TODAY }, extra));
+const pick = (ctx, state) => { const s = SG.pickSuggestion(ctx, state || {}, TODAY); return s ? s.id : null; };
+
+console.log("\n-- reading the user's own data --");
+ok("days since the user last typed something",
+  ctxOf([{ id: 1, type: "expense", amount: 10, date: "2026-08-17" }]).daysSinceLastLog, 4);
+ok("a recurring item posting itself is not the user using the app",
+  ctxOf([{ id: 1, type: "expense", amount: 10, date: "2026-08-17" },
+         { id: 2, type: "expense", amount: 3200, date: "2026-08-20", recurredFrom: 9 }]).daysSinceLastLog, 4);
+ok("nor is a catch-up estimate",
+  ctxOf([{ id: 1, type: "expense", amount: 10, date: "2026-08-17" },
+         { id: 2, type: "expense", amount: 400, date: "2026-08-20", catchUp: true }]).daysSinceLastLog, 4);
+ok("never logged anything at all",  ctxOf([]).daysSinceLastLog, 999);
+ok("spots debt words in a label, Hebrew or English",
+  [ctxOf([{ id: 1, type: "expense", amount: 500, label: "החזר הלוואה", date: TODAY }]).debtWords,
+   ctxOf([{ id: 1, type: "expense", amount: 500, label: "Car loan repayment", date: TODAY }]).debtWords,
+   ctxOf([{ id: 1, type: "expense", amount: 500, label: "Groceries", date: TODAY }]).debtWords], [true, true, false]);
+ok("counts days the running balance was under water",
+  ctxOf([{ id: 1, type: "expense", amount: 100, date: "2026-08-10" },
+         { id: 2, type: "expense", amount: 50, date: "2026-08-12" },
+         { id: 3, type: "income", amount: 400, date: "2026-08-15" }]).negativeDays, 2);
+
+console.log("\n-- what triggers --");
+const stale = ctxOf([{ id: 1, type: "expense", amount: 10, date: "2026-08-10" }]);
+ok("four quiet days asks about the statement", pick(stale), "statement");
+ok("...but not once they have imported before", pick(ctxOf([{ id: 1, type: "expense", amount: 10, date: "2026-08-10", externalId: "X1" }])), "collab");
+const overdrawn = ctxOf([{ id: 1, type: "expense", amount: 100, date: "2026-08-19" },
+                         { id: 2, type: "expense", amount: 50, date: "2026-08-20" },
+                         { id: 3, type: "expense", amount: 20, date: TODAY }]);
+ok("two days under water asks about debts", pick(overdrawn), "debts");
+ok("...but not for someone already tracking debts", pick(ctxOf([{ id: 1, type: "expense", amount: 100, date: "2026-08-19" },
+  { id: 2, type: "expense", amount: 50, date: "2026-08-20" }, { id: 3, type: "expense", amount: 20, date: TODAY }], { debts: [{ id: 1 }] })), "collab");
+ok("someone in a household is never asked to add a partner",
+  pick(ctxOf([{ id: 1, type: "expense", amount: 20, date: TODAY }], { householdId: "h1" })), null);
+
+console.log("\n-- how it goes quiet --");
+ok("dismissed once, never offered again", pick(stale, { dismissedTips: ["statement"] }), "collab");
+ok("shown three times is asked and answered", pick(stale, { shownCount: { statement: 3 } }), "collab");
+ok("quiet period means nothing at all", pick(stale, { quietUntil: "2026-09-15" }), null);
+ok("...and it ends", pick(stale, { quietUntil: "2026-08-20" }), "statement");
+ok("inside the weekly gap the same card stays put",
+  pick(stale, { lastSuggestionAt: "2026-08-19", activeId: "statement" }), "statement");
+ok("...and does not rotate to another one",
+  pick(stale, { lastSuggestionAt: "2026-08-19", activeId: "collab" }), "collab");
+ok("...but a card that stopped applying disappears mid-gap",
+  pick(ctxOf([{ id: 1, type: "expense", amount: 20, date: TODAY }], { householdId: "h1" }),
+       { lastSuggestionAt: "2026-08-19", activeId: "collab" }), null);
+ok("after the gap it can pick a new one",
+  pick(stale, { lastSuggestionAt: "2026-08-01", activeId: "collab" }), "statement");
+
+console.log("\n-- priority --");
+ok("the statement outranks debts when both apply", pick(overdrawn.daysSinceLastLog >= 4 ? overdrawn : Object.assign({}, overdrawn, { daysSinceLastLog: 9 })), "statement");
+
 done();
