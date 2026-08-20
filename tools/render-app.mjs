@@ -36,7 +36,7 @@ const BLOBS = {
   // exactly the case Layer 1 exists for.
   overview: {
     displayName: "Dana", email: "dana@example.com", onboardingDone: true, catchUpDone: true,
-    currency: "₪", lang: "en", theme: "blue",
+    currency: "₪", lang: process.env.LANG_CODE || "en", theme: "blue",
     onboardingData: { lifeStage: "Working", income: "12000", incomeType: "fixed", essentials: "4200" },
     tx: [
       { id: 1, type: "income", amount: 12000, label: "Salary", catId: "c8", category: "Salary", date: monthsAgo(0).slice(0, 8) + "01", repeat: "none", pending: false },
@@ -45,7 +45,7 @@ const BLOBS = {
     ],
     budgets: [], goals: [], trips: [], savings: [], businesses: [], investing: [], debts: [], notes: [],
   },
-  onboarding: { displayName: "Noa", email: "noa@example.com", onboardingDone: false, currency: "₪", lang: "en", tx: [] },
+  onboarding: { displayName: "Noa", email: "noa@example.com", onboardingDone: false, currency: "₪", lang: process.env.LANG_CODE || "en", tx: [] },
 };
 
 const stub = `
