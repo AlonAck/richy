@@ -204,4 +204,81 @@ ok("...as pending, so the balance does not move first",
   nextMonth.added.every(t => t.pending === true), true);
 ok("...and land in the confirm card", R.pendingRecurring(nextMonth.tx).length, 2);
 
+// ---------------------------------------------------------------------------
+// Daily safe-to-spend.
+// ---------------------------------------------------------------------------
+const S2S = build(["safeToSpendToday"], `
+  function isoDay(d){return d.toISOString().slice(0,10);}
+  function round2(n){return Math.round(n*100)/100;}
+  function isOpening(t){return !!t.opening;}
+  function isTransfer(t){return !!t.transfer||t.catId==="savings-transfer";}
+  function isTrip(t){return !!t.trip;}
+  function daysBetweenISO(a,b){return Math.round((new Date(b+"T00:00:00Z")-new Date(a+"T00:00:00Z"))/86400000);}\n`);
+
+const P = { periodStart: "2026-08-01", periodEnd: "2026-08-31" };
+const s2s = (tx, extra) => S2S.safeToSpendToday(Object.assign({ tx, todayIso: "2026-08-21" }, P, extra));
+
+console.log("\n-- safe to spend --");
+// 10,000 in, 1,000 spent, 11 days left (21st..31st inclusive) -> 9000/11
+ok("income minus spending over the days left",
+  s2s([{ id: 1, type: "income", amount: 10000, date: "2026-08-01" },
+       { id: 2, type: "expense", amount: 1000, date: "2026-08-05" }]).amount, round(9000 / 11));
+ok("today is one of the days left", s2s([]).daysLeft, 11);
+ok("on the last day you get the whole remainder",
+  S2S.safeToSpendToday({ tx: [{ id: 1, type: "income", amount: 300, date: "2026-08-01" }],
+    todayIso: "2026-08-31", periodStart: "2026-08-01", periodEnd: "2026-08-31" }).amount, 300);
+
+console.log("\n-- what it refuses to count --");
+ok("pending rows are not income",
+  s2s([{ id: 1, type: "income", amount: 10000, date: "2026-08-01", pending: true }]).income, 0);
+ok("an opening balance is not this month's income",
+  s2s([{ id: 1, type: "income", amount: 9000, date: "2026-08-01", opening: true }]).income, 0);
+ok("a transfer to savings is not spending",
+  s2s([{ id: 1, type: "expense", amount: 500, date: "2026-08-02", catId: "savings-transfer" }]).spent, 0);
+ok("last month's spending is not this month's",
+  s2s([{ id: 1, type: "expense", amount: 800, date: "2026-07-15" }]).spent, 0);
+ok("a future-dated row does not count yet",
+  s2s([{ id: 1, type: "expense", amount: 800, date: "2026-08-30" }]).spent, 0);
+
+console.log("\n-- steady vs variable income --");
+const salaryLate = [{ id: 1, type: "expense", amount: 200, date: "2026-08-03" }];
+ok("a steady earner's month is worth their monthly figure from day one",
+  s2s(salaryLate, { expectedIncome: 12000 }).income, 12000);
+ok("...but a bigger real month beats the estimate",
+  s2s(salaryLate.concat([{ id: 2, type: "income", amount: 15000, date: "2026-08-10" }]), { expectedIncome: 12000 }).income, 15000);
+ok("someone whose income varies gets no assumption",
+  s2s(salaryLate, { expectedIncome: 12000, variableIncome: true }).income, 0);
+
+console.log("\n-- commitments still to come --");
+const rentPending = { id: "rec_9_2026-08", type: "expense", amount: 3200, date: "2026-08-25", pending: true, recurredFrom: 9 };
+ok("a posted-but-unconfirmed rent is not spendable money",
+  s2s([{ id: 1, type: "income", amount: 10000, date: "2026-08-01" }, rentPending]).fixed, 3200);
+ok("...and it is not counted as spent as well (no double hit)",
+  s2s([{ id: 1, type: "income", amount: 10000, date: "2026-08-01" }, rentPending]).spent, 0);
+ok("a monthly source with nothing posted this period is still owed",
+  s2s([{ id: 9, type: "expense", amount: 3200, date: "2026-06-01", repeat: "monthly" }]).fixed, 3200);
+ok("...but not once this period's occurrence is confirmed",
+  s2s([{ id: 9, type: "expense", amount: 3200, date: "2026-06-01", repeat: "monthly" },
+       { id: "rec_9_2026-08", type: "expense", amount: 3200, date: "2026-08-01", recurredFrom: 9 }]).fixed, 0);
+ok("...and that confirmed one does count as spent",
+  s2s([{ id: 9, type: "expense", amount: 3200, date: "2026-06-01", repeat: "monthly" },
+       { id: "rec_9_2026-08", type: "expense", amount: 3200, date: "2026-08-01", recurredFrom: 9 }]).spent, 3200);
+
+console.log("\n-- goals --");
+ok("a goal with a deadline claims its share of the month",
+  s2s([], { goals: [{ target: 6000, saved: 0, deadline: "2026-11-19" }] }).goals, 2000);
+ok("an open-ended goal claims nothing", s2s([], { goals: [{ target: 6000, saved: 0 }] }).goals, 0);
+ok("a goal already past its deadline claims nothing",
+  s2s([], { goals: [{ target: 6000, saved: 0, deadline: "2026-07-01" }] }).goals, 0);
+ok("progress already made reduces the claim",
+  s2s([], { goals: [{ target: 6000, saved: 3000, deadline: "2026-11-19" }] }).goals, 1000);
+
+console.log("\n-- overspending --");
+const over = s2s([{ id: 1, type: "income", amount: 1000, date: "2026-08-01" },
+                  { id: 2, type: "expense", amount: 3000, date: "2026-08-05" }]);
+ok("goes negative rather than pretending", over.amount < 0, true);
+ok("...and says how negative", over.pot, -2000);
+
+function round(n) { return Math.round(n * 100) / 100; }
+
 done();
