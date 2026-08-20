@@ -331,4 +331,51 @@ ok("does not recur", logged.repeat, "none");
 ok("falls back to suggestCatId when the pick has no category",
   Q.quickPickTx({ label: "Something new", amount: 20 }, QCATS, HIST, "2026-08-21").catId, "c11");
 
+// ---------------------------------------------------------------------------
+// Weekly close.
+// ---------------------------------------------------------------------------
+const W = build(["catchUpTxs", "weeklyCloseWindow", "weeklyCloseDue", "skipCatchUp"], `
+  function isoDay(d){return d.toISOString().slice(0,10);}
+  function round2(n){return Math.round(n*100)/100;}
+  function addDaysISO(iso,n){var d=new Date(iso+"T00:00:00Z");d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);}
+  function daysBetweenISO(a,b){return Math.round((new Date(b+"T00:00:00Z")-new Date(a+"T00:00:00Z"))/86400000);}\n`);
+
+console.log("\n-- the week being closed --");
+// 2026-08-21 is a Friday; the most recent Sunday is 2026-08-16.
+ok("ends on the most recent close day", W.weeklyCloseWindow(0, "2026-08-21").end, "2026-08-16");
+ok("covers seven days", W.weeklyCloseWindow(0, "2026-08-21").start, "2026-08-10");
+ok("on the close day itself, that day is the end", W.weeklyCloseWindow(0, "2026-08-16").end, "2026-08-16");
+ok("a different close day moves the window",
+  W.weeklyCloseWindow(4, "2026-08-21").end, "2026-08-20");   // Thursday
+
+console.log("\n-- when it is due --");
+ok("a user who has never closed is due", W.weeklyCloseDue("", 0, "2026-08-21"), true);
+ok("closed this week, not due again", W.weeklyCloseDue("2026-08-16", 0, "2026-08-21"), false);
+ok("closed last week, due again", W.weeklyCloseDue("2026-08-09", 0, "2026-08-21"), true);
+
+console.log("\n-- what the answer writes --");
+const WCATS = [{ id: "c1", name: "Housing", folderId: "f1" }, { id: "c2", name: "Food", folderId: "f1" },
+               { id: "c8", name: "Salary", folderId: "f3" }, { id: "c11", name: "Other", folderId: "f2" }];
+const win = { periodStart: "2026-08-10", periodEnd: "2026-08-16" };
+const ball = W.catchUpTxs(Object.assign({ categories: WCATS, quickTotal: "400" }, win));
+ok("a single ballpark number is a complete answer", ball.length, 1);
+ok("...filed under Other", ball[0].catId, "c11");
+ok("...dated mid-week, not all on today (no one-day cliff)", ball[0].date, "2026-08-13");
+ok("...tagged catchUp so category analytics skip it", ball[0].catchUp, true);
+ok("...and catchUpCounts so the balance does not stay wrong", ball[0].catchUpCounts, true);
+ok("zero is not an answer", W.catchUpTxs(Object.assign({ categories: WCATS, quickTotal: "0" }, win)).length, 0);
+
+const detail = W.catchUpTxs(Object.assign({ categories: WCATS, mode: "detail", byCat: { c1: "300", c2: "120" } }, win));
+ok("by-category writes one row each", detail.map(t => t.category), ["Housing", "Food"]);
+ok("income folders are never offered as spending",
+  W.catchUpTxs(Object.assign({ categories: WCATS, mode: "detail", byCat: { c8: "5000" } }, win)).length, 0);
+ok("income is its own answer",
+  W.catchUpTxs(Object.assign({ categories: WCATS, income: "800" }, win)).map(t => t.type), ["income"]);
+
+console.log("\n-- which catch-up rows count --");
+ok("onboarding's rows still do not move the balance",
+  W.skipCatchUp({ catchUp: true }), true);
+ok("the weekly close's rows do", W.skipCatchUp({ catchUp: true, catchUpCounts: true }), false);
+ok("an ordinary row is unaffected", W.skipCatchUp({}), false);
+
 done();
