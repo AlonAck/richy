@@ -8361,7 +8361,6 @@ function Overview(props) {
   var tips = [
     { id: "debts",  icon: "credit",  title: "Crush your debt",  sub: "Payoff plan + debt-free date", used: (props.debts || []).length > 0,                       go: function() { if (props.onOpenDebts) props.onOpenDebts(); else nav("debts"); } },
     { id: "collab", icon: "user",    title: "Add your partner", sub: "Share budgets & goals",        used: !!props.householdId,                                  go: function() { if (props.onOpenCollab) props.onOpenCollab(); else nav("collab"); } },
-    { id: "sync",   icon: "refresh", title: "Sync your bank",   sub: "Auto-import transactions",     used: !!(props.bankSync && props.bankSync.enabled),         go: function() { if (props.onSetupSync) props.onSetupSync(); else nav("bankSync"); } },
     { id: "trip",   icon: "plane",   title: "Plan a trip",      sub: "Let Richard split your travel budget", used: (props.trips || []).length > 0,                go: function() { if (props.onPlanTrip) props.onPlanTrip(); else nav("trips"); } }
   ].filter(function(a) { return !a.used && tipsOff.indexOf(a.id) < 0; });
   // A brand-new account still needs to find these, so they sit high on the page.
@@ -9642,52 +9641,24 @@ function syncDocToTx(doc, seen, txList, cats, mainSym, id) {
   return tx;
 }
 
-// ===== BANK LEUMI DEMO ========================================================
-// There is no real Bank Leumi connection wired up (see the comment above
-// LEUMI_FINTEKA_ENDPOINT - a genuine one needs Leumi to certify Richy as a
-// licensed Third-Party Provider first). This is an honest stand-in: a pool of
-// believable Israeli-context merchants and a generator that produces fake but
-// realistic "synced" transactions, so the Connect Bank Leumi flow demos the
-// experience without ever claiming to be a real bank connection.
-var LEUMI_DEMO_MERCHANTS = [
-  { merchant: "Shufersal", min: 120, max: 420 },
-  { merchant: "Rami Levy", min: 90, max: 360 },
-  { merchant: "Paz Gas Station", min: 180, max: 340 },
-  { merchant: "Cofix", min: 10, max: 24 },
-  { merchant: "Aroma Espresso Bar", min: 16, max: 40 },
-  { merchant: "Wolt", min: 45, max: 130 },
-  { merchant: "Super-Pharm", min: 25, max: 160 },
-  { merchant: "Bezeq", min: 89, max: 89 },
-  { merchant: "Israel Electric Corp", min: 240, max: 620 },
-  { merchant: "Fox Home", min: 70, max: 320 },
-  { merchant: "IKEA", min: 140, max: 900 },
-  { merchant: "McDonald's", min: 32, max: 68 }
-];
-// Reuses syncDocToTx so demo transactions get the exact same categorization
-// and dedup treatment a real synced transaction would - that consistency is
-// what makes the demo feel like the real pipeline instead of a separate toy.
-function generateLeumiDemoTx(count, existingTx, cats, mainSym) {
-  var seen = {};
-  existingTx.forEach(function(t) { seen[dupKey(t.type, t.date, t.amount, t.label)] = true; });
-  var out = [];
-  var base = Date.now();
-  for (var i = 0; i < count; i++) {
-    var pick = LEUMI_DEMO_MERCHANTS[Math.floor(Math.random() * LEUMI_DEMO_MERCHANTS.length)];
-    var amount = round2(pick.min + Math.random() * (pick.max - pick.min));
-    var daysAgo = Math.floor(Math.random() * 6); // within the last week - feels freshly synced
-    var d = new Date(base - daysAgo * 86400000);
-    var doc = {
-      merchant: pick.merchant,
-      amount: amount,
-      currency: null, // demo transactions are generated directly in the app's own currency
-      date: d.toISOString().slice(0, 10),
-      source: "leumi_finteka",
-      externalId: "demo-" + base + "-" + i + "-" + Math.random().toString(36).slice(2, 8)
-    };
-    var t = syncDocToTx(doc, seen, existingTx, cats, mainSym, base + i);
-    if (t) out.push(t);
-  }
-  return out;
+
+// The Bank Leumi DEMO used to write invented transactions straight into the
+// real ledger, where they fed balance, budgets, category spend, savings rate,
+// streaks, XP, badges, net worth and everything Richard was told - with no way
+// to get them back out. The feature is gone; these are the rows it left behind.
+//
+// They are safe to identify: only the demo generator ever wrote an externalId
+// beginning "demo-", so this cannot match a real transaction - not a phone-sync
+// one (its externalId comes from the payload), not a hand-typed one (no
+// externalId at all), not a CSV import. Anything that fails that test is left
+// alone, which is the whole point: a wrong guess here deletes real money.
+function isDemoSyncTx(t) {
+  return !!(t && t.syncSource === "leumi_finteka" && typeof t.externalId === "string" && t.externalId.indexOf("demo-") === 0);
+}
+function cleanDemoSyncTx(list) {
+  var kept = [], removed = 0;
+  (list || []).forEach(function(t) { if (isDemoSyncTx(t)) removed++; else kept.push(t); });
+  return { tx: kept, removed: removed };
 }
 
 // ===== FOUND MONEY ============================================================
@@ -24637,9 +24608,11 @@ var BANK_SYNC_ENDPOINT = "https://richy-mgkl.vercel.app/api/bank-sync";
 // implements the real handshake, but it's DORMANT: a genuine connection needs
 // Bank Leumi to certify Richy as a licensed Third-Party Provider (eIDAS
 // QWAC/QSEAL certificates), which is a business/legal step, not a signup form.
-// Until/unless that happens, the UI below runs an honest, clearly-labeled DEMO
-// simulation instead (see LEUMI_DEMO_MERCHANTS and onConnectLeumiFinteka) -
-// it never calls this endpoint or pretends to be a real bank login.
+// Until/unless that happens there is no Bank Leumi connection in the product at
+// all. There used to be a labelled DEMO here that wrote invented transactions
+// into the real ledger; it is gone (see cleanDemoSyncTx). The endpoint below is
+// kept because the handshake it implements is real and finished - it is simply
+// dormant until certification, and nothing in the app calls it today.
 var LEUMI_FINTEKA_ENDPOINT = "https://richy-mgkl.vercel.app/api/leumi-fintaka";
 
 // The one-time phone setup, reformatted as a Jomo-style journey (the same
@@ -25483,150 +25456,6 @@ function BankSyncJourney(props) {
   );
 }
 
-// A DEMO Bank Leumi connect flow. There is no real bank behind this (see the
-// big comment above LEUMI_FINTEKA_ENDPOINT) - a genuine connection needs Bank
-// Leumi to certify Richy as a licensed Third-Party Provider first. This is
-// deliberately NOT a fake bank login screen (recreating a real bank's login
-// page, even a harmless-looking one, is the exact shape of a phishing page) -
-// instead it's an honest "here's what this would look like" consent dialog,
-// labeled Demo throughout. Rendered as its own section inside BankSyncView so
-// both sync methods live on one screen.
-function LeumiDemoConsentModal(props) {
-  var _bz = useState(false); var busy = _bz[0]; var setBusy = _bz[1];
-  function approve() {
-    if (busy) return;
-    setBusy(true);
-    Promise.resolve(props.onApprove()).then(function() { setBusy(false); props.onClose(); }).catch(function() { setBusy(false); });
-  }
-  var perms = ["Account name and masked account number", "Transaction history (amount, merchant, date)"];
-  return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 500 }} onClick={busy ? undefined : props.onClose}>
-      <div onClick={function(e) { e.stopPropagation(); }} style={{ width: "100%", maxWidth: 428, background: T.card, borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: "24px 22px 30px", boxSizing: "border-box" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-          <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", color: T.orange, background: T.orangeDim, borderRadius: 6, padding: "3px 7px" }}>DEMO</span>
-          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, fontFamily: DISP }}>Simulate connecting Bank Leumi</div>
-        </div>
-        <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.55, margin: "10px 0 16px" }}>
-          Richy doesn't have a live connection to Bank Leumi yet - that requires Bank Leumi to certify Richy as a licensed Open Banking provider first. This preview shows what the consent step would look like and fills your account with realistic-looking demo transactions so you can see the feature in action.
-        </div>
-        <div style={{ background: T.bg, borderRadius: 14, padding: "14px 16px", marginBottom: 18 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>A real connection would share</div>
-          {perms.map(function(p, i) {
-            return (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0" }}>
-                <SVGIcon id="check" size={13} color={T.green} />
-                <span style={{ fontSize: 13, color: T.ink }}>{p}</span>
-              </div>
-            );
-          })}
-        </div>
-        <button onClick={approve} disabled={busy}
-          style={{ width: "100%", background: T.btn, color: "#fff", border: "none", borderRadius: 16, padding: "15px 0", fontSize: 15.5, fontFamily: UI, fontWeight: 700, cursor: "pointer", opacity: busy ? 0.6 : 1, boxSizing: "border-box", marginBottom: 8 }}>
-          {busy ? "Simulating connection..." : "Simulate approval (Demo)"}
-        </button>
-        <button onClick={props.onClose} disabled={busy}
-          style={{ width: "100%", background: "none", color: T.ink3, border: "none", borderRadius: 16, padding: "12px 0", fontSize: 14.5, fontFamily: UI, fontWeight: 600, cursor: "pointer" }}>
-          Cancel
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function LeumiFintekaCard(props) {
-  var lf = props.leumiFinteka;
-  var connected = !!(lf && lf.connected);
-  var _md = useState(false); var modalOpen = _md[0]; var setModalOpen = _md[1];
-  var _sb = useState(false); var syncBusy = _sb[0]; var setSyncBusy = _sb[1];
-  var _dz = useState(false); var disconnecting = _dz[0]; var setDisconnecting = _dz[1];
-  var _err = useState(""); var err = _err[0]; var setErr = _err[1];
-  var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", padding: "18px 4px 8px", fontFamily: UI };
-
-  function handleDisconnect() {
-    if (!window.confirm("Disconnect Bank Leumi (Demo)? Transactions already synced stay in Richy; new ones will stop arriving until you reconnect.")) return;
-    setDisconnecting(true);
-    Promise.resolve(props.onDisconnect()).then(function() { setDisconnecting(false); }).catch(function() { setDisconnecting(false); });
-  }
-  function handleSyncNow() {
-    if (syncBusy) return;
-    setSyncBusy(true); setErr("");
-    Promise.resolve(props.onSyncNow()).catch(function(e) {
-      setErr((e && e.message) || "Sync didn't go through. Try again in a moment.");
-    }).then(function() { setSyncBusy(false); });
-  }
-
-  if (!connected) {
-    return (
-      <div>
-        <div style={secLabel}>Connect a bank directly</div>
-        <Card style={{ padding: "22px 20px", marginBottom: 4 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
-            <div style={{ width: 42, height: 42, borderRadius: 13, background: T.blueDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <SVGIcon id="building" size={20} color={T.blue} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, display: "flex", alignItems: "center", gap: 6 }}>
-                Bank Leumi
-                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.05em", color: T.orange, background: T.orangeDim, borderRadius: 5, padding: "2px 6px" }}>DEMO</span>
-              </div>
-              <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.45 }}>Preview what a direct Bank Leumi connection would feel like - fills your account with realistic demo transactions, no real bank involved.</div>
-            </div>
-          </div>
-          <button onClick={function() { setErr(""); setModalOpen(true); }}
-            style={{ width: "100%", background: T.card, color: T.ink, border: "1.5px solid " + T.sep, borderRadius: 14, padding: "13px 0", fontSize: 14.5, fontFamily: UI, fontWeight: 600, cursor: "pointer", boxSizing: "border-box" }}>
-            Connect Bank Leumi (Demo)
-          </button>
-          {lf && lf.status === "error" && lf.error && (
-            <div style={{ fontSize: 12.5, color: T.red, lineHeight: 1.5, marginTop: 10, fontFamily: UI }}>{lf.error}</div>
-          )}
-          {err && <div style={{ fontSize: 12.5, color: T.red, lineHeight: 1.5, marginTop: 10, fontFamily: UI }}>{err}</div>}
-        </Card>
-        <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, padding: "0 6px 4px" }}>
-          This is a demo - no real Bank Leumi account is ever contacted or asked for a password. A genuine connection needs Bank Leumi to certify Richy as a licensed Open Banking provider first.
-        </div>
-        {modalOpen && (
-          <LeumiDemoConsentModal
-            onApprove={function() {
-              return Promise.resolve(props.onConnect()).catch(function(e) {
-                setErr((e && e.message) || "Couldn't simulate the connection. Try again.");
-                throw e;
-              });
-            }}
-            onClose={function() { setModalOpen(false); }}
-          />
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div style={secLabel}>Connected bank</div>
-      <Card style={{ overflow: "hidden", marginBottom: 4 }}>
-        <div style={{ padding: "15px 20px", display: "flex", alignItems: "center", gap: 10, borderBottom: "0.5px solid " + T.sep }}>
-          <span style={{ width: 9, height: 9, borderRadius: "50%", background: T.green, boxShadow: "0 0 0 4px " + T.greenDim, flexShrink: 0 }} />
-          <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, fontFamily: UI }}>{lf.accountLabel || "Bank Leumi (Demo)"}</span>
-        </div>
-        <InfoRow label="Last synced" value={lf.lastSyncAt ? new Date(lf.lastSyncAt).toLocaleString() : "Waiting for first sync"} />
-        <InfoRow label="Transactions synced" value={String(lf.count || 0)} last />
-      </Card>
-      <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, padding: "0 6px 10px" }}>
-        Demo connection - these are realistic sample transactions, not real activity from a Bank Leumi account.
-      </div>
-
-      <button onClick={handleSyncNow} disabled={syncBusy}
-        style={{ width: "100%", background: T.card, color: T.orange, border: "1.5px solid " + T.orangeDim, borderRadius: 16, padding: "14px 0", fontSize: 15, fontFamily: UI, fontWeight: 600, cursor: "pointer", marginBottom: 8, opacity: syncBusy ? 0.6 : 1, boxSizing: "border-box" }}>
-        {syncBusy ? "Syncing..." : "Sync now (Demo)"}
-      </button>
-      {err && <div style={{ fontSize: 12.5, color: T.red, lineHeight: 1.5, padding: "0 6px 10px", fontFamily: UI }}>{err}</div>}
-
-      <button onClick={handleDisconnect} disabled={disconnecting}
-        style={{ width: "100%", background: "rgba(224,48,48,0.08)", color: T.red, border: "1px solid rgba(224,48,48,0.14)", borderRadius: 16, padding: "14px 0", fontSize: 15, fontFamily: UI, fontWeight: 600, cursor: "pointer", opacity: disconnecting ? 0.6 : 1, boxSizing: "border-box" }}>
-        {disconnecting ? "Disconnecting..." : "Disconnect Bank Leumi"}
-      </button>
-    </div>
-  );
-}
 
 function BankSyncView(props) {
   var bs = props.bankSync;
@@ -25696,8 +25525,6 @@ function BankSyncView(props) {
         <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.55, padding: "0 6px" }}>
           Works with any card in Apple Wallet or Google Wallet. Your bank credentials are never involved - your phone only reports the merchant and amount of each tap, straight to your own Richy account.
         </div>
-
-        <LeumiFintekaCard leumiFinteka={props.leumiFinteka} onConnect={props.onConnectLeumi} onDisconnect={props.onDisconnectLeumi} onSyncNow={props.onSyncLeumiNow} />
       </div>
     );
   }
@@ -25753,8 +25580,6 @@ function BankSyncView(props) {
       <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, padding: "8px 6px 0", fontFamily: UI }}>
         Turning it off keeps everything already synced and simply stops new transactions from arriving.
       </div>
-
-      <LeumiFintekaCard leumiFinteka={props.leumiFinteka} onConnect={props.onConnectLeumi} onDisconnect={props.onDisconnectLeumi} onSyncNow={props.onSyncLeumiNow} />
 
       {guide && <BankSyncJourney bankSync={bs} onClose={function() { setGuide(false); }} />}
     </div>
@@ -27739,6 +27564,18 @@ export default function App() {
     var allTx = (sharedData && sharedData.tx) || [];
     // Merge personal txs (including private ones) on top of shared txs.
     allTx = allTx.concat((data.tx || []).filter(function(t) { return !t.shared; }));
+    // One-time sweep of the retired Bank Leumi demo's invented rows. Told, not
+    // done silently: they moved the user's balance, so removing them moves it
+    // back, and a number changing on its own with no explanation is exactly the
+    // kind of thing that makes people stop trusting the app.
+    var demoSweep = cleanDemoSyncTx(allTx);
+    var demoBanner = null;
+    if (demoSweep.removed) {
+      allTx = demoSweep.tx;
+      demoBanner = { id: "demo-sync-cleanup", tone: "info", icon: "refresh", dismissible: true,
+        text: "Removed " + demoSweep.removed + " sample transaction" + (demoSweep.removed === 1 ? "" : "s")
+          + " left by the old Bank Leumi preview. Nothing you logged yourself was touched." };
+    }
     setTx(allTx);
     setBudgets(allBudgets.length ? allBudgets : (data.budgets || []));
     setGoals(allGoals.length ? allGoals : (data.goals || []));
@@ -27786,8 +27623,14 @@ export default function App() {
     setPeriodCustomStart(data.periodCustomStart || "");
     setPeriodCustomEnd(data.periodCustomEnd || "");
     setBankSync(data.bankSync || null);
-    setLeumiFinteka(data.leumiFinteka || null);
-    setCustomBanners(data.customBanners || []);
+    // A demo "connection" is not a connection; drop it with the rows it wrote.
+    var lf = data.leumiFinteka || null;
+    if (lf && lf.demo) lf = null;
+    setLeumiFinteka(lf);
+    var banners = data.customBanners || [];
+    // Only ever announce this once - the id makes the append idempotent.
+    if (demoBanner && !banners.some(function(b) { return b.id === demoBanner.id; })) banners = banners.concat([demoBanner]);
+    setCustomBanners(banners);
     setWidgets(data.widgets || []);
     setDismissedTips(data.dismissedTips || []);
     setHouseholdId(data.householdId || null);
@@ -28481,55 +28324,6 @@ export default function App() {
     else if (old && old.key) sha256Hex(old.key).then(function(h) { CLOUD.deleteSyncKey(h).catch(function() {}); });
   }
 
-  // ---- Bank Leumi (DEMO connection) --------------------------------------------
-  // api/leumi-fintaka.js implements the real OAuth2 handshake, but it's dormant:
-  // an actual connection needs Bank Leumi to certify Richy as a licensed
-  // Third-Party Provider (eIDAS QWAC/QSEAL certificates) - a business/legal
-  // step, not something a signup form grants. Until that happens, these
-  // handlers run an honest, clearly-labeled simulation entirely client-side -
-  // no network call, no fake bank login, nothing pretending to be real. The
-  // LeumiFintekaCard UI always says "(Demo)" so this is never mistaken for a
-  // live bank connection. Every path still funnels through the normal save(),
-  // exactly like onEnableBankSync above.
-  function onConnectLeumiFinteka() {
-    return new Promise(function(resolve) {
-      // A short delay reads better than an instant swap - it's the only thing
-      // "simulated" about the timing; everything else below is real app state.
-      setTimeout(function() {
-        var last4 = String(1000 + Math.floor(Math.random() * 9000));
-        var newTx = generateLeumiDemoTx(4 + Math.floor(Math.random() * 3), tx, categories, currency);
-        var nextTx = tx.concat(newTx);
-        var next = { status: "connected", connected: true, demo: true, accountLabel: "Bank Leumi (Demo) •••• " + last4, connectedAt: Date.now(), lastSyncAt: Date.now(), count: newTx.length, error: null };
-        setTx(nextTx);
-        setLeumiFinteka(next);
-        save({ tx: nextTx, leumiFinteka: next });
-        resolve(next);
-      }, 900);
-    });
-  }
-  function onDisconnectLeumiFinteka() {
-    // Mirrors the real disconnect's promise made in the UI copy: already-synced
-    // (demo) transactions stay in Richy, only the connection itself goes away.
-    return Promise.resolve().then(function() {
-      setLeumiFinteka(null);
-      save({ leumiFinteka: null });
-    });
-  }
-  function onSyncLeumiFintekaNow() {
-    return new Promise(function(resolve) {
-      setTimeout(function() {
-        var newTx = generateLeumiDemoTx(1 + Math.floor(Math.random() * 3), tx, categories, currency);
-        var nextTx = tx.concat(newTx);
-        var lf = leumiFinteka || {};
-        var next = { status: "connected", connected: true, demo: true, accountLabel: lf.accountLabel || "Bank Leumi (Demo)", connectedAt: lf.connectedAt || Date.now(), lastSyncAt: Date.now(), count: (lf.count || 0) + newTx.length, error: null };
-        setTx(nextTx);
-        setLeumiFinteka(next);
-        save({ tx: nextTx, leumiFinteka: next });
-        resolve(next);
-      }, 600);
-    });
-  }
-
   function onSaveInstructions(text) { setRichardInstructions(text); save({ richardInstructions: text }); }
 
   // What Richard sees as user-provided context: the editable custom instructions
@@ -29032,7 +28826,7 @@ export default function App() {
         {currentTab === "appearance" && <AppearanceView theme={theme} onThemeChange={onSaveTheme} darkMode={darkMode} onDarkModeChange={onSaveDarkMode} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "periodMode" && <PeriodModeView periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onPeriodModeChange={onSavePeriodMode} onPeriodCustomChange={onSavePeriodCustom} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
-        {currentTab === "bankSync" && <BankSyncView bankSync={bankSync} onEnable={onEnableBankSync} onDisable={onDisableBankSync} leumiFinteka={leumiFinteka} onConnectLeumi={onConnectLeumiFinteka} onDisconnectLeumi={onDisconnectLeumiFinteka} onSyncLeumiNow={onSyncLeumiFintekaNow} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "bankSync" && <BankSyncView bankSync={bankSync} onEnable={onEnableBankSync} onDisable={onDisableBankSync} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} />}
         {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Overview" : "Savings"} onBack={exitBusiness} />}
         {currentTab === "investing" && <InvestingView investing={investing} tx={tx} goals={goals} openInvId={openInv} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} onOpenInvestorOnboard={function() { prevTabRef.current = "investing"; setTab("investorOnboard"); }} onOpenScout={function() { prevTabRef.current = "investing"; setTab("scout"); }} onOpenPlanOnboard={function(acctId) { prevTabRef.current = "investing"; setOpenInv(acctId || null); setTab("investPlan"); }} backLabel={prevTabRef.current === "overview" ? "Overview" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
