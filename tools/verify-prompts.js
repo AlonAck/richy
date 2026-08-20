@@ -169,6 +169,14 @@ var CASES = [
   }, "he"],
 ];
 
+// Prompts that have deliberately changed since the migration baseline. Each
+// needs a reason: the point of this tool is that an UNEXPLAINED difference is a
+// bug, so the list is the record of what was changed on purpose.
+var INTENDED = {
+  advisorChat: "Phase 2 removed the Bank Leumi DEMO from Richard's capability tour.",
+  planChat:    "Phase 2 removed the Bank Leumi DEMO from Richard's capability tour."
+};
+
 var fails = 0;
 CASES.forEach(function (c) {
   var id = c[0], want, got;
@@ -178,6 +186,7 @@ CASES.forEach(function (c) {
   if (id.indexOf("trip") === 0) for (var t in TRIP) vars[t] = TRIP[t];
   got = P.build(id, vars, "", c[4]);
   if (got.replace(/[ ]+$/, "") === want.replace(/[ ]+$/, "")) { console.log("  ok   " + id + "  (" + want.length + " chars)"); return; }
+  if (INTENDED[id]) { console.log("  ~    " + id + "  changed on purpose: " + INTENDED[id]); return; }
   fails++;
   console.log("  FAIL " + id);
   var i = 0; while (i < Math.min(got.length, want.length) && got[i] === want[i]) i++;
@@ -185,5 +194,8 @@ CASES.forEach(function (c) {
   console.log("       client: ..." + JSON.stringify(want.slice(Math.max(0, i - 60), i + 90)));
   console.log("       server: ..." + JSON.stringify(got.slice(Math.max(0, i - 60), i + 90)));
 });
-console.log(fails ? "\n" + fails + " prompt(s) differ" : "\nAll " + CASES.length + " migrated prompts are byte-identical to the originals.");
+var intended = Object.keys(INTENDED).length;
+console.log(fails
+  ? "\n" + fails + " prompt(s) differ with no recorded reason"
+  : "\n" + (CASES.length - intended) + " prompts byte-identical to the originals; " + intended + " changed on purpose.");
 process.exit(fails ? 1 : 0);

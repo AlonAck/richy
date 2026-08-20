@@ -431,10 +431,10 @@ function applyLangDir(code) {
 }
 
 var TRANSLATIONS = {
-  en: { overview:"Overview", activity:"Activity", budgets:"Budgets", goals:"Goals", advisor:"Advisor", profile:"Profile", language:"Language", currency:"Currency", yourPlan:"Your Plan", categories:"Categories", signOut:"Sign Out", richyMember:"Richy member", richyRefersTo:"Richy refers to you as", seeYourPlan:"See your plan by Richard", netBalance:"Net Balance", income:"Income", spent:"Spent", topSpend:"Top spend", morning:"Good morning", afternoon:"Good afternoon", evening:"Good evening", savedThisPeriod:"saved this period", redoQuestionnaire:"Redo Questionnaire", yourPlanByRichard:"Your Plan by Richard", noTransactions:"No transactions yet", noTransactionsSub:"Tap + to log your first one. Awareness is the first step to wealth.", overviewEmptySub:"The Richest Man in Babylon started by tracking every coin. Start yours in Activity.", savingsRate:"Savings Rate",quickAdd:"Quick add", excellent:"Excellent", onTrack:"On track", buildItUp:"Build it up", overspending:"Room to rebalance", noIncomeYet:"No income logged yet", thisPeriod:"this period", transactions:"Transactions", whereItWent:"Where it went", overLimit:"over limit", complete:"complete", savedLabel:"saved", spentLabel:"spent", toGo:"to go", recent:"Recent", activeGoal:"active goal", activeGoals:"active goals", today:"Today", yesterday:"Yesterday", moneyIn:"Money In", moneyOut:"Money Out", newTransaction:"New Transaction", editTransaction:"Edit Transaction", addTransaction:"Add Transaction", saveChanges:"Save Changes", deleteTx:"Delete transaction", amount:"Amount", txLabel:"Label", category:"Category", date:"Date", repeat:"Repeat", once:"Once", weekly:"Weekly", monthly:"Monthly", markPending:"Mark as pending", expense:"Expense", noBudgets:"No budgets yet", noBudgetsSub:"Tap + to set a limit for a category. A budget is just telling your money where to go.", newBudget:"New Budget", editLimit:"Edit Limit", addBudget:"Add Budget", removeBudget:"Remove this budget", totalSpent:"Total Spent", byCategory:"By Category", edit:"Edit", delete:"Delete", save:"Save", budgeted:"budgeted", monthlyLimit:"Monthly limit", allCatsHaveBudget:"Every category already has a budget. Add a new category first.", noGoals:"No budget books yet", noGoalsSub:"Tap + to create your first budget book. A goal with a deadline is a plan, not a wish.", newBudgetBook:"New Budget Book", editBudgetBook:"Edit Budget Book", createBudgetBook:"Create Budget Book", deleteBudgetBook:"Delete budget book", addToBudgetBook:"Add to Budget Book", alreadySaved:"Already saved", target:"Target", name:"Name", deadline:"Deadline (optional)", goalComplete:"Goal complete!", remaining:"remaining", add:"Add", removeMoney:"Remove", removeFromBudgetBook:"Remove from Budget Book", removeMoneyConfirm:"Remove {amt} from {name}? This will reduce what you've saved.", syncWithAccount:"Sync with account", noSync:"Don't sync", syncedWith:"Synced with", addOrRemove:"Add / Remove", richySuggests:"Richard suggests", implement:"Implement", dismiss:"Dismiss", aiAdvisor:"AI Financial Advisor", aiAdvisorSub:"Personalized advice based on your real spending and expert financial wisdom.", analyzeMyFinances:"Analyze My Finances", thinkP1:"Reading your numbers",thinkP2:"Thinking it through",thinkP3:"Weighing the options",thinkP4:"Writing back",anStep1:"Reading your month",anStep2:"Scanning {n} transactions",anStep3:"Comparing plan to reality",anStep4:"Finding what matters most",anStep5:"Writing your analysis",analyzingFinances:"Analyzing your finances...", fewSeconds:"This takes a few seconds", refresh:"Refresh", insights:"Insights", analysisFailed:"Analysis failed", tryAgain:"Try Again", askYourAdvisor:"Ask Your Advisor", advisorQ1:"How can I save more?", advisorQ2:"Is my savings rate healthy?", advisorQ3:"What to do with my surplus?",advisorQ4:"Log what I just spent", thinking:"Thinking...", yesDo:"Yes, do it", notNow:"Not now", askRichard:"Ask Richard anything...", giveFeedback:"Give Richard feedback...", advisorDisclaimer:"Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.", translate:"Translate plan", noPlanYet:"No plan yet. Complete the onboarding questionnaire to get your personalized plan from Richard.", notes:"Notes", notesEmpty:"No notes yet", notesEmptySub:"Track who owes you and who you owe. Tap + to add your first one.", theyOweMe:"They owe me", iOwe:"I owe", newNote:"New Note", addNote:"Add Note", editNote:"Edit Note", saveNote:"Save Note", settle:"Settle", settleTitle:"Settle note", settleAddBalance:"Add to my balance", reminder:"Reminder", reminderTitle:"Set a reminder", setReminder:"Set reminder", clearReminder:"Clear reminder", reminderWhen:"Remind me on", reminderDenied:"Notifications are blocked. The note will still show a due badge.", due:"Due", overdue:"Overdue", deleteNote:"Delete note", trips:"Trips", planATrip:"Plan a Trip", planATripSub:"Budget a getaway without touching your balance.", planNewTrip:"Plan a New Trip", noTrips:"No trips yet", noTripsSub:"Plan a getaway and Richard will split your budget across the essentials.", tripName:"Trip name", destination:"Destination", tripBudget:"Total budget", tripDays:"Days", travelStyle:"Travel style", styleBudget:"Budget", styleComfort:"Comfort", styleLuxury:"Luxury", next:"Next", back:"Back", richardPlanning:"Richard is planning your trip", richardPlanningSub:"Splitting your budget across the essentials.", tripSplit:"Your budget split", allocated:"Allocated", overBy:"over by", saveTrip:"Save Trip", addCategory:"Add category", editCategory:"Edit category", color:"Color", deductFromBalance:"Deduct from balance", deductExplain:"This tracks what you actually spend on this trip as one live expense, so your balance only drops as you log spending here - not the whole budget up front. You can undo it anytime.", reserved:"Tracking against balance", undoReserve:"Stop tracking", logExpense:"Log expense", logExpenseTitle:"Log a trip expense", tripTips:"Richard's tips", deleteTrip:"Delete trip", deleteTripConfirm:"Delete this trip? This cannot be undone.", spentOf:"spent of", leftToSpend:"left to spend", planning:"Planning", tripSummary:"Trip summary", appearance:"Appearance", leftAfterBudgets:"Left after budgets", tripIcon:"Trip icon", savings:"Savings", netWorth:"Net Worth", balance:"Balance", manage:"Manage", totalSavings:"Total saved", savingsIntro:"Money you keep separate from your spending balance - an emergency fund, a sinking fund, anything you don't want to accidentally spend. It counts toward your net worth, never your balance.", newSavingsAccount:"New savings account", savingsAccountName:"Account name", addMoney:"Add money", withdraw:"Withdraw", fromBalance:"From my balance", externalMoney:"Money I already have", toBalance:"To my balance", removeFromNet:"Spend or remove", startingAmount:"Starting amount (optional)", createAccount:"Create account", closeAccount:"Close account", rename:"Rename", emptySavingsSub:"Keep an emergency fund or a sinking fund separate from your spending balance.", addSavingsAccount:"Add a savings account", history:"History", balanceUntouched:"Your spending balance stays untouched", movesFromBalance:"Moves money out of your spending balance", addsToBalance:"Adds the money back to your spending balance", leavesNetWorth:"Leaves your accounts - lowers your net worth", pickIcon:"Icon", emergencyFund:"Emergency Fund", noMovesYet:"No moves yet", pastChats:"Past chats", newChat:"New chat", conversation:"conversation", conversations:"conversations", noPastChats:"No past chats yet", message:"message", messages:"messages" },
-  he: { overview:"סקירה", activity:"פעילות", budgets:"תקציבים", goals:"יעדים", advisor:"יועץ", profile:"פרופיל", language:"שפה", currency:"מטבע", yourPlan:"התוכנית שלך", categories:"קטגוריות", signOut:"התנתק", richyMember:"חבר Richy", richyRefersTo:"ריצ'י מכנה אותך", seeYourPlan:"ראה את התוכנית שלך", netBalance:"יתרה נטו", income:"הכנסות", spent:"הוצאות", topSpend:"הוצאה עיקרית", morning:"בוקר טוב", afternoon:"צהריים טובים", evening:"ערב טוב", savedThisPeriod:"נחסך בתקופה זו", redoQuestionnaire:"מלא שאלון מחדש", yourPlanByRichard:"התוכנית שלך", noTransactions:"אין עסקאות עדיין", noTransactionsSub:"לחץ + כדי לרשום. מודעות היא הצעד הראשון לעושר.", overviewEmptySub:"עשיר בבבל התחיל בלעקוב אחרי כל מטבע. התחל גם אתה בפעילות.", savingsRate:"שיעור חיסכון",quickAdd:"הוספה מהירה", excellent:"מצוין", onTrack:"במסלול", buildItUp:"שפר את זה", overspending:"אפשר לאזן מחדש", thisPeriod:"בתקופה זו", transactions:"עסקאות", whereItWent:"לאן הלך", overLimit:"מעל המגבלה", complete:"הושלם", savedLabel:"נחסך", spentLabel:"הוצא", toGo:"לסיום", recent:"אחרון", activeGoal:"יעד פעיל", activeGoals:"יעדים פעילים", today:"היום", yesterday:"אתמול", moneyIn:"כסף נכנס", moneyOut:"כסף יוצא", newTransaction:"עסקה חדשה", editTransaction:"ערוך עסקה", addTransaction:"הוסף עסקה", saveChanges:"שמור שינויים", deleteTx:"מחק עסקה", amount:"סכום", txLabel:"תיאור", category:"קטגוריה", date:"תאריך", repeat:"חזרה", once:"פעם אחת", weekly:"שבועי", monthly:"חודשי", markPending:"סמן כממתין", expense:"הוצאה", noBudgets:"אין תקציבים עדיין", noBudgetsSub:"לחץ + להגדרת מגבלה לקטגוריה. תקציב הוא פשוט להגיד לכסף לאן ללכת.", newBudget:"תקציב חדש", editLimit:"ערוך מגבלה", addBudget:"הוסף תקציב", removeBudget:"הסר תקציב זה", totalSpent:"סך הוצאות", byCategory:"לפי קטגוריה", edit:"ערוך", delete:"מחק", save:"שמור", budgeted:"מתוקצב", monthlyLimit:"מגבלה חודשית", allCatsHaveBudget:"לכל הקטגוריות יש תקציב. הוסף קטגוריה חדשה תחילה.", noGoals:"אין ספרי תקציב עדיין", noGoalsSub:"לחץ + ליצירת ספר תקציב ראשון. יעד עם מועד הוא תוכנית, לא משאלה.", newBudgetBook:"ספר תקציב חדש", editBudgetBook:"ערוך ספר תקציב", createBudgetBook:"צור ספר תקציב", deleteBudgetBook:"מחק ספר תקציב", addToBudgetBook:"הוסף לספר תקציב", alreadySaved:"כבר נחסך", target:"יעד", name:"שם", deadline:"תאריך יעד (רשות)", goalComplete:"היעד הושג!", remaining:"נותר", add:"הוסף", removeMoney:"הסר", removeFromBudgetBook:"הסר מספר התקציב", removeMoneyConfirm:"להסיר {amt} מ-{name}? זה יקטין את מה שכבר נחסך.", syncWithAccount:"סנכרון עם חשבון", noSync:"בלי סנכרון", syncedWith:"מסונכרן עם", addOrRemove:"הוסף / הסר", richySuggests:"ריצ'י מציע", implement:"יישם", dismiss:"דחה", aiAdvisor:"יועץ פיננסי AI", aiAdvisorSub:"ייעוץ מותאם אישית בהתבסס על ההוצאות שלך.", analyzeMyFinances:"נתח את הכספים שלי", thinkP1:"קורא את המספרים שלך",thinkP2:"חושב על זה",thinkP3:"שוקל את האפשרויות",thinkP4:"מנסח תשובה",anStep1:"קורא את החודש שלך",anStep2:"סורק {n} תנועות",anStep3:"משווה תוכנית למציאות",anStep4:"מאתר את מה שחשוב באמת",anStep5:"כותב את הניתוח",analyzingFinances:"מנתח את הכספים שלך...", fewSeconds:"זה לוקח כמה שניות", refresh:"רענן", insights:"תובנות", analysisFailed:"הניתוח נכשל", tryAgain:"נסה שוב", askYourAdvisor:"שאל את היועץ שלך", advisorQ1:"איך אוכל לחסוך יותר?", advisorQ2:"האם שיעור החיסכון שלי בריא?", advisorQ3:"מה לעשות עם העודף שלי?",advisorQ4:"רשום מה שהוצאתי עכשיו", thinking:"חושב...", yesDo:"כן, עשה זאת", notNow:"לא עכשיו", askRichard:"שאל את ריצ'רד כל דבר...", giveFeedback:"תן ל-ריצ'רד משוב...", advisorDisclaimer:"ריצ'רד הוא עוזר AI ולא יועץ פיננסי מורשה. תמיד ערוך מחקר עצמאי לפני קבלת החלטות כלכליות.", translate:"תרגם תוכנית", noPlanYet:"אין תוכנית עדיין. מלא את השאלון כדי לקבל את התוכנית האישית שלך מריצ'רד.", noIncomeYet:"עדיין לא נרשמו הכנסות", notes:"פתקים", notesEmpty:"אין פתקים עדיין", notesEmptySub:"עקוב אחרי מי חייב לך ולמי אתה חייב. לחץ + להוספת הפתק הראשון.", theyOweMe:"חייבים לי", iOwe:"אני חייב", newNote:"פתק חדש", addNote:"הוסף פתק", editNote:"ערוך פתק", saveNote:"שמור פתק", settle:"סגור חוב", settleTitle:"סגירת פתק", settleAddBalance:"הוסף ליתרה שלי", reminder:"תזכורת", reminderTitle:"קבע תזכורת", setReminder:"קבע תזכורת", clearReminder:"בטל תזכורת", reminderWhen:"הזכר לי בתאריך", reminderDenied:"ההתראות חסומות. הפתק עדיין יציג תג מועד.", due:"מועד", overdue:"באיחור", deleteNote:"מחק פתק", trips:"טיולים", planATrip:"תכנן טיול", planATripSub:"תקצב חופשה בלי לגעת ביתרה שלך.", planNewTrip:"תכנן טיול חדש", noTrips:"אין טיולים עדיין", noTripsSub:"תכנן חופשה וריצ'רד יחלק את התקציב בין הדברים החשובים.", tripName:"שם הטיול", destination:"יעד", tripBudget:"תקציב כולל", tripDays:"ימים", travelStyle:"סגנון נסיעה", styleBudget:"חסכוני", styleComfort:"נוח", styleLuxury:"יוקרתי", next:"הבא", back:"חזרה", richardPlanning:"ריצ'רד מתכנן את הטיול שלך", richardPlanningSub:"מחלק את התקציב בין הדברים החשובים.", tripSplit:"חלוקת התקציב שלך", allocated:"הוקצה", overBy:"חריגה של", saveTrip:"שמור טיול", addCategory:"הוסף קטגוריה", editCategory:"ערוך קטגוריה", color:"צבע", deductFromBalance:"נכה מהיתרה", deductExplain:"כך מה שאתה באמת מוציא בטיול נרשם כהוצאה חיה אחת - היתרה יורדת רק כשאתה רושם הוצאות כאן, לא כל התקציב מראש. אפשר לבטל בכל רגע.", reserved:"במעקב מול היתרה", undoReserve:"הפסק מעקב", logExpense:"רשום הוצאה", logExpenseTitle:"רישום הוצאת טיול", tripTips:"הטיפים של ריצ'רד", deleteTrip:"מחק טיול", deleteTripConfirm:"למחוק את הטיול? אי אפשר לבטל פעולה זו.", spentOf:"הוצא מתוך", leftToSpend:"נותר להוצאה", planning:"בתכנון", tripSummary:"סיכום הטיול", appearance:"מראה", leftAfterBudgets:"נותר אחרי תקציבים", tripIcon:"סמל הטיול", savings:"חסכונות", netWorth:"שווי נקי", balance:"יתרה", manage:"ניהול", totalSavings:"סך הכל נחסך", savingsIntro:"כסף שאתה שומר בנפרד מיתרת ההוצאות - קרן חירום, קרן ייעודית, כל מה שאתה לא רוצה לבזבז בטעות. הוא נספר בשווי הנקי שלך, לעולם לא ביתרה.", newSavingsAccount:"חשבון חיסכון חדש", savingsAccountName:"שם החשבון", addMoney:"הוסף כסף", withdraw:"משיכה", fromBalance:"מהיתרה שלי", externalMoney:"כסף שכבר יש לי", toBalance:"ליתרה שלי", removeFromNet:"הוצא או הסר", startingAmount:"סכום התחלתי (רשות)", createAccount:"צור חשבון", closeAccount:"סגור חשבון", rename:"שנה שם", emptySavingsSub:"שמור קרן חירום או קרן ייעודית בנפרד מיתרת ההוצאות שלך.", addSavingsAccount:"הוסף חשבון חיסכון", history:"היסטוריה", balanceUntouched:"יתרת ההוצאות שלך נשארת ללא שינוי", movesFromBalance:"מעביר כסף החוצה מיתרת ההוצאות", addsToBalance:"מחזיר את הכסף ליתרת ההוצאות", leavesNetWorth:"יוצא מהחשבונות שלך - מוריד את השווי הנקי", pickIcon:"סמל", emergencyFund:"קרן חירום", noMovesYet:"אין תנועות עדיין", pastChats:"שיחות קודמות", newChat:"שיחה חדשה", conversation:"שיחה", conversations:"שיחות", noPastChats:"אין שיחות קודמות עדיין", message:"הודעה", messages:"הודעות" },
-  ar: { overview:"نظرة عامة", activity:"النشاط", budgets:"الميزانيات", goals:"الاهداف", advisor:"المستشار", profile:"الملف الشخصي", language:"اللغة", currency:"العملة", yourPlan:"خطتك", categories:"الفئات", signOut:"تسجيل الخروج", richyMember:"عضو Richy", richyRefersTo:"ريتشي يناديك", seeYourPlan:"انظر خطتك من ريتشارد", netBalance:"الرصيد الصافي", income:"الدخل", spent:"المنفق", topSpend:"اعلى انفاق", morning:"صباح الخير", afternoon:"مساء الخير", evening:"مساء الخير", savedThisPeriod:"تم توفيره", redoQuestionnaire:"اعادة الاستبيان", yourPlanByRichard:"خطتك من ريتشارد", noTransactions:"لا توجد معاملات بعد", noTransactionsSub:"اضغط + لتسجيل اول معاملة. الوعي هو الخطوة الاولى نحو الثروة.", overviewEmptySub:"اغنى رجل في بابل بدا بتتبع كل عملة. ابدا في النشاط.", savingsRate:"معدل الادخار",quickAdd:"اضافة سريعة", excellent:"ممتاز", onTrack:"في المسار", buildItUp:"طوره", overspending:"مجال للموازنة", thisPeriod:"هذه الفترة", transactions:"المعاملات", whereItWent:"اين ذهب", overLimit:"فوق الحد", complete:"مكتمل", savedLabel:"مدخر", spentLabel:"انفق", toGo:"متبقي", recent:"الاخير", activeGoal:"هدف نشط", activeGoals:"اهداف نشطة", today:"اليوم", yesterday:"امس", moneyIn:"المال الداخل", moneyOut:"المال الخارج", newTransaction:"معاملة جديدة", editTransaction:"تعديل المعاملة", addTransaction:"اضافة معاملة", saveChanges:"حفظ التغييرات", deleteTx:"حذف المعاملة", amount:"المبلغ", txLabel:"التسمية", category:"الفئة", date:"التاريخ", repeat:"تكرار", once:"مرة واحدة", weekly:"اسبوعي", monthly:"شهري", markPending:"وضع علامة معلقة", expense:"مصروف", noBudgets:"لا توجد ميزانيات بعد", noBudgetsSub:"اضغط + لتعيين حد للفئة. الميزانية هي توجيه المال.", newBudget:"ميزانية جديدة", editLimit:"تعديل الحد", addBudget:"اضافة ميزانية", removeBudget:"حذف هذه الميزانية", totalSpent:"اجمالي الانفاق", byCategory:"حسب الفئة", edit:"تعديل", delete:"حذف", save:"حفظ", budgeted:"مخصص", monthlyLimit:"الحد الشهري", allCatsHaveBudget:"كل الفئات لديها ميزانية. اضف فئة جديدة اولا.", noGoals:"لا توجد دفاتر بعد", noGoalsSub:"اضغط + لانشاء اول دفتر. الهدف بموعد خطة وليس امنية.", newBudgetBook:"دفتر جديد", editBudgetBook:"تعديل الدفتر", createBudgetBook:"انشاء دفتر", deleteBudgetBook:"حذف الدفتر", addToBudgetBook:"اضافة الى الدفتر", alreadySaved:"تم الادخار مسبقا", target:"الهدف", name:"الاسم", deadline:"الموعد النهائي (اختياري)", goalComplete:"تم تحقيق الهدف!", remaining:"متبقي", add:"اضافة", removeMoney:"إزالة", removeFromBudgetBook:"إزالة من الدفتر", removeMoneyConfirm:"إزالة {amt} من {name}؟ سيقلل هذا مما تم توفيره بالفعل.", syncWithAccount:"مزامنة مع حساب", noSync:"بدون مزامنة", syncedWith:"مزامن مع", addOrRemove:"إضافة / إزالة", richySuggests:"اقتراح ريتشارد", implement:"تطبيق", dismiss:"تجاهل", aiAdvisor:"مستشار مالي AI", aiAdvisorSub:"نصائح مخصصة بناء على انفاقك الفعلي.", analyzeMyFinances:"تحليل ماليتي", thinkP1:"أقرأ أرقامك",thinkP2:"أفكر في الأمر",thinkP3:"أوازن الخيارات",thinkP4:"أكتب الرد",anStep1:"أقرأ شهرك",anStep2:"أفحص {n} من المعاملات",anStep3:"أقارن الخطة بالواقع",anStep4:"أبحث عن الأهم",anStep5:"أكتب تحليلك",analyzingFinances:"جاري تحليل ماليتك...", fewSeconds:"هذا يستغرق بضع ثوان", refresh:"تحديث", insights:"رؤى", analysisFailed:"فشل التحليل", tryAgain:"حاول مجددا", askYourAdvisor:"اسال مستشارك", advisorQ1:"كيف يمكنني توفير المزيد؟", advisorQ2:"هل معدل توفيري صحي؟", advisorQ3:"ماذا افعل بالفائض؟",advisorQ4:"سجل ما انفقته للتو", thinking:"افكر...", yesDo:"نعم افعل ذلك", notNow:"ليس الان", askRichard:"اسال ريتشارد اي شيء...", giveFeedback:"اعطِ ريتشارد ملاحظاتك...", advisorDisclaimer:"ريتشارد مساعد ذكاء اصطناعي وليس مستشارا ماليا معتمدا. دائما ابحث قبل اتخاذ قرارات مالية.", translate:"ترجمة الخطة", noPlanYet:"لا توجد خطة بعد. اكمل الاستبيان للحصول على خطتك الشخصية من ريتشارد.", noIncomeYet:"لم يُسجل دخل بعد", notes:"ملاحظات", notesEmpty:"لا ملاحظات بعد", notesEmptySub:"تتبع من يدين لك ولمن تدين. اضغط + لإضافة أول ملاحظة.", theyOweMe:"يدينون لي", iOwe:"أنا مدين", newNote:"ملاحظة جديدة", addNote:"أضف ملاحظة", editNote:"تعديل الملاحظة", saveNote:"حفظ الملاحظة", settle:"تسوية", settleTitle:"تسوية الملاحظة", settleAddBalance:"أضف إلى رصيدي", reminder:"تذكير", reminderTitle:"ضبط تذكير", setReminder:"ضبط التذكير", clearReminder:"إلغاء التذكير", reminderWhen:"ذكرني في", reminderDenied:"الإشعارات محظورة. ستظل الملاحظة تعرض شارة الاستحقاق.", due:"مستحق", overdue:"متأخر", deleteNote:"حذف الملاحظة", trips:"رحلات", planATrip:"خطط رحلة", planATripSub:"ضع ميزانية لرحلة دون المساس برصيدك.", planNewTrip:"خطط رحلة جديدة", noTrips:"لا رحلات بعد", noTripsSub:"خطط رحلة وسيوزع ريتشارد ميزانيتك على الأساسيات.", tripName:"اسم الرحلة", destination:"الوجهة", tripBudget:"الميزانية الكلية", tripDays:"أيام", travelStyle:"نمط السفر", styleBudget:"اقتصادي", styleComfort:"مريح", styleLuxury:"فاخر", next:"التالي", back:"رجوع", richardPlanning:"ريتشارد يخطط رحلتك", richardPlanningSub:"يوزع ميزانيتك على الأساسيات.", tripSplit:"توزيع ميزانيتك", allocated:"مخصص", overBy:"تجاوز بمقدار", saveTrip:"حفظ الرحلة", addCategory:"أضف فئة", editCategory:"تعديل الفئة", color:"اللون", deductFromBalance:"خصم من الرصيد", deductExplain:"هكذا يُسجل ما تنفقه فعلاً في الرحلة كمصروف واحد مباشر - ينخفض رصيدك فقط عندما تسجل الإنفاق هنا، وليس الميزانية كلها مقدماً. يمكنك التراجع في أي وقت.", reserved:"قيد التتبع مقابل الرصيد", undoReserve:"إيقاف التتبع", logExpense:"سجل مصروفاً", logExpenseTitle:"تسجيل مصروف رحلة", tripTips:"نصائح ريتشارد", deleteTrip:"حذف الرحلة", deleteTripConfirm:"حذف هذه الرحلة؟ لا يمكن التراجع عن ذلك.", spentOf:"أُنفق من", leftToSpend:"متبقٍ للإنفاق", planning:"قيد التخطيط", tripSummary:"ملخص الرحلة", appearance:"المظهر", leftAfterBudgets:"المتبقي بعد الميزانيات", tripIcon:"رمز الرحلة", savings:"مدخرات", netWorth:"صافي الثروة", balance:"الرصيد", manage:"إدارة", totalSavings:"إجمالي المدخر", savingsIntro:"مال تحتفظ به منفصلاً عن رصيد إنفاقك - صندوق طوارئ، أو ادخار لهدف، أو أي مبلغ لا تريد إنفاقه بالخطأ. يُحسب ضمن صافي ثروتك، وليس ضمن رصيدك أبداً.", newSavingsAccount:"حساب توفير جديد", savingsAccountName:"اسم الحساب", addMoney:"أضف مالاً", withdraw:"سحب", fromBalance:"من رصيدي", externalMoney:"مال أملكه بالفعل", toBalance:"إلى رصيدي", removeFromNet:"إنفاق أو إزالة", startingAmount:"مبلغ البداية (اختياري)", createAccount:"إنشاء حساب", closeAccount:"إغلاق الحساب", rename:"إعادة تسمية", emptySavingsSub:"احتفظ بصندوق طوارئ أو ادخار لهدف منفصلاً عن رصيد إنفاقك.", addSavingsAccount:"أضف حساب توفير", history:"السجل", balanceUntouched:"رصيد إنفاقك يبقى دون تغيير", movesFromBalance:"ينقل المال خارج رصيد إنفاقك", addsToBalance:"يعيد المال إلى رصيد إنفاقك", leavesNetWorth:"يغادر حساباتك - يخفض صافي ثروتك", pickIcon:"الرمز", emergencyFund:"صندوق الطوارئ", noMovesYet:"لا حركات بعد", pastChats:"محادثات سابقة", newChat:"محادثة جديدة", conversation:"محادثة", conversations:"محادثات", noPastChats:"لا محادثات سابقة بعد", message:"رسالة", messages:"رسائل" },
-  ru: { overview:"Обзор", activity:"Активность", budgets:"Бюджеты", goals:"Цели", advisor:"Советник", profile:"Профиль", language:"Язык", currency:"Валюта", yourPlan:"Ваш план", categories:"Категории", signOut:"Выйти", richyMember:"Участник Richy", richyRefersTo:"Richy называет тебя", seeYourPlan:"Посмотреть план от Ричарда", netBalance:"Чистый баланс", income:"Доходы", spent:"Расходы", topSpend:"Главная трата", morning:"Доброе утро", afternoon:"Добрый день", evening:"Добрый вечер", savedThisPeriod:"сохранено за период", redoQuestionnaire:"Пройти снова", yourPlanByRichard:"Ваш план от Ричарда", noTransactions:"Нет транзакций", noTransactionsSub:"Нажмите + чтобы добавить первую. Осознанность - первый шаг к богатству.", overviewEmptySub:"Богатейший человек Вавилона начал с учёта каждой монеты. Начните в Активности.", savingsRate:"Уровень сбережений",quickAdd:"Быстрое добавление", excellent:"Отлично", onTrack:"В норме", buildItUp:"Улучшайте", overspending:"Можно выровнять", thisPeriod:"за период", transactions:"Транзакции", whereItWent:"Куда ушло", overLimit:"сверх лимита", complete:"завершено", savedLabel:"накоплено", spentLabel:"потрачено", toGo:"осталось", recent:"Последние", activeGoal:"активная цель", activeGoals:"активных целей", today:"Сегодня", yesterday:"Вчера", moneyIn:"Доходы", moneyOut:"Расходы", newTransaction:"Новая транзакция", editTransaction:"Редактировать", addTransaction:"Добавить транзакцию", saveChanges:"Сохранить изменения", deleteTx:"Удалить транзакцию", amount:"Сумма", txLabel:"Описание", category:"Категория", date:"Дата", repeat:"Повтор", once:"Однократно", weekly:"Еженедельно", monthly:"Ежемесячно", markPending:"Отметить как ожидающее", expense:"Расход", noBudgets:"Нет бюджетов", noBudgetsSub:"Нажмите + чтобы задать лимит. Бюджет говорит деньгам куда идти.", newBudget:"Новый бюджет", editLimit:"Изменить лимит", addBudget:"Добавить бюджет", removeBudget:"Удалить этот бюджет", totalSpent:"Всего потрачено", byCategory:"По категориям", edit:"Редактировать", delete:"Удалить", save:"Сохранить", budgeted:"запланировано", monthlyLimit:"Месячный лимит", allCatsHaveBudget:"Все категории уже имеют бюджет. Сначала добавьте новую категорию.", noGoals:"Нет книг целей", noGoalsSub:"Нажмите + чтобы создать первую. Цель с датой - это план, а не мечта.", newBudgetBook:"Новая книга целей", editBudgetBook:"Редактировать книгу целей", createBudgetBook:"Создать книгу целей", deleteBudgetBook:"Удалить книгу целей", addToBudgetBook:"Добавить в книгу целей", alreadySaved:"Уже накоплено", target:"Цель", name:"Название", deadline:"Срок (необязательно)", goalComplete:"Цель достигнута!", remaining:"осталось", add:"Добавить", removeMoney:"Снять", removeFromBudgetBook:"Убрать из книги целей", removeMoneyConfirm:"Снять {amt} из {name}? Это уменьшит уже накопленное.", syncWithAccount:"Синхронизировать со счётом", noSync:"Без синхронизации", syncedWith:"Синхронизировано с", addOrRemove:"Добавить / Снять", richySuggests:"Ричард предлагает", implement:"Применить", dismiss:"Отклонить", aiAdvisor:"Финансовый советник ИИ", aiAdvisorSub:"Персональные советы на основе ваших расходов.", analyzeMyFinances:"Анализировать мои финансы", thinkP1:"Читаю ваши цифры",thinkP2:"Обдумываю",thinkP3:"Взвешиваю варианты",thinkP4:"Пишу ответ",anStep1:"Читаю ваш месяц",anStep2:"Проверяю {n} операций",anStep3:"Сравниваю план с реальностью",anStep4:"Ищу самое важное",anStep5:"Пишу ваш анализ",analyzingFinances:"Анализируем ваши финансы...", fewSeconds:"Это займет несколько секунд", refresh:"Обновить", insights:"Инсайты", analysisFailed:"Анализ не удался", tryAgain:"Попробовать снова", askYourAdvisor:"Спросите вашего советника", advisorQ1:"Как сэкономить больше?", advisorQ2:"Мой уровень сбережений здоровый?", advisorQ3:"Что делать с излишком?",advisorQ4:"Запиши, что я потратил", thinking:"Думаю...", yesDo:"Да, сделай это", notNow:"Не сейчас", askRichard:"Спросите Ричарда что угодно...", giveFeedback:"Дайте обратную связь Ричарду...", advisorDisclaimer:"Ричард является ИИ-помощником, а не лицензированным финансовым советником. Всегда проводите собственное исследование.", translate:"Перевести план", noPlanYet:"Плана пока нет. Пройдите анкету, чтобы получить персональный план от Ричарда.", noIncomeYet:"Доходы ещё не записаны", notes:"Заметки", notesEmpty:"Пока нет заметок", notesEmptySub:"Отслеживайте, кто должен вам и кому должны вы. Нажмите +, чтобы добавить первую.", theyOweMe:"Мне должны", iOwe:"Я должен", newNote:"Новая заметка", addNote:"Добавить заметку", editNote:"Редактировать заметку", saveNote:"Сохранить заметку", settle:"Погасить", settleTitle:"Погашение заметки", settleAddBalance:"Добавить к моему балансу", reminder:"Напоминание", reminderTitle:"Установить напоминание", setReminder:"Установить", clearReminder:"Убрать напоминание", reminderWhen:"Напомнить мне", reminderDenied:"Уведомления заблокированы. Заметка всё равно покажет метку срока.", due:"Срок", overdue:"Просрочено", deleteNote:"Удалить заметку", trips:"Поездки", planATrip:"Спланировать поездку", planATripSub:"Составьте бюджет отпуска, не трогая свой баланс.", planNewTrip:"Спланировать новую поездку", noTrips:"Пока нет поездок", noTripsSub:"Спланируйте отпуск, и Ричард распределит бюджет по главному.", tripName:"Название поездки", destination:"Направление", tripBudget:"Общий бюджет", tripDays:"Дней", travelStyle:"Стиль путешествия", styleBudget:"Эконом", styleComfort:"Комфорт", styleLuxury:"Люкс", next:"Далее", back:"Назад", richardPlanning:"Ричард планирует вашу поездку", richardPlanningSub:"Распределяет бюджет по главному.", tripSplit:"Распределение бюджета", allocated:"Распределено", overBy:"превышение на", saveTrip:"Сохранить поездку", addCategory:"Добавить категорию", editCategory:"Редактировать категорию", color:"Цвет", deductFromBalance:"Списывать с баланса", deductExplain:"Реальные траты в поездке записываются как один живой расход - баланс уменьшается только когда вы записываете траты здесь, а не на весь бюджет сразу. Можно отменить в любой момент.", reserved:"Отслеживается по балансу", undoReserve:"Прекратить отслеживание", logExpense:"Записать расход", logExpenseTitle:"Запись расхода поездки", tripTips:"Советы Ричарда", deleteTrip:"Удалить поездку", deleteTripConfirm:"Удалить эту поездку? Это нельзя отменить.", spentOf:"потрачено из", leftToSpend:"осталось потратить", planning:"Планируется", tripSummary:"Итоги поездки", appearance:"Оформление", leftAfterBudgets:"Осталось после бюджетов", tripIcon:"Значок поездки", savings:"Сбережения", netWorth:"Чистый капитал", balance:"Баланс", manage:"Управлять", totalSavings:"Всего накоплено", savingsIntro:"Деньги, которые вы держите отдельно от расходного баланса - резервный фонд, накопления на цель, всё, что не хотите случайно потратить. Они входят в чистый капитал, но никогда - в баланс.", newSavingsAccount:"Новый сберегательный счёт", savingsAccountName:"Название счёта", addMoney:"Пополнить", withdraw:"Снять", fromBalance:"С моего баланса", externalMoney:"Деньги, которые уже есть", toBalance:"На мой баланс", removeFromNet:"Потратить или убрать", startingAmount:"Начальная сумма (необязательно)", createAccount:"Создать счёт", closeAccount:"Закрыть счёт", rename:"Переименовать", emptySavingsSub:"Держите резервный фонд или накопления отдельно от расходного баланса.", addSavingsAccount:"Добавить сберегательный счёт", history:"История", balanceUntouched:"Ваш расходный баланс не меняется", movesFromBalance:"Переводит деньги из расходного баланса", addsToBalance:"Возвращает деньги на расходный баланс", leavesNetWorth:"Уходит из ваших счетов - уменьшает чистый капитал", pickIcon:"Значок", emergencyFund:"Резервный фонд", noMovesYet:"Движений пока нет", pastChats:"Прошлые чаты", newChat:"Новый чат", conversation:"чат", conversations:"чатов", noPastChats:"Прошлых чатов пока нет", message:"сообщение", messages:"сообщений" },
+  en: { overview:"Overview", activity:"Activity", budgets:"Budgets", goals:"Goals", advisor:"Advisor", profile:"Profile", language:"Language", currency:"Currency", yourPlan:"Your Plan", categories:"Categories", signOut:"Sign Out", richyMember:"Richy member", richyRefersTo:"Richy refers to you as", seeYourPlan:"See your plan by Richard", netBalance:"Net Balance", income:"Income", spent:"Spent", topSpend:"Top spend", morning:"Good morning", afternoon:"Good afternoon", evening:"Good evening", savedThisPeriod:"saved this period", redoQuestionnaire:"Redo Questionnaire", yourPlanByRichard:"Your Plan by Richard", noTransactions:"No transactions yet", noTransactionsSub:"Tap + to log your first one. Awareness is the first step to wealth.", overviewEmptySub:"The Richest Man in Babylon started by tracking every coin. Start yours in Activity.", savingsRate:"Savings Rate",quickAdd:"Quick add", excellent:"Excellent", onTrack:"On track", buildItUp:"Build it up", overspending:"Room to rebalance", noIncomeYet:"No income logged yet", thisPeriod:"this period", transactions:"Transactions", whereItWent:"Where it went", overLimit:"over limit", complete:"complete", savedLabel:"saved", spentLabel:"spent", toGo:"to go", recent:"Recent", activeGoal:"active goal", activeGoals:"active goals", today:"Today", yesterday:"Yesterday", moneyIn:"Money In", moneyOut:"Money Out", newTransaction:"New Transaction", editTransaction:"Edit Transaction", addTransaction:"Add Transaction", saveChanges:"Save Changes", deleteTx:"Delete transaction", amount:"Amount", txLabel:"Label", category:"Category", date:"Date", repeat:"Repeat", once:"Once", weekly:"Weekly", monthly:"Monthly", markPending:"Mark as pending", expense:"Expense", noBudgets:"No budgets yet", noBudgetsSub:"Tap + to set a limit for a category. A budget is just telling your money where to go.", newBudget:"New Budget", editLimit:"Edit Limit", addBudget:"Add Budget", removeBudget:"Remove this budget", totalSpent:"Total Spent", byCategory:"By Category", edit:"Edit", delete:"Delete", save:"Save", budgeted:"budgeted", monthlyLimit:"Monthly limit", allCatsHaveBudget:"Every category already has a budget. Add a new category first.", noGoals:"No budget books yet", noGoalsSub:"Tap + to create your first budget book. A goal with a deadline is a plan, not a wish.", newBudgetBook:"New Budget Book", editBudgetBook:"Edit Budget Book", createBudgetBook:"Create Budget Book", deleteBudgetBook:"Delete budget book", addToBudgetBook:"Add to Budget Book", alreadySaved:"Already saved", target:"Target", name:"Name", deadline:"Deadline (optional)", goalComplete:"Goal complete!", remaining:"remaining", add:"Add", removeMoney:"Remove", removeFromBudgetBook:"Remove from Budget Book", removeMoneyConfirm:"Remove {amt} from {name}? This will reduce what you've saved.", syncWithAccount:"Sync with account", noSync:"Don't sync", syncedWith:"Synced with", addOrRemove:"Add / Remove", richySuggests:"Richard suggests", implement:"Implement", dismiss:"Dismiss", aiAdvisor:"AI Financial Advisor", aiAdvisorSub:"Personalized advice based on your real spending and expert financial wisdom.", analyzeMyFinances:"Analyze My Finances", thinkP1:"Reading your numbers",thinkP2:"Thinking it through",thinkP3:"Weighing the options",thinkP4:"Writing back",anStep1:"Reading your month",anStep2:"Scanning {n} transactions",anStep3:"Comparing plan to reality",anStep4:"Finding what matters most",anStep5:"Writing your analysis",analyzingFinances:"Analyzing your finances...", fewSeconds:"This takes a few seconds", refresh:"Refresh", insights:"Insights", analysisFailed:"Analysis failed", tryAgain:"Try Again", askYourAdvisor:"Ask Your Advisor", advisorQ1:"How can I save more?", advisorQ2:"Is my savings rate healthy?", advisorQ3:"What to do with my surplus?",advisorQ4:"Log what I just spent", thinking:"Thinking...", yesDo:"Yes, do it", notNow:"Not now", askRichard:"Ask Richard anything...", giveFeedback:"Give Richard feedback...", advisorDisclaimer:"Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.", translate:"Translate plan", noPlanYet:"No plan yet. Complete the onboarding questionnaire to get your personalized plan from Richard.", notes:"Notes", notesEmpty:"No notes yet", notesEmptySub:"Track who owes you and who you owe. Tap + to add your first one.", theyOweMe:"They owe me", iOwe:"I owe", newNote:"New Note", addNote:"Add Note", editNote:"Edit Note", saveNote:"Save Note", settle:"Settle", settleTitle:"Settle note", settleAddBalance:"Add to my balance", reminder:"Reminder", reminderTitle:"Set a reminder", setReminder:"Set reminder", clearReminder:"Clear reminder", reminderWhen:"Remind me on", reminderDenied:"Notifications are blocked. The note will still show a due badge.", due:"Due", overdue:"Overdue", deleteNote:"Delete note", trips:"Trips", planATrip:"Plan a Trip", planATripSub:"Budget a getaway without touching your balance.", planNewTrip:"Plan a New Trip", noTrips:"No trips yet", noTripsSub:"Plan a getaway and Richard will split your budget across the essentials.", tripName:"Trip name", destination:"Destination", tripBudget:"Total budget", tripDays:"Days", travelStyle:"Travel style", styleBudget:"Budget", styleComfort:"Comfort", styleLuxury:"Luxury", next:"Next", back:"Back", richardPlanning:"Richard is planning your trip", richardPlanningSub:"Splitting your budget across the essentials.", tripSplit:"Your budget split", allocated:"Allocated", overBy:"over by", saveTrip:"Save Trip", addCategory:"Add category", editCategory:"Edit category", color:"Color", deductFromBalance:"Deduct from balance", deductExplain:"This tracks what you actually spend on this trip as one live expense, so your balance only drops as you log spending here - not the whole budget up front. You can undo it anytime.", reserved:"Tracking against balance", undoReserve:"Stop tracking", logExpense:"Log expense", logExpenseTitle:"Log a trip expense", tripTips:"Richard's tips", deleteTrip:"Delete trip", deleteTripConfirm:"Delete this trip? This cannot be undone.", spentOf:"spent of", leftToSpend:"left to spend", planning:"Planning", tripSummary:"Trip summary", appearance:"Appearance", leftAfterBudgets:"Left after budgets", tripIcon:"Trip icon", savings:"Savings", netWorth:"Net Worth", balance:"Balance", manage:"Manage", totalSavings:"Total saved", savingsIntro:"Money you keep separate from your spending balance - an emergency fund, a sinking fund, anything you don't want to accidentally spend. It counts toward your net worth, never your balance.", newSavingsAccount:"New savings account", savingsAccountName:"Account name", addMoney:"Add money", withdraw:"Withdraw", fromBalance:"From my balance", externalMoney:"Money I already have", toBalance:"To my balance", removeFromNet:"Spend or remove", startingAmount:"Starting amount (optional)", createAccount:"Create account", closeAccount:"Close account", rename:"Rename", emptySavingsSub:"Keep an emergency fund or a sinking fund separate from your spending balance.", addSavingsAccount:"Add a savings account", history:"History", balanceUntouched:"Your spending balance stays untouched", movesFromBalance:"Moves money out of your spending balance", addsToBalance:"Adds the money back to your spending balance", leavesNetWorth:"Leaves your accounts - lowers your net worth", pickIcon:"Icon", emergencyFund:"Emergency Fund", noMovesYet:"No moves yet", pastChats:"Past chats", newChat:"New chat", conversation:"conversation", conversations:"conversations", noPastChats:"No past chats yet", message:"message", messages:"messages", recurTitleOne:"1 recurring item posted this month. Is it right?", recurTitleMany:"{n} recurring items posted this month. All correct?", recurSub:"They're waiting on you - nothing has moved your balance yet.", recurConfirmAll:"Yes, all correct", recurReview:"Check them", recurHide:"Hide", recurConfirmOne:"Confirm", recurSkipOne:"Didn't happen", recurAmountHint:"Tap the amount to change it before confirming.", recurBadge:"Due", obStageFreelance:"Freelance / self-employed", obStageRetired:"Retired", obIncomeTypeHead:"Is your income the same every month?", obIncomeFixed:"Steady", obIncomeFixedSub:"About the same amount each month", obIncomeVariable:"It varies", obIncomeVarSub:"Freelance, shifts, commission - it moves", obIncomeVarNote:"Then Richy won't assume a monthly figure. Log income when it lands and everything follows from what really arrived.", obFixedHead:"What goes out every month, whatever you do?", obFixedSub:"Tap the ones you pay. Richy will post them for you every month from now on - you'll only ever confirm them.", obFixedTotal:"Fixed costs", obFixedRent:"Rent", obFixedArnona:"Council tax", obFixedPower:"Electricity", obFixedWater:"Water", obFixedVaad:"Building fees", obFixedPhone:"Mobile", obFixedNet:"Internet", obFixedHealth:"Health insurance", obFixedCarIns:"Car insurance", obFixedFuel:"Fuel / transit pass", obFixedGym:"Gym", obFixedStream:"Netflix / Spotify", obFixedSaving:"Standing order to savings", obFixedLoan:"Loan repayment", obFixedOther:"Something else" },
+  he: { overview:"סקירה", activity:"פעילות", budgets:"תקציבים", goals:"יעדים", advisor:"יועץ", profile:"פרופיל", language:"שפה", currency:"מטבע", yourPlan:"התוכנית שלך", categories:"קטגוריות", signOut:"התנתק", richyMember:"חבר Richy", richyRefersTo:"ריצ'י מכנה אותך", seeYourPlan:"ראה את התוכנית שלך", netBalance:"יתרה נטו", income:"הכנסות", spent:"הוצאות", topSpend:"הוצאה עיקרית", morning:"בוקר טוב", afternoon:"צהריים טובים", evening:"ערב טוב", savedThisPeriod:"נחסך בתקופה זו", redoQuestionnaire:"מלא שאלון מחדש", yourPlanByRichard:"התוכנית שלך", noTransactions:"אין עסקאות עדיין", noTransactionsSub:"לחץ + כדי לרשום. מודעות היא הצעד הראשון לעושר.", overviewEmptySub:"עשיר בבבל התחיל בלעקוב אחרי כל מטבע. התחל גם אתה בפעילות.", savingsRate:"שיעור חיסכון",quickAdd:"הוספה מהירה", excellent:"מצוין", onTrack:"במסלול", buildItUp:"שפר את זה", overspending:"אפשר לאזן מחדש", thisPeriod:"בתקופה זו", transactions:"עסקאות", whereItWent:"לאן הלך", overLimit:"מעל המגבלה", complete:"הושלם", savedLabel:"נחסך", spentLabel:"הוצא", toGo:"לסיום", recent:"אחרון", activeGoal:"יעד פעיל", activeGoals:"יעדים פעילים", today:"היום", yesterday:"אתמול", moneyIn:"כסף נכנס", moneyOut:"כסף יוצא", newTransaction:"עסקה חדשה", editTransaction:"ערוך עסקה", addTransaction:"הוסף עסקה", saveChanges:"שמור שינויים", deleteTx:"מחק עסקה", amount:"סכום", txLabel:"תיאור", category:"קטגוריה", date:"תאריך", repeat:"חזרה", once:"פעם אחת", weekly:"שבועי", monthly:"חודשי", markPending:"סמן כממתין", expense:"הוצאה", noBudgets:"אין תקציבים עדיין", noBudgetsSub:"לחץ + להגדרת מגבלה לקטגוריה. תקציב הוא פשוט להגיד לכסף לאן ללכת.", newBudget:"תקציב חדש", editLimit:"ערוך מגבלה", addBudget:"הוסף תקציב", removeBudget:"הסר תקציב זה", totalSpent:"סך הוצאות", byCategory:"לפי קטגוריה", edit:"ערוך", delete:"מחק", save:"שמור", budgeted:"מתוקצב", monthlyLimit:"מגבלה חודשית", allCatsHaveBudget:"לכל הקטגוריות יש תקציב. הוסף קטגוריה חדשה תחילה.", noGoals:"אין ספרי תקציב עדיין", noGoalsSub:"לחץ + ליצירת ספר תקציב ראשון. יעד עם מועד הוא תוכנית, לא משאלה.", newBudgetBook:"ספר תקציב חדש", editBudgetBook:"ערוך ספר תקציב", createBudgetBook:"צור ספר תקציב", deleteBudgetBook:"מחק ספר תקציב", addToBudgetBook:"הוסף לספר תקציב", alreadySaved:"כבר נחסך", target:"יעד", name:"שם", deadline:"תאריך יעד (רשות)", goalComplete:"היעד הושג!", remaining:"נותר", add:"הוסף", removeMoney:"הסר", removeFromBudgetBook:"הסר מספר התקציב", removeMoneyConfirm:"להסיר {amt} מ-{name}? זה יקטין את מה שכבר נחסך.", syncWithAccount:"סנכרון עם חשבון", noSync:"בלי סנכרון", syncedWith:"מסונכרן עם", addOrRemove:"הוסף / הסר", richySuggests:"ריצ'י מציע", implement:"יישם", dismiss:"דחה", aiAdvisor:"יועץ פיננסי AI", aiAdvisorSub:"ייעוץ מותאם אישית בהתבסס על ההוצאות שלך.", analyzeMyFinances:"נתח את הכספים שלי", thinkP1:"קורא את המספרים שלך",thinkP2:"חושב על זה",thinkP3:"שוקל את האפשרויות",thinkP4:"מנסח תשובה",anStep1:"קורא את החודש שלך",anStep2:"סורק {n} תנועות",anStep3:"משווה תוכנית למציאות",anStep4:"מאתר את מה שחשוב באמת",anStep5:"כותב את הניתוח",analyzingFinances:"מנתח את הכספים שלך...", fewSeconds:"זה לוקח כמה שניות", refresh:"רענן", insights:"תובנות", analysisFailed:"הניתוח נכשל", tryAgain:"נסה שוב", askYourAdvisor:"שאל את היועץ שלך", advisorQ1:"איך אוכל לחסוך יותר?", advisorQ2:"האם שיעור החיסכון שלי בריא?", advisorQ3:"מה לעשות עם העודף שלי?",advisorQ4:"רשום מה שהוצאתי עכשיו", thinking:"חושב...", yesDo:"כן, עשה זאת", notNow:"לא עכשיו", askRichard:"שאל את ריצ'רד כל דבר...", giveFeedback:"תן ל-ריצ'רד משוב...", advisorDisclaimer:"ריצ'רד הוא עוזר AI ולא יועץ פיננסי מורשה. תמיד ערוך מחקר עצמאי לפני קבלת החלטות כלכליות.", translate:"תרגם תוכנית", noPlanYet:"אין תוכנית עדיין. מלא את השאלון כדי לקבל את התוכנית האישית שלך מריצ'רד.", noIncomeYet:"עדיין לא נרשמו הכנסות", notes:"פתקים", notesEmpty:"אין פתקים עדיין", notesEmptySub:"עקוב אחרי מי חייב לך ולמי אתה חייב. לחץ + להוספת הפתק הראשון.", theyOweMe:"חייבים לי", iOwe:"אני חייב", newNote:"פתק חדש", addNote:"הוסף פתק", editNote:"ערוך פתק", saveNote:"שמור פתק", settle:"סגור חוב", settleTitle:"סגירת פתק", settleAddBalance:"הוסף ליתרה שלי", reminder:"תזכורת", reminderTitle:"קבע תזכורת", setReminder:"קבע תזכורת", clearReminder:"בטל תזכורת", reminderWhen:"הזכר לי בתאריך", reminderDenied:"ההתראות חסומות. הפתק עדיין יציג תג מועד.", due:"מועד", overdue:"באיחור", deleteNote:"מחק פתק", trips:"טיולים", planATrip:"תכנן טיול", planATripSub:"תקצב חופשה בלי לגעת ביתרה שלך.", planNewTrip:"תכנן טיול חדש", noTrips:"אין טיולים עדיין", noTripsSub:"תכנן חופשה וריצ'רד יחלק את התקציב בין הדברים החשובים.", tripName:"שם הטיול", destination:"יעד", tripBudget:"תקציב כולל", tripDays:"ימים", travelStyle:"סגנון נסיעה", styleBudget:"חסכוני", styleComfort:"נוח", styleLuxury:"יוקרתי", next:"הבא", back:"חזרה", richardPlanning:"ריצ'רד מתכנן את הטיול שלך", richardPlanningSub:"מחלק את התקציב בין הדברים החשובים.", tripSplit:"חלוקת התקציב שלך", allocated:"הוקצה", overBy:"חריגה של", saveTrip:"שמור טיול", addCategory:"הוסף קטגוריה", editCategory:"ערוך קטגוריה", color:"צבע", deductFromBalance:"נכה מהיתרה", deductExplain:"כך מה שאתה באמת מוציא בטיול נרשם כהוצאה חיה אחת - היתרה יורדת רק כשאתה רושם הוצאות כאן, לא כל התקציב מראש. אפשר לבטל בכל רגע.", reserved:"במעקב מול היתרה", undoReserve:"הפסק מעקב", logExpense:"רשום הוצאה", logExpenseTitle:"רישום הוצאת טיול", tripTips:"הטיפים של ריצ'רד", deleteTrip:"מחק טיול", deleteTripConfirm:"למחוק את הטיול? אי אפשר לבטל פעולה זו.", spentOf:"הוצא מתוך", leftToSpend:"נותר להוצאה", planning:"בתכנון", tripSummary:"סיכום הטיול", appearance:"מראה", leftAfterBudgets:"נותר אחרי תקציבים", tripIcon:"סמל הטיול", savings:"חסכונות", netWorth:"שווי נקי", balance:"יתרה", manage:"ניהול", totalSavings:"סך הכל נחסך", savingsIntro:"כסף שאתה שומר בנפרד מיתרת ההוצאות - קרן חירום, קרן ייעודית, כל מה שאתה לא רוצה לבזבז בטעות. הוא נספר בשווי הנקי שלך, לעולם לא ביתרה.", newSavingsAccount:"חשבון חיסכון חדש", savingsAccountName:"שם החשבון", addMoney:"הוסף כסף", withdraw:"משיכה", fromBalance:"מהיתרה שלי", externalMoney:"כסף שכבר יש לי", toBalance:"ליתרה שלי", removeFromNet:"הוצא או הסר", startingAmount:"סכום התחלתי (רשות)", createAccount:"צור חשבון", closeAccount:"סגור חשבון", rename:"שנה שם", emptySavingsSub:"שמור קרן חירום או קרן ייעודית בנפרד מיתרת ההוצאות שלך.", addSavingsAccount:"הוסף חשבון חיסכון", history:"היסטוריה", balanceUntouched:"יתרת ההוצאות שלך נשארת ללא שינוי", movesFromBalance:"מעביר כסף החוצה מיתרת ההוצאות", addsToBalance:"מחזיר את הכסף ליתרת ההוצאות", leavesNetWorth:"יוצא מהחשבונות שלך - מוריד את השווי הנקי", pickIcon:"סמל", emergencyFund:"קרן חירום", noMovesYet:"אין תנועות עדיין", pastChats:"שיחות קודמות", newChat:"שיחה חדשה", conversation:"שיחה", conversations:"שיחות", noPastChats:"אין שיחות קודמות עדיין", message:"הודעה", messages:"הודעות", recurTitleOne:"הוצאה קבועה אחת נכנסה החודש. הכול נכון?", recurTitleMany:"{n} הוצאות קבועות נכנסו החודש. הכול נכון?", recurSub:"הן ממתינות לאישור שלך - שום דבר עדיין לא השפיע על היתרה.", recurConfirmAll:"כן, הכול נכון", recurReview:"בדיקה", recurHide:"הסתרה", recurConfirmOne:"אישור", recurSkipOne:"לא קרה", recurAmountHint:"אפשר להקיש על הסכום כדי לשנות אותו לפני האישור.", recurBadge:"לתשלום", obStageFreelance:"עצמאי/פרילנסר", obStageRetired:"גמלאי", obIncomeTypeHead:"ההכנסה שלך קבועה כל חודש?", obIncomeFixed:"קבועה", obIncomeFixedSub:"פחות או יותר אותו סכום כל חודש", obIncomeVariable:"משתנה", obIncomeVarSub:"פרילנס, משמרות, עמלות - זה זז", obIncomeVarNote:"אז ריצ'י לא יניח סכום חודשי. תרשמו הכנסה כשהיא מגיעה, והכול ייגזר ממה שבאמת נכנס.", obFixedHead:"מה יוצא כל חודש, בלי קשר למה שתעשו?", obFixedSub:"בחרו את מה שאתם משלמים. מעכשיו ריצ'י ירשום אותם בשבילכם כל חודש - רק תאשרו.", obFixedTotal:"הוצאות קבועות", obFixedRent:"שכר דירה", obFixedArnona:"ארנונה", obFixedPower:"חשמל", obFixedWater:"מים", obFixedVaad:"ועד בית", obFixedPhone:"סלולר", obFixedNet:"אינטרנט", obFixedHealth:"ביטוח בריאות", obFixedCarIns:"ביטוח רכב", obFixedFuel:"דלק/רב-קו", obFixedGym:"חדר כושר", obFixedStream:"נטפליקס/ספוטיפיי", obFixedSaving:"הוראת קבע לחיסכון", obFixedLoan:"החזר הלוואה", obFixedOther:"משהו אחר" },
+  ar: { overview:"نظرة عامة", activity:"النشاط", budgets:"الميزانيات", goals:"الاهداف", advisor:"المستشار", profile:"الملف الشخصي", language:"اللغة", currency:"العملة", yourPlan:"خطتك", categories:"الفئات", signOut:"تسجيل الخروج", richyMember:"عضو Richy", richyRefersTo:"ريتشي يناديك", seeYourPlan:"انظر خطتك من ريتشارد", netBalance:"الرصيد الصافي", income:"الدخل", spent:"المنفق", topSpend:"اعلى انفاق", morning:"صباح الخير", afternoon:"مساء الخير", evening:"مساء الخير", savedThisPeriod:"تم توفيره", redoQuestionnaire:"اعادة الاستبيان", yourPlanByRichard:"خطتك من ريتشارد", noTransactions:"لا توجد معاملات بعد", noTransactionsSub:"اضغط + لتسجيل اول معاملة. الوعي هو الخطوة الاولى نحو الثروة.", overviewEmptySub:"اغنى رجل في بابل بدا بتتبع كل عملة. ابدا في النشاط.", savingsRate:"معدل الادخار",quickAdd:"اضافة سريعة", excellent:"ممتاز", onTrack:"في المسار", buildItUp:"طوره", overspending:"مجال للموازنة", thisPeriod:"هذه الفترة", transactions:"المعاملات", whereItWent:"اين ذهب", overLimit:"فوق الحد", complete:"مكتمل", savedLabel:"مدخر", spentLabel:"انفق", toGo:"متبقي", recent:"الاخير", activeGoal:"هدف نشط", activeGoals:"اهداف نشطة", today:"اليوم", yesterday:"امس", moneyIn:"المال الداخل", moneyOut:"المال الخارج", newTransaction:"معاملة جديدة", editTransaction:"تعديل المعاملة", addTransaction:"اضافة معاملة", saveChanges:"حفظ التغييرات", deleteTx:"حذف المعاملة", amount:"المبلغ", txLabel:"التسمية", category:"الفئة", date:"التاريخ", repeat:"تكرار", once:"مرة واحدة", weekly:"اسبوعي", monthly:"شهري", markPending:"وضع علامة معلقة", expense:"مصروف", noBudgets:"لا توجد ميزانيات بعد", noBudgetsSub:"اضغط + لتعيين حد للفئة. الميزانية هي توجيه المال.", newBudget:"ميزانية جديدة", editLimit:"تعديل الحد", addBudget:"اضافة ميزانية", removeBudget:"حذف هذه الميزانية", totalSpent:"اجمالي الانفاق", byCategory:"حسب الفئة", edit:"تعديل", delete:"حذف", save:"حفظ", budgeted:"مخصص", monthlyLimit:"الحد الشهري", allCatsHaveBudget:"كل الفئات لديها ميزانية. اضف فئة جديدة اولا.", noGoals:"لا توجد دفاتر بعد", noGoalsSub:"اضغط + لانشاء اول دفتر. الهدف بموعد خطة وليس امنية.", newBudgetBook:"دفتر جديد", editBudgetBook:"تعديل الدفتر", createBudgetBook:"انشاء دفتر", deleteBudgetBook:"حذف الدفتر", addToBudgetBook:"اضافة الى الدفتر", alreadySaved:"تم الادخار مسبقا", target:"الهدف", name:"الاسم", deadline:"الموعد النهائي (اختياري)", goalComplete:"تم تحقيق الهدف!", remaining:"متبقي", add:"اضافة", removeMoney:"إزالة", removeFromBudgetBook:"إزالة من الدفتر", removeMoneyConfirm:"إزالة {amt} من {name}؟ سيقلل هذا مما تم توفيره بالفعل.", syncWithAccount:"مزامنة مع حساب", noSync:"بدون مزامنة", syncedWith:"مزامن مع", addOrRemove:"إضافة / إزالة", richySuggests:"اقتراح ريتشارد", implement:"تطبيق", dismiss:"تجاهل", aiAdvisor:"مستشار مالي AI", aiAdvisorSub:"نصائح مخصصة بناء على انفاقك الفعلي.", analyzeMyFinances:"تحليل ماليتي", thinkP1:"أقرأ أرقامك",thinkP2:"أفكر في الأمر",thinkP3:"أوازن الخيارات",thinkP4:"أكتب الرد",anStep1:"أقرأ شهرك",anStep2:"أفحص {n} من المعاملات",anStep3:"أقارن الخطة بالواقع",anStep4:"أبحث عن الأهم",anStep5:"أكتب تحليلك",analyzingFinances:"جاري تحليل ماليتك...", fewSeconds:"هذا يستغرق بضع ثوان", refresh:"تحديث", insights:"رؤى", analysisFailed:"فشل التحليل", tryAgain:"حاول مجددا", askYourAdvisor:"اسال مستشارك", advisorQ1:"كيف يمكنني توفير المزيد؟", advisorQ2:"هل معدل توفيري صحي؟", advisorQ3:"ماذا افعل بالفائض؟",advisorQ4:"سجل ما انفقته للتو", thinking:"افكر...", yesDo:"نعم افعل ذلك", notNow:"ليس الان", askRichard:"اسال ريتشارد اي شيء...", giveFeedback:"اعطِ ريتشارد ملاحظاتك...", advisorDisclaimer:"ريتشارد مساعد ذكاء اصطناعي وليس مستشارا ماليا معتمدا. دائما ابحث قبل اتخاذ قرارات مالية.", translate:"ترجمة الخطة", noPlanYet:"لا توجد خطة بعد. اكمل الاستبيان للحصول على خطتك الشخصية من ريتشارد.", noIncomeYet:"لم يُسجل دخل بعد", notes:"ملاحظات", notesEmpty:"لا ملاحظات بعد", notesEmptySub:"تتبع من يدين لك ولمن تدين. اضغط + لإضافة أول ملاحظة.", theyOweMe:"يدينون لي", iOwe:"أنا مدين", newNote:"ملاحظة جديدة", addNote:"أضف ملاحظة", editNote:"تعديل الملاحظة", saveNote:"حفظ الملاحظة", settle:"تسوية", settleTitle:"تسوية الملاحظة", settleAddBalance:"أضف إلى رصيدي", reminder:"تذكير", reminderTitle:"ضبط تذكير", setReminder:"ضبط التذكير", clearReminder:"إلغاء التذكير", reminderWhen:"ذكرني في", reminderDenied:"الإشعارات محظورة. ستظل الملاحظة تعرض شارة الاستحقاق.", due:"مستحق", overdue:"متأخر", deleteNote:"حذف الملاحظة", trips:"رحلات", planATrip:"خطط رحلة", planATripSub:"ضع ميزانية لرحلة دون المساس برصيدك.", planNewTrip:"خطط رحلة جديدة", noTrips:"لا رحلات بعد", noTripsSub:"خطط رحلة وسيوزع ريتشارد ميزانيتك على الأساسيات.", tripName:"اسم الرحلة", destination:"الوجهة", tripBudget:"الميزانية الكلية", tripDays:"أيام", travelStyle:"نمط السفر", styleBudget:"اقتصادي", styleComfort:"مريح", styleLuxury:"فاخر", next:"التالي", back:"رجوع", richardPlanning:"ريتشارد يخطط رحلتك", richardPlanningSub:"يوزع ميزانيتك على الأساسيات.", tripSplit:"توزيع ميزانيتك", allocated:"مخصص", overBy:"تجاوز بمقدار", saveTrip:"حفظ الرحلة", addCategory:"أضف فئة", editCategory:"تعديل الفئة", color:"اللون", deductFromBalance:"خصم من الرصيد", deductExplain:"هكذا يُسجل ما تنفقه فعلاً في الرحلة كمصروف واحد مباشر - ينخفض رصيدك فقط عندما تسجل الإنفاق هنا، وليس الميزانية كلها مقدماً. يمكنك التراجع في أي وقت.", reserved:"قيد التتبع مقابل الرصيد", undoReserve:"إيقاف التتبع", logExpense:"سجل مصروفاً", logExpenseTitle:"تسجيل مصروف رحلة", tripTips:"نصائح ريتشارد", deleteTrip:"حذف الرحلة", deleteTripConfirm:"حذف هذه الرحلة؟ لا يمكن التراجع عن ذلك.", spentOf:"أُنفق من", leftToSpend:"متبقٍ للإنفاق", planning:"قيد التخطيط", tripSummary:"ملخص الرحلة", appearance:"المظهر", leftAfterBudgets:"المتبقي بعد الميزانيات", tripIcon:"رمز الرحلة", savings:"مدخرات", netWorth:"صافي الثروة", balance:"الرصيد", manage:"إدارة", totalSavings:"إجمالي المدخر", savingsIntro:"مال تحتفظ به منفصلاً عن رصيد إنفاقك - صندوق طوارئ، أو ادخار لهدف، أو أي مبلغ لا تريد إنفاقه بالخطأ. يُحسب ضمن صافي ثروتك، وليس ضمن رصيدك أبداً.", newSavingsAccount:"حساب توفير جديد", savingsAccountName:"اسم الحساب", addMoney:"أضف مالاً", withdraw:"سحب", fromBalance:"من رصيدي", externalMoney:"مال أملكه بالفعل", toBalance:"إلى رصيدي", removeFromNet:"إنفاق أو إزالة", startingAmount:"مبلغ البداية (اختياري)", createAccount:"إنشاء حساب", closeAccount:"إغلاق الحساب", rename:"إعادة تسمية", emptySavingsSub:"احتفظ بصندوق طوارئ أو ادخار لهدف منفصلاً عن رصيد إنفاقك.", addSavingsAccount:"أضف حساب توفير", history:"السجل", balanceUntouched:"رصيد إنفاقك يبقى دون تغيير", movesFromBalance:"ينقل المال خارج رصيد إنفاقك", addsToBalance:"يعيد المال إلى رصيد إنفاقك", leavesNetWorth:"يغادر حساباتك - يخفض صافي ثروتك", pickIcon:"الرمز", emergencyFund:"صندوق الطوارئ", noMovesYet:"لا حركات بعد", pastChats:"محادثات سابقة", newChat:"محادثة جديدة", conversation:"محادثة", conversations:"محادثات", noPastChats:"لا محادثات سابقة بعد", message:"رسالة", messages:"رسائل", recurTitleOne:"بند متكرر واحد سُجّل هذا الشهر. هل هو صحيح؟", recurTitleMany:"{n} بنود متكررة سُجّلت هذا الشهر. هل كلها صحيحة؟", recurSub:"بانتظار تأكيدك - لم يتغيّر رصيدك بعد.", recurConfirmAll:"نعم، كلها صحيحة", recurReview:"مراجعتها", recurHide:"إخفاء", recurConfirmOne:"تأكيد", recurSkipOne:"لم يحدث", recurAmountHint:"اضغط على المبلغ لتغييره قبل التأكيد.", recurBadge:"مستحق", obStageFreelance:"عمل حر / مستقل", obStageRetired:"متقاعد", obIncomeTypeHead:"هل دخلك ثابت كل شهر؟", obIncomeFixed:"ثابت", obIncomeFixedSub:"نفس المبلغ تقريبًا كل شهر", obIncomeVariable:"متغيّر", obIncomeVarSub:"عمل حر، ورديات، عمولة - يتغيّر", obIncomeVarNote:"إذًا لن يفترض ريتشي مبلغًا شهريًا. سجّل الدخل عند وصوله وسيُبنى كل شيء على ما وصل فعلًا.", obFixedHead:"ما الذي يُصرف كل شهر مهما فعلت؟", obFixedSub:"اختر ما تدفعه. سيسجّلها ريتشي لك كل شهر من الآن - كل ما عليك هو تأكيدها.", obFixedTotal:"مصاريف ثابتة", obFixedRent:"إيجار", obFixedArnona:"ضريبة بلدية", obFixedPower:"كهرباء", obFixedWater:"ماء", obFixedVaad:"رسوم المبنى", obFixedPhone:"الهاتف المحمول", obFixedNet:"إنترنت", obFixedHealth:"تأمين صحي", obFixedCarIns:"تأمين السيارة", obFixedFuel:"وقود / بطاقة مواصلات", obFixedGym:"نادي رياضي", obFixedStream:"نتفليكس / سبوتيفاي", obFixedSaving:"أمر دائم للادخار", obFixedLoan:"سداد قرض", obFixedOther:"شيء آخر" },
+  ru: { overview:"Обзор", activity:"Активность", budgets:"Бюджеты", goals:"Цели", advisor:"Советник", profile:"Профиль", language:"Язык", currency:"Валюта", yourPlan:"Ваш план", categories:"Категории", signOut:"Выйти", richyMember:"Участник Richy", richyRefersTo:"Richy называет тебя", seeYourPlan:"Посмотреть план от Ричарда", netBalance:"Чистый баланс", income:"Доходы", spent:"Расходы", topSpend:"Главная трата", morning:"Доброе утро", afternoon:"Добрый день", evening:"Добрый вечер", savedThisPeriod:"сохранено за период", redoQuestionnaire:"Пройти снова", yourPlanByRichard:"Ваш план от Ричарда", noTransactions:"Нет транзакций", noTransactionsSub:"Нажмите + чтобы добавить первую. Осознанность - первый шаг к богатству.", overviewEmptySub:"Богатейший человек Вавилона начал с учёта каждой монеты. Начните в Активности.", savingsRate:"Уровень сбережений",quickAdd:"Быстрое добавление", excellent:"Отлично", onTrack:"В норме", buildItUp:"Улучшайте", overspending:"Можно выровнять", thisPeriod:"за период", transactions:"Транзакции", whereItWent:"Куда ушло", overLimit:"сверх лимита", complete:"завершено", savedLabel:"накоплено", spentLabel:"потрачено", toGo:"осталось", recent:"Последние", activeGoal:"активная цель", activeGoals:"активных целей", today:"Сегодня", yesterday:"Вчера", moneyIn:"Доходы", moneyOut:"Расходы", newTransaction:"Новая транзакция", editTransaction:"Редактировать", addTransaction:"Добавить транзакцию", saveChanges:"Сохранить изменения", deleteTx:"Удалить транзакцию", amount:"Сумма", txLabel:"Описание", category:"Категория", date:"Дата", repeat:"Повтор", once:"Однократно", weekly:"Еженедельно", monthly:"Ежемесячно", markPending:"Отметить как ожидающее", expense:"Расход", noBudgets:"Нет бюджетов", noBudgetsSub:"Нажмите + чтобы задать лимит. Бюджет говорит деньгам куда идти.", newBudget:"Новый бюджет", editLimit:"Изменить лимит", addBudget:"Добавить бюджет", removeBudget:"Удалить этот бюджет", totalSpent:"Всего потрачено", byCategory:"По категориям", edit:"Редактировать", delete:"Удалить", save:"Сохранить", budgeted:"запланировано", monthlyLimit:"Месячный лимит", allCatsHaveBudget:"Все категории уже имеют бюджет. Сначала добавьте новую категорию.", noGoals:"Нет книг целей", noGoalsSub:"Нажмите + чтобы создать первую. Цель с датой - это план, а не мечта.", newBudgetBook:"Новая книга целей", editBudgetBook:"Редактировать книгу целей", createBudgetBook:"Создать книгу целей", deleteBudgetBook:"Удалить книгу целей", addToBudgetBook:"Добавить в книгу целей", alreadySaved:"Уже накоплено", target:"Цель", name:"Название", deadline:"Срок (необязательно)", goalComplete:"Цель достигнута!", remaining:"осталось", add:"Добавить", removeMoney:"Снять", removeFromBudgetBook:"Убрать из книги целей", removeMoneyConfirm:"Снять {amt} из {name}? Это уменьшит уже накопленное.", syncWithAccount:"Синхронизировать со счётом", noSync:"Без синхронизации", syncedWith:"Синхронизировано с", addOrRemove:"Добавить / Снять", richySuggests:"Ричард предлагает", implement:"Применить", dismiss:"Отклонить", aiAdvisor:"Финансовый советник ИИ", aiAdvisorSub:"Персональные советы на основе ваших расходов.", analyzeMyFinances:"Анализировать мои финансы", thinkP1:"Читаю ваши цифры",thinkP2:"Обдумываю",thinkP3:"Взвешиваю варианты",thinkP4:"Пишу ответ",anStep1:"Читаю ваш месяц",anStep2:"Проверяю {n} операций",anStep3:"Сравниваю план с реальностью",anStep4:"Ищу самое важное",anStep5:"Пишу ваш анализ",analyzingFinances:"Анализируем ваши финансы...", fewSeconds:"Это займет несколько секунд", refresh:"Обновить", insights:"Инсайты", analysisFailed:"Анализ не удался", tryAgain:"Попробовать снова", askYourAdvisor:"Спросите вашего советника", advisorQ1:"Как сэкономить больше?", advisorQ2:"Мой уровень сбережений здоровый?", advisorQ3:"Что делать с излишком?",advisorQ4:"Запиши, что я потратил", thinking:"Думаю...", yesDo:"Да, сделай это", notNow:"Не сейчас", askRichard:"Спросите Ричарда что угодно...", giveFeedback:"Дайте обратную связь Ричарду...", advisorDisclaimer:"Ричард является ИИ-помощником, а не лицензированным финансовым советником. Всегда проводите собственное исследование.", translate:"Перевести план", noPlanYet:"Плана пока нет. Пройдите анкету, чтобы получить персональный план от Ричарда.", noIncomeYet:"Доходы ещё не записаны", notes:"Заметки", notesEmpty:"Пока нет заметок", notesEmptySub:"Отслеживайте, кто должен вам и кому должны вы. Нажмите +, чтобы добавить первую.", theyOweMe:"Мне должны", iOwe:"Я должен", newNote:"Новая заметка", addNote:"Добавить заметку", editNote:"Редактировать заметку", saveNote:"Сохранить заметку", settle:"Погасить", settleTitle:"Погашение заметки", settleAddBalance:"Добавить к моему балансу", reminder:"Напоминание", reminderTitle:"Установить напоминание", setReminder:"Установить", clearReminder:"Убрать напоминание", reminderWhen:"Напомнить мне", reminderDenied:"Уведомления заблокированы. Заметка всё равно покажет метку срока.", due:"Срок", overdue:"Просрочено", deleteNote:"Удалить заметку", trips:"Поездки", planATrip:"Спланировать поездку", planATripSub:"Составьте бюджет отпуска, не трогая свой баланс.", planNewTrip:"Спланировать новую поездку", noTrips:"Пока нет поездок", noTripsSub:"Спланируйте отпуск, и Ричард распределит бюджет по главному.", tripName:"Название поездки", destination:"Направление", tripBudget:"Общий бюджет", tripDays:"Дней", travelStyle:"Стиль путешествия", styleBudget:"Эконом", styleComfort:"Комфорт", styleLuxury:"Люкс", next:"Далее", back:"Назад", richardPlanning:"Ричард планирует вашу поездку", richardPlanningSub:"Распределяет бюджет по главному.", tripSplit:"Распределение бюджета", allocated:"Распределено", overBy:"превышение на", saveTrip:"Сохранить поездку", addCategory:"Добавить категорию", editCategory:"Редактировать категорию", color:"Цвет", deductFromBalance:"Списывать с баланса", deductExplain:"Реальные траты в поездке записываются как один живой расход - баланс уменьшается только когда вы записываете траты здесь, а не на весь бюджет сразу. Можно отменить в любой момент.", reserved:"Отслеживается по балансу", undoReserve:"Прекратить отслеживание", logExpense:"Записать расход", logExpenseTitle:"Запись расхода поездки", tripTips:"Советы Ричарда", deleteTrip:"Удалить поездку", deleteTripConfirm:"Удалить эту поездку? Это нельзя отменить.", spentOf:"потрачено из", leftToSpend:"осталось потратить", planning:"Планируется", tripSummary:"Итоги поездки", appearance:"Оформление", leftAfterBudgets:"Осталось после бюджетов", tripIcon:"Значок поездки", savings:"Сбережения", netWorth:"Чистый капитал", balance:"Баланс", manage:"Управлять", totalSavings:"Всего накоплено", savingsIntro:"Деньги, которые вы держите отдельно от расходного баланса - резервный фонд, накопления на цель, всё, что не хотите случайно потратить. Они входят в чистый капитал, но никогда - в баланс.", newSavingsAccount:"Новый сберегательный счёт", savingsAccountName:"Название счёта", addMoney:"Пополнить", withdraw:"Снять", fromBalance:"С моего баланса", externalMoney:"Деньги, которые уже есть", toBalance:"На мой баланс", removeFromNet:"Потратить или убрать", startingAmount:"Начальная сумма (необязательно)", createAccount:"Создать счёт", closeAccount:"Закрыть счёт", rename:"Переименовать", emptySavingsSub:"Держите резервный фонд или накопления отдельно от расходного баланса.", addSavingsAccount:"Добавить сберегательный счёт", history:"История", balanceUntouched:"Ваш расходный баланс не меняется", movesFromBalance:"Переводит деньги из расходного баланса", addsToBalance:"Возвращает деньги на расходный баланс", leavesNetWorth:"Уходит из ваших счетов - уменьшает чистый капитал", pickIcon:"Значок", emergencyFund:"Резервный фонд", noMovesYet:"Движений пока нет", pastChats:"Прошлые чаты", newChat:"Новый чат", conversation:"чат", conversations:"чатов", noPastChats:"Прошлых чатов пока нет", message:"сообщение", messages:"сообщений", recurTitleOne:"Один регулярный платёж добавлен в этом месяце. Всё верно?", recurTitleMany:"{n} регулярных платежей добавлено в этом месяце. Всё верно?", recurSub:"Ждут подтверждения - на баланс они пока не влияют.", recurConfirmAll:"Да, всё верно", recurReview:"Проверить", recurHide:"Скрыть", recurConfirmOne:"Подтвердить", recurSkipOne:"Не было", recurAmountHint:"Нажмите на сумму, чтобы изменить её перед подтверждением.", recurBadge:"К оплате", obStageFreelance:"Фриланс / самозанятый", obStageRetired:"На пенсии", obIncomeTypeHead:"Ваш доход одинаков каждый месяц?", obIncomeFixed:"Постоянный", obIncomeFixedSub:"Примерно одна и та же сумма", obIncomeVariable:"Меняется", obIncomeVarSub:"Фриланс, смены, проценты - плавает", obIncomeVarNote:"Тогда Richy не будет предполагать месячную сумму. Отмечайте доход по факту, и всё будет считаться от реально пришедшего.", obFixedHead:"Что уходит каждый месяц в любом случае?", obFixedSub:"Отметьте то, что платите. Дальше Richy будет добавлять их каждый месяц - вам останется подтвердить.", obFixedTotal:"Постоянные расходы", obFixedRent:"Аренда", obFixedArnona:"Муниципальный налог", obFixedPower:"Электричество", obFixedWater:"Вода", obFixedVaad:"Взносы за дом", obFixedPhone:"Мобильный", obFixedNet:"Интернет", obFixedHealth:"Медстраховка", obFixedCarIns:"Автострахование", obFixedFuel:"Топливо / проездной", obFixedGym:"Спортзал", obFixedStream:"Netflix / Spotify", obFixedSaving:"Автоперевод в накопления", obFixedLoan:"Платёж по кредиту", obFixedOther:"Что-то ещё" },
 };
 // Folder-budget strings live in their own block rather than being appended to
 // the four already-enormous single-line language objects above. tr() falls back
@@ -2936,7 +2936,7 @@ function motivSnapshot(data) {
   var savTotal = savingsTotal(data.savings || []);
   var todayIso = isoDay(today);
   var allIncome = tx.filter(function(t) { return t.type === "income" && !isTransfer(t) && motivSettled(t, todayIso); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var allExpense = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && motivSettled(t, todayIso); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var allExpense = tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTransfer(t) && motivSettled(t, todayIso); }).reduce(function(s, t) { return s + t.amount; }, 0);
   var netWorth = round2(allIncome - allExpense + savTotal + businessTotal(data.businesses || []) + investingTotal(data.investing || []));
   var openingTx = tx.filter(function(t) { return isOpening(t); })[0];
   var opening = openingTx ? (openingTx.amount || 0) : 0;
@@ -6943,11 +6943,56 @@ function MathStoryScreen(props) {
 }
 
 var STAGES = [
-  { label: "Teenager",  tKey: "obStageTeen",    icon: "star" },
-  { label: "Student",   tKey: "obStageStudent", icon: "book" },
-  { label: "Working",   tKey: "obStageWorking", icon: "briefcase" },
-  { label: "Parent",    tKey: "obStageParent",  icon: "home" },
+  { label: "Teenager",   tKey: "obStageTeen",      icon: "star" },
+  { label: "Student",    tKey: "obStageStudent",   icon: "book" },
+  { label: "Working",    tKey: "obStageWorking",   icon: "briefcase" },
+  { label: "Freelance",  tKey: "obStageFreelance", icon: "spark" },
+  { label: "Parent",     tKey: "obStageParent",    icon: "home" },
+  { label: "Retired",    tKey: "obStageRetired",   icon: "shield" },
 ];
+
+// The fixed costs an Israeli household actually recognises, as one-tap chips.
+// Each selected chip becomes a real transaction with repeat:"monthly", so the
+// materialiser posts it from the first month on - that is the whole trade the
+// onboarding is offering: ninety seconds now buys a year of not typing.
+var FIXED_COST_PRESETS = [
+  { id: "rent",    tKey: "obFixedRent",    icon: "home",      catId: "c1", picks: [2500, 3500, 4500, 6000] },
+  { id: "arnona",  tKey: "obFixedArnona",  icon: "building",  catId: "c1", picks: [200, 350, 500, 800] },
+  { id: "power",   tKey: "obFixedPower",   icon: "spark",     catId: "c1", picks: [150, 250, 400, 600] },
+  { id: "water",   tKey: "obFixedWater",   icon: "droplet",   catId: "c1", picks: [60, 100, 150, 250] },
+  { id: "vaad",    tKey: "obFixedVaad",    icon: "building",  catId: "c1", picks: [80, 150, 250, 400] },
+  { id: "phone",   tKey: "obFixedPhone",   icon: "phone",     catId: "c11", picks: [30, 50, 80, 120] },
+  { id: "net",     tKey: "obFixedNet",     icon: "wifi",      catId: "c11", picks: [70, 100, 150, 200] },
+  { id: "health",  tKey: "obFixedHealth",  icon: "heart",     catId: "c4", picks: [100, 200, 350, 500] },
+  { id: "carins",  tKey: "obFixedCarIns",  icon: "car",       catId: "c3", picks: [200, 350, 500, 800] },
+  { id: "fuel",    tKey: "obFixedFuel",    icon: "car",       catId: "c3", picks: [200, 400, 700, 1000] },
+  { id: "gym",     tKey: "obFixedGym",     icon: "dumbbell",  catId: "c4", picks: [100, 150, 250, 350] },
+  { id: "stream",  tKey: "obFixedStream",  icon: "film",      catId: "c5", picks: [20, 40, 60, 90] },
+  { id: "saving",  tKey: "obFixedSaving",  icon: "coins",     catId: "c10", picks: [200, 500, 1000, 2000] },
+  { id: "loan",    tKey: "obFixedLoan",    icon: "credit",    catId: "c11", picks: [300, 700, 1200, 2000] },
+  { id: "other",   tKey: "obFixedOther",   icon: "box",       catId: "c11", picks: [100, 250, 500, 1000] },
+];
+
+// Turn the picked chips into real, dated, repeating transactions. Dated to the
+// 1st of the current month rather than today, because that is when a standing
+// order actually lands - and it keeps the anchor day stable for every month
+// the materialiser generates afterwards.
+function fixedCostTxs(picked, cats, todayIso) {
+  var day1 = (todayIso || isoDay(new Date())).slice(0, 8) + "01";
+  var base = Date.now();
+  var out = [];
+  (picked || []).forEach(function(p, i) {
+    var amt = round2(parseFloat(p.amount) || 0);
+    if (!(amt > 0)) return;
+    var preset = FIXED_COST_PRESETS.filter(function(x) { return x.id === p.id; })[0] || {};
+    var c = catById(cats, preset.catId) || catByName(cats, "Other") || (cats || [])[0] || { id: "c11", name: "Other" };
+    out.push({
+      id: base + i, type: "expense", amount: amt, label: p.label || tr(preset.tKey || "obFixedOther"),
+      catId: c.id, category: c.name, date: day1, repeat: "monthly", pending: false, fixedCost: true
+    });
+  });
+  return out;
+}
 var TIMELINES = ["6 months", "1 year", "2 years", "5+ years"];
 var TIMELINE_TKEYS = { "6 months": "obTl1", "1 year": "obTl2", "2 years": "obTl3", "5+ years": "obTl4" };
 
@@ -6966,6 +7011,37 @@ function OnboardingScreen(props) {
   var _er = useState(""); var err = _er[0]; var setErr = _er[1];
   var _gp = useState(""); var genPlan = _gp[0]; var setGenPlan = _gp[1];
   var _god = useState(null); var genOData = _god[0]; var setGenOData = _god[1];
+  // "steady" or "varies". A variable income is the flag that stops Richy
+  // assuming a monthly figure it has no business assuming - see obIncomeVarNote.
+  var _itp = useState(""); var incomeType = _itp[0]; var setIncomeType = _itp[1];
+  // { id -> amount } for the fixed-cost chips. Selection and amount are the
+  // same act: a chip with no amount is not a cost anyone can budget against.
+  var _fxc = useState({}); var fixedCosts = _fxc[0]; var setFixedCosts = _fxc[1];
+  // Tapping a chip seeds it with the middle preset amount rather than 0, so the
+  // common case ("yes, roughly that") is already answered and the user only
+  // touches the ones that are actually different.
+  function toggleFixedCost(id) {
+    var next = {};
+    for (var k in fixedCosts) next[k] = fixedCosts[k];
+    if (next[id] != null) delete next[id];
+    else {
+      var p = FIXED_COST_PRESETS.filter(function(x) { return x.id === id; })[0];
+      next[id] = (p && p.picks && p.picks[1]) || 0;
+    }
+    setFixedCosts(next);
+  }
+  function setFixedCost(id, raw) {
+    var next = {};
+    for (var k in fixedCosts) next[k] = fixedCosts[k];
+    var v = parseFloat(raw);
+    next[id] = raw === "" || isNaN(v) ? 0 : Math.max(0, v);
+    setFixedCosts(next);
+  }
+  var pickedFixed = FIXED_COST_PRESETS.filter(function(p) { return fixedCosts[p.id] != null; });
+  var fixedTotal = pickedFixed.reduce(function(a, p) { return a + (parseFloat(fixedCosts[p.id]) || 0); }, 0);
+  useEffect(function() {
+    if (pickedFixed.length) setEssentials(String(Math.round(fixedTotal)));
+  }, [fixedTotal, pickedFixed.length]);
   var _em = useState("manual"); var entryMethod = _em[0]; var setEntryMethod = _em[1];
   // Journey additions: 9-screen questionnaire index, travel direction for the
   // slide transitions, the money-leak answers feeding the math story, and the
@@ -7018,7 +7094,8 @@ function OnboardingScreen(props) {
     });
     setLoading(false);
     setGenPlan(planText || localPlan());
-    setGenOData({ lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: ageStr, coreProblem: coreProblem, moneyLeaks: leakLabels2.join(", "), overspendEst: overspend, prefLang: prefLang, prefCurrency: prefCur, prefPeriodMode: prefPeriodMode, prefPeriodStart: prefPeriodStart, prefPeriodEnd: prefPeriodEnd });
+    setGenOData({ lifeStage: lifeStage, income: income, incomeType: incomeType || "fixed", essentials: essentials,
+      fixedCosts: pickedFixed.map(function(p) { return { id: p.id, amount: parseFloat(fixedCosts[p.id]) || 0 }; }), savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: ageStr, coreProblem: coreProblem, moneyLeaks: leakLabels2.join(", "), overspendEst: overspend, prefLang: prefLang, prefCurrency: prefCur, prefPeriodMode: prefPeriodMode, prefPeriodStart: prefPeriodStart, prefPeriodEnd: prefPeriodEnd });
     setStep(6);
   }
 
@@ -7392,14 +7469,74 @@ function OnboardingScreen(props) {
             )}
 
             {qIndex === 4 && (
-              <div style={{ paddingTop: 14 }}>
-                <QuickAmount label={tr("obIncomeLabel")} value={income} onChange={setIncome} picks={[1500, 3000, 5000, 8000]} />
+              <div style={{ paddingTop: 4 }}>
+                <div style={{ fontSize: 14.5, fontWeight: 650, color: JINK2, marginBottom: 12, lineHeight: 1.4 }}>{tr("obIncomeTypeHead")}</div>
+                <Stagger k="q4t" step={0.06}>
+                  {[{ v: "fixed", l: "obIncomeFixed", s: "obIncomeFixedSub", icon: "briefcase" },
+                    { v: "variable", l: "obIncomeVariable", s: "obIncomeVarSub", icon: "activity" }].map(function(o) {
+                    var sel = incomeType === o.v;
+                    return (
+                      <button key={o.v} onClick={function() { setIncomeType(o.v); if (o.v === "variable") setIncome(""); }} style={optCardStyle(sel)}>
+                        <div style={optIconTile(sel, 36)}>
+                          <SVGIcon id={o.icon} size={17} color={sel ? "#fff" : JINK3} />
+                        </div>
+                        <span style={{ flex: 1, textAlign: "start" }}>
+                          <span style={{ display: "block", fontSize: 15.5, fontWeight: sel ? 700 : 550, color: sel ? JINK : JINK2 }}>{tr(o.l)}</span>
+                          <span style={{ display: "block", fontSize: 12, color: JINK3, marginTop: 2, lineHeight: 1.35 }}>{tr(o.s)}</span>
+                        </span>
+                        {sel && optCheck}
+                      </button>
+                    );
+                  })}
+                </Stagger>
+                {incomeType === "fixed" && (
+                  <div style={{ paddingTop: 18 }}>
+                    <QuickAmount label={tr("obIncomeLabel")} value={income} onChange={setIncome} picks={[1500, 3000, 5000, 8000]} compact={true} />
+                  </div>
+                )}
+                {incomeType === "variable" && (
+                  <div style={{ paddingTop: 16, fontSize: 13, color: JINK3, lineHeight: 1.5 }}>{tr("obIncomeVarNote")}</div>
+                )}
               </div>
             )}
 
             {qIndex === 5 && (
-              <div style={{ paddingTop: 14 }}>
-                <QuickAmount label={tr("obEssentialsLabel")} value={essentials} onChange={setEssentials} picks={essPicks} />
+              <div style={{ paddingTop: 2 }}>
+                <div style={{ fontSize: 13, color: JINK3, marginBottom: 14, lineHeight: 1.45 }}>{tr("obFixedSub")}</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 9 }}>
+                  {FIXED_COST_PRESETS.map(function(p, i) {
+                    return (
+                      <JrChip key={p.id} icon={p.icon} label={tr(p.tKey)} selected={fixedCosts[p.id] != null} delay={0.03 + i * 0.03}
+                        style={{ padding: "10px 14px" }}
+                        onPress={function() { toggleFixedCost(p.id); }} />
+                    );
+                  })}
+                </div>
+                {/* Only picked chips get an amount row - fifteen amount fields on
+                    one screen is a form, and a form is what this flow exists to
+                    avoid. The running total doubles as the essentials figure the
+                    rest of the app already knows how to use. */}
+                {pickedFixed.length > 0 && (
+                  <div style={{ marginTop: 18 }}>
+                    {pickedFixed.map(function(p) {
+                      return (
+                        <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderBottom: "1px solid rgba(26,20,16,0.07)" }}>
+                          <SVGIcon id={p.icon} size={15} color={JINK3} />
+                          <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: JINK2 }}>{tr(p.tKey)}</span>
+                          <span style={{ fontSize: 14, color: JINK3, fontWeight: 600 }}>{prefCur || _currency.sym || "$"}</span>
+                          <input value={fixedCosts[p.id] === 0 ? "" : String(fixedCosts[p.id])} type="number" inputMode="decimal" autoFocus={false}
+                            placeholder={String(p.picks[1])}
+                            onChange={function(e) { setFixedCost(p.id, e.target.value); }}
+                            style={{ width: 82, textAlign: "end", border: "none", background: "none", outline: "none", fontSize: 17, fontWeight: 700, fontFamily: UI, color: JINK, padding: "2px 0" }} />
+                        </div>
+                      );
+                    })}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingTop: 14 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.07em" }}>{tr("obFixedTotal")}</span>
+                      <span style={{ fontSize: 22, fontWeight: 800, color: JINK, letterSpacing: "-0.02em" }}>{fmtCur(prefCur || _currency.sym || "$", fixedTotal)}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -8258,6 +8395,108 @@ function OverviewWidgets(props) {
   );
 }
 
+// The confirm card for materialised recurring items. Everything it lists is
+// pending - Richy is saying "I think this went out", not "this went out" - so
+// the card's whole job is to turn a guess into a fact the user signed off on.
+//
+// Confirm-all is one tap because that is the honest common case (rent really
+// did leave on the 1st). Adjusting an amount is one tap further in, because
+// the other common case is "yes but it was 3,240 this month", and making that
+// require a trip to Activity is how people stop confirming at all.
+function RecurringConfirm(props) {
+  var rows = props.rows || [];
+  var _o = useState(false);      var open = _o[0];     var setOpen = _o[1];
+  var _e = useState({});         var edits = _e[0];    var setEdits = _e[1];
+  if (!rows.length) return null;
+
+  function amountOf(t) {
+    var v = edits[t.id];
+    return v == null ? t.amount : v;
+  }
+  function setAmount(t, raw) {
+    var next = {};
+    for (var k in edits) next[k] = edits[k];
+    if (raw === "") next[t.id] = "";
+    else {
+      var n = parseFloat(raw);
+      next[t.id] = isNaN(n) ? "" : n;
+    }
+    setEdits(next);
+  }
+  function confirmOne(t) {
+    var v = amountOf(t);
+    props.onConfirm([t.id], (typeof v === "number" && v >= 0) ? { id: t.id, amount: round2(v) } : null);
+  }
+  function confirmAll() {
+    // Any amount the user re-typed rides along with the batch.
+    var patches = rows.map(function(t) {
+      var v = edits[t.id];
+      return (typeof v === "number" && v >= 0) ? { id: t.id, amount: round2(v) } : null;
+    }).filter(Boolean);
+    props.onConfirm(rows.map(function(t) { return t.id; }), patches);
+  }
+
+  var title = rows.length === 1 ? tr("recurTitleOne") : tr("recurTitleMany").replace("{n}", rows.length);
+
+  return (
+    <div style={{ marginBottom: 20, animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.04s both" }}>
+      <Card style={{ overflow: "hidden", border: "1px solid " + T.goldGlow }}>
+        <div style={{ padding: "15px 17px 13px", display: "flex", gap: 12, alignItems: "flex-start" }}>
+          <div style={{ width: 34, height: 34, borderRadius: 11, background: T.goldGlow, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <SVGIcon id="refresh" size={17} color={T.gold} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, lineHeight: 1.35 }}>{title}</div>
+            <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 3, lineHeight: 1.4 }}>{tr("recurSub")}</div>
+          </div>
+        </div>
+
+        {open && (
+          <div>
+            {rows.map(function(t, i) {
+              var c = catById(props.categories || [], t.catId) || { name: t.category || "", color: T.ink3, icon: "tag" };
+              var val = amountOf(t);
+              return (
+                <div key={t.id} style={{ padding: "11px 17px", borderTop: "0.5px solid " + T.sep, display: "flex", alignItems: "center", gap: 11 }}>
+                  <CatBadge icon={c.icon} color={c.color} size={30} soft={true} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
+                    <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{t.date}</div>
+                  </div>
+                  <input value={val === "" ? "" : String(val)} type="number" inputMode="decimal"
+                    onChange={function(e) { setAmount(t, e.target.value); }}
+                    style={{ width: 76, textAlign: "right", border: "none", borderBottom: "1px solid " + T.sep, background: "none", outline: "none",
+                             fontSize: 14, fontWeight: 700, fontFamily: UI, color: T.ink, padding: "2px 0" }} />
+                  <button onClick={function() { confirmOne(t); }}
+                    style={{ background: T.greenDim, color: T.green, border: "none", borderRadius: 9, padding: "7px 10px", fontSize: 11.5, fontWeight: 700, fontFamily: UI, cursor: "pointer", flexShrink: 0 }}>
+                    {tr("recurConfirmOne")}
+                  </button>
+                  <button onClick={function() { props.onSkip(t.id); }}
+                    style={{ background: "none", border: "none", padding: 4, cursor: "pointer", flexShrink: 0, opacity: 0.45, display: "flex" }} title={tr("recurSkipOne")}>
+                    <SVGIcon id="close" size={13} color={T.ink3} />
+                  </button>
+                </div>
+              );
+            })}
+            <div style={{ fontSize: 11, color: T.ink3, padding: "9px 17px 0" }}>{tr("recurAmountHint")}</div>
+          </div>
+        )}
+
+        <div style={{ display: "flex", gap: 9, padding: "12px 17px 15px" }}>
+          <button onClick={confirmAll}
+            style={{ flex: 1, background: T.green, color: "#fff", border: "none", borderRadius: 11, padding: "11px 0", fontSize: 13.5, fontWeight: 700, fontFamily: UI, cursor: "pointer" }}>
+            {tr("recurConfirmAll")}
+          </button>
+          <button onClick={function() { setOpen(!open); }}
+            style={{ background: "none", color: T.ink2, border: "1px solid " + T.sep, borderRadius: 11, padding: "11px 15px", fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
+            {open ? tr("recurHide") : tr("recurReview")}
+          </button>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
 function Overview(props) {
   var tx       = props.tx;
   // Navigate to another main tab/menu. Most summary cards are tappable and jump
@@ -8341,11 +8580,11 @@ function Overview(props) {
   // Internal transfers to/from savings pots are excluded too - moving your own
   // money isn't earning or spending it.
   var income  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && isSettled(t) && inTimeframe(t, timeframe); }).reduce(function(s,t) { return s+t.amount; }, 0);
-  var expense = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && isSettled(t) && inTimeframe(t, timeframe); }).reduce(function(s,t) { return s+t.amount; }, 0);
+  var expense = tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTransfer(t) && !isTrip(t) && isSettled(t) && inTimeframe(t, timeframe); }).reduce(function(s,t) { return s+t.amount; }, 0);
   var hasIncome = income > 0;
   var savRate = hasIncome ? Math.round(((income - expense) / income) * 100) : 0;
   function spentInCat(c) {
-    return tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inTimeframe(t, timeframe) && (t.catId === c.id || t.category === c.name); }).reduce(function(s,t){return s+t.amount;}, 0);
+    return tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTrip(t) && inTimeframe(t, timeframe) && (t.catId === c.id || t.category === c.name); }).reduce(function(s,t){return s+t.amount;}, 0);
   }
   var recent = tx.filter(function(t) { return !isTransfer(t); }).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,4);
   var monthTxCount = tx.filter(function(t) { return inTimeframe(t, timeframe) && !isTransfer(t); }).length;
@@ -8354,6 +8593,8 @@ function Overview(props) {
   // up yet. Each one retires itself the moment the feature is actually in use, and
   // can be waved off by hand, so a settled user never keeps staring at a pitch for
   // something they already know about. When none are left the section disappears.
+  // Occurrences the materialiser posted that are still waiting on the user.
+  var dueRecurring = pendingRecurring(tx);
   var tipsOff = props.dismissedTips || [];
   function dropTip(id) {
     if (props.onDismissTip) props.onDismissTip(id);
@@ -8607,10 +8848,10 @@ function Overview(props) {
   var monthNet = income - expense;
 
   function winExpenseInCat(c) {
-    return tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inWin(t.date) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    return tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTrip(t) && inWin(t.date) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
   }
-  var winExpenseTot = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && inWin(t.date); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var winIncomeTot  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && inWin(t.date); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var winExpenseTot = tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTransfer(t) && !isTrip(t) && inWin(t.date); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var winIncomeTot  = tx.filter(function(t) { return t.type === "income" && !t.pending && !isOpening(t) && !isTransfer(t) && inWin(t.date); }).reduce(function(s, t) { return s + t.amount; }, 0);
   var winSav = winIncomeTot > 0 ? Math.round(((winIncomeTot - winExpenseTot) / winIncomeTot) * 100) : 0;
   var winKept = Math.max(0, winIncomeTot - winExpenseTot);
   var winCats = cats.map(function(c) { return { name: c.name, color: c.color, val: winExpenseInCat(c) }; })
@@ -8619,7 +8860,7 @@ function Overview(props) {
     .slice(0, 6);
 
   var labelTotals = {};
-  tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && inWin(t.date); }).forEach(function(t) {
+  tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTransfer(t) && !isTrip(t) && inWin(t.date); }).forEach(function(t) {
     var k = t.label || "Other";
     labelTotals[k] = (labelTotals[k] || 0) + t.amount;
   });
@@ -8629,9 +8870,10 @@ function Overview(props) {
 
   // Daily running-balance series across the window - one true point per day, no
   // sampling gaps and no smoothing overshoot, so the line reflects real balances.
-  var startBal = tx.filter(function(t) { return t.date < winStart; }).reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0);
+  var startBal = tx.filter(function(t) { return !t.pending && t.date < winStart; }).reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0);
   var dayDelta = {};
   tx.forEach(function(t) {
+    if (t.pending) return;   // due, not paid - it must not bend the line
     if (inWin(t.date)) {
       dayDelta[t.date] = (dayDelta[t.date] || 0) + (t.type === "income" ? t.amount : -t.amount);
     }
@@ -9126,6 +9368,9 @@ function Overview(props) {
           </div>
         </div>
       )}
+
+      <RecurringConfirm rows={dueRecurring} categories={cats}
+        onConfirm={props.onConfirmRecurring} onSkip={props.onSkipRecurring} />
 
       {tips.length > 0 && tipsUpTop && tipsCard(0.05)}
 
@@ -9641,6 +9886,162 @@ function syncDocToTx(doc, seen, txList, cats, mainSym, id) {
   return tx;
 }
 
+
+// ===== RECURRING ==============================================================
+// `repeat: "monthly" | "weekly"` used to be decorative: detectRecurring() read
+// it as a hint for the subscriptions report and Activity drew a badge, but
+// nothing ever produced the next occurrence. So the one thing a budget app is
+// supposed to know for you - that rent leaves on the 1st every month - was
+// still something you re-typed twelve times a year.
+//
+// Occurrences post as `pending: true`. That is the whole safety property: Richy
+// is asserting "this is due", not "this happened". Every settled-money surface
+// filters pending out, so an unconfirmed row cannot move a balance, a savings
+// rate, a budget or anything Richard is told until the user confirms it.
+
+// Period identity. Two occurrences of the same source in the same period are
+// the same occurrence - this is what makes materialisation idempotent.
+function recurPeriodKey(dateIso, repeat) {
+  var d = new Date(dateIso + "T00:00:00");
+  if (isNaN(d.getTime())) return "";
+  if (repeat === "weekly") {
+    // ISO week: Thursday of the current week decides the year, so weeks that
+    // straddle New Year don't collide with week 1 of the wrong year.
+    var t = new Date(d.getTime());
+    t.setDate(t.getDate() + 4 - (t.getDay() || 7));
+    var yStart = new Date(t.getFullYear(), 0, 1);
+    var week = Math.ceil((((t - yStart) / 86400000) + 1) / 7);
+    return t.getFullYear() + "-W" + (week < 10 ? "0" + week : week);
+  }
+  return dateIso.slice(0, 7);
+}
+
+// Step one period forward, keeping the anchor day. Monthly clamps to the end of
+// short months, so a rent charge anchored to the 31st lands on the 30th in
+// April and on the 28th/29th in February instead of skidding into the next
+// month - which is what a naive setMonth(+1) does.
+function recurNextDate(dateIso, repeat, anchorDay) {
+  var d = new Date(dateIso + "T00:00:00");
+  if (isNaN(d.getTime())) return "";
+  if (repeat === "weekly") {
+    d.setDate(d.getDate() + 7);
+  } else {
+    var day = anchorDay || d.getDate();
+    d.setDate(1);
+    d.setMonth(d.getMonth() + 1);
+    var lastOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    d.setDate(Math.min(day, lastOfMonth));
+  }
+  return isoDay(d);
+}
+
+// A source is a row the user actually created that says "this happens again".
+// Structural rows are excluded: opening balances and trip lump sums are not
+// events that recur, and transfers come in matched pairs - materialising one
+// side would invent money moving out of an account with nothing arriving.
+function isRecurSource(t, opts) {
+  if (!t || (t.repeat !== "monthly" && t.repeat !== "weekly")) return false;
+  if (t.recurredFrom) return false;   // a generated occurrence never seeds more
+  if (t.pending) return false;        // don't build on something unconfirmed
+  // Someone who told us their income varies does not want last month's figure
+  // proposed as this month's. Their expenses still recur - rent does not care
+  // how the month went - so only the income side is suppressed.
+  if (opts && opts.variableIncome && t.type === "income") return false;
+  return !isOpening(t) && !isTransfer(t) && !isTrip(t) && !t.catchUp && !t.accountMove;
+}
+
+// How far back we are willing to fill. Someone returning after a year away does
+// not want nineteen unconfirmed charges waiting for them - that reads as the
+// app having invented a year of spending. Recent periods are useful; older gaps
+// are history the user never logged, and Richy does not get to guess at them.
+var RECUR_MAX_BACKFILL = 3;
+
+// Post every occurrence due since each source was last materialised, up to and
+// including today's period.
+//
+// Idempotency lives on the SOURCE row (`recurredThrough`), not on a scan of
+// what already exists. Two boots on the same day generate nothing the second
+// time, and - just as important - deleting a generated occurrence does not
+// bring it back on the next launch, which a "does this row exist?" check would.
+//
+// Returns the new list plus the rows added, so the caller can both persist and
+// tell the user what happened. `tx` is never mutated.
+function materializeRecurring(list, todayIso, opts) {
+  var today = todayIso || isoDay(new Date());
+  var added = [];
+  var stamps = {};
+  // Belt-and-braces on top of recurredThrough: if the stamp somehow never
+  // reached the server (a load never followed by a save), the deterministic id
+  // still stops the same occurrence being written twice.
+  var have = {};
+  (list || []).forEach(function(t) { if (t && t.id != null) have[t.id] = true; });
+  (list || []).forEach(function(t) {
+    if (!isRecurSource(t, opts) || !t.date || t.date > today) return;
+    var repeat = t.repeat;
+    var anchorDay = repeat === "monthly" ? new Date(t.date + "T00:00:00").getDate() : 0;
+    var nowKey = recurPeriodKey(today, repeat);
+    var through = t.recurredThrough || recurPeriodKey(t.date, repeat);
+    if (!nowKey || !through || through >= nowKey) return;
+
+    // Walk forward from the source date to today, keeping a sliding window of
+    // the most recent uncovered periods. Walking the whole way (rather than
+    // stopping at the cap) is what makes a long absence surface the LAST three
+    // rents rather than three from a year ago - the old ones are history the
+    // user never logged, and the recent ones are what they need to check.
+    //
+    // `covered` is the last period whose occurrence DATE has actually arrived,
+    // and it - not today's period - is what gets stamped. Stamping today's
+    // period on the 5th when rent falls on the 25th would mark the month done
+    // before its charge existed, and that occurrence would never be posted.
+    var due = [];
+    var covered = through;
+    var cursor = t.date;
+    for (var guard = 0; guard < 600; guard++) {
+      cursor = recurNextDate(cursor, repeat, anchorDay);
+      if (!cursor || cursor > today) break;
+      var key = recurPeriodKey(cursor, repeat);
+      if (key > through) {
+        due.push({ date: cursor, key: key });
+        if (due.length > RECUR_MAX_BACKFILL) due.shift();
+      }
+      covered = key;
+      if (key >= nowKey) break;
+    }
+    // Nothing due but time has moved on: still advance the stamp, so a source
+    // whose occurrences were all deleted doesn't get re-walked forever.
+    if (!due.length) { if (covered > through) stamps[t.id] = covered; return; }
+
+    due.forEach(function(p) {
+      var newId = "rec_" + t.id + "_" + p.key;
+      if (have[newId]) return;
+      have[newId] = true;
+      added.push(Object.assign({}, t, {
+        id: newId,
+        date: p.date,
+        pending: true,
+        repeat: "none",
+        recurredFrom: t.id,
+        recurPeriod: p.key,
+        // Provenance only - a generated row is not a synced or imported one.
+        externalId: undefined, synced: undefined, syncSource: undefined
+      }));
+    });
+    stamps[t.id] = covered;
+  });
+
+  if (!added.length) return { tx: list || [], added: [] };
+  var next = (list || []).map(function(t) {
+    return stamps[t.id] ? Object.assign({}, t, { recurredThrough: stamps[t.id] }) : t;
+  }).concat(added);
+  return { tx: next, added: added };
+}
+
+// The rows the confirm card is asking about: everything materialised and still
+// unconfirmed, oldest first.
+function pendingRecurring(list) {
+  return (list || []).filter(function(t) { return t.pending && t.recurredFrom; })
+    .sort(function(a, b) { return (a.date || "").localeCompare(b.date || ""); });
+}
 
 // The Bank Leumi DEMO used to write invented transactions straight into the
 // real ledger, where they fed balance, budgets, category spend, savings rate,
@@ -10681,7 +11082,7 @@ function Activity(props) {
                           {t.type === "income" ? tr("income") : c.name}
                         </span>
                         {t.origCur && t.origCur !== _currency.sym && <span style={{ fontSize: 10, fontWeight: 700, color: T.gold, background: T.goldDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.02em" }}>{fmtCur(t.origCur, t.origAmount)}</span>}
-                        {t.pending && <span style={{ fontSize: 10, fontWeight: 700, color: T.gold, background: T.goldDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.04em" }}>PENDING</span>}
+                        {t.pending && <span style={{ fontSize: 10, fontWeight: 700, color: T.gold, background: T.goldDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.04em", textTransform: "uppercase" }}>{tr("recurBadge")}</span>}
                         {t.synced && <span style={{ fontSize: 10, fontWeight: 700, color: T.green, background: T.greenDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.04em" }}>AUTO</span>}
                         {t.repeat && t.repeat !== "none" && <span style={{ fontSize: 10, fontWeight: 600, color: T.ink2, background: T.orangeDim, borderRadius: 5, padding: "1px 6px" }}>{t.repeat === "weekly" ? tr("weekly") : tr("monthly")}</span>}
                       </div>
@@ -11735,7 +12136,7 @@ function Budgets(props) {
     : !!(catById(cats, nb.catId || (availCats[0] || {}).id) || {}).synced;
 
   var viewRow = viewCat ? byKey[viewCat] : null;
-  var viewTxs = (viewRow && !viewRow.isFolder && !viewRow.cat.synced) ? props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, curMonth()) && (t.catId === viewRow.key || t.category === viewRow.name); }).sort(function(a, b) { return b.date.localeCompare(a.date); }) : [];
+  var viewTxs = (viewRow && !viewRow.isFolder && !viewRow.cat.synced) ? props.tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTrip(t) && inMonth(t, curMonth()) && (t.catId === viewRow.key || t.category === viewRow.name); }).sort(function(a, b) { return b.date.localeCompare(a.date); }) : [];
   // How many pots the synced tag being viewed is drawn from, just for "account" vs "accounts".
   var viewSynced = viewRow && !viewRow.isFolder ? viewRow.cat.synced : "";
   var viewSyncedLists = { business: props.businesses, investing: props.investing, savings: props.savings };
@@ -14325,10 +14726,10 @@ function Advisor(props) {
   var cats = props.categories || [];
   var ymA = curMonth();
   // Cash-flow is this month (matches the dashboard); net worth is all-time.
-  var income = props.tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var expense = props.tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  // Net worth = main balance (all-time tx) + every savings pot + business cash.
-  var netWorth = props.tx.reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0) + savingsTotal(props.savings || []) + businessTotal(props.businesses || []);
+  var income = props.tx.filter(function(t) { return t.type === "income" && !t.pending && !isOpening(t) && !isTransfer(t) && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var expense = props.tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTransfer(t) && !isTrip(t) && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  // Net worth = main balance (all-time SETTLED tx) + every savings pot + business cash.
+  var netWorth = props.tx.filter(function(t) { return !t.pending; }).reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0) + savingsTotal(props.savings || []) + businessTotal(props.businesses || []);
   var savings = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
   var topCats = cats.map(function(c) { return { name: c.name, spent: catSpend(c) }; }).filter(function(c) { return c.spent > 0; }).sort(function(a, b) { return b.spent - a.spent; }).slice(0, 5);
   var budgetLines = props.budgets.map(function(b) {
@@ -14444,7 +14845,7 @@ function Advisor(props) {
     + incomeAuditBlock(props.tx, props.onboardingData, cs);
 
   function catSpend(c) {
-    return props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ymA) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    return props.tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTrip(t) && inMonth(t, ymA) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
   }
 
   function localAnalysis() {
@@ -15385,7 +15786,7 @@ function Advisor(props) {
     return d.getFullYear() + "-" + (mm < 10 ? "0" + mm : "" + mm);
   }
   function catSpendInMonth(c, ym) {
-    return props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    return props.tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
   }
 
   // Whole months between today and a "YYYY-MM-DD" deadline (negative if past).
@@ -15418,7 +15819,7 @@ function Advisor(props) {
 
     var netKept = Math.round(income - expense);
     var prevYm = ymShift(ymA, -1);
-    var prevExpenseTot = props.tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && inMonth(t, prevYm); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    var prevExpenseTot = props.tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTransfer(t) && !isTrip(t) && inMonth(t, prevYm); }).reduce(function(s, t) { return s + t.amount; }, 0);
     var spendDelta = Math.round(expense - prevExpenseTot);
 
     var catTotal = allCats.reduce(function(s, c) { return s + c.spent; }, 0) || 1;
@@ -16524,13 +16925,13 @@ function FullAnalysisView(props) {
   var ym = curMonth();
 
   function catSpend(c) {
-    return tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); })
+    return tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); })
       .reduce(function(s, t) { return s + t.amount; }, 0);
   }
 
-  var income = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && inMonth(t, ym); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var expense = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && inMonth(t, ym); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var netWorth = tx.reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0) + savingsTotal(props.savings || []) + businessTotal(props.businesses || []);
+  var income = tx.filter(function(t) { return t.type === "income" && !t.pending && !isOpening(t) && !isTransfer(t) && inMonth(t, ym); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var expense = tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTransfer(t) && !isTrip(t) && inMonth(t, ym); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var netWorth = tx.filter(function(t) { return !t.pending; }).reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0) + savingsTotal(props.savings || []) + businessTotal(props.businesses || []);
   var reviewed = tx.filter(function(t) { return inMonth(t, ym) && !isTransfer(t); }).length;
 
   var savRate = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
@@ -24272,7 +24673,7 @@ function LogMonthView(props) {
 
   // What's already logged this month per category, and the budget limit if set.
   function spentThisMonth(c) {
-    return allTx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    return allTx.filter(function(t) { return t.type === "expense" && !t.pending && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
   }
   function limitFor(c) {
     var b = allBudgets.filter(function(x) { return x.catId === c.id || x.category === c.name; })[0];
@@ -25865,6 +26266,9 @@ function EditFinancialView(props) {
   var oData = props.oData || {};
   var _ls = useState(oData.lifeStage || ""); var lifeStage = _ls[0]; var setLifeStage = _ls[1];
   var _inc = useState(oData.income || ""); var income = _inc[0]; var setIncome = _inc[1];
+  // Set at signup, changeable here - a freelancer who lands a salaried job
+  // should not be stuck with Richy refusing to propose their monthly income.
+  var _itp = useState(oData.incomeType === "variable" ? "variable" : "fixed"); var incomeType = _itp[0]; var setIncomeType = _itp[1];
   var _ess = useState(oData.essentials || ""); var essentials = _ess[0]; var setEssentials = _ess[1];
   var _sav = useState(oData.savings || ""); var savings = _sav[0]; var setSavings = _sav[1];
   var _dbt = useState(oData.debt || ""); var debt = _dbt[0]; var setDebt = _dbt[1];
@@ -25873,7 +26277,7 @@ function EditFinancialView(props) {
   var _tl = useState(oData.timeline || ""); var timeline = _tl[0]; var setTimeline = _tl[1];
 
   function handleSave() {
-    props.onSave({ lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: oData.age || "" });
+    props.onSave({ lifeStage: lifeStage, income: income, incomeType: incomeType, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: oData.age || "" });
   }
 
   var flStyle = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 8, display: "block" };
@@ -25890,12 +26294,24 @@ function EditFinancialView(props) {
             return (
               <button key={st.label} onClick={function() { setLifeStage(st.label); }}
                 style={{ background: sel ? T.orange : "rgba(0,0,0,0.06)", border: "none", borderRadius: 30, padding: "9px 16px", fontSize: 14, fontWeight: sel ? 700 : 500, color: sel ? "#fff" : T.ink2, cursor: "pointer", fontFamily: UI }}>
-                {st.label}
+                {tr(st.tKey)}
               </button>
             );
           })}
         </div>
-        <AmountSettingRow first label="Monthly income" value={income} onChange={setIncome} picks={[1500, 3000, 5000, 8000]} />
+        <span style={flStyle}>{tr("obIncomeTypeHead")}</span>
+        <div style={{ display: "flex", gap: 8, marginBottom: 18, paddingBottom: 18, borderBottom: "0.5px solid " + T.sep }}>
+          {[{ v: "fixed", l: "obIncomeFixed" }, { v: "variable", l: "obIncomeVariable" }].map(function(o) {
+            var sel = incomeType === o.v;
+            return (
+              <button key={o.v} onClick={function() { setIncomeType(o.v); }}
+                style={{ flex: 1, background: sel ? T.orange : "rgba(0,0,0,0.06)", border: "none", borderRadius: 30, padding: "9px 16px", fontSize: 14, fontWeight: sel ? 700 : 500, color: sel ? "#fff" : T.ink2, fontFamily: UI, cursor: "pointer" }}>
+                {tr(o.l)}
+              </button>
+            );
+          })}
+        </div>
+        {incomeType === "fixed" && <AmountSettingRow first label="Monthly income" value={income} onChange={setIncome} picks={[1500, 3000, 5000, 8000]} />}
         <AmountSettingRow label="Monthly essentials" value={essentials} onChange={setEssentials} picks={[800, 1500, 2500, 4000]} />
         <AmountSettingRow label="Current savings" value={savings} onChange={setSavings} picks={[500, 2000, 10000, 25000]} />
         <AmountSettingRow last label="Total debt" value={debt} onChange={setDebt} picks={[1000, 5000, 20000]} />
@@ -26423,7 +26839,7 @@ function BadgeTile(props) {
 // (personal balances, savings pots, net worth, level, badges) is not read here,
 // because the household document does not contain it in the first place.
 function sharedTxOf(tx, uid) {
-  return (tx || []).filter(function(t) { return t && t.shared && t.owner === uid && !isTransfer(t); });
+  return (tx || []).filter(function(t) { return t && t.shared && !t.pending && t.owner === uid && !isTransfer(t); });
 }
 function memberTotals(tx, uid) {
   var rows = sharedTxOf(tx, uid);
@@ -27568,6 +27984,12 @@ export default function App() {
     // done silently: they moved the user's balance, so removing them moves it
     // back, and a number changing on its own with no explanation is exactly the
     // kind of thing that makes people stop trusting the app.
+    // Post anything a `repeat` says is due since the last load. These land
+    // pending, so nothing here moves a balance until the user confirms it on
+    // the Overview card.
+    var recur = materializeRecurring(allTx, isoDay(new Date()),
+      { variableIncome: ((data.onboardingData || {}).incomeType === "variable") });
+    allTx = recur.tx;
     var demoSweep = cleanDemoSyncTx(allTx);
     var demoBanner = null;
     if (demoSweep.removed) {
@@ -28242,6 +28664,35 @@ export default function App() {
     runNext(0);
   }, [businesses, accountKey]);
 
+  // Confirming a materialised recurring item is what turns Richy's guess into
+  // the user's fact: `pending` comes off and the money starts counting. Amount
+  // patches ride along so "yes, but it was 3,240 this month" is one action
+  // rather than a confirm followed by an edit.
+  function onConfirmRecurring(ids, patches) {
+    if (!ids || !ids.length) return;
+    var want = {}; ids.forEach(function(i) { want[i] = true; });
+    var patchBy = {};
+    (Array.isArray(patches) ? patches : (patches ? [patches] : [])).forEach(function(p) {
+      if (p && p.id != null && typeof p.amount === "number" && p.amount >= 0) patchBy[p.id] = p.amount;
+    });
+    var next = tx.map(function(t) {
+      if (!want[t.id]) return t;
+      var patch = { pending: false, recurConfirmedAt: isoDay(new Date()) };
+      if (patchBy[t.id] != null) patch.amount = round2(patchBy[t.id]);
+      return Object.assign({}, t, patch);
+    });
+    setTx(next);
+    save({ tx: next });
+  }
+  // "Didn't happen" removes the occurrence outright. It never counted toward a
+  // balance, so there is nothing to reverse - and the source keeps its
+  // recurredThrough stamp, so this month is not re-posted on the next launch.
+  function onSkipRecurring(id) {
+    var next = tx.filter(function(t) { return t.id !== id; });
+    setTx(next);
+    save({ tx: next });
+  }
+
   function onSaveFolders(next) { setFolders(next); save({ folders: next }); }
   function onSaveCategories(next) { setCategories(next); save({ categories: next }); }
   function onSaveCurrency(sym) { _currency.sym = sym; setCurrency(sym); save({ currency: sym }); }
@@ -28374,6 +28825,16 @@ export default function App() {
     // separate Emergency Fund pot, NOT their spending balance - so an existing
     // emergency fund is never forced onto the main balance. It counts toward net
     // worth from day one but leaves the balance clean.
+    // The fixed-cost chips become real repeating transactions right here. This
+    // is the trade the step promised: they are logged once, and from next month
+    // the materialiser posts them for confirmation instead of the user retyping
+    // rent twelve times a year.
+    var fixed = fixedCostTxs((oData && oData.fixedCosts) || [], categories, isoDay(new Date()));
+    if (fixed.length) {
+      var nextTx = (tx || []).concat(fixed);
+      setTx(nextTx);
+      merged.tx = nextTx;
+    }
     var savAmt = parseFloat(oData && oData.savings);
     if (savAmt > 0 && !(savings && savings.length)) {
       var sToday = new Date().toISOString().slice(0, 10);
@@ -28661,7 +29122,7 @@ export default function App() {
   // The five swipeable main tabs, produced by id so both the visible page and the
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
-    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
+    if (id === "overview") return <Overview tx={tx} onConfirmRecurring={onConfirmRecurring} onSkipRecurring={onSkipRecurring} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
     if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
