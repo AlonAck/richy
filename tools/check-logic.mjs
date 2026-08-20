@@ -281,4 +281,54 @@ ok("...and says how negative", over.pot, -2000);
 
 function round(n) { return Math.round(n * 100) / 100; }
 
+// ---------------------------------------------------------------------------
+// Quick add: which picks surface, and what one tap actually writes.
+// ---------------------------------------------------------------------------
+const Q = build(["quickPicksOf", "quickPickTx"], `
+  function isTransfer(t){return !!t.transfer||t.catId==="savings-transfer";}
+  function isTrip(t){return !!t.trip;}
+  function isOpening(t){return !!t.opening;}
+  function isoDay(d){return d.toISOString().slice(0,10);}
+  function round2(n){return Math.round(n*100)/100;}
+  function suggestCatId(){return "c11";}
+  function catById(cs,id){return (cs||[]).filter(function(c){return c.id===id;})[0]||null;}
+  function catByName(cs,n){return (cs||[]).filter(function(c){return c.name===n;})[0]||null;}\n`);
+
+const e = (id, label, amount, date, extra) =>
+  Object.assign({ id, type: "expense", label, amount, date, catId: "c2" }, extra || {});
+const HIST = [
+  e(1, "Coffee", 14, "2026-08-01"), e(2, "Coffee", 16, "2026-08-10"), e(3, "Coffee", 15, "2026-08-18"),
+  e(4, "Lunch", 48, "2026-08-05"), e(5, "Lunch", 52, "2026-08-19"),
+  e(6, "Haircut", 90, "2026-08-02"),
+];
+
+console.log("\n-- quick picks --");
+ok("most-used first", Q.quickPicksOf(HIST).map(p => p.label), ["Coffee", "Lunch", "Haircut"]);
+ok("carries the most recent amount", Q.quickPicksOf(HIST)[0].amount, 15);
+ok("caps at six", Q.quickPicksOf(HIST.concat(
+  ["A","B","C","D","E"].map((l, i) => e(20 + i, l, 5, "2026-08-2" + i)))).length, 6);
+ok("income is not a quick pick",
+  Q.quickPicksOf([{ id: 9, type: "income", label: "Salary", amount: 9000, date: "2026-08-01" }]).length, 0);
+ok("a pending recurring row is not a habit",
+  Q.quickPicksOf([e(9, "Rent", 3200, "2026-08-01", { pending: true, recurredFrom: 1 })]).length, 0);
+ok("a fixed cost on a repeat is not a quick pick - the materialiser posts it, and\n       a chip would invite logging it twice",
+  Q.quickPicksOf([e(9, "Rent", 3200, "2026-08-01", { repeat: "monthly" })]).length, 0);
+ok("nor a settled occurrence of one",
+  Q.quickPicksOf([e(9, "Rent", 3200, "2026-08-01", { recurredFrom: 2 })]).length, 0);
+ok("nor a transfer, trip lump sum, or catch-up estimate",
+  Q.quickPicksOf([e(9, "To savings", 500, "2026-08-01", { catId: "savings-transfer" }),
+                  e(10, "Tokyo", 5000, "2026-08-01", { trip: true }),
+                  e(11, "Earlier this month", 700, "2026-08-01", { catchUp: true })]).length, 0);
+
+console.log("\n-- one tap --");
+const QCATS = [{ id: "c2", name: "Food" }, { id: "c11", name: "Other" }];
+const logged = Q.quickPickTx(Q.quickPicksOf(HIST)[0], QCATS, HIST, "2026-08-21");
+ok("dated today", logged.date, "2026-08-21");
+ok("settled, not pending", logged.pending, false);
+ok("an expense with the remembered amount", [logged.type, logged.amount], ["expense", 15]);
+ok("keeps the category it was last filed under", [logged.catId, logged.category], ["c2", "Food"]);
+ok("does not recur", logged.repeat, "none");
+ok("falls back to suggestCatId when the pick has no category",
+  Q.quickPickTx({ label: "Something new", amount: 20 }, QCATS, HIST, "2026-08-21").catId, "c11");
+
 done();
