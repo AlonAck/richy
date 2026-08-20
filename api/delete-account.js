@@ -104,6 +104,14 @@ module.exports = async function handler(req, res) {
       var conn = connSnap.data();
       var tokenUrl = process.env.LEUMI_FINTEKA_TOKEN_URL || "";
       if (conn.accessToken && tokenUrl) {
+        // Bounded: this is the only outbound call in a function that runs ~15
+        // sequential awaits. Untimed, a slow bank endpoint could eat the whole
+        // budget and get the function killed AFTER users/{uid} was already
+        // deleted - which is what told users deletion had failed when it had
+        // not. Revoking is best-effort anyway; the token row is deleted either
+        // way on the next line.
+        var revokeCtrl = new AbortController();
+        var revokeTimer = setTimeout(function () { revokeCtrl.abort(); }, 8000);
         try {
           await fetch(tokenUrl.replace(/\/token\b/, "/revoke"), {
             method: "POST",
@@ -112,9 +120,11 @@ module.exports = async function handler(req, res) {
               token: conn.accessToken,
               client_id: process.env.LEUMI_FINTEKA_CLIENT_ID || "",
               client_secret: process.env.LEUMI_FINTEKA_CLIENT_SECRET || ""
-            }).toString()
+            }).toString(),
+            signal: revokeCtrl.signal
           });
         } catch (revokeErr) { /* best-effort */ }
+        finally { clearTimeout(revokeTimer); }
       }
       await connSnap.ref.delete();
     }
@@ -182,7 +192,15 @@ module.exports = async function handler(req, res) {
   try { await admin.auth().deleteUser(uid); } catch (e) { failed.push("authUser"); }
 
   if (failed.length) {
-    res.status(207).json({ ok: false, partial: true, failed: failed, message: "Some data could not be removed automatically. Email richysupport@gmail.com and we'll finish the deletion manually." });
+    // This endpoint is idempotent - every step re-runs cleanly against whatever
+    // is left - so a partial result is retryable, not a dead end. Say which
+    // steps are outstanding and whether the account blob itself is already gone
+    // (it is what the app reads on next load), and let the client offer Retry.
+    res.status(207).json({
+      ok: false, partial: true, failed: failed, retryable: true,
+      userDocDeleted: failed.indexOf("userDoc") === -1,
+      message: "Some data could not be removed automatically. You can try again - anything already deleted stays deleted."
+    });
     return;
   }
   res.status(200).json({ ok: true });

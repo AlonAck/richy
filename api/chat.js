@@ -2,6 +2,7 @@
 // carry a valid Firebase ID token, so only signed-in Richy users can spend the
 // API key - an anonymous caller who finds this URL gets a 401, not a free relay.
 var admin = require("firebase-admin");
+var PROMPTS = require("./_prompts.js");
 
 function initAdmin() {
   if (admin.apps.length) return true;
@@ -82,7 +83,24 @@ module.exports = async function handler(req, res) {
 
   var body = req.body || {};
   var messages = body.messages || [];
-  var system = body.system || "";
+
+  // ---- the system prompt is the SERVER'S, not the caller's --------------------
+  // This endpoint used to take `system` straight off the request body. That made
+  // every guardrail on Richard - the persona, the ISA "no personalised
+  // investment advice" line, the [ACTION:...] grammar the app then offers to
+  // apply to the user's real ledger - a client-side suggestion. Anyone who
+  // signed up could POST their own instructions and get a general-purpose Claude
+  // relay on our Anthropic key with no boundaries at all.
+  //
+  // Now the caller names a prompt and supplies DATA. api/_prompts.js owns every
+  // word of instruction text. An unknown id is a 400 rather than a silent
+  // fallback, so a client/server version skew fails loudly instead of quietly
+  // sending Richard out with no persona.
+  var system = PROMPTS.build(body.promptId, body.vars, body.userInstructions, body.lang);
+  if (system == null) {
+    res.status(400).json({ error: { type: "invalid_request", message: "Unknown prompt id." } });
+    return;
+  }
 
   // ---- input ceiling ----------------------------------------------------------
   // maxTokens below bounds the OUTPUT only. Input was previously unbounded, so a
@@ -95,7 +113,7 @@ module.exports = async function handler(req, res) {
   // confidently wrong answer built on half the user's numbers, which is worse
   // than a visible error.
   var MAX_MESSAGES = 40;
-  var MAX_SYSTEM_CHARS = 20000;
+  var MAX_SYSTEM_CHARS = 80000;
   var MAX_TOTAL_CHARS = 100000;
 
   if (!Array.isArray(messages) || messages.length === 0) {
@@ -106,7 +124,9 @@ module.exports = async function handler(req, res) {
     res.status(413).json({ error: { type: "request_too_large", message: "That conversation is too long for Richard to take in one go." } });
     return;
   }
-  if (typeof system !== "string" || system.length > MAX_SYSTEM_CHARS) {
+  // The instructions are ours and bounded; this can now only trip when a caller
+  // stuffs the DATA vars, which _prompts.js already clips - belt and braces.
+  if (system.length > MAX_SYSTEM_CHARS) {
     res.status(413).json({ error: { type: "request_too_large", message: "That request is too large." } });
     return;
   }
