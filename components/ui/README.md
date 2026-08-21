@@ -21,6 +21,10 @@ folder if the migration never happens.
 | `amount-slider-demo.tsx` | 21st.dev membership-amount demo | — |
 | `gradient-shimmer.tsx` | 21st.dev `GradientShimmer` | `GradientShimmer` (+ `gsBandGradient`, `GS_PRESETS`) |
 | `gradient-shimmer-demo.tsx` | 21st.dev sweep demo | — |
+| `ai-input.tsx` | kokonutui `AIInput` | the Advisor tab's ask-Richard bar (inline in `Advisor()`) |
+| `ai-input-demo.tsx` | kokonutui `AIInput` demo | — |
+| `textarea.tsx` | shadcn/ui `Textarea` | `ai-input.tsx`'s dependency only; not ported separately |
+| `../hooks/use-auto-resize-textarea.ts` | kokonutui `useAutoResizeTextarea` | `autoGrow()` in `Advisor()` (hand-rolled, no hook) |
 
 The gradient shimmer's port drops the `as`/`className` props (every call site
 wants a span with inline styles), swaps `useMemo` for a per-render rebuild, and
@@ -37,3 +41,12 @@ app's existing `RollingNum` instead of `AmountReadout`, the range is derived
 from each screen's quick-pick amounts rather than passed as `min`/`max`, and the
 square grid is toned down to roughly half opacity with a slow drift in place of
 the original's flicker. See the comments on `AmountSlider` for the details.
+
+The AI input's port keeps the rounded-pill textarea and the send button that
+fades/scales in once there's text, both using the theme's own tokens (`T.sep`,
+`T.ink`, `T.btn`) instead of Tailwind's `black/5`-style opacity classes. It
+drops the `Mic` button entirely — Richy has no speech-to-text backend, and a
+mic icon that does nothing on tap is worse than no mic icon. Auto-resize
+reuses the screen's existing `autoGrow()` + `inputRef` (a `useAutoResizeTextarea`
+hook adds nothing an existing effect wasn't already doing) and `onSubmit` maps
+straight onto the screen's own `sendChat()`.

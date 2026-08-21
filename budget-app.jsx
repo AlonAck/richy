@@ -16118,16 +16118,18 @@ function Advisor(props) {
           </div>
         )}
 
-        <div style={{ display: "flex", gap: 10, alignItems: "flex-end", padding: "12px 12px", borderTop: chat.length > 0 ? "0.5px solid " + T.sep : "none" }}>
-          <textarea ref={inputRef} value={input} rows={1}
-            onChange={function(e) { setInput(e.target.value); }}
-            onKeyDown={function(e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (!chatLoading) sendChat(); } }}
-            placeholder={tr("askRichard")}
-            style={{ flex: 1, border: "none", background: "rgba(0,0,0,0.045)", borderRadius: 14, outline: "none", fontSize: 14, fontFamily: UI, color: T.ink, padding: "13px 14px", resize: "none", lineHeight: 1.4, maxHeight: 132, overflowY: "auto", boxSizing: "border-box", display: "block" }} />
-          <button onClick={sendChat} disabled={!input.trim() || chatLoading}
-            style={{ width: 44, height: 44, border: "none", borderRadius: 14, background: input.trim() && !chatLoading ? T.btn : "rgba(0,0,0,0.1)", boxShadow: input.trim() && !chatLoading ? "0 6px 18px rgba(137,112,198,0.32)" : "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: input.trim() && !chatLoading ? "pointer" : "default", flexShrink: 0 }}>
-            <SVGIcon id="up" size={20} color="#fff" />
-          </button>
+        <div style={{ padding: "12px 12px", borderTop: chat.length > 0 ? "0.5px solid " + T.sep : "none" }}>
+          <div style={{ position: "relative", width: "100%" }}>
+            <textarea ref={inputRef} value={input} rows={1}
+              onChange={function(e) { setInput(e.target.value); }}
+              onKeyDown={function(e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (!chatLoading) sendChat(); } }}
+              placeholder={tr("askRichard")}
+              style={{ width: "100%", border: "none", background: "rgba(0,0,0,0.045)", borderRadius: 24, outline: "none", fontSize: 14, fontFamily: UI, color: T.ink, padding: "15px 54px 15px 18px", resize: "none", lineHeight: 1.4, maxHeight: 132, overflowY: "auto", boxSizing: "border-box", display: "block" }} />
+            <button onClick={sendChat} disabled={!input.trim() || chatLoading}
+              style={{ position: "absolute", right: 7, bottom: 7, width: 38, height: 38, border: "none", borderRadius: 13, background: T.btn, boxShadow: "0 6px 18px rgba(137,112,198,0.32)", display: "flex", alignItems: "center", justifyContent: "center", cursor: input.trim() && !chatLoading ? "pointer" : "default", opacity: input.trim() ? 1 : 0, transform: input.trim() ? "scale(1)" : "scale(0.95)", pointerEvents: input.trim() ? "auto" : "none", transition: "opacity 0.2s ease-out, transform 0.2s ease-out" }}>
+              <SVGIcon id="up" size={18} color="#fff" />
+            </button>
+          </div>
         </div>
       </Card>
       <div style={{ textAlign: "center", fontSize: 11, color: T.ink3, lineHeight: 1.55, padding: "0 10px 6px", letterSpacing: "0.01em" }}>
