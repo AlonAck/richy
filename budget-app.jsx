@@ -76,29 +76,31 @@ var THEMES = {
     advGreen: "#4ADE80", advRingLow: "#E07848",
     catNameHero: "rgba(255,255,255,0.82)", merchNameHero: "rgba(255,255,255,0.9)", merchBar: "linear-gradient(90deg,#C8673A99,#E07848)",
   },
-  // "blue" (Cornflower Ocean) — a light periwinkle hero with deep-navy ink, built on
-  // the two requested blues: #5C7AE3 (cornflower periwinkle — hero + accent highlight)
-  // and #3C4C82 (deep navy — primary accent for on-cream buttons/marks/links, crisp
-  // ~8:1 on the cream bg). The hero ink is #242C52, a deepened shade of #3C4C82, so
-  // the balance number reads clearly on the periwinkle hero (#3C4C82 alone is only
-  // ~2.3:1 there). Light hero => dark text, like the flagship Violet.
+  // "blue" (Cornflower Ocean) — recolored onto the six-step Steel Azure ramp
+  // (Floral White #FFF8EE, Alabaster Grey #DEE3E6, Powder Blue #AFC3D5,
+  // Wisteria Blue #7AA1CB, Rich Cerulean #3D76AD, Steel Azure #004A8F).
+  // #7AA1CB is the hero + accent highlight (was cornflower periwinkle);
+  // #004A8F is the primary accent for on-cream buttons/marks/links. The hero
+  // ink is #0B2E52, a deepened shade of #004A8F, so the balance number reads
+  // clearly on the light hero (#004A8F alone is too low-contrast there).
+  // Light hero => dark text, like the flagship Violet.
   blue: {
-    orange: "#3C4C82", orangeHi: "#5C7AE3", orangeDim: "rgba(92,122,227,0.15)", orangeGlow: "rgba(92,122,227,0.30)",
-    heroBg: "linear-gradient(160deg,#5C7AE3 0%,#8493E2 50%,#B2BEED 100%)",
-    heroBg2: "linear-gradient(135deg,#5C7AE3 0%,#8493E2 55%,#B2BEED 100%)",
-    btn: "linear-gradient(135deg,#5C7AE3 0%,#4C5E9C 55%,#3C4C82 100%)",
-    heroShadow: "0 12px 40px rgba(60,76,130,0.30), 0 2px 8px rgba(60,76,130,0.16)",
+    orange: "#004A8F", orangeHi: "#7AA1CB", orangeDim: "rgba(122,161,203,0.15)", orangeGlow: "rgba(122,161,203,0.30)",
+    heroBg: "linear-gradient(160deg,#7AA1CB 0%,#AFC3D5 50%,#DEE3E6 100%)",
+    heroBg2: "linear-gradient(135deg,#7AA1CB 0%,#AFC3D5 55%,#DEE3E6 100%)",
+    btn: "linear-gradient(135deg,#7AA1CB 0%,#3D76AD 55%,#004A8F 100%)",
+    heroShadow: "0 12px 40px rgba(0,74,143,0.30), 0 2px 8px rgba(0,74,143,0.16)",
     heroGlow1: "rgba(255,255,255,0.36)", heroGlow2: "rgba(255,255,255,0.16)",
-    heroText: "#242C52", heroMut: "rgba(36,44,82,0.62)", heroFaint: "rgba(36,44,82,0.46)",
-    heroSep: "rgba(36,44,82,0.13)", heroTrack: "rgba(36,44,82,0.10)",
+    heroText: "#0B2E52", heroMut: "rgba(11,46,82,0.62)", heroFaint: "rgba(11,46,82,0.46)",
+    heroSep: "rgba(11,46,82,0.13)", heroTrack: "rgba(11,46,82,0.10)",
     heroPos: "#188A4A", heroNeg: "#C73A36",
-    heroPillBg: "#FFFFFF", heroPillText: "#1B2140", heroRangeBg: "rgba(36,44,82,0.08)",
-    trendLineA: "#2E3A66", trendLineB: "#5C7AE3", trendArea: "#3C4C82",
-    trendDot: "#2E3A66", trendDotStroke: "#C3CDF0", trendGlow: "#3C4C82",
-    gridStrong: "rgba(36,44,82,0.12)", gridMid: "rgba(36,44,82,0.08)", gridFaint: "rgba(36,44,82,0.06)",
-    ringA: "#3C4C82",
+    heroPillBg: "#FFFFFF", heroPillText: "#081B33", heroRangeBg: "rgba(11,46,82,0.08)",
+    trendLineA: "#0B2E52", trendLineB: "#7AA1CB", trendArea: "#004A8F",
+    trendDot: "#0B2E52", trendDotStroke: "#DEE3E6", trendGlow: "#004A8F",
+    gridStrong: "rgba(11,46,82,0.12)", gridMid: "rgba(11,46,82,0.08)", gridFaint: "rgba(11,46,82,0.06)",
+    ringA: "#004A8F",
     advGreen: "#188A4A", advRingLow: "#E03030",
-    catNameHero: "rgba(36,44,82,0.82)", merchNameHero: "rgba(36,44,82,0.85)", merchBar: "linear-gradient(90deg,#3C4C82,#5C7AE3)",
+    catNameHero: "rgba(11,46,82,0.82)", merchNameHero: "rgba(11,46,82,0.85)", merchBar: "linear-gradient(90deg,#004A8F,#7AA1CB)",
   },
 };
 var _theme = { name: "blue" };
@@ -24556,7 +24558,7 @@ function CurrencyView(props) {
 function AppearanceView(props) {
   var opts = [
     { id: "purple",  label: "Mika's Violet",    sub: "Lavender hero, violet accents",  a: "#9D78E8", b: "#C8B1FF" },
-    { id: "blue",    label: "Cornflower Ocean", sub: "Periwinkle hero, navy accents",  a: "#5C7AE3", b: "#3C4C82" },
+    { id: "blue",    label: "Cornflower Ocean", sub: "Wisteria hero, steel-azure accents",  a: "#7AA1CB", b: "#004A8F" },
     { id: "classic", label: "Dark Ember",       sub: "Dark hero, warm amber accents",  a: "#1E1A16", b: "#C8673A" }
   ];
   var modeOpts = [

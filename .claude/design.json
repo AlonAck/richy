@@ -116,49 +116,49 @@
     },
     "blue": {
       "displayName": "Cornflower Ocean",
-      "description": "Light periwinkle hero with deep navy accents and dark text",
+      "description": "Light wisteria hero with steel-azure accents and dark text, built on the six-step Steel Azure ramp (Floral White #FFF8EE, Alabaster Grey #DEE3E6, Powder Blue #AFC3D5, Wisteria Blue #7AA1CB, Rich Cerulean #3D76AD, Steel Azure #004A8F)",
       "isDefault": false,
       "colors": {
-        "primary": "#3C4C82",
-        "primaryHi": "#5C7AE3",
-        "primaryDim": "rgba(92,122,227,0.15)",
-        "primaryGlow": "rgba(92,122,227,0.30)",
+        "primary": "#004A8F",
+        "primaryHi": "#7AA1CB",
+        "primaryDim": "rgba(122,161,203,0.15)",
+        "primaryGlow": "rgba(122,161,203,0.30)",
         "hero": {
-          "bg": "linear-gradient(160deg,#5C7AE3 0%,#8493E2 50%,#B2BEED 100%)",
-          "bg2": "linear-gradient(135deg,#5C7AE3 0%,#4C5E9C 55%,#3C4C82 100%)",
-          "text": "#242C52",
-          "mutedText": "rgba(36,44,82,0.62)",
-          "faintText": "rgba(36,44,82,0.46)",
-          "separator": "rgba(36,44,82,0.13)",
-          "track": "rgba(36,44,82,0.10)",
+          "bg": "linear-gradient(160deg,#7AA1CB 0%,#AFC3D5 50%,#DEE3E6 100%)",
+          "bg2": "linear-gradient(135deg,#7AA1CB 0%,#3D76AD 55%,#004A8F 100%)",
+          "text": "#0B2E52",
+          "mutedText": "rgba(11,46,82,0.62)",
+          "faintText": "rgba(11,46,82,0.46)",
+          "separator": "rgba(11,46,82,0.13)",
+          "track": "rgba(11,46,82,0.10)",
           "positive": "#188A4A",
           "negative": "#C73A36",
-          "shadow": "0 12px 40px rgba(60,76,130,0.30), 0 2px 8px rgba(60,76,130,0.16)",
+          "shadow": "0 12px 40px rgba(0,74,143,0.30), 0 2px 8px rgba(0,74,143,0.16)",
           "glow1": "rgba(255,255,255,0.36)",
           "glow2": "rgba(255,255,255,0.16)",
           "pillBg": "#FFFFFF",
-          "pillText": "#1B2140",
-          "rangeBg": "rgba(36,44,82,0.08)"
+          "pillText": "#081B33",
+          "rangeBg": "rgba(11,46,82,0.08)"
         },
         "trends": {
-          "lineA": "#2E3A66",
-          "lineB": "#5C7AE3",
-          "area": "#3C4C82",
-          "dot": "#2E3A66",
-          "dotStroke": "#C3CDF0",
-          "glow": "#3C4C82"
+          "lineA": "#0B2E52",
+          "lineB": "#7AA1CB",
+          "area": "#004A8F",
+          "dot": "#0B2E52",
+          "dotStroke": "#DEE3E6",
+          "glow": "#004A8F"
         },
         "grid": {
-          "strong": "rgba(36,44,82,0.12)",
-          "mid": "rgba(36,44,82,0.08)",
-          "faint": "rgba(36,44,82,0.06)"
+          "strong": "rgba(11,46,82,0.12)",
+          "mid": "rgba(11,46,82,0.08)",
+          "faint": "rgba(11,46,82,0.06)"
         },
-        "ring": "#3C4C82",
+        "ring": "#004A8F",
         "advisorGreen": "#188A4A",
         "advisorRingLow": "#E03030",
-        "categoryNameHero": "rgba(36,44,82,0.82)",
-        "merchandiseNameHero": "rgba(36,44,82,0.85)",
-        "merchandiseBar": "linear-gradient(90deg,#3C4C82,#5C7AE3)"
+        "categoryNameHero": "rgba(11,46,82,0.82)",
+        "merchandiseNameHero": "rgba(11,46,82,0.85)",
+        "merchandiseBar": "linear-gradient(90deg,#004A8F,#7AA1CB)"
       }
     }
   },
@@ -334,14 +334,14 @@
     "doNotChange": [
       "Cream background #F7F3EE (light mode)",
       "Dark hero balance card (classic theme) or light hero gradients (purple/blue themes)",
-      "Primary action colors per theme (orange #C8673A classic, purple #8970C6 for violet, navy #3C4C82 for blue)",
+      "Primary action colors per theme (orange #C8673A classic, purple #8970C6 for violet, steel azure #004A8F for blue)",
       "Apple system font stack (no web fonts)",
       "Casual greeting format",
       "Bottom tab bar with SVG icons",
       "Richard's name and personality"
     ],
     "warnings": [
-      "Light-hero themes (purple, blue): hero text is dark, not the primary accent color. #3C4C82 alone is only ~2.3:1 on periwinkle — always check contrast when adding new light-hero themes",
+      "Light-hero themes (purple, blue): hero text is dark, not the primary accent color. #004A8F alone is too low-contrast on the wisteria hero — always check contrast when adding new light-hero themes",
       "Liquid glass effect is subtle by design — avoid increasing blur or saturation beyond documented values",
       "Nav bar behavior requires careful shadow and specular rim tuning per light/dark mode to maintain the lens effect"
     ]
@@ -355,6 +355,6 @@
     "themeSystem": "Themes are runtime-switchable via Profile > Appearance. User choice persisted as 'theme' in Firestore. Three palettes supported: purple (default), classic, blue. Add new themes by extending THEMES object and THEME_LABELS map.",
     "glassSystem": "Comprehensive Liquid Glass material system for iOS 26-style nav bar refraction, pill-shaped active-tab lens, frosted sheets, and adaptive light/dark glass tokens. Never apply static 30% opacity to nav bars — use the glass system tokens instead.",
     "darkMode": "Full dark mode support via applyDarkMode(). Glass tokens adapt (bright specs in dark, dark borders in light) to maintain visibility.",
-    "accessibility": "All text has been checked for WCAG contrast. Light-hero themes use darkened ink (e.g., #242C52) on hero, not the primary color."
+    "accessibility": "All text has been checked for WCAG contrast. Light-hero themes use darkened ink (e.g., #0B2E52) on hero, not the primary color."
   }
 }
