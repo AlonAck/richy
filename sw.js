@@ -38,7 +38,14 @@ var SHELL = [
   "/vendor/firebase-firestore-compat.js?v=" + BUILD,
   "/manifest.webmanifest",
   "/icon-180.png",
-  "/icon-512.png"
+  "/icon-512.png",
+  "/fonts/richy-fonts.css",
+  "/fonts/eb-garamond-latin-700-italic.woff2",
+  "/fonts/eb-garamond-latin-ext-700-italic.woff2",
+  "/fonts/eb-garamond-cyrillic-700-italic.woff2",
+  "/fonts/eb-garamond-cyrillic-ext-700-italic.woff2",
+  "/fonts/noto-serif-hebrew-700.woff2",
+  "/fonts/noto-naskh-arabic-700.woff2"
 ];
 
 self.addEventListener("install", function (event) {

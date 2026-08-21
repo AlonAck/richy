@@ -22,5 +22,5 @@ export const T = {
   glassSpec: "rgba(0,0,0,0.07)",
 };
 
-export const UI = "-apple-system, system-ui, sans-serif";
-export const DISP = "-apple-system, system-ui, sans-serif";
+export const UI = '-apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+export const DISP = '"EB Garamond", "Noto Serif Hebrew", "Noto Naskh Arabic", Garamond, "Times New Roman", serif';

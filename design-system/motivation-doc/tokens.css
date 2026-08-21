@@ -52,11 +52,11 @@
   --shadow: 0 1px 2px rgba(26,20,16,.05), 0 8px 24px -14px rgba(26,20,16,.18);
 
   /* --- type roles -------------------------------------------------------
-     Three roles, each doing a job. No webfonts: the Artifact CSP blocks font
-     CDNs, and a silent fallback is worse than a considered system stack.    */
-  --f-display: "Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Georgia,"Times New Roman",serif;
-  --f-body:    -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-  --f-mono:    ui-monospace,"SF Mono","Cascadia Mono","Segoe UI Mono",Consolas,"Liberation Mono",monospace;
+     Title faces are bundled with Richy; every non-title role uses the native
+     system UI family (San Francisco on Apple platforms).                    */
+  --f-display: "EB Garamond","Noto Serif Hebrew","Noto Naskh Arabic",Garamond,"Times New Roman",serif;
+  --f-body:    -apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --f-mono:    var(--f-body);
 }
 
 /* --- dark ---------------------------------------------------------------
@@ -107,16 +107,15 @@
 
 /* ===========================================================================
    TYPE SCALE
-   Display carries hierarchy; body carries density; mono carries data.
-   Mono is semantic here, not decorative: it marks machine-checkable values
-   (triggers, XP figures, level numbers, reward grants).
+   Display carries hierarchy; the native UI family carries everything else,
+   including tabular data.
    =========================================================================== */
-.t-h1     { font-family:var(--f-display); font-weight:700; letter-spacing:-.035em; line-height:.94;
+.t-h1     { font-family:var(--f-display); font-weight:700; font-style:italic; letter-spacing:-.035em; line-height:.94;
             font-size:clamp(46px,9.5vw,96px); text-wrap:balance; }
-.t-h2     { font-family:var(--f-display); font-weight:700; letter-spacing:-.028em; line-height:1.05;
+.t-h2     { font-family:var(--f-display); font-weight:700; font-style:italic; letter-spacing:-.028em; line-height:1.05;
             font-size:clamp(29px,4.4vw,42px); text-wrap:balance; }
-.t-h3     { font-family:var(--f-display); font-weight:700; letter-spacing:-.018em; font-size:22px; }
-.t-lede   { font-family:var(--f-display); font-size:19px; line-height:1.55; color:var(--ink2); max-width:56ch; }
+.t-h3     { font-family:var(--f-display); font-weight:700; font-style:italic; letter-spacing:-.018em; font-size:22px; }
+.t-lede   { font-family:var(--f-body); font-size:19px; line-height:1.55; color:var(--ink2); max-width:56ch; }
 .t-body   { font-family:var(--f-body); font-size:16px; line-height:1.62; max-width:66ch; text-wrap:pretty; }
 .t-label  { font-size:13px; text-transform:uppercase; letter-spacing:.11em; color:var(--ink2); font-weight:600; }
 .t-eyebrow{ font-family:var(--f-mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink3); }

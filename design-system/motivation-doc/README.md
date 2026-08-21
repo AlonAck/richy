@@ -90,22 +90,17 @@ out, and the dashed border says so without spending a hue.
 
 ## Type
 
-Three roles. No webfonts — the Artifact CSP blocks font CDNs, and a silent
-fallback is worse than a considered system stack.
+Two families define the product: bundled serif faces for headings and the
+native UI stack for every other role. On Apple platforms that stack resolves
+to San Francisco without embedding Apple's restricted font files.
 
 | Role | Stack | Job |
 |---|---|---|
-| Display | Iowan Old Style → Palatino → Georgia | headings, lede, badge names |
-| Body | system UI sans | prose and dense table text |
-| Mono | ui-monospace → Cascadia → Consolas | data |
+| Display | EB Garamond 700 italic → Noto Serif Hebrew / Noto Naskh Arabic | headings and title-role text |
+| UI | San Francisco / native system UI | prose, controls, labels, and data |
 
-**Mono is semantic, not decorative.** It marks machine-checkable values:
-triggers (`savings rate ≥ 10% in a P`), XP figures, level numbers, reward
-grants. If a value could be asserted in a unit test, it's mono. If it's prose
-a person wrote, it isn't. Keeping that line honest is what stops the mono from
-reading as retro styling.
-
-Display is set tight (`-.035em` at h1) and heavy. Prose sits near 65ch;
+Display is bold and inclined, with script-aware companions for Hebrew and
+Arabic. Prose sits near 65ch;
 tables and the badge index are exempt because they're scanned, not read.
 `font-variant-numeric: tabular-nums` on every column of digits.
 

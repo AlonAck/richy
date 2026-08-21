@@ -84,6 +84,14 @@ const staticFiles = [
 ];
 for (const f of staticFiles) copyFileSync(f, "public/" + f);
 
+// Title fonts are self-hosted so both the service-worker-backed PWA and the
+// Capacitor shell retain the Garamond title system offline. License notices
+// travel with the redistributed OFL font files.
+mkdirSync("public/fonts", { recursive: true });
+for (const f of readdirSync("fonts")) {
+  copyFileSync("fonts/" + f, "public/fonts/" + f);
+}
+
 // Badge art: one SVG per badge per appearance (see badges/README.md). Copied
 // wholesale rather than listed file by file, so adding art is a drag-and-drop
 // into the folder and never an edit to this script.

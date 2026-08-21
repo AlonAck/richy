@@ -308,14 +308,12 @@ function resolveCat(cats, t) {
   return catById(cats, t.catId) || catByName(cats, t.category) || { id: "", name: t.category || "Other", color: "#6B5C4E", icon: "box" };
 }
 
-const UI = "-apple-system, system-ui, sans-serif";
-// Big-title/display stack. GT Alpina is a licensed Grilli Type face with no
-// free CDN - named first so licensed .woff2 files can be dropped in later via
-// an @font-face block with no other change. Fraunces (linked in index.html /
-// preview.html) is the free stand-in until then. Neither covers Hebrew, so the
-// stack still ends in the system UI fonts - RTL titles fall through to those
-// instead of rendering in a mismatched Latin serif.
-const DISP = '"GT Alpina", "Fraunces", Georgia, -apple-system, system-ui, sans-serif';
+// San Francisco is exposed by Apple through the system-font aliases; other
+// platforms receive their native UI face without shipping Apple's font files.
+const UI = '-apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+// Titles use the bundled EB Garamond Bold Italic face. Hebrew and Arabic use
+// bundled serif companions so localized headings keep the same editorial role.
+const DISP = '"EB Garamond", "Noto Serif Hebrew", "Noto Naskh Arabic", Garamond, "Times New Roman", serif';
 
 var _currency = { sym: "$" };
 // Seeds from the device's last-picked language (mirrored by applyLangDir())
@@ -424,6 +422,7 @@ function applyLangDir(code) {
   code = normalizeLang(code);
   _lang.code = code;
   try {
+    document.documentElement.lang = code;
     document.documentElement.dir = (code === "he" || code === "ar") ? "rtl" : "ltr";
     localStorage.setItem("cb_lang", code);
   } catch (e) {}
@@ -3373,8 +3372,8 @@ class ErrorBoundary extends React.Component {
     return React.createElement("div", { style: { position: "fixed", inset: 0, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI, padding: 24, zIndex: 9999 } },
       React.createElement("div", { style: { textAlign: "center", maxWidth: 340 } },
         React.createElement("div", { style: { width: 56, height: 56, borderRadius: 18, background: "#0D0C18", margin: "0 auto 16px", display: "flex", alignItems: "center", justifyContent: "center" } },
-          React.createElement("span", { style: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 34, fontWeight: 700, color: "#C8973A", lineHeight: 1 } }, "R")),
-        React.createElement("div", { style: { fontSize: 19, fontWeight: 800, color: ink, marginBottom: 8 } }, "Something went wrong"),
+          React.createElement("span", { style: { fontFamily: DISP, fontSize: 34, fontWeight: 700, fontStyle: "italic", color: "#C8973A", lineHeight: 1 } }, "R")),
+        React.createElement("div", { style: { fontSize: 19, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: ink, marginBottom: 8 } }, "Something went wrong"),
         React.createElement("div", { style: { fontSize: 13.5, color: sub, lineHeight: 1.5, marginBottom: 18 } }, "Your data is safe in the cloud. Reload the app to pick up right where you left off."),
         React.createElement("button", { onClick: function () { location.reload(); }, style: { border: "none", cursor: "pointer", background: "#C8973A", color: "#fff", fontSize: 14.5, fontWeight: 700, padding: "12px 28px", borderRadius: 12, fontFamily: UI } }, "Reload Richy")
       )
@@ -3404,7 +3403,7 @@ function RichyLogo(props) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style={props.style || {}}>
       <rect width="100" height="100" rx={22} fill="#0D0C18" />
-      <text x="50" y="75" textAnchor="middle" fontFamily={"Georgia, 'Times New Roman', serif"} fontSize="72" fontWeight="700" fill="#C8973A">R</text>
+      <text x="50" y="75" textAnchor="middle" fontFamily={DISP} fontSize="72" fontWeight="700" fontStyle="italic" fill="#C8973A">R</text>
     </svg>
   );
 }
@@ -3885,7 +3884,7 @@ function AIWorking(props) {
           </div>
         </div>
       )}
-      {props.title && <div style={{ fontSize: compact ? 13.5 : 15.5, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>{props.title}</div>}
+      {props.title && <div style={{ fontSize: compact ? 13.5 : 15.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{props.title}</div>}
       {props.sub && <div style={{ fontSize: compact ? 12 : 13, color: T.ink3, marginTop: 4 }}>{props.sub}</div>}
       <div style={{ height: 5, borderRadius: 999, background: "rgba(0,0,0,0.07)", marginTop: compact ? 12 : 18, overflow: "hidden" }}>
         <div style={{ height: "100%", width: pct + "%", borderRadius: 999, background: "linear-gradient(90deg," + T.orangeHi + "," + T.orange + ")", transition: "width 0.35s ease", position: "relative", overflow: "hidden" }}>
@@ -3938,7 +3937,7 @@ function BootSplash() {
             <SVGIcon id="spark" size={30} color="#fff" />
           </div>
         </div>
-        <div style={{ fontSize: 19, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em", marginTop: 18, animation: "rclPhrase 0.6s ease 0.15s both" }}>Richy</div>
+        <div style={{ fontSize: 19, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", marginTop: 18, animation: "rclPhrase 0.6s ease 0.15s both" }}>Richy</div>
         <div style={{ marginTop: 14, animation: "rclPhrase 0.6s ease 0.3s both" }}>
           <ThinkingDots size={5} color={T.ink3} />
         </div>
@@ -3956,7 +3955,7 @@ function BootRetryScreen(props) {
     <div style={{ minHeight: "100vh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI, padding: 24 }}>
       <div style={{ textAlign: "center", maxWidth: 300 }}>
         <SVGIcon id="spark" size={30} color={T.ink3} />
-        <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginTop: 14 }}>Can't reach your data</div>
+        <div style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, marginTop: 14 }}>Can't reach your data</div>
         <div style={{ fontSize: 14, color: T.ink3, marginTop: 6, lineHeight: 1.4 }}>Check your connection and try again.</div>
         <button onClick={props.onRetry} style={{ marginTop: 18, width: "100%", padding: "13px 0", borderRadius: 12, border: "none", background: T.orange, color: "#fff", fontFamily: UI, fontWeight: 700, fontSize: 15, cursor: "pointer" }}>Retry</button>
         <button onClick={props.onSignOut} style={{ marginTop: 10, width: "100%", padding: "13px 0", borderRadius: 12, border: "none", background: "transparent", color: T.ink3, fontFamily: UI, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Sign out</button>
@@ -5424,7 +5423,7 @@ function Overlay(props) {
         <div style={{ position: "relative" }}>
         <div style={{ width: 38, height: 5, borderRadius: 3, background: T.orangeDim, margin: "9px auto 0" }} />
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px 8px" }}>
-          <span style={{ fontSize: 18, fontWeight: 700, fontFamily: DISP, color: T.ink, letterSpacing: "-0.02em" }}>{props.title}</span>
+          <span style={{ fontSize: 18, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{props.title}</span>
           <button onClick={props.onClose} aria-label="Close" style={{
             background: T.orangeDim, border: "none", borderRadius: "50%",
             width: 30, height: 30, cursor: "pointer", fontSize: 18, color: T.orange,
@@ -5734,7 +5733,7 @@ function RichardText(props) {
     if (b) { bullets.push(b[1]); return; }
     flush();
     var h = line.match(/^\*\*(.+?)\*\*:?$/);
-    if (h) { blocks.push(<div key={"h" + i} style={fx({ fontWeight: 700, color: color, margin: "9px 0 1px" })}>{h[1]}</div>); return; }
+    if (h) { blocks.push(<div key={"h" + i} style={fx({ fontFamily: DISP, fontWeight: 700, fontStyle: "italic", color: color, margin: "9px 0 1px" })}>{h[1]}</div>); return; }
     blocks.push(<div key={"p" + i} style={fx({ margin: "5px 0" })}>{renderRichInline(line, "p" + i)}</div>);
   });
   flush();
@@ -5992,7 +5991,7 @@ function IntroCarousel(props) {
 
   var slideWrap = { flex: "0 0 100%", scrollSnapAlign: "start", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "10px 28px 0", boxSizing: "border-box" };
   var mockCard = { position: "relative", width: 268, background: "#fff", borderRadius: 22, padding: "18px 18px", boxShadow: "0 18px 44px rgba(40,28,16,0.13)", boxSizing: "border-box" };
-  var h2 = { fontSize: 22.5, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", textAlign: "center", lineHeight: 1.22, marginTop: 34 };
+  var h2 = { fontSize: 22.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", textAlign: "center", lineHeight: 1.22, marginTop: 34 };
   var sub = { fontSize: 14, color: JINK2, textAlign: "center", lineHeight: 1.55, marginTop: 8, maxWidth: 300 };
 
   return (
@@ -6067,7 +6066,7 @@ function IntroCarousel(props) {
                   <SVGIcon id="goals" size={20} color="#fff" />
                 </div>
                 <div>
-                  <div style={{ fontSize: 14.5, fontWeight: 800, color: JINK }}>{tr("emergencyFund")}</div>
+                  <div style={{ fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: JINK }}>{tr("emergencyFund")}</div>
                   <div style={{ fontSize: 11.5, fontWeight: 600, color: JINK3 }}>{tr("icGoalProgress")}</div>
                 </div>
               </div>
@@ -6336,7 +6335,7 @@ function AuthScreen(props) {
             <RichyLogo size={80} style={{ display: "block", position: "relative", borderRadius: 22, boxShadow: "0 12px 32px rgba(0,0,0,0.22), 0 4px 12px rgba(0,0,0,0.14)", animation: "rclBreathe 3s ease-in-out infinite" }} />
           </div>
           <div key={step} style={{ animation: "rclPhrase 0.45s ease both" }}>
-            <div style={{ fontSize: 30, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.15 }}>
+            <div style={{ fontSize: 30, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", lineHeight: 1.15 }}>
               {head.t}
             </div>
             <div style={{ fontSize: 15, color: T.ink2, marginTop: 6, wordBreak: "break-word" }}>
@@ -6573,7 +6572,7 @@ function CatchUpScreen(props) {
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+            <div style={{ fontSize: 22, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.2 }}>
               <WordReveal text={tr("cuHeadline").replace("{month}", monthName)} base={0.1} step={0.06} />
             </div>
           </div>
@@ -6738,7 +6737,7 @@ function StoryBeat(props) {
             {b.kicker}
           </div>
         )}
-        <div style={{ fontSize: 25, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.28, maxWidth: 330 }}>
+        <div style={{ fontSize: 25, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.28, maxWidth: 330 }}>
           <WordReveal text={b.headline} base={0.15} step={0.085} />
         </div>
         {b.big && st >= 1 && (
@@ -6783,7 +6782,7 @@ function CommitScreen(props) {
         <div style={{ fontSize: 11.5, fontWeight: 800, color: T.orange, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14, animation: "rclPhrase 0.5s ease both" }}>
           {tr("cmPact")}
         </div>
-        <div style={{ fontSize: 26, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.25, textAlign: "center", maxWidth: 320 }}>
+        <div style={{ fontSize: 26, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.25, textAlign: "center", maxWidth: 320 }}>
           <WordReveal text={props.username ? tr("cmReadyTakeBackName").replace("{name}", props.username) : tr("cmReadyTakeBack")} />
         </div>
         <div style={{ marginTop: 30, display: "flex", flexDirection: "column", gap: 16, width: "100%", maxWidth: 330 }}>
@@ -6920,7 +6919,7 @@ function MathStoryScreen(props) {
         <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 32px" }}>
           <div style={{ textAlign: "center" }}>
             <ProgressRing size={150} duration={2800} onDone={function() { setPh("beats"); }} />
-            <div style={{ fontSize: 17, fontWeight: 800, color: JINK, letterSpacing: "-0.01em", marginTop: 24 }}>{tr("msRingTitle")}</div>
+            <div style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", marginTop: 24 }}>{tr("msRingTitle")}</div>
             <div style={{ fontSize: 13.5, fontWeight: 600, color: JINK3, marginTop: 8 }}>
               <ThinkingPhrase phrases={[tr("msRingPhrase1"), tr("msRingPhrase2"), tr("msRingPhrase3")]} interval={950} />
             </div>
@@ -7115,7 +7114,7 @@ function OnboardingScreen(props) {
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: JINK, letterSpacing: "-0.02em" }}><WordReveal text={tr("obPlanReady")} base={0.15} step={0.07} /></div>
+              <div style={{ fontSize: 20, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: JINK, letterSpacing: "-0.01em" }}><WordReveal text={tr("obPlanReady")} base={0.15} step={0.07} /></div>
               <div style={{ fontSize: 13, color: JINK3, marginTop: 2 }}>{tr("obPlanBuiltForYou")}</div>
             </div>
           </div>
@@ -7129,7 +7128,7 @@ function OnboardingScreen(props) {
           </div>
 
           <div style={{ background: "#fff", borderRadius: 18, padding: "20px 20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: JINK, marginBottom: 6 }}>{tr("obHowAddTx")}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: JINK, marginBottom: 6 }}>{tr("obHowAddTx")}</div>
             <div style={{ fontSize: 13, color: JINK3, marginBottom: 16, lineHeight: 1.55 }}>{tr("obChangeAnytimeProfile")}</div>
             {[
               { id: "manual", label: tr("obManualEntry"), sub: tr("obManualEntrySub") },
@@ -7151,7 +7150,7 @@ function OnboardingScreen(props) {
 
           {proposed.length > 0 && (
             <div style={{ background: "#fff", borderRadius: 18, padding: "20px 20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: JINK, marginBottom: 6 }}>{tr("obSetupBudgetsQ")}</div>
+              <div style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: JINK, marginBottom: 6 }}>{tr("obSetupBudgetsQ")}</div>
               <div style={{ fontSize: 13, color: JINK3, marginBottom: 18, lineHeight: 1.55 }}>{tr("obBasedOnNumbers")}</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 13, marginBottom: 20 }}>
                 {proposed.map(function(b, i) {
@@ -7286,7 +7285,7 @@ function OnboardingScreen(props) {
           <JrStepShell k={qIndex} dir={dir}>
             {qIndex > 0 && (
               <div>
-                <div style={{ fontSize: 25, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.25, marginBottom: 8 }}>
+                <div style={{ fontSize: 25, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.25, marginBottom: 8 }}>
                   <WordReveal text={qh.h} base={0.04} step={0.045} />
                 </div>
                 <div style={{ fontSize: 14, color: JINK3, marginBottom: 26, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>{qh.s}</div>
@@ -7622,7 +7621,7 @@ function FoundMoney(props) {
       <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-          <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("fmTitle")}</span>
+          <span style={{ fontSize: 18, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{tr("fmTitle")}</span>
         </div>
         {tally > 0 && (
           <span style={{ fontSize: 12.5, fontWeight: 700, color: T.green }}>{tr("fmRecovered").replace("{amt}", dollars(tally))}</span>
@@ -7633,7 +7632,7 @@ function FoundMoney(props) {
         <button onClick={function() { setOpen(true); }} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 18, background: T.card, border: "none", boxShadow: cardShadow }}>
           <CatBadge icon="search" color={T.orange} size={40} soft={true} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>{tr(leakCount === 1 ? "fmSpottedLeakSing" : "fmSpottedLeakPl").replace("{n}", leakCount)}</div>
+            <div style={{ fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>{tr(leakCount === 1 ? "fmSpottedLeakSing" : "fmSpottedLeakPl").replace("{n}", leakCount)}</div>
             <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{recoverable > 0 ? tr("fmAboutAmtYear").replace("{amt}", dollars(recoverable)) : tr("fmTapReview")}</div>
           </div>
           <SVGIcon id="chevron" size={18} color={T.ink3} />
@@ -7642,7 +7641,7 @@ function FoundMoney(props) {
         <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 18, background: T.card, boxShadow: cardShadow }}>
           <CatBadge icon="check" color={T.green} size={40} soft={true} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>{tr("fmAllClear")}</div>
+            <div style={{ fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>{tr("fmAllClear")}</div>
             <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{tr("fmNoNewLeaks")}</div>
           </div>
         </div>
@@ -7681,7 +7680,7 @@ function FoundMoney(props) {
                 <IconBadge icon={st.icon} bg={st.color} size={34} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>{f.title}</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>{f.title}</span>
                     {f.annual > 0 && <span style={{ fontSize: 13, fontWeight: 700, color: T.green, flexShrink: 0 }}>{dollars(f.annual) + "/yr"}</span>}
                   </div>
                   <div style={{ fontSize: 12, color: T.ink3, marginTop: 3, lineHeight: 1.45 }}>{f.subtitle}</div>
@@ -7716,7 +7715,7 @@ function FoundMoney(props) {
 
         {findings.length === 0 && (
           <div style={{ textAlign: "center", padding: "24px 10px", color: T.ink3 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{tr("fmReviewedEverything")}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, marginBottom: 4 }}>{tr("fmReviewedEverything")}</div>
             <div style={{ fontSize: 13 }}>{tr("fmKeepsWatching")}</div>
           </div>
         )}
@@ -8218,7 +8217,7 @@ function WidgetCard(props) {
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
         <CatBadge icon={w.icon || "box"} color={color} size={30} soft />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: T.ink, lineHeight: 1.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.title}</div>
+          <div style={{ fontSize: 14, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, lineHeight: 1.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.title}</div>
           <div style={{ fontSize: 11, color: T.ink3, marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{widgetCaption(w, res)}</div>
         </div>
         {/* Richard made it, so the user needs a way to unmake it without asking. */}
@@ -8246,7 +8245,7 @@ function OverviewWidgets(props) {
     <div style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.165s both" }}>
       <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-        <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{"Your widgets"}</span>
+        <span style={{ fontSize: 18, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{"Your widgets"}</span>
         <div style={{ flex: 1 }} />
         <span style={{ fontSize: 11, color: T.ink3 }}>{"Built by Richard"}</span>
       </div>
@@ -8388,7 +8387,7 @@ function Overview(props) {
                   <SVGIcon id={a.icon} size={17} color={T.orange} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: T.ink, lineHeight: 1.3 }}>{a.title}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, lineHeight: 1.3 }}>{a.title}</div>
                   <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1, lineHeight: 1.35 }}>{a.sub}</div>
                 </div>
                 {/* The row itself opens the feature, so the only control it needs is
@@ -9141,7 +9140,7 @@ function Overview(props) {
           <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
             <SVGIcon id="activity" size={24} color={T.orange} />
           </div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: T.ink, marginBottom: 5 }}>{tr("noTransactions")}</div>
+          <div style={{ fontSize: 16, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, marginBottom: 5 }}>{tr("noTransactions")}</div>
           <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{tr("overviewEmptySub")}</div>
         </Card>
       )}
@@ -9180,7 +9179,7 @@ function Overview(props) {
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.heroMut }}>{(di ? ("Day " + di.dayNum + " of " + t.days) : "Trip in progress") + (t.destination ? (" - " + t.destination) : "")}</div>
-                <div style={{ fontSize: 17, fontWeight: 700, color: T.heroInk, marginTop: 2 }}>{t.name}</div>
+                <div style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.heroInk, marginTop: 2 }}>{t.name}</div>
               </div>
               <SVGIcon id="chevron" size={16} color={T.heroInk} />
             </div>
@@ -9212,7 +9211,7 @@ function Overview(props) {
         <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-            <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{props.onOpenInvesting ? "Accounts" : tr("savings")}</span>
+            <span style={{ fontSize: 18, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{props.onOpenInvesting ? "Accounts" : tr("savings")}</span>
           </div>
           {(savAccts.length > 0 || bizAccts.length > 0 || invAccts.length > 0) && (
             <button onClick={props.onOpenSavings} style={{ background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI, display: "flex", alignItems: "center", gap: 2 }}>
@@ -9283,7 +9282,7 @@ function Overview(props) {
           <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-              <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("budgets")}</span>
+              <span style={{ fontSize: 18, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{tr("budgets")}</span>
             </div>
             <span style={{ fontSize: 12, color: T.ink3, display: "flex", alignItems: "center", gap: 4 }}>{budgetRows.filter(function(b){return b.over;}).length > 0 ? budgetRows.filter(function(b){return b.over;}).length + " " + tr("overLimit") : tr("onTrack")}<SVGIcon id="chevron" size={13} color={T.ink3} /></span>
           </div>
@@ -9313,7 +9312,7 @@ function Overview(props) {
           <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-              <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("goals")}</span>
+              <span style={{ fontSize: 18, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{tr("goals")}</span>
             </div>
             <span style={{ fontSize: 12, color: T.ink3, display: "flex", alignItems: "center", gap: 4 }}>{goals.filter(function(g){return goalSavedAmount(g, tx, savAccts, bizAccts, invAccts)>=g.target;}).length + "/" + goals.length + " " + tr("complete")}<SVGIcon id="chevron" size={13} color={T.ink3} /></span>
           </div>
@@ -9353,7 +9352,7 @@ function Overview(props) {
         <div onClick={function() { nav("activity"); }} style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.18s both", cursor: "pointer" }}>
           <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-            <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{tr("recent")}</span>
+            <span style={{ fontSize: 18, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{tr("recent")}</span>
             <div style={{ flex: 1 }} />
             <SVGIcon id="chevron" size={14} color={T.ink3} />
           </div>
@@ -10043,7 +10042,7 @@ function ImportSheet(props) {
           <div style={{ fontSize: 11, color: T.ink3, textAlign: "center", marginBottom: 10 }}>or paste the CSV text below</div>
           <textarea value={raw} onChange={function(e) { setRaw(e.target.value); }} rows={6}
             placeholder={"Date,Description,Amount\n2026-06-01,Grocery Store,-54.20\n2026-06-02,Salary,3000"}
-            style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 13, padding: "11px 13px", fontSize: 13, fontFamily: "monospace", color: T.ink, outline: "none", resize: "vertical", marginBottom: 10 }} />
+            style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 13, padding: "11px 13px", fontSize: 13, fontFamily: UI, color: T.ink, outline: "none", resize: "vertical", marginBottom: 10 }} />
           {err && <div style={{ fontSize: 13, color: T.red, marginBottom: 10 }}>{err}</div>}
           <BigBtn label="Next: map columns" onPress={goMap} disabled={!raw.trim()} />
         </div>
@@ -10577,7 +10576,7 @@ function Activity(props) {
           <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
             <SVGIcon id="activity" size={24} color={T.orange} />
           </div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{tr("noTransactions")}</div>
+          <div style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, marginBottom: 4 }}>{tr("noTransactions")}</div>
           <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 18 }}>{importPrimary ? "Import a CSV statement to fill in your transactions, or add them by hand." : tr("noTransactionsSub")}</div>
           <button onClick={function() { if (importPrimary) setImportOpen(true); else props.setSheetOpen(true); }}
             style={{ background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 13, padding: "12px 22px", fontSize: 14, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px " + T.orangeGlow }}>
@@ -10599,7 +10598,7 @@ function Activity(props) {
                 <SVGIcon id="refresh" size={19} color={T.green} />
               </span>
               <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: "block", fontSize: 14, fontWeight: 700, color: T.ink }}>Let it log itself</span>
+                <span style={{ display: "block", fontSize: 14, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>Let it log itself</span>
                 <span style={{ display: "block", fontSize: 12.5, color: T.ink3, lineHeight: 1.4, marginTop: 1 }}>Set up Bank Sync and stop typing every expense.</span>
               </span>
               <SVGIcon id="chevron" size={15} color={T.ink3} />
@@ -10612,7 +10611,7 @@ function Activity(props) {
                 <SVGIcon id="home" size={19} color={T.blue} />
               </span>
               <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: "block", fontSize: 14, fontWeight: 700, color: T.ink }}>Budgeting with a partner?</span>
+                <span style={{ display: "block", fontSize: 14, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>Budgeting with a partner?</span>
                 <span style={{ display: "block", fontSize: 12.5, color: T.ink3, lineHeight: 1.4, marginTop: 1 }}>Invite them to a shared household you both see.</span>
               </span>
               <SVGIcon id="chevron" size={15} color={T.ink3} />
@@ -11142,7 +11141,7 @@ function Notes(props) {
           <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
             <SVGIcon id="note" size={24} color={T.orange} />
           </div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{tr("notesEmpty")}</div>
+          <div style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, marginBottom: 4 }}>{tr("notesEmpty")}</div>
           <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{tr("notesEmptySub")}</div>
         </Card>
       )}
@@ -11339,7 +11338,7 @@ function FolderRolesCard(props) {
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
           <RichyLogo size={26} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14.5, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.01em" }}>Let's make your folders mean something</div>
+            <div style={{ fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.heroInk, letterSpacing: "-0.01em" }}>Let's make your folders mean something</div>
             <div style={{ fontSize: 11.5, color: T.heroMut, marginTop: 1 }}>{"Sort each one and I can grade your split. " + (done + 1) + " of " + folders.length + "."}</div>
           </div>
           <button onClick={function() { setHidden(true); }} title="Not now"
@@ -11406,7 +11405,7 @@ function FolderRolesCard(props) {
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 13 }}>
           <RichyLogo size={26} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14.5, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.01em" }}>Now - how should it divide?</div>
+            <div style={{ fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.heroInk, letterSpacing: "-0.01em" }}>Now - how should it divide?</div>
             <div style={{ fontSize: 11.5, color: T.heroMut, marginTop: 1 }}>Pick the share each side gets. I'll grade you against your number, not a textbook's.</div>
           </div>
           <button onClick={function() { setPlanHidden(true); }} title="Not now"
@@ -11509,7 +11508,7 @@ function FolderRolesCard(props) {
       <div style={{ display: "flex", alignItems: "flex-start", gap: 9 }}>
         <span style={{ width: 9, height: 9, borderRadius: 5, background: vColor, flexShrink: 0, marginTop: 6 }} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.3 }}>
+          <div style={{ fontSize: 18, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", lineHeight: 1.3 }}>
             {split.verdict.text}
           </div>
           <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3, lineHeight: 1.4 }}>
@@ -11983,7 +11982,7 @@ function Budgets(props) {
           <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
             <SVGIcon id="budgets" size={24} color={T.orange} />
           </div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{tr("noBudgets")}</div>
+          <div style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, marginBottom: 4 }}>{tr("noBudgets")}</div>
           <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{tr("noBudgetsSub")}</div>
         </Card>
       )}
@@ -12044,7 +12043,7 @@ function Budgets(props) {
     return (
       <div style={{ marginBottom: 20 }}>
         <div style={{ padding: "0 4px 10px", animation: riseIn(delay) }}>
-          <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{title}</span>
+          <span style={{ fontSize: 18, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{title}</span>
         </div>
         <Card style={{ overflow: "hidden", animation: riseIn(delay + 1) }}>
           {list.map(function(r, i) {
@@ -12255,7 +12254,7 @@ function Goals(props) {
               <SVGIcon id="plane" size={20} color={T.heroInk} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.01em" }}>{tr("planATrip")}</div>
+              <div style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.heroInk, letterSpacing: "-0.01em" }}>{tr("planATrip")}</div>
               <div style={{ fontSize: 12, color: T.heroMut, marginTop: 2, lineHeight: 1.35 }}>{tr("planATripSub")}</div>
             </div>
             <SVGIcon id="chevron" size={18} color={T.heroInk} />
@@ -12357,7 +12356,7 @@ function Goals(props) {
               <SVGIcon id={t.icon || "plane"} size={22} color={T.heroInk} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.01em" }}>{t.name}</div>
+              <div style={{ fontSize: 16, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.heroInk, letterSpacing: "-0.01em" }}>{t.name}</div>
               <div style={{ fontSize: 12, color: T.heroMut, marginTop: 2, lineHeight: 1.35 }}>{(t.destination ? t.destination + " - " : "") + dollars(tSpent) + " " + tr("spentOf") + " " + dollars(t.total) + " (" + tPct + "%)"}</div>
             </div>
             <SVGIcon id="chevron" size={18} color={T.heroInk} />
@@ -12370,7 +12369,7 @@ function Goals(props) {
           <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
             <SVGIcon id="goals" size={24} color={T.orange} />
           </div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{tr("noGoals")}</div>
+          <div style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, marginBottom: 4 }}>{tr("noGoals")}</div>
           <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{tr("noGoalsSub")}</div>
         </Card>
       )}
@@ -13037,7 +13036,7 @@ function Trips(props) {
             <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
               <SVGIcon id="plane" size={24} color={T.orange} />
             </div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{tr("noTrips")}</div>
+            <div style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, marginBottom: 4 }}>{tr("noTrips")}</div>
             <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{tr("noTripsSub")}</div>
           </Card>
         ) : activeTrips.map(function(t) {
@@ -13171,7 +13170,7 @@ function Trips(props) {
             <div style={{ maxWidth: 380, margin: "0 auto" }}>
               <JrStepShell k={tq} dir={tqDir}>
                 <div>
-                  <div style={{ fontSize: 25, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.25, marginBottom: 8 }}>
+                  <div style={{ fontSize: 25, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.25, marginBottom: 8 }}>
                     <WordReveal text={tqh.h} base={0.04} step={0.045} />
                   </div>
                   <div style={{ fontSize: 14, color: JINK3, marginBottom: 26, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>{tqh.s}</div>
@@ -13299,12 +13298,12 @@ function Trips(props) {
           <Card style={{ padding: "18px 18px 20px" }}>
             {planning ? (
               <div style={{ padding: "34px 10px", textAlign: "center" }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>{tr("richardPlanning")}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>{tr("richardPlanning")}</div>
                 <div style={{ fontSize: 13, color: T.ink3, marginTop: 5 }}>{tr("richardPlanningSub")}</div>
               </div>
             ) : (
               <div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, marginBottom: 4, fontFamily: DISP, letterSpacing: "-0.02em" }}>{tr("tripSplit")}</div>
+                <div style={{ fontSize: 20, fontWeight: 700, fontStyle: "italic", color: T.ink, marginBottom: 4, fontFamily: DISP, letterSpacing: "-0.01em" }}>{tr("tripSplit")}</div>
                 {budgetAssessment && (function() {
                   var isShort = budgetAssessment.verdict === "short";
                   var isExcess = budgetAssessment.verdict === "excess";
@@ -13452,7 +13451,7 @@ function Trips(props) {
           </div>
           <div style={{ position: "relative" }}>
             <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut }}>{(trip.destination || "Trip") + (trip.days ? (" - " + trip.days + "d") : "")}</div>
-            <div style={{ fontSize: 26, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.02em", marginTop: 4 }}>{trip.name}</div>
+            <div style={{ fontSize: 26, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.heroInk, letterSpacing: "-0.01em", marginTop: 4 }}>{trip.name}</div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginTop: 10 }}>
               <span style={{ fontSize: 22, fontWeight: 700, color: T.heroInk }}>{_currency.sym}</span>
               <input type="number" value={getDetailEdit(trip.id, "total", trip.total)}
@@ -13911,7 +13910,7 @@ function BigDecisions(props) {
       <div style={{ background: T.card, borderRadius: 16, padding: "16px 16px 18px", boxShadow: cardShadow, marginTop: 14 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.06em", color: vs.color, background: vs.bg, padding: "5px 11px", borderRadius: 9 }}>{vs.label}</span>
-          <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, flex: 1 }}>{vd.verdictLabel}</span>
+          <span style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, flex: 1 }}>{vd.verdictLabel}</span>
         </div>
         <div style={{ fontSize: 14.5, color: T.ink, lineHeight: 1.5, marginTop: 12 }}>{vd.headline}</div>
         {vd.keyNumber && (
@@ -13956,7 +13955,7 @@ function BigDecisions(props) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 2px 11px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
           <span style={{ width: 3, height: 15, borderRadius: 2, background: T.orange }} />
-          <span style={{ fontSize: 16, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>Big Decisions</span>
+          <span style={{ fontSize: 16, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Big Decisions</span>
         </div>
         {decisions.length > 0 && <span style={{ fontSize: 12, color: T.ink3 }}>{decisions.length + " tracked"}</span>}
       </div>
@@ -13964,7 +13963,7 @@ function BigDecisions(props) {
       <button onClick={openNew} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 18, background: T.card, border: "none", boxShadow: cardShadow }}>
         <CatBadge icon="goals" color={T.orange} size={40} soft={true} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>Facing a big money call?</div>
+          <div style={{ fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>Facing a big money call?</div>
           <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>Get Richard's verdict against your real numbers</div>
         </div>
         <SVGIcon id="chevron" size={18} color={T.ink3} />
@@ -15335,11 +15334,11 @@ function Advisor(props) {
       <div style={{ position: "relative", width: 52, height: 52, flexShrink: 0 }}>
         <div style={{ position: "absolute", inset: -7, borderRadius: 20, background: "radial-gradient(circle, rgba(200,152,58,0.42), transparent 70%)", filter: "blur(7px)" }} />
         <div style={{ position: "relative", width: 52, height: 52, borderRadius: 16, background: "#0D0C18", boxShadow: "0 7px 18px rgba(13,12,24,0.32)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 27, fontWeight: 700, color: "#C8973A", lineHeight: 1 }}>R</span>
+          <span style={{ fontFamily: DISP, fontSize: 27, fontWeight: 700, fontStyle: "italic", color: "#C8973A", lineHeight: 1 }}>R</span>
         </div>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 19, fontWeight: 700, letterSpacing: "-0.02em", color: T.ink }}>Richard</div>
+        <div style={{ fontSize: 19, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, letterSpacing: "-0.01em", color: T.ink }}>Richard</div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: loading ? T.orange : stale ? T.gold : T.green, animation: loading ? "rcBadgePulse 1.3s ease-in-out infinite" : "none" }} />
           <span style={{ fontSize: 12, color: stale ? T.gold : T.ink3, fontWeight: stale ? 600 : 400 }}>{loading ? "Analyzing your month..." : stale ? "Your month changed - tap refresh" : advice ? "Analyzed your month - just now" : "Ready to analyze your month"}</span>
@@ -15359,7 +15358,7 @@ function Advisor(props) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 2px 11px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
           <span style={{ width: 3, height: 15, borderRadius: 2, background: T.orange }} />
-          <span style={{ fontSize: 16, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>{title}</span>
+          <span style={{ fontSize: 16, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{title}</span>
         </div>
         {meta && <span style={{ fontSize: 12, color: T.ink3 }}>{meta}</span>}
       </div>
@@ -15576,7 +15575,7 @@ function Advisor(props) {
             <span style={{ fontSize: 13, color: HFNT }}>{move.impactLabel}</span>
           </div>
         ) : null}
-        <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.015em", color: HINK, marginTop: move.impact ? 16 : 18 }}>{move.title}</div>
+        <div style={{ fontSize: 18, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, letterSpacing: "-0.01em", color: HINK, marginTop: move.impact ? 16 : 18 }}>{move.title}</div>
         {/* The move copy fades in word by word. A hidden copy of the finished
             text holds the space so the panel - which centers its content in a
             fixed-height frame - doesn't drift upward as words land. */}
@@ -15795,7 +15794,7 @@ function Advisor(props) {
                     <SVGIcon id={w.icon} size={16} color={HPT} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13.5, fontWeight: 700, color: HINK, letterSpacing: "-0.01em" }}>{w.title}</div>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: HINK, letterSpacing: "-0.01em" }}>{w.title}</div>
                     <div style={{ fontSize: 12, color: HMUT, marginTop: 2, lineHeight: 1.4 }}>{w.sub}</div>
                   </div>
                 </div>
@@ -15810,7 +15809,7 @@ function Advisor(props) {
     if (advice.expertQuote && advice.expertQuote.quote) {
       panels.push(
         <div key="quote" style={panelStyle({ justifyContent: "center", position: "relative" })}>
-          <span style={{ position: "absolute", top: 4, left: 14, fontFamily: DISP, fontSize: 120, lineHeight: 1, color: HINK, opacity: 0.1, pointerEvents: "none" }}>{'”'}</span>
+          <span style={{ position: "absolute", top: 4, left: 14, fontFamily: UI, fontSize: 120, lineHeight: 1, color: HINK, opacity: 0.1, pointerEvents: "none" }}>{'”'}</span>
           <p style={{ position: "relative", margin: 0, fontSize: 18, lineHeight: 1.5, fontWeight: 600, letterSpacing: "-0.01em", color: HINK }}>{advice.expertQuote.quote}</p>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 16 }}>
             <div style={{ width: 18, height: 2, borderRadius: 2, background: T.gold }} />
@@ -15855,7 +15854,7 @@ function Advisor(props) {
               <ClaudeMark size={20} color={HPT} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: HINK, letterSpacing: "-0.01em" }}>Full Analysis</div>
+              <div style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: HINK, letterSpacing: "-0.01em" }}>Full Analysis</div>
               <div style={{ fontSize: 12, color: HMUT, lineHeight: 1.4, marginTop: 2 }}>
                 Your score, key numbers, every budget line and what to fix first.
               </div>
@@ -15913,7 +15912,7 @@ function Advisor(props) {
       {advice && !advice.error && (
         <div>
           <div style={{ padding: "16px 4px 0", animation: riseIn(0) }}>
-            <h1 style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.12, color: T.ink }}>{greeting}</h1>
+            <h1 style={{ margin: 0, fontSize: 26, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, letterSpacing: "-0.01em", lineHeight: 1.12, color: T.ink }}>{greeting}</h1>
             <p style={{ margin: "7px 0 0", fontSize: 14.5, lineHeight: 1.45, color: T.ink2 }}>{subGreeting}</p>
           </div>
 
@@ -15931,7 +15930,7 @@ function Advisor(props) {
                     <CatBadge icon={m.icon} color={m.color} size={44} soft={true} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 5 }}>
-                        <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.01em", color: T.ink }}>{ins.title}</span>
+                <span style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, letterSpacing: "-0.01em", color: T.ink }}>{ins.title}</span>
                         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.02em", padding: "3px 8px", borderRadius: 7, whiteSpace: "nowrap", color: m.color, background: m.color + "1F" }}>{m.tag}</span>
                       </div>
                       <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: T.ink2 }}>{ins.body}</p>
@@ -15959,7 +15958,7 @@ function Advisor(props) {
       <div style={{ marginTop: 26, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "0 2px 11px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
           <span style={{ width: 3, height: 15, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-          <span style={{ fontSize: 16, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{tr("askYourAdvisor")}</span>
+          <span style={{ fontSize: 16, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{tr("askYourAdvisor")}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 0 }}>
           {chat.length > 0 && (
@@ -16142,7 +16141,7 @@ function Advisor(props) {
             <div style={{ width: 38, height: 5, borderRadius: 3, background: T.orangeDim, margin: "9px auto 2px", flexShrink: 0 }} />
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 18px 12px", borderBottom: "0.5px solid " + T.sep }}>
               <div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>{tr("pastChats")}</div>
+                <div style={{ fontSize: 18, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{tr("pastChats")}</div>
                 <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{(props.chats || []).length + " " + ((props.chats || []).length === 1 ? tr("conversation") : tr("conversations"))}</div>
               </div>
               <button onClick={function() { setHistoryOpen(false); }}
@@ -16651,7 +16650,7 @@ function FullAnalysisView(props) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 2px 11px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
           <span style={{ width: 3, height: 15, borderRadius: 2, background: T.orange }} />
-          <span style={{ fontSize: 16, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>{title}</span>
+          <span style={{ fontSize: 16, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{title}</span>
         </div>
         {meta ? <span style={{ fontSize: 12, color: T.ink3 }}>{meta}</span> : null}
       </div>
@@ -16666,7 +16665,7 @@ function FullAnalysisView(props) {
           <CatBadge icon={meta.icon} color={meta.color} size={44} soft={true} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 5 }}>
-              <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.01em", color: T.ink }}>{ins.title}</span>
+              <span style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, letterSpacing: "-0.01em", color: T.ink }}>{ins.title}</span>
               <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.02em", padding: "3px 8px", borderRadius: 7, whiteSpace: "nowrap", color: meta.color, background: meta.color + "1F" }}>{meta.tag}</span>
             </div>
             <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: T.ink2 }}>{ins.body}</p>
@@ -16686,7 +16685,7 @@ function FullAnalysisView(props) {
           <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
             <ClaudeMark size={24} color={T.orange} />
           </div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>No analysis yet</div>
+          <div style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, marginBottom: 4 }}>No analysis yet</div>
           <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>Head back to Richard and let him read your month first.</div>
         </Card>
       </div>
@@ -16705,7 +16704,7 @@ function FullAnalysisView(props) {
         </div>
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 5 }}>
           <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: ringColor }}>{a.scoreLabel || "Health"}</span>
-          <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.01em", color: T.heroInk }}>{headline}</span>
+          <span style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, letterSpacing: "-0.01em", color: T.heroInk }}>{headline}</span>
           <span style={{ fontSize: 12.5, color: T.heroMut, lineHeight: 1.45 }}>{"Reviewed " + reviewed + " transaction" + (reviewed === 1 ? "" : "s") + " across " + monthLabel + "."}</span>
         </div>
       </div>
@@ -16781,7 +16780,7 @@ function FullAnalysisView(props) {
             <div style={{ display: "flex", alignItems: "flex-start", gap: 9, marginBottom: 15 }}>
               <span style={{ width: 8, height: 8, borderRadius: 4, flexShrink: 0, marginTop: 6,
                 background: split.verdict.tone === "bad" ? T.red : split.verdict.tone === "warn" ? T.gold : split.verdict.tone === "good" ? T.green : T.ink3 }} />
-              <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em", lineHeight: 1.35 }}>{split.verdict.text}</span>
+              <span style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", lineHeight: 1.35 }}>{split.verdict.text}</span>
             </div>
             {split.rows.map(function(r) {
               return (
@@ -16866,7 +16865,7 @@ function CollabView(props) {
                 <SVGIcon id="mail" size={20} color={T.orange} />
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>You're invited to join</div>
+            <div style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>You're invited to join</div>
                 <div style={{ fontSize: 13, color: T.ink3, marginTop: 1 }}>"{inv.name}"</div>
               </div>
             </div>
@@ -16881,7 +16880,7 @@ function CollabView(props) {
             <div style={{ width: 54, height: 54, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
               <SVGIcon id="home" size={26} color={T.orange} />
             </div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: T.ink, marginBottom: 6 }}>Share a budget together</div>
+            <div style={{ fontSize: 18, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, marginBottom: 6 }}>Share a budget together</div>
             <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55 }}>
               Create a household and invite your partner. You'll share budgets, goals, and a combined balance - while each of you can still keep individual transactions private.
             </div>
@@ -16902,7 +16901,7 @@ function CollabView(props) {
             <div style={{ width: 54, height: 54, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
               <SVGIcon id="home" size={26} color={T.orange} />
             </div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: T.ink }}>{hh.name}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>{hh.name}</div>
             <div style={{ fontSize: 13, color: T.ink3, marginTop: 3 }}>{(hh.members || []).length} member{(hh.members || []).length === 1 ? "" : "s"}</div>
           </Card>
 
@@ -17830,7 +17829,7 @@ function DebtView(props) {
           <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
             <SVGIcon id="credit" size={24} color={T.orange} />
           </div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: T.ink, marginBottom: 5 }}>No debts tracked</div>
+          <div style={{ fontSize: 16, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, marginBottom: 5 }}>No debts tracked</div>
           <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 18 }}>Add a card, loan, or overdraft with its balance and interest rate, and I'll show you the fastest way out.</div>
           <button onClick={openAdd}
             style={{ background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 13, padding: "12px 22px", fontSize: 14, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px " + T.orangeGlow }}>
@@ -17905,7 +17904,7 @@ function DebtView(props) {
 
           {plan.neverClears ? (
             <Card style={{ padding: "18px 20px", marginBottom: 16, borderLeft: "3px solid " + T.gold }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, marginBottom: 6 }}>Almost treading water</div>
+            <div style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, marginBottom: 6 }}>Almost treading water</div>
               <div style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.55 }}>Right now the payments barely cover the interest, so the balance hardly moves. Adding even a little more each month is what turns the corner — try nudging the extra amount up to see your debt-free date appear.</div>
             </Card>
           ) : (
@@ -18688,7 +18687,7 @@ function InvestPlanOnboard(props) {
               <RichyLogo size={26} />
               <span style={{ fontSize: 12, fontWeight: 600, color: T.ink2 }}>Richard's recommendation</span>
             </div>
-            <div style={{ fontSize: 27, fontWeight: 800, color: T.ink, letterSpacing: "-0.03em", lineHeight: 1.12 }}>{plan.name}</div>
+            <div style={{ fontSize: 27, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", lineHeight: 1.12 }}>{plan.name}</div>
             <div style={{ fontSize: 14, color: T.ink2, marginTop: 6, lineHeight: 1.5 }}>{plan.pitch}</div>
 
             <Card style={{ padding: 20, marginTop: 18 }}>
@@ -18783,7 +18782,7 @@ function InvestPlanOnboard(props) {
               <RichyLogo size={26} />
               <span style={{ fontSize: 12, fontWeight: 600, color: T.ink2 }}>{step === 1 ? "Richard asks, " + firstName : "Richard asks"}</span>
             </div>
-            <div style={{ fontSize: 23, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", lineHeight: 1.22, marginBottom: 8 }}>
+            <div style={{ fontSize: 23, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", lineHeight: 1.22, marginBottom: 8 }}>
               <WordReveal text={q.h} base={0.04} step={0.045} />
             </div>
             <div style={{ fontSize: 14, color: T.ink2, marginBottom: 24, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>{q.s}</div>
@@ -19509,7 +19508,7 @@ function InvestingView(props) {
       <Card style={{ padding: "18px 20px 14px", marginBottom: 14, background: T.heroBg, boxShadow: T.heroShadow }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
           <CatBadge icon={acct.icon || "chart"} color={acct.color || T.green} size={34} soft={true} />
-          <div style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 700, color: T.heroText, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{acct.name}</div>
+          <div style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.heroText, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{acct.name}</div>
           <button onClick={function() { setCurMode(curMode === "app" ? "native" : "app"); }}
             style={{ border: "1px solid " + T.heroSep, background: "transparent", color: T.heroMut, borderRadius: 999, padding: "4px 10px", fontSize: 10.5, fontWeight: 700, fontFamily: UI, cursor: "pointer", letterSpacing: "0.04em" }}>
             {curMode === "app" ? sym + " " + appCode : "NATIVE"}
@@ -19584,7 +19583,7 @@ function InvestingView(props) {
               <SVGIcon id="refresh" size={20} color={T.green} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14.5, fontWeight: 800, color: T.ink }}>{"Your " + dollarsWhole(autoCfg.amount) + " " + (autoCfg.cadence === "weekly" ? "weekly" : "monthly") + " cycle is due"}</div>
+              <div style={{ fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>{"Your " + dollarsWhole(autoCfg.amount) + " " + (autoCfg.cadence === "weekly" ? "weekly" : "monthly") + " cycle is due"}</div>
               <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>
                 {!plan ? "Scheduled for " + autoNextDate + ", but there's no plan to invest it into yet."
                   : cash > 0 ? "Scheduled for " + autoNextDate + ". One tap and I spread it across your " + plan.name + " mix."
@@ -19608,7 +19607,7 @@ function InvestingView(props) {
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <RichyLogo size={28} />
               <div>
-                <div style={{ fontSize: 14.5, fontWeight: 800, color: T.ink, letterSpacing: "-0.01em" }}>{"Managed by Richard"}</div>
+                <div style={{ fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{"Managed by Richard"}</div>
                 <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1 }}>{plan.name + " · target " + plan.ret + "/yr"}</div>
               </div>
             </div>
@@ -19656,7 +19655,7 @@ function InvestingView(props) {
           style={{ width: "100%", marginBottom: 12, cursor: "pointer", fontFamily: UI, textAlign: "left", display: "flex", alignItems: "center", gap: 13, padding: "16px 17px", borderRadius: 18, background: T.card, border: "1.5px solid " + T.orange + "44", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 6px 20px rgba(0,0,0,0.05)", boxSizing: "border-box" }}>
           <RichyLogo size={44} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: T.ink }}>Let Richard build your plan</div>
+            <div style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>Let Richard build your plan</div>
             <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Four questions, and he'll match a fund mix to your goal and timeline - then keep an eye on it.</div>
           </div>
           <SVGIcon id="chevron" size={18} color={T.ink3} />
@@ -19670,7 +19669,7 @@ function InvestingView(props) {
           <SVGIcon id="refresh" size={20} color={autoCfg.on ? T.green : T.ink3} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: T.ink }}>Auto-invest</div>
+          <div style={{ fontSize: 14, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>Auto-invest</div>
           <div style={{ fontSize: 12, color: T.ink2, marginTop: 2, lineHeight: 1.4 }}>
             {autoCfg.on
               ? dollarsWhole(autoCfg.amount) + "/" + (autoCfg.cadence === "weekly" ? "wk" : "mo") + (autoCfg.roundUps ? " + round-ups" : "") + (plan ? " → " + plan.name : "") + (autoNextDate && !autoIsDue ? " · next " + autoNextDate : "")
@@ -19688,7 +19687,7 @@ function InvestingView(props) {
             <SVGIcon id="spark" size={20} color="#fff" />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: T.ink }}>{props.investorProfile ? "Investing basics from Richard" : "New to investing?"}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>{props.investorProfile ? "Investing basics from Richard" : "New to investing?"}</div>
             <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>{props.investorProfile ? "Revisit your guide, or redo the test anytime." : "Watch how stocks work, then get the basics tuned to you."}</div>
           </div>
           <SVGIcon id="chevron" size={18} color={T.ink3} />
@@ -19699,13 +19698,13 @@ function InvestingView(props) {
       <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-          <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Holdings</span>
+          <span style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Holdings</span>
         </div>
         <span style={{ fontSize: 12, color: T.ink3 }}>{held.length + (held.length === 1 ? " holding · " : " holdings · ") + dollars(holdingsValue)}</span>
       </div>
       {held.length === 0 ? (
         <Card style={{ padding: "22px 20px", marginBottom: 18, textAlign: "center" }}>
-          <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, marginBottom: 5 }}>Your first position starts here</div>
+          <div style={{ fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, marginBottom: 5 }}>Your first position starts here</div>
           <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginBottom: 12 }}>{cash > 0 ? (plan ? "You have " + dollars(cash) + " ready. Richard can spread it across your " + plan.name + " mix, or pick something yourself." : "You have " + dollars(cash) + " ready to invest. Search any US or Tel Aviv stock and ETF.") : "Deposit cash, then let Richard build your plan - or buy something yourself."}</div>
           <BigBtn label={cash <= 0 ? "Deposit cash" : plan ? "Invest into my plan" : "Buy your first stock"} onPress={function() { if (cash <= 0) openSheet("deposit"); else if (plan) openPlanBuy(); else openSheet("buy"); }} />
         </Card>
@@ -19737,7 +19736,7 @@ function InvestingView(props) {
         <div style={{ marginBottom: 18 }}>
           <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-            <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Allocation</span>
+            <span style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Allocation</span>
           </div>
           <Card style={{ padding: "16px 18px", display: "flex", alignItems: "center", gap: 18 }}>
             <svg width={108} height={108} viewBox="0 0 108 108" style={{ transform: "rotate(-90deg)", flexShrink: 0 }}>
@@ -19770,7 +19769,7 @@ function InvestingView(props) {
       <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-          <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Watchlist</span>
+          <span style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Watchlist</span>
         </div>
         <button onClick={function() { openSheet("watch"); }} style={{ background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 12.5, fontWeight: 700, fontFamily: UI }}>+ Add</button>
       </div>
@@ -19786,7 +19785,7 @@ function InvestingView(props) {
           <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-              <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Activity</span>
+              <span style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Activity</span>
             </div>
             {activity.length > 8 && (
               <button onClick={function() { setAllAct(true); }} style={{ background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 12.5, fontWeight: 700, fontFamily: UI }}>See all</button>
@@ -19818,7 +19817,7 @@ function InvestingView(props) {
           <SVGIcon id="search" size={22} color={T.heroText} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14.5, fontWeight: 800, color: T.heroText }}>{scoutCount > 0 ? "Scout found " + scoutCount + (scoutCount === 1 ? " idea" : " ideas") : "Let Scout read the market"}</div>
+          <div style={{ fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.heroText }}>{scoutCount > 0 ? "Scout found " + scoutCount + (scoutCount === 1 ? " idea" : " ideas") : "Let Scout read the market"}</div>
           <div style={{ fontSize: 12, color: T.heroMut, marginTop: 2 }}>Richard scans live prices and the news for you</div>
         </div>
         <SVGIcon id="chevron" size={18} color={T.heroMut} />
@@ -19846,7 +19845,7 @@ function InvestingView(props) {
             <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
               <RichyLogo size={38} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 16, fontWeight: 800, color: T.heroText, letterSpacing: "-0.01em" }}>Teacher mode</div>
+                <div style={{ fontSize: 16, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.heroText, letterSpacing: "-0.01em" }}>Teacher mode</div>
                 <div style={{ fontSize: 12, color: T.heroMut, marginTop: 1 }}>Richard explains investing, plainly</div>
               </div>
             </div>
@@ -19863,7 +19862,7 @@ function InvestingView(props) {
 
           <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-            <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Lessons</span>
+            <span style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Lessons</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 11, marginBottom: 18 }}>
             {INVEST_LESSONS.map(function(l) {
@@ -19877,7 +19876,7 @@ function InvestingView(props) {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                      <span style={{ fontSize: 14.5, fontWeight: 800, color: T.ink, letterSpacing: "-0.01em" }}>{l.title}</span>
+                      <span style={{ fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{l.title}</span>
                       {prog >= 100 && <SVGIcon id="check" size={14} color={T.green} />}
                     </div>
                     <div style={{ fontSize: 12, color: T.ink3, marginTop: 3 }}>
@@ -19897,7 +19896,7 @@ function InvestingView(props) {
                 <SVGIcon id="spark" size={20} color="#fff" />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 15, fontWeight: 800, color: T.ink }}>{props.investorProfile ? "Your personal starter guide" : "Get the basics tuned to you"}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>{props.investorProfile ? "Your personal starter guide" : "Get the basics tuned to you"}</div>
                 <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Four questions and Richard writes the guide for your level.</div>
               </div>
               <SVGIcon id="chevron" size={18} color={T.ink3} />
@@ -19913,7 +19912,7 @@ function InvestingView(props) {
             <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
               <RichyLogo size={46} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 17, fontWeight: 800, color: T.heroText, letterSpacing: "-0.01em" }}>Richard</div>
+                <div style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.heroText, letterSpacing: "-0.01em" }}>Richard</div>
                 <div style={{ fontSize: 12, color: T.heroMut, marginTop: 1 }}>{plan ? "Watching your " + plan.name + " mix" : "Ready to build your plan"}</div>
               </div>
               <button onClick={function() { setHealthOpen(true); }} style={{ textAlign: "center", flexShrink: 0, background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: UI }}>
@@ -19925,7 +19924,7 @@ function InvestingView(props) {
 
           <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-            <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>What Richard noticed</span>
+            <span style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>What Richard noticed</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 11, marginBottom: 20 }}>
             {investInsights(acct, { mix: mix, drift: drift, cash: cash, targetCash: targetCashPct, autoDue: autoIsDue,
@@ -19938,7 +19937,7 @@ function InvestingView(props) {
                       <SVGIcon id={x.icon} size={19} color={tone.c} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 14.5, fontWeight: 800, color: T.ink, letterSpacing: "-0.01em" }}>{x.title}</div>
+                      <div style={{ fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{x.title}</div>
                       <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginTop: 4 }}>{x.text}</div>
                       {x.cta && (
                         <button onClick={function() { runInsight(x.action); }}
@@ -19953,7 +19952,7 @@ function InvestingView(props) {
 
           <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 3, height: 16, borderRadius: 2, background: T.gold, flexShrink: 0 }} />
-            <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Ask Richard</span>
+            <span style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Ask Richard</span>
           </div>
           <Card style={{ padding: "14px 16px" }}>
             {coachMsgs.length === 0 && !coachBusy && (
@@ -20223,7 +20222,7 @@ function InvestingView(props) {
             <div style={{ width: 70, height: 70, borderRadius: "50%", background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
               <SVGIcon id="check" size={34} color={T.green} />
             </div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(planDone.invested) + " invested"}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{dollars(planDone.invested) + " invested"}</div>
             <div style={{ fontSize: 13.5, color: T.ink2, marginTop: 6, lineHeight: 1.5 }}>{"Spread across your " + plan.name + " mix" + (planDone.left > 0.01 ? ", with " + dollars(planDone.left) + " left as cash by design." : ".")}</div>
             <div style={{ background: "rgba(0,0,0,0.035)", borderRadius: 14, padding: "12px 14px", marginTop: 16, textAlign: "left" }}>
               {planDone.orders.map(function(o) {
@@ -20318,7 +20317,7 @@ function InvestingView(props) {
             <SVGIcon id="refresh" size={20} color={T.green} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14.5, fontWeight: 800, color: T.ink }}>Recurring investing</div>
+            <div style={{ fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>Recurring investing</div>
             <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>Invest into your plan, every cycle</div>
           </div>
           <button onClick={function() { saveAutoCfg({ on: !autoCfg.on }); }}
@@ -20351,7 +20350,7 @@ function InvestingView(props) {
             <SVGIcon id="coins" size={20} color={T.orange} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14.5, fontWeight: 800, color: T.ink }}>Round-ups</div>
+            <div style={{ fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>Round-ups</div>
             <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>{"Spare change from this month's spending: " + dollars(roundUpPool)}</div>
           </div>
           <button onClick={function() { saveAutoCfg({ roundUps: !autoCfg.roundUps }); }}
@@ -20400,7 +20399,7 @@ function InvestingView(props) {
                     </div>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: T.ink, letterSpacing: "-0.01em" }}>{pl.name}</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{pl.name}</div>
                     <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3 }}>{pl.risk + " risk"}</div>
                     <div style={{ fontSize: 13, fontWeight: 700, color: T.gold, marginTop: 5 }}>{"Target " + pl.ret + "/yr"}</div>
                   </div>
@@ -20428,7 +20427,7 @@ function InvestingView(props) {
           var doneAlready = (investLessonProgress(acct)[L.id] || 0) >= 100;
           return (
             <div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", lineHeight: 1.22 }}>{L.title}</div>
+              <div style={{ fontSize: 22, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", lineHeight: 1.22 }}>{L.title}</div>
               <div style={{ fontSize: 12, color: T.ink3, marginTop: 4 }}>{L.level + " · " + L.mins + " min read"}</div>
               <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.6, marginTop: 12 }}>{L.intro}</div>
 
@@ -20437,7 +20436,7 @@ function InvestingView(props) {
                   {L.checklist.map(function(c, i) {
                     return (
                       <Card key={i} style={{ padding: "15px 16px" }}>
-                        <div style={{ fontSize: 14, fontWeight: 800, color: T.ink, letterSpacing: "-0.01em", marginBottom: 10 }}>{c.q}</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", marginBottom: 10 }}>{c.q}</div>
                         <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 7 }}>
                           <SVGIcon id="check" size={16} color={T.green} />
                           <span style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.45 }}>{c.good}</span>
@@ -20457,7 +20456,7 @@ function InvestingView(props) {
                   {L.body.map(function(b, i) {
                     return (
                       <div key={i} style={{ marginBottom: 14 }}>
-                        <div style={{ fontSize: 14.5, fontWeight: 800, color: T.ink, marginBottom: 3 }}>{b.h}</div>
+                        <div style={{ fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, marginBottom: 3 }}>{b.h}</div>
                         <div style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.55 }}>{b.p}</div>
                       </div>
                     );
@@ -20940,7 +20939,7 @@ function StockView(props) {
           <div style={{ marginBottom: 16 }}>
             <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-              <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Richard's take</span>
+              <span style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Richard's take</span>
             </div>
             <Card style={{ padding: "16px 18px" }}>
               {(!take && takeBusy) ? (
@@ -20955,7 +20954,7 @@ function StockView(props) {
                       <SVGIcon id="spark" size={17} color="#fff" />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: T.ink, lineHeight: 1.3 }}>{take.headline}</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, lineHeight: 1.3 }}>{take.headline}</div>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 5, background: (OUT[take.outlook] || OUT.neutral).color + "18", borderRadius: 999, padding: "5px 10px", flexShrink: 0 }}>
                       <SVGIcon id={(OUT[take.outlook] || OUT.neutral).icon} size={12} color={(OUT[take.outlook] || OUT.neutral).color} />
@@ -21048,7 +21047,7 @@ function StockView(props) {
         <div style={{ marginBottom: 16 }}>
           <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-            <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Your position</span>
+            <span style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Your position</span>
           </div>
           <Card style={{ padding: "16px 18px" }}>
             {heldNow && (function() {
@@ -21121,7 +21120,7 @@ function StockView(props) {
       {!pos && (
         <Card style={{ padding: "16px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>Watching, not holding</div>
+            <div style={{ fontSize: 14, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>Watching, not holding</div>
             <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Ready to open a position?</div>
           </div>
           <button onClick={function() { if (props.onTrade) props.onTrade(symbol, "buy"); }}
@@ -21132,7 +21131,7 @@ function StockView(props) {
       {/* news */}
       <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-        <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>News</span>
+        <span style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>News</span>
       </div>
       {news === null ? (
         <div style={{ padding: "10px 4px 20px" }}><ThinkingDots s={4.5} color={T.ink3} /></div>
@@ -21371,7 +21370,7 @@ function InvestorOnboardScreen(props) {
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: JINK, letterSpacing: "-0.02em" }}><WordReveal text={"You're set, " + firstName + "."} base={0.1} step={0.06} /></div>
+              <div style={{ fontSize: 20, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: JINK, letterSpacing: "-0.01em" }}><WordReveal text={"You're set, " + firstName + "."} base={0.1} step={0.06} /></div>
               <div style={{ fontSize: 13, color: JINK3, marginTop: 2 }}>{expLabel} · your investing basics</div>
             </div>
           </div>
@@ -21386,7 +21385,7 @@ function InvestorOnboardScreen(props) {
               {(b.lessons || []).map(function(l, i) {
                 return (
                   <div key={i} style={{ marginBottom: 14, animation: "rclPhrase 0.45s ease " + (0.3 + i * 0.15).toFixed(2) + "s both" }}>
-                    <div style={{ fontSize: 14.5, fontWeight: 800, color: JINK, marginBottom: 3 }}>{l.title}</div>
+                    <div style={{ fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: JINK, marginBottom: 3 }}>{l.title}</div>
                     <div style={{ fontSize: 13.5, color: JINK2, lineHeight: 1.55 }}>{l.body}</div>
                   </div>
                 );
@@ -21395,7 +21394,7 @@ function InvestorOnboardScreen(props) {
           </div>
 
           <div style={{ background: "#fff", borderRadius: 18, padding: "20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
-            <div style={{ fontSize: 15.5, fontWeight: 800, color: JINK, marginBottom: 4 }}>How to tell if a stock is a good pick</div>
+            <div style={{ fontSize: 15.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: JINK, marginBottom: 4 }}>How to tell if a stock is a good pick</div>
             <div style={{ fontSize: 13, color: JINK3, marginBottom: 14, lineHeight: 1.5 }}>Run any stock through these before you buy.</div>
             {(b.goodPick || []).map(function(c, i) {
               return (
@@ -21443,7 +21442,7 @@ function InvestorOnboardScreen(props) {
           <JrStepShell k={qIndex} dir={dir}>
             {qIndex > 0 && (
               <div>
-                <div style={{ fontSize: 25, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.25, marginBottom: 8 }}>
+                <div style={{ fontSize: 25, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.25, marginBottom: 8 }}>
                   <WordReveal text={qh.h} base={0.04} step={0.045} />
                 </div>
                 <div style={{ fontSize: 14, color: JINK3, marginBottom: 26, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>{qh.s}</div>
@@ -21917,7 +21916,7 @@ function ScoutBasicsStory(props) {
             <ScoutBasicsScene beat={b.glyph} />
           </div>
           <div key={"t" + idx} style={{ flex: 1, minWidth: 0, animation: "rsbUp 0.45s ease 0.05s both" }}>
-            <div style={{ fontSize: 16, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.2 }}>{b.h}</div>
+            <div style={{ fontSize: 16, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", lineHeight: 1.2 }}>{b.h}</div>
             <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginTop: 4 }}>{b.s}</div>
           </div>
         </div>
@@ -22050,7 +22049,7 @@ function StockScoutView(props) {
           </div>
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 19, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em" }}>Richard's scouting report</div>
+          <div style={{ fontSize: 19, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Richard's scouting report</div>
           <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 1 }}>Deep analysis of the market's movers</div>
         </div>
       </div>
@@ -22071,7 +22070,7 @@ function StockScoutView(props) {
         </Card>
       ) : !scout ? (
         <Card style={{ padding: "24px 20px", marginTop: 12, textAlign: "center" }}>
-          <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, marginBottom: 6 }}>Ready when you are</div>
+          <div style={{ fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, marginBottom: 6 }}>Ready when you are</div>
           <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 14 }}>Richard will study the market's movers and the news, then bring you his best ideas.</div>
           <BigBtn label="Find me the next big pick" onPress={generate} />
         </Card>
@@ -22158,7 +22157,7 @@ function StockScoutView(props) {
           {/* Ask Richard (Sonnet chat) */}
           <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-            <span style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Ask Richard about these</span>
+            <span style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Ask Richard about these</span>
           </div>
           <Card style={{ padding: "14px 16px" }}>
             {msgs.length === 0 && !chatBusy && (
@@ -22953,7 +22952,7 @@ function BusinessView(props) {
             <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
               <SVGIcon id="briefcase" size={24} color={T.orange} />
             </div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>No business accounts yet</div>
+            <div style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, marginBottom: 4 }}>No business accounts yet</div>
             <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>Every great company started with a first plan. Richard will help you build yours.</div>
           </Card>
         ) : bizes.map(function(b) {
@@ -23105,7 +23104,7 @@ function BusinessView(props) {
               </div>
             ) : planResult ? (
               <div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: T.ink, marginBottom: 8, fontFamily: DISP, letterSpacing: "-0.02em" }}>Your business plan</div>
+                <div style={{ fontSize: 20, fontWeight: 700, fontStyle: "italic", color: T.ink, marginBottom: 8, fontFamily: DISP, letterSpacing: "-0.01em" }}>Your business plan</div>
                 <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.55, marginBottom: 14 }}>{planResult.summary}</div>
                 {planResult.verdict && planResult.verdict.keyNumber && (
                   <div style={{ display: "flex", alignItems: "baseline", gap: 9, marginBottom: 14, padding: "12px 14px", background: T.orangeDim, borderRadius: 13 }}>
@@ -23253,7 +23252,7 @@ function BusinessView(props) {
           <div style={{ maxWidth: 380, margin: "0 auto" }}>
             <JrStepShell k={bq} dir={bqDir}>
               <div>
-                <div style={{ fontSize: 25, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.25, marginBottom: 8 }}>
+                <div style={{ fontSize: 25, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.25, marginBottom: 8 }}>
                   <WordReveal text={bqh.h} base={0.04} step={0.045} />
                 </div>
                 <div style={{ fontSize: 14, color: JINK3, marginBottom: 26, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>{bqh.s}</div>
@@ -23512,7 +23511,7 @@ function BusinessView(props) {
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 16, animation: "rcFadeUp 0.5s ease both" }}>
           <div style={{ minWidth: 0 }}>
             <div style={heroKick2}>{labelOf(STRUCTURES, biz.profile && biz.profile.structure) + " · " + labelOf(STAGES, stage)}</div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.15, marginTop: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{biz.name}</div>
+            <div style={{ fontSize: 24, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", lineHeight: 1.15, marginTop: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{biz.name}</div>
             {biz.what ? <div style={{ fontSize: 13, color: T.ink2, marginTop: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{biz.what}</div> : null}
           </div>
           <div style={{ flexShrink: 0, width: 46, height: 46, borderRadius: "50%", background: biz.color || T.orange, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px " + (biz.color || T.orange) + "55" }}>
@@ -23658,7 +23657,7 @@ function BusinessView(props) {
                     <span style={{ fontSize: 11, fontWeight: 700, color: stColor, background: stBg, borderRadius: 999, padding: "4px 11px", letterSpacing: "0.03em" }}>{stLabel}</span>
                     {reviewLoading && <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, color: T.ink3 }}>updating<ThinkingDots size={2.5} color={T.ink3} /></span>}
                   </div>
-                  <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, lineHeight: 1.4, marginBottom: 6 }}>{latest.headline}</div>
+                  <div style={{ fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, lineHeight: 1.4, marginBottom: 6 }}>{latest.headline}</div>
                   {rows.map(function(r, i) {
                     return (
                       <div key={i} style={{ display: "flex", gap: 10, padding: "8px 0", borderTop: i > 0 ? "0.5px solid " + T.sep : "none" }}>
@@ -23666,7 +23665,7 @@ function BusinessView(props) {
                           <SVGIcon id={r.icon} size={15} color={r.tint} />
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 12.5, fontWeight: 700, color: T.ink }}>{r.v.title}</div>
+                          <div style={{ fontSize: 12.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>{r.v.title}</div>
                           <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 1 }}>{r.v.body}</div>
                         </div>
                       </div>
@@ -23703,7 +23702,7 @@ function BusinessView(props) {
                         return (
                           <div key={i} style={{ background: "rgba(0,0,0,0.03)", borderRadius: 12, padding: "11px 13px", marginBottom: i < ideas.length - 1 ? 8 : 0, animation: "rcFadeUp 0.45s ease " + (i * 0.08) + "s both" }}>
                             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
-                              <div style={{ fontSize: 13, fontWeight: 700, color: T.ink }}>{gi.title}</div>
+                              <div style={{ fontSize: 13, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>{gi.title}</div>
                               {gi.impact ? <div style={{ fontSize: 11.5, fontWeight: 700, color: T.green, flexShrink: 0 }}>{gi.impact}</div> : null}
                             </div>
                             <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 3 }}>{gi.body}</div>
@@ -23753,7 +23752,7 @@ function BusinessView(props) {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ width: 3, height: 15, borderRadius: 2, background: T.orange }} />
-                  <span style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>Cash flow</span>
+                  <span style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>Cash flow</span>
                 </div>
                 <span style={{ fontSize: 12, color: T.ink3 }}>{(runway === null ? "Self-sustaining" : (Math.round(runway * 10) / 10) + " mo runway")}</span>
               </div>
@@ -23788,7 +23787,7 @@ function BusinessView(props) {
             return (
               <Card style={{ padding: "18px", marginBottom: 16, position: "relative", overflow: "hidden", animation: "rcFadeUp 0.55s ease 0.06s both" }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Roadmap</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14.5, fontWeight: 700, color: T.ink, marginTop: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, marginTop: 8 }}>
                   Richard is drafting your roadmap
                   <ThinkingDots size={3.5} color={T.orange} />
                 </div>
@@ -23804,7 +23803,7 @@ function BusinessView(props) {
               <Card style={{ padding: "16px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12, animation: "rcFadeUp 0.55s ease 0.06s both" }}>
                 <CatBadge icon="chart" color={T.orange} size={40} soft={true} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>No roadmap yet</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>No roadmap yet</div>
                   <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Richard can lay out the concrete steps from here to a working business.</div>
                 </div>
                 <button onClick={function() { regenRoadmap(biz); }}
@@ -23866,7 +23865,7 @@ function BusinessView(props) {
                     <div key={m.id} style={{ borderTop: borderSt }}>
                       <div onClick={function() { setExpandedMs(expandedMs === m.id ? null : m.id); }} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", cursor: "pointer" }}>
                         <TaskCheck done={true} size={20} color={T.green} />
-                        <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600, color: T.ink3, textDecoration: "line-through" }}>{m.title}</span>
+                        <span style={{ flex: 1, fontSize: 13.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink3, textDecoration: "line-through" }}>{m.title}</span>
                         <span style={{ transform: expandedMs === m.id ? "rotate(-90deg)" : "rotate(90deg)", display: "flex", transition: "transform 0.25s ease" }}><SVGIcon id="chevron" size={13} color={T.ink3} /></span>
                       </div>
                       {expandedMs === m.id && <div style={{ paddingLeft: 4, paddingBottom: 6 }}>{(m.tasks || []).map(function(t) { return taskRow(m, t); })}</div>}
@@ -23877,7 +23876,7 @@ function BusinessView(props) {
                   return (
                     <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderTop: borderSt, opacity: 0.55 }}>
                       <span style={{ width: 20, height: 20, borderRadius: "50%", border: "1.5px dashed " + T.ink3, flexShrink: 0, boxSizing: "border-box" }} />
-                      <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600, color: T.ink2 }}>{m.title}</span>
+                      <span style={{ flex: 1, fontSize: 13.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink2 }}>{m.title}</span>
                       <span style={{ fontSize: 11.5, color: T.ink3 }}>{((m.tasks || []).length) + " steps"}</span>
                     </div>
                   );
@@ -23885,7 +23884,7 @@ function BusinessView(props) {
                 return (
                   <div key={m.id} style={{ padding: "9px 0 4px", borderTop: borderSt }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: T.ink, flex: 1 }}>{m.title}</span>
+                      <span style={{ fontSize: 14, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, flex: 1 }}>{m.title}</span>
                       <span style={{ fontSize: 10, fontWeight: 700, color: T.orange, background: T.orangeDim, borderRadius: 999, padding: "3px 9px", letterSpacing: "0.05em", textTransform: "uppercase" }}>Now</span>
                     </div>
                     {(m.tasks || []).map(function(t) { return taskRow(m, t); })}
@@ -23990,7 +23989,7 @@ function BusinessView(props) {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 2px 10px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange }} />
-                  <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Needs attention</span>
+                  <span style={{ fontSize: 18, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Needs attention</span>
                 </div>
                 <button onClick={function() { setInvoicesOpen(true); }} style={{ border: "none", background: "none", fontSize: 12, color: T.ink3, cursor: "pointer", fontFamily: UI }}>Invoices ›</button>
               </div>
@@ -23998,7 +23997,7 @@ function BusinessView(props) {
                 <Card style={{ padding: "16px 18px", display: "flex", alignItems: "center", gap: 12 }}>
                   <CatBadge icon="flag" color={T.orange} size={40} soft={true} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>No unpaid invoices</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>No unpaid invoices</div>
                     <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Track client invoices and see what's overdue at a glance.</div>
                   </div>
                   <button onClick={function() { setAddInvoiceOpen(true); }} style={{ background: T.orangeDim, border: "none", borderRadius: 10, padding: "9px 12px", fontSize: 12, fontWeight: 700, color: T.orange, cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>+ Add</button>
@@ -24035,7 +24034,7 @@ function BusinessView(props) {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 2px 10px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange }} />
-                  <span style={{ fontSize: 18, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>Recent activity</span>
+                  <span style={{ fontSize: 18, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Recent activity</span>
                 </div>
               </div>
               <Card style={{ padding: "2px 16px" }}>
@@ -24078,7 +24077,7 @@ function BusinessView(props) {
             {(plan.sections || []).map(function(s, i) {
               return (
                 <div key={i} style={{ marginBottom: i < plan.sections.length - 1 ? 12 : 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: T.ink, marginBottom: 3 }}>{s.title}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, marginBottom: 3 }}>{s.title}</div>
                   <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5 }}>{s.body}</div>
                 </div>
               );
@@ -24097,7 +24096,7 @@ function BusinessView(props) {
           <Card style={{ padding: "16px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
             <CatBadge icon="briefcase" color={T.orange} size={40} soft={true} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>No plan yet</div>
+              <div style={{ fontSize: 14, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>No plan yet</div>
               <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Have Richard draft a business plan and budget for you.</div>
             </div>
             <button onClick={function() { replanWithRichard(biz); }} disabled={replanning}
@@ -24780,7 +24779,7 @@ function BsdPhone(props) {
   return (
     <div style={{ background: "linear-gradient(180deg,#FFFFFF,#FBF7F1)", border: "1px solid rgba(0,0,0,0.07)", borderRadius: 20, boxShadow: "0 10px 26px rgba(40,28,16,0.10)", padding: "12px 10px 12px", position: "relative", overflow: "hidden", boxSizing: "border-box" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 6px 10px" }}>
-        <span style={{ fontSize: 12, fontWeight: 800, color: JINK, letterSpacing: "-0.01em", fontFamily: UI }}>{props.title}</span>
+        <span style={{ fontSize: 12, fontWeight: 700, fontStyle: "italic", color: JINK, letterSpacing: "-0.01em", fontFamily: DISP }}>{props.title}</span>
         {props.right ? props.right : props.plus ? (
           <span style={{ position: "relative", width: 22, height: 22, borderRadius: "50%", background: props.plusHl ? T.orange : "rgba(0,0,0,0.06)", color: props.plusHl ? "#fff" : T.orange, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, transition: "background 0.3s ease, color 0.3s ease" }}>
             +
@@ -24838,7 +24837,7 @@ function BsdBtn(props) {
 // Paste target: dashed while empty, green check once "pasted".
 function BsdField(props) {
   return (
-    <div style={{ position: "relative", margin: "0 10px 6px", padding: "9px 24px 9px 11px", borderRadius: 11, background: "#fff", border: "1.5px " + (props.pasted ? "solid " + T.green : "dashed rgba(0,0,0,0.16)"), fontSize: 9.5, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", color: props.pasted ? JINK : JINK3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: "border-color 0.3s ease", boxSizing: "border-box" }}>
+    <div style={{ position: "relative", margin: "0 10px 6px", padding: "9px 24px 9px 11px", borderRadius: 11, background: "#fff", border: "1.5px " + (props.pasted ? "solid " + T.green : "dashed rgba(0,0,0,0.16)"), fontSize: 9.5, fontFamily: UI, color: props.pasted ? JINK : JINK3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: "border-color 0.3s ease", boxSizing: "border-box" }}>
       {props.pasted ? props.value : (props.placeholder || "Tap to paste")}
       {props.tap && <BsdTap />}
       {props.pasted && (
@@ -25275,7 +25274,7 @@ function BankSyncHelpChat(props) {
             <SVGIcon id="spark" size={17} color="#fff" />
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: JINK, letterSpacing: "-0.01em", fontFamily: UI }}>Ask Richard</div>
+            <div style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", color: JINK, letterSpacing: "-0.01em", fontFamily: DISP }}>Ask Richard</div>
             <div style={{ fontSize: 11.5, color: JINK3, fontWeight: 600, fontFamily: UI }}>Bank Sync setup help</div>
           </div>
           <JrIconBtn icon="close" onPress={props.onClose} />
@@ -25419,7 +25418,7 @@ function BankSyncJourney(props) {
   }
 
   var labelJ = { fontSize: 11.5, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 12 };
-  var headJ = { fontSize: 25, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.25, marginBottom: 8 };
+  var headJ = { fontSize: 25, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.25, marginBottom: 8 };
   var subCard = { background: "rgba(255,255,255,0.85)", border: "1px solid rgba(0,0,0,0.05)", borderRadius: 14, padding: "12px 15px", fontSize: 13, color: JINK2, lineHeight: 1.5, boxSizing: "border-box" };
 
   return (
@@ -25487,7 +25486,7 @@ function BankSyncJourney(props) {
                 {step.copy && (
                   <div style={{ background: "#fff", borderRadius: 16, padding: "15px 16px", boxShadow: "0 6px 22px rgba(40,28,16,0.08)", marginBottom: 16, boxSizing: "border-box", animation: "rclPhrase 0.45s ease 0.35s both" }}>
                     <div style={{ fontSize: 10.5, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>{copyLabel[step.copy]}</div>
-                    <div style={{ fontSize: 12.5, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", color: JINK, wordBreak: "break-all", lineHeight: 1.55, marginBottom: 12 }}>{copyValue[step.copy]}</div>
+                    <div style={{ fontSize: 12.5, fontFamily: UI, color: JINK, wordBreak: "break-all", lineHeight: 1.55, marginBottom: 12 }}>{copyValue[step.copy]}</div>
                     <button onClick={function() { copy(step.copy); }}
                       style={{ width: "100%", background: copied === step.copy ? T.greenDim : T.orangeDim, color: copied === step.copy ? T.green : T.orange, border: "none", borderRadius: 12, padding: "11px 0", fontSize: 14, fontWeight: 700, fontFamily: UI, cursor: "pointer", boxSizing: "border-box", transition: "background 0.2s ease, color 0.2s ease" }}>
                       {copied === step.copy ? "Copied - now paste it on your phone" : "Copy"}
@@ -25578,7 +25577,7 @@ function LeumiDemoConsentModal(props) {
       <div onClick={function(e) { e.stopPropagation(); }} style={{ width: "100%", maxWidth: 428, background: T.card, borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: "24px 22px 30px", boxSizing: "border-box" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
           <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", color: T.orange, background: T.orangeDim, borderRadius: 6, padding: "3px 7px" }}>DEMO</span>
-          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, fontFamily: DISP }}>Simulate connecting Bank Leumi</div>
+          <div style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", color: T.ink, fontFamily: DISP }}>Simulate connecting Bank Leumi</div>
         </div>
         <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.55, margin: "10px 0 16px" }}>
           Richy doesn't have a live connection to Bank Leumi yet - that requires Bank Leumi to certify Richy as a licensed Open Banking provider first. This preview shows what the consent step would look like and fills your account with realistic-looking demo transactions so you can see the feature in action.
@@ -25639,7 +25638,7 @@ function LeumiFintekaCard(props) {
               <SVGIcon id="building" size={20} color={T.blue} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, display: "flex", alignItems: "center", gap: 6 }}>
                 Bank Leumi
                 <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.05em", color: T.orange, background: T.orangeDim, borderRadius: 5, padding: "2px 6px" }}>DEMO</span>
               </div>
@@ -25755,7 +25754,7 @@ function BankSyncView(props) {
           <div style={{ width: 52, height: 52, borderRadius: 16, background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
             <SVGIcon id="credit" size={24} color={T.green} />
           </div>
-          <div style={{ fontSize: 18, fontWeight: 700, color: T.ink, marginBottom: 6, fontFamily: DISP, letterSpacing: "-0.02em" }}>Automatic tap-to-pay sync</div>
+          <div style={{ fontSize: 18, fontWeight: 700, fontStyle: "italic", color: T.ink, marginBottom: 6, fontFamily: DISP, letterSpacing: "-0.01em" }}>Automatic tap-to-pay sync</div>
           <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, maxWidth: 300, margin: "0 auto 22px" }}>
             Every purchase you tap with Apple Pay or Google Pay lands in Richy by itself - categorized and labeled, no typing. A one-time automation on your phone does the sending.
           </div>
@@ -25797,7 +25796,7 @@ function BankSyncView(props) {
             <SVGIcon id="phone" size={20} color={T.orange} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>Set up your phone</div>
+            <div style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>Set up your phone</div>
             <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.45 }}>A guided walkthrough, one step per page - about two minutes. iPhone or Android.</div>
           </div>
           <SVGIcon id="chevron" size={14} color={T.ink3} />
@@ -26508,7 +26507,7 @@ function ProfileSection(props) {
         <div style={{ width: 26, height: 26, borderRadius: 8, background: props.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 1px 6px " + props.glow }}>
           <SVGIcon id={props.icon} size={13} color={props.color} />
         </div>
-        <span style={{ fontSize: 13, fontWeight: 700, color: T.ink2, letterSpacing: "0.01em", fontFamily: UI }}>{props.title}</span>
+        <span style={{ fontSize: 13, fontWeight: 700, fontStyle: "italic", color: T.ink2, letterSpacing: "-0.005em", fontFamily: DISP }}>{props.title}</span>
       </div>
       <Card style={{ overflow: "hidden" }}>
         {props.children}
@@ -26530,7 +26529,7 @@ function TripHistoryView(props) {
           <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
             <SVGIcon id="plane" size={24} color={T.orange} />
           </div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>No trips yet</div>
+          <div style={{ fontSize: 17, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, marginBottom: 4 }}>No trips yet</div>
           <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{"Trips you end will show up here."}</div>
         </Card>
       ) : ended.map(function(t) {
@@ -26576,7 +26575,7 @@ function LevelMark(props) {
           strokeDasharray={C} strokeDashoffset={C - (C * pct) / 100} transform="rotate(-90 52 52)"
           style={{ transition: "stroke-dashoffset var(--m-settle) var(--m-ease)" }} />
       </svg>
-      <div style={{ position: "absolute", top: 12, left: 12, width: 80, height: 80, borderRadius: "50%", background: T.btn, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 34, fontWeight: 800, color: "#fff", fontFamily: DISP, letterSpacing: "-0.02em" }}>
+      <div style={{ position: "absolute", top: 12, left: 12, width: 80, height: 80, borderRadius: "50%", background: T.btn, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 34, fontWeight: 800, color: "#fff", fontFamily: UI, letterSpacing: "-0.02em" }}>
         {props.initial}
       </div>
       <div style={{ position: "absolute", bottom: -2, left: "50%", transform: "translateX(-50%)", background: T.orange, color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99, border: "2.5px solid " + T.bg, fontFamily: UI, letterSpacing: "0.03em", whiteSpace: "nowrap" }}>
@@ -26704,7 +26703,7 @@ function SocialStrip(props) {
             <SVGIcon id="user" size={18} color={T.orange} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>{reqs ? (reqs + " waiting on you") : "Not following anyone"}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink }}>{reqs ? (reqs + " waiting on you") : "Not following anyone"}</div>
             <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>
               {reqs ? "Someone asked to follow you." : "Follow people to see their streaks and badges. Never their money."}
             </div>
@@ -26962,7 +26961,7 @@ function FriendView(props) {
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
           <Disc name={name} handle={person.handle} i={idx < 0 ? 0 : idx} size={84} />
         </div>
-        <div style={{ fontSize: 24, fontWeight: 700, color: T.ink, letterSpacing: "-0.025em", fontFamily: DISP }}>{me ? "You" : name}</div>
+        <div style={{ fontSize: 24, fontWeight: 700, fontStyle: "italic", color: T.ink, letterSpacing: "-0.01em", fontFamily: DISP }}>{me ? "You" : name}</div>
         {stats && (
           <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 9, background: T.orangeDim, borderRadius: 20, padding: "5px 13px" }}>
             <SVGIcon id="shield" size={11} color={T.orange} />
@@ -27106,7 +27105,7 @@ function Profile(props) {
             <div style={{ fontSize: 11.5, color: T.ink3 }}>Settings</div>
           </button>
         </div>
-        <div style={{ fontSize: 26, fontWeight: 700, color: T.ink, letterSpacing: "-0.03em", fontFamily: DISP }}>{props.user}</div>
+        <div style={{ fontSize: 26, fontWeight: 700, fontStyle: "italic", color: T.ink, letterSpacing: "-0.01em", fontFamily: DISP }}>{props.user}</div>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 9, background: T.orangeDim, borderRadius: 20, padding: "5px 13px" }}>
           <SVGIcon id="shield" size={11} color={T.orange} />
           <span style={{ fontSize: 12, fontWeight: 700, color: T.orange, fontFamily: UI }}>{snap.rank}</span>
@@ -27131,7 +27130,7 @@ function Profile(props) {
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 12.5, color: T.ink3 }}>This month</div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 5 }}>
-              <span style={{ fontSize: 23, fontWeight: 700, color: monthColor, letterSpacing: "-0.02em", fontFamily: DISP }}>{monthWord}</span>
+              <span style={{ fontSize: 23, fontWeight: 700, fontStyle: "italic", color: monthColor, letterSpacing: "-0.01em", fontFamily: DISP }}>{monthWord}</span>
               {onTrack && <SVGIcon id="check" size={17} color={T.green} />}
             </div>
             {curRate !== null && (
@@ -27207,7 +27206,7 @@ function Profile(props) {
         {clean.pending && (
           <div style={{ padding: "13px 16px", background: T.orangeDim, display: "flex", alignItems: "center", gap: 11, borderBottom: "0.5px solid " + T.sep }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: T.orange }}>Is this everything?</div>
+              <div style={{ fontSize: 13.5, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.orange }}>Is this everything?</div>
               <div style={{ fontSize: 11.5, color: T.ink2, marginTop: 2 }}>{"Week of " + clean.pending.label + " · " + props.pendingCount + " logged"}</div>
             </div>
             <button onClick={function() { props.onConfirmWeek(clean.pending.key); }}
@@ -28982,12 +28981,12 @@ export default function App() {
         <div style={{ display: "flex", alignItems: "center", padding: "14px 20px 14px" }}>
           <div style={{ width: 86, display: "flex", alignItems: "center" }}>
             <button onClick={function() { setTimeframeMenuOpen(true); }}
-              style={{ background: T.orangeDim, border: "none", borderRadius: 40, padding: "7px 12px 7px 14px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 3, whiteSpace: "nowrap" }}>
+              style={{ background: T.orangeDim, border: "none", borderRadius: 40, padding: "7px 7px 7px 9px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 3, whiteSpace: "nowrap" }}>
               {timeframeLabel}
               <span style={{ display: "flex", transform: "rotate(90deg)" }}><SVGIcon id="chevron" size={9} color={T.orange} /></span>
             </button>
           </div>
-          <span style={{ flex: 1, fontSize: 20, fontWeight: 700, color: T.ink, textAlign: "center", letterSpacing: "-0.02em" }}>
+          <span style={{ flex: 1, minWidth: 0, fontSize: 18, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, textAlign: "center", letterSpacing: "-0.02em", lineHeight: 1.1, whiteSpace: "nowrap" }}>
             {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "periodMode" ? "Date Range" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "badges" ? "Badges" : currentTab === "settings" ? "Settings" : currentTab === "person" ? personName : currentTab === "social" ? "Friends" : currentTab === "findPeople" ? "Find people" : currentTab === "analysis" ? "Full Analysis" : currentTab === "investPlan" ? "Your investing plan" : currentTab === "investorOnboard" ? "Investing basics" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
           <div style={{ width: 86, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>

@@ -6,18 +6,14 @@
 <title>ריצ'י — תקציב בעברית, בלי לחבר את הבנק</title>
 <meta name="description" content="ריצ'י בונה לך תקציב חודשי בעברית ובשקלים, בלי למסור לאף אחד את חשבון הבנק שלך. ריצ'רד, היועץ שבפנים, כבר קרא את החודש שלך."/>
 <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..800&display=swap" rel="stylesheet"/>
+<link rel="preload" href="/fonts/noto-serif-hebrew-700.woff2" as="font" type="font/woff2" crossorigin/>
+<link href="/fonts/richy-fonts.css" rel="stylesheet"/>
 <style>
   :root{
     --bg:#F7F3EE; --card:#FFFFFF; --ink:#1A1410; --ink2:#6B5C4E; --ink3:#B0A396;
     --sep:rgba(0,0,0,0.08); --purple:#8970C6; --purple-hi:#C8B1FF; --gold:#C8973A;
-    /* GT Alpina named first for when licensed .woff2 files + an @font-face
-       block are added; Fraunces (linked above) is the free stand-in until
-       then. Ends in a system serif so nothing renders blank while loading. */
-    --font-display:"GT Alpina","Fraunces",Georgia,serif;
-    --font-ui:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-display:"EB Garamond","Noto Serif Hebrew","Noto Naskh Arabic",Garamond,"Times New Roman",serif;
+    --font-ui:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   }
   html.rc-dark{--bg:#131110;--card:#1D1A17;--ink:#F2EDE6;--ink2:#C9BFB4;--ink3:#8F8478;--sep:rgba(255,255,255,0.10);}
   @media (prefers-color-scheme: dark){ html:not(.rc-light){--bg:#131110;--card:#1D1A17;--ink:#F2EDE6;--ink2:#C9BFB4;--ink3:#8F8478;--sep:rgba(255,255,255,0.10);} }
@@ -27,8 +23,8 @@
   .wrap{max-width:760px;margin:0 auto;padding:28px 20px 60px;}
   header.top{display:flex;align-items:center;gap:10px;margin-bottom:56px;}
   .mark{width:38px;height:38px;border-radius:12px;background:#0D0C18;display:flex;align-items:center;justify-content:center;flex:none;}
-  .mark span{font-family:Georgia,'Times New Roman',serif;font-size:23px;font-weight:700;color:var(--gold);line-height:1;transform:translateY(1px);}
-  .wordmark{font-size:17px;font-weight:800;color:var(--ink);letter-spacing:-0.01em;}
+  .mark span{font-family:var(--font-display);font-size:23px;font-weight:700;font-style:italic;color:var(--gold);line-height:1;transform:translateY(1px);}
+  .wordmark{font-family:var(--font-display);font-size:17px;font-weight:700;font-style:italic;color:var(--ink);letter-spacing:-0.01em;}
 
   .hero{text-align:center;padding:12px 0 8px;}
   .kicker{font-size:13.5px;font-weight:700;color:var(--purple);letter-spacing:0.02em;margin-bottom:18px;}
@@ -42,7 +38,7 @@
     color:var(--ink);
     margin:0 0 22px;
   }
-  h1 em{font-style:normal;color:var(--purple);}
+  h1 em{font-style:inherit;color:var(--purple);}
   .sub{font-size:17px;color:var(--ink2);max-width:520px;margin:0 auto 36px;}
 
   form.waitlist{display:flex;gap:8px;max-width:420px;margin:0 auto;flex-wrap:wrap;justify-content:center;}
@@ -65,7 +61,7 @@
   .cards{display:flex;gap:14px;margin:64px 0 8px;flex-wrap:wrap;}
   .card{flex:1 1 260px;background:var(--card);border:0.5px solid var(--sep);border-radius:16px;padding:22px 20px;}
   .card .ico{font-size:22px;margin-bottom:10px;display:block;}
-  .card h3{font-size:15.5px;color:var(--ink);margin:0 0 6px;font-weight:800;letter-spacing:-0.01em;}
+  .card h3{font-family:var(--font-display);font-size:15.5px;color:var(--ink);margin:0 0 6px;font-weight:700;font-style:italic;letter-spacing:-0.01em;}
   .card p{font-size:13.5px;color:var(--ink2);margin:0;line-height:1.55;}
 
   .foot{margin-top:64px;padding-top:20px;border-top:0.5px solid var(--sep);}
