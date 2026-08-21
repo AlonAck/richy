@@ -8942,7 +8942,7 @@ function Overview(props) {
 
       <div style={{ padding: "6px 2px 22px", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
         <div>
-          <div style={{ fontSize: 28, fontWeight: 700, color: T.ink, letterSpacing: "-0.03em", lineHeight: 1.18 }}>
+          <div style={{ fontSize: 28, fontWeight: 600, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", lineHeight: 1.18 }}>
             {greeting}
           </div>
           <div style={{ fontSize: 14, color: T.ink3, marginTop: 5, fontStyle: "italic" }}>
