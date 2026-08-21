@@ -431,10 +431,10 @@ function applyLangDir(code) {
 }
 
 var TRANSLATIONS = {
-  en: { overview:"Overview", activity:"Activity", budgets:"Budgets", goals:"Goals", advisor:"Advisor", profile:"Profile", language:"Language", currency:"Currency", yourPlan:"Your Plan", categories:"Categories", signOut:"Sign Out", richyMember:"Richy member", richyRefersTo:"Richy refers to you as", seeYourPlan:"See your plan by Richard", netBalance:"Net Balance", income:"Income", spent:"Spent", topSpend:"Top spend", morning:"Good morning", afternoon:"Good afternoon", evening:"Good evening", savedThisPeriod:"saved this period", redoQuestionnaire:"Redo Questionnaire", yourPlanByRichard:"Your Plan by Richard", noTransactions:"No transactions yet", noTransactionsSub:"Tap + to log your first one. Awareness is the first step to wealth.", overviewEmptySub:"The Richest Man in Babylon started by tracking every coin. Start yours in Activity.", savingsRate:"Savings Rate",quickAdd:"Quick add", excellent:"Excellent", onTrack:"On track", buildItUp:"Build it up", overspending:"Room to rebalance", noIncomeYet:"No income logged yet", thisPeriod:"this period", transactions:"Transactions", whereItWent:"Where it went", overLimit:"over limit", complete:"complete", savedLabel:"saved", spentLabel:"spent", toGo:"to go", recent:"Recent", activeGoal:"active goal", activeGoals:"active goals", today:"Today", yesterday:"Yesterday", moneyIn:"Money In", moneyOut:"Money Out", newTransaction:"New Transaction", editTransaction:"Edit Transaction", addTransaction:"Add Transaction", saveChanges:"Save Changes", deleteTx:"Delete transaction", amount:"Amount", txLabel:"Label", category:"Category", date:"Date", repeat:"Repeat", once:"Once", weekly:"Weekly", monthly:"Monthly", markPending:"Mark as pending", expense:"Expense", noBudgets:"No budgets yet", noBudgetsSub:"Tap + to set a limit for a category. A budget is just telling your money where to go.", newBudget:"New Budget", editLimit:"Edit Limit", addBudget:"Add Budget", removeBudget:"Remove this budget", totalSpent:"Total Spent", byCategory:"By Category", edit:"Edit", delete:"Delete", save:"Save", budgeted:"budgeted", monthlyLimit:"Monthly limit", allCatsHaveBudget:"Every category already has a budget. Add a new category first.", noGoals:"No budget books yet", noGoalsSub:"Tap + to create your first budget book. A goal with a deadline is a plan, not a wish.", newBudgetBook:"New Budget Book", editBudgetBook:"Edit Budget Book", createBudgetBook:"Create Budget Book", deleteBudgetBook:"Delete budget book", addToBudgetBook:"Add to Budget Book", alreadySaved:"Already saved", target:"Target", name:"Name", deadline:"Deadline (optional)", goalComplete:"Goal complete!", remaining:"remaining", add:"Add", removeMoney:"Remove", removeFromBudgetBook:"Remove from Budget Book", removeMoneyConfirm:"Remove {amt} from {name}? This will reduce what you've saved.", syncWithAccount:"Sync with account", noSync:"Don't sync", syncedWith:"Synced with", addOrRemove:"Add / Remove", richySuggests:"Richard suggests", implement:"Implement", dismiss:"Dismiss", aiAdvisor:"AI Financial Advisor", aiAdvisorSub:"Personalized advice based on your real spending and expert financial wisdom.", analyzeMyFinances:"Analyze My Finances", thinkP1:"Reading your numbers",thinkP2:"Thinking it through",thinkP3:"Weighing the options",thinkP4:"Writing back",anStep1:"Reading your month",anStep2:"Scanning {n} transactions",anStep3:"Comparing plan to reality",anStep4:"Finding what matters most",anStep5:"Writing your analysis",analyzingFinances:"Analyzing your finances...", fewSeconds:"This takes a few seconds", refresh:"Refresh", insights:"Insights", analysisFailed:"Analysis failed", tryAgain:"Try Again", askYourAdvisor:"Ask Your Advisor", advisorQ1:"How can I save more?", advisorQ2:"Is my savings rate healthy?", advisorQ3:"What to do with my surplus?",advisorQ4:"Log what I just spent", thinking:"Thinking...", yesDo:"Yes, do it", notNow:"Not now", askRichard:"Ask Richard anything...", giveFeedback:"Give Richard feedback...", advisorDisclaimer:"Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.", translate:"Translate plan", noPlanYet:"No plan yet. Complete the onboarding questionnaire to get your personalized plan from Richard.", notes:"Notes", notesEmpty:"No notes yet", notesEmptySub:"Track who owes you and who you owe. Tap + to add your first one.", theyOweMe:"They owe me", iOwe:"I owe", newNote:"New Note", addNote:"Add Note", editNote:"Edit Note", saveNote:"Save Note", settle:"Settle", settleTitle:"Settle note", settleAddBalance:"Add to my balance", reminder:"Reminder", reminderTitle:"Set a reminder", setReminder:"Set reminder", clearReminder:"Clear reminder", reminderWhen:"Remind me on", reminderDenied:"Notifications are blocked. The note will still show a due badge.", due:"Due", overdue:"Overdue", deleteNote:"Delete note", trips:"Trips", planATrip:"Plan a Trip", planATripSub:"Budget a getaway without touching your balance.", planNewTrip:"Plan a New Trip", noTrips:"No trips yet", noTripsSub:"Plan a getaway and Richard will split your budget across the essentials.", tripName:"Trip name", destination:"Destination", tripBudget:"Total budget", tripDays:"Days", travelStyle:"Travel style", styleBudget:"Budget", styleComfort:"Comfort", styleLuxury:"Luxury", next:"Next", back:"Back", richardPlanning:"Richard is planning your trip", richardPlanningSub:"Splitting your budget across the essentials.", tripSplit:"Your budget split", allocated:"Allocated", overBy:"over by", saveTrip:"Save Trip", addCategory:"Add category", editCategory:"Edit category", color:"Color", deductFromBalance:"Deduct from balance", deductExplain:"This tracks what you actually spend on this trip as one live expense, so your balance only drops as you log spending here - not the whole budget up front. You can undo it anytime.", reserved:"Tracking against balance", undoReserve:"Stop tracking", logExpense:"Log expense", logExpenseTitle:"Log a trip expense", tripTips:"Richard's tips", deleteTrip:"Delete trip", deleteTripConfirm:"Delete this trip? This cannot be undone.", spentOf:"spent of", leftToSpend:"left to spend", planning:"Planning", tripSummary:"Trip summary", appearance:"Appearance", leftAfterBudgets:"Left after budgets", tripIcon:"Trip icon", savings:"Savings", netWorth:"Net Worth", balance:"Balance", manage:"Manage", totalSavings:"Total saved", savingsIntro:"Money you keep separate from your spending balance - an emergency fund, a sinking fund, anything you don't want to accidentally spend. It counts toward your net worth, never your balance.", newSavingsAccount:"New savings account", savingsAccountName:"Account name", addMoney:"Add money", withdraw:"Withdraw", fromBalance:"From my balance", externalMoney:"Money I already have", toBalance:"To my balance", removeFromNet:"Spend or remove", startingAmount:"Starting amount (optional)", createAccount:"Create account", closeAccount:"Close account", rename:"Rename", emptySavingsSub:"Keep an emergency fund or a sinking fund separate from your spending balance.", addSavingsAccount:"Add a savings account", history:"History", balanceUntouched:"Your spending balance stays untouched", movesFromBalance:"Moves money out of your spending balance", addsToBalance:"Adds the money back to your spending balance", leavesNetWorth:"Leaves your accounts - lowers your net worth", pickIcon:"Icon", emergencyFund:"Emergency Fund", noMovesYet:"No moves yet", pastChats:"Past chats", newChat:"New chat", conversation:"conversation", conversations:"conversations", noPastChats:"No past chats yet", message:"message", messages:"messages" },
-  he: { overview:"סקירה", activity:"פעילות", budgets:"תקציבים", goals:"יעדים", advisor:"יועץ", profile:"פרופיל", language:"שפה", currency:"מטבע", yourPlan:"התוכנית שלך", categories:"קטגוריות", signOut:"התנתק", richyMember:"חבר Richy", richyRefersTo:"ריצ'י מכנה אותך", seeYourPlan:"ראה את התוכנית שלך", netBalance:"יתרה נטו", income:"הכנסות", spent:"הוצאות", topSpend:"הוצאה עיקרית", morning:"בוקר טוב", afternoon:"צהריים טובים", evening:"ערב טוב", savedThisPeriod:"נחסך בתקופה זו", redoQuestionnaire:"מלא שאלון מחדש", yourPlanByRichard:"התוכנית שלך", noTransactions:"אין עסקאות עדיין", noTransactionsSub:"לחץ + כדי לרשום. מודעות היא הצעד הראשון לעושר.", overviewEmptySub:"עשיר בבבל התחיל בלעקוב אחרי כל מטבע. התחל גם אתה בפעילות.", savingsRate:"שיעור חיסכון",quickAdd:"הוספה מהירה", excellent:"מצוין", onTrack:"במסלול", buildItUp:"שפר את זה", overspending:"אפשר לאזן מחדש", thisPeriod:"בתקופה זו", transactions:"עסקאות", whereItWent:"לאן הלך", overLimit:"מעל המגבלה", complete:"הושלם", savedLabel:"נחסך", spentLabel:"הוצא", toGo:"לסיום", recent:"אחרון", activeGoal:"יעד פעיל", activeGoals:"יעדים פעילים", today:"היום", yesterday:"אתמול", moneyIn:"כסף נכנס", moneyOut:"כסף יוצא", newTransaction:"עסקה חדשה", editTransaction:"ערוך עסקה", addTransaction:"הוסף עסקה", saveChanges:"שמור שינויים", deleteTx:"מחק עסקה", amount:"סכום", txLabel:"תיאור", category:"קטגוריה", date:"תאריך", repeat:"חזרה", once:"פעם אחת", weekly:"שבועי", monthly:"חודשי", markPending:"סמן כממתין", expense:"הוצאה", noBudgets:"אין תקציבים עדיין", noBudgetsSub:"לחץ + להגדרת מגבלה לקטגוריה. תקציב הוא פשוט להגיד לכסף לאן ללכת.", newBudget:"תקציב חדש", editLimit:"ערוך מגבלה", addBudget:"הוסף תקציב", removeBudget:"הסר תקציב זה", totalSpent:"סך הוצאות", byCategory:"לפי קטגוריה", edit:"ערוך", delete:"מחק", save:"שמור", budgeted:"מתוקצב", monthlyLimit:"מגבלה חודשית", allCatsHaveBudget:"לכל הקטגוריות יש תקציב. הוסף קטגוריה חדשה תחילה.", noGoals:"אין ספרי תקציב עדיין", noGoalsSub:"לחץ + ליצירת ספר תקציב ראשון. יעד עם מועד הוא תוכנית, לא משאלה.", newBudgetBook:"ספר תקציב חדש", editBudgetBook:"ערוך ספר תקציב", createBudgetBook:"צור ספר תקציב", deleteBudgetBook:"מחק ספר תקציב", addToBudgetBook:"הוסף לספר תקציב", alreadySaved:"כבר נחסך", target:"יעד", name:"שם", deadline:"תאריך יעד (רשות)", goalComplete:"היעד הושג!", remaining:"נותר", add:"הוסף", removeMoney:"הסר", removeFromBudgetBook:"הסר מספר התקציב", removeMoneyConfirm:"להסיר {amt} מ-{name}? זה יקטין את מה שכבר נחסך.", syncWithAccount:"סנכרון עם חשבון", noSync:"בלי סנכרון", syncedWith:"מסונכרן עם", addOrRemove:"הוסף / הסר", richySuggests:"ריצ'י מציע", implement:"יישם", dismiss:"דחה", aiAdvisor:"יועץ פיננסי AI", aiAdvisorSub:"ייעוץ מותאם אישית בהתבסס על ההוצאות שלך.", analyzeMyFinances:"נתח את הכספים שלי", thinkP1:"קורא את המספרים שלך",thinkP2:"חושב על זה",thinkP3:"שוקל את האפשרויות",thinkP4:"מנסח תשובה",anStep1:"קורא את החודש שלך",anStep2:"סורק {n} תנועות",anStep3:"משווה תוכנית למציאות",anStep4:"מאתר את מה שחשוב באמת",anStep5:"כותב את הניתוח",analyzingFinances:"מנתח את הכספים שלך...", fewSeconds:"זה לוקח כמה שניות", refresh:"רענן", insights:"תובנות", analysisFailed:"הניתוח נכשל", tryAgain:"נסה שוב", askYourAdvisor:"שאל את היועץ שלך", advisorQ1:"איך אוכל לחסוך יותר?", advisorQ2:"האם שיעור החיסכון שלי בריא?", advisorQ3:"מה לעשות עם העודף שלי?",advisorQ4:"רשום מה שהוצאתי עכשיו", thinking:"חושב...", yesDo:"כן, עשה זאת", notNow:"לא עכשיו", askRichard:"שאל את ריצ'רד כל דבר...", giveFeedback:"תן ל-ריצ'רד משוב...", advisorDisclaimer:"ריצ'רד הוא עוזר AI ולא יועץ פיננסי מורשה. תמיד ערוך מחקר עצמאי לפני קבלת החלטות כלכליות.", translate:"תרגם תוכנית", noPlanYet:"אין תוכנית עדיין. מלא את השאלון כדי לקבל את התוכנית האישית שלך מריצ'רד.", noIncomeYet:"עדיין לא נרשמו הכנסות", notes:"פתקים", notesEmpty:"אין פתקים עדיין", notesEmptySub:"עקוב אחרי מי חייב לך ולמי אתה חייב. לחץ + להוספת הפתק הראשון.", theyOweMe:"חייבים לי", iOwe:"אני חייב", newNote:"פתק חדש", addNote:"הוסף פתק", editNote:"ערוך פתק", saveNote:"שמור פתק", settle:"סגור חוב", settleTitle:"סגירת פתק", settleAddBalance:"הוסף ליתרה שלי", reminder:"תזכורת", reminderTitle:"קבע תזכורת", setReminder:"קבע תזכורת", clearReminder:"בטל תזכורת", reminderWhen:"הזכר לי בתאריך", reminderDenied:"ההתראות חסומות. הפתק עדיין יציג תג מועד.", due:"מועד", overdue:"באיחור", deleteNote:"מחק פתק", trips:"טיולים", planATrip:"תכנן טיול", planATripSub:"תקצב חופשה בלי לגעת ביתרה שלך.", planNewTrip:"תכנן טיול חדש", noTrips:"אין טיולים עדיין", noTripsSub:"תכנן חופשה וריצ'רד יחלק את התקציב בין הדברים החשובים.", tripName:"שם הטיול", destination:"יעד", tripBudget:"תקציב כולל", tripDays:"ימים", travelStyle:"סגנון נסיעה", styleBudget:"חסכוני", styleComfort:"נוח", styleLuxury:"יוקרתי", next:"הבא", back:"חזרה", richardPlanning:"ריצ'רד מתכנן את הטיול שלך", richardPlanningSub:"מחלק את התקציב בין הדברים החשובים.", tripSplit:"חלוקת התקציב שלך", allocated:"הוקצה", overBy:"חריגה של", saveTrip:"שמור טיול", addCategory:"הוסף קטגוריה", editCategory:"ערוך קטגוריה", color:"צבע", deductFromBalance:"נכה מהיתרה", deductExplain:"כך מה שאתה באמת מוציא בטיול נרשם כהוצאה חיה אחת - היתרה יורדת רק כשאתה רושם הוצאות כאן, לא כל התקציב מראש. אפשר לבטל בכל רגע.", reserved:"במעקב מול היתרה", undoReserve:"הפסק מעקב", logExpense:"רשום הוצאה", logExpenseTitle:"רישום הוצאת טיול", tripTips:"הטיפים של ריצ'רד", deleteTrip:"מחק טיול", deleteTripConfirm:"למחוק את הטיול? אי אפשר לבטל פעולה זו.", spentOf:"הוצא מתוך", leftToSpend:"נותר להוצאה", planning:"בתכנון", tripSummary:"סיכום הטיול", appearance:"מראה", leftAfterBudgets:"נותר אחרי תקציבים", tripIcon:"סמל הטיול", savings:"חסכונות", netWorth:"שווי נקי", balance:"יתרה", manage:"ניהול", totalSavings:"סך הכל נחסך", savingsIntro:"כסף שאתה שומר בנפרד מיתרת ההוצאות - קרן חירום, קרן ייעודית, כל מה שאתה לא רוצה לבזבז בטעות. הוא נספר בשווי הנקי שלך, לעולם לא ביתרה.", newSavingsAccount:"חשבון חיסכון חדש", savingsAccountName:"שם החשבון", addMoney:"הוסף כסף", withdraw:"משיכה", fromBalance:"מהיתרה שלי", externalMoney:"כסף שכבר יש לי", toBalance:"ליתרה שלי", removeFromNet:"הוצא או הסר", startingAmount:"סכום התחלתי (רשות)", createAccount:"צור חשבון", closeAccount:"סגור חשבון", rename:"שנה שם", emptySavingsSub:"שמור קרן חירום או קרן ייעודית בנפרד מיתרת ההוצאות שלך.", addSavingsAccount:"הוסף חשבון חיסכון", history:"היסטוריה", balanceUntouched:"יתרת ההוצאות שלך נשארת ללא שינוי", movesFromBalance:"מעביר כסף החוצה מיתרת ההוצאות", addsToBalance:"מחזיר את הכסף ליתרת ההוצאות", leavesNetWorth:"יוצא מהחשבונות שלך - מוריד את השווי הנקי", pickIcon:"סמל", emergencyFund:"קרן חירום", noMovesYet:"אין תנועות עדיין", pastChats:"שיחות קודמות", newChat:"שיחה חדשה", conversation:"שיחה", conversations:"שיחות", noPastChats:"אין שיחות קודמות עדיין", message:"הודעה", messages:"הודעות" },
-  ar: { overview:"نظرة عامة", activity:"النشاط", budgets:"الميزانيات", goals:"الاهداف", advisor:"المستشار", profile:"الملف الشخصي", language:"اللغة", currency:"العملة", yourPlan:"خطتك", categories:"الفئات", signOut:"تسجيل الخروج", richyMember:"عضو Richy", richyRefersTo:"ريتشي يناديك", seeYourPlan:"انظر خطتك من ريتشارد", netBalance:"الرصيد الصافي", income:"الدخل", spent:"المنفق", topSpend:"اعلى انفاق", morning:"صباح الخير", afternoon:"مساء الخير", evening:"مساء الخير", savedThisPeriod:"تم توفيره", redoQuestionnaire:"اعادة الاستبيان", yourPlanByRichard:"خطتك من ريتشارد", noTransactions:"لا توجد معاملات بعد", noTransactionsSub:"اضغط + لتسجيل اول معاملة. الوعي هو الخطوة الاولى نحو الثروة.", overviewEmptySub:"اغنى رجل في بابل بدا بتتبع كل عملة. ابدا في النشاط.", savingsRate:"معدل الادخار",quickAdd:"اضافة سريعة", excellent:"ممتاز", onTrack:"في المسار", buildItUp:"طوره", overspending:"مجال للموازنة", thisPeriod:"هذه الفترة", transactions:"المعاملات", whereItWent:"اين ذهب", overLimit:"فوق الحد", complete:"مكتمل", savedLabel:"مدخر", spentLabel:"انفق", toGo:"متبقي", recent:"الاخير", activeGoal:"هدف نشط", activeGoals:"اهداف نشطة", today:"اليوم", yesterday:"امس", moneyIn:"المال الداخل", moneyOut:"المال الخارج", newTransaction:"معاملة جديدة", editTransaction:"تعديل المعاملة", addTransaction:"اضافة معاملة", saveChanges:"حفظ التغييرات", deleteTx:"حذف المعاملة", amount:"المبلغ", txLabel:"التسمية", category:"الفئة", date:"التاريخ", repeat:"تكرار", once:"مرة واحدة", weekly:"اسبوعي", monthly:"شهري", markPending:"وضع علامة معلقة", expense:"مصروف", noBudgets:"لا توجد ميزانيات بعد", noBudgetsSub:"اضغط + لتعيين حد للفئة. الميزانية هي توجيه المال.", newBudget:"ميزانية جديدة", editLimit:"تعديل الحد", addBudget:"اضافة ميزانية", removeBudget:"حذف هذه الميزانية", totalSpent:"اجمالي الانفاق", byCategory:"حسب الفئة", edit:"تعديل", delete:"حذف", save:"حفظ", budgeted:"مخصص", monthlyLimit:"الحد الشهري", allCatsHaveBudget:"كل الفئات لديها ميزانية. اضف فئة جديدة اولا.", noGoals:"لا توجد دفاتر بعد", noGoalsSub:"اضغط + لانشاء اول دفتر. الهدف بموعد خطة وليس امنية.", newBudgetBook:"دفتر جديد", editBudgetBook:"تعديل الدفتر", createBudgetBook:"انشاء دفتر", deleteBudgetBook:"حذف الدفتر", addToBudgetBook:"اضافة الى الدفتر", alreadySaved:"تم الادخار مسبقا", target:"الهدف", name:"الاسم", deadline:"الموعد النهائي (اختياري)", goalComplete:"تم تحقيق الهدف!", remaining:"متبقي", add:"اضافة", removeMoney:"إزالة", removeFromBudgetBook:"إزالة من الدفتر", removeMoneyConfirm:"إزالة {amt} من {name}؟ سيقلل هذا مما تم توفيره بالفعل.", syncWithAccount:"مزامنة مع حساب", noSync:"بدون مزامنة", syncedWith:"مزامن مع", addOrRemove:"إضافة / إزالة", richySuggests:"اقتراح ريتشارد", implement:"تطبيق", dismiss:"تجاهل", aiAdvisor:"مستشار مالي AI", aiAdvisorSub:"نصائح مخصصة بناء على انفاقك الفعلي.", analyzeMyFinances:"تحليل ماليتي", thinkP1:"أقرأ أرقامك",thinkP2:"أفكر في الأمر",thinkP3:"أوازن الخيارات",thinkP4:"أكتب الرد",anStep1:"أقرأ شهرك",anStep2:"أفحص {n} من المعاملات",anStep3:"أقارن الخطة بالواقع",anStep4:"أبحث عن الأهم",anStep5:"أكتب تحليلك",analyzingFinances:"جاري تحليل ماليتك...", fewSeconds:"هذا يستغرق بضع ثوان", refresh:"تحديث", insights:"رؤى", analysisFailed:"فشل التحليل", tryAgain:"حاول مجددا", askYourAdvisor:"اسال مستشارك", advisorQ1:"كيف يمكنني توفير المزيد؟", advisorQ2:"هل معدل توفيري صحي؟", advisorQ3:"ماذا افعل بالفائض؟",advisorQ4:"سجل ما انفقته للتو", thinking:"افكر...", yesDo:"نعم افعل ذلك", notNow:"ليس الان", askRichard:"اسال ريتشارد اي شيء...", giveFeedback:"اعطِ ريتشارد ملاحظاتك...", advisorDisclaimer:"ريتشارد مساعد ذكاء اصطناعي وليس مستشارا ماليا معتمدا. دائما ابحث قبل اتخاذ قرارات مالية.", translate:"ترجمة الخطة", noPlanYet:"لا توجد خطة بعد. اكمل الاستبيان للحصول على خطتك الشخصية من ريتشارد.", noIncomeYet:"لم يُسجل دخل بعد", notes:"ملاحظات", notesEmpty:"لا ملاحظات بعد", notesEmptySub:"تتبع من يدين لك ولمن تدين. اضغط + لإضافة أول ملاحظة.", theyOweMe:"يدينون لي", iOwe:"أنا مدين", newNote:"ملاحظة جديدة", addNote:"أضف ملاحظة", editNote:"تعديل الملاحظة", saveNote:"حفظ الملاحظة", settle:"تسوية", settleTitle:"تسوية الملاحظة", settleAddBalance:"أضف إلى رصيدي", reminder:"تذكير", reminderTitle:"ضبط تذكير", setReminder:"ضبط التذكير", clearReminder:"إلغاء التذكير", reminderWhen:"ذكرني في", reminderDenied:"الإشعارات محظورة. ستظل الملاحظة تعرض شارة الاستحقاق.", due:"مستحق", overdue:"متأخر", deleteNote:"حذف الملاحظة", trips:"رحلات", planATrip:"خطط رحلة", planATripSub:"ضع ميزانية لرحلة دون المساس برصيدك.", planNewTrip:"خطط رحلة جديدة", noTrips:"لا رحلات بعد", noTripsSub:"خطط رحلة وسيوزع ريتشارد ميزانيتك على الأساسيات.", tripName:"اسم الرحلة", destination:"الوجهة", tripBudget:"الميزانية الكلية", tripDays:"أيام", travelStyle:"نمط السفر", styleBudget:"اقتصادي", styleComfort:"مريح", styleLuxury:"فاخر", next:"التالي", back:"رجوع", richardPlanning:"ريتشارد يخطط رحلتك", richardPlanningSub:"يوزع ميزانيتك على الأساسيات.", tripSplit:"توزيع ميزانيتك", allocated:"مخصص", overBy:"تجاوز بمقدار", saveTrip:"حفظ الرحلة", addCategory:"أضف فئة", editCategory:"تعديل الفئة", color:"اللون", deductFromBalance:"خصم من الرصيد", deductExplain:"هكذا يُسجل ما تنفقه فعلاً في الرحلة كمصروف واحد مباشر - ينخفض رصيدك فقط عندما تسجل الإنفاق هنا، وليس الميزانية كلها مقدماً. يمكنك التراجع في أي وقت.", reserved:"قيد التتبع مقابل الرصيد", undoReserve:"إيقاف التتبع", logExpense:"سجل مصروفاً", logExpenseTitle:"تسجيل مصروف رحلة", tripTips:"نصائح ريتشارد", deleteTrip:"حذف الرحلة", deleteTripConfirm:"حذف هذه الرحلة؟ لا يمكن التراجع عن ذلك.", spentOf:"أُنفق من", leftToSpend:"متبقٍ للإنفاق", planning:"قيد التخطيط", tripSummary:"ملخص الرحلة", appearance:"المظهر", leftAfterBudgets:"المتبقي بعد الميزانيات", tripIcon:"رمز الرحلة", savings:"مدخرات", netWorth:"صافي الثروة", balance:"الرصيد", manage:"إدارة", totalSavings:"إجمالي المدخر", savingsIntro:"مال تحتفظ به منفصلاً عن رصيد إنفاقك - صندوق طوارئ، أو ادخار لهدف، أو أي مبلغ لا تريد إنفاقه بالخطأ. يُحسب ضمن صافي ثروتك، وليس ضمن رصيدك أبداً.", newSavingsAccount:"حساب توفير جديد", savingsAccountName:"اسم الحساب", addMoney:"أضف مالاً", withdraw:"سحب", fromBalance:"من رصيدي", externalMoney:"مال أملكه بالفعل", toBalance:"إلى رصيدي", removeFromNet:"إنفاق أو إزالة", startingAmount:"مبلغ البداية (اختياري)", createAccount:"إنشاء حساب", closeAccount:"إغلاق الحساب", rename:"إعادة تسمية", emptySavingsSub:"احتفظ بصندوق طوارئ أو ادخار لهدف منفصلاً عن رصيد إنفاقك.", addSavingsAccount:"أضف حساب توفير", history:"السجل", balanceUntouched:"رصيد إنفاقك يبقى دون تغيير", movesFromBalance:"ينقل المال خارج رصيد إنفاقك", addsToBalance:"يعيد المال إلى رصيد إنفاقك", leavesNetWorth:"يغادر حساباتك - يخفض صافي ثروتك", pickIcon:"الرمز", emergencyFund:"صندوق الطوارئ", noMovesYet:"لا حركات بعد", pastChats:"محادثات سابقة", newChat:"محادثة جديدة", conversation:"محادثة", conversations:"محادثات", noPastChats:"لا محادثات سابقة بعد", message:"رسالة", messages:"رسائل" },
-  ru: { overview:"Обзор", activity:"Активность", budgets:"Бюджеты", goals:"Цели", advisor:"Советник", profile:"Профиль", language:"Язык", currency:"Валюта", yourPlan:"Ваш план", categories:"Категории", signOut:"Выйти", richyMember:"Участник Richy", richyRefersTo:"Richy называет тебя", seeYourPlan:"Посмотреть план от Ричарда", netBalance:"Чистый баланс", income:"Доходы", spent:"Расходы", topSpend:"Главная трата", morning:"Доброе утро", afternoon:"Добрый день", evening:"Добрый вечер", savedThisPeriod:"сохранено за период", redoQuestionnaire:"Пройти снова", yourPlanByRichard:"Ваш план от Ричарда", noTransactions:"Нет транзакций", noTransactionsSub:"Нажмите + чтобы добавить первую. Осознанность - первый шаг к богатству.", overviewEmptySub:"Богатейший человек Вавилона начал с учёта каждой монеты. Начните в Активности.", savingsRate:"Уровень сбережений",quickAdd:"Быстрое добавление", excellent:"Отлично", onTrack:"В норме", buildItUp:"Улучшайте", overspending:"Можно выровнять", thisPeriod:"за период", transactions:"Транзакции", whereItWent:"Куда ушло", overLimit:"сверх лимита", complete:"завершено", savedLabel:"накоплено", spentLabel:"потрачено", toGo:"осталось", recent:"Последние", activeGoal:"активная цель", activeGoals:"активных целей", today:"Сегодня", yesterday:"Вчера", moneyIn:"Доходы", moneyOut:"Расходы", newTransaction:"Новая транзакция", editTransaction:"Редактировать", addTransaction:"Добавить транзакцию", saveChanges:"Сохранить изменения", deleteTx:"Удалить транзакцию", amount:"Сумма", txLabel:"Описание", category:"Категория", date:"Дата", repeat:"Повтор", once:"Однократно", weekly:"Еженедельно", monthly:"Ежемесячно", markPending:"Отметить как ожидающее", expense:"Расход", noBudgets:"Нет бюджетов", noBudgetsSub:"Нажмите + чтобы задать лимит. Бюджет говорит деньгам куда идти.", newBudget:"Новый бюджет", editLimit:"Изменить лимит", addBudget:"Добавить бюджет", removeBudget:"Удалить этот бюджет", totalSpent:"Всего потрачено", byCategory:"По категориям", edit:"Редактировать", delete:"Удалить", save:"Сохранить", budgeted:"запланировано", monthlyLimit:"Месячный лимит", allCatsHaveBudget:"Все категории уже имеют бюджет. Сначала добавьте новую категорию.", noGoals:"Нет книг целей", noGoalsSub:"Нажмите + чтобы создать первую. Цель с датой - это план, а не мечта.", newBudgetBook:"Новая книга целей", editBudgetBook:"Редактировать книгу целей", createBudgetBook:"Создать книгу целей", deleteBudgetBook:"Удалить книгу целей", addToBudgetBook:"Добавить в книгу целей", alreadySaved:"Уже накоплено", target:"Цель", name:"Название", deadline:"Срок (необязательно)", goalComplete:"Цель достигнута!", remaining:"осталось", add:"Добавить", removeMoney:"Снять", removeFromBudgetBook:"Убрать из книги целей", removeMoneyConfirm:"Снять {amt} из {name}? Это уменьшит уже накопленное.", syncWithAccount:"Синхронизировать со счётом", noSync:"Без синхронизации", syncedWith:"Синхронизировано с", addOrRemove:"Добавить / Снять", richySuggests:"Ричард предлагает", implement:"Применить", dismiss:"Отклонить", aiAdvisor:"Финансовый советник ИИ", aiAdvisorSub:"Персональные советы на основе ваших расходов.", analyzeMyFinances:"Анализировать мои финансы", thinkP1:"Читаю ваши цифры",thinkP2:"Обдумываю",thinkP3:"Взвешиваю варианты",thinkP4:"Пишу ответ",anStep1:"Читаю ваш месяц",anStep2:"Проверяю {n} операций",anStep3:"Сравниваю план с реальностью",anStep4:"Ищу самое важное",anStep5:"Пишу ваш анализ",analyzingFinances:"Анализируем ваши финансы...", fewSeconds:"Это займет несколько секунд", refresh:"Обновить", insights:"Инсайты", analysisFailed:"Анализ не удался", tryAgain:"Попробовать снова", askYourAdvisor:"Спросите вашего советника", advisorQ1:"Как сэкономить больше?", advisorQ2:"Мой уровень сбережений здоровый?", advisorQ3:"Что делать с излишком?",advisorQ4:"Запиши, что я потратил", thinking:"Думаю...", yesDo:"Да, сделай это", notNow:"Не сейчас", askRichard:"Спросите Ричарда что угодно...", giveFeedback:"Дайте обратную связь Ричарду...", advisorDisclaimer:"Ричард является ИИ-помощником, а не лицензированным финансовым советником. Всегда проводите собственное исследование.", translate:"Перевести план", noPlanYet:"Плана пока нет. Пройдите анкету, чтобы получить персональный план от Ричарда.", noIncomeYet:"Доходы ещё не записаны", notes:"Заметки", notesEmpty:"Пока нет заметок", notesEmptySub:"Отслеживайте, кто должен вам и кому должны вы. Нажмите +, чтобы добавить первую.", theyOweMe:"Мне должны", iOwe:"Я должен", newNote:"Новая заметка", addNote:"Добавить заметку", editNote:"Редактировать заметку", saveNote:"Сохранить заметку", settle:"Погасить", settleTitle:"Погашение заметки", settleAddBalance:"Добавить к моему балансу", reminder:"Напоминание", reminderTitle:"Установить напоминание", setReminder:"Установить", clearReminder:"Убрать напоминание", reminderWhen:"Напомнить мне", reminderDenied:"Уведомления заблокированы. Заметка всё равно покажет метку срока.", due:"Срок", overdue:"Просрочено", deleteNote:"Удалить заметку", trips:"Поездки", planATrip:"Спланировать поездку", planATripSub:"Составьте бюджет отпуска, не трогая свой баланс.", planNewTrip:"Спланировать новую поездку", noTrips:"Пока нет поездок", noTripsSub:"Спланируйте отпуск, и Ричард распределит бюджет по главному.", tripName:"Название поездки", destination:"Направление", tripBudget:"Общий бюджет", tripDays:"Дней", travelStyle:"Стиль путешествия", styleBudget:"Эконом", styleComfort:"Комфорт", styleLuxury:"Люкс", next:"Далее", back:"Назад", richardPlanning:"Ричард планирует вашу поездку", richardPlanningSub:"Распределяет бюджет по главному.", tripSplit:"Распределение бюджета", allocated:"Распределено", overBy:"превышение на", saveTrip:"Сохранить поездку", addCategory:"Добавить категорию", editCategory:"Редактировать категорию", color:"Цвет", deductFromBalance:"Списывать с баланса", deductExplain:"Реальные траты в поездке записываются как один живой расход - баланс уменьшается только когда вы записываете траты здесь, а не на весь бюджет сразу. Можно отменить в любой момент.", reserved:"Отслеживается по балансу", undoReserve:"Прекратить отслеживание", logExpense:"Записать расход", logExpenseTitle:"Запись расхода поездки", tripTips:"Советы Ричарда", deleteTrip:"Удалить поездку", deleteTripConfirm:"Удалить эту поездку? Это нельзя отменить.", spentOf:"потрачено из", leftToSpend:"осталось потратить", planning:"Планируется", tripSummary:"Итоги поездки", appearance:"Оформление", leftAfterBudgets:"Осталось после бюджетов", tripIcon:"Значок поездки", savings:"Сбережения", netWorth:"Чистый капитал", balance:"Баланс", manage:"Управлять", totalSavings:"Всего накоплено", savingsIntro:"Деньги, которые вы держите отдельно от расходного баланса - резервный фонд, накопления на цель, всё, что не хотите случайно потратить. Они входят в чистый капитал, но никогда - в баланс.", newSavingsAccount:"Новый сберегательный счёт", savingsAccountName:"Название счёта", addMoney:"Пополнить", withdraw:"Снять", fromBalance:"С моего баланса", externalMoney:"Деньги, которые уже есть", toBalance:"На мой баланс", removeFromNet:"Потратить или убрать", startingAmount:"Начальная сумма (необязательно)", createAccount:"Создать счёт", closeAccount:"Закрыть счёт", rename:"Переименовать", emptySavingsSub:"Держите резервный фонд или накопления отдельно от расходного баланса.", addSavingsAccount:"Добавить сберегательный счёт", history:"История", balanceUntouched:"Ваш расходный баланс не меняется", movesFromBalance:"Переводит деньги из расходного баланса", addsToBalance:"Возвращает деньги на расходный баланс", leavesNetWorth:"Уходит из ваших счетов - уменьшает чистый капитал", pickIcon:"Значок", emergencyFund:"Резервный фонд", noMovesYet:"Движений пока нет", pastChats:"Прошлые чаты", newChat:"Новый чат", conversation:"чат", conversations:"чатов", noPastChats:"Прошлых чатов пока нет", message:"сообщение", messages:"сообщений" },
+  en: { overview:"Overview", activity:"Activity", budgets:"Budgets", goals:"Goals", advisor:"Advisor", profile:"Profile", language:"Language", currency:"Currency", yourPlan:"Your Plan", categories:"Categories", signOut:"Sign Out", richyMember:"Richy member", richyRefersTo:"Richy refers to you as", seeYourPlan:"See your plan by Richard", netBalance:"Net Balance", income:"Income", spent:"Spent", topSpend:"Top spend", morning:"Good morning", afternoon:"Good afternoon", evening:"Good evening", savedThisPeriod:"saved this period", redoQuestionnaire:"Redo Questionnaire", yourPlanByRichard:"Your Plan by Richard", noTransactions:"No transactions yet", noTransactionsSub:"Tap + to log your first one. Awareness is the first step to wealth.", overviewEmptySub:"The Richest Man in Babylon started by tracking every coin. Start yours in Activity.", savingsRate:"Savings Rate",quickAdd:"Quick add", excellent:"Excellent", onTrack:"On track", buildItUp:"Build it up", overspending:"Room to rebalance", noIncomeYet:"No income logged yet", thisPeriod:"this period", transactions:"Transactions", whereItWent:"Where it went", overLimit:"over limit", complete:"complete", savedLabel:"saved", spentLabel:"spent", toGo:"to go", recent:"Recent", activeGoal:"active goal", activeGoals:"active goals", today:"Today", yesterday:"Yesterday", moneyIn:"Money In", moneyOut:"Money Out", newTransaction:"New Transaction", editTransaction:"Edit Transaction", addTransaction:"Add Transaction", saveChanges:"Save Changes", deleteTx:"Delete transaction", amount:"Amount", txLabel:"Label", category:"Category", date:"Date", repeat:"Repeat", once:"Once", weekly:"Weekly", monthly:"Monthly", markPending:"Mark as pending", expense:"Expense", noBudgets:"No budgets yet", noBudgetsSub:"Tap + to set a limit for a category. A budget is just telling your money where to go.", newBudget:"New Budget", editLimit:"Edit Limit", addBudget:"Add Budget", removeBudget:"Remove this budget", totalSpent:"Total Spent", byCategory:"By Category", edit:"Edit", delete:"Delete", save:"Save", budgeted:"budgeted", monthlyLimit:"Monthly limit", allCatsHaveBudget:"Every category already has a budget. Add a new category first.", noGoals:"No budget books yet", noGoalsSub:"Tap + to create your first budget book. A goal with a deadline is a plan, not a wish.", newBudgetBook:"New Budget Book", editBudgetBook:"Edit Budget Book", createBudgetBook:"Create Budget Book", deleteBudgetBook:"Delete budget book", addToBudgetBook:"Add to Budget Book", alreadySaved:"Already saved", target:"Target", name:"Name", deadline:"Deadline (optional)", goalComplete:"Goal complete!", remaining:"remaining", add:"Add", removeMoney:"Remove", removeFromBudgetBook:"Remove from Budget Book", removeMoneyConfirm:"Remove {amt} from {name}? This will reduce what you've saved.", syncWithAccount:"Sync with account", noSync:"Don't sync", syncedWith:"Synced with", addOrRemove:"Add / Remove", richySuggests:"Richard suggests", implement:"Implement", dismiss:"Dismiss", aiAdvisor:"AI Financial Advisor", aiAdvisorSub:"Personalized advice based on your real spending and expert financial wisdom.", analyzeMyFinances:"Analyze My Finances", thinkP1:"Reading your numbers",thinkP2:"Thinking it through",thinkP3:"Weighing the options",thinkP4:"Writing back",anStep1:"Reading your month",anStep2:"Scanning {n} transactions",anStep3:"Comparing plan to reality",anStep4:"Finding what matters most",anStep5:"Writing your analysis",analyzingFinances:"Analyzing your finances...", fewSeconds:"This takes a few seconds", refresh:"Refresh", insights:"Insights", analysisFailed:"Analysis failed", tryAgain:"Try Again", askYourAdvisor:"Ask Your Advisor", advisorQ1:"How can I save more?", advisorQ2:"Is my savings rate healthy?", advisorQ3:"What to do with my surplus?",advisorQ4:"Log what I just spent", thinking:"Thinking...", yesDo:"Yes, do it", notNow:"Not now", askRichard:"Ask Richard anything...", giveFeedback:"Give Richard feedback...", advisorDisclaimer:"Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.", translate:"Translate plan", noPlanYet:"No plan yet. Complete the onboarding questionnaire to get your personalized plan from Richard.", notes:"Notes", notesEmpty:"No notes yet", notesEmptySub:"Track who owes you and who you owe. Tap + to add your first one.", theyOweMe:"They owe me", iOwe:"I owe", newNote:"New Note", addNote:"Add Note", editNote:"Edit Note", saveNote:"Save Note", settle:"Settle", settleTitle:"Settle note", settleAddBalance:"Add to my balance", reminder:"Reminder", reminderTitle:"Set a reminder", setReminder:"Set reminder", clearReminder:"Clear reminder", reminderWhen:"Remind me on", reminderDenied:"Notifications are blocked. The note will still show a due badge.", due:"Due", overdue:"Overdue", deleteNote:"Delete note", trips:"Trips", planATrip:"Plan a Trip", planATripSub:"Budget a getaway without touching your balance.", planNewTrip:"Plan a New Trip", noTrips:"No trips yet", noTripsSub:"Plan a getaway and Richard will split your budget across the essentials.", tripName:"Trip name", destination:"Destination", tripBudget:"Total budget", tripDays:"Days", travelStyle:"Travel style", styleBudget:"Budget", styleComfort:"Comfort", styleLuxury:"Luxury", next:"Next", back:"Back", richardPlanning:"Richard is planning your trip", richardPlanningSub:"Splitting your budget across the essentials.", tripSplit:"Your budget split", allocated:"Allocated", overBy:"over by", saveTrip:"Save Trip", addCategory:"Add category", editCategory:"Edit category", color:"Color", deductFromBalance:"Deduct from balance", deductExplain:"This tracks what you actually spend on this trip as one live expense, so your balance only drops as you log spending here - not the whole budget up front. You can undo it anytime.", reserved:"Tracking against balance", undoReserve:"Stop tracking", logExpense:"Log expense", logExpenseTitle:"Log a trip expense", tripTips:"Richard's tips", deleteTrip:"Delete trip", deleteTripConfirm:"Delete this trip? This cannot be undone.", spentOf:"spent of", leftToSpend:"left to spend", planning:"Planning", tripSummary:"Trip summary", appearance:"Appearance", leftAfterBudgets:"Left after budgets", tripIcon:"Trip icon", savings:"Savings", netWorth:"Net Worth", balance:"Balance", manage:"Manage", totalSavings:"Total saved", savingsIntro:"Money you keep separate from your spending balance - an emergency fund, a sinking fund, anything you don't want to accidentally spend. It counts toward your net worth, never your balance.", newSavingsAccount:"New savings account", savingsAccountName:"Account name", addMoney:"Add money", withdraw:"Withdraw", fromBalance:"From my balance", externalMoney:"Money I already have", toBalance:"To my balance", removeFromNet:"Spend or remove", startingAmount:"Starting amount (optional)", createAccount:"Create account", closeAccount:"Close account", rename:"Rename", emptySavingsSub:"Keep an emergency fund or a sinking fund separate from your spending balance.", addSavingsAccount:"Add a savings account", history:"History", balanceUntouched:"Your spending balance stays untouched", movesFromBalance:"Moves money out of your spending balance", addsToBalance:"Adds the money back to your spending balance", leavesNetWorth:"Leaves your accounts - lowers your net worth", pickIcon:"Icon", emergencyFund:"Emergency Fund", noMovesYet:"No moves yet", pastChats:"Past chats", newChat:"New chat", conversation:"conversation", conversations:"conversations", noPastChats:"No past chats yet", message:"message", messages:"messages", recurTitleOne:"1 recurring item posted this month. Is it right?", recurTitleMany:"{n} recurring items posted this month. All correct?", recurSub:"They're waiting on you - nothing has moved your balance yet.", recurConfirmAll:"Yes, all correct", recurReview:"Check them", recurHide:"Hide", recurConfirmOne:"Confirm", recurSkipOne:"Didn't happen", recurAmountHint:"Tap the amount to change it before confirming.", recurBadge:"Due", obStageFreelance:"Freelance / self-employed", obStageRetired:"Retired", obIncomeTypeHead:"Is your income the same every month?", obIncomeFixed:"Steady", obIncomeFixedSub:"About the same amount each month", obIncomeVariable:"It varies", obIncomeVarSub:"Freelance, shifts, commission - it moves", obIncomeVarNote:"Then Richy won't assume a monthly figure. Log income when it lands and everything follows from what really arrived.", obFixedHead:"What goes out every month, whatever you do?", obFixedSub:"Tap the ones you pay. Richy will post them for you every month from now on - you'll only ever confirm them.", obFixedTotal:"Fixed costs", obFixedRent:"Rent", obFixedArnona:"Council tax", obFixedPower:"Electricity", obFixedWater:"Water", obFixedVaad:"Building fees", obFixedPhone:"Mobile", obFixedNet:"Internet", obFixedHealth:"Health insurance", obFixedCarIns:"Car insurance", obFixedFuel:"Fuel / transit pass", obFixedGym:"Gym", obFixedStream:"Netflix / Spotify", obFixedSaving:"Standing order to savings", obFixedLoan:"Loan repayment", obFixedOther:"Something else", safeToday:"Safe to spend today", safeOverBy:"over, with {n} days to go", safeDaysLeft:"{n} days left this month", safeOneDay:"last day of the month", safeBreakdown:"after fixed costs and what your goals need", qaLogged:"{label} logged", qaUndo:"Undo", qaHoldHint:"Tap to log. Hold to change the amount first.", wcTitle:"Close your week", wcCardTitle:"Five minutes to close last week", wcCardSub:"Check what posted, add what you didn't log. Then it's done.", wcStart:"Start", wcStep1:"What posted this week", wcStep1None:"Nothing posted itself this week.", wcStep2:"Anything else you didn't log this week?", wcBallpark:"One rough number is a complete answer. Switch to \"By category\" if you'd rather break it down.", wcUntracked:"Untracked spending", wcIncomeGot:"Income that came in", wcFinish:"Done for the week", wcNothing:"Nothing to add", wcDone:"Week closed. See you next {day}.", wcDayLabel:"Weekly close day", wcWeekOf:"Week of {start}", impName:"Upload a card statement", impNameShort:"Upload statement", impEmptySub:"Upload the statement your card company sends you, or add transactions by hand.", impOrManual:"or add one by hand", impAddFirst:"Add your first transaction", navBusiness:"Business accounts", navInvesting:"Investing accounts", navNone:"None yet", navTracked:"{n} tracked", sgHeader:"One thing that might help", sgStatement:"Upload a card statement", sgStatementS:"Fill in what you didn't type, in one go", sgDebts:"Crush your debt", sgDebtsS:"A payoff order and a real debt-free date", sgCollab:"Add your partner", sgCollabS:"Share budgets and goals, keep some spending private", sgFewer:"Fewer suggestions?", sgQuieted:"Quiet for a month.", efLifeStage:"Life stage", efSavingsNow:"Current savings", setEntryLabel:"Adding transactions", setEntryManual:"Manual" },
+  he: { overview:"סקירה", activity:"פעילות", budgets:"תקציבים", goals:"יעדים", advisor:"יועץ", profile:"פרופיל", language:"שפה", currency:"מטבע", yourPlan:"התוכנית שלך", categories:"קטגוריות", signOut:"התנתק", richyMember:"חבר Richy", richyRefersTo:"ריצ'י מכנה אותך", seeYourPlan:"ראה את התוכנית שלך", netBalance:"יתרה נטו", income:"הכנסות", spent:"הוצאות", topSpend:"הוצאה עיקרית", morning:"בוקר טוב", afternoon:"צהריים טובים", evening:"ערב טוב", savedThisPeriod:"נחסך בתקופה זו", redoQuestionnaire:"מלא שאלון מחדש", yourPlanByRichard:"התוכנית שלך", noTransactions:"אין עסקאות עדיין", noTransactionsSub:"לחץ + כדי לרשום. מודעות היא הצעד הראשון לעושר.", overviewEmptySub:"עשיר בבבל התחיל בלעקוב אחרי כל מטבע. התחל גם אתה בפעילות.", savingsRate:"שיעור חיסכון",quickAdd:"הוספה מהירה", excellent:"מצוין", onTrack:"במסלול", buildItUp:"שפר את זה", overspending:"אפשר לאזן מחדש", thisPeriod:"בתקופה זו", transactions:"עסקאות", whereItWent:"לאן הלך", overLimit:"מעל המגבלה", complete:"הושלם", savedLabel:"נחסך", spentLabel:"הוצא", toGo:"לסיום", recent:"אחרון", activeGoal:"יעד פעיל", activeGoals:"יעדים פעילים", today:"היום", yesterday:"אתמול", moneyIn:"כסף נכנס", moneyOut:"כסף יוצא", newTransaction:"עסקה חדשה", editTransaction:"ערוך עסקה", addTransaction:"הוסף עסקה", saveChanges:"שמור שינויים", deleteTx:"מחק עסקה", amount:"סכום", txLabel:"תיאור", category:"קטגוריה", date:"תאריך", repeat:"חזרה", once:"פעם אחת", weekly:"שבועי", monthly:"חודשי", markPending:"סמן כממתין", expense:"הוצאה", noBudgets:"אין תקציבים עדיין", noBudgetsSub:"לחץ + להגדרת מגבלה לקטגוריה. תקציב הוא פשוט להגיד לכסף לאן ללכת.", newBudget:"תקציב חדש", editLimit:"ערוך מגבלה", addBudget:"הוסף תקציב", removeBudget:"הסר תקציב זה", totalSpent:"סך הוצאות", byCategory:"לפי קטגוריה", edit:"ערוך", delete:"מחק", save:"שמור", budgeted:"מתוקצב", monthlyLimit:"מגבלה חודשית", allCatsHaveBudget:"לכל הקטגוריות יש תקציב. הוסף קטגוריה חדשה תחילה.", noGoals:"אין ספרי תקציב עדיין", noGoalsSub:"לחץ + ליצירת ספר תקציב ראשון. יעד עם מועד הוא תוכנית, לא משאלה.", newBudgetBook:"ספר תקציב חדש", editBudgetBook:"ערוך ספר תקציב", createBudgetBook:"צור ספר תקציב", deleteBudgetBook:"מחק ספר תקציב", addToBudgetBook:"הוסף לספר תקציב", alreadySaved:"כבר נחסך", target:"יעד", name:"שם", deadline:"תאריך יעד (רשות)", goalComplete:"היעד הושג!", remaining:"נותר", add:"הוסף", removeMoney:"הסר", removeFromBudgetBook:"הסר מספר התקציב", removeMoneyConfirm:"להסיר {amt} מ-{name}? זה יקטין את מה שכבר נחסך.", syncWithAccount:"סנכרון עם חשבון", noSync:"בלי סנכרון", syncedWith:"מסונכרן עם", addOrRemove:"הוסף / הסר", richySuggests:"ריצ'י מציע", implement:"יישם", dismiss:"דחה", aiAdvisor:"יועץ פיננסי AI", aiAdvisorSub:"ייעוץ מותאם אישית בהתבסס על ההוצאות שלך.", analyzeMyFinances:"נתח את הכספים שלי", thinkP1:"קורא את המספרים שלך",thinkP2:"חושב על זה",thinkP3:"שוקל את האפשרויות",thinkP4:"מנסח תשובה",anStep1:"קורא את החודש שלך",anStep2:"סורק {n} תנועות",anStep3:"משווה תוכנית למציאות",anStep4:"מאתר את מה שחשוב באמת",anStep5:"כותב את הניתוח",analyzingFinances:"מנתח את הכספים שלך...", fewSeconds:"זה לוקח כמה שניות", refresh:"רענן", insights:"תובנות", analysisFailed:"הניתוח נכשל", tryAgain:"נסה שוב", askYourAdvisor:"שאל את היועץ שלך", advisorQ1:"איך אוכל לחסוך יותר?", advisorQ2:"האם שיעור החיסכון שלי בריא?", advisorQ3:"מה לעשות עם העודף שלי?",advisorQ4:"רשום מה שהוצאתי עכשיו", thinking:"חושב...", yesDo:"כן, עשה זאת", notNow:"לא עכשיו", askRichard:"שאל את ריצ'רד כל דבר...", giveFeedback:"תן ל-ריצ'רד משוב...", advisorDisclaimer:"ריצ'רד הוא עוזר AI ולא יועץ פיננסי מורשה. תמיד ערוך מחקר עצמאי לפני קבלת החלטות כלכליות.", translate:"תרגם תוכנית", noPlanYet:"אין תוכנית עדיין. מלא את השאלון כדי לקבל את התוכנית האישית שלך מריצ'רד.", noIncomeYet:"עדיין לא נרשמו הכנסות", notes:"פתקים", notesEmpty:"אין פתקים עדיין", notesEmptySub:"עקוב אחרי מי חייב לך ולמי אתה חייב. לחץ + להוספת הפתק הראשון.", theyOweMe:"חייבים לי", iOwe:"אני חייב", newNote:"פתק חדש", addNote:"הוסף פתק", editNote:"ערוך פתק", saveNote:"שמור פתק", settle:"סגור חוב", settleTitle:"סגירת פתק", settleAddBalance:"הוסף ליתרה שלי", reminder:"תזכורת", reminderTitle:"קבע תזכורת", setReminder:"קבע תזכורת", clearReminder:"בטל תזכורת", reminderWhen:"הזכר לי בתאריך", reminderDenied:"ההתראות חסומות. הפתק עדיין יציג תג מועד.", due:"מועד", overdue:"באיחור", deleteNote:"מחק פתק", trips:"טיולים", planATrip:"תכנן טיול", planATripSub:"תקצב חופשה בלי לגעת ביתרה שלך.", planNewTrip:"תכנן טיול חדש", noTrips:"אין טיולים עדיין", noTripsSub:"תכנן חופשה וריצ'רד יחלק את התקציב בין הדברים החשובים.", tripName:"שם הטיול", destination:"יעד", tripBudget:"תקציב כולל", tripDays:"ימים", travelStyle:"סגנון נסיעה", styleBudget:"חסכוני", styleComfort:"נוח", styleLuxury:"יוקרתי", next:"הבא", back:"חזרה", richardPlanning:"ריצ'רד מתכנן את הטיול שלך", richardPlanningSub:"מחלק את התקציב בין הדברים החשובים.", tripSplit:"חלוקת התקציב שלך", allocated:"הוקצה", overBy:"חריגה של", saveTrip:"שמור טיול", addCategory:"הוסף קטגוריה", editCategory:"ערוך קטגוריה", color:"צבע", deductFromBalance:"נכה מהיתרה", deductExplain:"כך מה שאתה באמת מוציא בטיול נרשם כהוצאה חיה אחת - היתרה יורדת רק כשאתה רושם הוצאות כאן, לא כל התקציב מראש. אפשר לבטל בכל רגע.", reserved:"במעקב מול היתרה", undoReserve:"הפסק מעקב", logExpense:"רשום הוצאה", logExpenseTitle:"רישום הוצאת טיול", tripTips:"הטיפים של ריצ'רד", deleteTrip:"מחק טיול", deleteTripConfirm:"למחוק את הטיול? אי אפשר לבטל פעולה זו.", spentOf:"הוצא מתוך", leftToSpend:"נותר להוצאה", planning:"בתכנון", tripSummary:"סיכום הטיול", appearance:"מראה", leftAfterBudgets:"נותר אחרי תקציבים", tripIcon:"סמל הטיול", savings:"חסכונות", netWorth:"שווי נקי", balance:"יתרה", manage:"ניהול", totalSavings:"סך הכל נחסך", savingsIntro:"כסף שאתה שומר בנפרד מיתרת ההוצאות - קרן חירום, קרן ייעודית, כל מה שאתה לא רוצה לבזבז בטעות. הוא נספר בשווי הנקי שלך, לעולם לא ביתרה.", newSavingsAccount:"חשבון חיסכון חדש", savingsAccountName:"שם החשבון", addMoney:"הוסף כסף", withdraw:"משיכה", fromBalance:"מהיתרה שלי", externalMoney:"כסף שכבר יש לי", toBalance:"ליתרה שלי", removeFromNet:"הוצא או הסר", startingAmount:"סכום התחלתי (רשות)", createAccount:"צור חשבון", closeAccount:"סגור חשבון", rename:"שנה שם", emptySavingsSub:"שמור קרן חירום או קרן ייעודית בנפרד מיתרת ההוצאות שלך.", addSavingsAccount:"הוסף חשבון חיסכון", history:"היסטוריה", balanceUntouched:"יתרת ההוצאות שלך נשארת ללא שינוי", movesFromBalance:"מעביר כסף החוצה מיתרת ההוצאות", addsToBalance:"מחזיר את הכסף ליתרת ההוצאות", leavesNetWorth:"יוצא מהחשבונות שלך - מוריד את השווי הנקי", pickIcon:"סמל", emergencyFund:"קרן חירום", noMovesYet:"אין תנועות עדיין", pastChats:"שיחות קודמות", newChat:"שיחה חדשה", conversation:"שיחה", conversations:"שיחות", noPastChats:"אין שיחות קודמות עדיין", message:"הודעה", messages:"הודעות", recurTitleOne:"הוצאה קבועה אחת נכנסה החודש. הכול נכון?", recurTitleMany:"{n} הוצאות קבועות נכנסו החודש. הכול נכון?", recurSub:"הן ממתינות לאישור שלך - שום דבר עדיין לא השפיע על היתרה.", recurConfirmAll:"כן, הכול נכון", recurReview:"בדיקה", recurHide:"הסתרה", recurConfirmOne:"אישור", recurSkipOne:"לא קרה", recurAmountHint:"אפשר להקיש על הסכום כדי לשנות אותו לפני האישור.", recurBadge:"לתשלום", obStageFreelance:"עצמאי/פרילנסר", obStageRetired:"גמלאי", obIncomeTypeHead:"ההכנסה שלך קבועה כל חודש?", obIncomeFixed:"קבועה", obIncomeFixedSub:"פחות או יותר אותו סכום כל חודש", obIncomeVariable:"משתנה", obIncomeVarSub:"פרילנס, משמרות, עמלות - זה זז", obIncomeVarNote:"אז ריצ'י לא יניח סכום חודשי. תרשמו הכנסה כשהיא מגיעה, והכול ייגזר ממה שבאמת נכנס.", obFixedHead:"מה יוצא כל חודש, בלי קשר למה שתעשו?", obFixedSub:"בחרו את מה שאתם משלמים. מעכשיו ריצ'י ירשום אותם בשבילכם כל חודש - רק תאשרו.", obFixedTotal:"הוצאות קבועות", obFixedRent:"שכר דירה", obFixedArnona:"ארנונה", obFixedPower:"חשמל", obFixedWater:"מים", obFixedVaad:"ועד בית", obFixedPhone:"סלולר", obFixedNet:"אינטרנט", obFixedHealth:"ביטוח בריאות", obFixedCarIns:"ביטוח רכב", obFixedFuel:"דלק/רב-קו", obFixedGym:"חדר כושר", obFixedStream:"נטפליקס/ספוטיפיי", obFixedSaving:"הוראת קבע לחיסכון", obFixedLoan:"החזר הלוואה", obFixedOther:"משהו אחר", safeToday:"בטוח להוציא היום", safeOverBy:"בחריגה, ונשארו {n} ימים", safeDaysLeft:"נשארו {n} ימים החודש", safeOneDay:"היום האחרון בחודש", safeBreakdown:"אחרי הוצאות קבועות ומה שהיעדים שלך צריכים", qaLogged:"{label} נרשם", qaUndo:"ביטול", qaHoldHint:"הקישו כדי לרשום. לחיצה ארוכה כדי לשנות סכום קודם.", wcTitle:"סגירת שבוע", wcCardTitle:"חמש דקות לסגור את השבוע שעבר", wcCardSub:"לאשר מה שנכנס, להוסיף מה שלא נרשם. וזהו.", wcStart:"התחלה", wcStep1:"מה נכנס השבוע", wcStep1None:"שום דבר לא נכנס לבד השבוע.", wcStep2:"עוד משהו שלא רשמת השבוע?", wcBallpark:"מספר גס אחד זו תשובה שלמה. אפשר לעבור ל\"לפי קטגוריה\" לפירוט.", wcUntracked:"הוצאות שלא נרשמו", wcIncomeGot:"הכנסה שנכנסה", wcFinish:"סיימנו לשבוע", wcNothing:"אין מה להוסיף", wcDone:"השבוע נסגר. נתראה ביום {day} הבא.", wcDayLabel:"יום סגירת שבוע", wcWeekOf:"השבוע של {start}", impName:"העלאת פירוט מהאשראי", impNameShort:"העלאת פירוט", impEmptySub:"אפשר להעלות את הפירוט שחברת האשראי שולחת, או לרשום ידנית.", impOrManual:"או לרשום ידנית", impAddFirst:"רשמו את התנועה הראשונה", navBusiness:"חשבונות עסק", navInvesting:"חשבונות השקעות", navNone:"אין עדיין", navTracked:"{n} במעקב", sgHeader:"דבר אחד שאולי יעזור", sgStatement:"העלאת פירוט מהאשראי", sgStatementS:"למלא בבת אחת את מה שלא הקלדתם", sgDebts:"לחסל את החוב", sgDebtsS:"סדר החזרים ותאריך אמיתי לסיום", sgCollab:"לצרף את בן/בת הזוג", sgCollabS:"תקציבים ויעדים משותפים, עם הוצאות שנשארות פרטיות", sgFewer:"פחות הצעות?", sgQuieted:"שקט לחודש.", efLifeStage:"שלב בחיים", efSavingsNow:"חיסכון קיים", setEntryLabel:"רישום תנועות", setEntryManual:"ידני" },
+  ar: { overview:"نظرة عامة", activity:"النشاط", budgets:"الميزانيات", goals:"الاهداف", advisor:"المستشار", profile:"الملف الشخصي", language:"اللغة", currency:"العملة", yourPlan:"خطتك", categories:"الفئات", signOut:"تسجيل الخروج", richyMember:"عضو Richy", richyRefersTo:"ريتشي يناديك", seeYourPlan:"انظر خطتك من ريتشارد", netBalance:"الرصيد الصافي", income:"الدخل", spent:"المنفق", topSpend:"اعلى انفاق", morning:"صباح الخير", afternoon:"مساء الخير", evening:"مساء الخير", savedThisPeriod:"تم توفيره", redoQuestionnaire:"اعادة الاستبيان", yourPlanByRichard:"خطتك من ريتشارد", noTransactions:"لا توجد معاملات بعد", noTransactionsSub:"اضغط + لتسجيل اول معاملة. الوعي هو الخطوة الاولى نحو الثروة.", overviewEmptySub:"اغنى رجل في بابل بدا بتتبع كل عملة. ابدا في النشاط.", savingsRate:"معدل الادخار",quickAdd:"اضافة سريعة", excellent:"ممتاز", onTrack:"في المسار", buildItUp:"طوره", overspending:"مجال للموازنة", thisPeriod:"هذه الفترة", transactions:"المعاملات", whereItWent:"اين ذهب", overLimit:"فوق الحد", complete:"مكتمل", savedLabel:"مدخر", spentLabel:"انفق", toGo:"متبقي", recent:"الاخير", activeGoal:"هدف نشط", activeGoals:"اهداف نشطة", today:"اليوم", yesterday:"امس", moneyIn:"المال الداخل", moneyOut:"المال الخارج", newTransaction:"معاملة جديدة", editTransaction:"تعديل المعاملة", addTransaction:"اضافة معاملة", saveChanges:"حفظ التغييرات", deleteTx:"حذف المعاملة", amount:"المبلغ", txLabel:"التسمية", category:"الفئة", date:"التاريخ", repeat:"تكرار", once:"مرة واحدة", weekly:"اسبوعي", monthly:"شهري", markPending:"وضع علامة معلقة", expense:"مصروف", noBudgets:"لا توجد ميزانيات بعد", noBudgetsSub:"اضغط + لتعيين حد للفئة. الميزانية هي توجيه المال.", newBudget:"ميزانية جديدة", editLimit:"تعديل الحد", addBudget:"اضافة ميزانية", removeBudget:"حذف هذه الميزانية", totalSpent:"اجمالي الانفاق", byCategory:"حسب الفئة", edit:"تعديل", delete:"حذف", save:"حفظ", budgeted:"مخصص", monthlyLimit:"الحد الشهري", allCatsHaveBudget:"كل الفئات لديها ميزانية. اضف فئة جديدة اولا.", noGoals:"لا توجد دفاتر بعد", noGoalsSub:"اضغط + لانشاء اول دفتر. الهدف بموعد خطة وليس امنية.", newBudgetBook:"دفتر جديد", editBudgetBook:"تعديل الدفتر", createBudgetBook:"انشاء دفتر", deleteBudgetBook:"حذف الدفتر", addToBudgetBook:"اضافة الى الدفتر", alreadySaved:"تم الادخار مسبقا", target:"الهدف", name:"الاسم", deadline:"الموعد النهائي (اختياري)", goalComplete:"تم تحقيق الهدف!", remaining:"متبقي", add:"اضافة", removeMoney:"إزالة", removeFromBudgetBook:"إزالة من الدفتر", removeMoneyConfirm:"إزالة {amt} من {name}؟ سيقلل هذا مما تم توفيره بالفعل.", syncWithAccount:"مزامنة مع حساب", noSync:"بدون مزامنة", syncedWith:"مزامن مع", addOrRemove:"إضافة / إزالة", richySuggests:"اقتراح ريتشارد", implement:"تطبيق", dismiss:"تجاهل", aiAdvisor:"مستشار مالي AI", aiAdvisorSub:"نصائح مخصصة بناء على انفاقك الفعلي.", analyzeMyFinances:"تحليل ماليتي", thinkP1:"أقرأ أرقامك",thinkP2:"أفكر في الأمر",thinkP3:"أوازن الخيارات",thinkP4:"أكتب الرد",anStep1:"أقرأ شهرك",anStep2:"أفحص {n} من المعاملات",anStep3:"أقارن الخطة بالواقع",anStep4:"أبحث عن الأهم",anStep5:"أكتب تحليلك",analyzingFinances:"جاري تحليل ماليتك...", fewSeconds:"هذا يستغرق بضع ثوان", refresh:"تحديث", insights:"رؤى", analysisFailed:"فشل التحليل", tryAgain:"حاول مجددا", askYourAdvisor:"اسال مستشارك", advisorQ1:"كيف يمكنني توفير المزيد؟", advisorQ2:"هل معدل توفيري صحي؟", advisorQ3:"ماذا افعل بالفائض؟",advisorQ4:"سجل ما انفقته للتو", thinking:"افكر...", yesDo:"نعم افعل ذلك", notNow:"ليس الان", askRichard:"اسال ريتشارد اي شيء...", giveFeedback:"اعطِ ريتشارد ملاحظاتك...", advisorDisclaimer:"ريتشارد مساعد ذكاء اصطناعي وليس مستشارا ماليا معتمدا. دائما ابحث قبل اتخاذ قرارات مالية.", translate:"ترجمة الخطة", noPlanYet:"لا توجد خطة بعد. اكمل الاستبيان للحصول على خطتك الشخصية من ريتشارد.", noIncomeYet:"لم يُسجل دخل بعد", notes:"ملاحظات", notesEmpty:"لا ملاحظات بعد", notesEmptySub:"تتبع من يدين لك ولمن تدين. اضغط + لإضافة أول ملاحظة.", theyOweMe:"يدينون لي", iOwe:"أنا مدين", newNote:"ملاحظة جديدة", addNote:"أضف ملاحظة", editNote:"تعديل الملاحظة", saveNote:"حفظ الملاحظة", settle:"تسوية", settleTitle:"تسوية الملاحظة", settleAddBalance:"أضف إلى رصيدي", reminder:"تذكير", reminderTitle:"ضبط تذكير", setReminder:"ضبط التذكير", clearReminder:"إلغاء التذكير", reminderWhen:"ذكرني في", reminderDenied:"الإشعارات محظورة. ستظل الملاحظة تعرض شارة الاستحقاق.", due:"مستحق", overdue:"متأخر", deleteNote:"حذف الملاحظة", trips:"رحلات", planATrip:"خطط رحلة", planATripSub:"ضع ميزانية لرحلة دون المساس برصيدك.", planNewTrip:"خطط رحلة جديدة", noTrips:"لا رحلات بعد", noTripsSub:"خطط رحلة وسيوزع ريتشارد ميزانيتك على الأساسيات.", tripName:"اسم الرحلة", destination:"الوجهة", tripBudget:"الميزانية الكلية", tripDays:"أيام", travelStyle:"نمط السفر", styleBudget:"اقتصادي", styleComfort:"مريح", styleLuxury:"فاخر", next:"التالي", back:"رجوع", richardPlanning:"ريتشارد يخطط رحلتك", richardPlanningSub:"يوزع ميزانيتك على الأساسيات.", tripSplit:"توزيع ميزانيتك", allocated:"مخصص", overBy:"تجاوز بمقدار", saveTrip:"حفظ الرحلة", addCategory:"أضف فئة", editCategory:"تعديل الفئة", color:"اللون", deductFromBalance:"خصم من الرصيد", deductExplain:"هكذا يُسجل ما تنفقه فعلاً في الرحلة كمصروف واحد مباشر - ينخفض رصيدك فقط عندما تسجل الإنفاق هنا، وليس الميزانية كلها مقدماً. يمكنك التراجع في أي وقت.", reserved:"قيد التتبع مقابل الرصيد", undoReserve:"إيقاف التتبع", logExpense:"سجل مصروفاً", logExpenseTitle:"تسجيل مصروف رحلة", tripTips:"نصائح ريتشارد", deleteTrip:"حذف الرحلة", deleteTripConfirm:"حذف هذه الرحلة؟ لا يمكن التراجع عن ذلك.", spentOf:"أُنفق من", leftToSpend:"متبقٍ للإنفاق", planning:"قيد التخطيط", tripSummary:"ملخص الرحلة", appearance:"المظهر", leftAfterBudgets:"المتبقي بعد الميزانيات", tripIcon:"رمز الرحلة", savings:"مدخرات", netWorth:"صافي الثروة", balance:"الرصيد", manage:"إدارة", totalSavings:"إجمالي المدخر", savingsIntro:"مال تحتفظ به منفصلاً عن رصيد إنفاقك - صندوق طوارئ، أو ادخار لهدف، أو أي مبلغ لا تريد إنفاقه بالخطأ. يُحسب ضمن صافي ثروتك، وليس ضمن رصيدك أبداً.", newSavingsAccount:"حساب توفير جديد", savingsAccountName:"اسم الحساب", addMoney:"أضف مالاً", withdraw:"سحب", fromBalance:"من رصيدي", externalMoney:"مال أملكه بالفعل", toBalance:"إلى رصيدي", removeFromNet:"إنفاق أو إزالة", startingAmount:"مبلغ البداية (اختياري)", createAccount:"إنشاء حساب", closeAccount:"إغلاق الحساب", rename:"إعادة تسمية", emptySavingsSub:"احتفظ بصندوق طوارئ أو ادخار لهدف منفصلاً عن رصيد إنفاقك.", addSavingsAccount:"أضف حساب توفير", history:"السجل", balanceUntouched:"رصيد إنفاقك يبقى دون تغيير", movesFromBalance:"ينقل المال خارج رصيد إنفاقك", addsToBalance:"يعيد المال إلى رصيد إنفاقك", leavesNetWorth:"يغادر حساباتك - يخفض صافي ثروتك", pickIcon:"الرمز", emergencyFund:"صندوق الطوارئ", noMovesYet:"لا حركات بعد", pastChats:"محادثات سابقة", newChat:"محادثة جديدة", conversation:"محادثة", conversations:"محادثات", noPastChats:"لا محادثات سابقة بعد", message:"رسالة", messages:"رسائل", recurTitleOne:"بند متكرر واحد سُجّل هذا الشهر. هل هو صحيح؟", recurTitleMany:"{n} بنود متكررة سُجّلت هذا الشهر. هل كلها صحيحة؟", recurSub:"بانتظار تأكيدك - لم يتغيّر رصيدك بعد.", recurConfirmAll:"نعم، كلها صحيحة", recurReview:"مراجعتها", recurHide:"إخفاء", recurConfirmOne:"تأكيد", recurSkipOne:"لم يحدث", recurAmountHint:"اضغط على المبلغ لتغييره قبل التأكيد.", recurBadge:"مستحق", obStageFreelance:"عمل حر / مستقل", obStageRetired:"متقاعد", obIncomeTypeHead:"هل دخلك ثابت كل شهر؟", obIncomeFixed:"ثابت", obIncomeFixedSub:"نفس المبلغ تقريبًا كل شهر", obIncomeVariable:"متغيّر", obIncomeVarSub:"عمل حر، ورديات، عمولة - يتغيّر", obIncomeVarNote:"إذًا لن يفترض ريتشي مبلغًا شهريًا. سجّل الدخل عند وصوله وسيُبنى كل شيء على ما وصل فعلًا.", obFixedHead:"ما الذي يُصرف كل شهر مهما فعلت؟", obFixedSub:"اختر ما تدفعه. سيسجّلها ريتشي لك كل شهر من الآن - كل ما عليك هو تأكيدها.", obFixedTotal:"مصاريف ثابتة", obFixedRent:"إيجار", obFixedArnona:"ضريبة بلدية", obFixedPower:"كهرباء", obFixedWater:"ماء", obFixedVaad:"رسوم المبنى", obFixedPhone:"الهاتف المحمول", obFixedNet:"إنترنت", obFixedHealth:"تأمين صحي", obFixedCarIns:"تأمين السيارة", obFixedFuel:"وقود / بطاقة مواصلات", obFixedGym:"نادي رياضي", obFixedStream:"نتفليكس / سبوتيفاي", obFixedSaving:"أمر دائم للادخار", obFixedLoan:"سداد قرض", obFixedOther:"شيء آخر", safeToday:"آمن للإنفاق اليوم", safeOverBy:"تجاوز، وبقي {n} يوم", safeDaysLeft:"بقي {n} يوم هذا الشهر", safeOneDay:"آخر يوم في الشهر", safeBreakdown:"بعد المصاريف الثابتة وما تحتاجه أهدافك", qaLogged:"تم تسجيل {label}", qaUndo:"تراجع", qaHoldHint:"اضغط للتسجيل. اضغط مطولًا لتغيير المبلغ أولًا.", wcTitle:"أغلق أسبوعك", wcCardTitle:"خمس دقائق لإغلاق الأسبوع الماضي", wcCardSub:"راجع ما سُجّل، وأضف ما لم تسجّله. وانتهى الأمر.", wcStart:"ابدأ", wcStep1:"ما سُجّل هذا الأسبوع", wcStep1None:"لم يُسجَّل شيء تلقائيًا هذا الأسبوع.", wcStep2:"أي شيء آخر لم تسجّله هذا الأسبوع؟", wcBallpark:"رقم تقريبي واحد إجابة كاملة. بدّل إلى \"حسب الفئة\" إن أردت التفصيل.", wcUntracked:"إنفاق غير مسجّل", wcIncomeGot:"دخل وصل", wcFinish:"انتهينا لهذا الأسبوع", wcNothing:"لا شيء لإضافته", wcDone:"أُغلق الأسبوع. نراك {day} القادم.", wcDayLabel:"يوم الإغلاق الأسبوعي", wcWeekOf:"أسبوع {start}", impName:"رفع كشف حساب البطاقة", impNameShort:"رفع كشف", impEmptySub:"ارفع الكشف الذي ترسله شركة البطاقة، أو أضف المعاملات يدويًا.", impOrManual:"أو أضف واحدة يدويًا", impAddFirst:"أضف أول معاملة", navBusiness:"حسابات الأعمال", navInvesting:"حسابات الاستثمار", navNone:"لا شيء بعد", navTracked:"{n} متتبَّع", sgHeader:"شيء واحد قد يساعد", sgStatement:"ارفع كشف حساب البطاقة", sgStatementS:"املأ ما لم تدخله دفعة واحدة", sgDebts:"تخلّص من ديونك", sgDebtsS:"ترتيب سداد وتاريخ حقيقي للتحرر من الدين", sgCollab:"أضف شريكك", sgCollabS:"شارك الميزانيات والأهداف، مع إبقاء بعض الإنفاق خاصًا", sgFewer:"اقتراحات أقل؟", sgQuieted:"هدوء لمدة شهر.", efLifeStage:"مرحلة الحياة", efSavingsNow:"المدخرات الحالية", setEntryLabel:"إضافة المعاملات", setEntryManual:"يدوي" },
+  ru: { overview:"Обзор", activity:"Активность", budgets:"Бюджеты", goals:"Цели", advisor:"Советник", profile:"Профиль", language:"Язык", currency:"Валюта", yourPlan:"Ваш план", categories:"Категории", signOut:"Выйти", richyMember:"Участник Richy", richyRefersTo:"Richy называет тебя", seeYourPlan:"Посмотреть план от Ричарда", netBalance:"Чистый баланс", income:"Доходы", spent:"Расходы", topSpend:"Главная трата", morning:"Доброе утро", afternoon:"Добрый день", evening:"Добрый вечер", savedThisPeriod:"сохранено за период", redoQuestionnaire:"Пройти снова", yourPlanByRichard:"Ваш план от Ричарда", noTransactions:"Нет транзакций", noTransactionsSub:"Нажмите + чтобы добавить первую. Осознанность - первый шаг к богатству.", overviewEmptySub:"Богатейший человек Вавилона начал с учёта каждой монеты. Начните в Активности.", savingsRate:"Уровень сбережений",quickAdd:"Быстрое добавление", excellent:"Отлично", onTrack:"В норме", buildItUp:"Улучшайте", overspending:"Можно выровнять", thisPeriod:"за период", transactions:"Транзакции", whereItWent:"Куда ушло", overLimit:"сверх лимита", complete:"завершено", savedLabel:"накоплено", spentLabel:"потрачено", toGo:"осталось", recent:"Последние", activeGoal:"активная цель", activeGoals:"активных целей", today:"Сегодня", yesterday:"Вчера", moneyIn:"Доходы", moneyOut:"Расходы", newTransaction:"Новая транзакция", editTransaction:"Редактировать", addTransaction:"Добавить транзакцию", saveChanges:"Сохранить изменения", deleteTx:"Удалить транзакцию", amount:"Сумма", txLabel:"Описание", category:"Категория", date:"Дата", repeat:"Повтор", once:"Однократно", weekly:"Еженедельно", monthly:"Ежемесячно", markPending:"Отметить как ожидающее", expense:"Расход", noBudgets:"Нет бюджетов", noBudgetsSub:"Нажмите + чтобы задать лимит. Бюджет говорит деньгам куда идти.", newBudget:"Новый бюджет", editLimit:"Изменить лимит", addBudget:"Добавить бюджет", removeBudget:"Удалить этот бюджет", totalSpent:"Всего потрачено", byCategory:"По категориям", edit:"Редактировать", delete:"Удалить", save:"Сохранить", budgeted:"запланировано", monthlyLimit:"Месячный лимит", allCatsHaveBudget:"Все категории уже имеют бюджет. Сначала добавьте новую категорию.", noGoals:"Нет книг целей", noGoalsSub:"Нажмите + чтобы создать первую. Цель с датой - это план, а не мечта.", newBudgetBook:"Новая книга целей", editBudgetBook:"Редактировать книгу целей", createBudgetBook:"Создать книгу целей", deleteBudgetBook:"Удалить книгу целей", addToBudgetBook:"Добавить в книгу целей", alreadySaved:"Уже накоплено", target:"Цель", name:"Название", deadline:"Срок (необязательно)", goalComplete:"Цель достигнута!", remaining:"осталось", add:"Добавить", removeMoney:"Снять", removeFromBudgetBook:"Убрать из книги целей", removeMoneyConfirm:"Снять {amt} из {name}? Это уменьшит уже накопленное.", syncWithAccount:"Синхронизировать со счётом", noSync:"Без синхронизации", syncedWith:"Синхронизировано с", addOrRemove:"Добавить / Снять", richySuggests:"Ричард предлагает", implement:"Применить", dismiss:"Отклонить", aiAdvisor:"Финансовый советник ИИ", aiAdvisorSub:"Персональные советы на основе ваших расходов.", analyzeMyFinances:"Анализировать мои финансы", thinkP1:"Читаю ваши цифры",thinkP2:"Обдумываю",thinkP3:"Взвешиваю варианты",thinkP4:"Пишу ответ",anStep1:"Читаю ваш месяц",anStep2:"Проверяю {n} операций",anStep3:"Сравниваю план с реальностью",anStep4:"Ищу самое важное",anStep5:"Пишу ваш анализ",analyzingFinances:"Анализируем ваши финансы...", fewSeconds:"Это займет несколько секунд", refresh:"Обновить", insights:"Инсайты", analysisFailed:"Анализ не удался", tryAgain:"Попробовать снова", askYourAdvisor:"Спросите вашего советника", advisorQ1:"Как сэкономить больше?", advisorQ2:"Мой уровень сбережений здоровый?", advisorQ3:"Что делать с излишком?",advisorQ4:"Запиши, что я потратил", thinking:"Думаю...", yesDo:"Да, сделай это", notNow:"Не сейчас", askRichard:"Спросите Ричарда что угодно...", giveFeedback:"Дайте обратную связь Ричарду...", advisorDisclaimer:"Ричард является ИИ-помощником, а не лицензированным финансовым советником. Всегда проводите собственное исследование.", translate:"Перевести план", noPlanYet:"Плана пока нет. Пройдите анкету, чтобы получить персональный план от Ричарда.", noIncomeYet:"Доходы ещё не записаны", notes:"Заметки", notesEmpty:"Пока нет заметок", notesEmptySub:"Отслеживайте, кто должен вам и кому должны вы. Нажмите +, чтобы добавить первую.", theyOweMe:"Мне должны", iOwe:"Я должен", newNote:"Новая заметка", addNote:"Добавить заметку", editNote:"Редактировать заметку", saveNote:"Сохранить заметку", settle:"Погасить", settleTitle:"Погашение заметки", settleAddBalance:"Добавить к моему балансу", reminder:"Напоминание", reminderTitle:"Установить напоминание", setReminder:"Установить", clearReminder:"Убрать напоминание", reminderWhen:"Напомнить мне", reminderDenied:"Уведомления заблокированы. Заметка всё равно покажет метку срока.", due:"Срок", overdue:"Просрочено", deleteNote:"Удалить заметку", trips:"Поездки", planATrip:"Спланировать поездку", planATripSub:"Составьте бюджет отпуска, не трогая свой баланс.", planNewTrip:"Спланировать новую поездку", noTrips:"Пока нет поездок", noTripsSub:"Спланируйте отпуск, и Ричард распределит бюджет по главному.", tripName:"Название поездки", destination:"Направление", tripBudget:"Общий бюджет", tripDays:"Дней", travelStyle:"Стиль путешествия", styleBudget:"Эконом", styleComfort:"Комфорт", styleLuxury:"Люкс", next:"Далее", back:"Назад", richardPlanning:"Ричард планирует вашу поездку", richardPlanningSub:"Распределяет бюджет по главному.", tripSplit:"Распределение бюджета", allocated:"Распределено", overBy:"превышение на", saveTrip:"Сохранить поездку", addCategory:"Добавить категорию", editCategory:"Редактировать категорию", color:"Цвет", deductFromBalance:"Списывать с баланса", deductExplain:"Реальные траты в поездке записываются как один живой расход - баланс уменьшается только когда вы записываете траты здесь, а не на весь бюджет сразу. Можно отменить в любой момент.", reserved:"Отслеживается по балансу", undoReserve:"Прекратить отслеживание", logExpense:"Записать расход", logExpenseTitle:"Запись расхода поездки", tripTips:"Советы Ричарда", deleteTrip:"Удалить поездку", deleteTripConfirm:"Удалить эту поездку? Это нельзя отменить.", spentOf:"потрачено из", leftToSpend:"осталось потратить", planning:"Планируется", tripSummary:"Итоги поездки", appearance:"Оформление", leftAfterBudgets:"Осталось после бюджетов", tripIcon:"Значок поездки", savings:"Сбережения", netWorth:"Чистый капитал", balance:"Баланс", manage:"Управлять", totalSavings:"Всего накоплено", savingsIntro:"Деньги, которые вы держите отдельно от расходного баланса - резервный фонд, накопления на цель, всё, что не хотите случайно потратить. Они входят в чистый капитал, но никогда - в баланс.", newSavingsAccount:"Новый сберегательный счёт", savingsAccountName:"Название счёта", addMoney:"Пополнить", withdraw:"Снять", fromBalance:"С моего баланса", externalMoney:"Деньги, которые уже есть", toBalance:"На мой баланс", removeFromNet:"Потратить или убрать", startingAmount:"Начальная сумма (необязательно)", createAccount:"Создать счёт", closeAccount:"Закрыть счёт", rename:"Переименовать", emptySavingsSub:"Держите резервный фонд или накопления отдельно от расходного баланса.", addSavingsAccount:"Добавить сберегательный счёт", history:"История", balanceUntouched:"Ваш расходный баланс не меняется", movesFromBalance:"Переводит деньги из расходного баланса", addsToBalance:"Возвращает деньги на расходный баланс", leavesNetWorth:"Уходит из ваших счетов - уменьшает чистый капитал", pickIcon:"Значок", emergencyFund:"Резервный фонд", noMovesYet:"Движений пока нет", pastChats:"Прошлые чаты", newChat:"Новый чат", conversation:"чат", conversations:"чатов", noPastChats:"Прошлых чатов пока нет", message:"сообщение", messages:"сообщений", recurTitleOne:"Один регулярный платёж добавлен в этом месяце. Всё верно?", recurTitleMany:"{n} регулярных платежей добавлено в этом месяце. Всё верно?", recurSub:"Ждут подтверждения - на баланс они пока не влияют.", recurConfirmAll:"Да, всё верно", recurReview:"Проверить", recurHide:"Скрыть", recurConfirmOne:"Подтвердить", recurSkipOne:"Не было", recurAmountHint:"Нажмите на сумму, чтобы изменить её перед подтверждением.", recurBadge:"К оплате", obStageFreelance:"Фриланс / самозанятый", obStageRetired:"На пенсии", obIncomeTypeHead:"Ваш доход одинаков каждый месяц?", obIncomeFixed:"Постоянный", obIncomeFixedSub:"Примерно одна и та же сумма", obIncomeVariable:"Меняется", obIncomeVarSub:"Фриланс, смены, проценты - плавает", obIncomeVarNote:"Тогда Richy не будет предполагать месячную сумму. Отмечайте доход по факту, и всё будет считаться от реально пришедшего.", obFixedHead:"Что уходит каждый месяц в любом случае?", obFixedSub:"Отметьте то, что платите. Дальше Richy будет добавлять их каждый месяц - вам останется подтвердить.", obFixedTotal:"Постоянные расходы", obFixedRent:"Аренда", obFixedArnona:"Муниципальный налог", obFixedPower:"Электричество", obFixedWater:"Вода", obFixedVaad:"Взносы за дом", obFixedPhone:"Мобильный", obFixedNet:"Интернет", obFixedHealth:"Медстраховка", obFixedCarIns:"Автострахование", obFixedFuel:"Топливо / проездной", obFixedGym:"Спортзал", obFixedStream:"Netflix / Spotify", obFixedSaving:"Автоперевод в накопления", obFixedLoan:"Платёж по кредиту", obFixedOther:"Что-то ещё", safeToday:"Можно потратить сегодня", safeOverBy:"перерасход, осталось {n} дн.", safeDaysLeft:"осталось {n} дн. в этом месяце", safeOneDay:"последний день месяца", safeBreakdown:"после постоянных расходов и взносов в цели", qaLogged:"{label} записано", qaUndo:"Отменить", qaHoldHint:"Нажмите, чтобы записать. Удерживайте, чтобы сначала изменить сумму.", wcTitle:"Закрыть неделю", wcCardTitle:"Пять минут, чтобы закрыть прошлую неделю", wcCardSub:"Проверьте, что записалось, добавьте, что нет. И всё.", wcStart:"Начать", wcStep1:"Что записалось за неделю", wcStep1None:"На этой неделе ничего не добавилось само.", wcStep2:"Что-то ещё, что вы не записали на этой неделе?", wcBallpark:"Одна приблизительная цифра - полный ответ. Переключитесь на «По категориям» для разбивки.", wcUntracked:"Незаписанные траты", wcIncomeGot:"Поступивший доход", wcFinish:"Готово на неделю", wcNothing:"Нечего добавлять", wcDone:"Неделя закрыта. До следующего {day}.", wcDayLabel:"День закрытия недели", wcWeekOf:"Неделя от {start}", impName:"Загрузить выписку по карте", impNameShort:"Загрузить выписку", impEmptySub:"Загрузите выписку от банка или добавьте операции вручную.", impOrManual:"или добавить вручную", impAddFirst:"Добавьте первую операцию", navBusiness:"Бизнес-счета", navInvesting:"Инвестиционные счета", navNone:"Пока нет", navTracked:"{n} отслеживается", sgHeader:"Одна вещь, которая может помочь", sgStatement:"Загрузите выписку по карте", sgStatementS:"Заполнить всё незаписанное разом", sgDebts:"Разберитесь с долгом", sgDebtsS:"Порядок выплат и реальная дата свободы от долга", sgCollab:"Добавьте партнёра", sgCollabS:"Общие бюджеты и цели, часть трат остаётся личной", sgFewer:"Меньше подсказок?", sgQuieted:"Тишина на месяц.", efLifeStage:"Этап жизни", efSavingsNow:"Текущие сбережения", setEntryLabel:"Добавление операций", setEntryManual:"Вручную" },
 };
 // Folder-budget strings live in their own block rather than being appended to
 // the four already-enormous single-line language objects above. tr() falls back
@@ -570,7 +570,7 @@ var ONBOARD_STRINGS = {
     obPlanReady:"Your plan is ready.", obPlanBuiltForYou:"Richard built this just for you.",
     obHowAddTx:"How do you want to add transactions?", obChangeAnytimeProfile:"You can change this anytime in Profile.",
     obManualEntry:"Enter them manually", obManualEntrySub:"Log each transaction yourself - full control",
-    obImportCsv:"Import from a CSV file", obImportCsvSub:"Upload a bank or card statement to fill them in",
+    obImportCsv:"Upload a card statement", obImportCsvSub:"The file your bank or card company sends - Richy reads it and fills them in",
     obSetupBudgetsQ:"Set up your budgets automatically?",
     obBasedOnNumbers:"Based on your numbers, Richard suggests these monthly limits:",
     obYesSetUp:"Yes, set them up", obSetUpMyself:"I'll set them up myself", obGetStarted:"Get Started",
@@ -722,7 +722,7 @@ var ONBOARD_STRINGS = {
     obPlanReady:"התוכנית שלך מוכנה.", obPlanBuiltForYou:"ריצ'רד בנה את זה במיוחד בשבילך.",
     obHowAddTx:"איך תרצה להוסיף עסקאות?", obChangeAnytimeProfile:"אפשר לשנות את זה בכל עת בפרופיל.",
     obManualEntry:"הזן ידנית", obManualEntrySub:"רשום כל עסקה בעצמך - שליטה מלאה",
-    obImportCsv:"ייבא מקובץ CSV", obImportCsvSub:"העלה דף חשבון בנק או אשראי כדי למלא אותן",
+    obImportCsv:"העלאת פירוט מהאשראי", obImportCsvSub:"הקובץ שהבנק או חברת האשראי שולחים - ריצ'י קורא אותו וממלא בשבילכם",
     obSetupBudgetsQ:"להגדיר תקציבים אוטומטית?",
     obBasedOnNumbers:"על סמך המספרים שלך, ריצ'רד מציע את המגבלות החודשיות האלה:",
     obYesSetUp:"כן, הגדר אותם", obSetUpMyself:"אני אגדיר אותם בעצמי", obGetStarted:"בואו נתחיל",
@@ -874,7 +874,7 @@ var ONBOARD_STRINGS = {
     obPlanReady:"خطتك جاهزة.", obPlanBuiltForYou:"ريتشارد بنى هذا خصيصاً لك.",
     obHowAddTx:"كيف تريد إضافة المعاملات؟", obChangeAnytimeProfile:"يمكنك تغيير هذا في أي وقت من الملف الشخصي.",
     obManualEntry:"أدخلها يدوياً", obManualEntrySub:"سجّل كل معاملة بنفسك - سيطرة كاملة",
-    obImportCsv:"استيراد من ملف CSV", obImportCsvSub:"ارفع كشف حساب بنكي أو بطاقة لملئها",
+    obImportCsv:"رفع كشف حساب البطاقة", obImportCsvSub:"الملف الذي يرسله البنك أو شركة البطاقة - يقرأه ريتشي ويملأها لك",
     obSetupBudgetsQ:"إعداد ميزانياتك تلقائياً؟",
     obBasedOnNumbers:"بناءً على أرقامك، يقترح ريتشارد هذه الحدود الشهرية:",
     obYesSetUp:"نعم، أعدّها", obSetUpMyself:"سأعدّها بنفسي", obGetStarted:"ابدأ الآن",
@@ -1026,7 +1026,7 @@ var ONBOARD_STRINGS = {
     obPlanReady:"Ваш план готов.", obPlanBuiltForYou:"Ричард составил его специально для вас.",
     obHowAddTx:"Как вы хотите добавлять транзакции?", obChangeAnytimeProfile:"Вы можете изменить это в любой момент в Профиле.",
     obManualEntry:"Вводить вручную", obManualEntrySub:"Записывайте каждую транзакцию сами - полный контроль",
-    obImportCsv:"Импортировать из CSV-файла", obImportCsvSub:"Загрузите выписку банка или карты, чтобы заполнить их",
+    obImportCsv:"Загрузить выписку по карте", obImportCsvSub:"Файл, который присылает банк или карта - Richy прочитает его и заполнит всё сам",
     obSetupBudgetsQ:"Настроить бюджеты автоматически?",
     obBasedOnNumbers:"Исходя из ваших цифр, Ричард предлагает следующие месячные лимиты:",
     obYesSetUp:"Да, настроить", obSetUpMyself:"Я настрою их сам", obGetStarted:"Начать",
@@ -1759,12 +1759,20 @@ function investingTotal(list) {
   if (!list || !list.length) return 0;
   return round2(list.reduce(function(s, a) { return s + investingWorth(a); }, 0));
 }
+// A catch-up row that should count toward the balance. See the WEEKLY CLOSE
+// note: onboarding's rows recall spending from before the opening balance and
+// must not be double-counted, while the weekly close's rows are money that
+// genuinely left this week and was never logged. Only the latter carry
+// catchUpCounts, so this predicate keeps every existing row behaving exactly as
+// it did.
+function skipCatchUp(t) { return !!t.catchUp && !t.catchUpCounts; }
+
 // Settled main spending balance (income minus expense), mirroring the Overview's
 // own balance math - excludes pending / future / catch-up rows.
 function mainSpendBalance(tx) {
   var today = new Date().toISOString().slice(0, 10);
   return (tx || []).filter(function(t) {
-    return !t.pending && !t.catchUp && t.date <= today;
+    return !t.pending && !skipCatchUp(t) && t.date <= today;
   }).reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0);
 }
 // A goal's effective "saved" amount. Manually-tracked goals use their stored
@@ -2936,7 +2944,7 @@ function motivSnapshot(data) {
   var savTotal = savingsTotal(data.savings || []);
   var todayIso = isoDay(today);
   var allIncome = tx.filter(function(t) { return t.type === "income" && !isTransfer(t) && motivSettled(t, todayIso); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var allExpense = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && motivSettled(t, todayIso); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var allExpense = tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTransfer(t) && motivSettled(t, todayIso); }).reduce(function(s, t) { return s + t.amount; }, 0);
   var netWorth = round2(allIncome - allExpense + savTotal + businessTotal(data.businesses || []) + investingTotal(data.investing || []));
   var openingTx = tx.filter(function(t) { return isOpening(t); })[0];
   var opening = openingTx ? (openingTx.amount || 0) : 0;
@@ -5656,10 +5664,6 @@ var RICHARD_FORMAT = " Format your answer so it is easy to scan instead of a wal
 // long prompts, so Richard would e.g. budget flights for a teenager whose dad
 // pays for them. Every prompt now routes free text through these two builders,
 // which put it up front and explicitly rank it above default assumptions.
-function richardUserCtx(text) {
-  if (!text || !String(text).trim()) return "";
-  return "CONTEXT FROM THE USER - HIGHEST PRIORITY (follow any instructions in it, and let this background OVERRIDE default assumptions: if it says a cost is covered by someone else, does not apply to them, or must stay fixed, every number and tip you produce must reflect that):\n" + String(text).trim() + "\n\n";
-}
 // Inline block for questionnaire notes (trip wizard, business wizard). Same
 // idea, but embeddable mid-prompt next to the other facts it modifies.
 function richardNotesBlock(label, text) {
@@ -6947,11 +6951,56 @@ function MathStoryScreen(props) {
 }
 
 var STAGES = [
-  { label: "Teenager",  tKey: "obStageTeen",    icon: "star" },
-  { label: "Student",   tKey: "obStageStudent", icon: "book" },
-  { label: "Working",   tKey: "obStageWorking", icon: "briefcase" },
-  { label: "Parent",    tKey: "obStageParent",  icon: "home" },
+  { label: "Teenager",   tKey: "obStageTeen",      icon: "star" },
+  { label: "Student",    tKey: "obStageStudent",   icon: "book" },
+  { label: "Working",    tKey: "obStageWorking",   icon: "briefcase" },
+  { label: "Freelance",  tKey: "obStageFreelance", icon: "spark" },
+  { label: "Parent",     tKey: "obStageParent",    icon: "home" },
+  { label: "Retired",    tKey: "obStageRetired",   icon: "shield" },
 ];
+
+// The fixed costs an Israeli household actually recognises, as one-tap chips.
+// Each selected chip becomes a real transaction with repeat:"monthly", so the
+// materialiser posts it from the first month on - that is the whole trade the
+// onboarding is offering: ninety seconds now buys a year of not typing.
+var FIXED_COST_PRESETS = [
+  { id: "rent",    tKey: "obFixedRent",    icon: "home",      catId: "c1", picks: [2500, 3500, 4500, 6000] },
+  { id: "arnona",  tKey: "obFixedArnona",  icon: "building",  catId: "c1", picks: [200, 350, 500, 800] },
+  { id: "power",   tKey: "obFixedPower",   icon: "spark",     catId: "c1", picks: [150, 250, 400, 600] },
+  { id: "water",   tKey: "obFixedWater",   icon: "droplet",   catId: "c1", picks: [60, 100, 150, 250] },
+  { id: "vaad",    tKey: "obFixedVaad",    icon: "building",  catId: "c1", picks: [80, 150, 250, 400] },
+  { id: "phone",   tKey: "obFixedPhone",   icon: "phone",     catId: "c11", picks: [30, 50, 80, 120] },
+  { id: "net",     tKey: "obFixedNet",     icon: "wifi",      catId: "c11", picks: [70, 100, 150, 200] },
+  { id: "health",  tKey: "obFixedHealth",  icon: "heart",     catId: "c4", picks: [100, 200, 350, 500] },
+  { id: "carins",  tKey: "obFixedCarIns",  icon: "car",       catId: "c3", picks: [200, 350, 500, 800] },
+  { id: "fuel",    tKey: "obFixedFuel",    icon: "car",       catId: "c3", picks: [200, 400, 700, 1000] },
+  { id: "gym",     tKey: "obFixedGym",     icon: "dumbbell",  catId: "c4", picks: [100, 150, 250, 350] },
+  { id: "stream",  tKey: "obFixedStream",  icon: "film",      catId: "c5", picks: [20, 40, 60, 90] },
+  { id: "saving",  tKey: "obFixedSaving",  icon: "coins",     catId: "c10", picks: [200, 500, 1000, 2000] },
+  { id: "loan",    tKey: "obFixedLoan",    icon: "credit",    catId: "c11", picks: [300, 700, 1200, 2000] },
+  { id: "other",   tKey: "obFixedOther",   icon: "box",       catId: "c11", picks: [100, 250, 500, 1000] },
+];
+
+// Turn the picked chips into real, dated, repeating transactions. Dated to the
+// 1st of the current month rather than today, because that is when a standing
+// order actually lands - and it keeps the anchor day stable for every month
+// the materialiser generates afterwards.
+function fixedCostTxs(picked, cats, todayIso) {
+  var day1 = (todayIso || isoDay(new Date())).slice(0, 8) + "01";
+  var base = Date.now();
+  var out = [];
+  (picked || []).forEach(function(p, i) {
+    var amt = round2(parseFloat(p.amount) || 0);
+    if (!(amt > 0)) return;
+    var preset = FIXED_COST_PRESETS.filter(function(x) { return x.id === p.id; })[0] || {};
+    var c = catById(cats, preset.catId) || catByName(cats, "Other") || (cats || [])[0] || { id: "c11", name: "Other" };
+    out.push({
+      id: base + i, type: "expense", amount: amt, label: p.label || tr(preset.tKey || "obFixedOther"),
+      catId: c.id, category: c.name, date: day1, repeat: "monthly", pending: false, fixedCost: true
+    });
+  });
+  return out;
+}
 var TIMELINES = ["6 months", "1 year", "2 years", "5+ years"];
 var TIMELINE_TKEYS = { "6 months": "obTl1", "1 year": "obTl2", "2 years": "obTl3", "5+ years": "obTl4" };
 
@@ -6970,6 +7019,37 @@ function OnboardingScreen(props) {
   var _er = useState(""); var err = _er[0]; var setErr = _er[1];
   var _gp = useState(""); var genPlan = _gp[0]; var setGenPlan = _gp[1];
   var _god = useState(null); var genOData = _god[0]; var setGenOData = _god[1];
+  // "steady" or "varies". A variable income is the flag that stops Richy
+  // assuming a monthly figure it has no business assuming - see obIncomeVarNote.
+  var _itp = useState(""); var incomeType = _itp[0]; var setIncomeType = _itp[1];
+  // { id -> amount } for the fixed-cost chips. Selection and amount are the
+  // same act: a chip with no amount is not a cost anyone can budget against.
+  var _fxc = useState({}); var fixedCosts = _fxc[0]; var setFixedCosts = _fxc[1];
+  // Tapping a chip seeds it with the middle preset amount rather than 0, so the
+  // common case ("yes, roughly that") is already answered and the user only
+  // touches the ones that are actually different.
+  function toggleFixedCost(id) {
+    var next = {};
+    for (var k in fixedCosts) next[k] = fixedCosts[k];
+    if (next[id] != null) delete next[id];
+    else {
+      var p = FIXED_COST_PRESETS.filter(function(x) { return x.id === id; })[0];
+      next[id] = (p && p.picks && p.picks[1]) || 0;
+    }
+    setFixedCosts(next);
+  }
+  function setFixedCost(id, raw) {
+    var next = {};
+    for (var k in fixedCosts) next[k] = fixedCosts[k];
+    var v = parseFloat(raw);
+    next[id] = raw === "" || isNaN(v) ? 0 : Math.max(0, v);
+    setFixedCosts(next);
+  }
+  var pickedFixed = FIXED_COST_PRESETS.filter(function(p) { return fixedCosts[p.id] != null; });
+  var fixedTotal = pickedFixed.reduce(function(a, p) { return a + (parseFloat(fixedCosts[p.id]) || 0); }, 0);
+  useEffect(function() {
+    if (pickedFixed.length) setEssentials(String(Math.round(fixedTotal)));
+  }, [fixedTotal, pickedFixed.length]);
   var _em = useState("manual"); var entryMethod = _em[0]; var setEntryMethod = _em[1];
   // Journey additions: 9-screen questionnaire index, travel direction for the
   // slide transitions, the money-leak answers feeding the math story, and the
@@ -7022,7 +7102,8 @@ function OnboardingScreen(props) {
     });
     setLoading(false);
     setGenPlan(planText || localPlan());
-    setGenOData({ lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: ageStr, coreProblem: coreProblem, moneyLeaks: leakLabels2.join(", "), overspendEst: overspend, prefLang: prefLang, prefCurrency: prefCur, prefPeriodMode: prefPeriodMode, prefPeriodStart: prefPeriodStart, prefPeriodEnd: prefPeriodEnd });
+    setGenOData({ lifeStage: lifeStage, income: income, incomeType: incomeType || "fixed", essentials: essentials,
+      fixedCosts: pickedFixed.map(function(p) { return { id: p.id, amount: parseFloat(fixedCosts[p.id]) || 0 }; }), savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: ageStr, coreProblem: coreProblem, moneyLeaks: leakLabels2.join(", "), overspendEst: overspend, prefLang: prefLang, prefCurrency: prefCur, prefPeriodMode: prefPeriodMode, prefPeriodStart: prefPeriodStart, prefPeriodEnd: prefPeriodEnd });
     setStep(6);
   }
 
@@ -7031,9 +7112,7 @@ function OnboardingScreen(props) {
     setLoading(true);
     setErr("");
     var ageStr = age !== null ? String(age) : "not provided";
-    var langName = LANGUAGE_NAMES[prefLang || props.lang] || "English";
-    var langInstruction = langName !== "English" ? " Respond entirely in " + langName + "." : "";
-    var system = richardUserCtx(props.richardNotes) + "You are Richard, a warm and knowledgeable personal finance advisor inside the Richy app. A new user has just answered their onboarding questions. Their primary financial challenge is: " + (coreProblem || "general budgeting") + ". Generate a concise, personalized financial plan that directly addresses THEIR SPECIFIC PROBLEM, not generic advice. Base it on proven frameworks but tailor it to their situation. Keep the plan under 230 words." + RICHARD_FORMAT + " IMPORTANT: If their problem involves features Richy doesn't have yet (couples mode, debt payoff tracking, business accounting), be honest about that and suggest practical workarounds." + langInstruction;
+    var system = { id: "onboardingPlan", vars: { coreProblem: coreProblem }, userInstructions: props.richardNotes, lang: prefLang || props.lang || "en" };
     var leakLabels = leaks.map(function(id) {
       var hit = LEAK_OPTIONS.filter(function(o) { return o.id === id; })[0];
       return hit ? hit.label : id;
@@ -7398,14 +7477,74 @@ function OnboardingScreen(props) {
             )}
 
             {qIndex === 4 && (
-              <div style={{ paddingTop: 14 }}>
-                <QuickAmount label={tr("obIncomeLabel")} value={income} onChange={setIncome} picks={[1500, 3000, 5000, 8000]} />
+              <div style={{ paddingTop: 4 }}>
+                <div style={{ fontSize: 14.5, fontWeight: 650, color: JINK2, marginBottom: 12, lineHeight: 1.4 }}>{tr("obIncomeTypeHead")}</div>
+                <Stagger k="q4t" step={0.06}>
+                  {[{ v: "fixed", l: "obIncomeFixed", s: "obIncomeFixedSub", icon: "briefcase" },
+                    { v: "variable", l: "obIncomeVariable", s: "obIncomeVarSub", icon: "activity" }].map(function(o) {
+                    var sel = incomeType === o.v;
+                    return (
+                      <button key={o.v} onClick={function() { setIncomeType(o.v); if (o.v === "variable") setIncome(""); }} style={optCardStyle(sel)}>
+                        <div style={optIconTile(sel, 36)}>
+                          <SVGIcon id={o.icon} size={17} color={sel ? "#fff" : JINK3} />
+                        </div>
+                        <span style={{ flex: 1, textAlign: "start" }}>
+                          <span style={{ display: "block", fontSize: 15.5, fontWeight: sel ? 700 : 550, color: sel ? JINK : JINK2 }}>{tr(o.l)}</span>
+                          <span style={{ display: "block", fontSize: 12, color: JINK3, marginTop: 2, lineHeight: 1.35 }}>{tr(o.s)}</span>
+                        </span>
+                        {sel && optCheck}
+                      </button>
+                    );
+                  })}
+                </Stagger>
+                {incomeType === "fixed" && (
+                  <div style={{ paddingTop: 18 }}>
+                    <QuickAmount label={tr("obIncomeLabel")} value={income} onChange={setIncome} picks={[1500, 3000, 5000, 8000]} compact={true} />
+                  </div>
+                )}
+                {incomeType === "variable" && (
+                  <div style={{ paddingTop: 16, fontSize: 13, color: JINK3, lineHeight: 1.5 }}>{tr("obIncomeVarNote")}</div>
+                )}
               </div>
             )}
 
             {qIndex === 5 && (
-              <div style={{ paddingTop: 14 }}>
-                <QuickAmount label={tr("obEssentialsLabel")} value={essentials} onChange={setEssentials} picks={essPicks} />
+              <div style={{ paddingTop: 2 }}>
+                <div style={{ fontSize: 13, color: JINK3, marginBottom: 14, lineHeight: 1.45 }}>{tr("obFixedSub")}</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 9 }}>
+                  {FIXED_COST_PRESETS.map(function(p, i) {
+                    return (
+                      <JrChip key={p.id} icon={p.icon} label={tr(p.tKey)} selected={fixedCosts[p.id] != null} delay={0.03 + i * 0.03}
+                        style={{ padding: "10px 14px" }}
+                        onPress={function() { toggleFixedCost(p.id); }} />
+                    );
+                  })}
+                </div>
+                {/* Only picked chips get an amount row - fifteen amount fields on
+                    one screen is a form, and a form is what this flow exists to
+                    avoid. The running total doubles as the essentials figure the
+                    rest of the app already knows how to use. */}
+                {pickedFixed.length > 0 && (
+                  <div style={{ marginTop: 18 }}>
+                    {pickedFixed.map(function(p) {
+                      return (
+                        <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderBottom: "1px solid rgba(26,20,16,0.07)" }}>
+                          <SVGIcon id={p.icon} size={15} color={JINK3} />
+                          <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: JINK2 }}>{tr(p.tKey)}</span>
+                          <span style={{ fontSize: 14, color: JINK3, fontWeight: 600 }}>{prefCur || _currency.sym || "$"}</span>
+                          <input value={fixedCosts[p.id] === 0 ? "" : String(fixedCosts[p.id])} type="number" inputMode="decimal" autoFocus={false}
+                            placeholder={String(p.picks[1])}
+                            onChange={function(e) { setFixedCost(p.id, e.target.value); }}
+                            style={{ width: 82, textAlign: "end", border: "none", background: "none", outline: "none", fontSize: 17, fontWeight: 700, fontFamily: UI, color: JINK, padding: "2px 0" }} />
+                        </div>
+                      );
+                    })}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingTop: 14 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.07em" }}>{tr("obFixedTotal")}</span>
+                      <span style={{ fontSize: 22, fontWeight: 800, color: JINK, letterSpacing: "-0.02em" }}>{fmtCur(prefCur || _currency.sym || "$", fixedTotal)}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -7525,10 +7664,10 @@ function FoundMoney(props) {
   var leakCount = findings.length;
   var recoverable = findings.reduce(function(s, f) { return s + (f.annual || 0); }, 0);
 
-  function richardSystem(extra) {
-    var custom = richardUserCtx(props.richardInstructions);
-    var langLine = (props.lang && props.lang !== "en") ? (" Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + ".") : "";
-    return custom + extra + langLine;
+  // Names a server-side prompt and hands it this user's data. The instruction
+  // text lives in api/_prompts.js - see callClaude().
+  function richardSpec(id, vars) {
+    return { id: id, vars: vars || {}, userInstructions: props.richardInstructions, lang: props.lang || "en" };
   }
 
   // Fetch Richard's warm intro once, the first time the sheet opens. Numbers come
@@ -7539,7 +7678,7 @@ function FoundMoney(props) {
     setNarrLoading(true);
     var lines = findings.slice(0, 8).map(function(f) { return "- " + f.title + " (" + f.subtitle + ")"; }).join("\n");
     var totalLine = recoverable > 0 ? ("\nTotal recoverable if acted on: " + dollars(recoverable) + " per year.") : "";
-    var system = richardSystem("You are Richard, the warm, sharp money guide inside the Richy app. The app has ALREADY audited the user's transactions and found the potential leaks listed below (forgotten subscriptions, price hikes, double charges, category spikes). The figures are exact - never invent or change a number. In 2-3 short sentences speak directly to the user: frame what was found and the single highest-impact move to make first. Do not re-list every item - they see the list below your note." + RICHARD_FORMAT);
+    var system = richardSpec("auditIntro");
     callClaude([{ role: "user", content: "The audit found:\n" + lines + totalLine + "\n\nWrite the short intro." }], system, 220, function(err, text) {
       setNarrLoading(false);
       if (err || !text) {
@@ -7572,7 +7711,7 @@ function FoundMoney(props) {
     setDraft({ id: f.id, text: "", loading: true });
     var m = f.meta || {};
     var isHike = f.type === "hike";
-    var system = richardSystem("You are Richard helping the user write a short, polite, effective " + (isHike ? "price-match / loyalty-discount" : "cancellation") + " message to a company. Output ONLY the message body - no preamble, no subject line, no bracketed placeholders except a trailing [Your Name]. Three to four firm-but-friendly sentences. No emojis.");
+    var system = richardSpec("cancelDraft", { isHike: isHike });
     var ask = isHike
       ? ("Write a message to " + f.merchant + " noting my price rose from " + dollars(m.oldAmt) + " to " + dollars(m.newAmt) + " and asking them to match my old rate or I will cancel.")
       : ("Write a message to cancel my " + f.merchant + " subscription of " + dollars(f.amount) + " per " + ((m.cadence === "weekly") ? "week" : "month") + ", effective immediately, and request written confirmation that no further charges will occur.");
@@ -7926,7 +8065,7 @@ function widgetScope(w, wc) {
 function widgetFlowTx(wc) {
   var today = new Date().toISOString().slice(0, 10);
   return (wc.tx || []).filter(function(t) {
-    return !t.pending && !t.catchUp && (t.date || "") <= today && !isOpening(t) && !isTransfer(t) && !isTrip(t);
+    return !t.pending && !skipCatchUp(t) && (t.date || "") <= today && !isOpening(t) && !isTransfer(t) && !isTrip(t);
   });
 }
 function widgetSum(list) {
@@ -7955,7 +8094,7 @@ function widgetValueAt(w, wc, back) {
   if (metric === "balance") {
     var today = new Date().toISOString().slice(0, 10);
     var upTo = (wc.tx || []).filter(function(t) {
-      return !t.pending && !t.catchUp && (t.date || "") <= today && (!win || (t.date || "") <= win.to);
+      return !t.pending && !skipCatchUp(t) && (t.date || "") <= today && (!win || (t.date || "") <= win.to);
     });
     return round2(widgetSum(upTo.filter(function(t) { return t.type === "income"; }))
       - widgetSum(upTo.filter(function(t) { return t.type === "expense"; })));
@@ -7969,7 +8108,7 @@ function widgetValueAt(w, wc, back) {
   // Snapshots: no history to walk honestly, so they always read "right now".
   if (metric === "netWorth") {
     var t2 = new Date().toISOString().slice(0, 10);
-    var all = (wc.tx || []).filter(function(t) { return !t.pending && !t.catchUp && (t.date || "") <= t2; });
+    var all = (wc.tx || []).filter(function(t) { return !t.pending && !skipCatchUp(t) && (t.date || "") <= t2; });
     return round2(widgetSum(all.filter(function(t) { return t.type === "income"; }))
       - widgetSum(all.filter(function(t) { return t.type === "expense"; }))
       + savingsTotal(wc.savings || []) + businessTotal(wc.businesses || []) + investingTotal(wc.investing || []));
@@ -8264,6 +8403,305 @@ function OverviewWidgets(props) {
   );
 }
 
+// The weekly close. Two steps, both skippable, both able to be a single tap.
+//
+// Step 1 is the recurring items that posted this week - the same confirm the
+// Overview card offers, put in front of the user on the one day they have
+// agreed to look. Step 2 is the catch-up question, running the onboarding
+// primitive on a weekly cadence: one rough number is a complete answer, and the
+// per-category breakdown is there for people who want it.
+function WeeklyCloseView(props) {
+  var cats = (props.categories || []).filter(function(c) { return c.folderId !== "f3" && c.id !== "opening"; });
+  var _st = useState(props.rows && props.rows.length ? 1 : 2); var step = _st[0]; var setStep = _st[1];
+  var _md = useState("quick"); var mode = _md[0]; var setMode = _md[1];
+  var _qt = useState(""); var quickTotal = _qt[0]; var setQuickTotal = _qt[1];
+  var _am = useState({}); var amts = _am[0]; var setAmts = _am[1];
+  var _in = useState(""); var inc = _in[0]; var setInc = _in[1];
+  var sym = _currency.sym || "$";
+
+  function setAmt(id, v) {
+    var n = {}; for (var k in amts) n[k] = amts[k]; n[id] = v; setAmts(n);
+  }
+  var anything = parseFloat(quickTotal) > 0 || parseFloat(inc) > 0
+    || Object.keys(amts).some(function(k) { return parseFloat(amts[k]) > 0; });
+
+  function finish() {
+    props.onFinish(catchUpTxs({
+      categories: props.categories, mode: mode, quickTotal: quickTotal, byCat: amts, income: inc,
+      periodStart: props.window.start, periodEnd: props.window.end,
+      quickLabel: tr("wcUntracked"), incomeLabel: tr("wcIncomeGot")
+    }));
+  }
+
+  var fieldBox = { display: "flex", alignItems: "center", gap: 3, background: T.chip || "rgba(0,0,0,0.045)", borderRadius: 10, padding: "7px 10px", minWidth: 96, boxSizing: "border-box" };
+  var amtInput = { width: 62, border: "none", background: "none", outline: "none", fontSize: 15, fontFamily: UI, color: T.ink, fontWeight: 600, textAlign: "end" };
+
+  return (
+    <Overlay open={props.open} onClose={props.onClose} title={tr("wcTitle")}>
+      <div style={{ fontSize: 12, color: T.ink3, fontWeight: 600, marginBottom: 14 }}>
+        {tr("wcWeekOf").replace("{start}", props.window.start)}
+      </div>
+
+      {step === 1 && (
+        <div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: T.ink, marginBottom: 10 }}>{tr("wcStep1")}</div>
+          {props.rows.length ? (
+            <RecurringConfirm rows={props.rows} categories={props.categories}
+              onConfirm={props.onConfirm} onSkip={props.onSkip} />
+          ) : (
+            <div style={{ fontSize: 13.5, color: T.ink3, marginBottom: 18 }}>{tr("wcStep1None")}</div>
+          )}
+          <BigBtn label={tr("continueBtn")} onPress={function() { setStep(2); }} />
+        </div>
+      )}
+
+      {step === 2 && (
+        <div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: T.ink, marginBottom: 6 }}>{tr("wcStep2")}</div>
+          <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.45, marginBottom: 14 }}>{tr("wcBallpark")}</div>
+
+          <div style={{ display: "flex", gap: 7, marginBottom: 14 }}>
+            {[{ id: "quick", label: tr("cuQuickTotal") }, { id: "detail", label: tr("cuByCategory") }].map(function(m) {
+              var on = mode === m.id;
+              return (
+                <button key={m.id} onClick={function() { setMode(m.id); }}
+                  style={{ flex: 1, padding: "9px 0", borderRadius: 11, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700, fontFamily: UI,
+                    background: on ? T.orangeDim : "rgba(0,0,0,0.04)", color: on ? T.orange : T.ink3 }}>
+                  {m.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {mode === "quick" ? (
+            <Card style={{ padding: "14px 16px", marginBottom: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5 }}>{tr("wcUntracked")}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <span style={{ fontSize: 21, color: T.ink3, fontWeight: 600 }}>{sym}</span>
+                <input value={quickTotal} onChange={function(e) { setQuickTotal(e.target.value); }} type="number" inputMode="decimal" placeholder="0"
+                  style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 26, fontFamily: UI, color: T.ink, fontWeight: 700, padding: 0 }} />
+              </div>
+            </Card>
+          ) : (
+            <Card style={{ overflow: "hidden", marginBottom: 12 }}>
+              {cats.map(function(c, i) {
+                return (
+                  <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 11, padding: "10px 14px", borderBottom: i < cats.length - 1 ? "0.5px solid " + T.sep : "none" }}>
+                    <CatBadge icon={c.icon} color={c.color} size={28} soft={true} />
+                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: T.ink }}>{c.name}</span>
+                    <span style={fieldBox}>
+                      <span style={{ fontSize: 13, color: T.ink3, fontWeight: 600 }}>{sym}</span>
+                      <input value={amts[c.id] || ""} onChange={function(e) { setAmt(c.id, e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={amtInput} />
+                    </span>
+                  </div>
+                );
+              })}
+            </Card>
+          )}
+
+          <Card style={{ padding: "14px 16px", marginBottom: 16 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5 }}>{tr("wcIncomeGot")}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <span style={{ fontSize: 18, color: T.ink3, fontWeight: 600 }}>{sym}</span>
+              <input value={inc} onChange={function(e) { setInc(e.target.value); }} type="number" inputMode="decimal" placeholder="0"
+                style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 20, fontFamily: UI, color: T.ink, fontWeight: 700, padding: 0 }} />
+            </div>
+          </Card>
+
+          <BigBtn label={anything ? tr("wcFinish") : tr("wcNothing")} onPress={finish} />
+        </div>
+      )}
+    </Overlay>
+  );
+}
+
+// A toast with one action. JrToast's look, plus the button an undo needs -
+// logging in one tap is only safe if untapping is also one tap.
+function UndoToast(props) {
+  useEffect(function() {
+    ensureJourneyCss();
+    if (!props.msg) return;
+    var t = setTimeout(function() { if (props.onDone) props.onDone(); }, 4200);
+    return function() { clearTimeout(t); };
+  }, [props.msg]);
+  if (!props.msg) return null;
+  return (
+    <div key={props.msg} style={{ position: "fixed", left: "50%", bottom: 96, transform: "translateX(-50%)", zIndex: 90,
+      background: "rgba(24,20,16,0.92)", color: "#fff", fontSize: 13.5, fontWeight: 600, fontFamily: UI,
+      padding: "11px 14px", borderRadius: 13, display: "flex", alignItems: "center", gap: 14,
+      boxShadow: "0 10px 30px rgba(0,0,0,0.28)", maxWidth: "min(92vw, 380px)", animation: "rcjChipIn 0.28s cubic-bezier(.2,.9,.3,1) both" }}>
+      <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{props.msg}</span>
+      {props.onUndo && (
+        <button onClick={props.onUndo}
+          style={{ background: "none", border: "none", color: T.orangeHi || "#E8A33D", fontFamily: UI, fontSize: 13.5, fontWeight: 800, cursor: "pointer", padding: "2px 2px", flexShrink: 0 }}>
+          {props.undoLabel || "Undo"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+// One-tap logging for the things this user buys over and over. The add sheet
+// already knew them (it pre-fills the form from the same list); the problem was
+// that reaching them cost a tab, a sheet, and a Save - four taps to record a
+// coffee, which is how a daily habit becomes a weekly chore and then nothing.
+//
+// Tap logs it outright. Hold opens the full form pre-filled, for the times the
+// amount is different - that is the old fillFromPick() behaviour, kept.
+function QuickAddChips(props) {
+  var picks = props.picks || [];
+  var heldRef = useRef(false);
+  var timerRef = useRef(null);
+  if (!picks.length) return null;
+
+  function startHold(p) {
+    heldRef.current = false;
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(function() {
+      heldRef.current = true;
+      nativeHaptic("MEDIUM");
+      props.onEdit(p);
+    }, 500);
+  }
+  function endHold() { if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; } }
+  function tap(p) {
+    // A hold has already opened the form; don't also log the row.
+    if (heldRef.current) { heldRef.current = false; return; }
+    nativeHaptic("LIGHT");
+    props.onLog(p);
+  }
+
+  return (
+    <div style={{ marginBottom: 18, animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.06s both" }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 9, fontFamily: UI }}>{tr("quickAdd")}</div>
+      <div className="jr-scroll" style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 3, WebkitOverflowScrolling: "touch" }}>
+        {picks.map(function(p, i) {
+          var c = catById(props.categories || [], p.catId) || { color: T.orange, icon: "tag" };
+          return (
+            <button key={p.label + i}
+              onClick={function() { tap(p); }}
+              onPointerDown={function() { startHold(p); }}
+              onPointerUp={endHold} onPointerLeave={endHold} onPointerCancel={endHold}
+              onContextMenu={function(e) { e.preventDefault(); }}
+              style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 9, padding: "10px 13px", borderRadius: 13,
+                border: "1px solid " + T.sep, background: T.card, cursor: "pointer", fontFamily: UI,
+                touchAction: "manipulation", WebkitUserSelect: "none", userSelect: "none" }}>
+              <CatBadge icon={c.icon} color={c.color} size={26} soft={true} />
+              <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 1 }}>
+                <span style={{ fontSize: 13, fontWeight: 650, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 120 }}>{p.label}</span>
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: T.ink3 }}>{dollars(p.amount)}</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ fontSize: 11, color: T.ink3, marginTop: 7 }}>{tr("qaHoldHint")}</div>
+    </div>
+  );
+}
+
+// The confirm card for materialised recurring items. Everything it lists is
+// pending - Richy is saying "I think this went out", not "this went out" - so
+// the card's whole job is to turn a guess into a fact the user signed off on.
+//
+// Confirm-all is one tap because that is the honest common case (rent really
+// did leave on the 1st). Adjusting an amount is one tap further in, because
+// the other common case is "yes but it was 3,240 this month", and making that
+// require a trip to Activity is how people stop confirming at all.
+function RecurringConfirm(props) {
+  var rows = props.rows || [];
+  var _o = useState(false);      var open = _o[0];     var setOpen = _o[1];
+  var _e = useState({});         var edits = _e[0];    var setEdits = _e[1];
+  if (!rows.length) return null;
+
+  function amountOf(t) {
+    var v = edits[t.id];
+    return v == null ? t.amount : v;
+  }
+  function setAmount(t, raw) {
+    var next = {};
+    for (var k in edits) next[k] = edits[k];
+    if (raw === "") next[t.id] = "";
+    else {
+      var n = parseFloat(raw);
+      next[t.id] = isNaN(n) ? "" : n;
+    }
+    setEdits(next);
+  }
+  function confirmOne(t) {
+    var v = amountOf(t);
+    props.onConfirm([t.id], (typeof v === "number" && v >= 0) ? { id: t.id, amount: round2(v) } : null);
+  }
+  function confirmAll() {
+    // Any amount the user re-typed rides along with the batch.
+    var patches = rows.map(function(t) {
+      var v = edits[t.id];
+      return (typeof v === "number" && v >= 0) ? { id: t.id, amount: round2(v) } : null;
+    }).filter(Boolean);
+    props.onConfirm(rows.map(function(t) { return t.id; }), patches);
+  }
+
+  var title = rows.length === 1 ? tr("recurTitleOne") : tr("recurTitleMany").replace("{n}", rows.length);
+
+  return (
+    <div style={{ marginBottom: 20, animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.04s both" }}>
+      <Card style={{ overflow: "hidden", border: "1px solid " + T.goldGlow }}>
+        <div style={{ padding: "15px 17px 13px", display: "flex", gap: 12, alignItems: "flex-start" }}>
+          <div style={{ width: 34, height: 34, borderRadius: 11, background: T.goldGlow, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <SVGIcon id="refresh" size={17} color={T.gold} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, lineHeight: 1.35 }}>{title}</div>
+            <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 3, lineHeight: 1.4 }}>{tr("recurSub")}</div>
+          </div>
+        </div>
+
+        {open && (
+          <div>
+            {rows.map(function(t, i) {
+              var c = catById(props.categories || [], t.catId) || { name: t.category || "", color: T.ink3, icon: "tag" };
+              var val = amountOf(t);
+              return (
+                <div key={t.id} style={{ padding: "11px 17px", borderTop: "0.5px solid " + T.sep, display: "flex", alignItems: "center", gap: 11 }}>
+                  <CatBadge icon={c.icon} color={c.color} size={30} soft={true} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
+                    <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{t.date}</div>
+                  </div>
+                  <input value={val === "" ? "" : String(val)} type="number" inputMode="decimal"
+                    onChange={function(e) { setAmount(t, e.target.value); }}
+                    style={{ width: 76, textAlign: "right", border: "none", borderBottom: "1px solid " + T.sep, background: "none", outline: "none",
+                             fontSize: 14, fontWeight: 700, fontFamily: UI, color: T.ink, padding: "2px 0" }} />
+                  <button onClick={function() { confirmOne(t); }}
+                    style={{ background: T.greenDim, color: T.green, border: "none", borderRadius: 9, padding: "7px 10px", fontSize: 11.5, fontWeight: 700, fontFamily: UI, cursor: "pointer", flexShrink: 0 }}>
+                    {tr("recurConfirmOne")}
+                  </button>
+                  <button onClick={function() { props.onSkip(t.id); }}
+                    style={{ background: "none", border: "none", padding: 4, cursor: "pointer", flexShrink: 0, opacity: 0.45, display: "flex" }} title={tr("recurSkipOne")}>
+                    <SVGIcon id="close" size={13} color={T.ink3} />
+                  </button>
+                </div>
+              );
+            })}
+            <div style={{ fontSize: 11, color: T.ink3, padding: "9px 17px 0" }}>{tr("recurAmountHint")}</div>
+          </div>
+        )}
+
+        <div style={{ display: "flex", gap: 9, padding: "12px 17px 15px" }}>
+          <button onClick={confirmAll}
+            style={{ flex: 1, background: T.green, color: "#fff", border: "none", borderRadius: 11, padding: "11px 0", fontSize: 13.5, fontWeight: 700, fontFamily: UI, cursor: "pointer" }}>
+            {tr("recurConfirmAll")}
+          </button>
+          <button onClick={function() { setOpen(!open); }}
+            style={{ background: "none", color: T.ink2, border: "1px solid " + T.sep, borderRadius: 11, padding: "11px 15px", fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
+            {open ? tr("recurHide") : tr("recurReview")}
+          </button>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
 function Overview(props) {
   var tx       = props.tx;
   // Navigate to another main tab/menu. Most summary cards are tappable and jump
@@ -8330,8 +8768,8 @@ function Overview(props) {
   // exclude them from all balance and cash-flow calculations.
   var today = new Date().toISOString().slice(0, 10);
   function isSettled(t) { return !t.pending && t.date <= today; }
-  var allIncome  = tx.filter(function(t) { return t.type === "income" && !t.catchUp && isSettled(t); }).reduce(function(s,t) { return s+t.amount; }, 0);
-  var allExpense = tx.filter(function(t) { return t.type === "expense" && !t.catchUp && isSettled(t); }).reduce(function(s,t) { return s+t.amount; }, 0);
+  var allIncome  = tx.filter(function(t) { return t.type === "income" && !skipCatchUp(t) && isSettled(t); }).reduce(function(s,t) { return s+t.amount; }, 0);
+  var allExpense = tx.filter(function(t) { return t.type === "expense" && !skipCatchUp(t) && isSettled(t); }).reduce(function(s,t) { return s+t.amount; }, 0);
   var balance = allIncome - allExpense;
   // Savings pots sit outside the main balance. Net worth = main balance + pots +
   // business-account cash (also walled off, but still the user's net worth).
@@ -8347,11 +8785,11 @@ function Overview(props) {
   // Internal transfers to/from savings pots are excluded too - moving your own
   // money isn't earning or spending it.
   var income  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && isSettled(t) && inTimeframe(t, timeframe); }).reduce(function(s,t) { return s+t.amount; }, 0);
-  var expense = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && isSettled(t) && inTimeframe(t, timeframe); }).reduce(function(s,t) { return s+t.amount; }, 0);
+  var expense = tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTransfer(t) && !isTrip(t) && isSettled(t) && inTimeframe(t, timeframe); }).reduce(function(s,t) { return s+t.amount; }, 0);
   var hasIncome = income > 0;
   var savRate = hasIncome ? Math.round(((income - expense) / income) * 100) : 0;
   function spentInCat(c) {
-    return tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inTimeframe(t, timeframe) && (t.catId === c.id || t.category === c.name); }).reduce(function(s,t){return s+t.amount;}, 0);
+    return tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTrip(t) && inTimeframe(t, timeframe) && (t.catId === c.id || t.category === c.name); }).reduce(function(s,t){return s+t.amount;}, 0);
   }
   var recent = tx.filter(function(t) { return !isTransfer(t); }).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,4);
   var monthTxCount = tx.filter(function(t) { return inTimeframe(t, timeframe) && !isTransfer(t); }).length;
@@ -8360,46 +8798,69 @@ function Overview(props) {
   // up yet. Each one retires itself the moment the feature is actually in use, and
   // can be waved off by hand, so a settled user never keeps staring at a pitch for
   // something they already know about. When none are left the section disappears.
-  var tipsOff = props.dismissedTips || [];
+  // Occurrences the materialiser posted that are still waiting on the user.
+  var dueRecurring = pendingRecurring(tx);
+
+  var oDataNow = props.onboardingData || {};
+  var s2sStart = (props.periodMode === "custom" && props.periodCustomStart && props.periodCustomEnd)
+    ? props.periodCustomStart : monthStartOf(curMonth());
+  var s2sEnd = (props.periodMode === "custom" && props.periodCustomStart && props.periodCustomEnd)
+    ? props.periodCustomEnd : monthEndOf(curMonth());
+  var safe = safeToSpendToday({
+    tx: tx, goals: goals, todayIso: new Date().toISOString().slice(0, 10),
+    periodStart: s2sStart, periodEnd: s2sEnd,
+    expectedIncome: parseFloat(oDataNow.income) || 0,
+    variableIncome: oDataNow.incomeType === "variable",
+    goalSaved: function(g) { return goalSavedAmount(g, tx, savAccts, bizAccts, invAccts); }
+  });
   function dropTip(id) {
     if (props.onDismissTip) props.onDismissTip(id);
   }
-  var tips = [
-    { id: "debts",  icon: "credit",  title: "Crush your debt",  sub: "Payoff plan + debt-free date", used: (props.debts || []).length > 0,                       go: function() { if (props.onOpenDebts) props.onOpenDebts(); else nav("debts"); } },
-    { id: "collab", icon: "user",    title: "Add your partner", sub: "Share budgets & goals",        used: !!props.householdId,                                  go: function() { if (props.onOpenCollab) props.onOpenCollab(); else nav("collab"); } },
-    { id: "sync",   icon: "refresh", title: "Sync your bank",   sub: "Auto-import transactions",     used: !!(props.bankSync && props.bankSync.enabled),         go: function() { if (props.onSetupSync) props.onSetupSync(); else nav("bankSync"); } },
-    { id: "trip",   icon: "plane",   title: "Plan a trip",      sub: "Let Richard split your travel budget", used: (props.trips || []).length > 0,                go: function() { if (props.onPlanTrip) props.onPlanTrip(); else nav("trips"); } }
-  ].filter(function(a) { return !a.used && tipsOff.indexOf(a.id) < 0; });
+  // At most one suggestion, and only when something in the user's own data
+  // makes it true - computed once at the App level so this card and Richard
+  // never disagree about what is being suggested. See pickSuggestion().
+  var suggestion = props.suggestion || null;
+  var suggestGo = {
+    statement: function() { if (props.onOpenImport) props.onOpenImport(); },
+    debts:     function() { if (props.onOpenDebts) props.onOpenDebts(); },
+    collab:    function() { if (props.onOpenCollab) props.onOpenCollab(); }
+  };
   // A brand-new account still needs to find these, so they sit high on the page.
   // Once there's a real month of activity they move below the numbers - the
   // dashboard is for your money first, feature pitches second.
   var tipsUpTop = tx.filter(function(t) { return !isOpening(t); }).length < 5;
 
   function tipsCard(delay) {
+    // Nothing to suggest, but the user just bought silence: tell them so. A
+    // quiet they cannot tell from a bug is not the same as a quiet they asked
+    // for, and this is the only moment to say it.
+    if (!suggestion) {
+      if (!props.quietedNotice) return null;
+      return (
+        <div style={{ marginBottom: 20, fontSize: 12.5, color: T.ink3, paddingInlineStart: 4,
+          animation: "rcFadeUp var(--m-enter) var(--m-ease) " + delay + "s both" }}>{tr("sgQuieted")}</div>
+      );
+    }
     return (
       <div style={{ marginBottom: 20, animation: "rcFadeUp var(--m-enter) var(--m-ease) " + delay + "s both" }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, fontFamily: UI }}>{"Get the most from Richy"}</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, fontFamily: UI }}>{tr("sgHeader")}</div>
         <Card style={{ overflow: "hidden" }}>
-          {tips.map(function(a, i) {
-            return (
-              <div key={a.id} onClick={a.go}
-                style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 14px 13px 16px", borderBottom: i < tips.length - 1 ? "0.5px solid " + T.sep : "none", cursor: "pointer" }}>
-                <div style={{ width: 34, height: 34, borderRadius: 11, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <SVGIcon id={a.icon} size={17} color={T.orange} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: T.ink, lineHeight: 1.3 }}>{a.title}</div>
-                  <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1, lineHeight: 1.35 }}>{a.sub}</div>
-                </div>
-                {/* The row itself opens the feature, so the only control it needs is
-                    a quiet way to say "I know, not for me" and get it off the page. */}
-                <div onClick={function(e) { e.stopPropagation(); dropTip(a.id); }} title="Not interested"
-                  style={{ width: 32, height: 32, borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer", opacity: 0.4 }}>
-                  <SVGIcon id="close" size={13} color={T.ink3} />
-                </div>
-              </div>
-            );
-          })}
+          <div onClick={function() { if (props.onTapSuggestion) props.onTapSuggestion(suggestion.id); (suggestGo[suggestion.id] || function() {})(); }}
+            style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 14px 13px 16px", cursor: "pointer" }}>
+            <div style={{ width: 34, height: 34, borderRadius: 11, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <SVGIcon id={suggestion.icon} size={17} color={T.orange} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: T.ink, lineHeight: 1.3 }}>{tr(suggestion.titleKey)}</div>
+              <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1, lineHeight: 1.35 }}>{tr(suggestion.subKey)}</div>
+            </div>
+            {/* The row itself opens the feature, so the only control it needs is
+                a quiet way to say "I know, not for me" and get it off the page. */}
+            <div onClick={function(e) { e.stopPropagation(); dropTip(suggestion.id); }} title={tr("sgFewer")}
+              style={{ width: 32, height: 32, borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer", opacity: 0.4 }}>
+              <SVGIcon id="close" size={13} color={T.ink3} />
+            </div>
+          </div>
         </Card>
       </div>
     );
@@ -8614,10 +9075,10 @@ function Overview(props) {
   var monthNet = income - expense;
 
   function winExpenseInCat(c) {
-    return tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inWin(t.date) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    return tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTrip(t) && inWin(t.date) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
   }
-  var winExpenseTot = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && inWin(t.date); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var winIncomeTot  = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && inWin(t.date); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var winExpenseTot = tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTransfer(t) && !isTrip(t) && inWin(t.date); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var winIncomeTot  = tx.filter(function(t) { return t.type === "income" && !t.pending && !isOpening(t) && !isTransfer(t) && inWin(t.date); }).reduce(function(s, t) { return s + t.amount; }, 0);
   var winSav = winIncomeTot > 0 ? Math.round(((winIncomeTot - winExpenseTot) / winIncomeTot) * 100) : 0;
   var winKept = Math.max(0, winIncomeTot - winExpenseTot);
   var winCats = cats.map(function(c) { return { name: c.name, color: c.color, val: winExpenseInCat(c) }; })
@@ -8626,7 +9087,7 @@ function Overview(props) {
     .slice(0, 6);
 
   var labelTotals = {};
-  tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && inWin(t.date); }).forEach(function(t) {
+  tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTransfer(t) && !isTrip(t) && inWin(t.date); }).forEach(function(t) {
     var k = t.label || "Other";
     labelTotals[k] = (labelTotals[k] || 0) + t.amount;
   });
@@ -8636,9 +9097,10 @@ function Overview(props) {
 
   // Daily running-balance series across the window - one true point per day, no
   // sampling gaps and no smoothing overshoot, so the line reflects real balances.
-  var startBal = tx.filter(function(t) { return t.date < winStart; }).reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0);
+  var startBal = tx.filter(function(t) { return !t.pending && t.date < winStart; }).reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0);
   var dayDelta = {};
   tx.forEach(function(t) {
+    if (t.pending) return;   // due, not paid - it must not bend the line
     if (inWin(t.date)) {
       dayDelta[t.date] = (dayDelta[t.date] || 0) + (t.type === "income" ? t.amount : -t.amount);
     }
@@ -9014,6 +9476,24 @@ function Overview(props) {
                   <div style={{ fontSize: 16, fontWeight: 700, color: HNEG, letterSpacing: "-0.02em", marginTop: 3 }}>{"-" + dollars(expense)}</div>
                 </div>
               </div>
+              {/* The number people actually open a budget app to find. Deliberately
+                  bigger than income/spent above it: those describe the month, this
+                  answers today. Negative is shown as a real overdraw rather than
+                  clamped to zero - "you are 40 a day over" is the useful version. */}
+              <div style={{ borderTop: "0.5px solid " + HSEP, paddingTop: 13, marginTop: 13 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>{tr("safeToday")}</div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 3, filter: hidden ? "blur(11px)" : "none", userSelect: "none" }}>
+                  <span style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.025em", color: safe.amount < 0 ? HNEG : HINK }}>
+                    {(safe.amount < 0 ? "-" : "") + dollars(Math.abs(safe.amount))}
+                  </span>
+                  <span style={{ fontSize: 11.5, color: HFNT, lineHeight: 1.3 }}>
+                    {safe.amount < 0
+                      ? tr("safeOverBy").replace("{n}", safe.daysLeft)
+                      : (safe.daysLeft === 1 ? tr("safeOneDay") : tr("safeDaysLeft").replace("{n}", safe.daysLeft))}
+                  </span>
+                </div>
+                <div style={{ fontSize: 11, color: HFNT, marginTop: 4, lineHeight: 1.35 }}>{tr("safeBreakdown")}</div>
+              </div>
             </div>
 
             {/* Panel 1 - Trend */}
@@ -9134,7 +9614,29 @@ function Overview(props) {
         </div>
       )}
 
-      {tips.length > 0 && tipsUpTop && tipsCard(0.05)}
+      <RecurringConfirm rows={dueRecurring} categories={cats}
+        onConfirm={props.onConfirmRecurring} onSkip={props.onSkipRecurring} />
+
+      {props.weeklyCloseDue && (
+        <div onClick={props.onOpenWeeklyClose}
+          style={{ marginBottom: 18, cursor: "pointer", animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.05s both" }}>
+          <Card style={{ padding: "15px 17px", display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 34, height: 34, borderRadius: 11, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <SVGIcon id="calendar" size={17} color={T.orange} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: T.ink, lineHeight: 1.3 }}>{tr("wcCardTitle")}</div>
+              <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 2, lineHeight: 1.35 }}>{tr("wcCardSub")}</div>
+            </div>
+            <span style={{ fontSize: 12.5, fontWeight: 700, color: T.orange, flexShrink: 0 }}>{tr("wcStart")}</span>
+          </Card>
+        </div>
+      )}
+
+      <QuickAddChips picks={quickPicksOf(tx)} categories={cats}
+        onLog={props.onQuickLog} onEdit={props.onQuickEdit} />
+
+      {tipsUpTop && tipsCard(0.05)}
 
       {tx.length === 0 && (
         <Card style={{ padding: "36px 24px", textAlign: "center", marginBottom: 20 }}>
@@ -9377,7 +9879,7 @@ function Overview(props) {
         </div>
       )}
 
-      {tips.length > 0 && !tipsUpTop && (
+      {!tipsUpTop && (
         <div style={{ marginTop: 20 }}>{tipsCard(0.2)}</div>
       )}
 
@@ -9561,6 +10063,48 @@ function topKey(tally) {
 // user's OWN history first (which category they previously used for the same /
 // a similar label), then falls back to the popular keyword map. Returns a catId
 // or "" when there's nothing confident to suggest.
+// The user's own repeat purchases, most-used first, each carrying the amount and
+// category from the last time they logged it. Derived rather than configured:
+// nobody sets up a "coffee" shortcut, they just buy coffee a lot.
+//
+// Lives at the top level because two screens read it - the add sheet (where it
+// pre-fills the form) and Overview (where a tap logs it outright).
+function quickPicksOf(txList) {
+  var byLabel = {};
+  (txList || []).forEach(function(t) {
+    if (t.type !== "expense" || isTransfer(t) || t.origCur) return;
+    if (t.pending || t.catchUp || isTrip(t) || isOpening(t)) return;
+    // Anything on a repeat is already handled: the materialiser posts it and
+    // the confirm card asks about it. Offering "Rent" as a one-tap chip would
+    // invite the user to log it a second time.
+    if (t.repeat === "monthly" || t.repeat === "weekly" || t.recurredFrom) return;
+    var key = (t.label || "").trim().toLowerCase();
+    if (!key) return;
+    var e = byLabel[key];
+    if (!e) { byLabel[key] = { label: t.label, amount: t.amount, catId: t.catId, count: 1, date: t.date }; }
+    else {
+      e.count += 1;
+      if (t.date > e.date) { e.date = t.date; e.amount = t.amount; e.catId = t.catId; e.label = t.label; }
+    }
+  });
+  var arr = [];
+  for (var k in byLabel) arr.push(byLabel[k]);
+  arr.sort(function(a, b) { return (b.count - a.count) || b.date.localeCompare(a.date); });
+  return arr.slice(0, 6);
+}
+
+// Build the transaction a one-tap quick-add produces. Same shape the add sheet
+// builds, so nothing downstream can tell the two apart.
+function quickPickTx(p, cats, txList, todayIso) {
+  var catId = p.catId || suggestCatId(p.label, txList, cats);
+  var c = catById(cats, catId) || catByName(cats, "Other") || (cats || [])[0] || { id: "", name: "Other" };
+  return {
+    id: Date.now(), type: "expense", amount: round2(p.amount || 0), label: p.label,
+    catId: c.id, category: c.name, date: todayIso || isoDay(new Date()),
+    repeat: "none", pending: false, quickAdd: true
+  };
+}
+
 function suggestCatId(label, txList, cats) {
   var q = (label || "").trim().toLowerCase();
   if (q.length < 2) return "";
@@ -9648,52 +10192,463 @@ function syncDocToTx(doc, seen, txList, cats, mainSym, id) {
   return tx;
 }
 
-// ===== BANK LEUMI DEMO ========================================================
-// There is no real Bank Leumi connection wired up (see the comment above
-// LEUMI_FINTEKA_ENDPOINT - a genuine one needs Leumi to certify Richy as a
-// licensed Third-Party Provider first). This is an honest stand-in: a pool of
-// believable Israeli-context merchants and a generator that produces fake but
-// realistic "synced" transactions, so the Connect Bank Leumi flow demos the
-// experience without ever claiming to be a real bank connection.
-var LEUMI_DEMO_MERCHANTS = [
-  { merchant: "Shufersal", min: 120, max: 420 },
-  { merchant: "Rami Levy", min: 90, max: 360 },
-  { merchant: "Paz Gas Station", min: 180, max: 340 },
-  { merchant: "Cofix", min: 10, max: 24 },
-  { merchant: "Aroma Espresso Bar", min: 16, max: 40 },
-  { merchant: "Wolt", min: 45, max: 130 },
-  { merchant: "Super-Pharm", min: 25, max: 160 },
-  { merchant: "Bezeq", min: 89, max: 89 },
-  { merchant: "Israel Electric Corp", min: 240, max: 620 },
-  { merchant: "Fox Home", min: 70, max: 320 },
-  { merchant: "IKEA", min: 140, max: 900 },
-  { merchant: "McDonald's", min: 32, max: 68 }
+
+// ===== SUGGESTIONS ============================================================
+// The static tips array showed the same three cards to everybody forever, which
+// is how a feature pitch becomes wallpaper. A suggestion here has to earn its
+// place: something in the user's own data has to be true for it to appear, it
+// stops after three showings, and two dismissals in a row buy a month of
+// silence. At most one is ever on screen.
+//
+// Deliberately not push notifications. Not here, not as a stretch.
+
+var SUGGEST_MAX_SHOWS = 3;       // after this it has been asked and answered
+var SUGGEST_MIN_GAP_DAYS = 7;    // a new suggestion at most once a week
+var SUGGEST_QUIET_DAYS = 30;     // what two dismissals in a row buys
+
+// Priority order is the array order: the first match wins, so the most
+// actionable thing sits first.
+var SUGGESTIONS = [
+  {
+    id: "statement",
+    icon: "down",
+    titleKey: "sgStatement",
+    subKey: "sgStatementS",
+    // Two ways to be behind: nothing logged for days, or the week's total is
+    // well short of what the known recurring commitments alone should be.
+    trigger: function(c) {
+      if (c.daysSinceLastLog >= 4) return true;
+      return c.expectedRecurring > 0 && c.loggedThisWeek < c.expectedRecurring * 0.75;
+    },
+    used: function(c) { return !!c.hasImported; }
+  },
+  {
+    id: "debts",
+    icon: "credit",
+    titleKey: "sgDebts",
+    subKey: "sgDebtsS",
+    trigger: function(c) { return c.negativeDays >= 2 || c.debtWords; },
+    used: function(c) { return c.debtCount > 0; }
+  },
+  {
+    id: "collab",
+    icon: "user",
+    titleKey: "sgCollab",
+    subKey: "sgCollabS",
+    trigger: function() { return true; },
+    used: function(c) { return !!c.householdId; }
+  }
 ];
-// Reuses syncDocToTx so demo transactions get the exact same categorization
-// and dedup treatment a real synced transaction would - that consistency is
-// what makes the demo feel like the real pipeline instead of a separate toy.
-function generateLeumiDemoTx(count, existingTx, cats, mainSym) {
-  var seen = {};
-  existingTx.forEach(function(t) { seen[dupKey(t.type, t.date, t.amount, t.label)] = true; });
+
+// The facts a trigger is allowed to read, computed once from real data.
+function suggestionContext(o) {
+  o = o || {};
+  var tx = o.tx || [];
+  var today = o.todayIso || isoDay(new Date());
+  var weekAgo = addDaysISO(today, -7);
+  var monthAgo = addDaysISO(today, -30);
+
+  var lastLog = "";
+  var loggedThisWeek = 0;
+  var debtWords = false;
+  var negativeDays = 0;
+  var running = 0;
+  var byDay = {};
+
+  tx.forEach(function(t) {
+    if (t.pending || isOpening(t)) return;
+    // Rows the user actually typed - a materialised recurring item posting
+    // itself is not evidence that anyone is still using the app.
+    if (!t.recurredFrom && !t.catchUp && (t.date || "") > lastLog) lastLog = t.date || "";
+    if (t.type === "expense" && !isTransfer(t) && !isTrip(t) && (t.date || "") >= weekAgo) loggedThisWeek += t.amount || 0;
+    if (/הלוואה|מינוס|החזר|אשראי|loan|overdraft|repayment|credit card/i.test(t.label || "")) debtWords = true;
+    if ((t.date || "") <= today) byDay[t.date] = (byDay[t.date] || 0) + (t.type === "income" ? t.amount : -t.amount);
+  });
+
+  // Days in the last month where the running balance sat below zero.
+  Object.keys(byDay).sort().forEach(function(d) {
+    running += byDay[d];
+    if (d >= monthAgo && running < 0) negativeDays++;
+  });
+
+  var expectedRecurring = 0;
+  tx.forEach(function(t) {
+    if (t.type !== "expense") return;
+    if (t.repeat === "weekly") expectedRecurring += t.amount || 0;
+    else if (t.repeat === "monthly") expectedRecurring += (t.amount || 0) / 4.3;
+  });
+
+  return {
+    daysSinceLastLog: lastLog ? daysBetweenISO(lastLog, today) : 999,
+    loggedThisWeek: round2(loggedThisWeek),
+    expectedRecurring: round2(expectedRecurring),
+    negativeDays: negativeDays,
+    debtWords: debtWords,
+    debtCount: (o.debts || []).length,
+    householdId: o.householdId,
+    hasImported: tx.some(function(t) { return !!t.imported || !!t.externalId; })
+  };
+}
+
+// Which suggestion, if any, to show right now.
+//   state: { dismissedTips, shownCount, lastSuggestionAt, quietUntil, activeId }
+function pickSuggestion(ctx, state, todayIso) {
+  state = state || {};
+  var today = todayIso || isoDay(new Date());
+  // Silence means silence.
+  if (state.quietUntil && state.quietUntil > today) return null;
+
+  var dismissed = state.dismissedTips || [];
+  var shown = state.shownCount || {};
+  function eligible(sg) {
+    if (dismissed.indexOf(sg.id) !== -1) return false;
+    if ((shown[sg.id] || 0) >= SUGGEST_MAX_SHOWS) return false;
+    if (sg.used(ctx)) return false;
+    return true;
+  }
+
+  // Inside the gap, keep whatever is already up rather than rotating - a card
+  // that changes every visit reads as noise, not advice. It still disappears
+  // the moment it stops being eligible (they went and did the thing).
+  if (state.lastSuggestionAt && daysBetweenISO(state.lastSuggestionAt, today) < SUGGEST_MIN_GAP_DAYS) {
+    var active = null;
+    for (var i = 0; i < SUGGESTIONS.length; i++) {
+      if (SUGGESTIONS[i].id === state.activeId) { active = SUGGESTIONS[i]; break; }
+    }
+    return (active && eligible(active) && active.trigger(ctx)) ? active : null;
+  }
+
+  for (var j = 0; j < SUGGESTIONS.length; j++) {
+    var sg = SUGGESTIONS[j];
+    if (eligible(sg) && sg.trigger(ctx)) return sg;
+  }
+  return null;
+}
+
+// ===== WEEKLY CLOSE ===========================================================
+// Five minutes on a Sunday, not a daily habit nobody keeps: confirm what posted
+// itself this week, then answer one question - "anything else you didn't log?"
+// A single ballpark number is a complete answer.
+//
+// ON THE catchUp FLAG. The onboarding catch-up tags its rows `catchUp: true`,
+// and every balance calculation in this file excludes them (mainSpendBalance,
+// the Overview balance, Richard's, the business/investing balances). That is
+// right for onboarding: those rows are a recollection of spending that happened
+// BEFORE the opening balance was set, so counting them would subtract the same
+// money twice.
+//
+// The weekly close is the opposite case. It is money that left the account this
+// week and never got logged, so the balance is overstated until the user says
+// so - a figure that changes nothing is a figure typed into a void. These rows
+// therefore carry `catchUpCounts: true` alongside `catchUp: true`: category-level
+// analytics still skip them (a lump in "Other" is not a spending insight), while
+// balance math counts them. Onboarding rows lack the flag and are untouched.
+function catchUpTxs(o) {
+  o = o || {};
+  var cats = (o.categories || []).filter(function(c) { return c.folderId !== "f3" && c.id !== "opening"; });
   var out = [];
   var base = Date.now();
-  for (var i = 0; i < count; i++) {
-    var pick = LEUMI_DEMO_MERCHANTS[Math.floor(Math.random() * LEUMI_DEMO_MERCHANTS.length)];
-    var amount = round2(pick.min + Math.random() * (pick.max - pick.min));
-    var daysAgo = Math.floor(Math.random() * 6); // within the last week - feels freshly synced
-    var d = new Date(base - daysAgo * 86400000);
-    var doc = {
-      merchant: pick.merchant,
-      amount: amount,
-      currency: null, // demo transactions are generated directly in the app's own currency
-      date: d.toISOString().slice(0, 10),
-      source: "leumi_finteka",
-      externalId: "demo-" + base + "-" + i + "-" + Math.random().toString(36).slice(2, 8)
-    };
-    var t = syncDocToTx(doc, seen, existingTx, cats, mainSym, base + i);
-    if (t) out.push(t);
+  var i = 0;
+  // Dated to the middle of the week rather than today. A week of recalled
+  // spending landing on one day gives the trend chart a cliff and makes "spent
+  // today" nonsense - the same bug the onboarding catch-up has.
+  var mid = o.periodStart && o.periodEnd
+    ? addDaysISO(o.periodStart, Math.floor(daysBetweenISO(o.periodStart, o.periodEnd) / 2))
+    : (o.todayIso || isoDay(new Date()));
+
+  function push(amount, label, cat) {
+    var v = round2(parseFloat(amount) || 0);
+    if (!(v > 0)) return;
+    out.push({ type: "expense", amount: v, label: label, catId: cat.id, category: cat.name,
+      date: mid, id: base + (i++), repeat: "none", pending: false,
+      catchUp: true, catchUpCounts: true });
+  }
+
+  if (o.mode === "detail") {
+    cats.forEach(function(c) { push((o.byCat || {})[c.id], c.name, c); });
+  } else {
+    var misc = cats.filter(function(c) { return /other|misc/i.test(c.name); })[0] || cats[cats.length - 1] || cats[0] || { id: "", name: "Other" };
+    push(o.quickTotal, o.quickLabel || "Untracked spending", misc);
+  }
+  var iv = round2(parseFloat(o.income) || 0);
+  if (iv > 0) {
+    out.push({ type: "income", amount: iv, label: o.incomeLabel || "Income received", catId: "c8", category: "Salary",
+      date: mid, id: base + (i++), repeat: "none", pending: false, catchUp: true, catchUpCounts: true });
   }
   return out;
+}
+
+// The week the close covers: the seven days ending on the most recent close day.
+// closeDay is 0-6 (Sunday..Saturday); Israel's week starts Sunday, so that is
+// the default.
+function weeklyCloseWindow(closeDay, todayIso) {
+  var today = todayIso || isoDay(new Date());
+  var d = new Date(today + "T00:00:00Z");
+  var day = d.getUTCDay();
+  var back = (day - (closeDay == null ? 0 : closeDay) + 7) % 7;
+  var end = addDaysISO(today, -back);
+  return { start: addDaysISO(end, -6), end: end };
+}
+
+// Due once the close day has come round again since the last one was finished.
+function weeklyCloseDue(lastCloseIso, closeDay, todayIso) {
+  var win = weeklyCloseWindow(closeDay, todayIso);
+  if (!lastCloseIso) return true;
+  return lastCloseIso < win.end;
+}
+
+// ===== SAFE TO SPEND ==========================================================
+// "How much can I spend today?" is the question people actually open a budget
+// app with, and the app answered a different one: how much is left for the
+// whole period. That number gets spent by the 12th.
+//
+// (income - fixed commitments - what goals need - spent so far) / days left.
+//
+// Two honesty rules shape it:
+//  - Income is what has ACTUALLY arrived, except for someone who told us their
+//    pay is steady - for them a month's expected income counts from day one,
+//    because otherwise the 1st of the month always reads as catastrophe. A
+//    variable earner gets no such assumption; that is what "it varies" means.
+//  - Fixed costs still to come are subtracted even though they haven't left
+//    yet. Rent is not spendable money just because it is the 3rd.
+//
+// This is arithmetic on the user's own numbers - a budgeting figure, not advice
+// about what to do with a surplus. Nothing here suggests investing it.
+function safeToSpendToday(o) {
+  o = o || {};
+  var tx = o.tx || [];
+  var today = o.todayIso || isoDay(new Date());
+  var start = o.periodStart, end = o.periodEnd;
+  function inPeriod(d) { return d && d >= start && d <= end; }
+  function real(t) { return !t.pending && !isOpening(t) && !isTransfer(t) && !isTrip(t); }
+
+  var earned = 0, spent = 0;
+  tx.forEach(function(t) {
+    if (!real(t) || !inPeriod(t.date) || t.date > today) return;
+    if (t.type === "income") earned += t.amount || 0;
+    else spent += t.amount || 0;
+  });
+  // A steady earner's month is worth their monthly figure whether or not the
+  // salary has landed yet; take whichever is larger, so a mid-month bonus still
+  // counts rather than being swallowed by the estimate.
+  var income = o.variableIncome ? earned : Math.max(earned, o.expectedIncome || 0);
+
+  // Commitments this period that have not been paid yet: pending occurrences
+  // the materialiser posted, plus any monthly source whose turn has not come
+  // round. Both are money already spoken for.
+  var settledFrom = {};
+  tx.forEach(function(t) {
+    if (t.recurredFrom && !t.pending && inPeriod(t.date)) settledFrom[t.recurredFrom] = true;
+  });
+  var fixed = 0;
+  tx.forEach(function(t) {
+    if (t.type !== "expense" || isTransfer(t) || isTrip(t)) return;
+    if (t.pending && t.recurredFrom && inPeriod(t.date)) { fixed += t.amount || 0; return; }
+    // A monthly source with nothing posted or pending for this period yet.
+    if (t.repeat === "monthly" && !t.recurredFrom && !t.pending
+        && !settledFrom[t.id] && !inPeriod(t.date)) {
+      var covered = tx.some(function(x) { return x.recurredFrom === t.id && inPeriod(x.date); });
+      if (!covered) fixed += t.amount || 0;
+    }
+  });
+
+  // What the goals need out of THIS period to stay on schedule. Only goals with
+  // a deadline make a claim on the month - an open-ended "save for a car" is an
+  // intention, not a commitment, and treating it as one would quietly tell
+  // people they cannot afford lunch.
+  var goalNeed = 0;
+  (o.goals || []).forEach(function(g) {
+    if (!g || !g.deadline || !(g.target > 0)) return;
+    var monthsLeft = Math.max(1, Math.round(daysBetweenISO(today, g.deadline) / 30));
+    if (daysBetweenISO(today, g.deadline) < 0) return;   // already past due
+    var remaining = Math.max(0, (g.target || 0) - (o.goalSaved ? (o.goalSaved(g) || 0) : (g.saved || 0)));
+    goalNeed += remaining / monthsLeft;
+  });
+
+  // Today counts: on the last day of the month you get the whole remainder.
+  var daysLeft = Math.max(1, daysBetweenISO(today, end) + 1);
+  var pot = income - fixed - goalNeed - spent;
+  return {
+    amount: round2(pot / daysLeft),
+    daysLeft: daysLeft,
+    income: round2(income), fixed: round2(fixed),
+    goals: round2(goalNeed), spent: round2(spent), pot: round2(pot)
+  };
+}
+
+// ===== RECURRING ==============================================================
+// `repeat: "monthly" | "weekly"` used to be decorative: detectRecurring() read
+// it as a hint for the subscriptions report and Activity drew a badge, but
+// nothing ever produced the next occurrence. So the one thing a budget app is
+// supposed to know for you - that rent leaves on the 1st every month - was
+// still something you re-typed twelve times a year.
+//
+// Occurrences post as `pending: true`. That is the whole safety property: Richy
+// is asserting "this is due", not "this happened". Every settled-money surface
+// filters pending out, so an unconfirmed row cannot move a balance, a savings
+// rate, a budget or anything Richard is told until the user confirms it.
+
+// Period identity. Two occurrences of the same source in the same period are
+// the same occurrence - this is what makes materialisation idempotent.
+function recurPeriodKey(dateIso, repeat) {
+  var d = new Date(dateIso + "T00:00:00");
+  if (isNaN(d.getTime())) return "";
+  if (repeat === "weekly") {
+    // ISO week: Thursday of the current week decides the year, so weeks that
+    // straddle New Year don't collide with week 1 of the wrong year.
+    var t = new Date(d.getTime());
+    t.setDate(t.getDate() + 4 - (t.getDay() || 7));
+    var yStart = new Date(t.getFullYear(), 0, 1);
+    var week = Math.ceil((((t - yStart) / 86400000) + 1) / 7);
+    return t.getFullYear() + "-W" + (week < 10 ? "0" + week : week);
+  }
+  return dateIso.slice(0, 7);
+}
+
+// Step one period forward, keeping the anchor day. Monthly clamps to the end of
+// short months, so a rent charge anchored to the 31st lands on the 30th in
+// April and on the 28th/29th in February instead of skidding into the next
+// month - which is what a naive setMonth(+1) does.
+function recurNextDate(dateIso, repeat, anchorDay) {
+  var d = new Date(dateIso + "T00:00:00");
+  if (isNaN(d.getTime())) return "";
+  if (repeat === "weekly") {
+    d.setDate(d.getDate() + 7);
+  } else {
+    var day = anchorDay || d.getDate();
+    d.setDate(1);
+    d.setMonth(d.getMonth() + 1);
+    var lastOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    d.setDate(Math.min(day, lastOfMonth));
+  }
+  return isoDay(d);
+}
+
+// A source is a row the user actually created that says "this happens again".
+// Structural rows are excluded: opening balances and trip lump sums are not
+// events that recur, and transfers come in matched pairs - materialising one
+// side would invent money moving out of an account with nothing arriving.
+function isRecurSource(t, opts) {
+  if (!t || (t.repeat !== "monthly" && t.repeat !== "weekly")) return false;
+  if (t.recurredFrom) return false;   // a generated occurrence never seeds more
+  if (t.pending) return false;        // don't build on something unconfirmed
+  // Someone who told us their income varies does not want last month's figure
+  // proposed as this month's. Their expenses still recur - rent does not care
+  // how the month went - so only the income side is suppressed.
+  if (opts && opts.variableIncome && t.type === "income") return false;
+  return !isOpening(t) && !isTransfer(t) && !isTrip(t) && !t.catchUp && !t.accountMove;
+}
+
+// How far back we are willing to fill. Someone returning after a year away does
+// not want nineteen unconfirmed charges waiting for them - that reads as the
+// app having invented a year of spending. Recent periods are useful; older gaps
+// are history the user never logged, and Richy does not get to guess at them.
+var RECUR_MAX_BACKFILL = 3;
+
+// Post every occurrence due since each source was last materialised, up to and
+// including today's period.
+//
+// Idempotency lives on the SOURCE row (`recurredThrough`), not on a scan of
+// what already exists. Two boots on the same day generate nothing the second
+// time, and - just as important - deleting a generated occurrence does not
+// bring it back on the next launch, which a "does this row exist?" check would.
+//
+// Returns the new list plus the rows added, so the caller can both persist and
+// tell the user what happened. `tx` is never mutated.
+function materializeRecurring(list, todayIso, opts) {
+  var today = todayIso || isoDay(new Date());
+  var added = [];
+  var stamps = {};
+  // Belt-and-braces on top of recurredThrough: if the stamp somehow never
+  // reached the server (a load never followed by a save), the deterministic id
+  // still stops the same occurrence being written twice.
+  var have = {};
+  (list || []).forEach(function(t) { if (t && t.id != null) have[t.id] = true; });
+  (list || []).forEach(function(t) {
+    if (!isRecurSource(t, opts) || !t.date || t.date > today) return;
+    var repeat = t.repeat;
+    var anchorDay = repeat === "monthly" ? new Date(t.date + "T00:00:00").getDate() : 0;
+    var nowKey = recurPeriodKey(today, repeat);
+    var through = t.recurredThrough || recurPeriodKey(t.date, repeat);
+    if (!nowKey || !through || through >= nowKey) return;
+
+    // Walk forward from the source date to today, keeping a sliding window of
+    // the most recent uncovered periods. Walking the whole way (rather than
+    // stopping at the cap) is what makes a long absence surface the LAST three
+    // rents rather than three from a year ago - the old ones are history the
+    // user never logged, and the recent ones are what they need to check.
+    //
+    // `covered` is the last period whose occurrence DATE has actually arrived,
+    // and it - not today's period - is what gets stamped. Stamping today's
+    // period on the 5th when rent falls on the 25th would mark the month done
+    // before its charge existed, and that occurrence would never be posted.
+    var due = [];
+    var covered = through;
+    var cursor = t.date;
+    for (var guard = 0; guard < 600; guard++) {
+      cursor = recurNextDate(cursor, repeat, anchorDay);
+      if (!cursor || cursor > today) break;
+      var key = recurPeriodKey(cursor, repeat);
+      if (key > through) {
+        due.push({ date: cursor, key: key });
+        if (due.length > RECUR_MAX_BACKFILL) due.shift();
+      }
+      covered = key;
+      if (key >= nowKey) break;
+    }
+    // Nothing due but time has moved on: still advance the stamp, so a source
+    // whose occurrences were all deleted doesn't get re-walked forever.
+    if (!due.length) { if (covered > through) stamps[t.id] = covered; return; }
+
+    due.forEach(function(p) {
+      var newId = "rec_" + t.id + "_" + p.key;
+      if (have[newId]) return;
+      have[newId] = true;
+      added.push(Object.assign({}, t, {
+        id: newId,
+        date: p.date,
+        pending: true,
+        repeat: "none",
+        recurredFrom: t.id,
+        recurPeriod: p.key,
+        // Provenance only - a generated row is not a synced or imported one.
+        externalId: undefined, synced: undefined, syncSource: undefined
+      }));
+    });
+    stamps[t.id] = covered;
+  });
+
+  if (!added.length) return { tx: list || [], added: [] };
+  var next = (list || []).map(function(t) {
+    return stamps[t.id] ? Object.assign({}, t, { recurredThrough: stamps[t.id] }) : t;
+  }).concat(added);
+  return { tx: next, added: added };
+}
+
+// The rows the confirm card is asking about: everything materialised and still
+// unconfirmed, oldest first.
+function pendingRecurring(list) {
+  return (list || []).filter(function(t) { return t.pending && t.recurredFrom; })
+    .sort(function(a, b) { return (a.date || "").localeCompare(b.date || ""); });
+}
+
+// The Bank Leumi DEMO used to write invented transactions straight into the
+// real ledger, where they fed balance, budgets, category spend, savings rate,
+// streaks, XP, badges, net worth and everything Richard was told - with no way
+// to get them back out. The feature is gone; these are the rows it left behind.
+//
+// They are safe to identify: only the demo generator ever wrote an externalId
+// beginning "demo-", so this cannot match a real transaction - not a phone-sync
+// one (its externalId comes from the payload), not a hand-typed one (no
+// externalId at all), not a CSV import. Anything that fails that test is left
+// alone, which is the whole point: a wrong guess here deletes real money.
+function isDemoSyncTx(t) {
+  return !!(t && t.syncSource === "leumi_finteka" && typeof t.externalId === "string" && t.externalId.indexOf("demo-") === 0);
+}
+function cleanDemoSyncTx(list) {
+  var kept = [], removed = 0;
+  (list || []).forEach(function(t) { if (isDemoSyncTx(t)) removed++; else kept.push(t); });
+  return { tx: kept, removed: removed };
 }
 
 // ===== FOUND MONEY ============================================================
@@ -10030,7 +10985,7 @@ function ImportSheet(props) {
   var totalOut = built.filter(function(t) { return t.type === "expense"; }).reduce(function(s, t) { return s + t.amount; }, 0);
 
   return (
-    <Overlay open={props.open} onClose={close} title="Import from CSV">
+    <Overlay open={props.open} onClose={close} title={tr("impName")}>
       {step === "paste" && (
         <div>
           <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginBottom: 12 }}>
@@ -10204,24 +11159,22 @@ function Activity(props) {
   // re-log a usual item in about two taps instead of retyping it. Frequency
   // ranked, keeping the most recent amount/category per label. Native-currency
   // entries only, so tapping one never inherits a stale foreign rate.
-  var quickPicks = (function() {
-    var byLabel = {};
-    (props.tx || []).forEach(function(t) {
-      if (t.type !== "expense" || isTransfer(t) || t.origCur) return;
-      var key = (t.label || "").trim().toLowerCase();
-      if (!key) return;
-      var e = byLabel[key];
-      if (!e) { byLabel[key] = { label: t.label, amount: t.amount, catId: t.catId, count: 1, date: t.date }; }
-      else {
-        e.count += 1;
-        if (t.date > e.date) { e.date = t.date; e.amount = t.amount; e.catId = t.catId; e.label = t.label; }
-      }
-    });
-    var arr = [];
-    for (var k in byLabel) arr.push(byLabel[k]);
-    arr.sort(function(a, b) { return (b.count - a.count) || b.date.localeCompare(a.date); });
-    return arr.slice(0, 6);
-  })();
+  var quickPicks = quickPicksOf(props.tx);
+
+  // Arriving here from the statement suggestion: open the import straight away.
+  useEffect(function() {
+    if (!props.openImport) return;
+    setImportOpen(true);
+    if (props.onImportOpened) props.onImportOpened();
+  }, [props.openImport]);
+
+  // A long-press on Overview hands the pick over here rather than logging it,
+  // so the sheet opens with the amount ready to change.
+  useEffect(function() {
+    if (!props.prefillPick) return;
+    fillFromPick(props.prefillPick);
+    if (props.onPrefillUsed) props.onPrefillUsed();
+  }, [props.prefillPick]);
 
   function fillFromPick(p) {
     setForm(function(prev) {
@@ -10374,7 +11327,7 @@ function Activity(props) {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginBottom: 12 }}>
-        <button onClick={function() { setImportOpen(true); }} title="Import from CSV"
+        <button onClick={function() { setImportOpen(true); }} title={tr("impName")}
           style={{ flexShrink: 0, width: 42, height: 42, borderRadius: 14, background: importPrimary ? T.btn : T.card, border: importPrimary ? "none" : "1.5px solid " + T.orangeDim, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: importPrimary ? "0 4px 14px rgba(137,112,198,0.32)" : "0 2px 10px rgba(0,0,0,0.05)" }}>
           <SVGIcon id="down" size={20} color={importPrimary ? "#fff" : T.orange} />
         </button>
@@ -10578,14 +11531,19 @@ function Activity(props) {
             <SVGIcon id="activity" size={24} color={T.orange} />
           </div>
           <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{tr("noTransactions")}</div>
-          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 18 }}>{importPrimary ? "Import a CSV statement to fill in your transactions, or add them by hand." : tr("noTransactionsSub")}</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 18 }}>{tr("impEmptySub")}</div>
           <button onClick={function() { if (importPrimary) setImportOpen(true); else props.setSheetOpen(true); }}
             style={{ background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 13, padding: "12px 22px", fontSize: 14, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px " + T.orangeGlow }}>
-            {importPrimary ? "Import from CSV" : "Add your first transaction"}
+            {importPrimary ? tr("impName") : tr("impAddFirst")}
           </button>
+          {/* The import used to be a bare text link unless the user picked
+              "import" at signup, so the one screen where it is obviously the
+              right answer - an empty ledger - is where it was least visible.
+              Both routes are buttons now; the preference only decides which
+              one leads. */}
           <button onClick={function() { if (importPrimary) props.setSheetOpen(true); else setImportOpen(true); }}
-            style={{ display: "block", margin: "12px auto 0", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
-            {importPrimary ? "or add one manually" : "or import from a CSV file"}
+            style={{ display: "block", margin: "12px auto 0", background: "none", border: "1px solid " + T.sep, borderRadius: 13, padding: "11px 20px", color: T.ink2, fontSize: 13.5, fontWeight: 700, fontFamily: UI, cursor: "pointer" }}>
+            {importPrimary ? tr("impOrManual") : tr("impName")}
           </button>
         </Card>
       )}
@@ -10716,7 +11674,7 @@ function Activity(props) {
                           {t.type === "income" ? tr("income") : c.name}
                         </span>
                         {t.origCur && t.origCur !== _currency.sym && <span style={{ fontSize: 10, fontWeight: 700, color: T.gold, background: T.goldDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.02em" }}>{fmtCur(t.origCur, t.origAmount)}</span>}
-                        {t.pending && <span style={{ fontSize: 10, fontWeight: 700, color: T.gold, background: T.goldDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.04em" }}>PENDING</span>}
+                        {t.pending && <span style={{ fontSize: 10, fontWeight: 700, color: T.gold, background: T.goldDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.04em", textTransform: "uppercase" }}>{tr("recurBadge")}</span>}
                         {t.synced && <span style={{ fontSize: 10, fontWeight: 700, color: T.green, background: T.greenDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.04em" }}>AUTO</span>}
                         {t.repeat && t.repeat !== "none" && <span style={{ fontSize: 10, fontWeight: 600, color: T.ink2, background: T.orangeDim, borderRadius: 5, padding: "1px 6px" }}>{t.repeat === "weekly" ? tr("weekly") : tr("monthly")}</span>}
                       </div>
@@ -11770,7 +12728,7 @@ function Budgets(props) {
     : !!(catById(cats, nb.catId || (availCats[0] || {}).id) || {}).synced;
 
   var viewRow = viewCat ? byKey[viewCat] : null;
-  var viewTxs = (viewRow && !viewRow.isFolder && !viewRow.cat.synced) ? props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, curMonth()) && (t.catId === viewRow.key || t.category === viewRow.name); }).sort(function(a, b) { return b.date.localeCompare(a.date); }) : [];
+  var viewTxs = (viewRow && !viewRow.isFolder && !viewRow.cat.synced) ? props.tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTrip(t) && inMonth(t, curMonth()) && (t.catId === viewRow.key || t.category === viewRow.name); }).sort(function(a, b) { return b.date.localeCompare(a.date); }) : [];
   // How many pots the synced tag being viewed is drawn from, just for "account" vs "accounts".
   var viewSynced = viewRow && !viewRow.isFolder ? viewRow.cat.synced : "";
   var viewSyncedLists = { business: props.businesses, investing: props.investing, savings: props.savings };
@@ -12193,7 +13151,7 @@ function Goals(props) {
   function mainBalanceCalc() {
     var txs = props.tx || [];
     var today = new Date().toISOString().slice(0, 10);
-    var settled = function(t) { return !t.pending && !t.catchUp && t.date <= today; };
+    var settled = function(t) { return !t.pending && !skipCatchUp(t) && t.date <= today; };
     var income = txs.filter(function(t) { return t.type === "income" && settled(t); }).reduce(function(s, t) { return s + t.amount; }, 0);
     var expense = txs.filter(function(t) { return t.type === "expense" && settled(t); }).reduce(function(s, t) { return s + t.amount; }, 0);
     return income - expense;
@@ -12669,17 +13627,10 @@ function Trips(props) {
     setWizardNoteLoading(true);
     var total = parseFloat(form.total) || 0;
     var allocSummary = alloc.map(function(a) { return a.label + ": " + dollars(a.planned || 0); }).join("; ");
-    var sys = richardUserCtx(props.richardInstructions)
-      + "You are Richard, a warm and knowledgeable personal finance and travel advisor inside the Richy app. "
-      + "The user is setting up a trip budget: " + (form.name || "a trip") + " to " + (form.destination || "an unspecified destination") + ". "
-      + "Trip details: " + (form.days || 0) + " days, " + (form.style || "comfort") + " style, total budget " + dollars(total) + ". "
-      + richardNotesBlock("NOTES FROM THE TRAVELER", form.notes)
-      + "Current budget split: " + (allocSummary || "not yet set") + ". "
-      + "The user has comments or suggestions about how this budget is split. Listen to their feedback and adjust the allocation to fit their priorities. "
-      + "You can DIRECTLY change the budget, not just describe it. When the user wants a change, give one short plain-text sentence explaining what you did, then on a new line append a directive in EXACTLY this form: @@ALLOC[{\"category\":\"Food\",\"amount\":600},{\"category\":\"Buffer\",\"amount\":150}] "
-      + "Only list the buckets you are changing, using whole numbers. Keep the overall total close to " + dollars(total) + " by also adjusting Buffer or Other when needed. Categories must be from: Flights, Housing, Food, Activities, Shopping, Transport, Other, Buffer. "
-      + "Only include the @@ALLOC directive when you actually intend to change the split; for general questions just answer normally. "
-      + "Be concise, warm, and practical." + RICHARD_FORMAT + " The @@ALLOC directive, when you use it, must be the very last thing in your reply.";
+    var sys = { id: "tripWizardNote", userInstructions: props.richardInstructions, lang: props.lang || "en",
+      vars: { tripName: form.name || "a trip", destination: form.destination || "an unspecified destination",
+              days: form.days || 0, style: form.style || "comfort", total: dollars(total),
+              notes: form.notes, allocSummary: allocSummary || "not yet set" } };
     callClaude(
       nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }),
       sys, 400,
@@ -12723,17 +13674,10 @@ function Trips(props) {
     } else if (dayInfo && dayInfo.status === "past") {
       liveContext = "This trip has already ended. ";
     }
-    var sys = richardUserCtx(props.richardInstructions)
-      + "You are Richard, a warm and knowledgeable personal finance and travel advisor inside the Richy app. "
-      + "The user is planning a trip: " + (trip.name || "a trip") + " to " + (trip.destination || "an unspecified destination") + ". "
-      + "Trip details: " + (trip.days || 0) + " days, " + (trip.style || "comfort") + " style, total budget " + dollars(trip.total || 0) + ". "
-      + richardNotesBlock("NOTES FROM THE TRAVELER", trip.notes)
-      + "Budget allocation: " + allocSummary + ". " + liveContext
-      + "The user has notes, suggestions, or comments about this trip plan. Listen carefully and adjust the budget to their feedback. "
-      + "You can DIRECTLY change the budget, not just describe it. When the user wants a change, give one short plain-text sentence explaining what you did, then on a new line append a directive in EXACTLY this form: @@ALLOC[{\"category\":\"Housing\",\"amount\":400},{\"category\":\"Food\",\"amount\":300}] "
-      + "Only list the buckets you are changing, using whole numbers. Do not set any bucket below what is already spent there. Keep the overall total close to " + dollars(trip.total || 0) + " by also adjusting Buffer or Other when needed. Categories must be from: Flights, Housing, Food, Activities, Shopping, Transport, Other, Buffer. "
-      + "Only include the @@ALLOC directive when you actually intend to change the split; for general questions just answer normally. "
-      + "Be concise, warm, and practical. Always prefer specific numbers and concrete next steps over general reassurance." + RICHARD_FORMAT + " The @@ALLOC directive, when you use it, must be the very last thing in your reply.";
+    var sys = { id: "tripPlanNote", userInstructions: props.richardInstructions, lang: props.lang || "en",
+      vars: { tripName: trip.name || "a trip", destination: trip.destination || "an unspecified destination",
+              days: trip.days || 0, style: trip.style || "comfort", total: dollars(trip.total || 0),
+              notes: trip.notes, allocSummary: allocSummary, liveContext: liveContext } };
     callClaude(
       nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }),
       sys, 400,
@@ -12815,7 +13759,7 @@ function Trips(props) {
     setPlanning(true);
     setBudgetAssessment(null);
     var total = parseFloat(form.total) || 0;
-    var sys = richardUserCtx(props.richardInstructions) + "You are Richard, a warm, expert travel-budget planner inside the Richy app. Re-split a trip budget across exactly these buckets: Flights, Housing, Food, Activities, Shopping, Transport, Other, Buffer. Honor the user's stated priorities from the conversation. The traveler's notes are hard constraints, not background: if they say a cost is covered by someone else (like a parent paying for the flights) or does not apply, set that bucket to 0 and redistribute the money to buckets the traveler will actually spend from, and make the tips and assessment fit their actual situation. Also estimate the realistic total cost for that destination, travel style, and number of days, then compare it to the user's budget. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"allocations\":[{\"category\":\"Flights\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"\"],\"budgetAssessment\":{\"estimated\":1200,\"verdict\":\"short\",\"note\":\"One sentence comparing budget to realistic cost.\"}}. verdict must be one of: short, excess, good. The amounts are whole numbers that sum to the total budget. Use Other for any spending that does not fit the main buckets.";
+    var sys = { id: "tripResplit", userInstructions: props.richardInstructions, lang: props.lang || "en" };
     var currentSplit = alloc.map(function(a) { return a.label + " " + dollars(a.planned || 0); }).join(", ");
     var convo = wizardNoteChat.map(function(m) { return (m.role === "user" ? "User" : m.role === "system" ? "System" : "Richard") + ": " + m.text; }).join("\n");
     var usr = "Re-split a " + (form.style || "comfort") + " trip to " + (form.destination || "somewhere") + " for " + (form.days || "a few") + " days, total budget " + dollars(total) + ". "
@@ -12839,7 +13783,7 @@ function Trips(props) {
     setPlanning(true);
     setBudgetAssessment(null);
     var total = parseFloat(form.total) || 0;
-    var sys = richardUserCtx(props.richardInstructions) + "You are Richard, a warm, expert travel-budget planner inside the Richy app. Split a trip budget across exactly these buckets: Flights, Housing, Food, Activities, Shopping, Transport, Other, Buffer. The traveler's notes are hard constraints, not background: if they say a cost is covered by someone else (like a parent paying for the flights) or does not apply, set that bucket to 0 and redistribute the money to buckets the traveler will actually spend from, and make the tips fit who the traveler actually is. Also estimate the realistic total cost for that destination, travel style, and number of days, then compare it to the user's budget - excluding any costs the notes say are covered by someone else. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"allocations\":[{\"category\":\"Flights\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"\"],\"budgetAssessment\":{\"estimated\":1200,\"verdict\":\"short\",\"note\":\"One sentence comparing budget to realistic cost.\"}}. verdict must be one of: short (budget is not enough), excess (budget is more than needed), good (budget is reasonable). The amounts are whole numbers that sum to the total budget. Use Other for any spending that does not fit the main buckets.";
+    var sys = { id: "tripSplit", userInstructions: props.richardInstructions, lang: props.lang || "en" };
     var usr = "Plan a " + (form.style || "comfort") + " trip to " + (form.destination || "somewhere") + " for " + (form.days || "a few") + " days, total budget " + dollars(total) + ". " + richardNotesBlock("NOTES FROM THE TRAVELER", form.notes) + "Split the budget across the buckets, give 3 short practical tips, and assess whether the budget is realistic for this destination.";
     callClaude([{ role: "user", content: usr }], sys, 800, function(e, text) {
       if (e || !text) { applyLocalSplit(); return; }
@@ -13764,7 +14708,12 @@ function Trips(props) {
 // captive portal) never settles on its own, which would leave the caller's
 // loading state stuck on forever. Every caller already has an error path - the
 // deadline is what makes that path reachable.
-function callClaude(messages, system, maxTokens, callback, model, timeoutMs) {
+// `prompt` names a server-side prompt and carries the DATA it needs:
+//   { id, vars, userInstructions, lang }
+// The instruction text itself lives in api/_prompts.js and never travels over
+// the wire - see the header there for why. A plain string is NOT accepted: the
+// proxy would 400 it, and failing here instead makes the mistake obvious.
+function callClaude(messages, prompt, maxTokens, callback, model, timeoutMs) {
   var apiUrl = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "data:" || location.protocol === "file:") ? "https://richy-mgkl.vercel.app/api/chat" : "/api/chat";
   // Exactly one of {success, error, timeout} may reach the caller, and the timer
   // is always cleared - so a late-arriving response can't re-fire a callback the
@@ -13799,7 +14748,11 @@ function callClaude(messages, system, maxTokens, callback, model, timeoutMs) {
         headers: headers,
         body: JSON.stringify({
           messages: messages,
-          system: system,
+          promptId: prompt && prompt.id,
+          vars: (prompt && prompt.vars) || {},
+          userInstructions: (prompt && prompt.userInstructions) || "",
+          situation: (prompt && prompt.situation) || "",
+          lang: (prompt && prompt.lang) || "en",
           maxTokens: maxTokens || 800,
           model: model || undefined,
         }),
@@ -13862,9 +14815,7 @@ function BigDecisions(props) {
     var text = (question || q || "").trim();
     if (!text || loading) return;
     setQ(text); setErr(""); setLoading(true); setVerdict(null); setActive(null);
-    var custom = richardUserCtx(props.richardInstructions);
-    var langLine = (props.lang && props.lang !== "en") ? (" Every string value must be written entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + ".") : "";
-    var system = custom + "You are Richard, a calm, sharp, honest personal finance advisor inside the Richy app. The user faces a real, specific money decision. Using their ACTUAL financial data, give a clear PERSONAL verdict run against their real cash flow, savings, goals and net worth - never generic advice. If it is a no or only a stretch, say so plainly and kindly. Return ONLY valid JSON, no markdown, no emojis, exactly this shape: {\"verdict\":\"yes|no|stretch|wait\",\"verdictLabel\":\"short label e.g. Yes, you can afford it\",\"headline\":\"one warm sentence with the core reason\",\"keyNumber\":\"the single most important figure e.g. $340/mo or 4 months\",\"keyNumberLabel\":\"what that figure means in 2 to 4 words\",\"reasoning\":[\"2 to 4 short bullets, each tied to a real number\"],\"tradeoff\":\"one sentence on what they give up or risk\",\"toMakeYes\":\"the single most impactful change that would make it work; empty string if already a clear yes\",\"confidence\":\"high|medium|low\"}." + langLine;
+    var system = { id: "bigDecision", userInstructions: props.richardInstructions, lang: props.lang || "en" };
     var content = "Decision: " + text + "\n\nMy financial data:\n" + (props.ctx || "(no data provided)") + (props.coreProblem ? ("\n\nMy main financial challenge: " + props.coreProblem) : "");
     callClaude([{ role: "user", content: content }], system, 650, function(e, raw) {
       setLoading(false);
@@ -14368,10 +15319,10 @@ function Advisor(props) {
   var cats = props.categories || [];
   var ymA = curMonth();
   // Cash-flow is this month (matches the dashboard); net worth is all-time.
-  var income = props.tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var expense = props.tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  // Net worth = main balance (all-time tx) + every savings pot + business cash.
-  var netWorth = props.tx.reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0) + savingsTotal(props.savings || []) + businessTotal(props.businesses || []);
+  var income = props.tx.filter(function(t) { return t.type === "income" && !t.pending && !isOpening(t) && !isTransfer(t) && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var expense = props.tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTransfer(t) && !isTrip(t) && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  // Net worth = main balance (all-time SETTLED tx) + every savings pot + business cash.
+  var netWorth = props.tx.filter(function(t) { return !t.pending; }).reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0) + savingsTotal(props.savings || []) + businessTotal(props.businesses || []);
   var savings = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
   var topCats = cats.map(function(c) { return { name: c.name, spent: catSpend(c) }; }).filter(function(c) { return c.spent > 0; }).sort(function(a, b) { return b.spent - a.spent; }).slice(0, 5);
   var budgetLines = props.budgets.map(function(b) {
@@ -14487,7 +15438,7 @@ function Advisor(props) {
     + incomeAuditBlock(props.tx, props.onboardingData, cs);
 
   function catSpend(c) {
-    return props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ymA) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    return props.tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTrip(t) && inMonth(t, ymA) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
   }
 
   function localAnalysis() {
@@ -14852,8 +15803,7 @@ function Advisor(props) {
 
   function getAdvice() {
     setLoading(true); setAdvice(null); setErrMsg("");
-    var customInstructionsPrefix = richardUserCtx(props.richardInstructions);
-    var system = customInstructionsPrefix + "You are an elite personal finance advisor trained on the wisdom of the world's greatest wealth builders. You have deep knowledge from:\n\nBOOKS & AUTHORS:\n- The Psychology of Money (Morgan Housel): wealth is about behavior not intelligence; saving is about the gap between ego and income; reasonable beats rational\n- Rich Dad Poor Dad (Robert Kiyosaki): assets put money in pocket, liabilities take it out; buy assets first, luxuries last; make money work for you\n- The Millionaire Next Door (Stanley & Danko): most millionaires live below their means, drive used cars, avoid lifestyle inflation\n- I Will Teach You To Be Rich (Ramit Sethi): automate savings, negotiate bills, spend extravagantly on things you love but cut mercilessly elsewhere\n- The Total Money Makeover (Dave Ramsey): debt snowball, emergency fund first, live on less than you earn\n- Think and Grow Rich (Napoleon Hill): definiteness of purpose, the mastermind principle, persistence\n- The Richest Man in Babylon (George Clason): pay yourself first 10%, let savings work, live on 70%, give 20% to debts\n- Money Master the Game (Tony Robbins): asset allocation drives 90% of returns, fees kill wealth, asymmetric risk/reward\n\nINTERVIEWS & QUOTES FROM THE WEALTHY:\n- Warren Buffett: do not save what is left after spending, spend what is left after saving; rule 1 never lose money, rule 2 never forget rule 1; someone is sitting in the shade today because someone planted a tree long ago\n- Charlie Munger: invert always invert; avoid what destroys wealth as much as seeking what builds it; the best thing a human being can do is to help another human being know more\n- Ray Dalio: diversify well and you can reduce risk without reducing returns; pain plus reflection equals progress; he who lives by the crystal ball will eat shattered glass\n- Naval Ravikant: earn with your mind not your time; specific knowledge cannot be taught; build or buy equity in a business\n- Warren Buffett on compounding: the snowball: compound interest is the eighth wonder of the world\n- Mark Cuban: pay off credit cards every month, never carry a balance; savings rates matter more than investment returns early on\n- Grant Cardone: the middle class saves to retire, the wealthy invest to create income now; 40% of income saved minimum\n- Jeff Bezos: focus on what will not change, not what will; think in long time horizons\n- Elon Musk: take as much risk as you can afford, you only live once\n\nPROVEN STRATEGIES:\n- Pay yourself first: automate 10-20% savings before touching income\n- The latte factor: small daily expenses compound into large annual costs\n- 50/30/20 rule: 50% needs, 30% wants, 20% savings and debt\n- Emergency fund: 3-6 months of expenses in liquid savings before investing\n- No lifestyle inflation: when income rises, raise savings rate not spending\n- Avoid car payments: buy used cars with cash or low financing\n- Cook more, eat out less: food is typically the fastest growing expense\n- Cancel subscriptions quarterly: audit recurring charges every 3 months\n- Negotiate everything: bills, salary, rent, insurance premiums\n- Tax efficiency: maximize retirement accounts before taxable investing\n- Index funds beat active management 90% of the time over 10 years\n- The 4% rule: you can withdraw 4% annually from a portfolio indefinitely\n- House hacking: rent part of your home to cover the mortgage\n- The one-day rule: wait 24 hours before any purchase over $50\n\nReturn ONLY valid JSON, no markdown. Never use emojis or non-ASCII symbols anywhere in any field. Use this structure: {\"score\":72,\"scoreLabel\":\"Good\",\"headline\":\"Summary here.\",\"insights\":[{\"type\":\"strength\",\"title\":\"Title\",\"body\":\"Body.\"},{\"type\":\"warning\",\"title\":\"Title\",\"body\":\"Body.\"},{\"type\":\"tip\",\"title\":\"Title\",\"body\":\"Body.\"}],\"expertQuote\":{\"quote\":\"Quote.\",\"author\":\"Author\"},\"webInsight\":{\"title\":\"Title\",\"body\":\"Body.\"}}";
+    var system = { id: "moneyAnalysis", userInstructions: props.richardInstructions, lang: props.lang || "en" };
     var specificity = " Requirements: every insight must cite the user's REAL numbers from the context and end with a concrete, quantified next step - an amount, a percentage, or a date - not an abstract tip like \"build an emergency fund\" or \"cancel some subscriptions.\" A stranger reading this should not be able to mistake it for advice written for anyone else. If you invoke a famous principle or author, it must directly sharpen a specific recommendation tied to their figures; never use a quote as a substitute for a real recommendation. If the data shows debt, address payoff concretely (which balance first, how much per month, roughly when debt-free) rather than defaulting to savings advice.";
     var analysisPrompt = (coreProblem
       ? "Analyze these finances. The user's primary challenge is: " + coreProblem + ". Tailor your insights specifically to this challenge — don't give generic advice. Context: " + ctx
@@ -15224,38 +16174,11 @@ function Advisor(props) {
     var nc = chat.concat([{ role: "user", text: msg }]);
     setChat(nc);
     setChatLoading(true);
-    var customInstructionsPrefix = richardUserCtx(props.richardInstructions);
     callClaude(
       nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }),
-      customInstructionsPrefix + "You are Richard, a smart assistant inside the Richy personal finance app. You are calm, warm, direct, and knowledgeable - a trusted friend who is an expert in money and can help with anything the user asks. You have deep knowledge from The Psychology of Money, Rich Dad Poor Dad, The Millionaire Next Door, I Will Teach You To Be Rich, The Total Money Makeover, Think and Grow Rich, The Richest Man in Babylon, and wisdom from Warren Buffett, Charlie Munger, Ray Dalio, Naval Ravikant, Mark Cuban, Grant Cardone and other wealth builders. You can answer questions about personal finance, investments, budgeting, debt, taxes, and wealth-building. You can also answer questions about how to use the Richy app (it has tabs: Overview, Activity for transactions, Budgets for spending limits, Goals for savings targets, and Advisor which is where we are now; categories are managed via the tag icon on Overview or the Manage link in pickers). You can answer general knowledge and technical questions too - if someone asks about math, technology, or anything else, answer helpfully. Always refer back to the user's real financial data when relevant. Current user financial data: " + ctx + "." + (coreProblem ? " The user's primary financial challenge is: " + coreProblem + ". Connect your advice to this when relevant." : "")
-      + " BE SPECIFIC, NEVER GENERIC. The user has heard \"build an emergency fund, cancel some subscriptions, invest in index funds\" a hundred times - generic tips read as a failure and are the top complaint about advisors like you. Anchor every answer in THEIR actual numbers above: quote their real figures, do the arithmetic, and end with a concrete next step that has an amount or a date attached. When they ask whether they can afford something (a purchase, a trip, a rent level, a big decision), compute it against their real income, essentials, savings and cash flow and give a direct answer - yes, no, or \"here is exactly what it would take\" - with the numbers shown, not a list of things to consider. When they ask about debt, give a payoff order, a specific monthly amount, and an estimated debt-free timeframe derived from their balances and rates; never just \"pay it down\" or \"build savings first.\" Cite a principle or a name only when it sharpens a specific recommendation - never decorate generic advice with a famous quote. If you truly lack a number needed to answer precisely, ask the one question that would unlock it instead of retreating to textbook advice."
-      + " IMPORTANT - YOU CAN UPDATE THE APP FOR THE USER, ACROSS EVERYTHING except Business/Investing accounts and Trips (those have their own dedicated tools). When the user tells you about a real money event, or directly asks you to change or create something in the app, acknowledge it warmly in words AND append one or more action tags at the very END of your reply (after your sentence, on their own). The app validates and shows the user a confirmation card before anything is applied - nothing you emit takes effect until they tap Apply, so it is fine to be generous about proposing a tag when the user's intent is clear. Action formats (use valid JSON, no spaces in keys): "
-      + "[ACTION:{\"kind\":\"expense\",\"amount\":50,\"category\":\"Food\",\"label\":\"groceries\"}] logs a purchase; "
-      + "[ACTION:{\"kind\":\"income\",\"amount\":4000,\"label\":\"new job salary\"}] logs income received; "
-      + "[ACTION:{\"kind\":\"budget\",\"category\":\"Food\",\"limit\":500}] sets a monthly budget; use \"folder\" instead of \"category\" to budget a whole folder at once ({\"kind\":\"budget\",\"folder\":\"Essentials\",\"limit\":4000}), and add \"dir\":\"target\" to make it a growth target the user should get ABOVE (for saving/investing) instead of a spending cap; "
-      + "[ACTION:{\"kind\":\"goal\",\"name\":\"Emergency Fund\",\"target\":3000}] creates a savings goal; "
-      + "[ACTION:{\"kind\":\"goalAdd\",\"name\":\"Emergency Fund\",\"amount\":200}] adds money to an existing goal; "
-      + "[ACTION:{\"kind\":\"category\",\"op\":\"add\",\"name\":\"Pets\",\"color\":\"#8970C6\",\"icon\":\"heart\"}] or {\"op\":\"rename\",\"name\":\"Pets\",\"newName\":\"Pet Care\"} or {\"op\":\"delete\",\"name\":\"Pets\"} manages a spending category; "
-      + "[ACTION:{\"kind\":\"folder\",\"op\":\"add\",\"name\":\"Fun\"}] or {\"op\":\"rename\",\"name\":\"Fun\",\"newName\":\"Leisure\"} or {\"op\":\"delete\",\"name\":\"Fun\"} manages a category folder; "
-      + "[ACTION:{\"kind\":\"folderRole\",\"name\":\"Essentials\",\"role\":\"need\"}] sorts a folder into the 50/30/20 rule - role is need, want, savings, or none for folders that aren't spending at all (income). Only offer this when the user asks about their split or when folders are unsorted and it would genuinely help; "
-      + "[ACTION:{\"kind\":\"savingsOpen\",\"name\":\"Travel Fund\",\"color\":\"#27A85F\",\"icon\":\"plane\"}] opens a new savings pot; "
-      + "[ACTION:{\"kind\":\"savingsMove\",\"account\":\"Travel Fund\",\"op\":\"deposit\",\"amount\":200,\"label\":\"birthday money\"}] (op is deposit or withdraw) puts money into or takes money out of an EXISTING savings pot from outside the main balance; "
-      + "[ACTION:{\"kind\":\"note\",\"dir\":\"owed\",\"amount\":40,\"label\":\"Sam - dinner split\"}] (dir is owed = someone owes the user, or owe = the user owes someone) logs a debt; "
-      + "[ACTION:{\"kind\":\"noteSettle\",\"label\":\"Sam - dinner split\"}] settles an existing open note by its exact label, turning it into a real transaction; "
-      + "[ACTION:{\"kind\":\"instructions\",\"op\":\"append\",\"text\":\"I hate subscriptions, always flag them\"}] (op is append or set) updates YOUR OWN custom instructions for how to advise this user going forward - use only when the user directly asks you to remember/always do something; "
-      + "[ACTION:{\"kind\":\"banner\",\"text\":\"Rent is due Friday\",\"tone\":\"info\",\"icon\":\"spark\",\"dismissible\":true}] (tone is info, success, or warn) puts a small banner message at the top of the app, visible on every tab, until the user dismisses it - use ONLY when the user directly and explicitly asks you to put up/create/show a banner or reminder message; never on your own initiative. "
-      + "[ACTION:{\"kind\":\"deleteTx\",\"category\":\"Food\",\"merchant\":\"Starbucks\",\"dateFrom\":\"2026-07-01\",\"dateTo\":\"2026-07-31\",\"type\":\"expense\"}] bulk-deletes every transaction matching the filters you give (category is an exact category name, merchant is a substring matched against the transaction label, type is expense or income, dateFrom/dateTo are YYYY-MM-DD and inclusive) - ALL fields are optional but you MUST include at least one, and only the filters the user actually specified; never invent a date range or category to narrow it. This is IRREVERSIBLE and deletes real logged data, so use it ONLY when the user explicitly asks to delete/remove/clear transactions (never on your own initiative, never as part of a broader cleanup you suggested), and never target their whole history with zero filters - if they say \"delete everything\" ask them to confirm a scope (a category, merchant, or date range) first instead of proposing the tag. The confirmation card will show exactly how many transactions and how much money match before anything is removed, so you don't need to state the count yourself. "
-      + "[ACTION:{\"kind\":\"opening\",\"amount\":3254}] sets their OPENING BALANCE - the money they already had when they started using Richy. It is stored outside income on purpose, so it never counts as earnings and never inflates the savings rate. Use it whenever the user says they already had money, started the month/period with an amount, or that some of their logged income was not actually earned. "
-      + "[ACTION:{\"kind\":\"editTx\",\"merchant\":\"Salary\",\"type\":\"income\",\"amount\":4880,\"set\":{\"amount\":1626}}] CORRECTS transactions already logged. The top-level fields are filters that pick the rows (category = exact category name, merchant = substring of the label, type = expense or income, amount = the exact current amount, dateFrom/dateTo = YYYY-MM-DD inclusive); \"set\" holds the new values and may contain amount, label, category, date, and type. At least one filter is required. Prefer the exact amount plus one more filter so you hit precisely the row the user means. "
-      + "THESE TWO ARE HOW YOU FIX THE APP'S OVERALL NUMBERS. The user cannot edit a savings rate, a monthly analysis or a budget's verdict directly - those are all computed from the raw rows in the data below. So when the user says a headline figure is wrong (\"my income says 4880 but that isn't right\", \"I already started this month with 3254\", \"that was money I had, not money I made\"), do not just agree or explain: find the ROW that produced it in the data below, say plainly which figure was wrong and what it should be, and emit the tags that fix it. That often means TWO tags together - correct the income row down to what was really earned AND set the opening balance to the part they already had - because moving money from income to opening balance is exactly what makes the savings rate, the monthly analysis and the budgets recompute correctly. State what will change as a result (\"your savings rate goes from 12% to 48%\") so they can check your arithmetic before they tap Apply. If their correction doesn't add up against the rows you can see, say so and ask, rather than guessing at a split. "
-      + "[ACTION:{\"kind\":\"widget\",\"op\":\"add\",\"title\":\"Coffee watch\",\"metric\":\"categorySpend\",\"target\":\"Food\",\"shape\":\"ring\",\"timeframe\":\"month\",\"goal\":200,\"icon\":\"coffee\",\"color\":\"#C8973A\"}] BUILDS A WIDGET on their Overview screen (op is add, update, or remove - for remove, pass only the exact title). This is a real feature: the user can ask for a card that follows anything below, drawn in whichever shape they ask for, and you fill in the template. "
-      + "metric (what it follows) is one of: categorySpend (target = exact category name), folderSpend (target = exact folder name), merchantSpend (target = a word matched against transaction labels, e.g. \"Starbucks\"), expense, income, net, savingsRate, txCount, budgetLeft (target = a category that HAS a budget), balance, savingsPot (target = exact pot name), netWorth, goalProgress (target = exact goal name). "
-      + "shape (how it looks) is one of: stat (one big number plus the change since last period), bar (a progress bar toward the goal), ring (the same as a gauge), list (the biggest rows behind the total), trend (six periods as mini bars), compare (this period beside the last one). timeframe is week, month, year, or all. "
-      + "goal is optional and only means something for bar and ring; leave it out and they fall back to a plain number, except that a category with a budget or a goal with a target borrows that automatically. For spending metrics the goal reads as a ceiling to stay under, for saving and income metrics as a target to get past - you don't need to say which. icon must be one of: " + WIDGET_ICONS.join(", ") + ". color is a #rrggbb hex. Up to " + MAX_WIDGETS + " widgets total; adding one with the title of an existing widget replaces it. "
-      + "Match the user's words to the template: \"track my coffee\" is merchantSpend or a category, \"as a ring/circle/gauge\" is ring, \"a bar\" is bar, \"show me the biggest ones\" is list, \"over the last few months\" is trend, \"versus last month\" is compare. Pick a sensible icon and a short title yourself rather than asking. If they ask for something no metric covers, say plainly what you can follow instead and offer the closest one - never invent a metric name, and never promise a widget on any screen other than Overview, which is the only place they appear. "
-      + "Use the EXACT category, folder, savings pot, goal, note-label and widget-title names given in the data below - never invent or guess a name. "
-      + "If the user mentions several things at once, emit several tags. Only emit a tag for a concrete event, or a direct explicit request to change/create something, with real values the user actually stated - never for hypotheticals, plans, or general advice. Do not mention the word ACTION or the tag syntax in your spoken reply; just speak naturally and let the tags do the work."
-      + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a CFO who builds a business plan - send business owners there. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (phone-automation Bank Sync is the real automatic option), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : ""),
+      { id: "advisorChat", userInstructions: props.richardInstructions, lang: props.lang || "en", situation: props.situation || "",
+        vars: { data: ctx, coreProblem: coreProblem,
+                widgetIcons: WIDGET_ICONS.join(", "), maxWidgets: MAX_WIDGETS } },
       500,
       function(err, text) {
         setChatLoading(false);
@@ -15456,7 +16379,7 @@ function Advisor(props) {
     return d.getFullYear() + "-" + (mm < 10 ? "0" + mm : "" + mm);
   }
   function catSpendInMonth(c, ym) {
-    return props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    return props.tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
   }
 
   // Whole months between today and a "YYYY-MM-DD" deadline (negative if past).
@@ -15489,7 +16412,7 @@ function Advisor(props) {
 
     var netKept = Math.round(income - expense);
     var prevYm = ymShift(ymA, -1);
-    var prevExpenseTot = props.tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && inMonth(t, prevYm); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    var prevExpenseTot = props.tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTransfer(t) && !isTrip(t) && inMonth(t, prevYm); }).reduce(function(s, t) { return s + t.amount; }, 0);
     var spendDelta = Math.round(expense - prevExpenseTot);
 
     var catTotal = allCats.reduce(function(s, c) { return s + c.spent; }, 0) || 1;
@@ -16595,13 +17518,13 @@ function FullAnalysisView(props) {
   var ym = curMonth();
 
   function catSpend(c) {
-    return tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); })
+    return tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); })
       .reduce(function(s, t) { return s + t.amount; }, 0);
   }
 
-  var income = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && inMonth(t, ym); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var expense = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && inMonth(t, ym); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var netWorth = tx.reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0) + savingsTotal(props.savings || []) + businessTotal(props.businesses || []);
+  var income = tx.filter(function(t) { return t.type === "income" && !t.pending && !isOpening(t) && !isTransfer(t) && inMonth(t, ym); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var expense = tx.filter(function(t) { return t.type === "expense" && !t.pending && !isTransfer(t) && !isTrip(t) && inMonth(t, ym); }).reduce(function(s, t) { return s + t.amount; }, 0);
+  var netWorth = tx.filter(function(t) { return !t.pending; }).reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0) + savingsTotal(props.savings || []) + businessTotal(props.businesses || []);
   var reviewed = tx.filter(function(t) { return inMonth(t, ym) && !isTransfer(t); }).length;
 
   var savRate = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
@@ -17503,9 +18426,7 @@ function roadmapProgress(roadmap) {
 function buildRoadmap(biz, richardInstructions, lang, cb) {
   var pf = biz.profile || {};
   var stage = pf.stage || "idea";
-  var custom = richardUserCtx(richardInstructions);
-  var langSuffix = (lang && lang !== "en") ? (" Every string value must be written entirely in " + (LANGUAGE_NAMES[lang] || "English") + ".") : "";
-  var sys = custom + "You are Richard, a sharp, warm, honest business CFO inside the Richy app. Build a step-by-step roadmap that takes this owner from where they are today to a working, growing business. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"milestones\":[{\"title\":\"short milestone name\",\"tasks\":[{\"label\":\"one concrete action\"}]}]}. Exactly 3 or 4 milestones, 2 or 3 tasks each, ordered as a path from today to the 12-month goal. Every task must be a single concrete action the owner can physically do, MAXIMUM 16 words - include a number or deliverable where possible (like: talk to 5 potential customers, list 3 competitors and their prices). Keep the whole reply compact enough to never get cut off. Tune it to the stage: idea = validate demand before spending money (talk to real customers, define the offer, land the first paying customer); launching = make it real (legal and fees, set prices, pick one launch channel, first 10 customers, track every sale); running = sharpen the machine (review margins, double down on the best channel, keep customers coming back, systemize the busywork)." + langSuffix;
+  var sys = { id: "bizRoadmap", userInstructions: richardInstructions, lang: lang || "en" };
   var pl = bizMonthProfit(biz, curMonth());
   var usr = "Business: " + (biz.name || "my business") + " - " + (biz.what || "unspecified") + ". Stage: " + stage + ". Scale: " + (pf.size || "side") + ". "
     + "Monthly budget " + dollars(pf.monthly || 0) + ", revenue goal " + dollars(pf.revenueGoal || 0) + ", cash on hand " + dollarsSigned(businessCash(biz)) + ". "
@@ -17661,9 +18582,7 @@ function localWeeklyReview(biz) {
 // Run the weekly review. Always calls back with a stored-shape review whose
 // numbers are computed locally - the model's text is advice, never data.
 function runWeeklyReview(biz, richardInstructions, lang, cb) {
-  var custom = richardUserCtx(richardInstructions);
-  var langSuffix = (lang && lang !== "en") ? (" Every string value must be written entirely in " + (LANGUAGE_NAMES[lang] || "English") + ".") : "";
-  var sys = custom + "You are Richard, a sharp, warm, honest business CFO inside the Richy app, delivering the owner's weekly business review. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"status\":\"on-track\" or \"watch\" or \"off-track\",\"headline\":\"one honest sentence, max 18 words, on exactly where the business stands this week\",\"tip\":{\"title\":\"2 to 5 words\",\"body\":\"1 to 2 sentences of concrete advice tied to their real numbers\"},\"warning\":{\"title\":\"2 to 5 words\",\"body\":\"the one risk to watch, tied to a real number\"},\"idea\":{\"title\":\"2 to 5 words\",\"body\":\"one growth or savings idea, with a dollar figure where possible\"},\"taskSuggestion\":{\"label\":\"one concrete task under 14 words, or empty string\",\"milestone\":\"the milestone title to file it under, or empty string\"},\"graduate\":\"\"}. Never repeat last week's headline. Base every claim only on the numbers given - never invent figures. If the business has clearly outgrown its stage (idea stage but real money is moving; launching stage but revenue keeps arriving) set graduate to the next stage, launching or running - otherwise leave it an empty string." + langSuffix;
+  var sys = { id: "bizWeekly", userInstructions: richardInstructions, lang: lang || "en" };
   callClaude([{ role: "user", content: bizWeeklyDigest(biz) }], sys, 600, function(e, text) {
     var ym = curMonth();
     var pl = bizMonthProfit(biz, ym);
@@ -18563,8 +19482,6 @@ function localInvestCoach(ctx) {
   return bits.join(" ");
 }
 function sendInvestCoach(ctx, history, cb) {
-  var langName = LANGUAGE_NAMES[ctx.lang] || "English";
-  var langLine = langName !== "English" ? " Reply entirely in " + langName + "." : "";
   var lines = [];
   lines.push("PORTFOLIO SNAPSHOT (real, live numbers - never invent figures, only use these):");
   lines.push("- Plan: " + (ctx.plan ? ctx.plan.name + " (" + ctx.plan.risk + " risk, target " + ctx.plan.ret + "/yr)" : "none picked yet"));
@@ -18574,11 +19491,8 @@ function sendInvestCoach(ctx, history, cb) {
   lines.push("- Auto-invest: " + (ctx.autoOn ? dollars(ctx.autoAmount) + " " + ctx.cadence + (ctx.roundUps ? " plus round-ups" : "") : "off"));
   lines.push("- All-time gain: " + (ctx.gain >= 0 ? "+" : "") + dollars(ctx.gain));
   lines.push("- Main spending balance outside investing: " + dollarsSigned(ctx.balance) + (ctx.balance < 0 ? " (NEGATIVE - they are overdrawn; do not advise investing more until this is fixed)" : ""));
-  var system = richardUserCtx(ctx.richardInstructions) +
-    "You are Richard, the user's investing coach inside their budgeting app. You manage a curated, fund-based portfolio for them. Warm, direct, plain English, 2-4 sentences unless they ask for depth." +
-    investorGlossary(ctx.profile) +
-    " Ground every answer in the snapshot below - quote their real figures. Never promise or predict returns, never guarantee anything, and say plainly when something is uncertain. You are not a licensed financial advisor; if they ask for a personalised recommendation about a specific security, give the general principle and the tradeoff rather than an instruction. Never output JSON or markdown headings - just talk." + langLine +
-    "\n\n" + lines.join("\n");
+  var system = { id: "investCoach", userInstructions: ctx.richardInstructions, lang: ctx.lang || "en",
+    vars: { glossary: investorGlossary(ctx.profile), data: lines.join("\n") } };
   callClaude(history, system, 500, function(err, text) {
     if (err || !text) { cb(null, localInvestCoach(ctx)); return; }
     cb(null, text);
@@ -20552,8 +21466,6 @@ function localStockTake(ctx) {
 }
 function runStockTake(ctx, cb) {
   var level = investorLevelPhrase(ctx.profile);
-  var langName = LANGUAGE_NAMES[ctx.lang] || "English";
-  var langLine = langName !== "English" ? " Write entirely in " + langName + "." : "";
   var posLine = ctx.position && ctx.position.shares > 0
     ? "They already hold " + ctx.position.shares + " shares at an average cost of " + invFmt(ctx.position.avgCost, ctx.currency, "native") + " (currently " + (ctx.position.unrealPct >= 0 ? "up" : "down") + " " + Math.abs(ctx.position.unrealPct) + "%)."
     : "They do not own this yet - they're just looking.";
@@ -20566,9 +21478,8 @@ function runStockTake(ctx, cb) {
   var personal = "About the reader: they are " + level + ". Their spendable balance is " + dollars(ctx.balance || 0) + " and they have " + dollars(ctx.investingCash || 0) + " of uninvested cash in this account." +
     (ctx.concentrationPct != null ? " This stock would be about " + ctx.concentrationPct + "% of their portfolio." : "") + goalsLine +
     (ctx.profile && ctx.profile.risk ? " When markets drop, they tend to: " + ctx.profile.risk + "." : "");
-  var system = richardUserCtx(ctx.richardInstructions) +
-    "You are Richard, this person's warm, honest personal stock analyst inside a budgeting app. You give a real, direct opinion - but always with humility about uncertainty, and always tied to THIS person's actual money and experience level. Never guarantee a price or a return. If putting money here would leave them without an emergency cushion, or make one stock too big a slice, say so before any encouragement." + investorGlossary(ctx.profile) +
-    " Return ONLY a JSON object, nothing before or after it, in exactly this shape: {\"outlook\":\"up|neutral|down\",\"confidence\":\"low|medium|high\",\"headline\":\"one short plain sentence\",\"opinion\":\"2-3 plain-English sentences with your honest view\",\"prediction\":\"what you'd watch for next, stated with honest uncertainty\",\"tips\":[\"1 to 3 short concrete tips for this person\"],\"goodPick\":[{\"label\":\"short check\",\"ok\":\"yes|watch|no\",\"note\":\"one short line\"}],\"forYou\":\"one warm sentence tying it to their money and experience\"}. Give 3 or 4 goodPick checks a beginner can actually judge." + langLine;
+  var system = { id: "stockTake", userInstructions: ctx.richardInstructions, lang: ctx.lang || "en",
+    vars: { glossary: investorGlossary(ctx.profile) } };
   callClaude([{ role: "user", content: digest + " " + personal }], system, 750, function(err, text) {
     if (err || !text) { cb(localStockTake(ctx)); return; }
     try {
@@ -20682,7 +21593,7 @@ function StockView(props) {
     takeGenRef.current = key;
     setTakeBusy(true);
     var bal = 0;
-    (props.tx || []).forEach(function(t) { if (t.pending || t.catchUp || (t.date && t.date > today)) return; bal += t.type === "income" ? t.amount : -t.amount; });
+    (props.tx || []).forEach(function(t) { if (t.pending || skipCatchUp(t) || (t.date && t.date > today)) return; bal += t.type === "income" ? t.amount : -t.amount; });
     var worthNow = investingWorth(acct) || 1;
     var posNow = allPos[symbol];
     var holdVal = posNow && posNow.shares > 0 ? invConvert(posNow.shares * pxKnown, cur) : 0;
@@ -21227,16 +22138,12 @@ function localInvestingBasics(profile) {
   };
 }
 function runInvestingBasics(profile, username, lang, richardInstructions, cb) {
-  var langName = LANGUAGE_NAMES[lang] || "English";
-  var langLine = langName !== "English" ? " Write entirely in " + langName + "." : "";
   var expMap = { never: "a complete beginner who has never invested", some: "someone who has dabbled a little", regular: "an experienced investor" };
   var amtMap = { toe: "just a little to learn", few: "a few hundred", grand: "a thousand or more", unsure: "an amount they're still deciding" };
   var invMap = { passive: "wants to set it and forget it", monthly: "will check in occasionally", active: "wants to be hands-on" };
   var riskMap = { sell: "would get nervous and sell in a downturn", hold: "would hold through a downturn", buy: "would buy more in a downturn" };
   var profileLine = "The reader is " + (expMap[profile.experience] || "new to investing") + ", " + (invMap[profile.involvement] || "") + ", planning to start with " + (amtMap[profile.amount] || "some money") + ", and " + (riskMap[profile.risk] || "is figuring out their risk comfort") + ". Their name is " + (username || "there") + ".";
-  var system = richardUserCtx(richardInstructions) +
-    "You are Richard, a warm, encouraging money mentor teaching someone the basics of investing, tuned exactly to their experience level and answers. Plain, friendly English. If they're a beginner, explain every term in a few plain words and keep it gentle and confidence-building. If they're experienced, skip the hand-holding and be crisp. Never hype, never guarantee returns, and remind them to invest only money they can leave alone." +
-    " Return ONLY a JSON object in exactly this shape: {\"intro\":\"1-2 warm sentences meeting them at their level\",\"lessons\":[{\"title\":\"short\",\"body\":\"2-3 plain sentences\"}],\"goodPick\":[{\"label\":\"a check they can actually apply\",\"why\":\"one plain sentence\"}],\"firstMove\":\"one concrete first action for them\"}. Give 3 lessons and 3-4 goodPick checks." + langLine;
+  var system = { id: "investingBasics", userInstructions: richardInstructions, lang: lang || "en" };
   callClaude([{ role: "user", content: profileLine + " Teach them the basics of investing and how to tell if a stock is a good pick, tailored to them." }], system, 850, function(err, text) {
     if (err || !text) { cb(localInvestingBasics(profile)); return; }
     try {
@@ -21522,7 +22429,6 @@ function localStockScout(candidates, ctx) {
 }
 function runStockScout(ctx, cb) {
   var langName = LANGUAGE_NAMES[ctx.lang] || "English";
-  var langLine = langName !== "English" ? " Write entirely in " + langName + "." : "";
   gatherScoutData(function(data) {
     var withData = data.candidates.filter(function(c) { return c.quote || c.yrPct != null; });
     if (!withData.length) { cb(localStockScout(data.candidates, ctx)); return; }
@@ -21535,9 +22441,8 @@ function runStockScout(ctx, cb) {
     var newsLines = (data.marketNews || []).slice(0, 6).map(function(n) { return "- " + n.headline; }).join("\n");
     var riskWord = { sell: "gets nervous and may sell in downturns", hold: "holds steady through downturns", buy: "likes to buy the dip" }[(ctx.profile || {}).risk] || "is still finding their risk comfort";
     var personal = "The investor has " + dollars(ctx.investingCash || 0) + " of cash ready to invest in this account and a spendable balance of " + dollars(ctx.balance || 0) + ". They are " + investorLevelPhrase(ctx.profile) + " who " + riskWord + ".";
-    var system = richardUserCtx(ctx.richardInstructions) +
-      "You are Richard in your most rigorous mode - a sharp, honest stock analyst hunting for the most promising opportunities for THIS person right now. Reason from the real data provided (recent price action and current headlines) together with what you know about these companies' products, moats, and likely catalysts. Have a genuine view, but name the risks plainly and never promise a return. Rank the 2 or 3 strongest ideas. Size each suggestion to what they can actually afford: never more than their available cash, smaller for a beginner or a nervous investor, and keep any single idea a sensible slice rather than everything at once. Write the way you'd talk to a smart friend over coffee, not the way an analyst files a report: short, punchy sentences, zero filler, no essay voice." + investorGlossary(ctx.profile) +
-      " Return ONLY a JSON object: {\"marketNote\":\"one punchy sentence on the market's mood right now\",\"picks\":[{\"symbol\":\"TICKER\",\"name\":\"Company name\",\"confidence\":\"low|medium|high\",\"hook\":\"your headline for this pick - ten words max, vivid enough to stop someone mid-scroll, no ticker needed\",\"thesis\":\"why it could win - at most two short spoken sentences\",\"catalyst\":\"the one specific driver - a product, trend, or event, in one sentence\",\"risks\":\"the main way it goes wrong, in one or two blunt sentences\",\"suggestedAmount\":<number of " + (SYM_TO_CODE[_currency.sym] || "USD") + ">,\"suggestedPct\":<percent of their investing cash>}]}. Choose only from the tickers listed above." + langLine;
+    var system = { id: "stockScout", userInstructions: ctx.richardInstructions, lang: ctx.lang || "en",
+      vars: { glossary: investorGlossary(ctx.profile), curCode: SYM_TO_CODE[_currency.sym] || "USD" } };
     callClaude([{ role: "user", content: "Candidate data:\n" + lines + "\n\nCurrent market headlines:\n" + (newsLines || "(none available)") + "\n\n" + personal + " Find the next big opportunities for me and size each one to my situation." }],
       system, 1500, function(err, text) {
         if (err || !text) { cb(localStockScout(data.candidates, ctx)); return; }
@@ -21553,9 +22458,9 @@ function runStockScout(ctx, cb) {
 function sendScoutChat(scout, ctx, history, cb) {
   var picksLine = (scout.picks || []).map(function(p) { return p.symbol + " (" + p.confidence + " confidence): " + p.thesis + " Catalyst: " + p.catalyst + " Risk: " + p.risks + " Suggested: " + dollars(p.suggestedAmount || 0); }).join("\n");
   var langName = LANGUAGE_NAMES[ctx.lang] || "English";
-  var langLine = langName !== "English" ? " Reply entirely in " + langName + "." : "";
-  var system = richardUserCtx(ctx.richardInstructions) +
-    "You are Richard, discussing the stock ideas you just gave this person. Be warm, direct, and concrete, explain your reasoning when asked, and stay honest about uncertainty - never promise returns. Keep replies short and punchy - two to four spoken-style sentences unless they ask for real depth. Tie advice to their money: they have " + dollars(ctx.investingCash || 0) + " of investing cash and are " + investorLevelPhrase(ctx.profile) + ". Your scouting report said: " + (scout.marketNote || "") + "\nYour picks:\n" + picksLine + RICHARD_FORMAT + langLine;
+  var system = { id: "stockChat", userInstructions: ctx.richardInstructions, lang: ctx.lang || "en",
+    vars: { investingCash: dollars(ctx.investingCash || 0), levelPhrase: investorLevelPhrase(ctx.profile),
+            marketNote: scout.marketNote || "", picks: picksLine } };
   callClaude(history, system, 700, cb);
 }
 
@@ -21962,7 +22867,7 @@ function StockScoutView(props) {
 
   var cash = acct ? investingCash(acct) : 0;
   var balance = 0;
-  tx.forEach(function(t) { if (t.pending || t.catchUp || (t.date && t.date > today)) return; balance += t.type === "income" ? t.amount : -t.amount; });
+  tx.forEach(function(t) { if (t.pending || skipCatchUp(t) || (t.date && t.date > today)) return; balance += t.type === "income" ? t.amount : -t.amount; });
   balance = round2(balance);
 
   function ctxObj() {
@@ -22398,8 +23303,7 @@ function BusinessView(props) {
   function fetchIdeas(biz) {
     if (ideasLoading) return;
     setIdeasLoading(true); setIdeas(null);
-    var custom = richardUserCtx(props.richardInstructions);
-    var sys = custom + "You are Richard, a sharp, warm, honest business CFO inside the Richy app. Give the owner growth ideas grounded ONLY in the numbers provided - never invent figures. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"ideas\":[{\"title\":\"2 to 6 words\",\"body\":\"2 to 3 concrete sentences tied to their numbers\",\"impact\":\"one short line like: about $120 more per month, or empty string\"}]} with EXACTLY 3 ideas." + langLine();
+    var sys = { id: "bizIdeas", userInstructions: props.richardInstructions, lang: props.lang || "en" };
     callClaude([{ role: "user", content: bizWeeklyDigest(biz) + " Give me 3 growth ideas." }], sys, 500, function(e, text) {
       setIdeasLoading(false);
       if (!e && text) {
@@ -22438,7 +23342,6 @@ function BusinessView(props) {
   var STAGES = [{ v: "idea", l: "Just an idea" }, { v: "launching", l: "Launching soon" }, { v: "running", l: "Already running" }];
   var SIZES = [{ v: "side", l: "Side project" }, { v: "growing", l: "Growing venture" }, { v: "full", l: "Full company" }];
   function labelOf(list, v) { for (var i = 0; i < list.length; i++) { if (list[i].v === v) return list[i].l; } return v; }
-  function langLine() { return (props.lang && props.lang !== "en") ? (" Every string value must be written entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + ".") : ""; }
 
   function setField(k, val) { setForm(function(p) { var n = {}; for (var key in p) n[key] = p[key]; n[k] = val; return n; }); }
   function setLogField(k, val) { setLogForm(function(p) { var n = {}; for (var key in p) n[key] = p[key]; n[k] = val; return n; }); }
@@ -22484,8 +23387,7 @@ function BusinessView(props) {
   function buildPlan() {
     setPlanning(true); setErr("");
     var monthly = parseFloat(form.monthly) || 0;
-    var custom = richardUserCtx(props.richardInstructions);
-    var sys = custom + "You are Richard, a sharp, warm, honest business CFO and startup advisor inside the Richy app. Build a practical, realistic, encouraging business plan and a monthly operating budget for the user's business, run against the real numbers they give you. The owner's notes, when present, are hard requirements: let them override the stage and scale defaults in the budget split, the plan sections, the tips, and the verdict - a plan that ignores what the owner wrote in their notes is a failed plan. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"summary\":\"2 to 3 sentence plain-English summary of the business and the path to making it work\",\"sections\":[{\"title\":\"short section title\",\"body\":\"2 to 4 sentences of concrete, specific advice\"}],\"categories\":[{\"category\":\"Marketing\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"short actionable tip\"],\"verdict\":{\"assessment\":\"one honest sentence on whether this budget and runway are realistic\",\"keyNumber\":\"the single most important figure e.g. 7 months runway or break-even at $4k/mo\",\"keyNumberLabel\":\"what that figure means in 2 to 4 words\"}}. Provide 4 to 6 sections covering positioning, the first 90 days, pricing and revenue, costs to watch, and the biggest risk. The categories must be chosen only from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer, and the amounts are whole numbers that sum to about the monthly budget. Be honest if the budget or runway looks too thin." + langLine();
+    var sys = { id: "bizPlan", userInstructions: props.richardInstructions, lang: props.lang || "en" };
     var usr = "Business name: " + (form.name || "my business") + ". What it does: " + (form.what || "unspecified") + ". "
       + "Legal structure: " + labelOf(STRUCTURES, form.structure) + ". Stage: " + labelOf(STAGES, form.stage) + ". Scale: " + labelOf(SIZES, form.size) + ". "
       + "Planned monthly spend: " + dollars(monthly) + ". Monthly revenue goal: " + dollars(parseFloat(form.revenueGoal) || 0) + ". "
@@ -22566,14 +23468,12 @@ function BusinessView(props) {
     setWizChat(nc); setWizLoading(true);
     var monthly = parseFloat(form.monthly) || 0;
     var split = planResult.categories.map(function(c) { return c.label + ": " + dollars(c.planned || 0); }).join("; ");
-    var custom = richardUserCtx(props.richardInstructions);
-    var sys = custom + "You are Richard, a warm, sharp business CFO inside the Richy app, helping set up a new business budget. "
-      + "Business: " + (form.name || "the business") + " - " + (form.what || "unspecified") + ". Structure: " + labelOf(STRUCTURES, form.structure) + ". Stage: " + labelOf(STAGES, form.stage) + ". Scale: " + labelOf(SIZES, form.size) + ". Monthly budget " + dollars(monthly) + ", revenue goal " + dollars(parseFloat(form.revenueGoal) || 0) + ". "
-      + richardNotesBlock("NOTES FROM THE OWNER", form.notes)
-      + "Current proposed budget split: " + (split || "not set") + ". "
-      + "Answer the owner's question with concrete, practical advice. You can DIRECTLY change the split, not just describe it. When the owner wants a change, give one short plain-text sentence explaining what you did, then on a new line append a directive in EXACTLY this form: @@ALLOC[{\"category\":\"Marketing\",\"amount\":600},{\"category\":\"Software\",\"amount\":150}] "
-      + "Only list the buckets you are changing, using whole numbers, and keep the overall total close to " + dollars(monthly) + " by also adjusting Buffer or Other when needed. Categories must be from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer. "
-      + "Only include the @@ALLOC directive when you actually intend to change the split; for general questions just answer normally." + RICHARD_FORMAT + " The @@ALLOC directive, when you use it, must be the very last thing in your reply.";
+    var sys = { id: "bizWizardChat", userInstructions: props.richardInstructions, lang: props.lang || "en",
+      vars: { name: form.name || "the business", what: form.what || "unspecified",
+              structure: labelOf(STRUCTURES, form.structure), stage: labelOf(STAGES, form.stage),
+              size: labelOf(SIZES, form.size), monthly: dollars(monthly),
+              revenueGoal: dollars(parseFloat(form.revenueGoal) || 0),
+              notes: form.notes, split: split || "not set" } };
     callClaude(nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }), sys, 450, function(e, reply) {
       setWizLoading(false);
       if (e || !reply) { setWizChat(function(p) { return p.concat([{ role: "richard", text: "Sorry, I could not connect. Try again." }]); }); return; }
@@ -22805,17 +23705,14 @@ function BusinessView(props) {
       var tsC = mssC[oi].tasks || [];
       for (var oj = 0; oj < tsC.length && openTasks.length < 6; oj++) { if (!tsC[oj].done) openTasks.push(tsC[oj].label); }
     }
-    var custom = richardUserCtx(props.richardInstructions);
-    var sys = custom + "You are Richard, a warm, sharp, honest business CFO inside the Richy app. You are helping the owner run and budget their business and make it succeed. "
-      + "Business: " + (biz.name || "the business") + " - " + (biz.what || "unspecified") + ". Structure: " + labelOf(STRUCTURES, pf.structure) + ". Stage: " + labelOf(STAGES, pf.stage) + ". Scale: " + labelOf(SIZES, pf.size) + ". Revenue goal " + dollars(pf.revenueGoal || 0) + "/month. "
-      + "LIVE NUMBERS - " + bizContextLine(biz) + (paceNow ? (" " + paceNow.text) : "") + " "
-      + "Monthly budget split: " + (split || "not set") + ". "
-      + richardNotesBlock("NOTES FROM THE OWNER", pf.notes)
-      + (openTasks.length ? ("Open roadmap tasks: " + openTasks.join(" | ") + ". ") : "")
-      + "Ground every answer in these numbers, and when you give advice end with one concrete action. "
-      + "You can DIRECTLY change the monthly budget split. When the owner wants that, give one short sentence explaining what you did, then on a new line append: @@ALLOC[{\"category\":\"Marketing\",\"amount\":600}] - only the buckets you are changing, whole numbers, keep the total close to " + dollars(pf.monthly || 0) + " by also adjusting Buffer or Other. Categories only from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer. "
-      + "You can also ACT on the business. When the owner reports a real money event or a finished step, or asks you to record one, acknowledge it in words and append ONE directive line at the very end: @@BIZ[{\"op\":\"expense\",\"category\":\"Marketing\",\"amount\":120,\"label\":\"Facebook ads\"},{\"op\":\"revenue\",\"amount\":300,\"label\":\"First sale\"},{\"op\":\"taskDone\",\"task\":\"words quoted from an open roadmap task\"},{\"op\":\"taskAdd\",\"milestone\":\"milestone title\",\"task\":\"new concrete task\"},{\"op\":\"stage\",\"value\":\"launching\"}] - include ONLY the ops that apply (usually one or two). Use taskDone only when the owner says they finished something matching an open roadmap task, quoting its words. Only emit ops for concrete events with real numbers the owner actually states - never for hypotheticals or plans. "
-      + "Use each directive at most once, each on its own line at the very end of the reply, @@ALLOC before @@BIZ. Do not mention the directive syntax in your spoken reply." + RICHARD_FORMAT;
+    var sys = { id: "bizChat", userInstructions: props.richardInstructions, lang: props.lang || "en",
+      vars: { name: biz.name || "the business", what: biz.what || "unspecified",
+              structure: labelOf(STRUCTURES, pf.structure), stage: labelOf(STAGES, pf.stage),
+              size: labelOf(SIZES, pf.size), revenueGoal: dollars(pf.revenueGoal || 0),
+              live: bizContextLine(biz) + (paceNow ? (" " + paceNow.text) : ""),
+              split: split || "not set", notes: pf.notes,
+              openTasks: openTasks.length ? openTasks.join(" | ") : "",
+              monthly: dollars(pf.monthly || 0) } };
     callClaude(nc.filter(function(m) { return m.role !== "system"; }).map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }), sys, 600, function(e, reply) {
       setChatLoading(false);
       if (e || !reply) {
@@ -22865,8 +23762,7 @@ function BusinessView(props) {
   function replanWithRichard(biz) {
     setReplanning(true);
     var pf = biz.profile || {};
-    var custom = richardUserCtx(props.richardInstructions);
-    var sys = custom + "You are Richard, a sharp, warm, honest business CFO inside the Richy app. Refresh the business plan and monthly operating budget using the latest numbers. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"summary\":\"2 to 3 sentences\",\"sections\":[{\"title\":\"\",\"body\":\"\"}],\"categories\":[{\"category\":\"Marketing\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"\"],\"verdict\":{\"assessment\":\"\",\"keyNumber\":\"\",\"keyNumberLabel\":\"\"}}. Categories only from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer, whole numbers summing to about the monthly budget. 4 to 6 sections." + langLine();
+    var sys = { id: "bizPlanRefresh", userInstructions: props.richardInstructions, lang: props.lang || "en" };
     var usr = "Business: " + (biz.name || "my business") + " - " + (biz.what || "unspecified") + ". Structure: " + labelOf(STRUCTURES, pf.structure) + ". Stage: " + labelOf(STAGES, pf.stage) + ". Scale: " + labelOf(SIZES, pf.size) + ". "
       + "Monthly budget " + dollars(pf.monthly || 0) + ", revenue goal " + dollars(pf.revenueGoal || 0) + ", cash on hand " + dollars(businessCash(biz)) + ", spent so far " + dollars(businessSpent(biz)) + ", runway " + ((pf.runway || 0) > 0 ? (pf.runway + " months") : "unspecified") + ". 12-month goal: " + (pf.goal || "unspecified") + ". "
       + richardNotesBlock("NOTES FROM THE OWNER", pf.notes)
@@ -24370,7 +25266,7 @@ function LogMonthView(props) {
 
   // What's already logged this month per category, and the budget limit if set.
   function spentThisMonth(c) {
-    return allTx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
+    return allTx.filter(function(t) { return t.type === "expense" && !t.pending && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
   }
   function limitFor(c) {
     var b = allBudgets.filter(function(x) { return x.catId === c.id || x.category === c.name; })[0];
@@ -24616,7 +25512,7 @@ function AppearanceView(props) {
 function EntryMethodView(props) {
   var opts = [
     { id: "manual", label: "Enter manually", sub: "Log each transaction yourself - full control", icon: "edit" },
-    { id: "import", label: "Import from CSV", sub: "Upload a bank or card statement to fill them in", icon: "down" }
+    { id: "import", label: tr("impName"), sub: tr("obImportCsvSub"), icon: "down" }
   ];
   return (
     <div>
@@ -24706,9 +25602,11 @@ var BANK_SYNC_ENDPOINT = "https://richy-mgkl.vercel.app/api/bank-sync";
 // implements the real handshake, but it's DORMANT: a genuine connection needs
 // Bank Leumi to certify Richy as a licensed Third-Party Provider (eIDAS
 // QWAC/QSEAL certificates), which is a business/legal step, not a signup form.
-// Until/unless that happens, the UI below runs an honest, clearly-labeled DEMO
-// simulation instead (see LEUMI_DEMO_MERCHANTS and onConnectLeumiFinteka) -
-// it never calls this endpoint or pretends to be a real bank login.
+// Until/unless that happens there is no Bank Leumi connection in the product at
+// all. There used to be a labelled DEMO here that wrote invented transactions
+// into the real ledger; it is gone (see cleanDemoSyncTx). The endpoint below is
+// kept because the handshake it implements is real and finished - it is simply
+// dormant until certification, and nothing in the app calls it today.
 var LEUMI_FINTEKA_ENDPOINT = "https://richy-mgkl.vercel.app/api/leumi-fintaka";
 
 // The one-time phone setup, reformatted as a Jomo-style journey (the same
@@ -25246,13 +26144,8 @@ function BankSyncHelpChat(props) {
     var stepLines = steps.map(function(st, i) {
       return (i + 1) + ". " + st.h + " " + st.s + (st.subs ? " (" + st.subs.join(" / ") + ")" : "");
     }).join("\n");
-    var system = "You are Richard, the warm advisor inside the Richy budget app, walking a user through Bank Sync's one-time phone setup. How it works: " +
-      (props.platform === "android"
-        ? "the free MacroDroid app watches for Google Wallet's purchase notification and forwards it"
-        : "the iPhone Shortcuts app's Transaction automation fires on each Apple Pay tap and sends the details") +
-      " as a POST to the user's personal Richy sync address, and Richy books the expense automatically. No bank login or credentials are ever involved; the sync key can only ADD expenses to this one account, never read anything. The user is on the setup page titled \"" + (props.stepLabel || "Getting started") + "\". The full " +
-      (props.platform === "android" ? "Android" : "iPhone") + " steps are:\n" + stepLines +
-      "\nAnswer setup questions concretely and literally, naming the exact buttons they'll see on their phone. The user may attach screenshots of their phone's screen - read them carefully, say what screen they're on, and name the exact next tap. The sync address, sync key and request body each have a Copy button on their own setup page - point users there instead of reciting values. If they think it isn't working, remind them the final page has a Send a test transaction button. Keep answers under 90 words, in plain sentences - no markdown headings, only use a numbered list when listing taps.";
+    var system = { id: "bankSyncHelp", lang: props.lang || "en",
+      vars: { platform: props.platform, stepLabel: props.stepLabel || "Getting started", steps: stepLines } };
     var recent = next.slice(-10);
     var latestImgIdx = -1;
     for (var li = recent.length - 1; li >= 0; li--) { if (recent[li].img) { latestImgIdx = li; break; } }
@@ -25557,150 +26450,6 @@ function BankSyncJourney(props) {
   );
 }
 
-// A DEMO Bank Leumi connect flow. There is no real bank behind this (see the
-// big comment above LEUMI_FINTEKA_ENDPOINT) - a genuine connection needs Bank
-// Leumi to certify Richy as a licensed Third-Party Provider first. This is
-// deliberately NOT a fake bank login screen (recreating a real bank's login
-// page, even a harmless-looking one, is the exact shape of a phishing page) -
-// instead it's an honest "here's what this would look like" consent dialog,
-// labeled Demo throughout. Rendered as its own section inside BankSyncView so
-// both sync methods live on one screen.
-function LeumiDemoConsentModal(props) {
-  var _bz = useState(false); var busy = _bz[0]; var setBusy = _bz[1];
-  function approve() {
-    if (busy) return;
-    setBusy(true);
-    Promise.resolve(props.onApprove()).then(function() { setBusy(false); props.onClose(); }).catch(function() { setBusy(false); });
-  }
-  var perms = ["Account name and masked account number", "Transaction history (amount, merchant, date)"];
-  return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 500 }} onClick={busy ? undefined : props.onClose}>
-      <div onClick={function(e) { e.stopPropagation(); }} style={{ width: "100%", maxWidth: 428, background: T.card, borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: "24px 22px 30px", boxSizing: "border-box" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-          <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", color: T.orange, background: T.orangeDim, borderRadius: 6, padding: "3px 7px" }}>DEMO</span>
-          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, fontFamily: DISP }}>Simulate connecting Bank Leumi</div>
-        </div>
-        <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.55, margin: "10px 0 16px" }}>
-          Richy doesn't have a live connection to Bank Leumi yet - that requires Bank Leumi to certify Richy as a licensed Open Banking provider first. This preview shows what the consent step would look like and fills your account with realistic-looking demo transactions so you can see the feature in action.
-        </div>
-        <div style={{ background: T.bg, borderRadius: 14, padding: "14px 16px", marginBottom: 18 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>A real connection would share</div>
-          {perms.map(function(p, i) {
-            return (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0" }}>
-                <SVGIcon id="check" size={13} color={T.green} />
-                <span style={{ fontSize: 13, color: T.ink }}>{p}</span>
-              </div>
-            );
-          })}
-        </div>
-        <button onClick={approve} disabled={busy}
-          style={{ width: "100%", background: T.btn, color: "#fff", border: "none", borderRadius: 16, padding: "15px 0", fontSize: 15.5, fontFamily: UI, fontWeight: 700, cursor: "pointer", opacity: busy ? 0.6 : 1, boxSizing: "border-box", marginBottom: 8 }}>
-          {busy ? "Simulating connection..." : "Simulate approval (Demo)"}
-        </button>
-        <button onClick={props.onClose} disabled={busy}
-          style={{ width: "100%", background: "none", color: T.ink3, border: "none", borderRadius: 16, padding: "12px 0", fontSize: 14.5, fontFamily: UI, fontWeight: 600, cursor: "pointer" }}>
-          Cancel
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function LeumiFintekaCard(props) {
-  var lf = props.leumiFinteka;
-  var connected = !!(lf && lf.connected);
-  var _md = useState(false); var modalOpen = _md[0]; var setModalOpen = _md[1];
-  var _sb = useState(false); var syncBusy = _sb[0]; var setSyncBusy = _sb[1];
-  var _dz = useState(false); var disconnecting = _dz[0]; var setDisconnecting = _dz[1];
-  var _err = useState(""); var err = _err[0]; var setErr = _err[1];
-  var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", padding: "18px 4px 8px", fontFamily: UI };
-
-  function handleDisconnect() {
-    if (!window.confirm("Disconnect Bank Leumi (Demo)? Transactions already synced stay in Richy; new ones will stop arriving until you reconnect.")) return;
-    setDisconnecting(true);
-    Promise.resolve(props.onDisconnect()).then(function() { setDisconnecting(false); }).catch(function() { setDisconnecting(false); });
-  }
-  function handleSyncNow() {
-    if (syncBusy) return;
-    setSyncBusy(true); setErr("");
-    Promise.resolve(props.onSyncNow()).catch(function(e) {
-      setErr((e && e.message) || "Sync didn't go through. Try again in a moment.");
-    }).then(function() { setSyncBusy(false); });
-  }
-
-  if (!connected) {
-    return (
-      <div>
-        <div style={secLabel}>Connect a bank directly</div>
-        <Card style={{ padding: "22px 20px", marginBottom: 4 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
-            <div style={{ width: 42, height: 42, borderRadius: 13, background: T.blueDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <SVGIcon id="building" size={20} color={T.blue} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, display: "flex", alignItems: "center", gap: 6 }}>
-                Bank Leumi
-                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.05em", color: T.orange, background: T.orangeDim, borderRadius: 5, padding: "2px 6px" }}>DEMO</span>
-              </div>
-              <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.45 }}>Preview what a direct Bank Leumi connection would feel like - fills your account with realistic demo transactions, no real bank involved.</div>
-            </div>
-          </div>
-          <button onClick={function() { setErr(""); setModalOpen(true); }}
-            style={{ width: "100%", background: T.card, color: T.ink, border: "1.5px solid " + T.sep, borderRadius: 14, padding: "13px 0", fontSize: 14.5, fontFamily: UI, fontWeight: 600, cursor: "pointer", boxSizing: "border-box" }}>
-            Connect Bank Leumi (Demo)
-          </button>
-          {lf && lf.status === "error" && lf.error && (
-            <div style={{ fontSize: 12.5, color: T.red, lineHeight: 1.5, marginTop: 10, fontFamily: UI }}>{lf.error}</div>
-          )}
-          {err && <div style={{ fontSize: 12.5, color: T.red, lineHeight: 1.5, marginTop: 10, fontFamily: UI }}>{err}</div>}
-        </Card>
-        <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, padding: "0 6px 4px" }}>
-          This is a demo - no real Bank Leumi account is ever contacted or asked for a password. A genuine connection needs Bank Leumi to certify Richy as a licensed Open Banking provider first.
-        </div>
-        {modalOpen && (
-          <LeumiDemoConsentModal
-            onApprove={function() {
-              return Promise.resolve(props.onConnect()).catch(function(e) {
-                setErr((e && e.message) || "Couldn't simulate the connection. Try again.");
-                throw e;
-              });
-            }}
-            onClose={function() { setModalOpen(false); }}
-          />
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div style={secLabel}>Connected bank</div>
-      <Card style={{ overflow: "hidden", marginBottom: 4 }}>
-        <div style={{ padding: "15px 20px", display: "flex", alignItems: "center", gap: 10, borderBottom: "0.5px solid " + T.sep }}>
-          <span style={{ width: 9, height: 9, borderRadius: "50%", background: T.green, boxShadow: "0 0 0 4px " + T.greenDim, flexShrink: 0 }} />
-          <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, fontFamily: UI }}>{lf.accountLabel || "Bank Leumi (Demo)"}</span>
-        </div>
-        <InfoRow label="Last synced" value={lf.lastSyncAt ? new Date(lf.lastSyncAt).toLocaleString() : "Waiting for first sync"} />
-        <InfoRow label="Transactions synced" value={String(lf.count || 0)} last />
-      </Card>
-      <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, padding: "0 6px 10px" }}>
-        Demo connection - these are realistic sample transactions, not real activity from a Bank Leumi account.
-      </div>
-
-      <button onClick={handleSyncNow} disabled={syncBusy}
-        style={{ width: "100%", background: T.card, color: T.orange, border: "1.5px solid " + T.orangeDim, borderRadius: 16, padding: "14px 0", fontSize: 15, fontFamily: UI, fontWeight: 600, cursor: "pointer", marginBottom: 8, opacity: syncBusy ? 0.6 : 1, boxSizing: "border-box" }}>
-        {syncBusy ? "Syncing..." : "Sync now (Demo)"}
-      </button>
-      {err && <div style={{ fontSize: 12.5, color: T.red, lineHeight: 1.5, padding: "0 6px 10px", fontFamily: UI }}>{err}</div>}
-
-      <button onClick={handleDisconnect} disabled={disconnecting}
-        style={{ width: "100%", background: "rgba(224,48,48,0.08)", color: T.red, border: "1px solid rgba(224,48,48,0.14)", borderRadius: 16, padding: "14px 0", fontSize: 15, fontFamily: UI, fontWeight: 600, cursor: "pointer", opacity: disconnecting ? 0.6 : 1, boxSizing: "border-box" }}>
-        {disconnecting ? "Disconnecting..." : "Disconnect Bank Leumi"}
-      </button>
-    </div>
-  );
-}
 
 function BankSyncView(props) {
   var bs = props.bankSync;
@@ -25770,8 +26519,6 @@ function BankSyncView(props) {
         <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.55, padding: "0 6px" }}>
           Works with any card in Apple Wallet or Google Wallet. Your bank credentials are never involved - your phone only reports the merchant and amount of each tap, straight to your own Richy account.
         </div>
-
-        <LeumiFintekaCard leumiFinteka={props.leumiFinteka} onConnect={props.onConnectLeumi} onDisconnect={props.onDisconnectLeumi} onSyncNow={props.onSyncLeumiNow} />
       </div>
     );
   }
@@ -25827,8 +26574,6 @@ function BankSyncView(props) {
       <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, padding: "8px 6px 0", fontFamily: UI }}>
         Turning it off keeps everything already synced and simply stops new transactions from arriving.
       </div>
-
-      <LeumiFintekaCard leumiFinteka={props.leumiFinteka} onConnect={props.onConnectLeumi} onDisconnect={props.onDisconnectLeumi} onSyncNow={props.onSyncLeumiNow} />
 
       {guide && <BankSyncJourney bankSync={bs} onClose={function() { setGuide(false); }} />}
     </div>
@@ -25888,18 +26633,37 @@ function PrivacyView(props) {
         if (!token) throw new Error("Your session expired. Sign out and back in, then try again.");
         return fetch(apiUrl, { method: "POST", headers: { Authorization: "Bearer " + token } });
       })
-      .then(function(r) { return r.json().catch(function() { return {}; }).then(function(j) { return { status: r.status, body: j }; }); })
+      .then(function(r) {
+        return r.text().then(function(raw) {
+          var body = null;
+          try { body = raw ? JSON.parse(raw) : null; } catch (e) { /* not JSON - see below */ }
+          return { status: r.status, body: body };
+        });
+      })
       .then(function(res) {
         setDelBusy(false);
-        if (res.body && res.body.ok) { props.onAccountDeleted(); return; }
-        if (res.body && res.body.partial) {
-          // Most of the data is gone but a step failed - tell the user, then
-          // still sign them out (their account blob no longer exists).
-          window.alert(res.body.message || "Some data could not be removed automatically. Email richysupport@gmail.com and we'll finish it manually.");
-          props.onAccountDeleted();
+        var body = res.body;
+        if (body && body.ok) { props.onAccountDeleted(); return; }
+        if (body && body.partial) {
+          // Retryable, and the endpoint is idempotent: keep the session so the
+          // user can actually press Retry. Signing them out here (what we used
+          // to do, behind a native alert) left them with no way back in to
+          // finish the job.
+          setDelErr((body.message || "Some data could not be removed automatically.")
+            + (body.failed && body.failed.length ? " Still to remove: " + body.failed.join(", ") + "." : "")
+            + " Try again, or email richysupport@gmail.com.");
           return;
         }
-        setDelErr((res.body && res.body.error && res.body.error.message) || "Deletion didn't go through. Try again, or email richysupport@gmail.com.");
+        // No parseable body. On the old code this fell through to "Deletion
+        // didn't go through" - but a serverless function killed mid-flight has
+        // usually ALREADY deleted the account blob, so that message was often
+        // the opposite of the truth, and the next load silently rebuilt an
+        // empty account. Say what is actually known, and let them retry.
+        if (!body) {
+          setDelErr("We couldn't confirm whether the deletion finished. Reopen this screen to check, or try again - anything already deleted stays deleted.");
+          return;
+        }
+        setDelErr((body.error && body.error.message) || "Deletion didn't go through. Try again, or email richysupport@gmail.com.");
       })
       .catch(function(e) {
         setDelBusy(false);
@@ -26091,10 +26855,45 @@ function EditDobView(props) {
   );
 }
 
+// Day names in the user's own language, from the browser rather than a table -
+// four locales' worth of weekday names is not worth hand-maintaining.
+function weekdayName(i) {
+  var localeMap = { en: "en-US", he: "he-IL", ar: "ar-SA", ru: "ru-RU" };
+  // 2026-08-16 is a Sunday, so adding i lands on weekday i.
+  var d = new Date(Date.UTC(2026, 7, 16 + (i || 0)));
+  try { return d.toLocaleDateString(localeMap[_lang.code] || "en-US", { weekday: "long", timeZone: "UTC" }); }
+  catch (e) { return ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][i || 0]; }
+}
+
+function EditCloseDayView(props) {
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} label={tr("wcDayLabel")} />
+      <div style={{ fontSize: 14, color: T.ink3, lineHeight: 1.55, marginBottom: 16, padding: "0 2px" }}>{tr("wcCardSub")}</div>
+      <Card style={{ overflow: "hidden" }}>
+        {[0, 1, 2, 3, 4, 5, 6].map(function(i) {
+          var on = (props.closeDay || 0) === i;
+          return (
+            <div key={i} onClick={function() { props.onSave(i); props.onBack(); }}
+              style={{ display: "flex", alignItems: "center", padding: "14px 18px", cursor: "pointer",
+                borderBottom: i < 6 ? "0.5px solid " + T.sep : "none" }}>
+              <span style={{ flex: 1, fontSize: 15, fontWeight: on ? 700 : 500, color: on ? T.ink : T.ink2 }}>{weekdayName(i)}</span>
+              {on && <SVGIcon id="check" size={16} color={T.green} />}
+            </div>
+          );
+        })}
+      </Card>
+    </div>
+  );
+}
+
 function EditFinancialView(props) {
   var oData = props.oData || {};
   var _ls = useState(oData.lifeStage || ""); var lifeStage = _ls[0]; var setLifeStage = _ls[1];
   var _inc = useState(oData.income || ""); var income = _inc[0]; var setIncome = _inc[1];
+  // Set at signup, changeable here - a freelancer who lands a salaried job
+  // should not be stuck with Richy refusing to propose their monthly income.
+  var _itp = useState(oData.incomeType === "variable" ? "variable" : "fixed"); var incomeType = _itp[0]; var setIncomeType = _itp[1];
   var _ess = useState(oData.essentials || ""); var essentials = _ess[0]; var setEssentials = _ess[1];
   var _sav = useState(oData.savings || ""); var savings = _sav[0]; var setSavings = _sav[1];
   var _dbt = useState(oData.debt || ""); var debt = _dbt[0]; var setDebt = _dbt[1];
@@ -26103,7 +26902,7 @@ function EditFinancialView(props) {
   var _tl = useState(oData.timeline || ""); var timeline = _tl[0]; var setTimeline = _tl[1];
 
   function handleSave() {
-    props.onSave({ lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: oData.age || "" });
+    props.onSave({ lifeStage: lifeStage, income: income, incomeType: incomeType, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: oData.age || "" });
   }
 
   var flStyle = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 8, display: "block" };
@@ -26113,22 +26912,34 @@ function EditFinancialView(props) {
     <div>
       <SubViewBack onBack={props.onBack} label="Privacy & Data" />
       <Card style={{ padding: "22px 20px", marginBottom: 12 }}>
-        <span style={flStyle}>Life stage</span>
+        <span style={flStyle}>{tr("efLifeStage")}</span>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18, paddingBottom: 18, borderBottom: "0.5px solid " + T.sep }}>
           {STAGES.map(function(st) {
             var sel = lifeStage === st.label;
             return (
               <button key={st.label} onClick={function() { setLifeStage(st.label); }}
                 style={{ background: sel ? T.orange : "rgba(0,0,0,0.06)", border: "none", borderRadius: 30, padding: "9px 16px", fontSize: 14, fontWeight: sel ? 700 : 500, color: sel ? "#fff" : T.ink2, cursor: "pointer", fontFamily: UI }}>
-                {st.label}
+                {tr(st.tKey)}
               </button>
             );
           })}
         </div>
-        <AmountSettingRow first label="Monthly income" value={income} onChange={setIncome} picks={[1500, 3000, 5000, 8000]} />
-        <AmountSettingRow label="Monthly essentials" value={essentials} onChange={setEssentials} picks={[800, 1500, 2500, 4000]} />
-        <AmountSettingRow label="Current savings" value={savings} onChange={setSavings} picks={[500, 2000, 10000, 25000]} />
-        <AmountSettingRow last label="Total debt" value={debt} onChange={setDebt} picks={[1000, 5000, 20000]} />
+        <span style={flStyle}>{tr("obIncomeTypeHead")}</span>
+        <div style={{ display: "flex", gap: 8, marginBottom: 18, paddingBottom: 18, borderBottom: "0.5px solid " + T.sep }}>
+          {[{ v: "fixed", l: "obIncomeFixed" }, { v: "variable", l: "obIncomeVariable" }].map(function(o) {
+            var sel = incomeType === o.v;
+            return (
+              <button key={o.v} onClick={function() { setIncomeType(o.v); }}
+                style={{ flex: 1, background: sel ? T.orange : "rgba(0,0,0,0.06)", border: "none", borderRadius: 30, padding: "9px 16px", fontSize: 14, fontWeight: sel ? 700 : 500, color: sel ? "#fff" : T.ink2, fontFamily: UI, cursor: "pointer" }}>
+                {tr(o.l)}
+              </button>
+            );
+          })}
+        </div>
+        {incomeType === "fixed" && <AmountSettingRow first label={tr("obIncomeLabel")} value={income} onChange={setIncome} picks={[1500, 3000, 5000, 8000]} />}
+        <AmountSettingRow label={tr("obEssentialsLabel")} value={essentials} onChange={setEssentials} picks={[800, 1500, 2500, 4000]} />
+        <AmountSettingRow label={tr("efSavingsNow")} value={savings} onChange={setSavings} picks={[500, 2000, 10000, 25000]} />
+        <AmountSettingRow last label={tr("obTotalDebtLabel")} value={debt} onChange={setDebt} picks={[1000, 5000, 20000]} />
       </Card>
       <Card style={{ padding: "22px 20px", marginBottom: 12 }}>
         <span style={flStyle}>Top goal</span>
@@ -26284,7 +27095,7 @@ function PlanView(props) {
     setTranslatingPlan(true);
     callClaude(
       [{ role: "user", content: "Translate this financial plan to " + langName + ". Keep the same warm tone, structure, and personal advice. Output only the translated plan, nothing else:\n\n" + props.plan }],
-      "You are Richard, a personal finance advisor. Translate the given financial plan faithfully to the requested language. Preserve the warm, direct, personal tone.",
+      { id: "planTranslate", lang: props.lang || "en" },
       400,
       function(err, translated) { setTranslatingPlan(false); if (!err && translated && props.onUpdatePlan) props.onUpdatePlan(translated); }
     );
@@ -26316,24 +27127,9 @@ function PlanView(props) {
     });
     var planChallenge = (props.onboardingData && props.onboardingData.coreProblem) || "";
     var langName = props.lang && props.lang !== "en" ? (LANGUAGE_NAMES[props.lang] || "English") : "";
-    var customInstructionsPrefix = richardUserCtx(props.richardInstructions);
-    var sys = customInstructionsPrefix + "You are Richard, a calm, warm, and deeply knowledgeable personal finance advisor inside the Richy app. You are a trusted friend who combines world-class financial expertise with genuine care for the user's situation. "
-      + "The user's name is " + (props.username || "there") + ". "
-      + (planChallenge ? "Their primary financial challenge is: " + planChallenge + ". Address this challenge directly and specifically — no generic advice. " : "")
-      + "Their current financial plan is: " + (props.plan || "not yet created") + ". Use this plan as context for every answer. "
-      + "You have deep knowledge from the world's best financial books and thinkers: The Psychology of Money (Morgan Housel — wealth is about behavior, not intelligence; saving is the gap between ego and income); Rich Dad Poor Dad (Kiyosaki — assets put money in your pocket, liabilities take it out; buy assets first); The Millionaire Next Door (Stanley and Danko — most millionaires live below their means, drive used cars, avoid lifestyle inflation); I Will Teach You To Be Rich (Ramit Sethi — automate savings, spend extravagantly on what you love, cut mercilessly elsewhere); The Total Money Makeover (Dave Ramsey — debt snowball, emergency fund first, live on less than you earn); The Richest Man in Babylon (Clason — pay yourself first 10%, live on 70%, give 20% to debts); Money Master the Game (Robbins — asset allocation drives 90% of returns, fees kill wealth). "
-      + "You carry the wisdom of Warren Buffett (do not save what is left after spending — spend what is left after saving; rule one: never lose money), Charlie Munger (invert, always invert; avoid what destroys wealth as much as seeking what builds it), Ray Dalio (diversify well and you can reduce risk without reducing returns; pain plus reflection equals progress), Naval Ravikant (earn with your mind not your time; build or buy equity), and Mark Cuban (pay off credit cards every month; savings rates matter more than investment returns early on). "
-      + "You know the Richy app deeply: it has tabs for Overview (balance, cash flow, net worth), Activity (all transactions), Budgets (monthly spending limits by category), Goals (savings targets), and Advisor (full AI analysis). Categories are managed via the tag icon on Overview or the Manage link in transaction pickers. "
-      + "Richy CAN import a CSV statement: the Activity tab has an import button that reads a bank or card CSV export entirely on-device (it maps columns, handles separate money-in/money-out columns, auto-categorizes from the user's history, and skips duplicates). If someone is tired of manual entry, point them there. "
-      + "Richy HAS a Debts tracker (Profile -> Debts): the user logs each debt's balance, rate, and minimum, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date. Point anyone paying off debt there, and answer 'what first' with their actual numbers. "
-      + "Richy HAS a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): clearly labeled a DEMO, it fills the account with realistic sample transactions to preview the experience, but it is NOT a real connection to the user's actual Bank Leumi account - that needs Bank Leumi to certify Richy as a licensed Open Banking provider first, which hasn't happened. Be direct about this if asked whether it's real. "
-      + "Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (phone-automation Bank Sync is the real automatic option), no fully shared couples ledger yet. If asked about these, acknowledge the gap and offer the best workaround available inside Richy. "
-      + "Be concise and direct — keep it short unless the user asks for more depth." + RICHARD_FORMAT + " The only bracketed syntax you may use is the action tag described next. "
-      + "If you want to suggest a specific concrete change to the user's app, append exactly one action tag at the very end of your reply: "
-      + "[ACTION:{\"type\":\"budget\",\"category\":\"Food\",\"limit\":500}] to set a monthly budget limit, or "
-      + "[ACTION:{\"type\":\"goal\",\"name\":\"Emergency Fund\",\"target\":3000}] to create a savings goal. "
-      + "Only include an action tag when making a specific recommendation with a real number the user has agreed to — never for hypotheticals or plans. "
-      + (langName ? "Respond entirely in " + langName + "." : "");
+    var sys = { id: "planChat", userInstructions: props.richardInstructions, lang: props.lang || "en", situation: props.situation || "",
+      vars: { username: props.username || "there", coreProblem: planChallenge,
+              plan: props.plan || "not yet created" } };
     callClaude(apiMsgs, sys, 250, function(err, reply) {
       var text = err || !reply ? "Sorry, I could not connect. Try again." : reply;
       var action = parseAction(text);
@@ -26668,7 +27464,7 @@ function BadgeTile(props) {
 // (personal balances, savings pots, net worth, level, badges) is not read here,
 // because the household document does not contain it in the first place.
 function sharedTxOf(tx, uid) {
-  return (tx || []).filter(function(t) { return t && t.shared && t.owner === uid && !isTransfer(t); });
+  return (tx || []).filter(function(t) { return t && t.shared && !t.pending && t.owner === uid && !isTransfer(t); });
 }
 function memberTotals(tx, uid) {
   var rows = sharedTxOf(tx, uid);
@@ -27276,6 +28072,12 @@ function Profile(props) {
           onClick={props.onViewCollab} />
         <ProfileRow icon="credit" iconBg={"rgba(224,48,48,0.12)"} iconColor={T.red} label="Debts"
           sub={props.debtCount ? (props.debtCount + " tracked") : "Nothing tracked"} onClick={props.onViewDebts} />
+        <ProfileRow icon="briefcase" iconBg={T.orangeDim} iconColor={T.orange} label={tr("navBusiness")}
+          sub={(props.businesses || []).length ? tr("navTracked").replace("{n}", (props.businesses || []).length) : tr("navNone")}
+          onClick={props.onViewBusiness} />
+        <ProfileRow icon="chart" iconBg={T.goldDim} iconColor={T.gold} label={tr("navInvesting")}
+          sub={(props.investing || []).length ? tr("navTracked").replace("{n}", (props.investing || []).length) : tr("navNone")}
+          onClick={props.onViewInvesting} />
         <ProfileRow icon="plane" iconBg={T.orangeDim} iconColor={T.orange} label="Trip history"
           sub={(props.trips || []).filter(function(t) { return t.ended; }).length + " ended"} onClick={props.onViewTripHistory} last />
       </Card>
@@ -27353,8 +28155,9 @@ function SettingsView(props) {
         <ProfileRow icon="credit" iconBg={T.greenDim} iconColor={T.green} label="Currency" value={curLabel} onClick={props.onViewCurrency} />
         <ProfileRow icon="briefcase" iconBg={T.greenDim} iconColor={T.green} label="Opening Balance" onClick={props.onViewEditOpeningBalance} />
         <ProfileRow icon="activity" iconBg={T.greenDim} iconColor={T.green} label="Log This Month" onClick={props.onViewLogMonth} />
-        <ProfileRow icon="edit" iconBg={T.greenDim} iconColor={T.green} label="Adding Transactions" value={props.entryMethod === "import" ? "CSV import" : "Manual"} onClick={props.onViewEntryMethod} />
+        <ProfileRow icon="edit" iconBg={T.greenDim} iconColor={T.green} label={tr("setEntryLabel")} value={props.entryMethod === "import" ? tr("impNameShort") : tr("setEntryManual")} onClick={props.onViewEntryMethod} />
         <ProfileRow icon="calendar" iconBg={T.greenDim} iconColor={T.green} label="Date Range" value={props.periodMode === "rolling" ? "Past Month" : props.periodMode === "custom" ? "Custom" : "This Month"} onClick={props.onViewPeriodMode} />
+        <ProfileRow icon="check" iconBg={T.greenDim} iconColor={T.green} label={tr("wcDayLabel")} value={weekdayName(props.closeDay)} onClick={props.onViewCloseDay} />
         <ProfileRow icon="refresh" iconBg={T.greenDim} iconColor={T.green} label="Bank Sync" value={props.bankSync && props.bankSync.enabled ? "On" : "Off"} onClick={props.onViewBankSync} last />
       </ProfileSection>
 
@@ -27676,6 +28479,16 @@ export default function App() {
   var categories = _cat[0]; var setCategories = _cat[1];
   var _sh = useState(false);
   var sheet = _sh[0]; var setSheet = _sh[1];
+  // Quick-add: the toast message, the row it can undo, and a pick handed to the
+  // add sheet by a long-press. All session-only - none of it is worth persisting.
+  var _qt = useState(""); var quickToast = _qt[0]; var setQuickToast = _qt[1];
+  var _qu = useState(null); var undoTx = _qu[0]; var setUndoTx = _qu[1];
+  var _qp = useState(null); var quickPrefill = _qp[0]; var setQuickPrefill = _qp[1];
+  // Weekly close: which day the user picked (0-6, Sunday default - the start of
+  // the Israeli week), when they last finished one, and whether the sheet is up.
+  var _wcd = useState(0); var closeDay = _wcd[0]; var setCloseDay = _wcd[1];
+  var _wcl = useState(""); var lastClose = _wcl[0]; var setLastClose = _wcl[1];
+  var _wco = useState(false); var closeOpen = _wco[0]; var setCloseOpen = _wco[1];
   var _cur = useState("$");
   var currency = _cur[0]; var setCurrency = _cur[1];
   var _ak = useState(null);
@@ -27764,6 +28577,19 @@ export default function App() {
   // they know about and simply don't want.
   var _dt = useState([]);
   var dismissedTips = _dt[0]; var setDismissedTips = _dt[1];
+  // Suggestion bookkeeping, persisted alongside dismissedTips: how often each
+  // one has been shown, when a NEW one last appeared, and a hard-silence date.
+  var _sgc = useState({}); var shownCount = _sgc[0]; var setShownCount = _sgc[1];
+  var _sga = useState(""); var lastSuggestionAt = _sga[0]; var setLastSuggestionAt = _sga[1];
+  var _sgq = useState(""); var quietUntil = _sgq[0]; var setQuietUntil = _sgq[1];
+  var _sgi = useState(""); var activeSuggestion = _sgi[0]; var setActiveSuggestion = _sgi[1];
+  // Deliberately NOT persisted: two dismissals in one sitting is a mood, and it
+  // should not follow the user across a reinstall or a month away.
+  var consecutiveDismissalsRef = useRef(0);
+  var _sgn = useState(false); var quietedNotice = _sgn[0]; var setQuietedNotice = _sgn[1];
+  // Set when a suggestion sends the user to the import; Activity opens the
+  // sheet on arrival so the tap lands where it promised rather than on a tab.
+  var _wi = useState(false); var wantImport = _wi[0]; var setWantImport = _wi[1];
   // Found Money: only the user's DECISIONS persist (the running tally, dismissed
   // finding ids, and a log of acted items). Findings themselves are recomputed
   // from tx each session by findMoney().
@@ -27809,6 +28635,24 @@ export default function App() {
     var allTx = (sharedData && sharedData.tx) || [];
     // Merge personal txs (including private ones) on top of shared txs.
     allTx = allTx.concat((data.tx || []).filter(function(t) { return !t.shared; }));
+    // One-time sweep of the retired Bank Leumi demo's invented rows. Told, not
+    // done silently: they moved the user's balance, so removing them moves it
+    // back, and a number changing on its own with no explanation is exactly the
+    // kind of thing that makes people stop trusting the app.
+    // Post anything a `repeat` says is due since the last load. These land
+    // pending, so nothing here moves a balance until the user confirms it on
+    // the Overview card.
+    var recur = materializeRecurring(allTx, isoDay(new Date()),
+      { variableIncome: ((data.onboardingData || {}).incomeType === "variable") });
+    allTx = recur.tx;
+    var demoSweep = cleanDemoSyncTx(allTx);
+    var demoBanner = null;
+    if (demoSweep.removed) {
+      allTx = demoSweep.tx;
+      demoBanner = { id: "demo-sync-cleanup", tone: "info", icon: "refresh", dismissible: true,
+        text: "Removed " + demoSweep.removed + " sample transaction" + (demoSweep.removed === 1 ? "" : "s")
+          + " left by the old Bank Leumi preview. Nothing you logged yourself was touched." };
+    }
     setTx(allTx);
     setBudgets(allBudgets.length ? allBudgets : (data.budgets || []));
     setGoals(allGoals.length ? allGoals : (data.goals || []));
@@ -27856,10 +28700,22 @@ export default function App() {
     setPeriodCustomStart(data.periodCustomStart || "");
     setPeriodCustomEnd(data.periodCustomEnd || "");
     setBankSync(data.bankSync || null);
-    setLeumiFinteka(data.leumiFinteka || null);
-    setCustomBanners(data.customBanners || []);
+    // A demo "connection" is not a connection; drop it with the rows it wrote.
+    var lf = data.leumiFinteka || null;
+    if (lf && lf.demo) lf = null;
+    setLeumiFinteka(lf);
+    var banners = data.customBanners || [];
+    // Only ever announce this once - the id makes the append idempotent.
+    if (demoBanner && !banners.some(function(b) { return b.id === demoBanner.id; })) banners = banners.concat([demoBanner]);
+    setCustomBanners(banners);
+    setCloseDay(typeof data.weeklyCloseDay === "number" ? data.weeklyCloseDay : 0);
+    setLastClose(data.lastWeeklyClose || "");
     setWidgets(data.widgets || []);
     setDismissedTips(data.dismissedTips || []);
+    setShownCount(data.shownCount || {});
+    setLastSuggestionAt(data.lastSuggestionAt || "");
+    setQuietUntil(data.quietUntil || "");
+    setActiveSuggestion(data.activeSuggestion || "");
     setHouseholdId(data.householdId || null);
     setUserDob(data.dob || "");
     setLang(applyLangDir(data.lang || "en"));
@@ -27983,6 +28839,23 @@ export default function App() {
         if (settled) return;   // fallback already fired
         settled = true;
         if (!data) {
+          // A missing doc means one of two very different things, and treating
+          // them the same is how a half-finished account deletion turned into a
+          // brand-new empty account: the user was told deletion failed, then
+          // signed in to a fresh blob with all their data actually gone.
+          //
+          // A genuinely new sign-up is minutes old. Anything older whose doc has
+          // vanished is a deletion that got part-way, or a document we should
+          // not paper over - so stop and show the retry screen instead of
+          // silently writing a replacement.
+          var createdMs = 0;
+          try { createdMs = Date.parse((cu.metadata && cu.metadata.creationTime) || "") || 0; } catch (e) {}
+          var isFreshSignup = !createdMs || (Date.now() - createdMs) < 10 * 60 * 1000;
+          if (!isFreshSignup) {
+            setLoadFailed(true);
+            setAuthChecked(true);
+            return;
+          }
           var nm = cu.displayName || (email ? email.split("@")[0] : "there");
           data = defaultBlob(nm, email);
           // First write for a brand-new account, before accountKey is set, so it
@@ -28214,7 +29087,32 @@ export default function App() {
   function onDismissTip(id) {
     if (dismissedTips.indexOf(id) >= 0) return;
     var next = dismissedTips.concat([id]);
-    setDismissedTips(next); save({ dismissedTips: next });
+    consecutiveDismissalsRef.current += 1;
+    var patch = { dismissedTips: next };
+    setDismissedTips(next);
+    // Two in a row is the user saying "stop", not "not that one". Take the hint
+    // for a month, and say so - silence the user cannot tell from a bug is not
+    // the same as silence they asked for.
+    if (consecutiveDismissalsRef.current >= 2) {
+      var until = addDaysISO(isoDay(new Date()), SUGGEST_QUIET_DAYS);
+      patch.quietUntil = until;
+      setQuietUntil(until);
+      setQuietedNotice(true);
+    }
+    save(patch);
+  }
+  // Tapping through is the opposite signal: it resets the dismissal streak and
+  // counts as one of this suggestion's three showings.
+  function onTapSuggestion(id) {
+    consecutiveDismissalsRef.current = 0;
+    var counts = {};
+    for (var k in shownCount) counts[k] = shownCount[k];
+    counts[id] = (counts[id] || 0) + 1;
+    var today = isoDay(new Date());
+    setShownCount(counts);
+    setActiveSuggestion(id);
+    setLastSuggestionAt(today);
+    save({ shownCount: counts, activeSuggestion: id, lastSuggestionAt: today });
   }
   function onSettleNote(nextTx, nextNotes) { setTx(nextTx); setNotes(nextNotes); save({ tx: nextTx, notes: nextNotes }); }
   function onSaveTrips(next) { setTrips(next); save({ trips: next }); }
@@ -28452,6 +29350,88 @@ export default function App() {
     runNext(0);
   }, [businesses, accountKey]);
 
+  // One-tap quick add. `undoTx` holds the row just written so the toast's Undo
+  // can take it straight back out - logging in one tap is only safe if
+  // untapping is one tap too.
+  function onQuickLog(p) {
+    var t = quickPickTx(p, categories, tx, isoDay(new Date()));
+    var next = tx.concat([t]);
+    setTx(next);
+    save({ tx: next });
+    setUndoTx(t);
+    setQuickToast(tr("qaLogged").replace("{label}", t.label));
+  }
+  function undoQuickLog() {
+    if (!undoTx) return;
+    var next = tx.filter(function(t) { return t.id !== undoTx.id; });
+    setTx(next);
+    save({ tx: next });
+    setUndoTx(null);
+    setQuickToast("");
+  }
+  // Hold: hand the pick to the add sheet instead of logging it, so the amount
+  // can be changed first. This is the pre-existing fillFromPick() path.
+  function onQuickEdit(p) {
+    setQuickPrefill(p);
+    setTab("activity");
+    setSheet(true);
+  }
+
+  var activeSuggestionNow = pickSuggestion(
+    suggestionContext({ tx: tx, debts: debts, householdId: householdId, todayIso: isoDay(new Date()) }),
+    { dismissedTips: dismissedTips, shownCount: shownCount, lastSuggestionAt: lastSuggestionAt,
+      quietUntil: quietUntil, activeId: activeSuggestion },
+    isoDay(new Date()));
+
+  // Confirming a materialised recurring item is what turns Richy's guess into
+  // the user's fact: `pending` comes off and the money starts counting. Amount
+  // patches ride along so "yes, but it was 3,240 this month" is one action
+  // rather than a confirm followed by an edit.
+  function onConfirmRecurring(ids, patches) {
+    if (!ids || !ids.length) return;
+    var want = {}; ids.forEach(function(i) { want[i] = true; });
+    var patchBy = {};
+    (Array.isArray(patches) ? patches : (patches ? [patches] : [])).forEach(function(p) {
+      if (p && p.id != null && typeof p.amount === "number" && p.amount >= 0) patchBy[p.id] = p.amount;
+    });
+    var next = tx.map(function(t) {
+      if (!want[t.id]) return t;
+      var patch = { pending: false, recurConfirmedAt: isoDay(new Date()) };
+      if (patchBy[t.id] != null) patch.amount = round2(patchBy[t.id]);
+      return Object.assign({}, t, patch);
+    });
+    setTx(next);
+    save({ tx: next });
+  }
+  // "Didn't happen" removes the occurrence outright. It never counted toward a
+  // balance, so there is nothing to reverse - and the source keeps its
+  // recurredThrough stamp, so this month is not re-posted on the next launch.
+  function onSkipRecurring(id) {
+    var next = tx.filter(function(t) { return t.id !== id; });
+    setTx(next);
+    save({ tx: next });
+  }
+
+  // Finishing a close writes whatever the user added and stamps the week, so
+  // the card stops asking until the day comes round again. "Nothing to add" is
+  // a complete answer and stamps it just the same.
+  function onFinishWeeklyClose(rows) {
+    var win = weeklyCloseWindow(closeDay, isoDay(new Date()));
+    var patch = { lastWeeklyClose: win.end };
+    setLastClose(win.end);
+    if (rows && rows.length) {
+      var next = tx.concat(rows);
+      setTx(next);
+      patch.tx = next;
+    }
+    save(patch);
+    setCloseOpen(false);
+  }
+  function onSaveCloseDay(d) {
+    var v = Math.max(0, Math.min(6, parseInt(d, 10) || 0));
+    setCloseDay(v); save({ weeklyCloseDay: v });
+  }
+
   function onSaveFolders(next) { setFolders(next); save({ folders: next }); }
   function onSaveCategories(next) { setCategories(next); save({ categories: next }); }
   function onSaveCurrency(sym) { _currency.sym = sym; setCurrency(sym); save({ currency: sym }); }
@@ -28463,7 +29443,7 @@ export default function App() {
       var langName = (LANGUAGE_OPTIONS.filter(function(o) { return o.code === code; })[0] || {}).label || code;
       callClaude(
         [{ role: "user", content: "Translate this financial plan to " + langName + ". Keep the same warm tone, structure, and personal advice. Output only the translated plan, nothing else:\n\n" + richPlan }],
-        "You are Richard, a personal finance advisor. Translate the given financial plan faithfully to the requested language. Preserve the warm, direct, personal tone.",
+        { id: "planTranslate", lang: code },
         400,
         function(err, translated) { if (!err && translated) { setRichPlan(translated); save({ plan: translated }); } }
       );
@@ -28534,55 +29514,6 @@ export default function App() {
     else if (old && old.key) sha256Hex(old.key).then(function(h) { CLOUD.deleteSyncKey(h).catch(function() {}); });
   }
 
-  // ---- Bank Leumi (DEMO connection) --------------------------------------------
-  // api/leumi-fintaka.js implements the real OAuth2 handshake, but it's dormant:
-  // an actual connection needs Bank Leumi to certify Richy as a licensed
-  // Third-Party Provider (eIDAS QWAC/QSEAL certificates) - a business/legal
-  // step, not something a signup form grants. Until that happens, these
-  // handlers run an honest, clearly-labeled simulation entirely client-side -
-  // no network call, no fake bank login, nothing pretending to be real. The
-  // LeumiFintekaCard UI always says "(Demo)" so this is never mistaken for a
-  // live bank connection. Every path still funnels through the normal save(),
-  // exactly like onEnableBankSync above.
-  function onConnectLeumiFinteka() {
-    return new Promise(function(resolve) {
-      // A short delay reads better than an instant swap - it's the only thing
-      // "simulated" about the timing; everything else below is real app state.
-      setTimeout(function() {
-        var last4 = String(1000 + Math.floor(Math.random() * 9000));
-        var newTx = generateLeumiDemoTx(4 + Math.floor(Math.random() * 3), tx, categories, currency);
-        var nextTx = tx.concat(newTx);
-        var next = { status: "connected", connected: true, demo: true, accountLabel: "Bank Leumi (Demo) •••• " + last4, connectedAt: Date.now(), lastSyncAt: Date.now(), count: newTx.length, error: null };
-        setTx(nextTx);
-        setLeumiFinteka(next);
-        save({ tx: nextTx, leumiFinteka: next });
-        resolve(next);
-      }, 900);
-    });
-  }
-  function onDisconnectLeumiFinteka() {
-    // Mirrors the real disconnect's promise made in the UI copy: already-synced
-    // (demo) transactions stay in Richy, only the connection itself goes away.
-    return Promise.resolve().then(function() {
-      setLeumiFinteka(null);
-      save({ leumiFinteka: null });
-    });
-  }
-  function onSyncLeumiFintekaNow() {
-    return new Promise(function(resolve) {
-      setTimeout(function() {
-        var newTx = generateLeumiDemoTx(1 + Math.floor(Math.random() * 3), tx, categories, currency);
-        var nextTx = tx.concat(newTx);
-        var lf = leumiFinteka || {};
-        var next = { status: "connected", connected: true, demo: true, accountLabel: lf.accountLabel || "Bank Leumi (Demo)", connectedAt: lf.connectedAt || Date.now(), lastSyncAt: Date.now(), count: (lf.count || 0) + newTx.length, error: null };
-        setTx(nextTx);
-        setLeumiFinteka(next);
-        save({ tx: nextTx, leumiFinteka: next });
-        resolve(next);
-      }, 600);
-    });
-  }
-
   function onSaveInstructions(text) { setRichardInstructions(text); save({ richardInstructions: text }); }
 
   // What Richard sees as user-provided context: the editable custom instructions
@@ -28633,6 +29564,16 @@ export default function App() {
     // separate Emergency Fund pot, NOT their spending balance - so an existing
     // emergency fund is never forced onto the main balance. It counts toward net
     // worth from day one but leaves the balance clean.
+    // The fixed-cost chips become real repeating transactions right here. This
+    // is the trade the step promised: they are logged once, and from next month
+    // the materialiser posts them for confirmation instead of the user retyping
+    // rent twelve times a year.
+    var fixed = fixedCostTxs((oData && oData.fixedCosts) || [], categories, isoDay(new Date()));
+    if (fixed.length) {
+      var nextTx = (tx || []).concat(fixed);
+      setTx(nextTx);
+      merged.tx = nextTx;
+    }
     var savAmt = parseFloat(oData && oData.savings);
     if (savAmt > 0 && !(savings && savings.length)) {
       var sToday = new Date().toISOString().slice(0, 10);
@@ -28920,11 +29861,11 @@ export default function App() {
   // The five swipeable main tabs, produced by id so both the visible page and the
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
-    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
-    if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
+    if (id === "overview") return <Overview tx={tx} onConfirmRecurring={onConfirmRecurring} onSkipRecurring={onSkipRecurring} onQuickLog={onQuickLog} onQuickEdit={onQuickEdit} weeklyCloseDue={weeklyCloseDue(lastClose, closeDay, isoDay(new Date()))} onOpenWeeklyClose={function() { setCloseOpen(true); }} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} onTapSuggestion={onTapSuggestion} quietedNotice={quietedNotice} suggestion={activeSuggestionNow} onOpenImport={function() { prevTabRef.current = "overview"; setTab("activity"); setWantImport(true); }} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
+    if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} prefillPick={quickPrefill} onPrefillUsed={function() { setQuickPrefill(null); }} openImport={wantImport} onImportOpened={function() { setWantImport(false); }} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
-    if (id === "advisor") return <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} widgets={widgets} onSaveWidgets={onSaveWidgets} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} />;
+    if (id === "advisor") return <Advisor situation={activeSuggestionNow ? activeSuggestionNow.id : ""} tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} widgets={widgets} onSaveWidgets={onSaveWidgets} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} />;
     return null;
   }
   applyTheme(theme);      // keep the live T palette in sync with the chosen design every render
@@ -29038,6 +29979,16 @@ export default function App() {
       )}
 
       <CustomBanners banners={customBanners} onSave={onSaveBanners} />
+      <WeeklyCloseView open={closeOpen} onClose={function() { setCloseOpen(false); }}
+        window={weeklyCloseWindow(closeDay, isoDay(new Date()))}
+        rows={pendingRecurring(tx).filter(function(t) {
+          var w = weeklyCloseWindow(closeDay, isoDay(new Date()));
+          return t.date >= w.start && t.date <= w.end;
+        })}
+        categories={categories} onConfirm={onConfirmRecurring} onSkip={onSkipRecurring}
+        onFinish={onFinishWeeklyClose} />
+      <UndoToast msg={quickToast} undoLabel={tr("qaUndo")}
+        onUndo={undoQuickLog} onDone={function() { setQuickToast(""); setUndoTx(null); }} />
 
       <div ref={swipeContentRef} style={{ position: "relative", overflowX: "clip" }}>
         {MAIN_TABS_SET[currentTab] ? (
@@ -29068,24 +30019,25 @@ export default function App() {
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} richardInstructions={richardCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} budgets={budgets} businesses={businesses} investing={investing} savings={savings} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "profile" && motivSnap && <Profile user={user} email={blobRef.current.email || ""} snap={motivSnap} feed={motivFeed(motivSnap)} onLogout={handleLogout} tx={tx} goals={goals} savings={savings} businesses={businesses} investing={investing} trips={trips} bankSync={bankSync} household={household} inviteCount={invites.length} debtCount={debts.length} pendingCount={motivSnap.clean.pending ? tx.filter(function(t) { return t.date >= motivSnap.clean.pending.key && t.date < weekAdd(motivSnap.clean.pending.key, 1) && !isOpening(t); }).length : 0} onConfirmWeek={onConfirmWeek} myUid={accountKey} categories={categories} following={social.following} requestCount={social.requests.length} onViewSocial={function() { prevTabRef.current = "profile"; setTab("social"); }} onOpenPerson={function(uid) { prevTabRef.current = "profile"; setOpenPerson(uid); setTab("person"); }} onViewSettings={function() { prevTabRef.current = "profile"; setTab("settings"); }} onViewBadges={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewStreaks={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewGoals={function() { setTab("goals"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewPlan={function() { setTab("plan"); }} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "profile"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} onViewTripHistory={function() { setTab("tripHistory"); }} />}
+        {currentTab === "profile" && motivSnap && <Profile user={user} email={blobRef.current.email || ""} snap={motivSnap} feed={motivFeed(motivSnap)} onLogout={handleLogout} tx={tx} goals={goals} savings={savings} businesses={businesses} investing={investing} trips={trips} bankSync={bankSync} household={household} inviteCount={invites.length} debtCount={debts.length} pendingCount={motivSnap.clean.pending ? tx.filter(function(t) { return t.date >= motivSnap.clean.pending.key && t.date < weekAdd(motivSnap.clean.pending.key, 1) && !isOpening(t); }).length : 0} onConfirmWeek={onConfirmWeek} myUid={accountKey} categories={categories} following={social.following} requestCount={social.requests.length} onViewSocial={function() { prevTabRef.current = "profile"; setTab("social"); }} onOpenPerson={function(uid) { prevTabRef.current = "profile"; setOpenPerson(uid); setTab("person"); }} onViewSettings={function() { prevTabRef.current = "profile"; setTab("settings"); }} onViewBadges={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewStreaks={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewGoals={function() { setTab("goals"); }} onViewBusiness={function() { prevTabRef.current = "profile"; setOpenBiz(null); setTab("business"); }} onViewInvesting={function() { prevTabRef.current = "profile"; setOpenInv(null); setTab("investing"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewPlan={function() { setTab("plan"); }} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "profile"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} onViewTripHistory={function() { setTab("tripHistory"); }} />}
         {currentTab === "badges" && motivSnap && <BadgesView snap={motivSnap} onOpen={function() {}} onBack={function() { setTab("profile"); }} />}
         {currentTab === "person" && <FriendView uid={openPerson} person={social.following.concat(social.followers).filter(function(p) { return p.uid === openPerson; })[0] || null} stats={(social.following.filter(function(p) { return p.uid === openPerson; })[0] || {}).stats || null} household={household} myUid={accountKey} tx={tx} categories={categories} onBack={function() { setTab(prevTabRef.current === "social" ? "social" : "profile"); }} />}
         {currentTab === "social" && <SocialView social={social} onOpen={function(uid) { prevTabRef.current = "social"; setOpenPerson(uid); setTab("person"); }} onFind={function() { prevTabRef.current = "social"; setTab("findPeople"); }} onAccept={onAcceptFollow} onDecline={onDeclineFollow} onRemoveFollower={onRemoveFollower} onBack={function() { setTab("profile"); }} />}
         {currentTab === "findPeople" && <FindPeopleView myHandle={social.handle} myUid={accountKey} followingUids={social.following.map(function(p) { return p.uid; })} onClaimHandle={onClaimHandle} onFind={CLOUD.findByHandle} onRequest={onRequestFollow} onCopy={copyText} onBack={function() { setTab("social"); }} />}
-        {currentTab === "settings" && <SettingsView user={user} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} richardInstructions={richardInstructions} bankSync={bankSync} householdName={household ? household.name : null} inviteCount={invites.length} debtCount={debts.length} onBack={function() { setTab("profile"); }} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "settings"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "settings"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "settings"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "settings"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "settings"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "settings"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "settings"; setTab("periodMode"); }} onViewBankSync={function() { prevTabRef.current = "settings"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "settings"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "settings"; setTab("editOpeningBalance"); }} onViewCollab={function() { prevTabRef.current = "settings"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "settings"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
+        {currentTab === "settings" && <SettingsView user={user} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} closeDay={closeDay} onViewCloseDay={function() { prevTabRef.current = "settings"; setTab("closeDay"); }} richardInstructions={richardInstructions} bankSync={bankSync} householdName={household ? household.name : null} inviteCount={invites.length} debtCount={debts.length} onBack={function() { setTab("profile"); }} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "settings"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "settings"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "settings"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "settings"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "settings"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "settings"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "settings"; setTab("periodMode"); }} onViewBankSync={function() { prevTabRef.current = "settings"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "settings"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "settings"; setTab("editOpeningBalance"); }} onViewCollab={function() { prevTabRef.current = "settings"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "settings"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
         {currentTab === "analysis" && <FullAnalysisView tx={tx} categories={categories} folders={folders} splitPlan={splitPlan} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} username={user} analysis={freshAnalysis ? freshAnalysis.data : null} onBack={function() { setTab("advisor"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} onAccountDeleted={handleLogout} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
         {currentTab === "editEmail" && <EditEmailView currentEmail={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onSave={function(email) { onSaveEmail(email); setTab("privacy"); }} />}
         {currentTab === "editDob" && <EditDobView currentDob={userDob} onBack={function() { setTab("privacy"); }} onSave={function(dob) { onSaveDob(dob); setTab("privacy"); }} />}
         {currentTab === "editFinancial" && <EditFinancialView oData={blobRef.current.onboardingData || {}} onBack={function() { setTab("privacy"); }} onSave={function(oData) { onSaveFinancial(oData); setTab("privacy"); }} />}
-        {currentTab === "plan" && <PlanView plan={richPlan} onBack={function() { setTab("profile"); }} onRetake={handleRetakePlan} username={user} lang={lang} richardInstructions={richardCtx} categories={categories} budgets={budgets} goals={goals} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onUpdatePlan={function(t) { setRichPlan(t); save({ plan: t }); }} onboardingData={onboardingData} />}
+        {currentTab === "plan" && <PlanView situation={activeSuggestionNow ? activeSuggestionNow.id : ""} plan={richPlan} onBack={function() { setTab("profile"); }} onRetake={handleRetakePlan} username={user} lang={lang} richardInstructions={richardCtx} categories={categories} budgets={budgets} goals={goals} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onUpdatePlan={function(t) { setRichPlan(t); save({ plan: t }); }} onboardingData={onboardingData} />}
         {currentTab === "language" && <LanguageView lang={lang} onLangChange={onSaveLang} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "appearance" && <AppearanceView theme={theme} onThemeChange={onSaveTheme} darkMode={darkMode} onDarkModeChange={onSaveDarkMode} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "closeDay" && <EditCloseDayView closeDay={closeDay} onSave={onSaveCloseDay} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "periodMode" && <PeriodModeView periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onPeriodModeChange={onSavePeriodMode} onPeriodCustomChange={onSavePeriodCustom} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
-        {currentTab === "bankSync" && <BankSyncView bankSync={bankSync} onEnable={onEnableBankSync} onDisable={onDisableBankSync} leumiFinteka={leumiFinteka} onConnectLeumi={onConnectLeumiFinteka} onDisconnectLeumi={onDisconnectLeumiFinteka} onSyncLeumiNow={onSyncLeumiFintekaNow} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "bankSync" && <BankSyncView bankSync={bankSync} onEnable={onEnableBankSync} onDisable={onDisableBankSync} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} />}
         {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Overview" : "Savings"} onBack={exitBusiness} />}
         {currentTab === "investing" && <InvestingView investing={investing} tx={tx} goals={goals} openInvId={openInv} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} onOpenInvestorOnboard={function() { prevTabRef.current = "investing"; setTab("investorOnboard"); }} onOpenScout={function() { prevTabRef.current = "investing"; setTab("scout"); }} onOpenPlanOnboard={function(acctId) { prevTabRef.current = "investing"; setOpenInv(acctId || null); setTab("investPlan"); }} backLabel={prevTabRef.current === "overview" ? "Overview" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
