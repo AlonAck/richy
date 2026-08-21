@@ -5914,7 +5914,7 @@ function WelcomeHero(props) {
       <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", padding: "54px 24px 30px", position: "relative", zIndex: 2 }}>
         <Stagger step={0.09} style={{ width: "100%", maxWidth: 380, display: "flex", flexDirection: "column", alignItems: "center" }}>
           <RichyLogo size={74} style={{ display: "block", margin: "0 auto", borderRadius: 21, boxShadow: "0 12px 32px rgba(0,0,0,0.22), 0 4px 12px rgba(0,0,0,0.14)" }} />
-          <div style={{ fontSize: 34, fontWeight: 600, fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.12, textAlign: "center", marginTop: 20 }}>
+          <div style={{ fontSize: 34, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.12, textAlign: "center", marginTop: 20 }}>
             {tr("whTitle1")}<br />{tr("whTitle2")}
           </div>
           <div style={{ fontSize: 15, color: JINK2, textAlign: "center", lineHeight: 1.55, marginTop: 10, maxWidth: 320 }}>
@@ -8942,7 +8942,7 @@ function Overview(props) {
 
       <div style={{ padding: "6px 2px 22px", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
         <div>
-          <div style={{ fontSize: 28, fontWeight: 600, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", lineHeight: 1.18 }}>
+          <div style={{ fontSize: 28, fontWeight: 700, fontStyle: "italic", fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", lineHeight: 1.18 }}>
             {greeting}
           </div>
           <div style={{ fontSize: 14, color: T.ink3, marginTop: 5, fontStyle: "italic" }}>
