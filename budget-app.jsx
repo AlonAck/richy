@@ -226,17 +226,23 @@ var ICON_BANK = [
   "sun", "star", "droplet", "tool", "credit", "building", "bike", "shirt", "wifi", "tv", "umbrella",
 ];
 
-// Refined, wealth-adjacent palette. Warm tones first, then jewel tones, then pastels/darks.
+// Curated tag/category palette (warm -> cool gradient): Papaya Whip, Tangerine
+// Dream, Light Coral, Powder Blue, Mauve, Wisteria Blue, Steel Azure.
 var COLOR_BANK = [
-  "#C8673A", "#C8983A", "#8B6CEF", "#2799C8", "#27A85F", "#00B4A0",
-  "#D97941", "#AF52DE", "#E0556E", "#5A7D9A", "#B0894E", "#6B5C4E",
-  "#FF6B6B", "#FF9F1C", "#FFCB47", "#06D6A0", "#118AB2", "#9B5DE5",
-  "#F72585", "#3A86FF", "#8AC926", "#F4A261", "#E76F51", "#264653",
-  "#E91E8C", "#7C3AED", "#0891B2", "#059669", "#DC2626", "#D97706",
-  "#7C2D12", "#1E3A5F", "#14532D", "#4A044E", "#134E4A", "#78350F",
-  "#FDA4AF", "#FCD34D", "#6EE7B7", "#93C5FD", "#C4B5FD", "#FCA5A5",
-  "#86EFAC", "#67E8F9", "#F9A8D4", "#FDE68A", "#A5B4FC", "#BAE6FD",
+  "#FFEED6", "#F79A78", "#F49292", "#A7C2DC", "#DBBCF1", "#7E8EC8", "#004A8F",
 ];
+
+// Picks readable icon ink for a solid-fill badge: dark ink on light/pastel
+// colors, white on darker/more saturated ones (YIQ perceived-brightness split).
+function contrastIconColor(hex) {
+  var c = (hex || "").replace("#", "");
+  if (c.length === 3) c = c.split("").map(function(ch) { return ch + ch; }).join("");
+  var r = parseInt(c.substr(0, 2), 16) || 0;
+  var g = parseInt(c.substr(2, 2), 16) || 0;
+  var b = parseInt(c.substr(4, 2), 16) || 0;
+  var yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 160 ? T.ink : "#fff";
+}
 
 // Folders are more than headers - see the "Folder intelligence" block below for
 // the full shape (colour, icon, 50/30/20 role, auto-fill rule).
@@ -247,16 +253,16 @@ var DEFAULT_FOLDERS = [
 ];
 
 var DEFAULT_CATEGORIES = [
-  { id: "c1",  name: "Housing",       color: "#8B6CEF", icon: "home",      folderId: "f1" },
-  { id: "c2",  name: "Food",          color: "#27A85F", icon: "food",      folderId: "f1" },
-  { id: "c3",  name: "Transport",     color: "#D97941", icon: "car",       folderId: "f1" },
-  { id: "c4",  name: "Health",        color: "#E0556E", icon: "heart",     folderId: "f1" },
-  { id: "c5",  name: "Entertainment", color: "#2799C8", icon: "film",      folderId: "f2" },
-  { id: "c6",  name: "Shopping",      color: "#AF52DE", icon: "cart",      folderId: "f2" },
-  { id: "c8",  name: "Salary",        color: "#27A85F", icon: "briefcase", folderId: "f3" },
-  { id: "c9",  name: "Investments",   color: "#C8983A", icon: "chart",     folderId: "f3" },
-  { id: "c10", name: "Savings",       color: "#C8673A", icon: "coins",     folderId: "f3" },
-  { id: "c11", name: "Other",         color: "#6B5C4E", icon: "box",       folderId: "f2" },
+  { id: "c1",  name: "Housing",       color: "#7E8EC8", icon: "home",      folderId: "f1" },
+  { id: "c2",  name: "Food",          color: "#F79A78", icon: "food",      folderId: "f1" },
+  { id: "c3",  name: "Transport",     color: "#A7C2DC", icon: "car",       folderId: "f1" },
+  { id: "c4",  name: "Health",        color: "#F49292", icon: "heart",     folderId: "f1" },
+  { id: "c5",  name: "Entertainment", color: "#DBBCF1", icon: "film",      folderId: "f2" },
+  { id: "c6",  name: "Shopping",      color: "#004A8F", icon: "cart",      folderId: "f2" },
+  { id: "c8",  name: "Salary",        color: "#7E8EC8", icon: "briefcase", folderId: "f3" },
+  { id: "c9",  name: "Investments",   color: "#004A8F", icon: "chart",     folderId: "f3" },
+  { id: "c10", name: "Savings",       color: "#F79A78", icon: "coins",     folderId: "f3" },
+  { id: "c11", name: "Other",         color: "#FFEED6", icon: "box",       folderId: "f2" },
 ];
 
 // Trip budget buckets. Richard splits the total across these; the pct map is the
@@ -1913,6 +1919,32 @@ function ensureSyncedTags(categories, folders) {
 }
 function freshCategories() { return DEFAULT_CATEGORIES.map(function(c) { return { id: c.id, name: c.name, color: c.color, icon: c.icon, folderId: c.folderId }; }).concat(SYNCED_TAGS); }
 function freshFolders() { return DEFAULT_FOLDERS.map(function(f) { return Object.assign({}, f); }).concat([SYNCED_TAG_FOLDER]); }
+
+// Default categories shipped with the old, pre-palette colors below - keyed by
+// id so an account's Food (c2) and Salary (c8), which happened to share a
+// color, repaint independently. Only a category that still carries this exact
+// legacy hex gets repainted to the current DEFAULT_CATEGORIES color; anything
+// a user has since recolored (even coincidentally to the same legacy hex) no
+// longer matches after the first repaint, so this settles after one run.
+var LEGACY_DEFAULT_CATEGORY_COLORS = {
+  c1: "#8B6CEF", c2: "#27A85F", c3: "#D97941", c4: "#E0556E", c5: "#2799C8",
+  c6: "#AF52DE", c8: "#27A85F", c9: "#C8983A", c10: "#C8673A", c11: "#6B5C4E",
+};
+function healDefaultCategoryColors(categories) {
+  var cats = categories || [];
+  var currentColor = {};
+  DEFAULT_CATEGORIES.forEach(function(c) { currentColor[c.id] = c.color; });
+  var changed = false;
+  var next = cats.map(function(c) {
+    var legacy = LEGACY_DEFAULT_CATEGORY_COLORS[c.id];
+    if (legacy && c.color === legacy && currentColor[c.id] && currentColor[c.id] !== legacy) {
+      changed = true;
+      return Object.assign({}, c, { color: currentColor[c.id] });
+    }
+    return c;
+  });
+  return { changed: changed, categories: next };
+}
 
 // ── Folder intelligence ─────────────────────────────────────────────────────
 // A folder used to be {id, name} and nothing else: a header in the Categories
@@ -5530,7 +5562,7 @@ function CatBadge(props) {
       display: "flex", alignItems: "center", justifyContent: "center",
       boxShadow: soft ? "none" : "0 2px 8px " + props.color + "55",
     }}>
-      <SVGIcon id={props.icon || "box"} size={Math.round(size * 0.5)} color={soft ? props.color : "#fff"} />
+      <SVGIcon id={props.icon || "box"} size={Math.round(size * 0.5)} color={soft ? props.color : contrastIconColor(props.color)} />
     </div>
   );
 }
@@ -28058,10 +28090,11 @@ export default function App() {
   useEffect(function() {
     if (!accountKey) return;
     var synced = ensureSyncedTags(categories, folders);
-    if (!synced.changed) return;
-    setCategories(synced.categories);
+    var healed = healDefaultCategoryColors(synced.categories);
+    if (!synced.changed && !healed.changed) return;
+    setCategories(healed.categories);
     setFolders(synced.folders);
-    save({ categories: synced.categories, folders: synced.folders });
+    save({ categories: healed.categories, folders: synced.folders });
   }, [accountKey, categories, folders]);
 
   function myEmail() {
