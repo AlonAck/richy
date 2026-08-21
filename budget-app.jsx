@@ -13299,8 +13299,13 @@ function Trips(props) {
           <Card style={{ padding: "18px 18px 20px" }}>
             {planning ? (
               <div style={{ padding: "34px 10px", textAlign: "center" }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>{tr("richardPlanning")}</div>
-                <div style={{ fontSize: 13, color: T.ink3, marginTop: 5 }}>{tr("richardPlanningSub")}</div>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 15, fontWeight: 700, color: T.ink }}>
+                  {tr("richardPlanning")}
+                  <ThinkingDots size={4} color={T.orange} />
+                </div>
+                <div style={{ fontSize: 13, color: T.ink3, marginTop: 5 }}>
+                  <ThinkingPhrase phrases={[tr("richardPlanningSub")]} />
+                </div>
               </div>
             ) : (
               <div>
@@ -15342,7 +15347,7 @@ function Advisor(props) {
         <div style={{ fontSize: 19, fontWeight: 700, letterSpacing: "-0.02em", color: T.ink }}>Richard</div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: loading ? T.orange : stale ? T.gold : T.green, animation: loading ? "rcBadgePulse 1.3s ease-in-out infinite" : "none" }} />
-          <span style={{ fontSize: 12, color: stale ? T.gold : T.ink3, fontWeight: stale ? 600 : 400 }}>{loading ? "Analyzing your month..." : stale ? "Your month changed - tap refresh" : advice ? "Analyzed your month - just now" : "Ready to analyze your month"}</span>
+          <span style={{ fontSize: 12, color: stale ? T.gold : T.ink3, fontWeight: stale ? 600 : 400 }}>{loading ? <ThinkingPhrase phrases={["Analyzing your month", "Comparing plan to reality", "Finding what matters most"]} /> : stale ? "Your month changed - tap refresh" : advice ? "Analyzed your month - just now" : "Ready to analyze your month"}</span>
         </div>
       </div>
       {advice && !advice.error && !loading && (
@@ -19970,8 +19975,8 @@ function InvestingView(props) {
               );
             })}
             {coachBusy && (
-              <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 9 }}>
-                <div style={{ background: "rgba(0,0,0,0.05)", borderRadius: "14px 14px 14px 4px", padding: "11px 14px" }}><ThinkingDots size={4.5} color={T.ink3} /></div>
+              <div style={{ marginBottom: 9 }}>
+                <RichardThinking size={13.5} phrases={["Reading your portfolio", "Checking it against the news", "Writing back"]} />
               </div>
             )}
             <div ref={coachEndRef} />
@@ -20947,7 +20952,10 @@ function StockView(props) {
                 <AIWorking compact title="Richard is reading the charts and news" sub="Forming an honest, personal view." expectedMs={9000}
                   steps={["Reading the price action", "Scanning the headlines", "Checking it against your money", "Writing his take"]} />
               ) : !take ? (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, color: T.ink3, fontSize: 13 }}><ThinkingDots s={4.5} color={T.ink3} /><span>Richard is getting his read ready...</span></div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, color: T.ink3, fontSize: 13 }}>
+                  <ThinkingDots size={4.5} color={T.orange} />
+                  <ThinkingPhrase phrases={["Still reading the charts", "Almost got his take"]} />
+                </div>
               ) : (
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
@@ -22175,8 +22183,8 @@ function StockScoutView(props) {
               );
             })}
             {chatBusy && (
-              <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 9 }}>
-                <div style={{ background: "rgba(0,0,0,0.05)", borderRadius: "14px 14px 14px 4px", padding: "11px 14px" }}><ThinkingDots size={4.5} color={T.ink3} /></div>
+              <div style={{ marginBottom: 9 }}>
+                <RichardThinking size={13.5} phrases={["Rechecking the candidates", "Weighing it against your money", "Writing back"]} />
               </div>
             )}
             <div ref={chatEndRef} />
