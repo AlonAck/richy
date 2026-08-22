@@ -14,22 +14,22 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="apple-mobile-web-app-title" content="Richy"/>
-<link rel="preload" href="/fonts/eb-garamond-latin-700-italic.woff2" as="font" type="font/woff2" crossorigin/>
 <link href="/fonts/richy-fonts.css" rel="stylesheet"/>
 <style>
   :root{
-    --font-title:"EB Garamond","Noto Serif Hebrew","Noto Naskh Arabic",Garamond,"Times New Roman",serif;
+    --font-title:"New York","Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Noto Serif Hebrew","Noto Naskh Arabic",ui-serif,"Times New Roman",serif;
     --font-ui:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   }
   html,body,#root{margin:0;background:#F7F3EE;font-family:var(--font-ui);}
+  button,input,select,textarea{font-family:var(--font-ui);}
   #err{white-space:pre-wrap;font-family:var(--font-ui);color:#b00;padding:16px;font-size:13px;}
   /* Native launch splash: painted by the browser the instant HTML arrives, long
      before the app bundle is fetched and compiled. React replaces it on mount. */
   .rc-splash{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-ui);}
   .rc-splash-in{text-align:center;}
   .rc-splash-logo{width:64px;height:64px;border-radius:20px;background:#0D0C18;margin:0 auto;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 32px rgba(0,0,0,0.18);animation:rcSplashBreathe 2.2s ease-in-out infinite;}
-  .rc-splash-logo span{font-family:var(--font-title);font-size:40px;font-weight:700;font-style:italic;color:#C8973A;line-height:1;transform:translateY(2px);}
-  .rc-splash-name{font-family:var(--font-title);font-size:19px;font-weight:700;font-style:italic;letter-spacing:-0.01em;color:#1A1410;margin-top:18px;opacity:0;animation:rcSplashIn 0.6s ease 0.15s forwards;}
+  .rc-splash-logo span{font-family:var(--font-title);font-size:40px;font-weight:500;font-style:normal;color:#C8973A;line-height:1;transform:translateY(2px);}
+  .rc-splash-name{font-family:var(--font-title);font-size:19px;font-weight:400;font-style:normal;letter-spacing:-0.01em;color:#1A1410;margin-top:18px;opacity:0;animation:rcSplashIn 0.6s ease 0.15s forwards;}
   html.rc-dark .rc-splash-name{color:#F2EDE6;}
   .rc-splash-dots{margin-top:14px;display:flex;justify-content:center;gap:4px;opacity:0;animation:rcSplashIn 0.6s ease 0.3s forwards;}
   .rc-splash-dots i{width:5px;height:5px;border-radius:50%;background:#B0A396;animation:rcSplashDot 1.15s ease-in-out infinite;}

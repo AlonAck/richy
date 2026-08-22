@@ -52,9 +52,9 @@
   --shadow: 0 1px 2px rgba(26,20,16,.05), 0 8px 24px -14px rgba(26,20,16,.18);
 
   /* --- type roles -------------------------------------------------------
-     Title faces are bundled with Richy; every non-title role uses the native
-     system UI family (San Francisco on Apple platforms).                    */
-  --f-display: "EB Garamond","Noto Serif Hebrew","Noto Naskh Arabic",Garamond,"Times New Roman",serif;
+     Titles use an upright editorial serif; every non-title role uses the
+     native system UI family (San Francisco on Apple platforms).             */
+  --f-display: "New York","Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Noto Serif Hebrew","Noto Naskh Arabic",ui-serif,"Times New Roman",serif;
   --f-body:    -apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --f-mono:    var(--f-body);
 }
@@ -110,11 +110,11 @@
    Display carries hierarchy; the native UI family carries everything else,
    including tabular data.
    =========================================================================== */
-.t-h1     { font-family:var(--f-display); font-weight:700; font-style:italic; letter-spacing:-.035em; line-height:.94;
+.t-h1     { font-family:var(--f-display); font-weight:400; font-style:normal; letter-spacing:-.025em; line-height:.98;
             font-size:clamp(46px,9.5vw,96px); text-wrap:balance; }
-.t-h2     { font-family:var(--f-display); font-weight:700; font-style:italic; letter-spacing:-.028em; line-height:1.05;
+.t-h2     { font-family:var(--f-display); font-weight:400; font-style:normal; letter-spacing:-.018em; line-height:1.08;
             font-size:clamp(29px,4.4vw,42px); text-wrap:balance; }
-.t-h3     { font-family:var(--f-display); font-weight:700; font-style:italic; letter-spacing:-.018em; font-size:22px; }
+.t-h3     { font-family:var(--f-display); font-weight:400; font-style:normal; letter-spacing:-.012em; font-size:22px; }
 .t-lede   { font-family:var(--f-body); font-size:19px; line-height:1.55; color:var(--ink2); max-width:56ch; }
 .t-body   { font-family:var(--f-body); font-size:16px; line-height:1.62; max-width:66ch; text-wrap:pretty; }
 .t-label  { font-size:13px; text-transform:uppercase; letter-spacing:.11em; color:var(--ink2); font-weight:600; }

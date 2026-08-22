@@ -23,4 +23,5 @@ export const T = {
 };
 
 export const UI = '-apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
-export const DISP = '"EB Garamond", "Noto Serif Hebrew", "Noto Naskh Arabic", Garamond, "Times New Roman", serif';
+export const DISP = '"New York", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Serif Hebrew", "Noto Naskh Arabic", ui-serif, "Times New Roman", serif';
+export const DISP_WEIGHT = 400;

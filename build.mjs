@@ -84,9 +84,8 @@ const staticFiles = [
 ];
 for (const f of staticFiles) copyFileSync(f, "public/" + f);
 
-// Title fonts are self-hosted so both the service-worker-backed PWA and the
-// Capacitor shell retain the Garamond title system offline. License notices
-// travel with the redistributed OFL font files.
+// Script-specific serif fallbacks remain self-hosted so localized titles keep
+// their editorial voice offline. License notices travel with the OFL files.
 mkdirSync("public/fonts", { recursive: true });
 for (const f of readdirSync("fonts")) {
   copyFileSync("fonts/" + f, "public/fonts/" + f);

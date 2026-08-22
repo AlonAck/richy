@@ -4,6 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Richy - App Store screenshot harness</title>
+<link href="/fonts/richy-fonts.css" rel="stylesheet"/>
 <!--
   DEV TOOL, never shipped (build.mjs copies an explicit file list into public/).
 
@@ -30,7 +31,9 @@
   capturing.
 -->
 <style>
-  html,body{margin:0;background:#5a5148;font-family:-apple-system,system-ui,sans-serif;}
+  :root{--font-ui:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;}
+  html,body{margin:0;background:#5a5148;font-family:var(--font-ui);}
+  button,input,select,textarea{font-family:var(--font-ui);}
   body.plain{background:#F7F3EE;}
   #stage{margin:0 auto;background:#F7F3EE;overflow:hidden;position:relative;}
   #stage.dark{background:#131110;}

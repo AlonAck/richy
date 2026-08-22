@@ -96,7 +96,7 @@ to San Francisco without embedding Apple's restricted font files.
 
 | Role | Stack | Job |
 |---|---|---|
-| Display | EB Garamond 700 italic → Noto Serif Hebrew / Noto Naskh Arabic | headings and title-role text |
+| Display | New York / Iowan Old Style / Palatino → Noto Serif Hebrew / Noto Naskh Arabic | upright, regular-weight headings and title-role text |
 | UI | San Francisco / native system UI | prose, controls, labels, and data |
 
 Display is bold and inclined, with script-aware companions for Hebrew and
