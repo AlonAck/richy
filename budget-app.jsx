@@ -3169,6 +3169,20 @@ var BADGE_TESTS = {
   "i-07-snowball":                   function(c) { return c.debtsCleared >= 3; },
 
   "j-01-opened-the-door":            function(c) { return c.invCount >= 1; },
+  "j-02-learned-it":                 function(c) { return c.invLessonsDone >= 6; },
+  "j-03-the-long-game-stage-1":      function(c) { return c.invHeldMonths >= 6; },
+  "j-04-the-long-game-stage-2":      function(c) { return c.invHeldMonths >= 12; },
+  "j-05-the-long-game-stage-3":      function(c) { return c.invHeldMonths >= 36; },
+  "j-06-steady-contributor":         function(c) { return c.invContribStreak >= 12; },
+
+  "m-01-first-find":                 function(c) { return c.fmActedCount >= 1; },
+  "m-02-treasure-hunter-stage-1":    function(c) { return c.fmTally >= 500; },
+  "m-03-treasure-hunter-stage-2":    function(c) { return c.fmTally >= 5000; },
+  "m-04-treasure-hunter-stage-3":    function(c) { return c.fmTally >= 25000; },
+  "m-05-subscription-slayer":        function(c) { return c.fmCancelledRecurring >= 5; },
+  "m-06-thought-it-through":         function(c) { return c.decisionsResolved >= 1; },
+  "m-07-walked-away":                function(c) { return c.decisionsDeclined >= 1; },
+  "m-08-ten-decisions":              function(c) { return c.decisionsResolved >= 10; },
 
   "k-01-first-trip":                 function(c) { return c.tripCount >= 1; },
   "k-05-the-grand-tour":             function(c) { return c.tripsEnded >= 5; },
@@ -3180,6 +3194,13 @@ var BADGE_TESTS = {
   "l-05-clean-slate-stage-3":        function(c) { return c.notesSettled >= 100; },
 
   "n-01-open-for-business":          function(c) { return c.bizCount >= 1; },
+  "n-02-in-the-black":               function(c) { return c.bizProfitMonths >= 1; },
+  "n-03-runway-stage-1":             function(c) { return c.bizBestRunway >= 3; },
+  "n-04-runway-stage-2":             function(c) { return c.bizBestRunway >= 6; },
+  "n-05-runway-stage-3":             function(c) { return c.bizBestRunway >= 12; },
+  "n-06-tax-pot-ready":              function(c) { return !!c.bizTaxCovered; },
+  "n-07-paid-in-full":               function(c) { return !!c.bizInvoicesClean; },
+  "n-08-doubled-the-business":       function(c) { return !!c.bizRevenueDoubled; },
 
   "o-01-two-purses":                 function(c) { return c.inHousehold; },
 
@@ -3261,6 +3282,37 @@ function motivSnapshot(data) {
   // for "how long have you been doing this" that the data can supply.
   var firstDay = data.createdAt || (tx.map(function(t) { return t.date; }).sort()[0] || todayIso);
   var daysActive = Math.max(0, Math.round((parseDay(todayIso) - parseDay(firstDay)) / 86400000));
+
+  // Found Money, Big Decisions, investing and business signals for the M, J
+  // and N badge families - all derived from persisted data, never the model.
+  var fmData = data.foundMoney || {};
+  var fmActed = fmData.acted || [];
+  var decisionsAll = data.decisions || [];
+  var invList = data.investing || [];
+  var bizList = data.businesses || [];
+  var bizProfitMonths = 0, bizBestRunway = 0, bizTaxCovered = false, bizInvoicesClean = false, bizRevenueDoubled = false;
+  bizList.forEach(function(b) {
+    var months = {};
+    (b.entries || []).forEach(function(e) { var m = (e.date || "").slice(0, 7); if (m) months[m] = true; });
+    var revByMonth = {};
+    (b.entries || []).forEach(function(e) {
+      if (e.kind === "deposit" && e.revenue) { var m = (e.date || "").slice(0, 7); revByMonth[m] = (revByMonth[m] || 0) + (e.amount || 0); }
+    });
+    for (var m in months) { if (bizMonthProfit(b, m).profit > 0) bizProfitMonths++; }
+    var rw = bizRunway(b);
+    var rwVal = rw === null ? 12 : rw;   // self-sustaining counts as a year+
+    if (rwVal > bizBestRunway) bizBestRunway = rwVal;
+    var taxInfo = taxOwedOf(b);
+    if (taxInfo.owed > 0 && taxPotBalance(b) >= taxInfo.owed) bizTaxCovered = true;
+    var invs = b.invoices || [];
+    if (invs.length >= 1 && invs.every(function(iv) { return iv.status === "paid"; })) bizInvoicesClean = true;
+    var revMonths = Object.keys(revByMonth).sort();
+    if (revMonths.length >= 2) {
+      var first = revByMonth[revMonths[0]];
+      if (first > 0 && revMonths.some(function(mm) { return mm > revMonths[0] && revByMonth[mm] >= first * 2; })) bizRevenueDoubled = true;
+    }
+  });
+
   var ctx = {
     txCount: tx.filter(function(t) { return !isOpening(t); }).length,
     hasOpening: !!openingTx,
@@ -3288,7 +3340,17 @@ function motivSnapshot(data) {
     savTotal: savTotal, netWorth: netWorth, opening: opening, cushionMonths: cushionMonths,
     debtsCleared: (data.debts || []).filter(function(d) { return d && d.cleared; }).length,
     cleanRun: clean.run, cleanTotal: clean.total, shieldsEarned: clean.shields, quietWeeks: quiet,
-    greenRun: green.run, greenTotal: green.total, bestRate: bestRate, repaired: repaired
+    greenRun: green.run, greenTotal: green.total, bestRate: bestRate, repaired: repaired,
+    fmTally: round2(fmData.tally || 0),
+    fmActedCount: fmActed.length,
+    fmCancelledRecurring: fmActed.filter(function(a) { return a && typeof a.id === "string" && a.id.indexOf("rec:") === 0; }).length,
+    decisionsResolved: decisionsAll.filter(function(d) { return d && d.status === "resolved"; }).length,
+    decisionsDeclined: decisionsAll.filter(function(d) { return d && d.status === "resolved" && d.verdict && d.verdict.verdict === "no"; }).length,
+    invLessonsDone: investLessonsDoneAll(invList),
+    invHeldMonths: investMonthsHeldNoSell(invList),
+    invContribStreak: investContribStreak(invList),
+    bizProfitMonths: bizProfitMonths, bizBestRunway: bizBestRunway, bizTaxCovered: bizTaxCovered,
+    bizInvoicesClean: bizInvoicesClean, bizRevenueDoubled: bizRevenueDoubled
   };
 
   // Which badges are currently satisfied. A badge, once earned, is kept forever
@@ -30356,7 +30418,7 @@ export default function App() {
   // The snapshot re-scores the whole ledger, so it is built only for the two
   // screens that display it rather than on every keystroke anywhere in the app.
   function motivData() {
-    return { tx: tx, budgets: budgets, goals: goals, savings: savings, businesses: businesses, investing: investing, categories: categories, folders: folders, debts: debts, onboardingData: onboardingData, motivation: motivation };
+    return { tx: tx, budgets: budgets, goals: goals, savings: savings, businesses: businesses, investing: investing, categories: categories, folders: folders, debts: debts, onboardingData: onboardingData, motivation: motivation, foundMoney: foundMoney, decisions: decisions, recoveryPlan: recoveryPlan, personalReviews: personalReviews };
   }
   var motivTab = currentTab === "profile" || currentTab === "badges";
   var motivSnap = motivTab ? motivSnapshot(motivData()) : null;
