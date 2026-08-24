@@ -1180,6 +1180,135 @@ for (var _fwc in WATCH_STRINGS) {
   for (var _fwk in WATCH_STRINGS[_fwc]) TRANSLATIONS[_fwc][_fwk] = WATCH_STRINGS[_fwc][_fwk];
 }
 
+// Recovery-plan strings: the RecoveryPulse Overview card, the personal weekly
+// review's local fallback, and the coach-tone setting.
+var RECOVERY_STRINGS = {
+  en: {
+    rpTitle: "Your recovery plan",
+    rpPromise: "The promise: recover about {amt}/mo",
+    rpThisMonth: "Leak spend this month",
+    rpVsBaseline: "{amt} of {base} typical",
+    rpNoBaseline: "{amt} so far - building your baseline",
+    rpRecovered: "Recovered so far: {amt}",
+    rpReviewReady: "Richard's weekly check-in is ready",
+    rpFirstReview: "Richard checks in weekly - your first review lands in a few days",
+    rpStatusOn: "On track", rpStatusWatch: "Worth a look", rpStatusOff: "Needs attention",
+    rpSeePlan: "Your full plan",
+    rpYourGoal: "Your goal",
+    rpHeadOn: "Good week - your leak spending stayed inside the plan.",
+    rpHeadWatch: "Mixed week - one leak category is drifting past its usual.",
+    rpHeadOff: "Rough week - leak spending ran well past your baseline.",
+    rpTipT: "One clean swap",
+    rpTipB: "Pick your heaviest leak day from last week and plan a zero-spend day in its place this week.",
+    rpWarnT: "Watch {cat}",
+    rpWarnB: "{cat} was your heaviest leak in the last 7 days at {amt}.",
+    rpCalmT: "Nothing burning",
+    rpCalmB: "No leak ran hot this week. Use the calm to bank progress toward your goal.",
+    rpIdeaT: "Bank the win",
+    rpIdeaB: "Move {amt} you didn't spend into your goal - progress you can see beats progress you remember.",
+    ctTitle: "Richard's tone",
+    ctSub: "How Richard talks about the weak spots you told him about",
+    ctDirect: "Direct", ctDirectSub: "Ties findings to your own words - honest, never shaming",
+    ctSoft: "Soft", ctSoftSub: "Just the numbers, no callbacks to what you said",
+    ctTough: "Tough coach", ctToughSub: "Holds you to the promise you made, firmly",
+    rpRowTip: "Tip", rpRowWatch: "Watch", rpRowIdea: "Idea",
+  },
+  he: {
+    rpTitle: "תוכנית ההחזר שלך",
+    rpPromise: "ההבטחה: להחזיר בערך {amt} בחודש",
+    rpThisMonth: "הוצאות דליפה החודש",
+    rpVsBaseline: "{amt} מתוך {base} רגיל",
+    rpNoBaseline: "{amt} עד כה - בונים את קו הבסיס",
+    rpRecovered: "הוחזר עד כה: {amt}",
+    rpReviewReady: "הצ'ק-אין השבועי של ריצ'רד מוכן",
+    rpFirstReview: "ריצ'רד עושה צ'ק-אין שבועי - הסקירה הראשונה תגיע בעוד כמה ימים",
+    rpStatusOn: "במסלול", rpStatusWatch: "שווה מבט", rpStatusOff: "דורש טיפול",
+    rpSeePlan: "התוכנית המלאה שלך",
+    rpYourGoal: "היעד שלך",
+    rpHeadOn: "שבוע טוב - הוצאות הדליפה נשארו בתוך התוכנית.",
+    rpHeadWatch: "שבוע מעורב - קטגוריית דליפה אחת חורגת מהרגיל.",
+    rpHeadOff: "שבוע קשה - הוצאות הדליפה עברו בהרבה את קו הבסיס.",
+    rpTipT: "החלפה נקייה אחת",
+    rpTipB: "בחר את יום הדליפה הכבד ביותר משבוע שעבר ותכנן במקומו יום ללא הוצאות השבוע.",
+    rpWarnT: "שים לב ל{cat}",
+    rpWarnB: "{cat} היה הדליפה הכבדה ביותר ב-7 הימים האחרונים עם {amt}.",
+    rpCalmT: "שום דבר לא בוער",
+    rpCalmB: "אף דליפה לא התחממה השבוע. נצל את הרוגע כדי להתקדם ליעד.",
+    rpIdeaT: "לשמור את הניצחון",
+    rpIdeaB: "העבר {amt} שלא הוצאת אל היעד שלך - התקדמות שרואים חזקה מהתקדמות שזוכרים.",
+    ctTitle: "הטון של ריצ'רד",
+    ctSub: "איך ריצ'רד מדבר על נקודות התורפה שסיפרת לו עליהן",
+    ctDirect: "ישיר", ctDirectSub: "קושר ממצאים למילים שלך - כן, אף פעם לא מבייש",
+    ctSoft: "עדין", ctSoftSub: "רק המספרים, בלי אזכורים למה שאמרת",
+    ctTough: "מאמן קשוח", ctToughSub: "מחזיק אותך בהבטחה שנתת, בתקיפות",
+    rpRowTip: "טיפ", rpRowWatch: "לשים לב", rpRowIdea: "רעיון",
+  },
+  ar: {
+    rpTitle: "خطة الاسترداد الخاصة بك",
+    rpPromise: "الوعد: استرداد نحو {amt} شهرياً",
+    rpThisMonth: "إنفاق التسرب هذا الشهر",
+    rpVsBaseline: "{amt} من {base} المعتاد",
+    rpNoBaseline: "{amt} حتى الآن - نبني خط الأساس",
+    rpRecovered: "المسترد حتى الآن: {amt}",
+    rpReviewReady: "مراجعة ريتشارد الأسبوعية جاهزة",
+    rpFirstReview: "يتابع ريتشارد أسبوعياً - أول مراجعة تصل خلال أيام",
+    rpStatusOn: "على المسار", rpStatusWatch: "يستحق نظرة", rpStatusOff: "يحتاج انتباهاً",
+    rpSeePlan: "خطتك الكاملة",
+    rpYourGoal: "هدفك",
+    rpHeadOn: "أسبوع جيد - بقي إنفاق التسرب ضمن الخطة.",
+    rpHeadWatch: "أسبوع متفاوت - فئة تسرب واحدة تنجرف فوق المعتاد.",
+    rpHeadOff: "أسبوع صعب - تجاوز إنفاق التسرب خط الأساس بكثير.",
+    rpTipT: "تبديل نظيف واحد",
+    rpTipB: "اختر أثقل يوم تسرب من الأسبوع الماضي وخطط ليوم بلا إنفاق مكانه هذا الأسبوع.",
+    rpWarnT: "راقب {cat}",
+    rpWarnB: "{cat} كان أثقل تسرب في آخر 7 أيام بمبلغ {amt}.",
+    rpCalmT: "لا شيء مشتعل",
+    rpCalmB: "لم يشتد أي تسرب هذا الأسبوع. استغل الهدوء لتحرز تقدماً نحو هدفك.",
+    rpIdeaT: "احفظ المكسب",
+    rpIdeaB: "انقل {amt} لم تنفقها إلى هدفك - تقدم تراه أقوى من تقدم تتذكره.",
+    ctTitle: "نبرة ريتشارد",
+    ctSub: "كيف يتحدث ريتشارد عن نقاط الضعف التي أخبرته بها",
+    ctDirect: "مباشر", ctDirectSub: "يربط النتائج بكلماتك - صادق، لا يخجّل أبداً",
+    ctSoft: "لطيف", ctSoftSub: "الأرقام فقط، دون الإشارة إلى ما قلته",
+    ctTough: "مدرب حازم", ctToughSub: "يحاسبك على الوعد الذي قطعته، بحزم",
+    rpRowTip: "نصيحة", rpRowWatch: "انتبه", rpRowIdea: "فكرة",
+  },
+  ru: {
+    rpTitle: "Ваш план возврата",
+    rpPromise: "Обещание: возвращать около {amt}/мес",
+    rpThisMonth: "Утечки в этом месяце",
+    rpVsBaseline: "{amt} из {base} обычных",
+    rpNoBaseline: "{amt} пока - собираем базовый уровень",
+    rpRecovered: "Возвращено: {amt}",
+    rpReviewReady: "Еженедельный обзор Ричарда готов",
+    rpFirstReview: "Ричард проверяет еженедельно - первый обзор через несколько дней",
+    rpStatusOn: "По плану", rpStatusWatch: "Стоит взглянуть", rpStatusOff: "Нужно внимание",
+    rpSeePlan: "Ваш полный план",
+    rpYourGoal: "Ваша цель",
+    rpHeadOn: "Хорошая неделя - расходы-утечки остались в рамках плана.",
+    rpHeadWatch: "Смешанная неделя - одна категория утечек выходит за обычное.",
+    rpHeadOff: "Трудная неделя - утечки заметно превысили базовый уровень.",
+    rpTipT: "Одна чистая замена",
+    rpTipB: "Выберите самый затратный день прошлой недели и запланируйте на его месте день без трат.",
+    rpWarnT: "Следите за {cat}",
+    rpWarnB: "{cat} - самая большая утечка за последние 7 дней: {amt}.",
+    rpCalmT: "Ничего не горит",
+    rpCalmB: "Ни одна утечка не разогналась на этой неделе. Используйте затишье для прогресса к цели.",
+    rpIdeaT: "Закрепите победу",
+    rpIdeaB: "Переведите {amt}, которые не потратили, в вашу цель - видимый прогресс сильнее памятного.",
+    ctTitle: "Тон Ричарда",
+    ctSub: "Как Ричард говорит о слабых местах, о которых вы ему рассказали",
+    ctDirect: "Прямой", ctDirectSub: "Связывает находки с вашими словами - честно, никогда не стыдит",
+    ctSoft: "Мягкий", ctSoftSub: "Только цифры, без отсылок к тому, что вы говорили",
+    ctTough: "Строгий тренер", ctToughSub: "Твёрдо держит вас у данного обещания",
+    rpRowTip: "Совет", rpRowWatch: "Внимание", rpRowIdea: "Идея",
+  },
+};
+for (var _rpc in RECOVERY_STRINGS) {
+  if (!TRANSLATIONS[_rpc]) continue;
+  for (var _rpk in RECOVERY_STRINGS[_rpc]) TRANSLATIONS[_rpc][_rpk] = RECOVERY_STRINGS[_rpc][_rpk];
+}
+
 function tr(key) {
   var code = _lang.code || "en";
   return (TRANSLATIONS[code] && TRANSLATIONS[code][key]) || (TRANSLATIONS.en[key]) || key;
@@ -8002,6 +8131,123 @@ function BusinessPulse(props) {
   );
 }
 
+// Identity-memoized watchIndex for render-path consumers (RecoveryPulse and
+// the review effect can share one sweep per tx change).
+var _watchIxCache = { tx: null, cats: null, day: "", out: null };
+function watchIndexCached(tx, cats, todayISO) {
+  if (_watchIxCache.tx === tx && _watchIxCache.cats === cats && _watchIxCache.day === todayISO) return _watchIxCache.out;
+  var out = watchIndex(tx, cats, todayISO);
+  _watchIxCache = { tx: tx, cats: cats, day: todayISO, out: out };
+  return out;
+}
+
+// The "why you installed Richy" card: the onboarding promise (recover about
+// X/mo), leak spend against baseline, money recovered so far, and Richard's
+// latest weekly check-in. Hidden entirely until a recovery plan exists, so
+// accounts from before this feature see nothing until they retake the plan.
+function RecoveryPulse(props) {
+  var _open = useState(false); var open = _open[0]; var setOpen = _open[1];
+  var rp = props.recoveryPlan;
+  if (!rp || !rp.startedAt) return null;
+  var tx = props.tx || [];
+  var cats = props.categories || [];
+  var todayISO = new Date().toISOString().slice(0, 10);
+  var ix = watchIndexCached(tx, cats, todayISO);
+  var ym = curMonth();
+  var baseline = rp.baselineObserved || parseFloat(rp.monthlyLeak) || 0;
+  var mtd = monthLeakSpend(ix, ym);
+  var rec = recoveredSoFar(props.foundMoney, ix, rp);
+  var reviews = props.personalReviews || [];
+  var last = reviews[0];
+  var due = personalReviewDue(rp, reviews);
+  var fresh = last && (Date.now() - new Date((last.date || "") + "T00:00:00").getTime()) < 3 * 86400000;
+  var statusColor = !last ? T.ink3 : last.status === "on-track" ? T.green : last.status === "watch" ? T.gold : T.red;
+  var statusLabel = !last ? "" : tr(last.status === "on-track" ? "rpStatusOn" : last.status === "watch" ? "rpStatusWatch" : "rpStatusOff");
+  var frac = baseline > 0 ? Math.min(1, mtd / baseline) : 0;
+  var barColor = baseline > 0 && mtd > baseline ? T.red : baseline > 0 && mtd > baseline * monthDayFrac() * 1.25 ? T.gold : T.green;
+  var target = parseFloat(rp.recoverTarget) || 0;
+  var goal = (props.goals || []).filter(function(g) { return rp.goalId && g.id === rp.goalId; })[0];
+  var goalName = goal ? goal.name : "";
+  var cardShadow = "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)";
+
+  function row(label, item) {
+    if (!item || !item.body) return null;
+    return (
+      <div style={{ background: "rgba(0,0,0,0.035)", borderRadius: 12, padding: "11px 13px", marginBottom: 9 }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</div>
+        <div style={{ fontSize: 13.5, fontWeight: 700, color: T.ink, marginTop: 3 }}>{item.title}</div>
+        <div style={{ fontSize: 12.5, color: T.ink2, marginTop: 2, lineHeight: 1.5 }}>{item.body}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.1s both", marginBottom: 20 }}>
+      <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ width: 3, height: 16, borderRadius: 2, background: T.green, flexShrink: 0 }} />
+        <span style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{tr("rpTitle")}</span>
+      </div>
+      <button onClick={function() { setOpen(true); }} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "block", padding: "14px 16px", borderRadius: 18, background: T.card, border: "none", boxShadow: cardShadow }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <CatBadge icon="shield" color={statusColor === T.ink3 ? T.green : statusColor} size={40} soft={true} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, lineHeight: 1.35 }}>
+              {last ? last.headline : tr("rpFirstReview")}
+            </div>
+            {target > 0 && <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>{trFill("rpPromise", { amt: dollars(target) })}</div>}
+          </div>
+          <SVGIcon id="chevron" size={18} color={T.ink3} />
+        </div>
+        <div style={{ marginTop: 11 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: T.ink3, marginBottom: 4 }}>
+            <span style={{ fontWeight: 700 }}>{tr("rpThisMonth")}</span>
+            <span>{baseline > 0 ? trFill("rpVsBaseline", { amt: dollars(mtd), base: dollars(baseline) }) : trFill("rpNoBaseline", { amt: dollars(mtd) })}</span>
+          </div>
+          <div style={{ height: 6, borderRadius: 3, background: "rgba(0,0,0,0.07)", overflow: "hidden" }}>
+            <div style={{ width: (frac * 100) + "%", height: "100%", borderRadius: 3, background: barColor }} />
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 9 }}>
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: T.green }}>{trFill("rpRecovered", { amt: dollars(rec.total) })}</span>
+          {(due || fresh) && (
+            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: T.orange, animation: "rcBadgePulse 1.6s ease 2", flexShrink: 0 }} />
+              <span style={{ fontSize: 11.5, fontWeight: 600, color: T.orange }}>{tr("rpReviewReady")}</span>
+            </span>
+          )}
+        </div>
+      </button>
+
+      <Overlay open={open} onClose={function() { setOpen(false); }} title={tr("rpTitle")}>
+        {last && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <span style={{ width: 9, height: 9, borderRadius: "50%", background: statusColor, flexShrink: 0 }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: statusColor }}>{statusLabel}</span>
+            <span style={{ fontSize: 12, color: T.ink3 }}>{last.date}</span>
+          </div>
+        )}
+        {last && <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, lineHeight: 1.4, marginBottom: 12 }}>{last.headline}</div>}
+        {last && row(tr("rpRowTip"), last.tip)}
+        {last && row(tr("rpRowWatch"), last.warning)}
+        {last && row(tr("rpRowIdea"), last.idea)}
+        {!last && <div style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.55, marginBottom: 12 }}>{tr("rpFirstReview")}</div>}
+        {goalName && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(39,168,95,0.08)", borderRadius: 12, padding: "10px 13px", marginBottom: 9 }}>
+            <SVGIcon id="goals" size={16} color={T.green} />
+            <span style={{ fontSize: 12.5, fontWeight: 700, color: T.green }}>{tr("rpYourGoal") + ": " + goalName}</span>
+          </div>
+        )}
+        {props.richPlan && (
+          <div style={{ background: "rgba(0,0,0,0.035)", borderRadius: 12, padding: "11px 13px" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5 }}>{tr("rpSeePlan")}</div>
+            <RichardText text={props.richPlan} size={13} />
+          </div>
+        )}
+      </Overlay>
+    </div>
+  );
+}
+
 // ===== RICHARD'S OVERVIEW WIDGETS =====
 // "Make me a widget that follows my coffee spending, and make it a ring."
 //
@@ -9411,6 +9657,8 @@ function Overview(props) {
         );
       })}
 
+      <RecoveryPulse tx={tx} categories={cats} goals={props.goals} recoveryPlan={props.recoveryPlan} personalReviews={props.personalReviews} foundMoney={props.foundMoney} richPlan={props.richPlan} />
+
       <FoundMoney tx={tx} categories={cats} foundMoney={props.foundMoney} onSaveFoundMoney={props.onSaveFoundMoney} onboardingData={props.onboardingData} coachTone={props.coachTone} budgets={props.budgets} onSaveBudgets={props.onSaveBudgets} richardInstructions={props.richardInstructions} lang={props.lang} />
 
       <BusinessPulse businesses={bizAccts} onOpenBusiness={props.onOpenBusiness} />
@@ -10402,6 +10650,174 @@ function _findMoneyCore(tx, cats, leakIds) {
     return (b.amount || 0) - (a.amount || 0);
   });
   return findings;
+}
+
+// ---- Personal weekly review -------------------------------------------------
+// The personal counterpart of the business CFO review: same discipline (a
+// deterministic digest Richard narrates but never edits, a local fallback, one
+// review per week, frozen numbers on the stored result), pointed at the
+// promise the user made in onboarding - "recover about X of what slips away".
+
+// The month's "leak spend": the discretionary categories plus the delivery
+// slice of Food. Stable and explainable, whatever leak sources were declared;
+// the declared sources get their own lines in the digest and the ranking.
+function monthLeakSpend(ix, ym) {
+  var mc = ix.byMonthCat[ym] || {};
+  return round2((mc["Entertainment"] || 0) + (mc["Shopping"] || 0) + (mc["Other"] || 0) + ((ix.delivery[ym] || {}).sum || 0));
+}
+
+// Money visibly recovered since the plan started: the Found Money tally (acted
+// findings) plus, for every completed month, how far leak spend stayed under
+// the baseline. Both terms deterministic; either can be zero.
+function recoveredSoFar(foundMoney, ix, rp) {
+  var tally = (foundMoney && foundMoney.tally) || 0;
+  var baseline = (rp && (rp.baselineObserved || parseFloat(rp.monthlyLeak))) || 0;
+  var saved = 0, months = 0;
+  if (baseline > 0 && rp.startedAt) {
+    var startYm = rp.startedAt.slice(0, 7);
+    var m = ymShift(curMonth(), 1);
+    while (m > startYm && months < 24) {
+      saved += Math.max(0, baseline - monthLeakSpend(ix, m));
+      months++;
+      m = ymShift(m, 1);
+    }
+  }
+  return { total: round2(tally + saved), tally: round2(tally), fromMonths: round2(saved), months: months };
+}
+
+// Due 7+ days after the last review, or 7+ days after the plan started for the
+// first one. No plan, no review.
+function personalReviewDue(rp, reviews) {
+  if (!rp || !rp.startedAt) return false;
+  var last = (reviews || [])[0];
+  var anchor = (last && last.date) || rp.startedAt;
+  var t = new Date(anchor + "T00:00:00").getTime();
+  if (isNaN(t)) return false;
+  return (Date.now() - t) >= 7 * 86400000;
+}
+
+// Per-leak-source spend for an arbitrary date window (the digest's last-7-days
+// lines). One pass over tx; ids follow LEAK_OPTIONS.
+function leakWindowSpend(tx, cats, fromISO, toISO) {
+  var out = { delivery: 0, goingout: 0, shopping: 0, impulse: 0, subs: 0 };
+  (tx || []).forEach(function(t) {
+    if (!isAuditableExpense(t, toISO)) return;
+    if (!t.date || t.date < fromISO || t.date > toISO) return;
+    var name = watchCatName(t, cats);
+    if (looksLikeDelivery(t)) out.delivery = round2(out.delivery + t.amount);
+    if (name === "Entertainment" || (name === "Food" && looksLikeGoingOut(t))) out.goingout = round2(out.goingout + t.amount);
+    if (name === "Shopping") out.shopping = round2(out.shopping + t.amount);
+    if (looksLikeSubscription(t.label)) out.subs = round2(out.subs + t.amount);
+  });
+  return out;
+}
+
+// The deterministic grounding block - Richard never gets to invent a number.
+function personalWeeklyDigest(tx, cats, rp, foundMoney, findings, reviews) {
+  var todayISO = new Date().toISOString().slice(0, 10);
+  var ym = curMonth();
+  var ix = watchIndex(tx, cats, todayISO);
+  var baseline = rp.baselineObserved || parseFloat(rp.monthlyLeak) || 0;
+  var mtd = monthLeakSpend(ix, ym);
+  var rec = recoveredSoFar(foundMoney, ix, rp);
+  var weekFrom = addDaysISO(todayISO, -6);
+  var wk = leakWindowSpend(tx, cats, weekFrom, todayISO);
+  var srcNames = (rp.leakSources || []).map(function(id) {
+    var o = LEAK_OPTIONS.filter(function(l) { return l.id === id; })[0];
+    return o ? o.label : id;
+  });
+  var top = (findings || [])[0];
+  var last = (reviews || [])[0];
+  return "Their onboarding promise: recover about " + dollars(parseFloat(rp.recoverTarget) || 0) + " per month of an estimated " + dollars(parseFloat(rp.monthlyLeak) || 0) + " that slips away monthly. "
+    + "Leak sources they named: " + (srcNames.length ? srcNames.join(", ") : "none - they said they had no idea") + ". "
+    + "This month so far: " + dollars(mtd) + " of leak-category spend vs " + (baseline > 0 ? dollars(baseline) + " in a typical month" : "no baseline yet") + " (month is " + Math.round(monthDayFrac() * 100) + "% done). "
+    + "Last 7 days: delivery " + dollars(wk.delivery) + ", going out " + dollars(wk.goingout) + ", shopping " + dollars(wk.shopping) + ", subscriptions " + dollars(wk.subs) + ". "
+    + "Recovered since the plan started: " + dollars(rec.total) + " (" + dollars(rec.tally) + " from leak fixes they acted on, " + dollars(rec.fromMonths) + " from months under baseline). "
+    + "Open leak findings: " + (findings || []).length + (top ? (". Top finding: " + top.title + " (" + top.subtitle + ")") : "") + ". "
+    + (last ? ("Last week you told them: " + last.headline + " ") : "This is their first personal weekly review. ");
+}
+
+// Offline/parse-failure fallback so a check-in still lands every week.
+// Written through tr() so it lands in the user's language, then frozen.
+function localPersonalReview(tx, cats, rp, foundMoney) {
+  var todayISO = new Date().toISOString().slice(0, 10);
+  var ym = curMonth();
+  var ix = watchIndex(tx, cats, todayISO);
+  var baseline = rp.baselineObserved || parseFloat(rp.monthlyLeak) || 0;
+  var mtd = monthLeakSpend(ix, ym);
+  var pro = baseline * monthDayFrac();
+  var status = baseline <= 0 ? "watch" : (mtd <= pro ? "on-track" : (mtd <= pro * 1.25 ? "watch" : "off-track"));
+  var headline = status === "on-track" ? tr("rpHeadOn") : status === "watch" ? tr("rpHeadWatch") : tr("rpHeadOff");
+  var wk = leakWindowSpend(tx, cats, addDaysISO(todayISO, -6), todayISO);
+  var worstId = "", worstAmt = 0;
+  for (var k in wk) { if (wk[k] > worstAmt) { worstAmt = wk[k]; worstId = k; } }
+  var worstOpt = LEAK_OPTIONS.filter(function(l) { return l.id === worstId; })[0];
+  var worstName = worstOpt ? tr(worstOpt.tKey) : worstId;
+  return {
+    status: status, headline: headline,
+    tip: { title: tr("rpTipT"), body: tr("rpTipB") },
+    warning: worstAmt > 0
+      ? { title: trFill("rpWarnT", { cat: worstName }), body: trFill("rpWarnB", { cat: worstName, amt: dollars(worstAmt) }) }
+      : { title: tr("rpCalmT"), body: tr("rpCalmB") },
+    idea: { title: tr("rpIdeaT"), body: trFill("rpIdeaB", { amt: dollars(Math.max(10, Math.round((parseFloat(rp.recoverTarget) || 40) / 4))) }) },
+    source: "local"
+  };
+}
+
+// Run the weekly personal review. Numbers on the stored review are computed
+// locally; the model's text is advice, never data. `tone` is the coachTone
+// setting - it shapes phrasing only.
+function runPersonalReview(tx, cats, rp, foundMoney, findings, reviews, richardInstructions, lang, tone, cb) {
+  var custom = richardUserCtx(richardInstructions);
+  var langSuffix = (lang && lang !== "en") ? (" Every string value must be written entirely in " + (LANGUAGE_NAMES[lang] || "English") + ".") : "";
+  var toneLine = tone === "tough"
+    ? " Voice: firm accountability coach - hold them to the promise they made, plainly, never insultingly."
+    : tone === "soft"
+      ? " Voice: gentle and neutral - present the numbers kindly, without referring back to what they said about their own habits."
+      : " Voice: honest and personal - when the numbers touch a leak source they declared, connect it to their own words, never shaming.";
+  var sys = custom + "You are Richard, the warm, sharp money guide inside the Richy app, delivering the user's weekly personal money check-in. They installed the app to fix a specific leak in their spending and made a recovery promise at signup; this review is how the app keeps that promise visible. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"status\":\"on-track\" or \"watch\" or \"off-track\",\"headline\":\"one honest sentence, max 18 words, on how their week went against the plan\",\"tip\":{\"title\":\"2 to 5 words\",\"body\":\"1 to 2 sentences of concrete advice tied to their real numbers\"},\"warning\":{\"title\":\"2 to 5 words\",\"body\":\"the one pattern to watch this week, tied to a real number\"},\"idea\":{\"title\":\"2 to 5 words\",\"body\":\"one small move that banks visible progress, with a figure where possible\"}}. Never repeat last week's headline. Base every claim only on the numbers given - never invent figures." + toneLine + langSuffix;
+  callClaude([{ role: "user", content: personalWeeklyDigest(tx, cats, rp, foundMoney, findings, reviews) }], sys, 500, function(e, text) {
+    var todayISO = new Date().toISOString().slice(0, 10);
+    var ix = watchIndex(tx, cats, todayISO);
+    var frozen = {
+      monthLeakSpend: monthLeakSpend(ix, curMonth()),
+      baseline: round2(rp.baselineObserved || parseFloat(rp.monthlyLeak) || 0),
+      recovered: recoveredSoFar(foundMoney, ix, rp).total,
+      target: round2(parseFloat(rp.recoverTarget) || 0)
+    };
+    function finish(r) {
+      cb({
+        id: "prev_" + Date.now(), date: todayISO,
+        status: r.status, headline: r.headline, tip: r.tip, warning: r.warning, idea: r.idea,
+        source: r.source || "ai",
+        monthLeakSpend: frozen.monthLeakSpend, baseline: frozen.baseline, recovered: frozen.recovered, target: frozen.target
+      });
+    }
+    if (e || !text) { finish(localPersonalReview(tx, cats, rp, foundMoney)); return; }
+    try {
+      var jsonStr = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
+      var p = JSON.parse(jsonStr);
+      var lr = localPersonalReview(tx, cats, rp, foundMoney);
+      var okStatus = { "on-track": 1, "watch": 1, "off-track": 1 };
+      if (!p.headline || !okStatus[p.status]) { finish(lr); return; }
+      finish({
+        status: p.status,
+        headline: String(p.headline).slice(0, 170),
+        tip: (p.tip && p.tip.body) ? { title: String(p.tip.title || "Tip").slice(0, 40), body: String(p.tip.body).slice(0, 300) } : lr.tip,
+        warning: (p.warning && p.warning.body) ? { title: String(p.warning.title || "Watch").slice(0, 40), body: String(p.warning.body).slice(0, 300) } : lr.warning,
+        idea: (p.idea && p.idea.body) ? { title: String(p.idea.title || "Idea").slice(0, 40), body: String(p.idea.body).slice(0, 300) } : lr.idea,
+        source: "ai"
+      });
+    } catch (e2) { finish(localPersonalReview(tx, cats, rp, foundMoney)); }
+  });
+}
+
+// Onboarding Q9 timeline -> a goal deadline the Goals tab understands.
+function timelineToDeadline(timeline) {
+  var months = timeline === "6 months" ? 6 : timeline === "1 year" ? 12 : timeline === "2 years" ? 24 : timeline === "5+ years" ? 60 : 0;
+  if (!months) return "";
+  var d = new Date(); d.setMonth(d.getMonth() + months);
+  return d.toISOString().slice(0, 10);
 }
 
 function ImportSheet(props) {
@@ -25104,6 +25520,46 @@ function AppearanceView(props) {
   );
 }
 
+// Richard's tone: how coaching copy refers back to the weak spots the user
+// declared. Read by Spending Watch finding chips and both weekly reviews.
+function CoachToneView(props) {
+  var opts = [
+    { id: "direct", labelKey: "ctDirect", subKey: "ctDirectSub", icon: "edit" },
+    { id: "soft",   labelKey: "ctSoft",   subKey: "ctSoftSub",   icon: "heart" },
+    { id: "tough",  labelKey: "ctTough",  subKey: "ctToughSub",  icon: "flame" }
+  ];
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+      <Card style={{ overflow: "hidden", marginBottom: 16 }}>
+        {opts.map(function(opt, i) {
+          var sel = (props.coachTone || "direct") === opt.id;
+          return (
+            <button key={opt.id} onClick={function() { props.onCoachToneChange(opt.id); }}
+              style={{ width: "100%", background: sel ? T.orangeDim : "none", border: "none", borderBottom: i < opts.length - 1 ? "0.5px solid " + T.sep : "none", padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", fontFamily: UI }}>
+              <div style={{ width: 46, height: 46, borderRadius: 13, background: sel ? T.orange : "rgba(0,0,0,0.05)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <SVGIcon id={opt.icon} size={20} color={sel ? "#fff" : T.ink3} />
+              </div>
+              <div style={{ flex: 1, textAlign: "left" }}>
+                <div style={{ fontSize: 16, fontWeight: sel ? 700 : 600, color: T.ink }}>{tr(opt.labelKey)}</div>
+                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{tr(opt.subKey)}</div>
+              </div>
+              {sel && (
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <SVGIcon id="check" size={12} color="#fff" />
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </Card>
+      <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.55, padding: "0 6px" }}>
+        {tr("ctSub")}
+      </div>
+    </div>
+  );
+}
+
 function EntryMethodView(props) {
   var opts = [
     { id: "manual", label: "Enter manually", sub: "Log each transaction yourself - full control", icon: "edit" },
@@ -27837,6 +28293,7 @@ function SettingsView(props) {
 
       <ProfileSection icon="spark" title="AI & Richard" bg={T.goldDim} color={T.gold} glow={T.goldGlow}>
         <ProfileRow icon="spark" iconBg={T.goldDim} iconColor={T.gold} label="Your Plan" onClick={props.onViewPlan} />
+        <ProfileRow icon="star" iconBg={T.goldDim} iconColor={T.gold} label={tr("ctTitle")} value={tr(props.coachTone === "soft" ? "ctSoft" : props.coachTone === "tough" ? "ctTough" : "ctDirect")} onClick={props.onViewCoachTone} />
         <ProfileRow icon="note" iconBg={T.goldDim} iconColor={T.gold} label="Richard's Instructions" value={props.richardInstructions ? "Custom" : "Default"} onClick={props.onViewInstructions} last />
       </ProfileSection>
 
@@ -28265,6 +28722,14 @@ export default function App() {
   // callbacks to their answers), "tough" (accountability framing).
   var _ctn = useState("direct");
   var coachTone = _ctn[0]; var setCoachTone = _ctn[1];
+  // The onboarding recovery promise, made durable: {startedAt, monthlyLeak,
+  // recoverTarget, leakSources[], goalId, baselineObserved}. Null until the
+  // questionnaire is (re)taken with this feature live.
+  var _rpl = useState(null);
+  var recoveryPlan = _rpl[0]; var setRecoveryPlan = _rpl[1];
+  // Personal weekly reviews, newest first, capped at 8 like biz reviews.
+  var _prv = useState([]);
+  var personalReviews = _prv[0]; var setPersonalReviews = _prv[1];
   // Big-Decision CFO: tracked decisions [{id, question, verdict, createdDate, status}].
   var _dec = useState([]);
   var decisions = _dec[0]; var setDecisions = _dec[1];
@@ -28321,6 +28786,8 @@ export default function App() {
     setNotes(data.notes || []);
     setFoundMoney(data.foundMoney || { tally: 0, dismissed: [], acted: [] });
     setCoachTone(data.coachTone || "direct");
+    setRecoveryPlan(data.recoveryPlan || null);
+    setPersonalReviews(data.personalReviews || []);
     setDecisions(data.decisions || []);
     // Trim on load too, so an account that already grew past the limit heals
     // itself on its next write instead of staying permanently unsaveable.
@@ -28625,7 +29092,7 @@ export default function App() {
     blobRef.current = {};
     setUser(null); setAccountKey(null); setTab("overview");
     setHouseholdId(null); setHousehold(null); setInvites([]);
-    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setInvestorProfile(null); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setCoachTone("direct"); setDecisions([]); setBankSync(null); setLeumiFinteka(null); setCustomBanners([]); setMotivation(motivDefault()); setSocial({ handle: "", following: [], followers: [], requests: [] });
+    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setInvestorProfile(null); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setCoachTone("direct"); setRecoveryPlan(null); setPersonalReviews([]); setDecisions([]); setBankSync(null); setLeumiFinteka(null); setCustomBanners([]); setMotivation(motivDefault()); setSocial({ handle: "", following: [], followers: [], requests: [] });
     // Language is deliberately NOT reset here (unlike theme) - it's a device
     // preference AuthScreen itself now renders in, and wiping it back to "en"
     // would force a Hebrew/Arabic/Russian user back to English on their own
@@ -28700,6 +29167,14 @@ export default function App() {
   function onSaveGoals(next) { setGoals(next); save({ goals: next }); }
   function onSaveFoundMoney(next) { setFoundMoney(next); save({ foundMoney: next }); }
   function onSaveCoachTone(t) { var v = t === "soft" || t === "tough" ? t : "direct"; setCoachTone(v); save({ coachTone: v }); }
+  function onSaveRecovery(plan, reviews) {
+    if (plan !== undefined) { setRecoveryPlan(plan); }
+    if (reviews !== undefined) { setPersonalReviews(reviews); }
+    var patch = {};
+    if (plan !== undefined) patch.recoveryPlan = plan;
+    if (reviews !== undefined) patch.personalReviews = reviews;
+    save(patch);
+  }
   function onSaveDecisions(next) { setDecisions(next); save({ decisions: next }); }
   // Trim at the save boundary rather than inside Advisor, so every caller
   // (archive-on-new-chat, delete, reopen) is covered by one rule and the state
@@ -28950,6 +29425,41 @@ export default function App() {
     runNext(0);
   }, [businesses, accountKey]);
 
+  // Personal weekly review: the client-side stand-in for a weekly cron, same
+  // shape as the CFO one above. At most one review (and one notification) per
+  // app open, only when 7+ days have passed. Also freezes the observed
+  // baseline into the recovery plan once two full months of data exist -
+  // from then on progress is measured against what actually happens, not the
+  // signup guess.
+  var personalReviewRan = useRef(false);
+  useEffect(function() {
+    if (personalReviewRan.current || !accountKey || !onboardingDone || !recoveryPlan || !recoveryPlan.startedAt) return;
+    personalReviewRan.current = true;
+    var rp = recoveryPlan;
+    var todayISO = new Date().toISOString().slice(0, 10);
+    var ix = watchIndexCached(tx, categories, todayISO);
+    if (!rp.baselineObserved) {
+      var startYm = rp.startedAt.slice(0, 7);
+      var m1 = ymShift(curMonth(), 1), m2 = ymShift(curMonth(), 2);
+      if (m2 > startYm) {
+        var nrp = {}; for (var k in rp) nrp[k] = rp[k];
+        nrp.baselineObserved = round2((monthLeakSpend(ix, m1) + monthLeakSpend(ix, m2)) / 2);
+        nrp.baselineComputedAt = todayISO;
+        onSaveRecovery(nrp, undefined);
+        rp = nrp;
+      }
+    }
+    if (!personalReviewDue(rp, personalReviews)) return;
+    var fmv = foundMoney || {};
+    var findings = findMoney(tx, categories, { leakIds: leakIdsOf(onboardingData) }).filter(function(f) {
+      return (fmv.dismissed || []).indexOf(f.id) === -1 && (fmv.muted || []).indexOf(f.type) === -1;
+    });
+    runPersonalReview(tx, categories, rp, foundMoney, findings, personalReviews, richardCtx, lang, coachTone, function(review) {
+      onSaveRecovery(undefined, [review].concat(personalReviews || []).slice(0, 8));
+      fireBizNotification("Richy", review.headline, "personal-review");
+    });
+  }, [recoveryPlan, accountKey, onboardingDone]);
+
   function onSaveFolders(next) { setFolders(next); save({ folders: next }); }
   function onSaveCategories(next) { setCategories(next); save({ categories: next }); }
   function onSaveCurrency(sym) { _currency.sym = sym; setCurrency(sym); save({ currency: sym }); }
@@ -29147,6 +29657,39 @@ export default function App() {
       setSavings([ef]);
       merged.savings = [ef];
     }
+    // The Q9 goal becomes a REAL goal - the user named it, gave it a number and
+    // a timeline; forgetting it was the old behavior. Skipped when a goal with
+    // that name already exists (retakes must not duplicate).
+    var goalTarget = parseFloat(oData && oData.goalAmt);
+    var newGoalId = null;
+    if (oData && oData.goalName && goalTarget > 0) {
+      var curGoals = merged.goals || [];
+      var dupe = curGoals.filter(function(g) { return (g.name || "").toLowerCase() === oData.goalName.toLowerCase(); })[0];
+      if (dupe) { newGoalId = dupe.id; }
+      else {
+        var ng = { id: Date.now() + 2, name: oData.goalName, target: goalTarget, saved: 0, deadline: timelineToDeadline(oData.timeline) };
+        merged.goals = curGoals.concat([ng]);
+        setGoals(merged.goals);
+        newGoalId = ng.id;
+      }
+    }
+    // Persist the money-story numbers as the recovery plan - the same math the
+    // onboarding cinema showed, made durable so the app can keep the promise
+    // (weekly review, RecoveryPulse, recovered-so-far all read from this).
+    var story = deriveMoneyStory({
+      income: oData && oData.income, overspend: oData && oData.overspendEst,
+      leaks: leakIdsOf(oData), goalAmt: oData && oData.goalAmt
+    });
+    var rpNew = {
+      v: 1, startedAt: new Date().toISOString().slice(0, 10),
+      monthlyLeak: story.mode === "full" ? story.monthlyLeak : 0,
+      recoverTarget: story.mode === "full" ? story.recoverMo : 0,
+      leakSources: leakIdsOf(oData),
+      goalId: newGoalId,
+      baselineObserved: null, baselineComputedAt: null
+    };
+    merged.recoveryPlan = rpNew;
+    setRecoveryPlan(rpNew);
     blobRef.current = merged;
     flushSave();
   }
@@ -29427,7 +29970,7 @@ export default function App() {
   // The five swipeable main tabs, produced by id so both the visible page and the
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
-    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} onboardingData={onboardingData} coachTone={coachTone} onSaveBudgets={onSaveBudgets} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
+    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} richPlan={richPlan} recoveryPlan={recoveryPlan} personalReviews={personalReviews} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} onboardingData={onboardingData} coachTone={coachTone} onSaveBudgets={onSaveBudgets} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
     if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
@@ -29580,7 +30123,7 @@ export default function App() {
         {currentTab === "person" && <FriendView uid={openPerson} person={social.following.concat(social.followers).filter(function(p) { return p.uid === openPerson; })[0] || null} stats={(social.following.filter(function(p) { return p.uid === openPerson; })[0] || {}).stats || null} household={household} myUid={accountKey} tx={tx} categories={categories} onBack={function() { setTab(prevTabRef.current === "social" ? "social" : "profile"); }} />}
         {currentTab === "social" && <SocialView social={social} onOpen={function(uid) { prevTabRef.current = "social"; setOpenPerson(uid); setTab("person"); }} onFind={function() { prevTabRef.current = "social"; setTab("findPeople"); }} onAccept={onAcceptFollow} onDecline={onDeclineFollow} onRemoveFollower={onRemoveFollower} onBack={function() { setTab("profile"); }} />}
         {currentTab === "findPeople" && <FindPeopleView myHandle={social.handle} myUid={accountKey} followingUids={social.following.map(function(p) { return p.uid; })} onClaimHandle={onClaimHandle} onFind={CLOUD.findByHandle} onRequest={onRequestFollow} onCopy={copyText} onBack={function() { setTab("social"); }} />}
-        {currentTab === "settings" && <SettingsView user={user} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} richardInstructions={richardInstructions} bankSync={bankSync} householdName={household ? household.name : null} inviteCount={invites.length} debtCount={debts.length} onBack={function() { setTab("profile"); }} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "settings"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "settings"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "settings"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "settings"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "settings"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "settings"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "settings"; setTab("periodMode"); }} onViewBankSync={function() { prevTabRef.current = "settings"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "settings"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "settings"; setTab("editOpeningBalance"); }} onViewCollab={function() { prevTabRef.current = "settings"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "settings"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
+        {currentTab === "settings" && <SettingsView user={user} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} richardInstructions={richardInstructions} bankSync={bankSync} householdName={household ? household.name : null} inviteCount={invites.length} debtCount={debts.length} onBack={function() { setTab("profile"); }} onViewPlan={function() { setTab("plan"); }} coachTone={coachTone} onViewCoachTone={function() { prevTabRef.current = "settings"; setTab("coachTone"); }} onViewInstructions={function() { prevTabRef.current = "settings"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "settings"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "settings"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "settings"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "settings"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "settings"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "settings"; setTab("periodMode"); }} onViewBankSync={function() { prevTabRef.current = "settings"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "settings"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "settings"; setTab("editOpeningBalance"); }} onViewCollab={function() { prevTabRef.current = "settings"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "settings"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
         {currentTab === "analysis" && <FullAnalysisView tx={tx} categories={categories} folders={folders} splitPlan={splitPlan} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} username={user} analysis={freshAnalysis ? freshAnalysis.data : null} onBack={function() { setTab("advisor"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} onAccountDeleted={handleLogout} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
@@ -29591,6 +30134,7 @@ export default function App() {
         {currentTab === "language" && <LanguageView lang={lang} onLangChange={onSaveLang} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "appearance" && <AppearanceView theme={theme} onThemeChange={onSaveTheme} darkMode={darkMode} onDarkModeChange={onSaveDarkMode} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "coachTone" && <CoachToneView coachTone={coachTone} onCoachToneChange={onSaveCoachTone} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "periodMode" && <PeriodModeView periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onPeriodModeChange={onSavePeriodMode} onPeriodCustomChange={onSavePeriodCustom} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "bankSync" && <BankSyncView bankSync={bankSync} onEnable={onEnableBankSync} onDisable={onDisableBankSync} leumiFinteka={leumiFinteka} onConnectLeumi={onConnectLeumiFinteka} onDisconnectLeumi={onDisconnectLeumiFinteka} onSyncLeumiNow={onSyncLeumiFintekaNow} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} />}
