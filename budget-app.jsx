@@ -8160,6 +8160,17 @@ function BusinessPulse(props) {
                   <span style={{ flex: 1, fontSize: 12.5, color: T.ink2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{nextTask}</span>
                 </div>
               )}
+              {(function() {
+                var od = overdueInvoicesOf(b);
+                if (!od.length) return null;
+                var odTotal = round2(od.reduce(function(s, i) { return s + (i.amount || 0); }, 0));
+                return (
+                  <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: nextTask ? 7 : 10 }}>
+                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: T.red, flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, fontWeight: 600, color: T.red }}>{od.length + (od.length === 1 ? " invoice overdue - " : " invoices overdue - ") + dollars(odTotal)}</span>
+                  </div>
+                );
+              })()}
               {reviewReady && (
                 <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: nextTask ? 7 : 10 }}>
                   <span style={{ width: 7, height: 7, borderRadius: "50%", background: T.orange, animation: "rcBadgePulse 1.6s ease 2", flexShrink: 0 }} />
@@ -18581,6 +18592,40 @@ function bizQuarterRevenue(biz) {
   }, 0);
   return { revenue: round2(rev), quarter: qNum, qStart: qStart };
 }
+// The one place the tax estimate is computed, so the stat card, the weekly
+// digest, the ideas list and the badge test can never disagree.
+function taxOwedOf(biz) {
+  var q = bizQuarterRevenue(biz);
+  var rate = (biz && biz.profile && biz.profile.taxRate != null) ? biz.profile.taxRate : 25;
+  return { owed: round2(q.revenue * (rate / 100)), rate: rate, quarter: q.quarter, revenue: q.revenue };
+}
+// The tax pot is an EARMARK inside business cash, not a transfer: entries
+// (positive set-asides, negative releases) sum to the reserved balance, and
+// available cash is business cash minus that reserve. Money never moves, so
+// there is no double-entry risk with the main-balance bridge.
+function taxPotBalance(biz) {
+  var bal = (((biz || {}).taxPot || {}).entries || []).reduce(function(s, e) { return s + (e.amount || 0); }, 0);
+  return round2(Math.max(0, bal));
+}
+function bizCashAvailable(biz) { return round2(businessCash(biz) - taxPotBalance(biz)); }
+function overdueInvoicesOf(biz, today) {
+  var t = today || new Date().toISOString().slice(0, 10);
+  return ((biz && biz.invoices) || []).filter(function(i) { return i.status !== "paid" && (i.dueDate || "") < t; });
+}
+// How far into the calendar quarter we are (0..1) - the under-reserved
+// warning only fires once most of the quarter has passed.
+function quarterFrac() {
+  var now = new Date();
+  var qm = Math.floor(now.getUTCMonth() / 3) * 3;
+  var qStart = Date.UTC(now.getUTCFullYear(), qm, 1);
+  var qEnd = Date.UTC(now.getUTCFullYear(), qm + 3, 1);
+  return Math.max(0, Math.min(1, (Date.now() - qStart) / (qEnd - qStart)));
+}
+// True when the tax pot is clearly behind the estimate late in the quarter.
+function taxPotBehind(biz) {
+  var tax = taxOwedOf(biz);
+  return tax.owed > 0 && taxPotBalance(biz) < tax.owed * 0.5 && quarterFrac() > 0.6;
+}
 
 // ---- Business roadmap -------------------------------------------------------
 // A stage-tuned milestone checklist Richard drafts for every business. The
@@ -18683,6 +18728,13 @@ function detectGraduation(biz) {
 // on-demand "growth ideas" panel when the AI is unreachable.
 function bizIdeas(biz) {
   var out = [];
+  // Tax gap first when the pot is clearly behind - it's the one idea with a
+  // deadline attached.
+  var _tax = taxOwedOf(biz);
+  var _gap = round2(_tax.owed - taxPotBalance(biz));
+  if (_tax.owed > 0 && _gap > 0 && taxPotBehind(biz)) {
+    out.push({ title: "Top up the tax pot", body: "Move " + dollars(_gap) + " into the tax set-aside to cover the estimated Q" + _tax.quarter + " bill - future you pays nothing extra, present you sleeps better." });
+  }
   var pf = biz.profile || {};
   var stage = pf.stage || "idea";
   var ym = curMonth();
@@ -18747,6 +18799,16 @@ function bizWeeklyDigest(biz) {
     + "Business: " + (biz.name || "my business") + " - " + (biz.what || "unspecified") + ". Stage: " + (pf.stage || "idea") + ". "
     + "This month: revenue " + dollars(pl.revenue) + " (monthly goal " + dollars(pf.revenueGoal || 0) + ", month is " + Math.round(dayFrac * 100) + "% done), spent " + dollars(pl.spend) + " of " + dollars(pf.monthly || 0) + " budget, profit " + dollarsSigned(pl.profit) + (pl.profit < 0 ? " (a LOSS - the business is spending more than it earns)" : "") + ". "
     + "Cash " + dollars(businessCash(biz)) + ", runway " + (runway === null ? "self-sustaining" : runway + " months") + ", health " + health.score + " of 100 (" + health.label + "). "
+    + (function() {
+        var tax = taxOwedOf(biz);
+        var od = overdueInvoicesOf(biz);
+        var unpaid = ((biz.invoices || []).filter(function(i) { return i.status !== "paid"; }));
+        var oldest = od.length ? od.reduce(function(m, i) { return (i.dueDate || "") < m ? i.dueDate : m; }, od[0].dueDate || "") : "";
+        var oldestDays = oldest ? Math.max(0, Math.round((Date.now() - new Date(oldest + "T00:00:00").getTime()) / 86400000)) : 0;
+        return "Tax: set aside " + dollars(taxPotBalance(biz)) + " of " + dollars(tax.owed) + " estimated owed for Q" + tax.quarter + " at " + tax.rate + "%. "
+          + "Invoices: " + unpaid.length + " unpaid totaling " + dollars(unpaid.reduce(function(s, i) { return s + (i.amount || 0); }, 0))
+          + (od.length ? (", " + od.length + " OVERDUE (oldest " + oldestDays + " days late)") : "") + ". ";
+      })()
     + (pace ? ("Pace: " + pace.text + " ") : "")
     + "Budget buckets (spent of planned): " + (catLine || "none") + ". "
     + (biz.roadmap ? ("Roadmap: " + prog.done + " of " + prog.total + " tasks done" + (cur ? (", current milestone: " + cur.title + (nextTask ? (", next task: " + nextTask) : "")) : ", all milestones complete") + ". ") : "No roadmap yet. ")
@@ -18775,11 +18837,17 @@ function localWeeklyReview(biz) {
   var tip = worst
     ? { title: "Rein in " + worst.label, body: worst.label + " is " + dollars(worst.overBy) + " over its " + dollars(worst.planned) + " budget this month. Pause spending there or move budget from Buffer so the plan matches reality." }
     : { title: "Keep the ledger honest", body: "Log every business expense and sale the day it happens - the advice here is only as sharp as the numbers you feed it." };
+  var odInv = overdueInvoicesOf(biz);
+  var taxInfo = taxOwedOf(biz);
   var warning = (runway !== null && runway < 3)
     ? { title: "Runway is short", body: "About " + runway + " months of cash left at the current burn. Cut the biggest non-earning cost or push revenue now - don't let it get to one." }
-    : (pace && pace.verdict === "over")
-      ? { title: "Pace is hot", body: pace.text }
-      : { title: "Nothing burning", body: "No urgent risk this week. Use the calm to work the roadmap." };
+    : odInv.length
+      ? { title: "Chase overdue invoices", body: odInv.length + (odInv.length === 1 ? " invoice is" : " invoices are") + " past due, " + dollars(odInv.reduce(function(s, i) { return s + (i.amount || 0); }, 0)) + " in total. A polite nudge today usually beats a bigger chase next month." }
+      : taxPotBehind(biz)
+        ? { title: "Tax pot is behind", body: "You've set aside " + dollars(taxPotBalance(biz)) + " of about " + dollars(taxInfo.owed) + " owed for Q" + taxInfo.quarter + ", and the quarter is nearly over. Move a slice of the next revenue in before it hurts." }
+        : (pace && pace.verdict === "over")
+          ? { title: "Pace is hot", body: pace.text }
+          : { title: "Nothing burning", body: "No urgent risk this week. Use the calm to work the roadmap." };
   var idea = bizIdeas(biz)[0];
   return { status: status, headline: headline, tip: tip, warning: warning, idea: { title: idea.title, body: idea.body }, taskSuggestion: null, graduate: "", source: "local" };
 }
@@ -23386,6 +23454,10 @@ function BusinessView(props) {
   var _invList = useState(false); var invoicesOpen = _invList[0]; var setInvoicesOpen = _invList[1];
   var _invForm = useState({ client: "", amount: "", dueDate: "" }); var invForm = _invForm[0]; var setInvForm = _invForm[1];
   var _taxSheet = useState(false); var taxSheetOpen = _taxSheet[0]; var setTaxSheetOpen = _taxSheet[1];
+  // One-tap follow-ups: set tax aside right after logging revenue, and record
+  // revenue right after marking an invoice paid. Both opt-in, never silent.
+  var _taxPrompt = useState(null); var taxPrompt = _taxPrompt[0]; var setTaxPrompt = _taxPrompt[1];       // {bizId, amount}
+  var _invRevPrompt = useState(null); var invRevPrompt = _invRevPrompt[0]; var setInvRevPrompt = _invRevPrompt[1]; // {bizId, client, amount}
 
   // Fresh-props ref so async AI callbacks never patch from a stale snapshot
   // (a reply can land after another save has already advanced the array).
@@ -23787,11 +23859,26 @@ function BusinessView(props) {
     }
     setDelCapConfirm(null);
   }
+  // Append one earmark entry (positive set-aside, negative release) to the
+  // business's tax pot. Clamped so a release can never take the pot negative
+  // and a set-aside can never exceed available (un-earmarked) cash.
+  function addTaxEntry(bizId, amount) {
+    var biz = null; for (var i = 0; i < bizesRef.current.length; i++) { if (bizesRef.current[i].id === bizId) { biz = bizesRef.current[i]; break; } }
+    if (!biz) return;
+    var amt = round2(amount || 0);
+    if (amt > 0) amt = Math.min(amt, Math.max(0, bizCashAvailable(biz)));
+    else amt = -Math.min(-amt, taxPotBalance(biz));
+    if (!amt) return;
+    var entries = ((biz.taxPot || {}).entries || []).concat([{ id: Date.now(), amount: amt, date: today }]);
+    props.onSaveBusinesses(patchBiz(bizId, { taxPot: { entries: entries } }));
+  }
   function logRevenue(bizId) {
     var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
     var v = parseFloat(revForm.amount) || 0;
     if (!biz || v <= 0) { setRevFor(null); return; }
     props.onSaveBusinesses(patchBiz(bizId, buildRevenuePatch(biz, revForm.label, v, Date.now())));
+    var rate = (biz.profile && biz.profile.taxRate != null) ? biz.profile.taxRate : 25;
+    if (rate > 0) setTaxPrompt({ bizId: bizId, amount: round2(v * rate / 100), rate: rate });
     setRevFor(null); setRevForm({ label: "", amount: "" });
   }
   // ---- Invoices (Needs attention / Unpaid stat) -----------------------------
@@ -23807,8 +23894,14 @@ function BusinessView(props) {
   function toggleInvoicePaid(bizId, invId) {
     var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
     if (!biz) return;
+    var flipped = (biz.invoices || []).filter(function(inv) { return inv.id === invId; })[0];
     var next = (biz.invoices || []).map(function(inv) { return inv.id === invId ? Object.assign({}, inv, { status: inv.status === "paid" ? "unpaid" : "paid" }) : inv; });
     props.onSaveBusinesses(patchBiz(bizId, { invoices: next }));
+    // Marking paid does not book revenue by itself (users who log revenue
+    // separately must not double-count) - offer it as a one-tap follow-up.
+    if (flipped && flipped.status !== "paid" && (flipped.amount || 0) > 0) {
+      setInvRevPrompt({ bizId: bizId, client: flipped.client || "", amount: round2(flipped.amount) });
+    }
   }
   function deleteInvoice(bizId, invId) {
     var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
@@ -24710,9 +24803,12 @@ function BusinessView(props) {
         </div>
 
         {(function() {
-          var qInfo = bizQuarterRevenue(biz);
-          var taxRate = (biz.profile && biz.profile.taxRate != null) ? biz.profile.taxRate : 25;
-          var taxOwed = round2(qInfo.revenue * (taxRate / 100));
+          var tax = taxOwedOf(biz);
+          var taxOwed = tax.owed, taxRate = tax.rate;
+          var qInfo = { quarter: tax.quarter };
+          var taxSetAside = taxPotBalance(biz);
+          var taxCovered = taxOwed > 0 && taxSetAside >= taxOwed;
+          var taxBehind = taxPotBehind(biz);
           var invoices = biz.invoices || [];
           var unpaidInvoices = invoices.filter(function(i) { return i.status !== "paid"; });
           var unpaidTotal = round2(unpaidInvoices.reduce(function(s, i) { return s + (i.amount || 0); }, 0));
@@ -24738,8 +24834,11 @@ function BusinessView(props) {
               </button>
               <button onClick={function() { setTaxSheetOpen(true); }} style={statCardSt}>
                 <div style={statLabelSt}>Tax pot</div>
-                <div style={statNumSt}>{dollars(taxOwed)}</div>
-                <div style={statSubSt}>{"for Q" + qInfo.quarter + " at " + taxRate + "%"}</div>
+                <div style={Object.assign({}, statNumSt, taxCovered ? { color: T.green } : {})}>{dollars(taxSetAside)}</div>
+                <div style={Object.assign({}, statSubSt, { color: taxCovered ? T.green : taxBehind ? T.red : T.ink3, display: "flex", alignItems: "center", gap: 4 })}>
+                  {taxBehind && !taxCovered && <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.red, flexShrink: 0 }} />}
+                  {taxOwed > 0 ? ("of " + dollars(taxOwed) + " owed for Q" + qInfo.quarter) : ("Q" + qInfo.quarter + " at " + taxRate + "%")}
+                </div>
               </button>
             </div>
           );
@@ -25462,10 +25561,65 @@ function BusinessView(props) {
         </Overlay>
 
         <Overlay open={taxSheetOpen} onClose={function() { setTaxSheetOpen(false); }} title="Tax set-aside">
-          <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginBottom: 10 }}>The share of revenue Richard estimates you should set aside for taxes each quarter.</div>
+          {(function() {
+            var tax = taxOwedOf(biz);
+            var setAside = taxPotBalance(biz);
+            var covered = tax.owed > 0 && setAside >= tax.owed;
+            return (
+              <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
+                <div style={{ flex: 1, background: covered ? T.greenDim : "rgba(0,0,0,0.04)", borderRadius: 14, padding: "12px 14px" }}>
+                  <div style={{ fontSize: 9.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em" }}>Set aside</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: covered ? T.green : T.ink, letterSpacing: "-0.02em", marginTop: 3 }}>{dollars(setAside)}</div>
+                </div>
+                <div style={{ flex: 1, background: "rgba(0,0,0,0.04)", borderRadius: 14, padding: "12px 14px" }}>
+                  <div style={{ fontSize: 9.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em" }}>{"Est. owed Q" + tax.quarter}</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", marginTop: 3 }}>{dollars(tax.owed)}</div>
+                </div>
+              </div>
+            );
+          })()}
+          <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginBottom: 10 }}>Money set aside stays in the business - it's earmarked so you don't spend it. Estimate = quarter revenue x your rate.</div>
+          <FormRow label={"Amount (" + dollars(Math.max(0, bizCashAvailable(biz))) + " available)"} value={getDetailEdit(biz.id, "taxAmt", "")}
+            onChange={function(e) { setDetailEdit(biz.id, "taxAmt", e.target.value); }} type="number" />
+          <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+            <button onClick={function() { var v = parseFloat(getDetailEdit(biz.id, "taxAmt", "")) || 0; if (v > 0) { addTaxEntry(biz.id, v); clearDetailEdit(biz.id, "taxAmt"); } }}
+              style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 12, background: T.green, color: "#fff" }}>Set aside</button>
+            <button onClick={function() { var v = parseFloat(getDetailEdit(biz.id, "taxAmt", "")) || 0; if (v > 0) { addTaxEntry(biz.id, -v); clearDetailEdit(biz.id, "taxAmt"); } }} disabled={taxPotBalance(biz) <= 0}
+              style={{ flex: 1, border: "1.5px solid " + (taxPotBalance(biz) <= 0 ? "rgba(0,0,0,0.08)" : T.orange), cursor: taxPotBalance(biz) <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 12, background: "none", color: taxPotBalance(biz) <= 0 ? T.ink3 : T.orange }}>Release</button>
+          </div>
           <FormRow label="Set-aside rate (%)" value={getDetailEdit(biz.id, "taxRate", (biz.profile && biz.profile.taxRate != null) ? biz.profile.taxRate : 25)}
             onChange={function(e) { setDetailEdit(biz.id, "taxRate", e.target.value); }} type="number" last={true} />
-          <BigBtn label="Save" onPress={function() { updateTaxRate(biz.id, getDetailEdit(biz.id, "taxRate", 25)); clearDetailEdit(biz.id, "taxRate"); setTaxSheetOpen(false); }} />
+          <BigBtn label="Save rate" onPress={function() { updateTaxRate(biz.id, getDetailEdit(biz.id, "taxRate", 25)); clearDetailEdit(biz.id, "taxRate"); setTaxSheetOpen(false); }} />
+        </Overlay>
+
+        <Overlay open={!!taxPrompt} onClose={function() { setTaxPrompt(null); }} title="Set tax aside?">
+          {taxPrompt && (
+            <div>
+              <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.55, marginBottom: 14 }}>
+                {"Nice - revenue logged. Set aside " + taxPrompt.rate + "% (" + dollars(taxPrompt.amount) + ") for tax now, so the quarter never surprises you?"}
+              </div>
+              <BigBtn label={"Set aside " + dollars(taxPrompt.amount)} onPress={function() { addTaxEntry(taxPrompt.bizId, taxPrompt.amount); setTaxPrompt(null); }} />
+              <button onClick={function() { setTaxPrompt(null); }}
+                style={{ width: "100%", background: "none", border: "none", cursor: "pointer", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, padding: "12px 0 4px" }}>Not now</button>
+            </div>
+          )}
+        </Overlay>
+
+        <Overlay open={!!invRevPrompt} onClose={function() { setInvRevPrompt(null); }} title="Record as revenue?">
+          {invRevPrompt && (
+            <div>
+              <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.55, marginBottom: 14 }}>
+                {"Invoice marked paid. Record " + dollars(invRevPrompt.amount) + (invRevPrompt.client ? " from " + invRevPrompt.client : "") + " as revenue too? Skip this if you already log that revenue separately."}
+              </div>
+              <BigBtn label="Record revenue" onPress={function() {
+                var b = null; for (var i = 0; i < bizesRef.current.length; i++) { if (bizesRef.current[i].id === invRevPrompt.bizId) { b = bizesRef.current[i]; break; } }
+                if (b) props.onSaveBusinesses(patchBiz(invRevPrompt.bizId, buildRevenuePatch(b, invRevPrompt.client, invRevPrompt.amount, Date.now())));
+                setInvRevPrompt(null);
+              }} />
+              <button onClick={function() { setInvRevPrompt(null); }}
+                style={{ width: "100%", background: "none", border: "none", cursor: "pointer", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, padding: "12px 0 4px" }}>Just mark paid</button>
+            </div>
+          )}
         </Overlay>
       </div>
     );
