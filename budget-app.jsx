@@ -1090,9 +1090,284 @@ for (var _obc in ONBOARD_STRINGS) {
   for (var _obk in ONBOARD_STRINGS[_obc]) TRANSLATIONS[_obc][_obk] = ONBOARD_STRINGS[_obc][_obk];
 }
 
+// Spending Watch strings: the personalized leak detectors' finding copy. The
+// engine emits i18n keys + params for these (unlike the four legacy detectors,
+// whose pre-formatted English strings are frozen by the dismissal contract).
+var WATCH_STRINGS = {
+  en: {
+    fmwDeliveryTitle: "{n} delivery orders this month",
+    fmwDeliverySub: "{amt} on food delivery",
+    fmwDeliverySubBase: "{amt} on food delivery vs {base} in a usual month",
+    fmwBleedTitle: "{n} small buys quietly added up",
+    fmwBleedSub: "{amt} this month in purchases under {small} - about half is usually recoverable",
+    fmwImpulseTitle: "{n} impulse buys in one day ({date})",
+    fmwImpulseSub: "{amt} in a single day",
+    fmwImpulseSubLate: "{amt} in a single day, mostly late at night",
+    fmwGoingOutTitle: "Going out is running {pct}% hot",
+    fmwGoingOutSub: "{amt} on weekend outings vs {base} usual - {extra} over",
+    fmwShopTitle: "Shopping has crept up three months straight",
+    fmwShopSub: "{amt} this month vs {was} three months ago",
+    fmwYourLeak: "You told Richy this is where money leaks - {leak}",
+    fmwYourLeakTough: "That's the {leak} leak you said you wanted to stop",
+    fmwSetCap: "Cap {cat} at {amt}/mo",
+    fmwCapSet: "Cap set",
+    fmwMuteType: "Don't show these",
+    fmwNewSince: "{n} new since your last visit",
+  },
+  he: {
+    fmwDeliveryTitle: "{n} הזמנות משלוח החודש",
+    fmwDeliverySub: "{amt} על משלוחי אוכל",
+    fmwDeliverySubBase: "{amt} על משלוחי אוכל לעומת {base} בחודש רגיל",
+    fmwBleedTitle: "{n} קניות קטנות שהצטברו בשקט",
+    fmwBleedSub: "{amt} החודש בקניות מתחת ל-{small} - בדרך כלל אפשר להחזיר בערך חצי",
+    fmwImpulseTitle: "{n} קניות אימפולסיביות ביום אחד ({date})",
+    fmwImpulseSub: "{amt} ביום אחד",
+    fmwImpulseSubLate: "{amt} ביום אחד, רובן בשעות הלילה",
+    fmwGoingOutTitle: "הבילויים רצים {pct}% מעל הרגיל",
+    fmwGoingOutSub: "{amt} על בילויי סוף שבוע לעומת {base} רגיל - {extra} מעל",
+    fmwShopTitle: "הקניות עולות כבר שלושה חודשים ברצף",
+    fmwShopSub: "{amt} החודש לעומת {was} לפני שלושה חודשים",
+    fmwYourLeak: "אמרת לריצ'י שכאן הכסף דולף - {leak}",
+    fmwYourLeakTough: "זו דליפת ה{leak} שאמרת שרצית לעצור",
+    fmwSetCap: "להגביל את {cat} ל-{amt} לחודש",
+    fmwCapSet: "התקרה נקבעה",
+    fmwMuteType: "אל תציג כאלה יותר",
+    fmwNewSince: "{n} חדשות מאז הביקור האחרון",
+  },
+  ar: {
+    fmwDeliveryTitle: "{n} طلبات توصيل هذا الشهر",
+    fmwDeliverySub: "{amt} على توصيل الطعام",
+    fmwDeliverySubBase: "{amt} على توصيل الطعام مقابل {base} في شهر عادي",
+    fmwBleedTitle: "{n} مشتريات صغيرة تراكمت بهدوء",
+    fmwBleedSub: "{amt} هذا الشهر في مشتريات أقل من {small} - عادة يمكن استرداد النصف تقريباً",
+    fmwImpulseTitle: "{n} مشتريات اندفاعية في يوم واحد ({date})",
+    fmwImpulseSub: "{amt} في يوم واحد",
+    fmwImpulseSubLate: "{amt} في يوم واحد، معظمها في وقت متأخر من الليل",
+    fmwGoingOutTitle: "مصاريف الخروج أعلى بنسبة {pct}%",
+    fmwGoingOutSub: "{amt} على الخروج في عطلة نهاية الأسبوع مقابل {base} المعتاد - {extra} زيادة",
+    fmwShopTitle: "التسوق يرتفع منذ ثلاثة أشهر متتالية",
+    fmwShopSub: "{amt} هذا الشهر مقابل {was} قبل ثلاثة أشهر",
+    fmwYourLeak: "أخبرت ريتشي أن المال يتسرب من هنا - {leak}",
+    fmwYourLeakTough: "هذا تسرب {leak} الذي قلت إنك تريد إيقافه",
+    fmwSetCap: "حدّد سقف {cat} عند {amt} شهرياً",
+    fmwCapSet: "تم تحديد السقف",
+    fmwMuteType: "لا تعرض مثل هذه",
+    fmwNewSince: "{n} جديدة منذ زيارتك الأخيرة",
+  },
+  ru: {
+    fmwDeliveryTitle: "{n} заказов доставки в этом месяце",
+    fmwDeliverySub: "{amt} на доставку еды",
+    fmwDeliverySubBase: "{amt} на доставку еды против {base} в обычный месяц",
+    fmwBleedTitle: "{n} мелких покупок незаметно накопились",
+    fmwBleedSub: "{amt} за месяц на покупки до {small} - обычно около половины можно вернуть",
+    fmwImpulseTitle: "{n} импульсивных покупок за один день ({date})",
+    fmwImpulseSub: "{amt} за один день",
+    fmwImpulseSubLate: "{amt} за один день, в основном поздно ночью",
+    fmwGoingOutTitle: "Траты на развлечения выше обычного на {pct}%",
+    fmwGoingOutSub: "{amt} на выходные против {base} обычно - {extra} сверху",
+    fmwShopTitle: "Шопинг растёт три месяца подряд",
+    fmwShopSub: "{amt} в этом месяце против {was} три месяца назад",
+    fmwYourLeak: "Вы сказали Richy, что деньги утекают здесь - {leak}",
+    fmwYourLeakTough: "Это та утечка ({leak}), которую вы хотели остановить",
+    fmwSetCap: "Ограничить {cat} до {amt}/мес",
+    fmwCapSet: "Лимит установлен",
+    fmwMuteType: "Больше не показывать такие",
+    fmwNewSince: "{n} новых с последнего визита",
+  },
+};
+for (var _fwc in WATCH_STRINGS) {
+  if (!TRANSLATIONS[_fwc]) continue;
+  for (var _fwk in WATCH_STRINGS[_fwc]) TRANSLATIONS[_fwc][_fwk] = WATCH_STRINGS[_fwc][_fwk];
+}
+
+// Recovery-plan strings: the RecoveryPulse Overview card, the personal weekly
+// review's local fallback, and the coach-tone setting.
+var RECOVERY_STRINGS = {
+  en: {
+    rpTitle: "Your recovery plan",
+    rpPromise: "The promise: recover about {amt}/mo",
+    rpThisMonth: "Leak spend this month",
+    rpVsBaseline: "{amt} of {base} typical",
+    rpNoBaseline: "{amt} so far - building your baseline",
+    rpRecovered: "Recovered so far: {amt}",
+    rpReviewReady: "Richard's weekly check-in is ready",
+    rpFirstReview: "Richard checks in weekly - your first review lands in a few days",
+    rpStatusOn: "On track", rpStatusWatch: "Worth a look", rpStatusOff: "Needs attention",
+    rpSeePlan: "Your full plan",
+    rpYourGoal: "Your goal",
+    rpHeadOn: "Good week - your leak spending stayed inside the plan.",
+    rpHeadWatch: "Mixed week - one leak category is drifting past its usual.",
+    rpHeadOff: "Rough week - leak spending ran well past your baseline.",
+    rpTipT: "One clean swap",
+    rpTipB: "Pick your heaviest leak day from last week and plan a zero-spend day in its place this week.",
+    rpWarnT: "Watch {cat}",
+    rpWarnB: "{cat} was your heaviest leak in the last 7 days at {amt}.",
+    rpCalmT: "Nothing burning",
+    rpCalmB: "No leak ran hot this week. Use the calm to bank progress toward your goal.",
+    rpIdeaT: "Bank the win",
+    rpIdeaB: "Move {amt} you didn't spend into your goal - progress you can see beats progress you remember.",
+    ctTitle: "Richard's tone",
+    ctSub: "How Richard talks about the weak spots you told him about",
+    ctDirect: "Direct", ctDirectSub: "Ties findings to your own words - honest, never shaming",
+    ctSoft: "Soft", ctSoftSub: "Just the numbers, no callbacks to what you said",
+    ctTough: "Tough coach", ctToughSub: "Holds you to the promise you made, firmly",
+    rpRowTip: "Tip", rpRowWatch: "Watch", rpRowIdea: "Idea",
+  },
+  he: {
+    rpTitle: "תוכנית ההחזר שלך",
+    rpPromise: "ההבטחה: להחזיר בערך {amt} בחודש",
+    rpThisMonth: "הוצאות דליפה החודש",
+    rpVsBaseline: "{amt} מתוך {base} רגיל",
+    rpNoBaseline: "{amt} עד כה - בונים את קו הבסיס",
+    rpRecovered: "הוחזר עד כה: {amt}",
+    rpReviewReady: "הצ'ק-אין השבועי של ריצ'רד מוכן",
+    rpFirstReview: "ריצ'רד עושה צ'ק-אין שבועי - הסקירה הראשונה תגיע בעוד כמה ימים",
+    rpStatusOn: "במסלול", rpStatusWatch: "שווה מבט", rpStatusOff: "דורש טיפול",
+    rpSeePlan: "התוכנית המלאה שלך",
+    rpYourGoal: "היעד שלך",
+    rpHeadOn: "שבוע טוב - הוצאות הדליפה נשארו בתוך התוכנית.",
+    rpHeadWatch: "שבוע מעורב - קטגוריית דליפה אחת חורגת מהרגיל.",
+    rpHeadOff: "שבוע קשה - הוצאות הדליפה עברו בהרבה את קו הבסיס.",
+    rpTipT: "החלפה נקייה אחת",
+    rpTipB: "בחר את יום הדליפה הכבד ביותר משבוע שעבר ותכנן במקומו יום ללא הוצאות השבוע.",
+    rpWarnT: "שים לב ל{cat}",
+    rpWarnB: "{cat} היה הדליפה הכבדה ביותר ב-7 הימים האחרונים עם {amt}.",
+    rpCalmT: "שום דבר לא בוער",
+    rpCalmB: "אף דליפה לא התחממה השבוע. נצל את הרוגע כדי להתקדם ליעד.",
+    rpIdeaT: "לשמור את הניצחון",
+    rpIdeaB: "העבר {amt} שלא הוצאת אל היעד שלך - התקדמות שרואים חזקה מהתקדמות שזוכרים.",
+    ctTitle: "הטון של ריצ'רד",
+    ctSub: "איך ריצ'רד מדבר על נקודות התורפה שסיפרת לו עליהן",
+    ctDirect: "ישיר", ctDirectSub: "קושר ממצאים למילים שלך - כן, אף פעם לא מבייש",
+    ctSoft: "עדין", ctSoftSub: "רק המספרים, בלי אזכורים למה שאמרת",
+    ctTough: "מאמן קשוח", ctToughSub: "מחזיק אותך בהבטחה שנתת, בתקיפות",
+    rpRowTip: "טיפ", rpRowWatch: "לשים לב", rpRowIdea: "רעיון",
+  },
+  ar: {
+    rpTitle: "خطة الاسترداد الخاصة بك",
+    rpPromise: "الوعد: استرداد نحو {amt} شهرياً",
+    rpThisMonth: "إنفاق التسرب هذا الشهر",
+    rpVsBaseline: "{amt} من {base} المعتاد",
+    rpNoBaseline: "{amt} حتى الآن - نبني خط الأساس",
+    rpRecovered: "المسترد حتى الآن: {amt}",
+    rpReviewReady: "مراجعة ريتشارد الأسبوعية جاهزة",
+    rpFirstReview: "يتابع ريتشارد أسبوعياً - أول مراجعة تصل خلال أيام",
+    rpStatusOn: "على المسار", rpStatusWatch: "يستحق نظرة", rpStatusOff: "يحتاج انتباهاً",
+    rpSeePlan: "خطتك الكاملة",
+    rpYourGoal: "هدفك",
+    rpHeadOn: "أسبوع جيد - بقي إنفاق التسرب ضمن الخطة.",
+    rpHeadWatch: "أسبوع متفاوت - فئة تسرب واحدة تنجرف فوق المعتاد.",
+    rpHeadOff: "أسبوع صعب - تجاوز إنفاق التسرب خط الأساس بكثير.",
+    rpTipT: "تبديل نظيف واحد",
+    rpTipB: "اختر أثقل يوم تسرب من الأسبوع الماضي وخطط ليوم بلا إنفاق مكانه هذا الأسبوع.",
+    rpWarnT: "راقب {cat}",
+    rpWarnB: "{cat} كان أثقل تسرب في آخر 7 أيام بمبلغ {amt}.",
+    rpCalmT: "لا شيء مشتعل",
+    rpCalmB: "لم يشتد أي تسرب هذا الأسبوع. استغل الهدوء لتحرز تقدماً نحو هدفك.",
+    rpIdeaT: "احفظ المكسب",
+    rpIdeaB: "انقل {amt} لم تنفقها إلى هدفك - تقدم تراه أقوى من تقدم تتذكره.",
+    ctTitle: "نبرة ريتشارد",
+    ctSub: "كيف يتحدث ريتشارد عن نقاط الضعف التي أخبرته بها",
+    ctDirect: "مباشر", ctDirectSub: "يربط النتائج بكلماتك - صادق، لا يخجّل أبداً",
+    ctSoft: "لطيف", ctSoftSub: "الأرقام فقط، دون الإشارة إلى ما قلته",
+    ctTough: "مدرب حازم", ctToughSub: "يحاسبك على الوعد الذي قطعته، بحزم",
+    rpRowTip: "نصيحة", rpRowWatch: "انتبه", rpRowIdea: "فكرة",
+  },
+  ru: {
+    rpTitle: "Ваш план возврата",
+    rpPromise: "Обещание: возвращать около {amt}/мес",
+    rpThisMonth: "Утечки в этом месяце",
+    rpVsBaseline: "{amt} из {base} обычных",
+    rpNoBaseline: "{amt} пока - собираем базовый уровень",
+    rpRecovered: "Возвращено: {amt}",
+    rpReviewReady: "Еженедельный обзор Ричарда готов",
+    rpFirstReview: "Ричард проверяет еженедельно - первый обзор через несколько дней",
+    rpStatusOn: "По плану", rpStatusWatch: "Стоит взглянуть", rpStatusOff: "Нужно внимание",
+    rpSeePlan: "Ваш полный план",
+    rpYourGoal: "Ваша цель",
+    rpHeadOn: "Хорошая неделя - расходы-утечки остались в рамках плана.",
+    rpHeadWatch: "Смешанная неделя - одна категория утечек выходит за обычное.",
+    rpHeadOff: "Трудная неделя - утечки заметно превысили базовый уровень.",
+    rpTipT: "Одна чистая замена",
+    rpTipB: "Выберите самый затратный день прошлой недели и запланируйте на его месте день без трат.",
+    rpWarnT: "Следите за {cat}",
+    rpWarnB: "{cat} - самая большая утечка за последние 7 дней: {amt}.",
+    rpCalmT: "Ничего не горит",
+    rpCalmB: "Ни одна утечка не разогналась на этой неделе. Используйте затишье для прогресса к цели.",
+    rpIdeaT: "Закрепите победу",
+    rpIdeaB: "Переведите {amt}, которые не потратили, в вашу цель - видимый прогресс сильнее памятного.",
+    ctTitle: "Тон Ричарда",
+    ctSub: "Как Ричард говорит о слабых местах, о которых вы ему рассказали",
+    ctDirect: "Прямой", ctDirectSub: "Связывает находки с вашими словами - честно, никогда не стыдит",
+    ctSoft: "Мягкий", ctSoftSub: "Только цифры, без отсылок к тому, что вы говорили",
+    ctTough: "Строгий тренер", ctToughSub: "Твёрдо держит вас у данного обещания",
+    rpRowTip: "Совет", rpRowWatch: "Внимание", rpRowIdea: "Идея",
+  },
+};
+for (var _rpc in RECOVERY_STRINGS) {
+  if (!TRANSLATIONS[_rpc]) continue;
+  for (var _rpk in RECOVERY_STRINGS[_rpc]) TRANSLATIONS[_rpc][_rpk] = RECOVERY_STRINGS[_rpc][_rpk];
+}
+
+// InvestingPulse strings (the Overview card; the investing tab's interior
+// stays English by its existing convention).
+var INVEST_PULSE_STRINGS = {
+  en: {
+    ipLabel: "Investing",
+    ipToday: "today",
+    ipLapse: "Your plan expected a contribution this month - nothing has gone in yet",
+    ipLapseAmt: "Your plan expected {amt} this month - nothing has gone in yet",
+    ipRoundups: "{amt} of spare change this month - one tap inside to put it to work",
+    ipMore: "+{n} more",
+    ipTipTitle: "Start investing with a plan",
+    ipTipSub: "Open an Investing account - Richard builds a mix around your goal and keeps the habit going",
+  },
+  he: {
+    ipLabel: "השקעות",
+    ipToday: "היום",
+    ipLapse: "התוכנית ציפתה להפקדה החודש - עדיין לא נכנס כלום",
+    ipLapseAmt: "התוכנית ציפתה ל-{amt} החודש - עדיין לא נכנס כלום",
+    ipRoundups: "{amt} עודף מהקניות החודש - לחיצה אחת בפנים כדי להשקיע אותו",
+    ipMore: "+{n} נוספים",
+    ipTipTitle: "להתחיל להשקיע עם תוכנית",
+    ipTipSub: "פתח חשבון השקעות - ריצ'רד בונה תמהיל סביב היעד שלך ושומר על ההרגל",
+  },
+  ar: {
+    ipLabel: "الاستثمار",
+    ipToday: "اليوم",
+    ipLapse: "توقعت خطتك مساهمة هذا الشهر - لم يدخل شيء بعد",
+    ipLapseAmt: "توقعت خطتك {amt} هذا الشهر - لم يدخل شيء بعد",
+    ipRoundups: "{amt} من الفكة هذا الشهر - نقرة واحدة بالداخل لتشغيلها",
+    ipMore: "+{n} أخرى",
+    ipTipTitle: "ابدأ الاستثمار بخطة",
+    ipTipSub: "افتح حساب استثمار - يبني ريتشارد مزيجاً حول هدفك ويحافظ على العادة",
+  },
+  ru: {
+    ipLabel: "Инвестиции",
+    ipToday: "сегодня",
+    ipLapse: "План ожидал взнос в этом месяце - пока ничего не поступило",
+    ipLapseAmt: "План ожидал {amt} в этом месяце - пока ничего не поступило",
+    ipRoundups: "{amt} мелочи с покупок за месяц - один тап внутри, чтобы вложить",
+    ipMore: "+{n} ещё",
+    ipTipTitle: "Начните инвестировать по плану",
+    ipTipSub: "Откройте инвест-счёт - Ричард соберёт портфель под вашу цель и поддержит привычку",
+  },
+};
+for (var _ipc in INVEST_PULSE_STRINGS) {
+  if (!TRANSLATIONS[_ipc]) continue;
+  for (var _ipk in INVEST_PULSE_STRINGS[_ipc]) TRANSLATIONS[_ipc][_ipk] = INVEST_PULSE_STRINGS[_ipc][_ipk];
+}
+
 function tr(key) {
   var code = _lang.code || "en";
   return (TRANSLATIONS[code] && TRANSLATIONS[code][key]) || (TRANSLATIONS.en[key]) || key;
+}
+
+// tr() + {param} substitution in one call. Every param occurrence is replaced.
+function trFill(key, params) {
+  var s = tr(key);
+  if (params) for (var k in params) s = s.split("{" + k + "}").join(params[k]);
+  return s;
 }
 
 function fmtCur(sym, n) {
@@ -2894,6 +3169,20 @@ var BADGE_TESTS = {
   "i-07-snowball":                   function(c) { return c.debtsCleared >= 3; },
 
   "j-01-opened-the-door":            function(c) { return c.invCount >= 1; },
+  "j-02-learned-it":                 function(c) { return c.invLessonsDone >= 6; },
+  "j-03-the-long-game-stage-1":      function(c) { return c.invHeldMonths >= 6; },
+  "j-04-the-long-game-stage-2":      function(c) { return c.invHeldMonths >= 12; },
+  "j-05-the-long-game-stage-3":      function(c) { return c.invHeldMonths >= 36; },
+  "j-06-steady-contributor":         function(c) { return c.invContribStreak >= 12; },
+
+  "m-01-first-find":                 function(c) { return c.fmActedCount >= 1; },
+  "m-02-treasure-hunter-stage-1":    function(c) { return c.fmTally >= 500; },
+  "m-03-treasure-hunter-stage-2":    function(c) { return c.fmTally >= 5000; },
+  "m-04-treasure-hunter-stage-3":    function(c) { return c.fmTally >= 25000; },
+  "m-05-subscription-slayer":        function(c) { return c.fmCancelledRecurring >= 5; },
+  "m-06-thought-it-through":         function(c) { return c.decisionsResolved >= 1; },
+  "m-07-walked-away":                function(c) { return c.decisionsDeclined >= 1; },
+  "m-08-ten-decisions":              function(c) { return c.decisionsResolved >= 10; },
 
   "k-01-first-trip":                 function(c) { return c.tripCount >= 1; },
   "k-05-the-grand-tour":             function(c) { return c.tripsEnded >= 5; },
@@ -2905,6 +3194,13 @@ var BADGE_TESTS = {
   "l-05-clean-slate-stage-3":        function(c) { return c.notesSettled >= 100; },
 
   "n-01-open-for-business":          function(c) { return c.bizCount >= 1; },
+  "n-02-in-the-black":               function(c) { return c.bizProfitMonths >= 1; },
+  "n-03-runway-stage-1":             function(c) { return c.bizBestRunway >= 3; },
+  "n-04-runway-stage-2":             function(c) { return c.bizBestRunway >= 6; },
+  "n-05-runway-stage-3":             function(c) { return c.bizBestRunway >= 12; },
+  "n-06-tax-pot-ready":              function(c) { return !!c.bizTaxCovered; },
+  "n-07-paid-in-full":               function(c) { return !!c.bizInvoicesClean; },
+  "n-08-doubled-the-business":       function(c) { return !!c.bizRevenueDoubled; },
 
   "o-01-two-purses":                 function(c) { return c.inHousehold; },
 
@@ -2928,7 +3224,12 @@ function motivSnapshot(data) {
   var today = new Date();
 
   var clean = cleanWeekState(motiv, today);
-  var target = Number((data.onboardingData || {}).savingsTargetPct || 0);
+  // Green-month target: the recovery plan's promised monthly recovery as a
+  // share of declared income. Without a plan the target stays 0 (any
+  // non-negative savings rate counts as green).
+  var rpIncome = parseFloat((data.onboardingData || {}).income) || 0;
+  var rpTarget = (data.recoveryPlan || {}).recoverTarget || 0;
+  var target = rpIncome > 0 && rpTarget > 0 ? Math.round(rpTarget / rpIncome * 100) : 0;
   var green = greenMonthState(tx, motiv, target);
   var bctx = { tx: tx, categories: data.categories || [], folders: data.folders || [] };
   var bud = budgetRunState(data.budgets || [], bctx);
@@ -2942,7 +3243,7 @@ function motivSnapshot(data) {
   var netWorth = round2(allIncome - allExpense + savTotal + businessTotal(data.businesses || []) + investingTotal(data.investing || []));
   var openingTx = tx.filter(function(t) { return isOpening(t); })[0];
   var opening = openingTx ? (openingTx.amount || 0) : 0;
-  var essentials = Number((data.onboardingData || {}).monthlyEssentials || 0);
+  var essentials = parseFloat((data.onboardingData || {}).essentials) || 0;
   var cushionMonths = essentials > 0 ? savTotal / essentials : 0;
 
   var goals = data.goals || [];
@@ -2981,6 +3282,37 @@ function motivSnapshot(data) {
   // for "how long have you been doing this" that the data can supply.
   var firstDay = data.createdAt || (tx.map(function(t) { return t.date; }).sort()[0] || todayIso);
   var daysActive = Math.max(0, Math.round((parseDay(todayIso) - parseDay(firstDay)) / 86400000));
+
+  // Found Money, Big Decisions, investing and business signals for the M, J
+  // and N badge families - all derived from persisted data, never the model.
+  var fmData = data.foundMoney || {};
+  var fmActed = fmData.acted || [];
+  var decisionsAll = data.decisions || [];
+  var invList = data.investing || [];
+  var bizList = data.businesses || [];
+  var bizProfitMonths = 0, bizBestRunway = 0, bizTaxCovered = false, bizInvoicesClean = false, bizRevenueDoubled = false;
+  bizList.forEach(function(b) {
+    var months = {};
+    (b.entries || []).forEach(function(e) { var m = (e.date || "").slice(0, 7); if (m) months[m] = true; });
+    var revByMonth = {};
+    (b.entries || []).forEach(function(e) {
+      if (e.kind === "deposit" && e.revenue) { var m = (e.date || "").slice(0, 7); revByMonth[m] = (revByMonth[m] || 0) + (e.amount || 0); }
+    });
+    for (var m in months) { if (bizMonthProfit(b, m).profit > 0) bizProfitMonths++; }
+    var rw = bizRunway(b);
+    var rwVal = rw === null ? 12 : rw;   // self-sustaining counts as a year+
+    if (rwVal > bizBestRunway) bizBestRunway = rwVal;
+    var taxInfo = taxOwedOf(b);
+    if (taxInfo.owed > 0 && taxPotBalance(b) >= taxInfo.owed) bizTaxCovered = true;
+    var invs = b.invoices || [];
+    if (invs.length >= 1 && invs.every(function(iv) { return iv.status === "paid"; })) bizInvoicesClean = true;
+    var revMonths = Object.keys(revByMonth).sort();
+    if (revMonths.length >= 2) {
+      var first = revByMonth[revMonths[0]];
+      if (first > 0 && revMonths.some(function(mm) { return mm > revMonths[0] && revByMonth[mm] >= first * 2; })) bizRevenueDoubled = true;
+    }
+  });
+
   var ctx = {
     txCount: tx.filter(function(t) { return !isOpening(t); }).length,
     hasOpening: !!openingTx,
@@ -3008,7 +3340,17 @@ function motivSnapshot(data) {
     savTotal: savTotal, netWorth: netWorth, opening: opening, cushionMonths: cushionMonths,
     debtsCleared: (data.debts || []).filter(function(d) { return d && d.cleared; }).length,
     cleanRun: clean.run, cleanTotal: clean.total, shieldsEarned: clean.shields, quietWeeks: quiet,
-    greenRun: green.run, greenTotal: green.total, bestRate: bestRate, repaired: repaired
+    greenRun: green.run, greenTotal: green.total, bestRate: bestRate, repaired: repaired,
+    fmTally: round2(fmData.tally || 0),
+    fmActedCount: fmActed.length,
+    fmCancelledRecurring: fmActed.filter(function(a) { return a && typeof a.id === "string" && a.id.indexOf("rec:") === 0; }).length,
+    decisionsResolved: decisionsAll.filter(function(d) { return d && d.status === "resolved"; }).length,
+    decisionsDeclined: decisionsAll.filter(function(d) { return d && d.status === "resolved" && d.verdict && d.verdict.verdict === "no"; }).length,
+    invLessonsDone: investLessonsDoneAll(invList),
+    invHeldMonths: investMonthsHeldNoSell(invList),
+    invContribStreak: investContribStreak(invList),
+    bizProfitMonths: bizProfitMonths, bizBestRunway: bizBestRunway, bizTaxCovered: bizTaxCovered,
+    bizInvoicesClean: bizInvoicesClean, bizRevenueDoubled: bizRevenueDoubled
   };
 
   // Which badges are currently satisfied. A badge, once earned, is kept forever
@@ -6675,6 +7017,25 @@ var LEAK_OPTIONS = [
   { id: "noidea",   label: "Honestly, no idea", tKey: "obLeakNoIdea",   icon: "search" },
 ];
 
+// Canonical leak ids from an onboardingData blob. Newer blobs carry
+// moneyLeakIds directly; older ones only have the comma-joined English labels,
+// so reverse-map those through LEAK_OPTIONS. Detection code works in ids only.
+function leakIdsOf(oData) {
+  if (!oData) return [];
+  if (Array.isArray(oData.moneyLeakIds)) return oData.moneyLeakIds.slice();
+  var raw = String(oData.moneyLeaks || "");
+  if (!raw) return [];
+  var out = [];
+  raw.split(",").forEach(function(part) {
+    var p = part.trim().toLowerCase();
+    if (!p) return;
+    for (var i = 0; i < LEAK_OPTIONS.length; i++) {
+      if (LEAK_OPTIONS[i].label.toLowerCase() === p) { out.push(LEAK_OPTIONS[i].id); return; }
+    }
+  });
+  return out;
+}
+
 // EXACT existing coreProblem strings - Advisor matches on them. Only the
 // icons are new.
 var PROBLEM_OPTIONS = [
@@ -6958,16 +7319,19 @@ var TIMELINES = ["6 months", "1 year", "2 years", "5+ years"];
 var TIMELINE_TKEYS = { "6 months": "obTl1", "1 year": "obTl2", "2 years": "obTl3", "5+ years": "obTl4" };
 
 function OnboardingScreen(props) {
+  // Retakes prefill from the previous answers instead of a blank re-ask; a
+  // first run passes no initialData so every field starts empty as before.
+  var init = props.initialData || {};
   var _s = useState(1); var step = _s[0]; var setStep = _s[1];
-  var _cp = useState(""); var coreProblem = _cp[0]; var setCoreProblem = _cp[1];
-  var _ls = useState(""); var lifeStage = _ls[0]; var setLifeStage = _ls[1];
-  var _inc = useState(""); var income = _inc[0]; var setIncome = _inc[1];
-  var _ess = useState(""); var essentials = _ess[0]; var setEssentials = _ess[1];
-  var _sav = useState(""); var savings = _sav[0]; var setSavings = _sav[1];
-  var _dbt = useState(""); var debt = _dbt[0]; var setDebt = _dbt[1];
-  var _gn = useState(""); var goalName = _gn[0]; var setGoalName = _gn[1];
-  var _ga = useState(""); var goalAmt = _ga[0]; var setGoalAmt = _ga[1];
-  var _tl = useState(""); var timeline = _tl[0]; var setTimeline = _tl[1];
+  var _cp = useState(init.coreProblem || ""); var coreProblem = _cp[0]; var setCoreProblem = _cp[1];
+  var _ls = useState(init.lifeStage || ""); var lifeStage = _ls[0]; var setLifeStage = _ls[1];
+  var _inc = useState(init.income || ""); var income = _inc[0]; var setIncome = _inc[1];
+  var _ess = useState(init.essentials || ""); var essentials = _ess[0]; var setEssentials = _ess[1];
+  var _sav = useState(init.savings || ""); var savings = _sav[0]; var setSavings = _sav[1];
+  var _dbt = useState(init.debt || ""); var debt = _dbt[0]; var setDebt = _dbt[1];
+  var _gn = useState(init.goalName || ""); var goalName = _gn[0]; var setGoalName = _gn[1];
+  var _ga = useState(init.goalAmt || ""); var goalAmt = _ga[0]; var setGoalAmt = _ga[1];
+  var _tl = useState(init.timeline || ""); var timeline = _tl[0]; var setTimeline = _tl[1];
   var _ld = useState(false); var loading = _ld[0]; var setLoading = _ld[1];
   var _er = useState(""); var err = _er[0]; var setErr = _er[1];
   var _gp = useState(""); var genPlan = _gp[0]; var setGenPlan = _gp[1];
@@ -6980,8 +7344,8 @@ function OnboardingScreen(props) {
   var _qi = useState(0); var qIndex = _qi[0]; var setQIndex = _qi[1];
   var _dr = useState("fwd"); var dir = _dr[0]; var setDir = _dr[1];
   var _ph = useState("q"); var phase = _ph[0]; var setPhase = _ph[1];
-  var _lk = useState([]); var leaks = _lk[0]; var setLeaks = _lk[1];
-  var _ov = useState(""); var overspend = _ov[0]; var setOverspend = _ov[1];
+  var _lk = useState(leakIdsOf(init)); var leaks = _lk[0]; var setLeaks = _lk[1];
+  var _ov = useState(init.overspendEst || ""); var overspend = _ov[0]; var setOverspend = _ov[1];
   var _gd = useState(false); var greetDone = _gd[0]; var setGreetDone = _gd[1];
   var _ts = useState(""); var toast = _ts[0]; var setToast = _ts[1];
   // Language + currency are asked HERE (not only at email signup) so Google
@@ -7024,7 +7388,7 @@ function OnboardingScreen(props) {
     });
     setLoading(false);
     setGenPlan(planText || localPlan());
-    setGenOData({ lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: ageStr, coreProblem: coreProblem, moneyLeaks: leakLabels2.join(", "), overspendEst: overspend, prefLang: prefLang, prefCurrency: prefCur, prefPeriodMode: prefPeriodMode, prefPeriodStart: prefPeriodStart, prefPeriodEnd: prefPeriodEnd });
+    setGenOData({ lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: ageStr, coreProblem: coreProblem, moneyLeaks: leakLabels2.join(", "), moneyLeakIds: leaks.slice(), overspendEst: overspend, prefLang: prefLang, prefCurrency: prefCur, prefPeriodMode: prefPeriodMode, prefPeriodStart: prefPeriodStart, prefPeriodEnd: prefPeriodEnd });
     setStep(6);
   }
 
@@ -7520,12 +7884,41 @@ function FoundMoney(props) {
   var cats = props.categories || [];
   var fm = props.foundMoney || { tally: 0, dismissed: [], acted: [] };
   var dismissed = fm.dismissed || [];
+  var muted = fm.muted || [];
   var tally = fm.tally || 0;
+  var tone = props.coachTone || "direct";
 
-  // Recompute findings from real tx each render, drop ones already resolved.
-  var findings = findMoney(tx, cats).filter(function(f) { return dismissed.indexOf(f.id) === -1; });
+  // Recompute findings from real tx each render - personalized by the leak
+  // sources the user declared in onboarding - then drop resolved ones and any
+  // detector type the user muted. Watch ids are month-scoped, so a dismiss
+  // naturally means "this month"; mute is the durable opt-out.
+  var leakIds = leakIdsOf(props.onboardingData);
+  var findings = findMoney(tx, cats, { leakIds: leakIds }).filter(function(f) {
+    return dismissed.indexOf(f.id) === -1 && muted.indexOf(f.type) === -1;
+  });
   var leakCount = findings.length;
   var recoverable = findings.reduce(function(s, f) { return s + (f.annual || 0); }, 0);
+  // "N new since last visit": ids that weren't on screen when the sheet was
+  // last closed. First-ever visit shows no badge (everything is "new" anyway).
+  var seenIds = (fm.lastSeen && fm.lastSeen.ids) || null;
+  var newCount = seenIds ? findings.filter(function(f) { return seenIds.indexOf(f.id) === -1; }).length : 0;
+
+  // Rendered copy: watch findings carry i18n keys + params; the four legacy
+  // detectors keep their pre-formatted English strings.
+  function fmText(f, which) {
+    var key = which === "title" ? f.titleKey : f.subKey;
+    return key ? trFill(key, which === "title" ? f.titleParams : f.subParams) : (which === "title" ? f.title : f.subtitle);
+  }
+  function leakNameOf(id) {
+    var o = LEAK_OPTIONS.filter(function(l) { return l.id === id; })[0];
+    return o ? tr(o.tKey) : id;
+  }
+  function writeLastSeen() {
+    if (!props.onSaveFoundMoney) return;
+    var next = {}; for (var k in fm) next[k] = fm[k];
+    next.lastSeen = { at: new Date().toISOString().slice(0, 10), ids: findings.map(function(f) { return f.id; }) };
+    props.onSaveFoundMoney(next);
+  }
 
   function richardSystem(extra) {
     var custom = richardUserCtx(props.richardInstructions);
@@ -7539,10 +7932,16 @@ function FoundMoney(props) {
   useEffect(function() {
     if (!open || narr || narrLoading || findings.length === 0) return;
     setNarrLoading(true);
-    var lines = findings.slice(0, 8).map(function(f) { return "- " + f.title + " (" + f.subtitle + ")"; }).join("\n");
+    var lines = findings.slice(0, 8).map(function(f) { return "- " + f.title + " (" + f.subtitle + ")" + (f.leakMatch ? " [matches a leak source the user self-declared at signup]" : ""); }).join("\n");
     var totalLine = recoverable > 0 ? ("\nTotal recoverable if acted on: " + dollars(recoverable) + " per year.") : "";
-    var system = richardSystem("You are Richard, the warm, sharp money guide inside the Richy app. The app has ALREADY audited the user's transactions and found the potential leaks listed below (forgotten subscriptions, price hikes, double charges, category spikes). The figures are exact - never invent or change a number. In 2-3 short sentences speak directly to the user: frame what was found and the single highest-impact move to make first. Do not re-list every item - they see the list below your note." + RICHARD_FORMAT);
-    callClaude([{ role: "user", content: "The audit found:\n" + lines + totalLine + "\n\nWrite the short intro." }], system, 220, function(err, text) {
+    var declaredLine = leakIds.length ? ("\nAt signup the user said their money leaks through: " + leakIds.map(function(id) { var o = LEAK_OPTIONS.filter(function(l) { return l.id === id; })[0]; return o ? o.label : id; }).join(", ") + ".") : "";
+    var toneLine = tone === "tough"
+      ? " Be a firm accountability coach: direct about the pattern they said they wanted to stop, but never insulting or shaming."
+      : tone === "soft"
+        ? " Keep the framing gentle and neutral - present the numbers without referring back to what the user said about their own habits."
+        : " When a finding matches a leak source the user declared, tie it to their own words - honest and personal, never shaming.";
+    var system = richardSystem("You are Richard, the warm, sharp money guide inside the Richy app. The app has ALREADY audited the user's transactions and found the potential leaks listed below (forgotten subscriptions, price hikes, double charges, category spikes, delivery-order runs, impulse-buy clusters, going-out and shopping creep). The figures are exact - never invent or change a number. In 2-3 short sentences speak directly to the user: frame what was found and the single highest-impact move to make first. Do not re-list every item - they see the list below your note." + toneLine + RICHARD_FORMAT);
+    callClaude([{ role: "user", content: "The audit found:\n" + lines + totalLine + declaredLine + "\n\nWrite the short intro." }], system, 220, function(err, text) {
       setNarrLoading(false);
       if (err || !text) {
         setNarr(leakCount === 1
@@ -7556,18 +7955,47 @@ function FoundMoney(props) {
 
   // Resolve a finding: append its id to dismissed and, when the user confirms they
   // acted, add the recovered amount to the running tally. Persists immediately.
-  function resolve(f, recovered) {
+  // Spreads the stored object so muted/lastSeen (and future keys) survive.
+  function resolve(f, recovered, action) {
     var credit = recovered || 0;
     if (props.onSaveFoundMoney) {
-      props.onSaveFoundMoney({
-        tally: round2(tally + credit),
-        dismissed: dismissed.concat([f.id]),
-        acted: credit > 0 ? (fm.acted || []).concat([{ id: f.id, title: f.title, amount: credit, date: new Date().toISOString().slice(0, 10) }]) : (fm.acted || [])
-      });
+      var next = {}; for (var k in fm) next[k] = fm[k];
+      next.tally = round2(tally + credit);
+      next.dismissed = dismissed.concat([f.id]);
+      next.acted = (credit > 0 || action)
+        ? (fm.acted || []).concat([{ id: f.id, title: f.title, amount: credit, date: new Date().toISOString().slice(0, 10), action: action || "" }])
+        : (fm.acted || []);
+      props.onSaveFoundMoney(next);
     }
     if (draft && draft.id === f.id) setDraft(null);
   }
   function creditOf(f) { return f.annual > 0 ? f.annual : f.amount; }
+  // Durable opt-out for one watch detector ("don't show going-out findings").
+  function muteType(f) {
+    if (!props.onSaveFoundMoney) return;
+    var next = {}; for (var k in fm) next[k] = fm[k];
+    next.muted = muted.concat([f.type]);
+    props.onSaveFoundMoney(next);
+  }
+  // "Set a cap": create or tighten the category budget at the finding's
+  // suggested level, then clear the card. Only findings that map cleanly onto
+  // one category (going out -> Entertainment, shopping creep -> Shopping)
+  // carry a capSuggest.
+  function applyCap(f) {
+    if (!props.onSaveBudgets || !f.catId || !f.capSuggest) return;
+    var budgets = props.budgets || [];
+    var existing = budgets.filter(function(b) { return b.catId === f.catId; })[0];
+    var next;
+    if (!existing) next = budgets.concat([{ catId: f.catId, category: f.categoryName, limit: f.capSuggest, dir: "cap" }]);
+    else next = budgets.map(function(b) {
+      if (b.catId !== f.catId) return b;
+      var nb = {}; for (var k in b) nb[k] = b[k];
+      nb.limit = Math.min(b.limit || f.capSuggest, f.capSuggest);
+      return nb;
+    });
+    props.onSaveBudgets(next);
+    resolve(f, 0, "cap");
+  }
 
   function makeDraft(f) {
     setCopied(false);
@@ -7602,13 +8030,18 @@ function FoundMoney(props) {
     if (t === "recurring") return { icon: "refresh", color: T.orange };
     if (t === "hike") return { icon: "up", color: T.red };
     if (t === "duplicate") return { icon: "credit", color: T.gold };
+    if (t === "delivery") return { icon: "food", color: T.orange };
+    if (t === "bleed") return { icon: "coins", color: T.gold };
+    if (t === "impulse") return { icon: "cart", color: T.red };
+    if (t === "goingout") return { icon: "coffee", color: T.btn };
+    if (t === "shopcreep") return { icon: "shirt", color: T.red };
     return { icon: "chart", color: T.btn };   // jump
   }
   function dismissLabel(t) {
     if (t === "recurring") return tr("fmKeepIt");
     if (t === "duplicate") return tr("fmLooksFine");
-    if (t === "jump") return tr("fmGotIt");
-    return tr("dismiss");
+    if (t === "hike") return tr("dismiss");
+    return tr("fmGotIt");
   }
 
   // Nothing to show and nothing ever found -> stay out of the way entirely.
@@ -7636,7 +8069,10 @@ function FoundMoney(props) {
           <CatBadge icon="search" color={T.orange} size={40} soft={true} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{tr(leakCount === 1 ? "fmSpottedLeakSing" : "fmSpottedLeakPl").replace("{n}", leakCount)}</div>
-            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{recoverable > 0 ? tr("fmAboutAmtYear").replace("{amt}", dollars(recoverable)) : tr("fmTapReview")}</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>
+              {recoverable > 0 ? tr("fmAboutAmtYear").replace("{amt}", dollars(recoverable)) : tr("fmTapReview")}
+              {newCount > 0 && <span style={{ color: T.orange, fontWeight: 700 }}>{" · " + trFill("fmwNewSince", { n: newCount })}</span>}
+            </div>
           </div>
           <SVGIcon id="chevron" size={18} color={T.ink3} />
         </button>
@@ -7650,7 +8086,7 @@ function FoundMoney(props) {
         </div>
       )}
 
-      <Overlay open={open} onClose={function() { setOpen(false); }} title={tr("fmTitle")}>
+      <Overlay open={open} onClose={function() { setOpen(false); writeLastSeen(); }} title={tr("fmTitle")}>
         <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
           <div style={{ flex: 1, background: T.greenDim, borderRadius: 14, padding: "12px 14px" }}>
             <div style={{ fontSize: 9.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em" }}>{tr("fmRecoverableYear")}</div>
@@ -7683,15 +8119,24 @@ function FoundMoney(props) {
                 <IconBadge icon={st.icon} bg={st.color} size={34} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-                    <span style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{f.title}</span>
+                    <span style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{fmText(f, "title")}</span>
                     {f.annual > 0 && <span style={{ fontSize: 13, fontWeight: 700, color: T.green, flexShrink: 0 }}>{dollars(f.annual) + "/yr"}</span>}
                   </div>
-                  <div style={{ fontSize: 12, color: T.ink3, marginTop: 3, lineHeight: 1.45 }}>{f.subtitle}</div>
+                  <div style={{ fontSize: 12, color: T.ink3, marginTop: 3, lineHeight: 1.45 }}>{fmText(f, "sub")}</div>
+                  {f.leakMatch && tone !== "soft" && (
+                    <div style={{ display: "inline-block", marginTop: 7, fontSize: 11, fontWeight: 700, color: T.orange, background: "rgba(200,103,58,0.1)", borderRadius: 7, padding: "3px 8px" }}>
+                      {trFill(tone === "tough" ? "fmwYourLeakTough" : "fmwYourLeak", { leak: leakNameOf(f.leakId) })}
+                    </div>
+                  )}
 
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 10 }}>
                     {canDraft && <button onClick={function() { makeDraft(f); }} style={primaryBtn}>{f.type === "hike" ? tr("fmDraftPriceMatch") : tr("fmDraftCancellation")}</button>}
                     {f.type === "duplicate" && <button onClick={function() { resolve(f, f.amount); }} style={primaryBtn}>{tr("fmCountRecovered")}</button>}
+                    {f.capSuggest > 0 && f.catId && props.onSaveBudgets && (
+                      <button onClick={function() { applyCap(f); }} style={primaryBtn}>{trFill("fmwSetCap", { cat: f.categoryName, amt: dollars(f.capSuggest) })}</button>
+                    )}
                     <button onClick={function() { resolve(f, 0); }} style={ghostBtn}>{dismissLabel(f.type)}</button>
+                    {f.leakId && <button onClick={function() { muteType(f); }} style={ghostBtn}>{tr("fmwMuteType")}</button>}
                   </div>
 
                   {draft && draft.id === f.id && (
@@ -7777,6 +8222,17 @@ function BusinessPulse(props) {
                   <span style={{ flex: 1, fontSize: 12.5, color: T.ink2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{nextTask}</span>
                 </div>
               )}
+              {(function() {
+                var od = overdueInvoicesOf(b);
+                if (!od.length) return null;
+                var odTotal = round2(od.reduce(function(s, i) { return s + (i.amount || 0); }, 0));
+                return (
+                  <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: nextTask ? 7 : 10 }}>
+                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: T.red, flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, fontWeight: 600, color: T.red }}>{od.length + (od.length === 1 ? " invoice overdue - " : " invoices overdue - ") + dollars(odTotal)}</span>
+                  </div>
+                );
+              })()}
               {reviewReady && (
                 <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: nextTask ? 7 : 10 }}>
                   <span style={{ width: 7, height: 7, borderRadius: "50%", background: T.orange, animation: "rcBadgePulse 1.6s ease 2", flexShrink: 0 }} />
@@ -7791,6 +8247,208 @@ function BusinessPulse(props) {
         <button onClick={function() { props.onOpenBusiness(null); }}
           style={{ width: "100%", background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI, padding: "2px 0 12px", textAlign: "center" }}>
           {"+" + (bizes.length - 2) + " more business" + (bizes.length - 2 > 1 ? "es" : "")}
+        </button>
+      )}
+    </div>
+  );
+}
+
+// Identity-memoized watchIndex for render-path consumers (RecoveryPulse and
+// the review effect can share one sweep per tx change).
+var _watchIxCache = { tx: null, cats: null, day: "", out: null };
+function watchIndexCached(tx, cats, todayISO) {
+  if (_watchIxCache.tx === tx && _watchIxCache.cats === cats && _watchIxCache.day === todayISO) return _watchIxCache.out;
+  var out = watchIndex(tx, cats, todayISO);
+  _watchIxCache = { tx: tx, cats: cats, day: todayISO, out: out };
+  return out;
+}
+
+// The "why you installed Richy" card: the onboarding promise (recover about
+// X/mo), leak spend against baseline, money recovered so far, and Richard's
+// latest weekly check-in. Hidden entirely until a recovery plan exists, so
+// accounts from before this feature see nothing until they retake the plan.
+function RecoveryPulse(props) {
+  var _open = useState(false); var open = _open[0]; var setOpen = _open[1];
+  var rp = props.recoveryPlan;
+  if (!rp || !rp.startedAt) return null;
+  var tx = props.tx || [];
+  var cats = props.categories || [];
+  var todayISO = new Date().toISOString().slice(0, 10);
+  var ix = watchIndexCached(tx, cats, todayISO);
+  var ym = curMonth();
+  var baseline = rp.baselineObserved || parseFloat(rp.monthlyLeak) || 0;
+  var mtd = monthLeakSpend(ix, ym);
+  var rec = recoveredSoFar(props.foundMoney, ix, rp);
+  var reviews = props.personalReviews || [];
+  var last = reviews[0];
+  var due = personalReviewDue(rp, reviews);
+  var fresh = last && (Date.now() - new Date((last.date || "") + "T00:00:00").getTime()) < 3 * 86400000;
+  var statusColor = !last ? T.ink3 : last.status === "on-track" ? T.green : last.status === "watch" ? T.gold : T.red;
+  var statusLabel = !last ? "" : tr(last.status === "on-track" ? "rpStatusOn" : last.status === "watch" ? "rpStatusWatch" : "rpStatusOff");
+  var frac = baseline > 0 ? Math.min(1, mtd / baseline) : 0;
+  var barColor = baseline > 0 && mtd > baseline ? T.red : baseline > 0 && mtd > baseline * monthDayFrac() * 1.25 ? T.gold : T.green;
+  var target = parseFloat(rp.recoverTarget) || 0;
+  var goal = (props.goals || []).filter(function(g) { return rp.goalId && g.id === rp.goalId; })[0];
+  var goalName = goal ? goal.name : "";
+  var cardShadow = "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)";
+
+  function row(label, item) {
+    if (!item || !item.body) return null;
+    return (
+      <div style={{ background: "rgba(0,0,0,0.035)", borderRadius: 12, padding: "11px 13px", marginBottom: 9 }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</div>
+        <div style={{ fontSize: 13.5, fontWeight: 700, color: T.ink, marginTop: 3 }}>{item.title}</div>
+        <div style={{ fontSize: 12.5, color: T.ink2, marginTop: 2, lineHeight: 1.5 }}>{item.body}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.1s both", marginBottom: 20 }}>
+      <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ width: 3, height: 16, borderRadius: 2, background: T.green, flexShrink: 0 }} />
+        <span style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{tr("rpTitle")}</span>
+      </div>
+      <button onClick={function() { setOpen(true); }} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "block", padding: "14px 16px", borderRadius: 18, background: T.card, border: "none", boxShadow: cardShadow }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <CatBadge icon="shield" color={statusColor === T.ink3 ? T.green : statusColor} size={40} soft={true} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, lineHeight: 1.35 }}>
+              {last ? last.headline : tr("rpFirstReview")}
+            </div>
+            {target > 0 && <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>{trFill("rpPromise", { amt: dollars(target) })}</div>}
+          </div>
+          <SVGIcon id="chevron" size={18} color={T.ink3} />
+        </div>
+        <div style={{ marginTop: 11 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: T.ink3, marginBottom: 4 }}>
+            <span style={{ fontWeight: 700 }}>{tr("rpThisMonth")}</span>
+            <span>{baseline > 0 ? trFill("rpVsBaseline", { amt: dollars(mtd), base: dollars(baseline) }) : trFill("rpNoBaseline", { amt: dollars(mtd) })}</span>
+          </div>
+          <div style={{ height: 6, borderRadius: 3, background: "rgba(0,0,0,0.07)", overflow: "hidden" }}>
+            <div style={{ width: (frac * 100) + "%", height: "100%", borderRadius: 3, background: barColor }} />
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 9 }}>
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: T.green }}>{trFill("rpRecovered", { amt: dollars(rec.total) })}</span>
+          {(due || fresh) && (
+            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: T.orange, animation: "rcBadgePulse 1.6s ease 2", flexShrink: 0 }} />
+              <span style={{ fontSize: 11.5, fontWeight: 600, color: T.orange }}>{tr("rpReviewReady")}</span>
+            </span>
+          )}
+        </div>
+      </button>
+
+      <Overlay open={open} onClose={function() { setOpen(false); }} title={tr("rpTitle")}>
+        {last && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <span style={{ width: 9, height: 9, borderRadius: "50%", background: statusColor, flexShrink: 0 }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: statusColor }}>{statusLabel}</span>
+            <span style={{ fontSize: 12, color: T.ink3 }}>{last.date}</span>
+          </div>
+        )}
+        {last && <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, lineHeight: 1.4, marginBottom: 12 }}>{last.headline}</div>}
+        {last && row(tr("rpRowTip"), last.tip)}
+        {last && row(tr("rpRowWatch"), last.warning)}
+        {last && row(tr("rpRowIdea"), last.idea)}
+        {!last && <div style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.55, marginBottom: 12 }}>{tr("rpFirstReview")}</div>}
+        {goalName && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(39,168,95,0.08)", borderRadius: 12, padding: "10px 13px", marginBottom: 9 }}>
+            <SVGIcon id="goals" size={16} color={T.green} />
+            <span style={{ fontSize: 12.5, fontWeight: 700, color: T.green }}>{tr("rpYourGoal") + ": " + goalName}</span>
+          </div>
+        )}
+        {props.richPlan && (
+          <div style={{ background: "rgba(0,0,0,0.035)", borderRadius: 12, padding: "11px 13px" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5 }}>{tr("rpSeePlan")}</div>
+            <RichardText text={props.richPlan} size={13} />
+          </div>
+        )}
+      </Overlay>
+    </div>
+  );
+}
+
+// Context for investInsights when rendered on Overview: everything computed
+// from persisted data, scoutCount pinned to 0 so no extra work runs here.
+function investPulseCtx(acct) {
+  var plan = investPlanOf(acct);
+  var mix = investActualMix(acct);
+  var pos = positionsOf(acct);
+  var held = 0;
+  for (var s in pos) { if (pos[s].shares > 0) held++; }
+  return {
+    mix: mix, drift: investDrift(acct), cash: investingCash(acct),
+    targetCash: plan ? (plan.alloc.filter(function(a) { return a.cls === "cash"; })[0] || { pct: 8 }).pct : 8,
+    autoDue: investAutoDue(acct), autoAmount: (acct.auto && acct.auto.amount) || 0,
+    autoNext: investAutoNext(acct) || "", scoutCount: 0, heldCount: held
+  };
+}
+
+// Investing's heartbeat on Overview - the mirror of BusinessPulse. Health ring,
+// worth and today's move, and ONE next action: a contribution lapse first (the
+// plan expected money this month), else the top actionable insight, else
+// round-ups left on the table. Habit-level only; never a security opinion.
+function InvestingPulse(props) {
+  var accts = props.investing || [];
+  if (!accts.length || !props.onOpenInvesting) return null;
+  var shown = accts.slice(0, 2);
+  var todayISO = new Date().toISOString().slice(0, 10);
+  return (
+    <div style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.08s both" }}>
+      {shown.map(function(a) {
+        var health = investHealth(a);
+        var worth = investingWorth(a);
+        var day = investingDayChange(a);
+        var lapse = investContribLapse(a, todayISO);
+        var nextLine = null, nextTone = T.orange;
+        if (lapse) {
+          nextLine = lapse.expected > 0 ? trFill("ipLapseAmt", { amt: dollarsWhole(lapse.expected) }) : tr("ipLapse");
+        } else {
+          var ins = investInsights(a, investPulseCtx(a)).filter(function(i) { return i.cta; })[0];
+          if (ins) { nextLine = ins.title; }
+          else {
+            var ru = investRoundUps(props.tx, curMonth());
+            if (ru > 0 && !(a.auto && a.auto.roundUps)) { nextLine = trFill("ipRoundups", { amt: dollars(ru) }); nextTone = T.green; }
+          }
+        }
+        var healthColor = health.score >= 70 ? T.green : health.score >= 45 ? T.gold : T.orange;
+        return (
+          <Card key={a.id} style={{ marginBottom: 14, overflow: "hidden" }}>
+            <div onClick={function() { props.onOpenInvesting(a.id); }} style={{ padding: "13px 16px", cursor: "pointer" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ position: "relative", width: 42, height: 42, flexShrink: 0 }}>
+                  <DrawRing size={42} stroke={4} value={health.score} max={100} color={healthColor} />
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: T.ink }}>{health.score}</div>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: T.btn, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI }}>{tr("ipLabel")}</div>
+                  <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 1 }}>{a.name}</div>
+                  <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>
+                    <span style={{ fontWeight: 700, color: T.ink2 }}>{dollars(worth)}</span>
+                    {day !== 0 && (
+                      <span style={{ fontWeight: 700, color: day > 0 ? T.green : T.red }}>{" " + (day > 0 ? "+" : "-") + dollars(Math.abs(day))}</span>
+                    )}
+                    {day !== 0 && (" " + tr("ipToday"))}
+                  </div>
+                </div>
+                <SVGIcon id="chevron" size={16} color={T.ink3} />
+              </div>
+              {nextLine && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, background: "rgba(0,0,0,0.03)", borderRadius: 10, padding: "8px 11px" }}>
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: nextTone, flexShrink: 0 }} />
+                  <span style={{ flex: 1, fontSize: 12.5, color: T.ink2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{nextLine}</span>
+                </div>
+              )}
+            </div>
+          </Card>
+        );
+      })}
+      {accts.length > 2 && (
+        <button onClick={function() { props.onOpenInvesting(null); }}
+          style={{ width: "100%", background: "none", border: "none", cursor: "pointer", color: T.btn, fontSize: 13, fontWeight: 700, fontFamily: UI, padding: "2px 0 12px", textAlign: "center" }}>
+          {trFill("ipMore", { n: accts.length - 2 })}
         </button>
       )}
     </div>
@@ -8370,7 +9028,8 @@ function Overview(props) {
     { id: "debts",  icon: "credit",  title: "Crush your debt",  sub: "Payoff plan + debt-free date", used: (props.debts || []).length > 0,                       go: function() { if (props.onOpenDebts) props.onOpenDebts(); else nav("debts"); } },
     { id: "collab", icon: "user",    title: "Add your partner", sub: "Share budgets & goals",        used: !!props.householdId,                                  go: function() { if (props.onOpenCollab) props.onOpenCollab(); else nav("collab"); } },
     { id: "sync",   icon: "refresh", title: "Sync your bank",   sub: "Auto-import transactions",     used: !!(props.bankSync && props.bankSync.enabled),         go: function() { if (props.onSetupSync) props.onSetupSync(); else nav("bankSync"); } },
-    { id: "trip",   icon: "plane",   title: "Plan a trip",      sub: "Let Richard split your travel budget", used: (props.trips || []).length > 0,                go: function() { if (props.onPlanTrip) props.onPlanTrip(); else nav("trips"); } }
+    { id: "trip",   icon: "plane",   title: "Plan a trip",      sub: "Let Richard split your travel budget", used: (props.trips || []).length > 0,                go: function() { if (props.onPlanTrip) props.onPlanTrip(); else nav("trips"); } },
+    { id: "invest", icon: "chart",   title: tr("ipTipTitle"),   sub: tr("ipTipSub"),                 used: (props.investing || []).length > 0,                   go: function() { if (props.onOpenInvesting) props.onOpenInvesting(null); } }
   ].filter(function(a) { return !a.used && tipsOff.indexOf(a.id) < 0; });
   // A brand-new account still needs to find these, so they sit high on the page.
   // Once there's a real month of activity they move below the numbers - the
@@ -9206,9 +9865,13 @@ function Overview(props) {
         );
       })}
 
-      <FoundMoney tx={tx} categories={cats} foundMoney={props.foundMoney} onSaveFoundMoney={props.onSaveFoundMoney} richardInstructions={props.richardInstructions} lang={props.lang} />
+      <RecoveryPulse tx={tx} categories={cats} goals={props.goals} recoveryPlan={props.recoveryPlan} personalReviews={props.personalReviews} foundMoney={props.foundMoney} richPlan={props.richPlan} />
+
+      <FoundMoney tx={tx} categories={cats} foundMoney={props.foundMoney} onSaveFoundMoney={props.onSaveFoundMoney} onboardingData={props.onboardingData} coachTone={props.coachTone} budgets={props.budgets} onSaveBudgets={props.onSaveBudgets} richardInstructions={props.richardInstructions} lang={props.lang} />
 
       <BusinessPulse businesses={bizAccts} onOpenBusiness={props.onOpenBusiness} />
+
+      <InvestingPulse investing={props.investing} tx={tx} onOpenInvesting={props.onOpenInvesting} />
 
       <div style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.09s both" }}>
         <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -9714,7 +10377,10 @@ function normalizeMerchant(label) {
   var s = (label || "").toLowerCase();
   s = s.replace(/[#*].*$/, " ");                 // drop store/ref after # or *
   s = s.replace(/\d{2,}/g, " ");                 // drop long digit runs (ids/dates)
-  s = s.replace(/[^a-z0-9&]+/g, " ");            // punctuation -> space
+  // Keep Hebrew and Cyrillic letters: stripping them collapsed every
+  // Hebrew/Russian-labeled merchant to "" so those charges could never group
+  // into findings. Latin keys are unchanged, so existing rec: ids still match.
+  s = s.replace(/[^a-z0-9&֐-׿Ѐ-ӿ]+/g, " ");  // punctuation -> space
   s = s.replace(/\b(inc|llc|ltd|co|com|www|the|payment|pmt|recurring|autopay|pos|purchase|debit|card)\b/g, " ");
   return s.replace(/\s+/g, " ").trim();
 }
@@ -9723,6 +10389,112 @@ function looksLikeSubscription(label) {
   var s = (label || "").toLowerCase();
   for (var i = 0; i < SUBSCRIPTION_HINTS.length; i++) { if (s.indexOf(SUBSCRIPTION_HINTS[i]) !== -1) return true; }
   return false;
+}
+
+// ===== SPENDING WATCH =========================================================
+// Extends the Found Money audit with detectors for the leaks users actually
+// declare in onboarding Q6: food delivery, impulse buys, going out, shopping.
+// Same rules as the base engine: deterministic, computed from the user's own
+// transactions, decisions-only persistence, stable ids. A detector matching a
+// self-declared leak source runs with looser thresholds and its findings rank
+// first - that IS the personalization.
+
+// Delivery platforms, Latin + Hebrew (Israeli market: Wolt / Ten Bis / Cibus /
+// Mishloha are the big four). Matched against the raw lowercased label, before
+// normalizeMerchant strips anything.
+var DELIVERY_HINTS = ["wolt", "uber eats", "ubereats", "doordash", "grubhub", "deliveroo", "10bis", "tenbis", "ten bis", "cibus", "mishloha", "postmates", "seamless", "just eat", "justeat", "foodora", "glovo", "domino", "וולט", "תן ביס", "תןביס", "משלוחה", "סיבוס", "משלוח"];
+// Venues that read as a night/afternoon out rather than groceries. Latin +
+// Hebrew + Cyrillic; deliberately word-ish fragments, not brand names.
+var GOING_OUT_HINTS = ["bar ", " bar", "pub", "club", "restaurant", "bistro", "cafe", "coffee", "diner", "izakaya", "taproom", "brewery", "cocktail", "lounge", "karaoke", "מסעדה", "בר ", "פאב", "קפה", "מועדון", "ресторан", "бар", "кафе", "паб", "клуб"];
+
+function looksLikeDelivery(t) {
+  var s = (t && t.label || "").toLowerCase();
+  if (!s) return false;
+  for (var i = 0; i < DELIVERY_HINTS.length; i++) { if (s.indexOf(DELIVERY_HINTS[i]) !== -1) return true; }
+  return false;
+}
+function looksLikeGoingOut(t) {
+  var s = (t && t.label || "").toLowerCase();
+  if (!s) return false;
+  for (var i = 0; i < GOING_OUT_HINTS.length; i++) { if (s.indexOf(GOING_OUT_HINTS[i]) !== -1) return true; }
+  return false;
+}
+
+// Detection thresholds. `declared` applies when the user named this leak in
+// onboarding - looser, because they asked us to watch it. `noidea` (or no
+// answer) runs everything at defaults.
+var WATCH_TUNING = {
+  delivery: { default: { minCount: 6,  ratio: 1.30 }, declared: { minCount: 4, ratio: 1.15 } },
+  bleed:    { default: { minCount: 12, share: 0.08 }, declared: { minCount: 8, share: 0.05 } },
+  impulse:  { default: { minBuys: 3,  mult: 1.5 },    declared: { minBuys: 2, mult: 1.5 } },
+  goingout: { default: { ratio: 1.35 },               declared: { ratio: 1.20 } },
+  shopping: { default: { ratio: 1.30 },               declared: { ratio: 1.20 } }
+};
+
+// Entries store only a date (YYYY-MM-DD) - no clock. Manual entries mint
+// id = Date.now() at logging time, so when that timestamp lands on the entry's
+// own date the hour is an honest "logged at purchase" proxy. Returns null
+// otherwise; callers may use the hour for phrasing but never to fire a finding.
+function entryClockOf(t) {
+  if (!t || typeof t.id !== "number" || t.id < 1e12) return null;
+  var d = new Date(t.id);
+  if (isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== t.date) return null;
+  return d.getHours();
+}
+
+// Resolved category name for grouping ("Shopping", "Food", ...). Falls back to
+// the denormalized name stored on the tx, then Other.
+function watchCatName(t, cats) {
+  var c = catById(cats, t.catId);
+  return (c && c.name) || t.category || "Other";
+}
+function isDiscretionary(t, cats) {
+  var n = watchCatName(t, cats);
+  return n === "Shopping" || n === "Entertainment" || n === "Other";
+}
+// UTC day-of-week for a stored date. 0=Sun..6=Sat.
+function watchDow(dateISO) { return new Date(dateISO + "T12:00:00Z").getUTCDay(); }
+
+// One O(n) sweep over auditable expenses feeding every Spending Watch detector:
+// per-month category sums, per-month delivery and going-out slices, per-day
+// transaction lists for the current month, and the overall amount distribution.
+function watchIndex(tx, cats, todayISO) {
+  var ym = (todayISO || "").slice(0, 7);
+  var ix = { byMonthCat: {}, delivery: {}, goingOut: {}, byDayCur: {}, amounts: [] };
+  (tx || []).forEach(function(t) {
+    if (!isAuditableExpense(t, todayISO)) return;
+    var m = (t.date || "").slice(0, 7);
+    if (!m) return;
+    var name = watchCatName(t, cats);
+    var mc = ix.byMonthCat[m] = ix.byMonthCat[m] || {};
+    mc[name] = (mc[name] || 0) + t.amount;
+    ix.amounts.push(t.amount);
+    if (m === ym) (ix.byDayCur[t.date] = ix.byDayCur[t.date] || []).push(t);
+    if (looksLikeDelivery(t)) {
+      var d = ix.delivery[m] = ix.delivery[m] || { count: 0, sum: 0, merchants: {} };
+      d.count++; d.sum += t.amount;
+      var mk = t.label || "delivery";
+      d.merchants[mk] = (d.merchants[mk] || 0) + t.amount;
+    }
+    var dow = watchDow(t.date);
+    var weekendish = dow === 5 || dow === 6 || (dow === 4 && (_lang.code === "he"));
+    if (weekendish && (name === "Entertainment" || (name === "Food" && looksLikeGoingOut(t)))) {
+      ix.goingOut[m] = (ix.goingOut[m] || 0) + t.amount;
+    }
+  });
+  return ix;
+}
+
+// Average of the up-to-3 prior months' values from a {ym: number} map (or a
+// picker fn). Needs at least 2 non-zero months to count as a baseline.
+function watchBaseline(ym, pick) {
+  var vals = [];
+  for (var i = 1; i <= 3; i++) {
+    var v = pick(ymShift(ym, i)) || 0;
+    if (v > 0) vals.push(v);
+  }
+  if (vals.length < 2) return 0;
+  return vals.reduce(function(s, v) { return s + v; }, 0) / vals.length;
 }
 
 // A real outflow worth auditing: not opening balance, internal transfer, future
@@ -9873,10 +10645,103 @@ function detectCategoryJumps(tx, cats) {
   return out;
 }
 
+// -- Spending Watch detectors (see the header above watchIndex) --------------
+
+// Food-delivery creep: order count this month, or month spend well above the
+// trailing average. `extra` above baseline is the recoverable figure; with no
+// baseline yet the finding is informational (annual 0), like a jump.
+function detectDeliveryCreep(ix, ym, tune) {
+  var cur = ix.delivery[ym];
+  if (!cur || cur.count === 0) return null;
+  var base = watchBaseline(ym, function(m) { return (ix.delivery[m] || {}).sum || 0; });
+  if (cur.count < tune.minCount && !(base > 0 && cur.sum >= base * tune.ratio)) return null;
+  var top = "", topSum = 0;
+  for (var k in cur.merchants) { if (cur.merchants[k] > topSum) { topSum = cur.merchants[k]; top = k; } }
+  return { count: cur.count, sum: round2(cur.sum), base: round2(base), extra: round2(base > 0 ? Math.max(0, cur.sum - base) : 0), top: top };
+}
+
+// Small-ticket bleed: many sub-`small` purchases summing to a real share of the
+// month. Recurring merchants are excluded so subscriptions don't double-count.
+// `small` is currency-relative (share of the user's own median expense), never
+// a hardcoded dollar figure - this is a four-currency app.
+function detectSmallTicketBleed(tx, ym, todayISO, ix, recurKeys, small, tune) {
+  var items = (tx || []).filter(function(t) {
+    return isAuditableExpense(t, todayISO) && (t.date || "").slice(0, 7) === ym && t.amount > 0 && t.amount <= small && !recurKeys[normalizeMerchant(t.label)];
+  });
+  if (items.length < tune.minCount) return null;
+  var sum = items.reduce(function(s, t) { return s + t.amount; }, 0);
+  var mc = ix.byMonthCat[ym] || {};
+  var monthTotal = 0; for (var k in mc) monthTotal += mc[k];
+  if (monthTotal <= 0 || sum < monthTotal * tune.share) return null;
+  return { n: items.length, sum: round2(sum), small: round2(small) };
+}
+
+// Impulse clusters: days with several discretionary purchases that together
+// blow past the user's own median day. At most the 2 largest days per month so
+// the list never turns into a diary. Late-night is phrasing only (entryClockOf).
+function detectImpulseClusters(ix, cats, tune) {
+  var days = Object.keys(ix.byDayCur);
+  var medDay = fmMedian(days.map(function(d) {
+    return ix.byDayCur[d].reduce(function(s, t) { return s + t.amount; }, 0);
+  }));
+  var out = [];
+  days.forEach(function(d) {
+    var disc = ix.byDayCur[d].filter(function(t) { return isDiscretionary(t, cats); });
+    if (disc.length < tune.minBuys) return;
+    var sum = disc.reduce(function(s, t) { return s + t.amount; }, 0);
+    if (medDay > 0 && sum < medDay * tune.mult) return;
+    var late = disc.filter(function(t) { var h = entryClockOf(t); return h !== null && (h >= 22 || h <= 2); }).length;
+    out.push({ date: d, n: disc.length, sum: round2(sum), late: late * 2 >= disc.length });
+  });
+  out.sort(function(a, b) { return b.sum - a.sum; });
+  return out.slice(0, 2);
+}
+
+// Going-out spend (weekend Entertainment + venue-labeled Food) vs the same
+// window's own trailing average. Needs a baseline - a first month out is not a
+// pattern - and a floor so a rounding-error "20% over" can't fire.
+function detectGoingOut(ix, ym, tune, floor) {
+  var cur = ix.goingOut[ym] || 0;
+  if (cur <= 0) return null;
+  var base = watchBaseline(ym, function(m) { return ix.goingOut[m] || 0; });
+  if (base <= 0) return null;
+  var extra = cur - base;
+  if (cur < base * tune.ratio || extra < floor) return null;
+  return { sum: round2(cur), base: round2(base), extra: round2(extra) };
+}
+
+// Shopping creep: a sustained rise (three closed months, each >= the one
+// before) that ends clearly above where it started. Distinct from a jump,
+// which is a single-month spike vs the average.
+function detectShoppingCreep(ix, ym, tune) {
+  function shopAt(m) { return (ix.byMonthCat[m] || {})["Shopping"] || 0; }
+  var m1 = shopAt(ymShift(ym, 1)), m2 = shopAt(ymShift(ym, 2)), m3 = shopAt(ymShift(ym, 3));
+  if (m3 <= 0 || m2 < m3 || m1 < m2) return null;
+  var cur = shopAt(ym);
+  if (cur < m3 * tune.ratio) return null;
+  return { cur: round2(cur), was: round2(m3), extra: round2(cur - m3) };
+}
+
 // Unify all detectors into one ranked list. Each finding has a STABLE id (so a
 // user's dismiss/keep persists across sessions) and an `annual` figure used for
 // ranking and the "found you $X" math.
-function findMoney(tx, cats) {
+//
+// `watch` personalizes detection: { leakIds } are the questionnaire's declared
+// leak sources (leakIdsOf) - declared detectors run with looser thresholds and
+// their findings rank first. Omitted = default thresholds, legacy ranking.
+//
+// Memoized on tx/cats identity (state arrays are replaced, never mutated) so
+// Overview re-renders don't re-scan the ledger - same trick as _recurCatCache.
+var _findMoneyCache = { tx: null, cats: null, key: "", out: null };
+function findMoney(tx, cats, watch) {
+  var leakIds = (watch && watch.leakIds) || [];
+  var cacheKey = leakIds.join(",");
+  if (_findMoneyCache.tx === tx && _findMoneyCache.cats === cats && _findMoneyCache.key === cacheKey) return _findMoneyCache.out;
+  var out = _findMoneyCore(tx, cats, leakIds);
+  _findMoneyCache = { tx: tx, cats: cats, key: cacheKey, out: out };
+  return out;
+}
+function _findMoneyCore(tx, cats, leakIds) {
   var findings = [];
   var recurring = detectRecurring(tx, cats);
   recurring.forEach(function(g) {
@@ -9907,12 +10772,262 @@ function findMoney(tx, cats) {
       amount: j.extra, annual: 0, merchant: "", catId: j.catId, categoryName: j.category, meta: j
     });
   });
-  // Annualized recoverable (recurring + hikes) first, then one-off informational.
+
+  // ---- Spending Watch: the questionnaire-personalized detectors ----
+  // title/subtitle stay canonical English (they feed Richard's prompt lines);
+  // titleKey/subKey + params drive what's rendered, in the user's language.
+  var todayISO = new Date().toISOString().slice(0, 10);
+  var ym = todayISO.slice(0, 7);
+  var ix = watchIndex(tx, cats, todayISO);
+  var smallAmt = Math.max(5, 0.35 * fmMedian(ix.amounts));
+  function tuneOf(leakId, key) { return leakIds.indexOf(leakId) >= 0 ? WATCH_TUNING[key].declared : WATCH_TUNING[key].default; }
+  var entCat = (cats || []).filter(function(c) { return c.name === "Entertainment"; })[0];
+  var shopCat = (cats || []).filter(function(c) { return c.name === "Shopping"; })[0];
+
+  var dlv = detectDeliveryCreep(ix, ym, tuneOf("delivery", "delivery"));
+  if (dlv) findings.push({
+    id: "dlv-" + ym, type: "delivery", leakId: "delivery",
+    title: dlv.count + " delivery orders this month",
+    subtitle: dollars(dlv.sum) + " on food delivery" + (dlv.base > 0 ? " vs " + dollars(dlv.base) + " in a usual month" : "") + (dlv.top ? " - most of it " + dlv.top : ""),
+    titleKey: "fmwDeliveryTitle", titleParams: { n: dlv.count },
+    subKey: dlv.base > 0 ? "fmwDeliverySubBase" : "fmwDeliverySub",
+    subParams: { amt: dollars(dlv.sum), base: dollars(dlv.base), top: dlv.top },
+    amount: dlv.sum, annual: round2(dlv.extra * 12), merchant: dlv.top || "", catId: "", categoryName: "Food", meta: dlv
+  });
+
+  var recurKeys = {};
+  recurring.forEach(function(g) { recurKeys[g.key] = true; });
+  var bld = detectSmallTicketBleed(tx, ym, todayISO, ix, recurKeys, smallAmt, tuneOf("impulse", "bleed"));
+  if (bld) findings.push({
+    id: "bleed-" + ym, type: "bleed", leakId: "impulse",
+    title: bld.n + " small buys quietly added up",
+    subtitle: dollars(bld.sum) + " this month in purchases under " + dollars(bld.small) + " - about half is usually recoverable",
+    titleKey: "fmwBleedTitle", titleParams: { n: bld.n },
+    subKey: "fmwBleedSub", subParams: { amt: dollars(bld.sum), small: dollars(bld.small) },
+    amount: bld.sum, annual: round2(bld.sum * 6), merchant: "", catId: "", categoryName: "", meta: bld
+  });
+
+  detectImpulseClusters(ix, cats, tuneOf("impulse", "impulse")).forEach(function(c) {
+    findings.push({
+      id: "imp-" + c.date, type: "impulse", leakId: "impulse",
+      title: c.n + " impulse buys in one day (" + c.date + ")",
+      subtitle: dollars(c.sum) + " in a single day" + (c.late ? ", mostly late at night" : ""),
+      titleKey: "fmwImpulseTitle", titleParams: { n: c.n, date: c.date },
+      subKey: c.late ? "fmwImpulseSubLate" : "fmwImpulseSub", subParams: { amt: dollars(c.sum) },
+      amount: c.sum, annual: 0, merchant: "", catId: "", categoryName: "", meta: c
+    });
+  });
+
+  var out = detectGoingOut(ix, ym, tuneOf("goingout", "goingout"), smallAmt * 4);
+  if (out) {
+    var outPct = Math.round((out.sum / out.base - 1) * 100);
+    findings.push({
+      id: "out-" + ym, type: "goingout", leakId: "goingout",
+      title: "Going out is running " + outPct + "% hot",
+      subtitle: dollars(out.sum) + " on weekend outings vs " + dollars(out.base) + " usual - " + dollars(out.extra) + " over",
+      titleKey: "fmwGoingOutTitle", titleParams: { pct: outPct },
+      subKey: "fmwGoingOutSub", subParams: { amt: dollars(out.sum), base: dollars(out.base), extra: dollars(out.extra) },
+      amount: out.extra, annual: round2(out.extra * 12), merchant: "", catId: entCat ? entCat.id : "", categoryName: entCat ? entCat.name : "Entertainment",
+      capSuggest: Math.round(out.base), meta: out
+    });
+  }
+
+  var shp = detectShoppingCreep(ix, ym, tuneOf("shopping", "shopping"));
+  if (shp) findings.push({
+    id: "shop-" + ym, type: "shopcreep", leakId: "shopping",
+    title: "Shopping has crept up three months straight",
+    subtitle: dollars(shp.cur) + " this month vs " + dollars(shp.was) + " three months ago",
+    titleKey: "fmwShopTitle", titleParams: {},
+    subKey: "fmwShopSub", subParams: { amt: dollars(shp.cur), was: dollars(shp.was) },
+    amount: shp.extra, annual: round2(shp.extra * 12), merchant: "", catId: shopCat ? shopCat.id : "", categoryName: shopCat ? shopCat.name : "Shopping",
+    capSuggest: Math.round(shp.was), meta: shp
+  });
+
+  // A specific watch finding beats the generic jump for the same category -
+  // showing both would read as two complaints about one number.
+  var covered = {};
+  if (dlv) covered["Food"] = true;
+  if (out) covered["Entertainment"] = true;
+  if (shp) covered["Shopping"] = true;
+  findings = findings.filter(function(f) { return !(f.type === "jump" && covered[f.categoryName]); });
+
+  // The user's self-declared leak sources lead the list; within each group,
+  // annualized recoverable first, then one-off informational.
+  findings.forEach(function(f) { f.leakMatch = !!(f.leakId && leakIds.indexOf(f.leakId) >= 0); });
   findings.sort(function(a, b) {
+    if (!!b.leakMatch !== !!a.leakMatch) return b.leakMatch ? 1 : -1;
     if ((b.annual || 0) !== (a.annual || 0)) return (b.annual || 0) - (a.annual || 0);
     return (b.amount || 0) - (a.amount || 0);
   });
   return findings;
+}
+
+// ---- Personal weekly review -------------------------------------------------
+// The personal counterpart of the business CFO review: same discipline (a
+// deterministic digest Richard narrates but never edits, a local fallback, one
+// review per week, frozen numbers on the stored result), pointed at the
+// promise the user made in onboarding - "recover about X of what slips away".
+
+// The month's "leak spend": the discretionary categories plus the delivery
+// slice of Food. Stable and explainable, whatever leak sources were declared;
+// the declared sources get their own lines in the digest and the ranking.
+function monthLeakSpend(ix, ym) {
+  var mc = ix.byMonthCat[ym] || {};
+  return round2((mc["Entertainment"] || 0) + (mc["Shopping"] || 0) + (mc["Other"] || 0) + ((ix.delivery[ym] || {}).sum || 0));
+}
+
+// Money visibly recovered since the plan started: the Found Money tally (acted
+// findings) plus, for every completed month, how far leak spend stayed under
+// the baseline. Both terms deterministic; either can be zero.
+function recoveredSoFar(foundMoney, ix, rp) {
+  var tally = (foundMoney && foundMoney.tally) || 0;
+  var baseline = (rp && (rp.baselineObserved || parseFloat(rp.monthlyLeak))) || 0;
+  var saved = 0, months = 0;
+  if (baseline > 0 && rp.startedAt) {
+    var startYm = rp.startedAt.slice(0, 7);
+    var m = ymShift(curMonth(), 1);
+    while (m > startYm && months < 24) {
+      saved += Math.max(0, baseline - monthLeakSpend(ix, m));
+      months++;
+      m = ymShift(m, 1);
+    }
+  }
+  return { total: round2(tally + saved), tally: round2(tally), fromMonths: round2(saved), months: months };
+}
+
+// Due 7+ days after the last review, or 7+ days after the plan started for the
+// first one. No plan, no review.
+function personalReviewDue(rp, reviews) {
+  if (!rp || !rp.startedAt) return false;
+  var last = (reviews || [])[0];
+  var anchor = (last && last.date) || rp.startedAt;
+  var t = new Date(anchor + "T00:00:00").getTime();
+  if (isNaN(t)) return false;
+  return (Date.now() - t) >= 7 * 86400000;
+}
+
+// Per-leak-source spend for an arbitrary date window (the digest's last-7-days
+// lines). One pass over tx; ids follow LEAK_OPTIONS.
+function leakWindowSpend(tx, cats, fromISO, toISO) {
+  var out = { delivery: 0, goingout: 0, shopping: 0, impulse: 0, subs: 0 };
+  (tx || []).forEach(function(t) {
+    if (!isAuditableExpense(t, toISO)) return;
+    if (!t.date || t.date < fromISO || t.date > toISO) return;
+    var name = watchCatName(t, cats);
+    if (looksLikeDelivery(t)) out.delivery = round2(out.delivery + t.amount);
+    if (name === "Entertainment" || (name === "Food" && looksLikeGoingOut(t))) out.goingout = round2(out.goingout + t.amount);
+    if (name === "Shopping") out.shopping = round2(out.shopping + t.amount);
+    if (looksLikeSubscription(t.label)) out.subs = round2(out.subs + t.amount);
+  });
+  return out;
+}
+
+// The deterministic grounding block - Richard never gets to invent a number.
+function personalWeeklyDigest(tx, cats, rp, foundMoney, findings, reviews) {
+  var todayISO = new Date().toISOString().slice(0, 10);
+  var ym = curMonth();
+  var ix = watchIndex(tx, cats, todayISO);
+  var baseline = rp.baselineObserved || parseFloat(rp.monthlyLeak) || 0;
+  var mtd = monthLeakSpend(ix, ym);
+  var rec = recoveredSoFar(foundMoney, ix, rp);
+  var weekFrom = addDaysISO(todayISO, -6);
+  var wk = leakWindowSpend(tx, cats, weekFrom, todayISO);
+  var srcNames = (rp.leakSources || []).map(function(id) {
+    var o = LEAK_OPTIONS.filter(function(l) { return l.id === id; })[0];
+    return o ? o.label : id;
+  });
+  var top = (findings || [])[0];
+  var last = (reviews || [])[0];
+  return "Their onboarding promise: recover about " + dollars(parseFloat(rp.recoverTarget) || 0) + " per month of an estimated " + dollars(parseFloat(rp.monthlyLeak) || 0) + " that slips away monthly. "
+    + "Leak sources they named: " + (srcNames.length ? srcNames.join(", ") : "none - they said they had no idea") + ". "
+    + "This month so far: " + dollars(mtd) + " of leak-category spend vs " + (baseline > 0 ? dollars(baseline) + " in a typical month" : "no baseline yet") + " (month is " + Math.round(monthDayFrac() * 100) + "% done). "
+    + "Last 7 days: delivery " + dollars(wk.delivery) + ", going out " + dollars(wk.goingout) + ", shopping " + dollars(wk.shopping) + ", subscriptions " + dollars(wk.subs) + ". "
+    + "Recovered since the plan started: " + dollars(rec.total) + " (" + dollars(rec.tally) + " from leak fixes they acted on, " + dollars(rec.fromMonths) + " from months under baseline). "
+    + "Open leak findings: " + (findings || []).length + (top ? (". Top finding: " + top.title + " (" + top.subtitle + ")") : "") + ". "
+    + (last ? ("Last week you told them: " + last.headline + " ") : "This is their first personal weekly review. ");
+}
+
+// Offline/parse-failure fallback so a check-in still lands every week.
+// Written through tr() so it lands in the user's language, then frozen.
+function localPersonalReview(tx, cats, rp, foundMoney) {
+  var todayISO = new Date().toISOString().slice(0, 10);
+  var ym = curMonth();
+  var ix = watchIndex(tx, cats, todayISO);
+  var baseline = rp.baselineObserved || parseFloat(rp.monthlyLeak) || 0;
+  var mtd = monthLeakSpend(ix, ym);
+  var pro = baseline * monthDayFrac();
+  var status = baseline <= 0 ? "watch" : (mtd <= pro ? "on-track" : (mtd <= pro * 1.25 ? "watch" : "off-track"));
+  var headline = status === "on-track" ? tr("rpHeadOn") : status === "watch" ? tr("rpHeadWatch") : tr("rpHeadOff");
+  var wk = leakWindowSpend(tx, cats, addDaysISO(todayISO, -6), todayISO);
+  var worstId = "", worstAmt = 0;
+  for (var k in wk) { if (wk[k] > worstAmt) { worstAmt = wk[k]; worstId = k; } }
+  var worstOpt = LEAK_OPTIONS.filter(function(l) { return l.id === worstId; })[0];
+  var worstName = worstOpt ? tr(worstOpt.tKey) : worstId;
+  return {
+    status: status, headline: headline,
+    tip: { title: tr("rpTipT"), body: tr("rpTipB") },
+    warning: worstAmt > 0
+      ? { title: trFill("rpWarnT", { cat: worstName }), body: trFill("rpWarnB", { cat: worstName, amt: dollars(worstAmt) }) }
+      : { title: tr("rpCalmT"), body: tr("rpCalmB") },
+    idea: { title: tr("rpIdeaT"), body: trFill("rpIdeaB", { amt: dollars(Math.max(10, Math.round((parseFloat(rp.recoverTarget) || 40) / 4))) }) },
+    source: "local"
+  };
+}
+
+// Run the weekly personal review. Numbers on the stored review are computed
+// locally; the model's text is advice, never data. `tone` is the coachTone
+// setting - it shapes phrasing only.
+function runPersonalReview(tx, cats, rp, foundMoney, findings, reviews, richardInstructions, lang, tone, cb) {
+  var custom = richardUserCtx(richardInstructions);
+  var langSuffix = (lang && lang !== "en") ? (" Every string value must be written entirely in " + (LANGUAGE_NAMES[lang] || "English") + ".") : "";
+  var toneLine = tone === "tough"
+    ? " Voice: firm accountability coach - hold them to the promise they made, plainly, never insultingly."
+    : tone === "soft"
+      ? " Voice: gentle and neutral - present the numbers kindly, without referring back to what they said about their own habits."
+      : " Voice: honest and personal - when the numbers touch a leak source they declared, connect it to their own words, never shaming.";
+  var sys = custom + "You are Richard, the warm, sharp money guide inside the Richy app, delivering the user's weekly personal money check-in. They installed the app to fix a specific leak in their spending and made a recovery promise at signup; this review is how the app keeps that promise visible. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"status\":\"on-track\" or \"watch\" or \"off-track\",\"headline\":\"one honest sentence, max 18 words, on how their week went against the plan\",\"tip\":{\"title\":\"2 to 5 words\",\"body\":\"1 to 2 sentences of concrete advice tied to their real numbers\"},\"warning\":{\"title\":\"2 to 5 words\",\"body\":\"the one pattern to watch this week, tied to a real number\"},\"idea\":{\"title\":\"2 to 5 words\",\"body\":\"one small move that banks visible progress, with a figure where possible\"}}. Never repeat last week's headline. Base every claim only on the numbers given - never invent figures." + toneLine + langSuffix;
+  callClaude([{ role: "user", content: personalWeeklyDigest(tx, cats, rp, foundMoney, findings, reviews) }], sys, 500, function(e, text) {
+    var todayISO = new Date().toISOString().slice(0, 10);
+    var ix = watchIndex(tx, cats, todayISO);
+    var frozen = {
+      monthLeakSpend: monthLeakSpend(ix, curMonth()),
+      baseline: round2(rp.baselineObserved || parseFloat(rp.monthlyLeak) || 0),
+      recovered: recoveredSoFar(foundMoney, ix, rp).total,
+      target: round2(parseFloat(rp.recoverTarget) || 0)
+    };
+    function finish(r) {
+      cb({
+        id: "prev_" + Date.now(), date: todayISO,
+        status: r.status, headline: r.headline, tip: r.tip, warning: r.warning, idea: r.idea,
+        source: r.source || "ai",
+        monthLeakSpend: frozen.monthLeakSpend, baseline: frozen.baseline, recovered: frozen.recovered, target: frozen.target
+      });
+    }
+    if (e || !text) { finish(localPersonalReview(tx, cats, rp, foundMoney)); return; }
+    try {
+      var jsonStr = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
+      var p = JSON.parse(jsonStr);
+      var lr = localPersonalReview(tx, cats, rp, foundMoney);
+      var okStatus = { "on-track": 1, "watch": 1, "off-track": 1 };
+      if (!p.headline || !okStatus[p.status]) { finish(lr); return; }
+      finish({
+        status: p.status,
+        headline: String(p.headline).slice(0, 170),
+        tip: (p.tip && p.tip.body) ? { title: String(p.tip.title || "Tip").slice(0, 40), body: String(p.tip.body).slice(0, 300) } : lr.tip,
+        warning: (p.warning && p.warning.body) ? { title: String(p.warning.title || "Watch").slice(0, 40), body: String(p.warning.body).slice(0, 300) } : lr.warning,
+        idea: (p.idea && p.idea.body) ? { title: String(p.idea.title || "Idea").slice(0, 40), body: String(p.idea.body).slice(0, 300) } : lr.idea,
+        source: "ai"
+      });
+    } catch (e2) { finish(localPersonalReview(tx, cats, rp, foundMoney)); }
+  });
+}
+
+// Onboarding Q9 timeline -> a goal deadline the Goals tab understands.
+function timelineToDeadline(timeline) {
+  var months = timeline === "6 months" ? 6 : timeline === "1 year" ? 12 : timeline === "2 years" ? 24 : timeline === "5+ years" ? 60 : 0;
+  if (!months) return "";
+  var d = new Date(); d.setMonth(d.getMonth() + months);
+  return d.toISOString().slice(0, 10);
 }
 
 function ImportSheet(props) {
@@ -14478,6 +15593,10 @@ function Advisor(props) {
       ? "\n\n=== BUSINESSES (managed in Savings -> Business Account, Richard is their CFO) ===\n"
         + props.businesses.map(bizContextLine).join("\n")
       : "")
+    + ((props.investing || []).length
+      ? "\n\n=== INVESTING (context only - aggregates, no holdings on purpose. NEVER give a buy/hold/sell opinion on any security or on anything in their portfolio; if asked about a specific investment, give the general principle and suggest a licensed advisor. Habit-level encouragement only.) ===\n"
+        + props.investing.map(investContextLine).join("\n")
+      : "")
     + "\n\n=== OVERVIEW WIDGETS (cards you built; the exact titles, use them to update or remove one) ===\n"
     + ((props.widgets || []).length
       ? props.widgets.map(function(w) {
@@ -15257,7 +16376,7 @@ function Advisor(props) {
       + "Match the user's words to the template: \"track my coffee\" is merchantSpend or a category, \"as a ring/circle/gauge\" is ring, \"a bar\" is bar, \"show me the biggest ones\" is list, \"over the last few months\" is trend, \"versus last month\" is compare. Pick a sensible icon and a short title yourself rather than asking. If they ask for something no metric covers, say plainly what you can follow instead and offer the closest one - never invent a metric name, and never promise a widget on any screen other than Overview, which is the only place they appear. "
       + "Use the EXACT category, folder, savings pot, goal, note-label and widget-title names given in the data below - never invent or guess a name. "
       + "If the user mentions several things at once, emit several tags. Only emit a tag for a concrete event, or a direct explicit request to change/create something, with real values the user actually stated - never for hypotheticals, plans, or general advice. Do not mention the word ACTION or the tag syntax in your spoken reply; just speak naturally and let the tags do the work."
-      + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a CFO who builds a business plan - send business owners there. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (phone-automation Bank Sync is the real automatic option), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : ""),
+      + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a CFO who builds a business plan - send business owners there. Richy ALSO has Investing Accounts (Overview -> Savings -> Investing Account): a manual brokerage-style pot with live quotes where Richard builds a plan around the user's goal and timeline (conservative/balanced/bold mixes of broad funds), tracks the habit (contributions, drift, health score), teaches with short lessons, and scouts research ideas - send anyone who wants to start investing there, but NEVER give a buy/hold/sell opinion on a specific security yourself; give the general principle and suggest a licensed advisor for personal recommendations. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (phone-automation Bank Sync is the real automatic option), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : ""),
       500,
       function(err, text) {
         setChatLoading(false);
@@ -17213,6 +18332,83 @@ function investRoundUps(tx, ym) {
   return round2(total);
 }
 
+// ---- Investing heartbeat ----------------------------------------------------
+// Habit-level signals only: whether money is arriving, never what to buy.
+
+// True in a month with any cash deposit or any buy trade.
+function investContributedIn(acct, ym) {
+  var dep = ((acct && acct.cashEntries) || []).some(function(e) { return e.kind !== "withdraw" && (e.date || "").slice(0, 7) === ym; });
+  if (dep) return true;
+  return ((acct && acct.trades) || []).some(function(t) { return t.kind === "buy" && (t.date || "").slice(0, 7) === ym; });
+}
+// Contribution lapse: the account has a plan, is at least ~a month old, and no
+// money has gone in this month. Deliberately arms even with auto-invest OFF
+// (the default) - the plan expected a contribution whether or not automation
+// is set up. Informational: it phrases an expectation, never moves money.
+function investContribLapse(acct, today) {
+  if (!acct || !investPlanOf(acct)) return null;
+  var todayISO = today || new Date().toISOString().slice(0, 10);
+  var created = acct.createdAt || todayISO;
+  if ((new Date(todayISO + "T00:00:00Z") - new Date(created + "T00:00:00Z")) < 35 * 86400000) return null;
+  var ym = todayISO.slice(0, 7);
+  if (investContributedIn(acct, ym)) return null;
+  var expected = investAutoMonthly(acct) || ((acct.auto && acct.auto.amount) || 0);
+  var lastDate = "";
+  ((acct.cashEntries || []).concat(acct.trades || [])).forEach(function(e) {
+    if ((e.kind === "deposit" || e.kind === "buy") && (e.date || "") > lastDate) lastDate = e.date;
+  });
+  return { expected: round2(expected), lastDate: lastDate };
+}
+// Consecutive months, ending with the current one, that saw a contribution.
+function investContribStreak(list) {
+  var best = 0;
+  (list || []).forEach(function(acct) {
+    var run = 0, ym = curMonth();
+    while (run < 60 && investContributedIn(acct, ym)) { run++; ym = ymShift(ym, 1); }
+    if (run > best) best = run;
+  });
+  return best;
+}
+// Whole months since the first buy with no sell trade anywhere after it.
+function investMonthsHeldNoSell(list) {
+  var best = 0;
+  (list || []).forEach(function(acct) {
+    var firstBuy = "", anySell = false;
+    ((acct && acct.trades) || []).forEach(function(t) {
+      if (t.kind === "buy" && (!firstBuy || (t.date || "") < firstBuy)) firstBuy = t.date || "";
+      if (t.kind === "sell") anySell = true;
+    });
+    if (!firstBuy || anySell) return;
+    var months = ymDiff(firstBuy.slice(0, 7), curMonth());
+    if (months > best) best = months;
+  });
+  return best;
+}
+// Completed lessons across all investing accounts (sums the per-account
+// investLessonsDone counter defined next to INVEST_LESSONS).
+function investLessonsDoneAll(list) {
+  var n = 0;
+  (list || []).forEach(function(acct) { n += investLessonsDone(acct); });
+  return n;
+}
+// One-line aggregate summary for Richard's main Advisor context. Aggregates
+// only - no symbols, no per-holding detail: commenting on visible holdings is
+// where the investment-advice line gets crossed, so the main chat never sees
+// them.
+function investContextLine(acct) {
+  var plan = investPlanOf(acct);
+  var health = investHealth(acct);
+  var pos = positionsOf(acct);
+  var held = 0;
+  for (var s in pos) { if (pos[s].shares > 0) held++; }
+  return (acct.name || "Investing") + ": worth " + dollars(investingWorth(acct))
+    + " (" + dollars(investingCash(acct)) + " uninvested cash, " + held + (held === 1 ? " holding" : " holdings") + ")"
+    + ", plan " + (plan ? plan.name : "none")
+    + ", setup health " + health.score + "/100"
+    + ", auto-invest " + ((acct.auto && acct.auto.on) ? "on" : "off")
+    + ", contributed this month: " + (investContributedIn(acct, curMonth()) ? "yes" : "no") + ".";
+}
+
 // A 0-100 read on how well the account is actually set up, from five things
 // Richard can check without guessing: is there a plan, is the money spread out,
 // is it drifting, is cash sitting idle, and is money arriving on a schedule.
@@ -17458,6 +18654,40 @@ function bizQuarterRevenue(biz) {
   }, 0);
   return { revenue: round2(rev), quarter: qNum, qStart: qStart };
 }
+// The one place the tax estimate is computed, so the stat card, the weekly
+// digest, the ideas list and the badge test can never disagree.
+function taxOwedOf(biz) {
+  var q = bizQuarterRevenue(biz);
+  var rate = (biz && biz.profile && biz.profile.taxRate != null) ? biz.profile.taxRate : 25;
+  return { owed: round2(q.revenue * (rate / 100)), rate: rate, quarter: q.quarter, revenue: q.revenue };
+}
+// The tax pot is an EARMARK inside business cash, not a transfer: entries
+// (positive set-asides, negative releases) sum to the reserved balance, and
+// available cash is business cash minus that reserve. Money never moves, so
+// there is no double-entry risk with the main-balance bridge.
+function taxPotBalance(biz) {
+  var bal = (((biz || {}).taxPot || {}).entries || []).reduce(function(s, e) { return s + (e.amount || 0); }, 0);
+  return round2(Math.max(0, bal));
+}
+function bizCashAvailable(biz) { return round2(businessCash(biz) - taxPotBalance(biz)); }
+function overdueInvoicesOf(biz, today) {
+  var t = today || new Date().toISOString().slice(0, 10);
+  return ((biz && biz.invoices) || []).filter(function(i) { return i.status !== "paid" && (i.dueDate || "") < t; });
+}
+// How far into the calendar quarter we are (0..1) - the under-reserved
+// warning only fires once most of the quarter has passed.
+function quarterFrac() {
+  var now = new Date();
+  var qm = Math.floor(now.getUTCMonth() / 3) * 3;
+  var qStart = Date.UTC(now.getUTCFullYear(), qm, 1);
+  var qEnd = Date.UTC(now.getUTCFullYear(), qm + 3, 1);
+  return Math.max(0, Math.min(1, (Date.now() - qStart) / (qEnd - qStart)));
+}
+// True when the tax pot is clearly behind the estimate late in the quarter.
+function taxPotBehind(biz) {
+  var tax = taxOwedOf(biz);
+  return tax.owed > 0 && taxPotBalance(biz) < tax.owed * 0.5 && quarterFrac() > 0.6;
+}
 
 // ---- Business roadmap -------------------------------------------------------
 // A stage-tuned milestone checklist Richard drafts for every business. The
@@ -17560,6 +18790,13 @@ function detectGraduation(biz) {
 // on-demand "growth ideas" panel when the AI is unreachable.
 function bizIdeas(biz) {
   var out = [];
+  // Tax gap first when the pot is clearly behind - it's the one idea with a
+  // deadline attached.
+  var _tax = taxOwedOf(biz);
+  var _gap = round2(_tax.owed - taxPotBalance(biz));
+  if (_tax.owed > 0 && _gap > 0 && taxPotBehind(biz)) {
+    out.push({ title: "Top up the tax pot", body: "Move " + dollars(_gap) + " into the tax set-aside to cover the estimated Q" + _tax.quarter + " bill - future you pays nothing extra, present you sleeps better." });
+  }
   var pf = biz.profile || {};
   var stage = pf.stage || "idea";
   var ym = curMonth();
@@ -17624,6 +18861,16 @@ function bizWeeklyDigest(biz) {
     + "Business: " + (biz.name || "my business") + " - " + (biz.what || "unspecified") + ". Stage: " + (pf.stage || "idea") + ". "
     + "This month: revenue " + dollars(pl.revenue) + " (monthly goal " + dollars(pf.revenueGoal || 0) + ", month is " + Math.round(dayFrac * 100) + "% done), spent " + dollars(pl.spend) + " of " + dollars(pf.monthly || 0) + " budget, profit " + dollarsSigned(pl.profit) + (pl.profit < 0 ? " (a LOSS - the business is spending more than it earns)" : "") + ". "
     + "Cash " + dollars(businessCash(biz)) + ", runway " + (runway === null ? "self-sustaining" : runway + " months") + ", health " + health.score + " of 100 (" + health.label + "). "
+    + (function() {
+        var tax = taxOwedOf(biz);
+        var od = overdueInvoicesOf(biz);
+        var unpaid = ((biz.invoices || []).filter(function(i) { return i.status !== "paid"; }));
+        var oldest = od.length ? od.reduce(function(m, i) { return (i.dueDate || "") < m ? i.dueDate : m; }, od[0].dueDate || "") : "";
+        var oldestDays = oldest ? Math.max(0, Math.round((Date.now() - new Date(oldest + "T00:00:00").getTime()) / 86400000)) : 0;
+        return "Tax: set aside " + dollars(taxPotBalance(biz)) + " of " + dollars(tax.owed) + " estimated owed for Q" + tax.quarter + " at " + tax.rate + "%. "
+          + "Invoices: " + unpaid.length + " unpaid totaling " + dollars(unpaid.reduce(function(s, i) { return s + (i.amount || 0); }, 0))
+          + (od.length ? (", " + od.length + " OVERDUE (oldest " + oldestDays + " days late)") : "") + ". ";
+      })()
     + (pace ? ("Pace: " + pace.text + " ") : "")
     + "Budget buckets (spent of planned): " + (catLine || "none") + ". "
     + (biz.roadmap ? ("Roadmap: " + prog.done + " of " + prog.total + " tasks done" + (cur ? (", current milestone: " + cur.title + (nextTask ? (", next task: " + nextTask) : "")) : ", all milestones complete") + ". ") : "No roadmap yet. ")
@@ -17652,11 +18899,17 @@ function localWeeklyReview(biz) {
   var tip = worst
     ? { title: "Rein in " + worst.label, body: worst.label + " is " + dollars(worst.overBy) + " over its " + dollars(worst.planned) + " budget this month. Pause spending there or move budget from Buffer so the plan matches reality." }
     : { title: "Keep the ledger honest", body: "Log every business expense and sale the day it happens - the advice here is only as sharp as the numbers you feed it." };
+  var odInv = overdueInvoicesOf(biz);
+  var taxInfo = taxOwedOf(biz);
   var warning = (runway !== null && runway < 3)
     ? { title: "Runway is short", body: "About " + runway + " months of cash left at the current burn. Cut the biggest non-earning cost or push revenue now - don't let it get to one." }
-    : (pace && pace.verdict === "over")
-      ? { title: "Pace is hot", body: pace.text }
-      : { title: "Nothing burning", body: "No urgent risk this week. Use the calm to work the roadmap." };
+    : odInv.length
+      ? { title: "Chase overdue invoices", body: odInv.length + (odInv.length === 1 ? " invoice is" : " invoices are") + " past due, " + dollars(odInv.reduce(function(s, i) { return s + (i.amount || 0); }, 0)) + " in total. A polite nudge today usually beats a bigger chase next month." }
+      : taxPotBehind(biz)
+        ? { title: "Tax pot is behind", body: "You've set aside " + dollars(taxPotBalance(biz)) + " of about " + dollars(taxInfo.owed) + " owed for Q" + taxInfo.quarter + ", and the quarter is nearly over. Move a slice of the next revenue in before it hurts." }
+        : (pace && pace.verdict === "over")
+          ? { title: "Pace is hot", body: pace.text }
+          : { title: "Nothing burning", body: "No urgent risk this week. Use the calm to work the roadmap." };
   var idea = bizIdeas(biz)[0];
   return { status: status, headline: headline, tip: tip, warning: warning, idea: { title: idea.title, body: idea.body }, taskSuggestion: null, graduate: "", source: "local" };
 }
@@ -22263,6 +23516,10 @@ function BusinessView(props) {
   var _invList = useState(false); var invoicesOpen = _invList[0]; var setInvoicesOpen = _invList[1];
   var _invForm = useState({ client: "", amount: "", dueDate: "" }); var invForm = _invForm[0]; var setInvForm = _invForm[1];
   var _taxSheet = useState(false); var taxSheetOpen = _taxSheet[0]; var setTaxSheetOpen = _taxSheet[1];
+  // One-tap follow-ups: set tax aside right after logging revenue, and record
+  // revenue right after marking an invoice paid. Both opt-in, never silent.
+  var _taxPrompt = useState(null); var taxPrompt = _taxPrompt[0]; var setTaxPrompt = _taxPrompt[1];       // {bizId, amount}
+  var _invRevPrompt = useState(null); var invRevPrompt = _invRevPrompt[0]; var setInvRevPrompt = _invRevPrompt[1]; // {bizId, client, amount}
 
   // Fresh-props ref so async AI callbacks never patch from a stale snapshot
   // (a reply can land after another save has already advanced the array).
@@ -22664,11 +23921,26 @@ function BusinessView(props) {
     }
     setDelCapConfirm(null);
   }
+  // Append one earmark entry (positive set-aside, negative release) to the
+  // business's tax pot. Clamped so a release can never take the pot negative
+  // and a set-aside can never exceed available (un-earmarked) cash.
+  function addTaxEntry(bizId, amount) {
+    var biz = null; for (var i = 0; i < bizesRef.current.length; i++) { if (bizesRef.current[i].id === bizId) { biz = bizesRef.current[i]; break; } }
+    if (!biz) return;
+    var amt = round2(amount || 0);
+    if (amt > 0) amt = Math.min(amt, Math.max(0, bizCashAvailable(biz)));
+    else amt = -Math.min(-amt, taxPotBalance(biz));
+    if (!amt) return;
+    var entries = ((biz.taxPot || {}).entries || []).concat([{ id: Date.now(), amount: amt, date: today }]);
+    props.onSaveBusinesses(patchBiz(bizId, { taxPot: { entries: entries } }));
+  }
   function logRevenue(bizId) {
     var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
     var v = parseFloat(revForm.amount) || 0;
     if (!biz || v <= 0) { setRevFor(null); return; }
     props.onSaveBusinesses(patchBiz(bizId, buildRevenuePatch(biz, revForm.label, v, Date.now())));
+    var rate = (biz.profile && biz.profile.taxRate != null) ? biz.profile.taxRate : 25;
+    if (rate > 0) setTaxPrompt({ bizId: bizId, amount: round2(v * rate / 100), rate: rate });
     setRevFor(null); setRevForm({ label: "", amount: "" });
   }
   // ---- Invoices (Needs attention / Unpaid stat) -----------------------------
@@ -22684,8 +23956,14 @@ function BusinessView(props) {
   function toggleInvoicePaid(bizId, invId) {
     var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
     if (!biz) return;
+    var flipped = (biz.invoices || []).filter(function(inv) { return inv.id === invId; })[0];
     var next = (biz.invoices || []).map(function(inv) { return inv.id === invId ? Object.assign({}, inv, { status: inv.status === "paid" ? "unpaid" : "paid" }) : inv; });
     props.onSaveBusinesses(patchBiz(bizId, { invoices: next }));
+    // Marking paid does not book revenue by itself (users who log revenue
+    // separately must not double-count) - offer it as a one-tap follow-up.
+    if (flipped && flipped.status !== "paid" && (flipped.amount || 0) > 0) {
+      setInvRevPrompt({ bizId: bizId, client: flipped.client || "", amount: round2(flipped.amount) });
+    }
   }
   function deleteInvoice(bizId, invId) {
     var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
@@ -23587,9 +24865,12 @@ function BusinessView(props) {
         </div>
 
         {(function() {
-          var qInfo = bizQuarterRevenue(biz);
-          var taxRate = (biz.profile && biz.profile.taxRate != null) ? biz.profile.taxRate : 25;
-          var taxOwed = round2(qInfo.revenue * (taxRate / 100));
+          var tax = taxOwedOf(biz);
+          var taxOwed = tax.owed, taxRate = tax.rate;
+          var qInfo = { quarter: tax.quarter };
+          var taxSetAside = taxPotBalance(biz);
+          var taxCovered = taxOwed > 0 && taxSetAside >= taxOwed;
+          var taxBehind = taxPotBehind(biz);
           var invoices = biz.invoices || [];
           var unpaidInvoices = invoices.filter(function(i) { return i.status !== "paid"; });
           var unpaidTotal = round2(unpaidInvoices.reduce(function(s, i) { return s + (i.amount || 0); }, 0));
@@ -23615,8 +24896,11 @@ function BusinessView(props) {
               </button>
               <button onClick={function() { setTaxSheetOpen(true); }} style={statCardSt}>
                 <div style={statLabelSt}>Tax pot</div>
-                <div style={statNumSt}>{dollars(taxOwed)}</div>
-                <div style={statSubSt}>{"for Q" + qInfo.quarter + " at " + taxRate + "%"}</div>
+                <div style={Object.assign({}, statNumSt, taxCovered ? { color: T.green } : {})}>{dollars(taxSetAside)}</div>
+                <div style={Object.assign({}, statSubSt, { color: taxCovered ? T.green : taxBehind ? T.red : T.ink3, display: "flex", alignItems: "center", gap: 4 })}>
+                  {taxBehind && !taxCovered && <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.red, flexShrink: 0 }} />}
+                  {taxOwed > 0 ? ("of " + dollars(taxOwed) + " owed for Q" + qInfo.quarter) : ("Q" + qInfo.quarter + " at " + taxRate + "%")}
+                </div>
               </button>
             </div>
           );
@@ -24339,10 +25623,65 @@ function BusinessView(props) {
         </Overlay>
 
         <Overlay open={taxSheetOpen} onClose={function() { setTaxSheetOpen(false); }} title="Tax set-aside">
-          <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginBottom: 10 }}>The share of revenue Richard estimates you should set aside for taxes each quarter.</div>
+          {(function() {
+            var tax = taxOwedOf(biz);
+            var setAside = taxPotBalance(biz);
+            var covered = tax.owed > 0 && setAside >= tax.owed;
+            return (
+              <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
+                <div style={{ flex: 1, background: covered ? T.greenDim : "rgba(0,0,0,0.04)", borderRadius: 14, padding: "12px 14px" }}>
+                  <div style={{ fontSize: 9.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em" }}>Set aside</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: covered ? T.green : T.ink, letterSpacing: "-0.02em", marginTop: 3 }}>{dollars(setAside)}</div>
+                </div>
+                <div style={{ flex: 1, background: "rgba(0,0,0,0.04)", borderRadius: 14, padding: "12px 14px" }}>
+                  <div style={{ fontSize: 9.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em" }}>{"Est. owed Q" + tax.quarter}</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", marginTop: 3 }}>{dollars(tax.owed)}</div>
+                </div>
+              </div>
+            );
+          })()}
+          <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginBottom: 10 }}>Money set aside stays in the business - it's earmarked so you don't spend it. Estimate = quarter revenue x your rate.</div>
+          <FormRow label={"Amount (" + dollars(Math.max(0, bizCashAvailable(biz))) + " available)"} value={getDetailEdit(biz.id, "taxAmt", "")}
+            onChange={function(e) { setDetailEdit(biz.id, "taxAmt", e.target.value); }} type="number" />
+          <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+            <button onClick={function() { var v = parseFloat(getDetailEdit(biz.id, "taxAmt", "")) || 0; if (v > 0) { addTaxEntry(biz.id, v); clearDetailEdit(biz.id, "taxAmt"); } }}
+              style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 12, background: T.green, color: "#fff" }}>Set aside</button>
+            <button onClick={function() { var v = parseFloat(getDetailEdit(biz.id, "taxAmt", "")) || 0; if (v > 0) { addTaxEntry(biz.id, -v); clearDetailEdit(biz.id, "taxAmt"); } }} disabled={taxPotBalance(biz) <= 0}
+              style={{ flex: 1, border: "1.5px solid " + (taxPotBalance(biz) <= 0 ? "rgba(0,0,0,0.08)" : T.orange), cursor: taxPotBalance(biz) <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 12, background: "none", color: taxPotBalance(biz) <= 0 ? T.ink3 : T.orange }}>Release</button>
+          </div>
           <FormRow label="Set-aside rate (%)" value={getDetailEdit(biz.id, "taxRate", (biz.profile && biz.profile.taxRate != null) ? biz.profile.taxRate : 25)}
             onChange={function(e) { setDetailEdit(biz.id, "taxRate", e.target.value); }} type="number" last={true} />
-          <BigBtn label="Save" onPress={function() { updateTaxRate(biz.id, getDetailEdit(biz.id, "taxRate", 25)); clearDetailEdit(biz.id, "taxRate"); setTaxSheetOpen(false); }} />
+          <BigBtn label="Save rate" onPress={function() { updateTaxRate(biz.id, getDetailEdit(biz.id, "taxRate", 25)); clearDetailEdit(biz.id, "taxRate"); setTaxSheetOpen(false); }} />
+        </Overlay>
+
+        <Overlay open={!!taxPrompt} onClose={function() { setTaxPrompt(null); }} title="Set tax aside?">
+          {taxPrompt && (
+            <div>
+              <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.55, marginBottom: 14 }}>
+                {"Nice - revenue logged. Set aside " + taxPrompt.rate + "% (" + dollars(taxPrompt.amount) + ") for tax now, so the quarter never surprises you?"}
+              </div>
+              <BigBtn label={"Set aside " + dollars(taxPrompt.amount)} onPress={function() { addTaxEntry(taxPrompt.bizId, taxPrompt.amount); setTaxPrompt(null); }} />
+              <button onClick={function() { setTaxPrompt(null); }}
+                style={{ width: "100%", background: "none", border: "none", cursor: "pointer", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, padding: "12px 0 4px" }}>Not now</button>
+            </div>
+          )}
+        </Overlay>
+
+        <Overlay open={!!invRevPrompt} onClose={function() { setInvRevPrompt(null); }} title="Record as revenue?">
+          {invRevPrompt && (
+            <div>
+              <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.55, marginBottom: 14 }}>
+                {"Invoice marked paid. Record " + dollars(invRevPrompt.amount) + (invRevPrompt.client ? " from " + invRevPrompt.client : "") + " as revenue too? Skip this if you already log that revenue separately."}
+              </div>
+              <BigBtn label="Record revenue" onPress={function() {
+                var b = null; for (var i = 0; i < bizesRef.current.length; i++) { if (bizesRef.current[i].id === invRevPrompt.bizId) { b = bizesRef.current[i]; break; } }
+                if (b) props.onSaveBusinesses(patchBiz(invRevPrompt.bizId, buildRevenuePatch(b, invRevPrompt.client, invRevPrompt.amount, Date.now())));
+                setInvRevPrompt(null);
+              }} />
+              <button onClick={function() { setInvRevPrompt(null); }}
+                style={{ width: "100%", background: "none", border: "none", cursor: "pointer", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, padding: "12px 0 4px" }}>Just mark paid</button>
+            </div>
+          )}
         </Overlay>
       </div>
     );
@@ -24611,6 +25950,46 @@ function AppearanceView(props) {
           );
         })}
       </Card>
+    </div>
+  );
+}
+
+// Richard's tone: how coaching copy refers back to the weak spots the user
+// declared. Read by Spending Watch finding chips and both weekly reviews.
+function CoachToneView(props) {
+  var opts = [
+    { id: "direct", labelKey: "ctDirect", subKey: "ctDirectSub", icon: "edit" },
+    { id: "soft",   labelKey: "ctSoft",   subKey: "ctSoftSub",   icon: "heart" },
+    { id: "tough",  labelKey: "ctTough",  subKey: "ctToughSub",  icon: "flame" }
+  ];
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+      <Card style={{ overflow: "hidden", marginBottom: 16 }}>
+        {opts.map(function(opt, i) {
+          var sel = (props.coachTone || "direct") === opt.id;
+          return (
+            <button key={opt.id} onClick={function() { props.onCoachToneChange(opt.id); }}
+              style={{ width: "100%", background: sel ? T.orangeDim : "none", border: "none", borderBottom: i < opts.length - 1 ? "0.5px solid " + T.sep : "none", padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", fontFamily: UI }}>
+              <div style={{ width: 46, height: 46, borderRadius: 13, background: sel ? T.orange : "rgba(0,0,0,0.05)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <SVGIcon id={opt.icon} size={20} color={sel ? "#fff" : T.ink3} />
+              </div>
+              <div style={{ flex: 1, textAlign: "left" }}>
+                <div style={{ fontSize: 16, fontWeight: sel ? 700 : 600, color: T.ink }}>{tr(opt.labelKey)}</div>
+                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{tr(opt.subKey)}</div>
+              </div>
+              {sel && (
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <SVGIcon id="check" size={12} color="#fff" />
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </Card>
+      <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.55, padding: "0 6px" }}>
+        {tr("ctSub")}
+      </div>
     </div>
   );
 }
@@ -27348,6 +28727,7 @@ function SettingsView(props) {
 
       <ProfileSection icon="spark" title="AI & Richard" bg={T.goldDim} color={T.gold} glow={T.goldGlow}>
         <ProfileRow icon="spark" iconBg={T.goldDim} iconColor={T.gold} label="Your Plan" onClick={props.onViewPlan} />
+        <ProfileRow icon="star" iconBg={T.goldDim} iconColor={T.gold} label={tr("ctTitle")} value={tr(props.coachTone === "soft" ? "ctSoft" : props.coachTone === "tough" ? "ctTough" : "ctDirect")} onClick={props.onViewCoachTone} />
         <ProfileRow icon="note" iconBg={T.goldDim} iconColor={T.gold} label="Richard's Instructions" value={props.richardInstructions ? "Custom" : "Default"} onClick={props.onViewInstructions} last />
       </ProfileSection>
 
@@ -27771,6 +29151,19 @@ export default function App() {
   // from tx each session by findMoney().
   var _fm = useState({ tally: 0, dismissed: [], acted: [] });
   var foundMoney = _fm[0]; var setFoundMoney = _fm[1];
+  // How Richard phrases coaching about the user's own declared weak spots:
+  // "direct" (ties findings to what they told us), "soft" (numbers only, no
+  // callbacks to their answers), "tough" (accountability framing).
+  var _ctn = useState("direct");
+  var coachTone = _ctn[0]; var setCoachTone = _ctn[1];
+  // The onboarding recovery promise, made durable: {startedAt, monthlyLeak,
+  // recoverTarget, leakSources[], goalId, baselineObserved}. Null until the
+  // questionnaire is (re)taken with this feature live.
+  var _rpl = useState(null);
+  var recoveryPlan = _rpl[0]; var setRecoveryPlan = _rpl[1];
+  // Personal weekly reviews, newest first, capped at 8 like biz reviews.
+  var _prv = useState([]);
+  var personalReviews = _prv[0]; var setPersonalReviews = _prv[1];
   // Big-Decision CFO: tracked decisions [{id, question, verdict, createdDate, status}].
   var _dec = useState([]);
   var decisions = _dec[0]; var setDecisions = _dec[1];
@@ -27826,6 +29219,9 @@ export default function App() {
     setInvestorProfile(data.investorProfile || null);
     setNotes(data.notes || []);
     setFoundMoney(data.foundMoney || { tally: 0, dismissed: [], acted: [] });
+    setCoachTone(data.coachTone || "direct");
+    setRecoveryPlan(data.recoveryPlan || null);
+    setPersonalReviews(data.personalReviews || []);
     setDecisions(data.decisions || []);
     // Trim on load too, so an account that already grew past the limit heals
     // itself on its next write instead of staying permanently unsaveable.
@@ -28130,7 +29526,7 @@ export default function App() {
     blobRef.current = {};
     setUser(null); setAccountKey(null); setTab("overview");
     setHouseholdId(null); setHousehold(null); setInvites([]);
-    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setInvestorProfile(null); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]); setBankSync(null); setLeumiFinteka(null); setCustomBanners([]); setMotivation(motivDefault()); setSocial({ handle: "", following: [], followers: [], requests: [] });
+    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setInvestorProfile(null); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setCoachTone("direct"); setRecoveryPlan(null); setPersonalReviews([]); setDecisions([]); setBankSync(null); setLeumiFinteka(null); setCustomBanners([]); setMotivation(motivDefault()); setSocial({ handle: "", following: [], followers: [], requests: [] });
     // Language is deliberately NOT reset here (unlike theme) - it's a device
     // preference AuthScreen itself now renders in, and wiping it back to "en"
     // would force a Hebrew/Arabic/Russian user back to English on their own
@@ -28204,6 +29600,15 @@ export default function App() {
   function onSaveBudgets(next) { setBudgets(next); save({ budgets: next }); }
   function onSaveGoals(next) { setGoals(next); save({ goals: next }); }
   function onSaveFoundMoney(next) { setFoundMoney(next); save({ foundMoney: next }); }
+  function onSaveCoachTone(t) { var v = t === "soft" || t === "tough" ? t : "direct"; setCoachTone(v); save({ coachTone: v }); }
+  function onSaveRecovery(plan, reviews) {
+    if (plan !== undefined) { setRecoveryPlan(plan); }
+    if (reviews !== undefined) { setPersonalReviews(reviews); }
+    var patch = {};
+    if (plan !== undefined) patch.recoveryPlan = plan;
+    if (reviews !== undefined) patch.personalReviews = reviews;
+    save(patch);
+  }
   function onSaveDecisions(next) { setDecisions(next); save({ decisions: next }); }
   // Trim at the save boundary rather than inside Advisor, so every caller
   // (archive-on-new-chat, delete, reopen) is covered by one rule and the state
@@ -28454,6 +29859,41 @@ export default function App() {
     runNext(0);
   }, [businesses, accountKey]);
 
+  // Personal weekly review: the client-side stand-in for a weekly cron, same
+  // shape as the CFO one above. At most one review (and one notification) per
+  // app open, only when 7+ days have passed. Also freezes the observed
+  // baseline into the recovery plan once two full months of data exist -
+  // from then on progress is measured against what actually happens, not the
+  // signup guess.
+  var personalReviewRan = useRef(false);
+  useEffect(function() {
+    if (personalReviewRan.current || !accountKey || !onboardingDone || !recoveryPlan || !recoveryPlan.startedAt) return;
+    personalReviewRan.current = true;
+    var rp = recoveryPlan;
+    var todayISO = new Date().toISOString().slice(0, 10);
+    var ix = watchIndexCached(tx, categories, todayISO);
+    if (!rp.baselineObserved) {
+      var startYm = rp.startedAt.slice(0, 7);
+      var m1 = ymShift(curMonth(), 1), m2 = ymShift(curMonth(), 2);
+      if (m2 > startYm) {
+        var nrp = {}; for (var k in rp) nrp[k] = rp[k];
+        nrp.baselineObserved = round2((monthLeakSpend(ix, m1) + monthLeakSpend(ix, m2)) / 2);
+        nrp.baselineComputedAt = todayISO;
+        onSaveRecovery(nrp, undefined);
+        rp = nrp;
+      }
+    }
+    if (!personalReviewDue(rp, personalReviews)) return;
+    var fmv = foundMoney || {};
+    var findings = findMoney(tx, categories, { leakIds: leakIdsOf(onboardingData) }).filter(function(f) {
+      return (fmv.dismissed || []).indexOf(f.id) === -1 && (fmv.muted || []).indexOf(f.type) === -1;
+    });
+    runPersonalReview(tx, categories, rp, foundMoney, findings, personalReviews, richardCtx, lang, coachTone, function(review) {
+      onSaveRecovery(undefined, [review].concat(personalReviews || []).slice(0, 8));
+      fireBizNotification("Richy", review.headline, "personal-review");
+    });
+  }, [recoveryPlan, accountKey, onboardingDone]);
+
   function onSaveFolders(next) { setFolders(next); save({ folders: next }); }
   function onSaveCategories(next) { setCategories(next); save({ categories: next }); }
   function onSaveCurrency(sym) { _currency.sym = sym; setCurrency(sym); save({ currency: sym }); }
@@ -28476,7 +29916,16 @@ export default function App() {
   function onSaveNickname(name) { setUser(name); save({ displayName: name }); }
   function onSaveDob(dob) { setUserDob(dob); save({ dob: dob }); }
   function onSaveEmail(email) { save({ email: email }); }
-  function onSaveFinancial(oData) { save({ onboardingData: oData }); }
+  // Merge, never replace: the edit form sends only the fields it shows, and a
+  // plain save would silently wipe coreProblem, moneyLeaks and the pref keys -
+  // the answers the rest of the app personalizes from.
+  function onSaveFinancial(oData) {
+    var base = blobRef.current.onboardingData || {};
+    var next = {}; for (var k in base) next[k] = base[k];
+    for (var k2 in oData) next[k2] = oData[k2];
+    setOnboardingData(next);
+    save({ onboardingData: next });
+  }
   function onSaveEntryMethod(m) { var v = m === "import" ? "import" : "manual"; setEntryMethod(v); save({ entryMethod: v }); }
   function onSavePeriodMode(m) { var v = m === "rolling" ? "rolling" : m === "custom" ? "custom" : "calendar"; setPeriodMode(v); save({ periodMode: v }); }
   function onSaveSplitPlan(p) { var v = splitPlanOf(p); setSplitPlan(v); save({ splitPlan: v }); }
@@ -28642,6 +30091,39 @@ export default function App() {
       setSavings([ef]);
       merged.savings = [ef];
     }
+    // The Q9 goal becomes a REAL goal - the user named it, gave it a number and
+    // a timeline; forgetting it was the old behavior. Skipped when a goal with
+    // that name already exists (retakes must not duplicate).
+    var goalTarget = parseFloat(oData && oData.goalAmt);
+    var newGoalId = null;
+    if (oData && oData.goalName && goalTarget > 0) {
+      var curGoals = merged.goals || [];
+      var dupe = curGoals.filter(function(g) { return (g.name || "").toLowerCase() === oData.goalName.toLowerCase(); })[0];
+      if (dupe) { newGoalId = dupe.id; }
+      else {
+        var ng = { id: Date.now() + 2, name: oData.goalName, target: goalTarget, saved: 0, deadline: timelineToDeadline(oData.timeline) };
+        merged.goals = curGoals.concat([ng]);
+        setGoals(merged.goals);
+        newGoalId = ng.id;
+      }
+    }
+    // Persist the money-story numbers as the recovery plan - the same math the
+    // onboarding cinema showed, made durable so the app can keep the promise
+    // (weekly review, RecoveryPulse, recovered-so-far all read from this).
+    var story = deriveMoneyStory({
+      income: oData && oData.income, overspend: oData && oData.overspendEst,
+      leaks: leakIdsOf(oData), goalAmt: oData && oData.goalAmt
+    });
+    var rpNew = {
+      v: 1, startedAt: new Date().toISOString().slice(0, 10),
+      monthlyLeak: story.mode === "full" ? story.monthlyLeak : 0,
+      recoverTarget: story.mode === "full" ? story.recoverMo : 0,
+      leakSources: leakIdsOf(oData),
+      goalId: newGoalId,
+      baselineObserved: null, baselineComputedAt: null
+    };
+    merged.recoveryPlan = rpNew;
+    setRecoveryPlan(rpNew);
     blobRef.current = merged;
     flushSave();
   }
@@ -28886,7 +30368,7 @@ export default function App() {
   if (!user) return <AuthScreen onLogin={handleLogin} />;
 
   if (!onboardingDone) {
-    return <OnboardingScreen username={user} dob={userDob} lang={lang} richardNotes={richardNotes} onComplete={handleOnboardingComplete} />;
+    return <OnboardingScreen username={user} dob={userDob} lang={lang} richardNotes={richardNotes} initialData={onboardingData} onComplete={handleOnboardingComplete} />;
   }
 
   if (!catchUpDone) {
@@ -28922,7 +30404,7 @@ export default function App() {
   // The five swipeable main tabs, produced by id so both the visible page and the
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
-    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
+    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} richPlan={richPlan} recoveryPlan={recoveryPlan} personalReviews={personalReviews} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} onboardingData={onboardingData} coachTone={coachTone} onSaveBudgets={onSaveBudgets} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
     if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
@@ -28936,7 +30418,7 @@ export default function App() {
   // The snapshot re-scores the whole ledger, so it is built only for the two
   // screens that display it rather than on every keystroke anywhere in the app.
   function motivData() {
-    return { tx: tx, budgets: budgets, goals: goals, savings: savings, businesses: businesses, investing: investing, categories: categories, folders: folders, debts: debts, onboardingData: onboardingData, motivation: motivation };
+    return { tx: tx, budgets: budgets, goals: goals, savings: savings, businesses: businesses, investing: investing, categories: categories, folders: folders, debts: debts, onboardingData: onboardingData, motivation: motivation, foundMoney: foundMoney, decisions: decisions, recoveryPlan: recoveryPlan, personalReviews: personalReviews };
   }
   var motivTab = currentTab === "profile" || currentTab === "badges";
   var motivSnap = motivTab ? motivSnapshot(motivData()) : null;
@@ -29075,7 +30557,7 @@ export default function App() {
         {currentTab === "person" && <FriendView uid={openPerson} person={social.following.concat(social.followers).filter(function(p) { return p.uid === openPerson; })[0] || null} stats={(social.following.filter(function(p) { return p.uid === openPerson; })[0] || {}).stats || null} household={household} myUid={accountKey} tx={tx} categories={categories} onBack={function() { setTab(prevTabRef.current === "social" ? "social" : "profile"); }} />}
         {currentTab === "social" && <SocialView social={social} onOpen={function(uid) { prevTabRef.current = "social"; setOpenPerson(uid); setTab("person"); }} onFind={function() { prevTabRef.current = "social"; setTab("findPeople"); }} onAccept={onAcceptFollow} onDecline={onDeclineFollow} onRemoveFollower={onRemoveFollower} onBack={function() { setTab("profile"); }} />}
         {currentTab === "findPeople" && <FindPeopleView myHandle={social.handle} myUid={accountKey} followingUids={social.following.map(function(p) { return p.uid; })} onClaimHandle={onClaimHandle} onFind={CLOUD.findByHandle} onRequest={onRequestFollow} onCopy={copyText} onBack={function() { setTab("social"); }} />}
-        {currentTab === "settings" && <SettingsView user={user} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} richardInstructions={richardInstructions} bankSync={bankSync} householdName={household ? household.name : null} inviteCount={invites.length} debtCount={debts.length} onBack={function() { setTab("profile"); }} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "settings"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "settings"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "settings"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "settings"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "settings"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "settings"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "settings"; setTab("periodMode"); }} onViewBankSync={function() { prevTabRef.current = "settings"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "settings"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "settings"; setTab("editOpeningBalance"); }} onViewCollab={function() { prevTabRef.current = "settings"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "settings"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
+        {currentTab === "settings" && <SettingsView user={user} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} richardInstructions={richardInstructions} bankSync={bankSync} householdName={household ? household.name : null} inviteCount={invites.length} debtCount={debts.length} onBack={function() { setTab("profile"); }} onViewPlan={function() { setTab("plan"); }} coachTone={coachTone} onViewCoachTone={function() { prevTabRef.current = "settings"; setTab("coachTone"); }} onViewInstructions={function() { prevTabRef.current = "settings"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "settings"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "settings"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "settings"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "settings"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "settings"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "settings"; setTab("periodMode"); }} onViewBankSync={function() { prevTabRef.current = "settings"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "settings"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "settings"; setTab("editOpeningBalance"); }} onViewCollab={function() { prevTabRef.current = "settings"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "settings"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
         {currentTab === "analysis" && <FullAnalysisView tx={tx} categories={categories} folders={folders} splitPlan={splitPlan} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} username={user} analysis={freshAnalysis ? freshAnalysis.data : null} onBack={function() { setTab("advisor"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} onAccountDeleted={handleLogout} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
@@ -29086,6 +30568,7 @@ export default function App() {
         {currentTab === "language" && <LanguageView lang={lang} onLangChange={onSaveLang} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "appearance" && <AppearanceView theme={theme} onThemeChange={onSaveTheme} darkMode={darkMode} onDarkModeChange={onSaveDarkMode} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "coachTone" && <CoachToneView coachTone={coachTone} onCoachToneChange={onSaveCoachTone} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "periodMode" && <PeriodModeView periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onPeriodModeChange={onSavePeriodMode} onPeriodCustomChange={onSavePeriodCustom} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "bankSync" && <BankSyncView bankSync={bankSync} onEnable={onEnableBankSync} onDisable={onDisableBankSync} leumiFinteka={leumiFinteka} onConnectLeumi={onConnectLeumiFinteka} onDisconnectLeumi={onDisconnectLeumiFinteka} onSyncLeumiNow={onSyncLeumiFintekaNow} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} />}
