@@ -1090,9 +1090,106 @@ for (var _obc in ONBOARD_STRINGS) {
   for (var _obk in ONBOARD_STRINGS[_obc]) TRANSLATIONS[_obc][_obk] = ONBOARD_STRINGS[_obc][_obk];
 }
 
+// Spending Watch strings: the personalized leak detectors' finding copy. The
+// engine emits i18n keys + params for these (unlike the four legacy detectors,
+// whose pre-formatted English strings are frozen by the dismissal contract).
+var WATCH_STRINGS = {
+  en: {
+    fmwDeliveryTitle: "{n} delivery orders this month",
+    fmwDeliverySub: "{amt} on food delivery",
+    fmwDeliverySubBase: "{amt} on food delivery vs {base} in a usual month",
+    fmwBleedTitle: "{n} small buys quietly added up",
+    fmwBleedSub: "{amt} this month in purchases under {small} - about half is usually recoverable",
+    fmwImpulseTitle: "{n} impulse buys in one day ({date})",
+    fmwImpulseSub: "{amt} in a single day",
+    fmwImpulseSubLate: "{amt} in a single day, mostly late at night",
+    fmwGoingOutTitle: "Going out is running {pct}% hot",
+    fmwGoingOutSub: "{amt} on weekend outings vs {base} usual - {extra} over",
+    fmwShopTitle: "Shopping has crept up three months straight",
+    fmwShopSub: "{amt} this month vs {was} three months ago",
+    fmwYourLeak: "You told Richy this is where money leaks - {leak}",
+    fmwYourLeakTough: "That's the {leak} leak you said you wanted to stop",
+    fmwSetCap: "Cap {cat} at {amt}/mo",
+    fmwCapSet: "Cap set",
+    fmwMuteType: "Don't show these",
+    fmwNewSince: "{n} new since your last visit",
+  },
+  he: {
+    fmwDeliveryTitle: "{n} הזמנות משלוח החודש",
+    fmwDeliverySub: "{amt} על משלוחי אוכל",
+    fmwDeliverySubBase: "{amt} על משלוחי אוכל לעומת {base} בחודש רגיל",
+    fmwBleedTitle: "{n} קניות קטנות שהצטברו בשקט",
+    fmwBleedSub: "{amt} החודש בקניות מתחת ל-{small} - בדרך כלל אפשר להחזיר בערך חצי",
+    fmwImpulseTitle: "{n} קניות אימפולסיביות ביום אחד ({date})",
+    fmwImpulseSub: "{amt} ביום אחד",
+    fmwImpulseSubLate: "{amt} ביום אחד, רובן בשעות הלילה",
+    fmwGoingOutTitle: "הבילויים רצים {pct}% מעל הרגיל",
+    fmwGoingOutSub: "{amt} על בילויי סוף שבוע לעומת {base} רגיל - {extra} מעל",
+    fmwShopTitle: "הקניות עולות כבר שלושה חודשים ברצף",
+    fmwShopSub: "{amt} החודש לעומת {was} לפני שלושה חודשים",
+    fmwYourLeak: "אמרת לריצ'י שכאן הכסף דולף - {leak}",
+    fmwYourLeakTough: "זו דליפת ה{leak} שאמרת שרצית לעצור",
+    fmwSetCap: "להגביל את {cat} ל-{amt} לחודש",
+    fmwCapSet: "התקרה נקבעה",
+    fmwMuteType: "אל תציג כאלה יותר",
+    fmwNewSince: "{n} חדשות מאז הביקור האחרון",
+  },
+  ar: {
+    fmwDeliveryTitle: "{n} طلبات توصيل هذا الشهر",
+    fmwDeliverySub: "{amt} على توصيل الطعام",
+    fmwDeliverySubBase: "{amt} على توصيل الطعام مقابل {base} في شهر عادي",
+    fmwBleedTitle: "{n} مشتريات صغيرة تراكمت بهدوء",
+    fmwBleedSub: "{amt} هذا الشهر في مشتريات أقل من {small} - عادة يمكن استرداد النصف تقريباً",
+    fmwImpulseTitle: "{n} مشتريات اندفاعية في يوم واحد ({date})",
+    fmwImpulseSub: "{amt} في يوم واحد",
+    fmwImpulseSubLate: "{amt} في يوم واحد، معظمها في وقت متأخر من الليل",
+    fmwGoingOutTitle: "مصاريف الخروج أعلى بنسبة {pct}%",
+    fmwGoingOutSub: "{amt} على الخروج في عطلة نهاية الأسبوع مقابل {base} المعتاد - {extra} زيادة",
+    fmwShopTitle: "التسوق يرتفع منذ ثلاثة أشهر متتالية",
+    fmwShopSub: "{amt} هذا الشهر مقابل {was} قبل ثلاثة أشهر",
+    fmwYourLeak: "أخبرت ريتشي أن المال يتسرب من هنا - {leak}",
+    fmwYourLeakTough: "هذا تسرب {leak} الذي قلت إنك تريد إيقافه",
+    fmwSetCap: "حدّد سقف {cat} عند {amt} شهرياً",
+    fmwCapSet: "تم تحديد السقف",
+    fmwMuteType: "لا تعرض مثل هذه",
+    fmwNewSince: "{n} جديدة منذ زيارتك الأخيرة",
+  },
+  ru: {
+    fmwDeliveryTitle: "{n} заказов доставки в этом месяце",
+    fmwDeliverySub: "{amt} на доставку еды",
+    fmwDeliverySubBase: "{amt} на доставку еды против {base} в обычный месяц",
+    fmwBleedTitle: "{n} мелких покупок незаметно накопились",
+    fmwBleedSub: "{amt} за месяц на покупки до {small} - обычно около половины можно вернуть",
+    fmwImpulseTitle: "{n} импульсивных покупок за один день ({date})",
+    fmwImpulseSub: "{amt} за один день",
+    fmwImpulseSubLate: "{amt} за один день, в основном поздно ночью",
+    fmwGoingOutTitle: "Траты на развлечения выше обычного на {pct}%",
+    fmwGoingOutSub: "{amt} на выходные против {base} обычно - {extra} сверху",
+    fmwShopTitle: "Шопинг растёт три месяца подряд",
+    fmwShopSub: "{amt} в этом месяце против {was} три месяца назад",
+    fmwYourLeak: "Вы сказали Richy, что деньги утекают здесь - {leak}",
+    fmwYourLeakTough: "Это та утечка ({leak}), которую вы хотели остановить",
+    fmwSetCap: "Ограничить {cat} до {amt}/мес",
+    fmwCapSet: "Лимит установлен",
+    fmwMuteType: "Больше не показывать такие",
+    fmwNewSince: "{n} новых с последнего визита",
+  },
+};
+for (var _fwc in WATCH_STRINGS) {
+  if (!TRANSLATIONS[_fwc]) continue;
+  for (var _fwk in WATCH_STRINGS[_fwc]) TRANSLATIONS[_fwc][_fwk] = WATCH_STRINGS[_fwc][_fwk];
+}
+
 function tr(key) {
   var code = _lang.code || "en";
   return (TRANSLATIONS[code] && TRANSLATIONS[code][key]) || (TRANSLATIONS.en[key]) || key;
+}
+
+// tr() + {param} substitution in one call. Every param occurrence is replaced.
+function trFill(key, params) {
+  var s = tr(key);
+  if (params) for (var k in params) s = s.split("{" + k + "}").join(params[k]);
+  return s;
 }
 
 function fmtCur(sym, n) {
@@ -7547,12 +7644,41 @@ function FoundMoney(props) {
   var cats = props.categories || [];
   var fm = props.foundMoney || { tally: 0, dismissed: [], acted: [] };
   var dismissed = fm.dismissed || [];
+  var muted = fm.muted || [];
   var tally = fm.tally || 0;
+  var tone = props.coachTone || "direct";
 
-  // Recompute findings from real tx each render, drop ones already resolved.
-  var findings = findMoney(tx, cats).filter(function(f) { return dismissed.indexOf(f.id) === -1; });
+  // Recompute findings from real tx each render - personalized by the leak
+  // sources the user declared in onboarding - then drop resolved ones and any
+  // detector type the user muted. Watch ids are month-scoped, so a dismiss
+  // naturally means "this month"; mute is the durable opt-out.
+  var leakIds = leakIdsOf(props.onboardingData);
+  var findings = findMoney(tx, cats, { leakIds: leakIds }).filter(function(f) {
+    return dismissed.indexOf(f.id) === -1 && muted.indexOf(f.type) === -1;
+  });
   var leakCount = findings.length;
   var recoverable = findings.reduce(function(s, f) { return s + (f.annual || 0); }, 0);
+  // "N new since last visit": ids that weren't on screen when the sheet was
+  // last closed. First-ever visit shows no badge (everything is "new" anyway).
+  var seenIds = (fm.lastSeen && fm.lastSeen.ids) || null;
+  var newCount = seenIds ? findings.filter(function(f) { return seenIds.indexOf(f.id) === -1; }).length : 0;
+
+  // Rendered copy: watch findings carry i18n keys + params; the four legacy
+  // detectors keep their pre-formatted English strings.
+  function fmText(f, which) {
+    var key = which === "title" ? f.titleKey : f.subKey;
+    return key ? trFill(key, which === "title" ? f.titleParams : f.subParams) : (which === "title" ? f.title : f.subtitle);
+  }
+  function leakNameOf(id) {
+    var o = LEAK_OPTIONS.filter(function(l) { return l.id === id; })[0];
+    return o ? tr(o.tKey) : id;
+  }
+  function writeLastSeen() {
+    if (!props.onSaveFoundMoney) return;
+    var next = {}; for (var k in fm) next[k] = fm[k];
+    next.lastSeen = { at: new Date().toISOString().slice(0, 10), ids: findings.map(function(f) { return f.id; }) };
+    props.onSaveFoundMoney(next);
+  }
 
   function richardSystem(extra) {
     var custom = richardUserCtx(props.richardInstructions);
@@ -7566,10 +7692,16 @@ function FoundMoney(props) {
   useEffect(function() {
     if (!open || narr || narrLoading || findings.length === 0) return;
     setNarrLoading(true);
-    var lines = findings.slice(0, 8).map(function(f) { return "- " + f.title + " (" + f.subtitle + ")"; }).join("\n");
+    var lines = findings.slice(0, 8).map(function(f) { return "- " + f.title + " (" + f.subtitle + ")" + (f.leakMatch ? " [matches a leak source the user self-declared at signup]" : ""); }).join("\n");
     var totalLine = recoverable > 0 ? ("\nTotal recoverable if acted on: " + dollars(recoverable) + " per year.") : "";
-    var system = richardSystem("You are Richard, the warm, sharp money guide inside the Richy app. The app has ALREADY audited the user's transactions and found the potential leaks listed below (forgotten subscriptions, price hikes, double charges, category spikes). The figures are exact - never invent or change a number. In 2-3 short sentences speak directly to the user: frame what was found and the single highest-impact move to make first. Do not re-list every item - they see the list below your note." + RICHARD_FORMAT);
-    callClaude([{ role: "user", content: "The audit found:\n" + lines + totalLine + "\n\nWrite the short intro." }], system, 220, function(err, text) {
+    var declaredLine = leakIds.length ? ("\nAt signup the user said their money leaks through: " + leakIds.map(function(id) { var o = LEAK_OPTIONS.filter(function(l) { return l.id === id; })[0]; return o ? o.label : id; }).join(", ") + ".") : "";
+    var toneLine = tone === "tough"
+      ? " Be a firm accountability coach: direct about the pattern they said they wanted to stop, but never insulting or shaming."
+      : tone === "soft"
+        ? " Keep the framing gentle and neutral - present the numbers without referring back to what the user said about their own habits."
+        : " When a finding matches a leak source the user declared, tie it to their own words - honest and personal, never shaming.";
+    var system = richardSystem("You are Richard, the warm, sharp money guide inside the Richy app. The app has ALREADY audited the user's transactions and found the potential leaks listed below (forgotten subscriptions, price hikes, double charges, category spikes, delivery-order runs, impulse-buy clusters, going-out and shopping creep). The figures are exact - never invent or change a number. In 2-3 short sentences speak directly to the user: frame what was found and the single highest-impact move to make first. Do not re-list every item - they see the list below your note." + toneLine + RICHARD_FORMAT);
+    callClaude([{ role: "user", content: "The audit found:\n" + lines + totalLine + declaredLine + "\n\nWrite the short intro." }], system, 220, function(err, text) {
       setNarrLoading(false);
       if (err || !text) {
         setNarr(leakCount === 1
@@ -7583,18 +7715,47 @@ function FoundMoney(props) {
 
   // Resolve a finding: append its id to dismissed and, when the user confirms they
   // acted, add the recovered amount to the running tally. Persists immediately.
-  function resolve(f, recovered) {
+  // Spreads the stored object so muted/lastSeen (and future keys) survive.
+  function resolve(f, recovered, action) {
     var credit = recovered || 0;
     if (props.onSaveFoundMoney) {
-      props.onSaveFoundMoney({
-        tally: round2(tally + credit),
-        dismissed: dismissed.concat([f.id]),
-        acted: credit > 0 ? (fm.acted || []).concat([{ id: f.id, title: f.title, amount: credit, date: new Date().toISOString().slice(0, 10) }]) : (fm.acted || [])
-      });
+      var next = {}; for (var k in fm) next[k] = fm[k];
+      next.tally = round2(tally + credit);
+      next.dismissed = dismissed.concat([f.id]);
+      next.acted = (credit > 0 || action)
+        ? (fm.acted || []).concat([{ id: f.id, title: f.title, amount: credit, date: new Date().toISOString().slice(0, 10), action: action || "" }])
+        : (fm.acted || []);
+      props.onSaveFoundMoney(next);
     }
     if (draft && draft.id === f.id) setDraft(null);
   }
   function creditOf(f) { return f.annual > 0 ? f.annual : f.amount; }
+  // Durable opt-out for one watch detector ("don't show going-out findings").
+  function muteType(f) {
+    if (!props.onSaveFoundMoney) return;
+    var next = {}; for (var k in fm) next[k] = fm[k];
+    next.muted = muted.concat([f.type]);
+    props.onSaveFoundMoney(next);
+  }
+  // "Set a cap": create or tighten the category budget at the finding's
+  // suggested level, then clear the card. Only findings that map cleanly onto
+  // one category (going out -> Entertainment, shopping creep -> Shopping)
+  // carry a capSuggest.
+  function applyCap(f) {
+    if (!props.onSaveBudgets || !f.catId || !f.capSuggest) return;
+    var budgets = props.budgets || [];
+    var existing = budgets.filter(function(b) { return b.catId === f.catId; })[0];
+    var next;
+    if (!existing) next = budgets.concat([{ catId: f.catId, category: f.categoryName, limit: f.capSuggest, dir: "cap" }]);
+    else next = budgets.map(function(b) {
+      if (b.catId !== f.catId) return b;
+      var nb = {}; for (var k in b) nb[k] = b[k];
+      nb.limit = Math.min(b.limit || f.capSuggest, f.capSuggest);
+      return nb;
+    });
+    props.onSaveBudgets(next);
+    resolve(f, 0, "cap");
+  }
 
   function makeDraft(f) {
     setCopied(false);
@@ -7629,13 +7790,18 @@ function FoundMoney(props) {
     if (t === "recurring") return { icon: "refresh", color: T.orange };
     if (t === "hike") return { icon: "up", color: T.red };
     if (t === "duplicate") return { icon: "credit", color: T.gold };
+    if (t === "delivery") return { icon: "food", color: T.orange };
+    if (t === "bleed") return { icon: "coins", color: T.gold };
+    if (t === "impulse") return { icon: "cart", color: T.red };
+    if (t === "goingout") return { icon: "coffee", color: T.btn };
+    if (t === "shopcreep") return { icon: "shirt", color: T.red };
     return { icon: "chart", color: T.btn };   // jump
   }
   function dismissLabel(t) {
     if (t === "recurring") return tr("fmKeepIt");
     if (t === "duplicate") return tr("fmLooksFine");
-    if (t === "jump") return tr("fmGotIt");
-    return tr("dismiss");
+    if (t === "hike") return tr("dismiss");
+    return tr("fmGotIt");
   }
 
   // Nothing to show and nothing ever found -> stay out of the way entirely.
@@ -7663,7 +7829,10 @@ function FoundMoney(props) {
           <CatBadge icon="search" color={T.orange} size={40} soft={true} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{tr(leakCount === 1 ? "fmSpottedLeakSing" : "fmSpottedLeakPl").replace("{n}", leakCount)}</div>
-            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{recoverable > 0 ? tr("fmAboutAmtYear").replace("{amt}", dollars(recoverable)) : tr("fmTapReview")}</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>
+              {recoverable > 0 ? tr("fmAboutAmtYear").replace("{amt}", dollars(recoverable)) : tr("fmTapReview")}
+              {newCount > 0 && <span style={{ color: T.orange, fontWeight: 700 }}>{" · " + trFill("fmwNewSince", { n: newCount })}</span>}
+            </div>
           </div>
           <SVGIcon id="chevron" size={18} color={T.ink3} />
         </button>
@@ -7677,7 +7846,7 @@ function FoundMoney(props) {
         </div>
       )}
 
-      <Overlay open={open} onClose={function() { setOpen(false); }} title={tr("fmTitle")}>
+      <Overlay open={open} onClose={function() { setOpen(false); writeLastSeen(); }} title={tr("fmTitle")}>
         <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
           <div style={{ flex: 1, background: T.greenDim, borderRadius: 14, padding: "12px 14px" }}>
             <div style={{ fontSize: 9.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em" }}>{tr("fmRecoverableYear")}</div>
@@ -7710,15 +7879,24 @@ function FoundMoney(props) {
                 <IconBadge icon={st.icon} bg={st.color} size={34} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-                    <span style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{f.title}</span>
+                    <span style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{fmText(f, "title")}</span>
                     {f.annual > 0 && <span style={{ fontSize: 13, fontWeight: 700, color: T.green, flexShrink: 0 }}>{dollars(f.annual) + "/yr"}</span>}
                   </div>
-                  <div style={{ fontSize: 12, color: T.ink3, marginTop: 3, lineHeight: 1.45 }}>{f.subtitle}</div>
+                  <div style={{ fontSize: 12, color: T.ink3, marginTop: 3, lineHeight: 1.45 }}>{fmText(f, "sub")}</div>
+                  {f.leakMatch && tone !== "soft" && (
+                    <div style={{ display: "inline-block", marginTop: 7, fontSize: 11, fontWeight: 700, color: T.orange, background: "rgba(200,103,58,0.1)", borderRadius: 7, padding: "3px 8px" }}>
+                      {trFill(tone === "tough" ? "fmwYourLeakTough" : "fmwYourLeak", { leak: leakNameOf(f.leakId) })}
+                    </div>
+                  )}
 
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 10 }}>
                     {canDraft && <button onClick={function() { makeDraft(f); }} style={primaryBtn}>{f.type === "hike" ? tr("fmDraftPriceMatch") : tr("fmDraftCancellation")}</button>}
                     {f.type === "duplicate" && <button onClick={function() { resolve(f, f.amount); }} style={primaryBtn}>{tr("fmCountRecovered")}</button>}
+                    {f.capSuggest > 0 && f.catId && props.onSaveBudgets && (
+                      <button onClick={function() { applyCap(f); }} style={primaryBtn}>{trFill("fmwSetCap", { cat: f.categoryName, amt: dollars(f.capSuggest) })}</button>
+                    )}
                     <button onClick={function() { resolve(f, 0); }} style={ghostBtn}>{dismissLabel(f.type)}</button>
+                    {f.leakId && <button onClick={function() { muteType(f); }} style={ghostBtn}>{tr("fmwMuteType")}</button>}
                   </div>
 
                   {draft && draft.id === f.id && (
@@ -9233,7 +9411,7 @@ function Overview(props) {
         );
       })}
 
-      <FoundMoney tx={tx} categories={cats} foundMoney={props.foundMoney} onSaveFoundMoney={props.onSaveFoundMoney} richardInstructions={props.richardInstructions} lang={props.lang} />
+      <FoundMoney tx={tx} categories={cats} foundMoney={props.foundMoney} onSaveFoundMoney={props.onSaveFoundMoney} onboardingData={props.onboardingData} coachTone={props.coachTone} budgets={props.budgets} onSaveBudgets={props.onSaveBudgets} richardInstructions={props.richardInstructions} lang={props.lang} />
 
       <BusinessPulse businesses={bizAccts} onOpenBusiness={props.onOpenBusiness} />
 
@@ -9741,7 +9919,10 @@ function normalizeMerchant(label) {
   var s = (label || "").toLowerCase();
   s = s.replace(/[#*].*$/, " ");                 // drop store/ref after # or *
   s = s.replace(/\d{2,}/g, " ");                 // drop long digit runs (ids/dates)
-  s = s.replace(/[^a-z0-9&]+/g, " ");            // punctuation -> space
+  // Keep Hebrew and Cyrillic letters: stripping them collapsed every
+  // Hebrew/Russian-labeled merchant to "" so those charges could never group
+  // into findings. Latin keys are unchanged, so existing rec: ids still match.
+  s = s.replace(/[^a-z0-9&֐-׿Ѐ-ӿ]+/g, " ");  // punctuation -> space
   s = s.replace(/\b(inc|llc|ltd|co|com|www|the|payment|pmt|recurring|autopay|pos|purchase|debit|card)\b/g, " ");
   return s.replace(/\s+/g, " ").trim();
 }
@@ -9750,6 +9931,112 @@ function looksLikeSubscription(label) {
   var s = (label || "").toLowerCase();
   for (var i = 0; i < SUBSCRIPTION_HINTS.length; i++) { if (s.indexOf(SUBSCRIPTION_HINTS[i]) !== -1) return true; }
   return false;
+}
+
+// ===== SPENDING WATCH =========================================================
+// Extends the Found Money audit with detectors for the leaks users actually
+// declare in onboarding Q6: food delivery, impulse buys, going out, shopping.
+// Same rules as the base engine: deterministic, computed from the user's own
+// transactions, decisions-only persistence, stable ids. A detector matching a
+// self-declared leak source runs with looser thresholds and its findings rank
+// first - that IS the personalization.
+
+// Delivery platforms, Latin + Hebrew (Israeli market: Wolt / Ten Bis / Cibus /
+// Mishloha are the big four). Matched against the raw lowercased label, before
+// normalizeMerchant strips anything.
+var DELIVERY_HINTS = ["wolt", "uber eats", "ubereats", "doordash", "grubhub", "deliveroo", "10bis", "tenbis", "ten bis", "cibus", "mishloha", "postmates", "seamless", "just eat", "justeat", "foodora", "glovo", "domino", "וולט", "תן ביס", "תןביס", "משלוחה", "סיבוס", "משלוח"];
+// Venues that read as a night/afternoon out rather than groceries. Latin +
+// Hebrew + Cyrillic; deliberately word-ish fragments, not brand names.
+var GOING_OUT_HINTS = ["bar ", " bar", "pub", "club", "restaurant", "bistro", "cafe", "coffee", "diner", "izakaya", "taproom", "brewery", "cocktail", "lounge", "karaoke", "מסעדה", "בר ", "פאב", "קפה", "מועדון", "ресторан", "бар", "кафе", "паб", "клуб"];
+
+function looksLikeDelivery(t) {
+  var s = (t && t.label || "").toLowerCase();
+  if (!s) return false;
+  for (var i = 0; i < DELIVERY_HINTS.length; i++) { if (s.indexOf(DELIVERY_HINTS[i]) !== -1) return true; }
+  return false;
+}
+function looksLikeGoingOut(t) {
+  var s = (t && t.label || "").toLowerCase();
+  if (!s) return false;
+  for (var i = 0; i < GOING_OUT_HINTS.length; i++) { if (s.indexOf(GOING_OUT_HINTS[i]) !== -1) return true; }
+  return false;
+}
+
+// Detection thresholds. `declared` applies when the user named this leak in
+// onboarding - looser, because they asked us to watch it. `noidea` (or no
+// answer) runs everything at defaults.
+var WATCH_TUNING = {
+  delivery: { default: { minCount: 6,  ratio: 1.30 }, declared: { minCount: 4, ratio: 1.15 } },
+  bleed:    { default: { minCount: 12, share: 0.08 }, declared: { minCount: 8, share: 0.05 } },
+  impulse:  { default: { minBuys: 3,  mult: 1.5 },    declared: { minBuys: 2, mult: 1.5 } },
+  goingout: { default: { ratio: 1.35 },               declared: { ratio: 1.20 } },
+  shopping: { default: { ratio: 1.30 },               declared: { ratio: 1.20 } }
+};
+
+// Entries store only a date (YYYY-MM-DD) - no clock. Manual entries mint
+// id = Date.now() at logging time, so when that timestamp lands on the entry's
+// own date the hour is an honest "logged at purchase" proxy. Returns null
+// otherwise; callers may use the hour for phrasing but never to fire a finding.
+function entryClockOf(t) {
+  if (!t || typeof t.id !== "number" || t.id < 1e12) return null;
+  var d = new Date(t.id);
+  if (isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== t.date) return null;
+  return d.getHours();
+}
+
+// Resolved category name for grouping ("Shopping", "Food", ...). Falls back to
+// the denormalized name stored on the tx, then Other.
+function watchCatName(t, cats) {
+  var c = catById(cats, t.catId);
+  return (c && c.name) || t.category || "Other";
+}
+function isDiscretionary(t, cats) {
+  var n = watchCatName(t, cats);
+  return n === "Shopping" || n === "Entertainment" || n === "Other";
+}
+// UTC day-of-week for a stored date. 0=Sun..6=Sat.
+function watchDow(dateISO) { return new Date(dateISO + "T12:00:00Z").getUTCDay(); }
+
+// One O(n) sweep over auditable expenses feeding every Spending Watch detector:
+// per-month category sums, per-month delivery and going-out slices, per-day
+// transaction lists for the current month, and the overall amount distribution.
+function watchIndex(tx, cats, todayISO) {
+  var ym = (todayISO || "").slice(0, 7);
+  var ix = { byMonthCat: {}, delivery: {}, goingOut: {}, byDayCur: {}, amounts: [] };
+  (tx || []).forEach(function(t) {
+    if (!isAuditableExpense(t, todayISO)) return;
+    var m = (t.date || "").slice(0, 7);
+    if (!m) return;
+    var name = watchCatName(t, cats);
+    var mc = ix.byMonthCat[m] = ix.byMonthCat[m] || {};
+    mc[name] = (mc[name] || 0) + t.amount;
+    ix.amounts.push(t.amount);
+    if (m === ym) (ix.byDayCur[t.date] = ix.byDayCur[t.date] || []).push(t);
+    if (looksLikeDelivery(t)) {
+      var d = ix.delivery[m] = ix.delivery[m] || { count: 0, sum: 0, merchants: {} };
+      d.count++; d.sum += t.amount;
+      var mk = t.label || "delivery";
+      d.merchants[mk] = (d.merchants[mk] || 0) + t.amount;
+    }
+    var dow = watchDow(t.date);
+    var weekendish = dow === 5 || dow === 6 || (dow === 4 && (_lang.code === "he"));
+    if (weekendish && (name === "Entertainment" || (name === "Food" && looksLikeGoingOut(t)))) {
+      ix.goingOut[m] = (ix.goingOut[m] || 0) + t.amount;
+    }
+  });
+  return ix;
+}
+
+// Average of the up-to-3 prior months' values from a {ym: number} map (or a
+// picker fn). Needs at least 2 non-zero months to count as a baseline.
+function watchBaseline(ym, pick) {
+  var vals = [];
+  for (var i = 1; i <= 3; i++) {
+    var v = pick(ymShift(ym, i)) || 0;
+    if (v > 0) vals.push(v);
+  }
+  if (vals.length < 2) return 0;
+  return vals.reduce(function(s, v) { return s + v; }, 0) / vals.length;
 }
 
 // A real outflow worth auditing: not opening balance, internal transfer, future
@@ -9900,6 +10187,83 @@ function detectCategoryJumps(tx, cats) {
   return out;
 }
 
+// -- Spending Watch detectors (see the header above watchIndex) --------------
+
+// Food-delivery creep: order count this month, or month spend well above the
+// trailing average. `extra` above baseline is the recoverable figure; with no
+// baseline yet the finding is informational (annual 0), like a jump.
+function detectDeliveryCreep(ix, ym, tune) {
+  var cur = ix.delivery[ym];
+  if (!cur || cur.count === 0) return null;
+  var base = watchBaseline(ym, function(m) { return (ix.delivery[m] || {}).sum || 0; });
+  if (cur.count < tune.minCount && !(base > 0 && cur.sum >= base * tune.ratio)) return null;
+  var top = "", topSum = 0;
+  for (var k in cur.merchants) { if (cur.merchants[k] > topSum) { topSum = cur.merchants[k]; top = k; } }
+  return { count: cur.count, sum: round2(cur.sum), base: round2(base), extra: round2(base > 0 ? Math.max(0, cur.sum - base) : 0), top: top };
+}
+
+// Small-ticket bleed: many sub-`small` purchases summing to a real share of the
+// month. Recurring merchants are excluded so subscriptions don't double-count.
+// `small` is currency-relative (share of the user's own median expense), never
+// a hardcoded dollar figure - this is a four-currency app.
+function detectSmallTicketBleed(tx, ym, todayISO, ix, recurKeys, small, tune) {
+  var items = (tx || []).filter(function(t) {
+    return isAuditableExpense(t, todayISO) && (t.date || "").slice(0, 7) === ym && t.amount > 0 && t.amount <= small && !recurKeys[normalizeMerchant(t.label)];
+  });
+  if (items.length < tune.minCount) return null;
+  var sum = items.reduce(function(s, t) { return s + t.amount; }, 0);
+  var mc = ix.byMonthCat[ym] || {};
+  var monthTotal = 0; for (var k in mc) monthTotal += mc[k];
+  if (monthTotal <= 0 || sum < monthTotal * tune.share) return null;
+  return { n: items.length, sum: round2(sum), small: round2(small) };
+}
+
+// Impulse clusters: days with several discretionary purchases that together
+// blow past the user's own median day. At most the 2 largest days per month so
+// the list never turns into a diary. Late-night is phrasing only (entryClockOf).
+function detectImpulseClusters(ix, cats, tune) {
+  var days = Object.keys(ix.byDayCur);
+  var medDay = fmMedian(days.map(function(d) {
+    return ix.byDayCur[d].reduce(function(s, t) { return s + t.amount; }, 0);
+  }));
+  var out = [];
+  days.forEach(function(d) {
+    var disc = ix.byDayCur[d].filter(function(t) { return isDiscretionary(t, cats); });
+    if (disc.length < tune.minBuys) return;
+    var sum = disc.reduce(function(s, t) { return s + t.amount; }, 0);
+    if (medDay > 0 && sum < medDay * tune.mult) return;
+    var late = disc.filter(function(t) { var h = entryClockOf(t); return h !== null && (h >= 22 || h <= 2); }).length;
+    out.push({ date: d, n: disc.length, sum: round2(sum), late: late * 2 >= disc.length });
+  });
+  out.sort(function(a, b) { return b.sum - a.sum; });
+  return out.slice(0, 2);
+}
+
+// Going-out spend (weekend Entertainment + venue-labeled Food) vs the same
+// window's own trailing average. Needs a baseline - a first month out is not a
+// pattern - and a floor so a rounding-error "20% over" can't fire.
+function detectGoingOut(ix, ym, tune, floor) {
+  var cur = ix.goingOut[ym] || 0;
+  if (cur <= 0) return null;
+  var base = watchBaseline(ym, function(m) { return ix.goingOut[m] || 0; });
+  if (base <= 0) return null;
+  var extra = cur - base;
+  if (cur < base * tune.ratio || extra < floor) return null;
+  return { sum: round2(cur), base: round2(base), extra: round2(extra) };
+}
+
+// Shopping creep: a sustained rise (three closed months, each >= the one
+// before) that ends clearly above where it started. Distinct from a jump,
+// which is a single-month spike vs the average.
+function detectShoppingCreep(ix, ym, tune) {
+  function shopAt(m) { return (ix.byMonthCat[m] || {})["Shopping"] || 0; }
+  var m1 = shopAt(ymShift(ym, 1)), m2 = shopAt(ymShift(ym, 2)), m3 = shopAt(ymShift(ym, 3));
+  if (m3 <= 0 || m2 < m3 || m1 < m2) return null;
+  var cur = shopAt(ym);
+  if (cur < m3 * tune.ratio) return null;
+  return { cur: round2(cur), was: round2(m3), extra: round2(cur - m3) };
+}
+
 // Unify all detectors into one ranked list. Each finding has a STABLE id (so a
 // user's dismiss/keep persists across sessions) and an `annual` figure used for
 // ranking and the "found you $X" math.
@@ -9950,8 +10314,90 @@ function _findMoneyCore(tx, cats, leakIds) {
       amount: j.extra, annual: 0, merchant: "", catId: j.catId, categoryName: j.category, meta: j
     });
   });
-  // Annualized recoverable (recurring + hikes) first, then one-off informational.
+
+  // ---- Spending Watch: the questionnaire-personalized detectors ----
+  // title/subtitle stay canonical English (they feed Richard's prompt lines);
+  // titleKey/subKey + params drive what's rendered, in the user's language.
+  var todayISO = new Date().toISOString().slice(0, 10);
+  var ym = todayISO.slice(0, 7);
+  var ix = watchIndex(tx, cats, todayISO);
+  var smallAmt = Math.max(5, 0.35 * fmMedian(ix.amounts));
+  function tuneOf(leakId, key) { return leakIds.indexOf(leakId) >= 0 ? WATCH_TUNING[key].declared : WATCH_TUNING[key].default; }
+  var entCat = (cats || []).filter(function(c) { return c.name === "Entertainment"; })[0];
+  var shopCat = (cats || []).filter(function(c) { return c.name === "Shopping"; })[0];
+
+  var dlv = detectDeliveryCreep(ix, ym, tuneOf("delivery", "delivery"));
+  if (dlv) findings.push({
+    id: "dlv-" + ym, type: "delivery", leakId: "delivery",
+    title: dlv.count + " delivery orders this month",
+    subtitle: dollars(dlv.sum) + " on food delivery" + (dlv.base > 0 ? " vs " + dollars(dlv.base) + " in a usual month" : "") + (dlv.top ? " - most of it " + dlv.top : ""),
+    titleKey: "fmwDeliveryTitle", titleParams: { n: dlv.count },
+    subKey: dlv.base > 0 ? "fmwDeliverySubBase" : "fmwDeliverySub",
+    subParams: { amt: dollars(dlv.sum), base: dollars(dlv.base), top: dlv.top },
+    amount: dlv.sum, annual: round2(dlv.extra * 12), merchant: dlv.top || "", catId: "", categoryName: "Food", meta: dlv
+  });
+
+  var recurKeys = {};
+  recurring.forEach(function(g) { recurKeys[g.key] = true; });
+  var bld = detectSmallTicketBleed(tx, ym, todayISO, ix, recurKeys, smallAmt, tuneOf("impulse", "bleed"));
+  if (bld) findings.push({
+    id: "bleed-" + ym, type: "bleed", leakId: "impulse",
+    title: bld.n + " small buys quietly added up",
+    subtitle: dollars(bld.sum) + " this month in purchases under " + dollars(bld.small) + " - about half is usually recoverable",
+    titleKey: "fmwBleedTitle", titleParams: { n: bld.n },
+    subKey: "fmwBleedSub", subParams: { amt: dollars(bld.sum), small: dollars(bld.small) },
+    amount: bld.sum, annual: round2(bld.sum * 6), merchant: "", catId: "", categoryName: "", meta: bld
+  });
+
+  detectImpulseClusters(ix, cats, tuneOf("impulse", "impulse")).forEach(function(c) {
+    findings.push({
+      id: "imp-" + c.date, type: "impulse", leakId: "impulse",
+      title: c.n + " impulse buys in one day (" + c.date + ")",
+      subtitle: dollars(c.sum) + " in a single day" + (c.late ? ", mostly late at night" : ""),
+      titleKey: "fmwImpulseTitle", titleParams: { n: c.n, date: c.date },
+      subKey: c.late ? "fmwImpulseSubLate" : "fmwImpulseSub", subParams: { amt: dollars(c.sum) },
+      amount: c.sum, annual: 0, merchant: "", catId: "", categoryName: "", meta: c
+    });
+  });
+
+  var out = detectGoingOut(ix, ym, tuneOf("goingout", "goingout"), smallAmt * 4);
+  if (out) {
+    var outPct = Math.round((out.sum / out.base - 1) * 100);
+    findings.push({
+      id: "out-" + ym, type: "goingout", leakId: "goingout",
+      title: "Going out is running " + outPct + "% hot",
+      subtitle: dollars(out.sum) + " on weekend outings vs " + dollars(out.base) + " usual - " + dollars(out.extra) + " over",
+      titleKey: "fmwGoingOutTitle", titleParams: { pct: outPct },
+      subKey: "fmwGoingOutSub", subParams: { amt: dollars(out.sum), base: dollars(out.base), extra: dollars(out.extra) },
+      amount: out.extra, annual: round2(out.extra * 12), merchant: "", catId: entCat ? entCat.id : "", categoryName: entCat ? entCat.name : "Entertainment",
+      capSuggest: Math.round(out.base), meta: out
+    });
+  }
+
+  var shp = detectShoppingCreep(ix, ym, tuneOf("shopping", "shopping"));
+  if (shp) findings.push({
+    id: "shop-" + ym, type: "shopcreep", leakId: "shopping",
+    title: "Shopping has crept up three months straight",
+    subtitle: dollars(shp.cur) + " this month vs " + dollars(shp.was) + " three months ago",
+    titleKey: "fmwShopTitle", titleParams: {},
+    subKey: "fmwShopSub", subParams: { amt: dollars(shp.cur), was: dollars(shp.was) },
+    amount: shp.extra, annual: round2(shp.extra * 12), merchant: "", catId: shopCat ? shopCat.id : "", categoryName: shopCat ? shopCat.name : "Shopping",
+    capSuggest: Math.round(shp.was), meta: shp
+  });
+
+  // A specific watch finding beats the generic jump for the same category -
+  // showing both would read as two complaints about one number.
+  var covered = {};
+  if (dlv) covered["Food"] = true;
+  if (out) covered["Entertainment"] = true;
+  if (shp) covered["Shopping"] = true;
+  findings = findings.filter(function(f) { return !(f.type === "jump" && covered[f.categoryName]); });
+
+  // The user's self-declared leak sources lead the list; within each group,
+  // annualized recoverable first, then one-off informational.
+  findings.forEach(function(f) { f.leakMatch = !!(f.leakId && leakIds.indexOf(f.leakId) >= 0); });
   findings.sort(function(a, b) {
+    if (!!b.leakMatch !== !!a.leakMatch) return b.leakMatch ? 1 : -1;
     if ((b.annual || 0) !== (a.annual || 0)) return (b.annual || 0) - (a.annual || 0);
     return (b.amount || 0) - (a.amount || 0);
   });
@@ -28981,7 +29427,7 @@ export default function App() {
   // The five swipeable main tabs, produced by id so both the visible page and the
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
-    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
+    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} onboardingData={onboardingData} coachTone={coachTone} onSaveBudgets={onSaveBudgets} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
     if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
