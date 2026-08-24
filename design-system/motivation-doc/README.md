@@ -99,8 +99,8 @@ to San Francisco without embedding Apple's restricted font files.
 | Display | New York / Iowan Old Style / Palatino → Noto Serif Hebrew / Noto Naskh Arabic | upright, regular-weight headings and title-role text |
 | UI | San Francisco / native system UI | prose, controls, labels, and data |
 
-Display is bold and inclined, with script-aware companions for Hebrew and
-Arabic. Prose sits near 65ch;
+Display is upright and regular-weight, never italic or bold, with script-aware
+companions for Hebrew and Arabic. Prose sits near 65ch;
 tables and the badge index are exempt because they're scanned, not read.
 `font-variant-numeric: tabular-nums` on every column of digits.
 

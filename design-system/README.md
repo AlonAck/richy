@@ -16,9 +16,6 @@ minimal esbuild step that produces a `dist/` bundle.
 
 ## Build
 
-This environment has no Node.js installed, so the build has **not** been run
-or verified yet. On a machine with Node 18+:
-
 ```
 cd design-system
 npm install
@@ -26,7 +23,7 @@ npm run build
 ```
 
 This produces `dist/richy-ds.js` (an IIFE exposing `window.RichyDS.*`) and
-`dist/styles.css`.
+`dist/styles.css`. Verified building cleanly as of 2026-08-24.
 
 ## Next step: run /design-sync
 
@@ -39,11 +36,23 @@ grading their previews.
 
 - Only 6 of the app's ~60 UI functions were extracted (the simplest,
   self-contained visual atoms). Most components in `budget-app.jsx` are
-  screen-level (`Overview`, `Activity`, `Budgets`, ...) or depend on app
-  state/hooks not meaningful outside the app — those aren't candidates for
-  a component-library sync as-is.
-- `tokens.js` is a static snapshot of the default ("purple") theme. The
-  live app mutates these values at runtime for dark mode and theme
+  screen-level (`Overview`, `Activity`, `Budgets`, `Profile`, `SocialView`,
+  `BusinessView`, ...) or depend on app state/hooks not meaningful outside
+  the app — those aren't candidates for a component-library sync as-is.
+  That now also includes newer composites shipped since this package was
+  extracted: `WidgetCard` (5-shape dashboard widget), `BadgeTile`/
+  `BadgeGlyph` (the badge collection), `LevelMark`, `StatCell`, `Disc`
+  (initials avatar) and `ProfileRow` — none have a package equivalent yet.
+- `tokens.js` is a static snapshot of the app's non-default ("purple")
+  theme — the live app's runtime default is `"blue"` (Cornflower Ocean).
+  The live app mutates these values at runtime for dark mode and theme
   switching; that behavior isn't reproduced here.
+- `tokens.js` also carries the badge rarity ramp (`RARITY_COLOR`,
+  `RARITY_LABEL`, `MYTHIC_GRADIENT`) as a light-theme snapshot; see
+  `motivation-doc/tokens.css` for the paired dark-mode ramp.
+- `motion.js` is a trimmed copy of the app's `ensureMotionCss()` — only the
+  CSS custom properties `BigBtn`'s press feedback and `ProgressBar`'s
+  grow-in animation need, not the full keyframe vocabulary (`rcRise`,
+  `rcPop`, `rcFlash`, ...) that powers screens this package doesn't extract.
 - `SVGIcon`'s icon bank was trimmed to only the icons the shipped
   components reference, to keep this scaffold minimal.
