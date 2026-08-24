@@ -1309,6 +1309,55 @@ for (var _rpc in RECOVERY_STRINGS) {
   for (var _rpk in RECOVERY_STRINGS[_rpc]) TRANSLATIONS[_rpc][_rpk] = RECOVERY_STRINGS[_rpc][_rpk];
 }
 
+// InvestingPulse strings (the Overview card; the investing tab's interior
+// stays English by its existing convention).
+var INVEST_PULSE_STRINGS = {
+  en: {
+    ipLabel: "Investing",
+    ipToday: "today",
+    ipLapse: "Your plan expected a contribution this month - nothing has gone in yet",
+    ipLapseAmt: "Your plan expected {amt} this month - nothing has gone in yet",
+    ipRoundups: "{amt} of spare change this month - one tap inside to put it to work",
+    ipMore: "+{n} more",
+    ipTipTitle: "Start investing with a plan",
+    ipTipSub: "Open an Investing account - Richard builds a mix around your goal and keeps the habit going",
+  },
+  he: {
+    ipLabel: "השקעות",
+    ipToday: "היום",
+    ipLapse: "התוכנית ציפתה להפקדה החודש - עדיין לא נכנס כלום",
+    ipLapseAmt: "התוכנית ציפתה ל-{amt} החודש - עדיין לא נכנס כלום",
+    ipRoundups: "{amt} עודף מהקניות החודש - לחיצה אחת בפנים כדי להשקיע אותו",
+    ipMore: "+{n} נוספים",
+    ipTipTitle: "להתחיל להשקיע עם תוכנית",
+    ipTipSub: "פתח חשבון השקעות - ריצ'רד בונה תמהיל סביב היעד שלך ושומר על ההרגל",
+  },
+  ar: {
+    ipLabel: "الاستثمار",
+    ipToday: "اليوم",
+    ipLapse: "توقعت خطتك مساهمة هذا الشهر - لم يدخل شيء بعد",
+    ipLapseAmt: "توقعت خطتك {amt} هذا الشهر - لم يدخل شيء بعد",
+    ipRoundups: "{amt} من الفكة هذا الشهر - نقرة واحدة بالداخل لتشغيلها",
+    ipMore: "+{n} أخرى",
+    ipTipTitle: "ابدأ الاستثمار بخطة",
+    ipTipSub: "افتح حساب استثمار - يبني ريتشارد مزيجاً حول هدفك ويحافظ على العادة",
+  },
+  ru: {
+    ipLabel: "Инвестиции",
+    ipToday: "сегодня",
+    ipLapse: "План ожидал взнос в этом месяце - пока ничего не поступило",
+    ipLapseAmt: "План ожидал {amt} в этом месяце - пока ничего не поступило",
+    ipRoundups: "{amt} мелочи с покупок за месяц - один тап внутри, чтобы вложить",
+    ipMore: "+{n} ещё",
+    ipTipTitle: "Начните инвестировать по плану",
+    ipTipSub: "Откройте инвест-счёт - Ричард соберёт портфель под вашу цель и поддержит привычку",
+  },
+};
+for (var _ipc in INVEST_PULSE_STRINGS) {
+  if (!TRANSLATIONS[_ipc]) continue;
+  for (var _ipk in INVEST_PULSE_STRINGS[_ipc]) TRANSLATIONS[_ipc][_ipk] = INVEST_PULSE_STRINGS[_ipc][_ipk];
+}
+
 function tr(key) {
   var code = _lang.code || "en";
   return (TRANSLATIONS[code] && TRANSLATIONS[code][key]) || (TRANSLATIONS.en[key]) || key;
@@ -8248,6 +8297,91 @@ function RecoveryPulse(props) {
   );
 }
 
+// Context for investInsights when rendered on Overview: everything computed
+// from persisted data, scoutCount pinned to 0 so no extra work runs here.
+function investPulseCtx(acct) {
+  var plan = investPlanOf(acct);
+  var mix = investActualMix(acct);
+  var pos = positionsOf(acct);
+  var held = 0;
+  for (var s in pos) { if (pos[s].shares > 0) held++; }
+  return {
+    mix: mix, drift: investDrift(acct), cash: investingCash(acct),
+    targetCash: plan ? (plan.alloc.filter(function(a) { return a.cls === "cash"; })[0] || { pct: 8 }).pct : 8,
+    autoDue: investAutoDue(acct), autoAmount: (acct.auto && acct.auto.amount) || 0,
+    autoNext: investAutoNext(acct) || "", scoutCount: 0, heldCount: held
+  };
+}
+
+// Investing's heartbeat on Overview - the mirror of BusinessPulse. Health ring,
+// worth and today's move, and ONE next action: a contribution lapse first (the
+// plan expected money this month), else the top actionable insight, else
+// round-ups left on the table. Habit-level only; never a security opinion.
+function InvestingPulse(props) {
+  var accts = props.investing || [];
+  if (!accts.length || !props.onOpenInvesting) return null;
+  var shown = accts.slice(0, 2);
+  var todayISO = new Date().toISOString().slice(0, 10);
+  return (
+    <div style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.08s both" }}>
+      {shown.map(function(a) {
+        var health = investHealth(a);
+        var worth = investingWorth(a);
+        var day = investingDayChange(a);
+        var lapse = investContribLapse(a, todayISO);
+        var nextLine = null, nextTone = T.orange;
+        if (lapse) {
+          nextLine = lapse.expected > 0 ? trFill("ipLapseAmt", { amt: dollarsWhole(lapse.expected) }) : tr("ipLapse");
+        } else {
+          var ins = investInsights(a, investPulseCtx(a)).filter(function(i) { return i.cta; })[0];
+          if (ins) { nextLine = ins.title; }
+          else {
+            var ru = investRoundUps(props.tx, curMonth());
+            if (ru > 0 && !(a.auto && a.auto.roundUps)) { nextLine = trFill("ipRoundups", { amt: dollars(ru) }); nextTone = T.green; }
+          }
+        }
+        var healthColor = health.score >= 70 ? T.green : health.score >= 45 ? T.gold : T.orange;
+        return (
+          <Card key={a.id} style={{ marginBottom: 14, overflow: "hidden" }}>
+            <div onClick={function() { props.onOpenInvesting(a.id); }} style={{ padding: "13px 16px", cursor: "pointer" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ position: "relative", width: 42, height: 42, flexShrink: 0 }}>
+                  <DrawRing size={42} stroke={4} value={health.score} max={100} color={healthColor} />
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: T.ink }}>{health.score}</div>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: T.btn, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI }}>{tr("ipLabel")}</div>
+                  <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 1 }}>{a.name}</div>
+                  <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>
+                    <span style={{ fontWeight: 700, color: T.ink2 }}>{dollars(worth)}</span>
+                    {day !== 0 && (
+                      <span style={{ fontWeight: 700, color: day > 0 ? T.green : T.red }}>{" " + (day > 0 ? "+" : "-") + dollars(Math.abs(day))}</span>
+                    )}
+                    {day !== 0 && (" " + tr("ipToday"))}
+                  </div>
+                </div>
+                <SVGIcon id="chevron" size={16} color={T.ink3} />
+              </div>
+              {nextLine && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, background: "rgba(0,0,0,0.03)", borderRadius: 10, padding: "8px 11px" }}>
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: nextTone, flexShrink: 0 }} />
+                  <span style={{ flex: 1, fontSize: 12.5, color: T.ink2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{nextLine}</span>
+                </div>
+              )}
+            </div>
+          </Card>
+        );
+      })}
+      {accts.length > 2 && (
+        <button onClick={function() { props.onOpenInvesting(null); }}
+          style={{ width: "100%", background: "none", border: "none", cursor: "pointer", color: T.btn, fontSize: 13, fontWeight: 700, fontFamily: UI, padding: "2px 0 12px", textAlign: "center" }}>
+          {trFill("ipMore", { n: accts.length - 2 })}
+        </button>
+      )}
+    </div>
+  );
+}
+
 // ===== RICHARD'S OVERVIEW WIDGETS =====
 // "Make me a widget that follows my coffee spending, and make it a ring."
 //
@@ -8821,7 +8955,8 @@ function Overview(props) {
     { id: "debts",  icon: "credit",  title: "Crush your debt",  sub: "Payoff plan + debt-free date", used: (props.debts || []).length > 0,                       go: function() { if (props.onOpenDebts) props.onOpenDebts(); else nav("debts"); } },
     { id: "collab", icon: "user",    title: "Add your partner", sub: "Share budgets & goals",        used: !!props.householdId,                                  go: function() { if (props.onOpenCollab) props.onOpenCollab(); else nav("collab"); } },
     { id: "sync",   icon: "refresh", title: "Sync your bank",   sub: "Auto-import transactions",     used: !!(props.bankSync && props.bankSync.enabled),         go: function() { if (props.onSetupSync) props.onSetupSync(); else nav("bankSync"); } },
-    { id: "trip",   icon: "plane",   title: "Plan a trip",      sub: "Let Richard split your travel budget", used: (props.trips || []).length > 0,                go: function() { if (props.onPlanTrip) props.onPlanTrip(); else nav("trips"); } }
+    { id: "trip",   icon: "plane",   title: "Plan a trip",      sub: "Let Richard split your travel budget", used: (props.trips || []).length > 0,                go: function() { if (props.onPlanTrip) props.onPlanTrip(); else nav("trips"); } },
+    { id: "invest", icon: "chart",   title: tr("ipTipTitle"),   sub: tr("ipTipSub"),                 used: (props.investing || []).length > 0,                   go: function() { if (props.onOpenInvesting) props.onOpenInvesting(null); } }
   ].filter(function(a) { return !a.used && tipsOff.indexOf(a.id) < 0; });
   // A brand-new account still needs to find these, so they sit high on the page.
   // Once there's a real month of activity they move below the numbers - the
@@ -9662,6 +9797,8 @@ function Overview(props) {
       <FoundMoney tx={tx} categories={cats} foundMoney={props.foundMoney} onSaveFoundMoney={props.onSaveFoundMoney} onboardingData={props.onboardingData} coachTone={props.coachTone} budgets={props.budgets} onSaveBudgets={props.onSaveBudgets} richardInstructions={props.richardInstructions} lang={props.lang} />
 
       <BusinessPulse businesses={bizAccts} onOpenBusiness={props.onOpenBusiness} />
+
+      <InvestingPulse investing={props.investing} tx={tx} onOpenInvesting={props.onOpenInvesting} />
 
       <div style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.09s both" }}>
         <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -15383,6 +15520,10 @@ function Advisor(props) {
       ? "\n\n=== BUSINESSES (managed in Savings -> Business Account, Richard is their CFO) ===\n"
         + props.businesses.map(bizContextLine).join("\n")
       : "")
+    + ((props.investing || []).length
+      ? "\n\n=== INVESTING (context only - aggregates, no holdings on purpose. NEVER give a buy/hold/sell opinion on any security or on anything in their portfolio; if asked about a specific investment, give the general principle and suggest a licensed advisor. Habit-level encouragement only.) ===\n"
+        + props.investing.map(investContextLine).join("\n")
+      : "")
     + "\n\n=== OVERVIEW WIDGETS (cards you built; the exact titles, use them to update or remove one) ===\n"
     + ((props.widgets || []).length
       ? props.widgets.map(function(w) {
@@ -16162,7 +16303,7 @@ function Advisor(props) {
       + "Match the user's words to the template: \"track my coffee\" is merchantSpend or a category, \"as a ring/circle/gauge\" is ring, \"a bar\" is bar, \"show me the biggest ones\" is list, \"over the last few months\" is trend, \"versus last month\" is compare. Pick a sensible icon and a short title yourself rather than asking. If they ask for something no metric covers, say plainly what you can follow instead and offer the closest one - never invent a metric name, and never promise a widget on any screen other than Overview, which is the only place they appear. "
       + "Use the EXACT category, folder, savings pot, goal, note-label and widget-title names given in the data below - never invent or guess a name. "
       + "If the user mentions several things at once, emit several tags. Only emit a tag for a concrete event, or a direct explicit request to change/create something, with real values the user actually stated - never for hypotheticals, plans, or general advice. Do not mention the word ACTION or the tag syntax in your spoken reply; just speak naturally and let the tags do the work."
-      + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a CFO who builds a business plan - send business owners there. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (phone-automation Bank Sync is the real automatic option), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : ""),
+      + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a CFO who builds a business plan - send business owners there. Richy ALSO has Investing Accounts (Overview -> Savings -> Investing Account): a manual brokerage-style pot with live quotes where Richard builds a plan around the user's goal and timeline (conservative/balanced/bold mixes of broad funds), tracks the habit (contributions, drift, health score), teaches with short lessons, and scouts research ideas - send anyone who wants to start investing there, but NEVER give a buy/hold/sell opinion on a specific security yourself; give the general principle and suggest a licensed advisor for personal recommendations. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (phone-automation Bank Sync is the real automatic option), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : ""),
       500,
       function(err, text) {
         setChatLoading(false);
@@ -18116,6 +18257,83 @@ function investRoundUps(tx, ym) {
     if (up > 0 && up < 1) total += up;
   });
   return round2(total);
+}
+
+// ---- Investing heartbeat ----------------------------------------------------
+// Habit-level signals only: whether money is arriving, never what to buy.
+
+// True in a month with any cash deposit or any buy trade.
+function investContributedIn(acct, ym) {
+  var dep = ((acct && acct.cashEntries) || []).some(function(e) { return e.kind !== "withdraw" && (e.date || "").slice(0, 7) === ym; });
+  if (dep) return true;
+  return ((acct && acct.trades) || []).some(function(t) { return t.kind === "buy" && (t.date || "").slice(0, 7) === ym; });
+}
+// Contribution lapse: the account has a plan, is at least ~a month old, and no
+// money has gone in this month. Deliberately arms even with auto-invest OFF
+// (the default) - the plan expected a contribution whether or not automation
+// is set up. Informational: it phrases an expectation, never moves money.
+function investContribLapse(acct, today) {
+  if (!acct || !investPlanOf(acct)) return null;
+  var todayISO = today || new Date().toISOString().slice(0, 10);
+  var created = acct.createdAt || todayISO;
+  if ((new Date(todayISO + "T00:00:00Z") - new Date(created + "T00:00:00Z")) < 35 * 86400000) return null;
+  var ym = todayISO.slice(0, 7);
+  if (investContributedIn(acct, ym)) return null;
+  var expected = investAutoMonthly(acct) || ((acct.auto && acct.auto.amount) || 0);
+  var lastDate = "";
+  ((acct.cashEntries || []).concat(acct.trades || [])).forEach(function(e) {
+    if ((e.kind === "deposit" || e.kind === "buy") && (e.date || "") > lastDate) lastDate = e.date;
+  });
+  return { expected: round2(expected), lastDate: lastDate };
+}
+// Consecutive months, ending with the current one, that saw a contribution.
+function investContribStreak(list) {
+  var best = 0;
+  (list || []).forEach(function(acct) {
+    var run = 0, ym = curMonth();
+    while (run < 60 && investContributedIn(acct, ym)) { run++; ym = ymShift(ym, 1); }
+    if (run > best) best = run;
+  });
+  return best;
+}
+// Whole months since the first buy with no sell trade anywhere after it.
+function investMonthsHeldNoSell(list) {
+  var best = 0;
+  (list || []).forEach(function(acct) {
+    var firstBuy = "", anySell = false;
+    ((acct && acct.trades) || []).forEach(function(t) {
+      if (t.kind === "buy" && (!firstBuy || (t.date || "") < firstBuy)) firstBuy = t.date || "";
+      if (t.kind === "sell") anySell = true;
+    });
+    if (!firstBuy || anySell) return;
+    var months = ymDiff(firstBuy.slice(0, 7), curMonth());
+    if (months > best) best = months;
+  });
+  return best;
+}
+// Completed lessons across all investing accounts (sums the per-account
+// investLessonsDone counter defined next to INVEST_LESSONS).
+function investLessonsDoneAll(list) {
+  var n = 0;
+  (list || []).forEach(function(acct) { n += investLessonsDone(acct); });
+  return n;
+}
+// One-line aggregate summary for Richard's main Advisor context. Aggregates
+// only - no symbols, no per-holding detail: commenting on visible holdings is
+// where the investment-advice line gets crossed, so the main chat never sees
+// them.
+function investContextLine(acct) {
+  var plan = investPlanOf(acct);
+  var health = investHealth(acct);
+  var pos = positionsOf(acct);
+  var held = 0;
+  for (var s in pos) { if (pos[s].shares > 0) held++; }
+  return (acct.name || "Investing") + ": worth " + dollars(investingWorth(acct))
+    + " (" + dollars(investingCash(acct)) + " uninvested cash, " + held + (held === 1 ? " holding" : " holdings") + ")"
+    + ", plan " + (plan ? plan.name : "none")
+    + ", setup health " + health.score + "/100"
+    + ", auto-invest " + ((acct.auto && acct.auto.on) ? "on" : "off")
+    + ", contributed this month: " + (investContributedIn(acct, curMonth()) ? "yes" : "no") + ".";
 }
 
 // A 0-100 read on how well the account is actually set up, from five things
