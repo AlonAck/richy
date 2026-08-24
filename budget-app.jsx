@@ -29109,8 +29109,12 @@ export default function App() {
       {/* Outer wrapper only does fixed positioning — no backdrop-filter here.
           iOS/WebKit will detach a position:fixed element from the viewport
           during scroll if backdrop-filter lives on that same element, so the
-          glass blur is applied to an inner div instead. */}
-      <div style={{ position: "fixed", bottom: "calc(20px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", width: "calc(100% - 32px)", maxWidth: 398, zIndex: 30 }}>
+          glass blur is applied to an inner div instead. A 2D translateX alone
+          can still leave this on a layer WebKit tears down and rebuilds mid-
+          scroll, which is what let it get left behind over list content in
+          the wild - translate3d + will-change pins it to its own persistent
+          compositor layer so it always tracks the visual viewport. */}
+      <div style={{ position: "fixed", bottom: "calc(20px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translate3d(-50%, 0, 0)", WebkitTransform: "translate3d(-50%, 0, 0)", willChange: "transform", width: "calc(100% - 32px)", maxWidth: 398, zIndex: 30 }}>
         <div style={{ position: "relative", background: T.navGlass, backdropFilter: "blur(28px) saturate(190%) brightness(1.08)", WebkitBackdropFilter: "blur(28px) saturate(190%) brightness(1.08)", borderRadius: 34, border: "1px solid " + T.glassBorder, boxShadow: "0 12px 40px rgba(0,0,0,0.18), 0 2px 10px rgba(0,0,0,0.08), inset 0 1px 0.5px " + T.navRimTop + ", inset 0 -1px 0.5px " + T.navRimBot }}>
           {/* Specular sheen — the curved-glass glare across the top of the bar. Self-clips
               via its own border radius (no overflow:hidden, so the active lens shadow
