@@ -2928,7 +2928,12 @@ function motivSnapshot(data) {
   var today = new Date();
 
   var clean = cleanWeekState(motiv, today);
-  var target = Number((data.onboardingData || {}).savingsTargetPct || 0);
+  // Green-month target: the recovery plan's promised monthly recovery as a
+  // share of declared income. Without a plan the target stays 0 (any
+  // non-negative savings rate counts as green).
+  var rpIncome = parseFloat((data.onboardingData || {}).income) || 0;
+  var rpTarget = (data.recoveryPlan || {}).recoverTarget || 0;
+  var target = rpIncome > 0 && rpTarget > 0 ? Math.round(rpTarget / rpIncome * 100) : 0;
   var green = greenMonthState(tx, motiv, target);
   var bctx = { tx: tx, categories: data.categories || [], folders: data.folders || [] };
   var bud = budgetRunState(data.budgets || [], bctx);
@@ -2942,7 +2947,7 @@ function motivSnapshot(data) {
   var netWorth = round2(allIncome - allExpense + savTotal + businessTotal(data.businesses || []) + investingTotal(data.investing || []));
   var openingTx = tx.filter(function(t) { return isOpening(t); })[0];
   var opening = openingTx ? (openingTx.amount || 0) : 0;
-  var essentials = Number((data.onboardingData || {}).monthlyEssentials || 0);
+  var essentials = parseFloat((data.onboardingData || {}).essentials) || 0;
   var cushionMonths = essentials > 0 ? savTotal / essentials : 0;
 
   var goals = data.goals || [];
@@ -6675,6 +6680,25 @@ var LEAK_OPTIONS = [
   { id: "noidea",   label: "Honestly, no idea", tKey: "obLeakNoIdea",   icon: "search" },
 ];
 
+// Canonical leak ids from an onboardingData blob. Newer blobs carry
+// moneyLeakIds directly; older ones only have the comma-joined English labels,
+// so reverse-map those through LEAK_OPTIONS. Detection code works in ids only.
+function leakIdsOf(oData) {
+  if (!oData) return [];
+  if (Array.isArray(oData.moneyLeakIds)) return oData.moneyLeakIds.slice();
+  var raw = String(oData.moneyLeaks || "");
+  if (!raw) return [];
+  var out = [];
+  raw.split(",").forEach(function(part) {
+    var p = part.trim().toLowerCase();
+    if (!p) return;
+    for (var i = 0; i < LEAK_OPTIONS.length; i++) {
+      if (LEAK_OPTIONS[i].label.toLowerCase() === p) { out.push(LEAK_OPTIONS[i].id); return; }
+    }
+  });
+  return out;
+}
+
 // EXACT existing coreProblem strings - Advisor matches on them. Only the
 // icons are new.
 var PROBLEM_OPTIONS = [
@@ -6958,16 +6982,19 @@ var TIMELINES = ["6 months", "1 year", "2 years", "5+ years"];
 var TIMELINE_TKEYS = { "6 months": "obTl1", "1 year": "obTl2", "2 years": "obTl3", "5+ years": "obTl4" };
 
 function OnboardingScreen(props) {
+  // Retakes prefill from the previous answers instead of a blank re-ask; a
+  // first run passes no initialData so every field starts empty as before.
+  var init = props.initialData || {};
   var _s = useState(1); var step = _s[0]; var setStep = _s[1];
-  var _cp = useState(""); var coreProblem = _cp[0]; var setCoreProblem = _cp[1];
-  var _ls = useState(""); var lifeStage = _ls[0]; var setLifeStage = _ls[1];
-  var _inc = useState(""); var income = _inc[0]; var setIncome = _inc[1];
-  var _ess = useState(""); var essentials = _ess[0]; var setEssentials = _ess[1];
-  var _sav = useState(""); var savings = _sav[0]; var setSavings = _sav[1];
-  var _dbt = useState(""); var debt = _dbt[0]; var setDebt = _dbt[1];
-  var _gn = useState(""); var goalName = _gn[0]; var setGoalName = _gn[1];
-  var _ga = useState(""); var goalAmt = _ga[0]; var setGoalAmt = _ga[1];
-  var _tl = useState(""); var timeline = _tl[0]; var setTimeline = _tl[1];
+  var _cp = useState(init.coreProblem || ""); var coreProblem = _cp[0]; var setCoreProblem = _cp[1];
+  var _ls = useState(init.lifeStage || ""); var lifeStage = _ls[0]; var setLifeStage = _ls[1];
+  var _inc = useState(init.income || ""); var income = _inc[0]; var setIncome = _inc[1];
+  var _ess = useState(init.essentials || ""); var essentials = _ess[0]; var setEssentials = _ess[1];
+  var _sav = useState(init.savings || ""); var savings = _sav[0]; var setSavings = _sav[1];
+  var _dbt = useState(init.debt || ""); var debt = _dbt[0]; var setDebt = _dbt[1];
+  var _gn = useState(init.goalName || ""); var goalName = _gn[0]; var setGoalName = _gn[1];
+  var _ga = useState(init.goalAmt || ""); var goalAmt = _ga[0]; var setGoalAmt = _ga[1];
+  var _tl = useState(init.timeline || ""); var timeline = _tl[0]; var setTimeline = _tl[1];
   var _ld = useState(false); var loading = _ld[0]; var setLoading = _ld[1];
   var _er = useState(""); var err = _er[0]; var setErr = _er[1];
   var _gp = useState(""); var genPlan = _gp[0]; var setGenPlan = _gp[1];
@@ -6980,8 +7007,8 @@ function OnboardingScreen(props) {
   var _qi = useState(0); var qIndex = _qi[0]; var setQIndex = _qi[1];
   var _dr = useState("fwd"); var dir = _dr[0]; var setDir = _dr[1];
   var _ph = useState("q"); var phase = _ph[0]; var setPhase = _ph[1];
-  var _lk = useState([]); var leaks = _lk[0]; var setLeaks = _lk[1];
-  var _ov = useState(""); var overspend = _ov[0]; var setOverspend = _ov[1];
+  var _lk = useState(leakIdsOf(init)); var leaks = _lk[0]; var setLeaks = _lk[1];
+  var _ov = useState(init.overspendEst || ""); var overspend = _ov[0]; var setOverspend = _ov[1];
   var _gd = useState(false); var greetDone = _gd[0]; var setGreetDone = _gd[1];
   var _ts = useState(""); var toast = _ts[0]; var setToast = _ts[1];
   // Language + currency are asked HERE (not only at email signup) so Google
@@ -7024,7 +7051,7 @@ function OnboardingScreen(props) {
     });
     setLoading(false);
     setGenPlan(planText || localPlan());
-    setGenOData({ lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: ageStr, coreProblem: coreProblem, moneyLeaks: leakLabels2.join(", "), overspendEst: overspend, prefLang: prefLang, prefCurrency: prefCur, prefPeriodMode: prefPeriodMode, prefPeriodStart: prefPeriodStart, prefPeriodEnd: prefPeriodEnd });
+    setGenOData({ lifeStage: lifeStage, income: income, essentials: essentials, savings: savings, debt: debt, goalName: goalName, goalAmt: goalAmt, timeline: timeline, age: ageStr, coreProblem: coreProblem, moneyLeaks: leakLabels2.join(", "), moneyLeakIds: leaks.slice(), overspendEst: overspend, prefLang: prefLang, prefCurrency: prefCur, prefPeriodMode: prefPeriodMode, prefPeriodStart: prefPeriodStart, prefPeriodEnd: prefPeriodEnd });
     setStep(6);
   }
 
@@ -9876,7 +9903,23 @@ function detectCategoryJumps(tx, cats) {
 // Unify all detectors into one ranked list. Each finding has a STABLE id (so a
 // user's dismiss/keep persists across sessions) and an `annual` figure used for
 // ranking and the "found you $X" math.
-function findMoney(tx, cats) {
+//
+// `watch` personalizes detection: { leakIds } are the questionnaire's declared
+// leak sources (leakIdsOf) - declared detectors run with looser thresholds and
+// their findings rank first. Omitted = default thresholds, legacy ranking.
+//
+// Memoized on tx/cats identity (state arrays are replaced, never mutated) so
+// Overview re-renders don't re-scan the ledger - same trick as _recurCatCache.
+var _findMoneyCache = { tx: null, cats: null, key: "", out: null };
+function findMoney(tx, cats, watch) {
+  var leakIds = (watch && watch.leakIds) || [];
+  var cacheKey = leakIds.join(",");
+  if (_findMoneyCache.tx === tx && _findMoneyCache.cats === cats && _findMoneyCache.key === cacheKey) return _findMoneyCache.out;
+  var out = _findMoneyCore(tx, cats, leakIds);
+  _findMoneyCache = { tx: tx, cats: cats, key: cacheKey, out: out };
+  return out;
+}
+function _findMoneyCore(tx, cats, leakIds) {
   var findings = [];
   var recurring = detectRecurring(tx, cats);
   recurring.forEach(function(g) {
@@ -27771,6 +27814,11 @@ export default function App() {
   // from tx each session by findMoney().
   var _fm = useState({ tally: 0, dismissed: [], acted: [] });
   var foundMoney = _fm[0]; var setFoundMoney = _fm[1];
+  // How Richard phrases coaching about the user's own declared weak spots:
+  // "direct" (ties findings to what they told us), "soft" (numbers only, no
+  // callbacks to their answers), "tough" (accountability framing).
+  var _ctn = useState("direct");
+  var coachTone = _ctn[0]; var setCoachTone = _ctn[1];
   // Big-Decision CFO: tracked decisions [{id, question, verdict, createdDate, status}].
   var _dec = useState([]);
   var decisions = _dec[0]; var setDecisions = _dec[1];
@@ -27826,6 +27874,7 @@ export default function App() {
     setInvestorProfile(data.investorProfile || null);
     setNotes(data.notes || []);
     setFoundMoney(data.foundMoney || { tally: 0, dismissed: [], acted: [] });
+    setCoachTone(data.coachTone || "direct");
     setDecisions(data.decisions || []);
     // Trim on load too, so an account that already grew past the limit heals
     // itself on its next write instead of staying permanently unsaveable.
@@ -28130,7 +28179,7 @@ export default function App() {
     blobRef.current = {};
     setUser(null); setAccountKey(null); setTab("overview");
     setHouseholdId(null); setHousehold(null); setInvites([]);
-    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setInvestorProfile(null); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]); setBankSync(null); setLeumiFinteka(null); setCustomBanners([]); setMotivation(motivDefault()); setSocial({ handle: "", following: [], followers: [], requests: [] });
+    setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setInvestorProfile(null); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setCoachTone("direct"); setDecisions([]); setBankSync(null); setLeumiFinteka(null); setCustomBanners([]); setMotivation(motivDefault()); setSocial({ handle: "", following: [], followers: [], requests: [] });
     // Language is deliberately NOT reset here (unlike theme) - it's a device
     // preference AuthScreen itself now renders in, and wiping it back to "en"
     // would force a Hebrew/Arabic/Russian user back to English on their own
@@ -28204,6 +28253,7 @@ export default function App() {
   function onSaveBudgets(next) { setBudgets(next); save({ budgets: next }); }
   function onSaveGoals(next) { setGoals(next); save({ goals: next }); }
   function onSaveFoundMoney(next) { setFoundMoney(next); save({ foundMoney: next }); }
+  function onSaveCoachTone(t) { var v = t === "soft" || t === "tough" ? t : "direct"; setCoachTone(v); save({ coachTone: v }); }
   function onSaveDecisions(next) { setDecisions(next); save({ decisions: next }); }
   // Trim at the save boundary rather than inside Advisor, so every caller
   // (archive-on-new-chat, delete, reopen) is covered by one rule and the state
@@ -28476,7 +28526,16 @@ export default function App() {
   function onSaveNickname(name) { setUser(name); save({ displayName: name }); }
   function onSaveDob(dob) { setUserDob(dob); save({ dob: dob }); }
   function onSaveEmail(email) { save({ email: email }); }
-  function onSaveFinancial(oData) { save({ onboardingData: oData }); }
+  // Merge, never replace: the edit form sends only the fields it shows, and a
+  // plain save would silently wipe coreProblem, moneyLeaks and the pref keys -
+  // the answers the rest of the app personalizes from.
+  function onSaveFinancial(oData) {
+    var base = blobRef.current.onboardingData || {};
+    var next = {}; for (var k in base) next[k] = base[k];
+    for (var k2 in oData) next[k2] = oData[k2];
+    setOnboardingData(next);
+    save({ onboardingData: next });
+  }
   function onSaveEntryMethod(m) { var v = m === "import" ? "import" : "manual"; setEntryMethod(v); save({ entryMethod: v }); }
   function onSavePeriodMode(m) { var v = m === "rolling" ? "rolling" : m === "custom" ? "custom" : "calendar"; setPeriodMode(v); save({ periodMode: v }); }
   function onSaveSplitPlan(p) { var v = splitPlanOf(p); setSplitPlan(v); save({ splitPlan: v }); }
@@ -28886,7 +28945,7 @@ export default function App() {
   if (!user) return <AuthScreen onLogin={handleLogin} />;
 
   if (!onboardingDone) {
-    return <OnboardingScreen username={user} dob={userDob} lang={lang} richardNotes={richardNotes} onComplete={handleOnboardingComplete} />;
+    return <OnboardingScreen username={user} dob={userDob} lang={lang} richardNotes={richardNotes} initialData={onboardingData} onComplete={handleOnboardingComplete} />;
   }
 
   if (!catchUpDone) {
