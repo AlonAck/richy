@@ -1,8 +1,8 @@
 {
   "name": "Richy Design System",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Premium financial app design system — expensive, warm, understated wealth. Apple-inspired with data-dense Bloomberg terminal aesthetic.",
-  "updated": "2026-07-26",
+  "updated": "2026-08-24",
   "philosophy": {
     "feeling": "Smart and calm — not stressful, not gamified, not cluttered",
     "warmth": "Cream tones and warm materials, never gray or sterile white",
@@ -17,13 +17,14 @@
     "Greetings are human and casual: 'Good morning, Alon.' NOT exclamatory",
     "Fill space with information and data, not whitespace and decoration",
     "Shadows are barely-there but present — depth reads as substance",
-    "borderRadius: 20-22px on everything — generous, Apple-style, never square"
+    "borderRadius: 20-22px on surfaces; 14px on buttons — generous, Apple-style, never square",
+    "Titles are an upright editorial serif, never italic — see typography.display"
   ],
   "themes": {
     "purple": {
       "displayName": "Mika's Violet",
-      "description": "Lavender hero with violet accents and dark text — default theme",
-      "isDefault": true,
+      "description": "Lavender hero with violet accents and dark text",
+      "isDefault": false,
       "colors": {
         "primary": "#8970C6",
         "primaryHi": "#C8B1FF",
@@ -116,8 +117,8 @@
     },
     "blue": {
       "displayName": "Cornflower Ocean",
-      "description": "Light periwinkle hero with deep navy accents and dark text",
-      "isDefault": false,
+      "description": "Light periwinkle hero with deep navy accents and dark text — default theme",
+      "isDefault": true,
       "colors": {
         "primary": "#3C4C82",
         "primaryHi": "#5C7AE3",
@@ -250,38 +251,78 @@
     }
   },
   "typography": {
-    "fontStack": "-apple-system, system-ui, sans-serif",
+    "description": "Two families with a strict division of labor: an upright editorial serif carries every title, the platform UI sans carries body copy, controls and all tabular data. Never italic — the app shipped and reverted a bold-italic Garamond pass (2026-08-19 to 2026-08-21) before settling on this upright serif on 2026-08-22.",
+    "ui": {
+      "role": "Body copy, labels, buttons, inputs, nav, all numbers",
+      "fontFamily": "-apple-system, BlinkMacSystemFont, system-ui, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+    },
+    "display": {
+      "role": "Every title and headline, app-wide — screen headers, sheet titles, onboarding headlines, Richard's markdown-style headers",
+      "fontFamily": "\"New York\", \"Iowan Old Style\", \"Palatino Linotype\", Palatino, Georgia, \"Noto Serif Hebrew\", \"Noto Naskh Arabic\", ui-serif, \"Times New Roman\", serif",
+      "weight": 400,
+      "style": "normal — upright, never italic",
+      "letterSpacing": "-0.01em typical",
+      "note": "Localized headings (Hebrew/Arabic) keep the same editorial role via the bundled Noto serif companions in the stack, not a separate font."
+    },
+    "mark": {
+      "role": "The 'R' logotype mark only (RichyLogo, error boundary, boot splash) — not used for titles",
+      "fontFamily": "same as display",
+      "weight": 500
+    },
     "scales": {
       "hero": {
-        "size": "44px",
+        "size": "42-44px",
+        "family": "ui",
         "weight": 700,
         "letterSpacing": "tight"
       },
       "headline": {
-        "size": "28-34px",
-        "weight": 700,
-        "letterSpacing": "-0.03em"
+        "size": "22-30px",
+        "family": "display",
+        "weight": 400,
+        "letterSpacing": "-0.01em"
       },
       "label": {
         "size": "10-12px",
+        "family": "ui",
         "weight": "600-700",
-        "letterSpacing": "0.12em",
+        "letterSpacing": "0.07em-0.12em (varies by context, never below 0.07em)",
         "textTransform": "uppercase"
       },
       "numbers": {
+        "family": "ui",
         "weight": 700,
         "letterSpacing": "tight",
         "formatter": "dollars()"
       }
     }
   },
+  "motion": {
+    "description": "Richy Motion — one vocabulary for everything that moves, shipped 2026-08-09. Durations and curves live as CSS custom properties (never literal ms/eases at call sites) so --m-scale can retime the whole app, and prefers-reduced-motion collapses it to near-zero without per-call-site checks.",
+    "principle": "Motion only ever does one of three jobs: content arriving (rcRise), a value changing (rcGrow / rcRowIn / rcNudge / rcFlash), or a moment that has actually earned a celebration (rcPop / rcSweep). Nothing loops forever except a genuine in-progress state (typing dots, analyzing pulse, refresh spinner) — when the work stops, the motion stops.",
+    "tokens": {
+      "--m-scale": "1 (global retime multiplier; 0.0001 under prefers-reduced-motion)",
+      "--m-stagger": "55ms (per-item entrance delay step, caps at 6 steps)",
+      "--m-press": "0.12s * scale — tap feedback (scale 0.975 on press)",
+      "--m-quick": "0.22s * scale — colour / background transitions",
+      "--m-enter": "0.42s * scale — content arriving",
+      "--m-settle": "0.52s * scale — spring, overshoot",
+      "--m-value": "0.60s * scale — bars, rings, rows filling/growing",
+      "--m-ease": "cubic-bezier(0.22,1,0.36,1) — fast in, slow out",
+      "--m-spring": "cubic-bezier(0.34,1.32,0.5,1) — weighted settle"
+    },
+    "pressFeedback": "Every tappable surface (BigBtn included) tracks pointer down/up/leave/cancel and applies transform: scale(0.975) on press, transitioning via 'transform var(--m-press) ease, box-shadow var(--m-quick) ease'.",
+    "growIn": "Bars, rings and progress fills render at 0 and animate to value on mount (useGrowIn hook: flips true on next animation frame, with a 50ms setTimeout backstop for backgrounded tabs) rather than snapping to their resting value.",
+    "keyframes": ["rcRise", "rcGrow", "rcPop", "rcFlash", "rcRowIn", "rcSweep", "rcNudge"],
+    "accessibility": "*:focus-visible gets a 2.5px solid outline in the active theme's accent colour (3.5px under prefers-contrast:more) — keyboard/AT-only, invisible to mouse and touch."
+  },
   "heroCard": {
     "description": "Centerpiece of the app — premium banking aesthetic",
     "layout": {
       "gradient": "theme-dependent gradient background",
       "shadow": "theme-dependent shadow",
-      "balanceLabel": "NET BALANCE — tiny all-caps white/40% opacity",
-      "balanceNumber": "44px bold white balance number",
+      "balanceLabel": "NET BALANCE — tiny all-caps label at ~0.1em letter-spacing, theme faintText color",
+      "balanceNumber": "42px bold number in theme.hero.text — dark ink (#2A1F4D purple, #242C52 blue) on the two light-hero themes, white only on the dark-hero classic theme; red switches to theme.hero.negative when the balance is negative",
       "savingsRate": "green pill badge if ≥20%, orange otherwise",
       "metrics": "Income vs Spent side-by-side with separator",
       "footer": "Bottom strip: 'Top spend → [Category] — $X.XX' (Bloomberg terminal readout)"
@@ -293,26 +334,35 @@
   },
   "components": {
     "card": {
-      "bg": "T.card (theme-aware)",
-      "borderRadius": "20-22px",
-      "shadow": "0 1px 3px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04)"
+      "bg": "T.card (flat) or T.sheetGlass (glass variant)",
+      "borderRadius": 20,
+      "border": "none (flat) or 1px solid T.glassBorder (glass)",
+      "shadow": "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.07) (flat) — 0 4px 24px rgba(0,0,0,0.09), inset 0 1px 0 T.glassSpec (glass)",
+      "backdropFilter": "none (flat) or blur(28px) saturate(180%) (glass)"
     },
     "button": {
-      "background": "theme-specific gradient (T.btn)",
-      "borderRadius": "16-18px",
-      "padding": "12px 20px",
-      "fontWeight": 600,
-      "fontSize": "14-16px"
+      "description": "BigBtn — full-width primary action button",
+      "width": "100%",
+      "background": "theme-specific gradient (T.btn), disabled state rgba(0,0,0,0.10)",
+      "borderRadius": 14,
+      "padding": "13px 0",
+      "fontWeight": 700,
+      "fontSize": 16,
+      "fontFamily": "ui",
+      "pressState": "scale(0.975) via the shared PRESS_T motion transition — see motion.pressFeedback"
     },
     "input": {
+      "description": "Most input containers carry no stroke at all — they're a tinted fill, not an outlined field",
       "bg": "T.inputBg (rgba-based, dark-aware)",
-      "border": "1px solid T.sep",
-      "borderRadius": "12px",
-      "padding": "12px 16px"
+      "border": "none in the overwhelming majority of instances (a 1px T.sep border appears only in a few contexts)",
+      "borderRadius": "11-13px depending on context (not a fixed value)",
+      "padding": "9-14px depending on context"
     },
     "navBar": {
+      "description": "Floating bottom tab bar, not a top-cornered edge-to-edge bar",
       "material": "Liquid Glass (iOS 26)",
-      "blur": "30px + saturate(180%)",
+      "blur": "28px + saturate(190%) + brightness(1.08) — distinct from the sheet's 30px/saturate(180%)",
+      "borderRadius": 34,
       "glassSpec": "inset bright top rim + soft lift shadow",
       "backdrop": "content refraction through glass",
       "activeTabs": "frosted capsule lens behind selected icon"
@@ -323,6 +373,63 @@
       "borderRadius": "24px top (iOS-style)",
       "dimBackdrop": "blur(4px) saturate(120%)"
     }
+  },
+  "badges": {
+    "description": "157-entry badge collection (motivation/achievement layer), shipped 2026-08-14. A distinct document design system for the badge index lives at design-system/motivation-doc/ (tokens.css) — this section covers the in-app rendering.",
+    "art": "Theme-mode-split SVG per badge at /badges/{light|dark}/{id}.svg — separate light/dark assets, not CSS-recolored. Rarity chroma is baked into the art (a ring) rather than applied by a wrapper.",
+    "lockedState": "Locked badges show a silhouette + lock icon on T.inputBg, no name shown, with a transparent-placeholder rarity line so the grid baseline still aligns with unlocked tiles.",
+    "rarity": {
+      "tiers": ["common", "uncommon", "rare", "epic", "legendary", "mythic"],
+      "rule": "One chroma per tier, consistent across light/dark; on dark grounds the ramp LIGHTENS rather than inverting so relative order and legibility hold on both.",
+      "colors": {
+        "common": { "light": "T.ink3 (#B0A396)", "dark": "#A2958A" },
+        "uncommon": { "light": "T.green (#27A85F)", "dark": "#4FC97F" },
+        "rare": { "light": "T.blue (#2E7DD6)", "dark": "#5B9CF5" },
+        "epic": { "light": "#8970C6 (pinned to violet across all app themes)", "dark": "#C8B1FF" },
+        "legendary": { "light": "T.gold (#C8983A)", "dark": "#E0B45C" },
+        "mythic": { "light": "gradient only, no flat color", "dark": "gradient only, no flat color" }
+      },
+      "mythicGradient": {
+        "light": "linear-gradient(100deg,#8970C6 0%,#2E7DD6 24%,#27A85F 46%,#C8983A 70%,#B4519B 100%)",
+        "dark": "linear-gradient(100deg,#C8B1FF 0%,#5B9CF5 24%,#4FC97F 46%,#E0B45C 70%,#F0A0D8 100%)",
+        "usage": "Animated text-clip gradient shimmer — the one deliberate motion flourish reserved for the top tier; disabled under prefers-reduced-motion"
+      },
+      "labels": "Uppercase tier name (COMMON / UNCOMMON / RARE / EPIC / LEGENDARY / MYTHIC) at the label type scale"
+    }
+  },
+  "social": {
+    "description": "Directional follow graph, shipped 2026-08-14. Explicitly separate from the household/shared-account system — 'carries no money'; followers/following never see any amount.",
+    "screens": {
+      "socialStrip": "Empty/populated summary card on Profile",
+      "socialView": "Requests card ('asked to follow you'), plus FOLLOWING · N and FOLLOWERS · N list cards, with an explicit privacy footer",
+      "findPeople": "Handle claim/lookup only — no directory browse (rules deny listing)"
+    },
+    "avatar": {
+      "component": "Disc — initials-only circle, no photos anywhere in the social layer",
+      "tints": ["#5C7AE3", "#27A85F", "#C8983A", "#8970C6", "#2E7DD6"],
+      "rule": "Cycled by index, not by identity hash"
+    }
+  },
+  "widgets": {
+    "description": "Overview dashboard widgets, shipped 2026-08-15. Up to 6 widgets, section subtitled 'Built by Richard' with a small 3x16px accent bar in T.orange beside the display-serif section header.",
+    "shapes": [
+      "ring — RingChart + percentage",
+      "bar — ProgressBar + over/left copy",
+      "compare — two-column period comparison with a +/-% pill",
+      "trend — mini bar-chart sparkline",
+      "list — CatBadge rows"
+    ]
+  },
+  "profile": {
+    "description": "Motivation layer / Profile screen rebuild, shipped 2026-08-13/14. Identity block reordered to XP (left) — LevelMark (center) — Settings gear (right), replacing the old stats-triple.",
+    "levelMark": "104x104 ringed avatar: initial on a T.btn gradient circle, an 'LV N' pill anchored at the bottom, ringed by an orange (T.orange) progress arc",
+    "sections": ["Identity row (XP / LevelMark / Settings)", "SocialStrip", "This month — Green-Month ring card (T.green/T.gold SVG ring)", "Streaks card"],
+    "rankPill": "shield icon + rank text on T.orangeDim background, next to an inline 'Edit profile' pill button"
+  },
+  "business": {
+    "description": "Business account overview rebuild, shipped 2026-07-31. Uses a 3-panel scrollable hero carousel mirroring the personal Overview hero pattern.",
+    "stats": ["Needs attention / Unpaid invoices", "Tax pot — editable per-business profile.taxRate, default 25%, editable via a bottom sheet"],
+    "colorPalette": "BIZ_COLORS — 20 colors, distinct from the category COLOR_BANK used elsewhere"
   },
   "darkMode": {
     "description": "Adaptive light/dark mode that respects theme-specific hero colors",
@@ -335,7 +442,7 @@
       "Cream background #F7F3EE (light mode)",
       "Dark hero balance card (classic theme) or light hero gradients (purple/blue themes)",
       "Primary action colors per theme (orange #C8673A classic, purple #8970C6 for violet, navy #3C4C82 for blue)",
-      "Apple system font stack (no web fonts)",
+      "Apple system font stack for body copy (no web fonts); upright serif for titles, never italic",
       "Casual greeting format",
       "Bottom tab bar with SVG icons",
       "Richard's name and personality"
@@ -343,7 +450,8 @@
     "warnings": [
       "Light-hero themes (purple, blue): hero text is dark, not the primary accent color. #3C4C82 alone is only ~2.3:1 on periwinkle — always check contrast when adding new light-hero themes",
       "Liquid glass effect is subtle by design — avoid increasing blur or saturation beyond documented values",
-      "Nav bar behavior requires careful shadow and specular rim tuning per light/dark mode to maintain the lens effect"
+      "Nav bar behavior requires careful shadow and specular rim tuning per light/dark mode to maintain the lens effect",
+      "Never reintroduce italic or bold-weight display type — the app shipped and explicitly reverted that combination"
     ]
   },
   "statusBar": {
@@ -352,9 +460,10 @@
     "dark": "dark content (dark text, dark icons on light nav)"
   },
   "notes": {
-    "themeSystem": "Themes are runtime-switchable via Profile > Appearance. User choice persisted as 'theme' in Firestore. Three palettes supported: purple (default), classic, blue. Add new themes by extending THEMES object and THEME_LABELS map.",
+    "themeSystem": "Themes are runtime-switchable via Profile > Appearance. User choice persisted as 'theme' in Firestore, defaulting to 'blue' (Cornflower Ocean) when unset. Three palettes supported: blue (default), purple, classic. Add new themes by extending THEMES object and THEME_LABELS map.",
     "glassSystem": "Comprehensive Liquid Glass material system for iOS 26-style nav bar refraction, pill-shaped active-tab lens, frosted sheets, and adaptive light/dark glass tokens. Never apply static 30% opacity to nav bars — use the glass system tokens instead.",
     "darkMode": "Full dark mode support via applyDarkMode(). Glass tokens adapt (bright specs in dark, dark borders in light) to maintain visibility.",
-    "accessibility": "All text has been checked for WCAG contrast. Light-hero themes use darkened ink (e.g., #242C52) on hero, not the primary color."
+    "accessibility": "All text has been checked for WCAG contrast. Light-hero themes use darkened ink (e.g., #242C52) on hero, not the primary color.",
+    "componentPackage": "A buildable extraction of the simplest visual-atom components (Card, IconBadge, CatBadge, BigBtn, ProgressBar, SVGIcon) lives at design-system/src/ for /design-sync. It intentionally does not include screen-level composites (Profile, Social views, WidgetCard, BadgeTile, BusinessView) — those depend on app state/hooks and aren't meaningful outside the app."
   }
 }
