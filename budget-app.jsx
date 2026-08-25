@@ -7398,9 +7398,13 @@ function OnboardingScreen(props) {
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
+      {/* Same ribbons and cream veil as the trip interview, so the two
+          question flows read as one surface. */}
+      <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base="#FBF3E8" speed={0.18} intensity={0.75} yScale={0.44} xScale={1.05} style={{ position: "absolute" }} />
+      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.85) 0%, rgba(251,243,232,0.45) 24%, rgba(251,243,232,0.45) 76%, rgba(251,243,232,0.8) 100%)" }} />
 
-      <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0", position: "relative", zIndex: 2 }}>
         {qIndex > 0 ? (
           <JrIconBtn icon="chevron" rotate={180} onPress={goBack} />
         ) : <div style={{ width: 34, flexShrink: 0 }} />}
@@ -7408,7 +7412,7 @@ function OnboardingScreen(props) {
         <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: JINK3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(qIndex + 1) + "/" + Q_TOTAL}</div>
       </div>
 
-      <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "28px 24px 8px" }}>
+      <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "28px 24px 8px", position: "relative", zIndex: 2 }}>
         <div style={{ maxWidth: 380, margin: "0 auto" }}>
           <JrStepShell k={qIndex} dir={dir}>
             {qIndex > 0 && (
@@ -7599,7 +7603,7 @@ function OnboardingScreen(props) {
         </div>
       </div>
 
-      <div style={{ padding: "12px 24px 40px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box" }}>
+      <div style={{ padding: "12px 24px 40px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box", position: "relative", zIndex: 2 }}>
         {qIndex === 0 && <JrBtn label={tr("obLetsGo")} disabled={!greetDone} onPress={advance} />}
         {qIndex === 1 && <JrBtn label={tr("continueBtn")} onPress={advance} />}
         {(qIndex === 2 || qIndex === 3) && (
