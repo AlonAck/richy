@@ -312,11 +312,14 @@ function resolveCat(cats, t) {
 // matching the compact sans typography in the reference.
 const UI = '-apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 // Every title uses an upright editorial serif. Apple devices prefer New York /
-// Iowan Old Style; the rest of the stack keeps the same bookish voice on other
-// platforms. Bundled Noto companions preserve that role for Hebrew and Arabic.
-const DISP = '"New York", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Serif Hebrew", "Noto Naskh Arabic", ui-serif, "Times New Roman", serif';
-const DISP_WEIGHT = 400;
+// EB Garamond is the title voice throughout Richy. Bundled Noto companions
+// preserve that role for Hebrew and Arabic.
+const DISP = '"EB Garamond", "Noto Serif Hebrew", "Noto Naskh Arabic", Garamond, "Times New Roman", serif';
+const DISP_WEIGHT = 700;
 const MARK_WEIGHT = 500;
+// Richard keeps a distinct, italic editorial voice within Advisor only.
+const RICHARD_DISP = '"EB Garamond", "Noto Serif Hebrew", "Noto Naskh Arabic", Garamond, "Times New Roman", serif';
+const RICHARD_DISP_WEIGHT = 700;
 
 var _currency = { sym: "$" };
 // Seeds from the device's last-picked language (mirrored by applyLangDir())
@@ -438,6 +441,23 @@ var TRANSLATIONS = {
   ar: { overview:"نظرة عامة", activity:"النشاط", budgets:"الميزانيات", goals:"الاهداف", advisor:"المستشار", profile:"الملف الشخصي", language:"اللغة", currency:"العملة", yourPlan:"خطتك", categories:"الفئات", signOut:"تسجيل الخروج", richyMember:"عضو Richy", richyRefersTo:"ريتشي يناديك", seeYourPlan:"انظر خطتك من ريتشارد", netBalance:"الرصيد الصافي", income:"الدخل", spent:"المنفق", topSpend:"اعلى انفاق", morning:"صباح الخير", afternoon:"مساء الخير", evening:"مساء الخير", savedThisPeriod:"تم توفيره", redoQuestionnaire:"اعادة الاستبيان", yourPlanByRichard:"خطتك من ريتشارد", noTransactions:"لا توجد معاملات بعد", noTransactionsSub:"اضغط + لتسجيل اول معاملة. الوعي هو الخطوة الاولى نحو الثروة.", overviewEmptySub:"اغنى رجل في بابل بدا بتتبع كل عملة. ابدا في النشاط.", savingsRate:"معدل الادخار",quickAdd:"اضافة سريعة", excellent:"ممتاز", onTrack:"في المسار", buildItUp:"طوره", overspending:"مجال للموازنة", thisPeriod:"هذه الفترة", transactions:"المعاملات", whereItWent:"اين ذهب", overLimit:"فوق الحد", complete:"مكتمل", savedLabel:"مدخر", spentLabel:"انفق", toGo:"متبقي", recent:"الاخير", activeGoal:"هدف نشط", activeGoals:"اهداف نشطة", today:"اليوم", yesterday:"امس", moneyIn:"المال الداخل", moneyOut:"المال الخارج", newTransaction:"معاملة جديدة", editTransaction:"تعديل المعاملة", addTransaction:"اضافة معاملة", saveChanges:"حفظ التغييرات", deleteTx:"حذف المعاملة", amount:"المبلغ", txLabel:"التسمية", category:"الفئة", date:"التاريخ", repeat:"تكرار", once:"مرة واحدة", weekly:"اسبوعي", monthly:"شهري", markPending:"وضع علامة معلقة", expense:"مصروف", noBudgets:"لا توجد ميزانيات بعد", noBudgetsSub:"اضغط + لتعيين حد للفئة. الميزانية هي توجيه المال.", newBudget:"ميزانية جديدة", editLimit:"تعديل الحد", addBudget:"اضافة ميزانية", removeBudget:"حذف هذه الميزانية", totalSpent:"اجمالي الانفاق", byCategory:"حسب الفئة", edit:"تعديل", delete:"حذف", save:"حفظ", budgeted:"مخصص", monthlyLimit:"الحد الشهري", allCatsHaveBudget:"كل الفئات لديها ميزانية. اضف فئة جديدة اولا.", noGoals:"لا توجد دفاتر بعد", noGoalsSub:"اضغط + لانشاء اول دفتر. الهدف بموعد خطة وليس امنية.", newBudgetBook:"دفتر جديد", editBudgetBook:"تعديل الدفتر", createBudgetBook:"انشاء دفتر", deleteBudgetBook:"حذف الدفتر", addToBudgetBook:"اضافة الى الدفتر", alreadySaved:"تم الادخار مسبقا", target:"الهدف", name:"الاسم", deadline:"الموعد النهائي (اختياري)", goalComplete:"تم تحقيق الهدف!", remaining:"متبقي", add:"اضافة", removeMoney:"إزالة", removeFromBudgetBook:"إزالة من الدفتر", removeMoneyConfirm:"إزالة {amt} من {name}؟ سيقلل هذا مما تم توفيره بالفعل.", syncWithAccount:"مزامنة مع حساب", noSync:"بدون مزامنة", syncedWith:"مزامن مع", addOrRemove:"إضافة / إزالة", richySuggests:"اقتراح ريتشارد", implement:"تطبيق", dismiss:"تجاهل", aiAdvisor:"مستشار مالي AI", aiAdvisorSub:"نصائح مخصصة بناء على انفاقك الفعلي.", analyzeMyFinances:"تحليل ماليتي", thinkP1:"أقرأ أرقامك",thinkP2:"أفكر في الأمر",thinkP3:"أوازن الخيارات",thinkP4:"أكتب الرد",anStep1:"أقرأ شهرك",anStep2:"أفحص {n} من المعاملات",anStep3:"أقارن الخطة بالواقع",anStep4:"أبحث عن الأهم",anStep5:"أكتب تحليلك",analyzingFinances:"جاري تحليل ماليتك...", fewSeconds:"هذا يستغرق بضع ثوان", refresh:"تحديث", insights:"رؤى", analysisFailed:"فشل التحليل", tryAgain:"حاول مجددا", askYourAdvisor:"اسال مستشارك", advisorQ1:"كيف يمكنني توفير المزيد؟", advisorQ2:"هل معدل توفيري صحي؟", advisorQ3:"ماذا افعل بالفائض؟",advisorQ4:"سجل ما انفقته للتو", thinking:"افكر...", yesDo:"نعم افعل ذلك", notNow:"ليس الان", askRichard:"اسال ريتشارد اي شيء...", giveFeedback:"اعطِ ريتشارد ملاحظاتك...", advisorDisclaimer:"ريتشارد مساعد ذكاء اصطناعي وليس مستشارا ماليا معتمدا. دائما ابحث قبل اتخاذ قرارات مالية.", translate:"ترجمة الخطة", noPlanYet:"لا توجد خطة بعد. اكمل الاستبيان للحصول على خطتك الشخصية من ريتشارد.", noIncomeYet:"لم يُسجل دخل بعد", notes:"ملاحظات", notesEmpty:"لا ملاحظات بعد", notesEmptySub:"تتبع من يدين لك ولمن تدين. اضغط + لإضافة أول ملاحظة.", theyOweMe:"يدينون لي", iOwe:"أنا مدين", newNote:"ملاحظة جديدة", addNote:"أضف ملاحظة", editNote:"تعديل الملاحظة", saveNote:"حفظ الملاحظة", settle:"تسوية", settleTitle:"تسوية الملاحظة", settleAddBalance:"أضف إلى رصيدي", reminder:"تذكير", reminderTitle:"ضبط تذكير", setReminder:"ضبط التذكير", clearReminder:"إلغاء التذكير", reminderWhen:"ذكرني في", reminderDenied:"الإشعارات محظورة. ستظل الملاحظة تعرض شارة الاستحقاق.", due:"مستحق", overdue:"متأخر", deleteNote:"حذف الملاحظة", trips:"رحلات", planATrip:"خطط رحلة", planATripSub:"ضع ميزانية لرحلة دون المساس برصيدك.", planNewTrip:"خطط رحلة جديدة", noTrips:"لا رحلات بعد", noTripsSub:"خطط رحلة وسيوزع ريتشارد ميزانيتك على الأساسيات.", tripName:"اسم الرحلة", destination:"الوجهة", tripBudget:"الميزانية الكلية", tripDays:"أيام", travelStyle:"نمط السفر", styleBudget:"اقتصادي", styleComfort:"مريح", styleLuxury:"فاخر", next:"التالي", back:"رجوع", richardPlanning:"ريتشارد يخطط رحلتك", richardPlanningSub:"يوزع ميزانيتك على الأساسيات.", tripSplit:"توزيع ميزانيتك", allocated:"مخصص", overBy:"تجاوز بمقدار", saveTrip:"حفظ الرحلة", addCategory:"أضف فئة", editCategory:"تعديل الفئة", color:"اللون", deductFromBalance:"خصم من الرصيد", deductExplain:"هكذا يُسجل ما تنفقه فعلاً في الرحلة كمصروف واحد مباشر - ينخفض رصيدك فقط عندما تسجل الإنفاق هنا، وليس الميزانية كلها مقدماً. يمكنك التراجع في أي وقت.", reserved:"قيد التتبع مقابل الرصيد", undoReserve:"إيقاف التتبع", logExpense:"سجل مصروفاً", logExpenseTitle:"تسجيل مصروف رحلة", tripTips:"نصائح ريتشارد", deleteTrip:"حذف الرحلة", deleteTripConfirm:"حذف هذه الرحلة؟ لا يمكن التراجع عن ذلك.", spentOf:"أُنفق من", leftToSpend:"متبقٍ للإنفاق", planning:"قيد التخطيط", tripSummary:"ملخص الرحلة", appearance:"المظهر", leftAfterBudgets:"المتبقي بعد الميزانيات", tripIcon:"رمز الرحلة", savings:"مدخرات", netWorth:"صافي الثروة", balance:"الرصيد", manage:"إدارة", totalSavings:"إجمالي المدخر", savingsIntro:"مال تحتفظ به منفصلاً عن رصيد إنفاقك - صندوق طوارئ، أو ادخار لهدف، أو أي مبلغ لا تريد إنفاقه بالخطأ. يُحسب ضمن صافي ثروتك، وليس ضمن رصيدك أبداً.", newSavingsAccount:"حساب توفير جديد", savingsAccountName:"اسم الحساب", addMoney:"أضف مالاً", withdraw:"سحب", fromBalance:"من رصيدي", externalMoney:"مال أملكه بالفعل", toBalance:"إلى رصيدي", removeFromNet:"إنفاق أو إزالة", startingAmount:"مبلغ البداية (اختياري)", createAccount:"إنشاء حساب", closeAccount:"إغلاق الحساب", rename:"إعادة تسمية", emptySavingsSub:"احتفظ بصندوق طوارئ أو ادخار لهدف منفصلاً عن رصيد إنفاقك.", addSavingsAccount:"أضف حساب توفير", history:"السجل", balanceUntouched:"رصيد إنفاقك يبقى دون تغيير", movesFromBalance:"ينقل المال خارج رصيد إنفاقك", addsToBalance:"يعيد المال إلى رصيد إنفاقك", leavesNetWorth:"يغادر حساباتك - يخفض صافي ثروتك", pickIcon:"الرمز", emergencyFund:"صندوق الطوارئ", noMovesYet:"لا حركات بعد", pastChats:"محادثات سابقة", newChat:"محادثة جديدة", conversation:"محادثة", conversations:"محادثات", noPastChats:"لا محادثات سابقة بعد", message:"رسالة", messages:"رسائل" },
   ru: { overview:"Обзор", activity:"Активность", budgets:"Бюджеты", goals:"Цели", advisor:"Советник", profile:"Профиль", language:"Язык", currency:"Валюта", yourPlan:"Ваш план", categories:"Категории", signOut:"Выйти", richyMember:"Участник Richy", richyRefersTo:"Richy называет тебя", seeYourPlan:"Посмотреть план от Ричарда", netBalance:"Чистый баланс", income:"Доходы", spent:"Расходы", topSpend:"Главная трата", morning:"Доброе утро", afternoon:"Добрый день", evening:"Добрый вечер", savedThisPeriod:"сохранено за период", redoQuestionnaire:"Пройти снова", yourPlanByRichard:"Ваш план от Ричарда", noTransactions:"Нет транзакций", noTransactionsSub:"Нажмите + чтобы добавить первую. Осознанность - первый шаг к богатству.", overviewEmptySub:"Богатейший человек Вавилона начал с учёта каждой монеты. Начните в Активности.", savingsRate:"Уровень сбережений",quickAdd:"Быстрое добавление", excellent:"Отлично", onTrack:"В норме", buildItUp:"Улучшайте", overspending:"Можно выровнять", thisPeriod:"за период", transactions:"Транзакции", whereItWent:"Куда ушло", overLimit:"сверх лимита", complete:"завершено", savedLabel:"накоплено", spentLabel:"потрачено", toGo:"осталось", recent:"Последние", activeGoal:"активная цель", activeGoals:"активных целей", today:"Сегодня", yesterday:"Вчера", moneyIn:"Доходы", moneyOut:"Расходы", newTransaction:"Новая транзакция", editTransaction:"Редактировать", addTransaction:"Добавить транзакцию", saveChanges:"Сохранить изменения", deleteTx:"Удалить транзакцию", amount:"Сумма", txLabel:"Описание", category:"Категория", date:"Дата", repeat:"Повтор", once:"Однократно", weekly:"Еженедельно", monthly:"Ежемесячно", markPending:"Отметить как ожидающее", expense:"Расход", noBudgets:"Нет бюджетов", noBudgetsSub:"Нажмите + чтобы задать лимит. Бюджет говорит деньгам куда идти.", newBudget:"Новый бюджет", editLimit:"Изменить лимит", addBudget:"Добавить бюджет", removeBudget:"Удалить этот бюджет", totalSpent:"Всего потрачено", byCategory:"По категориям", edit:"Редактировать", delete:"Удалить", save:"Сохранить", budgeted:"запланировано", monthlyLimit:"Месячный лимит", allCatsHaveBudget:"Все категории уже имеют бюджет. Сначала добавьте новую категорию.", noGoals:"Нет книг целей", noGoalsSub:"Нажмите + чтобы создать первую. Цель с датой - это план, а не мечта.", newBudgetBook:"Новая книга целей", editBudgetBook:"Редактировать книгу целей", createBudgetBook:"Создать книгу целей", deleteBudgetBook:"Удалить книгу целей", addToBudgetBook:"Добавить в книгу целей", alreadySaved:"Уже накоплено", target:"Цель", name:"Название", deadline:"Срок (необязательно)", goalComplete:"Цель достигнута!", remaining:"осталось", add:"Добавить", removeMoney:"Снять", removeFromBudgetBook:"Убрать из книги целей", removeMoneyConfirm:"Снять {amt} из {name}? Это уменьшит уже накопленное.", syncWithAccount:"Синхронизировать со счётом", noSync:"Без синхронизации", syncedWith:"Синхронизировано с", addOrRemove:"Добавить / Снять", richySuggests:"Ричард предлагает", implement:"Применить", dismiss:"Отклонить", aiAdvisor:"Финансовый советник ИИ", aiAdvisorSub:"Персональные советы на основе ваших расходов.", analyzeMyFinances:"Анализировать мои финансы", thinkP1:"Читаю ваши цифры",thinkP2:"Обдумываю",thinkP3:"Взвешиваю варианты",thinkP4:"Пишу ответ",anStep1:"Читаю ваш месяц",anStep2:"Проверяю {n} операций",anStep3:"Сравниваю план с реальностью",anStep4:"Ищу самое важное",anStep5:"Пишу ваш анализ",analyzingFinances:"Анализируем ваши финансы...", fewSeconds:"Это займет несколько секунд", refresh:"Обновить", insights:"Инсайты", analysisFailed:"Анализ не удался", tryAgain:"Попробовать снова", askYourAdvisor:"Спросите вашего советника", advisorQ1:"Как сэкономить больше?", advisorQ2:"Мой уровень сбережений здоровый?", advisorQ3:"Что делать с излишком?",advisorQ4:"Запиши, что я потратил", thinking:"Думаю...", yesDo:"Да, сделай это", notNow:"Не сейчас", askRichard:"Спросите Ричарда что угодно...", giveFeedback:"Дайте обратную связь Ричарду...", advisorDisclaimer:"Ричард является ИИ-помощником, а не лицензированным финансовым советником. Всегда проводите собственное исследование.", translate:"Перевести план", noPlanYet:"Плана пока нет. Пройдите анкету, чтобы получить персональный план от Ричарда.", noIncomeYet:"Доходы ещё не записаны", notes:"Заметки", notesEmpty:"Пока нет заметок", notesEmptySub:"Отслеживайте, кто должен вам и кому должны вы. Нажмите +, чтобы добавить первую.", theyOweMe:"Мне должны", iOwe:"Я должен", newNote:"Новая заметка", addNote:"Добавить заметку", editNote:"Редактировать заметку", saveNote:"Сохранить заметку", settle:"Погасить", settleTitle:"Погашение заметки", settleAddBalance:"Добавить к моему балансу", reminder:"Напоминание", reminderTitle:"Установить напоминание", setReminder:"Установить", clearReminder:"Убрать напоминание", reminderWhen:"Напомнить мне", reminderDenied:"Уведомления заблокированы. Заметка всё равно покажет метку срока.", due:"Срок", overdue:"Просрочено", deleteNote:"Удалить заметку", trips:"Поездки", planATrip:"Спланировать поездку", planATripSub:"Составьте бюджет отпуска, не трогая свой баланс.", planNewTrip:"Спланировать новую поездку", noTrips:"Пока нет поездок", noTripsSub:"Спланируйте отпуск, и Ричард распределит бюджет по главному.", tripName:"Название поездки", destination:"Направление", tripBudget:"Общий бюджет", tripDays:"Дней", travelStyle:"Стиль путешествия", styleBudget:"Эконом", styleComfort:"Комфорт", styleLuxury:"Люкс", next:"Далее", back:"Назад", richardPlanning:"Ричард планирует вашу поездку", richardPlanningSub:"Распределяет бюджет по главному.", tripSplit:"Распределение бюджета", allocated:"Распределено", overBy:"превышение на", saveTrip:"Сохранить поездку", addCategory:"Добавить категорию", editCategory:"Редактировать категорию", color:"Цвет", deductFromBalance:"Списывать с баланса", deductExplain:"Реальные траты в поездке записываются как один живой расход - баланс уменьшается только когда вы записываете траты здесь, а не на весь бюджет сразу. Можно отменить в любой момент.", reserved:"Отслеживается по балансу", undoReserve:"Прекратить отслеживание", logExpense:"Записать расход", logExpenseTitle:"Запись расхода поездки", tripTips:"Советы Ричарда", deleteTrip:"Удалить поездку", deleteTripConfirm:"Удалить эту поездку? Это нельзя отменить.", spentOf:"потрачено из", leftToSpend:"осталось потратить", planning:"Планируется", tripSummary:"Итоги поездки", appearance:"Оформление", leftAfterBudgets:"Осталось после бюджетов", tripIcon:"Значок поездки", savings:"Сбережения", netWorth:"Чистый капитал", balance:"Баланс", manage:"Управлять", totalSavings:"Всего накоплено", savingsIntro:"Деньги, которые вы держите отдельно от расходного баланса - резервный фонд, накопления на цель, всё, что не хотите случайно потратить. Они входят в чистый капитал, но никогда - в баланс.", newSavingsAccount:"Новый сберегательный счёт", savingsAccountName:"Название счёта", addMoney:"Пополнить", withdraw:"Снять", fromBalance:"С моего баланса", externalMoney:"Деньги, которые уже есть", toBalance:"На мой баланс", removeFromNet:"Потратить или убрать", startingAmount:"Начальная сумма (необязательно)", createAccount:"Создать счёт", closeAccount:"Закрыть счёт", rename:"Переименовать", emptySavingsSub:"Держите резервный фонд или накопления отдельно от расходного баланса.", addSavingsAccount:"Добавить сберегательный счёт", history:"История", balanceUntouched:"Ваш расходный баланс не меняется", movesFromBalance:"Переводит деньги из расходного баланса", addsToBalance:"Возвращает деньги на расходный баланс", leavesNetWorth:"Уходит из ваших счетов - уменьшает чистый капитал", pickIcon:"Значок", emergencyFund:"Резервный фонд", noMovesYet:"Движений пока нет", pastChats:"Прошлые чаты", newChat:"Новый чат", conversation:"чат", conversations:"чатов", noPastChats:"Прошлых чатов пока нет", message:"сообщение", messages:"сообщений" },
 };
+// Chat-first Richard copy lives in a small, separate block so the already-large
+// language dictionaries above stay readable. Keep every new chat label localized:
+// this surface is the first thing users see when they open Advisor.
+var ADVISOR_CHAT_STRINGS = {
+  en: { advisorGreeting:"How can I help with your money today?", sendMessage:"Send message", closeChat:"Close chat" },
+  he: { advisorGreeting:"איך אוכל לעזור לך עם הכסף שלך היום?", sendMessage:"שלח הודעה", closeChat:"סגור שיחה" },
+  ar: { advisorGreeting:"كيف يمكنني مساعدتك في شؤونك المالية اليوم؟", sendMessage:"إرسال الرسالة", closeChat:"إغلاق المحادثة" },
+  es: { advisorGreeting:"¿Cómo puedo ayudarte hoy con tu dinero?", sendMessage:"Enviar mensaje", closeChat:"Cerrar chat" },
+  fr: { advisorGreeting:"Comment puis-je vous aider avec votre argent aujourd’hui ?", sendMessage:"Envoyer le message", closeChat:"Fermer la discussion" },
+  ru: { advisorGreeting:"Как я могу помочь вам с деньгами сегодня?", sendMessage:"Отправить сообщение", closeChat:"Закрыть чат" },
+  de: { advisorGreeting:"Wie kann ich dir heute bei deinen Finanzen helfen?", sendMessage:"Nachricht senden", closeChat:"Chat schließen" },
+  pt: { advisorGreeting:"Como posso ajudar com seu dinheiro hoje?", sendMessage:"Enviar mensagem", closeChat:"Fechar conversa" },
+};
+for (var _ack in ADVISOR_CHAT_STRINGS) {
+  if (!TRANSLATIONS[_ack]) continue;
+  for (var _ak in ADVISOR_CHAT_STRINGS[_ack]) TRANSLATIONS[_ack][_ak] = ADVISOR_CHAT_STRINGS[_ack][_ak];
+}
 // Folder-budget strings live in their own block rather than being appended to
 // the four already-enormous single-line language objects above. tr() falls back
 // to English per key, so a language missing one still renders.
@@ -3375,7 +3395,7 @@ class ErrorBoundary extends React.Component {
     return React.createElement("div", { style: { position: "fixed", inset: 0, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI, padding: 24, zIndex: 9999 } },
       React.createElement("div", { style: { textAlign: "center", maxWidth: 340 } },
         React.createElement("div", { style: { width: 56, height: 56, borderRadius: 18, background: "#0D0C18", margin: "0 auto 16px", display: "flex", alignItems: "center", justifyContent: "center" } },
-          React.createElement("span", { style: { fontFamily: DISP, fontSize: 34, fontWeight: MARK_WEIGHT, color: "#C8973A", lineHeight: 1 } }, "R")),
+          React.createElement("span", { style: { fontFamily: UI, fontSize: 34, fontWeight: MARK_WEIGHT, color: "#C8973A", lineHeight: 1 } }, "R")),
         React.createElement("div", { style: { fontSize: 19, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: ink, marginBottom: 8 } }, "Something went wrong"),
         React.createElement("div", { style: { fontSize: 13.5, color: sub, lineHeight: 1.5, marginBottom: 18 } }, "Your data is safe in the cloud. Reload the app to pick up right where you left off."),
         React.createElement("button", { onClick: function () { location.reload(); }, style: { border: "none", cursor: "pointer", background: "#C8973A", color: "#fff", fontSize: 14.5, fontWeight: 700, padding: "12px 28px", borderRadius: 12, fontFamily: UI } }, "Reload Richy")
@@ -3406,7 +3426,7 @@ function RichyLogo(props) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style={props.style || {}}>
       <rect width="100" height="100" rx={22} fill="#0D0C18" />
-      <text x="50" y="75" textAnchor="middle" fontFamily={DISP} fontSize="72" fontWeight={MARK_WEIGHT} fill="#C8973A">R</text>
+      <text x="50" y="75" textAnchor="middle" fontFamily={UI} fontSize="72" fontWeight={MARK_WEIGHT} fill="#C8973A">R</text>
     </svg>
   );
 }
@@ -4244,6 +4264,11 @@ function ResponseStream(props) {
 // light and would vanish on cream). Accents still come from T.
 var JINK = "#1A1410", JINK2 = "#6B5C4E", JINK3 = "#B0A396";
 var JR_BG = "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)";
+// Body ink for copy that sits directly on JrShaderBg. JINK2 measures 5.8:1 on
+// the plain cream but collapses to 2.1-2.9:1 (theme-dependent) once a ribbon
+// core passes under it - a real AA failure at 14px, in every theme. This sits
+// on the JINK -> JINK2 line, so it reads as the same warm ink, just deeper.
+var JINK2_SH = "#4A3D33";
 
 function ensureJourneyCss() {
   var id = "richy-journey-css";
@@ -5173,6 +5198,7 @@ function SVGIcon(props) {
     eyeoff:   "M17.94 17.94A10 10 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9 9 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19M1 1l22 22",
     logout:   "M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9",
     refresh:  "M23 4v6h-6M1 20v-6h6M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15",
+    filter:   "M4 6h16M4 12h16M4 18h16M8 4v4M16 10v4M12 16v4",
     check:    "M20 6L9 17l-5-5",
     spark:    "M13 2L3 14h9l-1 8 10-12h-9l1-8z",
     search:   "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z",
@@ -5971,6 +5997,73 @@ function JrMockChip(props) {
   );
 }
 
+// A band of cream light for copy laid directly on JrShaderBg.
+//
+// The root veil is position:absolute inset:0, but the copy lives inside a
+// horizontally scroll-snapped, vertically centered track - so the veil cannot
+// know where a word is, and has to dim the whole midfield on the chance that
+// some of it is type. That is why it sat at the worst compromise available
+// (0.42): muddy ribbons everywhere, and the type still swinging between 5.8:1
+// and 2.1:1 as a ribbon swept under it. Contrast that FLUCTUATES under thin
+// Garamond hairlines is what actually reads as "annoying to read".
+//
+// This scrim is a sibling of the words instead, so it cannot desync from them
+// on scroll, on reflow, on a longer translation, or on a frozen reduced-motion
+// frame - it has no position of its own to desync from.
+//
+// It is a band, not a disc: flat across the line so a full-width headline sits
+// on an even plateau, feathered only vertically, and bled past the slide's side
+// padding so there is no vertical seam and adjacent slides abut cleanly
+// mid-drag. Stops are px measured from BOTH ends, so a 2-line English headline
+// and a 3-line Arabic one get the same falloff with no retuning.
+//
+// The cream is exactly rgb(251,243,232) - the shader's own u_base and the
+// veil's color. That one choice pays for three constraints: over a ribbon it
+// can only lerp back toward what the shader would have drawn with no ribbon
+// (subtractive, never a grey scrim); with no WebGL it lands within ~4/255 of
+// JR_BG and is invisible rather than a smear; and a near-opaque cream wash is
+// hue-neutral by construction, so periwinkle, violet and amber all resolve to
+// the same ground. Nothing here reads T at all.
+//
+// No mask-image and no backdrop-filter: JrShaderBg's rAF never idles, so any
+// backdrop layer above it would re-blur at 60fps forever, even under reduced
+// motion. Plain `background` costs one raster.
+function JrReadingLight(props) {
+  var padY = props.padY == null ? 78 : props.padY;    // vertical feather, px
+  var bleed = props.bleed == null ? 28 : props.bleed; // matches slideWrap's side padding
+  var a = props.strength == null ? 0.9 : props.strength;
+  function A(f) { return Math.round(a * f * 1000) / 1000; }
+  function P(f) { return Math.round(padY * f); }
+
+  var band = "linear-gradient(180deg,"
+    + "rgba(251,243,232,0) 0px,"
+    + "rgba(251,243,232," + A(0.10) + ") " + P(0.22) + "px,"
+    + "rgba(251,243,232," + A(0.36) + ") " + P(0.44) + "px,"
+    + "rgba(251,243,232," + A(0.70) + ") " + P(0.66) + "px,"
+    + "rgba(251,243,232," + A(0.92) + ") " + P(0.86) + "px,"
+    + "rgba(251,243,232," + A(1) + ") " + padY + "px,"
+    + "rgba(251,243,232," + A(1) + ") calc(100% - " + padY + "px),"
+    + "rgba(251,243,232," + A(0.92) + ") calc(100% - " + P(0.86) + "px),"
+    + "rgba(251,243,232," + A(0.70) + ") calc(100% - " + P(0.66) + "px),"
+    + "rgba(251,243,232," + A(0.36) + ") calc(100% - " + P(0.44) + "px),"
+    + "rgba(251,243,232," + A(0.10) + ") calc(100% - " + P(0.22) + "px),"
+    + "rgba(251,243,232,0) 100%)";
+
+  return (
+    <div style={Object.assign({ position: "relative", width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }, props.style)}>
+      <div aria-hidden="true" style={{ position: "absolute", top: -padY, bottom: -padY, left: -bleed, right: -bleed, zIndex: 0, pointerEvents: "none", background: band }} />
+      <div style={{
+        position: "relative", zIndex: 1, width: "100%",
+        display: "flex", flexDirection: "column", alignItems: "center",
+        // text-shadow inherits, so this reaches the h2 and the sub without
+        // touching either style object: a cream halo that fills the serif
+        // counters out where the band feathers away. Invisible on the plateau.
+        textShadow: "0 0 8px rgba(251,243,232,0.85)",
+      }}>{props.children}</div>
+    </div>
+  );
+}
+
 function IntroCarousel(props) {
   useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
   var trackRef = useRef(null);
@@ -5996,21 +6089,47 @@ function IntroCarousel(props) {
   }
 
   var slideWrap = { flex: "0 0 100%", scrollSnapAlign: "start", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "10px 28px 0", boxSizing: "border-box" };
-  var mockCard = { position: "relative", width: 268, background: "#fff", borderRadius: 22, padding: "18px 18px", boxShadow: "0 18px 44px rgba(40,28,16,0.13)", boxSizing: "border-box" };
-  var h2 = { fontSize: 22.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", textAlign: "center", lineHeight: 1.22, marginTop: 34 };
-  var sub = { fontSize: 14, color: JINK2, textAlign: "center", lineHeight: 1.55, marginTop: 8, maxWidth: 300 };
+  // minHeight pins all three cards to one height. Measured in the harness the
+  // three cards are 207 / 158 / 171px, so today the headline baseline jumps up
+  // to 49px on every swipe and you re-acquire the line each time. It also keeps
+  // the three reading-light bands at the same y so they abut cleanly mid-drag.
+  // If a translated card ever exceeds it the pin just stops binding - no break.
+  var mockCard = { position: "relative", width: 268, minHeight: 208, background: "#fff", borderRadius: 22, padding: "18px 18px", boxShadow: "0 18px 44px rgba(40,28,16,0.13)", boxSizing: "border-box" };
+  // 22.5 -> 24 puts stroke mass back into the Garamond hairlines. letterSpacing
+  // -0.01em -> 0 opens the counters (a thin ribbon core was slipping through an
+  // 'o') and is the correct value for Arabic, where negative tracking drags
+  // joined letterforms into each other. marginTop moves to litWrap so the
+  // band's plateau lines up with the text box rather than with the margin.
+  var h2 = { fontSize: 24, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK, letterSpacing: "0em", textAlign: "center", lineHeight: 1.22, maxWidth: 320 };
+  var sub = { fontSize: 14.5, color: JINK2_SH, textAlign: "center", lineHeight: 1.55, marginTop: 9, maxWidth: 300 };
+  // One geometry for all three slides so the bands never differ between them.
+  var litWrap = { marginTop: 34 };
 
   return (
     <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
-      <div style={{ display: "flex", justifyContent: "flex-end", padding: "18px 20px 0" }}>
-        <button onClick={props.onDone} style={{ background: "none", border: "none", color: JINK3, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: 6 }}>{tr("icSkip")}</button>
+      <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base="#FBF3E8" speed={0.16} intensity={0.6} yScale={0.44} xScale={1.05} style={{ position: "absolute" }} />
+      {/* The copy carries its own ground now (JrReadingLight), so this stops
+          being a legibility scrim and goes back to being chrome protection.
+          Stops are px from each end so they hug the actual Skip row and the dot
+          rail + CTA at any screen height, and the midfield relaxes 0.42 -> 0.20,
+          which hands most of the screen back to the shader. Every stop is cream
+          on cream, so with no WebGL this layer is still invisible. */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.88) 0px, rgba(251,243,232,0.60) 54px, rgba(251,243,232,0.20) 122px, rgba(251,243,232,0.20) calc(100% - 190px), rgba(251,243,232,0.46) calc(100% - 118px), rgba(251,243,232,0.80) 100%)" }} />
+
+      <div style={{ display: "flex", justifyContent: "flex-end", padding: "18px 20px 0", position: "relative", zIndex: 2 }}>
+        {/* JINK3 measures 2.24:1 on the plain cream - the worst text on this
+            screen, and it failed before the shader was ever added. */}
+        <button onClick={props.onDone} style={{ background: "none", border: "none", color: JINK2, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: 6 }}>{tr("icSkip")}</button>
       </div>
 
+      {/* overflowY was computing to `auto` (only overflowX was set), which the
+          band's -78px top/bottom overhang would have turned into a real
+          vertical scrollbar on short viewports. */}
       <div ref={trackRef} onScroll={onScroll} onPointerDown={function() { touchedRef.current = true; }} className="jr-scroll"
-        style={{ flex: 1, display: "flex", overflowX: "auto", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
+        style={{ flex: 1, display: "flex", overflowX: "auto", overflowY: "hidden", scrollSnapType: "x mandatory", position: "relative", zIndex: 2 }}>
 
         <div style={slideWrap}>
-          <div style={{ position: "relative", paddingBottom: 26 }}>
+          <div style={{ position: "relative", zIndex: 2, paddingBottom: 26 }}>
             <div style={mockCard}>
               <div style={{ fontSize: 11, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em" }}>{tr("icBalance")}</div>
               <div style={{ fontSize: 30, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", marginTop: 3 }}>$2,840</div>
@@ -6034,12 +6153,14 @@ function IntroCarousel(props) {
             <JrMockChip top={-16} right={-30} icon="up" tint={T.green} line1={tr("icChipSalary")} line2={tr("icChipSalaryAmt")} line2Color={T.green} dur="4.2s" />
             <JrMockChip bottom={0} left={-26} icon="coffee" tint={T.gold} line1={tr("icChipCoffee")} line2={tr("icChipCoffeeAmt")} delay="0.9s" />
           </div>
-          <div style={h2}>{tr("icSlide1Head")}</div>
-          <div style={sub}>{tr("icSlide1Sub")}</div>
+          <JrReadingLight style={litWrap}>
+            <div style={h2}>{tr("icSlide1Head")}</div>
+            <div style={sub}>{tr("icSlide1Sub")}</div>
+          </JrReadingLight>
         </div>
 
         <div style={slideWrap}>
-          <div style={{ position: "relative", paddingBottom: 26 }}>
+          <div style={{ position: "relative", zIndex: 2, paddingBottom: 26 }}>
             <div style={mockCard}>
               <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
                 <div style={{ background: T.orangeDim, borderRadius: "16px 4px 16px 16px", padding: "9px 13px", fontSize: 12, fontWeight: 600, color: JINK, maxWidth: 190 }}>
@@ -6059,12 +6180,14 @@ function IntroCarousel(props) {
             <JrMockChip top={-16} left={-24} icon="search" tint={T.orange} line1={tr("icChipLeak")} line2={tr("icChipLeakSub")} dur="4.4s" />
             <JrMockChip bottom={0} right={-24} icon="shield" tint={T.blue} line1={tr("icChipPrivate")} line2={tr("icChipPrivateSub")} delay="1.1s" />
           </div>
-          <div style={h2}>{tr("icSlide2Head")}</div>
-          <div style={sub}>{tr("icSlide2Sub")}</div>
+          <JrReadingLight style={litWrap}>
+            <div style={h2}>{tr("icSlide2Head")}</div>
+            <div style={sub}>{tr("icSlide2Sub")}</div>
+          </JrReadingLight>
         </div>
 
         <div style={slideWrap}>
-          <div style={{ position: "relative", paddingBottom: 26 }}>
+          <div style={{ position: "relative", zIndex: 2, paddingBottom: 26 }}>
             <div style={mockCard}>
               <div style={{ fontSize: 11, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>{tr("icYourGoal")}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -6086,12 +6209,14 @@ function IntroCarousel(props) {
             <JrMockChip top={-16} right={-28} icon="plane" tint={T.blue} line1={tr("icChipTrip")} line2={tr("icChipTripSub")} dur="4s" />
             <JrMockChip bottom={0} left={-26} icon="check" tint={T.green} line1={tr("icChipBudget")} line2={tr("icChipBudgetSub")} delay="0.8s" />
           </div>
-          <div style={h2}>{tr("icSlide3Head")}</div>
-          <div style={sub}>{tr("icSlide3Sub")}</div>
+          <JrReadingLight style={litWrap}>
+            <div style={h2}>{tr("icSlide3Head")}</div>
+            <div style={sub}>{tr("icSlide3Sub")}</div>
+          </JrReadingLight>
         </div>
       </div>
 
-      <div style={{ padding: "14px 24px 34px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box" }}>
+      <div style={{ padding: "14px 24px 34px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box", position: "relative", zIndex: 2 }}>
         <div style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: 16 }}>
           {[0, 1, 2].map(function(n) {
             return <div key={n} style={{ width: n === idx ? 20 : 6, height: 6, borderRadius: 999, background: n === idx ? T.orange : "rgba(137,112,198,0.25)", transition: "width 0.3s ease, background 0.3s ease" }} />;
@@ -7276,9 +7401,13 @@ function OnboardingScreen(props) {
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
+      {/* Same ribbons and cream veil as the trip interview, so the two
+          question flows read as one surface. */}
+      <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base="#FBF3E8" speed={0.18} intensity={0.75} yScale={0.44} xScale={1.05} style={{ position: "absolute" }} />
+      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.85) 0%, rgba(251,243,232,0.45) 24%, rgba(251,243,232,0.45) 76%, rgba(251,243,232,0.8) 100%)" }} />
 
-      <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0", position: "relative", zIndex: 2 }}>
         {qIndex > 0 ? (
           <JrIconBtn icon="chevron" rotate={180} onPress={goBack} />
         ) : <div style={{ width: 34, flexShrink: 0 }} />}
@@ -7286,7 +7415,7 @@ function OnboardingScreen(props) {
         <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: JINK3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(qIndex + 1) + "/" + Q_TOTAL}</div>
       </div>
 
-      <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "28px 24px 8px" }}>
+      <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "28px 24px 8px", position: "relative", zIndex: 2 }}>
         <div style={{ maxWidth: 380, margin: "0 auto" }}>
           <JrStepShell k={qIndex} dir={dir}>
             {qIndex > 0 && (
@@ -7477,7 +7606,7 @@ function OnboardingScreen(props) {
         </div>
       </div>
 
-      <div style={{ padding: "12px 24px 40px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box" }}>
+      <div style={{ padding: "12px 24px 40px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box", position: "relative", zIndex: 2 }}>
         {qIndex === 0 && <JrBtn label={tr("obLetsGo")} disabled={!greetDone} onPress={advance} />}
         {qIndex === 1 && <JrBtn label={tr("continueBtn")} onPress={advance} />}
         {(qIndex === 2 || qIndex === 3) && (
@@ -7858,6 +7987,15 @@ var WIDGET_ICONS = ["box", "coins", "chart", "coffee", "food", "car", "home", "c
 // The dashboard is a dashboard, not a wall. Six is enough for every real ask
 // and keeps Overview scrollable on a phone.
 var MAX_WIDGETS = 6;
+
+// Useful for every account without assuming a category, savings pot, or goal
+// that a person may not have created. These are the starting dashboard cards;
+// saved widgets (including an intentionally empty list) always take precedence.
+var DEFAULT_OVERVIEW_WIDGETS = [
+  { id: "default_spending_breakdown", title: "Where your money went", metric: "expense", target: "", shape: "list", timeframe: "month", goal: null, color: "#C8673A", icon: "cart" },
+  { id: "default_spending_trend", title: "Spending trend", metric: "expense", target: "", shape: "trend", timeframe: "month", goal: null, color: "#2799C8", icon: "chart" },
+  { id: "default_cash_flow", title: "This month vs last", metric: "net", target: "", shape: "compare", timeframe: "month", goal: null, color: "#27A85F", icon: "up" }
+];
 
 // The date window a timeframe covers, `back` periods ago (0 = the current one).
 // null means "all time", i.e. no bound.
@@ -8954,9 +9092,6 @@ function Overview(props) {
             {subtitle}
           </div>
         </div>
-        <button onClick={props.onCategories} style={{ flexShrink: 0, marginTop: 4, marginLeft: 18, width: 42, height: 42, borderRadius: "50%", background: T.btn, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(137,112,198,0.32)" }}>
-          <SVGIcon id="categories" size={20} color="#fff" />
-        </button>
       </div>
 
       <div style={{ marginBottom: 16, animation: "rcFadeUp var(--m-enter) var(--m-ease) both" }}>
@@ -9127,6 +9262,12 @@ function Overview(props) {
           </div>
         </div>
       </div>
+
+      {/* Widgets Richard built on request belong immediately under the cash
+          overview, before the supporting account and activity sections. */}
+      <OverviewWidgets widgets={props.widgets} tx={tx} categories={cats} folders={props.folders}
+        savings={savAccts} businesses={bizAccts} investing={invAccts} goals={goals} budgets={budgets}
+        onRemove={props.onRemoveWidget} />
 
       {props.plan && (
         <div style={{ background: "rgba(137,112,198,0.04)", borderRadius: 18, padding: "20px 22px", marginBottom: 16, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.04)", borderLeft: "3px solid " + T.orange, animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.09s both" }}>
@@ -9347,12 +9488,6 @@ function Overview(props) {
           </Card>
         </div>
       )}
-
-      {/* Widgets Richard built on request. Overview is the only screen that
-          renders these - see the note above WIDGET_METRICS. */}
-      <OverviewWidgets widgets={props.widgets} tx={tx} categories={cats} folders={props.folders}
-        savings={savAccts} businesses={bizAccts} investing={invAccts} goals={goals} budgets={budgets}
-        onRemove={props.onRemoveWidget} />
 
       {recent.length > 0 && (
         <div onClick={function() { nav("activity"); }} style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.18s both", cursor: "pointer" }}>
@@ -10152,6 +10287,18 @@ function Activity(props) {
   var delTxConfirm = _dtc[0]; var setDelTxConfirm = _dtc[1];
   var _fc = useState("");
   var filterCat = _fc[0]; var setFilterCat = _fc[1];
+  var _fo = useState(false);
+  var filterOpen = _fo[0]; var setFilterOpen = _fo[1];
+  var filterCopy = ({
+    en: { title: "Filter activity", all: "All transactions" },
+    he: { title: "סינון פעילות", all: "כל העסקאות" },
+    ar: { title: "تصفية النشاط", all: "كل المعاملات" },
+    es: { title: "Filtrar actividad", all: "Todas las transacciones" },
+    fr: { title: "Filtrer l’activité", all: "Toutes les transactions" },
+    ru: { title: "Фильтр активности", all: "Все транзакции" },
+    de: { title: "Aktivität filtern", all: "Alle Transaktionen" },
+    pt: { title: "Filtrar atividade", all: "Todas as transações" }
+  })[_lang.code] || { title: "Filter activity", all: "All transactions" };
 
   function setField(key, val) {
     setForm(function(prev) {
@@ -10380,16 +10527,43 @@ function Activity(props) {
     <div>
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginBottom: 12 }}>
         <button onClick={function() { setImportOpen(true); }} title="Import from CSV"
-          style={{ flexShrink: 0, width: 42, height: 42, borderRadius: "50%", background: importPrimary ? T.btn : T.card, border: importPrimary ? "none" : "1.5px solid " + T.orangeDim, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: importPrimary ? "0 4px 14px rgba(137,112,198,0.32)" : "0 2px 10px rgba(0,0,0,0.05)" }}>
+          aria-label="Import from CSV" style={{ flexShrink: 0, width: 42, height: 42, borderRadius: "50%", background: importPrimary ? T.btn : T.card, border: importPrimary ? "none" : "1.5px solid " + T.orangeDim, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: importPrimary ? "0 4px 14px rgba(137,112,198,0.32)" : "0 2px 10px rgba(0,0,0,0.05)" }}>
           <SVGIcon id="down" size={20} color={importPrimary ? "#fff" : T.orange} />
         </button>
         <button onClick={props.onOpenNotes} title={tr("notes")}
-          style={{ flexShrink: 0, width: 42, height: 42, borderRadius: "50%", background: T.btn, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(137,112,198,0.32)" }}>
+          aria-label={tr("notes")} style={{ flexShrink: 0, width: 42, height: 42, borderRadius: "50%", background: T.btn, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(137,112,198,0.32)" }}>
           <SVGIcon id="note" size={20} color="#fff" />
         </button>
+        {props.tx.length > 0 && filterOpts.length > 0 && (
+          <button type="button" onClick={function() { setFilterOpen(true); }} aria-label={filterCopy.title} title={filterCopy.title}
+            style={{ width: 42, height: 42, borderRadius: "50%", border: "1px solid " + (filterCat ? T.orange : T.sep), background: filterCat ? T.orangeDim : T.card, color: filterCat ? T.orange : T.ink2, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 9px rgba(0,0,0,0.05)" }}>
+            <SVGIcon id="filter" size={18} color={filterCat ? T.orange : T.ink2} />
+          </button>
+        )}
       </div>
       <ImportSheet open={importOpen} onClose={function() { setImportOpen(false); }} categories={cats} tx={props.tx}
         onImport={function(txs) { props.onSaveTx(props.tx.concat(txs)); }} />
+      <Overlay open={filterOpen} onClose={function() { setFilterOpen(false); }} title={filterCopy.title}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+          <button type="button" onClick={function() { setFilterCat(""); setFilterOpen(false); }}
+            style={{ width: "100%", display: "flex", alignItems: "center", gap: 11, border: "1px solid " + (!filterCat ? T.orange : T.sep), background: !filterCat ? T.orangeDim : T.card, borderRadius: 14, padding: "13px 14px", color: !filterCat ? T.orange : T.ink, cursor: "pointer", fontFamily: UI, fontSize: 15, fontWeight: !filterCat ? 700 : 500, textAlign: "start" }}>
+            <span style={{ width: 10, height: 10, borderRadius: "50%", background: !filterCat ? T.orange : T.ink3, flexShrink: 0 }} />
+            <span style={{ flex: 1 }}>{filterCopy.all}</span>
+            {!filterCat && <SVGIcon id="check" size={17} color={T.orange} />}
+          </button>
+          {filterOpts.map(function(c) {
+            var selected = filterCat === c.id;
+            return (
+              <button type="button" key={c.id} onClick={function() { setFilterCat(c.id); setFilterOpen(false); }}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 11, border: "1px solid " + (selected ? c.color : T.sep), background: selected ? c.color + "18" : T.card, borderRadius: 14, padding: "13px 14px", color: selected ? c.color : T.ink, cursor: "pointer", fontFamily: UI, fontSize: 15, fontWeight: selected ? 700 : 500, textAlign: "start" }}>
+                <span style={{ width: 10, height: 10, borderRadius: "50%", background: c.color, flexShrink: 0 }} />
+                <span style={{ flex: 1 }}>{c.name}</span>
+                {selected && <SVGIcon id="check" size={17} color={c.color} />}
+              </button>
+            );
+          })}
+        </div>
+      </Overlay>
       <Overlay open={props.sheetOpen} onClose={function() { props.setSheetOpen(false); }} title={tr("newTransaction")}>
         <div style={{ display: "flex", gap: 7, marginBottom: 7 }}>
           {["expense","income"].map(function(opt) {
@@ -10626,27 +10800,6 @@ function Activity(props) {
         </div>
       )}
 
-      {props.tx.length > 0 && filterOpts.length > 0 && (
-        <div style={{ display: "flex", gap: 7, overflowX: "auto", marginBottom: 14, paddingBottom: 2 }}>
-          <button onClick={function() { setFilterCat(""); }}
-            style={{ flexShrink: 0, padding: "7px 13px", borderRadius: 9, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: 700, fontFamily: UI,
-              background: !filterCat ? T.orangeDim : "rgba(0,0,0,0.04)", color: !filterCat ? T.orange : T.ink3 }}>
-            All
-          </button>
-          {filterOpts.map(function(c) {
-            var on = filterCat === c.id;
-            return (
-              <button key={c.id} onClick={function() { setFilterCat(on ? "" : c.id); }}
-                style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 6, padding: "7px 13px", borderRadius: 9, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: 700, fontFamily: UI,
-                  background: on ? c.color + "22" : "rgba(0,0,0,0.04)", color: on ? c.color : T.ink3 }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: c.color, display: "inline-block" }} />
-                {c.name}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
       {props.tx.length > 0 && (
         <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
           <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "14px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
@@ -10685,7 +10838,7 @@ function Activity(props) {
                       style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 16px", borderBottom: notLast ? "0.5px solid " + T.sep : "none", cursor: "pointer", userSelect: "none", WebkitUserSelect: "none", overflow: "hidden", animation: freshRows[t.id] ? ROW_IN : "none" }}>
                       <CatBadge icon={t.accountIcon} color={t.accountColor} size={40} soft={true} />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 15, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
+                        <div style={{ fontSize: 16, color: T.ink, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", lineHeight: 1.1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
                         <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, display: "flex", alignItems: "center", gap: 6 }}>
                           <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                             <span style={{ width: 6, height: 6, borderRadius: "50%", background: t.accountColor, display: "inline-block" }} />
@@ -10714,7 +10867,7 @@ function Activity(props) {
                     style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 16px", borderBottom: i < dayItems.length - 1 ? "0.5px solid " + T.sep : "none", opacity: t.pending ? 0.62 : 1, cursor: "pointer", userSelect: "none", WebkitUserSelect: "none", overflow: "hidden", animation: freshRows[t.id] ? ROW_IN : "none" }}>
                     <CatBadge icon={t.type === "income" ? "up" : c.icon} color={t.type === "income" ? T.green : c.color} size={40} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 15, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
+                      <div style={{ fontSize: 16, color: T.ink, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", lineHeight: 1.1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
                       <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, display: "flex", alignItems: "center", gap: 6 }}>
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                           <span style={{ width: 6, height: 6, borderRadius: "50%", background: t.type === "income" ? T.green : c.color, display: "inline-block" }} />
@@ -11947,7 +12100,7 @@ function Budgets(props) {
                 <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 11, padding: "10px 2px", borderBottom: i < viewRow.members.length - 1 ? "0.5px solid " + T.sep : "none" }}>
                   <CatBadge icon={m.icon} color={m.color} size={30} soft={true} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, color: T.ink, fontWeight: 600 }}>{m.name}</div>
+                    <div style={{ fontSize: 15, color: T.ink, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", lineHeight: 1.1 }}>{m.name}</div>
                     {sub && <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1 }}>{"sub-limit " + dollars(sub.limit)}</div>}
                   </div>
                   <span style={{ fontSize: 14, fontWeight: 700, color: sub && budgetOffTrack(sub) ? T.red : T.ink }}>{dollars(amt)}</span>
@@ -12065,7 +12218,7 @@ function Budgets(props) {
                   <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 9 }}>
                     <CatBadge icon={r.icon} color={r.color} size={34} soft={true} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ fontSize: 15, color: T.ink, fontWeight: 600 }}>{r.name}</span>
+                      <span style={{ fontSize: 16, color: T.ink, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", lineHeight: 1.1 }}>{r.name}</span>
                       {r.isFolder && (
                         <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1 }}>
                           {tr("bFolderBudget") + " - " + r.members.length + (r.members.length === 1 ? " category" : " categories") + (r.mode === "exclusive" ? ", exclusive" : "") + (r.live ? ", live" : "")}
@@ -12111,7 +12264,7 @@ function Budgets(props) {
                           style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px 9px 26px", borderTop: "0.5px solid " + T.sep, cursor: "pointer", background: "rgba(0,0,0,0.015)" }}>
                           <CatBadge icon={m.icon} color={m.color} size={24} soft={true} />
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 13, fontWeight: 600, color: T.ink }}>{m.name}</div>
+                            <div style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", color: T.ink, lineHeight: 1.1 }}>{m.name}</div>
                             <div style={{ marginTop: 4 }}><ProgressBar value={sr.amount} max={sr.limit} color={budgetOffTrack(sr) ? T.red : m.color} h={4} /></div>
                           </div>
                           <span style={{ fontSize: 12, fontWeight: 600, color: budgetOffTrack(sr) ? T.red : T.ink3 }}>{dollars(sr.amount) + " / " + dollars(sr.limit)}</span>
@@ -12405,7 +12558,7 @@ function Goals(props) {
             <div style={{ padding: "18px 18px 14px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
                 <div>
-                  <div style={{ fontSize: 17, fontWeight: 700, color: T.ink }}>{g.name}</div>
+                  <div style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", color: T.ink, lineHeight: 1.1 }}>{g.name}</div>
                   <div style={{ fontSize: 13, color: T.ink3, marginTop: 2 }}>
                     {done ? tr("goalComplete") : dollars(g.target - saved) + " " + tr("remaining")}
                   </div>
@@ -14239,6 +14392,11 @@ function Advisor(props) {
   var input = _in[0]; var setInput = _in[1];
   var _cl = useState(false);
   var chatLoading = _cl[0]; var setChatLoading = _cl[1];
+  // The composer stays visible above the Advisor tab bar. Focusing it opens a
+  // contained conversation canvas; collapsing the canvas leaves the analysis
+  // page exactly where the user was reading.
+  var _cxp = useState(false);
+  var chatExpanded = _cxp[0]; var setChatExpanded = _cxp[1];
   // Index of the just-arrived assistant message: only that one streams in via
   // TypeReveal; history and remounts render instantly.
   var animMsgRef = useRef(-1);
@@ -14260,6 +14418,16 @@ function Advisor(props) {
   var _pu = useState(null);
   var pendingUpdates = _pu[0]; var setPendingUpdates = _pu[1];
   var inputRef = useRef(null);
+  // Join the app's existing Back/Escape layer stack without lifting the entire
+  // chat session into App. History closes before the conversation canvas.
+  useEffect(function() {
+    function closeAdvisorLayer() {
+      if (historyOpen) setHistoryOpen(false);
+      else setChatExpanded(false);
+    }
+    window.addEventListener("richy-close-advisor-chat", closeAdvisorLayer);
+    return function() { window.removeEventListener("richy-close-advisor-chat", closeAdvisorLayer); };
+  }, [historyOpen]);
   // Swipeable analysis hero: a native scroll-snap carousel that mirrors the
   // Overview hero banner (dots + throttled onScroll page sync).
   var _apg = useState(0); var page = _apg[0]; var setPage = _apg[1];
@@ -15202,6 +15370,7 @@ function Advisor(props) {
     setPendingUpdates(null);
     setPendingAction(null);
     setHistoryOpen(false);
+    setChatExpanded(true);
   }
 
   // Open an archived chat back into the live view, archiving the current one first
@@ -15216,6 +15385,7 @@ function Advisor(props) {
       props.onSaveChats((props.chats || []).filter(function(s) { return s.id !== session.id; }));
     }
     setHistoryOpen(false);
+    setChatExpanded(true);
   }
 
   function deleteArchivedChat(id) {
@@ -15224,6 +15394,7 @@ function Advisor(props) {
 
   function sendChat() {
     if (!input.trim() || chatLoading) return;
+    setChatExpanded(true);
     var msg = input.trim();
     setInput("");
     var nc = chat.concat([{ role: "user", text: msg }]);
@@ -15340,11 +15511,11 @@ function Advisor(props) {
       <div style={{ position: "relative", width: 52, height: 52, flexShrink: 0 }}>
         <div style={{ position: "absolute", inset: -7, borderRadius: 20, background: "radial-gradient(circle, rgba(200,152,58,0.42), transparent 70%)", filter: "blur(7px)" }} />
         <div style={{ position: "relative", width: 52, height: 52, borderRadius: 16, background: "#0D0C18", boxShadow: "0 7px 18px rgba(13,12,24,0.32)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontFamily: DISP, fontSize: 27, fontWeight: MARK_WEIGHT, color: "#C8973A", lineHeight: 1 }}>R</span>
+          <span style={{ fontFamily: UI, fontSize: 27, fontWeight: MARK_WEIGHT, color: "#C8973A", lineHeight: 1 }}>R</span>
         </div>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 19, fontWeight: DISP_WEIGHT, fontFamily: DISP, letterSpacing: "-0.01em", color: T.ink }}>Richard</div>
+        <div style={{ fontSize: 19, fontWeight: RICHARD_DISP_WEIGHT, fontFamily: RICHARD_DISP, letterSpacing: "-0.01em", color: T.ink }}>Richard</div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: loading ? T.orange : stale ? T.gold : T.green, animation: loading ? "rcBadgePulse 1.3s ease-in-out infinite" : "none" }} />
           <span style={{ fontSize: 12, color: stale ? T.gold : T.ink3, fontWeight: stale ? 600 : 400 }}>{loading ? "Analyzing your month..." : stale ? "Your month changed - tap refresh" : advice ? "Analyzed your month - just now" : "Ready to analyze your month"}</span>
@@ -15364,7 +15535,7 @@ function Advisor(props) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 2px 11px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
           <span style={{ width: 3, height: 15, borderRadius: 2, background: T.orange }} />
-          <span style={{ fontSize: 16, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{title}</span>
+          <span style={{ fontSize: 16, fontWeight: RICHARD_DISP_WEIGHT, fontFamily: RICHARD_DISP, color: T.ink, letterSpacing: "-0.01em" }}>{title}</span>
         </div>
         {meta && <span style={{ fontSize: 12, color: T.ink3 }}>{meta}</span>}
       </div>
@@ -15536,8 +15707,8 @@ function Advisor(props) {
     panels.push(
       <div key="health" style={panelStyle({ justifyContent: "space-between" })}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, color: HMUT }}>Financial Health</span>
-          <span style={{ background: ringColor + "26", color: ringColor, fontSize: 11, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 8 }}>{advice.scoreLabel}</span>
+          <span style={{ fontFamily: RICHARD_DISP, fontSize: 13, letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: RICHARD_DISP_WEIGHT, color: HMUT }}>Financial Health</span>
+          <span style={{ background: ringColor + "26", color: ringColor, fontFamily: RICHARD_DISP, fontSize: 12, fontWeight: RICHARD_DISP_WEIGHT, letterSpacing: "0.03em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 8 }}>{advice.scoreLabel}</span>
         </div>
         <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
           <RingChart value={advice.score} max={100} size={142} stroke={10} color={ringColor} track={HTRACK} />
@@ -15547,7 +15718,7 @@ function Advisor(props) {
           </div>
         </div>
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 15.5, fontWeight: 600, letterSpacing: "-0.01em", color: HINK, lineHeight: 1.35 }}>{advice.headline}</div>
+          <div style={{ fontFamily: RICHARD_DISP, fontSize: 19, fontWeight: RICHARD_DISP_WEIGHT, letterSpacing: "-0.01em", color: HINK, lineHeight: 1.24 }}>{advice.headline}</div>
         </div>
         <div style={{ display: "flex", borderTop: "0.5px solid " + HSEP, paddingTop: 14 }}>
           {[{ k: "Saving", v: savingStat.label, d: savingStat.dot }, { k: "Spending", v: spendStat.label, d: spendStat.dot }, { k: "Buffer", v: bufferTxt, d: bufferStat }].map(function(col, ci) {
@@ -15581,7 +15752,7 @@ function Advisor(props) {
             <span style={{ fontSize: 13, color: HFNT }}>{move.impactLabel}</span>
           </div>
         ) : null}
-        <div style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, letterSpacing: "-0.01em", color: HINK, marginTop: move.impact ? 16 : 18 }}>{move.title}</div>
+        <div style={{ fontSize: 18, fontWeight: RICHARD_DISP_WEIGHT, fontFamily: RICHARD_DISP, letterSpacing: "-0.01em", color: HINK, marginTop: move.impact ? 16 : 18 }}>{move.title}</div>
         {/* The move copy fades in word by word. A hidden copy of the finished
             text holds the space so the panel - which centers its content in a
             fixed-height frame - doesn't drift upward as words land. */}
@@ -15800,7 +15971,7 @@ function Advisor(props) {
                     <SVGIcon id={w.icon} size={16} color={HPT} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: HINK, letterSpacing: "-0.01em" }}>{w.title}</div>
+                    <div style={{ fontSize: 13.5, fontWeight: RICHARD_DISP_WEIGHT, fontFamily: RICHARD_DISP, color: HINK, letterSpacing: "-0.01em" }}>{w.title}</div>
                     <div style={{ fontSize: 12, color: HMUT, marginTop: 2, lineHeight: 1.4 }}>{w.sub}</div>
                   </div>
                 </div>
@@ -15860,7 +16031,7 @@ function Advisor(props) {
               <ClaudeMark size={20} color={HPT} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: HINK, letterSpacing: "-0.01em" }}>Full Analysis</div>
+              <div style={{ fontSize: 15, fontWeight: RICHARD_DISP_WEIGHT, fontFamily: RICHARD_DISP, color: HINK, letterSpacing: "-0.01em" }}>Full Analysis</div>
               <div style={{ fontSize: 12, color: HMUT, lineHeight: 1.4, marginTop: 2 }}>
                 Your score, key numbers, every budget line and what to fix first.
               </div>
@@ -15918,7 +16089,7 @@ function Advisor(props) {
       {advice && !advice.error && (
         <div>
           <div style={{ padding: "16px 4px 0", animation: riseIn(0) }}>
-            <h1 style={{ margin: 0, fontSize: 26, fontWeight: DISP_WEIGHT, fontFamily: DISP, letterSpacing: "-0.01em", lineHeight: 1.12, color: T.ink }}>{greeting}</h1>
+            <h1 style={{ margin: 0, fontSize: 26, fontWeight: RICHARD_DISP_WEIGHT, fontFamily: RICHARD_DISP, letterSpacing: "-0.01em", lineHeight: 1.12, color: T.ink }}>{greeting}</h1>
             <p style={{ margin: "7px 0 0", fontSize: 14.5, lineHeight: 1.45, color: T.ink2 }}>{subGreeting}</p>
           </div>
 
@@ -15936,7 +16107,7 @@ function Advisor(props) {
                     <CatBadge icon={m.icon} color={m.color} size={44} soft={true} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 5 }}>
-                <span style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, letterSpacing: "-0.01em", color: T.ink }}>{ins.title}</span>
+                <span style={{ fontSize: 15, fontWeight: RICHARD_DISP_WEIGHT, fontFamily: RICHARD_DISP, letterSpacing: "-0.01em", color: T.ink }}>{ins.title}</span>
                         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.02em", padding: "3px 8px", borderRadius: 7, whiteSpace: "nowrap", color: m.color, background: m.color + "1F" }}>{m.tag}</span>
                       </div>
                       <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: T.ink2 }}>{ins.body}</p>
@@ -15961,57 +16132,88 @@ function Advisor(props) {
         </Card>
       )}
 
-      <div style={{ marginTop: 26, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "0 2px 11px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
-          <span style={{ width: 3, height: 15, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-          <span style={{ fontSize: 16, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{tr("askYourAdvisor")}</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 0 }}>
-          {chat.length > 0 && (
-            <button onClick={startNewChat} title={tr("newChat")}
-              style={{ display: "flex", alignItems: "center", gap: 5, border: "none", background: "rgba(0,0,0,0.05)", color: T.ink2, fontSize: 13, fontWeight: 600, fontFamily: UI, padding: "8px 12px", borderRadius: 11, cursor: "pointer", whiteSpace: "nowrap" }}>
-              <SVGIcon id="plus" size={15} color={T.ink2} />
-              {tr("newChat")}
-            </button>
-          )}
-          <button onClick={function() { setHistoryOpen(true); }} title={tr("pastChats")}
-            style={{ display: "flex", alignItems: "center", gap: 6, border: "none", background: T.orangeDim, color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI, padding: "8px 12px", borderRadius: 11, cursor: "pointer", whiteSpace: "nowrap" }}>
-            <SVGIcon id="clock" size={15} color={T.orange} />
-            {tr("pastChats")}
-            {(props.chats && props.chats.length > 0) && (
-              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 17, height: 17, padding: "0 4px", borderRadius: 9, background: T.orange, color: "#fff", fontSize: 10.5, fontWeight: 700, lineHeight: 1 }}>{props.chats.length}</span>
-            )}
-          </button>
-        </div>
-      </div>
-      <Card style={{ overflow: "hidden", marginBottom: 24 }}>
-        {chat.length > 0 && (
-          <div ref={chatScrollRef} style={{ maxHeight: 300, overflowY: "auto", padding: "16px 14px 4px", display: "flex", flexDirection: "column", gap: 10 }}>
-            {chat.map(function(m, i) {
-              var u = m.role === "user";
-              return (
-                <div key={i} style={{ display: "flex", justifyContent: u ? "flex-end" : "flex-start" }}>
-                  <div style={{ maxWidth: "84%", padding: "11px 14px", fontSize: 13.5, lineHeight: 1.5, whiteSpace: "pre-wrap", borderRadius: u ? "16px 16px 4px 16px" : "4px 16px 16px 16px", background: u ? "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.045)", color: u ? "#fff" : T.ink, boxShadow: u ? "0 4px 14px rgba(137,112,198,0.22)" : "none" }}>
-                    {u ? m.text : <TypeReveal fade text={m.text} size={13.5} animate={i === animMsgRef.current} onTick={pinChatScroll} onDone={function() { animMsgRef.current = -1; }} />}
-                  </div>
-                </div>
-              );
-            })}
-            {chatLoading && <RichardThinking size={13.5} />}
-          </div>
-        )}
-        {chat.length === 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "16px 16px 6px" }}>
-            {[tr("advisorQ1"), tr("advisorQ2"), tr("advisorQ3"), tr("advisorQ4")].map(function(q) {
-              return (
-                <button key={q} onClick={function() { setInput(q); }}
-                  style={{ border: "none", background: T.orangeDim, color: T.orange, fontSize: 12.5, fontWeight: 600, fontFamily: UI, padding: "8px 13px", borderRadius: 9, cursor: "pointer" }}>
-                  {q}
+      {/* Lets the final analysis card scroll fully above the persistent
+          composer instead of finishing underneath it. */}
+      <div aria-hidden="true" style={{ height: 198 }} />
+
+      {props.isActive !== false && ReactDOM.createPortal((
+        <div style={{ position: "fixed", top: 64, bottom: "calc(123px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, zIndex: 35, display: "flex", flexDirection: "column", pointerEvents: "none", boxSizing: "border-box" }}>
+          {chatExpanded && (
+            <div role="dialog" aria-label="Richard" data-richard-chat-panel=""
+              style={{ flex: 1, minHeight: 0, marginBottom: 10, pointerEvents: "auto", background: T.bg, borderTop: "0.5px solid " + T.sep, boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "82px minmax(0,1fr) 82px", alignItems: "center", minHeight: 58, padding: "8px 14px", borderBottom: "0.5px solid " + T.sep, boxSizing: "border-box" }}>
+                <button type="button" onClick={function() { setChatExpanded(false); }} aria-label={tr("closeChat")} title={tr("closeChat")}
+                  style={{ width: 40, height: 40, borderRadius: "50%", border: "0.5px solid " + T.sep, background: T.card, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
+                  <SVGIcon id="down" size={17} color={T.ink2} />
                 </button>
-              );
-            })}
-          </div>
-        )}
+                <div style={{ textAlign: "center", minWidth: 0 }}>
+                  <div style={{ fontFamily: RICHARD_DISP, fontSize: 18, fontWeight: RICHARD_DISP_WEIGHT, color: T.ink, letterSpacing: "-0.01em" }}>Richard</div>
+                </div>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 4 }}>
+                  <button type="button" onClick={function() { if (!chatLoading) setHistoryOpen(true); }} disabled={chatLoading} aria-label={tr("pastChats")} title={tr("pastChats")}
+                    style={{ position: "relative", width: 40, height: 40, borderRadius: "50%", border: "0.5px solid " + T.sep, background: T.card, display: "flex", alignItems: "center", justifyContent: "center", cursor: chatLoading ? "default" : "pointer", opacity: chatLoading ? 0.45 : 1, padding: 0 }}>
+                    <SVGIcon id="clock" size={16} color={T.ink2} />
+                    {(props.chats && props.chats.length > 0) && (
+                      <span style={{ position: "absolute", top: -3, insetInlineEnd: -3, minWidth: 16, height: 16, padding: "0 3px", borderRadius: 9, background: "#151311", color: "#fff", fontSize: 9.5, fontWeight: 700, lineHeight: "16px", boxSizing: "border-box" }}>{props.chats.length}</span>
+                    )}
+                  </button>
+                  <button type="button" onClick={function() { if (chat.length > 0 && !chatLoading) startNewChat(); }} disabled={chat.length === 0 || chatLoading} aria-label={tr("newChat")} title={tr("newChat")}
+                    style={{ width: 40, height: 40, borderRadius: "50%", border: "0.5px solid " + T.sep, background: T.card, display: "flex", alignItems: "center", justifyContent: "center", cursor: chat.length > 0 && !chatLoading ? "pointer" : "default", opacity: chat.length > 0 && !chatLoading ? 1 : 0.42, padding: 0 }}>
+                    <SVGIcon id="plus" size={16} color={T.ink2} />
+                  </button>
+                </div>
+              </div>
+
+              <div ref={chatScrollRef} className="rc-hero-scroll" role="log" aria-live="polite" aria-busy={chatLoading} data-richard-chat-log=""
+                style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "12px 18px 20px", display: "flex", flexDirection: "column", gap: 16, boxSizing: "border-box", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
+                {chat.length === 0 && (
+                  <div data-richard-empty="" style={{ flex: 1, minHeight: 300, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "24px 4px" }}>
+                    <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#151311", border: "1px solid rgba(200,152,58,0.24)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontFamily: UI, fontSize: 24, fontWeight: MARK_WEIGHT, color: "#C8983A", lineHeight: 1 }}>R</span>
+                    </div>
+                    <h2 style={{ maxWidth: 330, margin: "18px 0 0", fontFamily: RICHARD_DISP, fontSize: 29, lineHeight: 1.12, fontWeight: RICHARD_DISP_WEIGHT, letterSpacing: "-0.02em", color: T.ink }}>{tr("advisorGreeting")}</h2>
+                    <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8, marginTop: 22, maxWidth: 380 }}>
+                      {[tr("advisorQ1"), tr("advisorQ2"), tr("advisorQ3"), tr("advisorQ4")].map(function(q) {
+                        return (
+                          <button key={q} onClick={function() { setInput(q); setTimeout(function() { if (inputRef.current) inputRef.current.focus(); }, 0); }}
+                            style={{ border: "0.5px solid " + T.sep, background: T.card, color: T.ink2, fontSize: 12.5, fontWeight: 600, fontFamily: UI, padding: "9px 13px", borderRadius: 999, cursor: "pointer" }}>
+                            {q}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                {chat.length > 0 && chat.map(function(m, i) {
+                  var u = m.role === "user";
+                  return (
+                    <div key={i} style={{ display: "flex", justifyContent: u ? "flex-end" : "flex-start" }}>
+                      {u ? (
+                        <div dir="auto" style={{ maxWidth: "82%", padding: "11px 14px", fontSize: 13.5, lineHeight: 1.5, whiteSpace: "pre-wrap", borderRadius: 19, background: T.card, border: "0.5px solid " + T.sep, color: T.ink, textAlign: "start", unicodeBidi: "plaintext" }}>{m.text}</div>
+                      ) : (
+                        <div style={{ width: "100%", display: "flex", alignItems: "flex-start", gap: 10 }}>
+                          <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: "#151311", border: "1px solid rgba(200,152,58,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <span style={{ fontFamily: UI, fontSize: 15, fontWeight: MARK_WEIGHT, color: "#C8983A", lineHeight: 1 }}>R</span>
+                          </div>
+                          <div dir="auto" style={{ flex: 1, minWidth: 0, paddingTop: 3, fontSize: 13.5, lineHeight: 1.58, whiteSpace: "pre-wrap", color: T.ink, textAlign: "start", unicodeBidi: "plaintext" }}>
+                            <TypeReveal fade text={m.text} size={13.5} animate={i === animMsgRef.current} onTick={pinChatScroll} onDone={function() { animMsgRef.current = -1; }} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {chatLoading && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: "#151311", border: "1px solid rgba(200,152,58,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontFamily: UI, fontSize: 15, fontWeight: MARK_WEIGHT, color: "#C8983A", lineHeight: 1 }}>R</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 9, color: T.ink3, fontSize: 13, fontWeight: 600 }}>
+                      <ThinkingDots size={4} color={T.ink3} />
+                      <ThinkingPhrase />
+                    </div>
+                  </div>
+                )}
         {pendingUpdates && pendingUpdates.length > 0 && (function() {
           // A batch containing a delete gets a red warning treatment instead of
           // the usual mild orange "update" card - this one can't be undone.
@@ -16123,31 +16325,51 @@ function Advisor(props) {
           </div>
         )}
 
-        <div style={{ display: "flex", gap: 10, alignItems: "flex-end", padding: "12px 12px", borderTop: chat.length > 0 ? "0.5px solid " + T.sep : "none" }}>
-          <textarea ref={inputRef} value={input} rows={1}
-            onChange={function(e) { setInput(e.target.value); }}
-            onKeyDown={function(e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (!chatLoading) sendChat(); } }}
-            placeholder={tr("askRichard")}
-            style={{ flex: 1, border: "none", background: "rgba(0,0,0,0.045)", borderRadius: 14, outline: "none", fontSize: 14, fontFamily: UI, color: T.ink, padding: "13px 14px", resize: "none", lineHeight: 1.4, maxHeight: 132, overflowY: "auto", boxSizing: "border-box", display: "block" }} />
-          <button onClick={sendChat} disabled={!input.trim() || chatLoading}
-            style={{ width: 44, height: 44, border: "none", borderRadius: 14, background: input.trim() && !chatLoading ? T.btn : "rgba(0,0,0,0.1)", boxShadow: input.trim() && !chatLoading ? "0 6px 18px rgba(137,112,198,0.32)" : "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: input.trim() && !chatLoading ? "pointer" : "default", flexShrink: 0 }}>
-            <SVGIcon id="up" size={20} color="#fff" />
-          </button>
+              </div>
+              <div style={{ flexShrink: 0, textAlign: "center", fontSize: 10.5, color: T.ink3, lineHeight: 1.45, padding: "8px 18px 2px", letterSpacing: "0.01em" }}>
+                {tr("advisorDisclaimer")}
+              </div>
+            </div>
+          )}
+
+          {/* The composer is portalled so the tab track's transform cannot trap
+              position:fixed. It stays with Advisor while the analysis scrolls,
+              and leaves the document completely when the user changes tabs. */}
+          <div data-richard-composer="" style={{ flexShrink: 0, margin: "auto 14px 0", pointerEvents: "auto", boxSizing: "border-box" }}>
+            <div style={{ background: T.card, border: "0.5px solid " + (T.isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.08)"), borderRadius: 28, boxShadow: T.isDark ? "0 12px 34px rgba(0,0,0,0.38)" : "0 12px 34px rgba(43,34,25,0.12)", padding: "12px 12px 10px", boxSizing: "border-box" }}>
+              <textarea ref={inputRef} value={input} rows={1}
+                dir="auto" aria-label={tr("askYourAdvisor")}
+                onFocus={function() { setChatExpanded(true); }}
+                onChange={function(e) { setInput(e.target.value); }}
+                onKeyDown={function(e) { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); if (!chatLoading) sendChat(); } }}
+                placeholder={tr("askRichard")}
+                style={{ width: "100%", minHeight: 30, maxHeight: 132, border: "none", background: "transparent", outline: "none", color: T.ink, fontSize: 15, fontFamily: UI, lineHeight: 1.45, textAlign: "start", padding: "4px 6px 8px", resize: "none", overflowY: "auto", boxSizing: "border-box", display: "block" }} />
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 2 }}>
+                <button type="button" onClick={function() { setChatExpanded(true); }} aria-label={tr("askYourAdvisor")} aria-expanded={chatExpanded}
+                  style={{ width: 40, height: 40, flexShrink: 0, border: "1px solid rgba(200,152,58,0.24)", borderRadius: "50%", background: "#151311", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
+                  <span style={{ fontFamily: UI, fontSize: 20, fontWeight: MARK_WEIGHT, color: "#C8983A", lineHeight: 1 }}>R</span>
+                </button>
+                <button type="button" onClick={sendChat} disabled={!input.trim() || chatLoading} aria-label={tr("sendMessage")}
+                  style={{ width: 42, height: 42, flexShrink: 0, border: "none", borderRadius: "50%", background: input.trim() && !chatLoading ? "#151311" : (T.isDark ? "rgba(255,255,255,0.10)" : "rgba(21,19,17,0.08)"), display: "flex", alignItems: "center", justifyContent: "center", cursor: input.trim() && !chatLoading ? "pointer" : "default", padding: 0, transition: "background 160ms ease" }}>
+                  {chatLoading
+                    ? <ThinkingDots size={3.8} color="#fff" />
+                    : <SVGIcon id="up" size={18} color={input.trim() ? "#fff" : T.ink3} />}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </Card>
-      <div style={{ textAlign: "center", fontSize: 11, color: T.ink3, lineHeight: 1.55, padding: "0 10px 6px", letterSpacing: "0.01em" }}>
-        {tr("advisorDisclaimer")}
-      </div>
+      ), document.body)}
 
       {historyOpen && ReactDOM.createPortal((
-        <div onClick={function() { setHistoryOpen(false); }}
+        <div data-richard-history="" onClick={function() { setHistoryOpen(false); }}
           style={{ position: "fixed", inset: 0, zIndex: 95, background: "rgba(12,10,24,0.42)", backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
           <div onClick={function(e) { e.stopPropagation(); }}
             style={{ width: "100%", maxWidth: 440, maxHeight: "82vh", background: T.card, borderRadius: "24px 24px 0 0", boxShadow: "0 -12px 44px rgba(12,10,24,0.34)", display: "flex", flexDirection: "column", overflow: "hidden", boxSizing: "border-box" }}>
             <div style={{ width: 38, height: 5, borderRadius: 3, background: T.orangeDim, margin: "9px auto 2px", flexShrink: 0 }} />
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 18px 12px", borderBottom: "0.5px solid " + T.sep }}>
               <div>
-                <div style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{tr("pastChats")}</div>
+                <div style={{ fontSize: 18, fontWeight: RICHARD_DISP_WEIGHT, fontFamily: RICHARD_DISP, color: T.ink, letterSpacing: "-0.01em" }}>{tr("pastChats")}</div>
                 <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{(props.chats || []).length + " " + ((props.chats || []).length === 1 ? tr("conversation") : tr("conversations"))}</div>
               </div>
               <button onClick={function() { setHistoryOpen(false); }}
@@ -16167,7 +16389,7 @@ function Advisor(props) {
                   <div key={s.id}
                     style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.035)", borderRadius: 13, padding: "12px 13px" }}>
                     <button onClick={function() { openArchivedChat(s); }}
-                      style={{ flex: 1, minWidth: 0, textAlign: "left", border: "none", background: "transparent", cursor: "pointer", padding: 0, fontFamily: UI }}>
+                      style={{ flex: 1, minWidth: 0, textAlign: "start", border: "none", background: "transparent", cursor: "pointer", padding: 0, fontFamily: UI }}>
                       <div style={{ fontSize: 14, fontWeight: 600, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.title}</div>
                       <div style={{ fontSize: 12, color: T.ink3, marginTop: 3 }}>{when + " - " + count + " " + (count === 1 ? tr("message") : tr("messages"))}</div>
                     </button>
@@ -17975,6 +18197,466 @@ function DebtView(props) {
   );
 }
 
+var SAVINGS_PURPOSES = [
+  { v: "emergency", label: "Emergency cushion", sub: "Cover the essentials when life changes", icon: "shield" },
+  { v: "home", label: "A future home", sub: "Build a deposit without touching daily money", icon: "home" },
+  { v: "purchase", label: "A big purchase", sub: "Save first, then buy without debt", icon: "gift" },
+  { v: "travel", label: "A meaningful trip", sub: "Come home with memories, not a balance", icon: "plane" },
+  { v: "freedom", label: "More freedom", sub: "Create room to change jobs or slow down", icon: "leaf" },
+  { v: "general", label: "A stronger savings habit", sub: "Build a reserve and decide later", icon: "coins" }
+];
+function savingsPurpose(purpose) {
+  for (var i = 0; i < SAVINGS_PURPOSES.length; i++) if (SAVINGS_PURPOSES[i].v === purpose) return SAVINGS_PURPOSES[i];
+  return SAVINGS_PURPOSES[SAVINGS_PURPOSES.length - 1];
+}
+function savingsAddMonths(iso, months) {
+  var d = new Date((iso || new Date().toISOString().slice(0, 10)) + "T00:00:00Z");
+  if (isNaN(d.getTime())) d = new Date();
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + (parseInt(months, 10) || 0), 1)).toISOString().slice(0, 10);
+}
+function savingsMonthLabel(ym) {
+  var names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  var p = String(ym || "").split("-");
+  return names[Math.max(0, Math.min(11, (parseInt(p[1], 10) || 1) - 1))];
+}
+function savingsFormatMonth(iso) {
+  if (!iso) return "";
+  var p = String(iso).slice(0, 7).split("-");
+  return savingsMonthLabel(p.join("-")) + " " + p[0];
+}
+function savingsAverageExpenses(tx) {
+  var total = 0, monthsWithData = 0;
+  for (var off = 1; off <= 3; off++) {
+    var ym = ymShift(curMonth(), off);
+    var monthTotal = (tx || []).filter(function(t) {
+      return t && t.type === "expense" && !t.pending && !t.transfer && !t.catchUp && t.date && t.date.slice(0, 7) === ym;
+    }).reduce(function(s, t) { return s + (t.amount || 0); }, 0);
+    total += monthTotal;
+    if (monthTotal > 0) monthsWithData++;
+  }
+  if (total > 0) return round2(total / Math.max(1, monthsWithData));
+  var current = (tx || []).filter(function(t) {
+    return t && t.type === "expense" && !t.pending && !t.transfer && !t.catchUp && t.date && t.date.slice(0, 7) === curMonth();
+  }).reduce(function(s, t) { return s + (t.amount || 0); }, 0);
+  return current > 0 ? round2(current / Math.max(0.12, monthDayFrac())) : 0;
+}
+function savingsMonthSeries(acct, count) {
+  var entries = (acct && acct.entries) || [];
+  var out = [];
+  for (var off = (count || 6) - 1; off >= 0; off--) {
+    var ym = ymShift(curMonth(), off);
+    var end = monthEndOf(ym);
+    var dep = 0, wd = 0, bal = 0;
+    entries.forEach(function(e) {
+      var date = e.date || (acct && acct.createdAt) || end;
+      var amount = e.amount || 0;
+      if (date <= end) bal += e.kind === "withdraw" ? -amount : amount;
+      if (date.slice(0, 7) === ym) {
+        if (e.kind === "withdraw") wd += amount; else dep += amount;
+      }
+    });
+    out.push({ ym: ym, label: savingsMonthLabel(ym), deposits: round2(dep), withdrawals: round2(wd), net: round2(dep - wd), balance: round2(bal) });
+  }
+  return out;
+}
+function savingsContributionStreak(series, monthly) {
+  if (!(monthly > 0) || !series || !series.length) return 0;
+  var i = series.length - 1, streak = 0;
+  if ((series[i].net || 0) < monthly) i--;
+  for (; i >= 0; i--) {
+    if ((series[i].net || 0) + 0.005 < monthly) break;
+    streak++;
+  }
+  return streak;
+}
+function savingsPlanSnapshot(acct, tx) {
+  var profile = (acct && acct.profile) || {};
+  var balance = savingsBalance(acct);
+  var target = Math.max(0, parseFloat(profile.target) || 0);
+  var monthly = Math.max(0, parseFloat(profile.monthly) || 0);
+  var remaining = Math.max(0, round2(target - balance));
+  var deadline = profile.deadline || "";
+  var monthsLeft = deadline ? Math.max(1, ymDiff(curMonth(), deadline.slice(0, 7))) : (monthly > 0 ? Math.max(1, Math.ceil(remaining / monthly)) : 0);
+  var needMonthly = remaining > 0 && monthsLeft > 0 ? round2(remaining / monthsLeft) : 0;
+  var projectedMonths = remaining > 0 && monthly > 0 ? Math.ceil(remaining / monthly) : 0;
+  var projectedDate = projectedMonths > 0 ? savingsAddMonths(new Date().toISOString().slice(0, 10), projectedMonths) : "";
+  var avgExpense = savingsAverageExpenses(tx || []);
+  var series = savingsMonthSeries(acct, 12);
+  var current = series[series.length - 1] || { deposits: 0, withdrawals: 0 };
+  var allEntries = (acct && acct.entries) || [];
+  var totalDeposits = allEntries.filter(function(e) { return e.kind !== "withdraw"; }).reduce(function(s, e) { return s + (e.amount || 0); }, 0);
+  var totalWithdrawals = allEntries.filter(function(e) { return e.kind === "withdraw"; }).reduce(function(s, e) { return s + (e.amount || 0); }, 0);
+  return {
+    profile: profile, balance: balance, target: target, monthly: monthly, remaining: remaining,
+    progress: target > 0 ? Math.max(0, Math.min(100, Math.round(balance / target * 100))) : 0,
+    deadline: deadline, monthsLeft: monthsLeft, needMonthly: needMonthly,
+    projectedDate: projectedDate, avgExpense: avgExpense, runway: avgExpense > 0 ? balance / avgExpense : 0,
+    thisMonth: round2(current.net || 0), thisMonthOut: round2(current.withdrawals || 0),
+    streak: savingsContributionStreak(series, monthly), series: series,
+    totalDeposits: round2(totalDeposits), totalWithdrawals: round2(totalWithdrawals),
+    mainBalance: round2(mainSpendBalance(tx || []))
+  };
+}
+function savingsInsights(acct, snap) {
+  var out = [];
+  var purpose = savingsPurpose(snap.profile.purpose);
+  if (snap.target > 0 && snap.balance >= snap.target) {
+    out.push({ id: "won", icon: "check", tone: T.green, title: "You reached the goal", text: purpose.label + " is fully funded at " + dollars(snap.balance) + ". Keep it separate and only change the target when your life changes." });
+  } else {
+    var paceTarget = snap.monthly * monthDayFrac();
+    if (snap.monthly > 0 && snap.thisMonth + 0.01 < paceTarget) {
+      var catchUp = Math.max(1, Math.ceil(paceTarget - snap.thisMonth));
+      out.push({ id: "pace", icon: "activity", tone: T.orange, title: dollars(catchUp) + " gets this month back on pace", text: "You planned " + dollars(snap.monthly) + " a month and this month's net savings is " + dollarsSigned(snap.thisMonth) + ". A catch-up now protects the habit.", cta: "Add " + dollars(catchUp), action: "add", amount: catchUp });
+    } else if (snap.monthly > 0) {
+      out.push({ id: "pace", icon: "check", tone: T.green, title: "This month is on pace", text: "You've net saved " + dollars(snap.thisMonth) + " toward a " + dollars(snap.monthly) + " monthly plan. Consistency is doing the heavy lifting." });
+    }
+    if (snap.deadline && snap.needMonthly > snap.monthly * 1.05) {
+      out.push({ id: "deadline", icon: "calendar", tone: T.gold, title: "The deadline needs " + dollars(Math.ceil(snap.needMonthly)) + " a month", text: "At " + dollars(snap.monthly) + " a month, your current plan lands after the target date. Raise the monthly amount or give the goal more time.", cta: "Adjust plan", action: "plan" });
+    } else if (snap.projectedDate) {
+      out.push({ id: "finish", icon: "spark", tone: T.green, title: "On pace for " + savingsFormatMonth(snap.projectedDate), text: "Keep adding " + dollars(snap.monthly) + " a month and the remaining " + dollars(snap.remaining) + " is covered around " + savingsFormatMonth(snap.projectedDate) + "." });
+    }
+  }
+  if (snap.profile.purpose === "emergency" && snap.avgExpense > 0) {
+    var targetMonths = parseInt(snap.profile.coverageMonths, 10) || 3;
+    if (snap.runway + 0.05 < targetMonths) {
+      out.push({ id: "runway", icon: "shield", tone: T.orange, title: snap.runway.toFixed(1) + " months of breathing room", text: "Your recent spending averages about " + dollars(snap.avgExpense) + " a month. " + targetMonths + " months would be roughly " + dollars(snap.avgExpense * targetMonths) + "." });
+    }
+  } else if (!(snap.avgExpense > 0)) {
+    out.push({ id: "data", icon: "activity", tone: T.gold, title: "Tracking unlocks a sharper plan", text: "Log a few weeks of spending and Richard can translate this balance into real months of breathing room." });
+  }
+  if (snap.mainBalance < 0) {
+    out.unshift({ id: "balance", icon: "credit", tone: T.red, title: "Protect your spending balance first", text: "Your main balance is " + dollarsSigned(snap.mainBalance) + ". Pause extra transfers until it is positive, so saving doesn't create a cash squeeze." });
+  }
+  if (out.length < 3) {
+    out.push(snap.remaining <= 0
+      ? { id: "next", icon: "spark", tone: T.gold, title: "Choose what this habit does next", text: "The target is complete. Keep the account as it is, or update the plan when you have a new purpose for the monthly " + dollars(snap.monthly || 0) + ".", cta: "Update plan", action: "plan" }
+      : { id: "habit", icon: "refresh", tone: T.gold, title: snap.streak > 0 ? snap.streak + "-month saving streak" : "Make the next transfer easy", text: snap.streak > 0 ? "You've met the monthly amount " + snap.streak + (snap.streak === 1 ? " month" : " months") + " in a row. Keep the next transfer on the same day." : "Pick one repeatable day each month and move " + dollars(snap.monthly || snap.needMonthly || 1) + " before the rest of the month gets a vote." });
+  }
+  if (out.length < 3) {
+    out.push({ id: "separate", icon: "shield", tone: T.green, title: "Keep this money in its own lane", text: "This account stays outside your spendable balance. That separation makes the " + purpose.label.toLowerCase() + " harder to spend by accident." });
+  }
+  return out.slice(0, 3);
+}
+function SavingsMiniLine(props) {
+  var data = props.data || [];
+  if (!data.length) return null;
+  var W = 320, H = 112, top = 10, bottom = 86;
+  var vals = data.map(function(d) { return d.balance || 0; });
+  var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+  if (hi === lo) { hi += 1; lo -= 1; }
+  var pts = data.map(function(d, i) { return { x: 8 + (i * (W - 16) / Math.max(1, data.length - 1)), y: bottom - ((d.balance - lo) / (hi - lo)) * (bottom - top) }; });
+  var path = quadSmooth(pts);
+  var color = props.color || T.orange;
+  return (
+    <div role="img" aria-label="Savings balance over the last six months">
+      <svg width="100%" height={H} viewBox={"0 0 " + W + " " + H} style={{ display: "block", overflow: "visible" }}>
+        {[0, 1, 2].map(function(i) { var y = top + i * (bottom - top) / 2; return <line key={i} x1="8" y1={y} x2={W - 8} y2={y} stroke={T.sep} strokeWidth="1" strokeDasharray="3 5" />; })}
+        <path d={path} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        {pts.map(function(p, i) { return <circle key={i} cx={p.x} cy={p.y} r={i === pts.length - 1 ? 4 : 2.5} fill={color} stroke={T.card} strokeWidth="2" />; })}
+      </svg>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: -15 }}>
+        {data.map(function(d) { return <span key={d.ym} style={{ fontSize: 10.5, color: T.ink3 }}>{d.label}</span>; })}
+      </div>
+    </div>
+  );
+}
+function SavingsBars(props) {
+  var data = props.data || [];
+  var max = Math.max.apply(null, data.map(function(d) { return Math.max(Math.abs(d.net || 0), props.target || 0); }).concat([1]));
+  return (
+    <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 142, paddingTop: 8 }} role="img" aria-label="Monthly savings contributions">
+      {data.map(function(d) {
+        var net = d.net || 0;
+        var h = Math.max(net !== 0 ? 8 : 2, Math.round(Math.abs(net) / max * 104));
+        return (
+          <div key={d.ym} style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%" }}>
+            <span style={{ fontSize: 9.5, color: net < 0 ? T.red : T.ink3, marginBottom: 4, minHeight: 12 }}>{net !== 0 ? dollarsSigned(net) : ""}</span>
+            <div style={{ width: "72%", maxWidth: 30, height: h, minHeight: 2, borderRadius: "7px 7px 3px 3px", background: net < 0 ? T.red : net + 0.01 >= (props.target || 0) && props.target > 0 ? T.green : (props.color || T.orange), opacity: net !== 0 ? 1 : 0.22 }} />
+            <span style={{ fontSize: 10.5, color: T.ink3, marginTop: 7 }}>{d.label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function SavingsPlanOnboard(props) {
+  var acct = props.acct || { entries: [] };
+  var old = acct.profile || {};
+  var balance = savingsBalance(acct);
+  var avgExpense = savingsAverageExpenses(props.tx || []);
+  var today = new Date().toISOString().slice(0, 10);
+  var initialTarget = parseFloat(old.target) || Math.max(balance + 1000, avgExpense > 0 ? Math.ceil(avgExpense * 3 / 100) * 100 : 5000);
+  var _st = useState(1); var step = _st[0]; var setStep = _st[1];
+  var _dr = useState("fwd"); var dir = _dr[0]; var setDir = _dr[1];
+  var _pu = useState(old.purpose || ""); var purpose = _pu[0]; var setPurpose = _pu[1];
+  var _tg = useState(initialTarget); var target = _tg[0]; var setTarget = _tg[1];
+  var _hz = useState(old.horizonMonths == null ? 12 : old.horizonMonths); var horizon = _hz[0]; var setHorizon = _hz[1];
+  var _cv = useState(parseInt(old.coverageMonths, 10) || 3); var coverage = _cv[0]; var setCoverage = _cv[1];
+  var initialNeed = Math.max(1, Math.ceil(Math.max(0, initialTarget - balance) / Math.max(1, old.horizonMonths || 12)));
+  var _mo = useState(parseFloat(old.monthly) || initialNeed); var monthly = _mo[0]; var setMonthly = _mo[1];
+  var _bz = useState(false); var building = _bz[0]; var setBuilding = _bz[1];
+  var _dn = useState(false); var done = _dn[0]; var setDone = _dn[1];
+  var advRef = useRef(false);
+  useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
+
+  function suggestedTarget(kind, months) {
+    if (kind === "emergency" && avgExpense > 0) return Math.max(balance, Math.ceil(avgExpense * (months || coverage || 3) / 100) * 100);
+    var base = kind === "home" ? 25000 : kind === "travel" ? 3500 : kind === "purchase" ? 5000 : kind === "freedom" ? Math.max(10000, avgExpense * 6) : 5000;
+    return Math.max(Math.ceil(base / 100) * 100, Math.ceil((balance + 1000) / 100) * 100);
+  }
+  function choosePurpose(v) {
+    setPurpose(v);
+    setTarget(suggestedTarget(v, coverage));
+    autoNext();
+  }
+  function chooseCoverage(v) {
+    setCoverage(v);
+    if (avgExpense > 0) setTarget(suggestedTarget("emergency", v));
+  }
+  function chooseHorizon(v) {
+    setHorizon(v);
+    setMonthly(Math.max(1, Math.ceil(Math.max(0, (parseFloat(target) || 0) - balance) / Math.max(1, v || 12))));
+    autoNext();
+  }
+  function autoNext() {
+    if (advRef.current) return;
+    advRef.current = true;
+    setTimeout(function() { advRef.current = false; setDir("fwd"); setStep(function(s) { return Math.min(4, s + 1); }); }, 240);
+  }
+  function back() {
+    if (done) { setDone(false); setDir("back"); setStep(4); return; }
+    if (step <= 1) { props.onCancel(); return; }
+    setDir("back"); setStep(step - 1);
+  }
+  function next() {
+    setDir("fwd");
+    if (step < 4) {
+      if (step === 3) setMonthly(Math.max(1, Math.ceil(Math.max(0, (parseFloat(target) || 0) - balance) / Math.max(1, horizon || 12))));
+      setStep(step + 1); return;
+    }
+    setBuilding(true);
+    setTimeout(function() { setBuilding(false); setDone(true); }, 1100);
+  }
+  var targetNum = Math.max(0, parseFloat(target) || 0);
+  var horizonNum = Math.max(0, parseInt(horizon, 10) || 0);
+  var remaining = Math.max(0, targetNum - balance);
+  var needed = horizonNum > 0 ? Math.max(1, Math.ceil(remaining / horizonNum)) : Math.max(1, Math.ceil(monthly || remaining / 12));
+  var projectedMonths = monthly > 0 ? Math.ceil(remaining / monthly) : 0;
+  var deadline = horizonNum > 0 ? savingsAddMonths(today, horizonNum) : "";
+  var projected = projectedMonths > 0 ? savingsAddMonths(today, projectedMonths) : today;
+  var pInfo = savingsPurpose(purpose);
+
+  function finish() {
+    props.onSave({
+      purpose: purpose || "general", target: round2(targetNum), monthly: round2(Math.max(1, parseFloat(monthly) || needed)),
+      horizonMonths: horizonNum, deadline: deadline, coverageMonths: purpose === "emergency" ? coverage : 0,
+      complete: true, createdAt: old.createdAt || today, updatedAt: today
+    });
+  }
+  function optCard(sel) {
+    return { width: "100%", background: sel ? T.orangeDim : T.card, border: "1.5px solid " + (sel ? T.orange : T.sep), borderRadius: 15, padding: "14px 16px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 13, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px " + T.orangeGlow : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", marginBottom: 10 };
+  }
+
+  if (building) {
+    return (
+      <div style={{ padding: "64px 18px 100px", minHeight: 520, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ width: "100%", maxWidth: 320 }}>
+          <AIWorking bare title="Building your savings plan..." sub={"Turning " + pInfo.label.toLowerCase() + " into a monthly path you can actually track."} expectedMs={1100}
+            steps={["Reading your goal", "Checking your real spending", "Setting the monthly pace", "Building your milestones"]} />
+        </div>
+      </div>
+    );
+  }
+  if (done) {
+    var pct = targetNum > 0 ? Math.min(100, Math.round(balance / targetNum * 100)) : 0;
+    return (
+      <div style={{ paddingBottom: 42 }}>
+        <SubViewBack onBack={back} label="Edit answers" />
+        <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 7 }}><RichyLogo size={26} /><span style={{ fontSize: 12, fontWeight: 600, color: T.ink2 }}>Richard's savings plan</span></div>
+        <div style={{ fontSize: 27, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1.14 }}>{pInfo.label}</div>
+        <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.55, marginTop: 7 }}>A clear target, a realistic monthly rhythm, and live tracking from every deposit and withdrawal.</div>
+        <Card style={{ padding: 20, marginTop: 18, background: T.heroBg, boxShadow: T.heroShadow }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            <div style={{ position: "relative", width: 94, height: 94, flexShrink: 0 }}>
+              <RingChart size={94} stroke={8} value={pct} max={100} color={acct.color || T.orange} track="rgba(255,255,255,0.16)" />
+              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 20, fontWeight: 800, color: T.heroText }}>{pct + "%"}</span><span style={{ fontSize: 9.5, color: T.heroMut }}>funded</span></div>
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.09em", color: T.heroMut, fontWeight: 700 }}>Target</div>
+              <div style={{ fontSize: 26, color: T.heroText, fontWeight: 800, letterSpacing: "-0.03em", marginTop: 3 }}>{dollars(targetNum)}</div>
+              <div style={{ fontSize: 12, color: T.heroFaint, marginTop: 4 }}>{dollars(balance) + " already saved"}</div>
+            </div>
+          </div>
+        </Card>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
+          <Card style={{ padding: "15px 16px" }}><div style={{ fontSize: 10.5, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700 }}>Monthly pace</div><div style={{ fontSize: 21, fontWeight: 800, color: T.ink, marginTop: 6 }}>{dollars(monthly)}</div><div style={{ fontSize: 11.5, color: T.ink3, marginTop: 2 }}>your chosen rhythm</div></Card>
+          <Card style={{ padding: "15px 16px" }}><div style={{ fontSize: 10.5, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700 }}>At this pace</div><div style={{ fontSize: 21, fontWeight: 800, color: T.ink, marginTop: 6 }}>{remaining <= 0 ? "Funded" : savingsFormatMonth(projected)}</div><div style={{ fontSize: 11.5, color: T.ink3, marginTop: 2 }}>{deadline ? "target date " + savingsFormatMonth(deadline) : "flexible deadline"}</div></Card>
+        </div>
+        {deadline && monthly + 0.01 < needed && <div style={{ marginTop: 12, padding: "13px 14px", borderRadius: 14, background: T.orangeDim, display: "flex", gap: 10, alignItems: "flex-start" }}><SVGIcon id="calendar" size={18} color={T.orange} /><div style={{ fontSize: 12.5, lineHeight: 1.5, color: T.ink2 }}>The date needs about <b>{dollars(needed)} a month</b>. Your chosen {dollars(monthly)} pace is gentler, so the dashboard will keep showing the gap honestly.</div></div>}
+        <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.5, marginTop: 14, textAlign: "center" }}>Richy tracks the plan; it never moves money without you.</div>
+        <BigBtn label="Start tracking my plan" onPress={finish} />
+      </div>
+    );
+  }
+
+  var headings = {
+    1: { h: "What is this money for?", s: "A purpose lets Richard measure progress and give useful tips instead of generic advice." },
+    2: { h: "What would fully funded look like?", s: purpose === "emergency" ? "Use your recent spending to choose how many months of breathing room you want." : "Set the finish line. You can change it whenever the goal changes." },
+    3: { h: "When would you like to get there?", s: "A date turns the goal into a monthly pace. Flexible is fine too." },
+    4: { h: "What can you save most months?", s: "Choose an amount you can repeat. A realistic habit beats an ambitious month you cannot sustain." }
+  };
+  var q = headings[step];
+  var monthOptions = [{ v: 3, label: "In 3 months", sub: "A focused sprint", icon: "activity" }, { v: 6, label: "In 6 months", sub: "Fast but manageable", icon: "calendar" }, { v: 12, label: "In 1 year", sub: "A steady monthly rhythm", icon: "goals" }, { v: 24, label: "In 2 years", sub: "More room each month", icon: "leaf" }, { v: 0, label: "Keep it flexible", sub: "Track the habit without a deadline", icon: "spark" }];
+  var quickTargetBase = Math.max(100, Math.ceil((balance + 500) / 100) * 100);
+  var targetPicks = purpose === "emergency" && avgExpense > 0 ? [3, 6, 9].map(function(m) { return Math.ceil(avgExpense * m / 100) * 100; }) : [quickTargetBase, quickTargetBase + 2000, quickTargetBase + 5000];
+  var quickMonthly = [Math.max(1, Math.ceil(needed / 2)), Math.max(1, needed), Math.max(1, Math.ceil(needed * 1.25))].filter(function(v, i, a) { return a.indexOf(v) === i; });
+  var canNext = step === 1 ? !!purpose : step === 2 ? targetNum > 0 : step === 3 ? horizon !== null : monthly > 0;
+  return (
+    <div style={{ paddingBottom: 36 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 13, paddingTop: 4 }}>
+        <JrIconBtn icon="chevron" rotate={180} onPress={back} />
+        <JourneyBar pct={(step / 4) * 100} />
+        <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: T.ink3, textAlign: "right" }}>{step + "/4"}</div>
+      </div>
+      <div style={{ maxWidth: 390, margin: "0 auto", padding: "28px 2px 0" }}>
+        <JrStepShell k={step} dir={dir}>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 14 }}><RichyLogo size={26} /><span style={{ fontSize: 12, fontWeight: 600, color: T.ink2 }}>Richard asks</span></div>
+          <div style={{ fontSize: 23, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, lineHeight: 1.22, marginBottom: 8 }}><WordReveal text={q.h} base={0.04} step={0.045} /></div>
+          <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.55, marginBottom: 23 }}>{q.s}</div>
+          {step === 1 && <Stagger k="savPurpose" step={0.045}>{SAVINGS_PURPOSES.map(function(o) { var sel = purpose === o.v; return <button key={o.v} onClick={function() { choosePurpose(o.v); }} style={optCard(sel)}><div style={{ width: 42, height: 42, borderRadius: 12, background: sel ? T.btn : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><SVGIcon id={o.icon} size={20} color={sel ? "#fff" : T.ink3} /></div><div style={{ flex: 1 }}><div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>{o.label}</div><div style={{ fontSize: 12.5, color: T.ink2, marginTop: 2 }}>{o.sub}</div></div>{sel && <SVGIcon id="check" size={19} color={T.orange} />}</button>; })}</Stagger>}
+          {step === 2 && <div>
+            {purpose === "emergency" && avgExpense > 0 && <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>{[3, 6, 9].map(function(v) { var on = coverage === v; return <button key={v} onClick={function() { chooseCoverage(v); }} style={{ flex: 1, padding: "10px 4px", borderRadius: 12, border: "1.5px solid " + (on ? T.orange : T.sep), background: on ? T.orangeDim : T.card, color: on ? T.orange : T.ink2, fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>{v + " months"}</button>; })}</div>}
+            <Card style={{ padding: "17px 18px", marginBottom: 12 }}><div style={{ fontSize: 10.5, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700, marginBottom: 7 }}>Savings target</div><div style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ fontSize: 24, color: T.ink3, fontWeight: 700 }}>{_currency.sym}</span><input value={target} onChange={function(e) { setTarget(e.target.value); }} type="number" inputMode="decimal" min="0" style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", color: T.ink, fontFamily: UI, fontSize: 32, fontWeight: 800, padding: 0 }} /></div><div style={{ fontSize: 11.5, color: T.ink3, marginTop: 6 }}>{dollars(balance) + " already saved" + (avgExpense > 0 && purpose === "emergency" ? " · recent monthly spending " + dollars(avgExpense) : "")}</div></Card>
+            <div style={{ display: "flex", gap: 8 }}>{targetPicks.map(function(v) { return <button key={v} onClick={function() { setTarget(v); }} style={{ flex: 1, border: "1px solid " + T.sep, background: T.card, borderRadius: 11, padding: "10px 3px", color: T.ink2, fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{dollarsWhole(v)}</button>; })}</div>
+          </div>}
+          {step === 3 && <Stagger k="savHorizon" step={0.05}>{monthOptions.map(function(o) { var sel = horizon === o.v; return <button key={o.v} onClick={function() { chooseHorizon(o.v); }} style={optCard(sel)}><div style={{ width: 42, height: 42, borderRadius: 12, background: sel ? T.btn : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><SVGIcon id={o.icon} size={20} color={sel ? "#fff" : T.ink3} /></div><div style={{ flex: 1 }}><div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>{o.label}</div><div style={{ fontSize: 12.5, color: T.ink2, marginTop: 2 }}>{o.sub}</div></div>{sel && <SVGIcon id="check" size={19} color={T.orange} />}</button>; })}</Stagger>}
+          {step === 4 && <div>
+            <div style={{ textAlign: "center", fontSize: 42, fontWeight: 800, color: T.ink, letterSpacing: "-0.04em" }}>{dollarsWhole(monthly)}<span style={{ fontSize: 16, fontWeight: 600, color: T.ink3, letterSpacing: 0 }}>/mo</span></div>
+            <div style={{ display: "flex", gap: 8, marginTop: 18 }}>{quickMonthly.map(function(v) { var sel = Math.round(monthly) === Math.round(v); return <button key={v} onClick={function() { setMonthly(v); }} style={{ flex: 1, padding: "11px 0", border: "1.5px solid " + (sel ? T.orange : T.sep), background: sel ? T.orangeDim : T.card, borderRadius: 12, fontFamily: UI, fontSize: 13, fontWeight: 700, color: sel ? T.orange : T.ink2, cursor: "pointer" }}>{dollarsWhole(v)}</button>; })}</div>
+            <Card style={{ padding: "13px 15px", marginTop: 13 }}><div style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ fontSize: 18, color: T.ink3, fontWeight: 700 }}>{_currency.sym}</span><input value={monthly} onChange={function(e) { setMonthly(parseFloat(e.target.value) || 0); }} type="number" inputMode="decimal" min="1" aria-label="Monthly savings amount" style={{ flex: 1, border: "none", outline: "none", background: "none", color: T.ink, fontFamily: UI, fontSize: 20, fontWeight: 800, padding: 0 }} /><span style={{ fontSize: 12, color: T.ink3 }}>/ month</span></div></Card>
+            <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginTop: 13, textAlign: "center" }}>{horizonNum > 0 ? "The target date needs about " + dollars(needed) + " a month. Richy will track both your chosen pace and the gap." : "No deadline pressure. Richy will track the habit and estimate a finish date as you go."}</div>
+          </div>}
+        </JrStepShell>
+      </div>
+      <div style={{ maxWidth: 390, margin: "22px auto 0" }}><BigBtn label={step === 4 ? "Build my savings plan" : "Continue"} disabled={!canNext} onPress={next} /></div>
+    </div>
+  );
+}
+
+function SavingsAccountView(props) {
+  var acct = props.acct;
+  var profile = (acct && acct.profile) || {};
+  var _tb = useState("overview"); var tab = _tb[0]; var setTab = _tb[1];
+  var _ed = useState(false); var editingPlan = _ed[0]; var setEditingPlan = _ed[1];
+  if (!acct) return null;
+  if (!profile.complete || editingPlan) {
+    return <SavingsPlanOnboard acct={acct} tx={props.tx} onCancel={profile.complete ? function() { setEditingPlan(false); } : props.onBack} onSave={function(next) { props.onSaveProfile(next); setEditingPlan(false); }} />;
+  }
+  var snap = savingsPlanSnapshot(acct, props.tx || []);
+  var color = acct.color || T.orange;
+  var purpose = savingsPurpose(profile.purpose);
+  var six = snap.series.slice(-6);
+  var tips = savingsInsights(acct, snap);
+  var entries = (acct.entries || []).slice().sort(function(a, b) {
+    var ad = a.date || "", bd = b.date || "";
+    if (ad !== bd) return ad < bd ? 1 : -1;
+    return (b.id || 0) - (a.id || 0);
+  });
+  var deadlineOnTrack = !snap.deadline || !snap.projectedDate || snap.projectedDate.slice(0, 7) <= snap.deadline.slice(0, 7);
+  var statusText = snap.remaining <= 0 ? "Goal funded" : deadlineOnTrack ? "On track" : "Needs a pace change";
+  var statusColor = snap.remaining <= 0 || deadlineOnTrack ? T.green : T.gold;
+
+  function metricCard(label, value, sub, icon, tone) {
+    return (
+      <Card style={{ padding: "14px 15px", minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}><span style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</span><span style={{ width: 26, height: 26, borderRadius: 8, background: (tone || color) + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><SVGIcon id={icon} size={13} color={tone || color} /></span></div>
+        <div style={{ fontSize: 20, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", marginTop: 7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</div>
+        <div style={{ fontSize: 11, color: T.ink3, marginTop: 3, lineHeight: 1.35 }}>{sub}</div>
+      </Card>
+    );
+  }
+  function runTip(tip) {
+    if (tip.action === "add") props.onAdd(tip.amount || 0);
+    if (tip.action === "plan") setEditingPlan(true);
+  }
+  var TABS = [{ id: "overview", label: "Overview", icon: "spark" }, { id: "tracking", label: "Tracking", icon: "activity" }, { id: "plan", label: "Plan", icon: "goals" }];
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} label="Accounts" />
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+        <CatBadge icon={acct.icon || purpose.icon || "coins"} color={color} size={46} soft={true} />
+        <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 22, fontFamily: DISP, fontWeight: DISP_WEIGHT, color: T.ink, letterSpacing: "-0.02em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{acct.name}</div><div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{purpose.label + " · " + statusText}</div></div>
+        <span style={{ width: 9, height: 9, borderRadius: "50%", background: statusColor, boxShadow: "0 0 0 4px " + statusColor + "1F", marginRight: 4 }} />
+      </div>
+      <div style={{ display: "flex", gap: 5, padding: 4, borderRadius: 14, background: "rgba(0,0,0,0.05)", marginBottom: 14 }}>
+        {TABS.map(function(t) { var on = tab === t.id; return <button key={t.id} onClick={function() { setTab(t.id); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "9px 5px", borderRadius: 10, background: on ? T.card : "transparent", color: on ? T.ink : T.ink3, boxShadow: on ? "0 2px 8px rgba(0,0,0,0.08)" : "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><SVGIcon id={t.icon} size={14} color={on ? color : T.ink3} />{t.label}</button>; })}
+      </div>
+
+      {tab === "overview" && <div>
+        <Card style={{ padding: "18px 20px 16px", marginBottom: 12, background: T.heroBg, boxShadow: T.heroShadow }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+            <div><div style={{ fontSize: 10.5, color: T.heroMut, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>Saved toward {purpose.label.toLowerCase()}</div><div style={{ fontSize: 36, fontWeight: 800, color: T.heroText, letterSpacing: "-0.035em", lineHeight: 1.05, marginTop: 5 }}>{dollars(snap.balance)}</div></div>
+            <div style={{ position: "relative", width: 62, height: 62, flexShrink: 0 }}><RingChart size={62} stroke={6} value={snap.progress} max={100} color={color} track="rgba(255,255,255,0.14)" /><div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: T.heroText }}>{snap.progress + "%"}</div></div>
+          </div>
+          <div style={{ height: 7, borderRadius: 999, background: "rgba(255,255,255,0.14)", overflow: "hidden", marginTop: 15 }}><div style={{ height: "100%", width: snap.progress + "%", minWidth: snap.balance > 0 ? 5 : 0, borderRadius: 999, background: color, transition: "width 0.6s ease" }} /></div>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 7, fontSize: 11.5, color: T.heroFaint }}><span>{dollars(snap.remaining) + " left"}</span><span>{"Goal " + dollars(snap.target)}</span></div>
+          <div style={{ display: "flex", gap: 8, marginTop: 15 }}>
+            <button onClick={function() { props.onAdd(0); }} style={{ flex: 1.3, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 800, padding: "11px 0", borderRadius: 11, background: T.btn, color: "#fff", boxShadow: "0 4px 12px " + T.orangeGlow }}><span style={{ display: "inline-flex", verticalAlign: "middle", marginRight: 6 }}><SVGIcon id="plus" size={15} color="#fff" /></span>Add money</button>
+            <button onClick={props.onWithdraw} disabled={snap.balance <= 0} style={{ flex: 1, border: "1px solid rgba(255,255,255,0.24)", cursor: snap.balance > 0 ? "pointer" : "default", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "11px 0", borderRadius: 11, background: "rgba(255,255,255,0.08)", color: snap.balance > 0 ? T.heroText : T.heroFaint }}>Withdraw</button>
+          </div>
+        </Card>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+          {metricCard("This month", dollarsSigned(snap.thisMonth), "net of withdrawals · " + dollars(snap.monthly) + " planned", "down", snap.thisMonth + 0.01 >= snap.monthly ? T.green : color)}
+          {metricCard("Projected", snap.remaining <= 0 ? "Funded" : snap.projectedDate ? savingsFormatMonth(snap.projectedDate) : "No pace", snap.deadline ? "target " + savingsFormatMonth(snap.deadline) : "flexible date", "calendar", deadlineOnTrack ? T.green : T.gold)}
+          {metricCard("Safety runway", snap.avgExpense > 0 ? snap.runway.toFixed(1) + " mo" : "Unlock", snap.avgExpense > 0 ? "at recent spending" : "log spending first", "shield", snap.runway >= 3 ? T.green : T.gold)}
+          {metricCard("Saving streak", snap.streak + (snap.streak === 1 ? " month" : " months"), snap.streak ? "monthly target met" : "next deposit starts it", "refresh", snap.streak ? T.green : color)}
+        </div>
+        <Card style={{ padding: "17px 18px", marginBottom: 18 }}>
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, marginBottom: 8 }}><div><div style={{ fontSize: 16, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>Balance trend</div><div style={{ fontSize: 11.5, color: T.ink3, marginTop: 2 }}>Every move, month by month</div></div><span style={{ fontSize: 12.5, fontWeight: 700, color: color }}>{six.length ? dollars(six[six.length - 1].balance) : dollars(0)}</span></div>
+          <SavingsMiniLine data={six} color={color} />
+        </Card>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 9 }}><RichyLogo size={24} /><div><div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>Richard's tips</div><div style={{ fontSize: 11.5, color: T.ink3 }}>Written from this account's live numbers</div></div></div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {tips.map(function(tip) { return <Card key={tip.id} style={{ padding: "15px 16px" }}><div style={{ display: "flex", gap: 11, alignItems: "flex-start" }}><span style={{ width: 34, height: 34, borderRadius: 10, background: tip.tone + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><SVGIcon id={tip.icon} size={17} color={tip.tone} /></span><div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 14, fontWeight: 750, color: T.ink }}>{tip.title}</div><div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 4 }}>{tip.text}</div>{tip.cta && <button onClick={function() { runTip(tip); }} style={{ border: "none", background: "none", color: color, fontFamily: UI, fontSize: 12.5, fontWeight: 750, cursor: "pointer", padding: "9px 0 0" }}>{tip.cta + " →"}</button>}</div></div></Card>; })}
+        </div>
+      </div>}
+
+      {tab === "tracking" && <div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 12 }}>
+          {metricCard("Added", dollars(snap.totalDeposits), "all time", "down", T.green)}
+          {metricCard("Taken out", dollars(snap.totalWithdrawals), "all time", "up", T.gold)}
+          {metricCard("Net saved", dollars(snap.balance), entries.length + (entries.length === 1 ? " move" : " moves"), "coins", color)}
+        </div>
+        <Card style={{ padding: "17px 18px", marginBottom: 16 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10 }}><div><div style={{ fontSize: 16, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>Monthly contributions</div><div style={{ fontSize: 11.5, color: T.ink3, marginTop: 2 }}>Goal: {dollars(snap.monthly)} each month</div></div><span style={{ fontSize: 11.5, fontWeight: 700, color: snap.thisMonth >= snap.monthly ? T.green : color }}>{snap.thisMonth >= snap.monthly ? "Goal met" : dollars(Math.max(0, snap.monthly - snap.thisMonth)) + " to go"}</span></div>
+          <SavingsBars data={six} target={snap.monthly} color={color} />
+          <div style={{ marginTop: 7, paddingTop: 10, borderTop: "1px solid " + T.sep, display: "flex", justifyContent: "space-between", fontSize: 11.5, color: T.ink3 }}><span>Green bars met your plan</span><span>{snap.streak + "-month streak"}</span></div>
+        </Card>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 9 }}><div><div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>Account activity</div><div style={{ fontSize: 11.5, color: T.ink3, marginTop: 2 }}>The complete savings ledger</div></div><button onClick={function() { props.onAdd(0); }} style={{ border: "none", background: "none", color: color, fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>Add money</button></div>
+        <Card style={{ overflow: "hidden" }}>
+          {entries.length === 0 ? <div style={{ padding: "28px 20px", textAlign: "center", color: T.ink3, fontSize: 13 }}>No moves yet. Your first deposit starts the graph.</div> : entries.map(function(e, i) { var dep = e.kind !== "withdraw"; return <div key={e.id || i} style={{ padding: "12px 15px", display: "flex", alignItems: "center", gap: 10, borderBottom: i < entries.length - 1 ? "1px solid " + T.sep : "none" }}><span style={{ width: 30, height: 30, borderRadius: 9, background: (dep ? T.green : T.gold) + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><SVGIcon id={dep ? "down" : "up"} size={14} color={dep ? T.green : T.gold} /></span><div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 13, fontWeight: 600, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.label || (dep ? "Deposit" : "Withdrawal")}</div><div style={{ fontSize: 10.5, color: T.ink3, marginTop: 2 }}>{dateLabel(e.date || acct.createdAt)}</div></div><span style={{ fontSize: 13.5, fontWeight: 750, color: dep ? T.green : T.ink2 }}>{(dep ? "+" : "-") + dollars(e.amount || 0)}</span></div>; })}
+        </Card>
+      </div>}
+
+      {tab === "plan" && <div>
+        <Card style={{ padding: 18, marginBottom: 12 }}>
+          <div style={{ display: "flex", gap: 16, alignItems: "center" }}><div style={{ position: "relative", width: 82, height: 82, flexShrink: 0 }}><RingChart size={82} stroke={7} value={snap.progress} max={100} color={color} /><div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: T.ink }}>{snap.progress + "%"}</div></div><div style={{ flex: 1 }}><div style={{ fontSize: 11, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>{purpose.label}</div><div style={{ fontSize: 23, fontWeight: 800, color: T.ink, marginTop: 4 }}>{dollars(snap.target)}</div><div style={{ fontSize: 12, color: statusColor, fontWeight: 700, marginTop: 4 }}>{statusText}</div></div></div>
+        </Card>
+        <Card style={{ overflow: "hidden", marginBottom: 12 }}>
+          {[{ k: "Monthly plan", v: dollars(snap.monthly), s: snap.needMonthly > 0 ? dollars(Math.ceil(snap.needMonthly)) + " needed for date" : "goal already funded" }, { k: "Target date", v: snap.deadline ? savingsFormatMonth(snap.deadline) : "Flexible", s: snap.projectedDate ? "current pace: " + savingsFormatMonth(snap.projectedDate) : "add a monthly pace" }, { k: "Recent spending", v: snap.avgExpense > 0 ? dollars(snap.avgExpense) + "/mo" : "Not enough data", s: snap.avgExpense > 0 ? snap.runway.toFixed(1) + " months covered" : "log spending to calculate runway" }].map(function(row, i, arr) { return <div key={row.k} style={{ padding: "13px 16px", display: "flex", alignItems: "center", gap: 12, borderBottom: i < arr.length - 1 ? "1px solid " + T.sep : "none" }}><div style={{ flex: 1 }}><div style={{ fontSize: 12.5, color: T.ink2 }}>{row.k}</div><div style={{ fontSize: 10.5, color: T.ink3, marginTop: 2 }}>{row.s}</div></div><span style={{ fontSize: 13.5, fontWeight: 750, color: T.ink, textAlign: "right" }}>{row.v}</span></div>; })}
+        </Card>
+        <div style={{ fontSize: 16, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, margin: "18px 2px 9px" }}>Milestones</div>
+        <Card style={{ padding: "14px 16px", marginBottom: 12 }}>
+          {[25, 50, 75, 100].map(function(m, i) { var hit = snap.progress >= m; var amount = snap.target * m / 100; return <div key={m} style={{ display: "flex", alignItems: "center", gap: 11, padding: "9px 0", borderBottom: i < 3 ? "1px solid " + T.sep : "none" }}><span style={{ width: 28, height: 28, borderRadius: 9, background: hit ? T.green + "1F" : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><SVGIcon id={hit ? "check" : "goals"} size={14} color={hit ? T.green : T.ink3} /></span><div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 650, color: hit ? T.ink : T.ink2 }}>{m + "% funded"}</div><div style={{ fontSize: 10.5, color: T.ink3, marginTop: 1 }}>{dollars(amount)}</div></div><span style={{ fontSize: 11.5, fontWeight: 700, color: hit ? T.green : T.ink3 }}>{hit ? "Reached" : dollars(Math.max(0, amount - snap.balance)) + " away"}</span></div>; })}
+        </Card>
+        <button onClick={function() { setEditingPlan(true); }} style={{ width: "100%", border: "1.5px solid " + color, background: "none", color: color, borderRadius: 13, padding: "12px 0", fontFamily: UI, fontSize: 13.5, fontWeight: 750, cursor: "pointer" }}>Redo my savings questionnaire</button>
+        <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.5, textAlign: "center", padding: "12px 14px 0" }}>Changing the plan never changes your balance or history.</div>
+      </div>}
+    </div>
+  );
+}
+
 function SavingsView(props) {
   var accts = props.savings || [];
   var tx = props.tx || [];
@@ -17983,10 +18665,6 @@ function SavingsView(props) {
 
   var _cr = useState(false); var creating = _cr[0]; var setCreating = _cr[1];
   var _pk = useState(false); var picking = _pk[0]; var setPicking = _pk[1];
-  var _cri = useState(false); var creatingInv = _cri[0]; var setCreatingInv = _cri[1];
-  var _cin = useState(""); var ciName = _cin[0]; var setCiName = _cin[1];
-  var _cii = useState("chart"); var ciIcon = _cii[0]; var setCiIcon = _cii[1];
-  var _cicl = useState(INVESTING_COLORS[0]); var ciColor = _cicl[0]; var setCiColor = _cicl[1];
   var _cn = useState(""); var cName = _cn[0]; var setCName = _cn[1];
   var _cic = useState("coins"); var cIcon = _cic[0]; var setCIcon = _cic[1];
   var _ccl = useState(SAVINGS_COLORS[0]); var cColor = _ccl[0]; var setCColor = _ccl[1];
@@ -18002,6 +18680,7 @@ function SavingsView(props) {
   var _ren = useState(""); var renameVal = _ren[0]; var setRenameVal = _ren[1];
   var _del = useState(null); var deleteConfirm = _del[0]; var setDeleteConfirm = _del[1];
   var _delEnt = useState(null); var delEntryConfirm = _delEnt[0]; var setDelEntryConfirm = _delEnt[1];
+  var _openSav = useState(null); var openSav = _openSav[0]; var setOpenSav = _openSav[1];
 
   var total = savingsTotal(accts);
   var actAcct = act ? accts.filter(function(a) { return a.id === act.id; })[0] : null;
@@ -18024,9 +18703,9 @@ function SavingsView(props) {
     return { id: Date.now() + 1, type: type, amount: round2(amount), label: (type === "expense" ? "→ " : "← ") + accName + (suffix || ""), catId: "savings-transfer", category: "Savings transfer", transfer: true, date: dateOverride || today, repeat: "none", pending: false };
   }
 
-  function openAction(id, kind) {
+  function openAction(id, kind, suggested) {
     setAct({ id: id, kind: kind });
-    setAmt("");
+    setAmt(suggested > 0 ? String(Math.round(suggested * 100) / 100) : "");
     setSrc(kind === "add" ? "external" : "balance");
     setWLabel(""); setWDate(today);
   }
@@ -18067,17 +18746,19 @@ function SavingsView(props) {
     if (startAmt > 0 && fromMain) props.onMove(tx.concat([transferTx("expense", startAmt, name)]), nextSav);
     else props.onSaveSavings(nextSav);
     setCreating(false); setCName(""); setCAmt(""); setCSrc("external"); setCIcon("coins"); setCColor(SAVINGS_COLORS[0]);
+    setOpenSav(acct.id);
+  }
+  function saveProfile(acctId, profile) {
+    props.onSaveSavings(accts.map(function(a) {
+      if (a.id !== acctId) return a;
+      var n = {}; for (var k in a) n[k] = a[k];
+      n.profile = profile;
+      return n;
+    }));
   }
   function doRename(acct) {
     var name = renameVal.trim(); if (!name) return;
     props.onSaveSavings(accts.map(function(a) { if (a.id !== acct.id) return a; var n = {}; for (var k in a) n[k] = a[k]; n.name = name; return n; }));
-  }
-  function doCreateInv() {
-    var name = ciName.trim(); if (!name || !props.onSaveInvesting) return;
-    var acct = { id: "inv_" + Date.now(), name: name, color: ciColor, icon: ciIcon, createdAt: today, cashEntries: [], trades: [], dividends: [], watchlist: [], meta: {}, analyses: {}, chats: {}, priceSnapshotDate: "" };
-    props.onSaveInvesting((props.investing || []).concat([acct]));
-    setCreatingInv(false); setCiName(""); setCiIcon("chart"); setCiColor(INVESTING_COLORS[0]);
-    if (props.onOpenInvesting) props.onOpenInvesting(acct.id);
   }
   function doClose(acct) {
     var bal = savingsBalance(acct);
@@ -18139,6 +18820,38 @@ function SavingsView(props) {
   var amtSym = { fontSize: 22, color: T.ink3, fontWeight: 600 };
   var amtInput = { flex: 1, border: "none", background: "none", outline: "none", fontSize: 28, fontFamily: UI, color: T.ink, fontWeight: 700, padding: 0, boxSizing: "border-box", width: "100%" };
 
+  function moveOverlay() {
+    return (
+      <Overlay open={!!act} onClose={function() { setAct(null); }} title={(act && act.kind === "add" ? tr("addMoney") : tr("withdraw")) + (actAcct ? " · " + actAcct.name : "")}>
+        {actAcct && (
+          <div>
+            {act.kind === "withdraw" && <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 10 }}>{tr("balance") + ": " + dollars(savingsBalance(actAcct))}</div>}
+            <div style={Object.assign({}, fieldCard, { background: "rgba(0,0,0,0.04)", borderRadius: 14 })}>
+              <div style={amtRow}><span style={amtSym}>{sym}</span><input value={amt} onChange={function(e) { setAmt(e.target.value); }} type="number" inputMode="decimal" placeholder="0" autoFocus={true} style={amtInput} /></div>
+            </div>
+            {act.kind === "add"
+              ? seg(src, setSrc, [{ v: "external", label: tr("externalMoney") }, { v: "balance", label: tr("fromBalance") }])
+              : seg(src, setSrc, [{ v: "balance", label: tr("toBalance") }, { v: "remove", label: tr("removeFromNet") }])}
+            {act.kind === "withdraw" && <div style={{ marginTop: 9 }}><FormRow label={tr("name")} value={wLabel} onChange={function(e) { setWLabel(e.target.value); }} placeholder={src === "balance" ? tr("toBalance") : tr("removeFromNet")} /><FormRow label={tr("date")} value={wDate} onChange={function(e) { setWDate(e.target.value); }} type="date" last={true} /></div>}
+            <div style={{ fontSize: 12, color: T.ink3, marginTop: 9, lineHeight: 1.45, padding: "0 2px" }}>
+              {act.kind === "add" ? (src === "external" ? tr("balanceUntouched") : tr("movesFromBalance")) : (src === "balance" ? tr("addsToBalance") : tr("leavesNetWorth"))}
+            </div>
+            <BigBtn label={act.kind === "add" ? tr("addMoney") : tr("withdraw")} onPress={submitAction} disabled={!(parseFloat(amt) > 0)} />
+          </div>
+        )}
+      </Overlay>
+    );
+  }
+  var openSavAcct = openSav ? accts.filter(function(a) { return a.id === openSav; })[0] : null;
+  if (openSavAcct) {
+    return (
+      <div>
+        <SavingsAccountView acct={openSavAcct} tx={tx} onBack={function() { setOpenSav(null); setAct(null); }} onSaveProfile={function(profile) { saveProfile(openSavAcct.id, profile); }} onAdd={function(suggested) { openAction(openSavAcct.id, "add", suggested); }} onWithdraw={function() { openAction(openSavAcct.id, "withdraw"); }} />
+        {moveOverlay()}
+      </div>
+    );
+  }
+
   return (
     <div>
       <SubViewBack onBack={props.onBack} label={tr("overview")} />
@@ -18148,25 +18861,28 @@ function SavingsView(props) {
       {hubCount > 0 && (
         <Card style={{ padding: "18px 20px", marginBottom: 16, background: T.heroBg, boxShadow: T.heroShadow }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: T.heroMut, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{props.onOpenBusiness ? "Across your accounts" : tr("totalSavings")}</div>
-          <div style={{ fontSize: 36, fontWeight: 800, color: T.heroText, letterSpacing: "-0.03em", lineHeight: 1 }}>{dollars(hubTotal)}</div>
+          <div style={{ fontSize: 36, fontWeight: 600, color: T.heroText, letterSpacing: "-0.03em", lineHeight: 1 }}>{dollars(hubTotal)}</div>
           <div style={{ fontSize: 12.5, color: T.heroFaint, marginTop: 7 }}>{hubCount + " " + (hubCount === 1 ? "account" : "accounts") + " · " + tr("balanceUntouched").toLowerCase()}</div>
         </Card>
       )}
 
       {accts.map(function(a) {
         var bal = savingsBalance(a);
+        var savProfile = a.profile || {};
+        var savPct = savProfile.target > 0 ? Math.max(0, Math.min(100, Math.round(bal / savProfile.target * 100))) : 0;
         var entries = (a.entries || []).slice().sort(function(x, y) { return (y.id || 0) - (x.id || 0); }).slice(0, 6);
         var open = expanded === a.id;
         return (
           <Card key={a.id} style={{ marginBottom: 12, overflow: "hidden" }}>
-            <div style={{ padding: "15px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+            <button onClick={function() { setOpenSav(a.id); }} style={{ width: "100%", padding: "15px 16px", display: "flex", alignItems: "center", gap: 12, border: "none", background: "none", textAlign: "left", cursor: "pointer", fontFamily: UI }}>
               <CatBadge icon={a.icon || "coins"} color={a.color || T.orange} size={42} soft={true} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 15.5, fontWeight: 700, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.name}</div>
-                <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>{(a.entries || []).length + " " + tr("history").toLowerCase()}</div>
+                <div style={{ fontSize: 16, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.name}</div>
+                <div style={{ fontSize: 12, color: savProfile.complete ? (a.color || T.orange) : T.ink3, marginTop: 2 }}>{savProfile.complete ? (savPct + "% of " + dollars(savProfile.target) + " goal") : "Personalize your savings plan"}</div>
               </div>
-              <div style={{ fontSize: 19, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(bal)}</div>
-            </div>
+              <div style={{ fontSize: 19, fontWeight: 600, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(bal)}</div>
+              <SVGIcon id="chevron" size={16} color={T.ink3} />
+            </button>
             <div style={{ display: "flex", gap: 8, padding: "0 16px 14px", alignItems: "center" }}>
               <button onClick={function() { openAction(a.id, "add"); }}
                 style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 999, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow }}>{tr("addMoney")}</button>
@@ -18264,10 +18980,10 @@ function SavingsView(props) {
             <button onClick={function() { props.onOpenBusiness(b.id); }} style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "15px 16px" }}>
               <CatBadge icon={b.icon || "briefcase"} color={b.color || T.orange} size={42} soft={true} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 15.5, fontWeight: 700, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.name}</div>
+                <div style={{ fontSize: 16, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.name}</div>
                 <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>{b.what ? (b.what + " - Business") : "Business"}</div>
               </div>
-              <div style={{ fontSize: 19, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em", flexShrink: 0 }}>{dollars(businessCash(b))}</div>
+              <div style={{ fontSize: 19, fontWeight: 600, color: T.ink, letterSpacing: "-0.02em", flexShrink: 0 }}>{dollars(businessCash(b))}</div>
             </button>
           </Card>
         );
@@ -18282,47 +18998,16 @@ function SavingsView(props) {
             <button onClick={function() { props.onOpenInvesting(v.id); }} style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "15px 16px" }}>
               <CatBadge icon={v.icon || "chart"} color={v.color || T.green} size={42} soft={true} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 15.5, fontWeight: 700, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name}</div>
+                <div style={{ fontSize: 16, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name}</div>
                 <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>{(nHold ? nHold + (nHold === 1 ? " holding" : " holdings") + " · " : "") + "Investing"}</div>
               </div>
-              <div style={{ fontSize: 19, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em", flexShrink: 0 }}>{dollars(investingWorth(v))}</div>
+              <div style={{ fontSize: 19, fontWeight: 600, color: T.ink, letterSpacing: "-0.02em", flexShrink: 0 }}>{dollars(investingWorth(v))}</div>
             </button>
           </Card>
         );
       })}
 
-      {creatingInv ? (
-        <Card style={{ padding: "18px 18px", marginTop: 4, marginBottom: 12 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>New investing account</div>
-          <input value={ciName} onChange={function(e) { setCiName(e.target.value); }} placeholder="Name, e.g. My Portfolio" autoFocus={true}
-            style={{ width: "100%", background: "rgba(0,0,0,0.04)", border: "none", borderRadius: 12, padding: "12px 14px", fontSize: 16, fontFamily: UI, color: T.ink, fontWeight: 600, outline: "none", boxSizing: "border-box", marginBottom: 12 }} />
-          <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>{tr("pickIcon")}</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-            {INVESTING_ICONS.map(function(ic) {
-              var on = ic === ciIcon;
-              return (
-                <button key={ic} onClick={function() { setCiIcon(ic); }}
-                  style={{ width: 40, height: 40, borderRadius: 12, border: on ? "2px solid " + ciColor : "1px solid " + T.sep, background: on ? ciColor + "1F" : T.card, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <SVGIcon id={ic} size={19} color={on ? ciColor : T.ink3} />
-                </button>
-              );
-            })}
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 9, marginBottom: 14 }}>
-            {INVESTING_COLORS.map(function(col) {
-              var on = col === ciColor;
-              return (
-                <button key={col} onClick={function() { setCiColor(col); }}
-                  style={{ width: 28, height: 28, borderRadius: "50%", border: on ? "3px solid " + T.ink : "1px solid rgba(0,0,0,0.1)", background: col, cursor: "pointer", padding: 0 }} />
-              );
-            })}
-          </div>
-          <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, marginBottom: 12 }}>You'll add cash and buy your first stock inside the account. Live prices, your positions, and Richard's take on every holding.</div>
-          <BigBtn label={tr("createAccount")} onPress={doCreateInv} disabled={!ciName.trim()} />
-          <button onClick={function() { setCreatingInv(false); }}
-            style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>{tr("dismiss")}</button>
-        </Card>
-      ) : creating ? (
+      {creating ? (
         <Card style={{ padding: "18px 18px", marginTop: 4, marginBottom: 12 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>{tr("newSavingsAccount")}</div>
           <input value={cName} onChange={function(e) { setCName(e.target.value); }} placeholder={tr("savingsAccountName")} autoFocus={true}
@@ -18360,6 +19045,7 @@ function SavingsView(props) {
               <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 7, lineHeight: 1.45 }}>{cSrc === "external" ? tr("balanceUntouched") : tr("movesFromBalance")}</div>
             </div>
           )}
+          <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.45, margin: "10px 2px 2px" }}>Next, Richard will ask four quick questions to build the target, pace, tips, and tracking for this account.</div>
           <BigBtn label={tr("createAccount")} onPress={doCreate} disabled={!cName.trim()} />
           <button onClick={function() { setCreating(false); }}
             style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>{tr("dismiss")}</button>
@@ -18377,7 +19063,7 @@ function SavingsView(props) {
           <CatBadge icon="coins" color={T.orange} size={42} soft={true} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>Savings account</div>
-            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>A simple pot for money you don't want to spend.</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>A personalized target with tips, graphs, and live progress tracking.</div>
           </div>
           <SVGIcon id="chevron" size={18} color={T.ink3} />
         </button>
@@ -18390,7 +19076,7 @@ function SavingsView(props) {
           <SVGIcon id="chevron" size={18} color={T.ink3} />
         </button>
         {props.onOpenInvesting && (
-          <button onClick={function() { setPicking(false); setCreatingInv(true); }} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 16, background: T.card, border: "1px solid " + T.sep, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)", marginTop: 10 }}>
+          <button onClick={function() { setPicking(false); if (props.onOpenInvestorOnboard) props.onOpenInvestorOnboard(); }} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 16, background: T.card, border: "1px solid " + T.sep, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)", marginTop: 10 }}>
             <CatBadge icon="chart" color="#27A85F" size={42} soft={true} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>Investing account</div>
@@ -18401,36 +19087,7 @@ function SavingsView(props) {
         )}
       </Overlay>
 
-      <Overlay open={!!act} onClose={function() { setAct(null); }} title={(act && act.kind === "add" ? tr("addMoney") : tr("withdraw")) + (actAcct ? " · " + actAcct.name : "")}>
-        {actAcct && (
-          <div>
-            {act.kind === "withdraw" && (
-              <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 10 }}>{tr("balance") + ": " + dollars(savingsBalance(actAcct))}</div>
-            )}
-            <div style={Object.assign({}, fieldCard, { background: "rgba(0,0,0,0.04)", borderRadius: 14 })}>
-              <div style={amtRow}>
-                <span style={amtSym}>{sym}</span>
-                <input value={amt} onChange={function(e) { setAmt(e.target.value); }} type="number" inputMode="decimal" placeholder="0" autoFocus={true} style={amtInput} />
-              </div>
-            </div>
-            {act.kind === "add"
-              ? seg(src, setSrc, [{ v: "external", label: tr("externalMoney") }, { v: "balance", label: tr("fromBalance") }])
-              : seg(src, setSrc, [{ v: "balance", label: tr("toBalance") }, { v: "remove", label: tr("removeFromNet") }])}
-            {act.kind === "withdraw" && (
-              <div style={{ marginTop: 9 }}>
-                <FormRow label={tr("name")} value={wLabel} onChange={function(e) { setWLabel(e.target.value); }} placeholder={src === "balance" ? tr("toBalance") : tr("removeFromNet")} />
-                <FormRow label={tr("date")} value={wDate} onChange={function(e) { setWDate(e.target.value); }} type="date" last={true} />
-              </div>
-            )}
-            <div style={{ fontSize: 12, color: T.ink3, marginTop: 9, lineHeight: 1.45, padding: "0 2px" }}>
-              {act.kind === "add"
-                ? (src === "external" ? tr("balanceUntouched") : tr("movesFromBalance"))
-                : (src === "balance" ? tr("addsToBalance") : tr("leavesNetWorth"))}
-            </div>
-            <BigBtn label={act.kind === "add" ? tr("addMoney") : tr("withdraw")} onPress={submitAction} disabled={!(parseFloat(amt) > 0)} />
-          </div>
-        )}
-      </Overlay>
+      {moveOverlay()}
     </div>
   );
 }
@@ -18859,6 +19516,7 @@ function InvestPlanOnboard(props) {
 function InvestingView(props) {
   var accts = props.investing || [];
   var tx = props.tx || [];
+  useEffect(function() { ensureScoutCss(); }, []);
   var sym = _currency.sym;
   var appCode = SYM_TO_CODE[sym] || "USD";
   var today = new Date().toISOString().slice(0, 10);
@@ -18892,7 +19550,12 @@ function InvestingView(props) {
   var _delConfirm = useState(false); var delConfirm = _delConfirm[0]; var setDelConfirm = _delConfirm[1];
   var _delActC = useState(null); var delActConfirm = _delActC[0]; var setDelActConfirm = _delActC[1];
   // --- managed-side state (plan, auto-invest, lessons, coach) ---
-  var _hub = useState("portfolio"); var hubTab = _hub[0]; var setHubTab = _hub[1];
+  var _hub = useState("portfolio"); var localHubTab = _hub[0]; var setLocalHubTab = _hub[1];
+  var hubTab = props.hubTab || localHubTab;
+  function setHubTab(next) {
+    setLocalHubTab(next);
+    if (props.onHubTabChange) props.onHubTabChange(next);
+  }
   var _pamt = useState(""); var planAmt = _pamt[0]; var setPlanAmt = _pamt[1];
   var _pbusy = useState(false); var planBusy = _pbusy[0]; var setPlanBusy = _pbusy[1];
   var _pdone = useState(null); var planDone = _pdone[0]; var setPlanDone = _pdone[1];
@@ -19479,12 +20142,6 @@ function InvestingView(props) {
   var inputBox = { width: "100%", background: "rgba(0,0,0,0.04)", border: "none", borderRadius: 12, padding: "12px 14px", fontSize: 15, fontFamily: UI, color: T.ink, fontWeight: 600, outline: "none", boxSizing: "border-box" };
   var lbl = { fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 };
 
-  var HUB_TABS = [
-    { id: "portfolio", label: "Portfolio", icon: "chart" },
-    { id: "scout", label: "Scout", icon: "search" },
-    { id: "learn", label: "Learn", icon: "book" },
-    { id: "richard", label: "Richard", icon: "advisor" }
-  ];
   var HUB_SUB = { portfolio: "Managed by Richard", scout: "News-driven ideas", learn: "Investing, explained", richard: "Your AI money coach" };
 
   return (
@@ -19492,24 +20149,24 @@ function InvestingView(props) {
       <ScoutBeamsBg />
       <SubViewBack onBack={props.onBack} label={props.backLabel || "Accounts"} />
 
-      {/* hub tabs - the four surfaces of the investing account. A segmented row
-          rather than a second floating bar, so it never fights the app's nav pill. */}
-      <div style={{ display: "flex", gap: 4, background: "rgba(0,0,0,0.05)", borderRadius: 14, padding: 4, marginBottom: 16 }}>
-        {HUB_TABS.map(function(h) {
-          var on = hubTab === h.id;
-          return (
-            <button key={h.id} onClick={function() { setHubTab(h.id); }}
-              style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, padding: "9px 2px", borderRadius: 10, background: on ? T.card : "transparent", color: on ? T.ink : T.ink2, boxShadow: on ? "0 2px 8px rgba(0,0,0,0.08)" : "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, transition: "background 0.2s ease" }}>
-              <SVGIcon id={h.icon} size={15} color={on ? T.orange : T.ink3} />
-              {h.label}
-            </button>
-          );
-        })}
-      </div>
-      <div style={{ fontSize: 11.5, color: T.ink3, margin: "-8px 2px 14px" }}>{HUB_SUB[hubTab]}</div>
+      {!props.onHubTabChange && (
+        <div style={{ display: "flex", gap: 4, background: "rgba(0,0,0,0.05)", borderRadius: 14, padding: 4, marginBottom: 16 }}>
+          {INVESTING_HUB_TABS.map(function(h) {
+            var on = hubTab === h.id;
+            return (
+              <button key={h.id} onClick={function() { setHubTab(h.id); }}
+                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, padding: "9px 2px", borderRadius: 10, background: on ? T.card : "transparent", color: on ? T.ink : T.ink2, boxShadow: on ? "0 2px 8px rgba(0,0,0,0.08)" : "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                <SVGIcon id={h.icon} size={15} color={on ? T.orange : T.ink3} />
+                {h.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+      <div style={{ fontSize: 11.5, color: T.ink3, margin: "0 2px 14px" }}>{HUB_SUB[hubTab]}</div>
 
       {hubTab === "portfolio" && (
-      <div>
+      <div data-invest-motion style={{ animation: "invSectionIn 0.58s cubic-bezier(0.22,0.9,0.3,1) both" }}>
       {/* hero */}
       <Card style={{ padding: "18px 20px 14px", marginBottom: 14, background: T.heroBg, boxShadow: T.heroShadow }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
@@ -19846,7 +20503,7 @@ function InvestingView(props) {
 
       {/* ===== LEARN TAB ===== */}
       {hubTab === "learn" && (
-        <div>
+        <div data-invest-motion style={{ animation: "invSectionIn 0.58s cubic-bezier(0.22,0.9,0.3,1) both" }}>
           <Card style={{ padding: "18px 20px", marginBottom: 18, background: T.heroBg, boxShadow: T.heroShadow }}>
             <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
               <RichyLogo size={38} />
@@ -19871,12 +20528,12 @@ function InvestingView(props) {
             <span style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Lessons</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 11, marginBottom: 18 }}>
-            {INVEST_LESSONS.map(function(l) {
+            {INVEST_LESSONS.map(function(l, lessonIndex) {
               var prog = investLessonProgress(acct)[l.id] || 0;
               var col = l.level === "Basics" ? T.gold : T.orange;
               return (
-                <button key={l.id} onClick={function() { setOpenLesson(l.id); }}
-                  style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, background: T.card, borderRadius: 18, padding: "15px 16px", border: "none", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.07)", boxSizing: "border-box" }}>
+                <button key={l.id} data-invest-motion onClick={function() { setOpenLesson(l.id); }}
+                  style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, background: T.card, borderRadius: 18, padding: "15px 16px", border: "none", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.07)", boxSizing: "border-box", animation: "invCardIn 0.55s cubic-bezier(0.22,0.9,0.3,1) " + (0.06 + lessonIndex * 0.07).toFixed(2) + "s both" }}>
                   <div style={{ width: 44, height: 44, borderRadius: 14, background: col + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <SVGIcon id={l.icon} size={21} color={col} />
                   </div>
@@ -19913,7 +20570,7 @@ function InvestingView(props) {
 
       {/* ===== RICHARD TAB ===== */}
       {hubTab === "richard" && (
-        <div>
+        <div data-invest-motion style={{ animation: "invSectionIn 0.58s cubic-bezier(0.22,0.9,0.3,1) both" }}>
           <Card style={{ padding: "18px 20px", marginBottom: 18, background: T.heroBg, boxShadow: T.heroShadow }}>
             <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
               <RichyLogo size={46} />
@@ -19934,10 +20591,10 @@ function InvestingView(props) {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 11, marginBottom: 20 }}>
             {investInsights(acct, { mix: mix, drift: drift, cash: cash, targetCash: targetCashPct, autoDue: autoIsDue,
-              autoAmount: autoCfg.amount, autoNext: autoNextDate, scoutCount: scoutCount, heldCount: held.length }).map(function(x) {
+              autoAmount: autoCfg.amount, autoNext: autoNextDate, scoutCount: scoutCount, heldCount: held.length }).map(function(x, insightIndex) {
               var tone = { orange: { c: T.orange, bg: T.orangeDim }, gold: { c: T.gold, bg: T.goldDim }, green: { c: T.green, bg: T.greenDim } }[x.tone];
               return (
-                <Card key={x.id} style={{ padding: 16 }}>
+                <Card key={x.id} data-invest-motion style={{ padding: 16, animation: "invCardIn 0.55s cubic-bezier(0.22,0.9,0.3,1) " + (0.06 + insightIndex * 0.07).toFixed(2) + "s both" }}>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
                     <div style={{ width: 38, height: 38, borderRadius: 12, background: tone.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <SVGIcon id={x.icon} size={19} color={tone.c} />
@@ -21364,7 +22021,7 @@ function InvestorOnboardScreen(props) {
       <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, overflowY: "auto", position: "relative", zIndex: 0, overflowX: "hidden" }}>
         <ScoutBeamsBg opacity={0.42} />
         <div style={{ position: "absolute", top: -70, right: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(137,112,198,0.14) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift 9s ease-in-out infinite" }} />
-        <button onClick={props.onDone} style={{ position: "absolute", top: 18, left: 16, zIndex: 4, width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, boxShadow: "0 2px 8px rgba(40,28,16,0.08)" }}>
+        <button onClick={function() { props.onDone(false); }} style={{ position: "absolute", top: 18, left: 16, zIndex: 4, width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, boxShadow: "0 2px 8px rgba(40,28,16,0.08)" }}>
           <span style={{ display: "inline-flex", transform: "rotate(180deg)" }}><SVGIcon id="chevron" size={15} color={JINK2} /></span>
         </button>
         <div style={{ padding: "52px 24px 48px", position: "relative", maxWidth: 428, margin: "0 auto", boxSizing: "border-box" }}>
@@ -21422,7 +22079,7 @@ function InvestorOnboardScreen(props) {
             </div>
           )}
 
-          <JrBtn label="Start exploring" onPress={function() { persist(b); props.onDone(); }} />
+          <JrBtn label="Start exploring" onPress={function() { persist(b); props.onDone(true); }} />
           <button onClick={retake} style={{ width: "100%", marginTop: 12, background: "none", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.orange, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
             <SVGIcon id="refresh" size={14} color={T.orange} /> Redo the test
           </button>
@@ -21438,7 +22095,7 @@ function InvestorOnboardScreen(props) {
       <ScoutBeamsBg opacity={0.42} />
       {showCinema && <ScoutCinema scenes={ONBOARD_CINEMA} onDone={function() { setShowCinema(false); }} />}
       <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0" }}>
-        {qIndex > 0 ? <JrIconBtn icon="chevron" rotate={180} onPress={goBack} /> : <button onClick={props.onDone} style={{ width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, padding: 0 }}><SVGIcon id="close" size={15} color={JINK2} /></button>}
+        {qIndex > 0 ? <JrIconBtn icon="chevron" rotate={180} onPress={goBack} /> : <button onClick={function() { props.onDone(false); }} style={{ width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, padding: 0 }}><SVGIcon id="close" size={15} color={JINK2} /></button>}
         <JourneyBar pct={((qIndex + 1) / Q_TOTAL) * 100} />
         <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: JINK3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(qIndex + 1) + "/" + Q_TOTAL}</div>
       </div>
@@ -21660,6 +22317,12 @@ function ensureScoutCss() {
     + "@keyframes rsbBar{from{transform:scaleY(0)}to{transform:scaleY(1)}}"
     + "@keyframes rsbFill{from{width:0%}to{width:100%}}"
     + "@keyframes rsbUp{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}"
+    + "@keyframes rsbScene{0%{opacity:0;transform:translateY(10px) scale(.985);filter:blur(5px)}12%,86%{opacity:1;transform:none;filter:blur(0)}100%{opacity:0;transform:translateY(-7px) scale(.99);filter:blur(3px)}}"
+    + "@keyframes rsbSceneHold{from{opacity:0;transform:translateY(10px) scale(.985);filter:blur(5px)}to{opacity:1;transform:none;filter:blur(0)}}"
+    + "@keyframes rsbProgress{from{transform:scaleX(0)}to{transform:scaleX(1)}}"
+    + "@keyframes invSectionIn{from{opacity:0;transform:translateY(12px);filter:blur(4px)}to{opacity:1;transform:none;filter:blur(0)}}"
+    + "@keyframes invCardIn{from{opacity:0;transform:translateY(14px) scale(.99)}to{opacity:1;transform:none}}"
+    + "@keyframes invComposerIn{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:none}}"
     + "@keyframes rscFade{from{opacity:0}to{opacity:1}}"
     + "@keyframes rscFadeOut{to{opacity:0}}"
     + "@keyframes rscWord{from{opacity:0;transform:translateY(26px) scale(1.06);filter:blur(10px)}to{opacity:1;transform:none;filter:blur(0)}}"
@@ -21667,7 +22330,8 @@ function ensureScoutCss() {
     + "@keyframes rscGlyph{from{opacity:0;transform:scale(1.28) translateY(14px)}to{opacity:1;transform:none}}"
     + "@keyframes rscShoot{0%{transform:translateY(55vh);opacity:0}16%{opacity:1}80%{opacity:0.85}100%{transform:translateY(-195vh);opacity:0}}"
     + "@keyframes rscPulse{0%,100%{opacity:0.55;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.14)}}"
-    + "@keyframes rscBeam{0%{opacity:0;transform:translateY(70vh)}14%{opacity:1}86%{opacity:1}100%{opacity:0;transform:translateY(-165vh)}}";
+    + "@keyframes rscBeam{0%{opacity:0;transform:translateY(70vh)}14%{opacity:1}86%{opacity:1}100%{opacity:0;transform:translateY(-165vh)}}"
+    + "@media (prefers-reduced-motion:reduce){[data-invest-motion]{animation:none!important;transition:none!important}}";
   document.head.appendChild(st);
 }
 // Full-bleed backdrop layer that stays put as the page scrolls, centered on the
@@ -21902,37 +22566,40 @@ function ScoutBasicsStory(props) {
   useEffect(function() { ensureScoutCss(); }, []);
   useEffect(function() {
     if (last) return;
-    var t = setTimeout(function() { setIdx(idx + 1); }, 5000);
+    var t = setTimeout(function() { setIdx(idx + 1); }, 6200);
     return function() { clearTimeout(t); };
   }, [idx]);
   function next() { if (last) props.onDone && props.onDone(); else setIdx(idx + 1); }
   return (
-    <Card style={{ padding: 0, marginTop: 12, overflow: "hidden" }}>
-      <div onClick={next} style={{ cursor: "pointer", padding: "14px 16px 16px", background: "linear-gradient(150deg," + T.orangeDim + ", transparent 70%)" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+    <Card style={{ padding: 0, marginTop: 12, overflow: "hidden", border: "1px solid " + T.sep, boxShadow: "0 1px 1px rgba(0,0,0,0.02), 0 12px 34px rgba(28,22,18,0.08)" }}>
+      <div onClick={next} style={{ cursor: "pointer", position: "relative", padding: "15px 17px 16px", background: T.card, overflow: "hidden" }}>
+        {!last && <div key={"progress" + idx} data-invest-motion style={{ position: "absolute", left: 0, right: 0, top: 0, height: 2, background: T.sep }}>
+          <div style={{ height: "100%", background: T.ink, transformOrigin: "0 50%", animation: "rsbProgress 6.2s linear both" }} />
+        </div>}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 13 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-            <SVGIcon id="film" size={13} color={T.orange} />
-            <span style={{ fontSize: 11, fontWeight: 800, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em" }}>Stocks, the basics</span>
+            <div style={{ width: 24, height: 24, borderRadius: "50%", background: T.ink, display: "flex", alignItems: "center", justifyContent: "center" }}><SVGIcon id="film" size={11} color={T.card} /></div>
+            <span style={{ fontSize: 10.5, fontWeight: 700, color: T.ink2, textTransform: "uppercase", letterSpacing: "0.11em" }}>Stocks, the basics</span>
           </div>
           <button onClick={function(e) { e.stopPropagation(); props.onDone && props.onDone(); }}
-            style={{ background: "none", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.ink3, padding: 0 }}>Skip</button>
+            style={{ background: "none", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 11.5, fontWeight: 600, color: T.ink3, padding: "5px 0 5px 10px" }}>Skip</button>
         </div>
-        <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-          <div key={idx} style={{ flexShrink: 0, filter: "drop-shadow(0 3px 8px " + T.orangeGlow + ")", animation: "rsbUp 0.4s ease both" }}>
-            <ScoutBasicsScene beat={b.glyph} />
+        <div key={idx} data-invest-motion style={{ display: "flex", gap: 16, alignItems: "center", minHeight: 116, animation: (last ? "rsbSceneHold .65s" : "rsbScene 6.2s") + " cubic-bezier(0.22,0.9,0.3,1) both" }}>
+          <div style={{ width: 116, height: 100, borderRadius: 22, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(145deg," + T.inputBg + "," + T.card + ")", border: "1px solid " + T.sep, boxShadow: "inset 0 1px 0 rgba(255,255,255,.7)" }}>
+            <div style={{ transform: "scale(.82)", opacity: .88 }}><ScoutBasicsScene beat={b.glyph} /></div>
           </div>
-          <div key={"t" + idx} style={{ flex: 1, minWidth: 0, animation: "rsbUp 0.45s ease 0.05s both" }}>
-            <div style={{ fontSize: 16, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", lineHeight: 1.2 }}>{b.h}</div>
-            <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginTop: 4 }}>{b.s}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em", lineHeight: 1.16 }}>{b.h}</div>
+            <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.52, marginTop: 7 }}>{b.s}</div>
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14 }}>
-          <div style={{ display: "flex", gap: 5 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
+          <div style={{ display: "flex", gap: 6 }}>
             {beats.map(function(_, i) {
-              return <div key={i} style={{ width: i === idx ? 16 : 5, height: 5, borderRadius: 999, background: i === idx ? T.orange : T.orangeDim, transition: "width 0.3s ease" }} />;
+              return <div key={i} style={{ width: i === idx ? 18 : 5, height: 5, borderRadius: 999, background: i === idx ? T.ink : T.sep, transition: "width .45s cubic-bezier(0.22,0.9,0.3,1), background .3s ease" }} />;
             })}
           </div>
-          <span style={{ fontSize: 11.5, fontWeight: 700, color: T.orange }}>{last ? "Got it" : "Tap for next"}</span>
+          <span style={{ fontSize: 11.5, fontWeight: 650, color: T.ink2, display: "flex", alignItems: "center", gap: 5 }}>{last ? "Got it" : "Next"}<SVGIcon id="chevron" size={11} color={T.ink3} /></span>
         </div>
       </div>
     </Card>
@@ -22042,7 +22709,7 @@ function StockScoutView(props) {
   var msgs = (scout && scout.chat) || [];
 
   return (
-    <div style={{ position: "relative", zIndex: 0 }}>
+    <div data-invest-motion style={{ position: "relative", zIndex: 0, animation: props.embedded ? "invSectionIn 0.58s cubic-bezier(0.22,0.9,0.3,1) both" : "none" }}>
       {!props.embedded && <ScoutBeamsBg />}
       {acct && !acct.scoutIntroSeen && <ScoutCinema scenes={RICHARD_CINEMA} onDone={markIntroSeen} />}
       {!props.embedded && <SubViewBack onBack={props.onBack} label={props.backLabel || "Investing"} />}
@@ -22165,42 +22832,47 @@ function StockScoutView(props) {
             <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
             <span style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Ask Richard about these</span>
           </div>
-          <Card style={{ padding: "14px 16px" }}>
+          <div role="log" aria-live="polite" aria-busy={chatBusy} style={{ padding: "10px 2px 2px" }}>
             {msgs.length === 0 && !chatBusy && (
-              <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 12 }}>Curious why he picked these, or how they fit your plan? Ask him anything.</div>
+              <div data-invest-motion style={{ textAlign: "center", padding: "10px 22px 18px", animation: "invSectionIn .58s cubic-bezier(0.22,0.9,0.3,1) both" }}>
+                <RichyLogo size={38} />
+                <div style={{ fontFamily: DISP, fontWeight: DISP_WEIGHT, fontSize: 19, color: T.ink, letterSpacing: "-.015em", marginTop: 10 }}>Ask Richard about the scout</div>
+                <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginTop: 5 }}>Why these ideas, what could go wrong, or how they fit your plan.</div>
+              </div>
             )}
             {msgs.map(function(m, i) {
               var mine = m.role === "user";
               return (
-                <div key={i} style={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start", marginBottom: 9 }}>
-                  <div style={{ maxWidth: "85%", background: mine ? T.btn : "rgba(0,0,0,0.05)", color: mine ? "#fff" : T.ink, borderRadius: mine ? "14px 14px 4px 14px" : "14px 14px 14px 4px", padding: "9px 13px", fontSize: 13.5, lineHeight: 1.5, fontFamily: UI }}>
+                <div key={i} data-invest-motion style={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start", marginBottom: mine ? 12 : 18, animation: "invCardIn .45s cubic-bezier(0.22,0.9,0.3,1) both" }}>
+                  <div style={{ maxWidth: mine ? "82%" : "100%", background: mine ? T.inputBg : "transparent", color: T.ink, border: mine ? "1px solid " + T.sep : "none", borderRadius: mine ? 22 : 0, padding: mine ? "10px 14px" : "1px 3px", fontSize: 13.5, lineHeight: 1.55, fontFamily: UI, textAlign: "start", unicodeBidi: "plaintext" }}>
+                    {!mine && <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 7 }}><RichyLogo size={24} /><span style={{ fontFamily: DISP, fontWeight: DISP_WEIGHT, fontSize: 14, color: T.ink }}>Richard</span></div>}
                     {mine ? m.text : <TypeReveal fade animate={i === freshIdx} text={m.text} size={13.5} color={T.ink} />}
                   </div>
                 </div>
               );
             })}
             {chatBusy && (
-              <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 9 }}>
-                <div style={{ background: "rgba(0,0,0,0.05)", borderRadius: "14px 14px 14px 4px", padding: "11px 14px" }}><ThinkingDots size={4.5} color={T.ink3} /></div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "2px 3px 18px" }}>
+                <RichyLogo size={24} /><ThinkingDots size={4.5} color={T.ink3} />
               </div>
             )}
             <div ref={chatEndRef} />
             {msgs.length === 0 && (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 12 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 7, marginBottom: 14 }}>
                 {[(scout.picks && scout.picks[0] ? "Why " + scout.picks[0].symbol + "?" : "Why these?"), "Is this risky for me?", "How much should I start with?"].map(function(q) {
-                  return <button key={q} onClick={function() { sendChat(q); }} style={{ border: "1px solid " + T.sep, background: T.card, borderRadius: 999, padding: "7px 13px", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.ink2 }}>{q}</button>;
+                  return <button key={q} onClick={function() { sendChat(q); }} style={{ border: "1px solid " + T.sep, background: T.card, borderRadius: 999, padding: "8px 13px", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.ink2, boxShadow: "0 2px 10px rgba(0,0,0,.035)" }}>{q}</button>;
                 })}
               </div>
             )}
-            <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
-              <input value={chatInput} onChange={function(e) { setChatInput(e.target.value); }} onKeyDown={function(e) { if (e.key === "Enter") sendChat(); }}
-                placeholder="Ask Richard anything..." style={{ flex: 1, background: "rgba(0,0,0,0.04)", border: "none", borderRadius: 12, padding: "11px 14px", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box" }} />
+            <div data-invest-motion style={{ display: "flex", gap: 8, alignItems: "center", padding: "7px 8px 7px 17px", marginTop: 4, background: T.card, border: "1px solid " + T.sep, borderRadius: 28, boxShadow: "0 12px 32px rgba(20,17,14,.10), 0 2px 8px rgba(20,17,14,.05)", animation: "invComposerIn .5s cubic-bezier(0.22,0.9,0.3,1) both" }}>
+              <input value={chatInput} onChange={function(e) { setChatInput(e.target.value); }} onKeyDown={function(e) { if (e.key === "Enter" && !(e.nativeEvent && e.nativeEvent.isComposing)) sendChat(); }}
+                aria-label="Ask Richard about the scout" placeholder="Ask Richard anything..." style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "10px 0", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", textAlign: "start" }} />
               <button onClick={function() { sendChat(); }} disabled={!chatInput.trim() || chatBusy}
-                style={{ border: "none", cursor: chatInput.trim() && !chatBusy ? "pointer" : "default", background: chatInput.trim() && !chatBusy ? T.btn : "rgba(0,0,0,0.08)", borderRadius: 12, width: 42, height: 42, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <SVGIcon id="up" size={17} color={chatInput.trim() && !chatBusy ? "#fff" : T.ink3} />
+                aria-label="Send message" style={{ border: "none", cursor: chatInput.trim() && !chatBusy ? "pointer" : "default", background: chatInput.trim() && !chatBusy ? T.ink : T.inputBg, borderRadius: "50%", width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, opacity: chatInput.trim() && !chatBusy ? 1 : .72, transition: "opacity .2s ease, transform .2s ease" }}>
+                <SVGIcon id="up" size={17} color={chatInput.trim() && !chatBusy ? T.card : T.ink3} />
               </button>
             </div>
-          </Card>
+          </div>
 
           <div style={{ fontSize: 11, color: T.ink3, marginTop: 12, lineHeight: 1.45, padding: "0 2px 8px" }}>Richard's scouting is research to explore, not financial advice. He can be wrong - always do your own homework before you buy.</div>
         </div>
@@ -27493,7 +28165,12 @@ var TABS = [
   { id: "advisor", label: "Advisor" },
 ];
 
-var HAS_FAB = ["activity", "goals", "budgets", "categories", "notes"];
+var INVESTING_HUB_TABS = [
+  { id: "portfolio", label: "Portfolio", icon: "chart" },
+  { id: "scout", label: "Scout", icon: "search" },
+  { id: "learn", label: "Learn", icon: "book" },
+  { id: "richard", label: "Richard", icon: "advisor" },
+];
 
 // Bottom tab bar with an Apple-style "liquid glass" active lens: instead of the
 // selected pill popping in and out per button, one glass lens glides and settles
@@ -27549,10 +28226,10 @@ function GlassTabBar(props) {
             style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: "4px 4px", flex: 1, minWidth: 0, WebkitTapHighlightColor: "transparent" }}>
             {/* Constant padding so icons never shift - only the lens moves under them. */}
             <div style={{ borderRadius: 22, padding: "6px 12px", display: "flex", alignItems: "center", justifyContent: "center", transform: pressed ? "scale(0.8)" : "scale(1)", transition: "transform var(--m-settle) var(--m-spring)" }}>
-              <SVGIcon id={t.id} size={21} color={active ? T.orange : T.ink3} />
+              <SVGIcon id={t.icon || t.id} size={21} color={active ? T.orange : T.ink3} />
             </div>
             <span style={{ fontSize: 9.5, fontWeight: active ? 700 : 400, color: active ? T.orange : T.ink3, letterSpacing: "0.005em", whiteSpace: "nowrap", transition: "color 0.4s ease" }}>
-              {tr(t.id)}
+              {t.icon ? t.label : tr(t.id)}
             </span>
           </button>
         );
@@ -27669,6 +28346,12 @@ export default function App() {
   var openBiz = _obz[0]; var setOpenBiz = _obz[1];
   var _oiv = useState(null);
   var openInv = _oiv[0]; var setOpenInv = _oiv[1];
+  var _iht = useState("portfolio");
+  var investingHubTab = _iht[0]; var setInvestingHubTab = _iht[1];
+  // A new portfolio starts with Richard's questionnaire. The neutral starter
+  // account is created only after the user completes it.
+  var _pni = useState(false);
+  var pendingInvestingStart = _pni[0]; var setPendingInvestingStart = _pni[1];
   var _osk = useState(null); // { acctId, symbol } for the stock detail page
   var openStock = _osk[0]; var setOpenStock = _osk[1];
   var _isr = useState(null); // pending sheet on the investing page (from StockView)
@@ -27762,7 +28445,7 @@ export default function App() {
   // Overview widgets Richard builds on request ("a ring that follows my coffee
   // spending"). Structured specs only - metric, shape, target, timeframe, goal -
   // never markup, and rendered by OverviewWidgets on the Overview tab alone.
-  var _wgt = useState([]);
+  var _wgt = useState(DEFAULT_OVERVIEW_WIDGETS);
   var widgets = _wgt[0]; var setWidgets = _wgt[1];
   // Ids of the Overview "Get the most from Richy" suggestions the user waved off.
   // Suggestions for features already in use hide themselves; this is for the ones
@@ -27863,7 +28546,10 @@ export default function App() {
     setBankSync(data.bankSync || null);
     setLeumiFinteka(data.leumiFinteka || null);
     setCustomBanners(data.customBanners || []);
-    setWidgets(data.widgets || []);
+    // Older accounts have no widgets field. Start those accounts with the
+    // broadly useful defaults, while an explicit saved [] still means the user
+    // chose to keep this section empty.
+    setWidgets(Array.isArray(data.widgets) ? data.widgets.slice(0, MAX_WIDGETS) : DEFAULT_OVERVIEW_WIDGETS);
     setDismissedTips(data.dismissedTips || []);
     setHouseholdId(data.householdId || null);
     setUserDob(data.dob || "");
@@ -28827,6 +29513,10 @@ export default function App() {
   // and still see current state instead of a stale first-render closure.
   var closeTopRef = useRef(null);
   closeTopRef.current = function closeTopLayer() {
+    if (document.querySelector("[data-richard-history], [data-richard-chat-panel]")) {
+      window.dispatchEvent(new Event("richy-close-advisor-chat"));
+      return true;
+    }
     if (sheet) { setSheet(false); return true; }
     if (timeframeMenuOpen) { setTimeframeMenuOpen(false); return true; }
     return false;
@@ -28925,11 +29615,11 @@ export default function App() {
   // The five swipeable main tabs, produced by id so both the visible page and the
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
-    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
-    if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
+    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
+    if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
-    if (id === "advisor") return <Advisor tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} widgets={widgets} onSaveWidgets={onSaveWidgets} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} />;
+    if (id === "advisor") return <Advisor isActive={id === currentTab} tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} widgets={widgets} onSaveWidgets={onSaveWidgets} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} />;
     return null;
   }
   applyTheme(theme);      // keep the live T palette in sync with the chosen design every render
@@ -28985,24 +29675,22 @@ export default function App() {
 
       <div style={{ position: "sticky", top: 0, zIndex: 40, background: T.navBg, backdropFilter: "blur(24px) saturate(180%)", WebkitBackdropFilter: "blur(24px) saturate(180%)", borderBottom: "0.5px solid " + T.sep, boxShadow: "inset 0 1px 0 " + T.glassSpec + ", " + T.glassLiftDown }}>
         <div style={{ display: "flex", alignItems: "center", padding: "14px 20px 14px" }}>
-          <div style={{ width: 86, display: "flex", alignItems: "center" }}>
+          <div style={{ width: 122, display: "flex", alignItems: "center" }}>
             <button onClick={function() { setTimeframeMenuOpen(true); }}
               style={{ background: T.orangeDim, border: "none", borderRadius: 40, padding: "7px 7px 7px 9px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 3, whiteSpace: "nowrap" }}>
               {timeframeLabel}
               <span style={{ display: "flex", transform: "rotate(90deg)" }}><SVGIcon id="chevron" size={9} color={T.orange} /></span>
             </button>
           </div>
-          <span style={{ flex: 1, minWidth: 0, fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, textAlign: "center", letterSpacing: "-0.02em", lineHeight: 1.1, whiteSpace: "nowrap" }}>
+          <span style={{ flex: 1, minWidth: 0, fontSize: 18, fontWeight: currentTab === "advisor" ? RICHARD_DISP_WEIGHT : DISP_WEIGHT, fontFamily: currentTab === "advisor" ? RICHARD_DISP : DISP, color: T.ink, textAlign: "center", letterSpacing: "-0.02em", lineHeight: 1.1, whiteSpace: "nowrap" }}>
             {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "periodMode" ? "Date Range" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "badges" ? "Badges" : currentTab === "settings" ? "Settings" : currentTab === "person" ? personName : currentTab === "social" ? "Friends" : currentTab === "findPeople" ? "Find people" : currentTab === "analysis" ? "Full Analysis" : currentTab === "investPlan" ? "Your investing plan" : currentTab === "investorOnboard" ? "Investing basics" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
-          <div style={{ width: 86, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
-            {HAS_FAB.indexOf(currentTab) !== -1 && (
-              <button onClick={function() { nativeHaptic("MEDIUM"); setSheet(function(v) { return !v; }); }}
-                aria-label={sheet ? "Close add menu" : "Add new"}
-                style={{ background: sheet ? T.ink : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", border: "none", borderRadius: 40, width: 36, height: 36, cursor: "pointer", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: sheet ? "none" : "0 4px 12px " + T.orangeGlow, transform: sheet ? "rotate(45deg)" : "none", transition: "background var(--m-quick) ease, box-shadow var(--m-quick) ease, transform var(--m-settle) var(--m-spring)" }}>
-                <SVGIcon id="plus" size={16} color="#fff" />
-              </button>
-            )}
+          <div style={{ width: 122, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
+            <button onClick={function() { setTab("categories"); setSheet(false); }}
+              aria-label={tr("categories")}
+              style={{ border: "none", cursor: "pointer", width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: currentTab === "categories" ? T.orange : T.orangeDim }}>
+              <SVGIcon id="categories" size={17} color={currentTab === "categories" ? "#fff" : T.orange} />
+            </button>
             <button onClick={function() { setTab("profile"); }}
               aria-label="Profile"
               style={{ border: "none", cursor: "pointer", width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: tab === "profile" ? T.orange : "rgba(0,0,0,0.06)" }}>
@@ -29010,6 +29698,17 @@ export default function App() {
             </button>
           </div>
         </div>
+        {currentTab !== "advisor" && (
+          <button onClick={function() {
+              nativeHaptic("MEDIUM");
+              if (currentTab === "activity") setSheet(function(v) { return !v; });
+              else { setTab("activity"); setSheet(true); }
+            }}
+            aria-label={currentTab === "activity" && sheet ? "Close add transaction" : tr("addTransaction")}
+            style={{ position: "absolute", right: 20, bottom: -18, background: currentTab === "activity" && sheet ? T.ink : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", border: "none", borderRadius: "50%", width: 44, height: 44, cursor: "pointer", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: currentTab === "activity" && sheet ? "none" : "0 8px 20px " + T.orangeGlow, transform: currentTab === "activity" && sheet ? "rotate(45deg)" : "none", transition: "background var(--m-quick) ease, box-shadow var(--m-quick) ease, transform var(--m-settle) var(--m-spring)", zIndex: 41 }}>
+            <SVGIcon id="plus" size={18} color="#fff" />
+          </button>
+        )}
       </div>
 
       <Overlay open={timeframeMenuOpen} onClose={function() { setTimeframeMenuOpen(false); }} title="Timeframe">
@@ -29091,13 +29790,22 @@ export default function App() {
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "periodMode" && <PeriodModeView periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onPeriodModeChange={onSavePeriodMode} onPeriodCustomChange={onSavePeriodCustom} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "bankSync" && <BankSyncView bankSync={bankSync} onEnable={onEnableBankSync} onDisable={onDisableBankSync} leumiFinteka={leumiFinteka} onConnectLeumi={onConnectLeumiFinteka} onDisconnectLeumi={onDisconnectLeumiFinteka} onSyncLeumiNow={onSyncLeumiFintekaNow} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
-        {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setTab("investing"); setSheet(false); }} />}
+        {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenInvestorOnboard={function() { prevTabRef.current = "savings"; setPendingInvestingStart(true); setTab("investorOnboard"); }} />}
         {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Overview" : "Savings"} onBack={exitBusiness} />}
-        {currentTab === "investing" && <InvestingView investing={investing} tx={tx} goals={goals} openInvId={openInv} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} onOpenInvestorOnboard={function() { prevTabRef.current = "investing"; setTab("investorOnboard"); }} onOpenScout={function() { prevTabRef.current = "investing"; setTab("scout"); }} onOpenPlanOnboard={function(acctId) { prevTabRef.current = "investing"; setOpenInv(acctId || null); setTab("investPlan"); }} backLabel={prevTabRef.current === "overview" ? "Overview" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
+        {currentTab === "investing" && <InvestingView investing={investing} tx={tx} goals={goals} openInvId={openInv} hubTab={investingHubTab} onHubTabChange={setInvestingHubTab} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} onOpenInvestorOnboard={function() { prevTabRef.current = "investing"; setTab("investorOnboard"); }} onOpenScout={function() { prevTabRef.current = "investing"; setTab("scout"); }} onOpenPlanOnboard={function(acctId) { prevTabRef.current = "investing"; setOpenInv(acctId || null); setTab("investPlan"); }} backLabel={prevTabRef.current === "overview" ? "Overview" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
         {currentTab === "investPlan" && <InvestPlanOnboard acct={(investing || []).filter(function(a) { return a.id === openInv; })[0] || (investing || [])[0] || null} username={user} onCancel={function() { setTab("investing"); }} onSave={onSaveInvestPlan} />}
         {currentTab === "scout" && <StockScoutView investing={investing} openInvId={openInv} tx={tx} goals={goals} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} backLabel="Investing" onBack={function() { setTab("investing"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} onTrade={function(acctId, symbol) { setOpenInv(acctId); setInvSheetReq({ kind: "buy", symbol: symbol }); setTab("investing"); }} />}
         {currentTab === "stock" && <StockView investing={investing} tx={tx} goals={goals} openStock={openStock} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onOpenInvestorOnboard={function() { prevTabRef.current = "stock"; setTab("investorOnboard"); }} backLabel="Investing" onBack={function() { setTab("investing"); }} onTrade={function(symbol, kind) { setOpenInv(openStock ? openStock.acctId : null); setInvSheetReq({ kind: kind, symbol: symbol }); setTab("investing"); }} />}
-        {currentTab === "investorOnboard" && <InvestorOnboardScreen investorProfile={investorProfile} username={user} lang={lang} richardInstructions={richardCtx} today={new Date().toISOString().slice(0, 10)} onSave={onSaveInvestorProfile} onDone={function() { setTab(prevTabRef.current || "investing"); }} />}
+        {currentTab === "investorOnboard" && <InvestorOnboardScreen investorProfile={investorProfile} username={user} lang={lang} richardInstructions={richardCtx} today={new Date().toISOString().slice(0, 10)} onSave={onSaveInvestorProfile} onDone={function(completed) {
+          if (pendingInvestingStart && completed) {
+            var starter = { id: "inv_" + Date.now(), name: "My portfolio", color: INVESTING_COLORS[0], icon: "chart", createdAt: new Date().toISOString().slice(0, 10), cashEntries: [], trades: [], dividends: [], watchlist: [], meta: {}, analyses: {}, chats: {}, priceSnapshotDate: "" };
+            var nextInvesting = (investing || []).concat([starter]);
+            setInvesting(nextInvesting); save({ investing: nextInvesting });
+            setOpenInv(starter.id); setInvestingHubTab("portfolio"); setPendingInvestingStart(false); setTab("investing");
+          } else {
+            setPendingInvestingStart(false); setTab(prevTabRef.current || "investing");
+          }
+        }} />}
         {currentTab === "editOpeningBalance" && <EditOpeningBalanceView tx={tx} onComplete={handleEditOpeningBalance} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "logMonth" && <LogMonthView categories={categories} tx={tx} budgets={budgets} onComplete={handleLogMonth} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "collab" && <CollabView household={household} householdId={householdId} invites={invites} myUid={accountKey} onCreate={onCreateHousehold} onInvite={onInviteMember} onCancelInvite={onCancelInvite} onAccept={onAcceptInvite} onLeave={onLeaveHousehold} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
@@ -29121,7 +29829,9 @@ export default function App() {
           <div style={{ position: "absolute", inset: 0, borderRadius: 34, pointerEvents: "none", background: "linear-gradient(180deg, " + T.navSheen + " 0%, rgba(255,255,255,0) 42%, rgba(255,255,255,0) 100%)" }} />
           {currentTab === "business"
             ? <GlassBackBar label={exitBusinessLabel} onPress={exitBusiness} />
-            : <GlassTabBar tabs={TABS} current={currentTab} onSelect={function(id) { setTab(id); setSheet(false); }} />}
+            : currentTab === "investing"
+              ? <GlassTabBar tabs={INVESTING_HUB_TABS} current={investingHubTab} onSelect={setInvestingHubTab} />
+              : <GlassTabBar tabs={TABS} current={currentTab} onSelect={function(id) { setTab(id); setSheet(false); }} />}
         </div>
       </div>
     </div>
