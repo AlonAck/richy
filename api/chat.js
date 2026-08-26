@@ -2,6 +2,7 @@
 // carry a valid Firebase ID token, so only signed-in Richy users can spend the
 // API key - an anonymous caller who finds this URL gets a 401, not a free relay.
 var admin = require("firebase-admin");
+var prompts = require("./_prompts.js");
 
 function initAdmin() {
   if (admin.apps.length) return true;
@@ -150,7 +151,10 @@ module.exports = async function handler(req, res) {
       body: JSON.stringify({
         model: model,
         max_tokens: maxTokens,
-        system: system,
+        // The server-owned guardrail rides after the client text so it has the
+        // last word. Client prompts are unchanged; this line is the one a
+        // tampered client cannot remove.
+        system: system + prompts.GUARDRAIL,
         messages: messages
       }),
       signal: ctrl.signal
