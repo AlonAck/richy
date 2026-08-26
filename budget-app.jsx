@@ -320,6 +320,12 @@ const MARK_WEIGHT = 500;
 // Richard keeps a distinct, italic editorial voice within Advisor only.
 const RICHARD_DISP = '"EB Garamond", "Noto Serif Hebrew", "Noto Naskh Arabic", Garamond, "Times New Roman", serif';
 const RICHARD_DISP_WEIGHT = 700;
+// Every self-hosted face behind RICHARD_DISP - EB Garamond and both Noto serifs
+// - ships bold-only (see fonts/richy-fonts.css), so normal-weight text set in
+// RICHARD_DISP silently renders bold anyway. Body copy (anything that isn't a
+// headline/verdict/label) uses this stack instead, which skips straight to
+// fonts every OS ships at true regular weight.
+const RICHARD_BODY = 'Georgia, "Times New Roman", serif';
 
 var _currency = { sym: "$" };
 // Seeds from the device's last-picked language (mirrored by applyLangDir())
@@ -3431,6 +3437,51 @@ function RichyLogo(props) {
   );
 }
 
+// Fluid animated gradient circle - stands in for the plain close-chat X on the
+// Advisor screen. CSS-only (conic gradients spinning via a Houdini-registered
+// custom property) so it costs nothing next to the GPU orb Richard uses
+// elsewhere; browsers without @property support just render it static.
+function ensureSiriOrbCss() {
+  var id = "richy-siri-orb-css";
+  if (document.getElementById(id)) return;
+  var st = document.createElement("style"); st.id = id;
+  st.textContent = [
+    "@property --sorb-angle{syntax:'<angle>';inherits:false;initial-value:0deg;}",
+    ".rc-siri-orb{display:grid;grid-template-areas:'stack';overflow:hidden;border-radius:50%;position:relative;background:radial-gradient(circle,rgba(0,0,0,0.08) 0%,rgba(0,0,0,0.03) 30%,transparent 70%);}",
+    ".rc-siri-orb::before{content:'';display:block;grid-area:stack;width:100%;height:100%;border-radius:50%;background:"
+      + "conic-gradient(from calc(var(--sorb-angle,0deg)*1.2) at 30% 65%,var(--sorb-c3) 0deg,transparent 45deg 315deg,var(--sorb-c3) 360deg),"
+      + "conic-gradient(from calc(var(--sorb-angle,0deg)*0.8) at 70% 35%,var(--sorb-c2) 0deg,transparent 60deg 300deg,var(--sorb-c2) 360deg),"
+      + "conic-gradient(from calc(var(--sorb-angle,0deg)*-1.5) at 65% 75%,var(--sorb-c1) 0deg,transparent 90deg 270deg,var(--sorb-c1) 360deg),"
+      + "conic-gradient(from calc(var(--sorb-angle,0deg)*2.1) at 25% 25%,var(--sorb-c2) 0deg,transparent 30deg 330deg,var(--sorb-c2) 360deg),"
+      + "conic-gradient(from calc(var(--sorb-angle,0deg)*-0.7) at 80% 80%,var(--sorb-c1) 0deg,transparent 45deg 315deg,var(--sorb-c1) 360deg),"
+      + "radial-gradient(ellipse 120% 80% at 40% 60%,var(--sorb-c3) 0%,transparent 50%);"
+      + "filter:blur(var(--sorb-blur,8px)) contrast(var(--sorb-contrast,1.8)) saturate(1.2);animation:rcSorbSpin var(--sorb-dur,20s) linear infinite;transform:translateZ(0);will-change:transform;}",
+    ".rc-siri-orb::after{content:'';display:block;grid-area:stack;width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 45% 55%,rgba(255,255,255,0.1) 0%,rgba(255,255,255,0.05) 30%,transparent 60%);mix-blend-mode:overlay;}",
+    "@keyframes rcSorbSpin{from{--sorb-angle:0deg;}to{--sorb-angle:360deg;}}",
+    "@media (prefers-reduced-motion:reduce){.rc-siri-orb::before{animation:none;}}"
+  ].join("");
+  document.head.appendChild(st);
+}
+function SiriOrb(props) {
+  ensureSiriOrbCss();
+  var size = props.size || 48;
+  var blur = Math.max(size * 0.08, 3.5);
+  var contrast = Math.max(size * 0.003, 1.8);
+  // Colors ride the live theme: the accent pair plus brand gold, so the orb
+  // matches whichever look (blue / classic / purple, light or dark) is active.
+  return (
+    <div className="rc-siri-orb" aria-hidden="true" style={{
+      width: size, height: size, flexShrink: 0,
+      "--sorb-c1": props.c1 || T.orange,
+      "--sorb-c2": props.c2 || T.orangeHi,
+      "--sorb-c3": props.c3 || T.gold,
+      "--sorb-dur": (props.duration || 20) + "s",
+      "--sorb-blur": blur + "px",
+      "--sorb-contrast": contrast
+    }} />
+  );
+}
+
 // === LOADING & THINKING ANIMATIONS ===
 // Perceived-performance toolkit. Every AI wait in the app funnels through these
 // pieces so waiting reads as Richard visibly working, not a stalled screen:
@@ -3876,11 +3927,205 @@ function RichardThinking(props) {
   );
 }
 
-// Staged "Richard is working" panel: breathing avatar, steps that check off one
-// by one on a pace matched to the request, and an asymptotic progress bar that
-// eases toward done but never quite arrives until the response does. The steps
-// are theater - the request is one round trip - but they mirror what the model
-// is actually asked to do, and the wait feels shorter when the work is visible.
+// GPU "thinking" orb: a noise-driven ring of light with an orbiting spark,
+// breathing pulse and slow rotation, rendered by a fragment shader on its own
+// transparent canvas. Ported from a three.js shader into the same raw-WebGL
+// pattern as JrShaderBg (no dependencies, degrades to nothing without WebGL).
+// Colors are fixed to the Richy palette: dashboard blue, violet, and gold.
+function RichardOrb(props) {
+  var canvasRef = useRef(null);
+  useEffect(function() {
+    var canvas = canvasRef.current;
+    if (!canvas) return;
+    var gl = canvas.getContext("webgl", { alpha: true, premultipliedAlpha: true })
+      || canvas.getContext("experimental-webgl", { alpha: true, premultipliedAlpha: true });
+    if (!gl) return; // panel gradient shows through - still looks intentional
+    var vs = "attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }";
+    var fs = [
+      "precision highp float;",
+      "uniform vec2 u_res; uniform float u_time;",
+      "vec3 hash33(vec3 p3){ p3 = fract(p3 * vec3(0.1031, 0.11369, 0.13787)); p3 += dot(p3, p3.yxz + 19.19); return -1.0 + 2.0 * fract(vec3(p3.x + p3.y, p3.x + p3.z, p3.y + p3.z) * p3.zyx); }",
+      "float snoise3(vec3 p){ const float K1 = 0.333333333; const float K2 = 0.166666667;",
+      "  vec3 i = floor(p + (p.x + p.y + p.z) * K1); vec3 d0 = p - (i - (i.x + i.y + i.z) * K2);",
+      "  vec3 e = step(vec3(0.0), d0 - d0.yzx); vec3 i1 = e * (1.0 - e.zxy); vec3 i2 = 1.0 - e.zxy * (1.0 - e);",
+      "  vec3 d1 = d0 - (i1 - K2); vec3 d2 = d0 - (i2 - K1); vec3 d3 = d0 - 0.5;",
+      "  vec4 h = max(0.6 - vec4(dot(d0,d0), dot(d1,d1), dot(d2,d2), dot(d3,d3)), 0.0);",
+      "  vec4 n = h*h*h*h * vec4(dot(d0, hash33(i)), dot(d1, hash33(i + i1)), dot(d2, hash33(i + i2)), dot(d3, hash33(i + 1.0)));",
+      "  return dot(vec4(31.316), n); }",
+      "float light1(float q, float a, float d){ return q / (1.0 + d * a); }",
+      "float light2(float q, float a, float d){ return q / (1.0 + d * d * a); }",
+      "void main(){",
+      "  vec2 uv = (gl_FragCoord.xy * 2.0 - u_res) / min(u_res.x, u_res.y);",
+      "  float rot = u_time * 0.3; float sr = sin(rot); float cr = cos(rot);",
+      "  uv = vec2(cr*uv.x - sr*uv.y, sr*uv.x + cr*uv.y);",
+      "  vec3 c0 = vec3(0.361, 0.478, 0.890);", // Richy dashboard blue #5C7AE3
+      "  vec3 c1 = vec3(0.235, 0.298, 0.510);", // deep indigo #3C4C82 (button gradient end)
+      "  vec3 c2 = vec3(0.537, 0.439, 0.776);", // violet accent #8970C6
+      "  float len = length(uv);",
+      "  float invLen = len > 0.0 ? 1.0 / len : 0.0;",
+      "  float pulse = sin(u_time * 1.5) * 0.02;",
+      "  float n0 = snoise3(vec3(uv * 0.65, u_time * 0.5)) * 0.5 + 0.5;",
+      "  float ir = 0.2 + pulse;",
+      "  float r0 = mix(mix(ir, 1.0, 0.4), mix(ir, 1.0, 0.6), n0);",
+      "  float d0 = distance(uv, (r0 * invLen) * uv);",
+      "  float v0 = light1(1.0, 10.0, d0);",
+      "  v0 *= smoothstep(r0 * 1.05, r0, len);",
+      "  float cl = cos(atan(uv.y, uv.x) + u_time * 2.0) * 0.5 + 0.5;",
+      "  float a = u_time * -1.0;",
+      "  vec2 pos = vec2(cos(a), sin(a)) * r0;",
+      "  float d1v = distance(uv, pos);",
+      "  float v1 = light2(1.5, 5.0, d1v);",
+      "  v1 *= light1(1.0, 50.0, d0);",
+      "  float v2 = smoothstep(1.0, mix(ir, 1.0, n0 * 0.5), len);",
+      "  float v3 = smoothstep(ir, mix(ir, 1.0, 0.5), len);",
+      "  vec3 col = mix(c1, c2, cl);",
+      "  col = mix(col, c0, n0);",
+      "  col = (col * v0 + v1 * vec3(0.42, 0.52, 0.95)) * v2 * v3;", // spark glows blue, not white, so it survives a light ground
+      "  col = clamp(col, 0.0, 1.0);",
+      "  float alpha = clamp(max(max(col.r, col.g), col.b) * 1.75, 0.0, 1.0);", // extra opacity: the ring must hold up on the light panel
+      "  gl_FragColor = vec4(col, alpha);", // premultiplied: rgb already scaled
+      "}",
+    ].join("\n");
+    function mkShader(type, src) {
+      var sh = gl.createShader(type);
+      gl.shaderSource(sh, src); gl.compileShader(sh);
+      return sh;
+    }
+    var prog = gl.createProgram();
+    gl.attachShader(prog, mkShader(gl.VERTEX_SHADER, vs));
+    gl.attachShader(prog, mkShader(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+    gl.useProgram(prog);
+    var buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    var loc = gl.getAttribLocation(prog, "p");
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    var uRes = gl.getUniformLocation(prog, "u_res");
+    var uTime = gl.getUniformLocation(prog, "u_time");
+    var lose = gl.getExtension("WEBGL_lose_context");
+    var raf = null, t = 0, last = 0, reduced = jrReduced(), hidden = false;
+    function resize() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      var w = Math.floor(canvas.clientWidth * dpr), h = Math.floor(canvas.clientHeight * dpr);
+      if (w < 2 || h < 2) return;
+      if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+      gl.viewport(0, 0, w, h);
+      gl.uniform2f(uRes, w, h);
+    }
+    function frame(now) {
+      var dt = last ? Math.min(0.05, (now - last) / 1000) : 0.016; last = now;
+      if (!reduced && !hidden) t += dt;
+      resize();
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.uniform1f(uTime, t);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      raf = requestAnimationFrame(frame);
+    }
+    raf = requestAnimationFrame(frame);
+    function onVis() { hidden = document.hidden; }
+    document.addEventListener("visibilitychange", onVis);
+    return function() {
+      if (raf) cancelAnimationFrame(raf);
+      document.removeEventListener("visibilitychange", onVis);
+      try { gl.deleteBuffer(buf); gl.deleteProgram(prog); if (lose) lose.loseContext(); } catch (e) {}
+    };
+  }, []);
+  return <canvas ref={canvasRef} style={Object.assign({ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block", pointerEvents: "none" }, props.style)} />;
+}
+
+// ---- Focus Mode answer structure -------------------------------------------
+// A focus reply arrives as labeled plain-text sections (VERDICT/DO/CHANGE/...)
+// so the client - not the model - owns the layout. Parse it into an object;
+// return null when the shape is wrong so the caller can fall back to plain text.
+function parseFocusAnswer(raw) {
+  if (!raw) return null;
+  var text = String(raw).replace(/\r/g, "").trim();
+  var keys = ["VERDICT", "DO", "CHANGE", "SHORT", "LONG", "WHY", "RISKS", "QUESTION"];
+  var re = new RegExp("^(" + keys.join("|") + ")\\s*:\\s*", "gm");
+  var parts = {};
+  var m, marks = [];
+  while ((m = re.exec(text)) !== null) marks.push({ key: m[1], start: m.index, body: re.lastIndex });
+  if (!marks.length) return null;
+  for (var i = 0; i < marks.length; i++) {
+    var end = i + 1 < marks.length ? marks[i + 1].start : text.length;
+    parts[marks[i].key] = text.slice(marks[i].body, end).trim();
+  }
+  var v = (parts.VERDICT || "").toLowerCase();
+  var verdict = v.indexOf("yes") === 0 ? "Yes" : v.indexOf("no") === 0 ? "No" : v.indexOf("wait") === 0 ? "Wait" : null;
+  if (!verdict || !parts.DO) return null;
+  return { verdict: verdict, doNow: parts.DO, change: parts.CHANGE || "", shortRun: parts.SHORT || "", longRun: parts.LONG || "", why: parts.WHY || "", risks: parts.RISKS || "", question: parts.QUESTION || "" };
+}
+
+// *italic* and **bold** only - the two marks the focus prompt allows Richard.
+function focusInline(text, keyBase) {
+  var out = [];
+  var re = /(\*\*[^*\n]+\*\*|\*[^*\n]+\*)/g;
+  var last = 0, m, n = 0;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) out.push(text.slice(last, m.index));
+    var seg = m[0];
+    if (seg.slice(0, 2) === "**") out.push(<strong key={keyBase + "b" + (n++)} style={{ fontWeight: 700 }}>{seg.slice(2, -2)}</strong>);
+    else out.push(<em key={keyBase + "i" + (n++)}>{seg.slice(1, -1)}</em>);
+    last = re.lastIndex;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
+
+// The rendered focus verdict: big Yes/No/Wait, the move to make, then the
+// sections - what changes (short/long run), the reasoning, the risks - each
+// under its own theme-colored rail, all set in Richard's serif voice.
+function FocusAnswer(props) {
+  var f = props.focus;
+  var vColor = f.verdict === "Yes" ? "#188A4A" : f.verdict === "No" ? "#C73A36" : "#C8983A";
+  var body = { fontFamily: RICHARD_BODY, fontWeight: 400, fontSize: 15, lineHeight: 1.6, color: T.ink, textAlign: "start" };
+  function section(label, color, children, k) {
+    if (!children) return null;
+    return (
+      <div key={k} style={{ marginTop: 18, paddingLeft: 13, borderLeft: "3px solid " + color, borderRadius: 1 }}>
+        <div style={{ fontSize: 10.5, fontWeight: 800, fontFamily: UI, color: color, textTransform: "uppercase", letterSpacing: "0.11em", marginBottom: 6 }}>{label}</div>
+        {children}
+      </div>
+    );
+  }
+  function sub(label, color, text, k) {
+    if (!text) return null;
+    return (
+      <div key={k} style={{ marginTop: 9 }}>
+        <span style={{ fontSize: 10, fontWeight: 800, fontFamily: UI, color: color, background: color + "16", borderRadius: 6, padding: "2.5px 7px", textTransform: "uppercase", letterSpacing: "0.09em" }}>{label}</span>
+        <div style={Object.assign({}, body, { fontSize: 14.5, marginTop: 5 })}>{focusInline(text, k)}</div>
+      </div>
+    );
+  }
+  return (
+    <div dir="auto" style={{ animation: "rclPhrase 0.45s ease both" }}>
+      <div style={{ fontFamily: RICHARD_DISP, fontStyle: "italic", fontSize: 36, fontWeight: RICHARD_DISP_WEIGHT, lineHeight: 1, color: vColor, letterSpacing: "-0.02em" }}>{f.verdict === "Wait" ? "Wait." : f.verdict + "."}</div>
+      <div style={Object.assign({}, body, { fontSize: 15.5, marginTop: 10 })}>{focusInline(f.doNow, "do")}</div>
+      {section("What's gonna change", "#5C7AE3", (
+        <div>
+          {f.change ? <div style={body}>{focusInline(f.change, "ch")}</div> : null}
+          {sub("In the short run", "#3C4C82", f.shortRun, "sr")}
+          {sub("In the long run", "#5C7AE3", f.longRun, "lr")}
+        </div>
+      ), "change")}
+      {f.why ? section("Why I think that", "#8970C6", <div style={body}>{focusInline(f.why, "why")}</div>, "why") : null}
+      {f.risks ? section("How it can get risky", "#C73A36", <div style={body}>{focusInline(f.risks, "rk")}</div>, "risks") : null}
+      {f.question ? <div style={{ marginTop: 18, fontFamily: RICHARD_BODY, fontWeight: 400, fontStyle: "italic", fontSize: 15.5, lineHeight: 1.5, color: T.ink, paddingLeft: 13, borderLeft: "3px solid " + T.orange }}>{focusInline(f.question, "q")}</div> : null}
+      <div style={{ marginTop: 12, fontSize: 10.5, fontFamily: UI, color: T.ink3, lineHeight: 1.5 }}>Richard is an AI, not a licensed financial advisor - always do your own research before a decision this size.</div>
+    </div>
+  );
+}
+
+// Staged "Richard is working" panel: a shader-drawn thinking orb with the live
+// percentage inside it, steps that check off one by one on a pace matched to
+// the request, and an asymptotic progress that eases toward done but never
+// quite arrives until the response does. The steps are theater - the request
+// is one round trip - but they mirror what the model is actually asked to do,
+// and the wait feels shorter when the work is visible.
 function AIWorking(props) {
   useEffect(function() { ensureLoadingCss(); }, []);
   var steps = props.steps || [];
@@ -3900,20 +4145,28 @@ function AIWorking(props) {
   var inner = (
     <div style={{ textAlign: "center" }}>
       {!compact && (
-        <div style={{ position: "relative", width: 54, height: 54, margin: "0 auto 16px" }}>
-          <div style={{ position: "absolute", inset: -8, borderRadius: "50%", background: "radial-gradient(circle," + T.orangeGlow + " 0%, transparent 70%)", filter: "blur(6px)", animation: "rclGlow 2.4s ease-in-out infinite" }} />
-          <div style={{ position: "relative", width: 54, height: 54, borderRadius: 18, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 26px " + T.orangeGlow, animation: "rclBreathe 2.4s ease-in-out infinite" }}>
-            <SVGIcon id="spark" size={26} color="#fff" />
+        <div style={{ position: "relative", height: 175, borderRadius: 18, overflow: "hidden", background: "radial-gradient(130% 130% at 50% 0%, #EAF0FD 0%, #CBD8F7 100%)", margin: "0 0 16px", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.7), 0 10px 24px rgba(92,122,227,0.2)", border: "1px solid rgba(92,122,227,0.16)" }}>
+          <RichardOrb />
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
+            <span style={{ fontSize: 30, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: "#2E3A66", letterSpacing: "-0.02em", textShadow: "0 1px 10px rgba(255,255,255,0.65)", fontVariantNumeric: "tabular-nums" }}>
+              {Math.round(pct)}<span style={{ fontSize: 15, opacity: 0.7, marginLeft: 1 }}>%</span>
+            </span>
+          </div>
+          <div style={{ position: "absolute", left: 14, right: 14, bottom: 11, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, pointerEvents: "none" }}>
+            <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#5C7AE3", animation: "rclGlow 1.6s ease-in-out infinite", flexShrink: 0 }} />
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(60,76,130,0.85)", fontFamily: UI, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{steps[doneCount] || steps[steps.length - 1] || "Working"}</span>
           </div>
         </div>
       )}
       {props.title && <div style={{ fontSize: compact ? 13.5 : 15.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{props.title}</div>}
       {props.sub && <div style={{ fontSize: compact ? 12 : 13, color: T.ink3, marginTop: 4 }}>{props.sub}</div>}
-      <div style={{ height: 5, borderRadius: 999, background: "rgba(0,0,0,0.07)", marginTop: compact ? 12 : 18, overflow: "hidden" }}>
-        <div style={{ height: "100%", width: pct + "%", borderRadius: 999, background: "linear-gradient(90deg," + T.orangeHi + "," + T.orange + ")", transition: "width 0.35s ease", position: "relative", overflow: "hidden" }}>
-          <div style={{ position: "absolute", top: 0, bottom: 0, width: "38%", background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent)", animation: "rclSheen 1.6s ease-in-out infinite" }} />
+      {compact && (
+        <div style={{ height: 5, borderRadius: 999, background: "rgba(0,0,0,0.07)", marginTop: 12, overflow: "hidden" }}>
+          <div style={{ height: "100%", width: pct + "%", borderRadius: 999, background: "linear-gradient(90deg," + T.orangeHi + "," + T.orange + ")", transition: "width 0.35s ease", position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", top: 0, bottom: 0, width: "38%", background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent)", animation: "rclSheen 1.6s ease-in-out infinite" }} />
+          </div>
         </div>
-      </div>
+      )}
       {steps.length > 0 && (
         <div style={{ marginTop: compact ? 12 : 16, display: "flex", flexDirection: "column", gap: compact ? 7 : 9, textAlign: "left" }}>
           {steps.map(function(label, idx) {
@@ -4018,7 +4271,7 @@ function TypeReveal(props) {
   var partial = words.slice(0, n).join("");
   // Keep a bold run open mid-stream so unpaired ** never flashes as raw text.
   if (((partial.match(/\*\*/g) || []).length) % 2 === 1) partial += "**";
-  return <RichardText text={partial} size={props.size} color={props.color} fade={!!(props.fade && props.animate)} />;
+  return <RichardText text={partial} size={props.size} color={props.color} font={props.font} fade={!!(props.fade && props.animate)} />;
 }
 
 // Generic text-reveal primitive, ported from the shadcn/prompt-kit
@@ -5178,6 +5431,104 @@ function JrShaderBg(props) {
   return <canvas ref={canvasRef} style={Object.assign({ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", display: "block", pointerEvents: "none", zIndex: 0 }, props.style)} />;
 }
 
+// Focus Mode's backdrop: not another ribbon, but GOD RAYS - beams radiating
+// from a point behind Richard's avatar, two counter-rotating layers plus one
+// slow lighthouse sweep and a breathing core glow. The beam angles wobble with
+// a radius-coupled sine so the light seems to refract as it travels outward.
+// Same raw-WebGL boilerplate as JrShaderBg; colors mix over the cream base so
+// it stays a light surface, not a night sky.
+function JrFocusRaysBg(props) {
+  var canvasRef = useRef(null);
+  useEffect(function() {
+    var canvas = canvasRef.current;
+    if (!canvas) return;
+    var gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+    if (!gl) return;
+    var vs = "attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }";
+    var fs = [
+      "precision highp float;",
+      "uniform vec2 u_res; uniform float u_time, u_intensity;",
+      "uniform vec3 u_c1, u_c2, u_c3, u_base;",
+      "void main(){",
+      "  vec2 p = (gl_FragCoord.xy * 2.0 - u_res) / min(u_res.x, u_res.y);",
+      "  vec2 q = p - vec2(0.0, 0.34);", // source sits behind the avatar, upper-middle
+      "  float r = length(q);",
+      "  float a = atan(q.y, q.x) + u_time * 0.05;", // whole sky drifts, very slowly
+      "  float wob = sin(r * 4.0 - u_time * 0.7) * 0.3;", // refraction wobble
+      "  float b1 = pow(max(sin(a * 6.0 + u_time * 0.35 + wob), 0.0), 5.0);",
+      "  float b2 = pow(max(sin(a * -11.0 + u_time * 0.55 + wob * 1.6), 0.0), 9.0);",
+      "  float sweep = pow(max(sin(a - u_time * 0.22), 0.0), 22.0);", // one lighthouse beam
+      "  float fall = smoothstep(1.85, 0.05, r);",
+      "  float core = exp(-r * r * 5.0) * (0.72 + 0.28 * sin(u_time * 1.3));",
+      "  float m1 = clamp(b1 * fall * u_intensity, 0.0, 1.0);",
+      "  float m2 = clamp(b2 * fall * u_intensity * 0.8, 0.0, 1.0);",
+      "  float m3 = clamp((sweep * fall * 0.95 + core * 0.5) * u_intensity, 0.0, 1.0);",
+      "  vec3 col = u_base;",
+      "  col = mix(col, u_c1, m1);",
+      "  col = mix(col, u_c2, m2 * 0.9);",
+      "  col = mix(col, u_c3, m3 * 0.85);",
+      "  gl_FragColor = vec4(col, 1.0);",
+      "}",
+    ].join("\n");
+    function mkShader(type, src) {
+      var sh = gl.createShader(type);
+      gl.shaderSource(sh, src); gl.compileShader(sh);
+      return sh;
+    }
+    var prog = gl.createProgram();
+    gl.attachShader(prog, mkShader(gl.VERTEX_SHADER, vs));
+    gl.attachShader(prog, mkShader(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+    gl.useProgram(prog);
+    var buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    var loc = gl.getAttribLocation(prog, "p");
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    var U = {};
+    ["u_res", "u_time", "u_intensity", "u_c1", "u_c2", "u_c3", "u_base"].forEach(function(n) { U[n] = gl.getUniformLocation(prog, n); });
+    var lose = gl.getExtension("WEBGL_lose_context");
+    var c = (props.colors || ["#3C4C82", "#5C7AE3", "#8970C6"]).map(jrHex);
+    var base = jrHex(props.base || "#F7F3EE");
+    var intensity = props.intensity == null ? 0.5 : props.intensity;
+    var raf = null, t = 0, last = 0, reduced = jrReduced(), hidden = false;
+    function resize() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      var w = Math.floor(canvas.clientWidth * dpr), h = Math.floor(canvas.clientHeight * dpr);
+      if (w < 2 || h < 2) return;
+      if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+      gl.viewport(0, 0, w, h);
+      gl.uniform2f(U.u_res, w, h);
+    }
+    function frame(now) {
+      var dt = last ? Math.min(0.05, (now - last) / 1000) : 0.016; last = now;
+      if (!reduced && !hidden) t += dt;
+      resize();
+      gl.uniform1f(U.u_time, t);
+      gl.uniform1f(U.u_intensity, intensity);
+      gl.uniform3fv(U.u_c1, c[0]);
+      gl.uniform3fv(U.u_c2, c[1]);
+      gl.uniform3fv(U.u_c3, c[2]);
+      gl.uniform3fv(U.u_base, base);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      raf = requestAnimationFrame(frame);
+    }
+    raf = requestAnimationFrame(frame);
+    function onVis() { hidden = document.hidden; }
+    window.addEventListener("resize", resize);
+    document.addEventListener("visibilitychange", onVis);
+    return function() {
+      if (raf) cancelAnimationFrame(raf);
+      window.removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", onVis);
+      try { gl.deleteBuffer(buf); gl.deleteProgram(prog); if (lose) lose.loseContext(); } catch (e) {}
+    };
+  }, []);
+  return <canvas ref={canvasRef} style={Object.assign({ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block", pointerEvents: "none" }, props.style)} />;
+}
+
 function SVGIcon(props) {
   var size = props.size || 22;
   var color = props.color || T.ink2;
@@ -5253,6 +5604,8 @@ function SVGIcon(props) {
     close:    "M18 6L6 18M6 6l12 12",
     clock:    "M12 7v5l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
     camera:   "M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2zM12 17a4 4 0 100-8 4 4 0 000 8z",
+    mic:      "M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3zM19 10v2a7 7 0 01-14 0v-2M12 19v3M8 22h8",
+    attach:   "M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48",
   };
   var d = icons[props.id] || "";
   return (
@@ -5766,7 +6119,7 @@ function RichardText(props) {
     blocks.push(<div key={"p" + i} style={fx({ margin: "5px 0" })}>{renderRichInline(line, "p" + i)}</div>);
   });
   flush();
-  return <div style={{ fontSize: size, color: color, lineHeight: 1.6, fontFamily: UI, whiteSpace: "normal" }}>{blocks}</div>;
+  return <div style={{ fontSize: size, color: color, lineHeight: 1.6, fontFamily: props.font || UI, whiteSpace: "normal" }}>{blocks}</div>;
 }
 
 // Hero amount entry: the focal point of the transaction form. Combines the amount,
@@ -7994,6 +8347,23 @@ var DEFAULT_OVERVIEW_WIDGETS = [
   { id: "default_cash_flow", title: "This month vs last", metric: "net", target: "", shape: "compare", timeframe: "month", goal: null, color: "#27A85F", icon: "up" }
 ];
 
+// The template gallery behind "+ Add a widget". Covers the metrics every user
+// can use with zero setup first, then the ones that need a category, folder,
+// budget, goal or pot picked (needsPicker names which list to pick from).
+var WIDGET_TEMPLATES = [
+  { key: "spendByCategory", title: "Where your money went", metric: "expense", shape: "list", timeframe: "month", icon: "cart", color: "#C8673A", desc: "Your biggest spending categories this month" },
+  { key: "spendTrend", title: "Spending trend", metric: "expense", shape: "trend", timeframe: "month", icon: "chart", color: "#2799C8", desc: "Six months of spending, bar by bar" },
+  { key: "cashFlow", title: "This month vs last", metric: "net", shape: "compare", timeframe: "month", icon: "up", color: "#27A85F", desc: "Compare what's left over, month to month" },
+  { key: "savingsRate", title: "Savings rate", metric: "savingsRate", shape: "stat", timeframe: "month", icon: "spark", color: "#8970C6", desc: "Percent of income you kept this month" },
+  { key: "netWorth", title: "Net worth", metric: "netWorth", shape: "stat", timeframe: "all", icon: "diamond", color: "#C8983A", desc: "Everything you own, right now" },
+  { key: "txCount", title: "Transactions logged", metric: "txCount", shape: "stat", timeframe: "month", icon: "tag", color: "#5BB8A8", desc: "How many purchases you've tracked" },
+  { key: "categoryWatch", title: "Category watch", metric: "categorySpend", shape: "ring", timeframe: "month", icon: "box", color: "#C8673A", desc: "Watch one category against its budget", needsPicker: "category" },
+  { key: "budgetLeft", title: "Budget remaining", metric: "budgetLeft", shape: "bar", timeframe: "month", icon: "shield", color: "#27A85F", desc: "What's left in a category's budget", needsPicker: "budget" },
+  { key: "folderWatch", title: "Folder watch", metric: "folderSpend", shape: "ring", timeframe: "month", icon: "folder", color: "#2799C8", desc: "Watch a whole folder of categories", needsPicker: "folder" },
+  { key: "goalProgress", title: "Goal progress", metric: "goalProgress", shape: "ring", timeframe: "all", icon: "goals", color: "#8970C6", desc: "Track a savings goal toward its target", needsPicker: "goal" },
+  { key: "savingsPot", title: "Savings pot", metric: "savingsPot", shape: "stat", timeframe: "all", icon: "coins", color: "#C8983A", desc: "Balance of one of your savings pots", needsPicker: "savings" }
+];
+
 // The date window a timeframe covers, `back` periods ago (0 = the current one).
 // null means "all time", i.e. no bound.
 function widgetWindow(timeframe, back) {
@@ -8229,6 +8599,66 @@ function widgetCaption(w, res) {
   return base + " · " + tfWord;
 }
 
+// Reads the user's own data - what's over budget, what a goal still needs,
+// how much of income is being kept - and turns it into up to two widgets
+// nobody had to ask for. No account, no suggestions: there's nothing yet to
+// learn from.
+function suggestWidgets(wc, existingWidgets) {
+  var existingTitles = {};
+  (existingWidgets || []).forEach(function(w) { existingTitles[w.title] = 1; });
+  var out = [];
+  function add(w) { if (out.length < 2 && !existingTitles[w.title]) out.push(w); }
+
+  var cats = wc.categories || [];
+  var flows = widgetFlowTx(wc);
+  var win = widgetWindow("month", 0);
+  var byCat = {};
+  flows.filter(function(t) { return t.type === "expense" && inWidgetWindow(t, win); }).forEach(function(t) {
+    var c = catById(cats, t.catId) || catByName(cats, t.category);
+    var k = c ? c.name : (t.category || "Other");
+    byCat[k] = round2((byCat[k] || 0) + (t.amount || 0));
+  });
+
+  // 1) A category that's already over its budget this month is the single
+  // most actionable thing Richard can surface unprompted.
+  var overBudget = null;
+  (wc.budgets || []).forEach(function(b) {
+    var c2 = catById(cats, b.catId) || catByName(cats, b.category);
+    var name = c2 ? c2.name : b.category;
+    if (!name || !(b.limit > 0)) return;
+    var spent = byCat[name] || 0;
+    if (spent > b.limit && (!overBudget || spent - b.limit > overBudget.over)) overBudget = { name: name, over: spent - b.limit };
+  });
+  if (overBudget) {
+    // A gauge against the budget line says "how close to the edge" at a glance;
+    // the number alone doesn't.
+    add({ title: overBudget.name + " watch", metric: "categorySpend", target: overBudget.name, shape: "ring", timeframe: "month", icon: "box", color: "#E03030", reason: "Over budget here this month" });
+  }
+
+  // 2) Otherwise, the category taking the biggest bite out of this month -
+  // drawn as a trend so it shows whether the habit is growing or easing.
+  var topCat = null;
+  Object.keys(byCat).forEach(function(k) { if (byCat[k] > 0 && (!topCat || byCat[k] > byCat[topCat])) topCat = k; });
+  if (topCat && (!overBudget || topCat !== overBudget.name)) {
+    add({ title: topCat + " trend", metric: "categorySpend", target: topCat, shape: "trend", timeframe: "month", icon: "cart", color: "#C8673A", reason: "Your biggest category, month by month" });
+  }
+
+  // 3) A goal that isn't funded yet keeps momentum visible.
+  (wc.goals || []).forEach(function(g) {
+    if (!g.target || g.target <= 0) return;
+    var saved = goalSavedAmount(g, wc.tx || [], wc.savings, wc.businesses, wc.investing);
+    if (saved < g.target) add({ title: g.name + " progress", metric: "goalProgress", target: g.name, shape: "ring", timeframe: "all", icon: "goals", color: "#8970C6", reason: "Keep this goal moving" });
+  });
+
+  // 4) Where the money actually went, broken into the rows behind the total.
+  add({ title: "Where your money went", metric: "expense", target: "", shape: "list", timeframe: "month", icon: "cart", color: "#C8673A", reason: "The rows behind this month's spending" });
+
+  // 5) Fallback: savings rate matters to everyone, shown against last month.
+  add({ title: "Savings rate", metric: "savingsRate", shape: "compare", timeframe: "month", icon: "spark", color: "#27A85F", reason: "This month's rate against last" });
+
+  return out;
+}
+
 // A single Richard-built card. Every shape shares the same header so the set
 // reads as one family however different the bodies are.
 function WidgetCard(props) {
@@ -8376,19 +8806,20 @@ function WidgetCard(props) {
 // is advertised a feature by an empty box.
 function OverviewWidgets(props) {
   var list = (props.widgets || []).slice(0, MAX_WIDGETS);
-  if (!list.length) return null;
   var wc = {
     tx: props.tx || [], categories: props.categories || [], folders: props.folders || [],
     savings: props.savings || [], businesses: props.businesses || [], investing: props.investing || [],
     goals: props.goals || [], budgets: props.budgets || []
   };
+  var _add = useState(false); var adding = _add[0]; var setAdding = _add[1];
+  var atMax = list.length >= MAX_WIDGETS;
   return (
     <div style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.165s both" }}>
       <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
         <span style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{"Your widgets"}</span>
         <div style={{ flex: 1 }} />
-        <span style={{ fontSize: 11, color: T.ink3 }}>{"Built by Richard"}</span>
+        {list.length > 0 && <span style={{ fontSize: 11, color: T.ink3 }}>{"Built by Richard"}</span>}
       </div>
       <div style={{ marginBottom: 20 }}>
         {list.map(function(w) {
@@ -8399,8 +8830,162 @@ function OverviewWidgets(props) {
               onRemove={function() { if (props.onRemove) props.onRemove(w.id); }} />
           );
         })}
+        {!atMax && props.onAdd && (
+          <button onClick={function() { setAdding(true); }}
+            style={{ width: "100%", marginTop: list.length ? 0 : 0, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "18px 0", borderRadius: 16, background: "none", border: "1.5px dashed " + T.orange + "88", color: T.orange, fontSize: 14, fontWeight: 700 }}>
+            <SVGIcon id="plus" size={18} color={T.orange} />Add a widget
+          </button>
+        )}
       </div>
+      {adding && (
+        <AddWidgetOverlay open={adding} onClose={function() { setAdding(false); }} wc={wc} existingWidgets={list} lang={props.lang}
+          onAdd={function(w) { if (props.onAdd) props.onAdd(w); setAdding(false); }} />
+      )}
     </div>
+  );
+}
+
+// Everything behind "+ Add a widget": suggestions read from the user's own
+// data, a template gallery for the common asks, and a free-text box that
+// hands the request to Richard when no template fits.
+function AddWidgetOverlay(props) {
+  var wc = props.wc;
+  var existing = props.existingWidgets || [];
+  var _picker = useState(null); var picker = _picker[0]; var setPicker = _picker[1]; // { template } while choosing a target
+  var _prompt = useState(""); var prompt = _prompt[0]; var setPrompt = _prompt[1];
+  var _aiLoading = useState(false); var aiLoading = _aiLoading[0]; var setAiLoading = _aiLoading[1];
+  var _aiErr = useState(""); var aiErr = _aiErr[0]; var setAiErr = _aiErr[1];
+
+  var suggestions = suggestWidgets(wc, existing);
+
+  function nextId() { return "w_" + Date.now() + "_" + Math.floor(Math.random() * 1000); }
+  function finishAdd(w) { props.onAdd(Object.assign({ id: nextId() }, w)); }
+
+  function pickerOptions(kind) {
+    if (kind === "category") return (wc.categories || []).map(function(c) { return { name: c.name, icon: c.icon, color: c.color }; });
+    if (kind === "folder") return (wc.folders || []).map(function(f) { return { name: f.name, icon: "folder", color: T.orange }; });
+    if (kind === "goal") return (wc.goals || []).map(function(g) { return { name: g.name, icon: "goals", color: T.orange }; });
+    if (kind === "savings") return (wc.savings || []).map(function(s) { return { name: s.name, icon: s.icon || "coins", color: s.color || T.orange }; });
+    if (kind === "budget") {
+      return (wc.budgets || []).map(function(b) {
+        var c = catById(wc.categories, b.catId) || catByName(wc.categories, b.category);
+        return c ? { name: c.name, icon: c.icon, color: c.color } : null;
+      }).filter(Boolean);
+    }
+    return [];
+  }
+
+  function chooseTemplate(t) {
+    if (t.needsPicker) { setPicker(t); return; }
+    finishAdd({ title: t.title, metric: t.metric, target: "", shape: t.shape, timeframe: t.timeframe, goal: null, color: t.color, icon: t.icon });
+  }
+  function chooseTarget(name) {
+    var t = picker;
+    setPicker(null);
+    finishAdd({ title: t.needsPicker === "budget" ? (name + " budget") : (name + (t.needsPicker === "goal" ? " progress" : t.needsPicker === "savings" ? "" : " watch")), metric: t.metric, target: name, shape: t.shape, timeframe: t.timeframe, goal: null, color: t.color, icon: t.icon });
+  }
+
+  function askRichard() {
+    var ask = prompt.trim();
+    if (!ask || aiLoading) return;
+    setAiLoading(true); setAiErr("");
+    var sys = "You design ONE dashboard widget for a personal finance app, from the user's plain-English request. "
+      + "Reply with ONLY a JSON object, no prose, no markdown fences. Shape: "
+      + "{\"title\":string (<=40 chars), \"metric\":string, \"shape\":string, \"timeframe\":string, \"target\":string (omit or empty if the metric needs none), \"icon\":string, \"color\":\"#rrggbb\"}. "
+      + "metric is one of: categorySpend (target = exact category name), folderSpend (target = exact folder name), merchantSpend (target = any word), expense, income, net, savingsRate, txCount, budgetLeft (target = a category that already has a budget), balance, savingsPot (target = exact pot name), netWorth, goalProgress (target = exact goal name). "
+      + "shape is one of: stat, bar, ring, list, trend, compare. timeframe is week, month, year, or all. "
+      + "icon must be exactly one of: " + WIDGET_ICONS.join(", ") + ". "
+      + "Use ONLY these exact names - never invent one: categories [" + (wc.categories || []).map(function(c) { return c.name; }).join(", ") + "], folders [" + (wc.folders || []).map(function(f) { return f.name; }).join(", ") + "], goals [" + (wc.goals || []).map(function(g) { return g.name; }).join(", ") + "], savings pots [" + (wc.savings || []).map(function(s) { return s.name; }).join(", ") + "], budgeted categories [" + (wc.budgets || []).map(function(b) { var c = catById(wc.categories, b.catId) || catByName(wc.categories, b.category); return c ? c.name : null; }).filter(Boolean).join(", ") + "]. "
+      + "Pick the metric and shape that best match what they asked for; if their request needs a name not in the lists above, pick the closest metric that needs none instead."
+      + (props.lang && props.lang !== "en" ? " Write the title in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : "");
+    callClaude([{ role: "user", content: ask }], sys, 300, function(err, text) {
+      setAiLoading(false);
+      if (err) { setAiErr("Richard couldn't build that right now. Try again."); return; }
+      var raw = (text || "").trim().replace(/^```[a-z]*\n?/i, "").replace(/```$/, "").trim();
+      var m = raw.match(/\{[\s\S]*\}/);
+      var spec;
+      try { spec = JSON.parse(m ? m[0] : raw); } catch (e) { setAiErr("Richard's answer didn't parse. Try rephrasing."); return; }
+      var action = { kind: "widget", op: "add", title: spec.title, metric: spec.metric, shape: spec.shape, timeframe: spec.timeframe, target: spec.target || "", goal: null, color: /^#[0-9a-fA-F]{6}$/.test(spec.color || "") ? spec.color : "#8970C6", icon: WIDGET_ICONS.indexOf(spec.icon) >= 0 ? spec.icon : "spark" };
+      var v = validateAction(action, { categories: wc.categories, folders: wc.folders, savings: wc.savings, goals: wc.goals, budgets: wc.budgets, widgets: existing, notes: [] });
+      if (!v.ok) { setAiErr("Couldn't build that: " + v.reason + "."); return; }
+      finishAdd({ title: action.title, metric: action.metric, target: action.target, shape: action.shape, timeframe: action.timeframe, goal: null, color: action.color, icon: action.icon });
+      setPrompt("");
+    });
+  }
+
+  return (
+    <Overlay open={props.open} onClose={function() { setPicker(null); props.onClose(); }} title={picker ? ("Pick a " + picker.needsPicker) : "Add a widget"}>
+      {picker ? (
+        <div>
+          {pickerOptions(picker.needsPicker).length === 0 ? (
+            <div style={{ fontSize: 13, color: T.ink3, padding: "8px 2px 4px" }}>
+              {"You don't have any " + (picker.needsPicker === "budget" ? "budgeted categories" : picker.needsPicker + (picker.needsPicker === "category" ? "ies" : "s")) + " yet."}
+            </div>
+          ) : pickerOptions(picker.needsPicker).map(function(opt) {
+            return (
+              <button key={opt.name} onClick={function() { chooseTarget(opt.name); }}
+                style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "13px 4px", borderBottom: "0.5px solid " + T.sep, background: "none", border: "none", borderBottomWidth: "0.5px" }}>
+                <CatBadge icon={opt.icon} color={opt.color} size={34} soft={true} />
+                <span style={{ flex: 1, fontSize: 14.5, fontWeight: 600, color: T.ink }}>{opt.name}</span>
+                <SVGIcon id="chevron" size={15} color={T.ink3} />
+              </button>
+            );
+          })}
+          <button onClick={function() { setPicker(null); }}
+            style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 10, padding: "5px 0" }}>{"Back"}</button>
+        </div>
+      ) : (
+        <div>
+          {suggestions.length > 0 && (
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>{"Made by Richard, for you"}</div>
+              {suggestions.map(function(s) {
+                return (
+                  <div key={s.title} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 12px", borderRadius: 14, background: (s.color || T.orange) + "12", marginBottom: 8 }}>
+                    <CatBadge icon={s.icon} color={s.color} size={34} soft={true} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>{s.title}</div>
+                      <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1 }}>{s.reason}</div>
+                    </div>
+                    <button onClick={function() { finishAdd(s); }}
+                      style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "8px 14px", borderRadius: 10, background: s.color || T.orange, color: "#fff", flexShrink: 0 }}>{"Add"}</button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>{"Templates"}</div>
+          <div style={{ marginBottom: 18 }}>
+            {WIDGET_TEMPLATES.map(function(t) {
+              return (
+                <button key={t.key} onClick={function() { chooseTemplate(t); }}
+                  style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "11px 4px", borderBottom: "0.5px solid " + T.sep, background: "none", border: "none", borderBottomWidth: "0.5px" }}>
+                  <CatBadge icon={t.icon} color={t.color} size={34} soft={true} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: T.ink }}>{t.title}</div>
+                    <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1 }}>{t.desc}</div>
+                  </div>
+                  <SVGIcon id="chevron" size={15} color={T.ink3} />
+                </button>
+              );
+            })}
+          </div>
+
+          <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>{"Or ask Richard to build one"}</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input value={prompt} onChange={function(e) { setPrompt(e.target.value); }} placeholder={"e.g. a ring for my rent budget"} disabled={aiLoading}
+              onKeyDown={function(e) { if (e.key === "Enter") askRichard(); }}
+              style={{ flex: 1, background: T.card, border: "1px solid " + T.sep, borderRadius: 12, padding: "11px 13px", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box" }} />
+            <button onClick={askRichard} disabled={!prompt.trim() || aiLoading}
+              style={{ border: "none", cursor: prompt.trim() && !aiLoading ? "pointer" : "default", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "0 18px", borderRadius: 12, background: prompt.trim() && !aiLoading ? T.btn : "rgba(0,0,0,0.08)", color: prompt.trim() && !aiLoading ? "#fff" : T.ink3, flexShrink: 0 }}>
+              {aiLoading ? <ThinkingDots size={3.5} color="#fff" /> : "Build"}
+            </button>
+          </div>
+          {aiErr && <div style={{ fontSize: 12, color: T.red, marginTop: 8 }}>{aiErr}</div>}
+        </div>
+      )}
+    </Overlay>
   );
 }
 
@@ -9264,7 +9849,7 @@ function Overview(props) {
           overview, before the supporting account and activity sections. */}
       <OverviewWidgets widgets={props.widgets} tx={tx} categories={cats} folders={props.folders}
         savings={savAccts} businesses={bizAccts} investing={invAccts} goals={goals} budgets={budgets}
-        onRemove={props.onRemoveWidget} />
+        onRemove={props.onRemoveWidget} onAdd={props.onAddWidget} lang={props.lang} />
 
       {props.plan && (
         <div style={{ background: "rgba(137,112,198,0.04)", borderRadius: 18, padding: "20px 22px", marginBottom: 16, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.04)", borderLeft: "3px solid " + T.orange, animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.09s both" }}>
@@ -10522,7 +11107,7 @@ function Activity(props) {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginBottom: 12 }}>
+      <div style={{ display: "flex", justifyContent: "flex-start", gap: 8, marginBottom: 12 }}>
         <button onClick={function() { setImportOpen(true); }} title="Import from CSV"
           aria-label="Import from CSV" style={{ flexShrink: 0, width: 42, height: 42, borderRadius: "50%", background: importPrimary ? T.btn : T.card, border: importPrimary ? "none" : "1.5px solid " + T.orangeDim, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: importPrimary ? "0 4px 14px rgba(137,112,198,0.32)" : "0 2px 10px rgba(0,0,0,0.05)" }}>
           <SVGIcon id="down" size={20} color={importPrimary ? "#fff" : T.orange} />
@@ -14394,22 +14979,293 @@ function Advisor(props) {
   // page exactly where the user was reading.
   var _cxp = useState(false);
   var chatExpanded = _cxp[0]; var setChatExpanded = _cxp[1];
+  // Focus Mode: the big-decision setting. Swaps the backdrop to the god-rays
+  // shader, the suggestion chips to life-sized questions, and routes the send
+  // through a slower, higher-effort model call with a structured verdict reply.
+  var _fmode = useState(false);
+  var focusMode = _fmode[0]; var setFocusMode = _fmode[1];
+  // Composer attachments. An image is downscaled to a small JPEG and sent as a
+  // real vision content block; a text/CSV file is read and folded into the
+  // message. Anything the model genuinely cannot read is refused with a reason
+  // rather than accepted and quietly ignored.
+  var _att = useState(null); var attachment = _att[0]; var setAttachment = _att[1];
+  var _attErr = useState(""); var attachErr = _attErr[0]; var setAttachErr = _attErr[1];
+  var fileInputRef = useRef(null);
+  // Voice input via the browser's own speech recognition. Absent on Firefox and
+  // some Android webviews, so the button only appears where it actually works.
+  var _rec = useState(false); var recording = _rec[0]; var setRecording = _rec[1];
+  var recognitionRef = useRef(null);
+  var speechOK = typeof window !== "undefined" && !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  // === VOICE MODE ============================================================
+  // Full-screen "talk to Richard" surface, opened from the orb in the chat
+  // header. One phase string drives the whole screen: idle (mic off),
+  // listening, thinking (request in flight), speaking (reply read aloud).
+  // The conversation is the SAME chat thread - voice turns land in `chat`
+  // through sendChat, so switching back to text keeps the whole history.
+  var _vm = useState(false); var voiceMode = _vm[0]; var setVoiceMode = _vm[1];
+  var _vp = useState("idle"); var vPhase = _vp[0]; var setVPhaseState = _vp[1];
+  var _vtr = useState(""); var vTranscript = _vtr[0]; var setVTranscript = _vtr[1];
+  var _vcap = useState(""); var vCaption = _vcap[0]; var setVCaption = _vcap[1];
+  var _verr = useState(""); var vError = _verr[0]; var setVError = _verr[1];
+  var voiceRecRef = useRef(null);
+  var voiceOnRef = useRef(false);   // mirrors voiceMode for async callbacks
+  var vPhaseRef = useRef("idle");   // mirrors vPhase, same reason
+  var vSpokenRef = useRef(0);       // chat length already handled by the reply-watcher
+  var vExitAfterSpeechRef = useRef(false); // a voice turn proposed app changes -> reveal the confirm card
+  function setVPhase(p) { vPhaseRef.current = p; setVPhaseState(p); }
+  function vStopRec() {
+    try { if (voiceRecRef.current) { if (voiceRecRef.current.abort) voiceRecRef.current.abort(); else voiceRecRef.current.stop(); } } catch (e) {}
+  }
+  // Markdown markers and Focus Mode's section labels read terribly out loud.
+  function vStrip(text) {
+    return (text || "")
+      .replace(/^(VERDICT|DO|CHANGE|SHORT|LONG|WHY|RISKS|QUESTION):\s*/gm, "")
+      .replace(/\*\*([^*]+)\*\*/g, "$1").replace(/\*([^*]+)\*/g, "$1")
+      .replace(/\s+/g, " ").trim();
+  }
+  function vPickVoice() {
+    if (!window.speechSynthesis) return null;
+    var voices = window.speechSynthesis.getVoices() || [];
+    var want = ({ en: "en", he: "he", es: "es", fr: "fr", ar: "ar", ru: "ru", de: "de", pt: "pt" })[props.lang] || "en";
+    var best = null;
+    for (var i = 0; i < voices.length; i++) {
+      var v = voices[i];
+      if (!v.lang || v.lang.toLowerCase().indexOf(want) !== 0) continue;
+      // Richard is British - when speaking English, hold out for a GB voice.
+      if (want === "en" && /-GB/i.test(v.lang)) return v;
+      if (!best) best = v;
+    }
+    return best;
+  }
+  function vSpeechDone() {
+    if (!voiceOnRef.current) return;
+    if (vExitAfterSpeechRef.current) {
+      // This voice turn proposed app changes. The confirm card lives in the
+      // text panel underneath the overlay, so surface it instead of leaving
+      // the user talking to a promise they can't see.
+      vExitAfterSpeechRef.current = false;
+      exitVoiceMode();
+      return;
+    }
+    vListen();
+  }
+  function vSpeak(text) {
+    if (!window.speechSynthesis) { vSpeechDone(); return; } // no TTS -> the caption stays on screen, mic keeps going
+    var u = new SpeechSynthesisUtterance(vStrip(text));
+    var voice = vPickVoice();
+    if (voice) { u.voice = voice; u.lang = voice.lang; }
+    else u.lang = ({ en: "en-GB", he: "he-IL", es: "es-ES", fr: "fr-FR", ar: "ar-SA", ru: "ru-RU", de: "de-DE", pt: "pt-BR" })[props.lang] || "en-GB";
+    u.rate = 1.02; u.pitch = 0.92;
+    u.onend = function() { if (voiceOnRef.current && vPhaseRef.current === "speaking") vSpeechDone(); };
+    u.onerror = function() { if (voiceOnRef.current && vPhaseRef.current === "speaking") vSpeechDone(); };
+    setVPhase("speaking");
+    try { window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); } catch (e) { vSpeechDone(); }
+  }
+  function vListen() {
+    if (!voiceOnRef.current) return;
+    if (!speechOK) { setVPhase("error"); setVError("Voice input isn't supported in this browser. Try Chrome, Edge or Safari."); return; }
+    vStopRec();
+    var Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var rec = new Rec();
+    rec.lang = ({ en: "en-US", he: "he-IL", es: "es-ES", fr: "fr-FR", ar: "ar-SA", ru: "ru-RU", de: "de-DE", pt: "pt-BR" })[props.lang] || "en-US";
+    rec.interimResults = true;
+    rec.continuous = false;
+    var finalText = "";
+    var errName = "";
+    rec.onresult = function(ev) {
+      if (voiceRecRef.current !== rec) return; // a newer session took over
+      var said = "";
+      for (var i = 0; i < ev.results.length; i++) said += ev.results[i][0].transcript;
+      setVTranscript(said);
+      if (ev.results[ev.results.length - 1].isFinal) finalText = said;
+    };
+    rec.onerror = function(ev) {
+      if (voiceRecRef.current !== rec || !voiceOnRef.current) return;
+      errName = (ev && ev.error) || "unknown";
+      if (errName === "not-allowed") { setVPhase("error"); setVError("Microphone access is blocked. Allow it in your browser settings, then tap the orb."); }
+    };
+    rec.onend = function() {
+      if (voiceRecRef.current !== rec || !voiceOnRef.current) return;
+      var said = (finalText || "").trim();
+      if (said && !chatLoading) {
+        setVCaption("");
+        setVPhase("thinking");
+        sendChat(said);
+      } else if (vPhaseRef.current === "listening") {
+        if (!errName || errName === "no-speech" || errName === "aborted") {
+          // Silence timeout - keep the mic open until the user mutes or leaves.
+          vListen();
+        } else {
+          // Anything else ("network", "audio-capture", "service-not-allowed"...)
+          // would fail again instantly - restarting here is a hot infinite loop.
+          setVPhase("error");
+          setVError(errName === "network"
+            ? "The speech service couldn't be reached. Check your connection, then tap the orb."
+            : errName === "audio-capture"
+              ? "No microphone was found. Check your input settings, then tap the orb."
+              : "Voice input isn't available right now (" + errName + "). Tap the orb to try again.");
+        }
+      }
+    };
+    voiceRecRef.current = rec;
+    setVTranscript("");
+    setVPhase("listening");
+    try { rec.start(); } catch (e) { setVPhase("idle"); }
+  }
+  function enterVoiceMode() {
+    ensureLoadingCss();               // rclBreathe drives the orb's pulse
+    // Never run two recognition sessions at once: if the composer mic is
+    // dictating, finish that session first (stop() keeps its words in the box).
+    try { recognitionRef.current && recognitionRef.current.stop(); } catch (e) {}
+    setRecording(false);
+    voiceOnRef.current = true;
+    vSpokenRef.current = chat.length; // never speak history, only new replies
+    setVError(""); setVTranscript(""); setVCaption("");
+    setVoiceMode(true);
+    // iOS only unlocks speech synthesis inside a user gesture - prime it now
+    // with a silent utterance so the real reply is allowed to speak later.
+    try {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.getVoices();
+        var prime = new SpeechSynthesisUtterance(" ");
+        prime.volume = 0;
+        window.speechSynthesis.speak(prime);
+      }
+    } catch (e) {}
+    if (chatLoading) setVPhase("thinking"); else vListen();
+  }
+  function exitVoiceMode() {
+    voiceOnRef.current = false;
+    vExitAfterSpeechRef.current = false;
+    vStopRec();
+    try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
+    setVPhase("idle");
+    setVoiceMode(false);
+  }
+  function vOrbTap() {
+    if (vPhaseRef.current === "speaking") {
+      // Barge-in: cut Richard off and take the floor.
+      setVPhase("idle");
+      try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
+      vListen();
+    } else if (vPhaseRef.current === "listening") {
+      setVPhase("idle");
+      vStopRec();
+      setVTranscript("");
+    } else if (vPhaseRef.current === "idle" || vPhaseRef.current === "error") {
+      setVError("");
+      vListen();
+    } // thinking: nothing to do but wait
+  }
+  // Speak each NEW assistant reply that lands while voice mode is open.
+  useEffect(function() {
+    if (!voiceMode) return;
+    if (chat.length <= vSpokenRef.current) { vSpokenRef.current = chat.length; return; }
+    var last = chat[chat.length - 1];
+    vSpokenRef.current = chat.length;
+    if (last && last.role === "assistant") {
+      setVTranscript("");
+      setVCaption(last.text);
+      vSpeak(last.text);
+    }
+  }, [chat.length, voiceMode]);
+  // Leave nothing running if the user navigates away mid-conversation.
+  useEffect(function() {
+    return function() {
+      voiceOnRef.current = false;
+      try { if (voiceRecRef.current) { if (voiceRecRef.current.abort) voiceRecRef.current.abort(); else voiceRecRef.current.stop(); } } catch (e) {}
+      try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
+    };
+  }, []);
+  // Escape backs out of voice mode (capture phase, so handlers on the chat
+  // underneath never see the key while the voice surface is up).
+  useEffect(function() {
+    if (!voiceMode) return;
+    function onKey(e) { if (e.key === "Escape") { e.stopPropagation(); exitVoiceMode(); } }
+    window.addEventListener("keydown", onKey, true);
+    return function() { window.removeEventListener("keydown", onKey, true); };
+  }, [voiceMode]);
+  // While switching modes, both backdrops render for ~0.7s: the old one below,
+  // the new one on top clipped by a circle that grows out of the toggle pill.
+  // focusTrans holds the outgoing mode plus the pill's center in panel coords.
+  var _ftr = useState(null);
+  var focusTrans = _ftr[0]; var setFocusTrans = _ftr[1];
+  var focusTransTimer = useRef(null);
+  useEffect(function() { return function() { if (focusTransTimer.current) clearTimeout(focusTransTimer.current); }; }, []);
+  function toggleFocusMode(e) {
+    var panel = document.querySelector("[data-richard-chat-panel]");
+    var br = e.currentTarget.getBoundingClientRect();
+    var pr = panel ? panel.getBoundingClientRect() : { left: 0, top: 0 };
+    setFocusTrans({ prev: focusMode, x: Math.round(br.left + br.width / 2 - pr.left), y: Math.round(br.top + br.height / 2 - pr.top) });
+    setFocusMode(!focusMode);
+    if (focusTransTimer.current) clearTimeout(focusTransTimer.current);
+    focusTransTimer.current = setTimeout(function() { setFocusTrans(null); }, 750);
+  }
   // Index of the just-arrived assistant message: only that one streams in via
   // TypeReveal; history and remounts render instantly.
   var animMsgRef = useRef(-1);
   var chatScrollRef = useRef(null);
   function pinChatScroll() {
     var el = chatScrollRef.current;
-    if (el && el.scrollHeight - el.scrollTop - el.clientHeight < 90) el.scrollTop = el.scrollHeight;
+    if (el && el.scrollHeight - el.scrollTop - el.clientHeight < 90) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }
   useEffect(function() {
     var el = chatScrollRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [chat.length, chatLoading]);
+  // The chat panel and composer used to snap into place; this eases both so
+  // opening/closing the conversation and its position shifts read as one
+  // smooth motion instead of a jump cut.
+  useEffect(function() {
+    if (document.getElementById("richy-advisor-css")) return;
+    var st = document.createElement("style");
+    st.id = "richy-advisor-css";
+    st.textContent = "@keyframes rcAdvisorPanelIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}"
+      + "[data-richard-chat-panel]{animation:rcAdvisorPanelIn 0.32s cubic-bezier(0.22,1,0.36,1) both;}"
+      + "[data-richard-composer]{transition:transform 0.32s cubic-bezier(0.22,1,0.36,1), margin 0.32s cubic-bezier(0.22,1,0.36,1);}"
+      + "@keyframes rcSidebarIn{from{transform:translateX(-104%);}to{transform:none;}}"
+      + "@keyframes rcSidebarOut{from{transform:none;}to{transform:translateX(-104%);}}"
+      + "@keyframes rcSidebarDim{from{opacity:0;}to{opacity:1;}}"
+      + "@keyframes rcSidebarDimOut{from{opacity:1;}to{opacity:0;}}"
+      // Focus Mode reveal: the incoming backdrop irises out of the toggle pill.
+      // The circle's center rides on CSS vars set from the button's live position.
+      + "@keyframes rcFocusReveal{from{clip-path:circle(2% at var(--fx,50%) var(--fy,30%));-webkit-clip-path:circle(2% at var(--fx,50%) var(--fy,30%));}to{clip-path:circle(165% at var(--fx,50%) var(--fy,30%));-webkit-clip-path:circle(165% at var(--fx,50%) var(--fy,30%));}}"
+      // The pill itself pulses once as the wave leaves it, selling the "source" read.
+      + "@keyframes rcFocusPulse{0%{transform:scale(1);}35%{transform:scale(1.12);}100%{transform:scale(1);}}";
+    document.head.appendChild(st);
+  }, []);
   // Previous-chats history overlay. The live `chat` above is the current session;
   // archived sessions come in via props.chats and persist through props.onSaveChats.
   var _hist = useState(false);
   var historyOpen = _hist[0]; var setHistoryOpen = _hist[1];
+  // The past-chats badge is a "you have history" nudge, not an unread counter -
+  // once the sidebar's been opened once this session there's nothing left to
+  // point out, so it stays gone even after the drawer closes again.
+  var _histSeen = useState(false);
+  var historySeen = _histSeen[0]; var setHistorySeen = _histSeen[1];
+  // The sidebar stays mounted a beat after historyOpen goes false so it can
+  // slide back out instead of vanishing - same open/closing pattern Overlay
+  // uses elsewhere in the app.
+  var _histVis = useState(false);
+  var historyVisible = _histVis[0]; var setHistoryVisible = _histVis[1];
+  var _histClosing = useState(false);
+  var historyClosing = _histClosing[0]; var setHistoryClosing = _histClosing[1];
+  useEffect(function() {
+    if (historyOpen) {
+      setHistoryVisible(true); setHistoryClosing(false);
+    } else if (historyVisible) {
+      setHistoryClosing(true);
+      var t = setTimeout(function() { setHistoryVisible(false); setHistoryClosing(false); }, 280);
+      return function() { clearTimeout(t); };
+    }
+  }, [historyOpen]);
+  // Search box + per-row delete confirm for the past-chats list. Both reset
+  // whenever the drawer opens fresh, so a search never lingers into the next visit.
+  var _histSearch = useState("");
+  var historySearch = _histSearch[0]; var setHistorySearch = _histSearch[1];
+  var _delChat = useState(null);
+  var deleteChatConfirm = _delChat[0]; var setDeleteChatConfirm = _delChat[1];
+  useEffect(function() { if (historyOpen) { setHistorySearch(""); setDeleteChatConfirm(null); } }, [historyOpen]);
   var _pa = useState(null);
   var pendingAction = _pa[0]; var setPendingAction = _pa[1];
   var _pu = useState(null);
@@ -14419,7 +15275,8 @@ function Advisor(props) {
   // chat session into App. History closes before the conversation canvas.
   useEffect(function() {
     function closeAdvisorLayer() {
-      if (historyOpen) setHistoryOpen(false);
+      if (voiceOnRef.current) exitVoiceMode(); // topmost layer: the voice surface
+      else if (historyOpen) setHistoryOpen(false);
       else setChatExpanded(false);
     }
     window.addEventListener("richy-close-advisor-chat", closeAdvisorLayer);
@@ -15354,7 +16211,15 @@ function Advisor(props) {
     var firstUser = chat.filter(function(m) { return m.role === "user"; })[0];
     var title = firstUser ? firstUser.text : (chat[0] ? chat[0].text : "Chat with Richard");
     if (title.length > 60) title = title.slice(0, 57) + "...";
-    var session = { id: Date.now(), date: new Date().toISOString(), title: title, messages: chat };
+    // Drop image payloads before archiving - a base64 photo would bloat the
+    // saved document far past what chat history should ever cost to store.
+    var slim = chat.map(function(m) {
+      if (!m.att) return m;
+      var c = {}; for (var k in m) c[k] = m[k];
+      c.att = { kind: m.att.kind, name: m.att.name };
+      return c;
+    });
+    var session = { id: Date.now(), date: new Date().toISOString(), title: title, messages: slim };
     var prior = (props.chats || []).filter(function(s) { return s.id !== session.id; });
     props.onSaveChats([session].concat(prior));
     return true;
@@ -15389,17 +16254,175 @@ function Advisor(props) {
     if (props.onSaveChats) props.onSaveChats((props.chats || []).filter(function(s) { return s.id !== id; }));
   }
 
-  function sendChat() {
-    if (!input.trim() || chatLoading) return;
+  // Shrink a photo until its base64 comfortably fits the proxy's payload
+  // ceiling (100k chars total, shared with the system prompt and the rest of
+  // the thread). Big phone photos are 3-8MB, which would be rejected outright.
+  function downscaleImage(file, cb) {
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function() {
+      var MAX = 900;
+      var w = img.width, h = img.height;
+      if (w > h && w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      else if (h >= w && h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+      var cv = document.createElement("canvas");
+      cv.width = w; cv.height = h;
+      cv.getContext("2d").drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      var q = 0.72, data = "";
+      // Step the quality down until the encoded string is small enough to send.
+      for (var i = 0; i < 5; i++) {
+        data = cv.toDataURL("image/jpeg", q);
+        if (data.length < 46000) break;
+        q -= 0.13;
+      }
+      if (data.length >= 60000) { cb(new Error("That image is too detailed to send. Try a smaller crop.")); return; }
+      cb(null, { kind: "image", name: file.name, mediaType: "image/jpeg", b64: data.split(",")[1], preview: data });
+    };
+    img.onerror = function() { URL.revokeObjectURL(url); cb(new Error("That image couldn't be read.")); };
+    img.src = url;
+  }
+
+  function onPickFile(e) {
+    var file = e.target.files && e.target.files[0];
+    e.target.value = ""; // let the same file be picked again after removing it
+    if (!file) return;
+    setAttachErr("");
+    var type = file.type || "";
+    if (type.indexOf("image/") === 0) {
+      if (file.size > 12 * 1024 * 1024) { setAttachErr("That photo is over 12MB - try a smaller one."); return; }
+      downscaleImage(file, function(err, att) {
+        if (err) { setAttachErr(err.message); return; }
+        setAttachment(att);
+      });
+      return;
+    }
+    // Statements and exports are genuinely useful: read them as text.
+    var isText = type.indexOf("text/") === 0 || /\.(csv|txt|md|tsv|json)$/i.test(file.name);
+    if (isText) {
+      if (file.size > 400 * 1024) { setAttachErr("That file is too large - try one under 400KB."); return; }
+      var fr = new FileReader();
+      fr.onload = function() {
+        var text = String(fr.result || "");
+        var clipped = text.length > 12000;
+        if (clipped) text = text.slice(0, 12000);
+        setAttachment({ kind: "text", name: file.name, text: text, clipped: clipped });
+      };
+      fr.onerror = function() { setAttachErr("That file couldn't be read."); };
+      fr.readAsText(file);
+      return;
+    }
+    // Be honest instead of accepting something Richard can never look at.
+    setAttachErr(type.indexOf("video/") === 0
+      ? "Richard can't watch video yet. A screenshot of the key moment works."
+      : "Richard can read photos and text files (CSV, TXT). That file type isn't supported.");
+  }
+
+  function toggleMic() {
+    if (!speechOK) return;
+    if (recording) {
+      try { recognitionRef.current && recognitionRef.current.stop(); } catch (e) {}
+      return;
+    }
+    var Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var rec = new Rec();
+    rec.lang = ({ en: "en-US", he: "he-IL", es: "es-ES", fr: "fr-FR", ar: "ar-SA", ru: "ru-RU", de: "de-DE", pt: "pt-BR" })[props.lang] || "en-US";
+    rec.interimResults = true;
+    rec.continuous = false;
+    // Keep whatever was already typed; speech appends to it.
+    var base = input ? input.replace(/\s+$/, "") + " " : "";
+    rec.onresult = function(ev) {
+      var said = "";
+      for (var i = 0; i < ev.results.length; i++) said += ev.results[i][0].transcript;
+      setInput(base + said);
+    };
+    rec.onerror = function(ev) {
+      setRecording(false);
+      if (ev && ev.error === "not-allowed") setAttachErr("Microphone access is blocked. Allow it in your browser settings.");
+    };
+    rec.onend = function() {
+      setRecording(false);
+      if (inputRef.current) inputRef.current.focus();
+    };
+    recognitionRef.current = rec;
+    setAttachErr("");
+    setRecording(true);
+    try { rec.start(); } catch (e) { setRecording(false); }
+  }
+  // Never leave the mic listening after the user navigates away.
+  useEffect(function() {
+    return function() { try { recognitionRef.current && recognitionRef.current.stop(); } catch (e) {} };
+  }, []);
+
+  // One chat message -> one API message. A photo becomes a real vision content
+  // block so Richard actually looks at it, rather than being told a file exists.
+  function apiMsg(m) {
+    if (m.role === "user" && m.att && m.att.kind === "image" && m.att.b64) {
+      return { role: "user", content: [
+        { type: "image", source: { type: "base64", media_type: m.att.mediaType, data: m.att.b64 } },
+        { type: "text", text: m.text || "What do you make of this?" }
+      ] };
+    }
+    return { role: m.role === "user" ? "user" : "assistant", content: m.text };
+  }
+
+  function sendChat(overrideText) {
+    // Voice mode hands the finished transcript straight in; the composer path
+    // still reads from the input box. Attachments are composer-only.
+    var isVoice = typeof overrideText === "string";
+    var msg = (isVoice ? overrideText : input).trim();
+    var att = isVoice ? null : attachment;
+    if ((!msg && !att) || chatLoading) return;
     setChatExpanded(true);
-    var msg = input.trim();
-    setInput("");
-    var nc = chat.concat([{ role: "user", text: msg }]);
+    if (!isVoice) { setInput(""); setAttachment(null); setAttachErr(""); }
+    // A text file rides along inside the message; an image becomes a real
+    // vision block at API-mapping time (see apiMsg below).
+    if (att && att.kind === "text") {
+      msg = (msg || "Here's a file - take a look.")
+        + "\n\n--- Attached file: " + att.name + (att.clipped ? " (first 12,000 characters) " : " ") + "---\n"
+        + att.text + "\n--- end of file ---";
+    }
+    var nc = chat.concat([{ role: "user", text: msg, att: att || undefined, shown: att ? (input.trim() || (att.kind === "image" ? "" : "Here's a file - take a look.")) : undefined }]);
     setChat(nc);
     setChatLoading(true);
     var customInstructionsPrefix = richardUserCtx(props.richardInstructions);
+    // Voice turns always take the normal conversational path - Focus Mode's
+    // labeled sections are a reading format, not a listening one.
+    if (focusMode && !isVoice) {
+      // Big-decision path: a stricter, labeled reply the client lays out itself,
+      // a bigger model, more tokens, and a longer leash on the timeout.
+      var focusSys = customInstructionsPrefix
+        + "You are Richard, the financial mind inside the Richy app, and the user has switched on FOCUS MODE: they are weighing a BIG life decision (a job, a move, a large purchase, starting to invest). Think harder than usual, be decisive, and anchor EVERYTHING in their real data below - quote their actual numbers. Current user financial data: " + ctx + "."
+        + (coreProblem ? " Their stated primary challenge: " + coreProblem + "." : "")
+        + " Reply ONLY in this exact labeled format - every label at the start of its own line, in this order, plain text after each colon. In DO and every section below, *italicize* the exact phrase that IS the crux of that section's point - the part that would change their mind if they only read that - not a random word, and use it at least once per section; separately, **bold** key figures. No other markdown, no bullets, no emojis:\n"
+        + "VERDICT: exactly one word - Yes, No, or Wait\n"
+        + "DO: 2-3 short sentences - the call in plain words and the first concrete step, with an amount or date when possible.\n"
+        + "CHANGE: 2-4 sentences describing their current situation on this exact topic, from their real numbers, so the verdict has context.\n"
+        + "SHORT: 1-3 sentences - what actually happens in the coming weeks/months if they follow the verdict.\n"
+        + "LONG: 1-3 sentences - where this puts them in a few years.\n"
+        + "WHY: 2-4 sentences - the reasoning behind the verdict, tied to their numbers.\n"
+        + "RISKS: 2-4 sentences - how this can go wrong and the early warning signs to watch.\n"
+        + "QUESTION: exactly one short, specific follow-up question that moves the decision forward.\n"
+        + "Keep every section tight - only what matters to THEM, never generic filler. Do not add any text outside the labeled lines and do not write your own disclaimer; the app displays one."
+        + (props.lang && props.lang !== "en" ? " Write all section CONTENT in " + (LANGUAGE_NAMES[props.lang] || "English") + " (labels stay in English)." : "");
+      callClaude(
+        nc.map(apiMsg),
+        focusSys, 1800,
+        function(err, reply) {
+          setChatLoading(false);
+          if (err) {
+            setChat(function(p) { return p.concat([{ role: "assistant", text: "I hit a snag thinking that through - give it another try in a moment. (" + err.message + ")" }]); });
+            return;
+          }
+          var parsed = parseFocusAnswer(reply);
+          animMsgRef.current = -1;
+          setChat(function(p) { return p.concat([{ role: "assistant", text: reply, focus: parsed || undefined }]); });
+        },
+        "claude-opus-4-8", 90000);
+      return;
+    }
     callClaude(
-      nc.map(function(m) { return { role: m.role === "user" ? "user" : "assistant", content: m.text }; }),
+      nc.map(apiMsg),
       customInstructionsPrefix + "You are Richard, a smart assistant inside the Richy personal finance app. You are calm, warm, direct, and knowledgeable - a trusted friend who is an expert in money and can help with anything the user asks. You have deep knowledge from The Psychology of Money, Rich Dad Poor Dad, The Millionaire Next Door, I Will Teach You To Be Rich, The Total Money Makeover, Think and Grow Rich, The Richest Man in Babylon, and wisdom from Warren Buffett, Charlie Munger, Ray Dalio, Naval Ravikant, Mark Cuban, Grant Cardone and other wealth builders. You can answer questions about personal finance, investments, budgeting, debt, taxes, and wealth-building. You can also answer questions about how to use the Richy app (it has tabs: Overview, Activity for transactions, Budgets for spending limits, Goals for savings targets, and Advisor which is where we are now; categories are managed via the tag icon on Overview or the Manage link in pickers). You can answer general knowledge and technical questions too - if someone asks about math, technology, or anything else, answer helpfully. Always refer back to the user's real financial data when relevant. Current user financial data: " + ctx + "." + (coreProblem ? " The user's primary financial challenge is: " + coreProblem + ". Connect your advice to this when relevant." : "")
       + " BE SPECIFIC, NEVER GENERIC. The user has heard \"build an emergency fund, cancel some subscriptions, invest in index funds\" a hundred times - generic tips read as a failure and are the top complaint about advisors like you. Anchor every answer in THEIR actual numbers above: quote their real figures, do the arithmetic, and end with a concrete next step that has an amount or a date attached. When they ask whether they can afford something (a purchase, a trip, a rent level, a big decision), compute it against their real income, essentials, savings and cash flow and give a direct answer - yes, no, or \"here is exactly what it would take\" - with the numbers shown, not a list of things to consider. When they ask about debt, give a payoff order, a specific monthly amount, and an estimated debt-free timeframe derived from their balances and rates; never just \"pay it down\" or \"build savings first.\" Cite a principle or a name only when it sharpens a specific recommendation - never decorate generic advice with a famous quote. If you truly lack a number needed to answer precisely, ask the one question that would unlock it instead of retreating to textbook advice."
       + " IMPORTANT - YOU CAN UPDATE THE APP FOR THE USER, ACROSS EVERYTHING except Business/Investing accounts and Trips (those have their own dedicated tools). When the user tells you about a real money event, or directly asks you to change or create something in the app, acknowledge it warmly in words AND append one or more action tags at the very END of your reply (after your sentence, on their own). The app validates and shows the user a confirmation card before anything is applied - nothing you emit takes effect until they tap Apply, so it is fine to be generous about proposing a tag when the user's intent is clear. Action formats (use valid JSON, no spaces in keys): "
@@ -15428,7 +16451,9 @@ function Advisor(props) {
       + "Match the user's words to the template: \"track my coffee\" is merchantSpend or a category, \"as a ring/circle/gauge\" is ring, \"a bar\" is bar, \"show me the biggest ones\" is list, \"over the last few months\" is trend, \"versus last month\" is compare. Pick a sensible icon and a short title yourself rather than asking. If they ask for something no metric covers, say plainly what you can follow instead and offer the closest one - never invent a metric name, and never promise a widget on any screen other than Overview, which is the only place they appear. "
       + "Use the EXACT category, folder, savings pot, goal, note-label and widget-title names given in the data below - never invent or guess a name. "
       + "If the user mentions several things at once, emit several tags. Only emit a tag for a concrete event, or a direct explicit request to change/create something, with real values the user actually stated - never for hypotheticals, plans, or general advice. Do not mention the word ACTION or the tag syntax in your spoken reply; just speak naturally and let the tags do the work."
-      + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a CFO who builds a business plan - send business owners there. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (phone-automation Bank Sync is the real automatic option), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : ""),
+      + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a CFO who builds a business plan - send business owners there. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (phone-automation Bank Sync is the real automatic option), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use."
+      + " Close EVERY reply the same way: one short sentence reminding them you're an AI and not a licensed advisor and that they should do their own research, then exactly one short, specific follow-up question about their situation so the conversation keeps moving." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : "")
+      + (isVoice ? " VOICE MODE: the user is talking to you by voice and your reply will be read aloud by text-to-speech. Keep it to 2-4 short conversational sentences of natural spoken language - no lists, no markdown, no asterisks, no symbols that read badly aloud. Numbers still matter: quote the one or two key figures, never a table. Action tags still work exactly as described - append them at the very end as usual." : ""),
       500,
       function(err, text) {
         setChatLoading(false);
@@ -15461,6 +16486,9 @@ function Advisor(props) {
         if (updates.length > 0) {
           setPendingUpdates(updates);
           setPendingAction(null);
+          // On a voice turn the confirm card would sit invisible under the
+          // overlay - after Richard finishes saying so, drop back to text.
+          if (isVoice) vExitAfterSpeechRef.current = true;
         } else {
           // Fall back to the legacy advice-based suggestion when no concrete update.
           var action = suggestAction(display);
@@ -15705,7 +16733,7 @@ function Advisor(props) {
       <div key="health" style={panelStyle({ justifyContent: "space-between" })}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontFamily: RICHARD_DISP, fontSize: 13, letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: RICHARD_DISP_WEIGHT, color: HMUT }}>Financial Health</span>
-          <span style={{ background: ringColor + "26", color: ringColor, fontFamily: RICHARD_DISP, fontSize: 12, fontWeight: RICHARD_DISP_WEIGHT, letterSpacing: "0.03em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 8 }}>{advice.scoreLabel}</span>
+          <span style={{ background: ringColor + "26", color: ringColor, fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.03em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 8 }}>{advice.scoreLabel}</span>
         </div>
         <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
           <RingChart value={advice.score} max={100} size={142} stroke={10} color={ringColor} track={HTRACK} />
@@ -16061,8 +17089,6 @@ function Advisor(props) {
       <div style={{ position: "relative", zIndex: 1 }}>
       {richardHead}
 
-      <BigDecisions ctx={ctx} coreProblem={coreProblem} username={props.username} lang={props.lang} richardInstructions={props.richardInstructions} decisions={props.decisions} onSaveDecisions={props.onSaveDecisions} />
-
       {loading && (
         <AIWorking
           style={{ margin: "16px 0 20px" }}
@@ -16134,50 +17160,98 @@ function Advisor(props) {
       <div aria-hidden="true" style={{ height: 198 }} />
 
       {props.isActive !== false && ReactDOM.createPortal((
-        <div style={{ position: "fixed", top: 64, bottom: "calc(123px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, zIndex: 35, display: "flex", flexDirection: "column", pointerEvents: "none", boxSizing: "border-box" }}>
+        <div style={{ position: "fixed", top: chatExpanded ? 0 : 64, bottom: chatExpanded ? 0 : "calc(24px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, zIndex: chatExpanded ? 45 : 35, display: "flex", flexDirection: "column", pointerEvents: "none", boxSizing: "border-box", background: chatExpanded ? T.bg : "transparent", paddingBottom: chatExpanded ? "calc(14px + env(safe-area-inset-bottom, 0px))" : 0 }}>
           {chatExpanded && (
             <div role="dialog" aria-label="Richard" data-richard-chat-panel=""
-              style={{ flex: 1, minHeight: 0, marginBottom: 10, pointerEvents: "auto", background: T.bg, borderTop: "0.5px solid " + T.sep, boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "82px minmax(0,1fr) 82px", alignItems: "center", minHeight: 58, padding: "8px 14px", borderBottom: "0.5px solid " + T.sep, boxSizing: "border-box" }}>
-                <button type="button" onClick={function() { setChatExpanded(false); }} aria-label={tr("closeChat")} title={tr("closeChat")}
-                  style={{ width: 40, height: 40, borderRadius: "50%", border: "0.5px solid " + T.sep, background: T.card, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
-                  <SVGIcon id="down" size={17} color={T.ink2} />
+              style={{ position: "relative", overflow: "hidden", flex: 1, minHeight: 0, marginBottom: 10, pointerEvents: "auto", background: T.bg, borderTop: "0.5px solid " + T.sep, boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
+              {/* The shader is the panel's own background - not a boxed insert
+                  behind one section - so it reads as one continuous surface
+                  under the header, the greeting AND the message thread. Focus
+                  Mode trades the ribbons for god rays radiating from behind
+                  Richard's avatar. During a toggle the OUTGOING backdrop keeps
+                  running underneath while the incoming one irises out of the
+                  Focus pill (rcFocusReveal), then the old layer unmounts. */}
+              {focusTrans && (focusTrans.prev
+                ? <JrFocusRaysBg key="out-focus" colors={[T.orange, T.orangeHi, "#8970C6"]} base={T.bg} intensity={0.5} style={{ position: "absolute", inset: 0 }} />
+                : <JrShaderBg key="out-calm" colors={[T.orange, T.orangeHi, T.orange]} base={T.bg} speed={0.14} intensity={0.3} yScale={0.44} xScale={1.05} style={{ position: "absolute", inset: 0 }} />)}
+              <div style={focusTrans
+                ? { position: "absolute", inset: 0, "--fx": focusTrans.x + "px", "--fy": focusTrans.y + "px", animation: "rcFocusReveal 0.68s cubic-bezier(0.22,1,0.36,1) both" }
+                : { position: "absolute", inset: 0 }}>
+                {focusMode
+                  ? <JrFocusRaysBg key="focus" colors={[T.orange, T.orangeHi, "#8970C6"]} base={T.bg} intensity={0.5} style={{ position: "absolute", inset: 0 }} />
+                  : <JrShaderBg key="calm" colors={[T.orange, T.orangeHi, T.orange]} base={T.bg} speed={0.14} intensity={0.3} yScale={0.44} xScale={1.05} style={{ position: "absolute", inset: 0 }} />}
+              </div>
+              <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "linear-gradient(180deg," + jrRgba(T.bg, 0.72) + " 0%," + jrRgba(T.bg, 0.4) + " 22%," + jrRgba(T.bg, 0.4) + " 78%," + jrRgba(T.bg, 0.72) + " 100%)" }} />
+              <div style={{ position: "relative", zIndex: 1, flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "82px minmax(0,1fr) 82px", alignItems: "center", minHeight: 58, padding: "calc(8px + env(safe-area-inset-top, 0px)) 14px 8px", borderBottom: "0.5px solid " + T.sep, boxSizing: "border-box" }}>
+                <button type="button" onClick={function() { if (!chatLoading) { setHistoryOpen(true); setHistorySeen(true); } }} disabled={chatLoading} aria-label={tr("pastChats")} title={tr("pastChats")}
+                  style={{ position: "relative", width: 40, height: 40, borderRadius: "50%", border: "none", background: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: chatLoading ? "default" : "pointer", opacity: chatLoading ? 0.45 : 1, padding: 0 }}>
+                  <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={T.ink2} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path strokeDasharray="16" d="M4 5h13"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="16;0" /></path>
+                    <path strokeDasharray="12" strokeDashoffset="12" d="M4 10h10"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.2s" to="0" /></path>
+                    <path strokeDasharray="18" strokeDashoffset="18" d="M4 15h16"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.5s" dur="0.3s" to="0" /></path>
+                    <path strokeDasharray="16" strokeDashoffset="16" d="M4 20h13"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.8s" dur="0.3s" to="0" /></path>
+                  </svg>
+                  {(props.chats && props.chats.length > 0 && !historySeen) && (
+                    <span style={{ position: "absolute", top: -3, insetInlineEnd: -3, minWidth: 16, height: 16, padding: "0 3px", borderRadius: 9, background: "#151311", color: "#fff", fontSize: 9.5, fontWeight: 700, lineHeight: "16px", boxSizing: "border-box" }}>{props.chats.length}</span>
+                  )}
                 </button>
-                <div style={{ textAlign: "center", minWidth: 0 }}>
+                {/* Doubles as the mid-conversation Focus Mode switch - previously
+                    the toggle only lived on the empty greeting screen, with no
+                    way back to it once a chat was underway. Tapping the title
+                    flips it without leaving the thread or opening the sidebar. */}
+                <button type="button" onClick={function(e) { toggleFocusMode(e); }} aria-pressed={focusMode} aria-label={focusMode ? "Turn off Focus Mode" : "Turn on Focus Mode"} title={focusMode ? "Turn off Focus Mode" : "Turn on Focus Mode"}
+                  style={{ textAlign: "center", minWidth: 0, border: "none", background: "none", cursor: "pointer", padding: "2px 4px", fontFamily: "inherit" }}>
                   <div style={{ fontFamily: RICHARD_DISP, fontSize: 18, fontWeight: RICHARD_DISP_WEIGHT, color: T.ink, letterSpacing: "-0.01em" }}>Richard</div>
-                </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, fontSize: 9, fontWeight: 800, fontFamily: UI, color: focusMode ? "#8970C6" : T.ink3, letterSpacing: "0.16em", textTransform: "uppercase", marginTop: 1, opacity: focusMode ? 1 : 0.7 }}>
+                    <SVGIcon id="spark" size={9} color={focusMode ? "#8970C6" : T.ink3} />
+                    Focus Mode {focusMode ? "on" : "off"}
+                  </div>
+                </button>
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: 4 }}>
-                  <button type="button" onClick={function() { if (!chatLoading) setHistoryOpen(true); }} disabled={chatLoading} aria-label={tr("pastChats")} title={tr("pastChats")}
-                    style={{ position: "relative", width: 40, height: 40, borderRadius: "50%", border: "0.5px solid " + T.sep, background: T.card, display: "flex", alignItems: "center", justifyContent: "center", cursor: chatLoading ? "default" : "pointer", opacity: chatLoading ? 0.45 : 1, padding: 0 }}>
-                    <SVGIcon id="clock" size={16} color={T.ink2} />
-                    {(props.chats && props.chats.length > 0) && (
-                      <span style={{ position: "absolute", top: -3, insetInlineEnd: -3, minWidth: 16, height: 16, padding: "0 3px", borderRadius: 9, background: "#151311", color: "#fff", fontSize: 9.5, fontWeight: 700, lineHeight: "16px", boxSizing: "border-box" }}>{props.chats.length}</span>
-                    )}
+                  <button type="button" onClick={enterVoiceMode} aria-label="Talk to Richard" title="Talk to Richard"
+                    style={{ width: 40, height: 40, borderRadius: "50%", border: "none", background: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
+                    <SiriOrb size={22} />
                   </button>
-                  <button type="button" onClick={function() { if (chat.length > 0 && !chatLoading) startNewChat(); }} disabled={chat.length === 0 || chatLoading} aria-label={tr("newChat")} title={tr("newChat")}
-                    style={{ width: 40, height: 40, borderRadius: "50%", border: "0.5px solid " + T.sep, background: T.card, display: "flex", alignItems: "center", justifyContent: "center", cursor: chat.length > 0 && !chatLoading ? "pointer" : "default", opacity: chat.length > 0 && !chatLoading ? 1 : 0.42, padding: 0 }}>
-                    <SVGIcon id="plus" size={16} color={T.ink2} />
+                  <button type="button" onClick={function() { if (!chatLoading) startNewChat(); }} disabled={chatLoading} aria-label={tr("newChat")} title={tr("newChat")}
+                    style={{ width: 40, height: 40, borderRadius: "50%", border: "none", background: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: chatLoading ? "default" : "pointer", opacity: chatLoading ? 0.42 : 1, padding: 0 }}>
+                    <svg width={19} height={19} viewBox="0 0 24 24" fill="none" stroke={T.ink2} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                      <line x1="12" y1="7" x2="12" y2="13" />
+                      <line x1="9" y1="10" x2="15" y2="10" />
+                    </svg>
                   </button>
                 </div>
               </div>
 
               <div ref={chatScrollRef} className="rc-hero-scroll" role="log" aria-live="polite" aria-busy={chatLoading} data-richard-chat-log=""
-                style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "12px 18px 20px", display: "flex", flexDirection: "column", gap: 16, boxSizing: "border-box", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
+                style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "12px 18px 20px", display: "flex", flexDirection: "column", gap: 16, boxSizing: "border-box", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", scrollBehavior: "smooth" }}>
                 {chat.length === 0 && (
                   <div data-richard-empty="" style={{ flex: 1, minHeight: 300, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "24px 4px" }}>
-                    <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#151311", border: "1px solid rgba(200,152,58,0.24)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <button onClick={toggleFocusMode} aria-pressed={focusMode}
+                      style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 38, border: focusMode ? "none" : "0.5px solid " + T.sep, background: focusMode ? T.btn : T.card, color: focusMode ? "#fff" : T.ink2, fontSize: 12.5, fontWeight: 700, fontFamily: UI, padding: "9px 14px", borderRadius: 999, cursor: "pointer", boxShadow: focusMode ? "0 6px 18px " + T.orangeGlow : "none", transition: "background 0.45s ease, box-shadow 0.45s ease, color 0.45s ease", animation: focusTrans ? "rcFocusPulse 0.5s cubic-bezier(0.34,1.56,0.64,1) both" : "none" }}>
+                      <SVGIcon id="spark" size={13} color={focusMode ? "#fff" : T.orange} />
+                      {focusMode ? "Focus Mode on" : "Focus Mode"}
+                    </button>
+                    <div style={{ width: 48, height: 48, flexShrink: 0, borderRadius: "50%", background: "#151311", border: "1px solid rgba(200,152,58,0.24)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <span style={{ fontFamily: UI, fontSize: 24, fontWeight: MARK_WEIGHT, color: "#C8983A", lineHeight: 1 }}>R</span>
                     </div>
-                    <h2 style={{ maxWidth: 330, margin: "18px 0 0", fontFamily: RICHARD_DISP, fontSize: 29, lineHeight: 1.12, fontWeight: RICHARD_DISP_WEIGHT, letterSpacing: "-0.02em", color: T.ink }}>{tr("advisorGreeting")}</h2>
-                    <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8, marginTop: 22, maxWidth: 380 }}>
-                      {[tr("advisorQ1"), tr("advisorQ2"), tr("advisorQ3"), tr("advisorQ4")].map(function(q) {
-                        return (
-                          <button key={q} onClick={function() { setInput(q); setTimeout(function() { if (inputRef.current) inputRef.current.focus(); }, 0); }}
-                            style={{ border: "0.5px solid " + T.sep, background: T.card, color: T.ink2, fontSize: 12.5, fontWeight: 600, fontFamily: UI, padding: "9px 13px", borderRadius: 999, cursor: "pointer" }}>
-                            {q}
-                          </button>
-                        );
-                      })}
+                    {/* Keyed on the mode so greeting + chips fade up in the wake
+                        of the reveal wave instead of snapping mid-animation. */}
+                    <div key={focusMode ? "greet-focus" : "greet-calm"} style={{ display: "flex", flexDirection: "column", alignItems: "center", animation: "rclPhrase 0.5s ease " + (focusTrans ? "0.22s" : "0s") + " both" }}>
+                      <h2 style={{ maxWidth: 330, margin: "18px 0 0", fontFamily: RICHARD_DISP, fontSize: 29, lineHeight: 1.12, fontWeight: RICHARD_DISP_WEIGHT, letterSpacing: "-0.02em", color: T.ink }}>{focusMode ? "What big call are we making?" : tr("advisorGreeting")}</h2>
+                      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8, marginTop: 22, maxWidth: 380 }}>
+                        {(focusMode
+                          ? ["Should I take this new job?", "Should I move out on my own?", "Buy a car now, or keep saving?", "Is it time to start investing?"]
+                          : [tr("advisorQ1"), tr("advisorQ2"), tr("advisorQ3"), tr("advisorQ4")]).map(function(q) {
+                          return (
+                            <button key={q} onClick={function() { setInput(q); setTimeout(function() { if (inputRef.current) inputRef.current.focus(); }, 0); }}
+                              style={{ border: "0.5px solid " + T.sep, background: T.card, color: T.ink2, fontSize: 12.5, fontWeight: 600, fontFamily: UI, padding: "9px 13px", borderRadius: 999, cursor: "pointer" }}>
+                              {q}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -16186,31 +17260,53 @@ function Advisor(props) {
                   return (
                     <div key={i} style={{ display: "flex", justifyContent: u ? "flex-end" : "flex-start" }}>
                       {u ? (
-                        <div dir="auto" style={{ maxWidth: "82%", padding: "11px 14px", fontSize: 13.5, lineHeight: 1.5, whiteSpace: "pre-wrap", borderRadius: 19, background: T.card, border: "0.5px solid " + T.sep, color: T.ink, textAlign: "start", unicodeBidi: "plaintext" }}>{m.text}</div>
+                        <div dir="auto" style={{ maxWidth: "82%", padding: "11px 14px", fontSize: 13.5, lineHeight: 1.5, whiteSpace: "pre-wrap", borderRadius: 19, background: T.card, border: "0.5px solid " + T.sep, color: T.ink, textAlign: "start", unicodeBidi: "plaintext" }}>
+                          {m.att && (
+                            <span style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: (m.shown || m.text) ? 8 : 0 }}>
+                              {m.att.kind === "image" && m.att.preview
+                                ? <img src={m.att.preview} alt="" style={{ width: 120, maxWidth: "100%", borderRadius: 11, display: "block" }} />
+                                : <span style={{ display: "flex", alignItems: "center", gap: 7, background: T.orangeDim, borderRadius: 10, padding: "6px 9px", fontSize: 12, fontFamily: UI, fontWeight: 700, color: T.ink2 }}>
+                                    <SVGIcon id={m.att.kind === "image" ? "camera" : "note"} size={13} color={T.orange} />{m.att.name}
+                                  </span>}
+                            </span>
+                          )}
+                          {m.att ? (m.shown || "") : m.text}
+                        </div>
                       ) : (
                         <div style={{ width: "100%", display: "flex", alignItems: "flex-start", gap: 10 }}>
                           <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: "#151311", border: "1px solid rgba(200,152,58,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                             <span style={{ fontFamily: UI, fontSize: 15, fontWeight: MARK_WEIGHT, color: "#C8983A", lineHeight: 1 }}>R</span>
                           </div>
-                          <div dir="auto" style={{ flex: 1, minWidth: 0, paddingTop: 3, fontSize: 13.5, lineHeight: 1.58, whiteSpace: "pre-wrap", color: T.ink, textAlign: "start", unicodeBidi: "plaintext" }}>
-                            <TypeReveal fade text={m.text} size={13.5} animate={i === animMsgRef.current} onTick={pinChatScroll} onDone={function() { animMsgRef.current = -1; }} />
+                          {/* Richard's reply sits on the app's cream ground so it
+                              reads as his own surface against the white user
+                              bubbles, and is set in Garamond - his voice. */}
+                          <div dir="auto" style={{ flex: 1, minWidth: 0, padding: "12px 15px", borderRadius: 18, background: T.bg, border: "0.5px solid " + T.sep, fontSize: 14.5, fontFamily: RICHARD_BODY, fontWeight: 400, lineHeight: 1.58, whiteSpace: m.focus ? "normal" : "pre-wrap", color: T.ink, textAlign: "start", unicodeBidi: "plaintext" }}>
+                            {m.focus
+                              ? <FocusAnswer focus={m.focus} />
+                              : <TypeReveal fade text={m.text} size={14.5} font={RICHARD_DISP} animate={i === animMsgRef.current} onTick={pinChatScroll} onDone={function() { animMsgRef.current = -1; }} />}
                           </div>
                         </div>
                       )}
                     </div>
                   );
                 })}
-                {chatLoading && (
+                {chatLoading && (focusMode ? (
+                  <AIWorking bare style={{ flexShrink: 0, background: T.card, borderRadius: 20, padding: "20px 18px 18px", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.06)" }}
+                    title="Extra thinking"
+                    sub="Weighing this decision against your real numbers"
+                    expectedMs={30000}
+                    steps={["Reading your numbers", "Framing the decision", "Weighing short vs long run", "Stress-testing the risks", "Writing the verdict"]} />
+                ) : (
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: "#151311", border: "1px solid rgba(200,152,58,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <span style={{ fontFamily: UI, fontSize: 15, fontWeight: MARK_WEIGHT, color: "#C8983A", lineHeight: 1 }}>R</span>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 9, color: T.ink3, fontSize: 13, fontWeight: 600 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 9, color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI }}>
                       <ThinkingDots size={4} color={T.ink3} />
                       <ThinkingPhrase />
                     </div>
                   </div>
-                )}
+                ))}
         {pendingUpdates && pendingUpdates.length > 0 && (function() {
           // A batch containing a delete gets a red warning treatment instead of
           // the usual mild orange "update" card - this one can't be undone.
@@ -16326,13 +17422,24 @@ function Advisor(props) {
               <div style={{ flexShrink: 0, textAlign: "center", fontSize: 10.5, color: T.ink3, lineHeight: 1.45, padding: "8px 18px 2px", letterSpacing: "0.01em" }}>
                 {tr("advisorDisclaimer")}
               </div>
+              </div>
             </div>
           )}
 
           {/* The composer is portalled so the tab track's transform cannot trap
               position:fixed. It stays with Advisor while the analysis scrolls,
               and leaves the document completely when the user changes tabs. */}
-          <div data-richard-composer="" style={{ flexShrink: 0, margin: "auto 14px 0", pointerEvents: "auto", boxSizing: "border-box" }}>
+          <div data-richard-composer="" style={{ position: "relative", flexShrink: 0, margin: "auto 14px 0", pointerEvents: "auto", boxSizing: "border-box" }}>
+            {/* Absolutely positioned (not a flex sibling) so it can float above
+                the composer in EVERY state - collapsed or with the chat panel
+                open - without ever stealing flex space and leaving a gap that
+                the page behind the overlay bleeds through. */}
+            {props.onBackToOverview && (
+              <button onClick={props.onBackToOverview} aria-label="Back to Overview"
+                style={{ position: "absolute", bottom: "100%", left: 0, marginBottom: 10, border: "none", cursor: "pointer", width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: T.card, boxShadow: T.isDark ? "0 4px 14px rgba(0,0,0,0.3)" : "0 4px 14px rgba(43,34,25,0.1)" }}>
+                <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={T.ink2} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+              </button>
+            )}
             <div style={{ background: T.card, border: "0.5px solid " + (T.isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.08)"), borderRadius: 28, boxShadow: T.isDark ? "0 12px 34px rgba(0,0,0,0.38)" : "0 12px 34px rgba(43,34,25,0.12)", padding: "12px 12px 10px", boxSizing: "border-box" }}>
               <textarea ref={inputRef} value={input} rows={1}
                 dir="auto" aria-label={tr("askYourAdvisor")}
@@ -16341,16 +17448,52 @@ function Advisor(props) {
                 onKeyDown={function(e) { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); if (!chatLoading) sendChat(); } }}
                 placeholder={tr("askRichard")}
                 style={{ width: "100%", minHeight: 30, maxHeight: 132, border: "none", background: "transparent", outline: "none", color: T.ink, fontSize: 15, fontFamily: UI, lineHeight: 1.45, textAlign: "start", padding: "4px 6px 8px", resize: "none", overflowY: "auto", boxSizing: "border-box", display: "block" }} />
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 2 }}>
+              {attachment && (
+                <div style={{ display: "flex", alignItems: "center", gap: 9, margin: "2px 4px 8px", padding: "7px 9px", borderRadius: 13, background: T.orangeDim, boxSizing: "border-box" }}>
+                  {attachment.kind === "image"
+                    ? <img src={attachment.preview} alt="" style={{ width: 34, height: 34, borderRadius: 9, objectFit: "cover", flexShrink: 0 }} />
+                    : <span style={{ width: 34, height: 34, borderRadius: 9, background: T.card, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><SVGIcon id="note" size={16} color={T.orange} /></span>}
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: "block", fontSize: 12.5, fontWeight: 700, fontFamily: UI, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{attachment.name}</span>
+                    <span style={{ display: "block", fontSize: 10.5, fontFamily: UI, color: T.ink3, marginTop: 1 }}>{attachment.kind === "image" ? "Photo · Richard will look at it" : (attachment.clipped ? "Text file · first 12,000 characters" : "Text file · Richard will read it")}</span>
+                  </span>
+                  <button type="button" onClick={function() { setAttachment(null); }} aria-label="Remove attachment"
+                    style={{ width: 26, height: 26, flexShrink: 0, border: "none", borderRadius: 8, background: "rgba(0,0,0,0.06)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
+                    <SVGIcon id="close" size={12} color={T.ink2} />
+                  </button>
+                </div>
+              )}
+              {attachErr && (
+                <div style={{ margin: "0 6px 8px", fontSize: 11.5, fontFamily: UI, color: T.red, lineHeight: 1.4 }}>{attachErr}</div>
+              )}
+              <input ref={fileInputRef} type="file" onChange={onPickFile}
+                accept="image/*,text/plain,text/csv,.csv,.txt,.md,.tsv,.json" style={{ display: "none" }} />
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
                 <button type="button" onClick={function() { setChatExpanded(true); }} aria-label={tr("askYourAdvisor")} aria-expanded={chatExpanded}
-                  style={{ width: 40, height: 40, flexShrink: 0, border: "1px solid rgba(200,152,58,0.24)", borderRadius: "50%", background: "#151311", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
+                  style={{ width: 40, height: 40, flexShrink: 0, border: "1px solid rgba(200,152,58,0.24)", borderRadius: "50%", background: "#151311", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, boxSizing: "border-box" }}>
                   <span style={{ fontFamily: UI, fontSize: 20, fontWeight: MARK_WEIGHT, color: "#C8983A", lineHeight: 1 }}>R</span>
                 </button>
-                <button type="button" onClick={sendChat} disabled={!input.trim() || chatLoading} aria-label={tr("sendMessage")}
-                  style={{ width: 42, height: 42, flexShrink: 0, border: "none", borderRadius: "50%", background: input.trim() && !chatLoading ? "#151311" : (T.isDark ? "rgba(255,255,255,0.10)" : "rgba(21,19,17,0.08)"), display: "flex", alignItems: "center", justifyContent: "center", cursor: input.trim() && !chatLoading ? "pointer" : "default", padding: 0, transition: "background 160ms ease" }}>
+                {/* Attach a photo or a statement file. Every button in this row
+                    is 40x40 with a 17px glyph, so the row reads as one family
+                    instead of four buttons at slightly different scales. */}
+                <button type="button" onClick={function() { if (fileInputRef.current) fileInputRef.current.click(); }} aria-label="Attach a photo or file" title="Attach a photo or file"
+                  style={{ width: 40, height: 40, flexShrink: 0, border: "0.5px solid " + T.sep, borderRadius: "50%", background: T.isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, boxSizing: "border-box" }}>
+                  <SVGIcon id="plus" size={17} color={T.ink2} />
+                </button>
+                <div style={{ flex: 1 }} />
+                {/* Dictate instead of typing. Only rendered where the browser
+                    actually supports speech recognition. */}
+                {speechOK && (
+                  <button type="button" onClick={toggleMic} aria-label={recording ? "Stop recording" : "Speak your message"} aria-pressed={recording} title={recording ? "Stop recording" : "Speak your message"}
+                    style={{ width: 40, height: 40, flexShrink: 0, border: recording ? "none" : "0.5px solid " + T.sep, borderRadius: "50%", background: recording ? T.red : (T.isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)"), display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, boxSizing: "border-box", animation: recording ? "rclGlow 1.4s ease-in-out infinite" : "none", transition: "background 160ms ease" }}>
+                    <SVGIcon id="mic" size={17} color={recording ? "#fff" : T.ink2} />
+                  </button>
+                )}
+                <button type="button" onClick={sendChat} disabled={(!input.trim() && !attachment) || chatLoading} aria-label={tr("sendMessage")}
+                  style={{ width: 40, height: 40, flexShrink: 0, border: "none", borderRadius: "50%", background: (input.trim() || attachment) && !chatLoading ? "#151311" : (T.isDark ? "rgba(255,255,255,0.10)" : "rgba(21,19,17,0.08)"), display: "flex", alignItems: "center", justifyContent: "center", cursor: (input.trim() || attachment) && !chatLoading ? "pointer" : "default", padding: 0, boxSizing: "border-box", transition: "background 160ms ease" }}>
                   {chatLoading
                     ? <ThinkingDots size={3.8} color="#fff" />
-                    : <SVGIcon id="up" size={18} color={input.trim() ? "#fff" : T.ink3} />}
+                    : <SVGIcon id="up" size={17} color={(input.trim() || attachment) ? "#fff" : T.ink3} />}
                 </button>
               </div>
             </div>
@@ -16358,46 +17501,192 @@ function Advisor(props) {
         </div>
       ), document.body)}
 
-      {historyOpen && ReactDOM.createPortal((
-        <div data-richard-history="" onClick={function() { setHistoryOpen(false); }}
-          style={{ position: "fixed", inset: 0, zIndex: 95, background: "rgba(12,10,24,0.42)", backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-          <div onClick={function(e) { e.stopPropagation(); }}
-            style={{ width: "100%", maxWidth: 440, maxHeight: "82vh", background: T.card, borderRadius: "24px 24px 0 0", boxShadow: "0 -12px 44px rgba(12,10,24,0.34)", display: "flex", flexDirection: "column", overflow: "hidden", boxSizing: "border-box" }}>
-            <div style={{ width: 38, height: 5, borderRadius: 3, background: T.orangeDim, margin: "9px auto 2px", flexShrink: 0 }} />
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 18px 12px", borderBottom: "0.5px solid " + T.sep }}>
-              <div>
-                <div style={{ fontSize: 18, fontWeight: RICHARD_DISP_WEIGHT, fontFamily: RICHARD_DISP, color: T.ink, letterSpacing: "-0.01em" }}>{tr("pastChats")}</div>
-                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{(props.chats || []).length + " " + ((props.chats || []).length === 1 ? tr("conversation") : tr("conversations"))}</div>
+      {voiceMode && ReactDOM.createPortal((
+        <div role="dialog" aria-modal="true" aria-label="Voice chat with Richard" data-richard-voice=""
+          style={{ position: "fixed", top: 0, bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, zIndex: 60, background: T.bg, overflow: "hidden", display: "flex", flexDirection: "column", boxSizing: "border-box", animation: "rcAdvisorPanelIn 0.32s cubic-bezier(0.22,1,0.36,1) both" }}>
+          {/* Same ribbons as the text chat, breathing with the conversation -
+              calm while idle, surging while Richard speaks. */}
+          <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base={T.bg}
+            speed={vPhase === "speaking" ? 0.34 : vPhase === "thinking" ? 0.26 : vPhase === "listening" ? 0.2 : 0.12}
+            intensity={vPhase === "speaking" ? 0.52 : vPhase === "listening" ? 0.42 : 0.3}
+            yScale={0.44} xScale={1.05} style={{ position: "absolute", inset: 0 }} />
+          {/* Slightly heavier wash than the chat panel: captions sit directly
+              on the ribbons here, and ink over bare shader fails contrast. */}
+          <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "linear-gradient(180deg," + jrRgba(T.bg, 0.78) + " 0%," + jrRgba(T.bg, 0.52) + " 22%," + jrRgba(T.bg, 0.52) + " 78%," + jrRgba(T.bg, 0.78) + " 100%)" }} />
+          <div style={{ position: "relative", zIndex: 1, flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "82px minmax(0,1fr) 82px", alignItems: "center", minHeight: 58, padding: "calc(8px + env(safe-area-inset-top, 0px)) 14px 8px", boxSizing: "border-box" }}>
+              <div />
+              <div style={{ textAlign: "center", minWidth: 0 }}>
+                <div style={{ fontFamily: RICHARD_DISP, fontSize: 18, fontWeight: RICHARD_DISP_WEIGHT, color: T.ink, letterSpacing: "-0.01em" }}>Richard</div>
+                <div style={{ fontSize: 9, fontWeight: 800, fontFamily: UI, color: T.ink3, letterSpacing: "0.16em", textTransform: "uppercase", marginTop: 1, opacity: 0.7 }}>Voice chat</div>
               </div>
-              <button onClick={function() { setHistoryOpen(false); }}
-                style={{ width: 36, height: 36, border: "none", borderRadius: 12, background: "rgba(0,0,0,0.05)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                <SVGIcon id="close" size={16} color={T.ink2} />
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <button type="button" onClick={exitVoiceMode} aria-label="Back to text chat" title="Back to text chat"
+                  style={{ width: 40, height: 40, borderRadius: "50%", border: "none", background: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
+                  <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={T.ink2} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 26px", textAlign: "center" }}>
+              <button type="button" onClick={vOrbTap}
+                aria-label={vPhase === "speaking" ? "Interrupt Richard and speak" : vPhase === "listening" ? "Stop listening" : vPhase === "thinking" ? "Richard is thinking" : "Start talking"}
+                style={{ border: "none", background: "none", padding: 0, cursor: "pointer", borderRadius: "50%", transition: "transform 0.45s cubic-bezier(0.22,1,0.36,1)", transform: vPhase === "speaking" ? "scale(1.05)" : vPhase === "thinking" ? "scale(0.92)" : vPhase === "listening" ? "scale(1)" : "scale(0.88)", animation: vPhase === "listening" ? "rclBreathe 3.2s ease-in-out infinite" : vPhase === "speaking" ? "rclBreathe 1.5s ease-in-out infinite" : "none" }}>
+                <SiriOrb size={182} duration={vPhase === "speaking" ? 9 : vPhase === "thinking" ? 14 : 20} />
+              </button>
+
+              <div style={{ minHeight: 128, marginTop: 34, width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+                {vPhase === "listening" && (
+                  <div style={{ fontSize: 9, fontWeight: 800, fontFamily: UI, color: T.ink3, letterSpacing: "0.16em", textTransform: "uppercase" }}>Listening</div>
+                )}
+                {vPhase === "idle" && !vError && (
+                  <div style={{ fontSize: 13.5, fontFamily: UI, fontWeight: 600, color: T.ink2 }}>Mic is off - tap the orb to talk</div>
+                )}
+                {vPhase === "error" && (
+                  <div aria-live="polite" style={{ fontSize: 13, fontFamily: UI, fontWeight: 600, color: T.red, maxWidth: 320, lineHeight: 1.5 }}>{vError}</div>
+                )}
+                {vPhase === "thinking" && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 9, color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI }}>
+                    <ThinkingDots size={4} color={T.ink3} />
+                    <ThinkingPhrase />
+                  </div>
+                )}
+                {vTranscript && (vPhase === "listening" || vPhase === "thinking") && (
+                  <div dir="auto" style={{ fontFamily: RICHARD_BODY, fontStyle: "italic", fontSize: 15, color: T.ink2, lineHeight: 1.5, maxWidth: 330, unicodeBidi: "plaintext" }}>{vTranscript}</div>
+                )}
+                {vCaption && vPhase !== "thinking" && (
+                  <div dir="auto" aria-live="polite" style={{ fontFamily: RICHARD_BODY, fontSize: 15, color: T.ink, lineHeight: 1.6, maxWidth: 340, maxHeight: 168, overflowY: "auto", unicodeBidi: "plaintext" }}>{vStrip(vCaption)}</div>
+                )}
+                {vPhase === "speaking" && (
+                  <div style={{ fontSize: 11.5, fontFamily: UI, fontWeight: 600, color: T.ink3 }}>Tap the orb to interrupt</div>
+                )}
+              </div>
+            </div>
+
+            <div style={{ padding: "0 26px calc(16px + env(safe-area-inset-bottom, 0px))", textAlign: "center" }}>
+              <div style={{ fontSize: 10.5, fontFamily: UI, color: T.ink3, lineHeight: 1.5 }}>{tr("advisorDisclaimer")}</div>
+            </div>
+          </div>
+        </div>
+      ), document.body)}
+
+      {historyVisible && ReactDOM.createPortal((
+        <div data-richard-history="" onClick={function() { setHistoryOpen(false); }}
+          style={{ position: "fixed", inset: 0, zIndex: 95, background: "rgba(12,10,24,0.42)", backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)", animation: (historyClosing ? "rcSidebarDimOut 0.26s ease both" : "rcSidebarDim 0.24s ease both") }}>
+          {/* Left drawer, ChatGPT-style: new chat up top, the archive below. */}
+          <div onClick={function(e) { e.stopPropagation(); }}
+            style={{ position: "absolute", top: 0, bottom: 0, left: "max(0px, calc(50% - 215px))", width: "min(78%, 300px)", background: T.card, boxShadow: "12px 0 44px rgba(12,10,24,0.3)", display: "flex", flexDirection: "column", overflow: "hidden", boxSizing: "border-box", animation: (historyClosing ? "rcSidebarOut 0.26s cubic-bezier(0.4,0,1,1) both" : "rcSidebarIn 0.3s cubic-bezier(0.22,1,0.36,1) both"), paddingTop: "env(safe-area-inset-top, 0px)" }}>
+            {/* Minimal rail: one row rhythm throughout - a bare monochrome icon
+                and a label, no card fills, no chips, no chevrons. Hairlines do
+                the grouping that section headings and boxes used to do. */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 16px 14px" }}>
+              <div style={{ fontSize: 17, fontWeight: RICHARD_DISP_WEIGHT, fontFamily: RICHARD_DISP, color: T.ink, letterSpacing: "-0.01em" }}>Richard</div>
+              <button onClick={function() { setHistoryOpen(false); }} aria-label={tr("closeChat")}
+                style={{ width: 30, height: 30, border: "none", background: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
+                <SVGIcon id="close" size={16} color={T.ink3} />
               </button>
             </div>
-            <div style={{ overflowY: "auto", padding: "10px 14px", paddingBottom: "calc(32px + env(safe-area-inset-bottom, 0px))", display: "flex", flexDirection: "column", gap: 8 }}>
-              {(props.chats || []).length === 0 && (
-                <div style={{ textAlign: "center", color: T.ink3, fontSize: 13.5, padding: "30px 10px" }}>{tr("noPastChats")}</div>
+            <div style={{ padding: "4px 8px 10px", flexShrink: 0, borderBottom: "0.5px solid " + T.sep }}>
+              <button onClick={function() { if (chat.length > 0 && !chatLoading) startNewChat(); setHistoryOpen(false); }}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "9px 10px", border: "none", borderRadius: 10, background: "none", cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
+                <SVGIcon id="plus" size={16} color={T.ink2} />
+                <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 600, color: T.ink }}>{tr("newChat")}</span>
+              </button>
+              <button onClick={function() { setFocusMode(function(v) { return !v; }); }}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "9px 10px", border: "none", borderRadius: 10, background: "none", cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
+                <SVGIcon id="spark" size={16} color={focusMode ? "#8970C6" : T.ink2} />
+                <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 600, color: focusMode ? "#8970C6" : T.ink }}>Focus Mode</span>
+                {focusMode && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#8970C6", flexShrink: 0 }} />}
+              </button>
+              {props.onOpenFullAnalysis && (
+                <button onClick={function() { setHistoryOpen(false); setChatExpanded(false); props.onOpenFullAnalysis(); }}
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "9px 10px", border: "none", borderRadius: 10, background: "none", cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
+                  <SVGIcon id="chart" size={16} color={T.ink2} />
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 600, color: T.ink }}>Full Analysis</span>
+                </button>
               )}
-              {(props.chats || []).map(function(s) {
-                var d = new Date(s.date);
-                var when = isNaN(d.getTime()) ? "" : d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
-                var count = (s.messages || []).length;
-                return (
-                  <div key={s.id}
-                    style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.035)", borderRadius: 13, padding: "12px 13px" }}>
-                    <button onClick={function() { openArchivedChat(s); }}
-                      style={{ flex: 1, minWidth: 0, textAlign: "start", border: "none", background: "transparent", cursor: "pointer", padding: 0, fontFamily: UI }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.title}</div>
-                      <div style={{ fontSize: 12, color: T.ink3, marginTop: 3 }}>{when + " - " + count + " " + (count === 1 ? tr("message") : tr("messages"))}</div>
-                    </button>
-                    <button onClick={function() { deleteArchivedChat(s.id); }}
-                      style={{ width: 32, height: 32, flexShrink: 0, border: "none", borderRadius: 10, background: "rgba(0,0,0,0.05)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                      <SVGIcon id="trash" size={15} color={T.ink3} />
-                    </button>
-                  </div>
-                );
-              })}
+              {props.onOpenInstructions && (
+                <button onClick={function() { setHistoryOpen(false); setChatExpanded(false); props.onOpenInstructions(); }}
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "9px 10px", border: "none", borderRadius: 10, background: "none", cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
+                  <SVGIcon id="edit" size={16} color={T.ink2} />
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 600, color: T.ink }}>Teach Richard</span>
+                </button>
+              )}
             </div>
+            {(props.chats || []).length > 3 && (
+              <div style={{ position: "relative", margin: "12px 16px 2px", flexShrink: 0 }}>
+                <span style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", display: "flex", pointerEvents: "none" }}>
+                  <SVGIcon id="search" size={14} color={T.ink3} />
+                </span>
+                <input value={historySearch} onChange={function(e) { setHistorySearch(e.target.value); }}
+                  placeholder="Search" dir="auto"
+                  style={{ width: "100%", background: "none", border: "none", padding: "7px 22px 7px 22px", fontSize: 13, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box" }} />
+                {historySearch && (
+                  <button onClick={function() { setHistorySearch(""); }} aria-label="Clear search"
+                    style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", width: 20, height: 20, border: "none", background: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
+                    <SVGIcon id="close" size={12} color={T.ink3} />
+                  </button>
+                )}
+              </div>
+            )}
+            <div style={{ flex: 1, overflowY: "auto", padding: "12px 8px 10px" }}>
+              {(props.chats || []).length === 0 && (
+                <div style={{ color: T.ink3, fontSize: 13, padding: "8px 10px", fontFamily: UI }}>{tr("noPastChats")}</div>
+              )}
+              {(function() {
+                var q = historySearch.trim().toLowerCase();
+                var list = q ? (props.chats || []).filter(function(s) { return (s.title || "").toLowerCase().indexOf(q) !== -1; }) : (props.chats || []);
+                if ((props.chats || []).length > 0 && list.length === 0) {
+                  return <div style={{ color: T.ink3, fontSize: 13, padding: "8px 10px", fontFamily: UI }}>{"Nothing matches “" + historySearch.trim() + "”"}</div>;
+                }
+                return list.map(function(s) {
+                  var d = new Date(s.date);
+                  var when = isNaN(d.getTime()) ? "" : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+                  var confirming = deleteChatConfirm === s.id;
+                  return (
+                    <div key={s.id} style={{ padding: "2px 0" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <button onClick={function() { openArchivedChat(s); setHistoryOpen(false); }}
+                          style={{ flex: 1, minWidth: 0, textAlign: "start", border: "none", background: "none", cursor: "pointer", padding: "8px 10px", borderRadius: 10, fontFamily: UI }}>
+                          <div style={{ fontSize: 13.5, fontWeight: 500, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.title}</div>
+                        </button>
+                        <span style={{ fontSize: 11, color: T.ink3, fontFamily: UI, flexShrink: 0 }}>{when}</span>
+                        <button onClick={function() { setDeleteChatConfirm(confirming ? null : s.id); }} aria-label="Delete conversation"
+                          style={{ width: 26, height: 26, flexShrink: 0, border: "none", background: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, opacity: confirming ? 1 : 0.4 }}>
+                          <SVGIcon id="trash" size={13} color={confirming ? T.red : T.ink3} />
+                        </button>
+                      </div>
+                      {confirming && (
+                        <div style={{ display: "flex", gap: 14, padding: "4px 10px 8px" }}>
+                          <button onClick={function() { deleteArchivedChat(s.id); setDeleteChatConfirm(null); }}
+                            style={{ border: "none", background: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.red, padding: 0 }}>
+                            Delete
+                          </button>
+                          <button onClick={function() { setDeleteChatConfirm(null); }}
+                            style={{ border: "none", background: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.ink3, padding: 0 }}>
+                            Cancel
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+            {props.onOpenProfile && (
+              <button onClick={function() { setHistoryOpen(false); setChatExpanded(false); props.onOpenProfile(); }}
+                style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", paddingBottom: "calc(14px + env(safe-area-inset-bottom, 0px))", border: "none", borderTop: "0.5px solid " + T.sep, background: "none", cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
+                {/* The user's own mark. The app has no avatar images anywhere -
+                    an initial on a tinted disc is how a person is shown
+                    throughout (see Disc / FaceStack), so it is used here too. */}
+                <span style={{ width: 22, height: 22, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10.5, fontWeight: 700, fontFamily: UI, flexShrink: 0, lineHeight: 1 }}>
+                  {String(props.username || "?").trim().replace("@", "").charAt(0).toUpperCase() || "?"}
+                </span>
+                <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 600, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{(props.username || "Your profile")}</span>
+              </button>
+            )}
           </div>
         </div>
       ), document.body)}
@@ -16921,16 +18210,21 @@ function FullAnalysisView(props) {
     <div>
       <SubViewBack onBack={props.onBack} label="Richard" />
 
-      {/* Score summary - the same read as the Advisor hero, condensed */}
-      <div style={{ background: T.heroBg, borderRadius: 22, boxShadow: T.heroShadow, padding: 20, display: "flex", alignItems: "center", gap: 18, marginBottom: 24 }}>
-        <div style={{ position: "relative", width: 72, height: 72, flexShrink: 0 }}>
-          <DrawRing size={72} stroke={7} value={score} max={100} color={ringColor} track={T.heroTrack} />
-          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 700, letterSpacing: "-0.03em", color: T.heroInk }}>{score}</div>
-        </div>
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 5 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: ringColor }}>{a.scoreLabel || "Health"}</span>
-          <span style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, letterSpacing: "-0.01em", color: T.heroInk }}>{headline}</span>
-          <span style={{ fontSize: 12.5, color: T.heroMut, lineHeight: 1.45 }}>{"Reviewed " + reviewed + " transaction" + (reviewed === 1 ? "" : "s") + " across " + monthLabel + "."}</span>
+      {/* Score summary - the same read as the Advisor hero, condensed. The flat
+          gradient is now a contained shader: same blues, actually moving. */}
+      <div style={{ position: "relative", overflow: "hidden", borderRadius: 22, boxShadow: T.heroShadow, marginBottom: 24 }}>
+        <JrShaderBg colors={["#8493E2", "#B2BEED", "#3C4C82"]} base="#5C7AE3" speed={0.18} intensity={0.65} yScale={0.46} xScale={1.1} style={{ position: "absolute", inset: 0 }} />
+        <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "linear-gradient(160deg, rgba(178,190,237,0.28) 0%, rgba(132,147,226,0.04) 45%, rgba(60,76,130,0.22) 100%)" }} />
+        <div style={{ position: "relative", zIndex: 1, padding: 20, display: "flex", alignItems: "center", gap: 18 }}>
+          <div style={{ position: "relative", width: 72, height: 72, flexShrink: 0 }}>
+            <DrawRing size={72} stroke={7} value={score} max={100} color={ringColor} track={T.heroTrack} />
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 700, letterSpacing: "-0.03em", color: T.heroInk }}>{score}</div>
+          </div>
+          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 5 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: ringColor }}>{a.scoreLabel || "Health"}</span>
+            <span style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, letterSpacing: "-0.01em", color: T.heroInk }}>{headline}</span>
+            <span style={{ fontSize: 12.5, color: T.heroMut, lineHeight: 1.45 }}>{"Reviewed " + reviewed + " transaction" + (reviewed === 1 ? "" : "s") + " across " + monthLabel + "."}</span>
+          </div>
         </div>
       </div>
 
@@ -25411,10 +26705,11 @@ var BANK_SYNC_JOURNEY_IOS = [
 ];
 
 var BANK_SYNC_JOURNEY_ANDROID = [
-  { h: "Install MacroDroid.", s: "It's free on the Play Store. Google Wallet has no built-in automation - MacroDroid forwards its purchase notifications to Richy for you.", demo: "and1" },
+  { h: "Install MacroDroid.", s: "It's free on the Play Store. MacroDroid watches for your bank's purchase notifications and forwards each one to Richy for you.", demo: "and1" },
   { h: "Start a new macro.", s: "Open MacroDroid, tap Add Macro (the big +), then tap the + next to Triggers.", demo: "and2" },
-  { h: "Pick the trigger.", s: "Choose Notification, then Notification Received, then Select Application(s). Tick Google Wallet - called Google Pay on some phones - and tap OK.", subs: [
-    "If Android asks, allow MacroDroid to read notifications - that's how it sees each purchase."
+  { h: "Pick the trigger.", s: "Choose Notification, then Notification Received, then Select Application(s). Tick your bank's app - and Google Wallet too, if you tap to pay - then tap OK.", subs: [
+    "If Android asks, allow MacroDroid to read notifications - that's how it sees each purchase.",
+    "Any app that notifies you about spending works: bank apps, credit card apps, or wallets."
   ], demo: "and3" },
   { h: "Add the action.", s: "Tap the + next to Actions, then choose Connectivity, then HTTP Request.", demo: "and4" },
   { h: "Paste the sync address.", s: "Set the method to POST, then paste this into the URL box:", copy: "url", demo: "and5" },
@@ -26425,24 +27720,43 @@ function BankSyncView(props) {
     return (
       <div>
         <SubViewBack onBack={props.onBack} />
-        <Card style={{ padding: "34px 24px 26px", textAlign: "center", marginBottom: 16 }}>
+        <Card style={{ padding: "30px 24px 26px", textAlign: "center", marginBottom: 16 }}>
           <div style={{ width: 52, height: 52, borderRadius: 16, background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
-            <SVGIcon id="credit" size={24} color={T.green} />
+            <SVGIcon id="phone" size={24} color={T.green} />
           </div>
-          <div style={{ fontSize: 18, fontWeight: DISP_WEIGHT, color: T.ink, marginBottom: 6, fontFamily: DISP, letterSpacing: "-0.01em" }}>Automatic tap-to-pay sync</div>
-          <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, maxWidth: 300, margin: "0 auto 22px" }}>
-            Every purchase you tap with Apple Pay or Google Pay lands in Richy by itself - categorized and labeled, no typing. A one-time automation on your phone does the sending.
+          <div style={{ fontSize: 18, fontWeight: DISP_WEIGHT, color: T.ink, marginBottom: 6, fontFamily: DISP, letterSpacing: "-0.01em" }}>Notification-based sync</div>
+          <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, maxWidth: 310, margin: "0 auto 20px" }}>
+            Your bank already texts your phone every time you spend. A one-time automation reads those notifications and files each one in Richy - categorized and labeled, no typing.
+          </div>
+          <div style={{ textAlign: "left", maxWidth: 310, margin: "0 auto 22px", display: "flex", flexDirection: "column", gap: 11 }}>
+            {[
+              { icon: "phone", t: "Your bank sends its usual alert", s: "The same push you already get when a charge lands." },
+              { icon: "spark", t: "The automation reads it", s: "One rule on your phone pulls out the merchant and amount." },
+              { icon: "check", t: "Richy files the transaction", s: "Categorized against your history and ready in Activity." }
+            ].map(function(row, i) {
+              return (
+                <div key={row.t} style={{ display: "flex", alignItems: "flex-start", gap: 11 }}>
+                  <span style={{ width: 27, height: 27, borderRadius: 9, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: T.orange, fontFamily: UI }}>{i + 1}</span>
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: T.ink, lineHeight: 1.3 }}>{row.t}</div>
+                    <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.45 }}>{row.s}</div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
           <button onClick={handleEnable} disabled={busy}
             style={{ width: "100%", background: T.btn, color: "#fff", border: "none", borderRadius: 16, padding: "15px 0", fontSize: 16, fontFamily: UI, fontWeight: 600, cursor: "pointer", opacity: busy ? 0.6 : 1, boxSizing: "border-box" }}>
-            {busy ? "Turning on..." : "Turn on Bank Sync"}
+            {busy ? "Turning on..." : "Set up notification sync"}
           </button>
           {enableErr && (
             <div style={{ fontSize: 12.5, color: T.red, lineHeight: 1.5, marginTop: 10, fontFamily: UI }}>{enableErr}</div>
           )}
         </Card>
         <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.55, padding: "0 6px" }}>
-          Works with any card in Apple Wallet or Google Wallet. Your bank credentials are never involved - your phone only reports the merchant and amount of each tap, straight to your own Richy account.
+          Your bank login is never involved. The automation runs entirely on your phone and sends only the merchant and amount of each alert, straight to your own Richy account.
         </div>
 
         <LeumiFintekaCard leumiFinteka={props.leumiFinteka} onConnect={props.onConnectLeumi} onDisconnect={props.onDisconnectLeumi} onSyncNow={props.onSyncLeumiNow} />
@@ -28899,6 +30213,7 @@ export default function App() {
   function onSaveBanners(next) { setCustomBanners(next); save({ customBanners: next }); }
   function onSaveWidgets(next) { var v = (next || []).slice(0, MAX_WIDGETS); setWidgets(v); save({ widgets: v }); }
   function onRemoveWidget(id) { onSaveWidgets((widgets || []).filter(function(w) { return w.id !== id; })); }
+  function onAddWidget(w) { onSaveWidgets((widgets || []).concat([w])); }
   function onDismissTip(id) {
     if (dismissedTips.indexOf(id) >= 0) return;
     var next = dismissedTips.concat([id]);
@@ -29612,11 +30927,11 @@ export default function App() {
   // The five swipeable main tabs, produced by id so both the visible page and the
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
-    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
+    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} onAddWidget={onAddWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
     if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
-    if (id === "advisor") return <Advisor isActive={id === currentTab} tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} widgets={widgets} onSaveWidgets={onSaveWidgets} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} />;
+    if (id === "advisor") return <Advisor isActive={id === currentTab} tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} widgets={widgets} onSaveWidgets={onSaveWidgets} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} onBackToOverview={function() { setTab("overview"); }} onOpenInstructions={function() { prevTabRef.current = "advisor"; setTab("instructions"); setSheet(false); }} onOpenProfile={function() { prevTabRef.current = "advisor"; setTab("profile"); setSheet(false); }} />;
     return null;
   }
   applyTheme(theme);      // keep the live T palette in sync with the chosen design every render
@@ -29695,18 +31010,23 @@ export default function App() {
             </button>
           </div>
         </div>
-        {currentTab !== "advisor" && (
+      </div>
+
+      {/* The add button lives OUTSIDE the sticky header on purpose: that header
+          carries a backdrop-filter, which makes it the containing block for any
+          position:fixed descendant and would pin this to the header instead of
+          the viewport. At root level it stays parked in the bottom-left corner. */}
+      {currentTab !== "advisor" && (
           <button onClick={function() {
               nativeHaptic("MEDIUM");
               if (currentTab === "activity") setSheet(function(v) { return !v; });
               else { setTab("activity"); setSheet(true); }
             }}
             aria-label={currentTab === "activity" && sheet ? "Close add transaction" : tr("addTransaction")}
-            style={{ position: "absolute", right: 20, bottom: -18, background: currentTab === "activity" && sheet ? T.ink : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", border: "none", borderRadius: "50%", width: 44, height: 44, cursor: "pointer", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: currentTab === "activity" && sheet ? "none" : "0 8px 20px " + T.orangeGlow, transform: currentTab === "activity" && sheet ? "rotate(45deg)" : "none", transition: "background var(--m-quick) ease, box-shadow var(--m-quick) ease, transform var(--m-settle) var(--m-spring)", zIndex: 41 }}>
-            <SVGIcon id="plus" size={18} color="#fff" />
+            style={{ position: "fixed", left: "max(20px, calc(50% - 195px))", bottom: "calc(102px + env(safe-area-inset-bottom, 0px))", background: currentTab === "activity" && sheet ? T.ink : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", border: "none", borderRadius: "50%", width: 36, height: 36, cursor: "pointer", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: currentTab === "activity" && sheet ? "none" : "0 6px 16px " + T.orangeGlow, transform: currentTab === "activity" && sheet ? "rotate(45deg)" : "none", transition: "background var(--m-quick) ease, box-shadow var(--m-quick) ease, transform var(--m-settle) var(--m-spring)", zIndex: 41 }}>
+            <SVGIcon id="plus" size={16} color="#fff" />
           </button>
-        )}
-      </div>
+      )}
 
       <Overlay open={timeframeMenuOpen} onClose={function() { setTimeframeMenuOpen(false); }} title="Timeframe">
         <div style={{ paddingBottom: 4 }}>
@@ -29817,7 +31137,9 @@ export default function App() {
       {/* Outer wrapper only does fixed positioning — no backdrop-filter here.
           iOS/WebKit will detach a position:fixed element from the viewport
           during scroll if backdrop-filter lives on that same element, so the
-          glass blur is applied to an inner div instead. */}
+          glass blur is applied to an inner div instead. The Advisor tab drops
+          this bar entirely so its own chat composer owns that space. */}
+      {currentTab !== "advisor" && (
       <div style={{ position: "fixed", bottom: "calc(20px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", width: "calc(100% - 32px)", maxWidth: 398, zIndex: 30 }}>
         <div style={{ position: "relative", background: T.navGlass, backdropFilter: "blur(28px) saturate(190%) brightness(1.08)", WebkitBackdropFilter: "blur(28px) saturate(190%) brightness(1.08)", borderRadius: 34, border: "1px solid " + T.glassBorder, boxShadow: "0 12px 40px rgba(0,0,0,0.18), 0 2px 10px rgba(0,0,0,0.08), inset 0 1px 0.5px " + T.navRimTop + ", inset 0 -1px 0.5px " + T.navRimBot }}>
           {/* Specular sheen — the curved-glass glare across the top of the bar. Self-clips
@@ -29831,6 +31153,7 @@ export default function App() {
               : <GlassTabBar tabs={TABS} current={currentTab} onSelect={function(id) { setTab(id); setSheet(false); }} />}
         </div>
       </div>
+      )}
     </div>
   );
 }
