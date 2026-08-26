@@ -17,7 +17,7 @@
   USE:
     .claude/serve.ps1  ->  http://localhost:8899/.claude/shots.html
     Add ?screen=overview|activity|budgets|goals|advisor|notes to jump tabs.
-    Add &dark=1 for dark mode.
+    Add &dark=1 for dark mode, &theme=purple|blue|classic to switch palette.
     Add &device=67|55 to frame at App Store aspect ratios.
 
   On the Mac, capture the final PNGs from the iOS Simulator instead (exact
@@ -60,6 +60,10 @@
   <a href="?screen=notes">notes</a>
   <b>| mode:</b>
   <a href="?screen=overview&dark=1">dark</a>
+  <b>| theme:</b>
+  <a href="?screen=overview&theme=purple&dark=1">violet</a>
+  <a href="?screen=overview&theme=blue&dark=1">ocean</a>
+  <a href="?screen=overview&theme=classic&dark=1">ember</a>
   <b>| frame:</b>
   <a href="?screen=overview&device=67">6.7"</a>
   <a href="?screen=overview&device=55">5.5"</a>
@@ -73,6 +77,9 @@
 var Q = new URLSearchParams(location.search);
 var SCREEN = Q.get("screen") || "overview";
 var DARK = Q.get("dark") === "1";
+// Theme id (purple | blue | classic). Each palette now carries its own dark
+// variant, so light and dark have to be checked per theme, not just once.
+var THEME = Q.get("theme") || "blue";
 var DEVICE = Q.get("device") || "67";
 var LANG = Q.get("lang") || "en";
 var CHAT_MODE = Q.get("chat") || "empty";
@@ -161,7 +168,7 @@ var DEMO = {
   dob: "1996-04-12",
   lang: LANG,
   currency: "$",
-  theme: "blue",
+  theme: THEME,
   darkMode: DARK,
   onboardingDone: true,
   tx: TX,
