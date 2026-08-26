@@ -222,6 +222,16 @@ module.exports = async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   if (req.method === "OPTIONS") { res.status(200).end(); return; }
 
+  // LEGAL GATE - do not remove on a "just add the credentials" impulse. A real
+  // OAuth connection to customer bank accounts is licensed activity under
+  // Israeli law (s.2(a) of the financial-information-service law; unlicensed
+  // practice is an offence under s.57(a)(1)). This endpoint stays dark until
+  // the licence exists and this flag is deliberately set alongside it.
+  if (process.env.LEUMI_FINTEKA_LICENSED_GO_LIVE !== "yes") {
+    res.status(503).json({ error: { type: "not_live", message: "Direct bank connection is not available. The in-app Leumi experience is a demo." } });
+    return;
+  }
+
   try {
     if (!initAdmin()) {
       res.status(500).json({ ok: false, error: { code: "config_error", message: "FIREBASE_SERVICE_ACCOUNT is not set." } });
