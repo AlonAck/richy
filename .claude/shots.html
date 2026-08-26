@@ -17,7 +17,7 @@
   USE:
     .claude/serve.ps1  ->  http://localhost:8899/.claude/shots.html
     Add ?screen=overview|activity|budgets|goals|advisor|notes to jump tabs.
-    Add &dark=1 for dark mode.
+    Add &dark=1 for dark mode, &theme=purple|blue|classic to switch palette.
     Add &device=67|55 to frame at App Store aspect ratios.
 
   On the Mac, capture the final PNGs from the iOS Simulator instead (exact
@@ -35,9 +35,12 @@
   html,body{margin:0;background:#5a5148;font-family:var(--font-ui);}
   button,input,select,textarea{font-family:var(--font-ui);}
   body.plain{background:#F7F3EE;}
-  #stage{margin:0 auto;background:#F7F3EE;overflow:hidden;position:relative;}
+  /* The transform makes this framed stage the containing block for the app's
+     fixed nav, sheets and Advisor composer, matching a real mobile viewport. */
+  #stage{margin:0 auto;background:#F7F3EE;overflow:hidden;position:relative;transform:translateZ(0);}
   #stage.dark{background:#131110;}
-  #root{width:100%;height:100%;overflow-y:auto;}
+  #root{width:100%;height:100%;overflow-y:auto;scrollbar-width:none;}
+  #root::-webkit-scrollbar{display:none;}
   #err{white-space:pre-wrap;font-family:monospace;color:#fff;padding:16px;font-size:12px;}
   #bar{position:fixed;left:0;right:0;bottom:0;background:rgba(0,0,0,0.82);color:#fff;font-size:12px;padding:8px 12px;z-index:99999;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
   #bar a{color:#F0C46A;text-decoration:none;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,0.08);}
@@ -57,6 +60,10 @@
   <a href="?screen=notes">notes</a>
   <b>| mode:</b>
   <a href="?screen=overview&dark=1">dark</a>
+  <b>| theme:</b>
+  <a href="?screen=overview&theme=purple&dark=1">violet</a>
+  <a href="?screen=overview&theme=blue&dark=1">ocean</a>
+  <a href="?screen=overview&theme=classic&dark=1">ember</a>
   <b>| frame:</b>
   <a href="?screen=overview&device=67">6.7"</a>
   <a href="?screen=overview&device=55">5.5"</a>
@@ -70,7 +77,13 @@
 var Q = new URLSearchParams(location.search);
 var SCREEN = Q.get("screen") || "overview";
 var DARK = Q.get("dark") === "1";
+// Theme id (purple | blue | classic). Each palette now carries its own dark
+// variant, so light and dark have to be checked per theme, not just once.
+var THEME = Q.get("theme") || "blue";
 var DEVICE = Q.get("device") || "67";
+var LANG = Q.get("lang") || "en";
+var CHAT_MODE = Q.get("chat") || "empty";
+var CAPTURE = Q.get("capture") === "1";
 
 // Frame the stage at the App Store aspect ratios (logical points; capture at
 // 3x in the Simulator for the exact 1290x2796 / 1242x2208 pixel sizes).
@@ -82,8 +95,12 @@ var FRAMES = { "67": [430, 932], "55": [414, 736] };
   if (FRAMES[DEVICE]) {
     stage.style.width = FRAMES[DEVICE][0] + "px";
     stage.style.height = FRAMES[DEVICE][1] + "px";
-    stage.style.marginTop = "24px";
-    stage.style.boxShadow = "0 20px 60px rgba(0,0,0,0.45)";
+    stage.style.marginTop = CAPTURE ? "0" : "24px";
+    stage.style.boxShadow = CAPTURE ? "none" : "0 20px 60px rgba(0,0,0,0.45)";
+    if (CAPTURE) {
+      document.getElementById("bar").style.display = "none";
+      document.body.style.overflow = "hidden";
+    }
   } else {
     document.body.className = "plain";
     stage.style.width = "100%";
@@ -149,9 +166,9 @@ var DEMO = {
   displayName: "Alon",
   email: "demo@richy.app",
   dob: "1996-04-12",
-  lang: "en",
+  lang: LANG,
   currency: "$",
-  theme: "blue",
+  theme: THEME,
   darkMode: DARK,
   onboardingDone: true,
   tx: TX,
@@ -178,20 +195,24 @@ var DEMO = {
       { id: 1, kind: "deposit", amount: 7400, label: "Built up over time", date: d(60) }
     ] }
   ],
-  // One of each widget shape, the way Richard builds them from chat, so the
-  // Overview widget section can be composed and reviewed offline.
+  // The same practical default set a new account receives. Target-free metrics
+  // keep this fixture useful without assuming a person's category or goal.
   widgets: [
-    { id: "wg_1", title: "Coffee watch", metric: "categorySpend", target: "Coffee", shape: "ring", timeframe: "month", goal: 80, color: "#B0894E", icon: "coffee" },
-    { id: "wg_2", title: "Eating out", metric: "categorySpend", target: "Food", shape: "bar", timeframe: "month", goal: 600, color: "#C8673A", icon: "food" },
-    { id: "wg_3", title: "Where it went", metric: "expense", target: "", shape: "list", timeframe: "month", goal: null, color: "#8B6CEF", icon: "cart" },
-    { id: "wg_4", title: "Spending trend", metric: "expense", target: "", shape: "trend", timeframe: "month", goal: null, color: "#2799C8", icon: "chart" },
-    { id: "wg_5", title: "Month vs last", metric: "net", target: "", shape: "compare", timeframe: "month", goal: null, color: "#27A85F", icon: "up" },
-    { id: "wg_6", title: "Emergency fund", metric: "savingsPot", target: "Emergency Fund", shape: "stat", timeframe: "month", goal: null, color: "#27A85F", icon: "shield" }
+    { id: "default_spending_breakdown", title: "Where your money went", metric: "expense", target: "", shape: "list", timeframe: "month", goal: null, color: "#C8673A", icon: "cart" },
+    { id: "default_spending_trend", title: "Spending trend", metric: "expense", target: "", shape: "trend", timeframe: "month", goal: null, color: "#2799C8", icon: "chart" },
+    { id: "default_cash_flow", title: "This month vs last", metric: "net", target: "", shape: "compare", timeframe: "month", goal: null, color: "#27A85F", icon: "up" }
   ],
   trips: [], businesses: [], investing: [], decisions: [],
   foundMoney: { tally: 0, dismissed: [], acted: [] },
   richardNotes: "Saving for a Japan trip, wants to stop eating out so much."
 };
+
+// Advisor chat is normally live-only. A deterministic, read-only fixture keeps
+// active-conversation screenshots away from the production Claude endpoint.
+window.__DEMO_CHAT = CHAT_MODE === "active" ? [
+  { role: "user", text: "Can I put $500 toward my Japan trip this month?" },
+  { role: "assistant", text: "Yes. You've kept $3,024 this month after spending $2,176 of your $5,200 income. Moving $500 to Japan still leaves $2,524 for your emergency fund and other goals. Set the transfer for payday so it happens before the money gets absorbed into spending." }
+] : [];
 
 // ---- Optional demo household (?hh=1) ----------------------------------------
 // The social layer on Profile only has anything to show when the user is in a
@@ -230,6 +251,14 @@ fetch("/budget-app.jsx?t=" + Date.now()).then(function (r) { return r.text(); })
   var code = src
     .replace(/^\s*import[^\n]*\n/gm, "")
     .replace(/export default function App/, "function App");
+
+  // The empty array is unique to Advisor's live chat state. This replacement
+  // affects only this local harness; production source and persistence remain
+  // untouched.
+  code = code.replace(
+    /var _c = useState\(\[\]\);\s*var chat = _c\[0\]; var setChat = _c\[1\];/,
+    "var _c = useState(window.__DEMO_CHAT || []);\n  var chat = _c[0]; var setChat = _c[1];"
+  );
 
   // Auto sign-in: on the first render with no user, hand the demo blob to the
   // app's own handleLogin, then jump to the requested tab. Uses the real code

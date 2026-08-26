@@ -1,251 +1,260 @@
-# Richy — Product Roadmap to a 100/100 App
+# Richy — Product Roadmap
 
-> The complete list of features Richy needs to go from its current state
-> (20% retention, 3–5/10 AI usefulness in 10-persona simulation) to a
-> market-leading personal finance app.
+> Single source of truth for "where does Richy actually stand." Read this
+> instead of re-deriving state from the code every time.
 >
-> Evidence base: the user-simulation reports in `/reports/` (10 personas,
-> 8 of 10 churned) + current category leaders (YNAB, Monarch, Copilot,
-> Rocket Money, Empower).
+> Sources this is built from: `reports/qa-audit-2026-08-17.md` (code-verified,
+> file:line), `reports/security-review-2026-08-15.md`, `reports/richy-sim-latest.html`
+> (10-persona simulation, post-fix run, 2026-07-27), `APP_STORE_LISTING.md`.
 >
-> Last updated: 2026-06-23
+> Last updated: 2026-08-18. The previous version of this file (dated 2026-06-23)
+> was stale — it listed debt tracker, couples mode, business accounts, CSV
+> import, and investing as unbuilt. All five have since shipped. Don't trust
+> feature checkboxes in this file either, without dating them — trust the
+> reports/ directory and the live site first.
 
 ---
 
 ## Scoring legend
-- ⭐⭐⭐ = Churn-causing. Users quit *specifically* because this is missing.
-- ⭐⭐ = Major differentiator. Turns keepers into advocates.
+- ⭐⭐⭐ = Churn-causing / trust-destroying.
+- ⭐⭐ = Major differentiator.
 - ⭐ = Expands addressable market / engagement.
 
 ---
 
-## TIER 1 — Table Stakes (why users churned)
+## Current state snapshot
 
-### 1. Bank & Card Sync (Automatic Import) ⭐⭐⭐
-The single biggest gap. Chloe and Beatriz quit because Richy is 100% manual entry.
-- Connect via aggregators: Plaid (US/CA/UK/EU), TrueLayer / Tink (Europe),
-  Salt Edge (global), regional providers for India / Africa.
-- Auto-pull transactions, balances, credit cards, loans.
-- Turns Richy from "a diary you maintain" into "a dashboard that maintains itself."
+**Shipped and live:** expense tracking, budgeting, savings goals, Richard (AI
+advisor), CSV/statement import, 50-currency support, debt payoff tracker
+(avalanche/snowball), couples/household mode (shared + private ledger),
+business accounts (P&L-ish, runway, tax pot), investing/net-worth tracker,
+IOU notes, trip planning, EN/HE/AR/RU translation strings.
 
-**COST ANALYSIS (parked 2026-06-23 — revisit in Phase 2, do not build yet):**
-- This is a RECURRING per-user cost, not a one-time build. Breaks Richy's current
-  "build once, runs free" model (static hosting + Firebase free tier).
-- Plaid: ~$0.30 / connected account / month for Transactions + per-call fees. No
-  real free production tier. 1k users × 2 accounts ≈ $600/mo, scaling linearly.
-- TrueLayer/Tink (UK/EU) and Salt Edge (global) similar; Salt Edge tends to have
-  monthly minimums (hundreds of $/mo).
-- Regional fragmentation: NO single aggregator covers Richy's real audience
-  (India, Colombia, Turkey, Ghana, Brazil, Vietnam per sim). Plaid weak/absent in
-  most. Would need 3–4 providers, each its own contract + integration.
-- Compliance/legal: handling bank tokens requires security review, real privacy
-  policy, data-handling obligations; some providers gate production access on this.
-- Maintenance: connections break constantly (bank auth/MFA changes) → ongoing
-  support burden, not a finished feature.
-- Architecture: cannot call Plaid from browser. Requires a backend (Firebase
-  Functions) to hold secrets + exchange tokens. Richy is currently 100%
-  client-side — this adds real infrastructure.
-- DECISION: CSV import (shipped) covers ~80% of value at $0 recurring + no
-  compliance burden. Only build sync once there are paying users (subscription to
-  cover per-user fee) AND validated which regions real users are in (to pick the
-  right aggregator).
+**Not shipped:** any live bank connection. "Sync your bank" on the Overview is
+a demo-only Israeli-bank simulation (Leumi), not a real integration — see
+Tier 0 below, this is currently doing more harm than good.
 
-### 2. Local Currency Support ⭐⭐⭐  ✅ SHIPPED (2026-06-23)
-**#1 missing feature in the simulation — 8 of 10 personas needed it**
-(INR, COP, TRY, GHS, BRL, VND, AUD, PLN). No longer forces USD/EUR/GBP proxies.
-- DONE: Currency list expanded 5 → 50 (all sim currencies + majors + big
-  economies). Each has a UNIQUE symbol (dollar/yen families use A$, C$, CN¥, etc.
-  because the app keys the active currency by symbol), a display name, and a
-  minor-unit `dec` field. Stored in `CURRENCY_OPTIONS` with derived `SYM_TO_CODE`
-  and `SYM_TO_DEC`.
-- DONE: Correct decimal rules — `fmtCur` now respects per-currency digits
-  (¥1,500 and ₫250,000 with no decimals, KD12.345 with 3, $1,234.50 with 2).
-- DONE: Searchable currency picker in Settings (filter by code/name/symbol,
-  shows symbol + code + country name).
-- DONE: Foreign-currency expense chips no longer break with the long list —
-  curated common set, horizontally scrollable, always includes main + selected.
-- DONE: Live FX stays on frankfurter.dev (no new API). Offline `FX_FALLBACK`
-  table expanded to all 50 currencies, so cross-currency conversion works even
-  for currencies outside frankfurter's ECB set (COP, GHS, VND, NGN, etc.).
-- **Achieved the cheapest high-impact win: no third-party dependency added.**
-- STILL TODO (deferred): true multi-currency *accounts* (holding balances in
-  several currencies at once) — current model is one main currency + per-expense
-  foreign amounts. Currency selection during onboarding (today defaults to $,
-  changeable in Settings).
+**Latest user-simulation result (2026-07-27, post-fix, 10 personas):**
+impression 6.4/10, AI-usefulness 5.1/10, NPS 5.5, avg max-WTP $3.70/mo,
+**60% kept / 40% gave up** — up from a 40%-kept baseline the same day, after
+surfacing debt/partner/sync as quick-actions on Overview. Full data:
+`reports/richy-sim-latest.html`.
 
-### 3. CSV / Statement Import ⭐⭐⭐  ✅ SHIPPED (2026-06-23)
-Fallback for banks the aggregator doesn't cover. Upload CSV, auto-map columns.
-Critical for the long tail of international banks.
-- DONE: Activity tab → import button. File picker OR paste. Auto-detects delimiter
-  (comma/semicolon/tab), columns (date/amount/description), header row. Handles
-  US & European number formats, quoted fields, parentheses-negatives. Date format
-  toggle (DMY/MDY). "All rows are expenses" mode. Auto-categorizes by merchant
-  keywords. Preview with money-in/out totals before importing.
-- DONE: Entry-method preference (Manual default vs CSV import). Asked on the
-  plan-ready screen at signup, changeable in Profile > Adding transactions.
-  When set to "import" the Activity import button becomes primary and the empty
-  state leads with import. Stored as `entryMethod` on the user doc.
-- STILL TODO: OFX/QIF formats, duplicate detection against existing transactions,
-  remembering column mappings per bank.
+Churn themes across the cohort (frequency = personas who named it):
+1. **Bank sync / auto-import, incl. US Plaid — 5/10.** The single biggest
+   driver of disappointment. The newly-surfaced "Sync your bank" card *raised*
+   expectations, then broke them for anyone not on Leumi in Israel — an
+   Israeli non-Leumi user and a US user both named this as their reason for
+   giving up, almost verbatim.
+2. **Irregular / dual-income onboarding — 4/10.** Freelancers and couples want
+   income structure asked about during onboarding itself, not bolted on after.
+3. **Auto-categorization / subscription parsing — 2/10.**
+4. **Tax/VAT set-aside & invoicing — 2/10** (business persona).
+5. **Currency & language localization gaps — 2/10** (DKK missing; Russian UI
+   + reference-currency display wanted).
+6. Single mentions: debt-first onboarding path, partner accountability
+   nudges, business P&L/payroll depth, retirement/longevity projection,
+   accessibility (text size, card density).
 
-### 4. Automatic Categorization ⭐⭐⭐
-Once transactions flow in, they must self-sort. Merchant-name → category matching,
-with one-tap correction the app learns from. Without this, sync is just a different chore.
+**Code-level state (QA audit, 2026-08-17, `budget-app.jsx` 27,646 lines):** the
+app has several **silent data-loss bugs already in production** and the App
+Store copy overstates RTL/translation coverage. This is more urgent than any
+Tier 2-4 feature below — see Tier 0.
+
+---
+
+## TIER 0 — Fix before building anything new (P0/P1, code-verified 2026-08-17/15)
+
+Full detail with file:line in `reports/qa-audit-2026-08-17.md` and
+`reports/security-review-2026-08-15.md`. Do not re-derive these from scratch —
+read those files.
+
+**Silent data loss / lock-outs:**
+- Editing a debt sets `createdAt: undefined`, which makes Firestore throw
+  synchronously and **silently kills all saving for the rest of the session** —
+  the UI stays green while nothing persists. Likely explains most "it lost my
+  data" complaints.
+- `Activity.saveEdit` rebuilds transactions from scratch instead of merging,
+  dropping `opening`/`trip`/`catchUp`/`bizExpense`/`syncSource` flags —
+  corrupts opening balance permanently on a no-op edit.
+- Boot splash has no timeout — a stalled Firestore connection hangs forever
+  with force-quit as the only escape ("the app won't open").
+- `_stockGet`'s de-dup map never clears on a hung fetch — permanent spinners
+  with no retry.
+- Overview chart, 4 Profile settings rows, and Richard's budget context are
+  all **hardcoded to `$`** regardless of the user's actual currency.
+
+**Trust-breaking dead ends:**
+- The Leumi demo sync writes fabricated transactions into the *real* ledger,
+  invisibly, with no bulk-remove and no export label — this directly matches
+  what the July simulation flagged as the #1 churn cause (see above).
+- "Sync your bank · Auto-import transactions" on Overview promises something
+  that doesn't exist for ~everyone who taps it. Two of four simulated
+  quitters named this exact card.
+- No undo on CSV import, savings-pot deletion silently zeroes linked goals,
+  investing accounts can't be deleted/renamed, business "graduate" wipes the
+  roadmap and **Richard can trigger it with no confirmation**.
+
+**Security / regulatory:**
+- **Richard's system prompt is fully client-controlled** — any user can send
+  an arbitrary system prompt to your Anthropic key. This is both a cost/abuse
+  hole and the reason the ISA-regulated "no personalized investment advice"
+  boundary is currently unenforceable. This is the one item that's a direct
+  hit against the north-star regulatory constraint — treat as blocking.
+- Account-deletion race can report failure after it actually succeeded, then
+  silently recreates an empty account (GDPR / App Store 5.1.1(v) exposure).
+
+**App Store copy risk:**
+- The listing claims "full right-to-left layout." Signup, onboarding, and the
+  catch-up flow have **zero** translation calls, and RTL support is
+  direction-only (no logical CSS, 101 hardcoded physical alignments). A
+  Hebrew user's first ten minutes are English text in an RTL document. Fix:
+  soften the store copy until the funnel is actually translated — one field,
+  no build required, but do it before submission.
+
+**Why this is Tier 0, ahead of every feature below:** you cannot grow toward
+#1-on-the-App-Store on a bucket that's leaking user data and overpromising a
+feature that isn't there. Every hour spent on a new Tier 2/3 feature right now
+is an hour not spent stopping active churn and review-bombing risk. The QA
+audit's "five to fix first" (debt-edit save-killer, saveEdit merge, boot
+timeout, stock-fetch deadline, currency hardcoding) plus the bank-sync card
+fix (B2) and the server-side prompt registry (security #5) are the actual
+next build, full stop.
+
+---
+
+## TIER 1 — Table Stakes
+
+### 1. Bank & Card Sync (Automatic Import) ⭐⭐⭐ — still not built (by design, cost-parked)
+Real aggregator sync (Plaid / TrueLayer / Salt Edge) remains parked for cost
+and compliance reasons — see the original cost analysis below, still valid.
+**What changed:** the demo-only version now actively hurts more than it helps
+because it's surfaced prominently with no scope-qualifier. Fix the card copy
+(Tier 0) before revisiting whether to fund real sync.
+
+<details><summary>Original cost analysis (2026-06-23, still valid)</summary>
+
+- Recurring per-user cost, not one-time — breaks the "build once, runs free"
+  model (static hosting + Firebase free tier).
+- Plaid ~$0.30/connected account/month + per-call fees, no real free
+  production tier. TrueLayer/Tink/Salt Edge similar, often with monthly
+  minimums.
+- Regional fragmentation: no single aggregator covers Richy's real audience
+  (India, Colombia, Turkey, Ghana, Brazil, Vietnam per sim) — would need 3-4
+  provider contracts.
+- Requires a backend to hold secrets (Richy is currently 100% client-side for
+  this purpose).
+- DECISION: CSV import covers ~80% of the value at $0 recurring. Only build
+  real sync once there are paying users in validated regions.
+</details>
+
+### 2. Local Currency Support ⭐⭐⭐ — ✅ SHIPPED (2026-06-23)
+50 currencies, correct symbols/decimals, searchable picker, FX fallback table.
+Gap remaining: DKK-class edge currencies still missing per sim (Henrik); and
+the Tier 0 hardcoded-`$` bugs undermine this everywhere they appear.
+
+### 3. CSV / Statement Import ⭐⭐⭐ — ✅ SHIPPED (2026-06-23)
+Auto-detects delimiter/columns/date format, entry-method preference in
+onboarding. Gap: no undo/batch-id on import (Tier 0, B7).
+
+### 4. Automatic Categorization ⭐⭐⭐ — not built
+Still the biggest sim ask after bank sync (#3 theme). Merchant-name matching
+with learn-from-correction. Worth doing regardless of bank sync status, since
+it also helps CSV-imported data.
 
 ---
 
 ## TIER 2 — Major Differentiators
 
-### 5. Couples / Shared Household Mode ⭐⭐⭐  🚧 PHASE 1 SHIPPED (2026-06-23)
-Linh & husband downloaded Richy *specifically* to merge two incomes and left when it couldn't.
-Chosen model: couples/household with **shared budget + private logging** (joint
-ledger, but each person can keep specific transactions off the shared pot).
+### 5. Couples / Shared Household Mode ⭐⭐⭐ — ✅ SHIPPED, needs onboarding integration
+Shared budget + private logging, live sync, invite flow — all built. Sim gap:
+onboarding still asks single-income-first; couples want combined-income
+framing up front, not a bolt-on after signup (Shira, Nadav — both "flipped"
+from would-give-up to kept once they found the partner card, meaning it
+converts *if* found — the fix is visibility timing, not the feature itself).
 
-**Architecture (key constraint):** Firestore security is document-level, so PRIVATE
-data can never live in the shared doc. Design:
-- `households/{hid}` — shared budgets, goals, categories, shared transactions
-  (each tagged with who paid). Both members read/write it.
-- `users/{uid}` — each person's private transactions + personal settings. Never
-  leaves their own doc. App shows the union (shared + my private).
+### 6. Real Debt Payoff Tracker ⭐⭐⭐ — ✅ SHIPPED — has a P0 bug
+Avalanche/snowball, real debt-free-date. **The debt-edit save-killer (Tier 0)
+lives in this feature** — fix that before promoting debt tracker any further.
 
-- DONE (Phase 1 — the household *space*): `households` collection + CLOUD methods
-  (create / loadHousehold / subscribeHousehold via onSnapshot / findInvites /
-  inviteToHousehold / cancelInvite / acceptInvite / leaveHousehold / saveHousehold).
-  Invite-by-email + accept flow. `CollabView` in Profile → Collab: create household,
-  invite by email, see members + pending invites, accept invites addressed to you,
-  leave. Live member list via onSnapshot. `householdId` persisted on user doc.
-- DONE: firestore.rules updated with `households/{hid}` block (members read/write;
-  invited email can read+accept). **USER MUST PUBLISH the updated firestore.rules
-  in Firebase console → Firestore → Rules → Publish, or Collab will permission-deny.**
-- ⚠️ NOT YET TESTED end-to-end — needs two real accounts + published rules; the
-  preview login gate blocks cross-account testing. Phase 1 verified compile + render only.
-- DONE (Phase 2 — shared data + private logging): loadData now merges shared
-  (budgets/goals/categories/shared-tx) from household doc with personal data
-  (all txs including private ones) from user doc. save() now splits: shared txs
-  go to households/{hid}, personal txs stay in users/{uid}. Each tx has `shared`
-  (bool) and `owner` (uid) fields. Activity form shows "Share with partner"
-  toggle + member picker (who paid) when in a household. Phase 2 NOT tested
-  end-to-end — needs published rules + two accounts to confirm merge/split works.
-- DONE (Phase 3 — live sync): separate subscription effect on households/{hid} for
-  shared budgets/goals/categories/tx. When partner edits any of those, the app's
-  state updates immediately without a reload. Household membership changes (members,
-  invites) also live via onSnapshot. Conflict handling (last-write-wins via Firestore)
-  deferred to future hardening pass. ⚠️ Phase 3 also NOT tested end-to-end.
-- TODO: Richard awareness of household context (give advice on joint finances).
-  Conflict resolution UI for edge cases (simultaneous edits, deletion by one user
-  while other is editing).
-- Monarch's killer feature — a whole market segment.
+### 7. Recurring / Subscription Detection ⭐⭐ — not built
+Ties directly to sim theme #3 (auto-categorization/subscription parsing).
 
-### 6. Real Debt Payoff Tracker ⭐⭐⭐
-Kwame came only for this and left. A static "Total Debt" number is useless.
-- Log each debt with interest rate, minimum payment, balance.
-- Avalanche vs. snowball projection with a real debt-free-date countdown.
-- Progress visualization. Richard already *talks* avalanche/snowball — let users *track* it.
+### 8. Bills & Due-Date Calendar ⭐⭐ — not built
 
-### 7. Recurring / Subscription Detection ⭐⭐
-Auto-detect recurring charges, surface a subscriptions dashboard, flag price hikes
-and forgotten trials. Rocket Money built a business on this alone.
-
-### 8. Bills & Due-Date Calendar ⭐⭐
-Upcoming bills, reminders before due dates, "safe to spend" after what's owed.
-Prevents overdrafts.
-
-### 9. Irregular / Variable Income Handling ⭐⭐
-Tomasz (freelancer, one of the only keepers) needs this.
-- Income smoothing / averaging.
-- "Buffer month" strategy (live on last month's income — the YNAB method).
-- Variable-income-aware budgets.
+### 9. Irregular / Variable Income Handling ⭐⭐ — partially addressed
+Business accounts give freelancers a tax pot; true income smoothing /
+buffer-month budgeting is still open and is sim theme #2 (4/10 personas).
 
 ---
 
 ## TIER 3 — Specialized Segments
 
-### 10. Business / Personal Separation ⭐⭐
-Beatriz (bakery owner) left — no way to separate business from personal money.
-- Tag transactions business vs. personal.
-- Basic profit/loss view, supplier/COGS categories.
-- NOTE: consider a separate product. Don't half-build it.
+### 10. Business / Personal Separation ⭐⭐ — ✅ SHIPPED
+Business accounts with cash/budgets/plan, runway, tax pot. Gaps per sim
+(Eitan, still gave up): no invoicing/VAT handling, no real P&L/payroll
+forecasting — the current build is closer to "personal budgeting reskinned"
+than QuickBooks-lite. Also has a P0-adjacent bug: business "graduate" is
+one-way and wipes the roadmap, and Richard can trigger it unconfirmed (Tier 0).
 
-### 11. Remittance / International Transfer Tracking ⭐⭐
-Yusuf sends money home to Turkey — his biggest "expense" isn't really spending.
-- Dedicated transfer type that locks the exchange rate, shows what recipient *receives*.
-- Recurring family-obligation category.
+### 11. Remittance / International Transfer Tracking ⭐⭐ — not built
 
-### 12. Investment & Net Worth Tracking ⭐⭐
-- Link brokerage / retirement accounts, track portfolio value.
-- True net worth (assets − liabilities) over time, not just transaction sums.
-- Graduates users from "budgeter" to "wealth tracker" (Monarch / Empower territory).
+### 12. Investment & Net Worth Tracking ⭐⭐ — ✅ SHIPPED — has lock-out bugs
+Portfolio tracking, net worth over time. Gaps: accounts can't be
+deleted/renamed (permanent typo), and deleting a stock silently rewrites cash
+balance with no disclosure of the delta (Tier 0, A7).
 
-### 13. Gross vs. Net Pay Education ⭐
-Yusuf was shocked by his German net pay. A small "understand your payslip" tool
-(taxes, deductions explained) — cheap to build, sticky for new earners / immigrants.
+### 13. Gross vs. Net Pay Education ⭐ — not built
 
 ---
 
 ## TIER 4 — Engagement & Retention Layer
 
-### 14. Reports & Trends ⭐⭐
-Month-over-month, year-over-year, spending heatmaps, category trends, cash-flow forecasting.
-"Where did $9k go last quarter?" (Chloe's exact question) must be answerable in two taps.
-
-### 15. Smart Notifications ⭐⭐
-Proactive, not nagging: "80% through Food budget with 10 days left,"
-"Unusual $400 charge," "On track to hit your goal early."
-
-### 16. Goals That Auto-Fund ⭐
-Make existing Goals automatic: round-ups, scheduled auto-contributions,
-"pay yourself first" transfers.
-
-### 17. Multi-Device + Web App ⭐⭐
-Currently single-device. Real sync across phone, tablet, web is baseline expectation.
-
-### 18. Offline-First + Performance ⭐
-Works without signal, syncs later. Speed is a feature.
+### 14. Reports & Trends ⭐⭐ — not built
+### 15. Smart Notifications ⭐⭐ — not built
+### 16. Goals That Auto-Fund ⭐ — not built
+### 17. Multi-Device + Web App ⭐⭐ — web app exists (this *is* the product); true multi-device sync state unverified
+### 18. Offline-First + Performance ⭐ — offline-first shipped per store copy; unverified end-to-end
 
 ---
 
 ## THE MOAT — Richard (the AI advisor)
 
-No competitor has a genuinely good conversational advisor. This is Richy's real edge.
-Foundation already built this session: context-aware (knows user's core problem),
-honest about app limits, and able to ACT on the app (log expenses/income, set budgets,
-create goals via confirmation cards).
+Every simulated persona who commented on Richard praised the voice — this is
+genuinely ahead of the category. But two things undercut it right now:
 
-Push further:
-- **Proactive insights** — Richard surfaces things unprompted ("Your dining out doubled").
-- **Natural-language queries** — "How much on coffee since January?" → real answer from real data.
-- **Scenario modeling** — "Can I afford $1,500/mo rent?" → run against actual cash flow.
-- **Expand the action system** — recurring bills, goal adjustments, bulk recategorization.
-
----
-
-## ALREADY SHIPPED (this improvement cycle, 2026-06-23)
-- Onboarding "What's your biggest financial challenge?" discovery step (`coreProblem`).
-- Core problem flows into onboarding plan, monthly analysis, and plan chat.
-- Richard personalizes advice to the user's stated challenge.
-- Richard is honest about app limits (no bank sync, couples, debt calc, business).
-- Monthly analysis sends detailed budget data (per-category actual vs. limit, goals).
-- Richard can update the app from chat (expense / income / budget / goal / goalAdd)
-  with a confirmation card + clear in-chat heads-up before any change.
+- **The system-prompt injection hole (Tier 0)** means the safety/regulatory
+  guardrails you've written for Richard are advisory, not enforced — a
+  modified client can override them entirely. This is the top blocker on the
+  moat, not a feature gap.
+- Push further once Tier 0 is closed: proactive unprompted insights, real
+  natural-language data queries, scenario modeling ("can I afford $1,500/mo
+  rent"), and an expanded action system (recurring bills, bulk
+  recategorization).
 
 ---
 
-## RECOMMENDED BUILD SEQUENCE
+## RECOMMENDED BUILD SEQUENCE (revised 2026-08-18)
 
 | Phase | Build | Rationale |
 |-------|-------|-----------|
-| **1. Stop the bleeding** | Currency support → CSV import → debt tracker | Cheapest wins, recover churned personas, no 3rd-party dependency |
-| **2. Go mainstream** | Bank sync + auto-categorization | Expensive (aggregator cost/compliance) but it's the price of entry |
-| **3. Differentiate** | Couples mode + subscription detection + reports | Turn keepers into advocates |
-| **4. Expand** | Investments, business mode, remittance | New market segments |
-| **Throughout** | Richard as proactive, action-taking advisor | The defensible moat |
+| **0. Stop the bleeding (new, highest priority)** | QA audit's "five to fix first" (debt-edit save-killer, saveEdit merge, boot timeout, stock-fetch deadline, currency hardcoding) + bank-sync card copy fix + server-side Richard prompt registry | Active silent data loss, an overpromising card causing measured churn, and an unenforceable regulatory boundary — all worse than any missing feature |
+| **1. Close the dead ends** | Demo-transaction labeling/removal, CSV import undo, destructive-action confirmations, investing account delete/rename | Same class of trust damage as Phase 0, lower severity |
+| **2. Convert what's already built** | Surface couples mode earlier in onboarding (combined-income framing), variable-income/buffer-month budgeting, subscription/recurring detection | These are already-shipped or near-shipped capabilities being undersold — cheaper than new builds |
+| **3. Store readiness** | Translate the signup/onboarding funnel (0% `tr()` coverage today), swap physical CSS for logical properties, soften RTL claim until done | App Store copy currently overstates what's true — 2.3 risk |
+| **4. Real bank sync** | Only once there are paying users in validated regions (per original cost analysis) | Recurring cost model needs revenue first |
+| **Throughout** | Richard as proactive, action-taking advisor | The defensible moat — but only once the prompt hole is closed |
 
 ---
 
-## STRATEGIC READ
-Richy's design and AI advisor are already ahead of the market — every simulated user
-praised the look and Richard's voice. What loses them is **plumbing**: no sync, no local
-currency, no real debt/couples/business support.
+## STRATEGIC READ (revised)
 
-**Fastest highest-impact first move: Local Currency Support** — #1 gap, no third-party
-integration, unblocks the most personas at once.
+The June assessment — "design and Richard are ahead of market, plumbing is
+the gap" — is still directionally true, but the plumbing gap has changed
+shape. Most of Tier 1-3 got built. What's now costing trust is quality, not
+absence: features that silently lose data, a sync card that overpromises, and
+regulatory guardrails that live only in the browser. **The fastest path to
+the north star right now is not a new feature — it's making the app trust-
+worthy at what it already claims to do**, then converting the couples/
+debt/business builds that are underperforming their sim potential because
+they're hard to find or half-tested.

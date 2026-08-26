@@ -110,11 +110,11 @@
    Display carries hierarchy; the native UI family carries everything else,
    including tabular data.
    =========================================================================== */
-.t-h1     { font-family:var(--f-display); font-weight:400; font-style:normal; letter-spacing:-.025em; line-height:.98;
+.t-h1     { font-family:var(--f-display); font-weight:700; font-style:normal; letter-spacing:-.025em; line-height:.98;
             font-size:clamp(46px,9.5vw,96px); text-wrap:balance; }
-.t-h2     { font-family:var(--f-display); font-weight:400; font-style:normal; letter-spacing:-.018em; line-height:1.08;
+.t-h2     { font-family:var(--f-display); font-weight:700; font-style:normal; letter-spacing:-.018em; line-height:1.08;
             font-size:clamp(29px,4.4vw,42px); text-wrap:balance; }
-.t-h3     { font-family:var(--f-display); font-weight:400; font-style:normal; letter-spacing:-.012em; font-size:22px; }
+.t-h3     { font-family:var(--f-display); font-weight:700; font-style:normal; letter-spacing:-.012em; font-size:22px; }
 .t-lede   { font-family:var(--f-body); font-size:19px; line-height:1.55; color:var(--ink2); max-width:56ch; }
 .t-body   { font-family:var(--f-body); font-size:16px; line-height:1.62; max-width:66ch; text-wrap:pretty; }
 .t-label  { font-size:13px; text-transform:uppercase; letter-spacing:.11em; color:var(--ink2); font-weight:600; }
