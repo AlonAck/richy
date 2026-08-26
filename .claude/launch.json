@@ -7,6 +7,12 @@
       "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".claude/serve.ps1"],
       "port": 8899,
       "autoPort": true
+    },
+    {
+      "name": "richard",
+      "runtimeExecutable": "powershell.exe",
+      "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".claude/run-richard.ps1"],
+      "port": 3931
     }
   ]
 }
