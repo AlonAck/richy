@@ -3457,13 +3457,18 @@ function ensureSiriOrbCss() {
     // through to whatever's behind the orb in the DOM (the ribbon shader
     // canvas, in the voice overlay) - a light tint, not a solid disc.
     ".rc-siri-orb{display:grid;grid-template-areas:'stack';overflow:hidden;border-radius:50%;position:relative;background:radial-gradient(circle,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.04) 40%,transparent 72%),var(--sorb-base);}",
+    // Every layer turns at ONE rate, in ONE direction, separated by fixed
+    // offsets - the source component's mixed multipliers (1.2 / 0.8 / -1.5 /
+    // 2.1 / -0.7) made the layers beat against each other, which is what read
+    // as the colors twitching rather than turning. Wide arcs (color across
+    // ~240deg instead of ~90deg) keep the body solid instead of gauzy.
     ".rc-siri-orb::before{content:'';display:block;grid-area:stack;width:100%;height:100%;border-radius:50%;background:"
-      + "conic-gradient(from calc(var(--sorb-angle,0deg)*1.2) at 30% 65%,var(--sorb-c3) 0deg,transparent 45deg 315deg,var(--sorb-c3) 360deg),"
-      + "conic-gradient(from calc(var(--sorb-angle,0deg)*0.8) at 70% 35%,var(--sorb-c2) 0deg,transparent 60deg 300deg,var(--sorb-c2) 360deg),"
-      + "conic-gradient(from calc(var(--sorb-angle,0deg)*-1.5) at 65% 75%,var(--sorb-c1) 0deg,transparent 90deg 270deg,var(--sorb-c1) 360deg),"
-      + "conic-gradient(from calc(var(--sorb-angle,0deg)*2.1) at 25% 25%,var(--sorb-c2) 0deg,transparent 30deg 330deg,var(--sorb-c2) 360deg),"
-      + "conic-gradient(from calc(var(--sorb-angle,0deg)*-0.7) at 80% 80%,var(--sorb-c1) 0deg,transparent 45deg 315deg,var(--sorb-c1) 360deg),"
-      + "radial-gradient(ellipse 120% 80% at 40% 60%,var(--sorb-c3) 0%,transparent 50%);"
+      + "conic-gradient(from calc(var(--sorb-angle,0deg) + 0deg) at 32% 62%,var(--sorb-c3) 0deg,transparent 130deg 230deg,var(--sorb-c3) 360deg),"
+      + "conic-gradient(from calc(var(--sorb-angle,0deg) + 72deg) at 68% 38%,var(--sorb-c2) 0deg,transparent 140deg 220deg,var(--sorb-c2) 360deg),"
+      + "conic-gradient(from calc(var(--sorb-angle,0deg) + 144deg) at 62% 72%,var(--sorb-c1) 0deg,transparent 135deg 225deg,var(--sorb-c1) 360deg),"
+      + "conic-gradient(from calc(var(--sorb-angle,0deg) + 216deg) at 28% 30%,var(--sorb-c2) 0deg,transparent 145deg 215deg,var(--sorb-c2) 360deg),"
+      + "conic-gradient(from calc(var(--sorb-angle,0deg) + 288deg) at 74% 74%,var(--sorb-c1) 0deg,transparent 130deg 230deg,var(--sorb-c1) 360deg),"
+      + "radial-gradient(ellipse 130% 95% at 42% 58%,var(--sorb-c3) 0%,var(--sorb-c1) 45%,transparent 78%);"
       + "filter:blur(var(--sorb-blur,8px)) contrast(var(--sorb-contrast,1.8)) saturate(var(--sorb-sat,1.35));animation:rcSorbSpin var(--sorb-dur,20s) linear infinite;transform:translateZ(0);will-change:transform;}",
     ".rc-siri-orb::after{content:'';display:block;grid-area:stack;width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 45% 55%,rgba(255,255,255,0.1) 0%,rgba(255,255,255,0.05) 30%,transparent 60%);mix-blend-mode:overlay;}",
     "@keyframes rcSorbSpin{from{--sorb-angle:0deg;}to{--sorb-angle:360deg;}}",
@@ -3498,7 +3503,7 @@ function SiriOrb(props) {
       "--sorb-blur": blur + "px",
       "--sorb-contrast": contrast,
       "--sorb-sat": props.sat || 1.35,
-      "--sorb-base": props.base || jrRgba(T.orange, 0.45)
+      "--sorb-base": props.base || jrRgba(T.orange, 0.72)
     }} />
   );
 }
@@ -16527,8 +16532,9 @@ function Advisor(props) {
       + "Use the EXACT category, folder, savings pot, goal, note-label and widget-title names given in the data below - never invent or guess a name. "
       + "If the user mentions several things at once, emit several tags. Only emit a tag for a concrete event, or a direct explicit request to change/create something, with real values the user actually stated - never for hypotheticals, plans, or general advice. Do not mention the word ACTION or the tag syntax in your spoken reply; just speak naturally and let the tags do the work."
       + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a CFO who builds a business plan - send business owners there. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (Bank Sync files purchases from the payment notifications the user's own phone already receives - an automation they set up and control on their device, not a bank connection), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use."
-      + " Close EVERY reply the same way: one short sentence reminding them you're an AI and not a licensed advisor and that they should do their own research, then exactly one short, specific follow-up question about their situation so the conversation keeps moving." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : "")
-      + (isVoice ? " VOICE MODE: the user is talking to you by voice and your reply will be read aloud by text-to-speech. Keep it to 2-4 short conversational sentences of natural spoken language - no lists, no markdown, no asterisks, no symbols that read badly aloud. Numbers still matter: quote the one or two key figures, never a table. The closing not-a-licensed-advisor reminder is NOT optional in voice - it counts inside the sentence budget, never gets dropped for brevity. Action tags still work exactly as described - append them at the very end as usual." : ""),
+      + " Close EVERY reply with exactly one short, specific follow-up question about their situation so the conversation keeps moving."
+      + " ABOUT THE NOT-A-LICENSED-ADVISOR REMINDER: do NOT append it to every reply - on everyday budgeting talk it reads as nervous boilerplate and people stop reading it, which defeats its purpose. Include one short, natural version of it ONLY when leaving it out could actually cost them: anything touching investing, specific securities or assets, pensions and retirement accounts, insurance, taxes, loans, mortgages or refinancing, debt consolidation, big irreversible commitments, or any moment you are near the edge of what you can responsibly answer. In those cases say it in your own words as part of the answer, not as a disclaimer tacked on the end. For ordinary spending, saving, budgets, goals and affordability questions, skip it entirely - the app already shows a standing disclaimer on screen." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : "")
+      + (isVoice ? " VOICE MODE: the user is talking to you by voice and your reply will be read aloud by text-to-speech. Keep it to 2-4 short conversational sentences of natural spoken language - no lists, no markdown, no asterisks, no symbols that read badly aloud. Numbers still matter: quote the one or two key figures, never a table. When the reminder rule above says a topic needs the not-a-licensed-advisor caveat, it still applies in voice and counts inside the sentence budget - never drop it for brevity on those topics. Action tags still work exactly as described - append them at the very end as usual." : ""),
       500,
       function(err, text) {
         setChatLoading(false);
@@ -17609,7 +17615,12 @@ function Advisor(props) {
               <button type="button" onClick={vOrbTap}
                 aria-label={vPhase === "speaking" ? "Interrupt Richard and speak" : vPhase === "listening" ? "Stop listening" : vPhase === "thinking" ? "Richard is thinking" : "Start talking"}
                 style={{ border: "none", background: "none", padding: 0, cursor: "pointer", borderRadius: "50%", transition: "transform 0.45s cubic-bezier(0.22,1,0.36,1)", transform: vPhase === "speaking" ? "scale(1.05)" : vPhase === "thinking" ? "scale(0.92)" : vPhase === "listening" ? "scale(1)" : "scale(0.88)", animation: vPhase === "listening" ? "rclBreathe 3.2s ease-in-out infinite" : vPhase === "speaking" ? "rclBreathe 1.5s ease-in-out infinite" : "none" }}>
-                <SiriOrb size={182} sat={1.6} duration={vPhase === "speaking" ? 9 : vPhase === "thinking" ? 14 : 20} />
+                {/* One fixed spin rate across every phase: changing
+                    animation-duration mid-flight makes the CSS angle jump, so
+                    the orb visibly lurched each time Richard started or
+                    stopped talking. The phase reads from the scale and the
+                    ribbons behind it instead. */}
+                <SiriOrb size={182} sat={1.45} duration={22} />
               </button>
 
               {vPhase === "idle" && !vError && (
@@ -17663,114 +17674,132 @@ function Advisor(props) {
           style={{ position: "fixed", inset: 0, zIndex: 95, background: "rgba(12,10,24,0.42)", backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)", animation: (historyClosing ? "rcSidebarDimOut 0.26s ease both" : "rcSidebarDim 0.24s ease both") }}>
           {/* Left drawer, ChatGPT-style: new chat up top, the archive below. */}
           <div onClick={function(e) { e.stopPropagation(); }}
-            style={{ position: "absolute", top: 0, bottom: 0, left: "max(0px, calc(50% - 215px))", width: "min(78%, 300px)", background: T.card, boxShadow: "12px 0 44px rgba(12,10,24,0.3)", display: "flex", flexDirection: "column", overflow: "hidden", boxSizing: "border-box", animation: (historyClosing ? "rcSidebarOut 0.26s cubic-bezier(0.4,0,1,1) both" : "rcSidebarIn 0.3s cubic-bezier(0.22,1,0.36,1) both"), paddingTop: "env(safe-area-inset-top, 0px)" }}>
-            {/* Minimal rail: one row rhythm throughout - a bare monochrome icon
-                and a label, no card fills, no chips, no chevrons. Hairlines do
-                the grouping that section headings and boxes used to do. */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 16px 14px" }}>
-              <div style={{ fontSize: 17, fontWeight: RICHARD_DISP_WEIGHT, fontFamily: RICHARD_DISP, color: T.ink, letterSpacing: "-0.01em" }}>Richard</div>
+            style={{ position: "absolute", top: 0, bottom: 0, left: "max(0px, calc(50% - 215px))", width: "min(80%, 312px)", background: T.bg, boxShadow: "12px 0 44px rgba(12,10,24,0.3)", display: "flex", flexDirection: "column", overflow: "hidden", boxSizing: "border-box", animation: (historyClosing ? "rcSidebarOut 0.26s cubic-bezier(0.4,0,1,1) both" : "rcSidebarIn 0.3s cubic-bezier(0.22,1,0.36,1) both"), paddingTop: "env(safe-area-inset-top, 0px)" }}>
+            {/* Speaks the app's own row language - a tinted icon tile, a 15px
+                label and a hairline, grouped on a card over the cream ground
+                (see ProfileRow) - rather than the bare monochrome rail it was,
+                which read as a different product bolted onto the side. */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 18px 12px", flexShrink: 0 }}>
+              <div style={{ fontSize: 19, fontWeight: RICHARD_DISP_WEIGHT, fontFamily: RICHARD_DISP, color: T.ink, letterSpacing: "-0.01em" }}>Richard</div>
               <button onClick={function() { setHistoryOpen(false); }} aria-label={tr("closeChat")}
-                style={{ width: 30, height: 30, border: "none", background: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
-                <SVGIcon id="close" size={16} color={T.ink3} />
+                style={{ width: 32, height: 32, border: "none", borderRadius: "50%", background: T.card, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.06)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, flexShrink: 0 }}>
+                <SVGIcon id="close" size={15} color={T.ink2} />
               </button>
             </div>
-            <div style={{ padding: "4px 8px 10px", flexShrink: 0, borderBottom: "0.5px solid " + T.sep }}>
-              <button onClick={function() { if (chat.length > 0 && !chatLoading) startNewChat(); setHistoryOpen(false); }}
-                style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "9px 10px", border: "none", borderRadius: 10, background: "none", cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
-                <SVGIcon id="plus" size={16} color={T.ink2} />
-                <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 600, color: T.ink }}>{tr("newChat")}</span>
-              </button>
-              <button onClick={function() { setFocusMode(function(v) { return !v; }); }}
-                style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "9px 10px", border: "none", borderRadius: 10, background: "none", cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
-                <SVGIcon id="spark" size={16} color={focusMode ? "#8970C6" : T.ink2} />
-                <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 600, color: focusMode ? "#8970C6" : T.ink }}>Focus Mode</span>
-                {focusMode && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#8970C6", flexShrink: 0 }} />}
-              </button>
-              {props.onOpenFullAnalysis && (
-                <button onClick={function() { setHistoryOpen(false); setChatExpanded(false); props.onOpenFullAnalysis(); }}
-                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "9px 10px", border: "none", borderRadius: 10, background: "none", cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
-                  <SVGIcon id="chart" size={16} color={T.ink2} />
-                  <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 600, color: T.ink }}>Full Analysis</span>
-                </button>
-              )}
-              {props.onOpenInstructions && (
-                <button onClick={function() { setHistoryOpen(false); setChatExpanded(false); props.onOpenInstructions(); }}
-                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "9px 10px", border: "none", borderRadius: 10, background: "none", cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
-                  <SVGIcon id="edit" size={16} color={T.ink2} />
-                  <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 600, color: T.ink }}>Teach Richard</span>
-                </button>
-              )}
+            <div style={{ padding: "0 12px", flexShrink: 0 }}>
+              <Card style={{ overflow: "hidden" }}>
+                {(function() {
+                  var rows = [];
+                  rows.push({ key: "new", icon: "plus", label: tr("newChat"), tint: T.orangeDim, color: T.orange,
+                    onClick: function() { if (chat.length > 0 && !chatLoading) startNewChat(); setHistoryOpen(false); } });
+                  rows.push({ key: "focus", icon: "spark", label: "Focus Mode", tint: focusMode ? "rgba(137,112,198,0.16)" : T.orangeDim, color: focusMode ? "#8970C6" : T.orange,
+                    right: <span style={{ fontSize: 12, fontWeight: 700, fontFamily: UI, color: focusMode ? "#8970C6" : T.ink3 }}>{focusMode ? "On" : "Off"}</span>,
+                    noChevron: true,
+                    onClick: function() { setFocusMode(function(v) { return !v; }); } });
+                  if (props.onOpenFullAnalysis) rows.push({ key: "analysis", icon: "chart", label: "Full Analysis", tint: T.orangeDim, color: T.orange,
+                    onClick: function() { setHistoryOpen(false); setChatExpanded(false); props.onOpenFullAnalysis(); } });
+                  if (props.onOpenInstructions) rows.push({ key: "teach", icon: "edit", label: "Teach Richard", tint: T.orangeDim, color: T.orange,
+                    onClick: function() { setHistoryOpen(false); setChatExpanded(false); props.onOpenInstructions(); } });
+                  return rows.map(function(r, i) {
+                    return (
+                      <button key={r.key} onClick={r.onClick}
+                        style={{ width: "100%", background: "none", border: "none", borderBottom: i === rows.length - 1 ? "none" : "0.5px solid " + T.sep, padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", fontFamily: UI, boxSizing: "border-box" }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+                          <span style={{ width: 32, height: 32, borderRadius: 10, background: r.tint, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <SVGIcon id={r.icon} size={15} color={r.color} />
+                          </span>
+                          <span style={{ fontSize: 15, fontWeight: 500, color: T.ink, textAlign: "start" }}>{r.label}</span>
+                        </span>
+                        <span style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
+                          {r.right}
+                          {!r.noChevron && <SVGIcon id="chevron" size={14} color={T.ink3} />}
+                        </span>
+                      </button>
+                    );
+                  });
+                })()}
+              </Card>
             </div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", padding: "18px 18px 8px", fontFamily: UI, flexShrink: 0 }}>{tr("pastChats")}</div>
             {(props.chats || []).length > 3 && (
-              <div style={{ position: "relative", margin: "12px 16px 2px", flexShrink: 0 }}>
-                <span style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", display: "flex", pointerEvents: "none" }}>
+              <div style={{ position: "relative", margin: "0 12px 8px", flexShrink: 0 }}>
+                <span style={{ position: "absolute", insetInlineStart: 12, top: "50%", transform: "translateY(-50%)", display: "flex", pointerEvents: "none" }}>
                   <SVGIcon id="search" size={14} color={T.ink3} />
                 </span>
                 <input value={historySearch} onChange={function(e) { setHistorySearch(e.target.value); }}
                   placeholder="Search" dir="auto"
-                  style={{ width: "100%", background: "none", border: "none", padding: "7px 22px 7px 22px", fontSize: 13, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box" }} />
+                  style={{ width: "100%", background: T.card, border: "none", borderRadius: 12, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.05)", padding: "10px 34px", fontSize: 13.5, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box" }} />
                 {historySearch && (
                   <button onClick={function() { setHistorySearch(""); }} aria-label="Clear search"
-                    style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", width: 20, height: 20, border: "none", background: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
+                    style={{ position: "absolute", insetInlineEnd: 10, top: "50%", transform: "translateY(-50%)", width: 20, height: 20, border: "none", background: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
                     <SVGIcon id="close" size={12} color={T.ink3} />
                   </button>
                 )}
               </div>
             )}
-            <div style={{ flex: 1, overflowY: "auto", padding: "12px 8px 10px" }}>
-              {(props.chats || []).length === 0 && (
-                <div style={{ color: T.ink3, fontSize: 13, padding: "8px 10px", fontFamily: UI }}>{tr("noPastChats")}</div>
-              )}
+            <div style={{ flex: 1, overflowY: "auto", padding: "0 12px 10px" }}>
               {(function() {
                 var q = historySearch.trim().toLowerCase();
-                var list = q ? (props.chats || []).filter(function(s) { return (s.title || "").toLowerCase().indexOf(q) !== -1; }) : (props.chats || []);
-                if ((props.chats || []).length > 0 && list.length === 0) {
-                  return <div style={{ color: T.ink3, fontSize: 13, padding: "8px 10px", fontFamily: UI }}>{"Nothing matches “" + historySearch.trim() + "”"}</div>;
+                var all = props.chats || [];
+                var list = q ? all.filter(function(s) { return (s.title || "").toLowerCase().indexOf(q) !== -1; }) : all;
+                if (all.length === 0) {
+                  return <div style={{ color: T.ink3, fontSize: 13.5, padding: "10px 6px", fontFamily: UI, lineHeight: 1.5 }}>{tr("noPastChats")}</div>;
                 }
-                return list.map(function(s) {
-                  var d = new Date(s.date);
-                  var when = isNaN(d.getTime()) ? "" : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-                  var confirming = deleteChatConfirm === s.id;
-                  return (
-                    <div key={s.id} style={{ padding: "2px 0" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <button onClick={function() { openArchivedChat(s); setHistoryOpen(false); }}
-                          style={{ flex: 1, minWidth: 0, textAlign: "start", border: "none", background: "none", cursor: "pointer", padding: "8px 10px", borderRadius: 10, fontFamily: UI }}>
-                          <div style={{ fontSize: 13.5, fontWeight: 500, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.title}</div>
-                        </button>
-                        <span style={{ fontSize: 11, color: T.ink3, fontFamily: UI, flexShrink: 0 }}>{when}</span>
-                        <button onClick={function() { setDeleteChatConfirm(confirming ? null : s.id); }} aria-label="Delete conversation"
-                          style={{ width: 26, height: 26, flexShrink: 0, border: "none", background: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, opacity: confirming ? 1 : 0.4 }}>
-                          <SVGIcon id="trash" size={13} color={confirming ? T.red : T.ink3} />
-                        </button>
-                      </div>
-                      {confirming && (
-                        <div style={{ display: "flex", gap: 14, padding: "4px 10px 8px" }}>
-                          <button onClick={function() { deleteArchivedChat(s.id); setDeleteChatConfirm(null); }}
-                            style={{ border: "none", background: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.red, padding: 0 }}>
-                            Delete
-                          </button>
-                          <button onClick={function() { setDeleteChatConfirm(null); }}
-                            style={{ border: "none", background: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.ink3, padding: 0 }}>
-                            Cancel
-                          </button>
+                if (list.length === 0) {
+                  return <div style={{ color: T.ink3, fontSize: 13.5, padding: "10px 6px", fontFamily: UI }}>{"Nothing matches “" + historySearch.trim() + "”"}</div>;
+                }
+                return (
+                  <Card style={{ overflow: "hidden" }}>
+                    {list.map(function(s, i) {
+                      var d = new Date(s.date);
+                      var when = isNaN(d.getTime()) ? "" : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+                      var confirming = deleteChatConfirm === s.id;
+                      return (
+                        <div key={s.id} style={{ borderBottom: i === list.length - 1 ? "none" : "0.5px solid " + T.sep }}>
+                          <div style={{ display: "flex", alignItems: "center" }}>
+                            <button onClick={function() { openArchivedChat(s); setHistoryOpen(false); }}
+                              style={{ flex: 1, minWidth: 0, textAlign: "start", border: "none", background: "none", cursor: "pointer", padding: "12px 4px 12px 14px", fontFamily: UI }}>
+                              <div style={{ fontSize: 14.5, fontWeight: 500, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.title}</div>
+                              {when && <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>{when}</div>}
+                            </button>
+                            <button onClick={function() { setDeleteChatConfirm(confirming ? null : s.id); }} aria-label="Delete conversation"
+                              style={{ width: 40, height: 40, marginInlineEnd: 6, flexShrink: 0, border: "none", borderRadius: "50%", background: confirming ? T.redDim : "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
+                              <SVGIcon id="trash" size={14} color={confirming ? T.red : T.ink3} />
+                            </button>
+                          </div>
+                          {confirming && (
+                            <div style={{ display: "flex", gap: 8, padding: "0 14px 12px" }}>
+                              <button onClick={function() { deleteArchivedChat(s.id); setDeleteChatConfirm(null); }}
+                                style={{ border: "none", borderRadius: 10, background: T.redDim, cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.red, padding: "8px 14px" }}>
+                                Delete
+                              </button>
+                              <button onClick={function() { setDeleteChatConfirm(null); }}
+                                style={{ border: "none", borderRadius: 10, background: "rgba(0,0,0,0.05)", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.ink2, padding: "8px 14px" }}>
+                                Cancel
+                              </button>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  );
-                });
+                      );
+                    })}
+                  </Card>
+                );
               })()}
             </div>
             {props.onOpenProfile && (
               <button onClick={function() { setHistoryOpen(false); setChatExpanded(false); props.onOpenProfile(); }}
-                style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", paddingBottom: "calc(14px + env(safe-area-inset-bottom, 0px))", border: "none", borderTop: "0.5px solid " + T.sep, background: "none", cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
+                style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", paddingBottom: "calc(14px + env(safe-area-inset-bottom, 0px))", border: "none", borderTop: "0.5px solid " + T.sep, background: T.card, cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
                 {/* The user's own mark. The app has no avatar images anywhere -
                     an initial on a tinted disc is how a person is shown
                     throughout (see Disc / FaceStack), so it is used here too. */}
-                <span style={{ width: 22, height: 22, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10.5, fontWeight: 700, fontFamily: UI, flexShrink: 0, lineHeight: 1 }}>
+                <span style={{ width: 32, height: 32, borderRadius: "50%", background: T.orange, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 13.5, fontWeight: 700, fontFamily: UI, flexShrink: 0, lineHeight: 1 }}>
                   {String(props.username || "?").trim().replace("@", "").charAt(0).toUpperCase() || "?"}
                 </span>
-                <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 600, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{(props.username || "Your profile")}</span>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ display: "block", fontSize: 15, fontWeight: 500, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{(props.username || "Your profile")}</span>
+                  <span style={{ display: "block", fontSize: 12, color: T.ink3, marginTop: 1 }}>{tr("profile")}</span>
+                </span>
+                <SVGIcon id="chevron" size={14} color={T.ink3} />
               </button>
             )}
           </div>
@@ -18193,6 +18222,49 @@ function FullAnalysisView(props) {
   var tx = props.tx || [];
   var ym = curMonth();
 
+  // Ask-Richard thread, pinned to this screen. The composer is a bar at the
+  // bottom rather than a full-screen takeover: the analysis stays on screen so
+  // a question and the numbers that prompted it can be read together. Sending
+  // scrolls the thread into view at the bottom of the page.
+  var _fac = useState([]); var faChat = _fac[0]; var setFaChat = _fac[1];
+  var _fai = useState(""); var faInput = _fai[0]; var setFaInput = _fai[1];
+  var _fab = useState(false); var faBusy = _fab[0]; var setFaBusy = _fab[1];
+  var _faf = useState(-1); var faFresh = _faf[0]; var setFaFresh = _faf[1];
+  var faEndRef = useRef(null);
+  var faScrollWanted = useRef(false);
+  useEffect(function() {
+    if (!faScrollWanted.current) return;
+    faScrollWanted.current = false;
+    // Let layout settle first - the thread is only just mounted here, so
+    // scrolling immediately targets a position the layout then moves. Timers
+    // rather than rAF: rAF does not tick in a backgrounded or non-compositing
+    // tab, and the scroll would silently never happen.
+    //
+    // Smooth scrolling is driven by the compositor, so it is a no-op in those
+    // same conditions (and under reduced-motion). Landing on the thread is the
+    // behaviour that matters and the animation is the garnish, so the second
+    // timer checks whether the smooth pass actually moved us and snaps there
+    // if it did not - otherwise sending would look like it did nothing.
+    var reduce = false;
+    try { reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+    function endTop() {
+      var el = faEndRef.current;
+      return el && el.getBoundingClientRect ? el.getBoundingClientRect().top : 0;
+    }
+    var t1 = setTimeout(function() {
+      var el = faEndRef.current;
+      if (!el || !el.scrollIntoView) return;
+      el.scrollIntoView(reduce ? { block: "end" } : { behavior: "smooth", block: "end" });
+    }, 60);
+    var t2 = reduce ? null : setTimeout(function() {
+      var el = faEndRef.current;
+      if (!el || !el.scrollIntoView) return;
+      // Still well below the fold => the smooth pass never ran.
+      if (endTop() > window.innerHeight) el.scrollIntoView({ block: "end" });
+    }, 500);
+    return function() { clearTimeout(t1); if (t2) clearTimeout(t2); };
+  }, [faChat.length, faBusy]);
+
   function catSpend(c) {
     return tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ym) && (t.catId === c.id || t.category === c.name); })
       .reduce(function(s, t) { return s + t.amount; }, 0);
@@ -18215,6 +18287,39 @@ function FullAnalysisView(props) {
   var name = (props.username || "").trim() || "there";
   var headline = score >= 80 ? "You're in good shape, " + name + "." : score >= 60 ? "You're on the right track, " + name + "." : "Let's tighten things up, " + name + ".";
   var monthLabel = new Date().toLocaleString(undefined, { month: "long" }) + " " + new Date().getFullYear();
+
+  function sendFaChat(text) {
+    var msg = (text != null ? text : faInput).trim();
+    if (!msg || faBusy) return;
+    setFaInput("");
+    var history = faChat.concat([{ role: "user", text: msg }]);
+    setFaChat(history);
+    setFaBusy(true);
+    faScrollWanted.current = true;
+    // Grounded in the very figures on screen, so an answer can never quietly
+    // disagree with the card the user is looking at while they read it.
+    var snapshot = "This month (" + monthLabel + "): income " + dollars(income) + ", spent " + dollars(expense)
+      + ", kept " + dollars(net) + " (savings rate " + savRate + "%), net worth " + dollars(netWorth)
+      + ", buffer " + bufferTxt + " months of expenses, " + reviewed + " transactions reviewed"
+      + (totalLimit > 0 ? ", budgets " + budgetPct + "% used (" + dollars(expense) + " of " + dollars(totalLimit) + ")" : ", no budgets set")
+      + (typeof a.score === "number" ? ", Richard's health score " + a.score + "/100" : "")
+      + (a.headline ? ". Your written summary said: " + a.headline : "") + ".";
+    var sys = richardUserCtx(props.richardInstructions)
+      + "You are Richard, talking to the user while they read their Full Analysis screen in the Richy app. They can see every figure below as they read your reply, so quote those exact numbers and never contradict them. Answer the question they actually asked, in two to four short sentences of plain language - no headings, no bullet lists unless they ask for a list. If they ask about something the analysis does not cover, say so plainly rather than inventing a figure."
+      + " " + snapshot
+      + (props.lang && props.lang !== "en" ? " Reply entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : "");
+    callClaude(history.map(function(m) { return { role: m.role === "richard" ? "assistant" : "user", content: m.text }; }),
+      sys, 500, function(err, reply) {
+        setFaBusy(false);
+        faScrollWanted.current = true;
+        // This prompt never asks for ACTION tags, but strip any stray one
+        // rather than render the raw syntax at the user (stripUpdates itself
+        // is local to Advisor and not in scope here).
+        var out = (err || !reply) ? "Sorry, I couldn't think that through just now - try again in a moment."
+          : String(reply).replace(/\[ACTION:[\s\S]*?\]/g, "").trim();
+        setFaChat(function(prev) { setFaFresh(prev.length); return prev.concat([{ role: "richard", text: out }]); });
+      });
+  }
 
   var anaCtx = { tx: tx, categories: cats, folders: props.folders || [], businesses: props.businesses, investing: props.investing, savings: props.savings, ym: ym, splitPlan: props.splitPlan };
   var lines = (props.budgets || []).map(function(b) {
@@ -18293,7 +18398,9 @@ function FullAnalysisView(props) {
   }
 
   return (
-    <div>
+    // Bottom room for the fixed Ask-Richard bar, so the last card and the
+    // disclaimer can still be scrolled clear of it.
+    <div style={{ paddingBottom: 68 }}>
       <SubViewBack onBack={props.onBack} label="Richard" />
 
       {/* Score summary - the same read as the Advisor hero, condensed. The flat
@@ -18433,8 +18540,59 @@ function FullAnalysisView(props) {
         </div>
       )}
 
+      {/* The correspondence area. Lives at the end of the analysis, so sending
+          from the bar below scrolls the page down to it rather than covering
+          the numbers the question was about. */}
+      {(faChat.length > 0 || faBusy) && (
+        <div style={{ padding: "0 14px" }}>
+          {section("Ask Richard", "")}
+          <div role="log" aria-live="polite" aria-busy={faBusy}>
+            {faChat.map(function(m, i) {
+              var mine = m.role === "user";
+              return (
+                <div key={i} style={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start", marginBottom: mine ? 12 : 18 }}>
+                  <div dir="auto" style={{ maxWidth: mine ? "84%" : "100%", background: mine ? T.card : "transparent", border: mine ? "0.5px solid " + T.sep : "none", borderRadius: mine ? 19 : 0, padding: mine ? "11px 14px" : "1px 2px", fontSize: mine ? 13.5 : 14.5, fontFamily: mine ? UI : RICHARD_BODY, lineHeight: 1.55, color: T.ink, textAlign: "start", unicodeBidi: "plaintext", whiteSpace: "pre-wrap", boxShadow: mine ? "0 1px 1px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.05)" : "none" }}>
+                    {!mine && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
+                        <SiriOrb size={22} />
+                        <span style={{ fontFamily: RICHARD_DISP, fontWeight: RICHARD_DISP_WEIGHT, fontSize: 14.5, color: T.ink }}>Richard</span>
+                      </div>
+                    )}
+                    {mine ? m.text : <TypeReveal fade animate={i === faFresh} text={m.text} size={14.5} font={RICHARD_BODY} color={T.ink} />}
+                  </div>
+                </div>
+              );
+            })}
+            {faBusy && (
+              <div style={{ display: "flex", alignItems: "center", gap: 9, margin: "2px 2px 18px" }}>
+                <SiriOrb size={22} />
+                <ThinkingDots size={4.5} color={T.ink3} />
+                <ThinkingPhrase />
+              </div>
+            )}
+          </div>
+          <div ref={faEndRef} />
+        </div>
+      )}
+
       <div style={{ textAlign: "center", fontSize: 11.5, color: T.ink3, lineHeight: 1.5, padding: "0 14px 6px" }}>
         Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.
+      </div>
+
+      {/* Just a bar, never the whole screen. Sits above the tab bar's safe area
+          and matches the Advisor composer's shape so the two read as the same
+          Richard, reached from two places. */}
+      <div style={{ position: "fixed", left: "50%", transform: "translateX(-50%)", bottom: "calc(96px + env(safe-area-inset-bottom, 0px))", width: "100%", maxWidth: 430, padding: "0 14px", boxSizing: "border-box", zIndex: 38, pointerEvents: "none" }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", padding: "6px 6px 6px 16px", background: T.card, border: "0.5px solid " + T.sep, borderRadius: 26, boxShadow: "0 12px 32px rgba(20,17,14,0.14), 0 2px 8px rgba(20,17,14,0.06)", pointerEvents: "auto", boxSizing: "border-box" }}>
+          <input value={faInput} onChange={function(e) { setFaInput(e.target.value); }}
+            onKeyDown={function(e) { if (e.key === "Enter" && !(e.nativeEvent && e.nativeEvent.isComposing)) { e.preventDefault(); sendFaChat(); } }}
+            aria-label="Ask Richard about this analysis" placeholder="Ask about this analysis..." dir="auto"
+            style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "10px 0", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box" }} />
+          <button onClick={function() { sendFaChat(); }} disabled={!faInput.trim() || faBusy} aria-label={tr("sendMessage")}
+            style={{ width: 40, height: 40, flexShrink: 0, border: "none", borderRadius: "50%", background: faInput.trim() && !faBusy ? T.ink : T.inputBg, display: "flex", alignItems: "center", justifyContent: "center", cursor: faInput.trim() && !faBusy ? "pointer" : "default", padding: 0, transition: "background 160ms ease" }}>
+            <SVGIcon id="up" size={17} color={faInput.trim() && !faBusy ? T.card : T.ink3} />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -31201,7 +31359,7 @@ export default function App() {
         {currentTab === "social" && <SocialView social={social} onOpen={function(uid) { prevTabRef.current = "social"; setOpenPerson(uid); setTab("person"); }} onFind={function() { prevTabRef.current = "social"; setTab("findPeople"); }} onAccept={onAcceptFollow} onDecline={onDeclineFollow} onRemoveFollower={onRemoveFollower} onBack={function() { setTab("profile"); }} />}
         {currentTab === "findPeople" && <FindPeopleView myHandle={social.handle} myUid={accountKey} followingUids={social.following.map(function(p) { return p.uid; })} onClaimHandle={onClaimHandle} onFind={CLOUD.findByHandle} onRequest={onRequestFollow} onCopy={copyText} onBack={function() { setTab("social"); }} />}
         {currentTab === "settings" && <SettingsView user={user} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} richardInstructions={richardInstructions} bankSync={bankSync} householdName={household ? household.name : null} inviteCount={invites.length} debtCount={debts.length} onBack={function() { setTab("profile"); }} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "settings"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "settings"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "settings"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "settings"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "settings"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "settings"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "settings"; setTab("periodMode"); }} onViewBankSync={function() { prevTabRef.current = "settings"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "settings"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "settings"; setTab("editOpeningBalance"); }} onViewCollab={function() { prevTabRef.current = "settings"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "settings"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
-        {currentTab === "analysis" && <FullAnalysisView tx={tx} categories={categories} folders={folders} splitPlan={splitPlan} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} username={user} analysis={freshAnalysis ? freshAnalysis.data : null} onBack={function() { setTab("advisor"); }} />}
+        {currentTab === "analysis" && <FullAnalysisView tx={tx} categories={categories} folders={folders} splitPlan={splitPlan} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} username={user} analysis={freshAnalysis ? freshAnalysis.data : null} lang={lang} richardInstructions={richardCtx} onBack={function() { setTab("advisor"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} onAccountDeleted={handleLogout} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
         {currentTab === "editEmail" && <EditEmailView currentEmail={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onSave={function(email) { onSaveEmail(email); setTab("privacy"); }} />}
