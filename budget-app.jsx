@@ -3447,7 +3447,11 @@ function ensureSiriOrbCss() {
   var st = document.createElement("style"); st.id = id;
   st.textContent = [
     "@property --sorb-angle{syntax:'<angle>';inherits:false;initial-value:0deg;}",
-    ".rc-siri-orb{display:grid;grid-template-areas:'stack';overflow:hidden;border-radius:50%;position:relative;background:radial-gradient(circle,rgba(0,0,0,0.08) 0%,rgba(0,0,0,0.03) 30%,transparent 70%);}",
+    // A translucent backing fill sits under the swirl so the gaps between the
+    // conic-gradient arcs read as soft glass rather than a hole straight
+    // through to whatever's behind the orb in the DOM (the ribbon shader
+    // canvas, in the voice overlay) - a light tint, not a solid disc.
+    ".rc-siri-orb{display:grid;grid-template-areas:'stack';overflow:hidden;border-radius:50%;position:relative;background:radial-gradient(circle,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.04) 40%,transparent 72%),var(--sorb-base);}",
     ".rc-siri-orb::before{content:'';display:block;grid-area:stack;width:100%;height:100%;border-radius:50%;background:"
       + "conic-gradient(from calc(var(--sorb-angle,0deg)*1.2) at 30% 65%,var(--sorb-c3) 0deg,transparent 45deg 315deg,var(--sorb-c3) 360deg),"
       + "conic-gradient(from calc(var(--sorb-angle,0deg)*0.8) at 70% 35%,var(--sorb-c2) 0deg,transparent 60deg 300deg,var(--sorb-c2) 360deg),"
@@ -3455,29 +3459,41 @@ function ensureSiriOrbCss() {
       + "conic-gradient(from calc(var(--sorb-angle,0deg)*2.1) at 25% 25%,var(--sorb-c2) 0deg,transparent 30deg 330deg,var(--sorb-c2) 360deg),"
       + "conic-gradient(from calc(var(--sorb-angle,0deg)*-0.7) at 80% 80%,var(--sorb-c1) 0deg,transparent 45deg 315deg,var(--sorb-c1) 360deg),"
       + "radial-gradient(ellipse 120% 80% at 40% 60%,var(--sorb-c3) 0%,transparent 50%);"
-      + "filter:blur(var(--sorb-blur,8px)) contrast(var(--sorb-contrast,1.8)) saturate(1.2);animation:rcSorbSpin var(--sorb-dur,20s) linear infinite;transform:translateZ(0);will-change:transform;}",
+      + "filter:blur(var(--sorb-blur,8px)) contrast(var(--sorb-contrast,1.8)) saturate(var(--sorb-sat,1.35));animation:rcSorbSpin var(--sorb-dur,20s) linear infinite;transform:translateZ(0);will-change:transform;}",
     ".rc-siri-orb::after{content:'';display:block;grid-area:stack;width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 45% 55%,rgba(255,255,255,0.1) 0%,rgba(255,255,255,0.05) 30%,transparent 60%);mix-blend-mode:overlay;}",
     "@keyframes rcSorbSpin{from{--sorb-angle:0deg;}to{--sorb-angle:360deg;}}",
     "@media (prefers-reduced-motion:reduce){.rc-siri-orb::before{animation:none;}}"
   ].join("");
   document.head.appendChild(st);
 }
+// Lift a theme hex toward white. The orb needs a light tone in the mix or a
+// single-hue theme (blue, purple) collapses into one flat ball and the swirl
+// stops reading. jrHex is defined next to jrRgba above.
+function sorbLift(hex, f) {
+  var c = jrHex(hex);
+  return "rgb(" + Math.round((c[0] + (1 - c[0]) * f) * 255)
+    + "," + Math.round((c[1] + (1 - c[1]) * f) * 255)
+    + "," + Math.round((c[2] + (1 - c[2]) * f) * 255) + ")";
+}
 function SiriOrb(props) {
   ensureSiriOrbCss();
   var size = props.size || 48;
   var blur = Math.max(size * 0.08, 3.5);
   var contrast = Math.max(size * 0.003, 1.8);
-  // Colors ride the live theme: the accent pair plus brand gold, so the orb
-  // matches whichever look (blue / classic / purple, light or dark) is active.
+  // Colors ride the live theme - the accent pair plus the deeper trend tone,
+  // all from one family. Brand gold is deliberately NOT in here: against the
+  // blue and purple themes it reads as a yellow blob rather than a highlight.
   return (
     <div className="rc-siri-orb" aria-hidden="true" style={{
       width: size, height: size, flexShrink: 0,
-      "--sorb-c1": props.c1 || T.orange,
-      "--sorb-c2": props.c2 || T.orangeHi,
-      "--sorb-c3": props.c3 || T.gold,
+      "--sorb-c1": props.c1 || sorbLift(T.orange, 0.22),
+      "--sorb-c2": props.c2 || sorbLift(T.orangeHi, 0.5),
+      "--sorb-c3": props.c3 || sorbLift(T.trendLineA || T.orange, 0.34),
       "--sorb-dur": (props.duration || 20) + "s",
       "--sorb-blur": blur + "px",
-      "--sorb-contrast": contrast
+      "--sorb-contrast": contrast,
+      "--sorb-sat": props.sat || 1.35,
+      "--sorb-base": props.base || jrRgba(T.orange, 0.45)
     }} />
   );
 }
@@ -6408,7 +6424,8 @@ function JrReadingLight(props) {
         // text-shadow inherits, so this reaches the h2 and the sub without
         // touching either style object: a cream halo that fills the serif
         // counters out where the band feathers away. Invisible on the plateau.
-        textShadow: "0 0 8px rgba(251,243,232,0.85)",
+        // Scales with strength so a strength:0 caller (dark mode) is a no-op.
+        textShadow: "0 0 8px rgba(251,243,232," + Math.min(0.85, a) + ")",
       }}>{props.children}</div>
     </div>
   );
@@ -17507,12 +17524,12 @@ function Advisor(props) {
           {/* Same ribbons as the text chat, breathing with the conversation -
               calm while idle, surging while Richard speaks. */}
           <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base={T.bg}
-            speed={vPhase === "speaking" ? 0.34 : vPhase === "thinking" ? 0.26 : vPhase === "listening" ? 0.2 : 0.12}
-            intensity={vPhase === "speaking" ? 0.52 : vPhase === "listening" ? 0.42 : 0.3}
+            speed={vPhase === "speaking" ? 0.36 : vPhase === "thinking" ? 0.28 : vPhase === "listening" ? 0.22 : 0.14}
+            intensity={vPhase === "speaking" ? 0.6 : vPhase === "listening" ? 0.48 : vPhase === "thinking" ? 0.44 : 0.38}
             yScale={0.44} xScale={1.05} style={{ position: "absolute", inset: 0 }} />
-          {/* Slightly heavier wash than the chat panel: captions sit directly
-              on the ribbons here, and ink over bare shader fails contrast. */}
-          <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "linear-gradient(180deg," + jrRgba(T.bg, 0.78) + " 0%," + jrRgba(T.bg, 0.52) + " 22%," + jrRgba(T.bg, 0.52) + " 78%," + jrRgba(T.bg, 0.78) + " 100%)" }} />
+          {/* Light wash only - the ribbons stay vivid; the copy underneath
+              carries its own ground (JrReadingLight), not a screen-wide veil. */}
+          <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "linear-gradient(180deg," + jrRgba(T.bg, 0.72) + " 0%," + jrRgba(T.bg, 0.34) + " 22%," + jrRgba(T.bg, 0.34) + " 78%," + jrRgba(T.bg, 0.72) + " 100%)" }} />
           <div style={{ position: "relative", zIndex: 1, flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
             <div style={{ display: "grid", gridTemplateColumns: "82px minmax(0,1fr) 82px", alignItems: "center", minHeight: 58, padding: "calc(8px + env(safe-area-inset-top, 0px)) 14px 8px", boxSizing: "border-box" }}>
               <div />
@@ -17534,10 +17551,20 @@ function Advisor(props) {
               <button type="button" onClick={vOrbTap}
                 aria-label={vPhase === "speaking" ? "Interrupt Richard and speak" : vPhase === "listening" ? "Stop listening" : vPhase === "thinking" ? "Richard is thinking" : "Start talking"}
                 style={{ border: "none", background: "none", padding: 0, cursor: "pointer", borderRadius: "50%", transition: "transform 0.45s cubic-bezier(0.22,1,0.36,1)", transform: vPhase === "speaking" ? "scale(1.05)" : vPhase === "thinking" ? "scale(0.92)" : vPhase === "listening" ? "scale(1)" : "scale(0.88)", animation: vPhase === "listening" ? "rclBreathe 3.2s ease-in-out infinite" : vPhase === "speaking" ? "rclBreathe 1.5s ease-in-out infinite" : "none" }}>
-                <SiriOrb size={182} duration={vPhase === "speaking" ? 9 : vPhase === "thinking" ? 14 : 20} />
+                <SiriOrb size={182} sat={1.6} duration={vPhase === "speaking" ? 9 : vPhase === "thinking" ? 14 : 20} />
               </button>
 
-              <div style={{ minHeight: 128, marginTop: 34, width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+              {vPhase === "idle" && !vError && (
+                <div style={{ marginTop: 16, fontFamily: RICHARD_DISP, fontWeight: RICHARD_DISP_WEIGHT, fontSize: 15, color: T.ink2, letterSpacing: "-0.01em", lineHeight: 1.4, maxWidth: 260 }}>
+                  This is voice - Richard speaks back in a rich, natural tone.
+                </div>
+              )}
+
+              {/* The copy sits on its own feathered cream band (the onboarding
+                  pattern) so the ribbons around it can run at full strength.
+                  Dark mode skips the band - it is hard-coded cream. */}
+              <JrReadingLight padY={54} strength={T.isDark ? 0 : 0.88} style={{ marginTop: 34 }}>
+              <div style={{ minHeight: 128, width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
                 {vPhase === "listening" && (
                   <div style={{ fontSize: 9, fontWeight: 800, fontFamily: UI, color: T.ink3, letterSpacing: "0.16em", textTransform: "uppercase" }}>Listening</div>
                 )}
@@ -17563,6 +17590,7 @@ function Advisor(props) {
                   <div style={{ fontSize: 11.5, fontFamily: UI, fontWeight: 600, color: T.ink3 }}>Tap the orb to interrupt</div>
                 )}
               </div>
+              </JrReadingLight>
             </div>
 
             <div style={{ padding: "0 26px calc(16px + env(safe-area-inset-bottom, 0px))", textAlign: "center" }}>
@@ -23462,14 +23490,11 @@ function localStockScout(candidates, ctx) {
   var scored = candidates.filter(function(c) { return c.yrPct != null || c.moPct != null; })
     .map(function(c) { return { c: c, score: (c.moPct || 0) * 0.6 + (c.yrPct || 0) * 0.4 }; })
     .sort(function(a, b) { return b.score - a.score; });
-  var cash = ctx.investingCash || 0;
   var picks = scored.slice(0, 2).map(function(s) {
-    var amt = Math.max(0, Math.round(cash * 0.15));
     return { symbol: s.c.symbol, name: s.c.symbol, confidence: "low",
       hook: "The hot hand in " + s.c.theme + " right now.",
       thesis: "Among your candidates, " + s.c.symbol + " (" + s.c.theme + ") shows the strongest recent momentum (" + ((s.c.moPct || 0) >= 0 ? "+" : "") + (s.c.moPct || 0) + "% this month). That's history, not a promise - treat it as a starting point to research, not a verdict.",
-      catalyst: "Momentum in the " + s.c.theme + " space.", risks: "Fast risers can fall just as fast - keep the position small.",
-      suggestedAmount: amt, suggestedPct: cash > 0 ? Math.round(amt / cash * 100) : 0 };
+      catalyst: "Momentum in the " + s.c.theme + " space.", risks: "Fast risers can fall just as fast." };
   });
   return { marketNote: "I'm working from recent price action while my deeper analysis is offline - take these as leads to dig into.", picks: picks, source: "local", generatedAt: ctx.today, marketNews: [] };
 }
@@ -23487,11 +23512,14 @@ function runStockScout(ctx, cb) {
     }).join("\n");
     var newsLines = (data.marketNews || []).slice(0, 6).map(function(n) { return "- " + n.headline; }).join("\n");
     var riskWord = { sell: "gets nervous and may sell in downturns", hold: "holds steady through downturns", buy: "likes to buy the dip" }[(ctx.profile || {}).risk] || "is still finding their risk comfort";
-    var personal = "The investor has " + dollars(ctx.investingCash || 0) + " of cash ready to invest in this account and a spendable balance of " + dollars(ctx.balance || 0) + ". They are " + investorLevelPhrase(ctx.profile) + " who " + riskWord + ".";
+    // No cash or balance figures here on purpose - sizing is banned below, and
+    // handing the model exact numbers with nothing to do with them just invites
+    // it to ignore that rule. Only tone-calibration context survives.
+    var personal = "The investor is " + investorLevelPhrase(ctx.profile) + " who " + riskWord + ".";
     var system = richardUserCtx(ctx.richardInstructions) +
-      "You are Richard in your most rigorous mode - a sharp, honest stock analyst hunting for the most promising opportunities for THIS person right now. Reason from the real data provided (recent price action and current headlines) together with what you know about these companies' products, moats, and likely catalysts. Have a genuine view, but name the risks plainly and never promise a return. Rank the 2 or 3 strongest ideas. Size each suggestion to what they can actually afford: never more than their available cash, smaller for a beginner or a nervous investor, and keep any single idea a sensible slice rather than everything at once. Write the way you'd talk to a smart friend over coffee, not the way an analyst files a report: short, punchy sentences, zero filler, no essay voice." + investorGlossary(ctx.profile) +
-      " Return ONLY a JSON object: {\"marketNote\":\"one punchy sentence on the market's mood right now\",\"picks\":[{\"symbol\":\"TICKER\",\"name\":\"Company name\",\"confidence\":\"low|medium|high\",\"hook\":\"your headline for this pick - ten words max, vivid enough to stop someone mid-scroll, no ticker needed\",\"thesis\":\"why it could win - at most two short spoken sentences\",\"catalyst\":\"the one specific driver - a product, trend, or event, in one sentence\",\"risks\":\"the main way it goes wrong, in one or two blunt sentences\",\"suggestedAmount\":<number of " + (SYM_TO_CODE[_currency.sym] || "USD") + ">,\"suggestedPct\":<percent of their investing cash>}]}. Choose only from the tickers listed above." + langLine;
-    callClaude([{ role: "user", content: "Candidate data:\n" + lines + "\n\nCurrent market headlines:\n" + (newsLines || "(none available)") + "\n\n" + personal + " Find the next big opportunities for me and size each one to my situation." }],
+      "You are Richard in your most rigorous mode - a sharp, honest stock analyst hunting for the most promising opportunities right now. Reason from the real data provided (recent price action and current headlines) together with what you know about these companies' products, moats, and likely catalysts. Have a genuine view, but name the risks plainly and never promise a return, never state or imply how much of anything to buy, and never tell them to buy, sell, or hold - describe the opportunity and let them decide. Rank the 2 or 3 strongest ideas. Write the way you'd talk to a smart friend over coffee, not the way an analyst files a report: short, punchy sentences, zero filler, no essay voice." + investorGlossary(ctx.profile) +
+      " Return ONLY a JSON object: {\"marketNote\":\"one punchy sentence on the market's mood right now\",\"picks\":[{\"symbol\":\"TICKER\",\"name\":\"Company name\",\"confidence\":\"low|medium|high\",\"hook\":\"your headline for this pick - ten words max, vivid enough to stop someone mid-scroll, no ticker needed\",\"thesis\":\"why it could win - at most two short spoken sentences\",\"catalyst\":\"the one specific driver - a product, trend, or event, in one sentence\",\"risks\":\"the main way it goes wrong, in one or two blunt sentences\"}]}. Choose only from the tickers listed above." + langLine;
+    callClaude([{ role: "user", content: "Candidate data:\n" + lines + "\n\nCurrent market headlines:\n" + (newsLines || "(none available)") + "\n\n" + personal + " Find the next big opportunities worth researching." }],
       system, 1500, function(err, text) {
         if (err || !text) { cb(localStockScout(data.candidates, ctx)); return; }
         try {
@@ -23504,11 +23532,11 @@ function runStockScout(ctx, cb) {
   });
 }
 function sendScoutChat(scout, ctx, history, cb) {
-  var picksLine = (scout.picks || []).map(function(p) { return p.symbol + " (" + p.confidence + " confidence): " + p.thesis + " Catalyst: " + p.catalyst + " Risk: " + p.risks + " Suggested: " + dollars(p.suggestedAmount || 0); }).join("\n");
+  var picksLine = (scout.picks || []).map(function(p) { return p.symbol + " (" + p.confidence + " confidence): " + p.thesis + " Catalyst: " + p.catalyst + " Risk: " + p.risks; }).join("\n");
   var langName = LANGUAGE_NAMES[ctx.lang] || "English";
   var langLine = langName !== "English" ? " Reply entirely in " + langName + "." : "";
   var system = richardUserCtx(ctx.richardInstructions) +
-    "You are Richard, discussing the stock ideas you just gave this person. Be warm, direct, and concrete, explain your reasoning when asked, and stay honest about uncertainty - never promise returns. Keep replies short and punchy - two to four spoken-style sentences unless they ask for real depth. Tie advice to their money: they have " + dollars(ctx.investingCash || 0) + " of investing cash and are " + investorLevelPhrase(ctx.profile) + ". Your scouting report said: " + (scout.marketNote || "") + "\nYour picks:\n" + picksLine + RICHARD_FORMAT + langLine;
+    "You are Richard, discussing the stock ideas you just gave this person. Be warm, direct, and concrete, explain your reasoning when asked, and stay honest about uncertainty - never promise returns, and never state or imply how much of anything to buy. They are " + investorLevelPhrase(ctx.profile) + ". Keep replies short and punchy - two to four spoken-style sentences unless they ask for real depth. Your scouting report said: " + (scout.marketNote || "") + "\nYour picks:\n" + picksLine + RICHARD_FORMAT + langLine;
   callClaude(history, system, 700, cb);
 }
 
@@ -23716,7 +23744,7 @@ var SCOUT_CINEMA = [
   { h: "Prices are just moods.", s: "Millions of people voting with money, all day. The wiggles are normal.", glyph: 1 },
   { h: "Every pick needs a spark.", s: "The catalyst: one specific event that could actually move the price.", glyph: 2 },
   { h: "Dips are part of the deal.", s: "Great stocks drop sometimes. Only invest money that can sit for years.", glyph: 3 },
-  { h: "Start small. Learn cheap.", s: "Every idea is sized to your cash, so no single bet can hurt you.", glyph: 4 },
+  { h: "Start small. Learn cheap.", s: "How much to put in is your call, always - start smaller while you're learning.", glyph: 4 },
   { h: "Richard's on it.", s: "He reads the prices and the news, then brings you his best ideas.", glyph: -1, last: true }
 ];
 // Film for the "New to investing?" journey: how stocks work + how to spot a
@@ -23737,7 +23765,7 @@ var RICHARD_CINEMA = [
   { h: "He reads everything.", s: "Live prices, momentum, and today's headlines - across the market's biggest movers.", glyph: 5 },
   { h: "Then he thinks. Hard.", s: "His deepest reasoning mode weighs every candidate before he commits to a view.", glyph: 2 },
   { h: "Honest about risk.", s: "Every pick names its catalyst and how it could go wrong. No hype, no promised returns.", glyph: 6 },
-  { h: "Sized to your money.", s: "He never suggests more than you can afford - and keeps it smaller while you learn.", glyph: 4 },
+  { h: "The decision stays yours.", s: "He surfaces the idea and the risk - whether and how much is always your call.", glyph: 4 },
   { h: "Why he's the best.", s: "He's read more market history than any human could, and he isn't paid to sell you anything.", glyph: 1 },
   { h: "Let him hunt.", s: "Fresh picks, scouted from live data, whenever you ask.", glyph: -1, last: true, cta: "Show me the picks" }
 ];
@@ -23899,7 +23927,6 @@ function ScoutBasicsStory(props) {
 
 function StockScoutView(props) {
   var accts = props.investing || [];
-  var tx = props.tx || [];
   var today = new Date().toISOString().slice(0, 10);
   var acct = null;
   for (var ai = 0; ai < accts.length; ai++) { if (accts[ai].id === props.openInvId) { acct = accts[ai]; break; } }
@@ -23923,13 +23950,10 @@ function StockScoutView(props) {
 
   useEffect(function() { ensureScoutCss(); }, []);
 
-  var cash = acct ? investingCash(acct) : 0;
-  var balance = 0;
-  tx.forEach(function(t) { if (t.pending || t.catchUp || (t.date && t.date > today)) return; balance += t.type === "income" ? t.amount : -t.amount; });
-  balance = round2(balance);
-
+  // No cash/balance in scope on purpose: the scout surfaces research, and the
+  // model is never handed figures it could size a position against.
   function ctxObj() {
-    return { investingCash: cash, balance: balance, profile: props.investorProfile, lang: props.lang, richardInstructions: props.richardInstructions, today: today };
+    return { profile: props.investorProfile, lang: props.lang, richardInstructions: props.richardInstructions, today: today };
   }
   function saveScout(next) {
     if (!acct) return;
@@ -24030,7 +24054,7 @@ function StockScoutView(props) {
       {busy ? (
         <Card style={{ padding: "22px 20px", marginTop: 12 }}>
           <AIWorking bare title="Richard is thinking as hard as he can" sub="Deep-reasoning mode - reading live prices and the news before he commits."
-            expectedMs={30000} steps={["Pulling live prices and headlines", "Reading the market's mood", "Weighing every candidate", "Pressure-testing his picks", "Sizing it to your money"]} />
+            expectedMs={30000} steps={["Pulling live prices and headlines", "Reading the market's mood", "Weighing every candidate", "Pressure-testing his picks", "Writing the report"]} />
         </Card>
       ) : !scout ? (
         <Card style={{ padding: "24px 20px", marginTop: 12, textAlign: "center" }}>
@@ -24048,7 +24072,6 @@ function StockScoutView(props) {
           )}
 
           {(scout.picks || []).map(function(p, i) {
-            var overCash = (p.suggestedAmount || 0) > cash;
             // Older saved reports predate the hook field - promote the thesis's
             // first sentence so those cards still lead with a one-liner.
             var hook = p.hook;
@@ -24077,13 +24100,6 @@ function StockScoutView(props) {
                     <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, lineHeight: 1.42, letterSpacing: "-0.01em" }}>{hook}</div>
                   </div>
                 )}
-                {p.suggestedAmount != null && (
-                  <div style={{ background: "rgba(0,0,0,0.03)", borderRadius: 12, padding: "12px 14px", marginBottom: 10 }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 3 }}>How much to put in</div>
-                    <div style={{ fontSize: 15, fontWeight: 800, color: T.ink }}>{"Up to " + dollars(p.suggestedAmount) + (p.suggestedPct ? "  ·  " + p.suggestedPct + "% of your cash" : "")}</div>
-                    {overCash && <div style={{ fontSize: 11.5, color: T.gold, fontWeight: 600, marginTop: 3 }}>{"That's more than your " + dollars(cash) + " cash - deposit first, or start smaller."}</div>}
-                  </div>
-                )}
                 {hook && (
                   <button onClick={function() { togglePick(i); }}
                     style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", padding: "2px 0", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.orange }}>
@@ -24103,12 +24119,11 @@ function StockScoutView(props) {
                     })}
                   </div>
                 )}
-                <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                  <button onClick={function() { if (props.onOpenStock) props.onOpenStock(acct.id, p.symbol); }}
-                    style={{ flex: 1, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "10px 0", borderRadius: 11, background: "none", color: T.orange }}>{"See " + p.symbol}</button>
-                  <button onClick={function() { if (props.onTrade) props.onTrade(acct.id, p.symbol); }}
-                    style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 800, padding: "10px 0", borderRadius: 11, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow }}>Buy</button>
-                </div>
+                {/* Research only - no Buy CTA on an AI-generated pick card. A
+                    user who wants to act goes to the stock's own page and
+                    decides there, as a separate deliberate step. */}
+                <button onClick={function() { if (props.onOpenStock) props.onOpenStock(acct.id, p.symbol); }}
+                  style={{ width: "100%", marginTop: 12, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "10px 0", borderRadius: 11, background: "none", color: T.orange, boxSizing: "border-box" }}>{"See " + p.symbol}</button>
               </Card>
             );
           })}
@@ -24150,7 +24165,7 @@ function StockScoutView(props) {
             <div ref={chatEndRef} />
             {msgs.length === 0 && (
               <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 7, marginBottom: 14 }}>
-                {[(scout.picks && scout.picks[0] ? "Why " + scout.picks[0].symbol + "?" : "Why these?"), "Is this risky for me?", "How much should I start with?"].map(function(q) {
+                {[(scout.picks && scout.picks[0] ? "Why " + scout.picks[0].symbol + "?" : "Why these?"), "Is this risky?", "What could go wrong?"].map(function(q) {
                   return <button key={q} onClick={function() { sendChat(q); }} style={{ border: "1px solid " + T.sep, background: T.card, borderRadius: 999, padding: "8px 13px", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.ink2, boxShadow: "0 2px 10px rgba(0,0,0,.035)" }}>{q}</button>;
                 })}
               </div>
