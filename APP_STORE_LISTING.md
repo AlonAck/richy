@@ -17,11 +17,15 @@ Keep "Richy" first — it's the brand, and Apple weights early words in search.
 
 ## Subtitle — 30 char limit
 
-**`Your money has a manager now`** (28)
+**`Budget calmly. Spend clearly.`** (29)
 
 Alternatives:
-- `Budget calmly. Spend clearly.` (29)
-- `Budgets, goals & an advisor` (27)
+- `Your money, finally clear` (25)
+- `Budgets, goals & a money coach` (30)
+
+<!-- Legal note (Aug 2026): "manager" and "advisor" are avoided in the
+subtitle - the first reads as portfolio management and the second is a
+regulated title in Israel; neither is licensed. -->
 
 ## Promotional text — 170 char limit (editable without a new build)
 
@@ -33,7 +37,7 @@ can be changed any time without submitting a build.
 ## Keywords — 100 char limit, comma-separated, NO spaces
 
 ```
-budget,expense,tracker,spending,savings,finance,money,goals,debt,networth,advisor,planner,shekel
+budget,expense,tracker,spending,savings,finance,money,goals,debt,networth,coach,planner,shekel
 ```
 (95)
 
@@ -46,7 +50,7 @@ separately, so repeating wastes characters.
 Richy is a budgeting app that feels calm instead of guilty.
 
 Most money apps hand you a spreadsheet and hope you enjoy it. Richy gives you a
-clear picture of your month — and Richard, an AI advisor who has actually read
+clear picture of your month — and Richard, an AI money coach who has actually read
 your numbers and talks to you like a person.
 
 MEET RICHARD
@@ -100,7 +104,7 @@ decisions.
 The first release of Richy.
 
 Budgets, goals, savings, debt payoff, trips, notes, business accounts and an
-investing tracker — with Richard, an AI advisor who knows your real numbers.
+investing tracker — with Richard, an AI money coach who knows your real numbers.
 
 Now in English, Hebrew, Arabic and Russian, with full right-to-left layout,
 50 currencies, and offline support.
@@ -206,7 +210,7 @@ in search results, so lead with the strongest):
 | # | Screen | Caption to overlay |
 |---|---|---|
 | 1 | Overview dashboard | "See where the month actually went" |
-| 2 | Advisor chat with Richard | "An advisor who's read your numbers" |
+| 2 | Advisor chat with Richard | "A money coach who's read your numbers" |
 | 3 | Budgets with progress bars | "Budgets you can read at a glance" |
 | 4 | Goals / budget books | "Give every goal a deadline" |
 | 5 | Debt payoff projection | "A real debt-free date" |
