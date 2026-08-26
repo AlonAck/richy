@@ -18321,6 +18321,56 @@ function FullAnalysisView(props) {
       });
   }
 
+  // Both built once and rendered from both the empty state and the full page
+  // below - "always show" means the composer doesn't wait on there being an
+  // analysis to ask about; sendFaChat already degrades gracefully with no
+  // score/headline.
+  var threadBlock = (faChat.length > 0 || faBusy) && (
+    <div>
+      {section("Ask Richard", "")}
+      <div role="log" aria-live="polite" aria-busy={faBusy}>
+        {faChat.map(function(m, i) {
+          var mine = m.role === "user";
+          return (
+            <div key={i} style={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start", marginBottom: mine ? 12 : 18 }}>
+              <div dir="auto" style={{ maxWidth: mine ? "84%" : "100%", background: mine ? T.card : "transparent", border: mine ? "0.5px solid " + T.sep : "none", borderRadius: mine ? 19 : 0, padding: mine ? "11px 14px" : "1px 2px", fontSize: mine ? 13.5 : 14.5, fontFamily: mine ? UI : RICHARD_BODY, lineHeight: 1.55, color: T.ink, textAlign: "start", unicodeBidi: "plaintext", whiteSpace: "pre-wrap", boxShadow: mine ? "0 1px 1px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.05)" : "none" }}>
+                {!mine && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
+                    <SiriOrb size={22} />
+                    <span style={{ fontFamily: RICHARD_DISP, fontWeight: RICHARD_DISP_WEIGHT, fontSize: 14.5, color: T.ink }}>Richard</span>
+                  </div>
+                )}
+                {mine ? m.text : <TypeReveal fade animate={i === faFresh} text={m.text} size={14.5} font={RICHARD_BODY} color={T.ink} />}
+              </div>
+            </div>
+          );
+        })}
+        {faBusy && (
+          <div style={{ display: "flex", alignItems: "center", gap: 9, margin: "2px 2px 18px" }}>
+            <SiriOrb size={22} />
+            <ThinkingDots size={4.5} color={T.ink3} />
+            <ThinkingPhrase />
+          </div>
+        )}
+      </div>
+      <div ref={faEndRef} />
+    </div>
+  );
+  var composerBar = (
+    <div style={{ position: "fixed", left: "50%", transform: "translateX(-50%)", bottom: "calc(96px + env(safe-area-inset-bottom, 0px))", width: "100%", maxWidth: 430, padding: "0 14px", boxSizing: "border-box", zIndex: 38, pointerEvents: "none" }}>
+      <div style={{ display: "flex", gap: 8, alignItems: "center", padding: "6px 6px 6px 16px", background: T.card, border: "0.5px solid " + T.sep, borderRadius: 26, boxShadow: "0 12px 32px rgba(20,17,14,0.14), 0 2px 8px rgba(20,17,14,0.06)", pointerEvents: "auto", boxSizing: "border-box" }}>
+        <input value={faInput} onChange={function(e) { setFaInput(e.target.value); }}
+          onKeyDown={function(e) { if (e.key === "Enter" && !(e.nativeEvent && e.nativeEvent.isComposing)) { e.preventDefault(); sendFaChat(); } }}
+          aria-label="Ask Richard about this analysis" placeholder="Ask about this analysis..." dir="auto"
+          style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "10px 0", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box" }} />
+        <button onClick={function() { sendFaChat(); }} disabled={!faInput.trim() || faBusy} aria-label={tr("sendMessage")}
+          style={{ width: 40, height: 40, flexShrink: 0, border: "none", borderRadius: "50%", background: faInput.trim() && !faBusy ? T.ink : T.inputBg, display: "flex", alignItems: "center", justifyContent: "center", cursor: faInput.trim() && !faBusy ? "pointer" : "default", padding: 0, transition: "background 160ms ease" }}>
+          <SVGIcon id="up" size={17} color={faInput.trim() && !faBusy ? T.card : T.ink3} />
+        </button>
+      </div>
+    </div>
+  );
+
   var anaCtx = { tx: tx, categories: cats, folders: props.folders || [], businesses: props.businesses, investing: props.investing, savings: props.savings, ym: ym, splitPlan: props.splitPlan };
   var lines = (props.budgets || []).map(function(b) {
     var r = resolveBudget(b, anaCtx);
@@ -18384,15 +18434,19 @@ function FullAnalysisView(props) {
 
   if (!a.score && !insights.length) {
     return (
-      <div>
+      <div style={{ paddingBottom: 68 }}>
         <SubViewBack onBack={props.onBack} label="Richard" />
         <Card style={{ padding: "46px 24px", textAlign: "center" }}>
           <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
             <ClaudeMark size={24} color={T.orange} />
           </div>
           <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 4 }}>No analysis yet</div>
-          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>Head back to Richard and let him read your month first.</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>Head back to Richard and let him read your month first, or ask below - I can still help with your real transactions.</div>
         </Card>
+
+        {threadBlock && <div style={{ padding: "14px 14px 0" }}>{threadBlock}</div>}
+
+        {composerBar}
       </div>
     );
   }
@@ -18543,57 +18597,13 @@ function FullAnalysisView(props) {
       {/* The correspondence area. Lives at the end of the analysis, so sending
           from the bar below scrolls the page down to it rather than covering
           the numbers the question was about. */}
-      {(faChat.length > 0 || faBusy) && (
-        <div style={{ padding: "0 14px" }}>
-          {section("Ask Richard", "")}
-          <div role="log" aria-live="polite" aria-busy={faBusy}>
-            {faChat.map(function(m, i) {
-              var mine = m.role === "user";
-              return (
-                <div key={i} style={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start", marginBottom: mine ? 12 : 18 }}>
-                  <div dir="auto" style={{ maxWidth: mine ? "84%" : "100%", background: mine ? T.card : "transparent", border: mine ? "0.5px solid " + T.sep : "none", borderRadius: mine ? 19 : 0, padding: mine ? "11px 14px" : "1px 2px", fontSize: mine ? 13.5 : 14.5, fontFamily: mine ? UI : RICHARD_BODY, lineHeight: 1.55, color: T.ink, textAlign: "start", unicodeBidi: "plaintext", whiteSpace: "pre-wrap", boxShadow: mine ? "0 1px 1px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.05)" : "none" }}>
-                    {!mine && (
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
-                        <SiriOrb size={22} />
-                        <span style={{ fontFamily: RICHARD_DISP, fontWeight: RICHARD_DISP_WEIGHT, fontSize: 14.5, color: T.ink }}>Richard</span>
-                      </div>
-                    )}
-                    {mine ? m.text : <TypeReveal fade animate={i === faFresh} text={m.text} size={14.5} font={RICHARD_BODY} color={T.ink} />}
-                  </div>
-                </div>
-              );
-            })}
-            {faBusy && (
-              <div style={{ display: "flex", alignItems: "center", gap: 9, margin: "2px 2px 18px" }}>
-                <SiriOrb size={22} />
-                <ThinkingDots size={4.5} color={T.ink3} />
-                <ThinkingPhrase />
-              </div>
-            )}
-          </div>
-          <div ref={faEndRef} />
-        </div>
-      )}
+      {threadBlock && <div style={{ padding: "0 14px" }}>{threadBlock}</div>}
 
       <div style={{ textAlign: "center", fontSize: 11.5, color: T.ink3, lineHeight: 1.5, padding: "0 14px 6px" }}>
         Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.
       </div>
 
-      {/* Just a bar, never the whole screen. Sits above the tab bar's safe area
-          and matches the Advisor composer's shape so the two read as the same
-          Richard, reached from two places. */}
-      <div style={{ position: "fixed", left: "50%", transform: "translateX(-50%)", bottom: "calc(96px + env(safe-area-inset-bottom, 0px))", width: "100%", maxWidth: 430, padding: "0 14px", boxSizing: "border-box", zIndex: 38, pointerEvents: "none" }}>
-        <div style={{ display: "flex", gap: 8, alignItems: "center", padding: "6px 6px 6px 16px", background: T.card, border: "0.5px solid " + T.sep, borderRadius: 26, boxShadow: "0 12px 32px rgba(20,17,14,0.14), 0 2px 8px rgba(20,17,14,0.06)", pointerEvents: "auto", boxSizing: "border-box" }}>
-          <input value={faInput} onChange={function(e) { setFaInput(e.target.value); }}
-            onKeyDown={function(e) { if (e.key === "Enter" && !(e.nativeEvent && e.nativeEvent.isComposing)) { e.preventDefault(); sendFaChat(); } }}
-            aria-label="Ask Richard about this analysis" placeholder="Ask about this analysis..." dir="auto"
-            style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "10px 0", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box" }} />
-          <button onClick={function() { sendFaChat(); }} disabled={!faInput.trim() || faBusy} aria-label={tr("sendMessage")}
-            style={{ width: 40, height: 40, flexShrink: 0, border: "none", borderRadius: "50%", background: faInput.trim() && !faBusy ? T.ink : T.inputBg, display: "flex", alignItems: "center", justifyContent: "center", cursor: faInput.trim() && !faBusy ? "pointer" : "default", padding: 0, transition: "background 160ms ease" }}>
-            <SVGIcon id="up" size={17} color={faInput.trim() && !faBusy ? T.card : T.ink3} />
-          </button>
-        </div>
-      </div>
+      {composerBar}
     </div>
   );
 }
