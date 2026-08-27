@@ -251,6 +251,46 @@ function themeSwatch(name, dark) {
   return { a: side.swatchA || p.swatchA, b: side.swatchB || p.swatchB };
 }
 
+// The sign-up journey and the wizards built on it do not use the app chrome's
+// surfaces. They sit on their own ground - a warm gradient with its own inks,
+// panels and hairlines - so that the whole flow reads as one continuous piece
+// rather than a series of app screens. That ground is a full palette in its own
+// right, and like T it now comes in a light and a dark side.
+//
+// Dark keeps the warmth rather than reusing T's neutrals: the journey stays
+// recognisably itself, just lit from the other direction.
+var JOURNEY_LIGHT = {
+  bg: "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)",
+  shaderBase: "#FBF3E8",
+  ink: "#1A1410", ink2: "#6B5C4E", ink3: "#B0A396",
+  // Body ink for copy sitting directly on JrShaderBg. ink2 measures 5.8:1 on
+  // the plain ground but collapses once a ribbon core passes under it, so this
+  // pushes further from the ribbon: deeper on light, brighter on dark.
+  ink2sh: "#4A3D33",
+  card: "#FFFFFF",
+  panel: "rgba(255,255,255,0.85)",
+  fill0: "rgba(0,0,0,0.03)", fill1: "rgba(0,0,0,0.05)",
+  fill2: "rgba(0,0,0,0.07)", fill3: "rgba(0,0,0,0.09)",
+  line: "rgba(0,0,0,0.08)", line2: "rgba(0,0,0,0.13)",
+};
+var JOURNEY_DARK = {
+  bg: "linear-gradient(160deg,#231D17 0%,#1B1712 40%,#141110 100%)",
+  shaderBase: "#1A1610",
+  ink: "#F5EFE7", ink2: "#BCAC9A", ink3: "#83725F",
+  ink2sh: "#EFE5D8",
+  card: "#262019",
+  panel: "rgba(255,255,255,0.07)",
+  fill0: "rgba(255,255,255,0.035)", fill1: "rgba(255,255,255,0.06)",
+  fill2: "rgba(255,255,255,0.09)", fill3: "rgba(255,255,255,0.13)",
+  line: "rgba(255,255,255,0.12)", line2: "rgba(255,255,255,0.18)",
+};
+// Mutated in place like T, and read at render time by every journey screen.
+var J = {};
+function paintJourney() {
+  var side = T.isDark ? JOURNEY_DARK : JOURNEY_LIGHT;
+  for (var k in side) { J[k] = side[k]; }
+}
+
 var LIGHT_BG = "#F7F3EE";
 var LIGHT_CARD = "#FFFFFF";
 var DARK_BG = "#131110";
@@ -305,8 +345,10 @@ function applyDarkMode(dark) {
   T.navPillGlass = dark ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.62)";
   T.navPillRim   = dark ? "rgba(255,255,255,0.40)" : "rgba(255,255,255,0.95)";
   T.navPillShade = dark ? "rgba(0,0,0,0.30)"       : "rgba(0,0,0,0.07)";
-  // Repaint the accent/hero side of the palette for the new ground (rule 1).
+  // Repaint the accent/hero side of the palette, and the journey's own
+  // ground, for the new mode (rule 1).
   paintPalette();
+  paintJourney();
 }
 
 // Remember the last-used look across reloads so the very first paint matches
@@ -4689,17 +4731,14 @@ function ResponseStream(props) {
 // journey CTA button. CSS keyframes live in one injected block; JS-driven
 // animations (rAF) self-check prefers-reduced-motion because the global CSS
 // kill rule can't reach them.
-// The journey screens sit on a hardcoded warm cream gradient in every theme
-// and mode, so text directly on that background uses pinned light-palette
-// inks (a retake from Profile can happen in dark mode, where T.ink flips
-// light and would vanish on cream). Accents still come from T.
-var JINK = "#1A1410", JINK2 = "#6B5C4E", JINK3 = "#B0A396";
-var JR_BG = "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)";
-// Body ink for copy that sits directly on JrShaderBg. JINK2 measures 5.8:1 on
-// the plain cream but collapses to 2.1-2.9:1 (theme-dependent) once a ribbon
-// core passes under it - a real AA failure at 14px, in every theme. This sits
-// on the JINK -> JINK2 line, so it reads as the same warm ink, just deeper.
-var JINK2_SH = "#4A3D33";
+// The journey screens have their own ground and their own inks: see the J
+// palette next to T at the top of this file. J flips with dark mode, so these
+// screens follow the rest of the app instead of staying pinned to cream.
+//
+// MINK* is the exception. The Bank Sync DEMO renders a simulated phone showing
+// a third-party bank/automation app - a picture of someone else's UI, not a
+// Richy surface - so its inks stay on the light values in both modes.
+var MINK = "#1A1410", MINK2 = "#6B5C4E", MINK3 = "#B0A396";
 
 function ensureJourneyCss() {
   var id = "richy-journey-css";
@@ -4782,7 +4821,7 @@ function CountUpNum(props) {
 function RollingNum(props) {
   useEffect(function() { ensureJourneyCss(); }, []);
   var size = props.size || 44;
-  var color = props.color || JINK;
+  var color = props.color || J.ink;
   var h = Math.round(size * 1.16);
   var text = String(props.text == null ? "" : props.text);
   var reduced = jrReduced();
@@ -4842,7 +4881,7 @@ function ProgressRing(props) {
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round"
           strokeDasharray={C} strokeDashoffset={C * (1 - p)} />
       </svg>
-      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: Math.round(size * 0.21), fontWeight: 800, color: JINK, fontFamily: UI, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>
+      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: Math.round(size * 0.21), fontWeight: 800, color: J.ink, fontFamily: UI, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>
         {Math.round(p * 100)}%
       </div>
     </div>
@@ -4854,7 +4893,7 @@ function ProgressRing(props) {
 function JourneyBar(props) {
   useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
   return (
-    <div style={{ height: 5, borderRadius: 999, background: "rgba(0,0,0,0.08)", overflow: "hidden", flex: 1, boxSizing: "border-box" }}>
+    <div style={{ height: 5, borderRadius: 999, background: J.fill3, overflow: "hidden", flex: 1, boxSizing: "border-box" }}>
       <div style={{ height: "100%", width: (props.pct || 0) + "%", borderRadius: 999, background: T.btn, transition: "width 0.45s cubic-bezier(0.22,1,0.36,1)", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: 0, bottom: 0, width: "42%", background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.6),transparent)", animation: "rclSheen 2.3s ease-in-out infinite" }} />
       </div>
@@ -4897,7 +4936,7 @@ function BarCompare(props) {
             <div style={{ display: "flex", alignItems: "flex-end", height: H, boxSizing: "border-box" }}>
               <div style={{ width: 52, height: bh, borderRadius: "10px 10px 4px 4px", background: it.color, transition: "height 0.9s cubic-bezier(0.34,1.56,0.64,1) " + (i * 0.18).toFixed(2) + "s", boxShadow: "0 8px 20px " + (it.glow || "rgba(0,0,0,0.10)") }} />
             </div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.06em", textAlign: "center" }}>{it.label}</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: J.ink3, textTransform: "uppercase", letterSpacing: "0.06em", textAlign: "center" }}>{it.label}</div>
           </div>
         );
       })}
@@ -4926,8 +4965,8 @@ function LaurelBadge(props) {
     <div style={{ position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "6px 6px", minWidth: 146, boxSizing: "border-box" }}>
       <LaurelSide />
       <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: 17, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", lineHeight: 1.15 }}>{props.stat}</div>
-        <div style={{ fontSize: 9.5, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.09em", marginTop: 2 }}>{props.sub}</div>
+        <div style={{ fontSize: 17, fontWeight: 800, color: J.ink, letterSpacing: "-0.02em", lineHeight: 1.15 }}>{props.stat}</div>
+        <div style={{ fontSize: 9.5, fontWeight: 700, color: J.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginTop: 2 }}>{props.sub}</div>
       </div>
       <LaurelSide flip />
       <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "34%", background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent)", animation: "rcjShimmerSoft 4.6s ease-in-out infinite", pointerEvents: "none" }} />
@@ -4947,8 +4986,8 @@ function JrBtn(props) {
       onPointerLeave={function() { setPressed(false); }}
       style={Object.assign({
         width: "100%", border: "none", borderRadius: 999, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, letterSpacing: "-0.01em",
-        background: props.disabled ? "rgba(0,0,0,0.08)" : props.ghost ? "none" : T.btn,
-        color: props.disabled ? JINK3 : props.ghost ? JINK2 : "#fff",
+        background: props.disabled ? J.fill3 : props.ghost ? "none" : T.btn,
+        color: props.disabled ? J.ink3 : props.ghost ? J.ink2 : "#fff",
         cursor: off ? "default" : "pointer",
         boxShadow: props.disabled || props.ghost ? "none" : "0 6px 20px " + T.orangeGlow + ", 0 2px 6px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.3)",
         transform: pressed ? "scale(0.985)" : "scale(1)",
@@ -4981,9 +5020,9 @@ function JrChip(props) {
         position: "relative", display: "inline-flex", alignItems: "center", gap: 8,
         padding: props.sub ? "9px 14px" : props.small ? "8px 14px" : "10px 16px",
         borderRadius: props.sub ? 15 : 999,
-        border: "1.5px solid " + (sel ? "transparent" : "rgba(0,0,0,0.09)"),
-        background: sel ? T.btn : "rgba(255,255,255,0.92)",
-        color: sel ? "#fff" : JINK2,
+        border: "1.5px solid " + (sel ? "transparent" : J.line),
+        background: sel ? T.btn : J.panel,
+        color: sel ? "#fff" : J.ink2,
         boxShadow: sel ? "0 7px 18px " + T.orangeGlow + ", 0 2px 5px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.3)" : "0 2px 8px rgba(0,0,0,0.05)",
         cursor: "pointer", fontFamily: UI, boxSizing: "border-box",
         transform: pressed ? "scale(0.97)" : "scale(1)",
@@ -4991,11 +5030,11 @@ function JrChip(props) {
         animation: props.delay != null ? "rcjChipIn 0.42s cubic-bezier(0.34,1.56,0.64,1) " + props.delay.toFixed(2) + "s both" : "none",
       }, props.style)}>
       {sel ? (
-        <span style={{ width: 15, height: 15, borderRadius: "50%", background: "rgba(255,255,255,0.95)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, animation: "rcjCheckPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both" }}>
+        <span style={{ width: 15, height: 15, borderRadius: "50%", background: J.panel, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, animation: "rcjCheckPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both" }}>
           <SVGIcon id="check" size={9} color={T.orange} />
         </span>
       ) : props.icon ? (
-        <SVGIcon id={props.icon} size={14} color={JINK3} />
+        <SVGIcon id={props.icon} size={14} color={J.ink3} />
       ) : null}
       <span style={{ textAlign: "left" }}>
         <span style={{ display: "block", fontSize: props.sub ? 14.5 : props.small ? 12.5 : 13.5, fontWeight: sel ? 750 : 550, lineHeight: 1.2, letterSpacing: "-0.01em" }}>{props.label}</span>
@@ -5014,9 +5053,9 @@ function JrIconBtn(props) {
       onPointerDown={function() { setPressed(true); }}
       onPointerUp={function() { setPressed(false); }}
       onPointerLeave={function() { setPressed(false); }}
-      style={{ width: props.size || 34, height: props.size || 34, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", padding: 0, flexShrink: 0, boxSizing: "border-box", transform: pressed ? "scale(0.93)" : "scale(1)", transition: "transform 0.13s ease" }}>
+      style={{ width: props.size || 34, height: props.size || 34, borderRadius: "50%", border: "1.5px solid " + J.line, background: J.card, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", padding: 0, flexShrink: 0, boxSizing: "border-box", transform: pressed ? "scale(0.93)" : "scale(1)", transition: "transform 0.13s ease" }}>
       <span style={{ transform: "rotate(" + (props.rotate || 0) + "deg)", display: "flex" }}>
-        <SVGIcon id={props.icon || "chevron"} size={16} color={JINK2} />
+        <SVGIcon id={props.icon || "chevron"} size={16} color={J.ink2} />
       </span>
     </button>
   );
@@ -5031,7 +5070,7 @@ function JrStepBtn(props) {
       onPointerDown={function() { setPressed(true); }}
       onPointerUp={function() { setPressed(false); }}
       onPointerLeave={function() { setPressed(false); }}
-      style={{ width: 46, height: 46, borderRadius: "50%", border: "1.5px solid " + (pressed ? T.orange : "rgba(0,0,0,0.08)"), background: pressed ? T.orangeDim : "#fff", color: pressed ? T.orange : JINK2, fontSize: 22, fontWeight: 600, cursor: "pointer", boxShadow: pressed ? "0 2px 14px " + T.orangeGlow : "0 2px 10px rgba(0,0,0,0.06)", fontFamily: UI, boxSizing: "border-box", flexShrink: 0, lineHeight: 1, transform: pressed ? "scale(0.95)" : "scale(1)", transition: "transform 0.12s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease" }}>
+      style={{ width: 46, height: 46, borderRadius: "50%", border: "1.5px solid " + (pressed ? T.orange : J.line), background: pressed ? T.orangeDim : J.card, color: pressed ? T.orange : J.ink2, fontSize: 22, fontWeight: 600, cursor: "pointer", boxShadow: pressed ? "0 2px 14px " + T.orangeGlow : "0 2px 10px rgba(0,0,0,0.06)", fontFamily: UI, boxSizing: "border-box", flexShrink: 0, lineHeight: 1, transform: pressed ? "scale(0.95)" : "scale(1)", transition: "transform 0.12s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease" }}>
       {props.label}
     </button>
   );
@@ -5101,10 +5140,10 @@ function AmountSlider(props) {
   fracRef.current = frac;
 
   var trackH = props.compact ? 28 : 34;
-  var trackBg = app ? T.inputBg : "rgba(0,0,0,0.045)";
-  var edge    = app ? T.sep : "rgba(0,0,0,0.07)";
+  var trackBg = app ? T.inputBg : J.fill1;
+  var edge    = app ? T.sep : J.fill2;
   var thumbBg = app ? T.card : "#fff";
-  var tickInk = app ? T.ink3 : JINK3;
+  var tickInk = app ? T.ink3 : J.ink3;
 
   // Landmarks pull harder than the plain step, so the thumb settles exactly on a
   // quick-pick whenever it passes near one.
@@ -5360,7 +5399,7 @@ function QuickAmount(props) {
         <span style={{ position: "relative", display: "inline-flex" }}>
           <span style={{ position: "absolute", inset: props.compact ? -10 : -16, borderRadius: "50%", background: "radial-gradient(ellipse," + T.orangeGlow + " 0%, transparent 68%)", filter: "blur(10px)", opacity: num > 0 ? 0.8 : 0.3, transition: "opacity 0.5s ease", pointerEvents: "none", animation: "rclGlow 3s ease-in-out infinite" }} />
           <span style={{ position: "relative" }}>
-            <RollingNum text={sym + Math.round(num).toLocaleString("en-US")} size={props.compact ? 32 : 44} color={JINK} />
+            <RollingNum text={sym + Math.round(num).toLocaleString("en-US")} size={props.compact ? 32 : 44} color={J.ink} />
           </span>
         </span>
         <JrStepBtn label="+" onPress={function() { setNum(num + stepSize(num)); }} />
@@ -5390,10 +5429,10 @@ function QuickAmount(props) {
         {typing ? (
           <input autoFocus type="number" value={props.value} onChange={function(e) { props.onChange(e.target.value); }}
             placeholder="0" className="jr-field"
-            style={{ width: 160, background: "rgba(255,255,255,0.9)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 14, padding: "11px 14px", fontSize: 16, fontFamily: UI, color: JINK, outline: "none", boxSizing: "border-box", textAlign: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
+            style={{ width: 160, background: "rgba(255,255,255,0.9)", border: "1.5px solid " + J.line, borderRadius: 14, padding: "11px 14px", fontSize: 16, fontFamily: UI, color: J.ink, outline: "none", boxSizing: "border-box", textAlign: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
         ) : (
           <button onClick={function() { setTyping(true); }}
-            style={{ background: "none", border: "none", color: JINK3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: 4 }}>
+            style={{ background: "none", border: "none", color: J.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: 4 }}>
             type it instead
           </button>
         )}
@@ -5470,7 +5509,7 @@ function JrShaderBg(props) {
     xScale: props.xScale == null ? 1.0 : props.xScale,
     yScale: props.yScale == null ? 0.5 : props.yScale,
     c: (props.colors || ["#8970C6", "#C8B1FF", "#C8983A"]).map(jrHex),
-    base: jrHex(props.base || "#FBF3E8"),
+    base: jrHex(props.base || J.shaderBase),
   });
 
   useEffect(function() {
@@ -5480,7 +5519,7 @@ function JrShaderBg(props) {
       xScale: props.xScale == null ? 1.0 : props.xScale,
       yScale: props.yScale == null ? 0.5 : props.yScale,
       c: (props.colors || ["#8970C6", "#C8B1FF", "#C8983A"]).map(jrHex),
-      base: jrHex(props.base || "#FBF3E8"),
+      base: jrHex(props.base || J.shaderBase),
     };
   });
 
@@ -6021,8 +6060,8 @@ function Overlay(props) {
       }}>
         {props.ribbon && (
           <React.Fragment>
-            <JrShaderBg colors={props.ribbonColors || [T.orange, T.orangeHi, T.orange]} base="#FBF3E8" speed={0.16} intensity={0.55} yScale={0.5} xScale={1.05} style={{ position: "absolute", borderRadius: "24px 24px 0 0" }} />
-            <div style={{ position: "absolute", inset: 0, borderRadius: "24px 24px 0 0", pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.86) 0%, rgba(251,243,232,0.5) 30%, rgba(251,243,232,0.42) 60%, rgba(251,243,232,0.82) 100%)" }} />
+            <JrShaderBg colors={props.ribbonColors || [T.orange, T.orangeHi, T.orange]} base={T.sheetBg} speed={0.16} intensity={0.55} yScale={0.5} xScale={1.05} style={{ position: "absolute", borderRadius: "24px 24px 0 0" }} />
+            <div style={{ position: "absolute", inset: 0, borderRadius: "24px 24px 0 0", pointerEvents: "none", background: "linear-gradient(180deg, " + jrRgba(T.sheetBg, 0.86) + " 0%, " + jrRgba(T.sheetBg, 0.5) + " 30%, " + jrRgba(T.sheetBg, 0.42) + " 60%, " + jrRgba(T.sheetBg, 0.82) + " 100%)" }} />
           </React.Fragment>
         )}
         <div style={{ position: "relative" }}>
@@ -6510,8 +6549,8 @@ function TestimonialLine() {
           small-caps label carries the same rhythm without the implied claim. */}
       <div style={{ fontSize: 9, fontWeight: 800, fontFamily: UI, color: T.ink3, letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: 7, opacity: 0.8 }}>{tr("tsEarlyLabel")}</div>
       <div key={i} style={{ animation: "rclPhrase 0.5s ease both" }}>
-        <div style={{ fontSize: 14, color: JINK2, fontStyle: "italic", lineHeight: 1.5, maxWidth: 300, margin: "0 auto" }}>{cur.q}</div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 5 }}>— {cur.who}</div>
+        <div style={{ fontSize: 14, color: J.ink2, fontStyle: "italic", lineHeight: 1.5, maxWidth: 300, margin: "0 auto" }}>{cur.q}</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: J.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 5 }}>— {cur.who}</div>
       </div>
     </div>
   );
@@ -6520,27 +6559,27 @@ function TestimonialLine() {
 function WelcomeHero(props) {
   useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
   return (
-    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-      <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base="#FBF3E8" speed={0.22} intensity={0.85} yScale={0.42} xScale={1.05} style={{ position: "absolute" }} />
+    <div style={{ minHeight: "100vh", background: J.bg, fontFamily: UI, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base={J.shaderBase} speed={0.22} intensity={0.85} yScale={0.42} xScale={1.05} style={{ position: "absolute" }} />
       {/* Cream veil so the headline (top) and buttons (bottom) stay crisp while
           the ribbons shine through the middle. */}
-      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.9) 0%, rgba(251,243,232,0.4) 26%, rgba(251,243,232,0.18) 52%, rgba(251,243,232,0.55) 82%, rgba(251,243,232,0.85) 100%)" }} />
+      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, " + jrRgba(J.shaderBase, 0.9) + " 0%, " + jrRgba(J.shaderBase, 0.4) + " 26%, " + jrRgba(J.shaderBase, 0.18) + " 52%, " + jrRgba(J.shaderBase, 0.55) + " 82%, " + jrRgba(J.shaderBase, 0.85) + " 100%)" }} />
 
       <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", padding: "54px 24px 30px", position: "relative", zIndex: 2 }}>
         <Stagger step={0.09} style={{ width: "100%", maxWidth: 380, display: "flex", flexDirection: "column", alignItems: "center" }}>
           <RichyLogo size={74} style={{ display: "block", margin: "0 auto", borderRadius: 21, boxShadow: "0 12px 32px rgba(0,0,0,0.22), 0 4px 12px rgba(0,0,0,0.14)" }} />
-          <div style={{ fontSize: 34, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.12, textAlign: "center", marginTop: 20 }}>
+          <div style={{ fontSize: 34, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, letterSpacing: "-0.01em", lineHeight: 1.12, textAlign: "center", marginTop: 20 }}>
             {tr("whTitle1")}<br />{tr("whTitle2")}
           </div>
-          <div style={{ fontSize: 15, color: JINK2, textAlign: "center", lineHeight: 1.55, marginTop: 10, maxWidth: 320 }}>
+          <div style={{ fontSize: 15, color: J.ink2, textAlign: "center", lineHeight: 1.55, marginTop: 10, maxWidth: 320 }}>
             {tr("whSub")}
           </div>
           <div style={{ display: "flex", justifyContent: "center", gap: 10, marginTop: 22 }}>
             <LaurelBadge stat="Richard" sub={tr("whBadge1Sub")} />
             <LaurelBadge stat={tr("whBadge2Stat")} sub={tr("whBadge2Sub")} />
           </div>
-          <div style={{ width: "100%", background: "rgba(255,255,255,0.72)", border: "1px solid rgba(0,0,0,0.05)", borderRadius: 20, padding: "18px 16px 14px", marginTop: 22, boxShadow: "0 8px 28px rgba(40,28,16,0.08)", boxSizing: "border-box", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", textAlign: "center", marginBottom: 14 }}>{tr("whBarTitle")}</div>
+          <div style={{ width: "100%", background: J.panel, border: "1px solid " + J.line, borderRadius: 20, padding: "18px 16px 14px", marginTop: 22, boxShadow: "0 8px 28px rgba(40,28,16,0.08)", boxSizing: "border-box", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: J.ink3, textTransform: "uppercase", letterSpacing: "0.08em", textAlign: "center", marginBottom: 14 }}>{tr("whBarTitle")}</div>
             {/* Bar heights kept in honest proportion to the labels: a "~15%"
                 bar drawn 3x taller than its comparator is a fake axis, which
                 is exactly what consumer-deception review flags. Illustrative
@@ -6549,7 +6588,7 @@ function WelcomeHero(props) {
               { label: tr("whBarUntrackedLabel"), value: tr("whBarUntrackedValue"), pct: 58, color: "rgba(224,48,48,0.72)", glow: "rgba(224,48,48,0.18)" },
               { label: tr("whBarRichyLabel"), value: tr("whBarRichyValue"), pct: 34, color: T.green, glow: T.greenGlow },
             ]} />
-            <div style={{ fontSize: 11.5, color: JINK2, textAlign: "center", marginTop: 10, lineHeight: 1.4 }}>{tr("whBarFootnote")}</div>
+            <div style={{ fontSize: 11.5, color: J.ink2, textAlign: "center", marginTop: 10, lineHeight: 1.4 }}>{tr("whBarFootnote")}</div>
           </div>
           <div style={{ marginTop: 20, width: "100%" }}>
             <TestimonialLine />
@@ -6561,7 +6600,7 @@ function WelcomeHero(props) {
         <div style={{ animation: "rclPhrase 0.5s ease 0.75s both" }}>
           <JrBtn label={tr("whGetStarted")} onPress={props.onGetStarted} />
           <button onClick={props.onSignIn}
-            style={{ width: "100%", background: "none", border: "none", color: JINK2, fontSize: 14.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "15px 0 0" }}>
+            style={{ width: "100%", background: "none", border: "none", color: J.ink2, fontSize: 14.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "15px 0 0" }}>
             {tr("whSignIn")}
           </button>
         </div>
@@ -6573,13 +6612,13 @@ function WelcomeHero(props) {
 // Mock mini-cards for the carousel slides. Pure decoration - static data.
 function JrMockChip(props) {
   return (
-    <div style={{ position: "absolute", top: props.top, bottom: props.bottom, left: props.left, right: props.right, background: "rgba(255,255,255,0.96)", borderRadius: 13, padding: "9px 13px", boxShadow: "0 10px 26px rgba(40,28,16,0.14)", display: "flex", alignItems: "center", gap: 8, animation: "rcjFloat " + (props.dur || "3.6s") + " ease-in-out " + (props.delay || "0s") + " infinite", boxSizing: "border-box", whiteSpace: "nowrap" }}>
+    <div style={{ position: "absolute", top: props.top, bottom: props.bottom, left: props.left, right: props.right, background: J.panel, borderRadius: 13, padding: "9px 13px", boxShadow: "0 10px 26px rgba(40,28,16,0.14)", display: "flex", alignItems: "center", gap: 8, animation: "rcjFloat " + (props.dur || "3.6s") + " ease-in-out " + (props.delay || "0s") + " infinite", boxSizing: "border-box", whiteSpace: "nowrap" }}>
       <div style={{ width: 26, height: 26, borderRadius: 9, background: props.tint, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         <SVGIcon id={props.icon} size={14} color="#fff" />
       </div>
       <div>
-        <div style={{ fontSize: 11.5, fontWeight: 700, color: JINK, lineHeight: 1.2 }}>{props.line1}</div>
-        {props.line2 && <div style={{ fontSize: 10, fontWeight: 600, color: props.line2Color || JINK3, lineHeight: 1.3 }}>{props.line2}</div>}
+        <div style={{ fontSize: 11.5, fontWeight: 700, color: J.ink, lineHeight: 1.2 }}>{props.line1}</div>
+        {props.line2 && <div style={{ fontSize: 10, fontWeight: 600, color: props.line2Color || J.ink3, lineHeight: 1.3 }}>{props.line2}</div>}
       </div>
     </div>
   );
@@ -6605,13 +6644,15 @@ function JrMockChip(props) {
 // mid-drag. Stops are px measured from BOTH ends, so a 2-line English headline
 // and a 3-line Arabic one get the same falloff with no retuning.
 //
-// The cream is exactly rgb(251,243,232) - the shader's own u_base and the
-// veil's color. That one choice pays for three constraints: over a ribbon it
-// can only lerp back toward what the shader would have drawn with no ribbon
-// (subtractive, never a grey scrim); with no WebGL it lands within ~4/255 of
-// JR_BG and is invisible rather than a smear; and a near-opaque cream wash is
-// hue-neutral by construction, so periwinkle, violet and amber all resolve to
-// the same ground. Nothing here reads T at all.
+// The veil colour is exactly J.shaderBase - the shader's own u_base. That one
+// choice pays for three constraints: over a ribbon it can only lerp back toward
+// what the shader would have drawn with no ribbon (subtractive, never a grey
+// scrim); with no WebGL it lands within ~4/255 of J.bg and is invisible rather
+// than a smear; and a near-opaque wash of the ground is hue-neutral by
+// construction, so periwinkle, violet and amber all resolve to the same ground.
+// It follows the journey palette, so this holds on the dark ground too, where
+// the wash darkens toward J.shaderBase instead of lightening toward cream.
+// Nothing here reads T at all.
 //
 // No mask-image and no backdrop-filter: JrShaderBg's rAF never idles, so any
 // backdrop layer above it would re-blur at 60fps forever, even under reduced
@@ -6624,18 +6665,18 @@ function JrReadingLight(props) {
   function P(f) { return Math.round(padY * f); }
 
   var band = "linear-gradient(180deg,"
-    + "rgba(251,243,232,0) 0px,"
-    + "rgba(251,243,232," + A(0.10) + ") " + P(0.22) + "px,"
-    + "rgba(251,243,232," + A(0.36) + ") " + P(0.44) + "px,"
-    + "rgba(251,243,232," + A(0.70) + ") " + P(0.66) + "px,"
-    + "rgba(251,243,232," + A(0.92) + ") " + P(0.86) + "px,"
-    + "rgba(251,243,232," + A(1) + ") " + padY + "px,"
-    + "rgba(251,243,232," + A(1) + ") calc(100% - " + padY + "px),"
-    + "rgba(251,243,232," + A(0.92) + ") calc(100% - " + P(0.86) + "px),"
-    + "rgba(251,243,232," + A(0.70) + ") calc(100% - " + P(0.66) + "px),"
-    + "rgba(251,243,232," + A(0.36) + ") calc(100% - " + P(0.44) + "px),"
-    + "rgba(251,243,232," + A(0.10) + ") calc(100% - " + P(0.22) + "px),"
-    + "rgba(251,243,232,0) 100%)";
+    + jrRgba(J.shaderBase, 0) + " 0px,"
+    + jrRgba(J.shaderBase, A(0.10)) + " " + P(0.22) + "px,"
+    + jrRgba(J.shaderBase, A(0.36)) + " " + P(0.44) + "px,"
+    + jrRgba(J.shaderBase, A(0.70)) + " " + P(0.66) + "px,"
+    + jrRgba(J.shaderBase, A(0.92)) + " " + P(0.86) + "px,"
+    + jrRgba(J.shaderBase, A(1)) + " " + padY + "px,"
+    + jrRgba(J.shaderBase, A(1)) + " calc(100% - " + padY + "px),"
+    + jrRgba(J.shaderBase, A(0.92)) + " calc(100% - " + P(0.86) + "px),"
+    + jrRgba(J.shaderBase, A(0.70)) + " calc(100% - " + P(0.66) + "px),"
+    + jrRgba(J.shaderBase, A(0.36)) + " calc(100% - " + P(0.44) + "px),"
+    + jrRgba(J.shaderBase, A(0.10)) + " calc(100% - " + P(0.22) + "px),"
+    + jrRgba(J.shaderBase, 0) + " 100%)";
 
   return (
     <div style={Object.assign({ position: "relative", width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }, props.style)}>
@@ -6647,7 +6688,7 @@ function JrReadingLight(props) {
         // touching either style object: a cream halo that fills the serif
         // counters out where the band feathers away. Invisible on the plateau.
         // Scales with strength so a strength:0 caller (dark mode) is a no-op.
-        textShadow: "0 0 8px rgba(251,243,232," + Math.min(0.85, a) + ")",
+        textShadow: "0 0 8px " + jrRgba(J.shaderBase, Math.min(0.85, a)),
       }}>{props.children}</div>
     </div>
   );
@@ -6683,32 +6724,32 @@ function IntroCarousel(props) {
   // to 49px on every swipe and you re-acquire the line each time. It also keeps
   // the three reading-light bands at the same y so they abut cleanly mid-drag.
   // If a translated card ever exceeds it the pin just stops binding - no break.
-  var mockCard = { position: "relative", width: 268, minHeight: 208, background: "#fff", borderRadius: 22, padding: "18px 18px", boxShadow: "0 18px 44px rgba(40,28,16,0.13)", boxSizing: "border-box" };
+  var mockCard = { position: "relative", width: 268, minHeight: 208, background: J.card, borderRadius: 22, padding: "18px 18px", boxShadow: "0 18px 44px rgba(40,28,16,0.13)", boxSizing: "border-box" };
   // 22.5 -> 24 puts stroke mass back into the Garamond hairlines. letterSpacing
   // -0.01em -> 0 opens the counters (a thin ribbon core was slipping through an
   // 'o') and is the correct value for Arabic, where negative tracking drags
   // joined letterforms into each other. marginTop moves to litWrap so the
   // band's plateau lines up with the text box rather than with the margin.
-  var h2 = { fontSize: 24, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK, letterSpacing: "0em", textAlign: "center", lineHeight: 1.22, maxWidth: 320 };
-  var sub = { fontSize: 14.5, color: JINK2_SH, textAlign: "center", lineHeight: 1.55, marginTop: 9, maxWidth: 300 };
+  var h2 = { fontSize: 24, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, letterSpacing: "0em", textAlign: "center", lineHeight: 1.22, maxWidth: 320 };
+  var sub = { fontSize: 14.5, color: J.ink2sh, textAlign: "center", lineHeight: 1.55, marginTop: 9, maxWidth: 300 };
   // One geometry for all three slides so the bands never differ between them.
   var litWrap = { marginTop: 34 };
 
   return (
-    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
-      <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base="#FBF3E8" speed={0.16} intensity={0.6} yScale={0.44} xScale={1.05} style={{ position: "absolute" }} />
+    <div style={{ minHeight: "100vh", background: J.bg, fontFamily: UI, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
+      <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base={J.shaderBase} speed={0.16} intensity={0.6} yScale={0.44} xScale={1.05} style={{ position: "absolute" }} />
       {/* The copy carries its own ground now (JrReadingLight), so this stops
           being a legibility scrim and goes back to being chrome protection.
           Stops are px from each end so they hug the actual Skip row and the dot
           rail + CTA at any screen height, and the midfield relaxes 0.42 -> 0.20,
           which hands most of the screen back to the shader. Every stop is cream
           on cream, so with no WebGL this layer is still invisible. */}
-      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.88) 0px, rgba(251,243,232,0.60) 54px, rgba(251,243,232,0.20) 122px, rgba(251,243,232,0.20) calc(100% - 190px), rgba(251,243,232,0.46) calc(100% - 118px), rgba(251,243,232,0.80) 100%)" }} />
+      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, " + jrRgba(J.shaderBase, 0.88) + " 0px, " + jrRgba(J.shaderBase, 0.60) + " 54px, " + jrRgba(J.shaderBase, 0.20) + " 122px, " + jrRgba(J.shaderBase, 0.20) + " calc(100% - 190px), " + jrRgba(J.shaderBase, 0.46) + " calc(100% - 118px), " + jrRgba(J.shaderBase, 0.80) + " 100%)" }} />
 
       <div style={{ display: "flex", justifyContent: "flex-end", padding: "18px 20px 0", position: "relative", zIndex: 2 }}>
-        {/* JINK3 measures 2.24:1 on the plain cream - the worst text on this
+        {/* J.ink3 measures 2.24:1 on the plain cream - the worst text on this
             screen, and it failed before the shader was ever added. */}
-        <button onClick={props.onDone} style={{ background: "none", border: "none", color: JINK2, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: 6 }}>{tr("icSkip")}</button>
+        <button onClick={props.onDone} style={{ background: "none", border: "none", color: J.ink2, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: 6 }}>{tr("icSkip")}</button>
       </div>
 
       {/* overflowY was computing to `auto` (only overflowX was set), which the
@@ -6720,8 +6761,8 @@ function IntroCarousel(props) {
         <div style={slideWrap}>
           <div style={{ position: "relative", zIndex: 2, paddingBottom: 26 }}>
             <div style={mockCard}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em" }}>{tr("icBalance")}</div>
-              <div style={{ fontSize: 30, fontWeight: 800, color: JINK, letterSpacing: "-0.02em", marginTop: 3 }}>$2,840</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: J.ink3, textTransform: "uppercase", letterSpacing: "0.08em" }}>{tr("icBalance")}</div>
+              <div style={{ fontSize: 30, fontWeight: 800, color: J.ink, letterSpacing: "-0.02em", marginTop: 3 }}>$2,840</div>
               {[
                 { label: tr("icCatFood"), pct: 62, color: T.green, amt: "$412" },
                 { label: tr("icCatTransport"), pct: 38, color: T.blue, amt: "$95" },
@@ -6729,10 +6770,10 @@ function IntroCarousel(props) {
               ].map(function(r) {
                 return (
                   <div key={r.label} style={{ marginTop: 12 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, fontWeight: 650, color: JINK2, marginBottom: 4 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, fontWeight: 650, color: J.ink2, marginBottom: 4 }}>
                       <span>{r.label}</span><span>{r.amt}</span>
                     </div>
-                    <div style={{ height: 6, borderRadius: 999, background: "rgba(0,0,0,0.06)", overflow: "hidden" }}>
+                    <div style={{ height: 6, borderRadius: 999, background: J.fill2, overflow: "hidden" }}>
                       <div style={{ width: r.pct + "%", height: "100%", borderRadius: 999, background: r.color }} />
                     </div>
                   </div>
@@ -6752,18 +6793,18 @@ function IntroCarousel(props) {
           <div style={{ position: "relative", zIndex: 2, paddingBottom: 26 }}>
             <div style={mockCard}>
               <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
-                <div style={{ background: T.orangeDim, borderRadius: "16px 4px 16px 16px", padding: "9px 13px", fontSize: 12, fontWeight: 600, color: JINK, maxWidth: 190 }}>
+                <div style={{ background: T.orangeDim, borderRadius: "16px 4px 16px 16px", padding: "9px 13px", fontSize: 12, fontWeight: 600, color: J.ink, maxWidth: 190 }}>
                   {tr("icChatQ")}
                 </div>
               </div>
               <div style={{ display: "flex", marginBottom: 10 }}>
-                <div style={{ background: "rgba(0,0,0,0.045)", borderRadius: "4px 16px 16px 16px", padding: "9px 13px", fontSize: 12, fontWeight: 500, color: JINK, lineHeight: 1.5, maxWidth: 205 }}>
+                <div style={{ background: J.fill1, borderRadius: "4px 16px 16px 16px", padding: "9px 13px", fontSize: 12, fontWeight: 500, color: J.ink, lineHeight: 1.5, maxWidth: 205 }}>
                   {tr("icChatA")}
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 7, paddingLeft: 4 }}>
                 <ThinkingDots size={4} color={T.orange} />
-                <span style={{ fontSize: 10.5, fontWeight: 600, color: JINK3 }}>{tr("icRichardChecking")}</span>
+                <span style={{ fontSize: 10.5, fontWeight: 600, color: J.ink3 }}>{tr("icRichardChecking")}</span>
               </div>
             </div>
             <JrMockChip top={-16} left={-24} icon="search" tint={T.orange} line1={tr("icChipLeak")} line2={tr("icChipLeakSub")} dur="4.4s" />
@@ -6778,22 +6819,22 @@ function IntroCarousel(props) {
         <div style={slideWrap}>
           <div style={{ position: "relative", zIndex: 2, paddingBottom: 26 }}>
             <div style={mockCard}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>{tr("icYourGoal")}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: J.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>{tr("icYourGoal")}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 40, height: 40, borderRadius: 13, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 16px " + T.orangeGlow }}>
                   <SVGIcon id="goals" size={20} color="#fff" />
                 </div>
                 <div>
-                  <div style={{ fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK }}>{tr("emergencyFund")}</div>
-                  <div style={{ fontSize: 11.5, fontWeight: 600, color: JINK3 }}>{tr("icGoalProgress")}</div>
+                  <div style={{ fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink }}>{tr("emergencyFund")}</div>
+                  <div style={{ fontSize: 11.5, fontWeight: 600, color: J.ink3 }}>{tr("icGoalProgress")}</div>
                 </div>
               </div>
-              <div style={{ height: 8, borderRadius: 999, background: "rgba(0,0,0,0.06)", overflow: "hidden", marginTop: 14, position: "relative" }}>
+              <div style={{ height: 8, borderRadius: 999, background: J.fill2, overflow: "hidden", marginTop: 14, position: "relative" }}>
                 <div style={{ width: "35%", height: "100%", borderRadius: 999, background: T.btn, position: "relative", overflow: "hidden" }}>
                   <div style={{ position: "absolute", top: 0, bottom: 0, width: "40%", background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent)", animation: "rclSheen 1.8s ease-in-out infinite" }} />
                 </div>
               </div>
-              <div style={{ fontSize: 11.5, fontWeight: 600, color: JINK2, marginTop: 12, lineHeight: 1.5 }}>{tr("icGoalPace")}</div>
+              <div style={{ fontSize: 11.5, fontWeight: 600, color: J.ink2, marginTop: 12, lineHeight: 1.5 }}>{tr("icGoalPace")}</div>
             </div>
             <JrMockChip top={-16} right={-28} icon="plane" tint={T.blue} line1={tr("icChipTrip")} line2={tr("icChipTripSub")} dur="4s" />
             <JrMockChip bottom={0} left={-26} icon="check" tint={T.green} line1={tr("icChipBudget")} line2={tr("icChipBudgetSub")} delay="0.8s" />
@@ -7061,7 +7102,7 @@ function AuthScreen(props) {
       </div>
     );
   }
-  var fieldStyle = { width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 15px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" };
+  var fieldStyle = { width: "100%", background: J.panel, border: "1.5px solid " + J.line, borderRadius: 16, padding: "15px 15px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" };
 
   var ssoBlock = (
     <div>
@@ -7071,7 +7112,7 @@ function AuthScreen(props) {
         <div style={{ flex: 1, height: "0.5px", background: "rgba(0,0,0,0.12)" }} />
       </div>
       <button onClick={googleSignIn} disabled={busy} className="jr-press"
-        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, background: "#fff", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 16, padding: "14px 0", fontSize: 15, fontFamily: UI, fontWeight: 600, color: T.ink, cursor: busy ? "default" : "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
+        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, background: J.card, border: "1.5px solid " + J.line2, borderRadius: 16, padding: "14px 0", fontSize: 15, fontFamily: UI, fontWeight: 600, color: T.ink, cursor: busy ? "default" : "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
         <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
           <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z" />
           <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z" />
@@ -7121,7 +7162,7 @@ function AuthScreen(props) {
                 <input value={password} onChange={function(e) { setPW(e.target.value); }}
                   type={showPw ? "text" : "password"} placeholder={tr("auPasswordPlaceholder")} autoComplete="current-password"
                   onKeyDown={function(e) { if (e.key === "Enter") login(); }}
-                  className="jr-field" style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 46px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
+                  className="jr-field" style={{ width: "100%", background: J.panel, border: "1.5px solid " + J.line, borderRadius: 16, padding: "15px 46px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
                 <button onClick={function() { setShowPw(function(v) { return !v; }); }}
                   aria-label={showPw ? tr("auHidePassword") : tr("auShowPassword")}
                   style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
@@ -7172,7 +7213,7 @@ function AuthScreen(props) {
                 </div>
                 <input value={password} onChange={function(e) { setPW(e.target.value); }}
                   type={showPw ? "text" : "password"} placeholder={tr("auSetPasswordPlaceholder")} autoComplete="new-password"
-                  className="jr-field" style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 46px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
+                  className="jr-field" style={{ width: "100%", background: J.panel, border: "1.5px solid " + J.line, borderRadius: 16, padding: "15px 46px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
                 <button onClick={function() { setShowPw(function(v) { return !v; }); }}
                   aria-label={showPw ? tr("auHidePassword") : tr("auShowPassword")}
                   style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
@@ -7209,7 +7250,7 @@ function AuthScreen(props) {
               <textarea value={richardNotes} onChange={function(e) { setRichardNotes(e.target.value); }}
                 placeholder={tr("auNotesPlaceholder")}
                 rows={3}
-                className="jr-field" style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "13px 16px", fontSize: 15, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", resize: "vertical", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
+                className="jr-field" style={{ width: "100%", background: J.panel, border: "1.5px solid " + J.line, borderRadius: 16, padding: "13px 16px", fontSize: 15, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", resize: "vertical", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
             </div>
           )}
 
@@ -7316,13 +7357,13 @@ function CatchUpScreen(props) {
   var hasQuick = mode === "quick" ? (parseFloat(quickTotal) > 0) : Object.keys(amts).some(function(k) { return parseFloat(amts[k]) > 0; });
   var canAdd = hasQuick || parseFloat(inc) > 0;
 
-  var fieldBox = { display: "flex", alignItems: "center", gap: 3, background: "rgba(0,0,0,0.04)", borderRadius: 10, padding: "7px 10px", minWidth: 96, boxSizing: "border-box" };
-  var amtInput = { width: 58, border: "none", background: "none", outline: "none", fontSize: 15, fontFamily: UI, color: JINK, fontWeight: 600, textAlign: "right" };
+  var fieldBox = { display: "flex", alignItems: "center", gap: 3, background: J.fill0, borderRadius: 10, padding: "7px 10px", minWidth: 96, boxSizing: "border-box" };
+  var amtInput = { width: 58, border: "none", background: "none", outline: "none", fontSize: 15, fontFamily: UI, color: J.ink, fontWeight: 600, textAlign: "right" };
 
   return (
-    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column", maxWidth: 430, margin: "0 auto", position: "relative", overflow: "hidden" }}>
-      <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base="#FBF3E8" speed={0.16} intensity={0.7} yScale={0.44} xScale={1.05} style={{ position: "absolute" }} />
-      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.82) 0%, rgba(251,243,232,0.42) 24%, rgba(251,243,232,0.42) 76%, rgba(251,243,232,0.78) 100%)" }} />
+    <div style={{ minHeight: "100vh", background: J.bg, fontFamily: UI, display: "flex", flexDirection: "column", maxWidth: 430, margin: "0 auto", position: "relative", overflow: "hidden" }}>
+      <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base={J.shaderBase} speed={0.16} intensity={0.7} yScale={0.44} xScale={1.05} style={{ position: "absolute" }} />
+      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, " + jrRgba(J.shaderBase, 0.82) + " 0%, " + jrRgba(J.shaderBase, 0.42) + " 24%, " + jrRgba(J.shaderBase, 0.42) + " 76%, " + jrRgba(J.shaderBase, 0.78) + " 100%)" }} />
 
       <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "56px 22px 16px", position: "relative", zIndex: 2 }}>
 
@@ -7334,21 +7375,21 @@ function CatchUpScreen(props) {
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 22, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.2 }}>
+            <div style={{ fontSize: 22, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, letterSpacing: "-0.01em", lineHeight: 1.2 }}>
               <WordReveal text={tr("cuHeadline").replace("{month}", monthName)} base={0.1} step={0.06} />
             </div>
           </div>
         </div>
 
-        <div style={{ fontSize: 14.5, color: JINK2, lineHeight: 1.55, marginBottom: 22, animation: "rclPhrase 0.5s ease 0.35s both" }}>
+        <div style={{ fontSize: 14.5, color: J.ink2, lineHeight: 1.55, marginBottom: 22, animation: "rclPhrase 0.5s ease 0.35s both" }}>
           {tr("cuIntro")}
         </div>
 
-        <div style={{ background: "#fff", borderRadius: 16, padding: "14px 16px", marginBottom: 14, boxShadow: "0 6px 20px rgba(40,28,16,0.07)", animation: "rcjChipIn 0.45s cubic-bezier(0.34,1.56,0.64,1) 0.45s both", boxSizing: "border-box" }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>{tr("cuIncomeReceived").replace("{month}", monthName)}</div>
+        <div style={{ background: J.card, borderRadius: 16, padding: "14px 16px", marginBottom: 14, boxShadow: "0 6px 20px rgba(40,28,16,0.07)", animation: "rcjChipIn 0.45s cubic-bezier(0.34,1.56,0.64,1) 0.45s both", boxSizing: "border-box" }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: J.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>{tr("cuIncomeReceived").replace("{month}", monthName)}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ fontSize: 22, color: JINK3, fontWeight: 600 }}>{sym}</span>
-            <input value={inc} onChange={function(e) { setInc(e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 22, fontFamily: UI, color: JINK, fontWeight: 700 }} />
+            <span style={{ fontSize: 22, color: J.ink3, fontWeight: 600 }}>{sym}</span>
+            <input value={inc} onChange={function(e) { setInc(e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 22, fontFamily: UI, color: J.ink, fontWeight: 700 }} />
           </div>
         </div>
 
@@ -7358,7 +7399,7 @@ function CatchUpScreen(props) {
             return (
               <button key={m.id} onClick={function() { setMode(m.id); }}
                 style={{ flex: 1, padding: "9px 0", borderRadius: 11, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700, fontFamily: UI,
-                  background: on ? T.orangeDim : "rgba(0,0,0,0.04)", color: on ? T.orange : JINK3 }}>
+                  background: on ? T.orangeDim : J.fill0, color: on ? T.orange : J.ink3 }}>
                 {m.label}
               </button>
             );
@@ -7366,25 +7407,25 @@ function CatchUpScreen(props) {
         </div>
 
         {mode === "quick" ? (
-          <div style={{ background: "#fff", borderRadius: 16, padding: "14px 16px", boxShadow: "0 6px 20px rgba(40,28,16,0.07)", animation: "rcjChipIn 0.45s cubic-bezier(0.34,1.56,0.64,1) 0.6s both", boxSizing: "border-box" }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>{tr("cuRoughlySpent").replace("{month}", monthName)}</div>
+          <div style={{ background: J.card, borderRadius: 16, padding: "14px 16px", boxShadow: "0 6px 20px rgba(40,28,16,0.07)", animation: "rcjChipIn 0.45s cubic-bezier(0.34,1.56,0.64,1) 0.6s both", boxSizing: "border-box" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: J.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>{tr("cuRoughlySpent").replace("{month}", monthName)}</div>
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <span style={{ fontSize: 22, color: JINK3, fontWeight: 600 }}>{sym}</span>
-              <input value={quickTotal} onChange={function(e) { setQuickTotal(e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 22, fontFamily: UI, color: JINK, fontWeight: 700 }} />
+              <span style={{ fontSize: 22, color: J.ink3, fontWeight: 600 }}>{sym}</span>
+              <input value={quickTotal} onChange={function(e) { setQuickTotal(e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 22, fontFamily: UI, color: J.ink, fontWeight: 700 }} />
             </div>
-            <div style={{ fontSize: 12, color: JINK3, marginTop: 6, lineHeight: 1.45 }}>{tr("cuBallpark")}</div>
+            <div style={{ fontSize: 12, color: J.ink3, marginTop: 6, lineHeight: 1.45 }}>{tr("cuBallpark")}</div>
           </div>
         ) : (
           <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "4px 2px 8px" }}>{tr("cuSpentSoFar").replace("{month}", monthName)}</div>
-            <div style={{ background: "#fff", borderRadius: 16, overflow: "hidden", boxShadow: "0 6px 20px rgba(40,28,16,0.07)", animation: "rcjChipIn 0.45s cubic-bezier(0.34,1.56,0.64,1) 0.6s both" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: J.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "4px 2px 8px" }}>{tr("cuSpentSoFar").replace("{month}", monthName)}</div>
+            <div style={{ background: J.card, borderRadius: 16, overflow: "hidden", boxShadow: "0 6px 20px rgba(40,28,16,0.07)", animation: "rcjChipIn 0.45s cubic-bezier(0.34,1.56,0.64,1) 0.6s both" }}>
               {cats.map(function(c, i) {
                 return (
-                  <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderBottom: i < cats.length - 1 ? "0.5px solid rgba(0,0,0,0.06)" : "none" }}>
+                  <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderBottom: i < cats.length - 1 ? "0.5px solid " + J.line : "none" }}>
                     <CatBadge icon={c.icon} color={c.color} size={34} soft={true} />
-                    <span style={{ flex: 1, fontSize: 15, color: JINK, fontWeight: 500 }}>{c.name}</span>
+                    <span style={{ flex: 1, fontSize: 15, color: J.ink, fontWeight: 500 }}>{c.name}</span>
                     <div style={fieldBox}>
-                      <span style={{ fontSize: 14, color: JINK3, fontWeight: 600 }}>{sym}</span>
+                      <span style={{ fontSize: 14, color: J.ink3, fontWeight: 600 }}>{sym}</span>
                       <input value={amts[c.id] || ""} onChange={function(e) { setAmt(c.id, e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={amtInput} />
                     </div>
                   </div>
@@ -7396,10 +7437,10 @@ function CatchUpScreen(props) {
 
       </div>
 
-      <div style={{ padding: "14px 22px 40px", borderTop: "0.5px solid rgba(0,0,0,0.06)", background: "rgba(253,245,236,0.85)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", position: "relative", zIndex: 2 }}>
+      <div style={{ padding: "14px 22px 40px", borderTop: "0.5px solid " + J.line, background: "rgba(253,245,236,0.85)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", position: "relative", zIndex: 2 }}>
         <JrBtn label={canAdd ? tr("cuAddToMonth") : tr("continueBtn")} onPress={function() { props.onComplete(buildTxs()); }} style={{ padding: "16px 0", fontSize: 16 }} />
         <button onClick={function() { props.onComplete([]); }} className="jr-press"
-          style={{ width: "100%", background: "none", border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 14, fontSize: 14.5, fontWeight: 700, color: JINK2, cursor: "pointer", fontFamily: UI, padding: "13px 0", display: "block", textAlign: "center", marginTop: 10 }}>
+          style={{ width: "100%", background: "none", border: "1.5px solid " + J.line, borderRadius: 14, fontSize: 14.5, fontWeight: 700, color: J.ink2, cursor: "pointer", fontFamily: UI, padding: "13px 0", display: "block", textAlign: "center", marginTop: 10 }}>
           {tr("cuSkipFresh")}
         </button>
         {props.onSyncInstead && (
@@ -7499,7 +7540,7 @@ function StoryBeat(props) {
             {b.kicker}
           </div>
         )}
-        <div style={{ fontSize: 25, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.28, maxWidth: 330 }}>
+        <div style={{ fontSize: 25, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, letterSpacing: "-0.01em", lineHeight: 1.28, maxWidth: 330 }}>
           <WordReveal text={b.headline} base={0.15} step={0.085} />
         </div>
         {b.big && st >= 1 && (
@@ -7511,7 +7552,7 @@ function StoryBeat(props) {
         )}
         <div style={{ marginTop: 18, minHeight: 48, maxWidth: 320 }}>
           {st >= 2 && b.sub && (
-            <div style={{ fontSize: 15, color: JINK2, lineHeight: 1.6, animation: "rclPhrase 0.5s ease both" }}>{b.sub}</div>
+            <div style={{ fontSize: 15, color: J.ink2, lineHeight: 1.6, animation: "rclPhrase 0.5s ease both" }}>{b.sub}</div>
           )}
         </div>
         {st >= 2 && b.extra && (
@@ -7544,7 +7585,7 @@ function CommitScreen(props) {
         <div style={{ fontSize: 11.5, fontWeight: 800, color: T.orange, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14, animation: "rclPhrase 0.5s ease both" }}>
           {tr("cmPact")}
         </div>
-        <div style={{ fontSize: 26, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.25, textAlign: "center", maxWidth: 320 }}>
+        <div style={{ fontSize: 26, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, letterSpacing: "-0.01em", lineHeight: 1.25, textAlign: "center", maxWidth: 320 }}>
           <WordReveal text={props.username ? tr("cmReadyTakeBackName").replace("{name}", props.username) : tr("cmReadyTakeBack")} />
         </div>
         <div style={{ marginTop: 30, display: "flex", flexDirection: "column", gap: 16, width: "100%", maxWidth: 330 }}>
@@ -7555,7 +7596,7 @@ function CommitScreen(props) {
                 <span style={{ width: 26, height: 26, borderRadius: "50%", background: T.green, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, animation: "rcjCheckPop 0.45s cubic-bezier(0.34,1.56,0.64,1) " + (d + 0.18).toFixed(2) + "s both", boxShadow: "0 4px 12px " + T.greenGlow }}>
                   <SVGIcon id="check" size={13} color="#fff" />
                 </span>
-                <span style={{ fontSize: 15, fontWeight: 600, color: JINK, lineHeight: 1.45, textAlign: "left" }}>{label}</span>
+                <span style={{ fontSize: 15, fontWeight: 600, color: J.ink, lineHeight: 1.45, textAlign: "left" }}>{label}</span>
               </div>
             );
           })}
@@ -7565,7 +7606,7 @@ function CommitScreen(props) {
         <div style={{ animation: "rclPhrase 0.5s ease 2.4s both" }}>
           <JrBtn label={tr("cmYesImIn")} pulse onPress={props.onCommit} />
           <button onClick={props.onCommit}
-            style={{ width: "100%", background: "none", border: "none", color: JINK3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0" }}>
+            style={{ width: "100%", background: "none", border: "none", color: J.ink3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0" }}>
             {tr("cmLookAround")}
           </button>
         </div>
@@ -7649,11 +7690,11 @@ function MathStoryScreen(props) {
           { icon: "advisor", t: tr("msMethodItem3") },
         ].map(function(r, i) {
           return (
-            <div key={r.icon} style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(255,255,255,0.8)", border: "1px solid rgba(0,0,0,0.05)", borderRadius: 15, padding: "13px 15px", boxShadow: "0 3px 12px rgba(40,28,16,0.06)", animation: "rclPhrase 0.45s ease " + (0.25 + i * 0.16).toFixed(2) + "s both", boxSizing: "border-box" }}>
+            <div key={r.icon} style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(255,255,255,0.8)", border: "1px solid " + J.line, borderRadius: 15, padding: "13px 15px", boxShadow: "0 3px 12px rgba(40,28,16,0.06)", animation: "rclPhrase 0.45s ease " + (0.25 + i * 0.16).toFixed(2) + "s both", boxSizing: "border-box" }}>
               <span style={{ width: 34, height: 34, borderRadius: 11, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <SVGIcon id={r.icon} size={17} color={T.orange} />
               </span>
-              <span style={{ fontSize: 13.5, fontWeight: 650, color: JINK, lineHeight: 1.4 }}>{r.t}</span>
+              <span style={{ fontSize: 13.5, fontWeight: 650, color: J.ink, lineHeight: 1.4 }}>{r.t}</span>
             </div>
           );
         })}
@@ -7673,16 +7714,16 @@ function MathStoryScreen(props) {
   var shY = hasBig ? 0.52 : 0.44;
 
   return (
-    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, position: "relative", overflow: "hidden" }}>
-      <JrShaderBg colors={shColors} base="#FBF3E8" speed={shSpeed} intensity={shIntensity} yScale={shY} xScale={1.1} style={{ position: "absolute" }} />
-      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.78) 0%, rgba(251,243,232,0.28) 34%, rgba(251,243,232,0.32) 66%, rgba(251,243,232,0.72) 100%)" }} />
+    <div style={{ minHeight: "100vh", background: J.bg, fontFamily: UI, position: "relative", overflow: "hidden" }}>
+      <JrShaderBg colors={shColors} base={J.shaderBase} speed={shSpeed} intensity={shIntensity} yScale={shY} xScale={1.1} style={{ position: "absolute" }} />
+      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, " + jrRgba(J.shaderBase, 0.78) + " 0%, " + jrRgba(J.shaderBase, 0.28) + " 34%, " + jrRgba(J.shaderBase, 0.32) + " 66%, " + jrRgba(J.shaderBase, 0.72) + " 100%)" }} />
       <div style={{ position: "relative", zIndex: 2 }}>
       {ph === "ring" && (
         <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 32px" }}>
           <div style={{ textAlign: "center" }}>
             <ProgressRing size={150} duration={2800} onDone={function() { setPh("beats"); }} />
-            <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", marginTop: 24 }}>{tr("msRingTitle")}</div>
-            <div style={{ fontSize: 13.5, fontWeight: 600, color: JINK3, marginTop: 8 }}>
+            <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, letterSpacing: "-0.01em", marginTop: 24 }}>{tr("msRingTitle")}</div>
+            <div style={{ fontSize: 13.5, fontWeight: 600, color: J.ink3, marginTop: 8 }}>
               <ThinkingPhrase phrases={[tr("msRingPhrase1"), tr("msRingPhrase2"), tr("msRingPhrase3")]} interval={950} />
             </div>
           </div>
@@ -7812,7 +7853,7 @@ function OnboardingScreen(props) {
   }
 
 
-  var fieldStyle = { width: "100%", background: "rgba(255,255,255,0.88)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 16px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", marginBottom: 12, display: "block" };
+  var fieldStyle = { width: "100%", background: J.panel, border: "1.5px solid " + J.line, borderRadius: 16, padding: "15px 16px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", marginBottom: 12, display: "block" };
   var labelStyle = { fontSize: 12, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8, display: "block" };
 
   if (loading) {
@@ -7862,7 +7903,7 @@ function OnboardingScreen(props) {
     var proposed = suggestBudgets();
     var maxLimit = proposed.reduce(function(m, b) { return Math.max(m, b.limit); }, 1);
     return (
-      <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, overflowY: "auto", position: "relative", overflowX: "hidden" }}>
+      <div style={{ minHeight: "100vh", background: J.bg, fontFamily: UI, overflowY: "auto", position: "relative", overflowX: "hidden" }}>
         <div style={{ position: "absolute", top: -70, right: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(137,112,198,0.14) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift 9s ease-in-out infinite" }} />
         <div style={{ position: "absolute", top: 420, left: -80, width: 240, height: 240, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,154,60,0.11) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift2 11s ease-in-out infinite" }} />
         <div style={{ padding: "56px 24px 52px", position: "relative", maxWidth: 428, margin: "0 auto", boxSizing: "border-box" }}>
@@ -7876,22 +7917,22 @@ function OnboardingScreen(props) {
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 20, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK, letterSpacing: "-0.01em" }}><WordReveal text={tr("obPlanReady")} base={0.15} step={0.07} /></div>
-              <div style={{ fontSize: 13, color: JINK3, marginTop: 2 }}>{tr("obPlanBuiltForYou")}</div>
+              <div style={{ fontSize: 20, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, letterSpacing: "-0.01em" }}><WordReveal text={tr("obPlanReady")} base={0.15} step={0.07} /></div>
+              <div style={{ fontSize: 13, color: J.ink3, marginTop: 2 }}>{tr("obPlanBuiltForYou")}</div>
             </div>
           </div>
 
-          <div style={{ background: "#fff", borderRadius: 18, padding: "20px 20px", marginBottom: 20, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
+          <div style={{ background: J.card, borderRadius: 18, padding: "20px 20px", marginBottom: 20, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 12 }}>
               <ThinkingDots size={4} color={T.orange} />
               <span style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em" }}>{tr("yourPlanByRichard")}</span>
             </div>
-            <TypeReveal fade animate text={genPlan} size={14} color={JINK} />
+            <TypeReveal fade animate text={genPlan} size={14} color={J.ink} />
           </div>
 
-          <div style={{ background: "#fff", borderRadius: 18, padding: "20px 20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
-            <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK, marginBottom: 6 }}>{tr("obHowAddTx")}</div>
-            <div style={{ fontSize: 13, color: JINK3, marginBottom: 16, lineHeight: 1.55 }}>{tr("obChangeAnytimeProfile")}</div>
+          <div style={{ background: J.card, borderRadius: 18, padding: "20px 20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
+            <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, marginBottom: 6 }}>{tr("obHowAddTx")}</div>
+            <div style={{ fontSize: 13, color: J.ink3, marginBottom: 16, lineHeight: 1.55 }}>{tr("obChangeAnytimeProfile")}</div>
             {[
               { id: "manual", label: tr("obManualEntry"), sub: tr("obManualEntrySub") },
               { id: "import", label: tr("obImportCsv"), sub: tr("obImportCsvSub") }
@@ -7899,10 +7940,10 @@ function OnboardingScreen(props) {
               var sel = entryMethod === opt.id;
               return (
                 <button key={opt.id} onClick={function() { setEntryMethod(opt.id); }} className="jr-press"
-                  style={{ width: "100%", textAlign: "left", marginBottom: 10, background: sel ? "rgba(137,112,198,0.06)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 14, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, fontFamily: UI, boxSizing: "border-box", boxShadow: sel ? "0 0 0 3px " + T.orangeDim : "none", transition: "box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease" }}>
+                  style={{ width: "100%", textAlign: "left", marginBottom: 10, background: sel ? "rgba(137,112,198,0.06)" : J.card, border: "1.5px solid " + (sel ? T.orange : J.line), borderRadius: 14, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, fontFamily: UI, boxSizing: "border-box", boxShadow: sel ? "0 0 0 3px " + T.orangeDim : "none", transition: "box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease" }}>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 15, fontWeight: sel ? 700 : 600, color: JINK }}>{opt.label}</div>
-                    <div style={{ fontSize: 12.5, color: JINK3, marginTop: 2 }}>{opt.sub}</div>
+                    <div style={{ fontSize: 15, fontWeight: sel ? 700 : 600, color: J.ink }}>{opt.label}</div>
+                    <div style={{ fontSize: 12.5, color: J.ink3, marginTop: 2 }}>{opt.sub}</div>
                   </div>
                   {sel && <div style={{ width: 22, height: 22, borderRadius: "50%", background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, animation: "rcjCheckPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both", boxShadow: "0 3px 10px " + T.orangeGlow }}><SVGIcon id="check" size={12} color="#fff" /></div>}
                 </button>
@@ -7911,9 +7952,9 @@ function OnboardingScreen(props) {
           </div>
 
           {proposed.length > 0 && (
-            <div style={{ background: "#fff", borderRadius: 18, padding: "20px 20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
-              <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK, marginBottom: 6 }}>{tr("obSetupBudgetsQ")}</div>
-              <div style={{ fontSize: 13, color: JINK3, marginBottom: 18, lineHeight: 1.55 }}>{tr("obBasedOnNumbers")}</div>
+            <div style={{ background: J.card, borderRadius: 18, padding: "20px 20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
+              <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, marginBottom: 6 }}>{tr("obSetupBudgetsQ")}</div>
+              <div style={{ fontSize: 13, color: J.ink3, marginBottom: 18, lineHeight: 1.55 }}>{tr("obBasedOnNumbers")}</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 13, marginBottom: 20 }}>
                 {proposed.map(function(b, i) {
                   var pct = Math.max(8, Math.round((b.limit / maxLimit) * 100));
@@ -7921,12 +7962,12 @@ function OnboardingScreen(props) {
                   return (
                     <div key={b.catId} style={{ animation: "rclPhrase 0.45s ease " + d.toFixed(2) + "s both" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
-                        <span style={{ fontSize: 14, color: JINK2, fontWeight: 600 }}>{b.category}</span>
-                        <span style={{ fontSize: 14, fontWeight: 800, color: JINK, fontVariantNumeric: "tabular-nums" }}>
+                        <span style={{ fontSize: 14, color: J.ink2, fontWeight: 600 }}>{b.category}</span>
+                        <span style={{ fontSize: 14, fontWeight: 800, color: J.ink, fontVariantNumeric: "tabular-nums" }}>
                           <CountUpNum value={b.limit} duration={900} delay={d * 1000} format={function(v) { return jrCur(v); }} />
                         </span>
                       </div>
-                      <div style={{ height: 6, borderRadius: 999, background: "rgba(0,0,0,0.05)", overflow: "hidden" }}>
+                      <div style={{ height: 6, borderRadius: 999, background: J.fill1, overflow: "hidden" }}>
                         <div style={{ width: pct + "%", height: "100%", borderRadius: 999, background: T.btn, transformOrigin: "left center", animation: "rcjBarGrow 0.8s cubic-bezier(0.22,1,0.36,1) " + (d + 0.15).toFixed(2) + "s both" }} />
                       </div>
                     </div>
@@ -7935,7 +7976,7 @@ function OnboardingScreen(props) {
               </div>
               <JrBtn label={tr("obYesSetUp")} onPress={function() { props.onComplete(genPlan, genOData, proposed, entryMethod); }} style={{ marginBottom: 10, padding: "15px 0", fontSize: 16 }} />
               <button onClick={function() { props.onComplete(genPlan, genOData, null, entryMethod); }} className="jr-press"
-                style={{ width: "100%", background: "none", border: "none", fontSize: 14, color: JINK3, cursor: "pointer", fontFamily: UI, padding: "8px 0" }}>
+                style={{ width: "100%", background: "none", border: "none", fontSize: 14, color: J.ink3, cursor: "pointer", fontFamily: UI, padding: "8px 0" }}>
                 {tr("obSetUpMyself")}
               </button>
             </div>
@@ -8018,12 +8059,12 @@ function OnboardingScreen(props) {
   var essPicks = incNum > 0
     ? [0.3, 0.5, 0.7].map(function(p) { return Math.max(50, Math.round(incNum * p / 50) * 50); })
     : [800, 1500, 2500];
-  var labelJ = { fontSize: 11.5, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 12 };
+  var labelJ = { fontSize: 11.5, fontWeight: 700, color: J.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 12 };
   function optCardStyle(sel) {
-    return { width: "100%", background: sel ? "rgba(137,112,198,0.06)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "15px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px rgba(137,112,198,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", animation: sel ? "rclPop 0.25s ease" : "none", marginBottom: 11, transition: "box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease" };
+    return { width: "100%", background: sel ? "rgba(137,112,198,0.06)" : J.card, border: "1.5px solid " + (sel ? T.orange : J.line), borderRadius: 15, padding: "15px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px rgba(137,112,198,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", animation: sel ? "rclPop 0.25s ease" : "none", marginBottom: 11, transition: "box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease" };
   }
   function optIconTile(sel, size) {
-    return { width: size, height: size, borderRadius: 11, background: sel ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: sel ? "0 5px 14px " + T.orangeGlow : "none", transition: "background 0.25s ease, box-shadow 0.25s ease" };
+    return { width: size, height: size, borderRadius: 11, background: sel ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : J.fill0, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: sel ? "0 5px 14px " + T.orangeGlow : "none", transition: "background 0.25s ease, box-shadow 0.25s ease" };
   }
   var optCheck = (
     <span style={{ marginLeft: "auto", width: 22, height: 22, borderRadius: "50%", background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, animation: "rcjCheckPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both", boxShadow: "0 3px 10px " + T.orangeGlow }}>
@@ -8032,18 +8073,18 @@ function OnboardingScreen(props) {
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100vh", background: J.bg, fontFamily: UI, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
       {/* Same ribbons and cream veil as the trip interview, so the two
           question flows read as one surface. */}
-      <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base="#FBF3E8" speed={0.18} intensity={0.75} yScale={0.44} xScale={1.05} style={{ position: "absolute" }} />
-      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.85) 0%, rgba(251,243,232,0.45) 24%, rgba(251,243,232,0.45) 76%, rgba(251,243,232,0.8) 100%)" }} />
+      <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base={J.shaderBase} speed={0.18} intensity={0.75} yScale={0.44} xScale={1.05} style={{ position: "absolute" }} />
+      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, " + jrRgba(J.shaderBase, 0.85) + " 0%, " + jrRgba(J.shaderBase, 0.45) + " 24%, " + jrRgba(J.shaderBase, 0.45) + " 76%, " + jrRgba(J.shaderBase, 0.8) + " 100%)" }} />
 
       <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0", position: "relative", zIndex: 2 }}>
         {qIndex > 0 ? (
           <JrIconBtn icon="chevron" rotate={180} onPress={goBack} />
         ) : <div style={{ width: 34, flexShrink: 0 }} />}
         <JourneyBar pct={((qIndex + 1) / Q_TOTAL) * 100} />
-        <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: JINK3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(qIndex + 1) + "/" + Q_TOTAL}</div>
+        <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: J.ink3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(qIndex + 1) + "/" + Q_TOTAL}</div>
       </div>
 
       <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "28px 24px 8px", position: "relative", zIndex: 2 }}>
@@ -8051,10 +8092,10 @@ function OnboardingScreen(props) {
           <JrStepShell k={qIndex} dir={dir}>
             {qIndex > 0 && (
               <div>
-                <div style={{ fontSize: 25, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.25, marginBottom: 8 }}>
+                <div style={{ fontSize: 25, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, letterSpacing: "-0.01em", lineHeight: 1.25, marginBottom: 8 }}>
                   <WordReveal text={qh.h} base={0.04} step={0.045} />
                 </div>
-                <div style={{ fontSize: 14, color: JINK3, marginBottom: 26, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>{qh.s}</div>
+                <div style={{ fontSize: 14, color: J.ink3, marginBottom: 26, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>{qh.s}</div>
               </div>
             )}
 
@@ -8066,8 +8107,8 @@ function OnboardingScreen(props) {
                     <SVGIcon id="spark" size={28} color="#fff" />
                   </div>
                 </div>
-                <div style={{ background: "#fff", borderRadius: "4px 20px 20px 20px", padding: "16px 18px", boxShadow: "0 6px 22px rgba(40,28,16,0.09)", maxWidth: 330, boxSizing: "border-box" }}>
-                  <TypeReveal fade animate color={JINK} size={15.5}
+                <div style={{ background: J.card, borderRadius: "4px 20px 20px 20px", padding: "16px 18px", boxShadow: "0 6px 22px rgba(40,28,16,0.09)", maxWidth: 330, boxSizing: "border-box" }}>
+                  <TypeReveal fade animate color={J.ink} size={15.5}
                     text={tr("obGreeting").replace("{name}", firstName)}
                     onDone={function() { setGreetDone(true); }} />
                 </div>
@@ -8095,12 +8136,12 @@ function OnboardingScreen(props) {
                   })}
                 </div>
                 <div key={prefCur} style={{ marginTop: 22, textAlign: "center", animation: "rclPhrase 0.35s ease both", marginBottom: 22 }}>
-                  <span style={{ display: "inline-block", background: "rgba(255,255,255,0.85)", border: "1px solid rgba(0,0,0,0.06)", borderRadius: 999, padding: "8px 16px", fontSize: 13, fontWeight: 700, color: JINK2, boxShadow: "0 2px 8px rgba(0,0,0,0.04)", boxSizing: "border-box" }}>
+                  <span style={{ display: "inline-block", background: J.panel, border: "1px solid " + J.line, borderRadius: 999, padding: "8px 16px", fontSize: 13, fontWeight: 700, color: J.ink2, boxShadow: "0 2px 8px rgba(0,0,0,0.04)", boxSizing: "border-box" }}>
                     {tr("obYourCoffee").replace("{price}", fmtCur(prefCur, 4.5))}
                   </span>
                 </div>
                 <div style={labelJ}>{tr("obDateRangeLabel")}</div>
-                <div style={{ fontSize: 12.5, color: JINK3, marginTop: -8, marginBottom: 14, lineHeight: 1.5 }}>{tr("obDateRangeExplain")}</div>
+                <div style={{ fontSize: 12.5, color: J.ink3, marginTop: -8, marginBottom: 14, lineHeight: 1.5 }}>{tr("obDateRangeExplain")}</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {[
                     { id: "calendar", label: tr("obThisMonth") },
@@ -8135,9 +8176,9 @@ function OnboardingScreen(props) {
                   return (
                     <button key={st.label} onClick={function() { setLifeStage(st.label); autoAdvance(); }} style={optCardStyle(sel)}>
                       <div style={optIconTile(sel, 38)}>
-                        <SVGIcon id={st.icon} size={18} color={sel ? "#fff" : JINK3} />
+                        <SVGIcon id={st.icon} size={18} color={sel ? "#fff" : J.ink3} />
                       </div>
-                      <span style={{ fontSize: 17, fontWeight: sel ? 700 : 500, color: sel ? JINK : JINK2 }}>{tr(st.tKey)}</span>
+                      <span style={{ fontSize: 17, fontWeight: sel ? 700 : 500, color: sel ? J.ink : J.ink2 }}>{tr(st.tKey)}</span>
                       {sel && optCheck}
                     </button>
                   );
@@ -8152,9 +8193,9 @@ function OnboardingScreen(props) {
                   return (
                     <button key={opt.label} onClick={function() { setCoreProblem(opt.label); autoAdvance(); }} style={optCardStyle(sel)}>
                       <div style={optIconTile(sel, 36)}>
-                        <SVGIcon id={opt.icon} size={17} color={sel ? "#fff" : JINK3} />
+                        <SVGIcon id={opt.icon} size={17} color={sel ? "#fff" : J.ink3} />
                       </div>
-                      <span style={{ fontSize: 15, fontWeight: sel ? 700 : 500, color: sel ? JINK : JINK2, lineHeight: 1.35 }}>{tr(opt.tKey)}</span>
+                      <span style={{ fontSize: 15, fontWeight: sel ? 700 : 500, color: sel ? J.ink : J.ink2, lineHeight: 1.35 }}>{tr(opt.tKey)}</span>
                       {sel && optCheck}
                     </button>
                   );
@@ -8191,7 +8232,7 @@ function OnboardingScreen(props) {
                 <QuickAmount label={tr("obOverspendLabel")} value={overspend} onChange={setOverspend} picks={[100, 250, 500, 1000]} />
                 <div key={hint.tag} style={{ textAlign: "center", marginTop: 18, animation: "rclPhrase 0.35s ease both" }}>
                   <span style={{ display: "inline-block", background: T.orangeDim, color: T.orange, fontSize: 12.5, fontWeight: 800, padding: "7px 14px", borderRadius: 999, letterSpacing: "0.02em" }}>{hint.tag}</span>
-                  <div style={{ fontSize: 13, color: JINK2, marginTop: 8, lineHeight: 1.5 }}>{hint.txt}</div>
+                  <div style={{ fontSize: 13, color: J.ink2, marginTop: 8, lineHeight: 1.5 }}>{hint.txt}</div>
                 </div>
               </div>
             )}
@@ -8209,7 +8250,7 @@ function OnboardingScreen(props) {
               <div>
                 <div style={labelJ}>{tr("obGoalNameLabel")}</div>
                 <input value={goalName} onChange={function(e) { setGoalName(e.target.value); }} type="text" placeholder={tr("obGoalNamePlaceholder")}
-                  className="jr-field" style={Object.assign({}, fieldStyle, { color: JINK })} />
+                  className="jr-field" style={Object.assign({}, fieldStyle, { color: J.ink })} />
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 6 }}>
                   {[tr("emergencyFund"), tr("obGoalTravel"), tr("obGoalLaptop"), tr("obGoalApartment")].map(function(g, i) {
                     return (
@@ -8241,7 +8282,7 @@ function OnboardingScreen(props) {
         {qIndex === 0 && <JrBtn label={tr("obLetsGo")} disabled={!greetDone} onPress={advance} />}
         {qIndex === 1 && <JrBtn label={tr("continueBtn")} onPress={advance} />}
         {(qIndex === 2 || qIndex === 3) && (
-          <div style={{ textAlign: "center", fontSize: 12.5, color: JINK3, fontWeight: 600, padding: "14px 0" }}>{tr("obTapOption")}</div>
+          <div style={{ textAlign: "center", fontSize: 12.5, color: J.ink3, fontWeight: 600, padding: "14px 0" }}>{tr("obTapOption")}</div>
         )}
         {qIndex >= 4 && qIndex <= 8 && (
           <div>
@@ -8255,7 +8296,7 @@ function OnboardingScreen(props) {
                 if (qIndex === 7) setOverspend("");
                 advance();
               }}
-              style={{ width: "100%", background: "none", border: "none", color: JINK3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0" }}>
+              style={{ width: "100%", background: "none", border: "none", color: J.ink3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0" }}>
               {qIndex === 7 ? tr("obReallyDontKnow") : tr("obSkipForNow")}
             </button>
           </div>
@@ -14138,7 +14179,7 @@ function Trips(props) {
         if (tq <= 0) { setView("list"); return; }
         setTqDir("back"); setTq(tq - 1);
       }
-      var jInput = { width: "100%", background: "rgba(255,255,255,0.9)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 16px", fontSize: 16, fontFamily: UI, color: JINK, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" };
+      var jInput = { width: "100%", background: "rgba(255,255,255,0.9)", border: "1.5px solid " + J.line, borderRadius: 16, padding: "15px 16px", fontSize: 16, fontFamily: UI, color: J.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" };
 
       // ---- Trip story ----
       if (step === "story") {
@@ -14165,9 +14206,9 @@ function Trips(props) {
         var tBeat = tripBeats[Math.min(tripBeat, tripBeats.length - 1)];
         var tGreen = tBeat.color === T.green;
         var storyContent = (
-          <div style={{ position: "fixed", inset: 0, zIndex: 91, background: JR_BG, fontFamily: UI, overflow: "hidden" }}>
-            <JrShaderBg colors={tGreen ? [T.green, "#7BD6A2", T.green] : [T.orange, T.orangeHi, T.orange]} base="#FBF3E8" speed={tBeat.big ? 0.55 : 0.28} intensity={tBeat.big ? 1.05 : 0.8} yScale={tBeat.big ? 0.5 : 0.44} xScale={1.1} style={{ position: "absolute" }} />
-            <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.78) 0%, rgba(251,243,232,0.3) 34%, rgba(251,243,232,0.34) 66%, rgba(251,243,232,0.72) 100%)" }} />
+          <div style={{ position: "fixed", inset: 0, zIndex: 91, background: J.bg, fontFamily: UI, overflow: "hidden" }}>
+            <JrShaderBg colors={tGreen ? [T.green, "#7BD6A2", T.green] : [T.orange, T.orangeHi, T.orange]} base={J.shaderBase} speed={tBeat.big ? 0.55 : 0.28} intensity={tBeat.big ? 1.05 : 0.8} yScale={tBeat.big ? 0.5 : 0.44} xScale={1.1} style={{ position: "absolute" }} />
+            <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, " + jrRgba(J.shaderBase, 0.78) + " 0%, " + jrRgba(J.shaderBase, 0.3) + " 34%, " + jrRgba(J.shaderBase, 0.34) + " 66%, " + jrRgba(J.shaderBase, 0.72) + " 100%)" }} />
             <div style={{ position: "relative", zIndex: 2, height: "100%" }}>
               <JrStepShell k={tripBeat}>
                 <StoryBeat beat={tBeat} onNext={function() {
@@ -14183,24 +14224,24 @@ function Trips(props) {
 
       // ---- Interview ----
       var interviewContent = (
-        <div style={{ position: "fixed", inset: 0, zIndex: 91, background: JR_BG, display: "flex", flexDirection: "column", fontFamily: UI, overflow: "hidden" }}>
-          <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base="#FBF3E8" speed={0.18} intensity={0.75} yScale={0.44} xScale={1.05} style={{ position: "absolute" }} />
-          <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.85) 0%, rgba(251,243,232,0.45) 24%, rgba(251,243,232,0.45) 76%, rgba(251,243,232,0.8) 100%)" }} />
+        <div style={{ position: "fixed", inset: 0, zIndex: 91, background: J.bg, display: "flex", flexDirection: "column", fontFamily: UI, overflow: "hidden" }}>
+          <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base={J.shaderBase} speed={0.18} intensity={0.75} yScale={0.44} xScale={1.05} style={{ position: "absolute" }} />
+          <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, " + jrRgba(J.shaderBase, 0.85) + " 0%, " + jrRgba(J.shaderBase, 0.45) + " 24%, " + jrRgba(J.shaderBase, 0.45) + " 76%, " + jrRgba(J.shaderBase, 0.8) + " 100%)" }} />
 
           <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0", position: "relative", zIndex: 2, maxWidth: 430, width: "100%", margin: "0 auto", boxSizing: "border-box" }}>
             <JrIconBtn icon="chevron" rotate={180} onPress={tqBack} />
             <JourneyBar pct={((tq + 1) / TQ_TOTAL) * 100} />
-            <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: JINK3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(tq + 1) + "/" + TQ_TOTAL}</div>
+            <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: J.ink3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(tq + 1) + "/" + TQ_TOTAL}</div>
           </div>
 
           <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "28px 24px 8px", position: "relative", zIndex: 2 }}>
             <div style={{ maxWidth: 380, margin: "0 auto" }}>
               <JrStepShell k={tq} dir={tqDir}>
                 <div>
-                  <div style={{ fontSize: 25, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.25, marginBottom: 8 }}>
+                  <div style={{ fontSize: 25, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, letterSpacing: "-0.01em", lineHeight: 1.25, marginBottom: 8 }}>
                     <WordReveal text={tqh.h} base={0.04} step={0.045} />
                   </div>
-                  <div style={{ fontSize: 14, color: JINK3, marginBottom: 26, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>{tqh.s}</div>
+                  <div style={{ fontSize: 14, color: J.ink3, marginBottom: 26, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>{tqh.s}</div>
                 </div>
 
                 {tq === 0 && (
@@ -14249,8 +14290,8 @@ function Trips(props) {
                         var on = (form.icon || "plane") === ic;
                         return (
                           <button key={ic} onClick={function() { setField("icon", ic); }} className="jr-press"
-                            style={{ width: 46, height: 46, border: on ? "none" : "1.5px solid rgba(0,0,0,0.09)", background: on ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : "rgba(255,255,255,0.85)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxSizing: "border-box", boxShadow: on ? "0 5px 14px " + T.orangeGlow : "0 2px 6px rgba(0,0,0,0.05)", animation: "rcjChipIn 0.4s cubic-bezier(0.34,1.56,0.64,1) " + (0.05 + i * 0.04).toFixed(2) + "s both", transition: "background 0.2s ease, box-shadow 0.2s ease" }}>
-                            <SVGIcon id={ic} size={22} color={on ? "#fff" : JINK2} />
+                            style={{ width: 46, height: 46, border: on ? "none" : "1.5px solid " + J.line, background: on ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : J.panel, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxSizing: "border-box", boxShadow: on ? "0 5px 14px " + T.orangeGlow : "0 2px 6px rgba(0,0,0,0.05)", animation: "rcjChipIn 0.4s cubic-bezier(0.34,1.56,0.64,1) " + (0.05 + i * 0.04).toFixed(2) + "s both", transition: "background 0.2s ease, box-shadow 0.2s ease" }}>
+                            <SVGIcon id={ic} size={22} color={on ? "#fff" : J.ink2} />
                           </button>
                         );
                       })}
@@ -14269,13 +14310,13 @@ function Trips(props) {
                       var sel = form.wantPlan === o.v;
                       return (
                         <button key={String(o.v)} className="jr-press" onClick={function() { setField("wantPlan", o.v); tqAuto(); }}
-                          style={{ width: "100%", background: sel ? "rgba(137,112,198,0.06)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "16px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px rgba(137,112,198,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", marginBottom: 11, transition: "box-shadow 0.25s ease, border-color 0.25s ease" }}>
-                          <div style={{ width: 40, height: 40, borderRadius: 12, background: sel ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.25s ease" }}>
-                            <SVGIcon id={o.icon} size={19} color={sel ? "#fff" : JINK3} />
+                          style={{ width: "100%", background: sel ? "rgba(137,112,198,0.06)" : J.card, border: "1.5px solid " + (sel ? T.orange : J.line), borderRadius: 15, padding: "16px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px rgba(137,112,198,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", marginBottom: 11, transition: "box-shadow 0.25s ease, border-color 0.25s ease" }}>
+                          <div style={{ width: 40, height: 40, borderRadius: 12, background: sel ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : J.fill0, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.25s ease" }}>
+                            <SVGIcon id={o.icon} size={19} color={sel ? "#fff" : J.ink3} />
                           </div>
                           <span style={{ flex: 1 }}>
-                            <span style={{ display: "block", fontSize: 15, fontWeight: 700, color: JINK, lineHeight: 1.3 }}>{o.t}</span>
-                            <span style={{ display: "block", fontSize: 12.5, color: JINK3, marginTop: 3, lineHeight: 1.45 }}>{o.s}</span>
+                            <span style={{ display: "block", fontSize: 15, fontWeight: 700, color: J.ink, lineHeight: 1.3 }}>{o.t}</span>
+                            <span style={{ display: "block", fontSize: 12.5, color: J.ink3, marginTop: 3, lineHeight: 1.45 }}>{o.s}</span>
                           </span>
                         </button>
                       );
@@ -14293,19 +14334,19 @@ function Trips(props) {
             {tq === 3 && (
               <div>
                 <JrBtn label="Continue" onPress={tqAdvance} />
-                <button onClick={tqAdvance} className="jr-press" style={{ width: "100%", background: "none", border: "none", color: JINK3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0" }}>Skip for now</button>
+                <button onClick={tqAdvance} className="jr-press" style={{ width: "100%", background: "none", border: "none", color: J.ink3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0" }}>Skip for now</button>
               </div>
             )}
             {tq === 4 && <JrBtn label="Continue" disabled={total <= 0} onPress={tqAdvance} />}
-            {tq === 5 && <div style={{ textAlign: "center", fontSize: 12.5, color: JINK3, fontWeight: 600, padding: "14px 0" }}>Tap a vibe to continue</div>}
+            {tq === 5 && <div style={{ textAlign: "center", fontSize: 12.5, color: J.ink3, fontWeight: 600, padding: "14px 0" }}>Tap a vibe to continue</div>}
             {tq === 6 && <JrBtn label="Continue" onPress={tqAdvance} />}
             {tq === 7 && (
               <div>
                 <JrBtn label="Continue" onPress={tqAdvance} />
-                <button onClick={tqAdvance} className="jr-press" style={{ width: "100%", background: "none", border: "none", color: JINK3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0" }}>Skip for now</button>
+                <button onClick={tqAdvance} className="jr-press" style={{ width: "100%", background: "none", border: "none", color: J.ink3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0" }}>Skip for now</button>
               </div>
             )}
-            {tq === 8 && <div style={{ textAlign: "center", fontSize: 12.5, color: JINK3, fontWeight: 600, padding: "14px 0" }}>Pick one to continue</div>}
+            {tq === 8 && <div style={{ textAlign: "center", fontSize: 12.5, color: J.ink3, fontWeight: 600, padding: "14px 0" }}>Pick one to continue</div>}
           </div>
         </div>
       );
@@ -21083,7 +21124,7 @@ function InvestPlanOnboard(props) {
   var q = QS[step] || QS[1];
 
   function optCard(sel) {
-    return { width: "100%", background: sel ? T.orangeDim : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "15px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px " + T.orangeGlow : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", marginBottom: 11, transition: "box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease" };
+    return { width: "100%", background: sel ? T.orangeDim : J.card, border: "1.5px solid " + (sel ? T.orange : J.line), borderRadius: 15, padding: "15px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px " + T.orangeGlow : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", marginBottom: 11, transition: "box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease" };
   }
 
   // --- plan reveal ---
@@ -21091,10 +21132,10 @@ function InvestPlanOnboard(props) {
     var donut = investDonut(plan.alloc);
     var proj = investProjection(monthly, plan.mid, 10);
     return (
-      <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, overflowY: "auto", position: "relative", zIndex: 0, overflowX: "hidden" }}>
+      <div style={{ minHeight: "100vh", background: J.bg, fontFamily: UI, overflowY: "auto", position: "relative", zIndex: 0, overflowX: "hidden" }}>
         <ScoutBeamsBg opacity={0.42} />
         <div style={{ padding: "22px 22px 44px", maxWidth: 428, margin: "0 auto", boxSizing: "border-box", position: "relative" }}>
-          <button onClick={back} style={{ width: 34, height: 34, borderRadius: 11, border: "none", background: "rgba(0,0,0,0.05)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", marginBottom: 18, padding: 0 }}>
+          <button onClick={back} style={{ width: 34, height: 34, borderRadius: 11, border: "none", background: J.fill1, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", marginBottom: 18, padding: 0 }}>
             <span style={{ display: "inline-flex", transform: "rotate(180deg)" }}><SVGIcon id="chevron" size={16} color={T.ink} /></span>
           </button>
           <div style={{ animation: "rclPhrase 0.5s ease both" }}>
@@ -21169,7 +21210,7 @@ function InvestPlanOnboard(props) {
   // --- building ---
   if (building) {
     return (
-      <div style={{ minHeight: "100vh", background: JR_BG, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI, position: "relative", zIndex: 0 }}>
+      <div style={{ minHeight: "100vh", background: J.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI, position: "relative", zIndex: 0 }}>
         <ScoutBeamsBg opacity={0.42} />
         <div style={{ width: "100%", maxWidth: 320, padding: "0 32px" }}>
           <AIWorking bare title="Building your plan..." sub={"Matching a " + plan.risk.toLowerCase() + "-risk mix to your goal and timeline."} expectedMs={1900}
@@ -21182,7 +21223,7 @@ function InvestPlanOnboard(props) {
   // --- questions ---
   var canNext = step === 4 ? monthly > 0 : !!q.val;
   return (
-    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column", position: "relative", zIndex: 0 }}>
+    <div style={{ minHeight: "100vh", background: J.bg, fontFamily: UI, display: "flex", flexDirection: "column", position: "relative", zIndex: 0 }}>
       <ScoutBeamsBg opacity={0.42} />
       <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0" }}>
         <JrIconBtn icon="chevron" rotate={180} onPress={back} />
@@ -21208,7 +21249,7 @@ function InvestPlanOnboard(props) {
                   var sel = q.val === o.v;
                   return (
                     <button key={o.v} onClick={function() { q.set(o.v); autoNext(); }} style={optCard(sel)}>
-                      <div style={{ width: 42, height: 42, borderRadius: 12, background: sel ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: sel ? "0 5px 14px " + T.orangeGlow : "none" }}>
+                      <div style={{ width: 42, height: 42, borderRadius: 12, background: sel ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : J.fill0, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: sel ? "0 5px 14px " + T.orangeGlow : "none" }}>
                         <SVGIcon id={o.icon} size={20} color={sel ? "#fff" : T.ink3} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -21232,7 +21273,7 @@ function InvestPlanOnboard(props) {
                     var sel = monthly === v;
                     return (
                       <button key={v} onClick={function() { setMonthly(v); }}
-                        style={{ flex: 1, padding: "11px 0", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.09)"), background: sel ? T.orangeDim : "#fff", borderRadius: 13, fontFamily: UI, fontSize: 14, fontWeight: 700, color: sel ? T.orange : T.ink2, cursor: "pointer" }}>
+                        style={{ flex: 1, padding: "11px 0", border: "1.5px solid " + (sel ? T.orange : J.line), background: sel ? T.orangeDim : J.card, borderRadius: 13, fontFamily: UI, fontSize: 14, fontWeight: 700, color: sel ? T.orange : T.ink2, cursor: "pointer" }}>
                         {dollarsWhole(v)}
                       </button>
                     );
@@ -23727,10 +23768,10 @@ function InvestorOnboardScreen(props) {
   ];
 
   function optCard(sel) {
-    return { width: "100%", background: sel ? "rgba(137,112,198,0.06)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "15px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px rgba(137,112,198,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", marginBottom: 11, transition: "box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease" };
+    return { width: "100%", background: sel ? "rgba(137,112,198,0.06)" : J.card, border: "1.5px solid " + (sel ? T.orange : J.line), borderRadius: 15, padding: "15px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px rgba(137,112,198,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", marginBottom: 11, transition: "box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease" };
   }
   function optTile(sel) {
-    return { width: 38, height: 38, borderRadius: 11, background: sel ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: sel ? "0 5px 14px " + T.orangeGlow : "none", transition: "background 0.25s ease, box-shadow 0.25s ease" };
+    return { width: 38, height: 38, borderRadius: 11, background: sel ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : J.fill0, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: sel ? "0 5px 14px " + T.orangeGlow : "none", transition: "background 0.25s ease, box-shadow 0.25s ease" };
   }
   var optCheck = (
     <span style={{ marginLeft: "auto", width: 22, height: 22, borderRadius: "50%", background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, animation: "rcjCheckPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both", boxShadow: "0 3px 10px " + T.orangeGlow }}>
@@ -23744,10 +23785,10 @@ function InvestorOnboardScreen(props) {
           var sel = value === o.v;
           return (
             <button key={o.v} onClick={function() { setter(o.v); if (last) { if (advRef.current) return; advRef.current = true; setTimeout(function() { advRef.current = false; generate(o.v); }, 260); } else { autoAdvance(); } }} style={optCard(sel)}>
-              <div style={optTile(sel)}><SVGIcon id={o.icon} size={18} color={sel ? "#fff" : JINK3} /></div>
+              <div style={optTile(sel)}><SVGIcon id={o.icon} size={18} color={sel ? "#fff" : J.ink3} /></div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 15.5, fontWeight: sel ? 700 : 600, color: sel ? JINK : JINK2 }}>{o.label}</div>
-                <div style={{ fontSize: 12.5, color: JINK3, marginTop: 2 }}>{o.sub}</div>
+                <div style={{ fontSize: 15.5, fontWeight: sel ? 700 : 600, color: sel ? J.ink : J.ink2 }}>{o.label}</div>
+                <div style={{ fontSize: 12.5, color: J.ink3, marginTop: 2 }}>{o.sub}</div>
               </div>
               {sel && optCheck}
             </button>
@@ -23761,7 +23802,7 @@ function InvestorOnboardScreen(props) {
   if (qIndex === 5) {
     if (loading) {
       return (
-        <div style={{ minHeight: "100vh", background: JR_BG, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI, position: "relative", zIndex: 0 }}>
+        <div style={{ minHeight: "100vh", background: J.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI, position: "relative", zIndex: 0 }}>
           <ScoutBeamsBg opacity={0.42} />
           <div style={{ width: "100%", maxWidth: 320, padding: "0 32px" }}>
             <AIWorking bare title="Richard is putting together your starter guide" sub="Tuned to exactly how you answered." expectedMs={11000}
@@ -23773,11 +23814,11 @@ function InvestorOnboardScreen(props) {
     var b = basics || localInvestingBasics({ experience: experience, involvement: involvement, amount: amount, risk: risk });
     var expLabel = (INV_EXPERIENCE.filter(function(o) { return o.v === experience; })[0] || {}).label || "New to investing";
     return (
-      <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, overflowY: "auto", position: "relative", zIndex: 0, overflowX: "hidden" }}>
+      <div style={{ minHeight: "100vh", background: J.bg, fontFamily: UI, overflowY: "auto", position: "relative", zIndex: 0, overflowX: "hidden" }}>
         <ScoutBeamsBg opacity={0.42} />
         <div style={{ position: "absolute", top: -70, right: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(137,112,198,0.14) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift 9s ease-in-out infinite" }} />
-        <button onClick={function() { props.onDone(false); }} style={{ position: "absolute", top: 18, left: 16, zIndex: 4, width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, boxShadow: "0 2px 8px rgba(40,28,16,0.08)" }}>
-          <span style={{ display: "inline-flex", transform: "rotate(180deg)" }}><SVGIcon id="chevron" size={15} color={JINK2} /></span>
+        <button onClick={function() { props.onDone(false); }} style={{ position: "absolute", top: 18, left: 16, zIndex: 4, width: 34, height: 34, borderRadius: "50%", border: "1.5px solid " + J.line, background: J.card, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, boxShadow: "0 2px 8px rgba(40,28,16,0.08)" }}>
+          <span style={{ display: "inline-flex", transform: "rotate(180deg)" }}><SVGIcon id="chevron" size={15} color={J.ink2} /></span>
         </button>
         <div style={{ padding: "52px 24px 48px", position: "relative", maxWidth: 428, margin: "0 auto", boxSizing: "border-box" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
@@ -23788,39 +23829,39 @@ function InvestorOnboardScreen(props) {
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 20, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK, letterSpacing: "-0.01em" }}><WordReveal text={"You're set, " + firstName + "."} base={0.1} step={0.06} /></div>
-              <div style={{ fontSize: 13, color: JINK3, marginTop: 2 }}>{expLabel} · your investing basics</div>
+              <div style={{ fontSize: 20, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, letterSpacing: "-0.01em" }}><WordReveal text={"You're set, " + firstName + "."} base={0.1} step={0.06} /></div>
+              <div style={{ fontSize: 13, color: J.ink3, marginTop: 2 }}>{expLabel} · your investing basics</div>
             </div>
           </div>
 
-          <div style={{ background: "#fff", borderRadius: 18, padding: "20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
+          <div style={{ background: J.card, borderRadius: 18, padding: "20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 12 }}>
               <ThinkingDots size={4} color={T.orange} />
               <span style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em" }}>Richard's guide for you</span>
             </div>
-            <TypeReveal fade animate={basics && basics.source === "ai"} text={b.intro} size={14.5} color={JINK} />
+            <TypeReveal fade animate={basics && basics.source === "ai"} text={b.intro} size={14.5} color={J.ink} />
             <div style={{ marginTop: 16 }}>
               {(b.lessons || []).map(function(l, i) {
                 return (
                   <div key={i} style={{ marginBottom: 14, animation: "rclPhrase 0.45s ease " + (0.3 + i * 0.15).toFixed(2) + "s both" }}>
-                    <div style={{ fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK, marginBottom: 3 }}>{l.title}</div>
-                    <div style={{ fontSize: 13.5, color: JINK2, lineHeight: 1.55 }}>{l.body}</div>
+                    <div style={{ fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, marginBottom: 3 }}>{l.title}</div>
+                    <div style={{ fontSize: 13.5, color: J.ink2, lineHeight: 1.55 }}>{l.body}</div>
                   </div>
                 );
               })}
             </div>
           </div>
 
-          <div style={{ background: "#fff", borderRadius: 18, padding: "20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
-            <div style={{ fontSize: 15.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK, marginBottom: 4 }}>How to tell if a stock is a good pick</div>
-            <div style={{ fontSize: 13, color: JINK3, marginBottom: 14, lineHeight: 1.5 }}>Run any stock through these before you buy.</div>
+          <div style={{ background: J.card, borderRadius: 18, padding: "20px", marginBottom: 16, boxShadow: "0 6px 22px rgba(40,28,16,0.08)", boxSizing: "border-box" }}>
+            <div style={{ fontSize: 15.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, marginBottom: 4 }}>How to tell if a stock is a good pick</div>
+            <div style={{ fontSize: 13, color: J.ink3, marginBottom: 14, lineHeight: 1.5 }}>Run any stock through these before you buy.</div>
             {(b.goodPick || []).map(function(c, i) {
               return (
                 <div key={i} style={{ display: "flex", gap: 11, alignItems: "flex-start", marginBottom: 12, animation: "rclPhrase 0.45s ease " + (0.2 + i * 0.12).toFixed(2) + "s both" }}>
                   <div style={{ width: 24, height: 24, borderRadius: 8, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 12, fontWeight: 800, color: T.orange, fontFamily: UI }}>{i + 1}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: JINK }}>{c.label}</div>
-                    <div style={{ fontSize: 12.5, color: JINK3, marginTop: 1, lineHeight: 1.45 }}>{c.why}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: J.ink }}>{c.label}</div>
+                    <div style={{ fontSize: 12.5, color: J.ink3, marginTop: 1, lineHeight: 1.45 }}>{c.why}</div>
                   </div>
                 </div>
               );
@@ -23830,7 +23871,7 @@ function InvestorOnboardScreen(props) {
           {b.firstMove && (
             <div style={{ background: "linear-gradient(145deg,rgba(137,112,198,0.10),rgba(196,154,60,0.08))", borderRadius: 16, padding: "16px 18px", marginBottom: 20, boxSizing: "border-box" }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5 }}>Your first move</div>
-              <div style={{ fontSize: 14, color: JINK, fontWeight: 600, lineHeight: 1.5 }}>{b.firstMove}</div>
+              <div style={{ fontSize: 14, color: J.ink, fontWeight: 600, lineHeight: 1.5 }}>{b.firstMove}</div>
             </div>
           )}
 
@@ -23838,7 +23879,7 @@ function InvestorOnboardScreen(props) {
           <button onClick={retake} style={{ width: "100%", marginTop: 12, background: "none", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.orange, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
             <SVGIcon id="refresh" size={14} color={T.orange} /> Redo the test
           </button>
-          <div style={{ fontSize: 11.5, color: JINK3, textAlign: "center", marginTop: 14, lineHeight: 1.45 }}>Richard is a guide, not a licensed financial advisor. Invest only what you can afford to leave alone.</div>
+          <div style={{ fontSize: 11.5, color: J.ink3, textAlign: "center", marginTop: 14, lineHeight: 1.45 }}>Richard is a guide, not a licensed financial advisor. Invest only what you can afford to leave alone.</div>
         </div>
       </div>
     );
@@ -23846,13 +23887,13 @@ function InvestorOnboardScreen(props) {
 
   var qh = QH[qIndex];
   return (
-    <div style={{ minHeight: "100vh", background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column", position: "relative", zIndex: 0 }}>
+    <div style={{ minHeight: "100vh", background: J.bg, fontFamily: UI, display: "flex", flexDirection: "column", position: "relative", zIndex: 0 }}>
       <ScoutBeamsBg opacity={0.42} />
       {showCinema && <ScoutCinema scenes={ONBOARD_CINEMA} onDone={function() { setShowCinema(false); }} />}
       <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0" }}>
-        {qIndex > 0 ? <JrIconBtn icon="chevron" rotate={180} onPress={goBack} /> : <button onClick={function() { props.onDone(false); }} style={{ width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, padding: 0 }}><SVGIcon id="close" size={15} color={JINK2} /></button>}
+        {qIndex > 0 ? <JrIconBtn icon="chevron" rotate={180} onPress={goBack} /> : <button onClick={function() { props.onDone(false); }} style={{ width: 34, height: 34, borderRadius: "50%", border: "1.5px solid " + J.line, background: J.card, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, padding: 0 }}><SVGIcon id="close" size={15} color={J.ink2} /></button>}
         <JourneyBar pct={((qIndex + 1) / Q_TOTAL) * 100} />
-        <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: JINK3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(qIndex + 1) + "/" + Q_TOTAL}</div>
+        <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: J.ink3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(qIndex + 1) + "/" + Q_TOTAL}</div>
       </div>
 
       <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "28px 24px 8px" }}>
@@ -23860,10 +23901,10 @@ function InvestorOnboardScreen(props) {
           <JrStepShell k={qIndex} dir={dir}>
             {qIndex > 0 && (
               <div>
-                <div style={{ fontSize: 25, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.25, marginBottom: 8 }}>
+                <div style={{ fontSize: 25, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, letterSpacing: "-0.01em", lineHeight: 1.25, marginBottom: 8 }}>
                   <WordReveal text={qh.h} base={0.04} step={0.045} />
                 </div>
-                <div style={{ fontSize: 14, color: JINK3, marginBottom: 26, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>{qh.s}</div>
+                <div style={{ fontSize: 14, color: J.ink3, marginBottom: 26, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>{qh.s}</div>
               </div>
             )}
             {qIndex === 0 && (
@@ -23874,8 +23915,8 @@ function InvestorOnboardScreen(props) {
                     <SVGIcon id="spark" size={28} color="#fff" />
                   </div>
                 </div>
-                <div style={{ background: "#fff", borderRadius: "4px 20px 20px 20px", padding: "16px 18px", boxShadow: "0 6px 22px rgba(40,28,16,0.09)", maxWidth: 330, boxSizing: "border-box" }}>
-                  <TypeReveal fade animate color={JINK} size={15.5}
+                <div style={{ background: J.card, borderRadius: "4px 20px 20px 20px", padding: "16px 18px", boxShadow: "0 6px 22px rgba(40,28,16,0.09)", maxWidth: 330, boxSizing: "border-box" }}>
+                  <TypeReveal fade animate color={J.ink} size={15.5}
                     text={"Hi " + firstName + ". Investing can feel like a members-only club, but it really isn't. Four quick questions and I'll teach you the basics **your way** - then show you how to size up any stock."} />
                 </div>
                 <div style={{ marginTop: 26, width: "100%" }}>
@@ -25420,7 +25461,7 @@ function BusinessView(props) {
     var monthly = parseFloat(form.monthly) || 0;
 
     // Helpers used by the full-screen interview (steps 1-3).
-    var iStyle = { width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "15px 15px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" };
+    var iStyle = { width: "100%", background: J.panel, border: "1.5px solid " + J.line, borderRadius: 16, padding: "15px 15px 15px 46px", fontSize: 16, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" };
     function iwrap(iconId, child, mb) {
       return (
         <div style={{ position: "relative", marginBottom: mb !== undefined ? mb : 12 }}>
@@ -25491,10 +25532,10 @@ function BusinessView(props) {
       var sBeat = bizBeats[Math.min(bizBeat, bizBeats.length - 1)];
       var sGreen = sBeat.color === T.green;
       var sStoryContent = (
-        <div style={{ position: "fixed", inset: 0, zIndex: 91, background: JR_BG, fontFamily: UI, overflow: "hidden" }}>
-          <JrShaderBg colors={sGreen ? [T.green, "#7BD6A2", T.green] : [T.orange, T.orangeHi, T.orange]} base="#FBF3E8"
+        <div style={{ position: "fixed", inset: 0, zIndex: 91, background: J.bg, fontFamily: UI, overflow: "hidden" }}>
+          <JrShaderBg colors={sGreen ? [T.green, "#7BD6A2", T.green] : [T.orange, T.orangeHi, T.orange]} base={J.shaderBase}
             speed={sBeat.big ? 0.55 : 0.28} intensity={sBeat.big ? 1.05 : 0.8} yScale={sBeat.big ? 0.5 : 0.44} xScale={1.1} style={{ position: "absolute" }} />
-          <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.78) 0%, rgba(251,243,232,0.3) 34%, rgba(251,243,232,0.34) 66%, rgba(251,243,232,0.72) 100%)" }} />
+          <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, " + jrRgba(J.shaderBase, 0.78) + " 0%, " + jrRgba(J.shaderBase, 0.3) + " 34%, " + jrRgba(J.shaderBase, 0.34) + " 66%, " + jrRgba(J.shaderBase, 0.72) + " 100%)" }} />
           <div style={{ position: "relative", zIndex: 2, height: "100%" }}>
             <JrStepShell k={bizBeat}>
               <StoryBeat beat={sBeat} onNext={function() {
@@ -25619,7 +25660,7 @@ function BusinessView(props) {
     // behind, animated progress bar on top. Same form fields and the same
     // exits (createBlank / buildPlan) as the old 3-step version - only the
     // presentation changed. This portal always sits on the cream journey
-    // gradient, so text uses the pinned journey inks (JINK*) while accents
+    // gradient, so text uses the pinned journey inks (J.ink*) while accents
     // stay on the live theme tokens.
     var BQ_TOTAL = 12;
     var BQS = [
@@ -25652,30 +25693,30 @@ function BusinessView(props) {
       if (bq <= 0) { setView("list"); return; }
       setBqDir("back"); setBq(bq - 1);
     }
-    var jInput = Object.assign({}, iStyle, { color: JINK });
-    var bqLabel = { fontSize: 11.5, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 12 };
+    var jInput = Object.assign({}, iStyle, { color: J.ink });
+    var bqLabel = { fontSize: 11.5, fontWeight: 700, color: J.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 12 };
     var runwayNum = parseFloat(form.runway) || 0;
     var capNum = parseFloat(form.startCap) || 0;
 
     var screenContent = (
-      <div style={{ position: "fixed", inset: 0, zIndex: 91, background: JR_BG, display: "flex", flexDirection: "column", fontFamily: UI, overflow: "hidden" }}>
-        <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base="#FBF3E8" speed={0.18} intensity={0.75} yScale={0.44} xScale={1.05} style={{ position: "absolute" }} />
-        <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(251,243,232,0.85) 0%, rgba(251,243,232,0.45) 24%, rgba(251,243,232,0.45) 76%, rgba(251,243,232,0.8) 100%)" }} />
+      <div style={{ position: "fixed", inset: 0, zIndex: 91, background: J.bg, display: "flex", flexDirection: "column", fontFamily: UI, overflow: "hidden" }}>
+        <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base={J.shaderBase} speed={0.18} intensity={0.75} yScale={0.44} xScale={1.05} style={{ position: "absolute" }} />
+        <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, " + jrRgba(J.shaderBase, 0.85) + " 0%, " + jrRgba(J.shaderBase, 0.45) + " 24%, " + jrRgba(J.shaderBase, 0.45) + " 76%, " + jrRgba(J.shaderBase, 0.8) + " 100%)" }} />
 
         <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0", position: "relative", zIndex: 2, maxWidth: 430, width: "100%", margin: "0 auto", boxSizing: "border-box" }}>
           <JrIconBtn icon="chevron" rotate={180} onPress={bqBack} />
           <JourneyBar pct={((bq + 1) / BQ_TOTAL) * 100} />
-          <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: JINK3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(bq + 1) + "/" + BQ_TOTAL}</div>
+          <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: J.ink3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(bq + 1) + "/" + BQ_TOTAL}</div>
         </div>
 
         <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "28px 24px 8px", position: "relative", zIndex: 2 }}>
           <div style={{ maxWidth: 380, margin: "0 auto" }}>
             <JrStepShell k={bq} dir={bqDir}>
               <div>
-                <div style={{ fontSize: 25, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.25, marginBottom: 8 }}>
+                <div style={{ fontSize: 25, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, letterSpacing: "-0.01em", lineHeight: 1.25, marginBottom: 8 }}>
                   <WordReveal text={bqh.h} base={0.04} step={0.045} />
                 </div>
-                <div style={{ fontSize: 14, color: JINK3, marginBottom: 26, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>{bqh.s}</div>
+                <div style={{ fontSize: 14, color: J.ink3, marginBottom: 26, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>{bqh.s}</div>
               </div>
 
               {bq === 0 && (
@@ -25696,7 +25737,7 @@ function BusinessView(props) {
                   <textarea value={form.notes} onChange={function(e) { setField("notes", e.target.value); }}
                     placeholder="Notes for Richard (optional) - goals, constraints, ideas..."
                     rows={3}
-                    className="jr-field" style={{ width: "100%", background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 16, padding: "13px 16px", fontSize: 15, fontFamily: UI, color: JINK, outline: "none", boxSizing: "border-box", resize: "vertical", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
+                    className="jr-field" style={{ width: "100%", background: J.panel, border: "1.5px solid " + J.line, borderRadius: 16, padding: "13px 16px", fontSize: 15, fontFamily: UI, color: J.ink, outline: "none", boxSizing: "border-box", resize: "vertical", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
                 </div>
               )}
 
@@ -25716,8 +25757,8 @@ function BusinessView(props) {
                       var on = (form.icon || "briefcase") === ic;
                       return (
                         <button key={ic} onClick={function() { setField("icon", ic); }} className="jr-press"
-                          style={{ width: 48, height: 48, border: on ? "none" : "1.5px solid rgba(0,0,0,0.09)", background: on ? "linear-gradient(145deg," + form.color + "," + form.color + "CC)" : "rgba(255,255,255,0.85)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxSizing: "border-box", boxShadow: on ? "0 5px 14px " + form.color + "55" : "0 2px 6px rgba(0,0,0,0.05)", animation: "rcjChipIn 0.4s cubic-bezier(0.34,1.56,0.64,1) " + (0.05 + i * 0.04).toFixed(2) + "s both", transition: "background 0.2s ease, box-shadow 0.2s ease" }}>
-                          <SVGIcon id={ic} size={22} color={on ? "#fff" : JINK2} />
+                          style={{ width: 48, height: 48, border: on ? "none" : "1.5px solid " + J.line, background: on ? "linear-gradient(145deg," + form.color + "," + form.color + "CC)" : J.panel, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxSizing: "border-box", boxShadow: on ? "0 5px 14px " + form.color + "55" : "0 2px 6px rgba(0,0,0,0.05)", animation: "rcjChipIn 0.4s cubic-bezier(0.34,1.56,0.64,1) " + (0.05 + i * 0.04).toFixed(2) + "s both", transition: "background 0.2s ease, box-shadow 0.2s ease" }}>
+                          <SVGIcon id={ic} size={22} color={on ? "#fff" : J.ink2} />
                         </button>
                       );
                     })}
@@ -25763,13 +25804,13 @@ function BusinessView(props) {
                           if (o.v) { bqAuto(); }
                           else if (form.name.trim()) { createBlank(); }
                         }}
-                        style={{ width: "100%", background: sel ? "rgba(137,112,198,0.06)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "16px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px rgba(137,112,198,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", marginBottom: 11, transition: "box-shadow 0.25s ease, border-color 0.25s ease" }}>
-                        <div style={{ width: 40, height: 40, borderRadius: 12, background: sel ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.25s ease" }}>
-                          <SVGIcon id={o.icon} size={19} color={sel ? "#fff" : JINK3} />
+                        style={{ width: "100%", background: sel ? "rgba(137,112,198,0.06)" : J.card, border: "1.5px solid " + (sel ? T.orange : J.line), borderRadius: 15, padding: "16px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px rgba(137,112,198,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", marginBottom: 11, transition: "box-shadow 0.25s ease, border-color 0.25s ease" }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 12, background: sel ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : J.fill0, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.25s ease" }}>
+                          <SVGIcon id={o.icon} size={19} color={sel ? "#fff" : J.ink3} />
                         </div>
                         <span style={{ flex: 1 }}>
-                          <span style={{ display: "block", fontSize: 15, fontWeight: 700, color: JINK, lineHeight: 1.3 }}>{o.t}</span>
-                          <span style={{ display: "block", fontSize: 12.5, color: JINK3, marginTop: 3, lineHeight: 1.45 }}>{o.s}</span>
+                          <span style={{ display: "block", fontSize: 15, fontWeight: 700, color: J.ink, lineHeight: 1.3 }}>{o.t}</span>
+                          <span style={{ display: "block", fontSize: 12.5, color: J.ink3, marginTop: 3, lineHeight: 1.45 }}>{o.s}</span>
                         </span>
                       </button>
                     );
@@ -25870,7 +25911,7 @@ function BusinessView(props) {
                           );
                         })}
                       </div>
-                      <div key={form.capSrc} style={{ fontSize: 12.5, color: JINK2, lineHeight: 1.5, maxWidth: 300, margin: "0 auto", animation: "rclPhrase 0.35s ease both" }}>
+                      <div key={form.capSrc} style={{ fontSize: 12.5, color: J.ink2, lineHeight: 1.5, maxWidth: 300, margin: "0 auto", animation: "rclPhrase 0.35s ease both" }}>
                         {form.capSrc === "external" ? "Outside money you are putting in - your spendable balance is untouched." : "Moves from your spendable balance into the business. Net worth is unchanged."}
                       </div>
                     </div>
@@ -25885,17 +25926,17 @@ function BusinessView(props) {
           {bq === 0 && <JrBtn label="Continue" disabled={!form.name.trim()} onPress={bqAdvance} />}
           {(bq === 1 || bq === 2) && <JrBtn label="Continue" onPress={bqAdvance} />}
           {bq === 3 && (
-            <div style={{ textAlign: "center", fontSize: 12.5, color: JINK3, fontWeight: 600, padding: "14px 0" }}>Pick one to continue</div>
+            <div style={{ textAlign: "center", fontSize: 12.5, color: J.ink3, fontWeight: 600, padding: "14px 0" }}>Pick one to continue</div>
           )}
           {bq >= 4 && bq <= 6 && (
-            <div style={{ textAlign: "center", fontSize: 12.5, color: JINK3, fontWeight: 600, padding: "14px 0" }}>Tap an option to continue</div>
+            <div style={{ textAlign: "center", fontSize: 12.5, color: J.ink3, fontWeight: 600, padding: "14px 0" }}>Tap an option to continue</div>
           )}
           {bq === 7 && <JrBtn label="Continue" disabled={monthly <= 0} onPress={bqAdvance} />}
           {(bq === 8 || bq === 9 || bq === 10) && (
             <div>
               <JrBtn label="Continue" onPress={bqAdvance} />
               <button onClick={bqAdvance} className="jr-press"
-                style={{ width: "100%", background: "none", border: "none", color: JINK3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0" }}>
+                style={{ width: "100%", background: "none", border: "none", color: J.ink3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0" }}>
                 Skip for now
               </button>
             </div>
@@ -27206,7 +27247,7 @@ function BsdPhone(props) {
   return (
     <div style={{ background: "linear-gradient(180deg,#FFFFFF,#FBF7F1)", border: "1px solid rgba(0,0,0,0.07)", borderRadius: 20, boxShadow: "0 10px 26px rgba(40,28,16,0.10)", padding: "12px 10px 12px", position: "relative", overflow: "hidden", boxSizing: "border-box" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 6px 10px" }}>
-        <span style={{ fontSize: 12, fontWeight: DISP_WEIGHT, color: JINK, letterSpacing: "-0.01em", fontFamily: DISP }}>{props.title}</span>
+        <span style={{ fontSize: 12, fontWeight: DISP_WEIGHT, color: MINK, letterSpacing: "-0.01em", fontFamily: DISP }}>{props.title}</span>
         {props.right ? props.right : props.plus ? (
           <span style={{ position: "relative", width: 22, height: 22, borderRadius: "50%", background: props.plusHl ? T.orange : "rgba(0,0,0,0.06)", color: props.plusHl ? "#fff" : T.orange, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, transition: "background 0.3s ease, color 0.3s ease" }}>
             +
@@ -27226,19 +27267,19 @@ function BsdRow(props) {
     <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 8, margin: "0 10px 6px", padding: "9px 11px", borderRadius: 11, background: props.hl ? T.orangeDim : "#fff", border: "1px solid " + (props.hl ? T.orange : "rgba(0,0,0,0.06)"), transition: "background 0.3s ease, border-color 0.3s ease", boxSizing: "border-box" }}>
       {props.icon && (
         <span style={{ width: 20, height: 20, borderRadius: 6, background: props.hl ? T.orange : "rgba(0,0,0,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.3s ease" }}>
-          <SVGIcon id={props.icon} size={11} color={props.hl ? "#fff" : JINK3} />
+          <SVGIcon id={props.icon} size={11} color={props.hl ? "#fff" : MINK3} />
         </span>
       )}
-      <span style={{ flex: 1, minWidth: 0, fontSize: 11.5, fontWeight: props.hl ? 750 : 600, color: JINK, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontFamily: UI }}>{props.label}</span>
+      <span style={{ flex: 1, minWidth: 0, fontSize: 11.5, fontWeight: props.hl ? 750 : 600, color: MINK, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontFamily: UI }}>{props.label}</span>
       {props.badge && <span style={{ fontSize: 8, fontWeight: 800, color: T.green, background: T.greenDim, borderRadius: 5, padding: "2px 5px", flexShrink: 0, letterSpacing: "0.04em" }}>{props.badge}</span>}
-      {props.value && <span style={{ fontSize: 10.5, fontWeight: 650, color: props.blue ? "#3478F6" : JINK3, whiteSpace: "nowrap", flexShrink: 0, fontFamily: UI }}>{props.value}</span>}
+      {props.value && <span style={{ fontSize: 10.5, fontWeight: 650, color: props.blue ? "#3478F6" : MINK3, whiteSpace: "nowrap", flexShrink: 0, fontFamily: UI }}>{props.value}</span>}
       {props.toggle != null && <BsdToggle on={props.toggle} />}
       {props.check != null && (
         <span style={{ width: 15, height: 15, borderRadius: 4, border: "1.5px solid " + (props.check ? T.green : "rgba(0,0,0,0.2)"), background: props.check ? T.green : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.25s ease, border-color 0.25s ease" }}>
           {props.check && <SVGIcon id="check" size={9} color="#fff" />}
         </span>
       )}
-      {props.chev && <SVGIcon id="chevron" size={10} color={JINK3} />}
+      {props.chev && <SVGIcon id="chevron" size={10} color={MINK3} />}
       {props.tap && <BsdTap />}
     </div>
   );
@@ -27254,7 +27295,7 @@ function BsdToggle(props) {
 
 function BsdBtn(props) {
   return (
-    <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "6px 14px", borderRadius: 999, background: props.hl ? T.orange : "rgba(0,0,0,0.07)", color: props.hl ? "#fff" : JINK2, fontSize: 10.5, fontWeight: 750, fontFamily: UI, transition: "background 0.3s ease, color 0.3s ease", whiteSpace: "nowrap" }}>
+    <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "6px 14px", borderRadius: 999, background: props.hl ? T.orange : "rgba(0,0,0,0.07)", color: props.hl ? "#fff" : MINK2, fontSize: 10.5, fontWeight: 750, fontFamily: UI, transition: "background 0.3s ease, color 0.3s ease", whiteSpace: "nowrap" }}>
       {props.label}
       {props.tap && <BsdTap />}
     </span>
@@ -27264,7 +27305,7 @@ function BsdBtn(props) {
 // Paste target: dashed while empty, green check once "pasted".
 function BsdField(props) {
   return (
-    <div style={{ position: "relative", margin: "0 10px 6px", padding: "9px 24px 9px 11px", borderRadius: 11, background: "#fff", border: "1.5px " + (props.pasted ? "solid " + T.green : "dashed rgba(0,0,0,0.16)"), fontSize: 9.5, fontFamily: UI, color: props.pasted ? JINK : JINK3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: "border-color 0.3s ease", boxSizing: "border-box" }}>
+    <div style={{ position: "relative", margin: "0 10px 6px", padding: "9px 24px 9px 11px", borderRadius: 11, background: "#fff", border: "1.5px " + (props.pasted ? "solid " + T.green : "dashed rgba(0,0,0,0.16)"), fontSize: 9.5, fontFamily: UI, color: props.pasted ? MINK : MINK3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: "border-color 0.3s ease", boxSizing: "border-box" }}>
       {props.pasted ? props.value : (props.placeholder || "Tap to paste")}
       {props.tap && <BsdTap />}
       {props.pasted && (
@@ -27282,7 +27323,7 @@ function BsdAppIcon(props) {
       <div style={{ width: 32, height: 32, borderRadius: 10, margin: "0 auto", background: props.grad || "rgba(0,0,0,0.08)", display: "flex", alignItems: "center", justifyContent: "center", transform: props.pop ? "scale(1.18)" : "scale(1)", transition: "transform 0.35s cubic-bezier(0.34,1.56,0.64,1)", boxShadow: props.pop ? "0 6px 14px rgba(0,0,0,0.18)" : "none" }}>
         {props.icon && <SVGIcon id={props.icon} size={15} color="#fff" />}
       </div>
-      <div style={{ fontSize: 7.5, fontWeight: 600, color: JINK3, marginTop: 3, fontFamily: UI }}>{props.label}</div>
+      <div style={{ fontSize: 7.5, fontWeight: 600, color: MINK3, marginTop: 3, fontFamily: UI }}>{props.label}</div>
       {props.tap && <BsdTap />}
     </div>
   );
@@ -27294,7 +27335,7 @@ function BsdTabs(props) {
       {props.items.map(function(it, i) {
         var on = props.active === i;
         return (
-          <span key={it} style={{ position: "relative", flex: 1, textAlign: "center", padding: "6px 0", borderRadius: 8, fontSize: 9.5, fontWeight: 700, fontFamily: UI, color: on ? T.orange : JINK3, background: on ? "#fff" : "transparent", boxShadow: on ? "0 2px 6px rgba(0,0,0,0.08)" : "none", transition: "background 0.3s ease, color 0.3s ease" }}>
+          <span key={it} style={{ position: "relative", flex: 1, textAlign: "center", padding: "6px 0", borderRadius: 8, fontSize: 9.5, fontWeight: 700, fontFamily: UI, color: on ? T.orange : MINK3, background: on ? "#fff" : "transparent", boxShadow: on ? "0 2px 6px rgba(0,0,0,0.08)" : "none", transition: "background 0.3s ease, color 0.3s ease" }}>
             {it}
             {props.tap === i && <BsdTap />}
           </span>
@@ -27352,7 +27393,7 @@ var BANK_SYNC_DEMOS = {
       <BsdPhone title="Shortcuts" plus plusHl={p >= 3} plusTap={p === 2}>
         {p >= 3 ? (
           <div key="sheet" style={{ margin: "0 10px", animation: "rclPhrase 0.35s ease both" }}>
-            <div style={{ borderRadius: 12, background: "#fff", border: "1px solid rgba(0,0,0,0.07)", padding: "12px 12px", fontSize: 11, fontWeight: 750, color: JINK, textAlign: "center", fontFamily: UI }}>New Automation</div>
+            <div style={{ borderRadius: 12, background: "#fff", border: "1px solid rgba(0,0,0,0.07)", padding: "12px 12px", fontSize: 11, fontWeight: 750, color: MINK, textAlign: "center", fontFamily: UI }}>New Automation</div>
           </div>
         ) : (
           <div style={{ margin: "0 10px" }}>
@@ -27386,7 +27427,7 @@ var BANK_SYNC_DEMOS = {
   ios5: { durs: [1100, 1100, 1500], render: function(p) {
     return (
       <BsdPhone title="Add Action">
-        <div style={{ position: "relative", margin: "0 10px 8px", padding: "8px 11px", borderRadius: 11, background: "rgba(0,0,0,0.05)", fontSize: 10.5, color: p >= 1 ? JINK : JINK3, fontWeight: 600, fontFamily: UI }}>
+        <div style={{ position: "relative", margin: "0 10px 8px", padding: "8px 11px", borderRadius: 11, background: "rgba(0,0,0,0.05)", fontSize: 10.5, color: p >= 1 ? MINK : MINK3, fontWeight: 600, fontFamily: UI }}>
           {p >= 1 ? "Get Contents of URL" : "Search actions"}
           {p === 0 && <BsdTap />}
         </div>
@@ -27402,7 +27443,7 @@ var BANK_SYNC_DEMOS = {
   ios6: { durs: [1100, 1100, 1800], render: function(p) {
     return (
       <BsdPhone title="Get Contents of URL">
-        <div style={{ margin: "0 10px 6px", fontSize: 10.5, fontWeight: 600, color: JINK2, fontFamily: UI }}>
+        <div style={{ margin: "0 10px 6px", fontSize: 10.5, fontWeight: 600, color: MINK2, fontFamily: UI }}>
           Get contents of <span style={{ color: "#3478F6", fontWeight: 750 }}>URL</span>
         </div>
         <BsdField placeholder="URL" tap={p === 1} pasted={p >= 2} value="richy-mgkl.vercel.app/api/bank-sync" />
@@ -27461,8 +27502,8 @@ var BANK_SYNC_DEMOS = {
             <SVGIcon id="spark" size={14} color="#fff" />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 11.5, fontWeight: 750, color: JINK, fontFamily: UI }}>MacroDroid</div>
-            <div style={{ fontSize: 9, color: JINK3, fontFamily: UI }}>Device automation · Free</div>
+            <div style={{ fontSize: 11.5, fontWeight: 750, color: MINK, fontFamily: UI }}>MacroDroid</div>
+            <div style={{ fontSize: 9, color: MINK3, fontFamily: UI }}>Device automation · Free</div>
           </div>
           <BsdBtn label={p >= 2 ? "Open" : p === 1 ? "Installing…" : "Install"} hl={p !== 1} tap={p === 0} />
         </div>
@@ -27491,13 +27532,13 @@ var BANK_SYNC_DEMOS = {
     return (
       <BsdPhone title="New Macro">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 10px 6px" }}>
-          <span style={{ fontSize: 10.5, fontWeight: 800, color: JINK2, fontFamily: UI }}>Triggers</span>
+          <span style={{ fontSize: 10.5, fontWeight: 800, color: MINK2, fontFamily: UI }}>Triggers</span>
           <span style={{ position: "relative", width: 20, height: 20, borderRadius: "50%", background: p >= 2 ? T.orange : "rgba(0,0,0,0.07)", color: p >= 2 ? "#fff" : T.orange, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, transition: "background 0.3s ease, color 0.3s ease" }}>
             +
             {p === 1 && <BsdTap />}
           </span>
         </div>
-        <div style={{ margin: "0 10px", borderRadius: 11, border: "1.5px dashed rgba(0,0,0,0.14)", padding: "12px 0", textAlign: "center", fontSize: 9.5, color: JINK3, fontWeight: 600, fontFamily: UI }}>No triggers yet</div>
+        <div style={{ margin: "0 10px", borderRadius: 11, border: "1.5px dashed rgba(0,0,0,0.14)", padding: "12px 0", textAlign: "center", fontSize: 9.5, color: MINK3, fontWeight: 600, fontFamily: UI }}>No triggers yet</div>
       </BsdPhone>
     );
   } },
@@ -27524,7 +27565,7 @@ var BANK_SYNC_DEMOS = {
     return (
       <BsdPhone title="New Macro">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 10px 6px" }}>
-          <span style={{ fontSize: 10.5, fontWeight: 800, color: JINK2, fontFamily: UI }}>Actions</span>
+          <span style={{ fontSize: 10.5, fontWeight: 800, color: MINK2, fontFamily: UI }}>Actions</span>
           <span style={{ position: "relative", width: 20, height: 20, borderRadius: "50%", background: p >= 1 ? T.orange : "rgba(0,0,0,0.07)", color: p >= 1 ? "#fff" : T.orange, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, transition: "background 0.3s ease, color 0.3s ease" }}>
             +
             {p === 0 && <BsdTap />}
@@ -27571,7 +27612,7 @@ var BANK_SYNC_DEMOS = {
     return (
       <BsdPhone title="New Macro" right={
         <span style={{ position: "relative", width: 22, height: 22, borderRadius: "50%", background: p >= 1 ? T.green : "rgba(0,0,0,0.07)", display: "flex", alignItems: "center", justifyContent: "center", transition: "background 0.3s ease" }}>
-          <SVGIcon id="check" size={11} color={p >= 1 ? "#fff" : JINK3} />
+          <SVGIcon id="check" size={11} color={p >= 1 ? "#fff" : MINK3} />
           {p === 0 && <BsdTap />}
         </span>
       }>
@@ -27601,7 +27642,7 @@ function BankSyncDemo(props) {
         <span style={{ width: 14, height: 14, borderRadius: "50%", background: T.orangeDim, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
           <span style={{ width: 0, height: 0, borderTop: "3px solid transparent", borderBottom: "3px solid transparent", borderLeft: "5px solid " + T.orange, marginLeft: 1 }} />
         </span>
-        <span style={{ fontSize: 10.5, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.09em", fontFamily: UI }}>Watch - it loops</span>
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: J.ink3, textTransform: "uppercase", letterSpacing: "0.09em", fontFamily: UI }}>Watch - it loops</span>
       </div>
       {scene.render(phase)}
     </div>
@@ -27695,20 +27736,20 @@ function BankSyncHelpChat(props) {
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 95 }}>
       <div onClick={props.onClose} style={{ position: "absolute", inset: 0, background: "rgba(24,16,8,0.42)", animation: "rclPhrase 0.25s ease both" }} />
-      <div style={{ position: "absolute", left: "50%", bottom: 0, transform: "translateX(-50%)", width: "100%", maxWidth: 428, height: "min(560px, 80vh)", background: JR_BG, borderRadius: "24px 24px 0 0", boxShadow: "0 -12px 40px rgba(0,0,0,0.24)", display: "flex", flexDirection: "column", boxSizing: "border-box", animation: "rcjToastIn 0.32s ease both" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "16px 18px 12px", borderBottom: "1px solid rgba(0,0,0,0.06)", flexShrink: 0 }}>
+      <div style={{ position: "absolute", left: "50%", bottom: 0, transform: "translateX(-50%)", width: "100%", maxWidth: 428, height: "min(560px, 80vh)", background: J.bg, borderRadius: "24px 24px 0 0", boxShadow: "0 -12px 40px rgba(0,0,0,0.24)", display: "flex", flexDirection: "column", boxSizing: "border-box", animation: "rcjToastIn 0.32s ease both" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "16px 18px 12px", borderBottom: "1px solid " + J.line, flexShrink: 0 }}>
           <div style={{ width: 36, height: 36, borderRadius: 12, background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 5px 14px " + T.orangeGlow }}>
             <SVGIcon id="spark" size={17} color="#fff" />
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, color: JINK, letterSpacing: "-0.01em", fontFamily: DISP }}>Ask Richard</div>
-            <div style={{ fontSize: 11.5, color: JINK3, fontWeight: 600, fontFamily: UI }}>Bank Sync setup help</div>
+            <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, color: J.ink, letterSpacing: "-0.01em", fontFamily: DISP }}>Ask Richard</div>
+            <div style={{ fontSize: 11.5, color: J.ink3, fontWeight: 600, fontFamily: UI }}>Bank Sync setup help</div>
           </div>
           <JrIconBtn icon="close" onPress={props.onClose} />
         </div>
         <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "16px 16px 8px" }}>
           <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 10 }}>
-            <div style={{ background: "#fff", borderRadius: "4px 16px 16px 16px", padding: "11px 14px", maxWidth: "85%", boxShadow: "0 3px 12px rgba(40,28,16,0.06)", fontSize: 13.5, color: JINK, lineHeight: 1.55, fontFamily: UI, boxSizing: "border-box" }}>
+            <div style={{ background: J.card, borderRadius: "4px 16px 16px 16px", padding: "11px 14px", maxWidth: "85%", boxShadow: "0 3px 12px rgba(40,28,16,0.06)", fontSize: 13.5, color: J.ink, lineHeight: 1.55, fontFamily: UI, boxSizing: "border-box" }}>
               I'll get you through this setup. Ask me anything - which button to tap, what a word means, or why something isn't showing up. Stuck? Send me a screenshot of your screen and I'll tell you the exact next tap.
             </div>
           </div>
@@ -27724,14 +27765,14 @@ function BankSyncHelpChat(props) {
             var isLast = i === msgs.length - 1;
             return (
               <div key={i} style={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start", marginBottom: 10 }}>
-                <div style={{ background: mine ? T.btn : "#fff", color: mine ? "#fff" : JINK, borderRadius: mine ? "16px 4px 16px 16px" : "4px 16px 16px 16px", padding: m.img ? "6px 6px 9px" : "11px 14px", maxWidth: "85%", boxShadow: mine ? "0 4px 14px " + T.orangeGlow : "0 3px 12px rgba(40,28,16,0.06)", fontSize: 13.5, lineHeight: 1.55, fontFamily: UI, boxSizing: "border-box" }}>
+                <div style={{ background: mine ? T.btn : J.card, color: mine ? "#fff" : J.ink, borderRadius: mine ? "16px 4px 16px 16px" : "4px 16px 16px 16px", padding: m.img ? "6px 6px 9px" : "11px 14px", maxWidth: "85%", boxShadow: mine ? "0 4px 14px " + T.orangeGlow : "0 3px 12px rgba(40,28,16,0.06)", fontSize: 13.5, lineHeight: 1.55, fontFamily: UI, boxSizing: "border-box" }}>
                   {m.img && (
                     <img src={m.img} alt="Attached screenshot"
                       style={{ display: "block", width: "100%", maxHeight: 220, objectFit: "cover", borderRadius: mine ? "12px 2px 12px 12px" : "2px 12px 12px 12px", marginBottom: m.text ? 7 : 0 }} />
                   )}
                   {m.text ? (
                     <span style={{ display: "block", padding: m.img ? "0 8px" : 0 }}>
-                      {mine ? m.text : <TypeReveal fade animate={!!(isLast && m.fresh)} text={m.text} size={13.5} color={JINK} />}
+                      {mine ? m.text : <TypeReveal fade animate={!!(isLast && m.fresh)} text={m.text} size={13.5} color={J.ink} />}
                     </span>
                   ) : null}
                 </div>
@@ -27741,34 +27782,34 @@ function BankSyncHelpChat(props) {
           {loading && <RichardThinking phrases={["Reading the steps", "Checking your setup", "Thinking it through"]} />}
           <div ref={endRef} />
         </div>
-        <div style={{ borderTop: "1px solid rgba(0,0,0,0.06)", flexShrink: 0 }}>
+        <div style={{ borderTop: "1px solid " + J.line, flexShrink: 0 }}>
           {pendingImg && (
             <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px 0" }}>
               <div style={{ position: "relative", flexShrink: 0 }}>
                 <img src={pendingImg} alt="Screenshot to send"
-                  style={{ display: "block", width: 52, height: 52, objectFit: "cover", borderRadius: 12, border: "1.5px solid rgba(0,0,0,0.09)", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }} />
+                  style={{ display: "block", width: 52, height: 52, objectFit: "cover", borderRadius: 12, border: "1.5px solid " + J.line, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }} />
                 <button onClick={function() { setPendingImg(null); }} aria-label="Remove screenshot"
-                  style={{ position: "absolute", top: -7, right: -7, width: 20, height: 20, borderRadius: "50%", border: "2px solid " + JR_BG, background: "rgba(24,20,16,0.85)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
+                  style={{ position: "absolute", top: -7, right: -7, width: 20, height: 20, borderRadius: "50%", border: "2px solid " + J.bg, background: "rgba(24,20,16,0.85)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
                   <SVGIcon id="close" size={9} color="#fff" />
                 </button>
               </div>
-              <span style={{ fontSize: 12, color: JINK3, fontWeight: 600, fontFamily: UI }}>Screenshot attached - Richard will look at it.</span>
+              <span style={{ fontSize: 12, color: J.ink3, fontWeight: 600, fontFamily: UI }}>Screenshot attached - Richard will look at it.</span>
             </div>
           )}
           <div style={{ padding: "10px 14px 20px", display: "flex", gap: 9, alignItems: "center", boxSizing: "border-box" }}>
             <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }}
               onChange={function(e) { pickImage(e.target.files && e.target.files[0]); e.target.value = ""; }} />
             <button onClick={function() { if (fileRef.current) fileRef.current.click(); }} aria-label="Attach a screenshot"
-              style={{ width: 44, height: 44, borderRadius: "50%", border: "1.5px solid rgba(0,0,0,0.09)", background: pendingImg ? T.orangeDim : "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.05)", transition: "background 0.25s ease" }}>
-              <SVGIcon id="camera" size={18} color={pendingImg ? T.orange : JINK3} />
+              style={{ width: 44, height: 44, borderRadius: "50%", border: "1.5px solid " + J.line, background: pendingImg ? T.orangeDim : J.card, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.05)", transition: "background 0.25s ease" }}>
+              <SVGIcon id="camera" size={18} color={pendingImg ? T.orange : J.ink3} />
             </button>
             <input value={input} onChange={function(e) { setInput(e.target.value); }}
               onKeyDown={function(e) { if (e.key === "Enter" && !loading) send(); }}
               placeholder={pendingImg ? "Add a note, or just send..." : "Ask about any step..."}
-              style={{ flex: 1, minWidth: 0, background: "#fff", border: "1.5px solid rgba(0,0,0,0.09)", borderRadius: 999, padding: "12px 16px", fontSize: 14.5, fontFamily: UI, color: JINK, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
+              style={{ flex: 1, minWidth: 0, background: J.card, border: "1.5px solid " + J.line, borderRadius: 999, padding: "12px 16px", fontSize: 14.5, fontFamily: UI, color: J.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
             <button onClick={function() { send(); }} disabled={loading || (!input.trim() && !pendingImg)}
-              style={{ width: 44, height: 44, borderRadius: "50%", border: "none", background: ((!input.trim() && !pendingImg) || loading) ? "rgba(0,0,0,0.08)" : T.btn, display: "flex", alignItems: "center", justifyContent: "center", cursor: ((!input.trim() && !pendingImg) || loading) ? "default" : "pointer", flexShrink: 0, boxShadow: ((!input.trim() && !pendingImg) || loading) ? "none" : "0 5px 14px " + T.orangeGlow, transition: "background 0.25s ease, box-shadow 0.25s ease" }}>
-              <SVGIcon id="up" size={18} color={((!input.trim() && !pendingImg) || loading) ? JINK3 : "#fff"} />
+              style={{ width: 44, height: 44, borderRadius: "50%", border: "none", background: ((!input.trim() && !pendingImg) || loading) ? J.fill3 : T.btn, display: "flex", alignItems: "center", justifyContent: "center", cursor: ((!input.trim() && !pendingImg) || loading) ? "default" : "pointer", flexShrink: 0, boxShadow: ((!input.trim() && !pendingImg) || loading) ? "none" : "0 5px 14px " + T.orangeGlow, transition: "background 0.25s ease, box-shadow 0.25s ease" }}>
+              <SVGIcon id="up" size={18} color={((!input.trim() && !pendingImg) || loading) ? J.ink3 : "#fff"} />
             </button>
           </div>
         </div>
@@ -27844,12 +27885,12 @@ function BankSyncJourney(props) {
     }).catch(function() { setTestState("error"); });
   }
 
-  var labelJ = { fontSize: 11.5, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 12 };
-  var headJ = { fontSize: 25, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: JINK, letterSpacing: "-0.01em", lineHeight: 1.25, marginBottom: 8 };
-  var subCard = { background: "rgba(255,255,255,0.85)", border: "1px solid rgba(0,0,0,0.05)", borderRadius: 14, padding: "12px 15px", fontSize: 13, color: JINK2, lineHeight: 1.5, boxSizing: "border-box" };
+  var labelJ = { fontSize: 11.5, fontWeight: 700, color: J.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 12 };
+  var headJ = { fontSize: 25, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, letterSpacing: "-0.01em", lineHeight: 1.25, marginBottom: 8 };
+  var subCard = { background: J.panel, border: "1px solid " + J.line, borderRadius: 14, padding: "12px 15px", fontSize: 13, color: J.ink2, lineHeight: 1.5, boxSizing: "border-box" };
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 80, background: JR_BG, fontFamily: UI, display: "flex", flexDirection: "column" }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 80, background: J.bg, fontFamily: UI, display: "flex", flexDirection: "column" }}>
 
       <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0", flexShrink: 0 }}>
         {idx > 0 ? (
@@ -27858,7 +27899,7 @@ function BankSyncJourney(props) {
           <JrIconBtn icon="close" onPress={props.onClose} />
         )}
         <JourneyBar pct={((idx + 1) / total) * 100} />
-        <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: JINK3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(idx + 1) + "/" + total}</div>
+        <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: J.ink3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(idx + 1) + "/" + total}</div>
       </div>
 
       <div className="jr-scroll" style={{ flex: 1, overflowY: "auto", padding: "28px 24px 8px" }}>
@@ -27870,7 +27911,7 @@ function BankSyncJourney(props) {
                 <div style={headJ}>
                   <WordReveal text="Which phone do you have?" base={0.04} step={0.045} />
                 </div>
-                <div style={{ fontSize: 14, color: JINK3, marginBottom: 20, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>
+                <div style={{ fontSize: 14, color: J.ink3, marginBottom: 20, lineHeight: 1.55, animation: "rclPhrase 0.45s ease 0.25s both" }}>
                   One-time setup, about two minutes. Your bank login is never involved - your phone only reports the merchant and amount of each tap.
                 </div>
                 <BankSyncDemo id="payoff" />
@@ -27882,13 +27923,13 @@ function BankSyncJourney(props) {
                     var sel = platform === opt.id;
                     return (
                       <button key={opt.id} onClick={function() { pickPlatform(opt.id); }}
-                        style={{ width: "100%", background: sel ? "rgba(137,112,198,0.06)" : "#fff", border: "1.5px solid " + (sel ? T.orange : "rgba(0,0,0,0.08)"), borderRadius: 15, padding: "17px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px rgba(137,112,198,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", marginBottom: 11, transition: "box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease" }}>
-                        <div style={{ width: 40, height: 40, borderRadius: 12, background: sel ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: sel ? "0 5px 14px " + T.orangeGlow : "none", transition: "background 0.25s ease, box-shadow 0.25s ease" }}>
-                          <SVGIcon id="phone" size={19} color={sel ? "#fff" : JINK3} />
+                        style={{ width: "100%", background: sel ? "rgba(137,112,198,0.06)" : J.card, border: "1.5px solid " + (sel ? T.orange : J.line), borderRadius: 15, padding: "17px 18px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, boxShadow: sel ? "0 0 0 3px " + T.orangeDim + ", 0 8px 20px rgba(137,112,198,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", fontFamily: UI, boxSizing: "border-box", marginBottom: 11, transition: "box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease" }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 12, background: sel ? "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")" : J.fill0, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: sel ? "0 5px 14px " + T.orangeGlow : "none", transition: "background 0.25s ease, box-shadow 0.25s ease" }}>
+                          <SVGIcon id="phone" size={19} color={sel ? "#fff" : J.ink3} />
                         </div>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 17, fontWeight: sel ? 700 : 600, color: JINK }}>{opt.label}</div>
-                          <div style={{ fontSize: 12.5, color: JINK3, marginTop: 2 }}>{opt.sub}</div>
+                          <div style={{ fontSize: 17, fontWeight: sel ? 700 : 600, color: J.ink }}>{opt.label}</div>
+                          <div style={{ fontSize: 12.5, color: J.ink3, marginTop: 2 }}>{opt.sub}</div>
                         </div>
                         {sel && (
                           <span style={{ width: 22, height: 22, borderRadius: "50%", background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, animation: "rcjCheckPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both", boxShadow: "0 3px 10px " + T.orangeGlow }}>
@@ -27908,12 +27949,12 @@ function BankSyncJourney(props) {
                 <div style={headJ}>
                   <WordReveal text={step.h} base={0.04} step={0.045} />
                 </div>
-                <div style={{ fontSize: 15, color: JINK2, marginBottom: 20, lineHeight: 1.6, animation: "rclPhrase 0.45s ease 0.25s both" }}>{step.s}</div>
+                <div style={{ fontSize: 15, color: J.ink2, marginBottom: 20, lineHeight: 1.6, animation: "rclPhrase 0.45s ease 0.25s both" }}>{step.s}</div>
                 {step.demo && <BankSyncDemo id={step.demo} />}
                 {step.copy && (
-                  <div style={{ background: "#fff", borderRadius: 16, padding: "15px 16px", boxShadow: "0 6px 22px rgba(40,28,16,0.08)", marginBottom: 16, boxSizing: "border-box", animation: "rclPhrase 0.45s ease 0.35s both" }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 700, color: JINK3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>{copyLabel[step.copy]}</div>
-                    <div style={{ fontSize: 12.5, fontFamily: UI, color: JINK, wordBreak: "break-all", lineHeight: 1.55, marginBottom: 12 }}>{copyValue[step.copy]}</div>
+                  <div style={{ background: J.card, borderRadius: 16, padding: "15px 16px", boxShadow: "0 6px 22px rgba(40,28,16,0.08)", marginBottom: 16, boxSizing: "border-box", animation: "rclPhrase 0.45s ease 0.35s both" }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: J.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>{copyLabel[step.copy]}</div>
+                    <div style={{ fontSize: 12.5, fontFamily: UI, color: J.ink, wordBreak: "break-all", lineHeight: 1.55, marginBottom: 12 }}>{copyValue[step.copy]}</div>
                     <button onClick={function() { copy(step.copy); }}
                       style={{ width: "100%", background: copied === step.copy ? T.greenDim : T.orangeDim, color: copied === step.copy ? T.green : T.orange, border: "none", borderRadius: 12, padding: "11px 0", fontSize: 14, fontWeight: 700, fontFamily: UI, cursor: "pointer", boxSizing: "border-box", transition: "background 0.2s ease, color 0.2s ease" }}>
                       {copied === step.copy ? "Copied - now paste it on your phone" : "Copy"}
@@ -27936,13 +27977,13 @@ function BankSyncJourney(props) {
                 <div style={headJ}>
                   <WordReveal text="Let's prove it works." base={0.04} step={0.045} />
                 </div>
-                <div style={{ fontSize: 15, color: JINK2, marginBottom: 20, lineHeight: 1.6, animation: "rclPhrase 0.45s ease 0.25s both" }}>
+                <div style={{ fontSize: 15, color: J.ink2, marginBottom: 20, lineHeight: 1.6, animation: "rclPhrase 0.45s ease 0.25s both" }}>
                   This sends a pretend $1.00 purchase through the exact pipe your phone will use. It should appear in Activity within a few seconds - delete it there once you've seen it.
                 </div>
                 <BankSyncDemo id="payoff" />
                 <div style={{ animation: "rclPhrase 0.45s ease 0.35s both" }}>
                   <button onClick={sendTest} disabled={testState === "sending"}
-                    style={{ width: "100%", background: "#fff", color: T.orange, border: "1.5px solid " + T.orangeDim, borderRadius: 16, padding: "15px 0", fontSize: 15.5, fontFamily: UI, fontWeight: 700, cursor: "pointer", opacity: testState === "sending" ? 0.6 : 1, boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                    style={{ width: "100%", background: J.card, color: T.orange, border: "1.5px solid " + T.orangeDim, borderRadius: 16, padding: "15px 0", fontSize: 15.5, fontFamily: UI, fontWeight: 700, cursor: "pointer", opacity: testState === "sending" ? 0.6 : 1, boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                     {testState === "sending" ? "Sending..." : testState === "sent" ? "Send another test" : "Send a test transaction"}
                   </button>
                   {testState === "sent" && (
@@ -27966,12 +28007,12 @@ function BankSyncJourney(props) {
 
       <div style={{ padding: "12px 24px 34px", width: "100%", maxWidth: 428, margin: "0 auto", boxSizing: "border-box", flexShrink: 0 }}>
         {idx === 0 && (
-          <div style={{ textAlign: "center", fontSize: 12.5, color: JINK3, fontWeight: 600, padding: "14px 0" }}>Tap your phone to continue</div>
+          <div style={{ textAlign: "center", fontSize: 12.5, color: J.ink3, fontWeight: 600, padding: "14px 0" }}>Tap your phone to continue</div>
         )}
         {step && <JrBtn label="Done, next" onPress={advance} />}
         {isTest && <JrBtn label="Finish setup" onPress={props.onClose} />}
         <button onClick={function() { setChatOpen(true); }}
-          style={{ width: "100%", background: "none", border: "none", color: JINK3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+          style={{ width: "100%", background: "none", border: "none", color: J.ink3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "14px 0 0", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
           <SVGIcon id="spark" size={14} color={T.orange} />
           Stuck? Ask Richard
         </button>
