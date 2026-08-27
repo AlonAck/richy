@@ -1,4 +1,5 @@
-# Ad 1 — "The Intercept" (20s, 600 frames, 720x1280 Eevee)
+# Ad 1 — "The Intercept" (20s, 600 frames) — v3 look: tight 70mm macro,
+# sharp subject zone at f/5, saturated cobalt, filmic AgX-punchy grade.
 # Run:  blender -b --factory-startup -P ad1_intercept.py -- [stills|anim] [out_dir]
 import sys
 import os
@@ -24,76 +25,83 @@ def A(name):
 
 
 L.clear_scene()
-scn = L.setup_render(600, res=(720, 1280), samples=48)
-L.world_cream()
+if MODE == "anim":
+    scn = L.setup_render(600, res=(1080, 1920), samples=96)
+else:
+    scn = L.setup_render(600, res=(720, 1280), samples=48)
+L.world_cream(0.12)
 L.cyclorama()
-L.lights()
-L.shadow_decal(A("shadow_window"))
+L.lights(target_loc=(0, 0.7, 0.9))
+L.shadow_decal(A("shadow_window"), size=6.5, loc=(0.4, 1.8, 0.012))
 
-focus = L.focus_empty((-0.4, 1.0, 0.8))
-cam = L.camera(loc=(0, -6.8, 1.65), rot=(math.radians(82), 0, 0), fstop=2.2, focus=focus)
+# ---- camera: fixed macro, slow push, focus tracks the beat hero ----
+focus = L.focus_empty((-0.5, 1.0, 0.7))
+cam = L.camera(loc=(0.05, -5.5, 1.25), rot=(math.radians(86), 0, math.radians(-1.5)), fstop=5.0, focus=focus)
+cam.data.lens = 70
+L.key(cam, "location", 1, -5.5, 1, interp="SINE")
+L.key(cam, "location", 600, -4.7, 1, interp="SINE")
 
-# slow push-in across the whole spot
-L.key(cam, "location", 1, -6.8, 1, ease="EASE_IN_OUT", interp="SINE")
-L.key(cam, "location", 600, -5.9, 1, ease="EASE_IN_OUT", interp="SINE")
-L.key(cam, "location", 1, 1.65, 2, interp="SINE")
-L.key(cam, "location", 600, 1.5, 2, interp="SINE")
+# foreground bokeh occluders (no shadows) — exit before the end card
+fgm = L.mat_gloss("fg_white", L.WHITE, 0.15)
+bpy.ops.mesh.primitive_plane_add(size=1, location=(-1.35, -2.6, 0.25))
+fg1 = bpy.context.object
+fg1.scale = (1.1, 0.7, 1)
+fg1.rotation_euler = (math.radians(78), 0, math.radians(30))
+fg1.data.materials.append(fgm)
+fg1.visible_shadow = False
+bpy.ops.mesh.primitive_cylinder_add(radius=0.14, depth=0.03, location=(1.35, -2.2, 2.05))
+coin = bpy.context.object
+coin.rotation_euler = (math.radians(75), 0, 0)
+coin.data.materials.append(L.mat_gold())
+coin.visible_shadow = False
 
-# deep background brand wave, permanently defocused
-bg_wave = L.ribbon([(-3.5, 3.6, 2.6), (-1.5, 3.2, 2.0), (0.5, 3.4, 2.5), (2.8, 3.7, 2.1)], width=0.06, name="bg_wave")
+# background ribbons, silky mid-blue, behind everything
+bg_wave = L.ribbon([(-3.0, 3.6, 2.4), (-1.2, 3.2, 1.8), (0.6, 3.4, 2.3), (2.6, 3.7, 1.9)], width=0.06, name="bg_wave")
+rib = L.ribbon(
+    [(-2.4, 2.6, 1.4), (-1.1, 2.2, 2.0), (0.2, 1.9, 1.5), (1.4, 2.1, 2.2), (2.4, 2.6, 1.7)],
+    width=0.055,
+)
+rib.data.bevel_factor_end = 0.0
 
 # ---------------- props ----------------
-box = L.gift_box(loc=(-1.5, 1.2, 0.5), size=0.72)
+box = L.gift_box(loc=(-1.5, 1.0, 0.55), size=1.0)
+box.rotation_euler = (0, 0, math.radians(-14))
 
-# flip rig: buy card front, "3 weeks of your Freedom Fund" back
-bpy.ops.object.empty_add(location=(0.55, 1.0, 1.62))
+bpy.ops.object.empty_add(location=(0.42, 1.35, 1.75))
 flip = bpy.context.object
 bpy.context.view_layer.update()
 fl = flip.location
-# offset the two faces along the flip normal so they never z-fight
-front = L.card("buy_front", A("card_buynow"), 1.05, loc=(fl.x, fl.y - 0.01, fl.z))
-back = L.card("buy_back", A("card_price_back"), 1.05, loc=(fl.x, fl.y + 0.01, fl.z))
-back.rotation_euler = (math.radians(90), 0, math.pi)
+front = L.card("buy_front", A("card_buynow"), 1.25, loc=(fl.x, fl.y - 0.01, fl.z))
+back = L.card("buy_back", A("card_price_back"), 1.25, loc=(fl.x, fl.y + 0.01, fl.z))
+front.rotation_euler = (math.radians(90), 0, math.radians(-7))
+back.rotation_euler = (math.radians(90), 0, math.pi - math.radians(7))
 for p in (front, back):
     p.parent = flip
     p.matrix_parent_inverse = flip.matrix_world.inverted()
 
-orb, orb_map = L.orb(loc=(-2.4, 1.6, 2.7), radius=0.40)
-# swirl all spot long
+orb, orb_map = L.orb(loc=(-2.2, 1.6, 2.9), radius=0.48)
 L.key_node(orb_map.inputs["Rotation"], 1, (0, 0, 0), orb.data.materials[0].node_tree)
 L.key_node(orb_map.inputs["Rotation"], 600, (0, 0, math.tau), orb.data.materials[0].node_tree)
 
-rib = L.ribbon(
-    [(-2.8, 2.6, 1.1), (-1.6, 2.1, 1.7), (-0.5, 1.8, 1.0), (0.6, 2.0, 1.6), (1.9, 2.5, 2.0)],
-    width=0.04,
-)
-rib.data.bevel_factor_end = 0.0
-
-goal = L.card("goal", A("card_goal"), 1.15, loc=(-0.05, 0.75, -0.8))
-# gold fill bar riding the goal card's empty track (card-local coords)
+goal = L.card("goal", A("card_goal"), 1.3, loc=(0.0, 0.85, -0.9))
 gold_m = L.mat_gold()
 bpy.ops.mesh.primitive_cube_add(size=2, location=goal.location)
 bar = bpy.context.object
 bar.data.materials.append(gold_m)
 bpy.context.view_layer.update()
-bar.parent = goal
-# The card plane is a UNIT plane scaled by the parent, so child coords live in
-# unit space (±0.5) and inherit the card's scale. Identity parent inverse is
-# exactly what we want here. Track on the 360x180 texture:
-# x 28..332px, y 66..88px  →  unit x -0.4222..+0.4222, y center 0.0722.
+bar.parent = goal  # identity parent inverse: bar lives in the card's unit space
 bar.location = (-0.1646, 0.0722, 0.006)
 bar.scale = (0.001, 0.0611, 0.006)
 bb = bar.modifiers.new("bev", "BEVEL")
 bb.width = 0.008
 bb.segments = 3
 
-bubble = L.card("bubble", A("bubble_skip"), 0.95, loc=(-0.3, 0.8, 1.95))
-avatar = L.card("avatar", A("avatar_r"), 0.30, loc=(0, 0.6, 0.85))
-wordmark = L.card("wordmark", A("wordmark_richy"), 1.25, loc=(0, 0.6, 1.5))
-nota = L.card("nota", A("tagline_nota"), 1.5, loc=(0, 0.6, 1.03))
-coming = L.card("coming", A("tagline_coming"), 1.2, loc=(0, 0.6, 0.72))
+bubble = L.card("bubble", A("bubble_skip"), 1.0, loc=(-0.15, 1.0, 1.95))
+avatar = L.card("avatar", A("avatar_r"), 0.34, loc=(0, 0.6, 0.62))
+wordmark = L.card("wordmark", A("wordmark_richy"), 1.35, loc=(0, 0.6, 1.35))
+nota = L.card("nota", A("tagline_nota"), 1.55, loc=(0, 0.6, 0.9))
+coming = L.card("coming", A("tagline_coming"), 1.25, loc=(0, 0.6, 0.58))
 
-# late-scene cards start invisible
 for c, fin in ((bubble, 392), (avatar, 470), (wordmark, 532), (nota, 546), (coming, 560)):
     L.fade(c, f_in=fin)
 
@@ -102,46 +110,45 @@ K = L.key
 
 # B1 (1-90): box drifts toward the buy card
 K(box, "location", 1, -1.5, 0, interp="SINE")
-K(box, "location", 95, -0.25, 0, interp="SINE")
-K(box, "location", 1, 0.5, 2, interp="SINE")
-K(box, "location", 95, 0.85, 2, interp="SINE")
-K(box, "rotation_euler", 1, math.radians(-9), 2, interp="SINE")
-K(box, "rotation_euler", 95, math.radians(14), 2, interp="SINE")
+K(box, "location", 95, -0.5, 0, interp="SINE")
+K(box, "location", 1, 0.55, 2, interp="SINE")
+K(box, "location", 95, 0.6, 2, interp="SINE")
+K(box, "rotation_euler", 1, math.radians(-26), 2, interp="SINE")
+K(box, "rotation_euler", 95, math.radians(-8), 2, interp="SINE")
 
 # B2 (90-195): orb sweeps in and interposes; box recoils; ribbon grows
-K(orb, "location", 92, -2.4, 0)
+K(orb, "location", 92, -2.2, 0)
 K(orb, "location", 92, 1.6, 1)
-K(orb, "location", 92, 2.7, 2)
-K(orb, "location", 152, -0.12, 0, ease="EASE_OUT", interp="BACK")
-K(orb, "location", 152, 0.55, 1, ease="EASE_OUT", interp="BACK")
-K(orb, "location", 152, 1.05, 2, ease="EASE_OUT", interp="BACK")
-K(box, "location", 150, -0.25, 0)
-K(box, "location", 195, -0.78, 0, ease="EASE_OUT")
+K(orb, "location", 92, 2.9, 2)
+K(orb, "location", 152, -0.02, 0, ease="EASE_OUT", interp="BACK")
+K(orb, "location", 152, 0.5, 1, ease="EASE_OUT", interp="BACK")
+K(orb, "location", 152, 1.1, 2, ease="EASE_OUT", interp="BACK")
+K(box, "location", 150, -0.5, 0)
+K(box, "location", 195, -0.95, 0, ease="EASE_OUT")
 L.key(rib.data, "bevel_factor_end", 95, 0.0)
 L.key(rib.data, "bevel_factor_end", 165, 1.0, ease="EASE_IN_OUT", interp="SINE")
 
 # B3 (195-330): the flip
 K(flip, "rotation_euler", 212, 0.0, 2)
 K(flip, "rotation_euler", 262, math.pi, 2, ease="EASE_IN_OUT", interp="BEZIER")
-K(orb, "location", 212, -0.12, 0)
-K(orb, "location", 330, 0.0, 0, interp="SINE")
-K(orb, "location", 212, 1.05, 2)
-K(orb, "location", 330, 1.1, 2, interp="SINE")
+K(orb, "location", 212, -0.02, 0)
+K(orb, "location", 330, 0.1, 0, interp="SINE")
+K(orb, "location", 212, 1.1, 2)
+K(orb, "location", 330, 1.15, 2, interp="SINE")
 
 # B4 (330-450): buy assembly + box exit; goal card rises; gold bar fills 61→68%
-K(flip, "location", 340, 0.55, 0)
-K(flip, "location", 340, 1.62, 2)
-K(flip, "location", 425, 1.95, 0, ease="EASE_IN", interp="SINE")
-K(flip, "location", 425, 2.85, 2, ease="EASE_IN", interp="SINE")
-K(box, "location", 340, -0.52, 0)
-K(box, "location", 425, -2.4, 0, ease="EASE_IN", interp="SINE")
-K(orb, "location", 340, 0.0, 0)
-K(orb, "location", 400, 0.58, 0, interp="SINE")
-K(orb, "location", 340, 1.1, 2)
-K(orb, "location", 400, 1.5, 2, interp="SINE")
-K(goal, "location", 335, -0.8, 2)
+K(flip, "location", 340, 0.42, 0)
+K(flip, "location", 340, 1.75, 2)
+K(flip, "location", 425, 1.6, 0, ease="EASE_IN", interp="SINE")
+K(flip, "location", 425, 3.3, 2, ease="EASE_IN", interp="SINE")
+K(box, "location", 340, -0.95, 0)
+K(box, "location", 425, -2.6, 0, ease="EASE_IN", interp="SINE")
+K(orb, "location", 340, 0.1, 0)
+K(orb, "location", 400, 0.55, 0, interp="SINE")
+K(orb, "location", 340, 1.15, 2)
+K(orb, "location", 400, 1.55, 2, interp="SINE")
+K(goal, "location", 335, -0.9, 2)
 K(goal, "location", 385, 0.95, 2, ease="EASE_OUT", interp="BACK")
-# fill 61% → 68% of the track (unit-space: left edge -0.4222, width 0.8444)
 K(bar, "scale", 392, 0.2576, 0)
 K(bar, "location", 392, -0.1646, 0)
 K(bar, "scale", 448, 0.2871, 0, ease="EASE_IN_OUT", interp="SINE")
@@ -150,41 +157,51 @@ K(bar, "location", 448, -0.1351, 0, ease="EASE_IN_OUT", interp="SINE")
 # B5 (450-525): board clears; orb takes center; monogram appears
 for obj, fout in ((goal, 452), (bubble, 452)):
     L.fade(obj, f_out=fout)
-K(orb, "location", 452, 0.58, 0)
-K(orb, "location", 452, 1.5, 2)
+bar.hide_render = False
+bar.keyframe_insert("hide_render", frame=455)
+bar.hide_render = True
+bar.keyframe_insert("hide_render", frame=463)
+bar.hide_render = False
+K(orb, "location", 452, 0.55, 0)
+K(orb, "location", 452, 1.55, 2)
 K(orb, "location", 500, 0.0, 0, ease="EASE_OUT", interp="BACK")
-K(orb, "location", 500, 1.55, 2, ease="EASE_OUT", interp="BACK")
-K(orb, "scale", 452, 1.0, 0)
-K(orb, "scale", 452, 1.0, 1)
-K(orb, "scale", 452, 1.0, 2)
+K(orb, "location", 500, 1.4, 2, ease="EASE_OUT", interp="BACK")
 for i in range(3):
-    K(orb, "scale", 500, 1.18, i, ease="EASE_OUT")
+    K(orb, "scale", 452, 1.0, i)
+    K(orb, "scale", 500, 1.12, i, ease="EASE_OUT")
 
-# ribbons bow out before the end card so the type stands alone
+# ribbons and foreground props bow out before the end card
 for r, exit_dz in ((rib, 2.6), (bg_wave, 2.2)):
     K(r, "location", 505, 0.0, 2, interp="SINE")
     K(r, "location", 552, exit_dz, 2, ease="EASE_IN", interp="SINE")
+K(fg1, "location", 505, 0.25, 2, interp="SINE")
+K(fg1, "location", 545, -2.2, 2, ease="EASE_IN", interp="SINE")
+K(coin, "location", 505, 2.05, 2, interp="SINE")
+K(coin, "location", 545, 4.2, 2, ease="EASE_IN", interp="SINE")
 
 # B6 (525-600): end card — orb rises to crown the stack
 K(orb, "location", 528, 0.0, 0)
-K(orb, "location", 528, 1.55, 2)
-K(orb, "location", 570, 0.0, 0, interp="SINE")
-K(orb, "location", 570, 2.18, 2, ease="EASE_IN_OUT", interp="SINE")
+K(orb, "location", 528, 1.4, 2)
+K(orb, "location", 566, 0.0, 0, interp="SINE")
+K(orb, "location", 566, 1.95, 2, ease="EASE_IN_OUT", interp="SINE")
 for i in range(3):
-    K(orb, "scale", 528, 1.18, i)
-    K(orb, "scale", 570, 0.85, i, ease="EASE_IN_OUT", interp="SINE")
+    K(orb, "scale", 528, 1.12, i)
+    K(orb, "scale", 566, 0.78, i, ease="EASE_IN_OUT", interp="SINE")
 L.fade(avatar, f_out=524)
 
 # ---------------- focus pulls ----------------
-FK = [(1, (-0.6, 1.0, 0.75)), (100, (0.1, 0.7, 1.25)), (205, (0.55, 1.0, 1.62)),
-      (350, (-0.05, 0.75, 0.95)), (465, (0.0, 0.6, 1.5)), (540, (0.0, 0.6, 1.4))]
+FK = [(1, (-0.7, 1.0, 0.7)), (100, (0.0, 0.6, 1.1)), (205, (0.42, 1.35, 1.75)),
+      (350, (0.0, 0.85, 0.95)), (465, (0.0, 0.6, 1.4)), (540, (0.0, 0.6, 1.35))]
 for f, loc in FK:
     for i, v in enumerate(loc):
         K(focus, "location", f, v, i, interp="SINE")
 
 # ---------------- output ----------------
 if MODE == "anim":
-    L.render_animation(OUT if OUT.endswith(".mp4") else os.path.join(OUT, "ad1_720.mp4"))
+    os.makedirs(OUT, exist_ok=True)
+    scn.render.filepath = os.path.join(OUT, "f")
+    scn.render.image_settings.file_format = "PNG"
+    bpy.ops.render.render(animation=True)
 else:
     L.render_stills([45, 140, 260, 400, 490, 570], OUT, tag="ad1_")
 print("AD1 DONE", MODE)

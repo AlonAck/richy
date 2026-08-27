@@ -8,12 +8,13 @@ import math
 import os
 
 # ---- palette (design.json / Cornflower Ocean + brand constants) ----
-CREAM = (0.9451, 0.9255, 0.8859)      # #F7F3EE
+# v2: saturated well past target — AgX rolloff pulls them back to brand.
+CREAM = (0.9451, 0.9000, 0.8000)      # warm cream, fights AgX gray-drift
 INK = (0.0273, 0.0193, 0.0144)        # #1A1410 (linear-ish)
-BLUE = (0.1119, 0.1946, 0.7454)       # #5C7AE3
-BLUE_SOFT = (0.2423, 0.3049, 0.8148)  # #8493E2 lifted
-BLUE_PALE = (0.4620, 0.5271, 0.8469)  # #B2BEED
-GOLD = (0.5647, 0.3185, 0.0409)       # #C8983A
+BLUE = (0.055, 0.130, 0.850)          # deep saturated cobalt-periwinkle
+BLUE_SOFT = (0.140, 0.230, 0.880)
+BLUE_PALE = (0.330, 0.430, 0.900)
+GOLD = (0.680, 0.330, 0.022)          # rich metallic gold
 CHOCOLATE = (0.0144, 0.0097, 0.0060)  # #221B14
 WHITE = (0.9473, 0.9473, 0.9301)
 
@@ -36,10 +37,12 @@ def setup_render(frame_end, res=(720, 1280), samples=48, out_path=None):
     scn.render.fps = FPS
     scn.frame_start, scn.frame_end = 1, frame_end
     scn.eevee.taa_render_samples = samples
-    # Standard, not AgX: this is a high-key UI-forward scene and the brand cream
-    # must survive to the pixel. AgX desaturates it into gray.
+    # v2 look: AgX with the punchy look for filmic contrast — sources are
+    # saturated far past target so the rolloff lands them exactly on-brand.
     try:
-        scn.view_settings.view_transform = "Standard"
+        scn.view_settings.view_transform = "AgX"
+        scn.view_settings.look = "AgX - Punchy"
+        scn.view_settings.exposure = 0.35
     except TypeError:
         pass
     if out_path:
@@ -118,6 +121,11 @@ def mat_orb():
     nt.links.new(ramp.outputs["Color"], b.inputs["Emission Color"])
     b.inputs["Emission Strength"].default_value = 0.55
 
+    try:
+        b.inputs["Coat Weight"].default_value = 0.8
+        b.inputs["Coat Roughness"].default_value = 0.06
+    except KeyError:
+        pass
     fres = nt.nodes.new("ShaderNodeFresnel")
     fres.inputs["IOR"].default_value = 1.35
     mix = nt.nodes.new("ShaderNodeMixShader")
@@ -170,12 +178,13 @@ def lights(gobo=False, target_loc=(0, 0.8, 1.0)):
     target = bpy.context.object
     target.name = "light_target"
 
+    # v2 ratio: hard warm key, starved fill — depth comes from shadow, not flood
     key_loc = (5, -7, 8)
     bpy.ops.object.light_add(type="AREA", location=key_loc)
     key = bpy.context.object
-    key.data.energy = 2600
-    key.data.size = 0.6   # small: keeps the gobo's window pattern readable
-    key.data.color = (1.0, 0.96, 0.90)
+    key.data.energy = 4200
+    key.data.size = 1.0
+    key.data.color = (1.0, 0.93, 0.82)
     tc = key.constraints.new("TRACK_TO")
     tc.target = target
     tc.track_axis = "TRACK_NEGATIVE_Z"
@@ -183,16 +192,16 @@ def lights(gobo=False, target_loc=(0, 0.8, 1.0)):
 
     bpy.ops.object.light_add(type="AREA", location=(-6, -5, 5), rotation=(math.radians(55), 0, math.radians(-38)))
     fill = bpy.context.object
-    fill.data.energy = 420
+    fill.data.energy = 320
     fill.data.size = 9
-    fill.data.color = (0.94, 0.96, 1.0)
+    fill.data.color = (0.90, 0.94, 1.0)
 
-    # low warm kicker from behind-right so shadow sides of props stay ivory, not concrete
+    # warm kicker from behind-right: rims the props, keeps shadow sides ivory
     bpy.ops.object.light_add(type="AREA", location=(4, 4, 2.5))
     kick = bpy.context.object
-    kick.data.energy = 260
-    kick.data.size = 6
-    kick.data.color = (1.0, 0.95, 0.88)
+    kick.data.energy = 420
+    kick.data.size = 4
+    kick.data.color = (1.0, 0.90, 0.76)
     kc = kick.constraints.new("TRACK_TO")
     kc.target = target
     kc.track_axis = "TRACK_NEGATIVE_Z"
@@ -249,7 +258,7 @@ def focus_empty(loc=(0, 0, 1.2)):
 _IMG_CACHE = {}
 
 
-def card(name, png_path, width, loc=(0, 0, 1), emis=0.85, thick=True):
+def card(name, png_path, width, loc=(0, 0, 1), emis=1.0, thick=True):
     """UI card: plane textured with a browser-rendered PNG. Mostly emission so the
     type stays crisp; a little diffuse so scene light still models it."""
     if png_path not in _IMG_CACHE:
@@ -312,7 +321,7 @@ def hud_card(cam, name, png_path, width_frac, y_frac, dist=2.0, emis=1.0):
     return obj
 
 
-def shadow_decal(png_path, size=7.5, loc=(0.3, 1.2, 0.012), rot_z=0.25):
+def shadow_decal(png_path, size=8.0, loc=(0.3, 2.4, 0.012), rot_z=0.25):
     """The window-light pattern as a floor decal — art-directable, render-cheap,
     and immune to Eevee's shadow/visibility quirks."""
     if png_path not in _IMG_CACHE:
@@ -349,7 +358,7 @@ def gift_box(loc=(0, 0, 0.5), size=0.8):
     bev = box.modifiers.new("bev", "BEVEL")
     bev.width = size * 0.06
     bev.segments = 5
-    box.data.materials.append(mat_gloss("boxwhite", WHITE, 0.1))
+    box.data.materials.append(mat_gloss("boxwhite", WHITE, 0.25))
     bpy.context.view_layer.update()
 
     def child(half_extents, offset=(0, 0, 0), material=None):
@@ -365,14 +374,14 @@ def gift_box(loc=(0, 0, 0.5), size=0.8):
         return c
 
     band_m = mat_gloss("band", BLUE, 0.2)
-    lid_m = mat_gloss("lid", WHITE, 0.08)
+    lid_m = mat_gloss("lid", WHITE, 0.22)
     # Apple-style shell lid over the top quarter, with a visible seam; the
     # ribbon band pokes past the lid so it wraps the whole silhouette.
     lid = child((size * 0.545, size * 0.545, size * 0.11), offset=(0, 0, size * 0.33), material=lid_m)
     lb = lid.modifiers.new("bev", "BEVEL")
     lb.width = size * 0.02
     lb.segments = 3
-    e = size * 0.56  # past the lid shell
+    e = size * 0.585  # clearly past the lid shell — no coplanar shimmer
     child((size * 0.05, e, e), material=band_m)             # band around YZ
     child((e, size * 0.05, e), material=band_m)             # band around XZ
     return box
@@ -402,10 +411,10 @@ def ribbon(points, width=0.05, name="ribbon"):
     cu.twist_mode = "MINIMUM"
     obj = bpy.data.objects.new(name, cu)
     bpy.context.collection.objects.link(obj)
-    m = _principled(name + "_m", BLUE_PALE, 0.3)
+    m = _principled(name + "_m", BLUE_SOFT, 0.3)
     b = m.node_tree.nodes["Principled BSDF"]
     b.inputs["Emission Color"].default_value = (*BLUE_PALE, 1)
-    b.inputs["Emission Strength"].default_value = 0.12
+    b.inputs["Emission Strength"].default_value = 0.35
     obj.data.materials.append(m)
     return obj
 
@@ -505,6 +514,11 @@ def render_stills(frames, out_dir, tag=""):
 
 def render_animation(out_path):
     scn = bpy.context.scene
+    # Blender 5.x gates movie formats behind media_type
+    try:
+        scn.render.image_settings.media_type = "VIDEO"
+    except (AttributeError, TypeError):
+        pass
     scn.render.image_settings.file_format = "FFMPEG"
     scn.render.ffmpeg.format = "MPEG4"
     scn.render.ffmpeg.codec = "H264"
