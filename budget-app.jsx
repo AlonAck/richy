@@ -5535,6 +5535,24 @@ function JrShaderBg(props) {
       "precision highp float;",
       "uniform vec2 u_res; uniform float u_time, u_xScale, u_yScale, u_intensity;",
       "uniform vec3 u_c1, u_c2, u_c3, u_base;",
+      // Chroma boost, applied to each ribbon colour before it is mixed in.
+      //
+      // mix() lerps in gamma-encoded sRGB, and a lerp from a near-neutral
+      // ground to an accent runs through desaturated middles - cream toward
+      // navy passes through grey-blue. Most of a ribbon IS that middle, so the
+      // ribbons read as pale tint even though their thin cores land on the
+      // exact accent. This puts back the chroma the lerp eats.
+      //
+      // Saturating in HSV - hold the brightest channel, pull the others down -
+      // rather than around the colour’s own grey. A luminance-preserving boost
+      // has to RAISE the dominant channel, and the accents these screens pass
+      // in already sit near the top of theirs, so it gets clipped to almost
+      // nothing exactly on the dark ground where it was wanted most. Anchoring
+      // on the channel that would have clipped means the boost always lands.
+      "vec3 vivid(vec3 c, float k){",
+      "  float mx = max(c.r, max(c.g, c.b));",
+      "  return max(vec3(0.0), mx - (mx - c) * k);",
+      "}",
       "void main(){",
       "  vec2 p = (gl_FragCoord.xy * 2.0 - u_res) / min(u_res.x, u_res.y);",
       // Three ribbons share one traveling wave, offset by a FIXED 120 degrees
@@ -5551,9 +5569,19 @@ function JrShaderBg(props) {
       "  float m2 = clamp(i2 * u_intensity, 0.0, 1.0);",
       "  float m3 = clamp(i3 * u_intensity, 0.0, 1.0);",
       "  vec3 col = u_base;",
-      "  col = mix(col, u_c3, m3 * 0.9);",
-      "  col = mix(col, u_c1, m1);",
-      "  col = mix(col, u_c2, m2 * 0.85);",
+      // Saturating pulls a colour DOWN in luminance, which on the dark ground
+      // moves the ribbon toward what it sits on - copy crossing one actually
+      // gains contrast. On the cream ground it moves the other way, so the
+      // boost is capped where a reading veil could otherwise be undercut: 1.2
+      // is the most the light ground takes with body copy still at 4.5:1 over
+      // a ribbon core.
+      "  float k = mix(1.4, 1.2, step(0.5, dot(u_base, vec3(0.2126, 0.7152, 0.0722))));",
+      // The two trailing ribbons used to be held back to 0.9 / 0.85 so the
+      // weave read as layered. With the colours boosted they separate on hue
+      // instead, so all three now carry their full strength.
+      "  col = mix(col, vivid(u_c3, k), m3);",
+      "  col = mix(col, vivid(u_c1, k), m1);",
+      "  col = mix(col, vivid(u_c2, k), m2);",
       "  gl_FragColor = vec4(col, 1.0);",
       "}",
     ].join("\n");
