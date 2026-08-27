@@ -1,4 +1,4 @@
-# Ad 2 — "Run the Whole Thing" (20s, 600 frames) — v3 look: tight 70mm macro.
+﻿# Ad 2 â€” "Run the Whole Thing" (20s, 600 frames) â€” v3 look: tight 70mm macro.
 # Run:  blender -b --factory-startup -P ad2_business.py -- [stills|anim] [out_dir]
 import sys
 import os
@@ -34,7 +34,7 @@ L.lights(target_loc=(0, 0.7, 0.9))
 L.shadow_decal(A("shadow_window"), size=6.5, loc=(0.4, 1.8, 0.012))
 
 focus = L.focus_empty((0, 1.0, 1.2))
-cam = L.camera(loc=(0.05, -5.5, 1.25), rot=(math.radians(86), 0, math.radians(-1.5)), fstop=5.0, focus=focus)
+cam = L.camera(loc=(-0.15, -5.5, 1.25), rot=(math.radians(86), 0, 0), fstop=5.0, focus=focus)
 cam.data.lens = 70
 L.key(cam, "location", 1, -5.5, 1, interp="SINE")
 L.key(cam, "location", 600, -4.7, 1, interp="SINE")
@@ -77,9 +77,9 @@ revenue = L.card("revenue", A("card_revenue"), 1.35, loc=(0.1, 0.7, -0.9))
 chip = L.card("chip", A("chip_paid"), 0.32, loc=(0.55, 0.64, -0.4))
 portfolio = L.card("portfolio", A("card_portfolio_big"), 1.35, loc=(-0.05, 0.75, -0.95))
 bubble = L.card("bubble", A("bubble_changed"), 1.0, loc=(0, 0.7, 2.0))
-wordmark = L.card("wordmark", A("wordmark_richy"), 1.35, loc=(0, 0.6, 1.35))
-runline = L.card("runline", A("tagline_run"), 1.45, loc=(0, 0.6, 0.9))
-coming = L.card("coming", A("tagline_coming"), 1.25, loc=(0, 0.6, 0.58))
+wordmark = L.card("wordmark", A("wordmark_richy"), 1.15, loc=(0, 0.6, 1.35))
+runline = L.card("runline", A("tagline_run"), 1.25, loc=(0, 0.6, 0.92))
+coming = L.card("coming", A("tagline_coming"), 1.05, loc=(0, 0.6, 0.6))
 
 for c, fin in ((bubble, 470), (wordmark, 548), (runline, 558), (coming, 568)):
     L.fade(c, f_in=fin)
@@ -172,7 +172,7 @@ K(coin, "location", 545, 4.2, 2, ease="EASE_IN", interp="SINE")
 K(orb, "location", 522, 0.5, 0)
 K(orb, "location", 522, 2.05, 2)
 K(orb, "location", 556, 0.0, 0, ease="EASE_IN_OUT", interp="SINE")
-K(orb, "location", 556, 1.95, 2, ease="EASE_IN_OUT", interp="SINE")
+K(orb, "location", 556, 1.8, 2, ease="EASE_IN_OUT", interp="SINE")
 for i in range(3):
     K(orb, "scale", 522, 1.0, i)
     K(orb, "scale", 556, 0.78, i, ease="EASE_IN_OUT", interp="SINE")

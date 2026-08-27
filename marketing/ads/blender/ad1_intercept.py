@@ -1,4 +1,4 @@
-# Ad 1 — "The Intercept" (20s, 600 frames) — v3 look: tight 70mm macro,
+﻿# Ad 1 â€” "The Intercept" (20s, 600 frames) â€” v3 look: tight 70mm macro,
 # sharp subject zone at f/5, saturated cobalt, filmic AgX-punchy grade.
 # Run:  blender -b --factory-startup -P ad1_intercept.py -- [stills|anim] [out_dir]
 import sys
@@ -36,12 +36,12 @@ L.shadow_decal(A("shadow_window"), size=6.5, loc=(0.4, 1.8, 0.012))
 
 # ---- camera: fixed macro, slow push, focus tracks the beat hero ----
 focus = L.focus_empty((-0.5, 1.0, 0.7))
-cam = L.camera(loc=(0.05, -5.5, 1.25), rot=(math.radians(86), 0, math.radians(-1.5)), fstop=5.0, focus=focus)
+cam = L.camera(loc=(-0.15, -5.5, 1.25), rot=(math.radians(86), 0, 0), fstop=5.0, focus=focus)
 cam.data.lens = 70
 L.key(cam, "location", 1, -5.5, 1, interp="SINE")
 L.key(cam, "location", 600, -4.7, 1, interp="SINE")
 
-# foreground bokeh occluders (no shadows) — exit before the end card
+# foreground bokeh occluders (no shadows) â€” exit before the end card
 fgm = L.mat_gloss("fg_white", L.WHITE, 0.15)
 bpy.ops.mesh.primitive_plane_add(size=1, location=(-1.35, -2.6, 0.25))
 fg1 = bpy.context.object
@@ -56,7 +56,7 @@ coin.data.materials.append(L.mat_gold())
 coin.visible_shadow = False
 
 # background ribbons, silky mid-blue, behind everything
-bg_wave = L.ribbon([(-3.0, 3.6, 2.4), (-1.2, 3.2, 1.8), (0.6, 3.4, 2.3), (2.6, 3.7, 1.9)], width=0.06, name="bg_wave")
+bg_wave = L.ribbon([(-3.0, 3.6, 2.2), (-1.2, 3.2, 1.9), (0.6, 3.4, 2.2), (2.6, 3.7, 2.0)], width=0.06, name="bg_wave")
 rib = L.ribbon(
     [(-2.4, 2.6, 1.4), (-1.1, 2.2, 2.0), (0.2, 1.9, 1.5), (1.4, 2.1, 2.2), (2.4, 2.6, 1.7)],
     width=0.055,
@@ -67,7 +67,7 @@ rib.data.bevel_factor_end = 0.0
 box = L.gift_box(loc=(-1.5, 1.0, 0.55), size=1.0)
 box.rotation_euler = (0, 0, math.radians(-14))
 
-bpy.ops.object.empty_add(location=(0.42, 1.35, 1.75))
+bpy.ops.object.empty_add(location=(0.45, 1.35, 1.95))
 flip = bpy.context.object
 bpy.context.view_layer.update()
 fl = flip.location
@@ -96,11 +96,11 @@ bb = bar.modifiers.new("bev", "BEVEL")
 bb.width = 0.008
 bb.segments = 3
 
-bubble = L.card("bubble", A("bubble_skip"), 1.0, loc=(-0.15, 1.0, 1.95))
+bubble = L.card("bubble", A("bubble_skip"), 0.95, loc=(0.1, 1.0, 1.95))
 avatar = L.card("avatar", A("avatar_r"), 0.34, loc=(0, 0.6, 0.62))
-wordmark = L.card("wordmark", A("wordmark_richy"), 1.35, loc=(0, 0.6, 1.35))
-nota = L.card("nota", A("tagline_nota"), 1.55, loc=(0, 0.6, 0.9))
-coming = L.card("coming", A("tagline_coming"), 1.25, loc=(0, 0.6, 0.58))
+wordmark = L.card("wordmark", A("wordmark_richy"), 1.15, loc=(0, 0.6, 1.35))
+nota = L.card("nota", A("tagline_nota"), 1.3, loc=(0, 0.6, 0.92))
+coming = L.card("coming", A("tagline_coming"), 1.05, loc=(0, 0.6, 0.6))
 
 for c, fin in ((bubble, 392), (avatar, 470), (wordmark, 532), (nota, 546), (coming, 560)):
     L.fade(c, f_in=fin)
@@ -120,32 +120,35 @@ K(box, "rotation_euler", 95, math.radians(-8), 2, interp="SINE")
 K(orb, "location", 92, -2.2, 0)
 K(orb, "location", 92, 1.6, 1)
 K(orb, "location", 92, 2.9, 2)
-K(orb, "location", 152, -0.02, 0, ease="EASE_OUT", interp="BACK")
+K(orb, "location", 152, -0.3, 0, ease="EASE_OUT", interp="BACK")
 K(orb, "location", 152, 0.5, 1, ease="EASE_OUT", interp="BACK")
-K(orb, "location", 152, 1.1, 2, ease="EASE_OUT", interp="BACK")
+K(orb, "location", 152, 1.38, 2, ease="EASE_OUT", interp="BACK")
 K(box, "location", 150, -0.5, 0)
-K(box, "location", 195, -0.95, 0, ease="EASE_OUT")
+K(box, "location", 195, -0.7, 0, ease="EASE_OUT")
 L.key(rib.data, "bevel_factor_end", 95, 0.0)
 L.key(rib.data, "bevel_factor_end", 165, 1.0, ease="EASE_IN_OUT", interp="SINE")
 
-# B3 (195-330): the flip
+# B3 (195-330): the flip — the card glides left as it turns so the
+# revealed message sits centered in frame
 K(flip, "rotation_euler", 212, 0.0, 2)
 K(flip, "rotation_euler", 262, math.pi, 2, ease="EASE_IN_OUT", interp="BEZIER")
-K(orb, "location", 212, -0.02, 0)
-K(orb, "location", 330, 0.1, 0, interp="SINE")
-K(orb, "location", 212, 1.1, 2)
-K(orb, "location", 330, 1.15, 2, interp="SINE")
+K(flip, "location", 212, 0.45, 0)
+K(flip, "location", 262, 0.05, 0, ease="EASE_IN_OUT", interp="SINE")
+K(orb, "location", 212, -0.3, 0)
+K(orb, "location", 330, -0.55, 0, interp="SINE")
+K(orb, "location", 212, 1.38, 2)
+K(orb, "location", 330, 1.12, 2, interp="SINE")
 
-# B4 (330-450): buy assembly + box exit; goal card rises; gold bar fills 61→68%
-K(flip, "location", 340, 0.42, 0)
-K(flip, "location", 340, 1.75, 2)
-K(flip, "location", 425, 1.6, 0, ease="EASE_IN", interp="SINE")
+# B4 (330-450): buy assembly + box exit; goal card rises; gold bar fills 61â†’68%
+K(flip, "location", 340, 0.05, 0)
+K(flip, "location", 340, 1.95, 2)
+K(flip, "location", 425, 1.4, 0, ease="EASE_IN", interp="SINE")
 K(flip, "location", 425, 3.3, 2, ease="EASE_IN", interp="SINE")
 K(box, "location", 340, -0.95, 0)
 K(box, "location", 425, -2.6, 0, ease="EASE_IN", interp="SINE")
-K(orb, "location", 340, 0.1, 0)
+K(orb, "location", 340, -0.55, 0)
 K(orb, "location", 400, 0.55, 0, interp="SINE")
-K(orb, "location", 340, 1.15, 2)
+K(orb, "location", 340, 1.12, 2)
 K(orb, "location", 400, 1.55, 2, interp="SINE")
 K(goal, "location", 335, -0.9, 2)
 K(goal, "location", 385, 0.95, 2, ease="EASE_OUT", interp="BACK")
@@ -179,18 +182,18 @@ K(fg1, "location", 545, -2.2, 2, ease="EASE_IN", interp="SINE")
 K(coin, "location", 505, 2.05, 2, interp="SINE")
 K(coin, "location", 545, 4.2, 2, ease="EASE_IN", interp="SINE")
 
-# B6 (525-600): end card — orb rises to crown the stack
+# B6 (525-600): end card â€” orb rises to crown the stack
 K(orb, "location", 528, 0.0, 0)
 K(orb, "location", 528, 1.4, 2)
 K(orb, "location", 566, 0.0, 0, interp="SINE")
-K(orb, "location", 566, 1.95, 2, ease="EASE_IN_OUT", interp="SINE")
+K(orb, "location", 566, 1.8, 2, ease="EASE_IN_OUT", interp="SINE")
 for i in range(3):
     K(orb, "scale", 528, 1.12, i)
     K(orb, "scale", 566, 0.78, i, ease="EASE_IN_OUT", interp="SINE")
 L.fade(avatar, f_out=524)
 
 # ---------------- focus pulls ----------------
-FK = [(1, (-0.7, 1.0, 0.7)), (100, (0.0, 0.6, 1.1)), (205, (0.42, 1.35, 1.75)),
+FK = [(1, (-0.7, 1.0, 0.7)), (100, (-0.2, 0.6, 1.2)), (205, (0.15, 1.35, 1.95)),
       (350, (0.0, 0.85, 0.95)), (465, (0.0, 0.6, 1.4)), (540, (0.0, 0.6, 1.35))]
 for f, loc in FK:
     for i, v in enumerate(loc):
