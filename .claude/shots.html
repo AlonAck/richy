@@ -17,7 +17,8 @@
   USE:
     .claude/serve.ps1  ->  http://localhost:8899/.claude/shots.html
     Add ?screen=overview|activity|budgets|goals|advisor|notes to jump tabs.
-    Add &dark=1 for dark mode, &theme=purple|blue|classic to switch palette.
+    Add &dark=1 for dark mode, &theme=purple|blue|classic to switch palette,
+    &flow=journey to replay the sign-up journey.
     Add &device=67|55 to frame at App Store aspect ratios.
 
   On the Mac, capture the final PNGs from the iOS Simulator instead (exact
@@ -64,6 +65,9 @@
   <a href="?screen=overview&theme=purple&dark=1">violet</a>
   <a href="?screen=overview&theme=blue&dark=1">ocean</a>
   <a href="?screen=overview&theme=classic&dark=1">ember</a>
+  <b>| flow:</b>
+  <a href="?flow=app&dark=1">app</a>
+  <a href="?flow=journey&dark=1">journey</a>
   <b>| frame:</b>
   <a href="?screen=overview&device=67">6.7"</a>
   <a href="?screen=overview&device=55">5.5"</a>
@@ -80,6 +84,9 @@ var DARK = Q.get("dark") === "1";
 // Theme id (purple | blue | classic). Each palette now carries its own dark
 // variant, so light and dark have to be checked per theme, not just once.
 var THEME = Q.get("theme") || "blue";
+// &flow=journey replays the sign-up journey instead of the signed-in app, so
+// the onboarding/wizard screens can be reviewed like any other screen.
+var FLOW = Q.get("flow") || "app";
 var DEVICE = Q.get("device") || "67";
 var LANG = Q.get("lang") || "en";
 var CHAT_MODE = Q.get("chat") || "empty";
@@ -170,7 +177,7 @@ var DEMO = {
   currency: "$",
   theme: THEME,
   darkMode: DARK,
-  onboardingDone: true,
+  onboardingDone: FLOW !== "journey",
   tx: TX,
   categories: CATS,
   folders: FOLDERS,
