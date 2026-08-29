@@ -1,4 +1,4 @@
-﻿# Ad 2 â€” "Run the Whole Thing" (20s, 600 frames) â€” v3 look: tight 70mm macro.
+# Ad 2 — "Run the Whole Thing" (20s, 600 frames) — v3 look: tight 70mm macro.
 # Run:  blender -b --factory-startup -P ad2_business.py -- [stills|anim] [out_dir]
 import sys
 import os

@@ -1,4 +1,4 @@
-﻿# Ad 1 â€” "The Intercept" (20s, 600 frames) â€” v3 look: tight 70mm macro,
+# Ad 1 — "The Intercept" (20s, 600 frames) — v3 look: tight 70mm macro,
 # sharp subject zone at f/5, saturated cobalt, filmic AgX-punchy grade.
 # Run:  blender -b --factory-startup -P ad1_intercept.py -- [stills|anim] [out_dir]
 import sys
@@ -41,7 +41,7 @@ cam.data.lens = 70
 L.key(cam, "location", 1, -5.5, 1, interp="SINE")
 L.key(cam, "location", 600, -4.7, 1, interp="SINE")
 
-# foreground bokeh occluders (no shadows) â€” exit before the end card
+# foreground bokeh occluders (no shadows) — exit before the end card
 fgm = L.mat_gloss("fg_white", L.WHITE, 0.15)
 bpy.ops.mesh.primitive_plane_add(size=1, location=(-1.35, -2.6, 0.25))
 fg1 = bpy.context.object
@@ -139,7 +139,7 @@ K(orb, "location", 330, -0.55, 0, interp="SINE")
 K(orb, "location", 212, 1.38, 2)
 K(orb, "location", 330, 1.12, 2, interp="SINE")
 
-# B4 (330-450): buy assembly + box exit; goal card rises; gold bar fills 61â†’68%
+# B4 (330-450): buy assembly + box exit; goal card rises; gold bar fills 61→68%
 K(flip, "location", 340, 0.05, 0)
 K(flip, "location", 340, 1.95, 2)
 K(flip, "location", 425, 1.4, 0, ease="EASE_IN", interp="SINE")
@@ -182,7 +182,7 @@ K(fg1, "location", 545, -2.2, 2, ease="EASE_IN", interp="SINE")
 K(coin, "location", 505, 2.05, 2, interp="SINE")
 K(coin, "location", 545, 4.2, 2, ease="EASE_IN", interp="SINE")
 
-# B6 (525-600): end card â€” orb rises to crown the stack
+# B6 (525-600): end card — orb rises to crown the stack
 K(orb, "location", 528, 0.0, 0)
 K(orb, "location", 528, 1.4, 2)
 K(orb, "location", 566, 0.0, 0, interp="SINE")
