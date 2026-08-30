@@ -18448,7 +18448,7 @@ function Advisor(props) {
       + "Match the user's words to the template: \"track my coffee\" is merchantSpend or a category, \"as a ring/circle/gauge\" is ring, \"a bar\" is bar, \"show me the biggest ones\" is list, \"over the last few months\" is trend, \"versus last month\" is compare. Pick a sensible icon and a short title yourself rather than asking. If they ask for something no metric covers, say plainly what you can follow instead and offer the closest one - never invent a metric name, and never promise a widget on any screen other than Overview, which is the only place they appear. "
       + "Use the EXACT category, folder, savings pot, goal, note-label and widget-title names given in the data below - never invent or guess a name. "
       + "If the user mentions several things at once, emit several tags. Only emit a tag for a concrete event, or a direct explicit request to change/create something, with real values the user actually stated - never for hypotheticals, plans, or general advice. Do not mention the word ACTION or the tag syntax in your spoken reply; just speak naturally and let the tags do the work."
-      + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a CFO who builds a business plan - send business owners there. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (Bank Sync files purchases from the payment notifications the user's own phone already receives - an automation they set up and control on their device, not a bank connection), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use."
+      + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a CFO who builds a business plan - send business owners there. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Richy ALSO has real WhatsApp alerts for Richard Watch (Profile -> Settings -> WhatsApp Alerts): the user links their number and texts START to Richy's WhatsApp number to turn it on, then gets the single most urgent Watch signal relayed there once a day - it only ever replies inside a chat the user opened, so if an alert seems missing, tell them to message Richy on WhatsApp to reopen today's window. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (Bank Sync files purchases from the payment notifications the user's own phone already receives - an automation they set up and control on their device, not a bank connection), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use."
       + " Close EVERY reply with exactly one short, specific follow-up question about their situation so the conversation keeps moving."
       + " ABOUT THE NOT-A-LICENSED-ADVISOR REMINDER: do NOT append it to every reply - on everyday budgeting talk it reads as nervous boilerplate and people stop reading it, which defeats its purpose. Include one short, natural version of it ONLY when leaving it out could actually cost them: anything touching investing, specific securities or assets, pensions and retirement accounts, insurance, taxes, loans, mortgages or refinancing, debt consolidation, big irreversible commitments, or any moment you are near the edge of what you can responsibly answer. In those cases say it in your own words as part of the answer, not as a disclaimer tacked on the end. For ordinary spending, saving, budgets, goals and affordability questions, skip it entirely - the app already shows a standing disclaimer on screen." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : "")
       + (isVoice ? " VOICE MODE: the user is talking to you by voice and your reply will be read aloud by text-to-speech. Keep it to 2-4 short conversational sentences of natural spoken language - no lists, no markdown, no asterisks, no symbols that read badly aloud. Numbers still matter: quote the one or two key figures, never a table. When the reminder rule above says a topic needs the not-a-licensed-advisor caveat, it still applies in voice and counts inside the sentence budget - never drop it for brevity on those topics. Action tags still work exactly as described - append them at the very end as usual." : ""),
@@ -30485,6 +30485,7 @@ function PlanView(props) {
       + "Richy CAN import a CSV statement: the Activity tab has an import button that reads a bank or card CSV export entirely on-device (it maps columns, handles separate money-in/money-out columns, auto-categorizes from the user's history, and skips duplicates). If someone is tired of manual entry, point them there. "
       + "Richy HAS a Debts tracker (Profile -> Debts): the user logs each debt's balance, rate, and minimum, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date. Point anyone paying off debt there, and answer 'what first' with their actual numbers. "
       + "Richy HAS a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): clearly labeled a DEMO, it fills the account with realistic sample transactions to preview the experience, but it is NOT a real connection to the user's actual Bank Leumi account - that needs Bank Leumi to certify Richy as a licensed Open Banking provider first, which hasn't happened. Be direct about this if asked whether it's real. "
+      + "Richy HAS real WhatsApp alerts for Richard Watch (Profile -> Settings -> WhatsApp Alerts): the user links their number and texts START to Richy's WhatsApp to turn it on, then Richard relays the single most urgent Watch signal there once a day. It only ever replies inside a chat the user opened - if they ask why an alert didn't arrive, tell them to send Richy any WhatsApp message to reopen today's window. "
       + "Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (Bank Sync files purchases from the payment notifications the user's own phone already receives - an automation they set up and control on their device, not a bank connection), no fully shared couples ledger yet. If asked about these, acknowledge the gap and offer the best workaround available inside Richy. "
       + "Be concise and direct — keep it short unless the user asks for more depth." + RICHARD_FORMAT + " The only bracketed syntax you may use is the action tag described next. "
       + "If you want to suggest a specific concrete change to the user's app, append exactly one action tag at the very end of your reply: "
@@ -31490,6 +31491,91 @@ function Profile(props) {
   );
 }
 
+// WhatsApp delivery for Richard Watch's proactive alerts. Deliberately not a
+// "push notification" toggle: because WhatsApp only lets a business send for
+// free inside the 24h window opened by the user's own message, this screen is
+// honest that alerts land only after you've texted the number - see
+// WHATSAPP_SETUP.md for why that's the one design that can never bill anyone.
+function WhatsAppAlertsView(props) {
+  var wa = props.whatsapp;
+  var _phone = useState(""); var phone = _phone[0]; var setPhone = _phone[1];
+  var _busy = useState(false); var busy = _busy[0]; var setBusy = _busy[1];
+  var _err = useState(""); var err = _err[0]; var setErr = _err[1];
+  var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", padding: "18px 4px 8px", fontFamily: UI };
+
+  function handleLink() {
+    if (busy || !phone.trim()) return;
+    setBusy(true); setErr("");
+    Promise.resolve(props.onLink(phone.trim())).then(function() { setBusy(false); setPhone(""); })
+      .catch(function(e) { setErr((e && e.message) || "Couldn't save that number. Check it and try again."); setBusy(false); });
+  }
+  function handleUnlink() {
+    if (!window.confirm("Turn off WhatsApp alerts? Your linked number will be removed.")) return;
+    setBusy(true); setErr("");
+    Promise.resolve(props.onUnlink()).then(function() { setBusy(false); })
+      .catch(function(e) { setErr((e && e.message) || "Couldn't turn this off. Try again."); setBusy(false); });
+  }
+
+  var linked = !!(wa && wa.linked);
+  var status = wa ? wa.status : "not_linked";
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+      <div style={secLabel}>Richard Watch on WhatsApp</div>
+      <Card style={{ padding: "22px 20px", marginBottom: 4 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
+          <div style={{ width: 42, height: 42, borderRadius: 13, background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <SVGIcon id="phone" size={20} color={T.green} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>WhatsApp alerts</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.45 }}>Get Richard's most urgent Watch signal on WhatsApp - a budget about to blow, a goal falling behind - free, because it only ever replies inside a conversation you started.</div>
+          </div>
+        </div>
+
+        {!linked && (
+          <div>
+            <input value={phone} onChange={function(e) { setPhone(e.target.value); }} placeholder="+972501234567" inputMode="tel"
+              style={{ width: "100%", boxSizing: "border-box", background: T.bg, border: "1.5px solid " + T.sep, borderRadius: 12, padding: "12px 14px", fontSize: 15, fontFamily: UI, color: T.ink, marginBottom: 10 }} />
+            <button onClick={handleLink} disabled={busy || !phone.trim()}
+              style={{ width: "100%", background: T.btn, color: "#fff", border: "none", borderRadius: 14, padding: "13px 0", fontSize: 14.5, fontFamily: UI, fontWeight: 600, cursor: "pointer", opacity: busy || !phone.trim() ? 0.6 : 1, boxSizing: "border-box" }}>
+              {busy ? "Saving..." : "Save number"}
+            </button>
+          </div>
+        )}
+
+        {linked && status === "pending" && (
+          <div style={{ fontSize: 13.5, color: T.ink, lineHeight: 1.55 }}>
+            Almost there - send <b>START</b> to Richy's WhatsApp number from {wa.phone} to turn alerts on. Nothing is sent to you until you do.
+          </div>
+        )}
+        {linked && status === "active" && (
+          <div style={{ fontSize: 13.5, color: T.ink, lineHeight: 1.55 }}>
+            Alerts are on for {wa.phone}. {wa.windowOpen ? "Richard can message you right now." : "Send Richy any message on WhatsApp to open today's alert window."}
+          </div>
+        )}
+        {linked && status === "revoked" && (
+          <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55 }}>
+            {wa.phone} opted out (replied STOP). Send START again from that number to turn alerts back on.
+          </div>
+        )}
+        {err && <div style={{ fontSize: 12.5, color: T.red, lineHeight: 1.5, marginTop: 10, fontFamily: UI }}>{err}</div>}
+      </Card>
+
+      {linked && (
+        <button onClick={handleUnlink} disabled={busy}
+          style={{ width: "100%", background: "rgba(224,48,48,0.08)", color: T.red, border: "1px solid rgba(224,48,48,0.14)", borderRadius: 16, padding: "14px 0", fontSize: 15, fontFamily: UI, fontWeight: 600, cursor: "pointer", opacity: busy ? 0.6 : 1, boxSizing: "border-box", marginTop: 8 }}>
+          {busy ? "Removing..." : "Remove this number"}
+        </button>
+      )}
+      <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, padding: "10px 6px 4px" }}>
+        Richy only ever replies inside a conversation you opened - it never sends you a message you didn't ask for by texting first, so this can never rack up a WhatsApp charge on either side. At most a few alerts a day.
+      </div>
+    </div>
+  );
+}
+
 // Everything that configures the app, moved off Profile and behind the gear.
 // Nothing was dropped in the move: every row that used to be on Profile is
 // either here or in the Manage group on the new Profile.
@@ -31504,7 +31590,8 @@ function SettingsView(props) {
 
       <ProfileSection icon="spark" title="AI & Richard" bg={T.goldDim} color={T.gold} glow={T.goldGlow}>
         <ProfileRow icon="spark" iconBg={T.goldDim} iconColor={T.gold} label="Your Plan" onClick={props.onViewPlan} />
-        <ProfileRow icon="note" iconBg={T.goldDim} iconColor={T.gold} label="Richard's Instructions" value={props.richardInstructions ? "Custom" : "Default"} onClick={props.onViewInstructions} last />
+        <ProfileRow icon="note" iconBg={T.goldDim} iconColor={T.gold} label="Richard's Instructions" value={props.richardInstructions ? "Custom" : "Default"} onClick={props.onViewInstructions} />
+        <ProfileRow icon="phone" iconBg={T.goldDim} iconColor={T.gold} label="WhatsApp Alerts" value={props.whatsapp && props.whatsapp.status === "active" ? "On" : "Off"} onClick={props.onViewWhatsApp} last />
       </ProfileSection>
 
       <ProfileSection icon="coins" title="Money" bg={T.greenDim} color={T.green} glow={T.greenGlow}>
@@ -32210,6 +32297,13 @@ export default function App() {
   // the server (see leumiFinteka/{uid} there). null until first connected.
   var _lft = useState(null);
   var leumiFinteka = _lft[0]; var setLeumiFinteka = _lft[1];
+  // WhatsApp delivery for Richard Watch alerts: { linked, status, phone (masked),
+  // windowOpen, lastInboundAt, lastAlertAt }. Always the live, safe status from
+  // api/whatsapp.js?action=status - never persisted into the blob, since the
+  // phone number and opt-in state are server-owned (whatsappOptIn/{uid}), same
+  // reasoning as leumiFinteka's tokens. null until first fetched.
+  var _wap = useState(null);
+  var whatsapp = _wap[0]; var setWhatsapp = _wap[1];
   // Custom banners Richard can create from Advisor chat (e.g. "put a banner up
   // saying rent is due Friday"). Structured widgets only - text/tone/icon, never
   // raw markup - rendered by CustomBanners under the header on every tab.
@@ -33053,6 +33147,61 @@ export default function App() {
     });
   }
 
+  // ---- WhatsApp alerts for Richard Watch --------------------------------------
+  // A real integration (unlike the Leumi demo above) - api/whatsapp.js only ever
+  // sends a free-form reply inside the 24h window opened by the user texting
+  // the business number first, so there's no path here that can incur a WhatsApp
+  // charge. Every call carries the user's own Firebase ID token; the server is
+  // the source of truth, so state here is always just its last response.
+  function whatsappApiUrl() {
+    return (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "data:" || location.protocol === "file:") ? "https://richy-mgkl.vercel.app/api/whatsapp" : "/api/whatsapp";
+  }
+  function whatsappFetch(qs, opts) {
+    return CLOUD.getIdToken().then(function(token) {
+      if (!token) throw new Error("Your session expired. Sign out and back in, then try again.");
+      var headers = { Authorization: "Bearer " + token };
+      if (opts && opts.body) headers["Content-Type"] = "application/json";
+      return fetch(whatsappApiUrl() + qs, { method: (opts && opts.method) || "GET", headers: headers, body: opts && opts.body });
+    }).then(function(r) {
+      return r.json().catch(function() { return {}; }).then(function(j) {
+        if (!r.ok || !j.ok) throw new Error((j.error && j.error.message) || "Something went wrong. Try again.");
+        return j;
+      });
+    });
+  }
+  function refreshWhatsapp() {
+    return whatsappFetch("?action=status").then(function(j) { setWhatsapp(j); return j; });
+  }
+  function onLinkWhatsapp(phone) {
+    return whatsappFetch("?action=link", { method: "POST", body: JSON.stringify({ phone: phone }) })
+      .then(function(j) { setWhatsapp(j); return j; });
+  }
+  function onUnlinkWhatsapp() {
+    return whatsappFetch("?action=unlink", { method: "POST" })
+      .then(function(j) { setWhatsapp(j); return j; });
+  }
+  // A ref (not state) since this only guards a fire-and-forget background call,
+  // not anything rendered - avoids re-running the effect below on every render.
+  var waAlertSentDateRef = useRef("");
+  useEffect(function() {
+    if (!whatsapp || whatsapp.status !== "active" || !whatsapp.windowOpen) return;
+    var todayKey = new Date().toISOString().slice(0, 10);
+    if (waAlertSentDateRef.current === todayKey) return;
+    var watch = richardWatch({ tx: tx, categories: categories, budgets: budgets, goals: goals, savings: savings, businesses: businesses, investing: investing, foundMoney: foundMoney });
+    var top = watch.risks.length ? watch.risks[0] : (watch.leaks.length ? watch.leaks[0] : null);
+    if (!top || top.severity < 50) return;
+    waAlertSentDateRef.current = todayKey;
+    whatsappFetch("?action=send-alert", { method: "POST", body: JSON.stringify({ id: top.id, title: top.title, subtitle: top.subtitle, severity: top.severity }) })
+      .then(function(j) { if (j && j.sent) refreshWhatsapp(); })
+      .catch(function() {});
+  }, [whatsapp, tx, budgets, goals]);
+  // Fetch the live status only when the settings screen for it is open -
+  // there's no reason to hit the server on every app load for a screen most
+  // sessions never visit.
+  useEffect(function() {
+    if (tab === "whatsapp") refreshWhatsapp().catch(function() {});
+  }, [tab]);
+
   function onSaveInstructions(text) { setRichardInstructions(text); save({ richardInstructions: text }); }
 
   // What Richard sees as user-provided context: the editable custom instructions
@@ -33480,7 +33629,7 @@ export default function App() {
             </button>
           </div>
           <span style={{ flex: 1, minWidth: 0, fontSize: 18, fontWeight: currentTab === "advisor" ? RICHARD_DISP_WEIGHT : DISP_WEIGHT, fontFamily: currentTab === "advisor" ? RICHARD_DISP : DISP, color: T.ink, textAlign: "center", letterSpacing: "-0.02em", lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "periodMode" ? "Date Range" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "badges" ? "Badges" : currentTab === "settings" ? "Settings" : currentTab === "person" ? personName : currentTab === "social" ? "Friends" : currentTab === "findPeople" ? "Find people" : currentTab === "analysis" ? "Full Analysis" : currentTab === "investPlan" ? "Your investing plan" : currentTab === "investorOnboard" ? "Investing basics" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
+            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "periodMode" ? "Date Range" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "whatsapp" ? "WhatsApp Alerts" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "badges" ? "Badges" : currentTab === "settings" ? "Settings" : currentTab === "person" ? personName : currentTab === "social" ? "Friends" : currentTab === "findPeople" ? "Find people" : currentTab === "analysis" ? "Full Analysis" : currentTab === "investPlan" ? "Your investing plan" : currentTab === "investorOnboard" ? "Investing basics" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
           <div style={{ width: 122, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
             <HeaderShortcutBar current={currentTab} items={[
@@ -33577,7 +33726,7 @@ export default function App() {
         {currentTab === "person" && <FriendView uid={openPerson} person={social.following.concat(social.followers).filter(function(p) { return p.uid === openPerson; })[0] || null} stats={(social.following.filter(function(p) { return p.uid === openPerson; })[0] || {}).stats || null} household={household} myUid={accountKey} tx={tx} categories={categories} onBack={function() { setTab(prevTabRef.current === "social" ? "social" : "profile"); }} />}
         {currentTab === "social" && <SocialView social={social} onOpen={function(uid) { prevTabRef.current = "social"; setOpenPerson(uid); setTab("person"); }} onFind={function() { prevTabRef.current = "social"; setTab("findPeople"); }} onAccept={onAcceptFollow} onDecline={onDeclineFollow} onRemoveFollower={onRemoveFollower} onBack={function() { setTab("profile"); }} />}
         {currentTab === "findPeople" && <FindPeopleView myHandle={social.handle} myUid={accountKey} followingUids={social.following.map(function(p) { return p.uid; })} onClaimHandle={onClaimHandle} onFind={CLOUD.findByHandle} onRequest={onRequestFollow} onCopy={copyText} onBack={function() { setTab("social"); }} />}
-        {currentTab === "settings" && <SettingsView user={user} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} richardInstructions={richardInstructions} bankSync={bankSync} householdName={household ? household.name : null} inviteCount={invites.length} debtCount={debts.length} onBack={function() { setTab("profile"); }} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "settings"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "settings"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "settings"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "settings"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "settings"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "settings"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "settings"; setTab("periodMode"); }} onViewBankSync={function() { prevTabRef.current = "settings"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "settings"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "settings"; setTab("editOpeningBalance"); }} onViewCollab={function() { prevTabRef.current = "settings"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "settings"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
+        {currentTab === "settings" && <SettingsView user={user} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} richardInstructions={richardInstructions} bankSync={bankSync} whatsapp={whatsapp} householdName={household ? household.name : null} inviteCount={invites.length} debtCount={debts.length} onBack={function() { setTab("profile"); }} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "settings"; setTab("instructions"); }} onViewWhatsApp={function() { prevTabRef.current = "settings"; setTab("whatsapp"); }} onViewCurrency={function() { prevTabRef.current = "settings"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "settings"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "settings"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "settings"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "settings"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "settings"; setTab("periodMode"); }} onViewBankSync={function() { prevTabRef.current = "settings"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "settings"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "settings"; setTab("editOpeningBalance"); }} onViewCollab={function() { prevTabRef.current = "settings"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "settings"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
         {currentTab === "analysis" && <FullAnalysisView tx={tx} categories={categories} folders={folders} splitPlan={splitPlan} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} username={user} analysis={freshAnalysis ? freshAnalysis.data : null} lang={lang} richardInstructions={richardCtx} onBack={function() { setTab("advisor"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} onAccountDeleted={handleLogout} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
@@ -33590,6 +33739,7 @@ export default function App() {
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "periodMode" && <PeriodModeView periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onPeriodModeChange={onSavePeriodMode} onPeriodCustomChange={onSavePeriodCustom} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "bankSync" && <BankSyncView bankSync={bankSync} onEnable={onEnableBankSync} onDisable={onDisableBankSync} leumiFinteka={leumiFinteka} onConnectLeumi={onConnectLeumiFinteka} onDisconnectLeumi={onDisconnectLeumiFinteka} onSyncLeumiNow={onSyncLeumiFintekaNow} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "whatsapp" && <WhatsAppAlertsView whatsapp={whatsapp} onLink={onLinkWhatsapp} onUnlink={onUnlinkWhatsapp} onBack={function() { setTab(prevTabRef.current || "settings"); }} />}
         {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenInvestorOnboard={function() { prevTabRef.current = "savings"; setPendingInvestingStart(true); setTab("investorOnboard"); }} />}
         {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Overview" : "Savings"} onBack={exitBusiness} />}
         {currentTab === "investing" && <InvestingView investing={investing} tx={tx} goals={goals} openInvId={openInv} hubTab={investingHubTab} onHubTabChange={setInvestingHubTab} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} onOpenInvestorOnboard={function() { prevTabRef.current = "investing"; setTab("investorOnboard"); }} onOpenScout={function() { prevTabRef.current = "investing"; setTab("scout"); }} onOpenPlanOnboard={function(acctId) { prevTabRef.current = "investing"; setOpenInv(acctId || null); setTab("investPlan"); }} backLabel={prevTabRef.current === "overview" ? "Overview" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
