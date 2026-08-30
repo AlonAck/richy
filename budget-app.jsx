@@ -4768,10 +4768,10 @@ function ensureJourneyCss() {
     "@keyframes rcjFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}",
     "@keyframes rcjDrift{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(18px,-14px) scale(1.06)}}",
     "@keyframes rcjDrift2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-14px,10px) scale(1.08)}}",
-    // Glow color is baked purple: keyframes can't read the runtime theme. New
-    // signups always run the default purple theme; on themed retakes the glow
-    // reads slightly off-accent, which is cosmetic.
-    "@keyframes rcjPulseGlow{0%,100%{box-shadow:0 6px 20px rgba(137,112,198,0.30)}50%{box-shadow:0 6px 32px rgba(137,112,198,0.55)}}",
+    // Glow color follows the live theme via --jr-pulse-glow (set inline by
+    // JrBtn from T.orangeGlow), and the swing is a small blur change at one
+    // steady alpha rather than a color/intensity pulse - calmer to watch.
+    "@keyframes rcjPulseGlow{0%,100%{box-shadow:0 6px 18px var(--jr-pulse-glow, rgba(137,112,198,0.30))}50%{box-shadow:0 6px 24px var(--jr-pulse-glow, rgba(137,112,198,0.30))}}",
     "@keyframes rcjCheckPop{0%{transform:scale(0.4);opacity:0}60%{transform:scale(1.15);opacity:1}100%{transform:scale(1);opacity:1}}",
     "@keyframes rcjToastIn{from{opacity:0;transform:translate(-50%,14px)}to{opacity:1;transform:translate(-50%,0)}}",
     "@keyframes rcjShimmerSoft{0%{transform:translateX(-160%) skewX(-14deg)}55%{transform:translateX(320%) skewX(-14deg)}100%{transform:translateX(320%) skewX(-14deg)}}",
@@ -5002,15 +5002,16 @@ function JrBtn(props) {
       onPointerUp={function() { setPressed(false); }}
       onPointerLeave={function() { setPressed(false); }}
       style={Object.assign({
-        width: "100%", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, letterSpacing: "-0.01em",
+        width: "100%", border: "none", borderRadius: 999, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, letterSpacing: "-0.01em",
         background: props.disabled ? J.fill3 : props.ghost ? "none" : T.btn,
         color: props.disabled ? J.ink3 : props.ghost ? J.ink2 : "#fff",
         cursor: off ? "default" : "pointer",
-        boxShadow: props.disabled || props.ghost ? "none" : "0 6px 20px " + T.orangeGlow + ", 0 2px 6px rgba(0,0,0,0.1)",
-        transform: pressed ? "scale(0.97)" : "scale(1)",
+        boxShadow: props.disabled || props.ghost ? "none" : "0 6px 20px " + T.orangeGlow + ", 0 2px 6px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.3)",
+        transform: pressed ? "scale(0.985)" : "scale(1)",
         transition: "transform 0.12s ease, background 0.35s ease, box-shadow 0.35s ease, color 0.35s ease",
         boxSizing: "border-box",
-        animation: props.pulse && !off ? "rcjPulseGlow 2.2s ease-in-out infinite" : "none"
+        "--jr-pulse-glow": T.orangeGlow,
+        animation: props.pulse && !off ? "rcjPulseGlow 3.2s ease-in-out infinite" : "none"
       }, props.style)}>
       {props.busy
         ? <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>{props.busyLabel || "Please wait"}<ThinkingDots size={4.5} color="rgba(255,255,255,0.9)" /></span>
@@ -5039,9 +5040,9 @@ function JrChip(props) {
         border: "1.5px solid " + (sel ? "transparent" : J.line),
         background: sel ? T.btn : J.panel,
         color: sel ? "#fff" : J.ink2,
-        boxShadow: sel ? "0 7px 18px " + T.orangeGlow + ", 0 2px 5px rgba(0,0,0,0.08)" : "0 2px 8px rgba(0,0,0,0.05)",
+        boxShadow: sel ? "0 7px 18px " + T.orangeGlow + ", 0 2px 5px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.3)" : "0 2px 8px rgba(0,0,0,0.05)",
         cursor: "pointer", fontFamily: UI, boxSizing: "border-box",
-        transform: pressed ? "scale(0.93)" : "scale(1)",
+        transform: pressed ? "scale(0.97)" : "scale(1)",
         transition: "transform 0.12s ease, background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
         animation: props.delay != null ? "rcjChipIn 0.42s cubic-bezier(0.34,1.56,0.64,1) " + props.delay.toFixed(2) + "s both" : "none",
       }, props.style)}>
@@ -5069,7 +5070,7 @@ function JrIconBtn(props) {
       onPointerDown={function() { setPressed(true); }}
       onPointerUp={function() { setPressed(false); }}
       onPointerLeave={function() { setPressed(false); }}
-      style={{ width: props.size || 34, height: props.size || 34, borderRadius: "50%", border: "1.5px solid " + J.line, background: J.card, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", padding: 0, flexShrink: 0, boxSizing: "border-box", transform: pressed ? "scale(0.86)" : "scale(1)", transition: "transform 0.13s ease" }}>
+      style={{ width: props.size || 34, height: props.size || 34, borderRadius: "50%", border: "1.5px solid " + J.line, background: J.card, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", padding: 0, flexShrink: 0, boxSizing: "border-box", transform: pressed ? "scale(0.93)" : "scale(1)", transition: "transform 0.13s ease" }}>
       <span style={{ transform: "rotate(" + (props.rotate || 0) + "deg)", display: "flex" }}>
         <SVGIcon id={props.icon || "chevron"} size={16} color={J.ink2} />
       </span>
@@ -5086,7 +5087,7 @@ function JrStepBtn(props) {
       onPointerDown={function() { setPressed(true); }}
       onPointerUp={function() { setPressed(false); }}
       onPointerLeave={function() { setPressed(false); }}
-      style={{ width: 46, height: 46, borderRadius: "50%", border: "1.5px solid " + (pressed ? T.orange : J.line), background: pressed ? T.orangeDim : J.card, color: pressed ? T.orange : J.ink2, fontSize: 22, fontWeight: 600, cursor: "pointer", boxShadow: pressed ? "0 2px 14px " + T.orangeGlow : "0 2px 10px rgba(0,0,0,0.06)", fontFamily: UI, boxSizing: "border-box", flexShrink: 0, lineHeight: 1, transform: pressed ? "scale(0.9)" : "scale(1)", transition: "transform 0.12s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease" }}>
+      style={{ width: 46, height: 46, borderRadius: "50%", border: "1.5px solid " + (pressed ? T.orange : J.line), background: pressed ? T.orangeDim : J.card, color: pressed ? T.orange : J.ink2, fontSize: 22, fontWeight: 600, cursor: "pointer", boxShadow: pressed ? "0 2px 14px " + T.orangeGlow : "0 2px 10px rgba(0,0,0,0.06)", fontFamily: UI, boxSizing: "border-box", flexShrink: 0, lineHeight: 1, transform: pressed ? "scale(0.95)" : "scale(1)", transition: "transform 0.12s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease" }}>
       {props.label}
     </button>
   );
@@ -6200,12 +6201,14 @@ function BigBtn(props) {
         background: props.disabled ? T.fill3 : (props.color || T.btn),
         color: props.disabled ? T.ink3 : "#fff",
         textShadow: props.disabled ? "none" : "0 1px 2px rgba(42,31,77,0.35)",
-        border: "none", borderRadius: 14, padding: "13px 0",
+        border: "none", borderRadius: 999, padding: "13px 0",
         fontSize: 16, fontFamily: UI, fontWeight: 700,
         cursor: props.disabled ? "default" : "pointer",
         marginTop: 10,
-        boxShadow: props.disabled ? "none" : (pressed ? "0 2px 8px " + T.orangeGlow : "0 4px 14px " + T.orangeGlow),
-        transform: pressed ? "scale(0.975)" : "scale(1)",
+        boxShadow: props.disabled ? "none" : (pressed
+          ? "0 2px 8px " + T.orangeGlow + ", inset 0 1px 0 rgba(255,255,255,0.3)"
+          : "0 4px 14px " + T.orangeGlow + ", inset 0 1px 0 rgba(255,255,255,0.35)"),
+        transform: pressed ? "scale(0.99)" : "scale(1)",
         transition: PRESS_T,
       }}>
       {props.label}
@@ -13333,7 +13336,7 @@ function Activity(props) {
           <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 4 }}>{tr("noTransactions")}</div>
           <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 18 }}>{importPrimary ? "Import a CSV statement to fill in your transactions, or add them by hand." : tr("noTransactionsSub")}</div>
           <button onClick={function() { if (importPrimary) setImportOpen(true); else props.setSheetOpen(true); }}
-            style={{ background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 13, padding: "12px 22px", fontSize: 14, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px " + T.orangeGlow }}>
+            style={{ background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 999, padding: "12px 22px", fontSize: 14, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px " + T.orangeGlow }}>
             {importPrimary ? "Import from CSV" : "Add your first transaction"}
           </button>
           <button onClick={function() { if (importPrimary) props.setSheetOpen(true); else setImportOpen(true); }}
@@ -15766,7 +15769,7 @@ function Trips(props) {
       <div>
         {backRow(tr("goals"), props.onBack)}
         <button onClick={startWizard}
-          style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 16, padding: "15px 0", marginBottom: 18, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", fontSize: 16, fontWeight: 700, fontFamily: UI, boxShadow: "0 6px 18px " + T.orangeGlow }}>
+          style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 999, padding: "15px 0", marginBottom: 18, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", fontSize: 16, fontWeight: 700, fontFamily: UI, boxShadow: "0 6px 18px " + T.orangeGlow }}>
           {"+ " + tr("planNewTrip")}
         </button>
         {activeTrips.length === 0 ? (
@@ -16732,7 +16735,7 @@ function BigDecisions(props) {
           })}
         </div>
 
-        <button onClick={function() { ask(); }} disabled={loading || !q.trim()} style={{ width: "100%", marginTop: 12, background: (loading || !q.trim()) ? T.fill3 : T.btn, color: (loading || !q.trim()) ? T.ink3 : "#fff", border: "none", borderRadius: 14, padding: "14px 0", fontSize: 15.5, fontFamily: UI, fontWeight: 700, cursor: (loading || !q.trim()) ? "default" : "pointer", boxShadow: (loading || !q.trim()) ? "none" : "0 6px 20px " + T.orangeGlow }}>
+        <button onClick={function() { ask(); }} disabled={loading || !q.trim()} style={{ width: "100%", marginTop: 12, background: (loading || !q.trim()) ? T.fill3 : T.btn, color: (loading || !q.trim()) ? T.ink3 : "#fff", border: "none", borderRadius: 999, padding: "14px 0", fontSize: 15.5, fontFamily: UI, fontWeight: 700, cursor: (loading || !q.trim()) ? "default" : "pointer", boxShadow: (loading || !q.trim()) ? "none" : "0 6px 20px " + T.orangeGlow }}>
           {loading
             ? <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>Richard is weighing it<ThinkingDots size={4} color={T.ink3} /></span>
             : "Get Richard's verdict"}
@@ -19147,7 +19150,7 @@ function Advisor(props) {
           <div style={{ fontSize: 14, color: T.red, marginBottom: 6 }}>{tr("analysisFailed")}</div>
           {errMsg && <div style={{ fontSize: 12, color: T.ink3, marginBottom: 14, background: T.fill1, borderRadius: 8, padding: "8px 12px", textAlign: "left" }}>{errMsg}</div>}
           <button onClick={function() { setAdvice(null); setErrMsg(""); if (props.onSaveAnalysis) props.onSaveAnalysis(null); }}
-            style={{ background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 12, padding: "12px 24px", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
+            style={{ background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 999, padding: "12px 24px", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
             {tr("tryAgain")}
           </button>
         </Card>
@@ -19357,11 +19360,11 @@ function Advisor(props) {
                   setChat(function(p) { return p.concat([{ role: "assistant", text: msg }]); });
                   setPendingUpdates(null);
                 }}
-                  style={{ flex: 1, background: hasDelete ? T.red : T.btn, color: "#fff", textShadow: hasDelete ? "none" : "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 10, padding: "9px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                  style={{ flex: 1, background: hasDelete ? T.red : T.btn, color: "#fff", textShadow: hasDelete ? "none" : "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 999, padding: "9px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                   {hasDelete ? "Yes, delete" : "Apply" + (pendingUpdates.length > 1 ? " all" : "")}
                 </button>
                 <button onClick={function() { setPendingUpdates(null); }}
-                  style={{ flex: 1, background: T.fill3, color: T.ink2, border: "none", borderRadius: 10, padding: "9px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                  style={{ flex: 1, background: T.fill3, color: T.ink2, border: "none", borderRadius: 999, padding: "9px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                   Not now
                 </button>
               </div>
@@ -19405,11 +19408,11 @@ function Advisor(props) {
                 }
                 setPendingAction(null);
               }}
-                style={{ flex: 1, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 10, padding: "8px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                style={{ flex: 1, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 999, padding: "8px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                 {tr("yesDo")}
               </button>
               <button onClick={function() { setPendingAction(null); }}
-                style={{ flex: 1, background: T.fill3, color: T.ink2, border: "none", borderRadius: 10, padding: "8px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                style={{ flex: 1, background: T.fill3, color: T.ink2, border: "none", borderRadius: 999, padding: "8px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                 {tr("notNow")}
               </button>
             </div>
@@ -21522,7 +21525,7 @@ function DebtView(props) {
           <div style={{ fontSize: 16, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 5 }}>No debts tracked</div>
           <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 18 }}>Add a card, loan, or overdraft with its balance and interest rate, and I'll show you the fastest way out.</div>
           <button onClick={openAdd}
-            style={{ background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 13, padding: "12px 22px", fontSize: 14, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px " + T.orangeGlow }}>
+            style={{ background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 999, padding: "12px 22px", fontSize: 14, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px " + T.orangeGlow }}>
             Add your first debt
           </button>
         </Card>
@@ -22347,12 +22350,12 @@ function SavingsView(props) {
             </button>
             <div style={{ display: "flex", gap: 8, padding: "0 16px 14px", alignItems: "center" }}>
               <button onClick={function() { openAction(a.id, "add"); }}
-                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 11, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow }}>{tr("addMoney")}</button>
+                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 999, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow }}>{tr("addMoney")}</button>
               <button onClick={function() { openAction(a.id, "withdraw"); }} disabled={bal <= 0}
-                style={{ flex: 1, border: "1.5px solid " + (bal <= 0 ? T.hairline : T.orange), cursor: bal <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 11, background: "none", color: bal <= 0 ? T.ink3 : T.orange }}>{tr("withdraw")}</button>
+                style={{ flex: 1, border: "1.5px solid " + (bal <= 0 ? T.hairline : T.orange), cursor: bal <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 999, background: "none", color: bal <= 0 ? T.ink3 : T.orange }}>{tr("withdraw")}</button>
               <button onClick={function() { if (open) { setExpanded(null); } else { setExpanded(a.id); setRenameVal(a.name); } }}
                 aria-label={open ? "Hide account details" : "Show account details"}
-                style={{ width: 42, flexShrink: 0, border: "none", cursor: "pointer", background: T.fill1, borderRadius: 11, padding: "10px 0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                style={{ width: 42, flexShrink: 0, border: "none", cursor: "pointer", background: T.fill1, borderRadius: "50%", padding: "10px 0", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <div style={{ transform: open ? "rotate(90deg)" : "none", transition: "transform 0.2s", display: "flex" }}><SVGIcon id="chevron" size={16} color={T.ink2} /></div>
               </button>
             </div>
@@ -23683,21 +23686,21 @@ function InvestingView(props) {
       {/* actions - the managed pair first, then the manual controls */}
       <div style={{ display: "flex", gap: 10, marginBottom: 9 }}>
         <button onClick={openPlanBuy}
-          style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 15, fontWeight: 800, padding: "13px 0", borderRadius: 14, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 4px 14px " + T.orangeGlow }}>
+          style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 15, fontWeight: 800, padding: "13px 0", borderRadius: 999, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 4px 14px " + T.orangeGlow }}>
           <SVGIcon id="plus" size={17} color="#fff" />{plan ? "Invest" : "Build my plan"}
         </button>
         <button onClick={function() { setSheet("auto"); }}
-          style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 15, fontWeight: 700, padding: "13px 0", borderRadius: 14, background: T.ink, color: "#fff", boxShadow: "0 4px 14px rgba(20,18,16,0.2)" }}>
+          style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 15, fontWeight: 700, padding: "13px 0", borderRadius: 999, background: T.ink, color: "#fff", boxShadow: "0 4px 14px rgba(20,18,16,0.2)" }}>
           <SVGIcon id="refresh" size={16} color="#fff" />Auto-invest
         </button>
       </div>
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         <button onClick={function() { openSheet("buy"); }}
-          style={{ flex: 1.4, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "11px 0", borderRadius: 13, background: "none", color: T.orange }}>Buy a stock</button>
+          style={{ flex: 1.4, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "11px 0", borderRadius: 999, background: "none", color: T.orange }}>Buy a stock</button>
         <button onClick={function() { openSheet("deposit"); }}
-          style={{ flex: 1, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "11px 0", borderRadius: 13, background: "none", color: T.orange }}>Deposit</button>
+          style={{ flex: 1, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "11px 0", borderRadius: 999, background: "none", color: T.orange }}>Deposit</button>
         <button onClick={function() { openSheet("withdraw"); }} disabled={cash <= 0}
-          style={{ flex: 1, border: "1.5px solid " + (cash <= 0 ? T.hairline : T.orange), cursor: cash <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "11px 0", borderRadius: 13, background: "none", color: cash <= 0 ? T.ink3 : T.orange }}>Withdraw</button>
+          style={{ flex: 1, border: "1.5px solid " + (cash <= 0 ? T.hairline : T.orange), cursor: cash <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "11px 0", borderRadius: 999, background: "none", color: cash <= 0 ? T.ink3 : T.orange }}>Withdraw</button>
       </div>
 
       {/* auto-invest cycle due - Richard never moves money on his own, so a due
@@ -23719,9 +23722,9 @@ function InvestingView(props) {
           </div>
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
             <button onClick={function() { saveAutoCfg({ lastRunAt: today }); }}
-              style={{ flex: 1, border: "1.5px solid " + T.hairline, background: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "10px 0", borderRadius: 11, color: T.ink2 }}>Skip this one</button>
+              style={{ flex: 1, border: "1.5px solid " + T.hairline, background: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "10px 0", borderRadius: 999, color: T.ink2 }}>Skip this one</button>
             <button onClick={!plan ? function() { if (props.onOpenPlanOnboard) props.onOpenPlanOnboard(acct.id); } : cash > 0 ? runAutoCycle : function() { openSheet("deposit"); }}
-              style={{ flex: 1.4, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 800, padding: "10px 0", borderRadius: 11, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow }}>{!plan ? "Build my plan" : cash > 0 ? "Invest " + dollars(Math.min(autoCfg.amount, cash)) : "Deposit first"}</button>
+              style={{ flex: 1.4, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 800, padding: "10px 0", borderRadius: 999, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow }}>{!plan ? "Build my plan" : cash > 0 ? "Invest " + dollars(Math.min(autoCfg.amount, cash)) : "Deposit first"}</button>
           </div>
         </Card>
       )}
@@ -25220,10 +25223,10 @@ function StockView(props) {
             )}
             <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
               <button onClick={function() { if (props.onTrade) props.onTrade(symbol, "buy"); }}
-                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 800, padding: "11px 0", borderRadius: 12, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow }}>Buy more</button>
+                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 800, padding: "11px 0", borderRadius: 999, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow }}>Buy more</button>
               {heldNow && (
                 <button onClick={function() { if (props.onTrade) props.onTrade(symbol, "sell"); }}
-                  style={{ flex: 1, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "11px 0", borderRadius: 12, background: "none", color: T.orange }}>Sell</button>
+                  style={{ flex: 1, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "11px 0", borderRadius: 999, background: "none", color: T.orange }}>Sell</button>
               )}
             </div>
             {myTrades.length > 0 && (
@@ -25253,7 +25256,7 @@ function StockView(props) {
             <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Ready to open a position?</div>
           </div>
           <button onClick={function() { if (props.onTrade) props.onTrade(symbol, "buy"); }}
-            style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 800, padding: "11px 18px", borderRadius: 12, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow, flexShrink: 0 }}>Buy</button>
+            style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 800, padding: "11px 18px", borderRadius: 999, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow, flexShrink: 0 }}>Buy</button>
         </Card>
       )}
 
@@ -26270,7 +26273,7 @@ function StockScoutView(props) {
                     user who wants to act goes to the stock's own page and
                     decides there, as a separate deliberate step. */}
                 <button onClick={function() { if (props.onOpenStock) props.onOpenStock(acct.id, p.symbol); }}
-                  style={{ width: "100%", marginTop: 12, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "10px 0", borderRadius: 11, background: "none", color: T.orange, boxSizing: "border-box" }}>{"See " + p.symbol}</button>
+                  style={{ width: "100%", marginTop: 12, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "10px 0", borderRadius: 999, background: "none", color: T.orange, boxSizing: "border-box" }}>{"See " + p.symbol}</button>
               </Card>
             );
           })}
@@ -27075,7 +27078,7 @@ function BusinessView(props) {
           A Business Account walls off money for your venture, gives it its own budget categories, and puts Richard to work as your CFO - building a plan and keeping your spending on track.
         </div>
         <button onClick={startWizard}
-          style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 16, padding: "15px 0", marginBottom: 18, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", fontSize: 16, fontWeight: 700, fontFamily: UI, boxShadow: "0 6px 18px " + T.orangeGlow }}>
+          style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 999, padding: "15px 0", marginBottom: 18, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", fontSize: 16, fontWeight: 700, fontFamily: UI, boxShadow: "0 6px 18px " + T.orangeGlow }}>
           + New Business Account
         </button>
         {bizes.length === 0 ? (
@@ -27707,11 +27710,11 @@ function BusinessView(props) {
 
         <div style={{ display: "flex", gap: 8, marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.05s both" }}>
           <button onClick={function() { openAction(biz.id, "add"); }}
-            style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 12, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow }}>Add capital</button>
+            style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 999, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow }}>Add capital</button>
           <button onClick={function() { setRevFor(biz.id); setRevForm({ label: "", amount: "" }); }}
-            style={{ flex: 1, border: "1.5px solid " + T.green, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 12, background: "none", color: T.green }}>Record revenue</button>
+            style={{ flex: 1, border: "1.5px solid " + T.green, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 999, background: "none", color: T.green }}>Record revenue</button>
           <button onClick={function() { openAction(biz.id, "withdraw"); }} disabled={bal <= 0}
-            style={{ flex: 1, border: "1.5px solid " + (bal <= 0 ? T.hairline : T.orange), cursor: bal <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 12, background: "none", color: bal <= 0 ? T.ink3 : T.orange }}>Withdraw</button>
+            style={{ flex: 1, border: "1.5px solid " + (bal <= 0 ? T.hairline : T.orange), cursor: bal <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "12px 0", borderRadius: 999, background: "none", color: bal <= 0 ? T.ink3 : T.orange }}>Withdraw</button>
         </div>
 
         {(function() {
@@ -27809,22 +27812,22 @@ function BusinessView(props) {
                         <div style={{ fontSize: 12.5, color: T.ink, marginTop: 2, lineHeight: 1.4 }}>{latest.taskSuggestion.label}</div>
                       </div>
                       <button onClick={function() { addSuggestedTask(biz, latest); }}
-                        style={{ background: T.btn, border: "none", borderRadius: 9, padding: "8px 12px", fontSize: 12, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Add to roadmap</button>
+                        style={{ background: T.btn, border: "none", borderRadius: 999, padding: "8px 12px", fontSize: 12, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Add to roadmap</button>
                     </div>
                   )}
                   {showGrad && (
                     <div style={{ display: "flex", alignItems: "center", gap: 10, background: T.orangeDim, borderRadius: 12, padding: "10px 12px", marginTop: 8 }}>
                       <div style={{ flex: 1, fontSize: 12.5, color: T.ink, lineHeight: 1.4 }}>{"Richard thinks it's time to graduate to the " + (latest.graduate === "running" ? "running" : "launch") + " stage."}</div>
                       <button onClick={function() { graduateBiz(biz, latest.graduate); }}
-                        style={{ background: T.btn, border: "none", borderRadius: 9, padding: "8px 12px", fontSize: 12, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Graduate</button>
+                        style={{ background: T.btn, border: "none", borderRadius: 999, padding: "8px 12px", fontSize: 12, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Graduate</button>
                     </div>
                   )}
                   <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
                     <button onClick={function() { fetchIdeas(biz); }} disabled={ideasLoading}
-                      style={{ flex: 1, background: T.orangeDim, border: "none", borderRadius: 10, padding: "10px 0", fontSize: 12.5, fontWeight: 700, color: T.orange, cursor: ideasLoading ? "default" : "pointer", fontFamily: UI }}>{ideasLoading ? <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>Thinking<ThinkingDots size={3.5} color={T.orange} /></span> : "Get growth ideas"}</button>
+                      style={{ flex: 1, background: T.orangeDim, border: "none", borderRadius: 999, padding: "10px 0", fontSize: 12.5, fontWeight: 700, color: T.orange, cursor: ideasLoading ? "default" : "pointer", fontFamily: UI }}>{ideasLoading ? <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>Thinking<ThinkingDots size={3.5} color={T.orange} /></span> : "Get growth ideas"}</button>
                     {reviews.length > 1 && (
                       <button onClick={function() { setPastOpen(!pastOpen); }}
-                        style={{ flex: 1, background: "none", border: "1.5px solid " + T.sep, borderRadius: 10, padding: "10px 0", fontSize: 12.5, fontWeight: 600, color: T.ink2, cursor: "pointer", fontFamily: UI }}>{pastOpen ? "Hide past reviews" : "Past reviews (" + (reviews.length - 1) + ")"}</button>
+                        style={{ flex: 1, background: "none", border: "1.5px solid " + T.sep, borderRadius: 999, padding: "10px 0", fontSize: 12.5, fontWeight: 600, color: T.ink2, cursor: "pointer", fontFamily: UI }}>{pastOpen ? "Hide past reviews" : "Past reviews (" + (reviews.length - 1) + ")"}</button>
                     )}
                   </div>
                   {ideas && (
@@ -27938,7 +27941,7 @@ function BusinessView(props) {
                   <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Richard can lay out the concrete steps from here to a working business.</div>
                 </div>
                 <button onClick={function() { regenRoadmap(biz); }}
-                  style={{ background: T.btn, border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Build it</button>
+                  style={{ background: T.btn, border: "none", borderRadius: 999, padding: "9px 14px", fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Build it</button>
               </Card>
             );
           }
@@ -28231,7 +28234,7 @@ function BusinessView(props) {
               <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Have Richard draft a business plan and budget for you.</div>
             </div>
             <button onClick={function() { replanWithRichard(biz); }} disabled={replanning}
-              style={{ background: T.btn, border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: replanning ? "default" : "pointer", fontFamily: UI, flexShrink: 0 }}>{replanning ? <ThinkingDots size={3.5} color="#fff" /> : "Ask Richard"}</button>
+              style={{ background: T.btn, border: "none", borderRadius: 999, padding: "9px 14px", fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: replanning ? "default" : "pointer", fontFamily: UI, flexShrink: 0 }}>{replanning ? <ThinkingDots size={3.5} color="#fff" /> : "Ask Richard"}</button>
           </Card>
         )}
 
@@ -29732,11 +29735,11 @@ function LeumiDemoConsentModal(props) {
           })}
         </div>
         <button onClick={approve} disabled={busy}
-          style={{ width: "100%", background: T.btn, color: "#fff", border: "none", borderRadius: 16, padding: "15px 0", fontSize: 15.5, fontFamily: UI, fontWeight: 700, cursor: "pointer", opacity: busy ? 0.6 : 1, boxSizing: "border-box", marginBottom: 8 }}>
+          style={{ width: "100%", background: T.btn, color: "#fff", border: "none", borderRadius: 999, padding: "15px 0", fontSize: 15.5, fontFamily: UI, fontWeight: 700, cursor: "pointer", opacity: busy ? 0.6 : 1, boxSizing: "border-box", marginBottom: 8 }}>
           {busy ? "Simulating connection..." : "Simulate approval (Demo)"}
         </button>
         <button onClick={props.onClose} disabled={busy}
-          style={{ width: "100%", background: "none", color: T.ink3, border: "none", borderRadius: 16, padding: "12px 0", fontSize: 14.5, fontFamily: UI, fontWeight: 600, cursor: "pointer" }}>
+          style={{ width: "100%", background: "none", color: T.ink3, border: "none", borderRadius: 999, padding: "12px 0", fontSize: 14.5, fontFamily: UI, fontWeight: 600, cursor: "pointer" }}>
           Cancel
         </button>
       </div>
@@ -29918,7 +29921,7 @@ function BankSyncView(props) {
             })}
           </div>
           <button onClick={handleEnable} disabled={busy}
-            style={{ width: "100%", background: T.btn, color: "#fff", border: "none", borderRadius: 16, padding: "15px 0", fontSize: 16, fontFamily: UI, fontWeight: 600, cursor: "pointer", opacity: busy ? 0.6 : 1, boxSizing: "border-box" }}>
+            style={{ width: "100%", background: T.btn, color: "#fff", border: "none", borderRadius: 999, padding: "15px 0", fontSize: 16, fontFamily: UI, fontWeight: 600, cursor: "pointer", opacity: busy ? 0.6 : 1, boxSizing: "border-box" }}>
             {busy ? "Turning on..." : "Set up notification sync"}
           </button>
           {enableErr && (
@@ -30580,11 +30583,11 @@ function PlanView(props) {
           </div>
           <div style={{ display: "flex", gap: 10 }}>
             <button onClick={implementAction}
-              style={{ flex: 1, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 10, padding: "9px 0", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI }}>
+              style={{ flex: 1, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 999, padding: "9px 0", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI }}>
               {tr("implement")}
             </button>
             <button onClick={function() { setPendingAction(null); }}
-              style={{ flex: 1, background: T.fill3, color: T.ink2, border: "none", borderRadius: 10, padding: "9px 0", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI }}>
+              style={{ flex: 1, background: T.fill3, color: T.ink2, border: "none", borderRadius: 999, padding: "9px 0", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI }}>
               {tr("dismiss")}
             </button>
           </div>
