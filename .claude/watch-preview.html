@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Richy - Richard Watch preview</title>
+<link href="/fonts/richy-fonts.css" rel="stylesheet"/>
+<style>
+  :root{--font-ui:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;}
+  html,body,#root{margin:0;font-family:var(--font-ui);}
+  button,input,select,textarea{font-family:var(--font-ui);}
+  #err{white-space:pre-wrap;font-family:monospace;color:#b00;padding:16px;font-size:13px;}
+  @keyframes sheetSlideUp{from{opacity:0;transform:translateX(-50%) translateY(56px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+  @keyframes sheetSlideDown{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(56px)}}
+  @keyframes overlayFadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes overlayFadeOut{from{opacity:1}to{opacity:0}}
+  @keyframes rcFadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .bar{font-size:12px;padding:8px 16px;display:flex;gap:6px;flex-wrap:wrap;position:sticky;top:0;z-index:50;backdrop-filter:blur(8px);}
+  .bar a{text-decoration:none;border:1px solid currentColor;border-radius:6px;padding:3px 8px;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="err"></div>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+<script>
+// Firebase-free preview that drives the REAL new screens (DailyBrief,
+// GoalAtRiskDetail, NextThirtyDays, WatchOuts) through a tiny local router,
+// so navigation, the goal-cancel flow and the pick-what-to-cancel sheet are
+// all genuinely interactive - not a static dump of engine output.
+var RC = (function(){
+  function ResponsiveContainer(props){ return React.createElement("div", { style: { width: props.width, height: props.height } }, props.children); }
+  function PieChart(props){ return React.createElement("svg", { viewBox: "0 0 100 100", width: "100%", height: "100%" }, props.children); }
+  function Pie(){ return null; } function Cell(){ return null; }
+  return { ResponsiveContainer: ResponsiveContainer, PieChart: PieChart, Pie: Pie, Cell: Cell };
+})();
+
+function fetchSource(attempt){
+  return fetch("/budget-app.jsx?t=" + Date.now()).then(function(r){ return r.text(); }).catch(function(e){
+    if (attempt >= 5) throw e;
+    return new Promise(function(res){ setTimeout(function(){ res(fetchSource(attempt + 1)); }, 700); });
+  });
+}
+
+// Pinned clock: the pace/cliff/renewal detectors all guard on "days left in
+// the month", so leaving this on the real system clock makes the preview's
+// output depend on what day it happens to be run - late in a month, pace and
+// cliff go silent by design (see the daysLeft>=3 guard). Pin "today" to the
+// 12th so the preview shows the same thing every time it's opened.
+var _RealDate = Date;
+var PINNED_NOW = "2026-08-12T12:00:00";
+function PinnedDate() {
+  if (arguments.length === 0) return new _RealDate(PINNED_NOW);
+  return new (Function.prototype.bind.apply(_RealDate, [null].concat(Array.prototype.slice.call(arguments))))();
+}
+PinnedDate.prototype = _RealDate.prototype;
+PinnedDate.now = function () { return new _RealDate(PINNED_NOW).getTime(); };
+Date = PinnedDate;
+
+fetchSource(1).then(function(src){
+  var code = src.replace(/^\s*import[^\n]*\n/gm, "").replace(/export default function App/, "function App");
+  code += "\ntry { window.__T = T; window.__UI = UI; window.__DISP = DISP; } catch (e) {}\n";
+  var out = Babel.transform(code, { presets: ["react"] }).code;
+  window.__RICHY_MOCK__ = true;
+  var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
+  var PieChart = RC.PieChart, Pie = RC.Pie, Cell = RC.Cell, ResponsiveContainer = RC.ResponsiveContainer;
+  eval(out);
+
+  var qs = new URLSearchParams(location.search);
+  var theme = qs.get("theme") || "blue";        // Cornflower Ocean by default
+  var dark  = qs.get("dark") === "1";
+  var scen  = qs.get("s") || "risks";
+  applyTheme(theme); applyDarkMode(dark);
+  var T = window.__T, UI = window.__UI;
+  var pageBg = dark ? DARK_BG : LIGHT_BG;
+  document.documentElement.style.background = pageBg; document.body.style.background = pageBg;
+
+  // ---- mock ledgers ---------------------------------------------------------
+  var NOW = new Date();
+  function iso(d){ return d.toISOString().slice(0,10); }
+  function daysAgo(n){ var d = new Date(NOW); d.setDate(d.getDate()-n); return iso(d); }
+  function monthsAgo(n, day){ var d = new Date(NOW); d.setDate(1); d.setMonth(d.getMonth()-n); d.setDate(day); return iso(d); }
+  var cats = [
+    { id:"sub", name:"Subscriptions" }, { id:"food", name:"Food" }, { id:"fit", name:"Fitness" },
+    { id:"bank", name:"Bank" }, { id:"shop", name:"Shopping" }, { id:"home", name:"Home" }, { id:"inc", name:"Salary" }
+  ];
+  var uid = 0;
+  function L(){ var tx = []; return {
+    tx: tx,
+    E: function(date,amount,label,catId,category){ tx.push({ id:++uid, type:"expense", date:date, amount:amount, label:label, catId:catId, category:category }); return this; },
+    I: function(date,amount,label){ tx.push({ id:++uid, type:"income", date:date, amount:amount, label:label, catId:"inc", category:"Salary" }); return this; }
+  }; }
+
+  var initTx, initGoals, initBudgets;
+  if (scen === "risks") {
+    var b = L();
+    for (var m = 3; m >= 1; m--) {
+      b.I(monthsAgo(m,1), 4000, "Salary");
+      b.E(monthsAgo(m,2), 1900, "Rent", "home", "Home");
+      b.E(monthsAgo(m,8), 900+m, "Supermarket", "food", "Food");
+      b.E(monthsAgo(m,17), 600+m*3, "Card payment", "shop", "Shopping");
+      b.E(monthsAgo(m,21), 300+m*5, "Utilities", "home", "Home");
+    }
+    b.I(monthsAgo(0,1), 4000, "Salary");
+    b.E(monthsAgo(0,2), 1900, "Rent", "home", "Home");
+    b.E(monthsAgo(0,5), 1400, "Supermarket", "food", "Food");
+    b.E(monthsAgo(0,9), 980, "Card payment", "shop", "Shopping");
+    for (var m2 = 3; m2 >= 0; m2--) {
+      b.E(monthsAgo(m2,4), 15.99, "NETFLIX.COM", "sub", "Subscriptions");
+      b.E(monthsAgo(m2,6), 29.99, "ADOBE CREATIVE", "sub", "Subscriptions");
+      b.E(monthsAgo(m2,11), 40, "Planet Fitness", "fit", "Fitness");
+      b.E(monthsAgo(m2,13), 12.99, "HULU", "sub", "Subscriptions");
+    }
+    initTx = b.tx;
+    initBudgets = [{ catId:"food", category:"Food", limit:900, dir:"cap" }];
+    var dl = new Date(NOW); dl.setMonth(dl.getMonth()+3);
+    initGoals = [{ id:7, name:"Emergency Fund", target:3000, saved:2000, deadline: iso(dl) }];
+  } else if (scen === "hard") {
+    // Same as "risks" but Planet Fitness already kept - only Adobe is left to
+    // cancel, so the goal screen lands on the "can't close it" variant.
+    var b2 = L();
+    for (var m3 = 3; m3 >= 1; m3--) {
+      b2.I(monthsAgo(m3,1), 4000, "Salary");
+      b2.E(monthsAgo(m3,2), 1900, "Rent", "home", "Home");
+      b2.E(monthsAgo(m3,8), 900+m3, "Supermarket", "food", "Food");
+    }
+    b2.I(monthsAgo(0,1), 4000, "Salary");
+    b2.E(monthsAgo(0,2), 1900, "Rent", "home", "Home");
+    b2.E(monthsAgo(0,5), 1400, "Supermarket", "food", "Food");
+    for (var m4 = 3; m4 >= 0; m4--) {
+      b2.E(monthsAgo(m4,6), 29.99, "ADOBE CREATIVE", "sub", "Subscriptions");
+    }
+    initTx = b2.tx;
+    initBudgets = [{ catId:"food", category:"Food", limit:900, dir:"cap" }];
+    // A tight deadline against a big remaining gap - only $29.99/mo of real
+    // subscription drag left to cancel, nowhere near enough to close it, so
+    // this forces the "can't close it with cancellations alone" screen.
+    var dl2 = new Date(NOW); dl2.setMonth(dl2.getMonth()+1);
+    initGoals = [{ id:7, name:"Emergency Fund", target:4500, saved:2000, deadline: iso(dl2) }];
+  } else {
+    var a = L();
+    for (var k = 0; k <= 5; k++) {
+      a.I(monthsAgo(k,1), 6000, "Salary");
+      a.E(monthsAgo(k,4), 15.99, "NETFLIX.COM", "sub", "Subscriptions");
+      a.E(monthsAgo(k,6), 12.99, "HULU #7781", "sub", "Subscriptions");
+      a.E(monthsAgo(k,9), 10.99, "Spotify AB", "sub", "Subscriptions");
+      a.E(monthsAgo(k,11), k === 0 ? 48 : 40, "Planet Fitness", "fit", "Fitness");
+      a.E(monthsAgo(k,2), 3.5, "ATM Fee", "bank", "Bank");
+    }
+    a.E(monthsAgo(4,20), 1.99, "ADOBE CREATIVE", "sub", "Subscriptions");
+    for (var j = 3; j >= 0; j--) a.E(monthsAgo(j,3), 29.99, "ADOBE CREATIVE", "sub", "Subscriptions");
+    a.E(daysAgo(340), 139, "Amazon Prime", "sub", "Subscriptions");
+    a.E(daysAgo(6), 89.9, "ZARA", "shop", "Shopping");
+    a.E(daysAgo(4), 89.9, "ZARA", "shop", "Shopping");
+    for (var c = 1; c <= 11; c++) a.E(daysAgo(c), 4.5, "Cafe Nero", "food", "Food");
+    initTx = a.tx; initBudgets = []; initGoals = [];
+  }
+
+  // ---- tiny router mirroring App()'s own wiring ------------------------------
+  function PreviewApp(){
+    var _tab = React.useState("watchBrief"); var tab = _tab[0], setTab = _tab[1];
+    var _goalRisk = React.useState(null); var openGoalRisk = _goalRisk[0], setOpenGoalRisk = _goalRisk[1];
+    var _fm = React.useState({ tally: 0, dismissed: [], acted: [] }); var foundMoney = _fm[0], setFoundMoney = _fm[1];
+    var _goals = React.useState(initGoals); var goals = _goals[0], setGoals = _goals[1];
+    var _log = React.useState([]); var log = _log[0], setLog = _log[1];
+
+    function pushLog(msg){ setLog(function(prev){ return [msg].concat(prev).slice(0, 8); }); }
+    function onNavigate(t){ pushLog("onNavigate(\"" + t + "\")"); setTab(t); }
+    function onOpenGoalRisk(id){ pushLog("onOpenGoalRisk(" + id + ")"); setOpenGoalRisk(id); setTab("watchGoal"); }
+    function onSaveFoundMoney(next){ pushLog("onSaveFoundMoney: dismissed=[" + next.dismissed.join(",") + "]"); setFoundMoney(next); }
+    function onSaveGoals(next){ pushLog("onSaveGoals: " + JSON.stringify(next.map(function(g){ return { target: g.target, deadline: g.deadline }; }))); setGoals(next); }
+
+    var common = { tx: initTx, categories: cats, budgets: initBudgets, goals: goals, savings: [], businesses: [], investing: [], foundMoney: foundMoney };
+
+    var screen;
+    if (tab === "watchBrief") screen = React.createElement(DailyBrief, Object.assign({}, common, { onNavigate: onNavigate, onOpenGoalRisk: onOpenGoalRisk }));
+    else if (tab === "watchGoal") screen = React.createElement(GoalAtRiskDetail, Object.assign({}, common, { goalId: openGoalRisk, onSaveFoundMoney: onSaveFoundMoney, onSaveGoals: onSaveGoals, onNavigate: onNavigate }));
+    else if (tab === "watchForecast") screen = React.createElement(NextThirtyDays, Object.assign({}, common, { onNavigate: onNavigate }));
+    else if (tab === "watchOuts") screen = React.createElement(WatchOuts, Object.assign({}, common, { onNavigate: onNavigate }));
+    else screen = React.createElement("div", { style: { padding: "40px 16px", textAlign: "center", color: T.ink3, fontFamily: UI } },
+      "(\"overview\"/\"goals\"/\"budgets\"/\"activity\" are real app tabs not mounted in this harness - onNavigate(\"" + tab + "\") logged below)");
+
+    return React.createElement("div", null,
+      React.createElement("div", { className: "bar", style: { color: T.ink3, background: T.bg } },
+        link("Cornflower Ocean", { theme: "blue" }), link("Violet", { theme: "purple" }), link("Dark Ember", { theme: "classic" }),
+        link(dark ? "light" : "dark", { dark: dark ? "0" : "1" }),
+        link("scenario: leaks", { s: "leaks" }), link("scenario: risks", { s: "risks" }), link("scenario: hard", { s: "hard" }),
+        React.createElement("button", { onClick: function(){ setTab("watchBrief"); }, style: { border: "1px solid currentColor", borderRadius: 6, padding: "3px 8px", background: "none", color: T.ink3, cursor: "pointer" } }, "→ brief"),
+        React.createElement("button", { onClick: function(){ setTab("watchForecast"); }, style: { border: "1px solid currentColor", borderRadius: 6, padding: "3px 8px", background: "none", color: T.ink3, cursor: "pointer" } }, "→ next 30 days"),
+        React.createElement("button", { onClick: function(){ setTab("watchOuts"); }, style: { border: "1px solid currentColor", borderRadius: 6, padding: "3px 8px", background: "none", color: T.ink3, cursor: "pointer" } }, "→ watch-outs"),
+        React.createElement("span", { style: { marginInlineStart: 8 } }, "tab=" + tab)
+      ),
+      React.createElement("div", { style: { maxWidth: 460, margin: "0 auto", padding: 16, fontFamily: UI, color: T.ink } }, screen),
+      React.createElement("div", { style: { maxWidth: 460, margin: "24px auto", padding: "0 16px 40px", fontFamily: "monospace", fontSize: 11, color: T.ink3 } },
+        React.createElement("div", { style: { fontWeight: 700, marginBottom: 6 } }, "nav log:"),
+        log.map(function(l, i){ return React.createElement("div", { key: i }, l); })
+      )
+    );
+
+    function link(label, params){
+      var q = new URLSearchParams(location.search);
+      Object.keys(params).forEach(function(k){ q.set(k, params[k]); });
+      return React.createElement("a", { href: "?" + q.toString(), style: { color: T.orange } }, label);
+    }
+  }
+
+  ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(PreviewApp, null));
+}).catch(function(e){
+  document.getElementById("err").textContent = "Watch preview error:\n" + (e && e.stack ? e.stack : e);
+});
+</script>
+</body>
+</html>

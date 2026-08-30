@@ -345,6 +345,23 @@ function applyDarkMode(dark) {
   T.navPillGlass = dark ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.62)";
   T.navPillRim   = dark ? "rgba(255,255,255,0.40)" : "rgba(255,255,255,0.95)";
   T.navPillShade = dark ? "rgba(0,0,0,0.30)"       : "rgba(0,0,0,0.07)";
+  // The header shortcut bar is thick warm CREAM rather than the thin white
+  // glass the bottom bar wears. It sits on the cream header, where a white
+  // fill read as a foreign chip pasted on top; a deep cream reads as the same
+  // material, just denser. The two values are the ones already approved on the
+  // original button-bar mockup (reference/button-bar-mockup.html) - the bar's
+  // #D8CBB8 cream and its near-white #FFFCF7 thumb. Went through two more
+  // rounds after that: 0.88 opacity read as muddy/too dark, dialed back to
+  // 0.60; then Alon asked for SOLID (no translucency at all) and lighter
+  // still. Now a flat, fully opaque light cream - #EFE7D9 - a clear but
+  // gentle step down from the #F7F3EE page, not a tan/beige chip. Dark keeps
+  // the warmth instead of going neutral grey (the JOURNEY_DARK call) and is
+  // opaque + a shade lighter than before for the same reason.
+  T.creamBar     = dark ? "#483D31" : "#EFE7D9";
+  T.creamBarLens = dark ? "rgba(255,247,236,0.17)" : "rgba(255,252,247,0.92)";
+  // A touch more contrast than before: against a lighter, fully opaque fill
+  // the same faint edge would all but disappear.
+  T.creamBarEdge = dark ? "rgba(0,0,0,0.34)"       : "rgba(122,102,79,0.20)";
   // Repaint the accent/hero side of the palette, and the journey's own
   // ground, for the new mode (rule 1).
   paintPalette();
@@ -845,7 +862,7 @@ var ONBOARD_STRINGS = {
     fmFallbackSingle:"I went through your spending and found one charge worth a second look.",
     fmFallbackMultiNoAmt:"I went through your spending and found {n} things worth a look.",
     fmFallbackMultiAmt:"I went through your spending and found {n} things worth a look - around {amt} a year if you act on them.",
-    fmDraftPriceMatch:"Draft price-match", fmDraftCancellation:"Draft cancellation", fmCountRecovered:"Count as recovered",
+    fmDraftPriceMatch:"Draft price-match", fmDraftCancellation:"Draft cancellation", fmDraftRefund:"Draft refund request", fmCountRecovered:"Count as recovered",
     fmKeepIt:"Keep it", fmLooksFine:"Looks fine", fmGotIt:"Got it",
     fmCopied:"Copied", fmCopyMessage:"Copy message", fmIDidIt:"I did it (+{amt})",
     fmReviewedEverything:"You've reviewed everything", fmKeepsWatching:"Richard keeps watching as new spending comes in.",
@@ -997,7 +1014,7 @@ var ONBOARD_STRINGS = {
     fmFallbackSingle:"עברתי על ההוצאות שלך ומצאתי חיוב אחד שכדאי לבדוק שוב.",
     fmFallbackMultiNoAmt:"עברתי על ההוצאות שלך ומצאתי {n} דברים שכדאי לבדוק.",
     fmFallbackMultiAmt:"עברתי על ההוצאות שלך ומצאתי {n} דברים שכדאי לבדוק - בערך {amt} בשנה אם תפעל לפיהם.",
-    fmDraftPriceMatch:"נסח בקשת התאמת מחיר", fmDraftCancellation:"נסח ביטול", fmCountRecovered:"ספור כהושב",
+    fmDraftPriceMatch:"נסח בקשת התאמת מחיר", fmDraftCancellation:"נסח ביטול", fmDraftRefund:"נסח בקשת זיכוי", fmCountRecovered:"ספור כהושב",
     fmKeepIt:"השאר את זה", fmLooksFine:"נראה תקין", fmGotIt:"הבנתי",
     fmCopied:"הועתק", fmCopyMessage:"העתק הודעה", fmIDidIt:"עשיתי את זה (+{amt})",
     fmReviewedEverything:"סקרת הכל", fmKeepsWatching:"ריצ'רד ממשיך לעקוב כשיש הוצאות חדשות.",
@@ -1149,7 +1166,7 @@ var ONBOARD_STRINGS = {
     fmFallbackSingle:"راجعت إنفاقك ووجدت رسوماً واحدة تستحق نظرة ثانية.",
     fmFallbackMultiNoAmt:"راجعت إنفاقك ووجدت {n} أشياء تستحق النظر.",
     fmFallbackMultiAmt:"راجعت إنفاقك ووجدت {n} أشياء تستحق النظر - حوالي {amt} سنوياً إذا تصرفت بشأنها.",
-    fmDraftPriceMatch:"صياغة طلب مطابقة السعر", fmDraftCancellation:"صياغة إلغاء", fmCountRecovered:"اعتبرها مستعادة",
+    fmDraftPriceMatch:"صياغة طلب مطابقة السعر", fmDraftCancellation:"صياغة إلغاء", fmDraftRefund:"صياغة طلب استرداد", fmCountRecovered:"اعتبرها مستعادة",
     fmKeepIt:"احتفظ به", fmLooksFine:"يبدو جيداً", fmGotIt:"فهمت",
     fmCopied:"تم النسخ", fmCopyMessage:"نسخ الرسالة", fmIDidIt:"قمت بذلك (+{amt})",
     fmReviewedEverything:"لقد راجعت كل شيء", fmKeepsWatching:"ريتشارد يستمر بالمراقبة عند وصول إنفاق جديد.",
@@ -1301,7 +1318,7 @@ var ONBOARD_STRINGS = {
     fmFallbackSingle:"Я просмотрел ваши траты и нашёл одно списание, на которое стоит взглянуть ещё раз.",
     fmFallbackMultiNoAmt:"Я просмотрел ваши траты и нашёл {n} моментов, на которые стоит обратить внимание.",
     fmFallbackMultiAmt:"Я просмотрел ваши траты и нашёл {n} моментов, на которые стоит обратить внимание - около {amt} в год, если вы примете меры.",
-    fmDraftPriceMatch:"Составить запрос о снижении цены", fmDraftCancellation:"Составить отмену", fmCountRecovered:"Засчитать как возвращённое",
+    fmDraftPriceMatch:"Составить запрос о снижении цены", fmDraftCancellation:"Составить отмену", fmDraftRefund:"Составить запрос на возврат", fmCountRecovered:"Засчитать как возвращённое",
     fmKeepIt:"Оставить", fmLooksFine:"Всё в порядке", fmGotIt:"Понятно",
     fmCopied:"Скопировано", fmCopyMessage:"Скопировать сообщение", fmIDidIt:"Я сделал это (+{amt})",
     fmReviewedEverything:"Вы всё просмотрели", fmKeepsWatching:"Ричард продолжает следить за новыми тратами.",
@@ -5560,9 +5577,9 @@ function JrShaderBg(props) {
       // no per-ribbon time multiplier, no distance-based fan-out - so the
       // pattern reads as consistent from center to edge and start to finish.
       "  float ph = (p.x + u_time) * u_xScale;",
-      "  float i1 = 0.05 / abs(p.y + sin(ph) * u_yScale);",
-      "  float i2 = 0.05 / abs(p.y + sin(ph + 2.0944) * u_yScale);",
-      "  float i3 = 0.05 / abs(p.y + sin(ph + 4.1888) * u_yScale);",
+      "  float i1 = 0.04 / abs(p.y + sin(ph) * u_yScale);",
+      "  float i2 = 0.04 / abs(p.y + sin(ph + 2.0944) * u_yScale);",
+      "  float i3 = 0.04 / abs(p.y + sin(ph + 4.1888) * u_yScale);",
       // Tint the warm base toward each ribbon color by its (clamped) mask,
       // rather than adding light - keeps ribbons colored on a light ground.
       "  float m1 = clamp(i1 * u_intensity, 0.0, 1.0);",
@@ -7062,15 +7079,27 @@ function AuthScreen(props) {
     setError("");
     if (!cloudReady()) { setError(cloudErrorMsg()); return; }
     setBusy(true);
+    var settled = false;
     CLOUD.signInGoogle().then(function() {
+      settled = true;
       setBusy(false);
     }).catch(function(err) {
+      settled = true;
       setBusy(false);
       // Closing the popup is a deliberate cancel, not an error worth shouting about.
       var c = err && err.code;
       if (c === "auth/popup-closed-by-user" || c === "auth/cancelled-popup-request") return;
       setError(authMsg(err));
     });
+    // Safety net: some browsers (third-party-cookie blocking, strict COOP)
+    // never fire Firebase's own popup-closed rejection, so a user who backs
+    // out of the Google window is left staring at a permanently disabled
+    // screen. Coming back to this tab is a reliable sign the popup is gone
+    // one way or another - give Firebase a moment to settle on its own, then
+    // force the screen open again if it hasn't.
+    window.addEventListener("focus", function onFocusBack() {
+      setTimeout(function() { if (!settled) setBusy(false); }, 1500);
+    }, { once: true });
   }
 
   function goTo(s) {
@@ -8334,6 +8363,34 @@ function OnboardingScreen(props) {
   );
 }
 
+// A slim entry point into Richard Watch, sitting above Spotted Leaks on
+// Overview. Spotted Leaks already surfaces leak count and recoverable amount
+// on its own row, so this banner's only job is the thing Spotted Leaks can't
+// see: a forward-looking RISK (a budget on pace to blow, a month ending
+// short, a goal falling behind, saving less than usual). When there is one,
+// it leads with the single most urgent one, by name - not a generic "check
+// your finances" nudge. When there is none, it stays a quiet, dismissible-
+// feeling "All clear" link rather than disappearing outright, so the daily
+// brief stays reachable and checking it becomes a habit either way.
+function DailyBriefBanner(props) {
+  var watch = richardWatch({
+    tx: props.tx, categories: props.categories, budgets: props.budgets, goals: props.goals,
+    savings: props.savings, businesses: props.businesses, investing: props.investing,
+    foundMoney: props.foundMoney
+  });
+  var top = watch.risks.length ? watch.risks[0] : null;
+  return (
+    <button onClick={props.onOpen} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 18, background: T.card, border: "none", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)", marginBottom: 12 }}>
+      <IconBadge icon={top ? top.icon : "check"} bg={top ? T[top.tint] : T.green} size={40} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{top ? top.title : "Daily brief"}</div>
+        <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2 }}>{top ? "Richard is watching - tap for the full brief" : "All clear - Richard is watching"}</div>
+      </div>
+      <SVGIcon id="chevron" size={18} color={T.ink3} />
+    </button>
+  );
+}
+
 // Found Money surface: the Overview entry card (scoreboard + leak count) plus the
 // detail overlay where Richard narrates the audit and drafts the message that
 // recovers the money. Detection is deterministic (findMoney); Richard only
@@ -8354,7 +8411,11 @@ function FoundMoney(props) {
   // Recompute findings from real tx each render, drop ones already resolved.
   var findings = findMoney(tx, cats).filter(function(f) { return dismissed.indexOf(f.id) === -1; });
   var leakCount = findings.length;
-  var recoverable = findings.reduce(function(s, f) { return s + (f.annual || 0); }, 0);
+  // recoverableTotal, not a plain sum: rows that only re-describe money another
+  // row already counts (a price rise inside its own subscription, a redundant
+  // service listed above it) are skipped, so this is what the user would really
+  // stop paying.
+  var recoverable = recoverableTotal(findings);
 
   function richardSystem(extra) {
     var custom = richardUserCtx(props.richardInstructions);
@@ -8402,14 +8463,29 @@ function FoundMoney(props) {
     setCopied(false);
     setDraft({ id: f.id, text: "", loading: true });
     var m = f.meta || {};
-    var isHike = f.type === "hike";
-    var system = richardSystem("You are Richard helping the user write a short, polite, effective " + (isHike ? "price-match / loyalty-discount" : "cancellation") + " message to a company. Output ONLY the message body - no preamble, no subject line, no bracketed placeholders except a trailing [Your Name]. Three to four firm-but-friendly sentences. No emojis.");
-    var ask = isHike
-      ? ("Write a message to " + f.merchant + " noting my price rose from " + dollars(m.oldAmt) + " to " + dollars(m.newAmt) + " and asking them to match my old rate or I will cancel.")
-      : ("Write a message to cancel my " + f.merchant + " subscription of " + dollars(f.amount) + " per " + ((m.cadence === "weekly") ? "week" : "month") + ", effective immediately, and request written confirmation that no further charges will occur.");
+    // Three letters, one code path. Which one is decided by the finding type, so
+    // adding a detector that can be acted on by writing to a company only needs a
+    // case here - not a new sheet.
+    var mode = f.type === "hike" ? "pricematch" : (f.type === "fee" ? "waiver" : "cancel");
+    var goal = mode === "pricematch" ? "price-match / loyalty-discount" : (mode === "waiver" ? "fee-refund" : "cancellation");
+    var system = richardSystem("You are Richard helping the user write a short, polite, effective " + goal + " message to a company. Output ONLY the message body - no preamble, no subject line, no bracketed placeholders except a trailing [Your Name]. Three to four firm-but-friendly sentences. No emojis.");
+    var ask;
+    if (mode === "pricematch") {
+      ask = "Write a message to " + f.merchant + " noting my price rose from " + dollars(m.oldAmt) + " to " + dollars(m.newAmt) + " and asking them to match my old rate or I will cancel.";
+    } else if (mode === "waiver") {
+      ask = "Write a message to my bank asking them to refund " + (m.count > 1 ? (m.count + " " + f.merchant.toLowerCase() + " totalling " + dollars(m.total)) : ("a " + f.merchant.toLowerCase() + " charge of " + dollars(m.total) + " on " + m.lastDate)) + ", noting I am a long-standing customer and asking what I can set up so it does not happen again.";
+    } else if (f.type === "renewal") {
+      ask = "Write a message to " + f.merchant + " cancelling my annual subscription of " + dollars(f.amount) + " before it renews on " + m.dueDate + ", and requesting written confirmation that no further charges will occur.";
+    } else if (f.type === "trial") {
+      ask = "Write a message to " + f.merchant + " saying my introductory rate of " + dollars(m.introAmt) + " ended and " + dollars(m.nowAmt) + " per month is more than I want to pay, asking them to extend the intro rate or cancel me.";
+    } else if (f.type === "overlap") {
+      ask = "Write a message to cancel my " + f.merchant + " subscription of " + dollars(f.amount) + " per month, effective immediately, and request written confirmation that no further charges will occur.";
+    } else {
+      ask = "Write a message to cancel my " + f.merchant + " subscription of " + dollars(f.amount) + " per " + ((m.cadence === "weekly") ? "week" : "month") + ", effective immediately, and request written confirmation that no further charges will occur.";
+    }
     callClaude([{ role: "user", content: ask }], system, 260, function(err, text) {
       if (err || !text) {
-        setDraft({ id: f.id, loading: false, text: isHike
+        setDraft({ id: f.id, loading: false, text: mode === "pricematch"
           ? tr("fmHikeFallback").replace("{new}", dollars(m.newAmt)).replace("{old}", dollars(m.oldAmt))
           : tr("fmCancelFallback").replace("{merchant}", f.merchant) });
       } else { setDraft({ id: f.id, text: text, loading: false }); }
@@ -8427,16 +8503,18 @@ function FoundMoney(props) {
     } catch (e) {}
   }
 
+  // Icon and tint come from the engine's RW_STYLE table so a card, a digest row
+  // and a notification never drift apart on what a finding type looks like. The
+  // tint is a token NAME resolved through T here, which is what keeps every type
+  // - old and new - inside whichever palette is live.
   function typeStyle(t) {
-    if (t === "recurring") return { icon: "refresh", color: T.orange };
-    if (t === "hike") return { icon: "up", color: T.red };
-    if (t === "duplicate") return { icon: "credit", color: T.gold };
-    return { icon: "chart", color: T.btn };   // jump
+    var st = rwStyle(t);
+    return { icon: st.icon, color: T[st.tint] || T.orange };
   }
   function dismissLabel(t) {
-    if (t === "recurring") return tr("fmKeepIt");
-    if (t === "duplicate") return tr("fmLooksFine");
-    if (t === "jump") return tr("fmGotIt");
+    if (t === "recurring" || t === "overlap" || t === "renewal") return tr("fmKeepIt");
+    if (t === "duplicate" || t === "fee") return tr("fmLooksFine");
+    if (t === "jump" || t === "drift" || t === "trial") return tr("fmGotIt");
     return tr("dismiss");
   }
 
@@ -8505,7 +8583,12 @@ function FoundMoney(props) {
 
         {findings.map(function(f) {
           var st = typeStyle(f.type);
-          var canDraft = f.type === "recurring" || f.type === "hike";
+          // Every type Richard can write a letter for. A fee only qualifies when
+          // it is one a bank will actually reverse - asking for a refund on a
+          // card's annual fee just wastes the user's credibility.
+          var canDraft = f.type === "recurring" || f.type === "hike" || f.type === "trial"
+            || f.type === "overlap" || f.type === "renewal"
+            || (f.type === "fee" && f.meta && f.meta.avoidable);
           return (
             <div key={f.id} style={{ background: T.card, borderRadius: 16, padding: "13px 14px", marginBottom: 10, boxShadow: cardShadow }}>
               <div style={{ display: "flex", gap: 11, alignItems: "flex-start" }}>
@@ -8518,8 +8601,8 @@ function FoundMoney(props) {
                   <div style={{ fontSize: 12, color: T.ink3, marginTop: 3, lineHeight: 1.45 }}>{f.subtitle}</div>
 
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 10 }}>
-                    {canDraft && <button onClick={function() { makeDraft(f); }} style={primaryBtn}>{f.type === "hike" ? tr("fmDraftPriceMatch") : tr("fmDraftCancellation")}</button>}
-                    {f.type === "duplicate" && <button onClick={function() { resolve(f, f.amount); }} style={primaryBtn}>{tr("fmCountRecovered")}</button>}
+                    {canDraft && <button onClick={function() { makeDraft(f); }} style={primaryBtn}>{f.type === "hike" ? tr("fmDraftPriceMatch") : f.type === "fee" ? tr("fmDraftRefund") : tr("fmDraftCancellation")}</button>}
+                    {(f.type === "duplicate" || f.type === "fee") && <button onClick={function() { resolve(f, f.type === "fee" ? ((f.meta && f.meta.total) || f.amount) : f.amount); }} style={primaryBtn}>{tr("fmCountRecovered")}</button>}
                     <button onClick={function() { resolve(f, 0); }} style={ghostBtn}>{dismissLabel(f.type)}</button>
                   </div>
 
@@ -10279,6 +10362,7 @@ function Overview(props) {
         );
       })}
 
+      <DailyBriefBanner tx={tx} categories={cats} budgets={budgets} goals={goals} savings={props.savings} businesses={props.businesses} investing={props.investing} foundMoney={props.foundMoney} onOpen={function() { nav("watchBrief"); }} />
       <FoundMoney tx={tx} categories={cats} foundMoney={props.foundMoney} onSaveFoundMoney={props.onSaveFoundMoney} richardInstructions={props.richardInstructions} lang={props.lang} />
 
       <BusinessPulse businesses={bizAccts} onOpenBusiness={props.onOpenBusiness} />
@@ -10852,16 +10936,39 @@ function detectRecurring(tx, cats) {
     var brand = looksLikeSubscription(label);
     var consistent = nearMedian === items.length;   // every charge ~the same
 
-    var isRecurring = monthlyCadence || sameAmtAcrossMonths || flaggedMonthly || flaggedWeekly || (brand && consistent);
+    // A brand name alone is only evidence of a MONTHLY charge when there is more
+    // than one charge, or the single one is recent. Without this, one annual
+    // renewal (a 139 Prime charge eleven months ago) is read as 139 every month
+    // and lands in the recoverable total as 1,668/yr. Those belong to
+    // detectAnnualRenewals instead, which prices them per year.
+    var recentEnough = fmDaysBetween(items[0].date, todayISO) <= 45;
+    var brandRule = brand && consistent && (items.length >= 2 || recentEnough);
+
+    var isRecurring = monthlyCadence || sameAmtAcrossMonths || flaggedMonthly || flaggedWeekly || brandRule;
     if (!isRecurring) return;
+    // A repeating bank fee is a fee, not a subscription - detectFees prices it and
+    // can draft a refund request, neither of which a "cancel your subscription"
+    // row can do. Skipping it here also stops the two rows counting it twice.
+    if (looksLikeFee(label)) return;
 
     var cadence = flaggedWeekly ? "weekly" : "monthly";
     var perMonth = cadence === "weekly" ? monthlyAmt * 4.33 : monthlyAmt;
     var c = catById(cats, items[0].catId);
+    // How long this has been running and what it has cost so far. Not used for
+    // ranking - it is the sunk figure that actually decides a cancellation
+    // ("you have paid 840 to this since March") and every surface wants it.
+    var firstDate = items[items.length - 1].date;
+    var paidToDate = items.reduce(function(s, t) { return s + t.amount; }, 0);
     out.push({
       key: key, merchant: label, amount: round2(monthlyAmt), cadence: cadence,
       count: items.length, lastDate: items[0].date, catId: items[0].catId,
       categoryName: (c && c.name) || items[0].category || "", annual: round2(perMonth * 12),
+      // A commitment (rent, insurance, a loan) rather than something cancellable.
+      // Still returned - the forecast and cash-cliff maths need it - but findMoney
+      // keeps it out of the leak list and out of every recoverable total.
+      essential: looksEssential(label, (c && c.name) || items[0].category || ""),
+      firstDate: firstDate, paidToDate: round2(paidToDate),
+      monthsRunning: Math.max(1, Math.round(fmDaysBetween(firstDate, items[0].date) / 30.44)),
       items: items
     });
   });
@@ -10901,6 +11008,11 @@ function detectDuplicates(tx) {
   var out = [];
   Object.keys(byKey).forEach(function(k) {
     var arr = byKey[k].sort(function(a, b) { return (a.date || "").localeCompare(b.date || ""); });
+    // Three or more charges at the identical amount from the same merchant is a
+    // habit, not an accident - the daily 4.50 coffee. Flagging each consecutive
+    // pair as a double charge would put a fresh false alarm on the card every
+    // single day, which is the fastest way to make people stop trusting the list.
+    if (arr.length >= 3) return;
     for (var i = 0; i < arr.length - 1; i++) {
       if (fmDaysBetween(arr[i].date, arr[i + 1].date) <= 3) {
         out.push({
@@ -10946,18 +11058,31 @@ function detectCategoryJumps(tx, cats) {
 function findMoney(tx, cats) {
   var findings = [];
   var recurring = detectRecurring(tx, cats);
-  recurring.forEach(function(g) {
+  // Rows further down can describe money a recurring row already counts - a price
+  // hike lives INSIDE the subscription's own annual cost, a redundant streaming
+  // service is one of the subscriptions listed above it. Those rows still earn
+  // their place (each carries a different decision), but they must not be added
+  // up twice, so each names the row that already owns its money. See
+  // recoverableTotal(), which is what every "recoverable per year" figure uses.
+  // Commitments are dropped here and nowhere else, so every row below - the
+  // recurring list, its price hikes, its trials, its overlaps and the goal
+  // planner that shops from them - inherits the same rule from one place.
+  var leakable = recurring.filter(function(g) { return !g.essential; });
+  var recOwner = {};
+  leakable.forEach(function(g) { recOwner[g.key] = "rec:" + g.key; });
+  leakable.forEach(function(g) {
     findings.push({
       id: "rec:" + g.key, type: "recurring", title: g.merchant,
       subtitle: dollars(g.amount) + "/" + (g.cadence === "weekly" ? "wk" : "mo") + " - " + g.count + " charge" + (g.count === 1 ? "" : "s") + ", last " + g.lastDate,
       amount: g.amount, annual: g.annual, merchant: g.merchant, catId: g.catId, categoryName: g.categoryName, meta: g
     });
   });
-  detectPriceHikes(recurring).forEach(function(h) {
+  detectPriceHikes(leakable).forEach(function(h) {
     findings.push({
       id: h.key, type: "hike", title: h.merchant + " went up " + h.deltaPct + "%",
       subtitle: dollars(h.oldAmt) + " to " + dollars(h.newAmt) + " - " + dollars(h.annualImpact) + "/yr more",
-      amount: round2(h.newAmt - h.oldAmt), annual: h.annualImpact, merchant: h.merchant, catId: h.catId, categoryName: h.categoryName, meta: h
+      amount: round2(h.newAmt - h.oldAmt), annual: h.annualImpact, merchant: h.merchant, catId: h.catId, categoryName: h.categoryName,
+      subsumedBy: recOwner[h.key.slice(5)] || null, meta: h
     });
   });
   detectDuplicates(tx).forEach(function(d) {
@@ -10974,12 +11099,1532 @@ function findMoney(tx, cats) {
       amount: j.extra, annual: 0, merchant: "", catId: j.catId, categoryName: j.category, meta: j
     });
   });
+
+  detectFees(tx, cats).forEach(function(f) {
+    findings.push({
+      id: f.key, type: "fee", title: f.label + (f.count > 1 ? " x" + f.count : ""),
+      subtitle: f.repeats
+        ? (dollars(f.total) + " across " + f.monthsSeen + " months - about " + dollars(f.perMonth) + "/mo")
+        : (dollars(f.total) + " on " + f.lastDate + " - a one-off so far"),
+      amount: f.repeats ? f.perMonth : f.total, annual: f.annual, merchant: f.label,
+      catId: f.catId, categoryName: f.categoryName,
+      subsumedBy: recOwner[normalizeMerchant((f.items[0] || {}).label)] || null, meta: f
+    });
+  });
+  detectAnnualRenewals(tx, cats).forEach(function(r) {
+    findings.push({
+      id: r.key, type: "renewal",
+      title: r.merchant + (r.inDays >= 0 ? (" renews in " + r.inDays + " days") : " renewed recently"),
+      subtitle: dollars(r.amount) + " yearly, due " + r.dueDate + (r.confidence === "low" ? " - based on one charge, so worth checking" : ""),
+      amount: r.amount, annual: r.amount, merchant: r.merchant,
+      catId: r.catId, categoryName: r.categoryName,
+      subsumedBy: recOwner[r.key.slice(6)] || null, meta: r
+    });
+  });
+  detectTrialConversions(leakable).forEach(function(t) {
+    findings.push({
+      id: t.key, type: "trial", title: t.merchant + " intro price ended",
+      subtitle: dollars(t.introAmt) + " to " + dollars(t.nowAmt) + "/mo since " + t.startedDate + " - " + dollars(t.annual) + "/yr now",
+      amount: t.nowAmt, annual: t.annual, merchant: t.merchant,
+      catId: t.catId, categoryName: t.categoryName,
+      subsumedBy: recOwner[t.key.slice(6)] || null, meta: t
+    });
+  });
+  detectOverlapSubs(leakable).forEach(function(o) {
+    var owner = o.subs[o.subs.length - 1];
+    findings.push({
+      id: o.key, type: "overlap", title: o.count + " services doing the same job",
+      subtitle: o.merchants.join(", ") + " - " + dollars(o.perMonth) + "/mo together, dropping " + o.dropCandidate + " saves " + dollars(o.annual) + "/yr",
+      amount: round2(o.annual / 12), annual: o.annual, merchant: o.dropCandidate,
+      catId: owner.catId, categoryName: owner.categoryName,
+      subsumedBy: recOwner[owner.key] || null, meta: o
+    });
+  });
+  detectMicroDrift(tx, cats).forEach(function(d) {
+    findings.push({
+      id: d.key, type: "drift", title: d.count + " small charges in " + d.category,
+      subtitle: dollars(d.total) + " this month in charges under " + dollars(d.ticket) + " - " + d.share + "% of everything you spent",
+      amount: d.total, annual: 0, merchant: "", catId: d.catId, categoryName: d.category, meta: d
+    });
+  });
+
   // Annualized recoverable (recurring + hikes) first, then one-off informational.
   findings.sort(function(a, b) {
     if ((b.annual || 0) !== (a.annual || 0)) return (b.annual || 0) - (a.annual || 0);
     return (b.amount || 0) - (a.amount || 0);
   });
   return findings;
+}
+
+// The one honest way to add findings up. A row whose money is already owned by
+// another row (subsumedBy) contributes nothing, so the headline figure is what
+// the user would actually stop paying - never the same subscription counted once
+// as itself and again as its own price rise.
+function recoverableTotal(findings) {
+  return round2((findings || []).reduce(function(s, f) {
+    return s + (f.subsumedBy ? 0 : (f.annual || 0));
+  }, 0));
+}
+
+// ===== RICHARD WATCH ==========================================================
+// The always-on layer above Found Money. Found Money answers "what did I waste
+// last month"; Watch answers "what is about to go wrong, and what closes it".
+//
+// Same contract as the audit below it, and the reason both can be trusted:
+// EVERY number here is derived from the user's own transactions, budgets and
+// goals. Nothing is generated by the model - Richard only narrates and drafts on
+// top of these structures. A detector that cannot compute an honest figure
+// returns 0 rather than a guess (see the `annual` rules on each one).
+//
+// Colours are emitted as SEMANTIC TOKEN NAMES (`tint: "red"`, not "#E03030")
+// which resolve through T at render time, so every surface built on this engine
+// follows Cornflower Ocean / Violet / Dark Ember and both light and dark sides
+// without the engine knowing a single hex value.
+
+// Punctuation-stripped, space-padded label. Padding both ends is what lets a
+// phrase test be a plain indexOf of " phrase " - which is how "coffee" stops
+// matching the fee hint "fee". Hebrew and Arabic ranges are preserved so the
+// non-English hint lists work on the same path.
+function fmNormLabel(label) {
+  return " " + String(label || "").toLowerCase()
+    .replace(/[^a-z0-9\u0590-\u05FF\u0600-\u06FF]+/g, " ")
+    .replace(/\s+/g, " ").trim() + " ";
+}
+function labelHasHint(norm, hint) { return norm.indexOf(" " + hint + " ") !== -1; }
+
+function rwToday()          { return new Date().toISOString().slice(0, 10); }
+function rwYM(iso)          { return (iso || "").slice(0, 7); }
+function rwMonthShift(off)  { var d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - off); return d.toISOString().slice(0, 7); }
+function rwDaysInMonth(ym)  { return new Date(+ym.slice(0, 4), +ym.slice(5, 7), 0).getDate(); }
+function rwAddDays(iso, n)  { var d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+function rwDayDelta(a, b)   { return Math.round((new Date(a + "T12:00:00") - new Date(b + "T12:00:00")) / 86400000); }
+// Whole months from `from` to `to`, rounded up and floored at 0 - a deadline
+// 40 days out is two months of saving, not one, because the last one is partial.
+function rwMonthsUntil(deadline, fromISO) {
+  if (!deadline) return 0;
+  return Math.max(0, Math.ceil(rwDayDelta(deadline, fromISO) / 30.44));
+}
+
+// Income counterpart of isAuditableExpense - same exclusions, so the two always
+// agree on what "a real movement of money" means.
+function isAuditableIncome(t, todayISO) {
+  return !!(t && t.type === "income" && !isOpening(t) && !isTransfer(t) && !isTrip(t) && !t.pending && (!t.date || t.date <= todayISO));
+}
+function rwMonthTotals(tx, ym, todayISO) {
+  var inc = 0, exp = 0;
+  (tx || []).forEach(function(t) {
+    if (rwYM(t.date) !== ym) return;
+    if (isAuditableIncome(t, todayISO)) inc += t.amount;
+    else if (isAuditableExpense(t, todayISO)) exp += t.amount;
+  });
+  return { income: round2(inc), expense: round2(exp), net: round2(inc - exp) };
+}
+
+// Fee families, most severe first - detectFees stops at the first match so a
+// label reading "overdraft service charge" is filed as an overdraft, not as a
+// routine account fee. `avoidable` marks the ones worth drafting a waiver for.
+var FEE_PATTERNS = [
+  { kind: "overdraft", label: "Overdraft fees",        avoidable: true,  hints: ["overdraft", "nsf", "insufficient funds", "returned item fee", "עמלת חריגה", "יתרה חורגת"] },
+  { kind: "late",      label: "Late fees",             avoidable: true,  hints: ["late fee", "late charge", "late payment fee", "past due fee", "ריבית פיגורים", "עמלת פיגור"] },
+  { kind: "atm",       label: "ATM and cash fees",     avoidable: true,  hints: ["atm fee", "atm surcharge", "cash advance fee", "cash advance", "עמלת משיכה"] },
+  { kind: "fx",        label: "Foreign currency fees", avoidable: true,  hints: ["foreign transaction fee", "foreign transaction", "foreign exchange fee", "fx fee", "currency conversion fee", "cross border fee", "עמלת המרה", "המרת מטבע"] },
+  { kind: "transfer",  label: "Transfer fees",         avoidable: true,  hints: ["wire fee", "wire transfer fee", "transfer fee", "convenience fee", "processing fee", "עמלת העברה"] },
+  { kind: "account",   label: "Account fees",          avoidable: true,  hints: ["monthly maintenance fee", "maintenance fee", "monthly service fee", "service charge", "account fee", "monthly fee", "דמי ניהול", "עמלת ניהול"] },
+  { kind: "card",      label: "Card fees",             avoidable: false, hints: ["annual fee", "card fee", "membership fee", "דמי כרטיס"] }
+];
+
+// Commitments, not leaks. A monthly cadence alone cannot tell rent from Netflix,
+// so without this list the audit happily reports a mortgage as "recoverable" and
+// - worse - the goal planner answers "you are 54/mo short" with "cancel your
+// rent". Anything matching here is still tracked and still forecast (the cash
+// cliff needs to know rent is coming), it just never counts as money to recover
+// and never gets a cancellation letter offered for it.
+var ESSENTIAL_HINTS = [
+  "rent", "landlord", "mortgage", "escrow", "hoa", "council tax", "property tax", "arnona",
+  "insurance", "assurance", "loan", "repayment", "student loan", "credit card payment", "card payment",
+  "electric", "electricity", "water bill", "gas bill", "utilities", "utility",
+  "internet", "broadband", "phone bill", "mobile bill", "cellular",
+  "tuition", "daycare", "nursery", "childcare", "kindergarten",
+  "supermarket", "grocery", "groceries", "petrol", "gas station", "fuel",
+  "pension", "child support", "alimony", "tax payment",
+  "שכר דירה", "משכנתא", "ארנונה", "חשמל", "מים", "ביטוח", "הלוואה", "מכולת", "דלק"
+];
+function looksEssential(label, categoryName) {
+  var norm = fmNormLabel(label);
+  for (var i = 0; i < ESSENTIAL_HINTS.length; i++) { if (labelHasHint(norm, ESSENTIAL_HINTS[i])) return true; }
+  var cat = fmNormLabel(categoryName);
+  return labelHasHint(cat, "rent") || labelHasHint(cat, "housing") || labelHasHint(cat, "utilities")
+      || labelHasHint(cat, "insurance") || labelHasHint(cat, "groceries") || labelHasHint(cat, "loans");
+}
+
+// Used by detectRecurring to hand a repeating bank fee over to detectFees rather
+// than mis-file it as a subscription. Shares one hint list with the detector, so
+// the two can never disagree about what counts as a fee.
+function looksLikeFee(label) {
+  var norm = fmNormLabel(label);
+  for (var i = 0; i < FEE_PATTERNS.length; i++) {
+    for (var h = 0; h < FEE_PATTERNS[i].hints.length; h++) {
+      if (labelHasHint(norm, FEE_PATTERNS[i].hints[h])) return true;
+    }
+  }
+  return false;
+}
+
+// Services that do the same job. Two of these in one family is a real decision
+// to put in front of the user - it is the difference between "you spend a lot on
+// streaming" and "you are paying twice for the same thing".
+var SERVICE_FAMILIES = [
+  { id: "streaming", label: "video streaming",   hints: ["netflix", "hulu", "disney", "hbo", "paramount", "peacock", "apple tv", "prime video", "crunchyroll", "showtime", "starz", "yes plus", "cellcom tv"] },
+  { id: "music",     label: "music streaming",   hints: ["spotify", "apple music", "youtube premium", "youtube music", "tidal", "deezer", "pandora", "amazon music"] },
+  { id: "cloud",     label: "cloud storage",     hints: ["icloud", "dropbox", "google one", "onedrive", "backblaze", "pcloud"] },
+  { id: "ai",        label: "AI assistants",     hints: ["chatgpt", "openai", "claude", "anthropic", "gemini advanced", "copilot", "midjourney", "perplexity"] },
+  { id: "fitness",   label: "fitness",           hints: ["gym", "fitness", "peloton", "classpass", "strava", "whoop", "planet fitness", "holmes place", "icon fitness"] },
+  { id: "news",      label: "news subscriptions", hints: ["nytimes", "new york times", "wsj", "washington post", "the economist", "substack", "haaretz", "calcalist"] },
+  { id: "design",    label: "creative tools",    hints: ["adobe", "canva", "figma", "affinity", "sketch app"] }
+];
+
+// --- Leak-shaped detectors (feed findMoney, i.e. the Spotted Leaks list) ------
+
+// Bank and card fees. The most literal "found money" there is: nobody chooses to
+// pay these. The annual figure is only filled in when the fee has actually
+// repeated across two or more months - a single overdraft is a one-off, and
+// annualizing it would inflate the recoverable total this surface is trusted for.
+function detectFees(tx, cats) {
+  var todayISO = rwToday();
+  var buckets = {};
+  (tx || []).forEach(function(t) {
+    if (!isAuditableExpense(t, todayISO) || !(t.amount > 0)) return;
+    var norm = fmNormLabel(t.label);
+    for (var i = 0; i < FEE_PATTERNS.length; i++) {
+      var p = FEE_PATTERNS[i], hit = false;
+      for (var h = 0; h < p.hints.length; h++) { if (labelHasHint(norm, p.hints[h])) { hit = true; break; } }
+      if (!hit) continue;
+      (buckets[p.kind] = buckets[p.kind] || { pat: p, items: [] }).items.push(t);
+      break;
+    }
+  });
+  var out = [];
+  Object.keys(buckets).forEach(function(k) {
+    var b = buckets[k];
+    b.items.sort(function(a, c) { return (c.date || "").localeCompare(a.date || ""); });
+    var total = b.items.reduce(function(s, t) { return s + t.amount; }, 0);
+    var months = {};
+    b.items.forEach(function(t) { months[rwYM(t.date)] = true; });
+    var span = Object.keys(months).length;
+    var repeats = b.items.length >= 2 && span >= 2;
+    var perMonth = repeats ? total / span : 0;
+    out.push({
+      key: "fee-" + k, kind: k, label: b.pat.label, avoidable: b.pat.avoidable,
+      count: b.items.length, total: round2(total), monthsSeen: span, repeats: repeats,
+      lastDate: b.items[0].date, lastAmount: round2(b.items[0].amount),
+      perMonth: round2(perMonth), annual: round2(perMonth * 12),
+      catId: b.items[0].catId, categoryName: b.items[0].category || "", items: b.items
+    });
+  });
+  out.sort(function(a, b) { return (b.annual - a.annual) || (b.total - a.total); });
+  return out;
+}
+
+// Yearly subscriptions about to auto-renew. These are the ones that hurt: a
+// single large charge nobody remembers agreeing to, twelve months after the
+// decision was made. Warning BEFORE it lands is the whole point, so this is the
+// one leak detector that looks forward rather than back.
+function detectAnnualRenewals(tx, cats, horizonDays) {
+  var todayISO = rwToday();
+  var horizon = horizonDays || 45;
+  var groups = groupByMerchant(tx, todayISO);
+  var out = [];
+  Object.keys(groups).forEach(function(key) {
+    var items = groups[key];                       // newest first
+    var med = fmMedian(items.map(function(t) { return t.amount; }));
+    if (med < 20) return;                          // too small to be worth a warning
+    var gaps = [];
+    for (var i = 0; i < items.length - 1; i++) gaps.push(fmDaysBetween(items[i].date, items[i + 1].date));
+    var medGap = fmMedian(gaps);
+    var yearly = items.length >= 2 && medGap >= 300 && medGap <= 430;
+    // The other real case: one big charge from a known subscription brand, about
+    // a year old and never repeated. Nothing has proved a cycle yet, but the
+    // renewal is coming - flagged at low confidence so the UI can say so.
+    var singleBrand = items.length === 1 && looksLikeSubscription(items[0].label) && fmDaysBetween(items[0].date, todayISO) >= 300;
+    if (!yearly && !singleBrand) return;
+    var cycle = yearly ? Math.round(medGap) : 365;
+    var due = rwAddDays(items[0].date, cycle);
+    var inDays = rwDayDelta(due, todayISO);
+    if (inDays < -7 || inDays > horizon) return;
+    var c = catById(cats, items[0].catId);
+    out.push({
+      key: "renew-" + key, merchant: items[0].label || key, amount: round2(items[0].amount),
+      dueDate: due, inDays: inDays, cycleDays: cycle, confidence: yearly ? "high" : "low",
+      catId: items[0].catId, categoryName: (c && c.name) || items[0].category || ""
+    });
+  });
+  out.sort(function(a, b) { return a.inDays - b.inDays; });
+  return out;
+}
+
+// Two or more live subscriptions doing the same job. Reported as one decision
+// per family rather than one per service, because the user cancels a family, not
+// a list. The annual figure is deliberately the CHEAPEST of the set - the
+// smallest honest saving - so the headline number never over-promises.
+function detectOverlapSubs(recurring) {
+  var byFam = {};
+  (recurring || []).forEach(function(g) {
+    var norm = fmNormLabel(g.merchant);
+    for (var i = 0; i < SERVICE_FAMILIES.length; i++) {
+      var f = SERVICE_FAMILIES[i];
+      for (var h = 0; h < f.hints.length; h++) {
+        if (norm.indexOf(f.hints[h]) !== -1) { (byFam[f.id] = byFam[f.id] || { fam: f, subs: [] }).subs.push(g); return; }
+      }
+    }
+  });
+  var out = [];
+  Object.keys(byFam).forEach(function(id) {
+    var b = byFam[id];
+    if (b.subs.length < 2) return;
+    b.subs.sort(function(a, c) { return c.annual - a.annual; });
+    var perMonth = b.subs.reduce(function(s, g) { return s + (g.cadence === "weekly" ? g.amount * 4.33 : g.amount); }, 0);
+    var cheapest = b.subs[b.subs.length - 1];
+    out.push({
+      key: "ovl-" + id, familyId: id, family: b.fam.label, count: b.subs.length,
+      merchants: b.subs.map(function(g) { return g.merchant; }),
+      perMonth: round2(perMonth), stackAnnual: round2(perMonth * 12),
+      dropCandidate: cheapest.merchant, annual: round2(cheapest.annual), subs: b.subs
+    });
+  });
+  out.sort(function(a, b) { return b.annual - a.annual; });
+  return out;
+}
+
+// An intro price that has since stepped up - the trial that converted while
+// nobody was looking. Distinct from a price hike: the FIRST charge is the odd
+// one out, not the latest, so detectPriceHikes (newest vs median) never sees it.
+function detectTrialConversions(recurring) {
+  var todayISO = rwToday();
+  var out = [];
+  (recurring || []).forEach(function(g) {
+    var items = (g.items || []).slice().sort(function(a, b) { return (a.date || "").localeCompare(b.date || ""); });
+    if (items.length < 3) return;
+    var intro = items[0].amount;
+    var med = fmMedian(items.slice(1).map(function(t) { return t.amount; }));
+    if (med <= 0 || intro > med * 0.5 || (med - intro) < 1) return;
+    var stepDate = items[1].date;
+    if (fmDaysBetween(stepDate, todayISO) > 120) return;   // old news, not actionable
+    out.push({
+      key: "trial-" + g.key, merchant: g.merchant, introAmt: round2(intro), nowAmt: round2(med),
+      startedDate: stepDate, annual: round2(med * 12), extraAnnual: round2((med - intro) * 12),
+      catId: g.catId, categoryName: g.categoryName
+    });
+  });
+  out.sort(function(a, b) { return b.annual - a.annual; });
+  return out;
+}
+
+// Death by a thousand cuts: many small charges in one category that nobody
+// notices individually. This one reports projectedAnnual rather than annual, on
+// purpose - it is a behaviour pattern to see, not money already recoverable, and
+// it must never inflate the "recoverable per year" figure.
+function detectMicroDrift(tx, cats) {
+  var todayISO = rwToday(), ym = rwYM(todayISO);
+  var all = (tx || []).filter(function(t) { return isAuditableExpense(t, todayISO); });
+  if (all.length < 20) return [];                 // not enough history to know what "small" is
+  var smallTicket = Math.max(3, round2(fmMedian(all.map(function(t) { return t.amount; })) * 0.6));
+  var monthTx = all.filter(function(t) { return rwYM(t.date) === ym; });
+  var monthTotal = monthTx.reduce(function(s, t) { return s + t.amount; }, 0);
+  if (monthTotal <= 0) return [];
+  var by = {};
+  monthTx.forEach(function(t) {
+    if (t.amount > smallTicket) return;
+    var c = catById(cats, t.catId);
+    var name = (c && c.name) || t.category || "Uncategorized";
+    var k = String(t.catId || name);
+    (by[k] = by[k] || { catId: t.catId, category: name, items: [] }).items.push(t);
+  });
+  var out = [];
+  Object.keys(by).forEach(function(k) {
+    var b = by[k];
+    var total = b.items.reduce(function(s, t) { return s + t.amount; }, 0);
+    if (b.items.length < 8 || total < monthTotal * 0.05) return;
+    out.push({
+      key: "drift-" + k + "-" + ym, catId: b.catId, category: b.category,
+      count: b.items.length, total: round2(total), avg: round2(total / b.items.length),
+      ticket: smallTicket, share: Math.round((total / monthTotal) * 100),
+      projectedAnnual: round2(total * 12)
+    });
+  });
+  out.sort(function(a, b) { return b.total - a.total; });
+  return out;
+}
+
+// --- Forward-looking detectors (feed Richard Watch, not the leak list) --------
+
+// Every charge the user's own history says is coming in the next N days. This is
+// the backbone: the cash-cliff detector spends it, and a "what is coming" surface
+// can render it directly. Confidence is reported rather than hidden, so a UI can
+// separate "this will happen" from "this probably will".
+function forecastUpcoming(tx, cats, days) {
+  var todayISO = rwToday();
+  var horizon = days || 30;
+  var limit = rwAddDays(todayISO, horizon);
+  var groups = groupByMerchant(tx, todayISO);
+  var out = [];
+  Object.keys(groups).forEach(function(key) {
+    var items = groups[key];                       // newest first
+    if (items.length < 2) return;
+    var gaps = [];
+    for (var i = 0; i < items.length - 1; i++) gaps.push(fmDaysBetween(items[i].date, items[i + 1].date));
+    var medGap = fmMedian(gaps);
+    var cycle = 0, conf = "low";
+    if (medGap >= 5 && medGap <= 9)           { cycle = 7; conf = items.length >= 4 ? "high" : "med"; }
+    else if (medGap >= 12 && medGap <= 17)    { cycle = 14; conf = items.length >= 4 ? "high" : "med"; }
+    else if (medGap >= 24 && medGap <= 35)    { cycle = Math.round(medGap); conf = items.length >= 3 ? "high" : "med"; }
+    else if (medGap >= 300 && medGap <= 430)  { cycle = Math.round(medGap); conf = "med"; }
+    if (!cycle) return;
+    var amt = fmMedian(items.map(function(t) { return t.amount; }));
+    if (amt <= 0) return;
+    var c = catById(cats, items[0].catId);
+    var next = rwAddDays(items[0].date, cycle);
+    // Roll past any cycle that already elapsed - a charge the user has not logged
+    // yet must not make the projection point at the past.
+    var guard = 0;
+    while (next < todayISO && guard++ < 60) next = rwAddDays(next, cycle);
+    while (next <= limit && guard++ < 90) {
+      out.push({
+        date: next, merchant: items[0].label || key, amount: round2(amt), cycleDays: cycle,
+        confidence: conf, catId: items[0].catId, categoryName: (c && c.name) || items[0].category || "",
+        inDays: rwDayDelta(next, todayISO)
+      });
+      next = rwAddDays(next, cycle);
+    }
+  });
+  out.sort(function(a, b) { return a.date.localeCompare(b.date); });
+  return out;
+}
+
+// On pace to blow a cap, told early enough to still change the outcome. The
+// value the user actually needs is dailyAllowance - what is left to spend per
+// day to land under the cap - not the fact that they are over.
+//
+// Folder ("shared") budgets are skipped: their catId is a folder key, and
+// resolving it needs the folder's member list, which this layer does not see.
+function detectBudgetPace(tx, budgets, cats) {
+  var todayISO = rwToday(), ym = rwYM(todayISO);
+  var dim = rwDaysInMonth(ym), dayNo = +todayISO.slice(8, 10);
+  var daysLeft = dim - dayNo;
+  var out = [];
+  (budgets || []).forEach(function(b) {
+    if (!b || b.folderId || b.dir === "target") return;
+    var limit = +b.limit || 0;
+    if (limit <= 0) return;
+    var spent = (tx || []).filter(function(t) {
+      return isAuditableExpense(t, todayISO) && rwYM(t.date) === ym && (t.catId === b.catId || t.category === b.category);
+    }).reduce(function(s, t) { return s + t.amount; }, 0);
+    if (spent <= 0) return;
+    // Floor the elapsed fraction: on the 2nd of the month a single big shop
+    // would otherwise project to fifteen times the cap and cry wolf.
+    var elapsed = Math.max(dayNo / dim, 0.2);
+    var projected = spent / elapsed;
+    if (projected <= limit * 1.05 || daysLeft < 3) return;
+    out.push({
+      key: "pace-" + (b.catId || b.category) + "-" + ym, catId: b.catId, category: b.category,
+      limit: round2(limit), spent: round2(spent), projected: round2(projected),
+      over: round2(projected - limit), pct: Math.round((spent / limit) * 100),
+      daysLeft: daysLeft,
+      // Already past the cap: there is no daily allowance that saves the month, and
+      // offering "0.00/day keeps it under" when it is already blown just reads as
+      // a broken number. The surface says how far over instead.
+      blown: spent >= limit, overNow: round2(Math.max(0, spent - limit)),
+      dailyAllowance: round2(Math.max(0, (limit - spent) / daysLeft))
+    });
+  });
+  out.sort(function(a, b) { return b.over - a.over; });
+  return out;
+}
+
+// The month is going to end short. Counts only what is already spent plus the
+// recurring charges still to land - never a guess about discretionary spending -
+// so the shortfall it reports is a floor, not a forecast the user can argue with.
+function detectCashCliff(tx, cats) {
+  var todayISO = rwToday(), ym = rwYM(todayISO);
+  var daysLeft = rwDaysInMonth(ym) - (+todayISO.slice(8, 10));
+  if (daysLeft < 2) return null;
+  var m = rwMonthTotals(tx, ym, todayISO);
+  if (m.income <= 0) return null;                  // no income logged: nothing to be short against
+  var upcoming = forecastUpcoming(tx, cats, daysLeft).filter(function(f) { return rwYM(f.date) === ym; });
+  var committed = upcoming.reduce(function(s, f) { return s + f.amount; }, 0);
+  var projected = m.expense + committed;
+  if (projected <= m.income) return null;
+  return {
+    key: "cliff-" + ym, income: m.income, spent: m.expense, committed: round2(committed),
+    projectedExpense: round2(projected), shortfall: round2(projected - m.income),
+    daysLeft: daysLeft, upcoming: upcoming.slice(0, 8)
+  };
+}
+
+// A goal that will not land by its deadline at the rate the user is actually
+// saving. The gap it reports is the number the whole app exists to close - see
+// linkLeaksToGap, which turns it into a specific list of things to cancel.
+function detectGoalRisk(goals, tx, savings, businesses, investing) {
+  var todayISO = rwToday();
+  // Trailing three FULL months of real net saving. The current month is excluded
+  // because it is partial and would always read low.
+  var rates = [];
+  for (var i = 1; i <= 3; i++) {
+    var t = rwMonthTotals(tx, rwMonthShift(i), todayISO);
+    if (t.income > 0) rates.push(t.net);
+  }
+  var actual = rates.length ? round2(rates.reduce(function(s, v) { return s + v; }, 0) / rates.length) : 0;
+  var out = [];
+  (goals || []).forEach(function(g) {
+    if (!g || !g.deadline) return;
+    var target = +g.target || 0;
+    if (target <= 0) return;
+    var saved = goalSavedAmount(g, tx, savings, businesses, investing);
+    var remaining = target - saved;
+    if (remaining <= 0) return;
+    var months = rwMonthsUntil(g.deadline, todayISO);
+    var overdue = months <= 0;
+    var need = overdue ? remaining : remaining / months;
+    if (!overdue && need <= actual) return;
+    out.push({
+      key: "goal-" + g.id, goalId: g.id, name: g.name || "Goal",
+      target: round2(target), saved: round2(saved), remaining: round2(remaining),
+      deadline: g.deadline, monthsLeft: months, overdue: overdue,
+      needPerMonth: round2(need), actualPerMonth: actual,
+      gapPerMonth: round2(Math.max(0, need - actual)),
+      pct: Math.min(100, Math.round((saved / target) * 100))
+    });
+  });
+  out.sort(function(a, b) { return b.gapPerMonth - a.gapPerMonth; });
+  return out;
+}
+
+// Saving less of each paycheck than usual. Held back until the 10th, because
+// before that a single early bill makes every month look like a collapse.
+function detectSavingsSlip(tx) {
+  var todayISO = rwToday(), ym = rwYM(todayISO);
+  if (+todayISO.slice(8, 10) < 10) return null;
+  var cur = rwMonthTotals(tx, ym, todayISO);
+  if (cur.income <= 0) return null;
+  var prior = [];
+  for (var i = 1; i <= 3; i++) {
+    var t = rwMonthTotals(tx, rwMonthShift(i), todayISO);
+    if (t.income > 0) prior.push(t.net / t.income);
+  }
+  if (prior.length < 2) return null;
+  var base = prior.reduce(function(s, v) { return s + v; }, 0) / prior.length;
+  var now = cur.net / cur.income;
+  if (now >= base - 0.10) return null;             // inside normal month-to-month noise
+  return {
+    key: "slip-" + ym, nowPct: Math.round(now * 100), basePct: Math.round(base * 100),
+    dropPts: Math.round((base - now) * 100), income: cur.income, spent: cur.expense,
+    perMonthGap: round2((base - now) * cur.income)
+  };
+}
+
+// The move that makes Richard an advisor instead of a dashboard: given a monthly
+// shortfall, name the exact leaks that close it. Greedy on monthly value rather
+// than optimal subset-sum, deliberately - the user acts on the SHORTEST list,
+// and "cancel these two things" beats a perfect five-item plan nobody finishes.
+function linkLeaksToGap(findings, gapPerMonth) {
+  var gap = round2(+gapPerMonth || 0);
+  var empty = { gap: gap, covers: false, picked: [], monthly: 0, annual: 0, shortfall: gap };
+  if (gap <= 0) return empty;
+  var pool = (findings || [])
+    .filter(function(f) { return (f.annual || 0) > 0; })
+    .map(function(f) { return { id: f.id, type: f.type, title: f.title, merchant: f.merchant, monthly: round2((f.annual || 0) / 12), annual: f.annual }; })
+    .sort(function(a, b) { return b.monthly - a.monthly; });
+  var picked = [], sum = 0;
+  for (var i = 0; i < pool.length && sum < gap; i++) { picked.push(pool[i]); sum += pool[i].monthly; }
+  return {
+    gap: gap, covers: sum >= gap, picked: picked,
+    monthly: round2(sum), annual: round2(sum * 12),
+    shortfall: round2(Math.max(0, gap - sum))
+  };
+}
+
+// --- Signals: one shape for everything the engine can say --------------------
+//
+// Detectors above return their own domain objects. Everything a SURFACE consumes
+// goes through rwSignal so a card, a notification and a digest line all read the
+// same fields and no screen has to know which detector produced a row.
+//
+//   id        stable across sessions - dismissals and "seen" state key off it
+//   group     "leak" (money already going out) | "risk" (something about to break)
+//   kind      "recover" (get money back) | "prevent" (stop a loss) | "decide" (a choice)
+//   horizon   "now" | "soon" | "watch" - how fast it needs a human
+//   severity  0-100, comparable ACROSS types, so one sorted list is meaningful
+//   tint      semantic token NAME resolved through T at render time, never a hex
+//   actions   what can actually be done about it - the UI's button list
+//   meta      the originating detector object, untouched, for detail views
+
+var RW_ACTIONS = {
+  draftCancel:     "draft_cancel",       // Richard writes the cancellation message
+  draftPriceMatch: "draft_pricematch",   // Richard writes the price-match/loyalty ask
+  draftFeeWaiver:  "draft_feewaiver",    // Richard writes the fee-refund request
+  markRecovered:   "mark_recovered",     // credit the amount to the Found Money tally
+  dismiss:         "dismiss",
+  remindBefore:    "remind_before",      // remind me before this renews
+  openBudget:      "open_budget",
+  openGoal:        "open_goal",
+  openCategory:    "open_category",
+  planGap:         "plan_gap",           // show the leaks that close this shortfall
+  reviewList:      "review_list"         // open the underlying transactions
+};
+
+// type -> presentation class. The first four are the shipped Found Money types
+// and keep exactly the tint and icon they already had, so nothing on the live
+// Spotted Leaks card changes appearance; the rest are new.
+var RW_STYLE = {
+  recurring: { tint: "orange", icon: "refresh",  group: "leak", kind: "decide",  horizon: "watch" },
+  hike:      { tint: "red",    icon: "up",       group: "leak", kind: "recover", horizon: "now"   },
+  duplicate: { tint: "gold",   icon: "credit",   group: "leak", kind: "recover", horizon: "now"   },
+  jump:      { tint: "btn",    icon: "chart",    group: "leak", kind: "prevent", horizon: "now"   },
+  fee:       { tint: "red",    icon: "shield",   group: "leak", kind: "recover", horizon: "now"   },
+  renewal:   { tint: "gold",   icon: "calendar", group: "leak", kind: "decide",  horizon: "soon"  },
+  overlap:   { tint: "purple", icon: "film",     group: "leak", kind: "decide",  horizon: "watch" },
+  trial:     { tint: "orange", icon: "spark",    group: "leak", kind: "recover", horizon: "now"   },
+  drift:     { tint: "blue",   icon: "coins",    group: "leak", kind: "decide",  horizon: "watch" },
+  pace:      { tint: "gold",   icon: "budgets",  group: "risk", kind: "prevent", horizon: "now"   },
+  cliff:     { tint: "red",    icon: "flame",    group: "risk", kind: "prevent", horizon: "now"   },
+  goalrisk:  { tint: "orange", icon: "goals",    group: "risk", kind: "prevent", horizon: "soon"  },
+  slip:      { tint: "blue",   icon: "down",     group: "risk", kind: "prevent", horizon: "watch" }
+};
+function rwStyle(type) { return RW_STYLE[type] || { tint: "orange", icon: "search", group: "leak", kind: "decide", horizon: "watch" }; }
+
+// Types whose money is already gone: a category that jumped, a month of small
+// charges. They rank and they show, but no total may treat them as reclaimable.
+var RW_OBSERVED_ONLY = { jump: true, drift: true };
+
+// Comparable across every type, which is the point: a 40/mo subscription and a
+// budget about to blow have to be rankable against each other in one list.
+// Money is scored against the user's own income (5% of a month = the top of the
+// money scale) so the same figure is not "huge" for every user; urgency adds the
+// rest. Falls back to a flat scale when no income is known yet.
+function rwSeverity(monthlyValue, monthlyIncome, urgency) {
+  var v = Math.max(0, +monthlyValue || 0);
+  var ceiling = monthlyIncome > 0 ? monthlyIncome * 0.05 : 50;
+  var money = Math.min(1, v / (ceiling || 1));
+  return Math.max(1, Math.min(100, Math.round(money * 70 + (urgency || 0))));
+}
+function rwUrgency(horizon) { return horizon === "now" ? 24 : horizon === "soon" ? 13 : 0; }
+
+function rwSignal(o) {
+  var st = rwStyle(o.type);
+  var horizon = o.horizon || st.horizon;
+  return {
+    id: o.id, type: o.type, group: o.group || st.group, kind: o.kind || st.kind,
+    horizon: horizon, tint: st.tint, icon: st.icon,
+    title: o.title, subtitle: o.subtitle,
+    amount: round2(o.amount || 0), annual: round2(o.annual || 0),
+    // Two different kinds of money, kept apart on purpose. `monthly` is money
+    // that keeps leaving every month until something changes, and is the ONLY
+    // figure allowed into a "per month" headline. `oneOff` is a single amount to
+    // claim back or an overspend that already happened - real, but quoting it
+    // "/mo" would be a lie, which is how a double charge of 89.90 ends up
+    // inflating a monthly total by the same amount.
+    // A third kind: money already spent that nothing will bring back - a category
+    // that jumped, a month of small charges. Worth seeing, worth ranking, but it
+    // belongs in neither total, because "recover" is not on offer.
+    monthly: round2(o.monthly || 0), oneOff: round2(o.oneOff || 0), observed: round2(o.observed || 0),
+    // True when another signal already counts this money. The row still shows -
+    // it carries its own decision - but every total skips it.
+    subsumed: !!o.subsumed,
+    // Ranking spreads a one-off across a year so a 90 double charge still
+    // outranks a 3/mo subscription, and counts observed money at half weight so
+    // a big overspend still surfaces without pretending it can be recovered.
+    // None of this enters a money total.
+    severity: rwSeverity((o.monthly || 0) + (o.oneOff || 0) / 12 + (o.observed || 0) / 24, o.income || 0, rwUrgency(horizon)),
+    actions: o.actions || [], meta: o.meta || null
+  };
+}
+// The only way a per-month total gets summed anywhere in Watch.
+function rwSumMonthly(signals) {
+  return round2((signals || []).reduce(function(s, x) { return s + (x.subsumed ? 0 : (x.monthly || 0)); }, 0));
+}
+function rwSumOneOff(signals) {
+  return round2((signals || []).reduce(function(s, x) { return s + (x.subsumed ? 0 : (x.oneOff || 0)); }, 0));
+}
+
+// --- The always-on pass -------------------------------------------------------
+// One call, everything Richard knows right now. Pure: same state in, same
+// structure out, no network and no clock beyond today's date - which is what
+// makes it safe to run on every render, on a schedule, or in a background job.
+//
+//   state = { tx, categories, budgets, goals, savings, businesses, investing,
+//             foundMoney, forecastDays }
+function richardWatch(state) {
+  var s = state || {};
+  var tx = s.tx || [], cats = s.categories || [], budgets = s.budgets || [], goals = s.goals || [];
+  var todayISO = rwToday();
+
+  // Trailing income sets the scale for every severity score below.
+  var incomes = [];
+  for (var i = 1; i <= 3; i++) {
+    var mt = rwMonthTotals(tx, rwMonthShift(i), todayISO);
+    if (mt.income > 0) incomes.push(mt.income);
+  }
+  var income = incomes.length ? round2(incomes.reduce(function(a, b) { return a + b; }, 0) / incomes.length) : 0;
+
+  var dismissed = (s.foundMoney && s.foundMoney.dismissed) || [];
+  var findings = findMoney(tx, cats).filter(function(f) { return dismissed.indexOf(f.id) === -1; });
+
+  var leaks = findings.map(function(f) {
+    return rwSignal({
+      id: f.id, type: f.type, title: f.title, subtitle: f.subtitle,
+      amount: f.amount, annual: f.annual,
+      monthly: f.annual > 0 ? f.annual / 12 : 0,
+      oneOff: (f.annual > 0 || RW_OBSERVED_ONLY[f.type]) ? 0 : f.amount,
+      observed: RW_OBSERVED_ONLY[f.type] ? f.amount : 0,
+      subsumed: !!f.subsumedBy,
+      income: income, actions: rwActionsFor(f), meta: f
+    });
+  });
+
+  var risks = [];
+
+  detectBudgetPace(tx, budgets, cats).forEach(function(p) {
+    risks.push(rwSignal({
+      id: p.key, type: "pace",
+      title: p.blown
+        ? (p.category + " is already " + dollars(p.overNow) + " over")
+        : (p.category + " is on pace to go over"),
+      subtitle: p.blown
+        ? (dollars(p.spent) + " against a " + dollars(p.limit) + " cap, " + p.daysLeft + " days still to go")
+        : (dollars(p.spent) + " of " + dollars(p.limit) + " with " + p.daysLeft + " days left - "
+           + dollars(p.dailyAllowance) + "/day keeps it under"),
+      amount: p.over, monthly: p.over, income: income,
+      actions: [RW_ACTIONS.openBudget, RW_ACTIONS.openCategory, RW_ACTIONS.dismiss], meta: p
+    }));
+  });
+
+  var cliff = detectCashCliff(tx, cats);
+  if (cliff) {
+    risks.push(rwSignal({
+      id: cliff.key, type: "cliff",
+      title: "This month ends " + dollars(cliff.shortfall) + " short",
+      subtitle: cliff.committed > 0
+        ? (dollars(cliff.spent) + " spent and " + dollars(cliff.committed) + " of known charges still to land, against "
+           + dollars(cliff.income) + " in")
+        : (dollars(cliff.spent) + " spent against " + dollars(cliff.income) + " in, with " + cliff.daysLeft + " days still to go"),
+      amount: cliff.shortfall, monthly: cliff.shortfall, income: income,
+      // No plan_gap here on purpose: unlike a goal, a cliff has no single
+      // "cancel this" fix - the shortfall is what already happened this month.
+      actions: [RW_ACTIONS.reviewList], meta: cliff
+    }));
+  }
+
+  var goalRisks = detectGoalRisk(goals, tx, s.savings, s.businesses, s.investing);
+  goalRisks.forEach(function(g) {
+    // The part that makes this an advisor: attach the exact leaks that close it.
+    var plan = linkLeaksToGap(findings, g.gapPerMonth);
+    g.plan = plan;
+    risks.push(rwSignal({
+      id: g.key, type: "goalrisk",
+      title: g.overdue
+        ? (g.name + " is past its date, " + dollars(g.remaining) + " short")
+        : (g.name + " is behind by " + dollars(g.gapPerMonth) + "/mo"),
+      subtitle: plan.covers
+        ? ("Cancelling " + plan.picked.length + " thing" + (plan.picked.length === 1 ? "" : "s") + " covers it - "
+           + dollars(plan.monthly) + "/mo freed")
+        : (dollars(g.needPerMonth) + "/mo needed, " + dollars(g.actualPerMonth) + "/mo is the current rate"),
+      amount: g.remaining, monthly: g.gapPerMonth, income: income,
+      actions: plan.picked.length ? [RW_ACTIONS.planGap, RW_ACTIONS.openGoal] : [RW_ACTIONS.openGoal],
+      meta: g
+    }));
+  });
+
+  var slip = detectSavingsSlip(tx);
+  if (slip) {
+    risks.push(rwSignal({
+      id: slip.key, type: "slip",
+      title: "Saving " + slip.dropPts + " points less than usual",
+      subtitle: slip.nowPct + "% this month against a " + slip.basePct + "% average - about "
+        + dollars(slip.perMonthGap) + " less put away",
+      amount: slip.perMonthGap, monthly: slip.perMonthGap, income: income,
+      actions: [RW_ACTIONS.reviewList, RW_ACTIONS.dismiss], meta: slip
+    }));
+  }
+
+  var forecast = forecastUpcoming(tx, cats, s.forecastDays || 30);
+  var all = leaks.concat(risks).sort(function(a, b) { return b.severity - a.severity; });
+
+  return {
+    generatedAt: new Date().toISOString(), today: todayISO, monthlyIncome: income,
+    all: all, leaks: leaks, risks: risks, forecast: forecast,
+    // The full detectGoalRisk() row per goal, not just the headline fields -
+    // the goal-at-risk screen needs remaining/monthsLeft/needPerMonth/
+    // actualPerMonth/overdue too, and this is the one place that computes them.
+    goalPlans: goalRisks,
+    totals: {
+      signals: all.length,
+      recoverableAnnual: recoverableTotal(findings),
+      recoverableMonthly: round2(recoverableTotal(findings) / 12),
+      // Money to claim back once (a double charge, a refundable fee) - reported
+      // beside the per-month figure, never folded into it.
+      oneOffTotal: rwSumOneOff(leaks),
+      // The largest single risk, NOT the sum of them: a blown food budget, a
+      // month ending short and a goal falling behind are three views of the same
+      // overspend, so adding them together would report a number three times the
+      // size of the actual problem.
+      riskCount: risks.length,
+      topRiskMonthly: risks.reduce(function(m, r) { return Math.max(m, r.monthly || 0); }, 0),
+      upcomingTotal: round2(forecast.reduce(function(s2, f) { return s2 + f.amount; }, 0)),
+      upcomingCount: forecast.length,
+      topSeverity: all.length ? all[0].severity : 0
+    }
+  };
+}
+
+// Buttons a given leak finding can actually offer. Kept beside the engine rather
+// than in a component so a card, a notification and a digest all agree on what
+// is possible for a row without re-deriving it.
+function rwActionsFor(f) {
+  var A = RW_ACTIONS;
+  if (f.type === "recurring" || f.type === "trial" || f.type === "overlap") return [A.draftCancel, A.markRecovered, A.dismiss];
+  if (f.type === "hike")      return [A.draftPriceMatch, A.draftCancel, A.dismiss];
+  if (f.type === "fee")       return [(f.meta && f.meta.avoidable) ? A.draftFeeWaiver : A.reviewList, A.markRecovered, A.dismiss];
+  if (f.type === "renewal")   return [A.remindBefore, A.draftCancel, A.dismiss];
+  if (f.type === "duplicate") return [A.markRecovered, A.dismiss];
+  if (f.type === "drift")     return [A.openCategory, A.reviewList, A.dismiss];
+  if (f.type === "jump")      return [A.openCategory, A.dismiss];
+  return [A.dismiss];
+}
+
+// --- Digest: what changed since the user last looked -------------------------
+// The 24/7 half of the promise. Everything a daily card, a push notification or
+// a weekly email needs, computed by diffing against the ids already seen - so a
+// user is told about a leak once, not every morning until they act.
+//
+//   seen = { ids: [signal ids already shown], date: "YYYY-MM-DD" }
+function buildWatchDigest(watch, seen) {
+  var prev = (seen && seen.ids) || [];
+  var all = (watch && watch.all) || [];
+  var nowIds = all.map(function(s) { return s.id; });
+  var fresh = all.filter(function(s) { return prev.indexOf(s.id) === -1; });
+  var resolved = prev.filter(function(id) { return nowIds.indexOf(id) === -1; });
+  var top = fresh.length ? fresh[0] : (all[0] || null);
+  // Only leaks carry a money figure into the headline. Risks are counted, never
+  // added: a blown budget, a short month and a slipping goal are three readings
+  // of one overspend, so summing them would quote a number several times the
+  // real problem - the same trap totals.topRiskMonthly avoids.
+  var freshLeaks = fresh.filter(function(s) { return s.group === "leak"; });
+  var freshRisks = fresh.filter(function(s) { return s.group !== "leak"; });
+  var freshMonthly = rwSumMonthly(freshLeaks);
+  var freshOneOff = rwSumOneOff(freshLeaks);
+
+  var worth = freshMonthly > 0
+    ? (dollars(freshMonthly) + "/mo" + (freshOneOff > 0 ? (" plus " + dollars(freshOneOff) + " to claim back") : ""))
+    : (freshOneOff > 0 ? (dollars(freshOneOff) + " to claim back") : "");
+  var watchTail = freshRisks.length ? (" and " + freshRisks.length + " thing" + (freshRisks.length === 1 ? "" : "s") + " to watch") : "";
+
+  var headline;
+  if (fresh.length === 0 && all.length === 0)  headline = "Nothing needs you today.";
+  else if (fresh.length === 0)                 headline = "Nothing new - " + all.length + " open item" + (all.length === 1 ? "" : "s") + " still waiting.";
+  else if (fresh.length === 1)                 headline = top.title;
+  else if (freshLeaks.length && worth)         headline = freshLeaks.length + " new leak" + (freshLeaks.length === 1 ? "" : "s") + " worth " + worth + watchTail + ".";
+  else                                         headline = fresh.length + " new things need a look.";
+
+  return {
+    date: (watch && watch.today) || rwToday(),
+    quiet: fresh.length === 0,
+    headline: headline,
+    newCount: fresh.length, openCount: all.length, resolvedCount: resolved.length,
+    newLeakCount: freshLeaks.length, newRiskCount: freshRisks.length,
+    newSignals: fresh, resolvedIds: resolved, top: top,
+    freshMonthly: freshMonthly, freshOneOff: freshOneOff,
+    // Persist this back as `seen` so tomorrow's digest knows what was already said.
+    nextSeen: { ids: nowIds, date: (watch && watch.today) || rwToday() }
+  };
+}
+
+// Deterministic prompt payload for Richard's narration. The model is handed
+// finished numbers and asked only to frame them - the same contract the Found
+// Money intro already uses, and the reason no figure on these surfaces can be
+// hallucinated.
+function watchPromptPayload(watch, limit) {
+  var w = watch || {}, t = w.totals || {};
+  var rows = (w.all || []).slice(0, limit || 8).map(function(s) {
+    return "- [" + s.group + "/" + s.horizon + "] " + s.title + " (" + s.subtitle + ")";
+  });
+  var lines = ["Open items, most urgent first:"].concat(rows.length ? rows : ["- none"]);
+  if (t.recoverableAnnual > 0) lines.push("Recoverable if acted on: " + dollars(t.recoverableAnnual) + " per year.");
+  if (t.topRiskMonthly > 0)    lines.push("Largest single risk this month: " + dollars(t.topRiskMonthly) + ".");
+  if (t.upcomingCount > 0)     lines.push("Charges expected in the next 30 days: " + t.upcomingCount + ", totalling " + dollars(t.upcomingTotal) + ".");
+  (w.goalPlans || []).forEach(function(g) {
+    if (g.plan && g.plan.picked.length) {
+      lines.push("Goal \"" + g.name + "\" is short " + dollars(g.gapPerMonth) + "/mo; cancelling "
+        + g.plan.picked.map(function(p) { return p.merchant || p.title; }).join(", ")
+        + " frees " + dollars(g.plan.monthly) + "/mo" + (g.plan.covers ? " and closes the gap." : ", still short " + dollars(g.plan.shortfall) + "."));
+    }
+  });
+  return lines.join("\n");
+}
+
+
+// ===== RICHARD WATCH - UI =====================================================
+// Screens built on the richardWatch() engine above: the Daily Brief, the
+// goal-at-risk plan, Next 30 Days, and the two watch-out cards. Every number
+// on these screens comes straight from the engine - nothing here computes or
+// invents a figure of its own, matching the rule the Spotted Leaks card
+// already established. Colour is read through T[] (T.orange/red/gold/blue/
+// purple/green), the same live tokens Spotted Leaks uses, so these screens
+// repaint correctly across Cornflower Ocean, Violet and Dark Ember and both
+// light and dark without any of this code knowing a single hex value.
+
+var RW_CARD_SHADOW = "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)";
+
+// Two weights of button on these screens, matching the new design rather than
+// Spotted Leaks' own (solid pill for every action): a soft tinted ghost for
+// in-row secondary actions, reserving the solid gradient CTA - T.btn, the
+// exact adaptive token the app's own primary buttons already use - for the
+// one commit action at the bottom of a sheet or screen.
+function rwPillButtonStyle(kind) {
+  var base = { fontFamily: UI, fontSize: 14.5, fontWeight: 600, letterSpacing: "-0.01em", border: "none", borderRadius: 12, height: 44, padding: "0 16px", cursor: "pointer" };
+  if (kind === "accent-ghost") return Object.assign({}, base, { background: T.orangeDim, color: T.orange });
+  return Object.assign({}, base, { background: T.fill1, color: T.ink2 });
+}
+function rwCtaButtonStyle(disabled) {
+  return { width: "100%", height: 52, border: "none", borderRadius: 16, background: disabled ? T.fill2 : T.btn, color: disabled ? T.ink3 : "#fff", fontFamily: UI, fontSize: 17, fontWeight: 700, letterSpacing: "-0.01em", cursor: disabled ? "default" : "pointer" };
+}
+
+// Plain "< Label" back link - the inline style every Watch screen's header
+// uses, distinct from GlassBackBar's floating pill (that one is for screens
+// that float over content; these screens have a normal opaque header).
+function WatchBackLink(props) {
+  return (
+    <button onClick={props.onPress} aria-label={props.label} style={{ display: "flex", alignItems: "center", gap: 2, height: 44, padding: 0, border: "none", background: "none", cursor: "pointer", marginInlineStart: -6, WebkitTapHighlightColor: "transparent" }}>
+      <span style={{ display: "flex", transform: "scaleX(-1)" }}><SVGIcon id="chevron" size={19} color={T.orange} /></span>
+      <span style={{ fontFamily: UI, fontSize: 15.5, color: T.orange }}>{props.label}</span>
+    </button>
+  );
+}
+
+// One row for one signal. NOW-band risk rows (pace/cliff) render their own
+// dedicated card instead (PaceCard/CliffCard) - this renders everything else:
+// every leak type, and any risk row outside the NOW band. Tapping a leak
+// takes the user to Overview, where Spotted Leaks already has the full
+// interactive detail (draft a letter, mark recovered, dismiss) - reusing that
+// working surface rather than rebuilding drafting a second time here. Tapping
+// a non-leak risk row runs `onOpen`, which the caller wires per type.
+function WatchRow(props) {
+  var s = props.signal;
+  var tint = T[s.tint] || T.orange;
+  var showChevron = props.chevron !== false;
+  return (
+    <button onClick={props.onOpen} style={{ width: "100%", textAlign: "start", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, padding: "15px 16px", borderRadius: 18, background: T.card, border: "none", boxShadow: RW_CARD_SHADOW, WebkitTapHighlightColor: "transparent" }}>
+      <IconBadge icon={s.icon} bg={tint} size={40} />
+      <div style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{s.title}</div>
+          <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3, lineHeight: 1.35 }}>{s.subtitle}</div>
+        </div>
+        <div style={{ textAlign: "end", flexShrink: 0 }}>
+          {rwMoneyBlock(s)}
+        </div>
+      </div>
+      {showChevron && <SVGIcon id="chevron" size={16} color={T.ink3} />}
+    </button>
+  );
+}
+
+// The one place a signal's money renders. Three shapes, matched to the three
+// figures the engine keeps apart (see rwSignal in the engine above) - a
+// "/mo" or "/yr" figure that keeps leaving until something changes, a one-off
+// amount waiting to be claimed back, or money already spent that a total
+// must never re-add. Subsumed rows get a dash and their figure moves inside
+// their own sentence instead - "included above" rather than a second number.
+function rwMoneyBlock(s) {
+  if (s.subsumed) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+        <div style={{ width: 20, height: 2, borderRadius: 1, background: T.ink3, marginTop: 8 }} />
+        <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.ink3, marginTop: 8, maxWidth: 72, textAlign: "end" }}>Included<br />above</div>
+      </div>
+    );
+  }
+  if (s.monthly > 0) {
+    var perYr = s.annual > 0;
+    return (
+      <div>
+        <div style={{ fontSize: 15, fontWeight: 600, color: T.ink, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+          {dollars(perYr ? s.annual : s.monthly)}<span style={{ fontSize: 12, fontWeight: 400, color: T.ink3 }}>{perYr ? "/yr" : "/mo"}</span>
+        </div>
+      </div>
+    );
+  }
+  if (s.oneOff > 0) {
+    return <div style={{ fontSize: 15, fontWeight: 600, color: T.ink, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{dollars(s.oneOff)}</div>;
+  }
+  return <div style={{ fontSize: 15, fontWeight: 600, color: T.ink3, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{dollars(s.observed)}</div>;
+}
+
+function WatchSectionHeader(props) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+      <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.ink }}>{props.label}</span>
+      <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 600, color: T.ink3, fontVariantNumeric: "tabular-nums" }}>{props.count}</span>
+      <div style={{ flex: 1, height: 1, background: T.sep }} />
+    </div>
+  );
+}
+
+// The one NOW-band card with real inline actions - "Raise the cap" and "See
+// what's in it" are the only two buttons the design puts on a pace row, so
+// this is a dedicated card rather than a generic WatchRow with buttons
+// bolted on. `p` is the raw detectBudgetPace() row carried in signal.meta.
+function PaceCard(props) {
+  var p = props.pace;
+  var pct = p.blown ? 100 : Math.min(100, Math.round((p.spent / p.limit) * 100));
+  return (
+    <div style={{ background: T.card, borderRadius: 18, boxShadow: RW_CARD_SHADOW, padding: 16 }}>
+      <div style={{ display: "flex", gap: 13, alignItems: "center" }}>
+        <IconBadge icon="budgets" bg={T.red} size={40} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.ink3 }}>{p.blown ? "Budget pace · already over" : "Budget pace"}</div>
+          <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginTop: 3 }}>{p.blown ? (p.category + " is already " + dollars(p.overNow) + " over") : (p.category + " is on pace to go over")}</div>
+        </div>
+      </div>
+      {p.blown ? (
+        <div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 16 }}>
+            <span style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: T.red }}>{dollars(p.overNow)}</span>
+            <span style={{ fontSize: 12.5, color: T.ink3 }}>over the cap</span>
+          </div>
+          <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 8 }}>{dollars(p.spent) + " against a " + dollars(p.limit) + " cap, " + p.daysLeft + " days still to go."}</div>
+        </div>
+      ) : (
+        <div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 16 }}>
+            <span style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{dollars(p.dailyAllowance)}<span style={{ fontSize: 15, fontWeight: 400, color: T.ink3 }}>/day</span></span>
+            <span style={{ fontSize: 12.5, color: T.ink3 }}>keeps it under</span>
+          </div>
+          <div style={{ marginTop: 16, position: "relative" }}>
+            <div style={{ display: "flex", height: 8, borderRadius: 4, overflow: "hidden", background: T.fill1 }}>
+              <div style={{ width: pct + "%", background: T.orange }} />
+              <div style={{ width: (100 - pct) + "%", background: T.red }} />
+            </div>
+            <div style={{ position: "absolute", insetInlineStart: pct + "%", top: -3, width: 2, height: 14, background: T.ink, borderRadius: 1 }} />
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
+            <span style={{ fontSize: 12.5, color: T.ink3, fontVariantNumeric: "tabular-nums" }}>{dollars(p.spent) + " of " + dollars(p.limit)}</span>
+            <span style={{ fontSize: 12.5, color: T.ink3, fontVariantNumeric: "tabular-nums" }}>{p.daysLeft + " days left"}</span>
+          </div>
+        </div>
+      )}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 16 }}>
+        <button onClick={props.onRaiseCap} style={rwPillButtonStyle("accent-ghost")}>Raise the cap</button>
+        <button onClick={props.onSeeWhatsInIt} style={rwPillButtonStyle()}>See what's in it</button>
+      </div>
+    </div>
+  );
+}
+
+function CliffCard(props) {
+  var c = props.cliff;
+  return (
+    <div style={{ background: T.card, borderRadius: 18, boxShadow: RW_CARD_SHADOW, padding: 16 }}>
+      <div style={{ display: "flex", gap: 13, alignItems: "center" }}>
+        <IconBadge icon="chart" bg={T.red} size={40} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.ink3 }}>Cash cliff</div>
+          <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginTop: 3 }}>{"This month ends " + dollars(c.shortfall) + " short"}</div>
+        </div>
+      </div>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 16 }}>
+        <span style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: T.red }}>{dollars(c.shortfall)}</span>
+        <span style={{ fontSize: 12.5, color: T.ink3 }}>short</span>
+      </div>
+      <div style={{ display: "flex", marginTop: 16 }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>In</div>
+          <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums", marginTop: 4 }}>{dollars(c.income)}</div>
+        </div>
+        <div style={{ width: 1, background: T.sep, margin: "0 16px" }} />
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>Spent</div>
+          <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums", marginTop: 4, color: T.red }}>{dollars(c.spent)}</div>
+        </div>
+      </div>
+      {c.committed > 0 && <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 16 }}>{"Plus " + dollars(c.committed) + " of known charges still to land."}</div>}
+    </div>
+  );
+}
+
+// Where a tap on a signal row goes. Leaks all resolve to the SAME place -
+// Overview, where Spotted Leaks already has the full interactive detail
+// (draft a letter, mark recovered, dismiss) - reusing that working surface
+// rather than re-building drafting a second time for every new screen.
+// Risk types get a real destination each.
+function rwSignalDestination(props, s) {
+  if (s.group === "leak") return function() { props.onNavigate("overview"); };
+  if (s.type === "goalrisk") return function() { props.onOpenGoalRisk(s.meta.goalId); };
+  if (s.type === "pace") return function() { props.onNavigate("budgets"); };
+  if (s.type === "cliff" || s.type === "slip") return function() { props.onNavigate("activity"); };
+  return function() {};
+}
+
+function rwFormatSwept(iso) {
+  try {
+    var d = new Date(iso);
+    var h = d.getHours(), m = d.getMinutes();
+    return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m;
+  } catch (e) { return ""; }
+}
+
+// ===== DAILY BRIEF =============================================================
+// The front door of Richard Watch. Busy state ranks every open signal into
+// NOW/SOON/WATCH bands; the quiet state (most days, by design) says one
+// sentence and gets out of the way - see the two facts under it, which exist
+// only to prove the sweep actually ran.
+function DailyBrief(props) {
+  var watch = richardWatch({
+    tx: props.tx, categories: props.categories, budgets: props.budgets, goals: props.goals,
+    savings: props.savings, businesses: props.businesses, investing: props.investing,
+    foundMoney: props.foundMoney
+  });
+  var t = watch.totals;
+  var swept = rwFormatSwept(watch.generatedAt);
+
+  var bands = { now: [], soon: [], watch: [] };
+  watch.all.forEach(function(s) { (bands[s.horizon] || bands.watch).push(s); });
+
+  function goTo(s) { return rwSignalDestination(props, s); }
+
+  if (t.signals === 0) {
+    var next = watch.forecast[0];
+    return (
+      <div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+          <SubViewBack onBack={function() { props.onNavigate("overview"); }} label="Overview" />
+        </div>
+        <div style={{ paddingTop: 8 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 15, background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+            <SVGIcon id="check" size={22} color={T.green} />
+          </div>
+          <div style={{ fontSize: 26, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em" }}>Nothing needs you today.</div>
+          <div style={{ fontSize: 15, color: T.ink2, marginTop: 12, lineHeight: 1.45 }}>I went through your charges, your budgets and your goals this morning. Everything is where it should be.</div>
+        </div>
+
+        <div style={{ marginTop: 28, background: T.card, borderRadius: 18, boxShadow: RW_CARD_SHADOW }}>
+          {next && (
+            <div style={{ display: "flex", alignItems: "center", gap: 16, height: 64, padding: "0 16px", borderBottom: t.upcomingCount > 0 ? "1px solid " + T.sep : "none" }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>Next charge</div>
+                <div style={{ fontSize: 15, color: T.ink, marginTop: 3 }}>{next.merchant + " - in " + next.inDays + " day" + (next.inDays === 1 ? "" : "s")}</div>
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: T.ink, fontVariantNumeric: "tabular-nums" }}>{dollars(next.amount)}</div>
+            </div>
+          )}
+          <div style={{ display: "flex", alignItems: "center", gap: 16, height: 64, padding: "0 16px" }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>Next 30 days</div>
+              <div style={{ fontSize: 15, color: T.ink, marginTop: 3 }}>{t.upcomingCount + " charge" + (t.upcomingCount === 1 ? "" : "s") + " coming"}</div>
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: T.ink, fontVariantNumeric: "tabular-nums" }}>{dollars(t.upcomingTotal)}</div>
+          </div>
+        </div>
+
+        <button onClick={function() { props.onNavigate("watchForecast"); }} style={Object.assign({}, rwPillButtonStyle(), { width: "100%", marginTop: 16 })}>See everything I checked</button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ fontFamily: UI, fontSize: 13.5, color: T.ink2 }}>{"Richard" + (swept ? (" · swept " + swept) : "")}</span>
+      </div>
+
+      <div style={{ fontSize: 26, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", marginTop: 10 }}>Daily brief</div>
+      {/* Leak count and risk count stay apart here too - t.signals mixes both,
+          and calling a budget-pace or goal-behind row a "leak" would be wrong. */}
+      <div style={{ fontSize: 15, color: T.ink, marginTop: 8, lineHeight: 1.45 }}>
+        {watch.leaks.length > 0 && <span>{watch.leaks.length + " new leak" + (watch.leaks.length === 1 ? "" : "s")}{t.recoverableMonthly > 0 && <span>{" worth "}<b style={{ fontVariantNumeric: "tabular-nums" }}>{dollars(t.recoverableMonthly) + "/mo"}</b></span>}</span>}
+        {watch.leaks.length > 0 && t.oneOffTotal > 0 && <span> plus </span>}
+        {t.oneOffTotal > 0 && <span><b style={{ fontVariantNumeric: "tabular-nums" }}>{dollars(t.oneOffTotal)}</b>{" to claim back"}</span>}
+        {watch.risks.length > 0 && <span>{(watch.leaks.length > 0 ? " and " : "") + watch.risks.length + " thing" + (watch.risks.length === 1 ? "" : "s") + " to watch"}</span>}
+        {"."}
+      </div>
+
+      <div style={{ marginTop: 20, background: T.card, borderRadius: 18, boxShadow: RW_CARD_SHADOW, padding: 16, display: "flex", alignItems: "stretch" }}>
+        <div style={{ flex: 1.35, minWidth: 0 }}>
+          <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: T.ink }}>{dollars(t.recoverableMonthly)}<span style={{ fontSize: 12, fontWeight: 400, color: T.ink3 }}>/mo</span></div>
+          <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3, marginTop: 4 }}>Recoverable</div>
+        </div>
+        <div style={{ width: 1, background: T.sep, margin: "0 12px" }} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums", color: T.ink }}>{dollars(t.oneOffTotal)}</div>
+          <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.ink3, marginTop: 4 }}>To claim back</div>
+        </div>
+        <div style={{ width: 1, background: T.sep, margin: "0 12px" }} />
+        <div style={{ flex: 0.62, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums", color: T.ink }}>{t.signals}</div>
+          <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.ink3, marginTop: 4 }}>Open</div>
+        </div>
+      </div>
+
+      {["now", "soon", "watch"].map(function(band) {
+        var rows = bands[band];
+        if (!rows.length) return null;
+        var label = band === "now" ? "Now" : band === "soon" ? "Soon" : "Watch";
+        return (
+          <div key={band} style={{ marginTop: 24 }}>
+            <WatchSectionHeader label={label} count={rows.length} />
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {rows.map(function(s) {
+                if (band === "now" && s.type === "pace") {
+                  return <PaceCard key={s.id} pace={s.meta} onRaiseCap={function() { props.onNavigate("budgets"); }} onSeeWhatsInIt={function() { props.onNavigate("activity"); }} />;
+                }
+                if (band === "now" && s.type === "cliff") {
+                  return <CliffCard key={s.id} cliff={s.meta} />;
+                }
+                return <WatchRow key={s.id} signal={s} onOpen={goTo(s)} />;
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ===== GOAL AT RISK =============================================================
+// Reads top to bottom as one sentence: behind, by exactly this much, here's
+// what covers it, one tap. When cancelling everything left over still doesn't
+// close the gap, the screen says so once and offers the two honest ways out -
+// give it a real extra month, or aim for the number the current rate actually
+// supports - both computed live, never a rounded guess.
+function GoalAtRiskDetail(props) {
+  var watch = richardWatch({
+    tx: props.tx, categories: props.categories, budgets: props.budgets, goals: props.goals,
+    savings: props.savings, businesses: props.businesses, investing: props.investing,
+    foundMoney: props.foundMoney
+  });
+  var gp = watch.goalPlans.filter(function(g) { return String(g.goalId) === String(props.goalId); })[0];
+  var goal = (props.goals || []).filter(function(g) { return String(g.id) === String(props.goalId); })[0];
+  var _sheet = useState(false); var sheetOpen = _sheet[0]; var setSheetOpen = _sheet[1];
+
+  if (!gp || !goal) {
+    return (
+      <div>
+        <SubViewBack onBack={function() { props.onNavigate("goals"); }} label="Goals" />
+        <div style={{ fontSize: 15, color: T.ink2 }}>This goal is back on pace - nothing to fix here anymore.</div>
+      </div>
+    );
+  }
+
+  var plan = gp.plan;
+  var findings = findMoney(props.tx, props.categories);
+  var saved = goalSavedAmount(goal, props.tx, props.savings, props.businesses, props.investing);
+  var pct = goal.target > 0 ? Math.min(100, Math.round((saved / goal.target) * 100)) : 0;
+
+  // Cancel a set of recurring findings: dismiss them (same contract Spotted
+  // Leaks' own "Keep it" uses) so they stop nagging and next render's
+  // actualPerMonth organically reflects the lower spend. Deliberately does
+  // NOT credit the tally - the saving is real only once it actually happens,
+  // same rule Spotted Leaks already applies to every recurring row.
+  function cancelFindings(ids) {
+    var fm = props.foundMoney || { tally: 0, dismissed: [], acted: [] };
+    if (props.onSaveFoundMoney) {
+      props.onSaveFoundMoney({ tally: fm.tally || 0, dismissed: (fm.dismissed || []).concat(ids), acted: fm.acted || [] });
+    }
+  }
+  function cancelAndBack(ids) { cancelFindings(ids); props.onNavigate("goals"); }
+
+  function giveOneMoreMonth() {
+    var d = new Date(goal.deadline + "T12:00:00");
+    d.setMonth(d.getMonth() + 1);
+    var newDeadline = d.toISOString().slice(0, 10);
+    props.onSaveGoals(props.goals.map(function(g) { return g.id === goal.id ? Object.assign({}, g, { deadline: newDeadline }) : g; }));
+    props.onNavigate("goals");
+  }
+  function aimForReal() {
+    props.onSaveGoals(props.goals.map(function(g) { return g.id === goal.id ? Object.assign({}, g, { target: aimTargetValue() }) : g; }));
+    props.onNavigate("goals");
+  }
+  // What the user will actually have by the existing deadline at the current
+  // real saving rate (gp.actualPerMonth - the same trailing-3-month average
+  // detectGoalRisk built the whole plan from) - never a rounded guess.
+  function aimTargetValue() {
+    return round2(saved + (gp.actualPerMonth * (gp.monthsLeft || 0)));
+  }
+
+  var heroStyle = { margin: "16px 0 0", borderRadius: 18, background: T.heroBg2 || T.heroBg, boxShadow: T.heroShadow, padding: 16, position: "relative", overflow: "hidden" };
+
+  return (
+    <div>
+      <SubViewBack onBack={function() { props.onNavigate("goals"); }} label="Goals" />
+      <div style={{ fontSize: 24, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em" }}>{goal.name}</div>
+
+      <div style={heroStyle}>
+        <div style={{ position: "absolute", insetBlockStart: -40, insetInlineEnd: -30, width: 160, height: 160, borderRadius: "50%", background: "radial-gradient(circle," + (T.heroGlow1 || "rgba(255,255,255,0.3)") + ",transparent 70%)", pointerEvents: "none" }} />
+        <div style={{ position: "relative" }}>
+          <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut }}>Behind by</div>
+          <div style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: T.heroInk, marginTop: 8 }}>{dollars(gp.gapPerMonth)}<span style={{ fontSize: 15, fontWeight: 400, color: T.heroMut }}>/mo</span></div>
+
+          {plan.covers ? (
+            <div>
+              <div style={{ height: 8, borderRadius: 4, background: T.heroTrack || "rgba(255,255,255,0.2)", marginTop: 16, overflow: "hidden" }}>
+                <div style={{ width: pct + "%", height: "100%", borderRadius: 4, background: T.heroInk }} />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
+                <span style={{ fontSize: 12.5, color: T.heroInk, fontVariantNumeric: "tabular-nums" }}>{dollars(saved) + " saved of " + dollars(goal.target)}</span>
+                <span style={{ fontSize: 12.5, color: T.heroMut, fontVariantNumeric: "tabular-nums" }}>{"due " + goal.deadline}</span>
+              </div>
+              <div style={{ height: 1, background: T.heroSep || "rgba(255,255,255,0.2)", margin: "16px 0" }} />
+              <div style={{ fontSize: 12.5, color: T.heroInk, fontVariantNumeric: "tabular-nums" }}>{dollars(goal.target - saved) + " to go, " + (gp.monthsLeft != null ? gp.monthsLeft : "") + " month" + (gp.monthsLeft === 1 ? "" : "s") + " left"}</div>
+            </div>
+          ) : (
+            <div>
+              <div style={{ display: "flex", gap: 2, height: 8, borderRadius: 4, background: T.heroTrack || "rgba(255,255,255,0.2)", marginTop: 16, overflow: "hidden" }}>
+                <div style={{ width: Math.min(100, Math.round((plan.monthly / gp.gapPerMonth) * 100)) + "%", background: T.heroInk }} />
+                <div style={{ flex: 1, background: "repeating-linear-gradient(135deg," + (T.heroSep || "rgba(255,255,255,0.28)") + " 0 4px, transparent 4px 8px)" }} />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
+                <span style={{ fontSize: 12.5, color: T.heroInk, fontVariantNumeric: "tabular-nums" }}>{dollars(plan.monthly) + "/mo covered"}</span>
+                <span style={{ fontSize: 12.5, color: T.heroMut, fontVariantNumeric: "tabular-nums" }}>{dollars(plan.shortfall) + "/mo still short"}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {plan.covers ? (
+        <div>
+          <div style={{ margin: "16px 0 0", background: T.card, borderRadius: 18, boxShadow: RW_CARD_SHADOW, padding: 16, display: "flex", alignItems: "center" }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>Needs</div>
+              <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums", marginTop: 4 }}>{dollars(gp.needPerMonth)}<span style={{ fontSize: 12, fontWeight: 400, color: T.ink3 }}>/mo</span></div>
+            </div>
+            <div style={{ width: 1, background: T.sep, margin: "0 16px", alignSelf: "stretch" }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>Currently saving</div>
+              <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums", marginTop: 4, color: T.ink3 }}>{dollars(gp.actualPerMonth)}<span style={{ fontSize: 12, fontWeight: 400 }}>/mo</span></div>
+            </div>
+          </div>
+
+          <div style={{ paddingTop: 24 }}>
+            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: DISP, letterSpacing: "-0.01em", color: T.ink }}>{"Cancelling " + plan.picked.length + " thing" + (plan.picked.length === 1 ? "" : "s") + " covers it - " + dollars(plan.monthly) + "/mo freed"}</div>
+            {plan.shortfall === 0 && plan.monthly > gp.gapPerMonth && <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 8 }}>{"That is " + dollars(round2(plan.monthly - gp.gapPerMonth)) + "/mo more than the gap."}</div>}
+
+            <div style={{ marginTop: 16, background: T.card, borderRadius: 18, boxShadow: RW_CARD_SHADOW }}>
+              {plan.picked.map(function(p, i) {
+                return (
+                  <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 16, height: 64, padding: "0 16px", borderBottom: i < plan.picked.length - 1 ? "1px solid " + T.sep : "none" }}>
+                    <div style={{ width: 24, height: 24, borderRadius: 8, background: T.btn, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <SVGIcon id="check" size={13} color="#fff" />
+                    </div>
+                    <span style={{ flex: 1, fontSize: 15, color: T.ink }}>{p.merchant || p.title}</span>
+                    <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums" }}>{dollars(p.monthly)}<span style={{ fontSize: 12, fontWeight: 400, color: T.ink3 }}>/mo</span></span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 8 }}>
+            <BigBtn label="Cancel both" onPress={function() { cancelAndBack(plan.picked.map(function(p) { return p.id; })); }} />
+            <button onClick={function() { setSheetOpen(true); }} style={{ width: "100%", height: 44, border: "none", borderRadius: 12, background: "none", color: T.orange, fontFamily: UI, fontSize: 14.5, fontWeight: 600, cursor: "pointer" }}>Pick different ones</button>
+          </div>
+        </div>
+      ) : (
+        <div>
+          <div style={{ paddingTop: 24 }}>
+            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: DISP, letterSpacing: "-0.01em", color: T.ink, lineHeight: 1.3 }}>I can't close this one with cancellations alone.</div>
+            <div style={{ fontSize: 15, color: T.ink2, marginTop: 8, lineHeight: 1.45 }}>Everything left to cancel comes to <b style={{ color: T.ink, fontVariantNumeric: "tabular-nums" }}>{dollars(plan.monthly) + "/mo"}</b>. That gets you most of the way - here are the two honest ways to finish it.</div>
+          </div>
+
+          <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+            <button onClick={giveOneMoreMonth} style={{ textAlign: "start", width: "100%", background: T.card, borderRadius: 18, border: "none", boxShadow: RW_CARD_SHADOW, padding: 16, display: "flex", gap: 13, alignItems: "center", cursor: "pointer", fontFamily: UI }}>
+              <IconBadge icon="calendar" bg={T.orange} size={40} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>Give it one more month</div>
+                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>{(function() { var d = new Date(goal.deadline + "T12:00:00"); d.setMonth(d.getMonth() + 1); return "Due " + d.toISOString().slice(0, 10) + " instead"; })()}</div>
+              </div>
+              <SVGIcon id="chevron" size={16} color={T.ink3} />
+            </button>
+            <button onClick={aimForReal} style={{ textAlign: "start", width: "100%", background: T.card, borderRadius: 18, border: "none", boxShadow: RW_CARD_SHADOW, padding: 16, display: "flex", gap: 13, alignItems: "center", cursor: "pointer", fontFamily: UI }}>
+              <IconBadge icon="goals" bg={T.orange} size={40} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>Aim for what you'll actually have</div>
+                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>{dollars(aimTargetValue()) + " by " + goal.deadline + ", keeping the date"}</div>
+              </div>
+              <SVGIcon id="chevron" size={16} color={T.ink3} />
+            </button>
+          </div>
+
+          <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 8 }}>
+            <BigBtn label={plan.picked.length ? ("Cancel " + (plan.picked[0].merchant || plan.picked[0].title) + " anyway") : "Cancel anyway"} onPress={function() { if (plan.picked.length) cancelAndBack(plan.picked.map(function(p) { return p.id; })); }} disabled={!plan.picked.length} />
+            <button onClick={function() { props.onNavigate("goals"); }} style={{ width: "100%", height: 44, border: "none", borderRadius: 12, background: "none", color: T.orange, fontFamily: UI, fontSize: 14.5, fontWeight: 600, cursor: "pointer" }}>Leave it for now</button>
+          </div>
+        </div>
+      )}
+
+      <PickCancelSheet open={sheetOpen} onClose={function() { setSheetOpen(false); }} findings={findings} gapPerMonth={gp.gapPerMonth} onConfirm={function(ids) { setSheetOpen(false); cancelAndBack(ids); }} />
+    </div>
+  );
+}
+
+// One bottom sheet, over the full recurring pool (not just the picked set),
+// so the user can swap in a different combination than the automatic pick.
+// The footer keeps score live as items are ticked, so the moment the
+// selection is enough it says so - no subtraction left for the user to do.
+function PickCancelSheet(props) {
+  var pool = (props.findings || []).filter(function(f) { return f.type === "recurring" && !f.subsumedBy; });
+  var _sel = useState({}); var sel = _sel[0]; var setSel = _sel[1];
+  useEffect(function() { if (props.open) setSel({}); }, [props.open]);
+
+  var pickedIds = Object.keys(sel).filter(function(id) { return sel[id]; });
+  var monthly = round2(pool.filter(function(f) { return sel[f.id]; }).reduce(function(s, f) { return s + (f.annual > 0 ? f.annual / 12 : 0); }, 0));
+  var gap = props.gapPerMonth || 0;
+  var covers = monthly >= gap && gap > 0;
+  var spare = round2(monthly - gap);
+
+  return (
+    <Overlay open={props.open} onClose={props.onClose} title="Pick what to cancel">
+      <div style={{ fontSize: 12.5, color: T.ink2, marginTop: -8, marginBottom: 16, fontVariantNumeric: "tabular-nums" }}>{"You need " + dollars(gap) + "/mo to get this goal back on pace."}</div>
+      <div style={{ background: T.fill0, borderRadius: 18 }}>
+        {pool.map(function(f, i) {
+          var on = !!sel[f.id];
+          return (
+            <button key={f.id} onClick={function() { setSel(function(prev) { var next = Object.assign({}, prev); next[f.id] = !next[f.id]; return next; }); }}
+              style={{ width: "100%", textAlign: "start", display: "flex", alignItems: "center", gap: 16, height: 60, padding: "0 16px", border: "none", background: "none", borderBottom: i < pool.length - 1 ? "1px solid " + T.sep : "none", cursor: "pointer", fontFamily: UI }}>
+              <div style={{ width: 24, height: 24, borderRadius: 8, flexShrink: 0, background: on ? T.btn : "none", border: on ? "none" : "1.5px solid " + T.sep, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {on && <SVGIcon id="check" size={13} color="#fff" />}
+              </div>
+              <span style={{ flex: 1, fontSize: 15, color: T.ink }}>{f.merchant}</span>
+              <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums" }}>{dollars(f.amount)}<span style={{ fontSize: 12, fontWeight: 400, color: T.ink3 }}>/mo</span></span>
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ marginTop: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
+          <span style={{ fontSize: 12.5, color: T.ink2 }}>{pickedIds.length === 0 ? "Nothing selected yet" : (pickedIds.length + " selected" + (covers ? (" - covers it, " + dollars(spare) + "/mo spare") : ""))}</span>
+          <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: covers ? T.green : T.ink }}>{dollars(monthly)}<span style={{ fontSize: 12, fontWeight: 400, color: T.ink3 }}>/mo</span></span>
+        </div>
+        <BigBtn label={"Cancel these " + pickedIds.length} disabled={pickedIds.length === 0} onPress={function() { props.onConfirm(pickedIds); }} />
+      </div>
+    </Overlay>
+  );
+}
+
+// Three bars, filled by confidence - "high"/"med"/"low" read apart without
+// needing a second colour, since colour on this screen stays reserved for
+// role (there is no role here - every upcoming charge is neutral until it
+// lands), matching the design's own rule for horizon everywhere else.
+function ConfidenceMeter(props) {
+  var level = props.level;
+  var filled = level === "high" ? 3 : level === "med" ? 2 : 1;
+  var word = level === "high" ? "High" : level === "med" ? "Likely" : "Low";
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+      <span style={{ display: "flex", gap: 2 }}>
+        {[0, 1, 2].map(function(i) { return <i key={i} style={{ width: 5, height: 9, borderRadius: 1, display: "block", background: i < filled ? T.orange : T.fill2 }} />; })}
+      </span>
+      <span style={{ fontSize: 12.5, color: T.ink3 }}>{word}</span>
+    </div>
+  );
+}
+
+// ===== NEXT 30 DAYS =============================================================
+// Every charge the user's own history says is coming, ranked by date - not a
+// calendar guess, a projection built from real recurring cadences. Dates stay
+// plain ISO strings, matching how the rest of the app already shows dates
+// (never a localized month name), so this doesn't open new i18n surface area.
+function NextThirtyDays(props) {
+  var watch = richardWatch({
+    tx: props.tx, categories: props.categories, budgets: props.budgets, goals: props.goals,
+    savings: props.savings, businesses: props.businesses, investing: props.investing,
+    foundMoney: props.foundMoney, forecastDays: 30
+  });
+  var forecast = watch.forecast;
+  var total = watch.totals.upcomingTotal;
+
+  var bands = { "This week": [], "Next week": [], "Later": [] };
+  forecast.forEach(function(f) {
+    var key = f.inDays <= 6 ? "This week" : f.inDays <= 13 ? "Next week" : "Later";
+    bands[key].push(f);
+  });
+
+  return (
+    <div>
+      <SubViewBack onBack={function() { props.onNavigate("watchBrief"); }} label="Daily brief" />
+      <div style={{ fontSize: 24, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em" }}>Next 30 days</div>
+      <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 8 }}>From your own history, not a guess at the calendar.</div>
+
+      <div style={{ margin: "20px 0", background: T.card, borderRadius: 18, boxShadow: RW_CARD_SHADOW, padding: 16, display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+        <div>
+          <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>Total</div>
+          <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 4 }}>{"across " + forecast.length + " charge" + (forecast.length === 1 ? "" : "s")}</div>
+        </div>
+        <div style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: T.ink }}>{dollars(total)}</div>
+      </div>
+
+      {["This week", "Next week", "Later"].map(function(band) {
+        var rows = bands[band];
+        if (!rows.length) return null;
+        return (
+          <div key={band} style={{ marginBottom: 20 }}>
+            <WatchSectionHeader label={band} count={rows.length} />
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {rows.map(function(f, i) {
+                return (
+                  <div key={f.date + "-" + f.merchant + "-" + i} style={{ display: "flex", gap: 16, alignItems: "center" }}>
+                    <div style={{ width: 40, flexShrink: 0, textAlign: "end" }}>
+                      <div style={{ fontSize: 11, color: T.ink3, fontVariantNumeric: "tabular-nums" }}>{f.date}</div>
+                      <div style={{ fontSize: 11, color: T.ink3, marginTop: 2, fontVariantNumeric: "tabular-nums" }}>{"+" + f.inDays + "d"}</div>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0, background: T.card, borderRadius: 18, boxShadow: RW_CARD_SHADOW, padding: 16, display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{f.merchant}</div>
+                        <ConfidenceMeter level={f.confidence} />
+                      </div>
+                      <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums" }}>{dollars(f.amount)}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+
+      {forecast.length === 0 && <div style={{ fontSize: 15, color: T.ink3, textAlign: "center", padding: "40px 0" }}>Nothing on the horizon yet.</div>}
+    </div>
+  );
+}
+
+// ===== WATCH-OUTS =============================================================
+// The two forward-looking warnings on their own screen, for when the Daily
+// Brief's NOW band is worth a second look on its own. Same cards the Daily
+// Brief renders inline - one definition, reused, so the two screens can never
+// visually drift apart.
+function WatchOuts(props) {
+  var watch = richardWatch({
+    tx: props.tx, categories: props.categories, budgets: props.budgets, goals: props.goals,
+    savings: props.savings, businesses: props.businesses, investing: props.investing,
+    foundMoney: props.foundMoney
+  });
+  var paceRows = watch.risks.filter(function(r) { return r.type === "pace"; });
+  var cliffRows = watch.risks.filter(function(r) { return r.type === "cliff"; });
+
+  return (
+    <div>
+      <SubViewBack onBack={function() { props.onNavigate("watchBrief"); }} label="Daily brief" />
+      <div style={{ fontSize: 24, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em" }}>Watch-outs</div>
+
+      <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+        {paceRows.map(function(r) {
+          return <PaceCard key={r.id} pace={r.meta} onRaiseCap={function() { props.onNavigate("budgets"); }} onSeeWhatsInIt={function() { props.onNavigate("activity"); }} />;
+        })}
+        {cliffRows.map(function(r) { return <CliffCard key={r.id} cliff={r.meta} />; })}
+        {paceRows.length === 0 && cliffRows.length === 0 && (
+          <div style={{ fontSize: 15, color: T.ink3, textAlign: "center", padding: "40px 0" }}>Nothing to watch right now.</div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function ImportSheet(props) {
@@ -30101,6 +31746,292 @@ function GlassBackBar(props) {
   );
 }
 
+// A small header-mounted group of independent, always-tappable shortcuts
+// (Categories / Profile). Built on the same glass-lens mechanic as
+// GlassTabBar just above, so the header reads as the same chrome language as
+// the bottom tab bar - plus two interactions the bottom bar doesn't have:
+//
+//   - DRAG: press anywhere on the bar and slide. The lens follows the finger,
+//     the item under it lights up, and releasing commits that item. Sliding
+//     well off the bar and releasing cancels, the way iOS controls do.
+//   - LONG PRESS: hold ~340ms and the whole bar stretches - a squash-and-
+//     stretch that makes the glass read as elastic rather than rigid.
+//     Dragging past either end rubber-bands it further, damped.
+//
+// Unlike GlassTabBar these are independent shortcuts, not a mutually
+// exclusive tab set, so when neither is the current screen the lens stays
+// hidden until a finger touches the bar.
+function HeaderShortcutBar(props) {
+  var items = props.items, current = props.current;
+  var rowRef = useRef(null);
+  var lensRef = useRef(null);
+  var btnRefs = useRef([]);
+  var _drag = useState(-1); var drag = _drag[0]; var setDrag = _drag[1];
+  var _held = useState(false); var held = _held[0]; var setHeld = _held[1];
+  var holdTimer = useRef(null);
+  var committedRef = useRef(false);   // pointerup already ran onClick
+
+  var activeIndex = -1;
+  for (var ai = 0; ai < items.length; ai++) { if (items[ai].id === current) { activeIndex = ai; break; } }
+
+  // ── lens positioning ─────────────────────────────────────────────────────
+  // BUG, found and fixed: this used to be two independent systems computing
+  // the same number - a React effect (re-measuring on button-crossing) for
+  // the lens, and an imperative rAF loop for the bar's own squash-stretch.
+  // The effect's scale-compensation was only correct at the instant it ran;
+  // if the stretch amount kept changing afterward (which it does throughout
+  // a hold) with no button-crossing to re-trigger the effect, the lens went
+  // stale and drifted off its button. Fix: ONE function, `positionLens`,
+  // used by both the idle (React-driven) and live-drag (imperative) paths,
+  // and it never needs scale-compensation math at all - it only ever runs
+  // against rects captured while the bar is at scale(1,1) (both callers
+  // guarantee this), so the offset is already correct in the row's own
+  // layout space. When the row is later scaled for the stretch, the lens -
+  // an ordinary child of it - is carried along by the browser automatically,
+  // exactly like the buttons are. Nothing left to keep in sync by hand.
+  // Deliberately local, not the shared var(--m-settle)/var(--m-spring): this
+  // bar's motion was asked to be slowed down specifically, and --m-settle is
+  // used all over the app (GlassTabBar included) - changing it here would
+  // have slowed every other spring in Richy as a side effect. Same spring
+  // shape (--m-spring's own curve), just a longer local duration.
+  var BAR_SPRING = "cubic-bezier(0.34,1.32,0.5,1)";
+  var DRAG_EASE = "transform 0.26s cubic-bezier(0.22,1,0.36,1)";
+  var SETTLE_EASE = "transform 0.68s " + BAR_SPRING + ", width 0.68s " + BAR_SPRING + ", opacity 0.3s ease";
+  var PRESS_EASE = "transform 0.68s " + BAR_SPRING;
+  function positionLens(idx, rects, barRect, animated) {
+    var node = lensRef.current; if (!node) return;
+    if (idx < 0 || !rects || !rects[idx] || !barRect) {
+      node.style.transition = animated ? "opacity 0.22s ease" : "none";
+      node.style.opacity = "0";
+      return;
+    }
+    var x = rects[idx].left - barRect.left, w = rects[idx].width;
+    node.style.transition = animated ? SETTLE_EASE : DRAG_EASE;
+    node.style.transform = "translateX(" + x.toFixed(2) + "px)";
+    node.style.width = w.toFixed(2) + "px";
+    node.style.opacity = "1";
+  }
+  // Idle case: nothing is being touched, but `current` changed from outside
+  // (real navigation elsewhere in the app) or the bar just mounted/resized.
+  // The bar is guaranteed at rest here, so a fresh, unscaled measurement is
+  // always safe - and skipped outright while a gesture owns positioning, so
+  // this can never fight the imperative path mid-drag.
+  useEffect(function() {
+    function place() {
+      if (dragRef.current >= 0) return;
+      var row = rowRef.current; if (!row) return;
+      var barRect = row.getBoundingClientRect();
+      var rects = items.map(function(_, i) {
+        var b = btnRefs.current[i]; return b ? b.getBoundingClientRect() : null;
+      });
+      positionLens(activeIndex, rects, barRect, true);
+    }
+    place();
+    window.addEventListener("resize", place, { passive: true });
+    return function() { window.removeEventListener("resize", place); };
+  }, [activeIndex, items.length]);
+
+  // ── drag plumbing ────────────────────────────────────────────────────────
+  // PERFORMANCE, learned the hard way: the first cut of this drove the stretch
+  // through React state on every pointermove, which re-rendered the whole bar
+  // 60-120x a second AND re-measured every button per move - forced layout on
+  // an element that is simultaneously transformed and backdrop-filtered. It
+  // felt heavy. So the continuous parts are deliberately kept OFF React's
+  // render path:
+  //   - button rects are measured ONCE per gesture, at pointerdown;
+  //   - moves are coalesced into one rAF;
+  //   - the stretch is written straight to node.style, never via setState.
+  // React state now only carries what changes rarely (which item is lit, and
+  // whether the long press has engaged), so a whole drag is ~1-2 renders
+  // instead of hundreds. Because of that, `transform`/`transition` must NOT
+  // appear in the JSX style object below - React would clobber the imperative
+  // writes on the next render.
+  var rectsRef = useRef(null);      // per-button rects, cached per gesture
+  var barRectRef = useRef(null);
+  var rafRef = useRef(0);
+  var pendingXRef = useRef(0);
+  var heldRef = useRef(false);
+  var dragRef = useRef(-1);
+
+  // Hit-testing runs off real rects rather than arithmetic on index/width, so
+  // it stays correct under RTL without a mirrored code path.
+  function idxFromCache(clientX) {
+    var rs = rectsRef.current, br = barRectRef.current;
+    if (!rs || !br) return -1;
+    for (var i = 0; i < rs.length; i++) {
+      if (rs[i] && clientX >= rs[i].left && clientX <= rs[i].right) return i;
+    }
+    // Past the ends, or in the padding between buttons: snap to the nearer end
+    // so the lens keeps tracking instead of stalling.
+    return clientX < br.left + br.width / 2 ? 0 : rs.length - 1;
+  }
+  // Squash-and-stretch, written directly to the node. The rubber band is
+  // damped by a fractional power so it eases toward a limit instead of running
+  // away, and the bar widens as it flattens - what actually happens when you
+  // pull something elastic.
+  function paint(clientX) {
+    var row = rowRef.current, br = barRectRef.current;
+    if (!row || !br) return;
+    var over = clientX < br.left ? clientX - br.left
+             : clientX > br.right ? clientX - br.right : 0;
+    var pull = over === 0 ? 0 : (over > 0 ? 1 : -1) * Math.pow(Math.abs(over), 0.68) * 1.15;
+    var pullAbs = Math.min(Math.abs(pull), 26);
+    var sX = (heldRef.current ? 1.055 : 1) + pullAbs / 340;
+    var sY = (heldRef.current ? 0.945 : 1) - pullAbs / 900;
+    var shift = over === 0 ? 0 : (pull > 0 ? 1 : -1) * pullAbs * 0.42;
+    row.style.transform = "translateX(" + shift.toFixed(2) + "px) scale(" + sX.toFixed(4) + "," + sY.toFixed(4) + ")";
+  }
+  function inBounds(e) {
+    var br = barRectRef.current; if (!br) return false;
+    var slop = 28;   // a little forgiveness
+    return e.clientX >= br.left - slop && e.clientX <= br.right + slop &&
+           e.clientY >= br.top - slop && e.clientY <= br.bottom + slop;
+  }
+  function settle() {
+    var row = rowRef.current; if (!row) return;
+    row.style.transition = "transform 0.68s " + BAR_SPRING;
+    row.style.transform = "translateX(0px) scale(1,1)";
+    // Drop the compositor hint once the spring is done - leaving willChange on
+    // permanently pins a layer for a bar that is idle almost all the time.
+    // Window bumped to match the slower 0.68s settle above.
+    setTimeout(function() { if (rowRef.current && dragRef.current < 0) rowRef.current.style.willChange = "auto"; }, 760);
+  }
+  function endDrag() {
+    if (holdTimer.current) { clearTimeout(holdTimer.current); holdTimer.current = null; }
+    if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0; }
+    dragRef.current = -1; heldRef.current = false;
+    setDrag(-1); setHeld(false);
+    settle();
+    // Settle the lens back to wherever the resting screen actually is. This
+    // matters most on CANCEL (released outside the bar): `current` hasn't
+    // changed, so the idle effect's deps are unchanged and won't re-fire on
+    // their own - without this line the lens would be left stranded on
+    // whatever button the finger last crossed. Reuses this gesture's cached
+    // rects (still valid: buttons don't reflow mid-gesture, only the bar's
+    // own transform did) rather than re-measuring.
+    positionLens(activeIndex, rectsRef.current, barRectRef.current, true);
+  }
+  function onDown(e) {
+    var row = rowRef.current; if (!row) return;
+    // Start from identity so the cached rects describe the unstretched bar
+    // (a fast re-press during the spring-back would otherwise measure it
+    // mid-scale and skew every hit-test for the whole gesture).
+    row.style.transition = "none";
+    row.style.transform = "translateX(0px) scale(1,1)";
+    row.style.willChange = "transform";
+    barRectRef.current = row.getBoundingClientRect();   // also forces the reflow
+    rectsRef.current = items.map(function(_, i) {
+      var b = btnRefs.current[i];
+      return b ? b.getBoundingClientRect() : null;
+    });
+    row.style.transition = DRAG_EASE;
+
+    var i = idxFromCache(e.clientX);
+    dragRef.current = i; setDrag(i);
+    positionLens(i, rectsRef.current, barRectRef.current, false);
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+    nativeHaptic("LIGHT");
+    if (holdTimer.current) clearTimeout(holdTimer.current);
+    holdTimer.current = setTimeout(function() {
+      heldRef.current = true; setHeld(true); nativeHaptic("MEDIUM");
+      paint(pendingXRef.current);
+    }, 340);
+    pendingXRef.current = e.clientX;
+  }
+  function onMove(e) {
+    if (dragRef.current < 0) return;
+    pendingXRef.current = e.clientX;
+    if (rafRef.current) return;              // coalesce to one write per frame
+    rafRef.current = requestAnimationFrame(function() {
+      rafRef.current = 0;
+      var x = pendingXRef.current;
+      paint(x);
+      var i = idxFromCache(x);
+      if (i >= 0 && i !== dragRef.current) {
+        dragRef.current = i; setDrag(i); nativeHaptic("LIGHT");   // rare: only on crossing
+        positionLens(i, rectsRef.current, barRectRef.current, false);
+      }
+    });
+  }
+  function onUp(e) {
+    if (dragRef.current < 0) return;
+    var chosen = dragRef.current, commit = inBounds(e);
+    endDrag();
+    if (commit && items[chosen]) { committedRef.current = true; items[chosen].onClick(); }
+  }
+  // Clear the hold timer and any queued frame if this unmounts mid-press (e.g.
+  // the tab switches out from under it), so nothing lands on a dead component.
+  useEffect(function() {
+    return function() {
+      if (holdTimer.current) clearTimeout(holdTimer.current);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
+  return (
+    <div ref={rowRef}
+      onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp}
+      onPointerCancel={endDrag} onLostPointerCapture={endDrag}
+      style={{ position: "relative", display: "flex", padding: 3, borderRadius: 999,
+      // Thick, SOLID cream, not the bottom bar's thin white glass - see
+      // T.creamBar. No backdrop-filter: the fill is fully opaque now, so
+      // there's nothing behind it left to blur - a blur here would be pure
+      // compositor cost for an effect nobody could ever see.
+      background: T.creamBar,
+      border: "1px solid " + T.creamBarEdge,
+      boxShadow: "inset 0 1px 0.5px " + T.navRimTop + ", inset 0 -1px 0.5px " + T.navRimBot + ", 0 1px 3px rgba(0,0,0,0.06)",
+      // The bar owns the gesture, so the page must not steal it as a scroll.
+      touchAction: "none" }}>
+      {/* transform / transition / willChange are set imperatively during a
+          gesture (see the drag plumbing above) and deliberately absent here -
+          listing them would let each React render overwrite the live value. */}
+      {/* Specular sheen - the curved-glass glare across the top. Self-clips via
+          its own radius (no overflow:hidden, so the lens shadow isn't cropped)
+          and sits below both the lens and the buttons in paint order. */}
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, borderRadius: 999, pointerEvents: "none", background: "linear-gradient(180deg, " + T.navSheen + " 0%, rgba(255,255,255,0) 46%, rgba(255,255,255,0) 100%)" }} />
+      {/* left/width/transform/opacity are set imperatively by positionLens -
+          see the note above. Only the non-positional look lives in JSX. */}
+      <div ref={lensRef} aria-hidden="true" style={{ position: "absolute", left: 0, top: 3, bottom: 3, opacity: 0,
+        borderRadius: 999, background: T.creamBarLens,
+        // No backdrop-filter on the lens: it rides on an already-opaque cream
+        // bar, so there is nothing behind it left to blur - pure cost.
+        boxShadow: "inset 0 1px 0.5px " + T.navPillRim + ", inset 0 -1px 1px " + T.navPillShade + ", 0 2px 7px rgba(0,0,0,0.12)",
+        pointerEvents: "none", zIndex: 0 }} />
+      {items.map(function(it, idx) {
+        // Under a finger, only the item being dragged over lights up; at rest
+        // it falls back to whichever screen is actually current.
+        var lit = drag >= 0 ? (drag === idx) : (it.id === current);
+        return (
+          <button key={it.id}
+            ref={function(el) { btnRefs.current[idx] = el; }}
+            onClick={function() {
+              // The pointerup path already committed this one. Click still
+              // matters for keyboard and assistive activation, so it stays -
+              // it just must not fire the action a second time.
+              if (committedRef.current) { committedRef.current = false; return; }
+              nativeHaptic("LIGHT"); it.onClick();
+            }}
+            aria-label={it.label}
+            title={it.label}
+            style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+              background: "none", border: "none", cursor: "pointer", fontFamily: UI,
+              // Horizontal padding trimmed a little from the original
+              // width-preserving value, per Alon's ask to narrow the bar.
+              padding: "7px 13px",
+              WebkitTapHighlightColor: "transparent", touchAction: "none",
+              transform: (drag === idx && held) ? "scale(1.12)" : drag === idx ? "scale(0.94)" : "scale(1)",
+              // Local PRESS_EASE, not the shared var(--m-settle) - this
+              // button's press-scale was asked to move slower specifically,
+              // and --m-settle is the app-wide spring duration.
+              transition: PRESS_EASE }}>
+            <SVGIcon id={it.icon} size={15} color={lit ? T.orange : T.ink} />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // The whole account is ONE Firestore document, and Firestore caps a document at
 // 1 MiB. Richard's chat archive was the only unbounded thing in it: every "New
 // chat" appended a full transcript and nothing ever trimmed. Once the blob
@@ -30186,6 +32117,8 @@ export default function App() {
   var openBiz = _obz[0]; var setOpenBiz = _obz[1];
   var _oiv = useState(null);
   var openInv = _oiv[0]; var setOpenInv = _oiv[1];
+  var _ogr = useState(null);
+  var openGoalRisk = _ogr[0]; var setOpenGoalRisk = _ogr[1];
   var _iht = useState("portfolio");
   var investingHubTab = _iht[0]; var setInvestingHubTab = _iht[1];
   // A new portfolio starts with Richard's questionnaire. The neutral starter
@@ -31546,20 +33479,14 @@ export default function App() {
               <span style={{ display: "flex", transform: "rotate(90deg)" }}><SVGIcon id="chevron" size={9} color={T.orange} /></span>
             </button>
           </div>
-          <span style={{ flex: 1, minWidth: 0, fontSize: 18, fontWeight: currentTab === "advisor" ? RICHARD_DISP_WEIGHT : DISP_WEIGHT, fontFamily: currentTab === "advisor" ? RICHARD_DISP : DISP, color: T.ink, textAlign: "center", letterSpacing: "-0.02em", lineHeight: 1.1, whiteSpace: "nowrap" }}>
+          <span style={{ flex: 1, minWidth: 0, fontSize: 18, fontWeight: currentTab === "advisor" ? RICHARD_DISP_WEIGHT : DISP_WEIGHT, fontFamily: currentTab === "advisor" ? RICHARD_DISP : DISP, color: T.ink, textAlign: "center", letterSpacing: "-0.02em", lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "periodMode" ? "Date Range" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "badges" ? "Badges" : currentTab === "settings" ? "Settings" : currentTab === "person" ? personName : currentTab === "social" ? "Friends" : currentTab === "findPeople" ? "Find people" : currentTab === "analysis" ? "Full Analysis" : currentTab === "investPlan" ? "Your investing plan" : currentTab === "investorOnboard" ? "Investing basics" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
-          <div style={{ width: 122, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
-            <button onClick={function() { setTab("categories"); setSheet(false); }}
-              aria-label={tr("categories")}
-              style={{ border: "none", cursor: "pointer", width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: currentTab === "categories" ? T.orange : T.orangeDim }}>
-              <SVGIcon id="categories" size={17} color={currentTab === "categories" ? "#fff" : T.orange} />
-            </button>
-            <button onClick={function() { setTab("profile"); }}
-              aria-label="Profile"
-              style={{ border: "none", cursor: "pointer", width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: tab === "profile" ? T.orange : T.fill2 }}>
-              <SVGIcon id="user" size={16} color={tab === "profile" ? "#fff" : T.ink2} />
-            </button>
+          <div style={{ width: 122, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
+            <HeaderShortcutBar current={currentTab} items={[
+              { id: "categories", icon: "categories", label: tr("categories"), onClick: function() { setTab("categories"); setSheet(false); } },
+              { id: "profile", icon: "user", label: tr("profile"), onClick: function() { setTab("profile"); } }
+            ]} />
           </div>
         </div>
       </div>
@@ -31637,6 +33564,10 @@ export default function App() {
           })()
         ) : (
         <div key={animKey} style={{ padding: "8px 16px 16px", animation: animDir === "right" ? "navSlideRight var(--m-enter) var(--m-ease) both" : animDir === "left" ? "navSlideLeft var(--m-enter) var(--m-ease) both" : "navFade var(--m-enter) var(--m-ease) both" }}>
+        {currentTab === "watchBrief" && <DailyBrief tx={tx} categories={categories} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} foundMoney={foundMoney} onNavigate={function(t) { setTab(t); }} onOpenGoalRisk={function(id) { setOpenGoalRisk(id); setTab("watchGoal"); }} />}
+        {currentTab === "watchGoal" && <GoalAtRiskDetail goalId={openGoalRisk} tx={tx} categories={categories} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} onSaveGoals={onSaveGoals} onNavigate={function(t) { setTab(t); }} />}
+        {currentTab === "watchForecast" && <NextThirtyDays tx={tx} categories={categories} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} foundMoney={foundMoney} onNavigate={function(t) { setTab(t); }} />}
+        {currentTab === "watchOuts" && <WatchOuts tx={tx} categories={categories} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} foundMoney={foundMoney} onNavigate={function(t) { setTab(t); }} />}
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} richardInstructions={richardCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}

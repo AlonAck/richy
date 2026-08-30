@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -64,10 +64,11 @@ fetchSource(1).then(function(src){
   var code = src
     .replace(/^\s*import[^\n]*\n/gm, "")
     .replace(/export default function App/, "function App");
-  // T is a `const`, so eval() keeps it inside its own block and the harness code
-  // below can't see it (unlike the hoisted function declarations). Hand it out
-  // explicitly so harness chrome can use the same live palette the app does.
-  code += "\ntry { window.__T = T; } catch (e) {}\n";
+  // T/UI/DISP are `const`, so eval() keeps them inside its own block and the
+  // harness code below can't see them (unlike the hoisted function
+  // declarations). Hand them out explicitly so harness chrome can use the
+  // same live palette/fonts the app does.
+  code += "\ntry { window.__T = T; window.__UI = UI; window.__DISP = DISP; } catch (e) {}\n";
   var out = Babel.transform(code, { presets: ["react"] }).code;
   // Market data is mocked by default so the harness never needs API keys or
   // network; add ?live=1 to hit the real /api/stock proxy for smoke tests.
@@ -612,6 +613,37 @@ fetchSource(1).then(function(src){
       );
     };
     el = React.createElement(QaHarness);
+  } else if (view === "headerbar") {
+    // Isolated look at the App shell's sticky header, for verifying the
+    // Categories/Profile HeaderShortcutBar (merged capsule + gliding lens)
+    // without needing a real signed-in session. ?current=categories|profile,
+    // ?lang=he for RTL/Hebrew label-length check, ?dark=1 for dark mode.
+    function HeaderBarHarness() {
+      var T = window.__T, UI = window.__UI, DISP = window.__DISP; // module-scope `const`s aren't visible here - see fetchSource() above
+      var _cur = React.useState(qs.get("current") || ""); var current = _cur[0]; var setCurrent = _cur[1];
+      if (qs.get("lang") === "he") { _lang.code = "he"; document.documentElement.dir = "rtl"; }
+      var title = current === "categories" ? tr("categories") : current === "profile" ? tr("profile") : "Overview";
+      return React.createElement("div", { style: { background: T.bg, minHeight: "40vh" } },
+        React.createElement("div", { style: { position: "sticky", top: 0, background: T.navBg, backdropFilter: "blur(24px) saturate(180%)", borderBottom: "0.5px solid " + T.sep } },
+          React.createElement("div", { style: { display: "flex", alignItems: "center", padding: "14px 20px 14px" } },
+            React.createElement("div", { style: { width: 122, display: "flex", alignItems: "center" } },
+              React.createElement("button", { style: { background: T.orangeDim, border: "none", borderRadius: 40, padding: "7px 7px 7px 9px", fontSize: 13, fontWeight: 600, color: T.orange, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 3, whiteSpace: "nowrap" } }, "This Month",
+                React.createElement("span", { style: { display: "flex", transform: "rotate(90deg)" } }, React.createElement(SVGIcon, { id: "chevron", size: 9, color: T.orange }))
+              )
+            ),
+            React.createElement("span", { style: { flex: 1, minWidth: 0, fontSize: 18, fontWeight: 700, fontFamily: DISP, color: T.ink, textAlign: "center", letterSpacing: "-0.02em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, title),
+            React.createElement("div", { style: { width: 122, display: "flex", alignItems: "center", justifyContent: "flex-end" } },
+              React.createElement(HeaderShortcutBar, { current: current, items: [
+                { id: "categories", icon: "categories", label: tr("categories"), onClick: function(){ setCurrent("categories"); window.__clicked = "categories"; } },
+                { id: "profile", icon: "user", label: tr("profile"), onClick: function(){ setCurrent("profile"); window.__clicked = "profile"; } }
+              ] })
+            )
+          )
+        ),
+        React.createElement("div", { style: { padding: 20, color: T.ink2, fontFamily: UI, fontSize: 13 } }, "Tap Categories / Profile above to see the lens glide. current=" + (current || "(none)"))
+      );
+    }
+    el = React.createElement(HeaderBarHarness, {});
   } else if (view === "mathstory") {
     _currency.sym = qs.get("cur") || "$";
     var msData = qs.get("empty") ? {} : { income: "6000", essentials: "2600", overspend: "700", leaks: ["delivery", "subs", "impulse"], goalName: "Emergency fund", goalAmt: "10000", timeline: "1 year", savings: "1500" };
