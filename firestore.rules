@@ -146,6 +146,13 @@ service cloud.firestore {
     // ever touches these. The client only ever sees the SAFE status fields via
     // the ?action=status endpoint, mirrored into its own users/{uid}.leumiFinteka.
 
+    // WhatsApp Richard Watch alerts (api/whatsapp.js): whatsappOptIn/{uid} holds
+    // the linked phone number and the opt-in/session state that gates every
+    // outbound message; whatsappPhones/{phone} maps an inbound sender back to a
+    // uid. Same pattern as leumiFinteka above - deliberately absent here so the
+    // catch-all deny covers them; only the Admin SDK touches them, and the
+    // client only ever sees safe status via ?action=status.
+
     // Everything else is denied by default.
     match /{document=**} {
       allow read, write: if false;
