@@ -84,8 +84,10 @@ self.addEventListener("fetch", function (event) {
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req).then(function (r) {
-        var copy = r.clone();
-        caches.open(CACHE).then(function (c) { c.put("/index.html", copy); });
+        if (r && r.ok) {
+          var copy = r.clone();
+          caches.open(CACHE).then(function (c) { c.put("/index.html", copy); });
+        }
         return r;
       }).catch(function () {
         return caches.match("/index.html").then(function (m) { return m || caches.match("/"); });
@@ -99,8 +101,10 @@ self.addEventListener("fetch", function (event) {
   if (sameOrigin && url.pathname === "/dist/app.js") {
     event.respondWith(
       fetch(req).then(function (r) {
-        var copy = r.clone();
-        caches.open(CACHE).then(function (c) { c.put(req, copy); });
+        if (r && r.ok) {
+          var copy = r.clone();
+          caches.open(CACHE).then(function (c) { c.put(req, copy); });
+        }
         return r;
       }).catch(function () { return caches.match(req, { ignoreSearch: true }); })
     );

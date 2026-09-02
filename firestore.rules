@@ -56,8 +56,17 @@ service cloud.firestore {
         && request.resource.data.createdBy == request.auth.uid;
       // Read: members, or an invited email (so the invite is discoverable).
       allow read: if isMember() || isInvited();
-      // Update: existing members, or an invited user accepting (adding self).
-      allow update: if isMember() || isInvited();
+      // Update: existing members may change anything on the doc. An invited
+      // (not-yet-joined) user may ONLY accept: add themselves to memberUids and
+      // remove their own email from pendingEmails, and touch no other field -
+      // otherwise an invitee could rewrite memberUids, evict the creator, or
+      // wipe the household before ever joining it.
+      allow update: if isMember() || (
+        isInvited()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["memberUids", "pendingEmails"])
+        && request.resource.data.memberUids == resource.data.memberUids.concat([request.auth.uid])
+        && request.resource.data.pendingEmails == resource.data.pendingEmails.removeAll([request.auth.token.email])
+      );
       // Delete: only members (e.g. winding down the household).
       allow delete: if isMember();
     }
