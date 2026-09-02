@@ -19406,13 +19406,32 @@ function Advisor(props) {
                   if (pendingAction.fn === "apply50/30/20") {
                     var pool = (income || 3000) * 0.8;
                     var weights = { Housing: 0.34, Food: 0.18, Transport: 0.12, Health: 0.06, Entertainment: 0.12, Shopping: 0.10, Travel: 0.04, Other: 0.04 };
-                    var newB = cats.map(function(c) {
+                    // MERGE, never replace. This used to build a fresh array and
+                    // hand it straight to onSaveBudgets, which deleted every
+                    // budget the split doesn't name - folder budgets, custom
+                    // categories, anything the user set by hand - and threw away
+                    // dir/mode/track on the ones it did keep. The button was a
+                    // no-op typo until now, so that wipe had never actually run;
+                    // repairing the typo without this would have shipped it.
+                    var limits = {};
+                    cats.forEach(function(c) {
                       var w = weights[c.name];
-                      if (!w) return null;
-                      return { catId: c.id, category: c.name, limit: Math.round(pool * w) };
-                    }).filter(Boolean);
-                    if (newB.length) props.onSaveBudgets(newB);
-                    setChat(function(p) { return p.concat([{ role: "assistant", text: "Done. I've set budgets across your categories along the 50/30/20 lines. Open Budgets to fine-tune." }]); });
+                      if (w) limits[c.id] = { limit: Math.round(pool * w), name: c.name };
+                    });
+                    var touched = {};
+                    var merged = (props.budgets || []).map(function(b) {
+                      var hit = limits[b.catId];
+                      if (!hit) return b;
+                      touched[b.catId] = true;
+                      // Keep every other field the user configured on this row.
+                      return Object.assign({}, b, { limit: hit.limit });
+                    });
+                    Object.keys(limits).forEach(function(cid) {
+                      if (!touched[cid]) merged = merged.concat([{ catId: cid, category: limits[cid].name, limit: limits[cid].limit, dir: "cap" }]);
+                    });
+                    var changed = Object.keys(limits).length;
+                    if (changed) props.onSaveBudgets(merged);
+                    setChat(function(p) { return p.concat([{ role: "assistant", text: changed ? "Done. I've set " + changed + " " + (changed === 1 ? "budget" : "budgets") + " along the 50/30/20 lines and left your other budgets alone. Open Budgets to fine-tune." : "I couldn't match any of your categories to the 50/30/20 split, so I've left your budgets as they are." }]); });
                   } else if (pendingAction.label.indexOf("emergency fund") !== -1) {
                     var efTarget = Math.round((expense || 1000) * 3);
                     props.onSaveGoals(props.goals.concat([{ id: Date.now(), name: "Emergency Fund", target: efTarget, saved: 0 }]));
