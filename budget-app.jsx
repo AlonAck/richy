@@ -6145,13 +6145,12 @@ function Overlay(props) {
           aria-label="Drag down to close"
           style={{ width: 38, height: 5, borderRadius: 3, background: T.orangeDim, margin: "9px auto 0", cursor: dragging ? "grabbing" : "grab", touchAction: "none" }}
         />
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px 8px" }}>
+        <div
+          onMouseDown={startDrag}
+          onTouchStart={startDrag}
+          style={{ display: "flex", alignItems: "center", padding: "12px 20px 8px", cursor: dragging ? "grabbing" : "grab", touchAction: "none" }}
+        >
           <span style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{props.title}</span>
-          <button onClick={props.onClose} aria-label="Close" style={{
-            background: T.orangeDim, border: "none", borderRadius: "50%",
-            width: 30, height: 30, cursor: "pointer", fontSize: 18, color: T.orange,
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>x</button>
         </div>
         <div style={{ padding: "2px 20px 0" }}>{props.children}</div>
         </div>
@@ -9242,18 +9241,35 @@ function WidgetCard(props) {
     );
   }
 
+  // Urgent widgets (over a limit, off track) earn a hotter treatment so the
+  // one thing that actually needs a decision today doesn't read the same as
+  // a card that's just informative. This is the whole point of the redesign:
+  // a widget should look worth opening the app for, not like a stat plaque.
+  var urgent = !!res.bad;
+  var accent = urgent ? T.red : color;
   return (
-    <Card style={{ padding: "15px 17px", marginBottom: 10 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-        <CatBadge icon={w.icon || "box"} color={color} size={30} soft />
+    <Card style={{
+      padding: "16px 18px", marginBottom: 12, position: "relative", overflow: "hidden",
+      background: "linear-gradient(135deg, " + accent + (urgent ? "1F" : "14") + " 0%, " + T.card + " 55%)",
+      border: "1px solid " + accent + (urgent ? "40" : "22"),
+      boxShadow: "0 1px 2px rgba(0,0,0,0.04), 0 10px 28px " + accent + (urgent ? "2E" : "1C"),
+    }}>
+      <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: accent }} />
+      <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 13 }}>
+        <CatBadge icon={w.icon || "box"} color={accent} size={36} soft />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, lineHeight: 1.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.title}</div>
-          <div style={{ fontSize: 11, color: T.ink3, marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{widgetCaption(w, res)}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, fontFamily: DISP, color: T.ink, lineHeight: 1.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.title}</div>
+            {urgent && (
+              <span style={{ flexShrink: 0, fontSize: 9.5, fontWeight: 800, color: T.red, background: T.red + "1F", borderRadius: 20, padding: "2px 7px", textTransform: "uppercase", letterSpacing: "0.04em", animation: "rcBadgePulse 2.2s ease-in-out infinite" }}>{"Act today"}</span>
+            )}
+          </div>
+          <div style={{ fontSize: 11.5, color: urgent ? T.red : T.ink3, fontWeight: urgent ? 700 : 400, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{widgetCaption(w, res)}</div>
         </div>
         {/* Richard made it, so the user needs a way to unmake it without asking. */}
         <div onClick={function(e) { e.stopPropagation(); props.onRemove(); }} title="Remove widget"
-          style={{ width: 30, height: 30, borderRadius: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer", opacity: 0.35 }}>
-          <SVGIcon id="close" size={13} color={T.ink3} />
+          style={{ width: 28, height: 28, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer", opacity: 0.35 }}>
+          <SVGIcon id="close" size={12} color={T.ink3} />
         </div>
       </div>
       {body()}
