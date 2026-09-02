@@ -35,7 +35,7 @@ const T = {
   glass:     "rgba(255,255,255,0.82)",
   ink:       "#1A1410",
   ink2:      "#6B5C4E",
-  ink3:      "#B0A396",
+  ink3:      "#7A6B5C",
   sep:       "rgba(0,0,0,0.06)",
   sepDark:   "rgba(255,255,255,0.08)",
   orange:    "#8970C6",
@@ -262,7 +262,7 @@ function themeSwatch(name, dark) {
 var JOURNEY_LIGHT = {
   bg: "linear-gradient(160deg,#FDF5EC 0%,#FAF0E4 40%,#F5E8D8 100%)",
   shaderBase: "#FBF3E8",
-  ink: "#1A1410", ink2: "#6B5C4E", ink3: "#B0A396",
+  ink: "#1A1410", ink2: "#6B5C4E", ink3: "#7A6B5C",
   // Body ink for copy sitting directly on JrShaderBg. ink2 measures 5.8:1 on
   // the plain ground but collapses once a ribbon core passes under it, so this
   // pushes further from the ribbon: deeper on light, brighter on dark.
@@ -304,7 +304,27 @@ function applyDarkMode(dark) {
   T.sep     = dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
   T.ink     = dark ? "#EDE8E2" : "#1A1410";
   T.ink2    = dark ? "#A09080" : "#6B5C4E";
-  T.ink3    = dark ? "#6B5C4E" : "#B0A396";
+  // ink3 is the tertiary ink: captions, form labels, dates, and the inactive
+  // bottom-nav labels. It is the most-used colour token in the app (~725 render
+  // sites), so its contrast ratio is not a detail - it decides whether a
+  // quarter of the interface is legible.
+  //
+  // This assignment is the one that counts. The literal in the T declaration
+  // above is overwritten here on module load and again on every App render, so
+  // correcting that literal alone changes nothing a user can see.
+  //
+  // The previous pair failed WCAG AA outright, and had done since 17 August:
+  //   light  #B0A396 on #F7F3EE = 2.23:1   (AA normal text needs 4.5:1)
+  //   dark   #6B5C4E on #131110 = 2.93:1
+  //
+  // Measured against every ground each side is actually painted on - page,
+  // card, sheet, and the heaviest fill panel a caption can sit in - the values
+  // below clear 4.5:1 on all real text surfaces and stay above 3:1 (AA large
+  // text / non-text) even on that heaviest fill:
+  //   light  #7A6B5C -> 5.14:1 on card, 4.65:1 on page, 4.76:1 on sheet
+  //   dark   #978877 -> 5.47:1 on page, 5.09:1 on card, 4.68:1 on darkCard2
+  // Both keep a visible step below ink2, so the ink hierarchy still reads.
+  T.ink3    = dark ? "#978877" : "#7A6B5C";
   T.navBg   = dark ? "rgba(19,17,16,0.88)"   : "rgba(250,247,242,0.82)";
   T.sheetBg = dark ? "#1C1915" : "#F8F6F1";
   T.inputBg = dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)";
@@ -658,7 +678,7 @@ function applyLangDir(code) {
 }
 
 var TRANSLATIONS = {
-  en: { overview:"Overview", activity:"Activity", budgets:"Budgets", goals:"Goals", advisor:"Advisor", profile:"Profile", language:"Language", currency:"Currency", yourPlan:"Your Plan", categories:"Categories", signOut:"Sign Out", richyMember:"Richy member", richyRefersTo:"Richy refers to you as", seeYourPlan:"See your plan by Richard", netBalance:"Net Balance", income:"Income", spent:"Spent", topSpend:"Top spend", morning:"Good morning", afternoon:"Good afternoon", evening:"Good evening", savedThisPeriod:"saved this period", redoQuestionnaire:"Redo Questionnaire", yourPlanByRichard:"Your Plan by Richard", noTransactions:"No transactions yet", noTransactionsSub:"Tap + to log your first one. Awareness is the first step to wealth.", overviewEmptySub:"The Richest Man in Babylon started by tracking every coin. Start yours in Activity.", savingsRate:"Savings Rate",quickAdd:"Quick add", excellent:"Excellent", onTrack:"On track", buildItUp:"Build it up", overspending:"Room to rebalance", noIncomeYet:"No income logged yet", thisPeriod:"this period", transactions:"Transactions", whereItWent:"Where it went", overLimit:"over limit", complete:"complete", savedLabel:"saved", spentLabel:"spent", toGo:"to go", recent:"Recent", activeGoal:"active goal", activeGoals:"active goals", today:"Today", yesterday:"Yesterday", moneyIn:"Money In", moneyOut:"Money Out", newTransaction:"New Transaction", editTransaction:"Edit Transaction", addTransaction:"Add Transaction", saveChanges:"Save Changes", deleteTx:"Delete transaction", amount:"Amount", txLabel:"Label", category:"Category", date:"Date", repeat:"Repeat", once:"Once", weekly:"Weekly", monthly:"Monthly", markPending:"Mark as pending", expense:"Expense", noBudgets:"No budgets yet", noBudgetsSub:"Tap + to set a limit for a category. A budget is just telling your money where to go.", newBudget:"New Budget", editLimit:"Edit Limit", addBudget:"Add Budget", removeBudget:"Remove this budget", totalSpent:"Total Spent", byCategory:"By Category", edit:"Edit", delete:"Delete", save:"Save", budgeted:"budgeted", monthlyLimit:"Monthly limit", allCatsHaveBudget:"Every category already has a budget. Add a new category first.", noGoals:"No budget books yet", noGoalsSub:"Tap + to create your first budget book. A goal with a deadline is a plan, not a wish.", newBudgetBook:"New Budget Book", editBudgetBook:"Edit Budget Book", createBudgetBook:"Create Budget Book", deleteBudgetBook:"Delete budget book", addToBudgetBook:"Add to Budget Book", alreadySaved:"Already saved", target:"Target", name:"Name", deadline:"Deadline (optional)", goalComplete:"Goal complete!", remaining:"remaining", add:"Add", removeMoney:"Remove", removeFromBudgetBook:"Remove from Budget Book", removeMoneyConfirm:"Remove {amt} from {name}? This will reduce what you've saved.", syncWithAccount:"Sync with account", noSync:"Don't sync", syncedWith:"Synced with", addOrRemove:"Add / Remove", richySuggests:"Richard suggests", implement:"Implement", dismiss:"Dismiss", aiAdvisor:"AI Money Coach", aiAdvisorSub:"Personalized advice based on your real spending and expert financial wisdom.", analyzeMyFinances:"Analyze My Finances", thinkP1:"Reading your numbers",thinkP2:"Thinking it through",thinkP3:"Weighing the options",thinkP4:"Writing back",anStep1:"Reading your month",anStep2:"Scanning {n} transactions",anStep3:"Comparing plan to reality",anStep4:"Finding what matters most",anStep5:"Writing your analysis",analyzingFinances:"Analyzing your finances...", fewSeconds:"This takes a few seconds", refresh:"Refresh", insights:"Insights", analysisFailed:"Analysis failed", tryAgain:"Try Again", askYourAdvisor:"Ask Your Advisor", advisorQ1:"How can I save more?", advisorQ2:"Is my savings rate healthy?", advisorQ3:"What to do with my surplus?",advisorQ4:"Log what I just spent", thinking:"Thinking...", yesDo:"Yes, do it", notNow:"Not now", askRichard:"Ask Richard anything...", giveFeedback:"Give Richard feedback...", advisorDisclaimer:"Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.", translate:"Translate plan", noPlanYet:"No plan yet. Complete the onboarding questionnaire to get your personalized plan from Richard.", notes:"Notes", notesEmpty:"No notes yet", notesEmptySub:"Track who owes you and who you owe. Tap + to add your first one.", theyOweMe:"They owe me", iOwe:"I owe", newNote:"New Note", addNote:"Add Note", editNote:"Edit Note", saveNote:"Save Note", settle:"Settle", settleTitle:"Settle note", settleAddBalance:"Add to my balance", reminder:"Reminder", reminderTitle:"Set a reminder", setReminder:"Set reminder", clearReminder:"Clear reminder", reminderWhen:"Remind me on", reminderDenied:"Notifications are blocked. The note will still show a due badge.", due:"Due", overdue:"Overdue", deleteNote:"Delete note", trips:"Trips", planATrip:"Plan a Trip", planATripSub:"Budget a getaway without touching your balance.", planNewTrip:"Plan a New Trip", noTrips:"No trips yet", noTripsSub:"Plan a getaway and Richard will split your budget across the essentials.", tripName:"Trip name", destination:"Destination", tripBudget:"Total budget", tripDays:"Days", travelStyle:"Travel style", styleBudget:"Budget", styleComfort:"Comfort", styleLuxury:"Luxury", next:"Next", back:"Back", richardPlanning:"Richard is planning your trip", richardPlanningSub:"Splitting your budget across the essentials.", tripSplit:"Your budget split", allocated:"Allocated", overBy:"over by", saveTrip:"Save Trip", addCategory:"Add category", editCategory:"Edit category", color:"Color", deductFromBalance:"Deduct from balance", deductExplain:"This tracks what you actually spend on this trip as one live expense, so your balance only drops as you log spending here - not the whole budget up front. You can undo it anytime.", reserved:"Tracking against balance", undoReserve:"Stop tracking", logExpense:"Log expense", logExpenseTitle:"Log a trip expense", tripTips:"Richard's tips", deleteTrip:"Delete trip", deleteTripConfirm:"Delete this trip? This cannot be undone.", spentOf:"spent of", leftToSpend:"left to spend", planning:"Planning", tripSummary:"Trip summary", appearance:"Appearance", leftAfterBudgets:"Left after budgets", tripIcon:"Trip icon", savings:"Savings", netWorth:"Net Worth", balance:"Balance", manage:"Manage", totalSavings:"Total saved", savingsIntro:"Money you keep separate from your spending balance - an emergency fund, a sinking fund, anything you don't want to accidentally spend. It counts toward your net worth, never your balance.", newSavingsAccount:"New savings account", savingsAccountName:"Account name", addMoney:"Add money", withdraw:"Withdraw", fromBalance:"From my balance", externalMoney:"Money I already have", toBalance:"To my balance", removeFromNet:"Spend or remove", startingAmount:"Starting amount (optional)", createAccount:"Create account", closeAccount:"Close account", rename:"Rename", emptySavingsSub:"Keep an emergency fund or a sinking fund separate from your spending balance.", addSavingsAccount:"Add a savings account", history:"History", balanceUntouched:"Your spending balance stays untouched", movesFromBalance:"Moves money out of your spending balance", addsToBalance:"Adds the money back to your spending balance", leavesNetWorth:"Leaves your accounts - lowers your net worth", pickIcon:"Icon", emergencyFund:"Emergency Fund", noMovesYet:"No moves yet", pastChats:"Past chats", newChat:"New chat", conversation:"conversation", conversations:"conversations", noPastChats:"No past chats yet", message:"message", messages:"messages" },
+  en: { overview:"Dashboard", activity:"Activity", budgets:"Budgets", goals:"Goals", advisor:"Advisor", profile:"Profile", language:"Language", currency:"Currency", yourPlan:"Your Plan", categories:"Categories", signOut:"Sign Out", richyMember:"Richy member", richyRefersTo:"Richy refers to you as", seeYourPlan:"See your plan by Richard", netBalance:"Net Balance", income:"Income", spent:"Spent", topSpend:"Top spend", morning:"Good morning", afternoon:"Good afternoon", evening:"Good evening", savedThisPeriod:"saved this period", redoQuestionnaire:"Redo Questionnaire", yourPlanByRichard:"Your Plan by Richard", noTransactions:"No transactions yet", noTransactionsSub:"Tap + to log your first one. Awareness is the first step to wealth.", overviewEmptySub:"The Richest Man in Babylon started by tracking every coin. Start yours in Activity.", savingsRate:"Savings Rate",quickAdd:"Quick add", excellent:"Excellent", onTrack:"On track", buildItUp:"Build it up", overspending:"Room to rebalance", noIncomeYet:"No income logged yet", thisPeriod:"this period", transactions:"Transactions", whereItWent:"Where it went", overLimit:"over limit", complete:"complete", savedLabel:"saved", spentLabel:"spent", toGo:"to go", recent:"Recent", activeGoal:"active goal", activeGoals:"active goals", today:"Today", yesterday:"Yesterday", moneyIn:"Money In", moneyOut:"Money Out", newTransaction:"New Transaction", editTransaction:"Edit Transaction", addTransaction:"Add Transaction", saveChanges:"Save Changes", deleteTx:"Delete transaction", amount:"Amount", txLabel:"Label", category:"Category", date:"Date", repeat:"Repeat", once:"Once", weekly:"Weekly", monthly:"Monthly", markPending:"Mark as pending", expense:"Expense", noBudgets:"No budgets yet", noBudgetsSub:"Tap + to set a limit for a category. A budget is just telling your money where to go.", newBudget:"New Budget", editLimit:"Edit Limit", addBudget:"Add Budget", removeBudget:"Remove this budget", totalSpent:"Total Spent", byCategory:"By Category", edit:"Edit", delete:"Delete", save:"Save", budgeted:"budgeted", monthlyLimit:"Monthly limit", allCatsHaveBudget:"Every category already has a budget. Add a new category first.", noGoals:"No budget books yet", noGoalsSub:"Tap + to create your first budget book. A goal with a deadline is a plan, not a wish.", newBudgetBook:"New Budget Book", editBudgetBook:"Edit Budget Book", createBudgetBook:"Create Budget Book", deleteBudgetBook:"Delete budget book", addToBudgetBook:"Add to Budget Book", alreadySaved:"Already saved", target:"Target", name:"Name", deadline:"Deadline (optional)", goalComplete:"Goal complete!", remaining:"remaining", add:"Add", removeMoney:"Remove", removeFromBudgetBook:"Remove from Budget Book", removeMoneyConfirm:"Remove {amt} from {name}? This will reduce what you've saved.", syncWithAccount:"Sync with account", noSync:"Don't sync", syncedWith:"Synced with", addOrRemove:"Add / Remove", richySuggests:"Richard suggests", implement:"Implement", dismiss:"Dismiss", aiAdvisor:"AI Money Coach", aiAdvisorSub:"Personalized advice based on your real spending and expert financial wisdom.", analyzeMyFinances:"Analyze My Finances", thinkP1:"Reading your numbers",thinkP2:"Thinking it through",thinkP3:"Weighing the options",thinkP4:"Writing back",anStep1:"Reading your month",anStep2:"Scanning {n} transactions",anStep3:"Comparing plan to reality",anStep4:"Finding what matters most",anStep5:"Writing your analysis",analyzingFinances:"Analyzing your finances...", fewSeconds:"This takes a few seconds", refresh:"Refresh", insights:"Insights", analysisFailed:"Analysis failed", tryAgain:"Try Again", askYourAdvisor:"Ask Your Advisor", advisorQ1:"How can I save more?", advisorQ2:"Is my savings rate healthy?", advisorQ3:"What to do with my surplus?",advisorQ4:"Log what I just spent", thinking:"Thinking...", yesDo:"Yes, do it", notNow:"Not now", askRichard:"Ask Richard anything...", giveFeedback:"Give Richard feedback...", advisorDisclaimer:"Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.", translate:"Translate plan", noPlanYet:"No plan yet. Complete the onboarding questionnaire to get your personalized plan from Richard.", notes:"Notes", notesEmpty:"No notes yet", notesEmptySub:"Track who owes you and who you owe. Tap + to add your first one.", theyOweMe:"They owe me", iOwe:"I owe", newNote:"New Note", addNote:"Add Note", editNote:"Edit Note", saveNote:"Save Note", settle:"Settle", settleTitle:"Settle note", settleAddBalance:"Add to my balance", reminder:"Reminder", reminderTitle:"Set a reminder", setReminder:"Set reminder", clearReminder:"Clear reminder", reminderWhen:"Remind me on", reminderDenied:"Notifications are blocked. The note will still show a due badge.", due:"Due", overdue:"Overdue", deleteNote:"Delete note", trips:"Trips", planATrip:"Plan a Trip", planATripSub:"Budget a getaway without touching your balance.", planNewTrip:"Plan a New Trip", noTrips:"No trips yet", noTripsSub:"Plan a getaway and Richard will split your budget across the essentials.", tripName:"Trip name", destination:"Destination", tripBudget:"Total budget", tripDays:"Days", travelStyle:"Travel style", styleBudget:"Budget", styleComfort:"Comfort", styleLuxury:"Luxury", next:"Next", back:"Back", richardPlanning:"Richard is planning your trip", richardPlanningSub:"Splitting your budget across the essentials.", tripSplit:"Your budget split", allocated:"Allocated", overBy:"over by", saveTrip:"Save Trip", addCategory:"Add category", editCategory:"Edit category", color:"Color", deductFromBalance:"Deduct from balance", deductExplain:"This tracks what you actually spend on this trip as one live expense, so your balance only drops as you log spending here - not the whole budget up front. You can undo it anytime.", reserved:"Tracking against balance", undoReserve:"Stop tracking", logExpense:"Log expense", logExpenseTitle:"Log a trip expense", tripTips:"Richard's tips", deleteTrip:"Delete trip", deleteTripConfirm:"Delete this trip? This cannot be undone.", spentOf:"spent of", leftToSpend:"left to spend", planning:"Planning", tripSummary:"Trip summary", appearance:"Appearance", leftAfterBudgets:"Left after budgets", tripIcon:"Trip icon", savings:"Savings", netWorth:"Net Worth", balance:"Balance", manage:"Manage", totalSavings:"Total saved", savingsIntro:"Money you keep separate from your spending balance - an emergency fund, a sinking fund, anything you don't want to accidentally spend. It counts toward your net worth, never your balance.", newSavingsAccount:"New savings account", savingsAccountName:"Account name", addMoney:"Add money", withdraw:"Withdraw", fromBalance:"From my balance", externalMoney:"Money I already have", toBalance:"To my balance", removeFromNet:"Spend or remove", startingAmount:"Starting amount (optional)", createAccount:"Create account", closeAccount:"Close account", rename:"Rename", emptySavingsSub:"Keep an emergency fund or a sinking fund separate from your spending balance.", addSavingsAccount:"Add a savings account", history:"History", balanceUntouched:"Your spending balance stays untouched", movesFromBalance:"Moves money out of your spending balance", addsToBalance:"Adds the money back to your spending balance", leavesNetWorth:"Leaves your accounts - lowers your net worth", pickIcon:"Icon", emergencyFund:"Emergency Fund", noMovesYet:"No moves yet", pastChats:"Past chats", newChat:"New chat", conversation:"conversation", conversations:"conversations", noPastChats:"No past chats yet", message:"message", messages:"messages" },
   he: { overview:"סקירה", activity:"פעילות", budgets:"תקציבים", goals:"יעדים", advisor:"מאמן", profile:"פרופיל", language:"שפה", currency:"מטבע", yourPlan:"התוכנית שלך", categories:"קטגוריות", signOut:"התנתק", richyMember:"חבר Richy", richyRefersTo:"ריצ'י מכנה אותך", seeYourPlan:"ראה את התוכנית שלך", netBalance:"יתרה נטו", income:"הכנסות", spent:"הוצאות", topSpend:"הוצאה עיקרית", morning:"בוקר טוב", afternoon:"צהריים טובים", evening:"ערב טוב", savedThisPeriod:"נחסך בתקופה זו", redoQuestionnaire:"מלא שאלון מחדש", yourPlanByRichard:"התוכנית שלך", noTransactions:"אין עסקאות עדיין", noTransactionsSub:"לחץ + כדי לרשום. מודעות היא הצעד הראשון לעושר.", overviewEmptySub:"עשיר בבבל התחיל בלעקוב אחרי כל מטבע. התחל גם אתה בפעילות.", savingsRate:"שיעור חיסכון",quickAdd:"הוספה מהירה", excellent:"מצוין", onTrack:"במסלול", buildItUp:"שפר את זה", overspending:"אפשר לאזן מחדש", thisPeriod:"בתקופה זו", transactions:"עסקאות", whereItWent:"לאן הלך", overLimit:"מעל המגבלה", complete:"הושלם", savedLabel:"נחסך", spentLabel:"הוצא", toGo:"לסיום", recent:"אחרון", activeGoal:"יעד פעיל", activeGoals:"יעדים פעילים", today:"היום", yesterday:"אתמול", moneyIn:"כסף נכנס", moneyOut:"כסף יוצא", newTransaction:"עסקה חדשה", editTransaction:"ערוך עסקה", addTransaction:"הוסף עסקה", saveChanges:"שמור שינויים", deleteTx:"מחק עסקה", amount:"סכום", txLabel:"תיאור", category:"קטגוריה", date:"תאריך", repeat:"חזרה", once:"פעם אחת", weekly:"שבועי", monthly:"חודשי", markPending:"סמן כממתין", expense:"הוצאה", noBudgets:"אין תקציבים עדיין", noBudgetsSub:"לחץ + להגדרת מגבלה לקטגוריה. תקציב הוא פשוט להגיד לכסף לאן ללכת.", newBudget:"תקציב חדש", editLimit:"ערוך מגבלה", addBudget:"הוסף תקציב", removeBudget:"הסר תקציב זה", totalSpent:"סך הוצאות", byCategory:"לפי קטגוריה", edit:"ערוך", delete:"מחק", save:"שמור", budgeted:"מתוקצב", monthlyLimit:"מגבלה חודשית", allCatsHaveBudget:"לכל הקטגוריות יש תקציב. הוסף קטגוריה חדשה תחילה.", noGoals:"אין ספרי תקציב עדיין", noGoalsSub:"לחץ + ליצירת ספר תקציב ראשון. יעד עם מועד הוא תוכנית, לא משאלה.", newBudgetBook:"ספר תקציב חדש", editBudgetBook:"ערוך ספר תקציב", createBudgetBook:"צור ספר תקציב", deleteBudgetBook:"מחק ספר תקציב", addToBudgetBook:"הוסף לספר תקציב", alreadySaved:"כבר נחסך", target:"יעד", name:"שם", deadline:"תאריך יעד (רשות)", goalComplete:"היעד הושג!", remaining:"נותר", add:"הוסף", removeMoney:"הסר", removeFromBudgetBook:"הסר מספר התקציב", removeMoneyConfirm:"להסיר {amt} מ-{name}? זה יקטין את מה שכבר נחסך.", syncWithAccount:"סנכרון עם חשבון", noSync:"בלי סנכרון", syncedWith:"מסונכרן עם", addOrRemove:"הוסף / הסר", richySuggests:"ריצ'י מציע", implement:"יישם", dismiss:"דחה", aiAdvisor:"מאמן כלכלי AI", aiAdvisorSub:"הכוונה מותאמת אישית בהתבסס על ההוצאות שלך.", analyzeMyFinances:"נתח את הכספים שלי", thinkP1:"קורא את המספרים שלך",thinkP2:"חושב על זה",thinkP3:"שוקל את האפשרויות",thinkP4:"מנסח תשובה",anStep1:"קורא את החודש שלך",anStep2:"סורק {n} תנועות",anStep3:"משווה תוכנית למציאות",anStep4:"מאתר את מה שחשוב באמת",anStep5:"כותב את הניתוח",analyzingFinances:"מנתח את הכספים שלך...", fewSeconds:"זה לוקח כמה שניות", refresh:"רענן", insights:"תובנות", analysisFailed:"הניתוח נכשל", tryAgain:"נסה שוב", askYourAdvisor:"שאל את המאמן שלך", advisorQ1:"איך אוכל לחסוך יותר?", advisorQ2:"האם שיעור החיסכון שלי בריא?", advisorQ3:"מה לעשות עם העודף שלי?",advisorQ4:"רשום מה שהוצאתי עכשיו", thinking:"חושב...", yesDo:"כן, עשה זאת", notNow:"לא עכשיו", askRichard:"שאל את ריצ'רד כל דבר...", giveFeedback:"תן ל-ריצ'רד משוב...", advisorDisclaimer:"ריצ'רד הוא עוזר AI ולא יועץ פיננסי מורשה. תמיד ערוך מחקר עצמאי לפני קבלת החלטות כלכליות.", translate:"תרגם תוכנית", noPlanYet:"אין תוכנית עדיין. מלא את השאלון כדי לקבל את התוכנית האישית שלך מריצ'רד.", noIncomeYet:"עדיין לא נרשמו הכנסות", notes:"פתקים", notesEmpty:"אין פתקים עדיין", notesEmptySub:"עקוב אחרי מי חייב לך ולמי אתה חייב. לחץ + להוספת הפתק הראשון.", theyOweMe:"חייבים לי", iOwe:"אני חייב", newNote:"פתק חדש", addNote:"הוסף פתק", editNote:"ערוך פתק", saveNote:"שמור פתק", settle:"סגור חוב", settleTitle:"סגירת פתק", settleAddBalance:"הוסף ליתרה שלי", reminder:"תזכורת", reminderTitle:"קבע תזכורת", setReminder:"קבע תזכורת", clearReminder:"בטל תזכורת", reminderWhen:"הזכר לי בתאריך", reminderDenied:"ההתראות חסומות. הפתק עדיין יציג תג מועד.", due:"מועד", overdue:"באיחור", deleteNote:"מחק פתק", trips:"טיולים", planATrip:"תכנן טיול", planATripSub:"תקצב חופשה בלי לגעת ביתרה שלך.", planNewTrip:"תכנן טיול חדש", noTrips:"אין טיולים עדיין", noTripsSub:"תכנן חופשה וריצ'רד יחלק את התקציב בין הדברים החשובים.", tripName:"שם הטיול", destination:"יעד", tripBudget:"תקציב כולל", tripDays:"ימים", travelStyle:"סגנון נסיעה", styleBudget:"חסכוני", styleComfort:"נוח", styleLuxury:"יוקרתי", next:"הבא", back:"חזרה", richardPlanning:"ריצ'רד מתכנן את הטיול שלך", richardPlanningSub:"מחלק את התקציב בין הדברים החשובים.", tripSplit:"חלוקת התקציב שלך", allocated:"הוקצה", overBy:"חריגה של", saveTrip:"שמור טיול", addCategory:"הוסף קטגוריה", editCategory:"ערוך קטגוריה", color:"צבע", deductFromBalance:"נכה מהיתרה", deductExplain:"כך מה שאתה באמת מוציא בטיול נרשם כהוצאה חיה אחת - היתרה יורדת רק כשאתה רושם הוצאות כאן, לא כל התקציב מראש. אפשר לבטל בכל רגע.", reserved:"במעקב מול היתרה", undoReserve:"הפסק מעקב", logExpense:"רשום הוצאה", logExpenseTitle:"רישום הוצאת טיול", tripTips:"הטיפים של ריצ'רד", deleteTrip:"מחק טיול", deleteTripConfirm:"למחוק את הטיול? אי אפשר לבטל פעולה זו.", spentOf:"הוצא מתוך", leftToSpend:"נותר להוצאה", planning:"בתכנון", tripSummary:"סיכום הטיול", appearance:"מראה", leftAfterBudgets:"נותר אחרי תקציבים", tripIcon:"סמל הטיול", savings:"חסכונות", netWorth:"שווי נקי", balance:"יתרה", manage:"ניהול", totalSavings:"סך הכל נחסך", savingsIntro:"כסף שאתה שומר בנפרד מיתרת ההוצאות - קרן חירום, קרן ייעודית, כל מה שאתה לא רוצה לבזבז בטעות. הוא נספר בשווי הנקי שלך, לעולם לא ביתרה.", newSavingsAccount:"חשבון חיסכון חדש", savingsAccountName:"שם החשבון", addMoney:"הוסף כסף", withdraw:"משיכה", fromBalance:"מהיתרה שלי", externalMoney:"כסף שכבר יש לי", toBalance:"ליתרה שלי", removeFromNet:"הוצא או הסר", startingAmount:"סכום התחלתי (רשות)", createAccount:"צור חשבון", closeAccount:"סגור חשבון", rename:"שנה שם", emptySavingsSub:"שמור קרן חירום או קרן ייעודית בנפרד מיתרת ההוצאות שלך.", addSavingsAccount:"הוסף חשבון חיסכון", history:"היסטוריה", balanceUntouched:"יתרת ההוצאות שלך נשארת ללא שינוי", movesFromBalance:"מעביר כסף החוצה מיתרת ההוצאות", addsToBalance:"מחזיר את הכסף ליתרת ההוצאות", leavesNetWorth:"יוצא מהחשבונות שלך - מוריד את השווי הנקי", pickIcon:"סמל", emergencyFund:"קרן חירום", noMovesYet:"אין תנועות עדיין", pastChats:"שיחות קודמות", newChat:"שיחה חדשה", conversation:"שיחה", conversations:"שיחות", noPastChats:"אין שיחות קודמות עדיין", message:"הודעה", messages:"הודעות" },
   ar: { overview:"نظرة عامة", activity:"النشاط", budgets:"الميزانيات", goals:"الاهداف", advisor:"المدرب", profile:"الملف الشخصي", language:"اللغة", currency:"العملة", yourPlan:"خطتك", categories:"الفئات", signOut:"تسجيل الخروج", richyMember:"عضو Richy", richyRefersTo:"ريتشي يناديك", seeYourPlan:"انظر خطتك من ريتشارد", netBalance:"الرصيد الصافي", income:"الدخل", spent:"المنفق", topSpend:"اعلى انفاق", morning:"صباح الخير", afternoon:"مساء الخير", evening:"مساء الخير", savedThisPeriod:"تم توفيره", redoQuestionnaire:"اعادة الاستبيان", yourPlanByRichard:"خطتك من ريتشارد", noTransactions:"لا توجد معاملات بعد", noTransactionsSub:"اضغط + لتسجيل اول معاملة. الوعي هو الخطوة الاولى نحو الثروة.", overviewEmptySub:"اغنى رجل في بابل بدا بتتبع كل عملة. ابدا في النشاط.", savingsRate:"معدل الادخار",quickAdd:"اضافة سريعة", excellent:"ممتاز", onTrack:"في المسار", buildItUp:"طوره", overspending:"مجال للموازنة", thisPeriod:"هذه الفترة", transactions:"المعاملات", whereItWent:"اين ذهب", overLimit:"فوق الحد", complete:"مكتمل", savedLabel:"مدخر", spentLabel:"انفق", toGo:"متبقي", recent:"الاخير", activeGoal:"هدف نشط", activeGoals:"اهداف نشطة", today:"اليوم", yesterday:"امس", moneyIn:"المال الداخل", moneyOut:"المال الخارج", newTransaction:"معاملة جديدة", editTransaction:"تعديل المعاملة", addTransaction:"اضافة معاملة", saveChanges:"حفظ التغييرات", deleteTx:"حذف المعاملة", amount:"المبلغ", txLabel:"التسمية", category:"الفئة", date:"التاريخ", repeat:"تكرار", once:"مرة واحدة", weekly:"اسبوعي", monthly:"شهري", markPending:"وضع علامة معلقة", expense:"مصروف", noBudgets:"لا توجد ميزانيات بعد", noBudgetsSub:"اضغط + لتعيين حد للفئة. الميزانية هي توجيه المال.", newBudget:"ميزانية جديدة", editLimit:"تعديل الحد", addBudget:"اضافة ميزانية", removeBudget:"حذف هذه الميزانية", totalSpent:"اجمالي الانفاق", byCategory:"حسب الفئة", edit:"تعديل", delete:"حذف", save:"حفظ", budgeted:"مخصص", monthlyLimit:"الحد الشهري", allCatsHaveBudget:"كل الفئات لديها ميزانية. اضف فئة جديدة اولا.", noGoals:"لا توجد دفاتر بعد", noGoalsSub:"اضغط + لانشاء اول دفتر. الهدف بموعد خطة وليس امنية.", newBudgetBook:"دفتر جديد", editBudgetBook:"تعديل الدفتر", createBudgetBook:"انشاء دفتر", deleteBudgetBook:"حذف الدفتر", addToBudgetBook:"اضافة الى الدفتر", alreadySaved:"تم الادخار مسبقا", target:"الهدف", name:"الاسم", deadline:"الموعد النهائي (اختياري)", goalComplete:"تم تحقيق الهدف!", remaining:"متبقي", add:"اضافة", removeMoney:"إزالة", removeFromBudgetBook:"إزالة من الدفتر", removeMoneyConfirm:"إزالة {amt} من {name}؟ سيقلل هذا مما تم توفيره بالفعل.", syncWithAccount:"مزامنة مع حساب", noSync:"بدون مزامنة", syncedWith:"مزامن مع", addOrRemove:"إضافة / إزالة", richySuggests:"اقتراح ريتشارد", implement:"تطبيق", dismiss:"تجاهل", aiAdvisor:"مدرب مالي AI", aiAdvisorSub:"نصائح مخصصة بناء على انفاقك الفعلي.", analyzeMyFinances:"تحليل ماليتي", thinkP1:"أقرأ أرقامك",thinkP2:"أفكر في الأمر",thinkP3:"أوازن الخيارات",thinkP4:"أكتب الرد",anStep1:"أقرأ شهرك",anStep2:"أفحص {n} من المعاملات",anStep3:"أقارن الخطة بالواقع",anStep4:"أبحث عن الأهم",anStep5:"أكتب تحليلك",analyzingFinances:"جاري تحليل ماليتك...", fewSeconds:"هذا يستغرق بضع ثوان", refresh:"تحديث", insights:"رؤى", analysisFailed:"فشل التحليل", tryAgain:"حاول مجددا", askYourAdvisor:"اسأل مدربك", advisorQ1:"كيف يمكنني توفير المزيد؟", advisorQ2:"هل معدل توفيري صحي؟", advisorQ3:"ماذا افعل بالفائض؟",advisorQ4:"سجل ما انفقته للتو", thinking:"افكر...", yesDo:"نعم افعل ذلك", notNow:"ليس الان", askRichard:"اسال ريتشارد اي شيء...", giveFeedback:"اعطِ ريتشارد ملاحظاتك...", advisorDisclaimer:"ريتشارد مساعد ذكاء اصطناعي وليس مستشارا ماليا معتمدا. دائما ابحث قبل اتخاذ قرارات مالية.", translate:"ترجمة الخطة", noPlanYet:"لا توجد خطة بعد. اكمل الاستبيان للحصول على خطتك الشخصية من ريتشارد.", noIncomeYet:"لم يُسجل دخل بعد", notes:"ملاحظات", notesEmpty:"لا ملاحظات بعد", notesEmptySub:"تتبع من يدين لك ولمن تدين. اضغط + لإضافة أول ملاحظة.", theyOweMe:"يدينون لي", iOwe:"أنا مدين", newNote:"ملاحظة جديدة", addNote:"أضف ملاحظة", editNote:"تعديل الملاحظة", saveNote:"حفظ الملاحظة", settle:"تسوية", settleTitle:"تسوية الملاحظة", settleAddBalance:"أضف إلى رصيدي", reminder:"تذكير", reminderTitle:"ضبط تذكير", setReminder:"ضبط التذكير", clearReminder:"إلغاء التذكير", reminderWhen:"ذكرني في", reminderDenied:"الإشعارات محظورة. ستظل الملاحظة تعرض شارة الاستحقاق.", due:"مستحق", overdue:"متأخر", deleteNote:"حذف الملاحظة", trips:"رحلات", planATrip:"خطط رحلة", planATripSub:"ضع ميزانية لرحلة دون المساس برصيدك.", planNewTrip:"خطط رحلة جديدة", noTrips:"لا رحلات بعد", noTripsSub:"خطط رحلة وسيوزع ريتشارد ميزانيتك على الأساسيات.", tripName:"اسم الرحلة", destination:"الوجهة", tripBudget:"الميزانية الكلية", tripDays:"أيام", travelStyle:"نمط السفر", styleBudget:"اقتصادي", styleComfort:"مريح", styleLuxury:"فاخر", next:"التالي", back:"رجوع", richardPlanning:"ريتشارد يخطط رحلتك", richardPlanningSub:"يوزع ميزانيتك على الأساسيات.", tripSplit:"توزيع ميزانيتك", allocated:"مخصص", overBy:"تجاوز بمقدار", saveTrip:"حفظ الرحلة", addCategory:"أضف فئة", editCategory:"تعديل الفئة", color:"اللون", deductFromBalance:"خصم من الرصيد", deductExplain:"هكذا يُسجل ما تنفقه فعلاً في الرحلة كمصروف واحد مباشر - ينخفض رصيدك فقط عندما تسجل الإنفاق هنا، وليس الميزانية كلها مقدماً. يمكنك التراجع في أي وقت.", reserved:"قيد التتبع مقابل الرصيد", undoReserve:"إيقاف التتبع", logExpense:"سجل مصروفاً", logExpenseTitle:"تسجيل مصروف رحلة", tripTips:"نصائح ريتشارد", deleteTrip:"حذف الرحلة", deleteTripConfirm:"حذف هذه الرحلة؟ لا يمكن التراجع عن ذلك.", spentOf:"أُنفق من", leftToSpend:"متبقٍ للإنفاق", planning:"قيد التخطيط", tripSummary:"ملخص الرحلة", appearance:"المظهر", leftAfterBudgets:"المتبقي بعد الميزانيات", tripIcon:"رمز الرحلة", savings:"مدخرات", netWorth:"صافي الثروة", balance:"الرصيد", manage:"إدارة", totalSavings:"إجمالي المدخر", savingsIntro:"مال تحتفظ به منفصلاً عن رصيد إنفاقك - صندوق طوارئ، أو ادخار لهدف، أو أي مبلغ لا تريد إنفاقه بالخطأ. يُحسب ضمن صافي ثروتك، وليس ضمن رصيدك أبداً.", newSavingsAccount:"حساب توفير جديد", savingsAccountName:"اسم الحساب", addMoney:"أضف مالاً", withdraw:"سحب", fromBalance:"من رصيدي", externalMoney:"مال أملكه بالفعل", toBalance:"إلى رصيدي", removeFromNet:"إنفاق أو إزالة", startingAmount:"مبلغ البداية (اختياري)", createAccount:"إنشاء حساب", closeAccount:"إغلاق الحساب", rename:"إعادة تسمية", emptySavingsSub:"احتفظ بصندوق طوارئ أو ادخار لهدف منفصلاً عن رصيد إنفاقك.", addSavingsAccount:"أضف حساب توفير", history:"السجل", balanceUntouched:"رصيد إنفاقك يبقى دون تغيير", movesFromBalance:"ينقل المال خارج رصيد إنفاقك", addsToBalance:"يعيد المال إلى رصيد إنفاقك", leavesNetWorth:"يغادر حساباتك - يخفض صافي ثروتك", pickIcon:"الرمز", emergencyFund:"صندوق الطوارئ", noMovesYet:"لا حركات بعد", pastChats:"محادثات سابقة", newChat:"محادثة جديدة", conversation:"محادثة", conversations:"محادثات", noPastChats:"لا محادثات سابقة بعد", message:"رسالة", messages:"رسائل" },
   ru: { overview:"Обзор", activity:"Активность", budgets:"Бюджеты", goals:"Цели", advisor:"Помощник", profile:"Профиль", language:"Язык", currency:"Валюта", yourPlan:"Ваш план", categories:"Категории", signOut:"Выйти", richyMember:"Участник Richy", richyRefersTo:"Richy называет тебя", seeYourPlan:"Посмотреть план от Ричарда", netBalance:"Чистый баланс", income:"Доходы", spent:"Расходы", topSpend:"Главная трата", morning:"Доброе утро", afternoon:"Добрый день", evening:"Добрый вечер", savedThisPeriod:"сохранено за период", redoQuestionnaire:"Пройти снова", yourPlanByRichard:"Ваш план от Ричарда", noTransactions:"Нет транзакций", noTransactionsSub:"Нажмите + чтобы добавить первую. Осознанность - первый шаг к богатству.", overviewEmptySub:"Богатейший человек Вавилона начал с учёта каждой монеты. Начните в Активности.", savingsRate:"Уровень сбережений",quickAdd:"Быстрое добавление", excellent:"Отлично", onTrack:"В норме", buildItUp:"Улучшайте", overspending:"Можно выровнять", thisPeriod:"за период", transactions:"Транзакции", whereItWent:"Куда ушло", overLimit:"сверх лимита", complete:"завершено", savedLabel:"накоплено", spentLabel:"потрачено", toGo:"осталось", recent:"Последние", activeGoal:"активная цель", activeGoals:"активных целей", today:"Сегодня", yesterday:"Вчера", moneyIn:"Доходы", moneyOut:"Расходы", newTransaction:"Новая транзакция", editTransaction:"Редактировать", addTransaction:"Добавить транзакцию", saveChanges:"Сохранить изменения", deleteTx:"Удалить транзакцию", amount:"Сумма", txLabel:"Описание", category:"Категория", date:"Дата", repeat:"Повтор", once:"Однократно", weekly:"Еженедельно", monthly:"Ежемесячно", markPending:"Отметить как ожидающее", expense:"Расход", noBudgets:"Нет бюджетов", noBudgetsSub:"Нажмите + чтобы задать лимит. Бюджет говорит деньгам куда идти.", newBudget:"Новый бюджет", editLimit:"Изменить лимит", addBudget:"Добавить бюджет", removeBudget:"Удалить этот бюджет", totalSpent:"Всего потрачено", byCategory:"По категориям", edit:"Редактировать", delete:"Удалить", save:"Сохранить", budgeted:"запланировано", monthlyLimit:"Месячный лимит", allCatsHaveBudget:"Все категории уже имеют бюджет. Сначала добавьте новую категорию.", noGoals:"Нет книг целей", noGoalsSub:"Нажмите + чтобы создать первую. Цель с датой - это план, а не мечта.", newBudgetBook:"Новая книга целей", editBudgetBook:"Редактировать книгу целей", createBudgetBook:"Создать книгу целей", deleteBudgetBook:"Удалить книгу целей", addToBudgetBook:"Добавить в книгу целей", alreadySaved:"Уже накоплено", target:"Цель", name:"Название", deadline:"Срок (необязательно)", goalComplete:"Цель достигнута!", remaining:"осталось", add:"Добавить", removeMoney:"Снять", removeFromBudgetBook:"Убрать из книги целей", removeMoneyConfirm:"Снять {amt} из {name}? Это уменьшит уже накопленное.", syncWithAccount:"Синхронизировать со счётом", noSync:"Без синхронизации", syncedWith:"Синхронизировано с", addOrRemove:"Добавить / Снять", richySuggests:"Ричард предлагает", implement:"Применить", dismiss:"Отклонить", aiAdvisor:"Финансовый коуч ИИ", aiAdvisorSub:"Персональные советы на основе ваших расходов.", analyzeMyFinances:"Анализировать мои финансы", thinkP1:"Читаю ваши цифры",thinkP2:"Обдумываю",thinkP3:"Взвешиваю варианты",thinkP4:"Пишу ответ",anStep1:"Читаю ваш месяц",anStep2:"Проверяю {n} операций",anStep3:"Сравниваю план с реальностью",anStep4:"Ищу самое важное",anStep5:"Пишу ваш анализ",analyzingFinances:"Анализируем ваши финансы...", fewSeconds:"Это займет несколько секунд", refresh:"Обновить", insights:"Инсайты", analysisFailed:"Анализ не удался", tryAgain:"Попробовать снова", askYourAdvisor:"Спросите вашего советника", advisorQ1:"Как сэкономить больше?", advisorQ2:"Мой уровень сбережений здоровый?", advisorQ3:"Что делать с излишком?",advisorQ4:"Запиши, что я потратил", thinking:"Думаю...", yesDo:"Да, сделай это", notNow:"Не сейчас", askRichard:"Спросите Ричарда что угодно...", giveFeedback:"Дайте обратную связь Ричарду...", advisorDisclaimer:"Ричард является ИИ-помощником, а не лицензированным финансовым советником. Всегда проводите собственное исследование.", translate:"Перевести план", noPlanYet:"Плана пока нет. Пройдите анкету, чтобы получить персональный план от Ричарда.", noIncomeYet:"Доходы ещё не записаны", notes:"Заметки", notesEmpty:"Пока нет заметок", notesEmptySub:"Отслеживайте, кто должен вам и кому должны вы. Нажмите +, чтобы добавить первую.", theyOweMe:"Мне должны", iOwe:"Я должен", newNote:"Новая заметка", addNote:"Добавить заметку", editNote:"Редактировать заметку", saveNote:"Сохранить заметку", settle:"Погасить", settleTitle:"Погашение заметки", settleAddBalance:"Добавить к моему балансу", reminder:"Напоминание", reminderTitle:"Установить напоминание", setReminder:"Установить", clearReminder:"Убрать напоминание", reminderWhen:"Напомнить мне", reminderDenied:"Уведомления заблокированы. Заметка всё равно покажет метку срока.", due:"Срок", overdue:"Просрочено", deleteNote:"Удалить заметку", trips:"Поездки", planATrip:"Спланировать поездку", planATripSub:"Составьте бюджет отпуска, не трогая свой баланс.", planNewTrip:"Спланировать новую поездку", noTrips:"Пока нет поездок", noTripsSub:"Спланируйте отпуск, и Ричард распределит бюджет по главному.", tripName:"Название поездки", destination:"Направление", tripBudget:"Общий бюджет", tripDays:"Дней", travelStyle:"Стиль путешествия", styleBudget:"Эконом", styleComfort:"Комфорт", styleLuxury:"Люкс", next:"Далее", back:"Назад", richardPlanning:"Ричард планирует вашу поездку", richardPlanningSub:"Распределяет бюджет по главному.", tripSplit:"Распределение бюджета", allocated:"Распределено", overBy:"превышение на", saveTrip:"Сохранить поездку", addCategory:"Добавить категорию", editCategory:"Редактировать категорию", color:"Цвет", deductFromBalance:"Списывать с баланса", deductExplain:"Реальные траты в поездке записываются как один живой расход - баланс уменьшается только когда вы записываете траты здесь, а не на весь бюджет сразу. Можно отменить в любой момент.", reserved:"Отслеживается по балансу", undoReserve:"Прекратить отслеживание", logExpense:"Записать расход", logExpenseTitle:"Запись расхода поездки", tripTips:"Советы Ричарда", deleteTrip:"Удалить поездку", deleteTripConfirm:"Удалить эту поездку? Это нельзя отменить.", spentOf:"потрачено из", leftToSpend:"осталось потратить", planning:"Планируется", tripSummary:"Итоги поездки", appearance:"Оформление", leftAfterBudgets:"Осталось после бюджетов", tripIcon:"Значок поездки", savings:"Сбережения", netWorth:"Чистый капитал", balance:"Баланс", manage:"Управлять", totalSavings:"Всего накоплено", savingsIntro:"Деньги, которые вы держите отдельно от расходного баланса - резервный фонд, накопления на цель, всё, что не хотите случайно потратить. Они входят в чистый капитал, но никогда - в баланс.", newSavingsAccount:"Новый сберегательный счёт", savingsAccountName:"Название счёта", addMoney:"Пополнить", withdraw:"Снять", fromBalance:"С моего баланса", externalMoney:"Деньги, которые уже есть", toBalance:"На мой баланс", removeFromNet:"Потратить или убрать", startingAmount:"Начальная сумма (необязательно)", createAccount:"Создать счёт", closeAccount:"Закрыть счёт", rename:"Переименовать", emptySavingsSub:"Держите резервный фонд или накопления отдельно от расходного баланса.", addSavingsAccount:"Добавить сберегательный счёт", history:"История", balanceUntouched:"Ваш расходный баланс не меняется", movesFromBalance:"Переводит деньги из расходного баланса", addsToBalance:"Возвращает деньги на расходный баланс", leavesNetWorth:"Уходит из ваших счетов - уменьшает чистый капитал", pickIcon:"Значок", emergencyFund:"Резервный фонд", noMovesYet:"Движений пока нет", pastChats:"Прошлые чаты", newChat:"Новый чат", conversation:"чат", conversations:"чатов", noPastChats:"Прошлых чатов пока нет", message:"сообщение", messages:"сообщений" },
@@ -3325,6 +3345,52 @@ function cloudErrorMsg() {
 function _auth() { return _fb().auth(); }
 function _fsdb() { return _fb().firestore(); }
 
+// The three plan arrays a household shares. They are the ones a household bug
+// can empty behind the user's back, so they are named once here and referenced
+// by the seed, the merge and the save() guard rather than spelled out at each.
+var HOUSEHOLD_PLAN_KEYS = ["budgets", "goals", "categories"];
+// The key each of those arrays is identified by, for merging.
+var HOUSEHOLD_PLAN_ID = { budgets: "catId", goals: "id", categories: "id" };
+
+// Union a joiner's plan into a household's, keyed per HOUSEHOLD_PLAN_ID.
+//
+// Policy, deliberately non-destructive: where both sides hold the same key the
+// household's existing entry WINS, because joining somebody's household means
+// adopting the shared plan they already agreed on, not silently rewriting it.
+// Where only the joiner has a key, it is carried across. Nothing is dropped -
+// which matters most for `categories`, since a category the joiner loses would
+// orphan the catId on every transaction they have ever logged.
+//
+// The data model has no per-member scoping for these three arrays (only `tx`
+// carries a `shared` flag), so union-with-existing-wins is the only merge that
+// destroys nothing on either side.
+//
+// Returns null when the household already covers everything the joiner has and
+// every field is present, so a no-op join costs no write.
+function mergeHouseholdPlan(hh, mine) {
+  var out = {};
+  var changed = false;
+  HOUSEHOLD_PLAN_KEYS.forEach(function(field) {
+    var key = HOUSEHOLD_PLAN_ID[field];
+    var theirs = Array.isArray(hh && hh[field]) ? hh[field] : [];
+    var ours = Array.isArray(mine && mine[field]) ? mine[field] : [];
+    var seen = {};
+    theirs.forEach(function(e) { if (e && e[key] != null) seen[e[key]] = true; });
+    var add = ours.filter(function(e) {
+      if (!e || e[key] == null || seen[e[key]]) return false;
+      seen[e[key]] = true; // guards duplicates within the joiner's own array
+      return true;
+    });
+    // An ABSENT field has to be written even with nothing to add, or it stays
+    // absent and the next member to join hits the same empty-read bug.
+    if (add.length || !Array.isArray(hh && hh[field])) {
+      out[field] = theirs.concat(add);
+      changed = true;
+    }
+  });
+  return changed ? out : null;
+}
+
 var CLOUD = {
   // Subscribe to sign-in state. cb receives the Firebase user (or null).
   // Returns an unsubscribe function. Fires once immediately with the restored
@@ -3435,14 +3501,28 @@ var CLOUD = {
   // personal settings stay in each member's users/{uid} doc and never enter here.
   // Membership is enforced by Firestore rules: only listed memberUids (or an
   // invited email in pendingEmails, who can accept) may touch the doc.
-  createHousehold: function(member, name) {
+  // A new household starts as a COPY of the creator's plan, never as a blank
+  // document. Writing it without budgets/goals/categories meant the live
+  // subscription read those fields straight back as [], emptied local state,
+  // and the next save() of anything at all - a transaction, a theme change, a
+  // dismissed tip - persisted the empty arrays over the creator's real data
+  // and orphaned the catId on every transaction they had ever logged
+  // (30 Aug audit, NEW-1). `seed` is the creator's current plan.
+  createHousehold: function(member, name, seed) {
     var ref = _fsdb().collection("households").doc();
+    var s = seed || {};
     var data = {
       name: name || "Our Household",
       createdBy: member.uid,
       memberUids: [member.uid],
       members: [{ uid: member.uid, name: member.name || "", email: (member.email || "").toLowerCase() }],
       pendingEmails: [],
+      budgets: Array.isArray(s.budgets) ? s.budgets : [],
+      goals: Array.isArray(s.goals) ? s.goals : [],
+      categories: Array.isArray(s.categories) ? s.categories : [],
+      // Only transactions already marked shared belong in the household doc;
+      // private ones never leave the member's own users/{uid} document.
+      tx: (Array.isArray(s.tx) ? s.tx : []).filter(function(t) { return t && t.shared; }),
       createdAt: Date.now()
     };
     return ref.set(data).then(function() { return ref.id; });
@@ -3484,12 +3564,29 @@ var CLOUD = {
       pendingEmails: FV.arrayRemove((email || "").toLowerCase())
     });
   },
-  acceptInvite: function(hid, member) {
+  // Joining MERGES the joiner's plan into the household (see
+  // mergeHouseholdPlan) instead of either side overwriting the other. Before
+  // this, joining simply adopted whatever the household doc held - which for a
+  // household created by the old createHousehold was nothing at all, so the
+  // joiner's budgets, goals and categories were emptied too.
+  //
+  // Two writes, on purpose and in this order. firestore.rules lets an
+  // invited-but-not-joined user touch membership fields ONLY, so the merge has
+  // to land on a second write, after the first has made them a member. The
+  // merge is also what back-fills the plan fields on households created before
+  // seeding existed, so an already-damaged household heals on the next join.
+  acceptInvite: function(hid, member, mine) {
     var FV = _fb().firestore.FieldValue;
-    return _fsdb().collection("households").doc(hid).update({
+    var ref = _fsdb().collection("households").doc(hid);
+    return ref.update({
       memberUids: FV.arrayUnion(member.uid),
       members: FV.arrayUnion({ uid: member.uid, name: member.name || "", email: (member.email || "").toLowerCase() }),
       pendingEmails: FV.arrayRemove((member.email || "").toLowerCase())
+    }).then(function() {
+      return ref.get();
+    }).then(function(snap) {
+      var merged = mergeHouseholdPlan(snap.exists ? snap.data() : {}, mine || {});
+      return merged ? ref.set(merged, { merge: true }) : null;
     });
   },
   leaveHousehold: function(hid, member) {
@@ -5508,6 +5605,15 @@ function jrRgba(hex, a) {
   var c = jrHex(hex);
   return "rgba(" + Math.round(c[0] * 255) + "," + Math.round(c[1] * 255) + "," + Math.round(c[2] * 255) + "," + a + ")";
 }
+// Same hex multiplied toward black by k (0 = unchanged, 1 = black). The
+// liquid-glass buttons derive their shade insets and label ink from the live
+// accent this way, so a theme swap moves every layer together.
+function jrShade(hex, k) {
+  var c = jrHex(hex), m = 1 - k;
+  function h2(v) { var t = Math.round(v * 255 * m).toString(16); return t.length < 2 ? "0" + t : t; }
+  return "#" + h2(c[0]) + h2(c[1]) + h2(c[2]);
+}
+function jrShadeRgba(hex, k, a) { return jrRgba(jrShade(hex, k), a); }
 
 // Raw-WebGL animated shader background (no three.js). Flowing chromatic light
 // ribbons - reworked from the classic sine-ribbon shader to TINT a warm base
@@ -6120,13 +6226,12 @@ function Overlay(props) {
           aria-label="Drag down to close"
           style={{ width: 38, height: 5, borderRadius: 3, background: T.orangeDim, margin: "9px auto 0", cursor: dragging ? "grabbing" : "grab", touchAction: "none" }}
         />
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px 8px" }}>
+        <div
+          onMouseDown={startDrag}
+          onTouchStart={startDrag}
+          style={{ display: "flex", alignItems: "center", padding: "12px 20px 8px", cursor: dragging ? "grabbing" : "grab", touchAction: "none" }}
+        >
           <span style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{props.title}</span>
-          <button onClick={props.onClose} aria-label="Close" style={{
-            background: T.orangeDim, border: "none", borderRadius: "50%",
-            width: 30, height: 30, cursor: "pointer", fontSize: 18, color: T.orange,
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>x</button>
         </div>
         <div style={{ padding: "2px 20px 0" }}>{props.children}</div>
         </div>
@@ -8436,7 +8541,7 @@ function FoundMoney(props) {
     var lines = findings.slice(0, 8).map(function(f) { return "- " + f.title + " (" + f.subtitle + ")"; }).join("\n");
     var totalLine = recoverable > 0 ? ("\nTotal recoverable if acted on: " + dollars(recoverable) + " per year.") : "";
     var system = richardSystem("You are Richard, the warm, sharp money guide inside the Richy app. The app has ALREADY audited the user's transactions and found the potential leaks listed below (forgotten subscriptions, price hikes, double charges, category spikes). The figures are exact - never invent or change a number. In 2-3 short sentences speak directly to the user: frame what was found and the single highest-impact move to make first. Do not re-list every item - they see the list below your note." + RICHARD_FORMAT);
-    callClaude([{ role: "user", content: "The audit found:\n" + lines + totalLine + "\n\nWrite the short intro." }], system, 220, function(err, text) {
+    callClaudeFast([{ role: "user", content: "The audit found:\n" + lines + totalLine + "\n\nWrite the short intro." }], system, 220, function(err, text) {
       setNarrLoading(false);
       if (err || !text) {
         setNarr(leakCount === 1
@@ -8487,7 +8592,7 @@ function FoundMoney(props) {
     } else {
       ask = "Write a message to cancel my " + f.merchant + " subscription of " + dollars(f.amount) + " per " + ((m.cadence === "weekly") ? "week" : "month") + ", effective immediately, and request written confirmation that no further charges will occur.";
     }
-    callClaude([{ role: "user", content: ask }], system, 260, function(err, text) {
+    callClaudeFast([{ role: "user", content: ask }], system, 260, function(err, text) {
       if (err || !text) {
         setDraft({ id: f.id, loading: false, text: mode === "pricematch"
           ? tr("fmHikeFallback").replace("{new}", dollars(m.newAmt)).replace("{old}", dollars(m.oldAmt))
@@ -9225,18 +9330,35 @@ function WidgetCard(props) {
     );
   }
 
+  // Urgent widgets (over a limit, off track) earn a hotter treatment so the
+  // one thing that actually needs a decision today doesn't read the same as
+  // a card that's just informative. This is the whole point of the redesign:
+  // a widget should look worth opening the app for, not like a stat plaque.
+  var urgent = !!res.bad;
+  var accent = urgent ? T.red : color;
   return (
-    <Card style={{ padding: "15px 17px", marginBottom: 10 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-        <CatBadge icon={w.icon || "box"} color={color} size={30} soft />
+    <Card style={{
+      padding: "16px 18px", marginBottom: 12, position: "relative", overflow: "hidden",
+      background: "linear-gradient(135deg, " + accent + (urgent ? "1F" : "14") + " 0%, " + T.card + " 55%)",
+      border: "1px solid " + accent + (urgent ? "40" : "22"),
+      boxShadow: "0 1px 2px rgba(0,0,0,0.04), 0 10px 28px " + accent + (urgent ? "2E" : "1C"),
+    }}>
+      <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: accent }} />
+      <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 13 }}>
+        <CatBadge icon={w.icon || "box"} color={accent} size={36} soft />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, lineHeight: 1.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.title}</div>
-          <div style={{ fontSize: 11, color: T.ink3, marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{widgetCaption(w, res)}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, fontFamily: DISP, color: T.ink, lineHeight: 1.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.title}</div>
+            {urgent && (
+              <span style={{ flexShrink: 0, fontSize: 9.5, fontWeight: 800, color: T.red, background: T.red + "1F", borderRadius: 20, padding: "2px 7px", textTransform: "uppercase", letterSpacing: "0.04em", animation: "rcBadgePulse 2.2s ease-in-out infinite" }}>{"Act today"}</span>
+            )}
+          </div>
+          <div style={{ fontSize: 11.5, color: urgent ? T.red : T.ink3, fontWeight: urgent ? 700 : 400, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{widgetCaption(w, res)}</div>
         </div>
         {/* Richard made it, so the user needs a way to unmake it without asking. */}
         <div onClick={function(e) { e.stopPropagation(); props.onRemove(); }} title="Remove widget"
-          style={{ width: 30, height: 30, borderRadius: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer", opacity: 0.35 }}>
-          <SVGIcon id="close" size={13} color={T.ink3} />
+          style={{ width: 28, height: 28, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer", opacity: 0.35 }}>
+          <SVGIcon id="close" size={12} color={T.ink3} />
         </div>
       </div>
       {body()}
@@ -9340,7 +9462,7 @@ function AddWidgetOverlay(props) {
       + "Use ONLY these exact names - never invent one: categories [" + (wc.categories || []).map(function(c) { return c.name; }).join(", ") + "], folders [" + (wc.folders || []).map(function(f) { return f.name; }).join(", ") + "], goals [" + (wc.goals || []).map(function(g) { return g.name; }).join(", ") + "], savings pots [" + (wc.savings || []).map(function(s) { return s.name; }).join(", ") + "], budgeted categories [" + (wc.budgets || []).map(function(b) { var c = catById(wc.categories, b.catId) || catByName(wc.categories, b.category); return c ? c.name : null; }).filter(Boolean).join(", ") + "]. "
       + "Pick the metric and shape that best match what they asked for; if their request needs a name not in the lists above, pick the closest metric that needs none instead."
       + (props.lang && props.lang !== "en" ? " Write the title in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : "");
-    callClaude([{ role: "user", content: ask }], sys, 300, function(err, text) {
+    callClaudeFast([{ role: "user", content: ask }], sys, 300, function(err, text) {
       setAiLoading(false);
       if (err) { setAiErr("Richard couldn't build that right now. Try again."); return; }
       var raw = (text || "").trim().replace(/^```[a-z]*\n?/i, "").replace(/```$/, "").trim();
@@ -9600,6 +9722,37 @@ function Overview(props) {
     };
   }).sort(function(a,b){ return b.pct - a.pct; });
 
+  // The hero is the one place users should not have to interpret a dashboard.
+  // Richard does the arithmetic in the background and exposes four decisions:
+  // what is safe this week, whether the month is healthy, the next useful move,
+  // and what the always-on watcher has found. Keep the maths deterministic - the
+  // language model may explain a result elsewhere, but it never invents one here.
+  var heroWatch = richardWatch({
+    tx: tx, categories: cats, budgets: budgets, goals: goals,
+    savings: savAccts, businesses: bizAccts, investing: invAccts,
+    foundMoney: props.foundMoney, forecastDays: 30
+  });
+  var heroUpcomingWeekRows = heroWatch.forecast.filter(function(f) { return f.inDays >= 0 && f.inDays <= 7; });
+  var heroUpcomingWeek = round2(heroUpcomingWeekRows.reduce(function(s, f) { return s + f.amount; }, 0));
+  var heroCashRoom = Math.max(0, round2(balance - heroUpcomingWeek));
+  var heroCapRows = budgetRows.filter(function(r) { return r.dir === "cap" && r.limit > 0; });
+  var heroBudgetRoom = round2(heroCapRows.reduce(function(s, r) { return s + Math.max(0, r.limit - r.spent); }, 0));
+  // When caps exist, safe-to-spend respects both cash and the user's plan. With
+  // no caps yet it stays useful by reserving only charges already recognised.
+  var safeToSpend = Math.max(0, heroCapRows.length ? Math.min(heroCashRoom, heroBudgetRoom) : heroCashRoom);
+  var safePerDay = round2(safeToSpend / 7);
+  var heroTopRisk = heroWatch.risks.length ? heroWatch.risks[0] : null;
+  var heroTopLeak = heroWatch.leaks.length ? heroWatch.leaks[0] : null;
+  var heroMove = heroTopRisk || heroTopLeak;
+  var heroOverCaps = heroCapRows.filter(function(r) { return r.over; }).length;
+  var heroMonthRisk = heroWatch.risks.some(function(r) { return r.type === "cliff"; });
+  var heroMonthStatus = heroMonthRisk ? "Needs attention" : heroOverCaps > 0 ? "Plan needs a tune-up" : "On track";
+  var heroMonthTone = heroMonthRisk ? T.heroNeg : heroOverCaps > 0 ? T.gold : T.heroPos;
+  var heroTodayDate = new Date();
+  var heroDaysLeft = new Date(heroTodayDate.getFullYear(), heroTodayDate.getMonth() + 1, 0).getDate() - heroTodayDate.getDate();
+  var heroMonthPct = income > 0 ? Math.max(0, Math.min(100, Math.round((expense / income) * 100))) : 0;
+  var heroPageCount = 4;
+
   // ===== Hero carousel: swipeable state + draw animation =====
   var _pg = useState(0);    var page = _pg[0];     var setPage = _pg[1];
   var _rg = useState("1M"); var range = _rg[0];    var setRange = _rg[1];
@@ -9706,7 +9859,7 @@ function Overview(props) {
       try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
     }
     if (d.axis !== "x") return;
-    if ((page === 0 && dx > 0) || (page === 4 && dx < 0)) dx = dx * 0.35;
+    if ((page === 0 && dx > 0) || (page === heroPageCount - 1 && dx < 0)) dx = dx * 0.35;
     d.dx = dx;
     setDragX(dx);
   }
@@ -9718,7 +9871,7 @@ function Overview(props) {
     var w = d.vw || 366;
     var dx = d.dx || 0;
     var np = page;
-    if (dx < -w * 0.38 && page < 4) np = page + 1;
+    if (dx < -w * 0.38 && page < heroPageCount - 1) np = page + 1;
     else if (dx > w * 0.38 && page > 0) np = page - 1;
     d.dx = 0;
     d.axis = null;
@@ -10120,7 +10273,7 @@ function Overview(props) {
 
       <div style={{ marginBottom: 16, animation: "rcFadeUp var(--m-enter) var(--m-ease) both" }}>
         <div style={{ display: "flex", justifyContent: "center", gap: 7, padding: "0 0 11px" }}>
-          {[0,1,2,3,4].map(function(i) {
+          {[0,1,2,3].map(function(i) {
             return <div key={i} onClick={function() { goPage(i); }} style={{ width: i === page ? 18 : 6, height: 6, borderRadius: 3, cursor: "pointer", transition: "all 0.3s cubic-bezier(0.22,1,0.36,1)", background: i === page ? T.orange : T.fill4 }} />;
           })}
         </div>
@@ -10130,157 +10283,112 @@ function Overview(props) {
           <div ref={scrollRef} onScroll={onScroll} className="rc-hero-scroll"
             style={{ position: "relative", zIndex: 1, display: "flex", height: "100%", width: "100%", overflowX: "auto", overflowY: "hidden", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
 
-            {/* Panel 0 - Balance */}
-            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden",padding: "22px 24px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative" }}>
+            {/* Panel 0 - Safe to spend. The answer users came for, not another
+                account total they still have to interpret. */}
+            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden", padding: "21px 24px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                {savAccts.length > 0 ? (
-                  <div onPointerDown={stopDrag} style={{ display: "flex", gap: 2, background: T.heroRangeBg, borderRadius: 9, padding: 3 }}>
-                    {[["bal", tr("balance")], ["net", tr("netWorth")]].map(function(opt) {
-                      var on = (opt[0] === "net") === showNet;
-                      return (
-                        <div key={opt[0]} onPointerDown={stopDrag} onClick={function() { setShowNet(opt[0] === "net"); }}
-                          style={{ padding: "4px 10px", borderRadius: 7, fontSize: 11, fontWeight: 700, letterSpacing: "0.02em", cursor: "pointer", transition: "all 0.2s", background: on ? T.heroPillBg : "transparent", color: on ? T.heroPillText : HMUT }}>
-                          {opt[1]}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>{tr("netBalance")}</span>
-                )}
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>Safe to spend</div>
+                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>Next 7 days</div>
+                </div>
                 <div onPointerDown={stopDrag} onClick={function() { setHidden(function(v) { return !v; }); }} style={{ cursor: "pointer", padding: 4, display: "flex" }}>
                   <SVGIcon id={hidden ? "eyeoff" : "eye"} size={20} color={HMUT} />
                 </div>
               </div>
               <div>
                 <div style={{ filter: hidden ? "blur(11px)" : "none", userSelect: "none" }}>
-                  <span style={{ fontSize: 42, fontWeight: 700, color: heroValNeg ? HNEG : HINK, letterSpacing: "-0.03em", lineHeight: 1 }}>{(heroValNeg ? "-" : "") + dollars(Math.abs(heroVal * dp))}</span>
+                  <span style={{ fontSize: 43, fontWeight: 750, color: safeToSpend > 0 ? HINK : HNEG, letterSpacing: "-0.04em", lineHeight: 1 }}>{dollars(safeToSpend * dp)}</span>
                 </div>
-                {showNet ? (
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 9 }}>
-                    <span style={{ fontSize: 12, color: HFNT }}>{dollars(balance) + " " + tr("balance").toLowerCase() + " + " + dollars(savTotal) + " " + tr("savings").toLowerCase()}</span>
-                  </div>
-                ) : (
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 9 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: monthNet >= 0 ? HPOS : HNEG }}>{(monthNet >= 0 ? "+" : "-") + dollars(Math.abs(monthNet))}</span>
-                    <span style={{ fontSize: 12, color: HFNT }}>{tfLabel}</span>
-                  </div>
-                )}
+                <div style={{ fontSize: 12.5, color: HFNT, lineHeight: 1.4, marginTop: 9 }}>
+                  {heroUpcomingWeek > 0
+                    ? ("After keeping " + dollars(heroUpcomingWeek) + " for " + heroUpcomingWeekRows.length + " known charge" + (heroUpcomingWeekRows.length === 1 ? "" : "s") + ".")
+                    : (heroCapRows.length ? "Based on your balance and remaining budget." : "No known charges need reserving this week.")}
+                </div>
               </div>
-              <div style={{ display: "flex", gap: 14, borderTop: "0.5px solid " + HSEP, paddingTop: 14 }}>
+              <div style={{ display: "flex", gap: 14, borderTop: "0.5px solid " + HSEP, paddingTop: 13 }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>{tr("income")}</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: HPOS, letterSpacing: "-0.02em", marginTop: 3 }}>{"+" + dollars(income)}</div>
+                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>Per day</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: HINK, letterSpacing: "-0.02em", marginTop: 3 }}>{dollars(safePerDay)}</div>
                 </div>
                 <div style={{ width: "0.5px", background: HSEP }} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>{tr("spent")}</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: HNEG, letterSpacing: "-0.02em", marginTop: 3 }}>{"-" + dollars(expense)}</div>
+                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>Current balance</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: balance < 0 ? HNEG : HINK, letterSpacing: "-0.02em", marginTop: 3 }}>{(balance < 0 ? "-" : "") + dollars(Math.abs(balance))}</div>
                 </div>
               </div>
             </div>
 
-            {/* Panel 1 - Trend */}
-            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>{(showNet ? tr("netWorth") : tr("balance")).toUpperCase() + " TREND"}</span>
-                {rangeRow()}
+            {/* Panel 1 - Month status. One verdict, with the three numbers that
+                explain it; no chart-reading required. */}
+            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden", padding: "20px 22px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>This month</span>
+                <span style={{ padding: "5px 9px", borderRadius: 999, background: T.heroRangeBg, fontSize: 10.5, fontWeight: 700, color: heroMonthTone }}>{heroMonthStatus}</span>
               </div>
-              {/* Negative margin + matching padding widen the grab area out to the
-                  panel edges without moving the chart: touchAction pan-y keeps the
-                  page scrollable while claiming the horizontal axis for scrubbing. */}
-              <div onPointerDown={beginScrub} onPointerMove={moveScrub} onPointerUp={endScrub} onPointerCancel={endScrub} onPointerLeave={endScrub}
-                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 -22px", padding: "0 22px", touchAction: "pan-y", cursor: nPts > 1 ? "ew-resize" : "default" }}>
-                {trendChart()}
-              </div>
-              {/* While scrubbing this reads that day instead of today - same two
-                  slots, same meaning, so nothing jumps around under your finger. */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: 4 }}>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: scrubUp ? HPOS : HNEG }}>{(scrubUp ? "+" : "-") + dollars(Math.abs(scrubNet))}</div>
-                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>{scrubIdx >= 0 ? "net change - through then" : ("net change - " + winLabel)}</div>
+              <div>
+                <div style={{ fontSize: 26, fontWeight: 750, color: HINK, letterSpacing: "-0.03em", lineHeight: 1.12 }}>{heroMonthStatus}</div>
+                <div style={{ fontSize: 12.5, color: HFNT, lineHeight: 1.45, marginTop: 8, minHeight: 36 }}>
+                  {heroTopRisk ? heroTopRisk.title : (income > 0 ? (dollars(Math.max(0, income - expense)) + " remains from recorded income.") : "Add income and spending so Richard can judge the month.")}
                 </div>
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: shownBal < 0 ? HNEG : HINK, letterSpacing: "-0.02em" }}>{(shownBal < 0 ? "-" : "") + dollars(shownBal)}</div>
-                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>{scrubIdx >= 0 ? scrubDateLabel(scrubIdx) : (shift > 0 ? dateLabel(winEnd) : ((showNet ? tr("netWorth") : tr("balance")).toLowerCase() + " now"))}</div>
+                <div style={{ height: 7, borderRadius: 999, background: HTRACK, overflow: "hidden", marginTop: 10 }}>
+                  <div style={{ height: "100%", width: (heroMonthPct * dp) + "%", borderRadius: 999, background: heroMonthPct > 100 ? HNEG : heroMonthPct > 85 ? T.gold : HPOS, transition: "width 0.5s ease" }} />
                 </div>
               </div>
-            </div>
-
-            {/* Panel 2 - Categories */}
-            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>WHERE IT GOES</span>
-                {rangeRow()}
-              </div>
-              {winCats.length === 0 ? (
-                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: HMUT }}>No spending in this period.</div>
-              ) : (
-                <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 18, marginTop: 6 }}>
-                  <div style={{ position: "relative", width: 132, height: 132, flexShrink: 0 }}>
-                    {donutChart()}
-                    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                      <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.1em", color: HFNT }}>SPENT</div>
-                      <div style={{ fontSize: 20, fontWeight: 700, color: HINK, letterSpacing: "-0.03em" }}>{dollars(winExpenseTot)}</div>
-                    </div>
-                  </div>
-                  <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
-                    {winCats.map(function(c, i) {
-                      return (
-                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          <span style={{ width: 9, height: 9, borderRadius: 3, background: c.color, flexShrink: 0 }} />
-                          <span style={{ flex: 1, fontSize: 12, color: T.catNameHero, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: HINK }}>{Math.round((c.val / winExpenseTot) * 100) + "%"}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Panel 3 - Savings rate */}
-            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden",padding: "22px 24px", display: "flex", alignItems: "center", gap: 22 }}>
-              <div style={{ position: "relative", width: 120, height: 120, flexShrink: 0 }}>
-                {ringChart()}
-                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                  <div style={{ fontSize: 30, fontWeight: 700, color: HINK, letterSpacing: "-0.03em", lineHeight: 1 }}>{Math.round(Math.max(0, winSav) * dp)}<span style={{ fontSize: 16 }}>%</span></div>
-                  <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.1em", color: HFNT, marginTop: 2 }}>SAVED</div>
-                </div>
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>SAVINGS RATE</div>
-                <div style={{ fontSize: 16, fontWeight: 600, color: HINK, lineHeight: 1.35, marginTop: 8, letterSpacing: "-0.01em" }}>{winIncomeTot > 0 ? "You kept " + dollars(winKept) + " of what you earned." : "No income recorded in this period."}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 10 }}>
-                  <SVGIcon id={winSav >= 0 ? "up" : "down"} size={14} color={winSav >= 0 ? HPOS : HMUT} />
-                  <span style={{ fontSize: 12, fontWeight: 600, color: winSav >= 0 ? HPOS : HMUT }}>{winSav >= 20 ? "Excellent pace" : winSav >= 10 ? "On track" : winSav >= 0 ? "Building up" : "Room to rebalance"}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Panel 4 - Top merchants */}
-            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>TOP MERCHANTS</span>
-                {rangeRow()}
-              </div>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 13 }}>
-                {merchants.length === 0 ? (
-                  <div style={{ textAlign: "center", fontSize: 13, color: HMUT }}>No expenses in this period.</div>
-                ) : merchants.map(function(m, i) {
-                  return (
-                    <div key={i}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
-                        <span style={{ fontSize: 13, fontWeight: 500, color: T.merchNameHero, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "62%" }}>{m.name}</span>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: HINK, letterSpacing: "-0.02em" }}>{dollars(m.amt)}</span>
-                      </div>
-                      <div style={{ height: 6, borderRadius: 4, background: HTRACK, overflow: "hidden" }}>
-                        <div style={{ height: "100%", width: ((m.amt / merchMax) * 100 * dp).toFixed(1) + "%", background: T.merchBar, borderRadius: 4 }} />
-                      </div>
-                    </div>
-                  );
+              <div style={{ display: "flex", gap: 11, borderTop: "0.5px solid " + HSEP, paddingTop: 12 }}>
+                {[{ k: "Income", v: dollars(income), c: HPOS }, { k: "Spent", v: dollars(expense), c: HINK }, { k: "Days left", v: String(heroDaysLeft), c: HINK }].map(function(x, i) {
+                  return <div key={x.k} style={{ flex: 1, paddingLeft: i ? 10 : 0, borderLeft: i ? "0.5px solid " + HSEP : "none" }}><div style={{ fontSize: 9.5, fontWeight: 600, letterSpacing: "0.07em", textTransform: "uppercase", color: HFNT }}>{x.k}</div><div style={{ fontSize: 14.5, fontWeight: 700, color: x.c, marginTop: 3, letterSpacing: "-0.02em" }}>{x.v}</div></div>;
                 })}
               </div>
+            </div>
+
+            {/* Panel 2 - Richard's single next move. The detail lives in Daily
+                Brief; the hero only earns one decision at a time. */}
+            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden", padding: "20px 22px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>Richard's next move</span>
+                <span style={{ width: 27, height: 27, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", background: T.heroRangeBg }}><SVGIcon id={heroMove ? heroMove.icon : "check"} size={14} color={heroMove ? (T[heroMove.tint] || HINK) : HPOS} /></span>
+              </div>
+              <div style={{ minHeight: 105, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                <div style={{ fontSize: 20, fontWeight: 750, color: HINK, letterSpacing: "-0.025em", lineHeight: 1.18, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                  {heroMove ? heroMove.title : "Nothing needs you right now."}
+                </div>
+                <div style={{ fontSize: 12.5, color: HFNT, lineHeight: 1.42, marginTop: 8, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                  {heroMove ? heroMove.subtitle : "Richard is still watching your budgets, goals and upcoming charges."}
+                </div>
+              </div>
+              <button onPointerDown={stopDrag} onClick={function() { nav("watchBrief"); }}
+                style={{ width: "100%", height: 36, borderRadius: 11, border: "none", background: T.heroPillBg, color: T.heroPillText, fontFamily: UI, fontSize: 12.5, fontWeight: 750, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                {heroMove ? "See Richard's plan" : "Open daily brief"}<SVGIcon id="chevron" size={13} color={T.heroPillText} />
+              </button>
+            </div>
+
+            {/* Panel 3 - The 24/7 watcher. Summary first; the long finding list
+                remains one tap away so a new user never meets a wall of alerts. */}
+            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden", padding: "20px 22px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>Money watcher</span>
+                <span style={{ fontSize: 10.5, fontWeight: 700, color: HPOS, display: "flex", alignItems: "center", gap: 5 }}><i style={{ width: 6, height: 6, borderRadius: 6, display: "block", background: HPOS, animation: "rcBadgePulse 2s ease-in-out infinite" }} />24/7</span>
+              </div>
+              <div>
+                {heroWatch.leaks.length ? (
+                  <div>
+                    <div style={{ fontSize: 35, fontWeight: 750, color: HINK, letterSpacing: "-0.04em", lineHeight: 1 }}>
+                      {heroWatch.totals.recoverableAnnual > 0 ? dollars(heroWatch.totals.recoverableAnnual) : dollars(heroWatch.totals.oneOffTotal)}
+                    </div>
+                    <div style={{ fontSize: 12, color: HFNT, marginTop: 7 }}>{heroWatch.totals.recoverableAnnual > 0 ? "potential to protect each year" : "potentially available to claim back"}</div>
+                    <div style={{ marginTop: 11, display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ width: 25, height: 25, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: T.heroRangeBg, flexShrink: 0 }}><SVGIcon id={heroTopLeak.icon} size={13} color={T[heroTopLeak.tint] || HINK} /></span>
+                      <span style={{ fontSize: 12.5, fontWeight: 650, color: HINK, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{heroTopLeak.title}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div><div style={{ fontSize: 25, fontWeight: 750, color: HINK, letterSpacing: "-0.03em" }}>All clear</div><div style={{ fontSize: 12.5, color: HFNT, lineHeight: 1.45, marginTop: 8 }}>No new leaks, duplicate charges or price jumps found.</div></div>
+                )}
+              </div>
+              <button onPointerDown={stopDrag} onClick={function() { nav("watchBrief"); }}
+                style={{ width: "100%", height: 36, borderRadius: 11, border: "1px solid " + HSEP, background: "transparent", color: HINK, fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                {heroWatch.leaks.length ? ("Review " + heroWatch.leaks.length + " finding" + (heroWatch.leaks.length === 1 ? "" : "s")) : "See what Richard checked"}<SVGIcon id="chevron" size={13} color={HINK} />
+              </button>
             </div>
 
           </div>
@@ -12207,7 +12315,7 @@ function DailyBrief(props) {
     return (
       <div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-          <SubViewBack onBack={function() { props.onNavigate("overview"); }} label="Overview" />
+          <SubViewBack onBack={function() { props.onNavigate("overview"); }} label="Dashboard" />
         </div>
         <div style={{ paddingTop: 8 }}>
           <div style={{ width: 44, height: 44, borderRadius: 15, background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
@@ -16505,9 +16613,13 @@ function Trips(props) {
   return listView();
 }
 
-// Optional 5th arg `model` picks a specific model (e.g. "claude-opus-4-8" for the
-// deep stock scout). Omitted -> the proxy's default Sonnet. The proxy whitelists
-// model strings, so an unknown value simply falls back to Sonnet.
+// Launch model routing. Core advice stays on the quality tier; short, tightly
+// scoped transformations can opt into the fast tier without changing providers
+// or response handling.
+var AI_MODEL_CORE = "claude-sonnet-5";
+var AI_MODEL_FAST = "claude-haiku-4-5";
+// Optional 5th arg `model` picks a tier. Omitted -> the core tier. The proxy
+// whitelists model strings, so an unknown value safely falls back to core.
 // Optional 6th arg `timeoutMs` overrides the default deadline. Every call is
 // bounded: a fetch that stalls without erroring (backgrounded tab, cell handoff,
 // captive portal) never settles on its own, which would leave the caller's
@@ -16550,7 +16662,7 @@ function callClaude(messages, system, maxTokens, callback, model, timeoutMs) {
           messages: messages,
           system: system,
           maxTokens: maxTokens || 800,
-          model: model || undefined,
+          model: model || AI_MODEL_CORE,
         }),
       };
       if (ctrl) opts.signal = ctrl.signal;
@@ -16578,6 +16690,13 @@ function callClaude(messages, system, maxTokens, callback, model, timeoutMs) {
       finish(null, text.trim());
     });
   }).catch(function(err) { finish(new Error("Fetch failed: " + ((err && err.message) || "network error")), null); });
+}
+
+// Cost-sensitive launch path for short, constrained work: translation,
+// narration, support and compact JSON generation. Keeping this wrapper explicit
+// makes every downgraded surface easy to audit or promote after launch testing.
+function callClaudeFast(messages, system, maxTokens, callback, timeoutMs) {
+  return callClaude(messages, system, maxTokens, callback, AI_MODEL_FAST, timeoutMs);
 }
 
 // Big-Decision CFO: the user poses a high-stakes money question ("can I afford
@@ -17929,7 +18048,7 @@ function Advisor(props) {
       return { type: "link", label: "Open a Roth IRA or 401k", icon: "spark" };
     }
     if ((actionLower.indexOf("budget") !== -1 || actionLower.indexOf("allocate") !== -1) && actionLower.indexOf("50/30/20") !== -1) {
-      return { type: "action", label: "Apply 50/30/20 to my budgets", icon: "budget", fn: "apply5030 20" };
+      return { type: "action", label: "Apply 50/30/20 to my budgets", icon: "budget", fn: "apply50/30/20" };
     }
     if (actionLower.indexOf("emergency fund") !== -1 && actionLower.indexOf("$") !== -1) {
       return { type: "action", label: "Create an emergency fund goal", icon: "flag" };
@@ -18427,7 +18546,7 @@ function Advisor(props) {
           animMsgRef.current = -1;
           setChat(function(p) { return p.concat([{ role: "assistant", text: reply, focus: parsed || undefined }]); });
         },
-        "claude-opus-4-8", 90000);
+        AI_MODEL_CORE, 90000);
       return;
     }
     callClaude(
@@ -19392,13 +19511,32 @@ function Advisor(props) {
                   if (pendingAction.fn === "apply50/30/20") {
                     var pool = (income || 3000) * 0.8;
                     var weights = { Housing: 0.34, Food: 0.18, Transport: 0.12, Health: 0.06, Entertainment: 0.12, Shopping: 0.10, Travel: 0.04, Other: 0.04 };
-                    var newB = cats.map(function(c) {
+                    // MERGE, never replace. This used to build a fresh array and
+                    // hand it straight to onSaveBudgets, which deleted every
+                    // budget the split doesn't name - folder budgets, custom
+                    // categories, anything the user set by hand - and threw away
+                    // dir/mode/track on the ones it did keep. The button was a
+                    // no-op typo until now, so that wipe had never actually run;
+                    // repairing the typo without this would have shipped it.
+                    var limits = {};
+                    cats.forEach(function(c) {
                       var w = weights[c.name];
-                      if (!w) return null;
-                      return { catId: c.id, category: c.name, limit: Math.round(pool * w) };
-                    }).filter(Boolean);
-                    if (newB.length) props.onSaveBudgets(newB);
-                    setChat(function(p) { return p.concat([{ role: "assistant", text: "Done. I've set budgets across your categories along the 50/30/20 lines. Open Budgets to fine-tune." }]); });
+                      if (w) limits[c.id] = { limit: Math.round(pool * w), name: c.name };
+                    });
+                    var touched = {};
+                    var merged = (props.budgets || []).map(function(b) {
+                      var hit = limits[b.catId];
+                      if (!hit) return b;
+                      touched[b.catId] = true;
+                      // Keep every other field the user configured on this row.
+                      return Object.assign({}, b, { limit: hit.limit });
+                    });
+                    Object.keys(limits).forEach(function(cid) {
+                      if (!touched[cid]) merged = merged.concat([{ catId: cid, category: limits[cid].name, limit: limits[cid].limit, dir: "cap" }]);
+                    });
+                    var changed = Object.keys(limits).length;
+                    if (changed) props.onSaveBudgets(merged);
+                    setChat(function(p) { return p.concat([{ role: "assistant", text: changed ? "Done. I've set " + changed + " " + (changed === 1 ? "budget" : "budgets") + " along the 50/30/20 lines and left your other budgets alone. Open Budgets to fine-tune." : "I couldn't match any of your categories to the 50/30/20 split, so I've left your budgets as they are." }]); });
                   } else if (pendingAction.label.indexOf("emergency fund") !== -1) {
                     var efTarget = Math.round((expense || 1000) * 3);
                     props.onSaveGoals(props.goals.concat([{ id: Date.now(), name: "Emergency Fund", target: efTarget, saved: 0 }]));
@@ -21453,7 +21591,7 @@ function buildRoadmap(biz, richardInstructions, lang, cb) {
     + richardNotesBlock("NOTES FROM THE OWNER", pf.notes)
     + (biz.plan && biz.plan.summary ? ("Current plan summary: " + biz.plan.summary + " ") : "")
     + "Build the roadmap. Every milestone and task must fit who the owner says they are in their notes.";
-  callClaude([{ role: "user", content: usr }], sys, 1100, function(e, text) {
+  callClaudeFast([{ role: "user", content: usr }], sys, 1100, function(e, text) {
     if (e || !text) { cb(localRoadmap(biz)); return; }
     try {
       var jsonStr = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
@@ -21603,7 +21741,7 @@ function runWeeklyReview(biz, richardInstructions, lang, cb) {
   var custom = richardUserCtx(richardInstructions);
   var langSuffix = (lang && lang !== "en") ? (" Every string value must be written entirely in " + (LANGUAGE_NAMES[lang] || "English") + ".") : "";
   var sys = custom + "You are Richard, a sharp, warm, honest business CFO inside the Richy app, delivering the owner's weekly business review. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"status\":\"on-track\" or \"watch\" or \"off-track\",\"headline\":\"one honest sentence, max 18 words, on exactly where the business stands this week\",\"tip\":{\"title\":\"2 to 5 words\",\"body\":\"1 to 2 sentences of concrete advice tied to their real numbers\"},\"warning\":{\"title\":\"2 to 5 words\",\"body\":\"the one risk to watch, tied to a real number\"},\"idea\":{\"title\":\"2 to 5 words\",\"body\":\"one growth or savings idea, with a dollar figure where possible\"},\"taskSuggestion\":{\"label\":\"one concrete task under 14 words, or empty string\",\"milestone\":\"the milestone title to file it under, or empty string\"},\"graduate\":\"\"}. Never repeat last week's headline. Base every claim only on the numbers given - never invent figures. If the business has clearly outgrown its stage (idea stage but real money is moving; launching stage but revenue keeps arriving) set graduate to the next stage, launching or running - otherwise leave it an empty string." + langSuffix;
-  callClaude([{ role: "user", content: bizWeeklyDigest(biz) }], sys, 600, function(e, text) {
+  callClaudeFast([{ role: "user", content: bizWeeklyDigest(biz) }], sys, 600, function(e, text) {
     var ym = curMonth();
     var pl = bizMonthProfit(biz, ym);
     var frozen = { revenue: pl.revenue, spend: pl.spend, profit: pl.profit, runwayMonths: bizRunway(biz), healthScore: bizHealth(biz).score };
@@ -24944,7 +25082,7 @@ function runStockTake(ctx, cb) {
   var system = richardUserCtx(ctx.richardInstructions) +
     "You are Richard, a warm, plain-spoken market explainer inside a budgeting app. You describe what is factually happening with this stock and what the company does - you NEVER give an opinion on whether it is worth buying, holding, or selling, never rate it, and never suggest an amount. You are not a licensed investment advisor; if the reader needs the decision made, that belongs with one. Never guarantee or predict a price or a return. If the concentration figure shows this stock would dominate their portfolio, include that as a plain risk warning." + investorGlossary(ctx.profile) +
     " Return ONLY a JSON object, nothing before or after it, in exactly this shape: {\"outlook\":\"up|neutral|down - the recent PRICE TREND from the data above, backward-looking history only, not your view of where it goes\",\"confidence\":\"low|medium|high - how clear that trend reading is\",\"headline\":\"one short plain sentence describing the current picture\",\"opinion\":\"2-3 plain-English sentences explaining what is driving the story - facts and context, no advisability view\",\"prediction\":\"the next concrete EVENT worth watching (earnings, a launch, a ruling) - an event, never a price call\",\"tips\":[\"1 to 3 short GENERIC investing-education tips - never specific to this stock's advisability\"],\"goodPick\":[{\"label\":\"short check\",\"ok\":\"yes|watch|no\",\"note\":\"one short line\"}],\"forYou\":\"empty string, or at most one cautionary sentence about concentration or keeping an emergency cushion - never encouragement to buy\"}. Give 3 or 4 goodPick checks a beginner can actually judge." + langLine;
-  callClaude([{ role: "user", content: digest + " " + personal }], system, 750, function(err, text) {
+  callClaudeFast([{ role: "user", content: digest + " " + personal }], system, 750, function(err, text) {
     if (err || !text) { cb(localStockTake(ctx)); return; }
     try {
       var obj = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
@@ -25615,7 +25753,7 @@ function runInvestingBasics(profile, username, lang, richardInstructions, cb) {
   var system = richardUserCtx(richardInstructions) +
     "You are Richard, a warm, encouraging money mentor teaching someone the basics of investing, tuned exactly to their experience level and answers. Plain, friendly English. If they're a beginner, explain every term in a few plain words and keep it gentle and confidence-building. If they're experienced, skip the hand-holding and be crisp. Never hype, never guarantee returns, and remind them to invest only money they can leave alone." +
     " Return ONLY a JSON object in exactly this shape: {\"intro\":\"1-2 warm sentences meeting them at their level\",\"lessons\":[{\"title\":\"short\",\"body\":\"2-3 plain sentences\"}],\"goodPick\":[{\"label\":\"a check they can actually apply\",\"why\":\"one plain sentence\"}],\"firstMove\":\"one concrete first action for them\"}. Give 3 lessons and 3-4 goodPick checks." + langLine;
-  callClaude([{ role: "user", content: profileLine + " Teach them the basics of investing and how to tell if a stock is a good pick, tailored to them." }], system, 850, function(err, text) {
+  callClaudeFast([{ role: "user", content: profileLine + " Teach them the basics of investing and how to tell if a stock is a good pick, tailored to them." }], system, 850, function(err, text) {
     if (err || !text) { cb(localInvestingBasics(profile)); return; }
     try {
       var obj = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
@@ -25925,7 +26063,7 @@ function runStockScout(ctx, cb) {
           obj.source = "ai"; obj.generatedAt = ctx.today; obj.marketNews = (data.marketNews || []).slice(0, 6);
           cb(obj);
         } catch (e) { cb(localStockScout(data.candidates, ctx)); }
-      }, "claude-opus-4-8");
+      }, AI_MODEL_CORE);
   });
 }
 function sendScoutChat(scout, ctx, history, cb) {
@@ -26608,6 +26746,15 @@ function ensureBizCss() {
     + "@keyframes bizBarGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}"
     + "@keyframes bizTickIn{from{opacity:0;transform:translateY(6px) scale(0.9)}to{opacity:1;transform:none}}"
     + ".rc-hero-scroll{scrollbar-width:none;-ms-overflow-style:none;}.rc-hero-scroll::-webkit-scrollbar{display:none;width:0;height:0;}"
+    // Liquid-glass action capsules (design 1A). Hover and press can't live in
+    // an inline style, so the two shadows travel as custom properties and the
+    // states are matched here.
+    + "@keyframes rcSweep{0%{transform:translateX(-140%) rotate(-14deg);}55%{transform:translateX(240%) rotate(-14deg);}100%{transform:translateX(240%) rotate(-14deg);}}"
+    + ".rc-gbtn{position:relative;overflow:hidden;box-shadow:var(--gb-sh);transition:transform 300ms cubic-bezier(.2,.8,.2,1),box-shadow 300ms ease;}"
+    + ".rc-gbtn:hover:not(:disabled){box-shadow:var(--gb-sh-hov);}"
+    + ".rc-gbtn:active:not(:disabled){transform:scale(0.975);}"
+    + ".rc-gbtn-sweep{position:absolute;top:-30%;left:0;width:36%;height:190%;background:linear-gradient(90deg,rgba(255,255,255,0),var(--gb-sweep),rgba(255,255,255,0));filter:blur(6px);animation:rcSweep 5.5s cubic-bezier(.4,0,.2,1) infinite;pointer-events:none;}"
+    + "@media (prefers-reduced-motion:reduce){.rc-gbtn{transition:none;}.rc-gbtn-sweep{animation:none;opacity:0;}}"
     + "@media (prefers-reduced-motion:reduce){[data-biz-motion]{animation:none!important;transition:none!important}}";
   document.head.appendChild(st);
 }
@@ -26657,6 +26804,86 @@ function BizConfetti(props) {
         return <span key={i} style={{ position: "absolute", width: b.w, height: b.h, borderRadius: 2, background: b.c, boxShadow: "0 1px 3px rgba(0,0,0,0.14)", "--cx": b.cx + "px", "--cy": b.cy + "px", "--cr": b.cr + "deg", animation: "bizConfetti 1.35s cubic-bezier(0.16,0.75,0.28,1) " + b.d + "s both" }} />;
       })}
     </div>
+  );
+}
+
+// Liquid-glass action capsule - design 1A ("Tinted glass pills") from the
+// Claude Design canvas "Action Buttons - Liquid Glass".
+//
+// The shared recipe is tint / shade / shine / glass: colour lives in a
+// translucent tint layer rather than a flat fill, the 1px top rim is the shine,
+// the inset bottom is the shade, and blur+saturate is held at the system value
+// (blur(18px) saturate(180%)). The canvas hard-codes its violet; here every
+// layer is derived from the live T palette, so the capsules follow purple /
+// classic / blue and re-mix for dark mode - where the white shine drops to a
+// fraction of its light-mode alpha and the primary tint darkens so white label
+// ink keeps its contrast against a near-black card.
+//
+// kind: "primary" (accent; carries the one specular sweep) | "green" | "neutral".
+function GlassActionBtn(props) {
+  var kind = props.kind || "neutral";
+  var dis = !!props.disabled;
+  var d = !!T.isDark;
+  // Shine factor: the canvas's white rims and washes are far too hot over a
+  // dark card, so every white alpha runs through here.
+  var sf = d ? 0.36 : 1;
+  function w(a) { return "rgba(255,255,255," + (Math.round(a * sf * 1000) / 1000) + ")"; }
+  var glass = "blur(18px) saturate(180%)";
+  var tint, shine, rim, sh, shHov, ink, txtShadow, sweep = null;
+
+  if (dis) {
+    // Still glass, just emptied out: no tint, no glow, and CSS skips the states.
+    shine = "linear-gradient(180deg," + w(0.62) + "," + w(0.22) + " 48%,rgba(255,255,255,0) 66%)";
+    tint = "linear-gradient(180deg," + jrRgba(T.ink, d ? 0.10 : 0.02) + "," + jrRgba(T.ink, d ? 0.16 : 0.05) + ")";
+    rim = "1px solid " + w(0.5);
+    sh = "inset 0 1px 0 " + w(0.7) + ",inset 0 -5px 10px " + (d ? "rgba(0,0,0,0.26)" : jrRgba(T.ink, 0.05)) + ",0 1px 2px rgba(0,0,0,0.04)";
+    shHov = sh;
+    ink = T.ink3;
+  } else if (kind === "primary") {
+    var acc = T.orange;
+    shine = "linear-gradient(180deg," + w(0.5) + "," + w(0.1) + " 44%,rgba(255,255,255,0) 62%)";
+    tint = d
+      ? "linear-gradient(180deg," + jrShadeRgba(acc, 0.30, 0.88) + "," + jrShadeRgba(acc, 0.46, 0.96) + ")"
+      : "linear-gradient(180deg," + jrRgba(acc, 0.72) + "," + jrShadeRgba(acc, 0.18, 0.90) + ")";
+    rim = "1px solid " + w(0.5);
+    sh = "inset 0 1px 0 " + w(0.8) + ",inset 0 -7px 14px " + jrShadeRgba(acc, 0.62, d ? 0.34 : 0.28) + ",0 6px 18px " + jrRgba(acc, d ? 0.30 : 0.38) + ",0 1px 2px rgba(0,0,0,0.1)";
+    shHov = "inset 0 1px 0 " + w(0.9) + ",inset 0 -7px 14px " + jrShadeRgba(acc, 0.62, d ? 0.30 : 0.24) + ",0 9px 24px " + jrRgba(acc, d ? 0.38 : 0.46) + ",0 1px 2px rgba(0,0,0,0.1)";
+    ink = "#FFFFFF";
+    txtShadow = "0 1px 1px " + jrShadeRgba(acc, 0.62, 0.35);
+    sweep = w(0.5); // primary only - every button shining at once is noise
+  } else if (kind === "green") {
+    var g = T.green;
+    shine = "linear-gradient(180deg," + w(0.72) + "," + w(0.18) + " 46%," + w(0.04) + " 64%)";
+    tint = "linear-gradient(180deg," + jrRgba(g, d ? 0.16 : 0.14) + "," + jrRgba(g, d ? 0.28 : 0.30) + ")";
+    rim = "1px solid " + w(0.6);
+    sh = "inset 0 1px 0 " + w(0.9) + ",inset 0 -6px 12px " + jrShadeRgba(g, 0.55, d ? 0.22 : 0.14) + ",0 5px 16px " + jrRgba(g, d ? 0.16 : 0.20) + ",0 1px 2px rgba(0,0,0,0.06)";
+    shHov = "inset 0 1px 0 " + w(1) + ",inset 0 -6px 12px " + jrShadeRgba(g, 0.55, d ? 0.19 : 0.12) + ",0 8px 22px " + jrRgba(g, d ? 0.22 : 0.26) + ",0 1px 2px rgba(0,0,0,0.06)";
+    ink = d ? g : jrShade(g, 0.42);
+  } else {
+    shine = "linear-gradient(180deg," + w(0.78) + "," + w(0.30) + " 48%," + w(0.1) + " 66%)";
+    tint = d
+      ? "linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.11))"
+      : "linear-gradient(180deg," + jrRgba(T.ink, 0.03) + "," + jrRgba(T.ink, 0.09) + ")";
+    rim = "1px solid " + w(0.7);
+    sh = "inset 0 1px 0 " + w(0.95) + ",inset 0 -6px 12px " + (d ? "rgba(0,0,0,0.30)" : jrRgba(T.ink, 0.08)) + ",0 4px 14px " + (d ? "rgba(0,0,0,0.34)" : jrRgba(T.ink, 0.10)) + ",0 1px 2px rgba(0,0,0,0.05)";
+    shHov = "inset 0 1px 0 " + w(1) + ",inset 0 -6px 12px " + (d ? "rgba(0,0,0,0.26)" : jrRgba(T.ink, 0.07)) + ",0 7px 20px " + (d ? "rgba(0,0,0,0.42)" : jrRgba(T.ink, 0.14)) + ",0 1px 2px rgba(0,0,0,0.05)";
+    ink = d ? T.ink2 : jrShade(T.ink2, 0.14);
+  }
+
+  return (
+    <button className="rc-gbtn" onClick={dis ? undefined : props.onClick} disabled={dis}
+      style={{
+        flex: props.flex != null ? props.flex : 1, minWidth: 0, height: 54, boxSizing: "border-box",
+        border: rim, borderRadius: 999, cursor: dis ? "default" : "pointer",
+        fontFamily: UI, fontSize: 14.5, fontWeight: 600, letterSpacing: "-0.01em", whiteSpace: "nowrap",
+        color: ink, textShadow: txtShadow || "none",
+        background: shine + "," + tint,
+        backdropFilter: glass, WebkitBackdropFilter: glass,
+        "--gb-sh": sh, "--gb-sh-hov": shHov, "--gb-sweep": sweep || "transparent"
+      }}>
+      {sweep ? <span className="rc-gbtn-sweep" /> : null}
+      <span style={{ position: "relative" }}>{props.label}</span>
+    </button>
   );
 }
 
@@ -26868,7 +27095,7 @@ function BusinessView(props) {
     setIdeasLoading(true); setIdeas(null);
     var custom = richardUserCtx(props.richardInstructions);
     var sys = custom + "You are Richard, a sharp, warm, honest business CFO inside the Richy app. Give the owner growth ideas grounded ONLY in the numbers provided - never invent figures. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"ideas\":[{\"title\":\"2 to 6 words\",\"body\":\"2 to 3 concrete sentences tied to their numbers\",\"impact\":\"one short line like: about $120 more per month, or empty string\"}]} with EXACTLY 3 ideas." + langLine();
-    callClaude([{ role: "user", content: bizWeeklyDigest(biz) + " Give me 3 growth ideas." }], sys, 500, function(e, text) {
+    callClaudeFast([{ role: "user", content: bizWeeklyDigest(biz) + " Give me 3 growth ideas." }], sys, 500, function(e, text) {
       setIdeasLoading(false);
       if (!e && text) {
         try {
@@ -27028,7 +27255,7 @@ function BusinessView(props) {
     var next = bizes.concat([biz]);
     if (startCap > 0 && fromMain) props.onBusinessMove(tx.concat([transferTx("expense", startCap, biz.name)]), next);
     else props.onSaveBusinesses(next);
-    setActiveId(biz.id); setView("detail");
+    setActiveId(null); setView("list");
   }
   function saveBusiness() {
     if (!planResult) return;
@@ -28225,13 +28452,10 @@ function BusinessView(props) {
             );
           })()}
 
-          <div data-biz-motion style={{ display: "flex", gap: 8, marginBottom: 16, animation: bizCardAnim(1) }}>
-            <button onClick={function() { openAction(biz.id, "add"); }}
-              style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "12px 0", borderRadius: 12, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow, whiteSpace: "nowrap" }}>Add capital</button>
-            <button onClick={function() { setRevFor(biz.id); setRevForm({ label: "", amount: "" }); }}
-              style={{ flex: 1, border: "1.5px solid " + T.green, cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "12px 0", borderRadius: 12, background: "none", color: T.green, whiteSpace: "nowrap" }}>Record revenue</button>
-            <button onClick={function() { openAction(biz.id, "withdraw"); }} disabled={bal <= 0}
-              style={{ flex: 1, border: "1.5px solid " + (bal <= 0 ? T.hairline : T.orange), cursor: bal <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "12px 0", borderRadius: 12, background: "none", color: bal <= 0 ? T.ink3 : T.orange, whiteSpace: "nowrap" }}>Withdraw</button>
+          <div data-biz-motion style={{ display: "flex", gap: 10, marginBottom: 16, animation: bizCardAnim(1) }}>
+            <GlassActionBtn kind="primary" flex={1} label="Add capital" onClick={function() { openAction(biz.id, "add"); }} />
+            <GlassActionBtn kind="green" flex={1.3} label="Record revenue" onClick={function() { setRevFor(biz.id); setRevForm({ label: "", amount: "" }); }} />
+            <GlassActionBtn kind="neutral" flex={0.78} label="Withdraw" disabled={bal <= 0} onClick={function() { openAction(biz.id, "withdraw"); }} />
           </div>
 
           {/* The habit loop. A week counts when the ledger moved - an expense,
@@ -30205,7 +30429,7 @@ function BankSyncHelpChat(props) {
     var history = recent.map(function(m, mi) {
       return { role: m.role === "user" ? "user" : "assistant", content: m.role === "user" ? toContent(m, mi === latestImgIdx) : m.text };
     });
-    callClaude(history, system, 400, function(err, out) {
+    callClaudeFast(history, system, 400, function(err, out) {
       setLoading(false);
       props.onMsgs(next.concat([{ role: "richard", text: (err || !out) ? "I couldn't reach the server just now - check your connection and ask me again in a moment." : out, fresh: true }]));
     });
@@ -31249,7 +31473,7 @@ function PlanView(props) {
     if (translatingPlan || !props.plan || !props.lang || props.lang === "en") return;
     var langName = LANGUAGE_NAMES[props.lang] || props.lang;
     setTranslatingPlan(true);
-    callClaude(
+    callClaudeFast(
       [{ role: "user", content: "Translate this financial plan to " + langName + ". Keep the same warm tone, structure, and personal advice. Output only the translated plan, nothing else:\n\n" + props.plan }],
       "You are Richard, a personal finance advisor. Translate the given financial plan faithfully to the requested language. Preserve the warm, direct, personal tone.",
       400,
@@ -32535,7 +32759,7 @@ function CustomBanners(props) {
 }
 
 var TABS = [
-  { id: "overview", label: "Overview" },
+  { id: "overview", label: "Dashboard" },
   { id: "activity", label: "Activity" },
   { id: "budgets", label: "Budgets" },
   { id: "goals", label: "Goals" },
@@ -33423,11 +33647,33 @@ export default function App() {
       }
       // Live-sync shared data.
       setSharedData({ budgets: hh.budgets || [], goals: hh.goals || [], categories: hh.categories || [], tx: hh.tx || [] });
-      setBudgets(hh.budgets || []);
-      setGoals(hh.goals || []);
-      setCategories(hh.categories || []);
-      var personalTx = tx.filter(function(t) { return !t.shared; });
-      setTx((hh.tx || []).concat(personalTx));
+      // Adopt only the plan fields the document actually CARRIES. An absent
+      // field means this household was never seeded (created before
+      // createHousehold seeded, or written by an older client); reading it back
+      // as [] is what emptied local state, after which the next save() of
+      // anything persisted the empty arrays over the user's real data
+      // (30 Aug audit, NEW-1). An explicitly empty array is a real edit by a
+      // partner and is adopted normally.
+      //
+      // Adopting also updates the save() baseline, because the household doc is
+      // the source of truth for these three. Without that, a partner clearing
+      // the shared budgets would be undone by the empty-array guard in save().
+      function adoptPlan(field, value, setter) {
+        if (!Array.isArray(value)) return;
+        setter(value);
+        if (blobRef.current) blobRef.current[field] = value;
+      }
+      adoptPlan("budgets", hh.budgets, setBudgets);
+      adoptPlan("goals", hh.goals, setGoals);
+      adoptPlan("categories", hh.categories, setCategories);
+      // Functional form. This callback outlives the render it was created in
+      // (deps are [householdId, accountKey]), so a captured `tx` is stale: every
+      // transaction added since the effect last ran would be dropped here and
+      // then persisted as a truncated list the moment a partner touched the
+      // household doc (25 Aug sweep, §2.8a).
+      setTx(function(cur) {
+        return (hh.tx || []).concat((cur || []).filter(function(t) { return !t.shared; }));
+      });
     });
     return function() { if (typeof unsub === "function") unsub(); };
   }, [householdId, accountKey]);
@@ -33466,7 +33712,11 @@ export default function App() {
 
   function onCreateHousehold(name) {
     if (!accountKey) return Promise.resolve();
-    return CLOUD.createHousehold(meAsMember(), name).then(function(hid) {
+    // Seed the new household from the creator's current plan, so the
+    // subscription above has real arrays to read back rather than nothing.
+    return CLOUD.createHousehold(meAsMember(), name, {
+      budgets: budgets, goals: goals, categories: categories, tx: tx
+    }).then(function(hid) {
       setHouseholdId(hid);
       save({ householdId: hid });
       return hid;
@@ -33482,7 +33732,12 @@ export default function App() {
   }
   function onAcceptInvite(hid) {
     if (!hid) return Promise.resolve();
-    return CLOUD.acceptInvite(hid, meAsMember()).then(function() {
+    // Hand our plan over so it is merged into the household rather than
+    // discarded. The merge completes before setHouseholdId starts the
+    // subscription, so the first snapshot already carries both sides.
+    return CLOUD.acceptInvite(hid, meAsMember(), {
+      budgets: budgets, goals: goals, categories: categories
+    }).then(function() {
       setHouseholdId(hid);
       setInvites([]);
       save({ householdId: hid });
@@ -33534,6 +33789,27 @@ export default function App() {
     for (var ek in existing) blob[ek] = existing[ek];
     blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.savings = savings; blob.businesses = businesses; blob.investing = investing; blob.investorProfile = investorProfile; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme; blob.foundMoney = foundMoney; blob.decisions = decisions; blob.monthAnalysis = monthAnalysis; blob.motivation = motivation;
     for (var k in next) blob[k] = next[k];
+    // Last line of defence for the shared plan arrays. save() rebuilds the
+    // whole blob from CURRENT STATE on every call, so any bug that empties one
+    // of those state arrays gets persisted over the user's real data by the
+    // very next save of anything at all - adding a transaction, changing the
+    // theme, dismissing a tip. That is how creating or joining a household
+    // destroyed budgets, goals and categories (30 Aug audit, NEW-1), and it is
+    // the shape of the whole class rather than of one bug.
+    //
+    // So: an ambient rebuild may never write an empty array over a non-empty
+    // one. An EXPLICIT save({budgets: []}) is a deliberate user action -
+    // deleting your last budget - and still goes through untouched; only the
+    // ambient path is guarded. flushSave() writes the household document from
+    // this same blob, so the guard covers the shared copy too.
+    for (var gi = 0; gi < HOUSEHOLD_PLAN_KEYS.length; gi++) {
+      var pk = HOUSEHOLD_PLAN_KEYS[gi];
+      if (next && Object.prototype.hasOwnProperty.call(next, pk)) continue;
+      if (Array.isArray(blob[pk]) && blob[pk].length === 0 && Array.isArray(existing[pk]) && existing[pk].length > 0) {
+        blob[pk] = existing[pk];
+        try { console.warn("Richy: refused to save an empty " + pk + " over " + existing[pk].length + " existing entries"); } catch (e) {}
+      }
+    }
     blobRef.current = blob;
     // Debounce Firestore writes: coalesce rapid successive saves (e.g. typing)
     // into a single write 800ms after the last call. The blob is captured by
@@ -33853,7 +34129,7 @@ export default function App() {
     save({ lang: code });
     if (richPlan) {
       var langName = (LANGUAGE_OPTIONS.filter(function(o) { return o.code === code; })[0] || {}).label || code;
-      callClaude(
+      callClaudeFast(
         [{ role: "user", content: "Translate this financial plan to " + langName + ". Keep the same warm tone, structure, and personal advice. Output only the translated plan, nothing else:\n\n" + richPlan }],
         "You are Richard, a personal finance advisor. Translate the given financial plan faithfully to the requested language. Preserve the warm, direct, personal tone.",
         400,
@@ -34382,7 +34658,7 @@ export default function App() {
   // The bar only carries this label while you are picking a business, not while
   // one is open - inside an account it is the four-way hub instead, exactly as
   // the investing tab does it, and the row at the top of the page steps out.
-  var exitBusinessLabel = "Back to " + (prevTabRef.current === "overview" ? "Overview" : "Savings");
+  var exitBusinessLabel = "Back to " + (prevTabRef.current === "overview" ? "Dashboard" : "Savings");
   var MAIN_TAB_IDS = TABS.map(function(t) { return t.id; });
   // Feed the native drag handlers fresh values without re-subscribing each render.
   liveRef.current = { currentTab: currentTab, sheet: sheet, order: MAIN_TAB_IDS, mainSet: MAIN_TABS_SET };
@@ -34570,8 +34846,8 @@ export default function App() {
         {currentTab === "bankSync" && <BankSyncView bankSync={bankSync} onEnable={onEnableBankSync} onDisable={onDisableBankSync} leumiFinteka={leumiFinteka} onConnectLeumi={onConnectLeumiFinteka} onDisconnectLeumi={onDisconnectLeumiFinteka} onSyncLeumiNow={onSyncLeumiFintekaNow} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "whatsapp" && <WhatsAppAlertsView whatsapp={whatsapp} onLink={onLinkWhatsapp} onUnlink={onUnlinkWhatsapp} onBack={function() { setTab(prevTabRef.current || "settings"); }} />}
         {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setOpenBizDetail(id || null); setBusinessHubTab("desk"); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenInvestorOnboard={function() { prevTabRef.current = "savings"; setPendingInvestingStart(true); setTab("investorOnboard"); }} />}
-        {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} hubTab={businessHubTab} onHubTabChange={setBusinessHubTab} onDetailChange={setOpenBizDetail} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Overview" : "Savings"} onBack={exitBusiness} />}
-        {currentTab === "investing" && <InvestingView investing={investing} tx={tx} goals={goals} openInvId={openInv} hubTab={investingHubTab} onHubTabChange={setInvestingHubTab} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} onOpenInvestorOnboard={function() { prevTabRef.current = "investing"; setTab("investorOnboard"); }} onOpenScout={function() { prevTabRef.current = "investing"; setTab("scout"); }} onOpenPlanOnboard={function(acctId) { prevTabRef.current = "investing"; setOpenInv(acctId || null); setTab("investPlan"); }} backLabel={prevTabRef.current === "overview" ? "Overview" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
+        {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} hubTab={businessHubTab} onHubTabChange={setBusinessHubTab} onDetailChange={setOpenBizDetail} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Dashboard" : "Savings"} onBack={exitBusiness} />}
+        {currentTab === "investing" && <InvestingView investing={investing} tx={tx} goals={goals} openInvId={openInv} hubTab={investingHubTab} onHubTabChange={setInvestingHubTab} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} onOpenInvestorOnboard={function() { prevTabRef.current = "investing"; setTab("investorOnboard"); }} onOpenScout={function() { prevTabRef.current = "investing"; setTab("scout"); }} onOpenPlanOnboard={function(acctId) { prevTabRef.current = "investing"; setOpenInv(acctId || null); setTab("investPlan"); }} backLabel={prevTabRef.current === "overview" ? "Dashboard" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
         {currentTab === "investPlan" && <InvestPlanOnboard acct={(investing || []).filter(function(a) { return a.id === openInv; })[0] || (investing || [])[0] || null} username={user} onCancel={function() { setTab("investing"); }} onSave={onSaveInvestPlan} />}
         {currentTab === "scout" && <StockScoutView investing={investing} openInvId={openInv} tx={tx} goals={goals} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} backLabel="Investing" onBack={function() { setTab("investing"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} onTrade={function(acctId, symbol) { setOpenInv(acctId); setInvSheetReq({ kind: "buy", symbol: symbol }); setTab("investing"); }} />}
         {currentTab === "stock" && <StockView investing={investing} tx={tx} goals={goals} openStock={openStock} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onOpenInvestorOnboard={function() { prevTabRef.current = "stock"; setTab("investorOnboard"); }} backLabel="Investing" onBack={function() { setTab("investing"); }} onTrade={function(symbol, kind) { setOpenInv(openStock ? openStock.acctId : null); setInvSheetReq({ kind: kind, symbol: symbol }); setTab("investing"); }} />}

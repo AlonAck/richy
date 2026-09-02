@@ -15,6 +15,12 @@
       "port": 3931
     },
     {
+      "name": "richard-uicheck",
+      "runtimeExecutable": "powershell.exe",
+      "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "$env:RICHARD_DISABLE_AUTH_LOCAL='true'; & '.claude/run-richard.ps1'"],
+      "port": 3931
+    },
+    {
       "name": "adref",
       "runtimeExecutable": "node",
       "runtimeArgs": ["C:\\Users\\ackal\\AppData\\Local\\Temp\\claude\\C--Users-ackal-Downloads-Budget-App-Budget-App\\152ceb6d-0b4e-4f87-879d-033ec2745b0f\\scratchpad\\adref\\server.js"],

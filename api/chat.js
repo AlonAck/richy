@@ -126,11 +126,16 @@ module.exports = async function handler(req, res) {
 
   // Hard cap so a tampered client can't request unbounded output on our bill.
   var maxTokens = Math.min(Math.max(parseInt(body.maxTokens, 10) || 800, 1), 2000);
-  // Callers may request a specific model (e.g. Opus for the deep stock scout,
-  // Sonnet for everything else). Whitelist to keep the proxy from being turned
-  // into an open relay for arbitrary model strings.
-  var ALLOWED_MODELS = { "claude-sonnet-4-6": 1, "claude-opus-4-8": 1, "claude-sonnet-5": 1 };
-  var model = (body.model && ALLOWED_MODELS[body.model]) ? body.model : "claude-sonnet-4-6";
+  // Launch routing: Sonnet 5 is the quality tier and Haiku 4.5 handles short,
+  // tightly-scoped work. Legacy model names are mapped down here as well, so an
+  // older cached client cannot keep invoking the expensive launch models.
+  var ALLOWED_MODELS = { "claude-sonnet-5": 1, "claude-haiku-4-5": 1 };
+  var LEGACY_MODEL_MAP = {
+    "claude-sonnet-4-6": "claude-sonnet-5",
+    "claude-opus-4-8": "claude-sonnet-5"
+  };
+  var requestedModel = LEGACY_MODEL_MAP[body.model] || body.model;
+  var model = (requestedModel && ALLOWED_MODELS[requestedModel]) ? requestedModel : "claude-sonnet-5";
 
   // Deadline cascade, innermost first: this abort (45s) < the client's own
   // timeout in callClaude (55s) < maxDuration in vercel.json (60s). Ordered that
@@ -141,6 +146,20 @@ module.exports = async function handler(req, res) {
   var ctrl = new AbortController();
   var timer = setTimeout(function () { ctrl.abort(); }, 45000);
   try {
+    var anthropicBody = {
+      model: model,
+      max_tokens: maxTokens,
+      // The server-owned guardrail rides after the client text so it has the
+      // last word. Client prompts are unchanged; this line is the one a
+      // tampered client cannot remove.
+      system: system + prompts.GUARDRAIL,
+      messages: messages
+    };
+    // Sonnet 5 enables adaptive thinking by default. Richard's existing calls
+    // were non-thinking calls, so keep that behavior for predictable latency,
+    // output shape and launch cost. Haiku 4.5 is non-thinking by default.
+    if (model === "claude-sonnet-5") anthropicBody.thinking = { type: "disabled" };
+
     var response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -148,15 +167,7 @@ module.exports = async function handler(req, res) {
         "x-api-key": apiKey,
         "anthropic-version": "2023-06-01"
       },
-      body: JSON.stringify({
-        model: model,
-        max_tokens: maxTokens,
-        // The server-owned guardrail rides after the client text so it has the
-        // last word. Client prompts are unchanged; this line is the one a
-        // tampered client cannot remove.
-        system: system + prompts.GUARDRAIL,
-        messages: messages
-      }),
+      body: JSON.stringify(anthropicBody),
       signal: ctrl.signal
     });
 
