@@ -3345,6 +3345,52 @@ function cloudErrorMsg() {
 function _auth() { return _fb().auth(); }
 function _fsdb() { return _fb().firestore(); }
 
+// The three plan arrays a household shares. They are the ones a household bug
+// can empty behind the user's back, so they are named once here and referenced
+// by the seed, the merge and the save() guard rather than spelled out at each.
+var HOUSEHOLD_PLAN_KEYS = ["budgets", "goals", "categories"];
+// The key each of those arrays is identified by, for merging.
+var HOUSEHOLD_PLAN_ID = { budgets: "catId", goals: "id", categories: "id" };
+
+// Union a joiner's plan into a household's, keyed per HOUSEHOLD_PLAN_ID.
+//
+// Policy, deliberately non-destructive: where both sides hold the same key the
+// household's existing entry WINS, because joining somebody's household means
+// adopting the shared plan they already agreed on, not silently rewriting it.
+// Where only the joiner has a key, it is carried across. Nothing is dropped -
+// which matters most for `categories`, since a category the joiner loses would
+// orphan the catId on every transaction they have ever logged.
+//
+// The data model has no per-member scoping for these three arrays (only `tx`
+// carries a `shared` flag), so union-with-existing-wins is the only merge that
+// destroys nothing on either side.
+//
+// Returns null when the household already covers everything the joiner has and
+// every field is present, so a no-op join costs no write.
+function mergeHouseholdPlan(hh, mine) {
+  var out = {};
+  var changed = false;
+  HOUSEHOLD_PLAN_KEYS.forEach(function(field) {
+    var key = HOUSEHOLD_PLAN_ID[field];
+    var theirs = Array.isArray(hh && hh[field]) ? hh[field] : [];
+    var ours = Array.isArray(mine && mine[field]) ? mine[field] : [];
+    var seen = {};
+    theirs.forEach(function(e) { if (e && e[key] != null) seen[e[key]] = true; });
+    var add = ours.filter(function(e) {
+      if (!e || e[key] == null || seen[e[key]]) return false;
+      seen[e[key]] = true; // guards duplicates within the joiner's own array
+      return true;
+    });
+    // An ABSENT field has to be written even with nothing to add, or it stays
+    // absent and the next member to join hits the same empty-read bug.
+    if (add.length || !Array.isArray(hh && hh[field])) {
+      out[field] = theirs.concat(add);
+      changed = true;
+    }
+  });
+  return changed ? out : null;
+}
+
 var CLOUD = {
   // Subscribe to sign-in state. cb receives the Firebase user (or null).
   // Returns an unsubscribe function. Fires once immediately with the restored
@@ -3455,14 +3501,28 @@ var CLOUD = {
   // personal settings stay in each member's users/{uid} doc and never enter here.
   // Membership is enforced by Firestore rules: only listed memberUids (or an
   // invited email in pendingEmails, who can accept) may touch the doc.
-  createHousehold: function(member, name) {
+  // A new household starts as a COPY of the creator's plan, never as a blank
+  // document. Writing it without budgets/goals/categories meant the live
+  // subscription read those fields straight back as [], emptied local state,
+  // and the next save() of anything at all - a transaction, a theme change, a
+  // dismissed tip - persisted the empty arrays over the creator's real data
+  // and orphaned the catId on every transaction they had ever logged
+  // (30 Aug audit, NEW-1). `seed` is the creator's current plan.
+  createHousehold: function(member, name, seed) {
     var ref = _fsdb().collection("households").doc();
+    var s = seed || {};
     var data = {
       name: name || "Our Household",
       createdBy: member.uid,
       memberUids: [member.uid],
       members: [{ uid: member.uid, name: member.name || "", email: (member.email || "").toLowerCase() }],
       pendingEmails: [],
+      budgets: Array.isArray(s.budgets) ? s.budgets : [],
+      goals: Array.isArray(s.goals) ? s.goals : [],
+      categories: Array.isArray(s.categories) ? s.categories : [],
+      // Only transactions already marked shared belong in the household doc;
+      // private ones never leave the member's own users/{uid} document.
+      tx: (Array.isArray(s.tx) ? s.tx : []).filter(function(t) { return t && t.shared; }),
       createdAt: Date.now()
     };
     return ref.set(data).then(function() { return ref.id; });
@@ -3504,12 +3564,29 @@ var CLOUD = {
       pendingEmails: FV.arrayRemove((email || "").toLowerCase())
     });
   },
-  acceptInvite: function(hid, member) {
+  // Joining MERGES the joiner's plan into the household (see
+  // mergeHouseholdPlan) instead of either side overwriting the other. Before
+  // this, joining simply adopted whatever the household doc held - which for a
+  // household created by the old createHousehold was nothing at all, so the
+  // joiner's budgets, goals and categories were emptied too.
+  //
+  // Two writes, on purpose and in this order. firestore.rules lets an
+  // invited-but-not-joined user touch membership fields ONLY, so the merge has
+  // to land on a second write, after the first has made them a member. The
+  // merge is also what back-fills the plan fields on households created before
+  // seeding existed, so an already-damaged household heals on the next join.
+  acceptInvite: function(hid, member, mine) {
     var FV = _fb().firestore.FieldValue;
-    return _fsdb().collection("households").doc(hid).update({
+    var ref = _fsdb().collection("households").doc(hid);
+    return ref.update({
       memberUids: FV.arrayUnion(member.uid),
       members: FV.arrayUnion({ uid: member.uid, name: member.name || "", email: (member.email || "").toLowerCase() }),
       pendingEmails: FV.arrayRemove((member.email || "").toLowerCase())
+    }).then(function() {
+      return ref.get();
+    }).then(function(snap) {
+      var merged = mergeHouseholdPlan(snap.exists ? snap.data() : {}, mine || {});
+      return merged ? ref.set(merged, { merge: true }) : null;
     });
   },
   leaveHousehold: function(hid, member) {
@@ -32739,11 +32816,33 @@ export default function App() {
       }
       // Live-sync shared data.
       setSharedData({ budgets: hh.budgets || [], goals: hh.goals || [], categories: hh.categories || [], tx: hh.tx || [] });
-      setBudgets(hh.budgets || []);
-      setGoals(hh.goals || []);
-      setCategories(hh.categories || []);
-      var personalTx = tx.filter(function(t) { return !t.shared; });
-      setTx((hh.tx || []).concat(personalTx));
+      // Adopt only the plan fields the document actually CARRIES. An absent
+      // field means this household was never seeded (created before
+      // createHousehold seeded, or written by an older client); reading it back
+      // as [] is what emptied local state, after which the next save() of
+      // anything persisted the empty arrays over the user's real data
+      // (30 Aug audit, NEW-1). An explicitly empty array is a real edit by a
+      // partner and is adopted normally.
+      //
+      // Adopting also updates the save() baseline, because the household doc is
+      // the source of truth for these three. Without that, a partner clearing
+      // the shared budgets would be undone by the empty-array guard in save().
+      function adoptPlan(field, value, setter) {
+        if (!Array.isArray(value)) return;
+        setter(value);
+        if (blobRef.current) blobRef.current[field] = value;
+      }
+      adoptPlan("budgets", hh.budgets, setBudgets);
+      adoptPlan("goals", hh.goals, setGoals);
+      adoptPlan("categories", hh.categories, setCategories);
+      // Functional form. This callback outlives the render it was created in
+      // (deps are [householdId, accountKey]), so a captured `tx` is stale: every
+      // transaction added since the effect last ran would be dropped here and
+      // then persisted as a truncated list the moment a partner touched the
+      // household doc (25 Aug sweep, §2.8a).
+      setTx(function(cur) {
+        return (hh.tx || []).concat((cur || []).filter(function(t) { return !t.shared; }));
+      });
     });
     return function() { if (typeof unsub === "function") unsub(); };
   }, [householdId, accountKey]);
@@ -32782,7 +32881,11 @@ export default function App() {
 
   function onCreateHousehold(name) {
     if (!accountKey) return Promise.resolve();
-    return CLOUD.createHousehold(meAsMember(), name).then(function(hid) {
+    // Seed the new household from the creator's current plan, so the
+    // subscription above has real arrays to read back rather than nothing.
+    return CLOUD.createHousehold(meAsMember(), name, {
+      budgets: budgets, goals: goals, categories: categories, tx: tx
+    }).then(function(hid) {
       setHouseholdId(hid);
       save({ householdId: hid });
       return hid;
@@ -32798,7 +32901,12 @@ export default function App() {
   }
   function onAcceptInvite(hid) {
     if (!hid) return Promise.resolve();
-    return CLOUD.acceptInvite(hid, meAsMember()).then(function() {
+    // Hand our plan over so it is merged into the household rather than
+    // discarded. The merge completes before setHouseholdId starts the
+    // subscription, so the first snapshot already carries both sides.
+    return CLOUD.acceptInvite(hid, meAsMember(), {
+      budgets: budgets, goals: goals, categories: categories
+    }).then(function() {
       setHouseholdId(hid);
       setInvites([]);
       save({ householdId: hid });
@@ -32850,6 +32958,27 @@ export default function App() {
     for (var ek in existing) blob[ek] = existing[ek];
     blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.savings = savings; blob.businesses = businesses; blob.investing = investing; blob.investorProfile = investorProfile; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme; blob.foundMoney = foundMoney; blob.decisions = decisions; blob.monthAnalysis = monthAnalysis; blob.motivation = motivation;
     for (var k in next) blob[k] = next[k];
+    // Last line of defence for the shared plan arrays. save() rebuilds the
+    // whole blob from CURRENT STATE on every call, so any bug that empties one
+    // of those state arrays gets persisted over the user's real data by the
+    // very next save of anything at all - adding a transaction, changing the
+    // theme, dismissing a tip. That is how creating or joining a household
+    // destroyed budgets, goals and categories (30 Aug audit, NEW-1), and it is
+    // the shape of the whole class rather than of one bug.
+    //
+    // So: an ambient rebuild may never write an empty array over a non-empty
+    // one. An EXPLICIT save({budgets: []}) is a deliberate user action -
+    // deleting your last budget - and still goes through untouched; only the
+    // ambient path is guarded. flushSave() writes the household document from
+    // this same blob, so the guard covers the shared copy too.
+    for (var gi = 0; gi < HOUSEHOLD_PLAN_KEYS.length; gi++) {
+      var pk = HOUSEHOLD_PLAN_KEYS[gi];
+      if (next && Object.prototype.hasOwnProperty.call(next, pk)) continue;
+      if (Array.isArray(blob[pk]) && blob[pk].length === 0 && Array.isArray(existing[pk]) && existing[pk].length > 0) {
+        blob[pk] = existing[pk];
+        try { console.warn("Richy: refused to save an empty " + pk + " over " + existing[pk].length + " existing entries"); } catch (e) {}
+      }
+    }
     blobRef.current = blob;
     // Debounce Firestore writes: coalesce rapid successive saves (e.g. typing)
     // into a single write 800ms after the last call. The blob is captured by
