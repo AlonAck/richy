@@ -304,7 +304,27 @@ function applyDarkMode(dark) {
   T.sep     = dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
   T.ink     = dark ? "#EDE8E2" : "#1A1410";
   T.ink2    = dark ? "#A09080" : "#6B5C4E";
-  T.ink3    = dark ? "#6B5C4E" : "#B0A396";
+  // ink3 is the tertiary ink: captions, form labels, dates, and the inactive
+  // bottom-nav labels. It is the most-used colour token in the app (~725 render
+  // sites), so its contrast ratio is not a detail - it decides whether a
+  // quarter of the interface is legible.
+  //
+  // This assignment is the one that counts. The literal in the T declaration
+  // above is overwritten here on module load and again on every App render, so
+  // correcting that literal alone changes nothing a user can see.
+  //
+  // The previous pair failed WCAG AA outright, and had done since 17 August:
+  //   light  #B0A396 on #F7F3EE = 2.23:1   (AA normal text needs 4.5:1)
+  //   dark   #6B5C4E on #131110 = 2.93:1
+  //
+  // Measured against every ground each side is actually painted on - page,
+  // card, sheet, and the heaviest fill panel a caption can sit in - the values
+  // below clear 4.5:1 on all real text surfaces and stay above 3:1 (AA large
+  // text / non-text) even on that heaviest fill:
+  //   light  #7A6B5C -> 5.14:1 on card, 4.65:1 on page, 4.76:1 on sheet
+  //   dark   #978877 -> 5.47:1 on page, 5.09:1 on card, 4.68:1 on darkCard2
+  // Both keep a visible step below ink2, so the ink hierarchy still reads.
+  T.ink3    = dark ? "#978877" : "#7A6B5C";
   T.navBg   = dark ? "rgba(19,17,16,0.88)"   : "rgba(250,247,242,0.82)";
   T.sheetBg = dark ? "#1C1915" : "#F8F6F1";
   T.inputBg = dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)";
@@ -26761,7 +26781,7 @@ function BusinessView(props) {
     var next = bizes.concat([biz]);
     if (startCap > 0 && fromMain) props.onBusinessMove(tx.concat([transferTx("expense", startCap, biz.name)]), next);
     else props.onSaveBusinesses(next);
-    setActiveId(biz.id); setView("detail");
+    setActiveId(null); setView("list");
   }
   function saveBusiness() {
     if (!planResult) return;
