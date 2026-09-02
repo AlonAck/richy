@@ -56,17 +56,40 @@ service cloud.firestore {
         && request.resource.data.createdBy == request.auth.uid;
       // Read: members, or an invited email (so the invite is discoverable).
       allow read: if isMember() || isInvited();
-      // Update: existing members may change anything on the doc. An invited
-      // (not-yet-joined) user may ONLY accept: add themselves to memberUids and
-      // remove their own email from pendingEmails, and touch no other field -
-      // otherwise an invitee could rewrite memberUids, evict the creator, or
-      // wipe the household before ever joining it.
-      allow update: if isMember() || (
-        isInvited()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["memberUids", "pendingEmails"])
-        && request.resource.data.memberUids == resource.data.memberUids.concat([request.auth.uid])
-        && request.resource.data.pendingEmails == resource.data.pendingEmails.removeAll([request.auth.token.email])
-      );
+      // Update. Existing members may change anything on the doc. An invited
+      // (not-yet-joined) user gets exactly two moves and nothing else: accept
+      // their own invite, or decline it. `allow update: if isMember() ||
+      // isInvited()` used to be the whole rule, which let someone who had only
+      // been invited rewrite memberUids to evict the creator, reassign
+      // createdBy, or blank budgets/goals/categories before ever joining
+      // (security review 15 Aug, §9; still open through the 30 Aug audit).
+      //
+      // Accepting is the ONLY write that may touch membership, and it is pinned
+      // field by field: memberUids gains exactly the caller's own uid and loses
+      // nobody; members grows by exactly one entry, that entry is the caller's,
+      // and every existing entry survives (hasAll); pendingEmails loses only
+      // the caller's own address. Anything else - budgets, goals, categories,
+      // tx, name, createdBy - is outside affectedKeys and therefore denied.
+      //
+      // `members` has to be in the allowed set because CLOUD.acceptInvite writes
+      // it alongside memberUids in one update. Leaving it out does not harden
+      // anything; it just makes every invite acceptance fail permission-denied.
+      function acceptsOwnInvite() {
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly(["memberUids", "members", "pendingEmails"])
+          && request.resource.data.memberUids == resource.data.memberUids.concat([request.auth.uid])
+          && request.resource.data.pendingEmails == resource.data.pendingEmails.removeAll([request.auth.token.email])
+          && request.resource.data.members.size() == resource.data.members.size() + 1
+          && request.resource.data.members.hasAll(resource.data.members)
+          && request.resource.data.members[resource.data.members.size()].uid == request.auth.uid;
+      }
+      // Declining is strictly de-escalating: drop your own address from the
+      // invite list and touch nothing else. No membership field may move.
+      function declinesOwnInvite() {
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly(["pendingEmails"])
+          && request.resource.data.pendingEmails == resource.data.pendingEmails.removeAll([request.auth.token.email]);
+      }
+      allow update: if isMember()
+        || (isInvited() && (acceptsOwnInvite() || declinesOwnInvite()));
       // Delete: only members (e.g. winding down the household).
       allow delete: if isMember();
     }
