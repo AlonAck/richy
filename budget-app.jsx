@@ -3513,6 +3513,84 @@ function householdBudgetOverlaps(hh, mine) {
   return out;
 }
 
+// ===== TRANSACTION STORE =====================================================
+// Since the document split (FIRESTORE_SPLIT.md) each transaction is its own
+// document at users/{uid}/tx/{id}, keyed by the transaction's id as a string.
+// The parent document says which world an account is in:
+//   txSchema absent or 1  - tx[] still lives on the document (the old way)
+//   txSchema 2            - tx[] is gone; the subcollection is the truth
+// The client decides once per session at load (App's txStoreRef) and never
+// flips mid-session. The parent's array wins until a session boots and sees
+// schema 2 - that single rule is what keeps an interrupted or late migration
+// from ever outranking a transaction the user just entered.
+var TX_SCHEMA_ARRAY = 1;
+var TX_SCHEMA_SPLIT = 2;
+// Firestore allows 500 operations per batch; leave headroom.
+var TX_BATCH_LIMIT = 450;
+// How long the boot may wait for a first-time move before carrying on with
+// the array for this session (the move keeps running; the switch is not made).
+var TX_MIGRATE_TIMEOUT_MS = 20000;
+
+function txById(a, b) { return (Number(a.id) || 0) - (Number(b.id) || 0); }
+
+function txSame(a, b) {
+  if (a === b) return true;
+  try { return JSON.stringify(a) === JSON.stringify(b); } catch (e) { return false; }
+}
+
+// Which documents a new array implies writing or deleting, against the array
+// last known to be persisted. Callers keep handing in whole arrays (that is
+// how every screen already works); only the changed entries reach Firestore.
+function txDiff(prev, next) {
+  var prevById = {};
+  (prev || []).forEach(function(t) { if (t && t.id != null) prevById[String(t.id)] = t; });
+  var put = [];
+  var nextIds = {};
+  (next || []).forEach(function(t) {
+    if (!t || t.id == null) return;
+    var key = String(t.id);
+    nextIds[key] = true;
+    var was = prevById[key];
+    if (!was || !txSame(was, t)) put.push(t);
+  });
+  var del = [];
+  for (var key in prevById) { if (!nextIds[key]) del.push(prevById[key].id); }
+  return { put: put, del: del };
+}
+
+// Deterministic stand-in for a record with no id (the app never produces one,
+// but the migration must not depend on that): a small hash of its content and
+// position, so two runs over the same array agree.
+function stableTxId(t, i) {
+  var s = String(t.date || "") + "|" + String(t.amount || "") + "|" + String(t.label || "") + "|" + String(t.type || "") + "|" + i;
+  var h = 5381;
+  for (var k = 0; k < s.length; k++) h = ((h << 5) + h + s.charCodeAt(k)) | 0;
+  return Math.abs(h);
+}
+
+// Ids are Date.now() values, so an array can in principle hold two entries
+// with the same id; as documents they would collapse into one. Re-id any
+// repeat to the next free integer. Deterministic for a given array.
+function dedupeTxIds(list) {
+  var seen = {};
+  var out = [];
+  for (var i = 0; i < (list || []).length; i++) {
+    var t = list[i];
+    if (!t || typeof t !== "object") continue;
+    var id = (t.id == null) ? stableTxId(t, i) : t.id;
+    if (seen[String(id)]) {
+      var n = Number(id);
+      var next = isNaN(n) ? stableTxId(t, i) : n;
+      while (seen[String(next)]) next += 1;
+      id = next;
+    }
+    if (id !== t.id) t = Object.assign({}, t, { id: id });
+    seen[String(id)] = true;
+    out.push(t);
+  }
+  return out;
+}
+
 var CLOUD = {
   // Subscribe to sign-in state. cb receives the Firebase user (or null).
   // Returns an unsubscribe function. Fires once immediately with the restored
@@ -3553,6 +3631,107 @@ var CLOUD = {
     // drops a key) can silently kill saving instead of raising the normal
     // error banner. Stripping undefined here means no field can ever do that.
     return _fsdb().collection("users").doc(uid).set(JSON.parse(JSON.stringify(data)));
+  },
+  // Field-level write to users/{uid}: only the keys in `patch` change and the
+  // keys in `deleteKeys` are removed; nothing else on the document is touched.
+  // update(), not set(): two clients editing different fields no longer
+  // overwrite each other, and a late write can never resurrect a deleted
+  // account (update fails on a missing document instead of recreating it).
+  updateUser: function(uid, patch, deleteKeys) {
+    if (!cloudReady() || !uid) return Promise.resolve();
+    var clean = JSON.parse(JSON.stringify(patch || {}));
+    var FV = _fb().firestore.FieldValue;
+    (deleteKeys || []).forEach(function(k) { clean[k] = FV.delete(); });
+    if (!Object.keys(clean).length) return Promise.resolve();
+    return _fsdb().collection("users").doc(uid).update(clean);
+  },
+  // ---- Transactions: users/{uid}/tx/{id} ------------------------------------
+  txDoc: function(uid, id) {
+    return _fsdb().collection("users").doc(uid).collection("tx").doc(String(id));
+  },
+  loadTx: function(uid) {
+    return _fsdb().collection("users").doc(uid).collection("tx").get().then(function(snap) {
+      var out = [];
+      snap.forEach(function(d) { var t = d.data(); if (t && t.id != null) out.push(t); });
+      out.sort(txById);
+      return out;
+    });
+  },
+  // Writes whole documents (`puts`) and removes ids (`dels`) in batches of at
+  // most TX_BATCH_LIMIT operations, one after another, so a failure leaves a
+  // clean prefix that a retry simply rewrites.
+  writeTx: function(uid, puts, dels) {
+    if (!cloudReady() || !uid) return Promise.resolve();
+    var ops = [];
+    (puts || []).forEach(function(t) { if (t && t.id != null) ops.push({ put: JSON.parse(JSON.stringify(t)) }); });
+    (dels || []).forEach(function(id) { if (id != null) ops.push({ del: String(id) }); });
+    var chunks = [];
+    for (var i = 0; i < ops.length; i += TX_BATCH_LIMIT) chunks.push(ops.slice(i, i + TX_BATCH_LIMIT));
+    return chunks.reduce(function(p, chunk) {
+      return p.then(function() {
+        var batch = _fsdb().batch();
+        chunk.forEach(function(op) {
+          if (op.put) batch.set(CLOUD.txDoc(uid, op.put.id), op.put);
+          else batch.delete(CLOUD.txDoc(uid, op.del));
+        });
+        return batch.commit();
+      });
+    }, Promise.resolve());
+  },
+  // One-time move of an account's tx[] array into the subcollection. Safe to
+  // run again: every array entry is (re)written and any document the array no
+  // longer lists is removed, so an interrupted earlier attempt can never bring
+  // back a deleted transaction. The switch itself is a transaction against a
+  // fresh read of the parent: whatever another session added to or removed
+  // from the array while the batches were in flight is carried over before
+  // the array is dropped, and a document that already switched is left alone.
+  // `stillWanted()` lets the caller stop short of the switch if it has given
+  // up waiting - the batches stay as harmless scratch for the next attempt.
+  // Resolves { switched, alreadySplit, missing, tx }.
+  migrateTx: function(uid, txArray, stillWanted) {
+    var list = dedupeTxIds(txArray || []);
+    var listById = {};
+    list.forEach(function(t) { listById[String(t.id)] = t; });
+    return CLOUD.loadTx(uid).then(function(existing) {
+      var strays = existing.filter(function(t) { return !listById[String(t.id)]; }).map(function(t) { return t.id; });
+      return CLOUD.writeTx(uid, list, strays);
+    }).then(function() {
+      if (stillWanted && !stillWanted()) return { switched: false, tx: list };
+      var db = _fsdb();
+      var parent = db.collection("users").doc(uid);
+      var FV = _fb().firestore.FieldValue;
+      return db.runTransaction(function(t) {
+        return t.get(parent).then(function(snap) {
+          if (!snap.exists) return { missing: true };
+          var d = snap.data() || {};
+          if (d.txSchema === TX_SCHEMA_SPLIT) return { alreadySplit: true };
+          var cur = dedupeTxIds(Array.isArray(d.tx) ? d.tx : []);
+          var curById = {};
+          cur.forEach(function(x) { curById[String(x.id)] = x; });
+          cur.forEach(function(x) {
+            var mine = listById[String(x.id)];
+            if (!mine || !txSame(mine, x)) t.set(CLOUD.txDoc(uid, x.id), JSON.parse(JSON.stringify(x)));
+          });
+          list.forEach(function(x) { if (!curById[String(x.id)]) t.delete(CLOUD.txDoc(uid, x.id)); });
+          t.update(parent, { txSchema: TX_SCHEMA_SPLIT, tx: FV.delete() });
+          return { switched: true, tx: cur.slice().sort(txById) };
+        });
+      });
+    });
+  },
+  // An older client (cached before the split) that saved while this account
+  // was already on schema 2 wrote a tx[] array to the parent again. Import
+  // whatever it holds that the subcollection lacks, then clear the array.
+  // Deletions made by that old client cannot be told apart from documents it
+  // never knew about, so only additions are reconciled. Resolves the imported
+  // entries.
+  reconcileLegacyTx: function(uid, sub, legacyArray) {
+    var have = {};
+    (sub || []).forEach(function(t) { have[String(t.id)] = true; });
+    var missing = dedupeTxIds(legacyArray || []).filter(function(t) { return !have[String(t.id)]; });
+    return CLOUD.writeTx(uid, missing, []).then(function() {
+      return CLOUD.updateUser(uid, {}, ["tx"]);
+    }).then(function() { return missing; });
   },
   // ---- Bank Sync (Apple Pay / Google Pay via phone automations) ----------------
   // syncKeys/{sha256(key)} maps a per-user random token to their uid so
@@ -32915,6 +33094,20 @@ export default function App() {
   // than one that is honestly broken.
   var _serr = useState(""); var saveError = _serr[0]; var setSaveError = _serr[1];
   var saveRetryRef = useRef(null);
+  // Where this account's transactions live for the whole session - see
+  // FIRESTORE_SPLIT.md. "array": tx[] on the document, written whole, exactly
+  // as before the split. "sub": one document per transaction under
+  // users/{uid}/tx, and only the entries a user action changed are written.
+  // `persisted` is the array as last written, which the diff runs against.
+  var txStoreRef = useRef({ mode: "array", persisted: [] });
+  // Field-level patch accumulated between debounced flushes: the only thing
+  // that ever reaches the parent document now.
+  var pendingPatchRef = useRef({});
+  // Transaction documents waiting to go out (sub mode), keyed by id, and the
+  // serial chain that sends them in order.
+  var txQueueRef = useRef({ put: {}, del: {} });
+  var txChainRef = useRef(Promise.resolve());
+  var txRetryRef = useRef(null);
   var prevTabRef = useRef("profile");
   var _hp = useState(false); var hasPw = _hp[0]; var setHasPw = _hp[1];
 
@@ -33118,19 +33311,32 @@ export default function App() {
           return;
         }
         blobRef.current = data;
-        // If user is in a household, load and merge shared data.
-        if (data.householdId) {
-          CLOUD.loadHousehold(data.householdId).then(function(hh) {
-            loadData(data, hh);
-          }).catch(function() { loadData(data); });
-        } else {
-          loadData(data);
-        }
-        setUser(data.displayName || email || "there");
-        setAccountKey(cu.uid);
-        setHasPw(CLOUD.hasPasswordProvider());
-        setLoadFailed(false);
-        setAuthChecked(true);
+        // Where this account keeps its transactions - and, the first time a
+        // new client sees it, move them out of the document (FIRESTORE_SPLIT.md).
+        // Runs before loadData so the session starts from the right list.
+        prepareTxStore(cu.uid, data).then(function(storeTx) {
+          data.tx = storeTx;
+          blobRef.current = data;
+          // If user is in a household, load and merge shared data.
+          if (data.householdId) {
+            CLOUD.loadHousehold(data.householdId).then(function(hh) {
+              loadData(data, hh);
+            }).catch(function() { loadData(data); });
+          } else {
+            loadData(data);
+          }
+          setUser(data.displayName || email || "there");
+          setAccountKey(cu.uid);
+          setHasPw(CLOUD.hasPasswordProvider());
+          setLoadFailed(false);
+          setAuthChecked(true);
+        }).catch(function(err) {
+          // An already-split account whose transactions could not be read:
+          // offer Retry rather than showing an empty ledger as if it were real.
+          try { console.error("Richy: transactions failed to load:", err); } catch (e) {}
+          setLoadFailed(true);
+          setAuthChecked(true);
+        });
       }).catch(function() {
         if (settled) return;
         settled = true;
@@ -33292,6 +33498,10 @@ export default function App() {
 
   function handleLogin(displayName, data, key) {
     blobRef.current = data || {};
+    // A just-created account: its document still carries tx[] (schema 1) and
+    // is moved to the subcollection on its next load, like any other.
+    txStoreRef.current = { mode: "array", persisted: (data && data.tx) || [] };
+    pendingPatchRef.current = {};
     loadData(data || {});
     setUser(displayName);
     setAccountKey(key || displayName);
@@ -33303,9 +33513,14 @@ export default function App() {
     // would resurrect the just-erased users/{uid} doc as a ghost.
     if (saveTimerRef.current) { clearTimeout(saveTimerRef.current); saveTimerRef.current = null; }
     if (saveRetryRef.current) { clearTimeout(saveRetryRef.current); saveRetryRef.current = null; }
+    if (txRetryRef.current) { clearTimeout(txRetryRef.current); txRetryRef.current = null; }
     setSaveError("");
     CLOUD.signOut();
     blobRef.current = {};
+    txStoreRef.current = { mode: "array", persisted: [] };
+    pendingPatchRef.current = {};
+    txQueueRef.current = { put: {}, del: {} };
+    txChainRef.current = Promise.resolve();
     setUser(null); setAccountKey(null); setTab("overview");
     setHouseholdId(null); setHousehold(null); setInvites([]); setMergeReport(null);
     setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setInvestorProfile(null); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]); setBankSync(null); setLeumiFinteka(null); setCustomBanners([]); setMotivation(motivDefault()); setSocial({ handle: "", following: [], followers: [], requests: [] });
@@ -33316,38 +33531,180 @@ export default function App() {
     setOnboardingDone(false); setCatchUpDone(false); setRichPlan(""); setUserDob(""); setPlanJustCreated(false); setLang(_lang.code); applyTheme("blue"); setTheme("blue");
   }
 
+  // Decides where this account's transactions live for the session and
+  // returns the list to start from. Never rejects on the migration path - a
+  // move that cannot happen (offline, rules not yet published, too slow) just
+  // leaves the account on the array store until next time. It rejects only
+  // when an already-split account cannot be read at all, which the boot turns
+  // into the Retry screen.
+  function prepareTxStore(uid, data) {
+    var legacy = Array.isArray(data && data.tx) ? data.tx : [];
+    var settle = function(mode, list) { txStoreRef.current = { mode: mode, persisted: list }; return list; };
+    if (!cloudReady() || !uid) return Promise.resolve(settle("array", legacy));
+    if (data.txSchema === TX_SCHEMA_SPLIT) {
+      return CLOUD.loadTx(uid).then(function(sub) {
+        if (!legacy.length) return settle("sub", sub);
+        // Schema 2 plus an array can only mean an older client wrote it.
+        return CLOUD.reconcileLegacyTx(uid, sub, legacy).then(function(imported) {
+          return settle("sub", sub.concat(imported).sort(txById));
+        }).catch(function(err) {
+          try { console.warn("Richy: legacy tx not reconciled this time:", err && err.code || err); } catch (e) {}
+          return settle("sub", sub);        // the array stays on the parent for next time
+        });
+      });
+    }
+    if (typeof navigator !== "undefined" && navigator.onLine === false) return Promise.resolve(settle("array", legacy));
+    return new Promise(function(resolve) {
+      var wanted = true;
+      var timer = setTimeout(function() {
+        if (!wanted) return;
+        wanted = false;
+        try { console.warn("Richy: tx move is taking too long; keeping the array this session"); } catch (e) {}
+        resolve(settle("array", legacy));
+      }, TX_MIGRATE_TIMEOUT_MS);
+      CLOUD.migrateTx(uid, legacy, function() { return wanted; }).then(function(res) {
+        if (!wanted) return;              // gave up already; the switch was not made
+        wanted = false; clearTimeout(timer);
+        if (res && res.switched) { resolve(settle("sub", (res.tx || []).slice().sort(txById))); return; }
+        if (res && res.alreadySplit) {    // another device switched this account meanwhile
+          CLOUD.loadTx(uid).then(function(sub) { resolve(settle("sub", sub)); })
+            .catch(function() { resolve(settle("array", legacy)); });
+          return;
+        }
+        resolve(settle("array", legacy));
+      }).catch(function(err) {
+        if (!wanted) return;
+        wanted = false; clearTimeout(timer);
+        try { console.warn("Richy: tx move skipped this session:", err && err.code || err); } catch (e) {}
+        resolve(settle("array", legacy));
+      });
+    });
+  }
+
+  // Serial sender for queued transaction documents (sub mode). Batches go out
+  // one after another so order is kept; a failure puts the operations back
+  // beneath anything queued since, raises the banner, and retries.
+  function flushTxQueue() {
+    var uid = accountKey;
+    var run = function() {
+      if (!uid) return;
+      var q = txQueueRef.current;
+      var puts = Object.keys(q.put).map(function(k) { return q.put[k]; });
+      var dels = Object.keys(q.del).map(function(k) { return q.del[k]; });
+      if (!puts.length && !dels.length) return;
+      txQueueRef.current = { put: {}, del: {} };
+      return CLOUD.writeTx(uid, puts, dels).then(function() {
+        setSaveError("");
+        if (txRetryRef.current) { clearTimeout(txRetryRef.current); txRetryRef.current = null; }
+      }, function(err) {
+        var cur = txQueueRef.current;
+        var back = { put: {}, del: {} };
+        puts.forEach(function(t) { back.put[String(t.id)] = t; });
+        dels.forEach(function(id) { back.del[String(id)] = id; });
+        for (var pk in cur.put) { delete back.del[pk]; back.put[pk] = cur.put[pk]; }
+        for (var dk in cur.del) { delete back.put[dk]; back.del[dk] = cur.del[dk]; }
+        txQueueRef.current = back;
+        try { console.error("Richy tx save failed:", err); } catch (e) {}
+        setSaveError(saveErrorMsg(err));
+        if (!txRetryRef.current) {
+          txRetryRef.current = setTimeout(function() {
+            txRetryRef.current = null;
+            flushTxQueue().catch(function() {});
+          }, 8000);
+        }
+        throw err;
+      });
+    };
+    var next = txChainRef.current.then(run, run);
+    txChainRef.current = next.catch(function() {});
+    return next;
+  }
+
+  // Sub-mode write path for transactions: diff the new array against what is
+  // already persisted, remember the new array as persisted, and send only the
+  // documents that changed. Resolves once they have landed.
+  function queueTxWrite(nextTx) {
+    var store = txStoreRef.current;
+    var diff = txDiff(store.persisted, nextTx);
+    store.persisted = nextTx;
+    if (!diff.put.length && !diff.del.length) return Promise.resolve();
+    var q = txQueueRef.current;
+    diff.put.forEach(function(t) { var k = String(t.id); delete q.del[k]; q.put[k] = t; });
+    diff.del.forEach(function(id) { var k = String(id); delete q.put[k]; q.del[k] = id; });
+    return flushTxQueue();
+  }
+
+  // Immediate persist of a transaction list plus a few fields, skipping the
+  // debounce - for the bank-sync drain, whose inbox documents may only be
+  // deleted once the transactions are safely stored.
+  function persistTxNow(nextTx, fields) {
+    if (!accountKey) return Promise.resolve();
+    if (txStoreRef.current.mode === "sub") {
+      return queueTxWrite(nextTx).then(function() { return CLOUD.updateUser(accountKey, fields || {}); });
+    }
+    var patch = { tx: nextTx, txSchema: TX_SCHEMA_ARRAY };
+    for (var k in (fields || {})) patch[k] = fields[k];
+    return CLOUD.updateUser(accountKey, patch);
+  }
+
+  // Which keys save() refreshes from React state when a caller did not pass
+  // them explicitly. `tx` joins the list only while the account is still on
+  // the array store.
+  var AMBIENT_SAVE_KEYS = ["budgets", "goals", "trips", "savings", "businesses", "investing", "investorProfile", "notes", "folders", "categories", "currency", "lang", "theme", "foundMoney", "decisions", "monthAnalysis", "motivation"];
+
   function save(next) {
     if (!accountKey) return;
+    next = next || {};
     var existing = blobRef.current || {};
+    var subMode = txStoreRef.current.mode === "sub";
+    var state = { budgets: budgets, goals: goals, trips: trips, savings: savings, businesses: businesses, investing: investing, investorProfile: investorProfile, notes: notes, folders: folders, categories: categories, currency: currency, lang: lang, theme: theme, foundMoney: foundMoney, decisions: decisions, monthAnalysis: monthAnalysis, motivation: motivation };
+    if (!subMode) state.tx = tx;
+    // The patch is what actually reaches Firestore: every key the caller
+    // passed, plus any ambient key whose state no longer matches the last
+    // known document. Everything else is left alone on the server - which is
+    // what lets a second client edit other fields at the same time without
+    // either side overwriting the other. Before the split this rebuilt and
+    // set() the entire document from state on every call.
+    var patch = {};
+    for (var k in next) patch[k] = next[k];
+    for (var i = 0; i < AMBIENT_SAVE_KEYS.length + 1; i++) {
+      var sk = i < AMBIENT_SAVE_KEYS.length ? AMBIENT_SAVE_KEYS[i] : "tx";
+      if (!Object.prototype.hasOwnProperty.call(state, sk)) continue;
+      if (Object.prototype.hasOwnProperty.call(next, sk)) continue;
+      if (state[sk] === existing[sk]) continue;
+      // Last line of defence for the shared plan arrays (30 Aug audit, NEW-1):
+      // an ambient refresh may never write an empty array over a non-empty
+      // one. An EXPLICIT save({budgets: []}) is a deliberate user action -
+      // deleting your last budget - and still goes through untouched.
+      if (HOUSEHOLD_PLAN_KEYS.indexOf(sk) !== -1 && Array.isArray(state[sk]) && state[sk].length === 0 && Array.isArray(existing[sk]) && existing[sk].length > 0) {
+        try { console.warn("Richy: refused to save an empty " + sk + " over " + existing[sk].length + " existing entries"); } catch (e) {}
+        continue;
+      }
+      patch[sk] = state[sk];
+    }
+    // In-memory mirror of the whole document, tx included: the export screen
+    // and the household copy read from it.
     var blob = {};
     for (var ek in existing) blob[ek] = existing[ek];
-    blob.tx = tx; blob.budgets = budgets; blob.goals = goals; blob.trips = trips; blob.savings = savings; blob.businesses = businesses; blob.investing = investing; blob.investorProfile = investorProfile; blob.notes = notes; blob.folders = folders; blob.categories = categories; blob.currency = currency; blob.lang = lang; blob.theme = theme; blob.foundMoney = foundMoney; blob.decisions = decisions; blob.monthAnalysis = monthAnalysis; blob.motivation = motivation;
-    for (var k in next) blob[k] = next[k];
-    // Last line of defence for the shared plan arrays. save() rebuilds the
-    // whole blob from CURRENT STATE on every call, so any bug that empties one
-    // of those state arrays gets persisted over the user's real data by the
-    // very next save of anything at all - adding a transaction, changing the
-    // theme, dismissing a tip. That is how creating or joining a household
-    // destroyed budgets, goals and categories (30 Aug audit, NEW-1), and it is
-    // the shape of the whole class rather than of one bug.
-    //
-    // So: an ambient rebuild may never write an empty array over a non-empty
-    // one. An EXPLICIT save({budgets: []}) is a deliberate user action -
-    // deleting your last budget - and still goes through untouched; only the
-    // ambient path is guarded. flushSave() writes the household document from
-    // this same blob, so the guard covers the shared copy too.
-    for (var gi = 0; gi < HOUSEHOLD_PLAN_KEYS.length; gi++) {
-      var pk = HOUSEHOLD_PLAN_KEYS[gi];
-      if (next && Object.prototype.hasOwnProperty.call(next, pk)) continue;
-      if (Array.isArray(blob[pk]) && blob[pk].length === 0 && Array.isArray(existing[pk]) && existing[pk].length > 0) {
-        blob[pk] = existing[pk];
-        try { console.warn("Richy: refused to save an empty " + pk + " over " + existing[pk].length + " existing entries"); } catch (e) {}
+    for (var pk in patch) blob[pk] = patch[pk];
+    blobRef.current = blob;
+    if (Object.prototype.hasOwnProperty.call(patch, "tx")) {
+      if (subMode) {
+        // Transactions are documents now: only the changed ones are written,
+        // and straight away rather than after the debounce.
+        var nextTx = patch.tx;
+        delete patch.tx;
+        queueTxWrite(nextTx).catch(function() {});
+      } else {
+        // Still on the array store: say so on every array write, so a move
+        // that lands late can never outrank an array this session wrote after it.
+        patch.txSchema = TX_SCHEMA_ARRAY;
       }
     }
-    blobRef.current = blob;
+    for (var qk in patch) pendingPatchRef.current[qk] = patch[qk];
     // Debounce Firestore writes: coalesce rapid successive saves (e.g. typing)
-    // into a single write 800ms after the last call. The blob is captured by
-    // reference (blobRef) so the final write always has the latest data.
+    // into a single write 800ms after the last call. The patch accumulates in
+    // pendingPatchRef so the final write always carries the latest values.
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(function() {
       saveTimerRef.current = null;
@@ -33355,18 +33712,25 @@ export default function App() {
     }, 800);
   }
 
-  // The actual write. Previously this was a bare CLOUD.saveUser() whose promise
-  // was never awaited or caught, so ANY failure - an oversized document, an
-  // expired session, a rules change - was completely invisible: the UI kept
-  // accepting edits and the user only found out when a reload rolled them back.
-  // Now a failure raises a banner and retries, and success clears it.
+  // The actual write: a field-level update() of the pending patch. Before the
+  // split this set() the whole document from React state, which is what made
+  // two clients unable to share an account. A failure raises the banner, puts
+  // the fields back beneath anything newer, and retries; success clears it.
   function flushSave() {
     if (!accountKey) return;
-    CLOUD.saveUser(accountKey, blobRef.current).then(function() {
+    var patch = pendingPatchRef.current;
+    pendingPatchRef.current = {};
+    var write = Object.keys(patch).length ? CLOUD.updateUser(accountKey, patch) : Promise.resolve();
+    write.then(function() {
       setSaveError("");
       if (saveRetryRef.current) { clearTimeout(saveRetryRef.current); saveRetryRef.current = null; }
     }).catch(function(err) {
       try { console.error("Richy save failed:", err); } catch (e) {}
+      var newer = pendingPatchRef.current;
+      var merged = {};
+      for (var k in patch) merged[k] = patch[k];
+      for (var nk in newer) merged[nk] = newer[nk];
+      pendingPatchRef.current = merged;
       setSaveError(saveErrorMsg(err));
       // One retry in flight at a time. Any further user action re-enters save()
       // and re-arms this anyway, so a simple fixed delay is enough.
@@ -33377,11 +33741,33 @@ export default function App() {
         }, 8000);
       }
     });
-    if (householdId && household) {
-      var sharedTx = blobRef.current.tx ? blobRef.current.tx.filter(function(t) { return t.shared; }) : [];
-      CLOUD.saveHousehold(householdId, { budgets: blobRef.current.budgets, goals: blobRef.current.goals, categories: blobRef.current.categories, tx: sharedTx })
-        .catch(function(err) { try { console.error("Richy household save failed:", err); } catch (e) {} });
+    saveHouseholdCopy();
+  }
+
+  // The household document keeps the shared plan and the shared transactions
+  // as arrays, exactly as before the split; this write is unchanged.
+  function saveHouseholdCopy() {
+    if (!(householdId && household)) return;
+    var b = blobRef.current || {};
+    var sharedTx = b.tx ? b.tx.filter(function(t) { return t.shared; }) : [];
+    CLOUD.saveHousehold(householdId, { budgets: b.budgets, goals: b.goals, categories: b.categories, tx: sharedTx })
+      .catch(function(err) { try { console.error("Richy household save failed:", err); } catch (e) {} });
+  }
+
+  // For the few paths that assemble a whole document (finishing onboarding,
+  // retaking the questionnaire): persist the keys that changed against the
+  // last mirror, immediately.
+  function persistBlob(merged) {
+    var prev = blobRef.current || {};
+    var patch = {};
+    for (var k in merged) { if (merged[k] !== prev[k]) patch[k] = merged[k]; }
+    blobRef.current = merged;
+    if (Object.prototype.hasOwnProperty.call(patch, "tx")) {
+      if (txStoreRef.current.mode === "sub") { var nextTx = patch.tx; delete patch.tx; queueTxWrite(nextTx).catch(function() {}); }
+      else patch.txSchema = TX_SCHEMA_ARRAY;
     }
+    for (var pk in patch) pendingPatchRef.current[pk] = patch[pk];
+    flushSave();
   }
 
   // Signature of the current transactions; any add/remove changes it, which is
@@ -33511,16 +33897,20 @@ export default function App() {
         ? { enabled: true, key: bs.key, keyHash: bs.keyHash || null, createdAt: bs.createdAt || null, lastSyncAt: phoneSyncedCount ? Date.now() : bs.lastSyncAt, count: (bs.count || 0) + phoneSyncedCount }
         : bs;
       var nextTx = curTx.concat(newTxs);
-      // Immediate persist (mirrors persistNotesOnly below): merge into the
-      // freshest blob so this write can't clobber other arrays, skip the debounce.
+      // Immediate persist, skipping the debounce: the new transactions (as
+      // documents, or the array while the account is still on it) plus the
+      // sync counters. Inbox rows are deleted only once that write resolves.
       var existing = blobRef.current || {};
       var blob = {};
       for (var k in existing) blob[k] = existing[k];
       blob.tx = nextTx; blob.bankSync = nextBs;
       blobRef.current = blob;
       setTx(nextTx); setBankSync(nextBs);
-      CLOUD.saveUser(accountKey, blob).then(function() {
+      persistTxNow(nextTx, { bankSync: nextBs }).then(function() {
         CLOUD.deleteSyncInboxDocs(accountKey, ids);
+      }).catch(function(err) {
+        try { console.error("Richy bank-sync persist failed:", err); } catch (e) {}
+        setSaveError(saveErrorMsg(err));
       });
     });
     return unsub;
@@ -33541,6 +33931,7 @@ export default function App() {
     for (var k in existing) blob[k] = existing[k];
     blob.notes = nextNotes;
     blobRef.current = blob;
+    pendingPatchRef.current.notes = nextNotes;
     flushSave();   // routed through flushSave so a failure raises the banner, not silence
   }
   // Fire one or more due reminders and mark them all fired in a SINGLE state
@@ -33900,8 +34291,7 @@ export default function App() {
       setSavings([ef]);
       merged.savings = [ef];
     }
-    blobRef.current = merged;
-    flushSave();
+    persistBlob(merged);
   }
 
   // The mid-month catch-up step. Appends the user's already-spent transactions
@@ -34156,6 +34546,9 @@ export default function App() {
         try { console.error("Richy initial save failed:", err); } catch (e) {}
       });
       blobRef.current = data;
+      // Created with tx[] on the document (schema 1); moved on its next load.
+      txStoreRef.current = { mode: "array", persisted: (data && data.tx) || [] };
+      pendingPatchRef.current = {};
       loadData(data);
       setUser(data.displayName || pend.email || "there");
       setAccountKey(pend.uid);
@@ -34180,8 +34573,7 @@ export default function App() {
     var merged = {};
     for (var k in current) merged[k] = current[k];
     merged.onboardingDone = false;
-    blobRef.current = merged;
-    flushSave();
+    persistBlob(merged);
   }
 
   var currentTab = tab;
@@ -34322,7 +34714,7 @@ export default function App() {
             <div style={{ fontSize: 12.5, fontWeight: 700, color: T.red, fontFamily: UI, letterSpacing: "-0.01em" }}>Not saved</div>
             <div style={{ fontSize: 12.5, color: T.ink2, fontFamily: UI, lineHeight: 1.45, marginTop: 2 }}>{saveError}</div>
           </div>
-          <button onClick={function() { flushSave(); }} aria-label="Retry saving"
+          <button onClick={function() { flushSave(); flushTxQueue().catch(function() {}); }} aria-label="Retry saving"
             style={{ flexShrink: 0, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "7px 12px", borderRadius: 9, background: T.red, color: "#fff" }}>Retry</button>
         </div>
       )}

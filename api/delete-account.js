@@ -73,16 +73,23 @@ module.exports = async function handler(req, res) {
   var db = admin.firestore();
   var failed = [];
 
-  // 1. syncInbox subcollection (must go before the parent doc - deleting a doc
-  //    does NOT delete its subcollections in Firestore).
-  try {
-    var inbox = await db.collection("users").doc(uid).collection("syncInbox").get();
-    if (!inbox.empty) {
+  // 1. Subcollections (must go before the parent doc - deleting a doc does NOT
+  //    delete its subcollections in Firestore). syncInbox holds pending
+  //    bank-sync rows; tx holds every transaction since the document split
+  //    (FIRESTORE_SPLIT.md), which can run to thousands - so both are drained
+  //    in pages of 400 rather than in one batch that would exceed the 500 cap.
+  var deleteSubcollection = async function (name) {
+    var col = db.collection("users").doc(uid).collection(name);
+    while (true) {
+      var page = await col.limit(400).get();
+      if (page.empty) return;
       var batch = db.batch();
-      inbox.docs.forEach(function (d) { batch.delete(d.ref); });
+      page.docs.forEach(function (d) { batch.delete(d.ref); });
       await batch.commit();
     }
-  } catch (e) { failed.push("syncInbox"); }
+  };
+  try { await deleteSubcollection("syncInbox"); } catch (e) { failed.push("syncInbox"); }
+  try { await deleteSubcollection("tx"); } catch (e) { failed.push("tx"); }
 
   // 2. The account blob itself.
   try { await db.collection("users").doc(uid).delete(); } catch (e) { failed.push("userDoc"); }

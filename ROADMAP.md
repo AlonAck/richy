@@ -543,8 +543,20 @@ yet compiled)**.
   until a build has passed on the Mac.
 - **Next (owner: Alon):** the Firebase iOS app registration and plist,
   then one Mac session: `xcodegen generate` → build → sign in with a test
-  account. **Next (owner: AI, no Mac needed):** the document split above,
-  then wiring `promptId` into `api/chat.js`.
+  account.
+- **Document split — started 2026-09-04 on branch `firestore-split`, not
+  merged.** Transactions move to `users/{uid}/tx/{id}` and every write to
+  the parent becomes a field-level `update()`; the parent's array stays
+  authoritative until a session boots and sees `txSchema: 2`, which is what
+  makes an interrupted or late move harmless. Deploy-order safe: with the
+  rules not yet published the move fails cleanly and the account stays on
+  the array. The migration scenarios pass against a fake Firestore and the
+  Babel transform passes; nothing has run against the real project yet.
+  Rollout, in order: publish `firestore.rules` → test the branch's Vercel
+  preview with a **test** account → merge to `master` (that is the deploy).
+  Full write-up in `FIRESTORE_SPLIT.md`. **Next (owner: AI, no Mac
+  needed), after the merge:** a listener on the subcollection, then
+  `richardChats`, then wiring `promptId` into `api/chat.js`.
 - **Still open, unchanged:** the Android-timeline contradiction at the top
   of this section, and the PROPOSED-ONLY MVP scope. Both are restated in
   the artifact; neither blocks the foundation.

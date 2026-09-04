@@ -22,6 +22,15 @@ service cloud.firestore {
         allow read, delete: if request.auth != null && request.auth.uid == uid;
         allow create, update: if false;
       }
+
+      // Transactions, one document per entry, since the document split of
+      // 4 Sep 2026 (FIRESTORE_SPLIT.md). Owner-only, like the parent. With
+      // each transaction its own document, two clients - the web app and the
+      // iOS app - can add, edit and delete at the same time: each touches only
+      // its own documents, never one shared array.
+      match /tx/{txId} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
     }
 
     // Bank Sync key -> uid mapping. Created by the owner when enabling Bank

@@ -1,12 +1,21 @@
 import Foundation
 
-/// `users/{uid}` - the account document, READ shape only. The foundation never
-/// writes it: the web app overwrites this document wholesale, so a second
-/// writer would destroy data until the backend splits it (migration plan,
-/// "the single-document blob"). Every array defaults to empty and every
-/// setting is optional so accounts from any era decode. Savings, business,
-/// investing, debt, note and trip arrays arrive with their features.
+/// `users/{uid}` - the account document, READ shape only for now.
+///
+/// Since the document split (FIRESTORE_SPLIT.md) transactions live in the
+/// `users/{uid}/tx/{id}` subcollection once `txSchema == 2`; until an account
+/// has been moved (the web app moves it on its next open) they are still the
+/// `tx` array here, and this app must not write transactions for it. Every
+/// other field is written only through field-level `update()` - never a
+/// whole-document `set()`. Every array defaults to empty and every setting is
+/// optional so accounts from any era decode. Savings, business, investing,
+/// debt, note and trip arrays arrive with their features.
 struct Account: Decodable, Equatable, Sendable {
+    /// 1 (or absent): transactions are the `tx` array below. 2: they are the
+    /// `tx` subcollection and the array is gone.
+    let txSchema: Int
+    var isTransactionsSplit: Bool { txSchema >= 2 }
+
     let email: String?
     let dob: String?
     let handle: String?

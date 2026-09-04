@@ -53,6 +53,20 @@ async function deleteAllAuthUsers() {
   return deleted;
 }
 
+// Deleting a document does NOT delete its subcollections in Firestore, so the
+// per-user tx (since the document split, see FIRESTORE_SPLIT.md) and syncInbox
+// collections are drained first, in pages of 400.
+async function deleteSubcollection(db, userRef, name) {
+  var col = userRef.collection(name);
+  while (true) {
+    var page = await col.limit(400).get();
+    if (page.empty) return;
+    var batch = db.batch();
+    page.docs.forEach(function (d) { batch.delete(d.ref); });
+    await batch.commit();
+  }
+}
+
 async function deleteUsersCollection() {
   var db = admin.firestore();
   var col = db.collection(USERS_COLLECTION);
@@ -61,6 +75,10 @@ async function deleteUsersCollection() {
   while (true) {
     var snap = await col.limit(400).get();
     if (snap.empty) break;
+    for (var i = 0; i < snap.docs.length; i++) {
+      await deleteSubcollection(db, snap.docs[i].ref, "tx");
+      await deleteSubcollection(db, snap.docs[i].ref, "syncInbox");
+    }
     var batch = db.batch();
     snap.docs.forEach(function (doc) { batch.delete(doc.ref); });
     await batch.commit();
