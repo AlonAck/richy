@@ -10,3 +10,10 @@ public
 service-account.json
 **/service-account.json
 *-firebase-adminsdk-*.json
+
+# Native iOS app (RichyIOS/) - generated per machine, never committed
+RichyIOS/Richy.xcodeproj/
+RichyIOS/Info.plist
+RichyIOS/Resources/GoogleService-Info.plist
+RichyIOS/xcuserdata/
+RichyIOS/.build/

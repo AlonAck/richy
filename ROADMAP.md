@@ -449,9 +449,12 @@ entries, no conflict):**
 - Build a real native SwiftUI app — not `WKWebView` wrapping the existing
   site.
 - Keep the existing backend: Vercel APIs, Firebase Auth, Firestore,
-  Storage, existing UIDs and existing data. No migration to Supabase or
+  existing UIDs and existing data. No migration to Supabase or
   Clerk for launch convenience — either would be a separate, explicitly
-  approved project.
+  approved project. *(Corrected 2026-09-04: Firebase **Storage** is not
+  used anywhere in this codebase — zero references in the client, the API
+  routes or the HTML. Don't add the Storage SDK to the iOS project or
+  declare it in privacy metadata.)*
 - Keep the web client (richy-mgkl.vercel.app) operational throughout —
   native and web should authenticate as the same user against the same
   data, not fork into two products.
@@ -485,25 +488,66 @@ as decided:**
   it's a product decision with real trade-offs, not a technical default.
 
 **Target architecture (native client):** SwiftUI app calling the existing
-Vercel API layer, with Firebase Auth/Firestore/Storage used directly where
-appropriate — mirrors this repo's current client/server split, just with a
-native client instead of the React web app. Proposed module shape:
-`App/` (entry point, routing), `Core/Design/`, `Core/Networking/`,
-`Core/Persistence/` (Keychain + narrow local caching), `Core/Firebase/`,
-and one `Features/<name>/` folder per screen area (Auth, Dashboard,
-Transactions, Richard, Profile, Settings) with protocol-backed services so
-views never call Firebase/HTTP directly. Anthropic credentials stay
-server-side, as they already do.
+Vercel API layer, with Firebase Auth (and, after the document split below,
+Firestore) used directly — mirrors this repo's current client/server split,
+just with a native client instead of the React web app. Built 2026-09-04 in
+the folder shape Alon specified, under `RichyIOS/`: `App/` (entry point,
+`AppState`, `AppServices`, root routing), `Features/<name>/` (Auth, Boot,
+Home, Richard, Profile — views plus `@Observable` view models),
+`Components/`, `Models/` (Codable account document), `Services/`
+(Networking, Auth, Firebase, Chat, Account — protocol-backed, with
+in-memory mocks so views never call Firebase/HTTP directly and every screen
+previews offline), `DesignSystem/`, `Utilities/`. Anthropic credentials
+stay server-side, as they already do; the native app ships zero secrets.
 
 **Phase tracker (0 = access/prereqs, through 8 = post-launch/ownership
-transition).** Currently at **Phase 0 — Access and prerequisites**. The
-blocker recorded on that other track was "no access to the Richy source
-repository in this workspace" — **that blocker doesn't apply here**: this
-session has direct, working access to the actual repo at the connected
-folder path, so Phase 0's next real step is confirming Mac/Xcode access
-cadence and a permanent bundle ID, not locating the source. Whoever
-resumes this track next should start from that corrected state, not
-re-derive the now-resolved blocker.
+transition).** Currently at **Phase 2 — Native foundation (written, not
+yet compiled)**.
+
+- **Phase 0 — done.** Repo access is direct (the earlier "no access"
+  blocker never applied here). Bundle id kept as `com.richy.app`, the id
+  already in `capacitor.config.json`. Still owed by Alon before the Mac
+  session: register the iOS app in Firebase project `richy-91667` and
+  download `GoogleService-Info.plist`; confirm a Mac with Xcode 16.4+.
+- **Phase 1 — done 2026-09-03/04, against commit `0f5d45d`.** Full audit
+  of architecture, 41 routes, auth providers, Firestore schema and rules,
+  7 API routes, 21 env vars, AI payload paths and open P0s, classified
+  into keep / change / rebuild. Written up in the **Taking Richy Native**
+  artifact: https://claude.ai/code/artifact/ea459fb7-651b-4b23-85cf-2ffcfe7fe1a5
+  Two corrections to earlier records besides the Storage one above:
+  `api/_prompts.js` is a complete server-side prompt registry with a
+  `build()` function, but `api/chat.js` never calls it — it still takes
+  `system` verbatim from the client and only appends `GUARDRAIL`, so the
+  27 "You are Richard" prompts still live in the client; and the 25 Aug
+  "server-side prompt registry" credit in the Tier 0 closed table is
+  therefore only half true.
+  **The one finding that gates every native write:** `users/{uid}` is a
+  single document that `CLOUD.saveUser()` overwrites wholesale with
+  `.set()` from React state. Two signed-in clients would clobber each
+  other, which contradicts the "same user, same data" decision above. The
+  split (`tx` and `richardChats` to subcollections, field-level
+  `update()` on the parent, UUIDs instead of `Date.now()` ids) is backend
+  work that needs no Mac and must land before the native app writes
+  anything.
+- **Phase 2 — in progress, 2026-09-04.** The SwiftUI foundation is
+  written under `RichyIOS/` (56 Swift files, ~2,800 lines): app entry,
+  session state, XcodeGen `project.yml` (iOS 17, Swift 5 mode,
+  FirebaseCore + FirebaseAuth only), `APIClient` actor, `AuthService`
+  (Firebase + mock), Keychain session record, Codable models for the
+  account document, the design tokens ported from the web palette,
+  loading/error/empty components, real sign-in/sign-up/reset screens, and
+  a Profile with sign out and account deletion through
+  `/api/delete-account`. It reads and writes **nothing** in Firestore.
+  **Not yet compiled** — this machine has no Swift toolchain;
+  `RichyIOS/README.md` is the Mac checklist. Do not mark Phase 2 done
+  until a build has passed on the Mac.
+- **Next (owner: Alon):** the Firebase iOS app registration and plist,
+  then one Mac session: `xcodegen generate` → build → sign in with a test
+  account. **Next (owner: AI, no Mac needed):** the document split above,
+  then wiring `promptId` into `api/chat.js`.
+- **Still open, unchanged:** the Android-timeline contradiction at the top
+  of this section, and the PROPOSED-ONLY MVP scope. Both are restated in
+  the artifact; neither blocks the foundation.
 
 **Safe-build ground rules carried over, still binding:** no live account
 creation, identity verification, store submissions, purchases, OAuth

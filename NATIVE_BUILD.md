@@ -1,3 +1,5 @@
+> **Superseded (2026-09-04).** The Capacitor WebView route below is no longer the plan. The native SwiftUI app lives in `RichyIOS/` - start at `RichyIOS/README.md`. This file stays for the App Store Connect and privacy-label notes, which still apply.
+
 # Richy — Native App Store Build Guide
 
 Everything below runs on a **Mac** (Xcode is macOS-only). The web app is already
