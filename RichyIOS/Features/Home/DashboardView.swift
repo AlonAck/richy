@@ -25,7 +25,7 @@ struct DashboardView: View {
             ZStack {
                 RichyColor.background.ignoresSafeArea()
                 switch store.phase {
-                case .loading:
+                case .loading, .needsSetup:
                     LoadingView(label: "Loading your money...")
                 case .failed(let message):
                     ErrorView(message: message, retry: { store.retry() })

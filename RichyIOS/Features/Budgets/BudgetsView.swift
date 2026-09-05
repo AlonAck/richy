@@ -19,7 +19,7 @@ struct BudgetsView: View {
             ZStack {
                 RichyColor.background.ignoresSafeArea()
                 switch store.phase {
-                case .loading:
+                case .loading, .needsSetup:
                     LoadingView()
                 case .failed(let message):
                     ErrorView(message: message, retry: { store.retry() })

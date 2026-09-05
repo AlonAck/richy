@@ -12,7 +12,7 @@ struct ActivityView: View {
             ZStack {
                 RichyColor.background.ignoresSafeArea()
                 switch store.phase {
-                case .loading:
+                case .loading, .needsSetup:
                     LoadingView(label: "Loading your activity...")
                 case .failed(let message):
                     ErrorView(message: message, retry: { store.retry() })
