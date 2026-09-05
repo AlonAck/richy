@@ -293,18 +293,36 @@ fetchSource(1).then(function(src){
           { id: 63, kind: "deposit",  amount: 120,  date: "2026-07-01", fromMain: false, label: "Revenue: Online orders", revenue: true }
         ]
       }] : [];
+      // The fixture is written around a fixed timeline; slide it so its newest
+      // entry lands today. Otherwise the seed silently ages out of the current
+      // month and every "this month" figure on the page reads zero.
+      (function shiftSeedDates(){
+        if (!seedBiz.length) return;
+        var newest = "";
+        seedBiz[0].entries.forEach(function(e){ if (e.date > newest) newest = e.date; });
+        var days = Math.round((Date.parse(new Date().toISOString().slice(0,10) + "T00:00:00Z") - Date.parse(newest + "T00:00:00Z")) / 86400000);
+        if (!days) return;
+        function shift(d){ return new Date(Date.parse(d + "T00:00:00Z") + days * 86400000).toISOString().slice(0, 10); }
+        seedBiz[0].createdAt = shift(seedBiz[0].createdAt);
+        seedBiz[0].entries = seedBiz[0].entries.map(function(e){ return Object.assign({}, e, { date: shift(e.date) }); });
+        seedBiz[0].categories = seedBiz[0].categories.map(function(c){
+          return Object.assign({}, c, { entries: (c.entries || []).map(function(e){ return Object.assign({}, e, { date: shift(e.date) }); }) });
+        });
+      })();
       var _b = React.useState(seedBiz); var bz = _b[0]; var setBz = _b[1];
       var _tx = React.useState(mockTx); var tx = _tx[0]; var setTx = _tx[1];
+      var _bh = React.useState("desk"); var bhub = _bh[0]; var setBhub = _bh[1];
+      var _bd = React.useState(qs.get("seed") ? "biz_1" : null); var bDetail = _bd[0]; var setBDetail = _bd[1];
       window.__seedBiz = bz[0] || null;
       // Mirrors the App shell's fixed bottom banner, which inside a business
       // account carries the exit control instead of the five tabs. Rendered here
       // so that bar can be checked without standing up the whole signed-in app.
-      var openName = (bz[0] && qs.get("seed")) ? bz[0].name : "";
-      var exitLabel = openName ? "Exit " + openName : "Back to Savings";
+      var exitLabel = "Back to Savings";
       function exit(){ window.__clicked = "exitBusiness"; }
       return React.createElement(React.Fragment, null,
         React.createElement(BusinessView, {
           businesses: bz, tx: tx, openBizId: qs.get("seed") ? "biz_1" : null, username: "Alon", lang: "en", richardInstructions: "",
+          hubTab: bhub, onHubTabChange: setBhub, onDetailChange: setBDetail,
           onSaveBusinesses: function(n){ setBz(n); },
           onBusinessMove: function(ntx, nb){ setTx(ntx); setBz(nb); },
           onBack: exit, backLabel: "Savings"
@@ -312,7 +330,9 @@ fetchSource(1).then(function(src){
         React.createElement("div", { style: { position: "fixed", bottom: "calc(20px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", width: "calc(100% - 32px)", maxWidth: 398, zIndex: 30 } },
           React.createElement("div", { style: { position: "relative", background: window.__T.navGlass, backdropFilter: "blur(28px) saturate(190%) brightness(1.08)", WebkitBackdropFilter: "blur(28px) saturate(190%) brightness(1.08)", borderRadius: 34, border: "1px solid " + window.__T.glassBorder, boxShadow: "0 12px 40px rgba(0,0,0,0.18), 0 2px 10px rgba(0,0,0,0.08), inset 0 1px 0.5px " + window.__T.navRimTop + ", inset 0 -1px 0.5px " + window.__T.navRimBot } },
             React.createElement("div", { style: { position: "absolute", inset: 0, borderRadius: 34, pointerEvents: "none", background: "linear-gradient(180deg, " + window.__T.navSheen + " 0%, rgba(255,255,255,0) 42%, rgba(255,255,255,0) 100%)" } }),
-            React.createElement(GlassBackBar, { label: exitLabel, onPress: exit })
+            bDetail != null
+              ? React.createElement(GlassTabBar, { tabs: BUSINESS_HUB_TABS, current: bhub, onSelect: setBhub })
+              : React.createElement(GlassBackBar, { label: exitLabel, onPress: exit })
           )
         )
       );

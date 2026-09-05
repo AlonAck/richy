@@ -3854,7 +3854,11 @@ class ErrorBoundary extends React.Component {
 
 function Card(props) {
   return (
-    <div style={Object.assign({
+    // The two motion flags are forwarded because the reduced-motion media query
+    // keys off them - a Card that swallowed the attribute would keep animating
+    // for a reader who asked the OS for stillness.
+    <div data-biz-motion={props["data-biz-motion"]} data-invest-motion={props["data-invest-motion"]}
+      style={Object.assign({
       background: props.glass ? T.sheetGlass : T.card,
       borderRadius: 20,
       border: props.glass ? "1px solid " + T.glassBorder : "none",
@@ -8890,6 +8894,7 @@ function BusinessPulse(props) {
         var health = bizHealth(b);
         var pl = bizMonthProfit(b, curMonth());
         var runway = bizRunway(b);
+        var streak = bizStreak(b);
         var mss = (b.roadmap && b.roadmap.milestones) || [];
         var nextTask = null;
         for (var i = 0; i < mss.length && !nextTask; i++) {
@@ -8908,7 +8913,14 @@ function BusinessPulse(props) {
                   <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: T.ink }}>{health.score}</div>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI }}>Business</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: UI }}>Business</span>
+                    {streak.weeks > 0 && (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 700, color: streak.atRisk ? T.ink3 : T.orange, flexShrink: 0 }}>
+                        <SVGIcon id="flame" size={10} color={streak.atRisk ? T.ink3 : T.orange} />{streak.weeks + "w"}
+                      </span>
+                    )}
+                  </div>
                   <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 1 }}>{b.name}</div>
                   <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>
                     <span style={{ fontWeight: 700, color: pl.profit < 0 ? T.red : (pl.profit > 0 ? T.green : T.ink2) }}>{(pl.profit < 0 ? "-" : "") + dollars(Math.abs(pl.profit))}</span>
@@ -21542,34 +21554,47 @@ function bizPace(biz) {
 }
 // A 5-100 health read from runway, pace, revenue vs goal and bucket overspend.
 // Idea-stage businesses with no cash yet aren't punished for runway or revenue.
+//
+// The score is built as a list of NAMED contributions rather than a running
+// total, so the ring can be tapped open into an honest "what's helping, what's
+// hurting" breakdown - the business twin of investHealth's parts. The arithmetic
+// is unchanged: base 70, the same deltas, clamped to 5-100.
 function bizHealth(biz) {
   var pf = (biz && biz.profile) || {};
   var stage = pf.stage || "idea";
-  var score = 70;
+  var parts = [{ k: "Starting point", delta: 70, note: "Every business begins here", base: true }];
   var runway = bizRunway(biz);
   if (!(stage === "idea" && businessCash(biz) <= 0)) {
-    if (runway === null) score += 15;
-    else if (runway >= 6) score += 10;
-    else if (runway < 2) score -= 25;
-    else if (runway < 4) score -= 10;
+    if (runway === null) parts.push({ k: "Runway", delta: 15, note: "Self-sustaining - income covers the spending" });
+    else if (runway >= 6) parts.push({ k: "Runway", delta: 10, note: runway + " months of cash at the current burn" });
+    else if (runway < 2) parts.push({ k: "Runway", delta: -25, note: "Under 2 months of cash left at this burn" });
+    else if (runway < 4) parts.push({ k: "Runway", delta: -10, note: runway + " months of cash - thinner than it should be" });
+    else parts.push({ k: "Runway", delta: 0, note: runway + " months of cash at the current burn" });
   }
   var pace = bizPace(biz);
-  if (pace) { score += pace.verdict === "over" ? -10 : 5; }
+  if (pace) {
+    parts.push(pace.verdict === "over"
+      ? { k: "Spending pace", delta: -10, note: "Running ahead of the monthly budget" }
+      : { k: "Spending pace", delta: 5, note: pace.verdict === "under" ? "Comfortably under budget" : "Right on pace for the month" });
+  }
   if (stage !== "idea" && (pf.revenueGoal || 0) > 0) {
     var target = pf.revenueGoal * monthDayFrac();
     var rev = bizMonthRevenue(biz, curMonth());
-    if (rev >= target) score += 10;
-    else if (rev < target * 0.5) score -= 10;
+    if (rev >= target) parts.push({ k: "Revenue vs goal", delta: 10, note: "Ahead of today's share of " + dollars(pf.revenueGoal) });
+    else if (rev < target * 0.5) parts.push({ k: "Revenue vs goal", delta: -10, note: "Under half of today's share of " + dollars(pf.revenueGoal) });
+    else parts.push({ k: "Revenue vs goal", delta: 0, note: "Tracking near today's share of " + dollars(pf.revenueGoal) });
   }
-  var overPenalty = 0;
+  var overCount = 0;
   ((biz && biz.categories) || []).forEach(function(c) {
-    if ((c.planned || 0) > 0 && bizCatMonthSpent(biz, c.key, curMonth()) > c.planned * 1.2) overPenalty += 5;
+    if ((c.planned || 0) > 0 && bizCatMonthSpent(biz, c.key, curMonth()) > c.planned * 1.2) overCount++;
   });
-  score -= Math.min(10, overPenalty);
-  score = Math.max(5, Math.min(100, Math.round(score)));
+  if (overCount > 0) parts.push({ k: "Budget buckets", delta: -Math.min(10, overCount * 5), note: overCount + (overCount === 1 ? " bucket is" : " buckets are") + " more than 20% over plan" });
+  else parts.push({ k: "Budget buckets", delta: 0, note: "Nothing badly over its plan" });
+  var raw = parts.reduce(function(n, p) { return n + p.delta; }, 0);
+  var score = Math.max(5, Math.min(100, Math.round(raw)));
   var label = score >= 80 ? "Strong" : score >= 60 ? "Steady" : score >= 40 ? "Watch" : "At risk";
   var color = score >= 80 ? T.green : score >= 60 ? T.orange : score >= 40 ? "#C8983A" : T.red;
-  return { score: score, label: label, color: color };
+  return { score: score, label: label, color: color, parts: parts };
 }
 // Trailing 14 days of revenue vs the 14 days before that.
 function bizRevenueTrend(biz) {
@@ -21616,6 +21641,231 @@ function bizQuarterRevenue(biz) {
     return s + ((e.kind === "deposit" && e.revenue && (e.date || "") >= qStart) ? (e.amount || 0) : 0);
   }, 0);
   return { revenue: round2(rev), quarter: qNum, qStart: qStart };
+}
+
+// ---- Founder's streak -------------------------------------------------------
+// The habit loop the business tab is built around: a week "counts" when the
+// owner did something real in it - logged an expense, booked revenue, or ticked
+// a roadmap step. Weeks are counted from the ledger itself, so the streak can
+// never be gamed by opening the app, only by running the business.
+function bizWeekIndex(dateStr) {
+  var t = Date.parse((dateStr || "") + "T00:00:00Z");
+  if (isNaN(t)) return null;
+  return Math.floor(t / 86400000 / 7);
+}
+function bizStreak(biz) {
+  var weeks = {};
+  ((biz && biz.entries) || []).forEach(function(e) { var w = bizWeekIndex(e.date); if (w !== null) weeks[w] = (weeks[w] || 0) + 1; });
+  (((biz && biz.roadmap) || {}).milestones || []).forEach(function(m) {
+    (m.tasks || []).forEach(function(t) { if (t.done) { var w = bizWeekIndex(t.doneAt); if (w !== null) weeks[w] = (weeks[w] || 0) + 1; } });
+  });
+  var nowW = Math.floor(Date.now() / 86400000 / 7);
+  var thisWeek = weeks[nowW] || 0;
+  // A streak stays alive through the current week even before you've acted in
+  // it - you haven't broken anything until the week actually ends.
+  var run = 0;
+  var w0 = thisWeek > 0 ? nowW : nowW - 1;
+  while (weeks[w0]) { run++; w0--; }
+  var current = run;
+  var keys = [];
+  for (var k in weeks) keys.push(parseInt(k, 10));
+  keys.sort(function(a, b) { return a - b; });
+  var best = 0, run2 = 0, prev = null;
+  keys.forEach(function(w) { run2 = (prev !== null && w === prev + 1) ? run2 + 1 : 1; prev = w; if (run2 > best) best = run2; });
+  return { weeks: current, best: Math.max(best, current), thisWeek: thisWeek, atRisk: current > 0 && thisWeek === 0, activeWeeks: keys.length };
+}
+// Month-over-month profit swing plus the best month on record - the two lines
+// that make a founder want to beat last month.
+function bizMomentum(biz) {
+  var ym = curMonth();
+  var cur = bizMonthProfit(biz, ym);
+  var prev = bizMonthProfit(biz, ymShift(ym, 1));
+  var momPct = (prev.profit !== 0 && isFinite(prev.profit)) ? Math.round(((cur.profit - prev.profit) / Math.abs(prev.profit)) * 100) : null;
+  var best = null, monthsLogged = 0;
+  for (var i = 0; i < 12; i++) {
+    var m = ymShift(ym, i);
+    var p = bizMonthProfit(biz, m);
+    if (p.revenue > 0 || p.spend > 0) monthsLogged++;
+    if (p.revenue > 0 && (!best || p.revenue > best.revenue)) best = { ym: m, revenue: p.revenue };
+  }
+  return { cur: cur, prev: prev, momPct: momPct, best: best, monthsLogged: monthsLogged, isRecord: !!(best && best.ym === ym && cur.revenue > 0 && monthsLogged > 1) };
+}
+
+// ---- Richard's CFO desk -----------------------------------------------------
+// The insight cards on the CFO tab. Every one is measured off this business's
+// real ledger - the same discipline as investInsights - so nothing here is a
+// canned tip. `action` routes to the surface that actually fixes the thing.
+function bizInsights(biz, ctx) {
+  var out = [];
+  var pf = (biz && biz.profile) || {};
+  var stage = pf.stage || "idea";
+  var ym = curMonth();
+  var pl = bizMonthProfit(biz, ym);
+  var runway = bizRunway(biz);
+  var pace = bizPace(biz);
+  var trend = bizRevenueTrend(biz);
+  var streak = ctx.streak || bizStreak(biz);
+  var mom = ctx.momentum || bizMomentum(biz);
+  var cash = businessCash(biz);
+
+  if (runway !== null && runway < 3 && cash > 0) {
+    out.push({ id: "runway", tone: "red", icon: "shield", title: runway + " months of runway",
+      text: "At " + dollars(bizBurn(biz)) + " a month of net burn, the " + dollars(cash) + " in this account runs out around then. The fix is either revenue up or burn down - and revenue is the one with no ceiling.",
+      cta: "See the cash flow", action: "desk" });
+  }
+  if (ctx.overdueCount > 0) {
+    out.push({ id: "overdue", tone: "red", icon: "flag", title: ctx.overdueCount + (ctx.overdueCount === 1 ? " invoice is overdue" : " invoices are overdue"),
+      text: dollars(ctx.overdueTotal) + " has been earned and not paid. Chasing an overdue invoice is the highest-paid hour in your week - the work is already done.",
+      cta: "Open invoices", action: "invoices" });
+  }
+  if (stage !== "idea" && pl.revenue === 0) {
+    out.push({ id: "firstsale", tone: "orange", icon: "spark", title: "No revenue logged this month",
+      text: "The first sale is the only number that changes the whole picture. Offer " + (biz.what || "what you sell") + " directly to ten people this week, then record what lands here.",
+      cta: "Record revenue", action: "revenue" });
+  } else if (pl.profit > 0 && stage !== "idea") {
+    out.push({ id: "black", tone: "green", icon: "check", title: "You're in the black this month",
+      text: dollars(pl.revenue) + " in, " + dollars(pl.spend) + " out, " + dollars(pl.profit) + " kept" + (pl.margin !== null ? " - a " + Math.round(pl.margin * 100) + "% margin" : "") + ". Most businesses never see this line. Yours has.",
+      cta: null, action: null });
+  }
+  if (ctx.taxOwed > 0) {
+    out.push({ id: "tax", tone: "gold", icon: "coins", title: "Set aside " + dollars(ctx.taxOwed) + " for tax",
+      text: "That's " + ctx.taxRate + "% of the " + dollars(ctx.qRevenue) + " booked so far this quarter. Money you've already spent is the worst way to find out a bill was coming.",
+      cta: "Adjust the rate", action: "tax" });
+  }
+  if (pace && pace.verdict === "over") {
+    out.push({ id: "pace", tone: "orange", icon: "activity", title: "Spending is ahead of plan",
+      text: pace.text,
+      cta: "See the budget", action: "desk" });
+  }
+  if (ctx.nextTask) {
+    out.push({ id: "next", tone: "orange", icon: "flag", title: "Your next step",
+      text: ctx.nextTask + (ctx.milestone ? "  ·  part of \"" + ctx.milestone + "\"" : "") + ". One step a week is how the whole roadmap gets finished.",
+      cta: "Open the roadmap", action: "plan" });
+  } else if (!biz.roadmap) {
+    out.push({ id: "roadmap", tone: "orange", icon: "chart", title: "No roadmap yet",
+      text: "Richard can lay out the milestones from where " + (biz.name || "this business") + " stands today to a business that runs - then break each one into steps you can actually tick off.",
+      cta: "Build it", action: "plan" });
+  }
+  if (streak.weeks >= 2) {
+    out.push({ id: "streak", tone: "green", icon: "flame", title: streak.weeks + " weeks running",
+      text: streak.atRisk
+        ? "You've logged something every week for " + streak.weeks + " weeks. Nothing yet this week - one expense, one sale or one ticked step keeps it alive."
+        : "You've moved this business forward every week for " + streak.weeks + " straight weeks. That consistency is worth more than any single clever decision.",
+      cta: streak.atRisk ? "Log something" : null, action: streak.atRisk ? "revenue" : null });
+  }
+  if (mom.isRecord) {
+    out.push({ id: "record", tone: "green", icon: "trophy", title: "Best revenue month yet",
+      text: dollars(mom.cur.revenue) + " booked this month - more than any month since you opened this account. Whatever you did differently, do it again.",
+      cta: null, action: null });
+  } else if (trend.verdict === "down" && trend.prior > 0) {
+    out.push({ id: "trenddown", tone: "orange", icon: "down", title: "Revenue has cooled off",
+      text: dollars(trend.recent) + " in the last fortnight against " + dollars(trend.prior) + " the fortnight before. Worth asking where the last customers came from, before spending to find new ones.",
+      cta: "Get growth ideas", action: "ideas" });
+  }
+  if (ctx.overCat) {
+    out.push({ id: "overcat", tone: "gold", icon: "budgets", title: ctx.overCat.label + " is over plan",
+      text: dollars(ctx.overCat.spent) + " spent against " + dollars(ctx.overCat.planned) + " budgeted this month. Either the plan was wrong or the spending was - both are worth naming out loud.",
+      cta: "Retune the budget", action: "desk" });
+  }
+  // One reading nudge, and only the one this business has actually earned -
+  // the lesson that answers the number Richard is currently worried about.
+  var read = ctx.lessons || {};
+  var teach = null;
+  if (pl.revenue > 0 && pl.margin !== null && pl.margin < 0.3 && (read.margin || 0) < 100) {
+    teach = { id: "margin", title: "Your margin is " + Math.round(pl.margin * 100) + "%",
+      text: "You keep " + Math.round(pl.margin * 100) + " of every 100 you bring in. Under 30% there's no room for a refund, a discount or a bad month. Four minutes on why that number decides everything." };
+  } else if (runway !== null && runway < 4 && (read.cashflow || 0) < 100) {
+    teach = { id: "cashflow", title: "Profit isn't cash - and yours is tight",
+      text: "You're " + runway + " months from empty at the current burn. This is the read on why profitable businesses still run out of money, and what to watch instead." };
+  } else if (ctx.overdueCount > 0 && (read.cashflow || 0) < 100) {
+    teach = { id: "cashflow", title: "Late invoices are a cash problem",
+      text: "Work you've done and not been paid for is the gap between profit and cash. Four minutes on why that gap sinks otherwise healthy businesses." };
+  } else if (stage === "idea" && (read.customers || 0) < 100) {
+    teach = { id: "customers", title: "Start with ten conversations",
+      text: "At idea stage there's no funnel to optimise - there are ten people who might say yes. Here's how to find them and what to ask." };
+  }
+  if (teach) out.push({ id: "teach", tone: "gold", icon: "book", title: teach.title, text: teach.text, cta: "Read it", action: "learn:" + teach.id });
+  return out.slice(0, 6);
+}
+// A greeting that knows the time of day and the owner's name - the small
+// personal touch that makes the tab read as somebody's desk, not a report.
+function bizGreeting(name) {
+  var h = new Date().getHours();
+  var when = h < 5 ? "Still up" : h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+  var who = (name || "").trim();
+  return who ? (when + ", " + who) : when;
+}
+
+// ---- Founder's school -------------------------------------------------------
+// The business twin of INVEST_LESSONS: short, plain-English reads on the things
+// that decide whether a small business survives. Progress lives on biz.lessons.
+var BIZ_LESSONS = [
+  { id: "margin", title: "Margin is the whole game", mins: 4, level: "Basics", icon: "coins",
+    blurb: "Revenue is vanity, profit is sanity, margin is the number that decides.",
+    intro: "Margin is what's left of every unit of revenue after the cost of delivering it. A business turning over 10,000 a month at 8% margin is poorer than one turning over 3,000 at 45%. Same effort, different life.",
+    body: [
+      { h: "Work it out on one sale", p: "Take one typical sale. Subtract everything it cost you to deliver that specific sale - materials, fees, the hours if you paid someone. What's left, divided by the price, is your margin." },
+      { h: "Low margin means no room", p: "At 10% margin, one refund wipes out ten sales. At 50%, you can absorb mistakes, discount to win a customer, and still get paid." },
+      { h: "Raise it two ways", p: "Charge more, or cost less. Most owners only ever try the second one - and it's the harder half." }
+    ],
+    close: "If you only track one number in this app, make it margin. Revenue tells you how busy you were; margin tells you whether it was worth it." },
+  { id: "cashflow", title: "Profit isn't cash", mins: 4, level: "Basics", icon: "activity",
+    blurb: "Profitable businesses die of empty bank accounts every day.",
+    intro: "Profit is what you earned. Cash is what you can actually spend today. They drift apart the moment someone pays you late - and that gap is what kills otherwise healthy businesses.",
+    body: [
+      { h: "The timing gap", p: "You buy stock in March, sell it in April, get paid in June. On paper April was a great month. In May you couldn't make rent." },
+      { h: "Runway is the real health check", p: "Cash on hand divided by what you burn each month. Under three months, every decision gets made in a panic - and panicked decisions are expensive." },
+      { h: "Invoice like you mean it", p: "Send it the day the work is done, with a due date on it, and chase it the day it's late. That is not rude - it is the job." }
+    ],
+    close: "Richy tracks both for you: the P&L card is profit, the Cash flow card is survival. Read them in that order - survival first." },
+  { id: "pricing", title: "How to price without guessing", mins: 5, level: "Core", icon: "tag",
+    blurb: "Most small businesses are underpriced, and it's rarely the customers' idea.",
+    intro: "Price is a decision, not a discovery. It's the fastest lever you own: a 10% price rise with no lost customers is often a 30-50% profit rise, because your costs didn't move.",
+    checklist: [
+      { q: "Do you know what three competitors charge?", good: "Written down, current, for the same thing", bad: "A vague sense that you're 'about right'" },
+      { q: "Have you ever raised prices?", good: "Yes - and you kept most customers", bad: "Never, out of fear" },
+      { q: "Can you name what makes you the obvious pick?", good: "One specific thing a customer would repeat", bad: "'Good service' or 'good value'" },
+      { q: "Does the price cover a bad day?", good: "Refunds, redos and dead time are priced in", bad: "It only works if nothing goes wrong" },
+      { q: "Are you discounting to win?", good: "Rarely, and deliberately", bad: "Every time someone hesitates" }
+    ],
+    close: "Test a rise on your bestseller first, on new customers only. If nobody flinches, you were underpriced - and now you know." },
+  { id: "customers", title: "Your first ten customers", mins: 4, level: "Basics", icon: "user",
+    blurb: "Not marketing. Ten conversations, one at a time.",
+    intro: "Before there's a funnel, an ad budget or a brand, there are ten people who said yes. Getting them is a manual, unglamorous, direct job - and it teaches you more than any strategy deck.",
+    body: [
+      { h: "Go direct", p: "Message people you can reach individually and make a specific offer. Ten real conversations beat a thousand impressions when you're starting." },
+      { h: "Ask what nearly stopped them", p: "The objection they almost didn't say out loud is the thing you fix next - in the offer, the price, or how you explain it." },
+      { h: "Write down their words", p: "The exact phrases customers use to describe the problem become your marketing copy later. You cannot invent this language yourself." }
+    ],
+    close: "Ten paying customers is the point where you stop guessing and start reading. Everything before it is a hypothesis." },
+  { id: "costs", title: "Which costs earn their keep", mins: 5, level: "Core", icon: "budgets",
+    blurb: "Every cost should be able to explain itself in one sentence.",
+    intro: "Businesses rarely die of one huge mistake. They bleed out through a dozen small costs nobody ever questions again after the month they were signed up for.",
+    body: [
+      { h: "Sort costs into two piles", p: "Costs that bring in customers or deliver the work, and costs that don't. The second pile is where you cut first, always." },
+      { h: "The 30% rule", p: "If one line is eating more than a third of everything you spend, it needs a competing quote or a renegotiation this month - not next quarter." },
+      { h: "Cutting is faster than earning", p: "Money you stop spending is profit today, in full. Money you earn instead costs you something to win first." }
+    ],
+    close: "Once a quarter, read your own category list and make each line justify itself out loud. The ones that can't, go." },
+  { id: "tax", title: "Set it aside before you spend it", mins: 4, level: "Core", icon: "shield",
+    blurb: "The tax bill is not a surprise. It's a date you already know.",
+    intro: "The most common cash disaster in a small business is a tax bill spent months before it arrived. The money was never yours - it just sat in your account looking like it was.",
+    body: [
+      { h: "Take the cut on the way in", p: "Every time revenue lands, move the tax share out of the working balance. What's left is what the business can actually spend." },
+      { h: "Estimate high, not low", p: "Being over-reserved is a pleasant surprise. Being under-reserved is a payment plan and a penalty." },
+      { h: "Rates are local - get a real number", p: "The set-aside rate here is a placeholder until an accountant gives you yours. One conversation, once, and you can stop guessing." }
+    ],
+    close: "Richy's Tax pot stat does the arithmetic on your real quarter revenue. Setting the rate honestly is the only part that's on you." }
+];
+function bizLessonById(id) {
+  for (var i = 0; i < BIZ_LESSONS.length; i++) { if (BIZ_LESSONS[i].id === id) return BIZ_LESSONS[i]; }
+  return null;
+}
+function bizLessonProgress(biz) { return (biz && biz.lessons) || {}; }
+function bizLessonsDone(biz) {
+  var m = bizLessonProgress(biz), n = 0;
+  BIZ_LESSONS.forEach(function(l) { if ((m[l.id] || 0) >= 100) n++; });
+  return n;
 }
 
 // ---- Business roadmap -------------------------------------------------------
@@ -26806,12 +27056,91 @@ function StockScoutView(props) {
   );
 }
 
-// A Business Account: part savings pot (a walled-off cash balance separate from
-// personal spending money), part Plan-a-Trip (business budget categories), with
-// Richard acting as a CFO who interviews the owner, drafts a business plan and a
-// monthly operating budget, and keeps tuning it. Capital that moves in from the
-// personal balance is logged as a transfer (so net worth is unchanged); expenses
-// and revenue are pot-only moves that change the business cash and net worth.
+// The business tab's motion kit. Injected once, under its own id, so the tab
+// still animates when it is mounted standalone in the dev harness.
+function ensureBizCss() {
+  if (document.getElementById("richy-biz-css")) return;
+  var st = document.createElement("style");
+  st.id = "richy-biz-css";
+  st.textContent = "@keyframes rcFadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}"
+    + "@keyframes rcCheckPop{0%{transform:scale(0.6);}55%{transform:scale(1.12);}100%{transform:scale(1);}}"
+    + "@keyframes rcShimmer{from{transform:translateX(-110%) skewX(-12deg);}to{transform:translateX(240%) skewX(-12deg);}}"
+    + "@keyframes rcPillIn{from{opacity:0;transform:translateY(8px) scale(0.96);}to{opacity:1;transform:none;}}"
+    + "@keyframes rcBadgePulse{0%,100%{opacity:1;}50%{opacity:0.35;}}"
+    // --- the investing-grade layer -------------------------------------------
+    + "@keyframes bizSectionIn{from{opacity:0;transform:translateY(12px);filter:blur(4px)}to{opacity:1;transform:none;filter:blur(0)}}"
+    + "@keyframes bizCardIn{from{opacity:0;transform:translateY(14px) scale(.99)}to{opacity:1;transform:none}}"
+    + "@keyframes bizRowIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}"
+    + "@keyframes bizNumPop{0%{opacity:0;transform:scale(0.86) translateY(7px)}62%{opacity:1;transform:scale(1.04)}100%{opacity:1;transform:none}}"
+    + "@keyframes bizGlow{0%,100%{opacity:0.42;transform:scale(0.94)}50%{opacity:0.9;transform:scale(1.12)}}"
+    + "@keyframes bizBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}"
+    + "@keyframes bizSheen{from{transform:translateX(-130%) skewX(-14deg)}to{transform:translateX(400%) skewX(-14deg)}}"
+    + "@keyframes bizFlameFlick{0%,100%{transform:scale(1) rotate(0deg)}30%{transform:scale(1.13) rotate(-4deg)}65%{transform:scale(0.97) rotate(3deg)}}"
+    + "@keyframes bizConfetti{0%{opacity:0;transform:translate(0,0) scale(0.5) rotate(0deg)}18%{opacity:1}100%{opacity:0;transform:translate(var(--cx,0px),var(--cy,-70px)) scale(1) rotate(var(--cr,220deg))}}"
+    + "@keyframes bizBarGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}"
+    + "@keyframes bizTickIn{from{opacity:0;transform:translateY(6px) scale(0.9)}to{opacity:1;transform:none}}"
+    + ".rc-hero-scroll{scrollbar-width:none;-ms-overflow-style:none;}.rc-hero-scroll::-webkit-scrollbar{display:none;width:0;height:0;}"
+    // Liquid-glass action capsules (design 1A). Hover and press can't live in
+    // an inline style, so the two shadows travel as custom properties and the
+    // states are matched here.
+    + "@keyframes rcSweep{0%{transform:translateX(-140%) rotate(-14deg);}55%{transform:translateX(240%) rotate(-14deg);}100%{transform:translateX(240%) rotate(-14deg);}}"
+    + ".rc-gbtn{position:relative;overflow:hidden;box-shadow:var(--gb-sh);transition:transform 300ms cubic-bezier(.2,.8,.2,1),box-shadow 300ms ease;}"
+    + ".rc-gbtn:hover:not(:disabled){box-shadow:var(--gb-sh-hov);}"
+    + ".rc-gbtn:active:not(:disabled){transform:scale(0.975);}"
+    + ".rc-gbtn-sweep{position:absolute;top:-30%;left:0;width:36%;height:190%;background:linear-gradient(90deg,rgba(255,255,255,0),var(--gb-sweep),rgba(255,255,255,0));filter:blur(6px);animation:rcSweep 5.5s cubic-bezier(.4,0,.2,1) infinite;pointer-events:none;}"
+    + "@media (prefers-reduced-motion:reduce){.rc-gbtn{transition:none;}.rc-gbtn-sweep{animation:none;opacity:0;}}"
+    + "@media (prefers-reduced-motion:reduce){[data-biz-motion]{animation:none!important;transition:none!important}}";
+  document.head.appendChild(st);
+}
+// Staggered entry helpers, so a screen full of cards reads as one considered
+// arrival rather than fifteen independent pops.
+function bizSectionAnim(delay) { return "bizSectionIn 0.58s cubic-bezier(0.22,0.9,0.3,1) " + (delay || 0).toFixed(2) + "s both"; }
+// The stagger is capped: past the tenth card the delay stops growing, so a long
+// list of budget categories can't leave the last card crawling in a second late.
+function bizCardAnim(i, base) { return "bizCardIn 0.55s cubic-bezier(0.22,0.9,0.3,1) " + ((base == null ? 0.05 : base) + Math.min(i, 9) * 0.06).toFixed(2) + "s both"; }
+
+// The ambient shader field behind the business tab - the twin of the investing
+// tab's ScoutBeamsBg, except the colour is the BUSINESS's own identity colour
+// rather than the app accent, so every account you open feels like its own
+// place. Scroll-locked and non-interactive.
+function BizAuraBg(props) {
+  var isDark = T.bg === DARK_BG;
+  var tint = props.color || T.orange;
+  return (
+    <ScrollLockBg>
+      <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: props.opacity != null ? props.opacity : (isDark ? 0.5 : 0.38) }}>
+        <JrShaderBg colors={[tint, T.orangeHi, tint]} base={T.bg} speed={0.13} intensity={0.78} yScale={0.44} xScale={1.08}
+          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
+      </div>
+    </ScrollLockBg>
+  );
+}
+
+// A one-shot burst of identity-coloured confetti, fired when a milestone lands.
+// Pure decoration: absolutely positioned, pointer-events off, and gone in a
+// second - the celebration the roadmap has always deserved.
+function BizConfetti(props) {
+  var col = props.color || T.orange;
+  var bits = [];
+  for (var i = 0; i < 26; i++) {
+    var ang = (i / 26) * Math.PI * 2;
+    var dist = 80 + ((i * 23) % 90);
+    bits.push({
+      cx: Math.round(Math.cos(ang) * dist), cy: Math.round(Math.sin(ang) * dist * 0.85) - 34,
+      cr: 140 + ((i * 53) % 300), d: ((i % 6) * 0.04).toFixed(3),
+      c: i % 3 === 0 ? T.gold : (i % 3 === 1 ? col : T.green),
+      w: i % 2 ? 6 : 9, h: i % 2 ? 11 : 7
+    });
+  }
+  return (
+    <div data-biz-motion style={{ position: "absolute", left: "50%", top: props.top || "34%", width: 0, height: 0, pointerEvents: "none", zIndex: 3 }}>
+      {bits.map(function(b, i) {
+        return <span key={i} style={{ position: "absolute", width: b.w, height: b.h, borderRadius: 2, background: b.c, boxShadow: "0 1px 3px rgba(0,0,0,0.14)", "--cx": b.cx + "px", "--cy": b.cy + "px", "--cr": b.cr + "deg", animation: "bizConfetti 1.35s cubic-bezier(0.16,0.75,0.28,1) " + b.d + "s both" }} />;
+      })}
+    </div>
+  );
+}
+
 // Liquid-glass action capsule - design 1A ("Tinted glass pills") from the
 // Claude Design canvas "Action Buttons - Liquid Glass".
 //
@@ -26892,6 +27221,15 @@ function GlassActionBtn(props) {
   );
 }
 
+// A Business Account: part savings pot (a walled-off cash balance separate from
+// personal spending money), part Plan-a-Trip (business budget categories), with
+// Richard acting as a CFO who interviews the owner, drafts a business plan and a
+// monthly operating budget, and keeps tuning it. Capital that moves in from the
+// personal balance is logged as a transfer (so net worth is unchanged); expenses
+// and revenue are pot-only moves that change the business cash and net worth.
+//
+// The screen is a four-way hub - Desk, Plan, Learn, CFO - deliberately shaped
+// like the investing tab's, so the two wealth surfaces are learned once.
 function BusinessView(props) {
   var bizes = props.businesses || [];
   var tx = props.tx || [];
@@ -26943,34 +27281,34 @@ function BusinessView(props) {
   var _invList = useState(false); var invoicesOpen = _invList[0]; var setInvoicesOpen = _invList[1];
   var _invForm = useState({ client: "", amount: "", dueDate: "" }); var invForm = _invForm[0]; var setInvForm = _invForm[1];
   var _taxSheet = useState(false); var taxSheetOpen = _taxSheet[0]; var setTaxSheetOpen = _taxSheet[1];
+  // --- hub state (the four business surfaces, mirroring the investing hub) ---
+  // App owns the tab when it renders the glass bar at the bottom of the screen;
+  // the local copy is what the dev harness (and any standalone mount) uses.
+  var _bhub = useState("desk"); var localHubTab = _bhub[0]; var setLocalHubTab = _bhub[1];
+  var hubTab = props.hubTab || localHubTab;
+  function setHubTab(next) {
+    setLocalHubTab(next);
+    if (props.onHubTabChange) props.onHubTabChange(next);
+  }
+  var _bhlt = useState(false); var healthOpen = _bhlt[0]; var setHealthOpen = _bhlt[1];
+  var _blsn = useState(null); var openLesson = _blsn[0]; var setOpenLesson = _blsn[1];
 
   // Fresh-props ref so async AI callbacks never patch from a stale snapshot
   // (a reply can land after another save has already advanced the array).
   var bizesRef = useRef(bizes); bizesRef.current = bizes;
 
-  // Inject the business-tab animation kit once (own id so the tab also works
-  // standalone in the dev harness, without the Overview having mounted first).
+  // The motion kit mirrors the investing tab's vocabulary - sections rise and
+  // unblur, cards stagger in behind them - so the two wealth surfaces read as
+  // one product. Everything animated carries data-biz-motion, which the
+  // reduced-motion query switches off wholesale.
+  useEffect(function() { ensureBizCss(); }, []);
+
+  // Tell App whether a business is open, so the bar at the bottom of the screen
+  // can be the four-way hub while you're inside an account and a plain "exit"
+  // button while you're picking one - the same shape the investing tab uses.
   useEffect(function() {
-    if (document.getElementById("richy-biz-css")) return;
-    var st = document.createElement("style");
-    st.id = "richy-biz-css";
-    st.textContent = "@keyframes rcFadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}"
-      + "@keyframes rcCheckPop{0%{transform:scale(0.6);}55%{transform:scale(1.12);}100%{transform:scale(1);}}"
-      + "@keyframes rcShimmer{from{transform:translateX(-110%) skewX(-12deg);}to{transform:translateX(240%) skewX(-12deg);}}"
-      + "@keyframes rcPillIn{from{opacity:0;transform:translateY(8px) scale(0.96);}to{opacity:1;transform:none;}}"
-      + "@keyframes rcBadgePulse{0%,100%{opacity:1;}50%{opacity:0.35;}}"
-      + ".rc-hero-scroll{scrollbar-width:none;-ms-overflow-style:none;}.rc-hero-scroll::-webkit-scrollbar{display:none;width:0;height:0;}"
-      // Liquid-glass action capsules (design 1A). Hover and press can't live in
-      // an inline style, so the two shadows travel as custom properties and the
-      // states are matched here.
-      + "@keyframes rcSweep{0%{transform:translateX(-140%) rotate(-14deg);}55%{transform:translateX(240%) rotate(-14deg);}100%{transform:translateX(240%) rotate(-14deg);}}"
-      + ".rc-gbtn{position:relative;overflow:hidden;box-shadow:var(--gb-sh);transition:transform 300ms cubic-bezier(.2,.8,.2,1),box-shadow 300ms ease;}"
-      + ".rc-gbtn:hover:not(:disabled){box-shadow:var(--gb-sh-hov);}"
-      + ".rc-gbtn:active:not(:disabled){transform:scale(0.975);}"
-      + ".rc-gbtn-sweep{position:absolute;top:-30%;left:0;width:36%;height:190%;background:linear-gradient(90deg,rgba(255,255,255,0),var(--gb-sweep),rgba(255,255,255,0));filter:blur(6px);animation:rcSweep 5.5s cubic-bezier(.4,0,.2,1) infinite;pointer-events:none;}"
-      + "@media (prefers-reduced-motion:reduce){.rc-gbtn{transition:none;}.rc-gbtn-sweep{animation:none;opacity:0;}}";
-    document.head.appendChild(st);
-  }, []);
+    if (props.onDetailChange) props.onDetailChange(view === "detail" ? (activeId || null) : null);
+  }, [view, activeId]);
 
   // Detail hero carousel (3 panels) + P&L month picker.
   var _hp = useState(0); var heroPage = _hp[0]; var setHeroPage = _hp[1];
@@ -27119,6 +27457,10 @@ function BusinessView(props) {
       chat: ((biz.chat || []).concat([{ role: "richard", text: line }])).slice(-30),
       roadmap: null
     }));
+    // Graduating throws the old roadmap away and Richard immediately drafts the
+    // next one; the Plan tab is where that happens, so take them there rather
+    // than leaving the moment to happen off-screen.
+    setHubTab("plan");
     setCelebrate({ id: "grad", title: newStage === "launching" ? "Launched" : "Up and running" });
     if (celTimer.current) clearTimeout(celTimer.current);
     celTimer.current = setTimeout(function() { setCelebrate(null); }, 2600);
@@ -27146,6 +27488,26 @@ function BusinessView(props) {
   }
   function patchBiz(id, patch) {
     return bizesRef.current.map(function(b) { if (b.id !== id) return b; var n = {}; for (var k in b) n[k] = b[k]; for (var k2 in patch) n[k2] = patch[k2]; return n; });
+  }
+  // Founder's school progress lives on the account, so it survives a reinstall
+  // and reads the same on every device.
+  function markBizLesson(biz, id, pct) {
+    var m = {}; var cur = bizLessonProgress(biz);
+    for (var k in cur) m[k] = cur[k];
+    m[id] = pct;
+    props.onSaveBusinesses(patchBiz(biz.id, { lessons: m }));
+  }
+  // Every CFO insight card's CTA, routed to the surface that actually fixes the
+  // thing it is pointing at.
+  function runBizInsight(biz, action) {
+    if (!action) return;
+    if (action === "desk") { setHubTab("desk"); return; }
+    if (action === "plan") { setHubTab("plan"); return; }
+    if (action === "invoices") { setInvoicesOpen(true); return; }
+    if (action === "tax") { setTaxSheetOpen(true); return; }
+    if (action === "revenue") { setRevFor(biz.id); setRevForm({ label: "", amount: "" }); return; }
+    if (action === "ideas") { fetchIdeas(biz); return; }
+    if (action.indexOf("learn:") === 0) { setHubTab("learn"); setOpenLesson(action.slice(6)); return; }
   }
 
   // ---- Intake / plan generation -------------------------------------------
@@ -27478,9 +27840,12 @@ function BusinessView(props) {
   }
   // The thread lives on the business object itself (biz.chat, capped at 30
   // messages) so the conversation survives reloads and syncs across devices.
-  function sendChat(biz) {
-    if (!chatInput.trim() || chatLoading) return;
-    var msg = chatInput.trim();
+  // `overrideText` lets the suggestion chips ask a grounded question without
+  // routing it through the input box first.
+  function sendChat(biz, overrideText) {
+    var typed = (overrideText || chatInput || "").trim();
+    if (!typed || chatLoading) return;
+    var msg = typed;
     setChatInput("");
     var nc = (biz.chat || []).concat([{ role: "user", text: msg }]);
     props.onSaveBusinesses(patchBiz(biz.id, { chat: nc.slice(-30) }));
@@ -27628,46 +27993,103 @@ function BusinessView(props) {
   }
 
   // ---- List view -----------------------------------------------------------
+  // The front door. When you own more than one venture this is a portfolio
+  // page: everything you've built, its cash, its health and whether it moved
+  // this week - the same read the investing tab gives a portfolio.
   function listView() {
+    var ymL = curMonth();
+    var totalCash = businessTotal(bizes);
+    var totalProfit = bizes.reduce(function(s, b) { return s + bizMonthProfit(b, ymL).profit; }, 0);
+    var totalRevenue = bizes.reduce(function(s, b) { return s + bizMonthProfit(b, ymL).revenue; }, 0);
+    var liveStreak = bizes.reduce(function(n, b) { return Math.max(n, bizStreak(b).weeks); }, 0);
     return (
-      <div>
+      <div style={{ position: "relative", zIndex: 0 }}>
+        <BizAuraBg color={(bizes[0] && bizes[0].color) || T.orange} opacity={bizes.length ? undefined : 0.22} />
         {backRow(props.backLabel || "Savings", props.onBack)}
-        <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, marginBottom: 16, padding: "0 2px" }}>
-          A Business Account walls off money for your venture, gives it its own budget categories, and puts Richard to work as your CFO - building a plan and keeping your spending on track.
-        </div>
-        <button onClick={startWizard}
-          style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 16, padding: "15px 0", marginBottom: 18, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", fontSize: 16, fontWeight: 700, fontFamily: UI, boxShadow: "0 6px 18px " + T.orangeGlow }}>
+
+        {bizes.length > 0 && (
+          <div data-biz-motion style={{ position: "relative", overflow: "hidden", borderRadius: 22, background: T.heroBg, boxShadow: T.heroShadow, padding: "20px 22px 18px", marginBottom: 16, animation: bizCardAnim(0, 0.02) }}>
+            <div style={{ position: "absolute", top: -70, right: -60, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
+            <div style={{ position: "relative" }}>
+              <div style={{ fontSize: 12.5, color: T.heroMut, fontWeight: 600, marginBottom: 2 }}>{bizGreeting(props.username)}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut, marginTop: 8 }}>
+                {bizes.length === 1 ? "Business cash" : bizes.length + " businesses · cash"}
+              </div>
+              <div data-biz-motion style={{ fontSize: 34, fontWeight: 800, color: T.heroInk, letterSpacing: "-0.03em", lineHeight: 1.05, marginTop: 4, animation: "bizNumPop 0.6s cubic-bezier(0.22,0.9,0.3,1) 0.08s both" }}><CountUp value={totalCash} /></div>
+              <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10, marginTop: 8 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: totalProfit >= 0 ? T.heroPos : T.heroNeg }}>
+                  {(totalProfit >= 0 ? "+" : "-") + dollars(Math.abs(totalProfit)) + " this month"}
+                </span>
+                <span style={{ fontSize: 12, color: T.heroFaint }}>{dollars(totalRevenue) + " earned"}</span>
+                {liveStreak > 0 && (
+                  <span data-biz-motion style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 800, color: T.heroInk, background: T.heroPillBg, padding: "3px 9px", borderRadius: 20, animation: "rcPillIn 0.45s cubic-bezier(0.34,1.56,0.64,1) 0.2s both" }}>
+                    <SVGIcon id="flame" size={11} color={T.gold} />{liveStreak + (liveStreak === 1 ? " week" : " weeks")}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {bizes.length === 0 && (
+          <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, marginBottom: 16, padding: "0 2px" }}>
+            A Business Account walls off money for your venture, gives it its own budget categories, and puts Richard to work as your CFO - building a plan and keeping your spending on track.
+          </div>
+        )}
+        <button onClick={startWizard} data-biz-motion
+          style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 16, padding: "15px 0", marginBottom: 18, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", fontSize: 16, fontWeight: 700, fontFamily: UI, boxShadow: "0 6px 18px " + T.orangeGlow, animation: bizCardAnim(1) }}>
           + New Business Account
         </button>
         {bizes.length === 0 ? (
-          <Card style={{ padding: "46px 24px", textAlign: "center" }}>
-            <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
-              <SVGIcon id="briefcase" size={24} color={T.orange} />
+          <Card data-biz-motion style={{ padding: "46px 24px", textAlign: "center", animation: bizCardAnim(2) }}>
+            <div style={{ position: "relative", width: 52, height: 52, margin: "0 auto 14px" }}>
+              <div data-biz-motion style={{ position: "absolute", inset: -10, borderRadius: "50%", background: "radial-gradient(circle," + T.orangeGlow + " 0%, transparent 70%)", filter: "blur(8px)", animation: "bizGlow 3s ease-in-out infinite" }} />
+              <div data-biz-motion style={{ position: "relative", width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", animation: "bizBreathe 3s ease-in-out infinite" }}>
+                <SVGIcon id="briefcase" size={24} color={T.orange} />
+              </div>
             </div>
             <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 4 }}>No business accounts yet</div>
             <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>Every great company started with a first plan. Richard will help you build yours.</div>
           </Card>
-        ) : bizes.map(function(b) {
+        ) : bizes.map(function(b, bi) {
           var bal = businessCash(b);
           var spent = businessSpent(b);
           var monthly = (b.profile && b.profile.monthly) || 0;
           var pct = monthly > 0 ? Math.min(100, Math.round((spent / monthly) * 100)) : 0;
+          var hb = bizHealth(b);
+          var sb = bizStreak(b);
+          var plb = bizMonthProfit(b, ymL);
+          var stageB = (b.profile && b.profile.stage) || "idea";
           return (
-            <Card key={b.id} style={{ marginBottom: 14, overflow: "hidden" }}>
+            <Card key={b.id} data-biz-motion style={{ marginBottom: 14, overflow: "hidden", animation: bizCardAnim(2 + bi) }}>
               <div onClick={function() { setActiveId(b.id); setView("detail"); }} style={{ padding: "18px 18px", cursor: "pointer" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 11, minWidth: 0 }}>
-                    <div style={{ width: 38, height: 38, borderRadius: 12, background: (b.color || T.orange) + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <SVGIcon id={b.icon || "briefcase"} size={20} color={b.color || T.orange} />
-                    </div>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.name}</div>
-                      <div style={{ fontSize: 13, color: T.ink3, marginTop: 2 }}>{b.what || labelOf(STRUCTURES, b.profile && b.profile.structure)}</div>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 11, marginBottom: 12 }}>
+                  <div style={{ width: 38, height: 38, borderRadius: 12, background: (b.color || T.orange) + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <SVGIcon id={b.icon || "briefcase"} size={20} color={b.color || T.orange} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.name}</div>
+                    <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.what || labelOf(STRUCTURES, b.profile && b.profile.structure)}</div>
+                    <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 6, marginTop: 7 }}>
+                      <span style={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: b.color || T.orange, background: (b.color || T.orange) + "1F", borderRadius: 6, padding: "3px 7px", whiteSpace: "nowrap" }}>{labelOf(STAGES, stageB)}</span>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: T.ink2, background: T.fill1, borderRadius: 6, padding: "3px 7px", whiteSpace: "nowrap" }}>
+                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: hb.color, flexShrink: 0 }} />{hb.label + " " + hb.score}
+                      </span>
+                      {sb.weeks > 0 && (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: T.orange, background: T.orangeDim, borderRadius: 6, padding: "3px 7px", whiteSpace: "nowrap" }}>
+                          <SVGIcon id="flame" size={10} color={T.orange} />{sb.weeks + (sb.weeks === 1 ? " week" : " weeks")}
+                        </span>
+                      )}
                     </div>
                   </div>
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(bal)}</div>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: T.ink3, marginTop: 2 }}>cash on hand</div>
+                  <div style={{ flexShrink: 0, textAlign: "right" }}>
+                    <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>{dollars(bal)}</div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: T.ink3, marginTop: 2, whiteSpace: "nowrap" }}>cash on hand</div>
+                    {plb.profit !== 0 && (
+                      <div style={{ fontSize: 11.5, fontWeight: 700, color: plb.profit > 0 ? T.green : T.red, marginTop: 5, whiteSpace: "nowrap" }}>
+                        {(plb.profit > 0 ? "+" : "-") + dollars(Math.abs(plb.profit))}
+                      </div>
+                    )}
                   </div>
                 </div>
                 {monthly > 0 && (
@@ -28196,761 +28618,1062 @@ function BusinessView(props) {
     var stage = (biz.profile && biz.profile.stage) || "idea";
     var heroKick = { fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut };
     var heroKick2 = { fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.orange };
+    var greeting = bizGreeting(props.username);
+    var streak = bizStreak(biz);
+    var momentum = bizMomentum(biz);
+    var lessonsDone = bizLessonsDone(biz);
+    // The last eight weeks as ticks, oldest first - the streak you can see at
+    // a glance without reading a number.
+    var streakDots = (function() {
+      var weeksMap = {};
+      (biz.entries || []).forEach(function(e) { var w = bizWeekIndex(e.date); if (w !== null) weeksMap[w] = 1; });
+      (((biz.roadmap) || {}).milestones || []).forEach(function(m) {
+        (m.tasks || []).forEach(function(t) { if (t.done) { var w = bizWeekIndex(t.doneAt); if (w !== null) weeksMap[w] = 1; } });
+      });
+      var nowW = Math.floor(Date.now() / 86400000 / 7);
+      var out = [];
+      for (var i = 7; i >= 0; i--) out.push({ on: !!weeksMap[nowW - i] });
+      return out;
+    })();
+    // Everything the CFO cards need, measured once off the real ledger.
+    var insights = (function() {
+      var qI = bizQuarterRevenue(biz);
+      var rateI = (biz.profile && biz.profile.taxRate != null) ? biz.profile.taxRate : 25;
+      var unpaidI = (biz.invoices || []).filter(function(i) { return i.status !== "paid"; });
+      var overdueI = unpaidI.filter(function(i) { return (i.dueDate || "") < today; });
+      var nextTask = null, milestone = null;
+      var mssI = (biz.roadmap && biz.roadmap.milestones) || [];
+      for (var mi = 0; mi < mssI.length && !nextTask; mi++) {
+        if (mssI[mi].done) continue;
+        var tsI = mssI[mi].tasks || [];
+        for (var ti = 0; ti < tsI.length; ti++) { if (!tsI[ti].done) { nextTask = tsI[ti].label; milestone = mssI[mi].title; break; } }
+      }
+      var overCat = null;
+      (biz.categories || []).forEach(function(c) {
+        if (!((c.planned || 0) > 0)) return;
+        var sp = bizCatMonthSpent(biz, c.key, ym);
+        if (sp > c.planned && (!overCat || sp - c.planned > overCat.spent - overCat.planned)) overCat = { label: c.label, spent: sp, planned: c.planned };
+      });
+      return bizInsights(biz, {
+        streak: streak, momentum: momentum,
+        overdueCount: overdueI.length, overdueTotal: round2(overdueI.reduce(function(s, i) { return s + (i.amount || 0); }, 0)),
+        taxOwed: round2(qI.revenue * (rateI / 100)), taxRate: rateI, qRevenue: qI.revenue,
+        nextTask: nextTask, milestone: milestone, overCat: overCat, lessons: bizLessonProgress(biz)
+      });
+    })();
+    // Openers that only make sense for THIS business, in this state - a founder
+    // with no revenue yet should not be offered "how do I raise prices?".
+    var chatOpeners = (function() {
+      var q = [];
+      if (pl.revenue === 0 && stage !== "idea") q.push("How do I land my first sale?");
+      if (runway !== null && runway < 6) q.push("How do I stretch my runway?");
+      if (pl.revenue > 0 && pl.margin !== null && pl.margin < 0.4) q.push("Why is my margin so thin?");
+      if (pl.revenue > 0) q.push("Where is my money actually going?");
+      if ((biz.invoices || []).filter(function(i) { return i.status !== "paid"; }).length) q.push("How do I chase an overdue invoice?");
+      if (stage === "idea") q.push("What should I do first?");
+      q.push("What should I focus on this week?");
+      return q.slice(0, 3);
+    })();
     return (
-      <div>
-        {backRow("Business", function() { setView("list"); setActiveId(null); })}
+      <div style={{ position: "relative", zIndex: 0 }}>
+        <BizAuraBg color={biz.color || T.orange} />
+        {/* With one account there is no list worth stepping back into, so back
+            leaves the tab outright - the same single tap out the bottom bar
+            used to offer before it became the hub. */}
+        {bizes.length > 1
+          ? backRow("Business", function() { setView("list"); setActiveId(null); })
+          : backRow(props.backLabel || "Savings", function() { setView("list"); setActiveId(null); if (props.onBack) props.onBack(); })}
 
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 16, animation: "rcFadeUp 0.5s ease both" }}>
+        {/* Identity row: who you are, what stage you're at, and the streak
+            that says how long you've kept at it. */}
+        <div data-biz-motion style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 14, animation: "rcFadeUp 0.5s ease both" }}>
           <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 12.5, color: T.ink3, fontWeight: 600, marginBottom: 3 }}>{greeting}</div>
             <div style={heroKick2}>{labelOf(STRUCTURES, biz.profile && biz.profile.structure) + " · " + labelOf(STAGES, stage)}</div>
             <div style={{ fontSize: 24, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", lineHeight: 1.15, marginTop: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{biz.name}</div>
             {biz.what ? <div style={{ fontSize: 13, color: T.ink2, marginTop: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{biz.what}</div> : null}
           </div>
-          <div style={{ flexShrink: 0, width: 46, height: 46, borderRadius: "50%", background: biz.color || T.orange, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px " + (biz.color || T.orange) + "55" }}>
-            <SVGIcon id={biz.icon || "briefcase"} size={22} color="#fff" />
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            <div data-biz-motion style={{ position: "absolute", inset: -10, borderRadius: "50%", background: "radial-gradient(circle," + (biz.color || T.orange) + "55 0%, transparent 70%)", filter: "blur(8px)", pointerEvents: "none", animation: "bizGlow 3.2s ease-in-out infinite" }} />
+            <div data-biz-motion style={{ position: "relative", width: 46, height: 46, borderRadius: "50%", background: biz.color || T.orange, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px " + (biz.color || T.orange) + "55", animation: "bizBreathe 3.2s ease-in-out infinite" }}>
+              <SVGIcon id={biz.icon || "briefcase"} size={22} color="#fff" />
+            </div>
           </div>
         </div>
 
-        {(function() {
-          var prevPl = bizMonthProfit(biz, ymOffset(1));
-          var momPct = (stage !== "idea" && prevPl.profit !== 0 && isFinite(prevPl.profit)) ? Math.round(((pl.profit - prevPl.profit) / Math.abs(prevPl.profit)) * 100) : null;
-          return (
-            <div style={{ position: "relative", overflow: "hidden", borderRadius: 22, background: T.heroBg, boxShadow: T.heroShadow, padding: "22px 22px 20px", marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.02s both" }}>
-              <div style={{ position: "absolute", top: -70, right: -60, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
-              <div style={{ position: "relative" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={heroKick}>{"This month · " + ymLabel(ym)}</span>
-                  {momPct !== null && (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 700, color: momPct >= 0 ? T.heroPos : T.heroNeg, background: T.heroPillBg, padding: "3px 9px", borderRadius: 20 }}>
-                      {(momPct >= 0 ? "+" : "") + momPct + "% MoM"}
-                    </span>
-                  )}
-                </div>
-                {stage === "idea" ? (
-                  <div>
-                    <div style={{ fontSize: 40, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.03em", margin: "11px 0 3px" }}><CountUp value={pl.spend} /></div>
-                    <div style={{ fontSize: 12.5, color: T.heroMut }}>{"spent of " + dollars(monthly) + " planned - keep the idea stage lean"}</div>
-                  </div>
-                ) : (
-                  <div>
-                    <div style={{ fontSize: 40, fontWeight: 700, color: pl.profit < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em", margin: "11px 0 3px" }}><CountUp value={pl.profit} /></div>
-                    <div style={{ fontSize: 12.5, color: T.heroMut }}>{"after " + dollars(pl.spend) + " in expenses" + (pl.margin !== null ? " · " + Math.round(pl.margin * 100) + "% margin" : "")}</div>
-                  </div>
-                )}
-                <div style={{ height: 1, background: T.heroSep, margin: "16px 0 14px" }} />
-                <div style={{ display: "flex", gap: 14 }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: T.heroMut, marginBottom: 4 }}><span style={{ width: 7, height: 7, borderRadius: 2, background: T.heroPos, flexShrink: 0 }} />Income in</div>
-                    <div style={{ fontSize: 17, fontWeight: 700, color: T.heroInk }}>{dollars(pl.revenue)}</div>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: T.heroMut, marginBottom: 4 }}><span style={{ width: 7, height: 7, borderRadius: 2, background: T.heroMut, flexShrink: 0 }} />Money out</div>
-                    <div style={{ fontSize: 17, fontWeight: 700, color: T.heroInk }}>{dollars(pl.spend)}</div>
-                  </div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14, paddingTop: 12, borderTop: "0.5px solid " + T.heroSep }}>
-                  <div>
-                    <div style={{ fontSize: 20, fontWeight: 700, color: bal < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.02em" }}><CountUp value={bal} /></div>
-                    <div style={{ fontSize: 11, color: T.heroMut, marginTop: 1 }}>cash on hand</div>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{ position: "relative", width: 34, height: 34 }}>
-                      <DrawRing size={34} stroke={3.5} value={health.score} max={100} color={health.color} track="rgba(255,255,255,0.25)" />
-                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: T.heroInk }}>{health.score}</div>
-                    </div>
-                    <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: T.heroMut }}>{health.label}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })()}
-
-        <div style={{ display: "flex", gap: 10, marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.05s both" }}>
-          <GlassActionBtn kind="primary" flex={1} label="Add capital" onClick={function() { openAction(biz.id, "add"); }} />
-          <GlassActionBtn kind="green" flex={1.3} label="Record revenue" onClick={function() { setRevFor(biz.id); setRevForm({ label: "", amount: "" }); }} />
-          <GlassActionBtn kind="neutral" flex={0.78} label="Withdraw" disabled={bal <= 0} onClick={function() { openAction(biz.id, "withdraw"); }} />
-        </div>
-
-        {(function() {
-          var qInfo = bizQuarterRevenue(biz);
-          var taxRate = (biz.profile && biz.profile.taxRate != null) ? biz.profile.taxRate : 25;
-          var taxOwed = round2(qInfo.revenue * (taxRate / 100));
-          var invoices = biz.invoices || [];
-          var unpaidInvoices = invoices.filter(function(i) { return i.status !== "paid"; });
-          var unpaidTotal = round2(unpaidInvoices.reduce(function(s, i) { return s + (i.amount || 0); }, 0));
-          var overdueInvoices = unpaidInvoices.filter(function(i) { return (i.dueDate || "") < today; });
-          var statCardSt = { flex: 1, textAlign: "left", background: T.card, border: "none", borderRadius: 16, padding: "14px 13px", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.07)", fontFamily: UI, cursor: "pointer", minWidth: 0 };
-          var statLabelSt = { fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 9 };
-          var statNumSt = { fontSize: 21, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em", lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" };
-          var statSubSt = { fontSize: 10.5, color: T.ink3, marginTop: 4 };
-          return (
-            <div style={{ display: "flex", gap: 8, marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.06s both" }}>
-              <div style={Object.assign({}, statCardSt, { cursor: "default" })}>
-                <div style={statLabelSt}>Runway</div>
-                {runway === null ? <div style={statNumSt}>Self-sustaining</div> : <div style={statNumSt}>{(Math.round(runway * 10) / 10)}<span style={{ fontSize: 12, fontWeight: 600, color: T.ink3 }}> mo</span></div>}
-                <div style={statSubSt}>if income paused</div>
-              </div>
-              <button onClick={function() { setInvoicesOpen(true); }} style={statCardSt}>
-                <div style={statLabelSt}>Unpaid</div>
-                <div style={statNumSt}>{dollars(unpaidTotal)}</div>
-                <div style={Object.assign({}, statSubSt, { color: overdueInvoices.length ? T.red : T.ink3, display: "flex", alignItems: "center", gap: 4 })}>
-                  {overdueInvoices.length > 0 && <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.red, flexShrink: 0 }} />}
-                  {overdueInvoices.length > 0 ? (overdueInvoices.length + " overdue") : (unpaidInvoices.length ? "due soon" : "all caught up")}
-                </div>
-              </button>
-              <button onClick={function() { setTaxSheetOpen(true); }} style={statCardSt}>
-                <div style={statLabelSt}>Tax pot</div>
-                <div style={statNumSt}>{dollars(taxOwed)}</div>
-                <div style={statSubSt}>{"for Q" + qInfo.quarter + " at " + taxRate + "%"}</div>
-              </button>
-            </div>
-          );
-        })()}
-
-        {(function() {
-          var reviews = biz.reviews || [];
-          var latest = reviews[0];
-          if (!latest && !reviewLoading) return null;
-          var stColor = latest ? (latest.status === "on-track" ? T.green : latest.status === "watch" ? "#C8983A" : T.red) : T.ink3;
-          var stBg = latest ? (latest.status === "on-track" ? "rgba(39,168,95,0.12)" : latest.status === "watch" ? "rgba(200,152,58,0.15)" : "rgba(217,84,107,0.12)") : "transparent";
-          var stLabel = latest ? (latest.status === "on-track" ? "On track" : latest.status === "watch" ? "Worth a look" : "Needs attention") : "";
-          var rows = latest ? [
-            { icon: "star", tint: T.green, v: latest.tip },
-            { icon: "shield", tint: "#C8983A", v: latest.warning },
-            { icon: "up", tint: T.orange, v: latest.idea }
-          ].filter(function(r) { return r.v && r.v.body; }) : [];
-          var fwd = { idea: { launching: 1, running: 1 }, launching: { running: 1 }, running: {} };
-          var showGrad = !!(latest && latest.graduate && fwd[stage] && fwd[stage][latest.graduate] && !detectGraduation(biz));
-          return (
-            <Card style={{ padding: "16px 18px", marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.03s both", position: "relative", overflow: "hidden" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>This week with Richard</div>
-                {latest && <span style={{ fontSize: 11, color: T.ink3 }}>{latest.date}</span>}
-              </div>
-              {reviewLoading && !latest && (
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 600, color: T.ink2 }}>
-                    Richard is running your weekly review
-                    <ThinkingDots size={3.5} color={T.orange} />
-                  </div>
-                  <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3 }}>
-                    <ThinkingPhrase phrases={["Pulling this month's numbers", "Comparing to last week", "Writing the honest read"]} />
-                  </div>
-                  <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "45%", background: "linear-gradient(105deg, transparent, rgba(255,255,255,0.5), transparent)", animation: "rcShimmer 1.4s ease infinite", pointerEvents: "none" }} />
-                </div>
-              )}
-              {latest && (
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: stColor, background: stBg, borderRadius: 999, padding: "4px 11px", letterSpacing: "0.03em" }}>{stLabel}</span>
-                    {reviewLoading && <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, color: T.ink3 }}>updating<ThinkingDots size={2.5} color={T.ink3} /></span>}
-                  </div>
-                  <div style={{ fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, lineHeight: 1.4, marginBottom: 6 }}>{latest.headline}</div>
-                  {rows.map(function(r, i) {
-                    return (
-                      <div key={i} style={{ display: "flex", gap: 10, padding: "8px 0", borderTop: i > 0 ? "0.5px solid " + T.sep : "none" }}>
-                        <div style={{ width: 30, height: 30, borderRadius: 9, background: r.tint + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
-                          <SVGIcon id={r.icon} size={15} color={r.tint} />
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 12.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{r.v.title}</div>
-                          <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 1 }}>{r.v.body}</div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {latest.taskSuggestion && !latest.taskSuggestion.added && biz.roadmap && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, background: T.orangeDim, borderRadius: 12, padding: "10px 12px", marginTop: 8 }}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 10.5, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.06em" }}>Suggested step</div>
-                        <div style={{ fontSize: 12.5, color: T.ink, marginTop: 2, lineHeight: 1.4 }}>{latest.taskSuggestion.label}</div>
-                      </div>
-                      <button onClick={function() { addSuggestedTask(biz, latest); }}
-                        style={{ background: T.btn, border: "none", borderRadius: 9, padding: "8px 12px", fontSize: 12, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Add to roadmap</button>
-                    </div>
-                  )}
-                  {showGrad && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, background: T.orangeDim, borderRadius: 12, padding: "10px 12px", marginTop: 8 }}>
-                      <div style={{ flex: 1, fontSize: 12.5, color: T.ink, lineHeight: 1.4 }}>{"Richard thinks it's time to graduate to the " + (latest.graduate === "running" ? "running" : "launch") + " stage."}</div>
-                      <button onClick={function() { graduateBiz(biz, latest.graduate); }}
-                        style={{ background: T.btn, border: "none", borderRadius: 9, padding: "8px 12px", fontSize: 12, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Graduate</button>
-                    </div>
-                  )}
-                  <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                    <button onClick={function() { fetchIdeas(biz); }} disabled={ideasLoading}
-                      style={{ flex: 1, background: T.orangeDim, border: "none", borderRadius: 10, padding: "10px 0", fontSize: 12.5, fontWeight: 700, color: T.orange, cursor: ideasLoading ? "default" : "pointer", fontFamily: UI }}>{ideasLoading ? <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>Thinking<ThinkingDots size={3.5} color={T.orange} /></span> : "Get growth ideas"}</button>
-                    {reviews.length > 1 && (
-                      <button onClick={function() { setPastOpen(!pastOpen); }}
-                        style={{ flex: 1, background: "none", border: "1.5px solid " + T.sep, borderRadius: 10, padding: "10px 0", fontSize: 12.5, fontWeight: 600, color: T.ink2, cursor: "pointer", fontFamily: UI }}>{pastOpen ? "Hide past reviews" : "Past reviews (" + (reviews.length - 1) + ")"}</button>
-                    )}
-                  </div>
-                  {ideas && (
-                    <div style={{ marginTop: 10 }}>
-                      {ideas.map(function(gi, i) {
-                        return (
-                          <div key={i} style={{ background: T.fill0, borderRadius: 12, padding: "11px 13px", marginBottom: i < ideas.length - 1 ? 8 : 0, animation: "rcFadeUp 0.45s ease " + (i * 0.08) + "s both" }}>
-                            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
-                              <div style={{ fontSize: 13, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{gi.title}</div>
-                              {gi.impact ? <div style={{ fontSize: 11.5, fontWeight: 700, color: T.green, flexShrink: 0 }}>{gi.impact}</div> : null}
-                            </div>
-                            <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 3 }}>{gi.body}</div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                  {pastOpen && reviews.length > 1 && (
-                    <div style={{ marginTop: 10, borderTop: "0.5px solid " + T.sep, paddingTop: 4 }}>
-                      {reviews.slice(1).map(function(r) {
-                        var c = r.status === "on-track" ? T.green : r.status === "watch" ? "#C8983A" : T.red;
-                        return (
-                          <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 9, padding: "7px 0" }}>
-                            <span style={{ width: 7, height: 7, borderRadius: "50%", background: c, flexShrink: 0 }} />
-                            <span style={{ fontSize: 11.5, color: T.ink3, flexShrink: 0 }}>{r.date}</span>
-                            <span style={{ flex: 1, fontSize: 12, color: T.ink2, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.headline}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
-            </Card>
-          );
-        })()}
-
-        {(function() {
-          var series = bizCashSeries(biz, 6);
-          var vals = series.map(function(s) { return s.val; });
-          var mn = Math.min.apply(null, vals.concat([0]));
-          var mx = Math.max.apply(null, vals.concat([0]));
-          var span = (mx - mn) || 1;
-          var lo = mn - span * 0.1, hi = mx + span * 0.1;
-          var W = 300, H = 58;
-          function xOf(i) { return series.length > 1 ? (i / (series.length - 1)) * W : 0; }
-          function yOf(v) { return H - ((v - lo) / (hi - lo)) * H; }
-          var pts = series.map(function(s, i) { return { x: xOf(i), y: yOf(s.val) }; });
-          var line = quadSmooth(pts);
-          var area = line + " L " + W + " " + H + " L 0 " + H + " Z";
-          var last = pts[pts.length - 1];
-          var burn = bizBurn(biz);
-          var gradId = "bizCashG" + biz.id;
-          return (
-            <Card style={{ padding: "16px 18px", marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.07s both" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 3, height: 15, borderRadius: 2, background: T.orange }} />
-                  <span style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>Cash flow</span>
-                </div>
-                <span style={{ fontSize: 12, color: T.ink3 }}>{(runway === null ? "Self-sustaining" : (Math.round(runway * 10) / 10) + " mo runway")}</span>
-              </div>
-              <svg viewBox={"0 0 " + W + " " + H} width="100%" height={H} preserveAspectRatio="none" style={{ display: "block", overflow: "visible" }}>
-                <defs>
-                  <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stopColor={T.orange} stopOpacity="0.22" />
-                    <stop offset="1" stopColor={T.orange} stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                <path d={area} fill={"url(#" + gradId + ")"} />
-                <path d={line} fill="none" stroke={T.orange} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                {last && <circle cx={last.x} cy={last.y} r="3.5" fill={T.orange} stroke={T.card} strokeWidth="2" />}
-              </svg>
-              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 9 }}>
-                <div>
-                  <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em", color: T.ink3, fontWeight: 700 }}>On hand</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: T.ink, marginTop: 2 }}>{dollars(bal)}</div>
-                </div>
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em", color: T.ink3, fontWeight: 700 }}>Avg burn</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: T.ink, marginTop: 2 }}>{dollars(burn)}<span style={{ fontSize: 11, color: T.ink3, fontWeight: 600 }}>/mo</span></div>
-                </div>
-              </div>
-            </Card>
-          );
-        })()}
-
-        {(function() {
-          var rm = biz.roadmap;
-          if (!rm && roadmapBuilding) {
-            return (
-              <Card style={{ padding: "18px", marginBottom: 16, position: "relative", overflow: "hidden", animation: "rcFadeUp 0.55s ease 0.06s both" }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Roadmap</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginTop: 8 }}>
-                  Richard is drafting your roadmap
-                  <ThinkingDots size={3.5} color={T.orange} />
-                </div>
-                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3, lineHeight: 1.45 }}>
-                  <ThinkingPhrase phrases={["Reading where the business stands", "Laying out the milestones", "Breaking them into concrete steps"]} />
-                </div>
-                <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "45%", background: "linear-gradient(105deg, transparent, rgba(255,255,255,0.5), transparent)", animation: "rcShimmer 1.4s ease infinite", pointerEvents: "none" }} />
-              </Card>
-            );
-          }
-          if (!rm) {
-            return (
-              <Card style={{ padding: "16px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12, animation: "rcFadeUp 0.55s ease 0.06s both" }}>
-                <CatBadge icon="chart" color={T.orange} size={40} soft={true} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>No roadmap yet</div>
-                  <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Richard can lay out the concrete steps from here to a working business.</div>
-                </div>
-                <button onClick={function() { regenRoadmap(biz); }}
-                  style={{ background: T.btn, border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Build it</button>
-              </Card>
-            );
-          }
-          var prog = roadmapProgress(rm);
-          var gradTarget = detectGraduation(biz);
-          var curId = null;
-          for (var ci = 0; ci < rm.milestones.length; ci++) { if (!rm.milestones[ci].done) { curId = rm.milestones[ci].id; break; } }
-          function taskRow(m, t) {
-            return (
-              <div key={t.id} onClick={function() { toggleTask(biz, m.id, t.id); }} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", cursor: "pointer" }}>
-                <TaskCheck done={!!t.done} pop={lastChecked === t.id && !!t.done} color={T.orange} />
-                <span style={{ flex: 1, fontSize: 13.5, lineHeight: 1.45, color: t.done ? T.ink3 : T.ink, textDecoration: t.done ? "line-through" : "none", transition: "color 0.3s ease" }}>{t.label}</span>
-              </div>
-            );
-          }
-          return (
-            <Card style={{ padding: "16px 18px", marginBottom: 16, position: "relative", overflow: "hidden", animation: "rcFadeUp 0.55s ease 0.06s both" }}>
-              {celebrate && (
-                <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "45%", background: "linear-gradient(105deg, transparent, rgba(255,255,255,0.55), transparent)", animation: "rcShimmer 1.1s ease both", pointerEvents: "none", zIndex: 2 }} />
-              )}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Roadmap</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                  <DrawRing size={26} stroke={3.5} value={prog.done} max={prog.total || 1} color={T.orange} />
-                  <span style={{ fontSize: 12, fontWeight: 700, color: T.ink2 }}>{prog.done + " of " + prog.total}</span>
-                  {rm.source === "local" && (
-                    <button onClick={function() { regenRoadmap(biz); }} disabled={roadmapBuilding}
-                      style={{ background: T.orangeDim, border: "none", borderRadius: 9, padding: "5px 10px", fontSize: 11, fontWeight: 700, color: T.orange, cursor: roadmapBuilding ? "default" : "pointer", fontFamily: UI }}>{roadmapBuilding ? <ThinkingDots size={3.5} color={T.orange} /> : "Ask Richard"}</button>
-                  )}
-                </div>
-              </div>
-              {celebrate && (
-                <div style={{ display: "flex", justifyContent: "center", margin: "4px 0 10px" }}>
-                  <div style={{ background: T.orangeDim, color: T.orange, borderRadius: 999, padding: "6px 14px", fontSize: 12.5, fontWeight: 700, animation: "rcPillIn 0.45s ease both" }}>
-                    {"Milestone complete - " + celebrate.title}
-                  </div>
-                </div>
-              )}
-              {gradTarget && (
-                <div style={{ background: T.heroBg, borderRadius: 14, padding: "13px 14px", margin: "8px 0 10px", boxShadow: T.heroShadow }}>
-                  <div style={{ fontSize: 13.5, fontWeight: 700, color: T.heroInk, lineHeight: 1.4 }}>
-                    {gradTarget === "launching" ? ("Richard thinks " + biz.name + " is moving from idea to launch.") : ("Richard thinks " + biz.name + " is now a running business.")}
-                  </div>
-                  <div style={{ fontSize: 12.5, color: T.heroMut, marginTop: 3, lineHeight: 1.45 }}>
-                    {gradTarget === "launching" ? "Real money is moving - that's a launch. Graduating rebuilds the roadmap for this new stage." : "Revenue is coming in again and again. Graduating rebuilds the roadmap around margins, repeat customers and systems."}
-                  </div>
-                  <button onClick={function() { graduateBiz(biz, gradTarget); }}
-                    style={{ marginTop: 10, background: "rgba(255,255,255,0.92)", border: "none", borderRadius: 10, padding: "9px 16px", fontSize: 12.5, fontWeight: 700, color: T.orange, cursor: "pointer", fontFamily: UI }}>Graduate</button>
-                </div>
-              )}
-              {rm.milestones.map(function(m, mi) {
-                var borderSt = mi > 0 ? "0.5px solid " + T.sep : "none";
-                if (m.done) {
-                  return (
-                    <div key={m.id} style={{ borderTop: borderSt }}>
-                      <div onClick={function() { setExpandedMs(expandedMs === m.id ? null : m.id); }} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", cursor: "pointer" }}>
-                        <TaskCheck done={true} size={20} color={T.green} />
-                        <span style={{ flex: 1, fontSize: 13.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink3, textDecoration: "line-through" }}>{m.title}</span>
-                        <span style={{ transform: expandedMs === m.id ? "rotate(-90deg)" : "rotate(90deg)", display: "flex", transition: "transform 0.25s ease" }}><SVGIcon id="chevron" size={13} color={T.ink3} /></span>
-                      </div>
-                      {expandedMs === m.id && <div style={{ paddingLeft: 4, paddingBottom: 6 }}>{(m.tasks || []).map(function(t) { return taskRow(m, t); })}</div>}
-                    </div>
-                  );
-                }
-                if (m.id !== curId) {
-                  return (
-                    <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderTop: borderSt, opacity: 0.55 }}>
-                      <span style={{ width: 20, height: 20, borderRadius: "50%", border: "1.5px dashed " + T.ink3, flexShrink: 0, boxSizing: "border-box" }} />
-                      <span style={{ flex: 1, fontSize: 13.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink2 }}>{m.title}</span>
-                      <span style={{ fontSize: 11.5, color: T.ink3 }}>{((m.tasks || []).length) + " steps"}</span>
-                    </div>
-                  );
-                }
-                return (
-                  <div key={m.id} style={{ padding: "9px 0 4px", borderTop: borderSt }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-                      <span style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, flex: 1 }}>{m.title}</span>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: T.orange, background: T.orangeDim, borderRadius: 999, padding: "3px 9px", letterSpacing: "0.05em", textTransform: "uppercase" }}>Now</span>
-                    </div>
-                    {(m.tasks || []).map(function(t) { return taskRow(m, t); })}
-                  </div>
-                );
-              })}
-            </Card>
-          );
-        })()}
-
-        {(function() {
-          var created = (biz.createdAt || "").slice(0, 7);
-          var maxBack = created ? Math.max(0, ymDiff(created, curMonth())) : 0;
-          var off = Math.min(plMonthOff, maxBack);
-          var ymSel = ymOffset(off);
-          var mpl = bizMonthProfit(biz, ymSel);
-          var revGoal = (biz.profile && biz.profile.revenueGoal) || 0;
-          var catRows = biz.categories.filter(function(c) { return (c.planned || 0) > 0 || bizCatMonthSpent(biz, c.key, ymSel) > 0; });
-          var stepSt = function(disabled) { return { width: 26, height: 26, borderRadius: 8, border: "none", background: T.fill1, cursor: disabled ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: disabled ? 0.35 : 1, padding: 0 }; };
-          var maxRE = Math.max(mpl.revenue, mpl.spend, 1);
-          var incBarPct = Math.min(100, (mpl.revenue / maxRE) * 100);
-          var expBarPct = Math.min(100, (mpl.spend / maxRE) * 100);
-          return (
-            <Card style={{ padding: "16px 18px", marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.08s both" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Profit & loss</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <button disabled={off >= maxBack} onClick={function() { setPlMonthOff(Math.min(off + 1, maxBack)); }} style={stepSt(off >= maxBack)}>
-                    <span style={{ transform: "rotate(180deg)", display: "flex" }}><SVGIcon id="chevron" size={14} color={T.ink2} /></span>
-                  </button>
-                  <span style={{ fontSize: 12.5, fontWeight: 700, color: T.ink, minWidth: 62, textAlign: "center", fontFamily: UI }}>{ymLabel(ymSel)}</span>
-                  <button disabled={off <= 0} onClick={function() { setPlMonthOff(Math.max(off - 1, 0)); }} style={stepSt(off <= 0)}>
-                    <SVGIcon id="chevron" size={14} color={T.ink2} />
-                  </button>
-                </div>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 11 }}>
-                <span style={{ width: 68, fontSize: 12.5, color: T.ink2, flexShrink: 0 }}>Revenue</span>
-                <div style={{ flex: 1, height: 8, background: T.fill1, borderRadius: 8, overflow: "hidden" }}>
-                  <div style={{ width: incBarPct + "%", height: "100%", background: T.green, borderRadius: 8, transition: "width 0.5s ease" }} />
-                </div>
-                <span style={{ width: 64, textAlign: "right", fontSize: 13, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(mpl.revenue)}</span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 13 }}>
-                <span style={{ width: 68, fontSize: 12.5, color: T.ink2, flexShrink: 0 }}>Expenses</span>
-                <div style={{ flex: 1, height: 8, background: T.fill1, borderRadius: 8, overflow: "hidden" }}>
-                  <div style={{ width: expBarPct + "%", height: "100%", background: T.ink3, borderRadius: 8, transition: "width 0.5s ease" }} />
-                </div>
-                <span style={{ width: 64, textAlign: "right", fontSize: 13, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(mpl.spend)}</span>
-              </div>
-              <div style={{ borderTop: "0.5px solid " + T.sep, marginTop: 4, paddingTop: 8, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>Profit</span>
-                <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.01em", color: mpl.profit < 0 ? T.red : T.green }}>{(mpl.profit < 0 ? "-" : "") + dollars(Math.abs(mpl.profit))}</span>
-              </div>
-              {mpl.margin !== null && (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 5 }}>
-                  <span style={{ fontSize: 12.5, color: T.ink3 }}>Margin</span>
-                  <span style={{ fontSize: 12.5, fontWeight: 700, color: mpl.margin < 0 ? T.red : T.ink2 }}>{Math.round(mpl.margin * 100) + "%"}</span>
-                </div>
-              )}
-              {stage === "running" && revGoal > 0 && off === 0 && (
-                <div style={{ marginTop: 12 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                    <span style={{ fontSize: 12.5, color: T.ink2, fontWeight: 600 }}>Revenue vs goal</span>
-                    <span style={{ fontSize: 12, color: T.ink3 }}>{dollars(mpl.revenue) + " of " + dollars(revGoal)}</span>
-                  </div>
-                  <ProgressBar value={mpl.revenue} max={revGoal} color={T.green} h={5} />
-                </div>
-              )}
-              {stage === "launching" && mpl.revenue === 0 && off === 0 && (
-                <div style={{ marginTop: 12, background: T.orangeDim, borderRadius: 10, padding: "9px 12px", fontSize: 12.5, color: T.ink, lineHeight: 1.5 }}>
-                  No revenue logged yet. Your first sale is the one number that changes everything - when it lands, record it here.
-                </div>
-              )}
-              {catRows.length > 0 && (
-                <div style={{ marginTop: 14, borderTop: "0.5px solid " + T.sep, paddingTop: 12 }}>
-                  {catRows.map(function(c, i) {
-                    var sp = bizCatMonthSpent(biz, c.key, ymSel);
-                    var ov = sp > (c.planned || 0) && (c.planned || 0) > 0;
-                    return (
-                      <div key={c.key} style={{ marginBottom: i < catRows.length - 1 ? 9 : 0 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                          <span style={{ fontSize: 12.5, color: T.ink2, fontWeight: 600 }}>{c.label}</span>
-                          <span style={{ fontSize: 12, color: ov ? T.red : T.ink3 }}>{dollars(sp) + ((c.planned || 0) > 0 ? " / " + dollars(c.planned) : "")}</span>
-                        </div>
-                        <ProgressBar value={sp} max={c.planned || 1} color={ov ? T.red : c.color} h={4} />
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </Card>
-          );
-        })()}
-
-        {(function() {
-          var invoices = biz.invoices || [];
-          var unpaid = invoices.filter(function(i) { return i.status !== "paid"; });
-          var top = unpaid.slice().sort(function(a, b) { return (a.dueDate || "").localeCompare(b.dueDate || ""); }).slice(0, 3);
-          return (
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 2px 10px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange }} />
-                  <span style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Needs attention</span>
-                </div>
-                <button onClick={function() { setInvoicesOpen(true); }} style={{ border: "none", background: "none", fontSize: 12, color: T.ink3, cursor: "pointer", fontFamily: UI }}>Invoices ›</button>
-              </div>
-              {top.length === 0 ? (
-                <Card style={{ padding: "16px 18px", display: "flex", alignItems: "center", gap: 12 }}>
-                  <CatBadge icon="flag" color={T.orange} size={40} soft={true} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>No unpaid invoices</div>
-                    <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Track client invoices and see what's overdue at a glance.</div>
-                  </div>
-                  <button onClick={function() { setAddInvoiceOpen(true); }} style={{ background: T.orangeDim, border: "none", borderRadius: 10, padding: "9px 12px", fontSize: 12, fontWeight: 700, color: T.orange, cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>+ Add</button>
-                </Card>
-              ) : (
-                <Card style={{ padding: "2px 16px" }}>
-                  {top.map(function(inv, i) {
-                    var isOver = (inv.dueDate || "") < today;
-                    var stColor = isOver ? T.red : T.orange;
-                    var stBg = isOver ? T.redDim : T.orangeDim;
-                    var stLabel = isOver ? "Overdue" : "Unpaid";
-                    return (
-                      <button key={inv.id} onClick={function() { setInvoicesOpen(true); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", background: "none", border: "none", padding: "13px 0", cursor: "pointer", textAlign: "left", fontFamily: UI, borderTop: i > 0 ? "0.5px solid " + T.sep : "none" }}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 14.5, fontWeight: 600, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{inv.client}</div>
-                          <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>{isOver ? "Was due " + inv.dueDate : "Due " + inv.dueDate}</div>
-                        </div>
-                        <span style={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: stColor, background: stBg, padding: "3px 8px", borderRadius: 7, flexShrink: 0 }}>{stLabel}</span>
-                        <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, whiteSpace: "nowrap", flexShrink: 0, minWidth: 56, textAlign: "right" }}>{dollars(inv.amount)}</div>
-                      </button>
-                    );
-                  })}
-                </Card>
-              )}
-            </div>
-          );
-        })()}
-
-        {(function() {
-          var rows = (biz.entries || []).slice().sort(function(a, b) { return (b.date || "").localeCompare(a.date || "") || ((b.id || 0) - (a.id || 0)); }).slice(0, 6);
-          if (!rows.length) return null;
-          return (
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 2px 10px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange }} />
-                  <span style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Recent activity</span>
-                </div>
-              </div>
-              <Card style={{ padding: "2px 16px" }}>
-                {rows.map(function(e, i) {
-                  var cat = e.catKey ? (biz.categories.filter(function(c) { return c.key === e.catKey; })[0] || null) : null;
-                  var icon = cat ? cat.icon : (e.revenue ? "up" : (e.kind === "withdraw" ? "down" : "up"));
-                  var color = cat ? cat.color : (e.revenue ? T.green : T.ink3);
-                  var neg = e.kind === "withdraw";
-                  var amtColor = e.revenue ? T.green : (neg ? T.ink : T.green);
-                  return (
-                    <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderTop: i > 0 ? "0.5px solid " + T.sep : "none" }}>
-                      <CatBadge icon={icon} color={color} size={38} soft={true} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14.5, fontWeight: 600, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{e.label || (neg ? "Withdraw" : "Deposit")}</div>
-                        <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>{e.date}</div>
-                      </div>
-                      <div style={{ fontSize: 14.5, fontWeight: 700, color: amtColor, letterSpacing: "-0.02em", whiteSpace: "nowrap", flexShrink: 0 }}>{(neg ? "-" : "+") + dollars(e.amount)}</div>
-                    </div>
-                  );
-                })}
-              </Card>
-            </div>
-          );
-        })()}
-
-        {(plan.summary || (plan.sections && plan.sections.length)) && (
-          <Card style={{ padding: "16px 18px", marginBottom: 16 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Business plan</div>
-              <button onClick={function() { replanWithRichard(biz); }} disabled={replanning}
-                style={{ background: T.orangeDim, border: "none", borderRadius: 9, padding: "5px 11px", fontSize: 11.5, fontWeight: 700, color: T.orange, cursor: replanning ? "default" : "pointer", fontFamily: UI }}>{replanning ? "Updating..." : "Replan"}</button>
-            </div>
-            {plan.summary && <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.55, marginBottom: plan.sections && plan.sections.length ? 14 : 0 }}>{plan.summary}</div>}
-            {plan.verdict && plan.verdict.assessment && (
-              <div style={{ background: T.orangeDim, borderRadius: 12, padding: "11px 13px", marginBottom: 14 }}>
-                {plan.verdict.keyNumber && <div style={{ fontSize: 17, fontWeight: 800, color: T.orange, letterSpacing: "-0.02em" }}>{plan.verdict.keyNumber + (plan.verdict.keyNumberLabel ? (" " + plan.verdict.keyNumberLabel) : "")}</div>}
-                <div style={{ fontSize: 13, color: T.ink, lineHeight: 1.5, marginTop: plan.verdict.keyNumber ? 4 : 0 }}>{plan.verdict.assessment}</div>
-              </div>
-            )}
-            {(plan.sections || []).map(function(s, i) {
+        {/* In-page hub switcher. App renders the glass version at the bottom of
+            the screen when it owns the tab, so this only shows standalone. */}
+        {!props.onHubTabChange && (
+          <div style={{ display: "flex", gap: 4, background: T.fill1, borderRadius: 14, padding: 4, marginBottom: 12 }}>
+            {BUSINESS_HUB_TABS.map(function(h) {
+              var on = hubTab === h.id;
               return (
-                <div key={i} style={{ marginBottom: i < plan.sections.length - 1 ? 12 : 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 3 }}>{s.title}</div>
-                  <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5 }}>{s.body}</div>
-                </div>
+                <button key={h.id} onClick={function() { setHubTab(h.id); }}
+                  style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, padding: "9px 2px", borderRadius: 10, background: on ? T.card : "transparent", color: on ? T.ink : T.ink2, boxShadow: on ? "0 2px 8px rgba(0,0,0,0.08)" : "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                  <SVGIcon id={h.icon} size={15} color={on ? T.orange : T.ink3} />
+                  {h.label}
+                </button>
               );
             })}
-            {(plan.tips || []).length > 0 && (
-              <div style={{ marginTop: 14, borderTop: "0.5px solid " + T.sep, paddingTop: 12 }}>
-                {plan.tips.map(function(tp, i) {
-                  return <div key={i} style={{ fontSize: 13, color: T.ink, lineHeight: 1.5, marginBottom: i < plan.tips.length - 1 ? 7 : 0, display: "flex", gap: 8 }}><span style={{ color: T.orange, fontWeight: 700 }}>-</span><span>{tp}</span></div>;
-                })}
-              </div>
-            )}
-          </Card>
+          </div>
         )}
+        <div key={"sub" + hubTab} data-biz-motion style={{ fontSize: 11.5, color: T.ink3, margin: "0 2px 14px", animation: "rcFadeUp 0.4s ease both" }}>{BIZ_HUB_SUB[hubTab]}</div>
 
-        {!(plan.summary || (plan.sections && plan.sections.length)) && (
-          <Card style={{ padding: "16px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
-            <CatBadge icon="briefcase" color={T.orange} size={40} soft={true} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>No plan yet</div>
-              <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Have Richard draft a business plan and budget for you.</div>
-            </div>
-            <button onClick={function() { replanWithRichard(biz); }} disabled={replanning}
-              style={{ background: T.btn, border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: replanning ? "default" : "pointer", fontFamily: UI, flexShrink: 0 }}>{replanning ? <ThinkingDots size={3.5} color="#fff" /> : "Ask Richard"}</button>
-          </Card>
-        )}
-
-        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 2px 10px" }}>Budget categories</div>
-        {biz.categories.map(function(a) {
-          var catMonth = bizCatMonthSpent(biz, a.key, ym);
-          var over = catMonth > a.planned && a.planned > 0;
-          return (
-            <Card key={a.key} style={{ marginBottom: 12, overflow: "hidden" }}>
-              <div style={{ padding: "15px 16px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 10 }}>
-                  <div style={{ width: 34, height: 34, borderRadius: 10, background: a.color + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <SVGIcon id={a.icon} size={18} color={a.color} />
+        {/* ===== DESK: the numbers, the money in and out, the housekeeping ===== */}
+        {hubTab === "desk" && (
+        <div data-biz-motion style={{ animation: bizSectionAnim(0) }}>
+          {(function() {
+            var momPct = stage !== "idea" ? momentum.momPct : null;
+            return (
+              <div data-biz-motion style={{ position: "relative", overflow: "hidden", borderRadius: 22, background: T.heroBg, boxShadow: T.heroShadow, padding: "22px 22px 20px", marginBottom: 16, animation: bizCardAnim(0, 0.02) }}>
+                <div style={{ position: "absolute", top: -70, right: -60, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
+                {/* A record month earns one pass of light across the card - the
+                    only time this hero ever moves on its own. */}
+                {momentum.isRecord && <div data-biz-motion style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "38%", background: "linear-gradient(105deg, transparent, rgba(255,255,255,0.35), transparent)", animation: "bizSheen 2.6s ease-in-out 0.5s both", pointerEvents: "none" }} />}
+                <div style={{ position: "relative" }}>
+                  {/* One badge, not two: a record month already says the
+                      month is up, and both pills together push the month
+                      kicker onto a second line. */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                    <span style={Object.assign({}, heroKick, { whiteSpace: "nowrap" })}>{"This month · " + ymLabel(ym)}</span>
+                    {momentum.isRecord ? (
+                      <span data-biz-motion style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 800, color: T.heroInk, background: T.heroPillBg, padding: "3px 9px", borderRadius: 20, letterSpacing: "0.02em", flexShrink: 0, whiteSpace: "nowrap", animation: "rcPillIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.25s both" }}>
+                        <SVGIcon id="trophy" size={11} color={T.gold} />BEST YET
+                      </span>
+                    ) : momPct !== null ? (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 700, color: momPct >= 0 ? T.heroPos : T.heroNeg, background: T.heroPillBg, padding: "3px 9px", borderRadius: 20, flexShrink: 0, whiteSpace: "nowrap" }}>
+                        {(momPct >= 0 ? "+" : "") + momPct + "% MoM"}
+                      </span>
+                    ) : null}
                   </div>
-                  <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: T.ink }}>{a.label}</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: over ? T.red : T.ink2 }}>{dollars(catMonth) + " / " + sym}</span>
-                    <input type="number" value={getDetailEdit(biz.id, "alloc_" + a.key, a.planned)}
-                      onChange={function(e) { setDetailEdit(biz.id, "alloc_" + a.key, e.target.value); }}
-                      onBlur={function(e) { updatePlanned(biz.id, a.key, e.target.value); clearDetailEdit(biz.id, "alloc_" + a.key); }}
-                      style={{ width: 58, border: "none", background: T.fill1, borderRadius: 7, outline: "none", fontSize: 13, fontWeight: 600, color: T.ink, fontFamily: UI, textAlign: "right", padding: "3px 6px", boxSizing: "border-box" }} />
+                  {stage === "idea" ? (
+                    <div>
+                      <div data-biz-motion style={{ fontSize: 40, fontWeight: 700, color: T.heroInk, letterSpacing: "-0.03em", margin: "11px 0 3px", animation: "bizNumPop 0.6s cubic-bezier(0.22,0.9,0.3,1) 0.06s both" }}><CountUp value={pl.spend} /></div>
+                      <div style={{ fontSize: 12.5, color: T.heroMut }}>{"spent of " + dollars(monthly) + " planned - keep the idea stage lean"}</div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div data-biz-motion style={{ fontSize: 40, fontWeight: 700, color: pl.profit < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em", margin: "11px 0 3px", animation: "bizNumPop 0.6s cubic-bezier(0.22,0.9,0.3,1) 0.06s both" }}><CountUp value={pl.profit} /></div>
+                      <div style={{ fontSize: 12.5, color: T.heroMut }}>{"after " + dollars(pl.spend) + " in expenses" + (pl.margin !== null ? " · " + Math.round(pl.margin * 100) + "% margin" : "")}</div>
+                    </div>
+                  )}
+                  <div style={{ height: 1, background: T.heroSep, margin: "16px 0 14px" }} />
+                  <div style={{ display: "flex", gap: 14 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: T.heroMut, marginBottom: 4 }}><span style={{ width: 7, height: 7, borderRadius: 2, background: T.heroPos, flexShrink: 0 }} />Income in</div>
+                      <div style={{ fontSize: 17, fontWeight: 700, color: T.heroInk }}>{dollars(pl.revenue)}</div>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: T.heroMut, marginBottom: 4 }}><span style={{ width: 7, height: 7, borderRadius: 2, background: T.heroMut, flexShrink: 0 }} />Money out</div>
+                      <div style={{ fontSize: 17, fontWeight: 700, color: T.heroInk }}>{dollars(pl.spend)}</div>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14, paddingTop: 12, borderTop: "0.5px solid " + T.heroSep }}>
+                    <div>
+                      <div style={{ fontSize: 20, fontWeight: 700, color: bal < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.02em" }}><CountUp value={bal} /></div>
+                      <div style={{ fontSize: 11, color: T.heroMut, marginTop: 1 }}>cash on hand</div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ position: "relative", width: 34, height: 34 }}>
+                        <DrawRing size={34} stroke={3.5} value={health.score} max={100} color={health.color} track="rgba(255,255,255,0.25)" />
+                        <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: T.heroInk }}>{health.score}</div>
+                      </div>
+                      <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: T.heroMut }}>{health.label}</span>
+                    </div>
                   </div>
                 </div>
-                <ProgressBar value={catMonth} max={a.planned || 1} color={over ? T.red : a.color} h={6} />
-                {a.spent > catMonth && <div style={{ fontSize: 11, color: T.ink3, marginTop: 5 }}>{"All time: " + dollars(a.spent)}</div>}
-                {(a.entries || []).length > 0 && (
-                  <div style={{ marginTop: 10 }}>
-                    {a.entries.map(function(e) {
+              </div>
+            );
+          })()}
+
+          <div data-biz-motion style={{ display: "flex", gap: 10, marginBottom: 16, animation: bizCardAnim(1) }}>
+            <GlassActionBtn kind="primary" flex={1} label="Add capital" onClick={function() { openAction(biz.id, "add"); }} />
+            <GlassActionBtn kind="green" flex={1.3} label="Record revenue" onClick={function() { setRevFor(biz.id); setRevForm({ label: "", amount: "" }); }} />
+            <GlassActionBtn kind="neutral" flex={0.78} label="Withdraw" disabled={bal <= 0} onClick={function() { openAction(biz.id, "withdraw"); }} />
+          </div>
+
+          {/* The habit loop. A week counts when the ledger moved - an expense,
+              a sale, or a ticked roadmap step - so it can only be earned by
+              actually running the business, never by opening the app. */}
+          <Card data-biz-motion style={{ padding: "14px 16px", marginBottom: 16, position: "relative", overflow: "hidden", animation: bizCardAnim(2) }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ position: "relative", width: 42, height: 42, flexShrink: 0 }}>
+                {streak.weeks > 0 && <div data-biz-motion style={{ position: "absolute", inset: -6, borderRadius: "50%", background: "radial-gradient(circle," + T.orangeGlow + " 0%, transparent 70%)", filter: "blur(6px)", animation: "bizGlow 2.4s ease-in-out infinite" }} />}
+                <div data-biz-motion style={{ position: "relative", width: 42, height: 42, borderRadius: 13, background: streak.weeks > 0 ? T.orangeDim : T.fill1, display: "flex", alignItems: "center", justifyContent: "center", animation: streak.weeks > 0 ? "bizFlameFlick 2.6s ease-in-out infinite" : "none" }}>
+                  <SVGIcon id="flame" size={21} color={streak.weeks > 0 ? T.orange : T.ink3} />
+                </div>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>
+                  {streak.weeks > 0 ? (streak.weeks + (streak.weeks === 1 ? " week running" : " weeks running")) : "Start your streak"}
+                </div>
+                <div style={{ fontSize: 12, color: streak.atRisk ? T.orange : T.ink3, marginTop: 2, lineHeight: 1.4 }}>
+                  {streak.atRisk
+                    ? "Nothing logged this week - one entry keeps it alive."
+                    : streak.weeks > 0
+                      ? (streak.thisWeek + (streak.thisWeek === 1 ? " entry" : " entries") + " this week" + (streak.best > streak.weeks ? "  ·  best " + streak.best : ""))
+                      : "One expense, one sale, or one ticked step starts it."}
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 3, flexShrink: 0 }}>
+                {streakDots.map(function(d, di) {
+                  return <span key={di} data-biz-motion style={{ width: 6, height: d.on ? 18 : 10, borderRadius: 3, alignSelf: "center", background: d.on ? (biz.color || T.orange) : T.fill2, animation: "bizTickIn 0.4s cubic-bezier(0.34,1.56,0.64,1) " + (0.05 + di * 0.04).toFixed(2) + "s both" }} />;
+                })}
+              </div>
+            </div>
+          </Card>
+
+          {(function() {
+            var qInfo = bizQuarterRevenue(biz);
+            var taxRate = (biz.profile && biz.profile.taxRate != null) ? biz.profile.taxRate : 25;
+            var taxOwed = round2(qInfo.revenue * (taxRate / 100));
+            var invoices = biz.invoices || [];
+            var unpaidInvoices = invoices.filter(function(i) { return i.status !== "paid"; });
+            var unpaidTotal = round2(unpaidInvoices.reduce(function(s, i) { return s + (i.amount || 0); }, 0));
+            var overdueInvoices = unpaidInvoices.filter(function(i) { return (i.dueDate || "") < today; });
+            var statCardSt = { flex: 1, textAlign: "left", background: T.card, border: "none", borderRadius: 16, padding: "14px 13px", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.07)", fontFamily: UI, cursor: "pointer", minWidth: 0 };
+            var statLabelSt = { fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 9 };
+            // Whole figures, not cents: three cards across a phone leaves ~90px
+            // of number, and the exact amount is one tap away in each sheet.
+            var statNumSt = { fontSize: 20, fontWeight: 700, color: T.ink, letterSpacing: "-0.025em", lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" };
+            var statSubSt = { fontSize: 10.5, color: T.ink3, marginTop: 4 };
+            return (
+              <div data-biz-motion style={{ display: "flex", gap: 8, marginBottom: 16, animation: bizCardAnim(3) }}>
+                <div style={Object.assign({}, statCardSt, { cursor: "default" })}>
+                  <div style={statLabelSt}>Runway</div>
+                  {runway === null ? <div style={statNumSt}>Self-sustaining</div> : <div style={statNumSt}>{(Math.round(runway * 10) / 10)}<span style={{ fontSize: 12, fontWeight: 600, color: T.ink3 }}> mo</span></div>}
+                  <div style={statSubSt}>if sales stop</div>
+                </div>
+                <button onClick={function() { setInvoicesOpen(true); }} style={statCardSt}>
+                  <div style={statLabelSt}>Unpaid</div>
+                  <div style={statNumSt}>{dollarsWhole(unpaidTotal)}</div>
+                  <div style={Object.assign({}, statSubSt, { color: overdueInvoices.length ? T.red : T.ink3, display: "flex", alignItems: "center", gap: 4 })}>
+                    {overdueInvoices.length > 0 && <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.red, flexShrink: 0 }} />}
+                    {overdueInvoices.length > 0 ? (overdueInvoices.length + " overdue") : (unpaidInvoices.length ? "due soon" : "all caught up")}
+                  </div>
+                </button>
+                <button onClick={function() { setTaxSheetOpen(true); }} style={statCardSt}>
+                  <div style={statLabelSt}>Tax pot</div>
+                  <div style={statNumSt}>{dollarsWhole(taxOwed)}</div>
+                  <div style={statSubSt}>{"for Q" + qInfo.quarter + " at " + taxRate + "%"}</div>
+                </button>
+              </div>
+            );
+          })()}
+
+          {(function() {
+            var series = bizCashSeries(biz, 6);
+            var vals = series.map(function(s) { return s.val; });
+            var mn = Math.min.apply(null, vals.concat([0]));
+            var mx = Math.max.apply(null, vals.concat([0]));
+            var span = (mx - mn) || 1;
+            var lo = mn - span * 0.1, hi = mx + span * 0.1;
+            var W = 300, H = 58;
+            function xOf(i) { return series.length > 1 ? (i / (series.length - 1)) * W : 0; }
+            function yOf(v) { return H - ((v - lo) / (hi - lo)) * H; }
+            var pts = series.map(function(s, i) { return { x: xOf(i), y: yOf(s.val) }; });
+            var line = quadSmooth(pts);
+            var area = line + " L " + W + " " + H + " L 0 " + H + " Z";
+            var last = pts[pts.length - 1];
+            var burn = bizBurn(biz);
+            var gradId = "bizCashG" + biz.id;
+            return (
+              <Card data-biz-motion style={{ padding: "16px 18px", marginBottom: 16, animation: bizCardAnim(4) }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ width: 3, height: 15, borderRadius: 2, background: T.orange }} />
+                    <span style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>Cash flow</span>
+                  </div>
+                  <span style={{ fontSize: 12, color: T.ink3 }}>{(runway === null ? "Self-sustaining" : (Math.round(runway * 10) / 10) + " mo runway")}</span>
+                </div>
+                <svg viewBox={"0 0 " + W + " " + H} width="100%" height={H} preserveAspectRatio="none" style={{ display: "block", overflow: "visible" }}>
+                  <defs>
+                    <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stopColor={T.orange} stopOpacity="0.22" />
+                      <stop offset="1" stopColor={T.orange} stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  <path d={area} fill={"url(#" + gradId + ")"} />
+                  <path d={line} fill="none" stroke={T.orange} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  {last && <circle cx={last.x} cy={last.y} r="3.5" fill={T.orange} stroke={T.card} strokeWidth="2" />}
+                </svg>
+                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 9 }}>
+                  <div>
+                    <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em", color: T.ink3, fontWeight: 700 }}>On hand</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: T.ink, marginTop: 2 }}>{dollars(bal)}</div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em", color: T.ink3, fontWeight: 700 }}>Avg burn</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: T.ink, marginTop: 2 }}>{dollars(burn)}<span style={{ fontSize: 11, color: T.ink3, fontWeight: 600 }}>/mo</span></div>
+                  </div>
+                </div>
+              </Card>
+            );
+          })()}
+
+          {(function() {
+            var created = (biz.createdAt || "").slice(0, 7);
+            var maxBack = created ? Math.max(0, ymDiff(created, curMonth())) : 0;
+            var off = Math.min(plMonthOff, maxBack);
+            var ymSel = ymOffset(off);
+            var mpl = bizMonthProfit(biz, ymSel);
+            var revGoal = (biz.profile && biz.profile.revenueGoal) || 0;
+            var catRows = biz.categories.filter(function(c) { return (c.planned || 0) > 0 || bizCatMonthSpent(biz, c.key, ymSel) > 0; });
+            var stepSt = function(disabled) { return { width: 26, height: 26, borderRadius: 8, border: "none", background: T.fill1, cursor: disabled ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: disabled ? 0.35 : 1, padding: 0 }; };
+            var maxRE = Math.max(mpl.revenue, mpl.spend, 1);
+            var incBarPct = Math.min(100, (mpl.revenue / maxRE) * 100);
+            var expBarPct = Math.min(100, (mpl.spend / maxRE) * 100);
+            return (
+              <Card data-biz-motion style={{ padding: "16px 18px", marginBottom: 16, animation: bizCardAnim(5) }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Profit & loss</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <button disabled={off >= maxBack} onClick={function() { setPlMonthOff(Math.min(off + 1, maxBack)); }} style={stepSt(off >= maxBack)}>
+                      <span style={{ transform: "rotate(180deg)", display: "flex" }}><SVGIcon id="chevron" size={14} color={T.ink2} /></span>
+                    </button>
+                    <span style={{ fontSize: 12.5, fontWeight: 700, color: T.ink, minWidth: 62, textAlign: "center", fontFamily: UI }}>{ymLabel(ymSel)}</span>
+                    <button disabled={off <= 0} onClick={function() { setPlMonthOff(Math.max(off - 1, 0)); }} style={stepSt(off <= 0)}>
+                      <SVGIcon id="chevron" size={14} color={T.ink2} />
+                    </button>
+                  </div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 11 }}>
+                  <span style={{ width: 68, fontSize: 12.5, color: T.ink2, flexShrink: 0 }}>Revenue</span>
+                  <div style={{ flex: 1, height: 8, background: T.fill1, borderRadius: 8, overflow: "hidden" }}>
+                    <div data-biz-motion style={{ width: incBarPct + "%", height: "100%", background: T.green, borderRadius: 8, transformOrigin: "left", transition: "width 0.5s ease", animation: "bizBarGrow 0.62s cubic-bezier(0.22,0.9,0.3,1) 0.3s both" }} />
+                  </div>
+                  <span style={{ width: 64, textAlign: "right", fontSize: 13, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(mpl.revenue)}</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 13 }}>
+                  <span style={{ width: 68, fontSize: 12.5, color: T.ink2, flexShrink: 0 }}>Expenses</span>
+                  <div style={{ flex: 1, height: 8, background: T.fill1, borderRadius: 8, overflow: "hidden" }}>
+                    <div data-biz-motion style={{ width: expBarPct + "%", height: "100%", background: T.ink3, borderRadius: 8, transformOrigin: "left", transition: "width 0.5s ease", animation: "bizBarGrow 0.62s cubic-bezier(0.22,0.9,0.3,1) 0.37s both" }} />
+                  </div>
+                  <span style={{ width: 64, textAlign: "right", fontSize: 13, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(mpl.spend)}</span>
+                </div>
+                <div style={{ borderTop: "0.5px solid " + T.sep, marginTop: 4, paddingTop: 8, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>Profit</span>
+                  <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.01em", color: mpl.profit < 0 ? T.red : T.green }}>{(mpl.profit < 0 ? "-" : "") + dollars(Math.abs(mpl.profit))}</span>
+                </div>
+                {mpl.margin !== null && (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 5 }}>
+                    <span style={{ fontSize: 12.5, color: T.ink3 }}>Margin</span>
+                    <span style={{ fontSize: 12.5, fontWeight: 700, color: mpl.margin < 0 ? T.red : T.ink2 }}>{Math.round(mpl.margin * 100) + "%"}</span>
+                  </div>
+                )}
+                {stage === "running" && revGoal > 0 && off === 0 && (
+                  <div style={{ marginTop: 12 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                      <span style={{ fontSize: 12.5, color: T.ink2, fontWeight: 600 }}>Revenue vs goal</span>
+                      <span style={{ fontSize: 12, color: T.ink3 }}>{dollars(mpl.revenue) + " of " + dollars(revGoal)}</span>
+                    </div>
+                    <ProgressBar value={mpl.revenue} max={revGoal} color={T.green} h={5} />
+                  </div>
+                )}
+                {stage === "launching" && mpl.revenue === 0 && off === 0 && (
+                  <div style={{ marginTop: 12, background: T.orangeDim, borderRadius: 10, padding: "9px 12px", fontSize: 12.5, color: T.ink, lineHeight: 1.5 }}>
+                    No revenue logged yet. Your first sale is the one number that changes everything - when it lands, record it here.
+                  </div>
+                )}
+                {catRows.length > 0 && (
+                  <div style={{ marginTop: 14, borderTop: "0.5px solid " + T.sep, paddingTop: 12 }}>
+                    {catRows.map(function(c, i) {
+                      var sp = bizCatMonthSpent(biz, c.key, ymSel);
+                      var ov = sp > (c.planned || 0) && (c.planned || 0) > 0;
                       return (
-                        <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0" }}>
-                          <span style={{ fontSize: 13, color: T.ink2 }}>{e.label}</span>
-                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                            <span style={{ fontSize: 13, fontWeight: 600, color: T.ink }}>{dollars(e.amount)}</span>
-                            <button onClick={function() { deleteExpense(biz.id, a.key, e.id); }} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex" }}><SVGIcon id="trash" size={14} color={T.ink3} /></button>
+                        <div key={c.key} style={{ marginBottom: i < catRows.length - 1 ? 9 : 0 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                            <span style={{ fontSize: 12.5, color: T.ink2, fontWeight: 600 }}>{c.label}</span>
+                            <span style={{ fontSize: 12, color: ov ? T.red : T.ink3 }}>{dollars(sp) + ((c.planned || 0) > 0 ? " / " + dollars(c.planned) : "")}</span>
                           </div>
+                          <ProgressBar value={sp} max={c.planned || 1} color={ov ? T.red : c.color} h={4} />
                         </div>
                       );
                     })}
                   </div>
                 )}
-                <button onClick={function() { setLogFor({ bizId: biz.id, key: a.key, label: a.label }); setLogForm({ label: "", amount: "" }); }}
-                  style={{ width: "100%", marginTop: 10, background: T.orangeDim, border: "none", borderRadius: 10, padding: "9px 0", color: T.orange, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>+ Log expense</button>
-              </div>
-            </Card>
-          );
-        })}
+              </Card>
+            );
+          })()}
 
-        <div style={{ position: "relative", overflow: "hidden", borderRadius: 22, padding: "20px 22px", background: T.heroBg, boxShadow: T.heroShadow, marginBottom: 16, marginTop: 4 }}>
-          <div style={{ position: "absolute", bottom: -70, left: -50, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
-          <div style={{ position: "relative" }}>
-            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut }}>Unallocated budget</div>
-            <div style={{ fontSize: 34, fontWeight: 700, color: (monthly - plannedTotal) < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em", marginTop: 8 }}>{((monthly - plannedTotal) < 0 ? "-" : "") + dollars(Math.abs(monthly - plannedTotal))}</div>
-            <div style={{ fontSize: 12.5, color: T.heroMut, marginTop: 6, lineHeight: 1.5 }}>{dollars(monthly) + " monthly budget - " + dollars(plannedTotal) + " allocated"}</div>
-          </div>
-        </div>
-
-        {capHistory.length > 0 && (
-          <Card style={{ padding: "14px 16px", marginBottom: 12 }}>
-            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Capital history</div>
-            {capHistory.map(function(e) {
-              var dep = e.kind !== "withdraw";
-              var entryKey = biz.id + "_" + e.id;
-              var confirming = delCapConfirm === entryKey;
-              return (
-                <div key={e.id} style={{ padding: "7px 0", borderBottom: "0.5px solid " + T.sep }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 26, height: 26, borderRadius: 8, background: (dep ? T.green : T.ink3) + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <SVGIcon id={dep ? "down" : "up"} size={13} color={dep ? T.green : T.ink2} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, color: T.ink, fontWeight: 500 }}>{e.label || (dep ? "Capital" : "Withdraw")}</div>
-                      <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{e.date}</div>
-                    </div>
-                    <span style={{ fontSize: 13.5, fontWeight: 700, color: dep ? T.green : T.ink2, flexShrink: 0 }}>{(dep ? "+" : "-") + dollars(e.amount)}</span>
-                    <button onClick={function() { setDelCapConfirm(confirming ? null : entryKey); }} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex", flexShrink: 0 }}>
-                      <SVGIcon id="trash" size={13} color={T.ink3} />
-                    </button>
+          {(function() {
+            var invoices = biz.invoices || [];
+            var unpaid = invoices.filter(function(i) { return i.status !== "paid"; });
+            var top = unpaid.slice().sort(function(a, b) { return (a.dueDate || "").localeCompare(b.dueDate || ""); }).slice(0, 3);
+            return (
+              <div data-biz-motion style={{ marginBottom: 16, animation: bizCardAnim(6) }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 2px 10px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange }} />
+                    <span style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Needs attention</span>
                   </div>
-                  {confirming && (
-                    <div style={{ marginTop: 6, background: "rgba(220,50,50,0.07)", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ flex: 1, fontSize: 12, color: T.ink2 }}>{"Delete this entry?"}</span>
-                      <button onClick={function() { deleteCapEntry(biz.id, e.id); }}
-                        style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "6px 12px", borderRadius: 8, background: T.red, color: "#fff" }}>
-                        Delete
-                      </button>
-                      <button onClick={function() { setDelCapConfirm(null); }}
-                        style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, padding: "6px 12px", borderRadius: 8, background: T.fill2, color: T.ink2 }}>
-                        Cancel
-                      </button>
+                  <button onClick={function() { setInvoicesOpen(true); }} style={{ border: "none", background: "none", fontSize: 12, color: T.ink3, cursor: "pointer", fontFamily: UI }}>Invoices ›</button>
+                </div>
+                {top.length === 0 ? (
+                  <Card style={{ padding: "16px 18px", display: "flex", alignItems: "center", gap: 12 }}>
+                    <CatBadge icon="flag" color={T.orange} size={40} soft={true} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>No unpaid invoices</div>
+                      <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Track client invoices and see what's overdue at a glance.</div>
+                    </div>
+                    <button onClick={function() { setAddInvoiceOpen(true); }} style={{ background: T.orangeDim, border: "none", borderRadius: 10, padding: "9px 12px", fontSize: 12, fontWeight: 700, color: T.orange, cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>+ Add</button>
+                  </Card>
+                ) : (
+                  <Card style={{ padding: "2px 16px" }}>
+                    {top.map(function(inv, i) {
+                      var isOver = (inv.dueDate || "") < today;
+                      var stColor = isOver ? T.red : T.orange;
+                      var stBg = isOver ? T.redDim : T.orangeDim;
+                      var stLabel = isOver ? "Overdue" : "Unpaid";
+                      return (
+                        <button key={inv.id} onClick={function() { setInvoicesOpen(true); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", background: "none", border: "none", padding: "13px 0", cursor: "pointer", textAlign: "left", fontFamily: UI, borderTop: i > 0 ? "0.5px solid " + T.sep : "none" }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 14.5, fontWeight: 600, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{inv.client}</div>
+                            <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>{isOver ? "Was due " + inv.dueDate : "Due " + inv.dueDate}</div>
+                          </div>
+                          <span style={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: stColor, background: stBg, padding: "3px 8px", borderRadius: 7, flexShrink: 0 }}>{stLabel}</span>
+                          <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, whiteSpace: "nowrap", flexShrink: 0, minWidth: 56, textAlign: "right" }}>{dollars(inv.amount)}</div>
+                        </button>
+                      );
+                    })}
+                  </Card>
+                )}
+              </div>
+            );
+          })()}
+
+          {(function() {
+            var rows = (biz.entries || []).slice().sort(function(a, b) { return (b.date || "").localeCompare(a.date || "") || ((b.id || 0) - (a.id || 0)); }).slice(0, 6);
+            if (!rows.length) return null;
+            return (
+              <div data-biz-motion style={{ marginBottom: 16, animation: bizCardAnim(7) }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 2px 10px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange }} />
+                    <span style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Recent activity</span>
+                  </div>
+                </div>
+                <Card style={{ padding: "2px 16px" }}>
+                  {rows.map(function(e, i) {
+                    var cat = e.catKey ? (biz.categories.filter(function(c) { return c.key === e.catKey; })[0] || null) : null;
+                    var icon = cat ? cat.icon : (e.revenue ? "up" : (e.kind === "withdraw" ? "down" : "up"));
+                    var color = cat ? cat.color : (e.revenue ? T.green : T.ink3);
+                    var neg = e.kind === "withdraw";
+                    var amtColor = e.revenue ? T.green : (neg ? T.ink : T.green);
+                    return (
+                      <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderTop: i > 0 ? "0.5px solid " + T.sep : "none" }}>
+                        <CatBadge icon={icon} color={color} size={38} soft={true} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 14.5, fontWeight: 600, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{e.label || (neg ? "Withdraw" : "Deposit")}</div>
+                          <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>{e.date}</div>
+                        </div>
+                        <div style={{ fontSize: 14.5, fontWeight: 700, color: amtColor, letterSpacing: "-0.02em", whiteSpace: "nowrap", flexShrink: 0 }}>{(neg ? "-" : "+") + dollars(e.amount)}</div>
+                      </div>
+                    );
+                  })}
+                </Card>
+              </div>
+            );
+          })()}
+
+          <div data-biz-motion style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 2px 10px", animation: bizCardAnim(8) }}>Budget categories</div>
+          {biz.categories.map(function(a, catIndex) {
+            var catMonth = bizCatMonthSpent(biz, a.key, ym);
+            var over = catMonth > a.planned && a.planned > 0;
+            return (
+              <Card key={a.key} data-biz-motion style={{ marginBottom: 12, overflow: "hidden", animation: bizCardAnim(9 + catIndex) }}>
+                <div style={{ padding: "15px 16px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 10 }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 10, background: a.color + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <SVGIcon id={a.icon} size={18} color={a.color} />
+                    </div>
+                    <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: T.ink }}>{a.label}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: over ? T.red : T.ink2 }}>{dollars(catMonth) + " / " + sym}</span>
+                      <input type="number" value={getDetailEdit(biz.id, "alloc_" + a.key, a.planned)}
+                        onChange={function(e) { setDetailEdit(biz.id, "alloc_" + a.key, e.target.value); }}
+                        onBlur={function(e) { updatePlanned(biz.id, a.key, e.target.value); clearDetailEdit(biz.id, "alloc_" + a.key); }}
+                        style={{ width: 58, border: "none", background: T.fill1, borderRadius: 7, outline: "none", fontSize: 13, fontWeight: 600, color: T.ink, fontFamily: UI, textAlign: "right", padding: "3px 6px", boxSizing: "border-box" }} />
+                    </div>
+                  </div>
+                  <ProgressBar value={catMonth} max={a.planned || 1} color={over ? T.red : a.color} h={6} />
+                  {a.spent > catMonth && <div style={{ fontSize: 11, color: T.ink3, marginTop: 5 }}>{"All time: " + dollars(a.spent)}</div>}
+                  {(a.entries || []).length > 0 && (
+                    <div style={{ marginTop: 10 }}>
+                      {a.entries.map(function(e) {
+                        return (
+                          <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0" }}>
+                            <span style={{ fontSize: 13, color: T.ink2 }}>{e.label}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                              <span style={{ fontSize: 13, fontWeight: 600, color: T.ink }}>{dollars(e.amount)}</span>
+                              <button onClick={function() { deleteExpense(biz.id, a.key, e.id); }} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex" }}><SVGIcon id="trash" size={14} color={T.ink3} /></button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
+                  <button onClick={function() { setLogFor({ bizId: biz.id, key: a.key, label: a.label }); setLogForm({ label: "", amount: "" }); }}
+                    style={{ width: "100%", marginTop: 10, background: T.orangeDim, border: "none", borderRadius: 10, padding: "9px 0", color: T.orange, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>+ Log expense</button>
                 </div>
-              );
-            })}
-          </Card>
-        )}
+              </Card>
+            );
+          })}
 
-        <Card style={{ overflow: "hidden", marginBottom: 12 }}>
-          <div style={{ padding: "14px 16px 10px", borderBottom: "0.5px solid " + T.sep }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Ask your CFO</div>
-            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3, fontFamily: UI }}>Richard can answer questions and retune your budget</div>
+          <div data-biz-motion style={{ position: "relative", overflow: "hidden", borderRadius: 22, padding: "20px 22px", background: T.heroBg, boxShadow: T.heroShadow, marginBottom: 16, marginTop: 4, animation: bizCardAnim(9 + biz.categories.length) }}>
+            <div style={{ position: "absolute", bottom: -70, left: -50, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
+            <div style={{ position: "relative" }}>
+              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut }}>Unallocated budget</div>
+              <div style={{ fontSize: 34, fontWeight: 700, color: (monthly - plannedTotal) < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em", marginTop: 8 }}>{((monthly - plannedTotal) < 0 ? "-" : "") + dollars(Math.abs(monthly - plannedTotal))}</div>
+              <div style={{ fontSize: 12.5, color: T.heroMut, marginTop: 6, lineHeight: 1.5 }}>{dollars(monthly) + " monthly budget - " + dollars(plannedTotal) + " allocated"}</div>
+            </div>
           </div>
-          {thread.length > 0 && (
-            <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
-              {thread.map(function(m, i) {
-                if (m.role === "system") {
-                  return (
-                    <div key={i} style={{ display: "flex", justifyContent: "center" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 5, background: T.greenDim, color: T.green, borderRadius: 999, padding: "4px 11px", fontSize: 11.5, fontWeight: 700, fontFamily: UI }}>
-                        <SVGIcon id="check" size={11} color={T.green} />{m.text}
-                      </div>
-                    </div>
-                  );
-                }
-                var isUser = m.role === "user";
+
+          {capHistory.length > 0 && (
+            <Card data-biz-motion style={{ padding: "14px 16px", marginBottom: 12, animation: bizCardAnim(10 + biz.categories.length) }}>
+              <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Capital history</div>
+              {capHistory.map(function(e) {
+                var dep = e.kind !== "withdraw";
+                var entryKey = biz.id + "_" + e.id;
+                var confirming = delCapConfirm === entryKey;
                 return (
-                  <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
-                    <div style={{ maxWidth: "82%", background: isUser ? T.orange : T.fill1, borderRadius: 12, padding: "8px 12px", fontSize: 13.5, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
-                      {isUser ? m.text : <TypeReveal fade text={m.text} size={13.5} animate={m.role === "richard" && m.text === animBizRef.current} onDone={function() { animBizRef.current = null; }} />}
+                  <div key={e.id} style={{ padding: "7px 0", borderBottom: "0.5px solid " + T.sep }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{ width: 26, height: 26, borderRadius: 8, background: (dep ? T.green : T.ink3) + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <SVGIcon id={dep ? "down" : "up"} size={13} color={dep ? T.green : T.ink2} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, color: T.ink, fontWeight: 500 }}>{e.label || (dep ? "Capital" : "Withdraw")}</div>
+                        <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{e.date}</div>
+                      </div>
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: dep ? T.green : T.ink2, flexShrink: 0 }}>{(dep ? "+" : "-") + dollars(e.amount)}</span>
+                      <button onClick={function() { setDelCapConfirm(confirming ? null : entryKey); }} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex", flexShrink: 0 }}>
+                        <SVGIcon id="trash" size={13} color={T.ink3} />
+                      </button>
                     </div>
+                    {confirming && (
+                      <div style={{ marginTop: 6, background: "rgba(220,50,50,0.07)", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ flex: 1, fontSize: 12, color: T.ink2 }}>{"Delete this entry?"}</span>
+                        <button onClick={function() { deleteCapEntry(biz.id, e.id); }}
+                          style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "6px 12px", borderRadius: 8, background: T.red, color: "#fff" }}>
+                          Delete
+                        </button>
+                        <button onClick={function() { setDelCapConfirm(null); }}
+                          style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, padding: "6px 12px", borderRadius: 8, background: T.fill2, color: T.ink2 }}>
+                          Cancel
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })}
-              {chatLoading && <RichardThinking size={13.5} radius={12} />}
-            </div>
+            </Card>
           )}
-          <div style={{ display: "flex", gap: 8, padding: "10px 12px" }}>
-            <input value={chatInput} onChange={function(e) { setChatInput(e.target.value); }}
-              onKeyDown={function(e) { if (e.key === "Enter" && !chatLoading) sendChat(biz); }}
-              placeholder="e.g. Should I spend more on marketing?"
-              style={{ flex: 1, border: "none", background: T.fill1, borderRadius: 10, padding: "9px 12px", fontSize: 13.5, fontFamily: UI, outline: "none", color: T.ink }} />
-            <button onClick={function() { sendChat(biz); }} disabled={!chatInput.trim() || chatLoading}
-              aria-label="Send message"
-              style={{ background: chatInput.trim() && !chatLoading ? T.btn : T.fill3, border: "none", borderRadius: 10, width: 38, height: 38, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 17 }}>^</button>
-          </div>
-        </Card>
 
-        {deleteConfirm === biz.id ? (
-          <div style={{ background: "rgba(220,50,50,0.07)", borderRadius: 12, padding: "12px 14px", marginTop: 6 }}>
-            <div style={{ fontSize: 13, color: T.ink2, marginBottom: 10, lineHeight: 1.45 }}>{bal > 0 ? dollars(bal) + " of cash will return to your balance. " : ""}Close this business account?</div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={function() { closeBusiness(biz); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 10, background: T.red, color: "#fff" }}>Close account</button>
-              <button onClick={function() { setDeleteConfirm(null); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "10px 0", borderRadius: 10, background: T.fill2, color: T.ink2 }}>Cancel</button>
+          {deleteConfirm === biz.id ? (
+            <div style={{ background: "rgba(220,50,50,0.07)", borderRadius: 12, padding: "12px 14px", marginTop: 6 }}>
+              <div style={{ fontSize: 13, color: T.ink2, marginBottom: 10, lineHeight: 1.45 }}>{bal > 0 ? dollars(bal) + " of cash will return to your balance. " : ""}Close this business account?</div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={function() { closeBusiness(biz); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 10, background: T.red, color: "#fff" }}>Close account</button>
+                <button onClick={function() { setDeleteConfirm(null); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "10px 0", borderRadius: 10, background: T.fill2, color: T.ink2 }}>Cancel</button>
+              </div>
             </div>
-          </div>
-        ) : (
-          <button onClick={function() { setDeleteConfirm(biz.id); }}
-            style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "8px 0 4px" }}>Close business account</button>
+          ) : (
+            <button onClick={function() { setDeleteConfirm(biz.id); }}
+              style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "8px 0 4px" }}>Close business account</button>
+          )}
+
+          {deleteOutrightConfirm === biz.id ? (
+            <div style={{ background: "rgba(220,50,50,0.07)", borderRadius: 12, padding: "12px 14px", marginTop: 8 }}>
+              <div style={{ fontSize: 13, color: T.ink2, marginBottom: 10, lineHeight: 1.45 }}>{bal > 0 ? dollars(bal) + " will be permanently lost. " : ""}Delete this account and its plan? This cannot be undone.</div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={function() { deleteBusinessOutright(biz); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 10, background: T.red, color: "#fff" }}>Delete</button>
+                <button onClick={function() { setDeleteOutrightConfirm(null); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "10px 0", borderRadius: 10, background: T.fill2, color: T.ink2 }}>Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <button onClick={function() { setDeleteOutrightConfirm(biz.id); }}
+              style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "4px 0 2px", textAlign: "left" }}>Delete account</button>
+          )}
+        </div>
         )}
 
-        {deleteOutrightConfirm === biz.id ? (
-          <div style={{ background: "rgba(220,50,50,0.07)", borderRadius: 12, padding: "12px 14px", marginTop: 8 }}>
-            <div style={{ fontSize: 13, color: T.ink2, marginBottom: 10, lineHeight: 1.45 }}>{bal > 0 ? dollars(bal) + " will be permanently lost. " : ""}Delete this account and its plan? This cannot be undone.</div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={function() { deleteBusinessOutright(biz); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 10, background: T.red, color: "#fff" }}>Delete</button>
-              <button onClick={function() { setDeleteOutrightConfirm(null); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "10px 0", borderRadius: 10, background: T.fill2, color: T.ink2 }}>Cancel</button>
+        {/* ===== PLAN: the roadmap out of here, and the plan behind it ===== */}
+        {hubTab === "plan" && (
+        <div data-biz-motion style={{ animation: bizSectionAnim(0) }}>
+          {(function() {
+            var rmP = biz.roadmap;
+            var progP = roadmapProgress(rmP);
+            var pctP = progP.total > 0 ? Math.round((progP.done / progP.total) * 100) : 0;
+            var nextP = null, curTitle = null;
+            var mssP = (rmP && rmP.milestones) || [];
+            for (var mi2 = 0; mi2 < mssP.length; mi2++) {
+              if (mssP[mi2].done) continue;
+              curTitle = mssP[mi2].title;
+              var tsP = mssP[mi2].tasks || [];
+              for (var tj = 0; tj < tsP.length; tj++) { if (!tsP[tj].done) { nextP = tsP[tj].label; break; } }
+              break;
+            }
+            return (
+              <Card data-biz-motion style={{ padding: "18px 20px", marginBottom: 16, background: T.heroBg, boxShadow: T.heroShadow, animation: bizCardAnim(0) }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
+                  <div style={{ position: "relative", width: 52, height: 52, flexShrink: 0 }}>
+                    <DrawRing size={52} stroke={5} value={progP.done} max={progP.total || 1} color={T.gold} track={T.heroTrack} />
+                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: T.heroInk }}>{pctP + "%"}</div>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.heroText, letterSpacing: "-0.01em" }}>{stage === "idea" ? "The road to launch" : stage === "launching" ? "The road to a running business" : "The road to a business that lasts"}</div>
+                    <div style={{ fontSize: 12.5, color: T.heroMut, marginTop: 2, lineHeight: 1.45 }}>
+                      {progP.total > 0 ? (progP.done + " of " + progP.total + " steps done" + (curTitle ? "  ·  now: " + curTitle : "")) : "Richard hasn't laid out the steps yet."}
+                    </div>
+                  </div>
+                </div>
+                {nextP && (
+                  <div data-biz-motion style={{ marginTop: 14, paddingTop: 12, borderTop: "0.5px solid " + T.heroSep, animation: "rcFadeUp 0.5s ease 0.14s both" }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: T.heroMut, textTransform: "uppercase", letterSpacing: "0.09em" }}>Next step</div>
+                    <div style={{ fontSize: 14, color: T.heroInk, marginTop: 4, lineHeight: 1.45 }}>{nextP}</div>
+                  </div>
+                )}
+              </Card>
+            );
+          })()}
+
+          {(function() {
+            var rm = biz.roadmap;
+            if (!rm && roadmapBuilding) {
+              return (
+                <Card data-biz-motion style={{ padding: "18px", marginBottom: 16, position: "relative", overflow: "hidden", animation: bizCardAnim(1) }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Roadmap</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginTop: 8 }}>
+                    Richard is drafting your roadmap
+                    <ThinkingDots size={3.5} color={T.orange} />
+                  </div>
+                  <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3, lineHeight: 1.45 }}>
+                    <ThinkingPhrase phrases={["Reading where the business stands", "Laying out the milestones", "Breaking them into concrete steps"]} />
+                  </div>
+                  <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "45%", background: "linear-gradient(105deg, transparent, rgba(255,255,255,0.5), transparent)", animation: "rcShimmer 1.4s ease infinite", pointerEvents: "none" }} />
+                </Card>
+              );
+            }
+            if (!rm) {
+              return (
+                <Card data-biz-motion style={{ padding: "16px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12, animation: bizCardAnim(1) }}>
+                  <CatBadge icon="chart" color={T.orange} size={40} soft={true} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>No roadmap yet</div>
+                    <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Richard can lay out the concrete steps from here to a working business.</div>
+                  </div>
+                  <button onClick={function() { regenRoadmap(biz); }}
+                    style={{ background: T.btn, border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Build it</button>
+                </Card>
+              );
+            }
+            var prog = roadmapProgress(rm);
+            var gradTarget = detectGraduation(biz);
+            var curId = null;
+            for (var ci = 0; ci < rm.milestones.length; ci++) { if (!rm.milestones[ci].done) { curId = rm.milestones[ci].id; break; } }
+            function taskRow(m, t, ti) {
+              return (
+                <div key={t.id} data-biz-motion onClick={function() { toggleTask(biz, m.id, t.id); }}
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", cursor: "pointer", animation: "bizRowIn 0.42s cubic-bezier(0.22,0.9,0.3,1) " + (0.08 + (ti || 0) * 0.05).toFixed(2) + "s both" }}>
+                  <TaskCheck done={!!t.done} pop={lastChecked === t.id && !!t.done} color={biz.color || T.orange} />
+                  <span style={{ flex: 1, fontSize: 13.5, lineHeight: 1.45, color: t.done ? T.ink3 : T.ink, textDecoration: t.done ? "line-through" : "none", transition: "color 0.3s ease" }}>{t.label}</span>
+                </div>
+              );
+            }
+            return (
+              <Card data-biz-motion style={{ padding: "16px 18px", marginBottom: 16, position: "relative", overflow: "hidden", animation: bizCardAnim(1) }}>
+                {celebrate && (
+                  <div data-biz-motion style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "45%", background: "linear-gradient(105deg, transparent, rgba(255,255,255,0.55), transparent)", animation: "rcShimmer 1.1s ease both", pointerEvents: "none", zIndex: 2 }} />
+                )}
+                {celebrate && <BizConfetti color={biz.color || T.orange} />}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Roadmap</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <DrawRing size={26} stroke={3.5} value={prog.done} max={prog.total || 1} color={T.orange} />
+                    <span style={{ fontSize: 12, fontWeight: 700, color: T.ink2 }}>{prog.done + " of " + prog.total}</span>
+                    {rm.source === "local" && (
+                      <button onClick={function() { regenRoadmap(biz); }} disabled={roadmapBuilding}
+                        style={{ background: T.orangeDim, border: "none", borderRadius: 9, padding: "5px 10px", fontSize: 11, fontWeight: 700, color: T.orange, cursor: roadmapBuilding ? "default" : "pointer", fontFamily: UI }}>{roadmapBuilding ? <ThinkingDots size={3.5} color={T.orange} /> : "Ask Richard"}</button>
+                    )}
+                  </div>
+                </div>
+                {celebrate && (
+                  <div style={{ display: "flex", justifyContent: "center", margin: "4px 0 10px" }}>
+                    <div style={{ background: T.orangeDim, color: T.orange, borderRadius: 999, padding: "6px 14px", fontSize: 12.5, fontWeight: 700, animation: "rcPillIn 0.45s ease both" }}>
+                      {"Milestone complete - " + celebrate.title}
+                    </div>
+                  </div>
+                )}
+                {gradTarget && (
+                  <div style={{ background: T.heroBg, borderRadius: 14, padding: "13px 14px", margin: "8px 0 10px", boxShadow: T.heroShadow }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: T.heroInk, lineHeight: 1.4 }}>
+                      {gradTarget === "launching" ? ("Richard thinks " + biz.name + " is moving from idea to launch.") : ("Richard thinks " + biz.name + " is now a running business.")}
+                    </div>
+                    <div style={{ fontSize: 12.5, color: T.heroMut, marginTop: 3, lineHeight: 1.45 }}>
+                      {gradTarget === "launching" ? "Real money is moving - that's a launch. Graduating rebuilds the roadmap for this new stage." : "Revenue is coming in again and again. Graduating rebuilds the roadmap around margins, repeat customers and systems."}
+                    </div>
+                    <button onClick={function() { graduateBiz(biz, gradTarget); }}
+                      style={{ marginTop: 10, background: "rgba(255,255,255,0.92)", border: "none", borderRadius: 10, padding: "9px 16px", fontSize: 12.5, fontWeight: 700, color: T.orange, cursor: "pointer", fontFamily: UI }}>Graduate</button>
+                  </div>
+                )}
+                {rm.milestones.map(function(m, mi) {
+                  var borderSt = mi > 0 ? "0.5px solid " + T.sep : "none";
+                  if (m.done) {
+                    return (
+                      <div key={m.id} style={{ borderTop: borderSt }}>
+                        <div onClick={function() { setExpandedMs(expandedMs === m.id ? null : m.id); }} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", cursor: "pointer" }}>
+                          <TaskCheck done={true} size={20} color={T.green} />
+                          <span style={{ flex: 1, fontSize: 13.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink3, textDecoration: "line-through" }}>{m.title}</span>
+                          <span style={{ transform: expandedMs === m.id ? "rotate(-90deg)" : "rotate(90deg)", display: "flex", transition: "transform 0.25s ease" }}><SVGIcon id="chevron" size={13} color={T.ink3} /></span>
+                        </div>
+                        {expandedMs === m.id && <div style={{ paddingLeft: 4, paddingBottom: 6 }}>{(m.tasks || []).map(function(t, ti) { return taskRow(m, t, ti); })}</div>}
+                      </div>
+                    );
+                  }
+                  if (m.id !== curId) {
+                    return (
+                      <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderTop: borderSt, opacity: 0.55 }}>
+                        <span style={{ width: 20, height: 20, borderRadius: "50%", border: "1.5px dashed " + T.ink3, flexShrink: 0, boxSizing: "border-box" }} />
+                        <span style={{ flex: 1, fontSize: 13.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink2 }}>{m.title}</span>
+                        <span style={{ fontSize: 11.5, color: T.ink3 }}>{((m.tasks || []).length) + " steps"}</span>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={m.id} style={{ padding: "9px 0 4px", borderTop: borderSt }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+                        <span style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, flex: 1 }}>{m.title}</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: T.orange, background: T.orangeDim, borderRadius: 999, padding: "3px 9px", letterSpacing: "0.05em", textTransform: "uppercase" }}>Now</span>
+                      </div>
+                      {(m.tasks || []).map(function(t, ti) { return taskRow(m, t, ti); })}
+                    </div>
+                  );
+                })}
+              </Card>
+            );
+          })()}
+
+          {(plan.summary || (plan.sections && plan.sections.length)) && (
+            <Card style={{ padding: "16px 18px", marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Business plan</div>
+                <button onClick={function() { replanWithRichard(biz); }} disabled={replanning}
+                  style={{ background: T.orangeDim, border: "none", borderRadius: 9, padding: "5px 11px", fontSize: 11.5, fontWeight: 700, color: T.orange, cursor: replanning ? "default" : "pointer", fontFamily: UI }}>{replanning ? "Updating..." : "Replan"}</button>
+              </div>
+              {plan.summary && <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.55, marginBottom: plan.sections && plan.sections.length ? 14 : 0 }}>{plan.summary}</div>}
+              {plan.verdict && plan.verdict.assessment && (
+                <div style={{ background: T.orangeDim, borderRadius: 12, padding: "11px 13px", marginBottom: 14 }}>
+                  {plan.verdict.keyNumber && <div style={{ fontSize: 17, fontWeight: 800, color: T.orange, letterSpacing: "-0.02em" }}>{plan.verdict.keyNumber + (plan.verdict.keyNumberLabel ? (" " + plan.verdict.keyNumberLabel) : "")}</div>}
+                  <div style={{ fontSize: 13, color: T.ink, lineHeight: 1.5, marginTop: plan.verdict.keyNumber ? 4 : 0 }}>{plan.verdict.assessment}</div>
+                </div>
+              )}
+              {(plan.sections || []).map(function(s, i) {
+                return (
+                  <div key={i} style={{ marginBottom: i < plan.sections.length - 1 ? 12 : 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 3 }}>{s.title}</div>
+                    <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5 }}>{s.body}</div>
+                  </div>
+                );
+              })}
+              {(plan.tips || []).length > 0 && (
+                <div style={{ marginTop: 14, borderTop: "0.5px solid " + T.sep, paddingTop: 12 }}>
+                  {plan.tips.map(function(tp, i) {
+                    return <div key={i} style={{ fontSize: 13, color: T.ink, lineHeight: 1.5, marginBottom: i < plan.tips.length - 1 ? 7 : 0, display: "flex", gap: 8 }}><span style={{ color: T.orange, fontWeight: 700 }}>-</span><span>{tp}</span></div>;
+                  })}
+                </div>
+              )}
+            </Card>
+          )}
+
+          {!(plan.summary || (plan.sections && plan.sections.length)) && (
+            <Card style={{ padding: "16px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
+              <CatBadge icon="briefcase" color={T.orange} size={40} soft={true} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>No plan yet</div>
+                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Have Richard draft a business plan and budget for you.</div>
+              </div>
+              <button onClick={function() { replanWithRichard(biz); }} disabled={replanning}
+                style={{ background: T.btn, border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: replanning ? "default" : "pointer", fontFamily: UI, flexShrink: 0 }}>{replanning ? <ThinkingDots size={3.5} color="#fff" /> : "Ask Richard"}</button>
+            </Card>
+          )}
+        </div>
+        )}
+
+        {hubTab === "learn" && (
+        <div data-biz-motion style={{ animation: bizSectionAnim(0) }}>
+          <Card data-biz-motion style={{ padding: "18px 20px", marginBottom: 18, background: T.heroBg, boxShadow: T.heroShadow, animation: bizCardAnim(0) }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+              <RichyLogo size={38} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 16, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.heroText, letterSpacing: "-0.01em" }}>Founder's school</div>
+                <div style={{ fontSize: 12, color: T.heroMut, marginTop: 1 }}>{lessonsDone === BIZ_LESSONS.length ? "You've read the lot - the rest is reps" : "The six things that decide whether a business lasts"}</div>
+              </div>
             </div>
+            <div style={{ marginTop: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11.5, color: T.heroMut, marginBottom: 7 }}>
+                <span>Your progress</span>
+                <span style={{ fontWeight: 800, color: T.heroText }}>{lessonsDone + "/" + BIZ_LESSONS.length + " read"}</span>
+              </div>
+              <div style={{ height: 7, borderRadius: 4, background: T.heroTrack, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: (lessonsDone / BIZ_LESSONS.length * 100) + "%", background: T.gold, borderRadius: 4, transition: "width 0.5s cubic-bezier(0.22,0.9,0.3,1)" }} />
+              </div>
+            </div>
+          </Card>
+
+          <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+            <span style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Lessons</span>
           </div>
-        ) : (
-          <button onClick={function() { setDeleteOutrightConfirm(biz.id); }}
-            style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "4px 0 2px", textAlign: "left" }}>Delete account</button>
+          <div style={{ display: "flex", flexDirection: "column", gap: 11, marginBottom: 18 }}>
+            {BIZ_LESSONS.map(function(l, li) {
+              var prog = bizLessonProgress(biz)[l.id] || 0;
+              var col = l.level === "Basics" ? T.gold : T.orange;
+              return (
+                <button key={l.id} data-biz-motion onClick={function() { setOpenLesson(l.id); }}
+                  style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, background: T.card, borderRadius: 18, padding: "15px 16px", border: "none", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.07)", boxSizing: "border-box", animation: bizCardAnim(li, 0.08) }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 14, background: col + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <SVGIcon id={l.icon} size={21} color={col} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                      <span style={{ fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{l.title}</span>
+                      {prog >= 100 && <SVGIcon id="check" size={14} color={T.green} />}
+                    </div>
+                    <div style={{ fontSize: 12, color: T.ink3, marginTop: 3, lineHeight: 1.4 }}>{l.blurb}</div>
+                    <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 3 }}>{l.level + " · " + l.mins + " min"}</div>
+                  </div>
+                  <SVGIcon id="chevron" size={18} color={T.ink3} />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        )}
+
+        {/* ===== CFO: Richard's read on the business, and the chat ===== */}
+        {hubTab === "cfo" && (
+        <div data-biz-motion style={{ animation: bizSectionAnim(0) }}>
+          <Card data-biz-motion style={{ padding: "18px 20px", marginBottom: 18, background: T.heroBg, boxShadow: T.heroShadow, animation: bizCardAnim(0) }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
+              <RichyLogo size={46} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.heroText, letterSpacing: "-0.01em" }}>Richard</div>
+                <div style={{ fontSize: 12, color: T.heroMut, marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{"CFO on " + (biz.name || "this business")}</div>
+              </div>
+              <button onClick={function() { setHealthOpen(true); }} aria-label="Business health breakdown"
+                style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: UI }}>
+                <div style={{ position: "relative", width: 38, height: 38 }}>
+                  <DrawRing size={38} stroke={4} value={health.score} max={100} color={health.color} track={T.heroTrack} />
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: T.heroInk }}>{health.score}</div>
+                </div>
+                <span style={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: T.heroMut }}>health</span>
+              </button>
+            </div>
+          </Card>
+
+          {/* Everything below is measured off this business's own ledger - the
+              same discipline the investing tab's insight cards hold to. */}
+          {insights.length > 0 && (
+            <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
+              <span style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>What Richard noticed</span>
+            </div>
+          )}
+          <div style={{ display: "flex", flexDirection: "column", gap: 11, marginBottom: 20 }}>
+            {insights.map(function(x, xi) {
+              var tone = { orange: { c: T.orange, bg: T.orangeDim }, gold: { c: T.gold, bg: T.goldDim }, green: { c: T.green, bg: T.greenDim }, red: { c: T.red, bg: T.redDim } }[x.tone] || { c: T.orange, bg: T.orangeDim };
+              return (
+                <Card key={x.id} data-biz-motion style={{ padding: 16, animation: bizCardAnim(xi, 0.08) }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                    <div style={{ width: 38, height: 38, borderRadius: 12, background: tone.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <SVGIcon id={x.icon} size={19} color={tone.c} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{x.title}</div>
+                      <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginTop: 4 }}>{x.text}</div>
+                      {x.cta && (
+                        <button onClick={function() { runBizInsight(biz, x.action); }}
+                          style={{ marginTop: 11, background: tone.bg, color: tone.c, border: "none", borderRadius: 11, padding: "9px 15px", fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>{x.cta}</button>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+
+          {(function() {
+            var reviews = biz.reviews || [];
+            var latest = reviews[0];
+            if (!latest && !reviewLoading) return null;
+            var stColor = latest ? (latest.status === "on-track" ? T.green : latest.status === "watch" ? "#C8983A" : T.red) : T.ink3;
+            var stBg = latest ? (latest.status === "on-track" ? "rgba(39,168,95,0.12)" : latest.status === "watch" ? "rgba(200,152,58,0.15)" : "rgba(217,84,107,0.12)") : "transparent";
+            var stLabel = latest ? (latest.status === "on-track" ? "On track" : latest.status === "watch" ? "Worth a look" : "Needs attention") : "";
+            var rows = latest ? [
+              { icon: "star", tint: T.green, v: latest.tip },
+              { icon: "shield", tint: "#C8983A", v: latest.warning },
+              { icon: "up", tint: T.orange, v: latest.idea }
+            ].filter(function(r) { return r.v && r.v.body; }) : [];
+            var fwd = { idea: { launching: 1, running: 1 }, launching: { running: 1 }, running: {} };
+            var showGrad = !!(latest && latest.graduate && fwd[stage] && fwd[stage][latest.graduate] && !detectGraduation(biz));
+            return (
+              <Card data-biz-motion style={{ padding: "16px 18px", marginBottom: 16, animation: bizCardAnim(insights.length, 0.08), position: "relative", overflow: "hidden" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>This week with Richard</div>
+                  {latest && <span style={{ fontSize: 11, color: T.ink3 }}>{latest.date}</span>}
+                </div>
+                {reviewLoading && !latest && (
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 600, color: T.ink2 }}>
+                      Richard is running your weekly review
+                      <ThinkingDots size={3.5} color={T.orange} />
+                    </div>
+                    <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3 }}>
+                      <ThinkingPhrase phrases={["Pulling this month's numbers", "Comparing to last week", "Writing the honest read"]} />
+                    </div>
+                    <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "45%", background: "linear-gradient(105deg, transparent, rgba(255,255,255,0.5), transparent)", animation: "rcShimmer 1.4s ease infinite", pointerEvents: "none" }} />
+                  </div>
+                )}
+                {latest && (
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: stColor, background: stBg, borderRadius: 999, padding: "4px 11px", letterSpacing: "0.03em" }}>{stLabel}</span>
+                      {reviewLoading && <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, color: T.ink3 }}>updating<ThinkingDots size={2.5} color={T.ink3} /></span>}
+                    </div>
+                    <div style={{ fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, lineHeight: 1.4, marginBottom: 6 }}>{latest.headline}</div>
+                    {rows.map(function(r, i) {
+                      return (
+                        <div key={i} style={{ display: "flex", gap: 10, padding: "8px 0", borderTop: i > 0 ? "0.5px solid " + T.sep : "none" }}>
+                          <div style={{ width: 30, height: 30, borderRadius: 9, background: r.tint + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                            <SVGIcon id={r.icon} size={15} color={r.tint} />
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 12.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{r.v.title}</div>
+                            <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 1 }}>{r.v.body}</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {latest.taskSuggestion && !latest.taskSuggestion.added && biz.roadmap && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, background: T.orangeDim, borderRadius: 12, padding: "10px 12px", marginTop: 8 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 10.5, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.06em" }}>Suggested step</div>
+                          <div style={{ fontSize: 12.5, color: T.ink, marginTop: 2, lineHeight: 1.4 }}>{latest.taskSuggestion.label}</div>
+                        </div>
+                        <button onClick={function() { addSuggestedTask(biz, latest); }}
+                          style={{ background: T.btn, border: "none", borderRadius: 9, padding: "8px 12px", fontSize: 12, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Add to roadmap</button>
+                      </div>
+                    )}
+                    {showGrad && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, background: T.orangeDim, borderRadius: 12, padding: "10px 12px", marginTop: 8 }}>
+                        <div style={{ flex: 1, fontSize: 12.5, color: T.ink, lineHeight: 1.4 }}>{"Richard thinks it's time to graduate to the " + (latest.graduate === "running" ? "running" : "launch") + " stage."}</div>
+                        <button onClick={function() { graduateBiz(biz, latest.graduate); }}
+                          style={{ background: T.btn, border: "none", borderRadius: 9, padding: "8px 12px", fontSize: 12, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Graduate</button>
+                      </div>
+                    )}
+                    <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                      <button onClick={function() { fetchIdeas(biz); }} disabled={ideasLoading}
+                        style={{ flex: 1, background: T.orangeDim, border: "none", borderRadius: 10, padding: "10px 0", fontSize: 12.5, fontWeight: 700, color: T.orange, cursor: ideasLoading ? "default" : "pointer", fontFamily: UI }}>{ideasLoading ? <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>Thinking<ThinkingDots size={3.5} color={T.orange} /></span> : "Get growth ideas"}</button>
+                      {reviews.length > 1 && (
+                        <button onClick={function() { setPastOpen(!pastOpen); }}
+                          style={{ flex: 1, background: "none", border: "1.5px solid " + T.sep, borderRadius: 10, padding: "10px 0", fontSize: 12.5, fontWeight: 600, color: T.ink2, cursor: "pointer", fontFamily: UI }}>{pastOpen ? "Hide past reviews" : "Past reviews (" + (reviews.length - 1) + ")"}</button>
+                      )}
+                    </div>
+                    {ideas && (
+                      <div style={{ marginTop: 10 }}>
+                        {ideas.map(function(gi, i) {
+                          return (
+                            <div key={i} style={{ background: T.fill0, borderRadius: 12, padding: "11px 13px", marginBottom: i < ideas.length - 1 ? 8 : 0, animation: "rcFadeUp 0.45s ease " + (i * 0.08) + "s both" }}>
+                              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+                                <div style={{ fontSize: 13, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{gi.title}</div>
+                                {gi.impact ? <div style={{ fontSize: 11.5, fontWeight: 700, color: T.green, flexShrink: 0 }}>{gi.impact}</div> : null}
+                              </div>
+                              <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 3 }}>{gi.body}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {pastOpen && reviews.length > 1 && (
+                      <div style={{ marginTop: 10, borderTop: "0.5px solid " + T.sep, paddingTop: 4 }}>
+                        {reviews.slice(1).map(function(r) {
+                          var c = r.status === "on-track" ? T.green : r.status === "watch" ? "#C8983A" : T.red;
+                          return (
+                            <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 9, padding: "7px 0" }}>
+                              <span style={{ width: 7, height: 7, borderRadius: "50%", background: c, flexShrink: 0 }} />
+                              <span style={{ fontSize: 11.5, color: T.ink3, flexShrink: 0 }}>{r.date}</span>
+                              <span style={{ flex: 1, fontSize: 12, color: T.ink2, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.headline}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </Card>
+            );
+          })()}
+
+          <Card data-biz-motion style={{ overflow: "hidden", marginBottom: 12, animation: bizCardAnim(insights.length + 1, 0.08) }}>
+            <div style={{ padding: "14px 16px 10px", borderBottom: "0.5px solid " + T.sep }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Ask your CFO</div>
+              <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3, fontFamily: UI }}>Richard can answer questions and retune your budget</div>
+            </div>
+            {thread.length > 0 && (
+              <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+                {thread.map(function(m, i) {
+                  if (m.role === "system") {
+                    return (
+                      <div key={i} style={{ display: "flex", justifyContent: "center" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 5, background: T.greenDim, color: T.green, borderRadius: 999, padding: "4px 11px", fontSize: 11.5, fontWeight: 700, fontFamily: UI }}>
+                          <SVGIcon id="check" size={11} color={T.green} />{m.text}
+                        </div>
+                      </div>
+                    );
+                  }
+                  var isUser = m.role === "user";
+                  return (
+                    <div key={i} data-biz-motion style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start", animation: "bizCardIn 0.4s cubic-bezier(0.22,0.9,0.3,1) both" }}>
+                      <div style={{ maxWidth: "82%", background: isUser ? T.orange : T.fill1, borderRadius: isUser ? "12px 12px 4px 12px" : "12px 12px 12px 4px", padding: "8px 12px", fontSize: 13.5, color: isUser ? "#fff" : T.ink, lineHeight: 1.5, fontFamily: UI }}>
+                        {isUser ? m.text : <TypeReveal fade text={m.text} size={13.5} animate={m.role === "richard" && m.text === animBizRef.current} onDone={function() { animBizRef.current = null; }} />}
+                      </div>
+                    </div>
+                  );
+                })}
+                {chatLoading && <RichardThinking size={13.5} radius={12} />}
+              </div>
+            )}
+            {/* Openers written from this business's own numbers, so the first
+                question a founder asks is already a good one. */}
+            {thread.length === 0 && !chatLoading && (
+              <div style={{ padding: "12px 14px 2px" }}>
+                <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginBottom: 10 }}>
+                  {"He can see every expense, sale and invoice in " + (biz.name || "this account") + ", plus the budget you set. Ask him anything about them."}
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                  {chatOpeners.map(function(q2, qi) {
+                    return (
+                      <button key={q2} data-biz-motion onClick={function() { sendChat(biz, q2); }}
+                        style={{ border: "1px solid " + T.sep, background: T.card, borderRadius: 999, padding: "7px 13px", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.ink2, animation: "rcPillIn 0.42s cubic-bezier(0.34,1.56,0.64,1) " + (0.05 + qi * 0.06).toFixed(2) + "s both" }}>{q2}</button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 8, padding: "10px 12px" }}>
+              <input value={chatInput} onChange={function(e) { setChatInput(e.target.value); }}
+                onKeyDown={function(e) { if (e.key === "Enter" && !chatLoading) sendChat(biz); }}
+                placeholder="e.g. Should I spend more on marketing?"
+                style={{ flex: 1, border: "none", background: T.fill1, borderRadius: 10, padding: "9px 12px", fontSize: 13.5, fontFamily: UI, outline: "none", color: T.ink }} />
+              <button onClick={function() { sendChat(biz); }} disabled={!chatInput.trim() || chatLoading}
+                aria-label="Send message"
+                style={{ background: chatInput.trim() && !chatLoading ? T.btn : T.fill3, border: "none", borderRadius: 10, width: 38, height: 38, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: chatInput.trim() && !chatLoading ? "pointer" : "default", padding: 0 }}>
+                <SVGIcon id="up" size={17} color={chatInput.trim() && !chatLoading ? "#fff" : T.ink3} />
+              </button>
+            </div>
+          </Card>
+        </div>
         )}
 
         <Overlay open={!!act} onClose={function() { setAct(null); }} title={(act && act.kind === "add" ? "Add capital" : "Withdraw") + (biz ? " - " + biz.name : "")}>
@@ -29029,6 +29752,92 @@ function BusinessView(props) {
           <FormRow label="Set-aside rate (%)" value={getDetailEdit(biz.id, "taxRate", (biz.profile && biz.profile.taxRate != null) ? biz.profile.taxRate : 25)}
             onChange={function(e) { setDetailEdit(biz.id, "taxRate", e.target.value); }} type="number" last={true} />
           <BigBtn label="Save" onPress={function() { updateTaxRate(biz.id, getDetailEdit(biz.id, "taxRate", 25)); clearDetailEdit(biz.id, "taxRate"); setTaxSheetOpen(false); }} />
+        </Overlay>
+
+        {/* ===== FOUNDER'S SCHOOL LESSON ===== */}
+        <Overlay open={!!openLesson} onClose={function() { setOpenLesson(null); }} title="Richard teaches">
+          {(function() {
+            var L = openLesson ? bizLessonById(openLesson) : null;
+            if (!L) return null;
+            var doneAlready = (bizLessonProgress(biz)[L.id] || 0) >= 100;
+            return (
+              <div>
+                <div style={{ fontSize: 22, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", lineHeight: 1.22 }}>{L.title}</div>
+                <div style={{ fontSize: 12, color: T.ink3, marginTop: 4 }}>{L.level + " · " + L.mins + " min read"}</div>
+                <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.6, marginTop: 12 }}>{L.intro}</div>
+                {L.checklist && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 18 }}>
+                    {L.checklist.map(function(c, ci) {
+                      return (
+                        <Card key={ci} data-biz-motion style={{ padding: "15px 16px", animation: bizCardAnim(ci, 0.04) }}>
+                          <div style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", marginBottom: 10 }}>{c.q}</div>
+                          <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 7 }}>
+                            <SVGIcon id="check" size={16} color={T.green} />
+                            <span style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.45 }}>{c.good}</span>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                            <SVGIcon id="close" size={16} color={T.red} />
+                            <span style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.45 }}>{c.bad}</span>
+                          </div>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+                {L.body && (
+                  <div style={{ marginTop: 16 }}>
+                    {L.body.map(function(b, bi) {
+                      return (
+                        <div key={bi} data-biz-motion style={{ marginBottom: 14, animation: "rcFadeUp 0.45s ease " + (0.04 + bi * 0.06).toFixed(2) + "s both" }}>
+                          <div style={{ fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 3 }}>{b.h}</div>
+                          <div style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.55 }}>{b.p}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 10, background: T.orangeDim, borderRadius: 14, padding: "14px 15px", marginTop: 12 }}>
+                  <SVGIcon id="spark" size={18} color={T.orange} />
+                  <div style={{ fontSize: 12.5, color: T.ink, lineHeight: 1.5 }}>{L.close}</div>
+                </div>
+                <BigBtn label={doneAlready ? "Done - close" : "Mark as read"} onPress={function() {
+                  if (!doneAlready) markBizLesson(biz, L.id, 100);
+                  setOpenLesson(null);
+                }} />
+                {doneAlready && (
+                  <button onClick={function() { markBizLesson(biz, L.id, 0); setOpenLesson(null); }}
+                    style={{ width: "100%", marginTop: 8, background: "none", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.ink3, padding: "5px 0" }}>Mark as not read</button>
+                )}
+              </div>
+            );
+          })()}
+        </Overlay>
+
+        {/* ===== HEALTH BREAKDOWN ===== */}
+        <Overlay open={healthOpen} onClose={function() { setHealthOpen(false); }} title={"Business health · " + health.score}>
+          <div style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.55, marginBottom: 16 }}>
+            Everything Richard can check without guessing - runway, spending pace, revenue against your own goal, and whether the buckets are holding. It reads how the business is set up today, not how it will do.
+          </div>
+          {health.parts.map(function(hp, hi) {
+            var up = hp.delta > 0, down = hp.delta < 0;
+            var col = hp.base ? T.ink3 : up ? T.green : down ? T.red : T.ink3;
+            return (
+              <div key={hi} data-biz-motion style={{ display: "flex", alignItems: "flex-start", gap: 11, padding: "11px 0", borderTop: hi > 0 ? "0.5px solid " + T.sep : "none", animation: "bizRowIn 0.4s ease " + (0.03 + hi * 0.05).toFixed(2) + "s both" }}>
+                <span style={{ minWidth: 44, textAlign: "center", flexShrink: 0, fontSize: 12.5, fontWeight: 800, fontFamily: UI, color: col, background: hp.base ? T.fill1 : up ? T.greenDim : down ? T.redDim : T.fill1, borderRadius: 8, padding: "4px 0" }}>
+                  {hp.base ? hp.delta : (hp.delta > 0 ? "+" + hp.delta : String(hp.delta))}
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, color: T.ink }}>{hp.k}</div>
+                  <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.45 }}>{hp.note}</div>
+                </div>
+              </div>
+            );
+          })}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "0.5px solid " + T.sep, marginTop: 6, paddingTop: 12 }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>{health.label}</span>
+            <span style={{ fontSize: 20, fontWeight: 800, color: health.color, letterSpacing: "-0.02em" }}>{health.score}</span>
+          </div>
+          <BigBtn label="Got it" onPress={function() { setHealthOpen(false); }} />
         </Overlay>
       </div>
     );
@@ -32298,6 +33107,21 @@ var INVESTING_HUB_TABS = [
   { id: "richard", label: "Richard", icon: "advisor" },
 ];
 
+// The business account's own four-way hub, deliberately the same shape as the
+// investing one so the two wealth surfaces are learned once, not twice.
+var BUSINESS_HUB_TABS = [
+  { id: "desk", label: "Desk", icon: "briefcase" },
+  { id: "plan", label: "Plan", icon: "flag" },
+  { id: "learn", label: "Learn", icon: "book" },
+  { id: "cfo", label: "CFO", icon: "advisor" },
+];
+var BIZ_HUB_SUB = {
+  desk: "The money in, out and left over",
+  plan: "The road from here to a real business",
+  learn: "Running a business, explained",
+  cfo: "Richard's read on your numbers"
+};
+
 // Bottom tab bar with an Apple-style "liquid glass" active lens: instead of the
 // selected pill popping in and out per button, one glass lens glides and settles
 // under whichever tab is active (with a soft spring overshoot), and the tapped
@@ -32766,6 +33590,13 @@ export default function App() {
   var openGoalRisk = _ogr[0]; var setOpenGoalRisk = _ogr[1];
   var _iht = useState("portfolio");
   var investingHubTab = _iht[0]; var setInvestingHubTab = _iht[1];
+  var _bht = useState("desk");
+  var businessHubTab = _bht[0]; var setBusinessHubTab = _bht[1];
+  // Which business (if any) BusinessView currently has open. It owns that
+  // navigation internally, so it reports back - the bottom bar needs to know
+  // whether to be the four-way hub or a plain way out.
+  var _bdo = useState(null);
+  var openBizDetail = _bdo[0]; var setOpenBizDetail = _bdo[1];
   // A new portfolio starts with Richard's questionnaire. The neutral starter
   // account is created only after the user completes it.
   var _pni = useState(false);
@@ -34188,13 +35019,11 @@ export default function App() {
   // Leaving the business account. One handler so the row at the top of the page
   // and the bar at the bottom of the screen can never disagree about where back
   // goes; the label names the account you're stepping out of when one is open.
-  function exitBusiness() { setTab(prevTabRef.current || "overview"); setSheet(false); }
-  var openBizName = (function() {
-    var b = (businesses || []).filter(function(x) { return String(x.id) === String(openBiz); })[0];
-    if (!b || !b.name) return "";
-    return b.name.length > 22 ? b.name.slice(0, 21) + "…" : b.name;
-  })();
-  var exitBusinessLabel = openBizName ? "Exit " + openBizName : ("Back to " + (prevTabRef.current === "overview" ? "Dashboard" : "Savings"));
+  function exitBusiness() { setTab(prevTabRef.current || "overview"); setOpenBizDetail(null); setSheet(false); }
+  // The bar only carries this label while you are picking a business, not while
+  // one is open - inside an account it is the four-way hub instead, exactly as
+  // the investing tab does it, and the row at the top of the page steps out.
+  var exitBusinessLabel = "Back to " + (prevTabRef.current === "overview" ? "Dashboard" : "Savings");
   var MAIN_TAB_IDS = TABS.map(function(t) { return t.id; });
   // Feed the native drag handlers fresh values without re-subscribing each render.
   liveRef.current = { currentTab: currentTab, sheet: sheet, order: MAIN_TAB_IDS, mainSet: MAIN_TABS_SET };
@@ -34202,8 +35031,8 @@ export default function App() {
   // The five swipeable main tabs, produced by id so both the visible page and the
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
-    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} onAddWidget={onAddWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
-    if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
+    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} onAddWidget={onAddWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setOpenBizDetail(id || null); setBusinessHubTab("desk"); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
+    if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setOpenBizDetail(id || null); setBusinessHubTab("desk"); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
     if (id === "advisor") return <Advisor isActive={id === currentTab} tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} widgets={widgets} onSaveWidgets={onSaveWidgets} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} onBackToOverview={function() { setTab("overview"); }} onOpenInstructions={function() { prevTabRef.current = "advisor"; setTab("instructions"); setSheet(false); }} onOpenProfile={function() { prevTabRef.current = "advisor"; setTab("profile"); setSheet(false); }} />;
@@ -34381,8 +35210,8 @@ export default function App() {
         {currentTab === "periodMode" && <PeriodModeView periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onPeriodModeChange={onSavePeriodMode} onPeriodCustomChange={onSavePeriodCustom} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "bankSync" && <BankSyncView bankSync={bankSync} onEnable={onEnableBankSync} onDisable={onDisableBankSync} leumiFinteka={leumiFinteka} onConnectLeumi={onConnectLeumiFinteka} onDisconnectLeumi={onDisconnectLeumiFinteka} onSyncLeumiNow={onSyncLeumiFintekaNow} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "whatsapp" && <WhatsAppAlertsView whatsapp={whatsapp} onLink={onLinkWhatsapp} onUnlink={onUnlinkWhatsapp} onBack={function() { setTab(prevTabRef.current || "settings"); }} />}
-        {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenInvestorOnboard={function() { prevTabRef.current = "savings"; setPendingInvestingStart(true); setTab("investorOnboard"); }} />}
-        {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Dashboard" : "Savings"} onBack={exitBusiness} />}
+        {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setOpenBizDetail(id || null); setBusinessHubTab("desk"); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenInvestorOnboard={function() { prevTabRef.current = "savings"; setPendingInvestingStart(true); setTab("investorOnboard"); }} />}
+        {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} hubTab={businessHubTab} onHubTabChange={setBusinessHubTab} onDetailChange={setOpenBizDetail} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Dashboard" : "Savings"} onBack={exitBusiness} />}
         {currentTab === "investing" && <InvestingView investing={investing} tx={tx} goals={goals} openInvId={openInv} hubTab={investingHubTab} onHubTabChange={setInvestingHubTab} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} onOpenInvestorOnboard={function() { prevTabRef.current = "investing"; setTab("investorOnboard"); }} onOpenScout={function() { prevTabRef.current = "investing"; setTab("scout"); }} onOpenPlanOnboard={function(acctId) { prevTabRef.current = "investing"; setOpenInv(acctId || null); setTab("investPlan"); }} backLabel={prevTabRef.current === "overview" ? "Dashboard" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
         {currentTab === "investPlan" && <InvestPlanOnboard acct={(investing || []).filter(function(a) { return a.id === openInv; })[0] || (investing || [])[0] || null} username={user} onCancel={function() { setTab("investing"); }} onSave={onSaveInvestPlan} />}
         {currentTab === "scout" && <StockScoutView investing={investing} openInvId={openInv} tx={tx} goals={goals} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} backLabel="Investing" onBack={function() { setTab("investing"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} onTrade={function(acctId, symbol) { setOpenInv(acctId); setInvSheetReq({ kind: "buy", symbol: symbol }); setTab("investing"); }} />}
@@ -34422,7 +35251,9 @@ export default function App() {
               isn't cropped). Sits below the buttons in paint order. */}
           <div style={{ position: "absolute", inset: 0, borderRadius: 34, pointerEvents: "none", background: "linear-gradient(180deg, " + T.navSheen + " 0%, rgba(255,255,255,0) 42%, rgba(255,255,255,0) 100%)" }} />
           {currentTab === "business"
-            ? <GlassBackBar label={exitBusinessLabel} onPress={exitBusiness} />
+            ? (openBizDetail != null
+                ? <GlassTabBar tabs={BUSINESS_HUB_TABS} current={businessHubTab} onSelect={setBusinessHubTab} />
+                : <GlassBackBar label={exitBusinessLabel} onPress={exitBusiness} />)
             : currentTab === "investing"
               ? <GlassTabBar tabs={INVESTING_HUB_TABS} current={investingHubTab} onSelect={setInvestingHubTab} />
               : <GlassTabBar tabs={TABS} current={currentTab} onSelect={function(id) { setTab(id); setSheet(false); }} />}
