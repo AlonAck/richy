@@ -564,6 +564,17 @@ yet compiled)**.
   reply can be reported from its context menu). What closes the phase is
   running the app with a test account and the web/phone parity test in the
   README - that needs a Mac and a person, not CI.
+- **Sign in with Google and Apple (Phase 5 item 8) written 2026-09-05
+  evening, unverified on a device:** Google through Firebase's own web flow
+  (no Google SDK; the Firebase auth domain is already authorised, so the
+  same Google accounts as the web sign in), Apple through the system sheet
+  with a hashed nonce and `OAuthProvider.appleCredential`. The return URL
+  scheme is written into the built Info.plist by a build phase that reads
+  `GoogleService-Info.plist`, so nothing per-project is committed;
+  `Richy.entitlements` carries the Sign in with Apple capability. Both
+  sign into the existing Firebase user for that email - no duplicate uids.
+  Still to check on a device: the Google sheet returns to the app, and the
+  Apple sheet works once a paid team enables the capability.
 - **Document split — started 2026-09-04 on branch `firestore-split`, not
   merged.** Transactions move to `users/{uid}/tx/{id}` and every write to
   the parent becomes a field-level `update()`; the parent's array stays

@@ -59,6 +59,39 @@ final class FirebaseAuthService: AuthService {
         }
     }
 
+    func signInWithGoogle() async throws -> AuthUser {
+        let provider = OAuthProvider.provider(withProviderID: "google.com")
+        provider.customParameters = ["prompt": "select_account"]
+        do {
+            let credential = try await provider.credential(with: nil)
+            let result = try await Auth.auth().signIn(with: credential)
+            Log.auth.info("Signed in with Google")
+            return AuthUser(firebaseUser: result.user)
+        } catch {
+            throw AuthError.from(error)
+        }
+    }
+
+    func signInWithApple(idToken: String, rawNonce: String, fullName: PersonNameComponents?) async throws -> AuthUser {
+        let credential = OAuthProvider.appleCredential(withIDToken: idToken, rawNonce: rawNonce, fullName: fullName)
+        do {
+            let result = try await Auth.auth().signIn(with: credential)
+            let existing = result.user.displayName ?? ""
+            if existing.isEmpty, let fullName {
+                let formatted = PersonNameComponentsFormatter().string(from: fullName).trimmingCharacters(in: .whitespaces)
+                if !formatted.isEmpty {
+                    let change = result.user.createProfileChangeRequest()
+                    change.displayName = formatted
+                    try? await change.commitChanges()
+                }
+            }
+            Log.auth.info("Signed in with Apple")
+            return AuthUser(firebaseUser: result.user)
+        } catch {
+            throw AuthError.from(error)
+        }
+    }
+
     func idToken(forceRefresh: Bool) async throws -> String? {
         guard let user = Auth.auth().currentUser else { return nil }
         return try await user.getIDToken(forcingRefresh: forceRefresh)

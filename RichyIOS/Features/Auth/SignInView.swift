@@ -31,6 +31,8 @@ struct SignInView: View {
                 Task { await model.signIn() }
             }
             .disabled(!model.canSignIn)
+            OrDivider()
+            SocialSignInButtons(model: model)
             Button("Forgot your password?", action: onForgotPassword)
                 .font(RichyFont.ui(RichyFont.Size.subhead, weight: .medium))
                 .tint(RichyColor.accent)

@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import AuthenticationServices
 
 /// Form state for sign-in, sign-up and reset. Success is not signalled from
 /// here: the auth service's state stream tells `AppState`, which switches the
@@ -58,6 +59,34 @@ final class AuthViewModel {
         }
     }
 
+    func signInWithGoogle() async {
+        await run {
+            _ = try await self.auth.signInWithGoogle()
+        }
+    }
+
+    /// The outcome of the system Sign in with Apple sheet.
+    func signInWithApple(_ result: Result<ASAuthorization, Error>, rawNonce: String) async {
+        switch result {
+        case .failure(let error):
+            let mapped = AuthError.from(error)
+            if mapped != .cancelled {
+                errorMessage = UserFacingError.message(for: mapped)
+            }
+        case .success(let authorization):
+            guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
+                  let tokenData = credential.identityToken,
+                  let idToken = String(data: tokenData, encoding: .utf8) else {
+                errorMessage = "Apple did not return a sign-in token. Try again."
+                return
+            }
+            let fullName = credential.fullName
+            await run {
+                _ = try await self.auth.signInWithApple(idToken: idToken, rawNonce: rawNonce, fullName: fullName)
+            }
+        }
+    }
+
     func clearMessages() {
         errorMessage = nil
         infoMessage = nil
@@ -72,6 +101,7 @@ final class AuthViewModel {
         do {
             try await work()
         } catch {
+            if let authError = error as? AuthError, authError == .cancelled { return }
             errorMessage = UserFacingError.message(for: error)
         }
     }

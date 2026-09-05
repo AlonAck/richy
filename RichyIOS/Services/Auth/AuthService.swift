@@ -15,4 +15,14 @@ protocol AuthService: TokenProvider {
     func signUp(email: String, password: String) async throws -> AuthUser
     func sendPasswordReset(email: String) async throws
     func signOut() throws
+
+    /// Google through Firebase's own web flow: a Safari sheet on the Firebase
+    /// auth domain, the round trip handled by the SDK. The app registers the
+    /// return URL scheme at build time from `GoogleService-Info.plist`.
+    func signInWithGoogle() async throws -> AuthUser
+
+    /// Apple, once the system sheet has produced an identity token. `rawNonce`
+    /// is the value whose SHA-256 was sent to Apple; `fullName` arrives only
+    /// on the very first sign-in and is kept as the display name.
+    func signInWithApple(idToken: String, rawNonce: String, fullName: PersonNameComponents?) async throws -> AuthUser
 }

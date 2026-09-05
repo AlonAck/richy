@@ -21,7 +21,7 @@ What CI cannot do is run the app: that still takes the Mac checklist below.
 | `Features/Budgets/`, `Features/Goals/` | Live numbers; add, edit and delete caps, targets and goals from the phone (`BudgetFormView`, `GoalFormView`), written as field-level edits of the account document after a fresh read |
 | `Features/Ledger/` | `LedgerStore` (one live subscription per session, shared by every tab) and `LedgerMath` (the dashboard arithmetic, ported from the web) |
 | `Features/Richard/` | `RichardChatView` + view model: your messages as bubbles, Richard's as text, suggestion chips, the AI disclosure first, a report control on every reply; `RichardPrompt` builds the system prompt from the live ledger on every send |
-| `Features/Auth/`, `Boot/`, `Profile/` | Sign in / sign up / reset; boot and not-configured screens; profile with sign out and delete account |
+| `Features/Auth/`, `Boot/`, `Profile/` | Sign in / sign up / reset with email; Continue with Google (Firebase's web flow, no extra SDK) and Continue with Apple (`SocialSignInButtons`); boot and not-configured screens; profile with sign out and delete account |
 | `Components/` | `LoadingView`, `ErrorView`, `EmptyStateView`, `AsyncContentView`, buttons, card, text field, logo |
 | `Models/` | Codable models for the account document: `Transaction`, `Budget`, `Goal`, `Category`, `Folder`, `Account`, chat types |
 | `Services/Ledger/` | `LedgerService` protocol; `FirestoreLedgerService` (live listeners on `users/{uid}` and `users/{uid}/tx`, one document per write, and the one-time account move from the web app's `migrateTx`); `MockLedgerService` (in-memory, with sample data) |
@@ -31,8 +31,8 @@ What CI cannot do is run the app: that still takes the Mac checklist below.
 | `Richy.xcodeproj` | The Xcode project, committed. Xcode 16 format: each folder above is a synchronised folder, so new files are picked up without touching the project. Packages: FirebaseCore, FirebaseAuth, FirebaseFirestore |
 | `project.yml` | The same project as an XcodeGen spec — only a fallback for regenerating `Richy.xcodeproj`, see below |
 
-Deliberately **not** here yet: Sign in with Apple / Google, saved chat
-history, creating an account from the phone (sign-up works, but the account document
+Deliberately **not** here yet: saved chat history, creating an account from
+the phone (sign-up works, but the account document
 is still created by the web's onboarding), savings pots, business,
 investing, trips, households, Bank Sync.
 
@@ -48,6 +48,19 @@ overwriting each other. Budgets and goals are arrays on the account
 document; an edit re-reads the document inside a transaction, changes one
 entry and writes back only that array, keeping any key this app does not
 know about.
+
+### Google and Apple sign-in
+
+Both come back into the app through a custom URL scheme that depends on the
+Firebase file, so a build phase ("Register sign-in URL scheme") reads
+`REVERSED_CLIENT_ID` and `GOOGLE_APP_ID` from `Resources/GoogleService-Info.plist`
+and writes the schemes into the built `Info.plist`. Nothing to configure by
+hand; without the file the phase does nothing and email sign-in still works.
+Google uses Firebase's own web flow on the Firebase auth domain, which is
+already an authorised domain, so the same Google accounts as the web sign
+in. Apple needs the **Sign in with Apple** capability on the App ID, which
+automatic signing adds from `Richy.entitlements` once a paid team is
+selected; on a personal team the Apple button shows but the sheet fails.
 
 ## Before the Mac session — things only the account owner can do
 

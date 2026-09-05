@@ -1,4 +1,6 @@
 import SwiftUI
+import FirebaseCore
+import FirebaseAuth
 
 @main
 struct RichyApp: App {
@@ -17,6 +19,13 @@ struct RichyApp: App {
             RootView()
                 .environment(appState)
                 .environment(\.services, services)
+                .onOpenURL { url in
+                    // The Google sign-in sheet returns through the URL scheme
+                    // registered at build time; Firebase finishes the handshake.
+                    if FirebaseApp.app() != nil {
+                        _ = Auth.auth().canHandle(url)
+                    }
+                }
         }
     }
 }

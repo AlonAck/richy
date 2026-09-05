@@ -17,10 +17,14 @@ enum AuthError: Error, LocalizedError, Equatable, Sendable {
     case tooManyRequests
     case network
     case notConfigured
+    /// The person closed the Google or Apple sheet. Not a failure; nothing is shown.
+    case cancelled
     case unknown(String)
 
     var errorDescription: String? {
         switch self {
+        case .cancelled:
+            return ""
         case .invalidEmail:
             return "That doesn't look like an email address."
         case .invalidCredential, .wrongPassword:
@@ -48,10 +52,15 @@ enum AuthError: Error, LocalizedError, Equatable, Sendable {
     static func from(_ error: Error) -> AuthError {
         if let authError = error as? AuthError { return authError }
         let nsError = error as NSError
+        // ASAuthorizationError.canceled: the Sign in with Apple sheet was dismissed.
+        if nsError.domain == "com.apple.AuthenticationServices.AuthorizationError" {
+            return nsError.code == 1001 ? .cancelled : .unknown(nsError.localizedDescription)
+        }
         guard nsError.domain == "FIRAuthErrorDomain" else {
             return .unknown(nsError.localizedDescription)
         }
         switch nsError.code {
+        case 17058: return .cancelled            // FIRAuthErrorCodeWebContextCancelled
         case 17004: return .invalidCredential   // FIRAuthErrorCodeInvalidCredential
         case 17005: return .userDisabled        // FIRAuthErrorCodeUserDisabled
         case 17007: return .emailInUse          // FIRAuthErrorCodeEmailAlreadyInUse

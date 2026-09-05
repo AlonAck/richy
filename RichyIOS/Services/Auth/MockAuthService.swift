@@ -65,6 +65,21 @@ final class MockAuthService: AuthService, @unchecked Sendable {
         guard email.contains("@") else { throw AuthError.invalidEmail }
     }
 
+    func signInWithGoogle() async throws -> AuthUser {
+        try await Task.sleep(nanoseconds: 400_000_000)
+        let signedIn = AuthUser(uid: "demo-uid", email: "demo@gmail.com", displayName: "Demo", isEmailVerified: true, provider: .google)
+        update(signedIn)
+        return signedIn
+    }
+
+    func signInWithApple(idToken: String, rawNonce: String, fullName: PersonNameComponents?) async throws -> AuthUser {
+        try await Task.sleep(nanoseconds: 400_000_000)
+        let name = fullName.map { PersonNameComponentsFormatter().string(from: $0) } ?? "Demo"
+        let signedIn = AuthUser(uid: "demo-uid", email: "demo@privaterelay.appleid.com", displayName: name, isEmailVerified: true, provider: .apple)
+        update(signedIn)
+        return signedIn
+    }
+
     func signOut() throws {
         update(nil)
     }

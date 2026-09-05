@@ -43,6 +43,36 @@ targets:
         product: FirebaseAuth
       - package: Firebase
         product: FirebaseFirestore
+    entitlements:
+      path: Richy.entitlements
+      properties:
+        com.apple.developer.applesignin: [Default]
+    postBuildScripts:
+      # Same script as the committed Richy.xcodeproj: registers the sign-in
+      # URL scheme(s) from GoogleService-Info.plist in the built Info.plist.
+      - name: Register sign-in URL scheme
+        shell: /bin/sh
+        script: |
+          CONFIG="${SRCROOT}/Resources/GoogleService-Info.plist"
+          TARGET="${TARGET_BUILD_DIR}/${INFOPLIST_PATH}"
+          PB=/usr/libexec/PlistBuddy
+          if [ ! -f "$CONFIG" ] || [ ! -f "$TARGET" ]; then exit 0; fi
+          REVERSED=$($PB -c "Print :REVERSED_CLIENT_ID" "$CONFIG" 2>/dev/null || true)
+          APPID=$($PB -c "Print :GOOGLE_APP_ID" "$CONFIG" 2>/dev/null || true)
+          ENCODED=""
+          if [ -n "$APPID" ]; then ENCODED="app-$(echo "$APPID" | tr ':' '-')"; fi
+          $PB -c "Delete :CFBundleURLTypes" "$TARGET" 2>/dev/null || true
+          $PB -c "Add :CFBundleURLTypes array" "$TARGET"
+          $PB -c "Add :CFBundleURLTypes:0 dict" "$TARGET"
+          $PB -c "Add :CFBundleURLTypes:0:CFBundleTypeRole string Editor" "$TARGET"
+          $PB -c "Add :CFBundleURLTypes:0:CFBundleURLSchemes array" "$TARGET"
+          I=0
+          for S in "$REVERSED" "$ENCODED"; do
+            if [ -n "$S" ]; then
+              $PB -c "Add :CFBundleURLTypes:0:CFBundleURLSchemes:$I string $S" "$TARGET"
+              I=$((I+1))
+            fi
+          done
     info:
       path: Info.plist
       properties:
