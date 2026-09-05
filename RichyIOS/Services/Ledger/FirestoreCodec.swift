@@ -90,6 +90,61 @@ enum FirestoreCodec {
         return out
     }
 
+    // MARK: A new account
+
+    /// The web app's `TERMS_VERSION` at the time of writing.
+    static let termsVersion = "2026-08-26"
+
+    /// The document the web's sign-up writes (`finishSignup`), minus the `tx`
+    /// array: a phone-created account starts on schema 2 with an empty
+    /// subcollection. Same default folders and categories, same synced tags,
+    /// same consent fields.
+    static func newAccountDocument(_ draft: AccountDraft, now: Date = Date()) -> [String: Any] {
+        var out: [String: Any] = [
+            "txSchema": splitSchema,
+            "budgets": [],
+            "goals": [],
+            "notes": [],
+            "folders": defaultFolders,
+            "categories": defaultCategories,
+            "displayName": draft.displayName,
+            "dob": draft.dob,
+            "lang": draft.lang,
+            "currency": draft.currency,
+            "richardNotes": draft.richardNotes,
+            "consentAt": Int(now.timeIntervalSince1970 * 1000),
+            "termsVersion": termsVersion
+        ]
+        if let email = draft.email { out["email"] = email }
+        return out
+    }
+
+    /// `DEFAULT_FOLDERS` + `SYNCED_TAG_FOLDER`, verbatim.
+    static let defaultFolders: [[String: Any]] = [
+        ["id": "f1", "name": "Essentials", "color": "#2799C8", "icon": "home"],
+        ["id": "f2", "name": "Lifestyle", "color": "#AF52DE", "icon": "star"],
+        ["id": "f3", "name": "Income & Wealth", "color": "#27A85F", "icon": "coins"],
+        ["id": "f-wealth", "name": "Business, Investing & Savings", "color": "#C8983A", "icon": "briefcase",
+         "rule": ["kind": "accounts", "accounts": ["business", "investing", "savings"]], "locked": true]
+    ]
+
+    /// `DEFAULT_CATEGORIES` + `SYNCED_TAGS`, verbatim.
+    static let defaultCategories: [[String: Any]] = [
+        ["id": "c1", "name": "Housing", "color": "#8B6CEF", "icon": "home", "folderId": "f1"],
+        ["id": "c2", "name": "Food", "color": "#27A85F", "icon": "food", "folderId": "f1"],
+        ["id": "c3", "name": "Transport", "color": "#D97941", "icon": "car", "folderId": "f1"],
+        ["id": "c4", "name": "Health", "color": "#E0556E", "icon": "heart", "folderId": "f1"],
+        ["id": "c5", "name": "Entertainment", "color": "#2799C8", "icon": "film", "folderId": "f2"],
+        ["id": "c6", "name": "Shopping", "color": "#AF52DE", "icon": "cart", "folderId": "f2"],
+        ["id": "c8", "name": "Salary", "color": "#27A85F", "icon": "briefcase", "folderId": "f3"],
+        ["id": "c9", "name": "Investments", "color": "#C8983A", "icon": "chart", "folderId": "f3"],
+        ["id": "c10", "name": "Savings", "color": "#C8673A", "icon": "coins", "folderId": "f3"],
+        ["id": "c11", "name": "Other", "color": "#6B5C4E", "icon": "box", "folderId": "f2"],
+        ["id": "tag-business", "name": "Business", "color": "#C8673A", "icon": "briefcase", "folderId": "f-wealth", "synced": "business"],
+        ["id": "tag-investing", "name": "Investment", "color": "#C8983A", "icon": "chart", "folderId": "f-wealth", "synced": "investing"],
+        ["id": "tag-savings", "name": "Savings", "color": "#8970C6", "icon": "coins", "folderId": "f-wealth", "synced": "savings"]
+    ]
+
     // MARK: Budgets and goals
 
     /// The web's budget object. `dir` is written explicitly so switching a

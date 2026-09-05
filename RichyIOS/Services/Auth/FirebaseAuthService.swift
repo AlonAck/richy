@@ -60,10 +60,11 @@ final class FirebaseAuthService: AuthService {
     }
 
     func signInWithGoogle() async throws -> AuthUser {
-        let provider = OAuthProvider.provider(withProviderID: "google.com")
+        let provider = OAuthProvider.provider(providerID: "google.com")
         provider.customParameters = ["prompt": "select_account"]
+        let noDelegate: AuthUIDelegate? = nil
         do {
-            let credential = try await provider.credential(with: nil)
+            let credential = try await provider.credential(with: noDelegate)
             let result = try await Auth.auth().signIn(with: credential)
             Log.auth.info("Signed in with Google")
             return AuthUser(firebaseUser: result.user)

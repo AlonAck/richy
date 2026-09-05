@@ -85,4 +85,22 @@ enum RichyDate {
         guard let date = date(from: monthKey + "-01") else { return monthKey }
         return monthTitle.string(from: date)
     }
+
+    /// The web app's `computeAge`: whole years between a "YYYY-MM-DD" date of
+    /// birth and now, on the UTC calendar. Nil when the date cannot be read.
+    static func age(dob: String, now: Date = Date()) -> Int? {
+        guard let birth = date(from: dob) else { return nil }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = utc
+        let birthParts = calendar.dateComponents([.year, .month, .day], from: birth)
+        let nowParts = calendar.dateComponents([.year, .month, .day], from: now)
+        guard let by = birthParts.year, let bm = birthParts.month, let bd = birthParts.day,
+              let ny = nowParts.year, let nm = nowParts.month, let nd = nowParts.day else { return nil }
+        var age = ny - by
+        if nm < bm || (nm == bm && nd < bd) { age -= 1 }
+        return age
+    }
+
+    /// Richy is for people 16 and older (terms section 2, privacy section 8).
+    static let minimumAge = 16
 }

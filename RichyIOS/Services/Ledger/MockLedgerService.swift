@@ -32,6 +32,27 @@ final class MockLedgerService: LedgerService, @unchecked Sendable {
         }
     }
 
+    func createAccount(_ draft: AccountDraft, uid: String) async throws {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        mutateAccount { _ in
+            Account(email: draft.email,
+                    currency: draft.currency,
+                    onboardingDone: false,
+                    tx: [],
+                    budgets: [],
+                    goals: [],
+                    categories: MockLedgerService.sampleCategories,
+                    folders: MockLedgerService.sampleFolders)
+        }
+        if draft.openingBalance > 0 {
+            mutate { list in
+                list.append(Transaction(id: RichyDate.newId(), type: .income, amount: draft.openingBalance,
+                                        label: "Opening balance", catId: "opening", category: "Opening balance",
+                                        date: RichyDate.today(), repeatRule: "none", pending: false, opening: true))
+            }
+        }
+    }
+
     func saveBudget(_ budget: Budget, uid: String) async throws {
         mutateAccount { current in
             var budgets = current.budgets

@@ -31,10 +31,20 @@ What CI cannot do is run the app: that still takes the Mac checklist below.
 | `Richy.xcodeproj` | The Xcode project, committed. Xcode 16 format: each folder above is a synchronised folder, so new files are picked up without touching the project. Packages: FirebaseCore, FirebaseAuth, FirebaseFirestore |
 | `project.yml` | The same project as an XcodeGen spec — only a fallback for regenerating `Richy.xcodeproj`, see below |
 
-Deliberately **not** here yet: saved chat history, creating an account from
-the phone (sign-up works, but the account document
-is still created by the web's onboarding), savings pots, business,
+Deliberately **not** here yet: saved chat history, the web's ten-step
+onboarding questionnaire and Richard's first plan (an account created on
+the phone gets it the first time it opens the web), savings pots, business,
 investing, trips, households, Bank Sync.
+
+### Accounts created from the phone
+
+Sign-up with email writes `users/{uid}` right after the login is created,
+with the fields the web's sign-up writes (name, date of birth, currency,
+language, consent time, terms version, the default folders and categories),
+on schema 2 from the start. A first Google or Apple sign-in has no document
+yet, so `AccountSetupView` collects the same answers and writes it. Both
+apply the 16+ gate the web applies (`RichyDate.age`), and both record the
+AI consent in the same `consentAt` field.
 
 ### How the data flows
 

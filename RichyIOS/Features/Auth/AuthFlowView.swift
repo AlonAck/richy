@@ -25,6 +25,7 @@ struct AuthFlowView: View {
                                    onCreateAccount: { path = [.signUp] })
                     case .signUp:
                         SignUpView(auth: services.auth,
+                                   ledger: services.ledger,
                                    onHaveAccount: { path = [.signIn] })
                     case .reset:
                         ResetPasswordView(auth: services.auth)

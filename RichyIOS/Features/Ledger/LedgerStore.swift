@@ -13,6 +13,10 @@ final class LedgerStore {
     enum Phase: Equatable {
         case loading
         case ready
+        /// Signed in, but `users/{uid}` does not exist yet: a first sign-in
+        /// from the phone. `AccountSetupView` collects what the web's sign-up
+        /// would have, then `createAccount` writes the document.
+        case needsSetup
         case failed(String)
     }
 
@@ -155,8 +159,28 @@ final class LedgerStore {
         }
     }
 
+    /// Writes the account document for a first sign-in from the phone, then
+    /// resubscribes so the tabs load it.
+    func createAccount(_ draft: AccountDraft) async -> Bool {
+        do {
+            try await ledger.createAccount(draft, uid: uid)
+            writeError = nil
+            retry()
+            return true
+        } catch {
+            writeError = UserFacingError.message(for: error)
+            Log.app.error("Account creation failed")
+            return false
+        }
+    }
+
     private func fail(_ error: Error) {
         if error is CancellationError { return }
+        if case .needsSetup = phase { return }
+        if LedgerError(error) == .noAccount {
+            phase = .needsSetup
+            return
+        }
         phase = .failed(UserFacingError.message(for: error))
         Log.app.error("Ledger stream failed")
     }

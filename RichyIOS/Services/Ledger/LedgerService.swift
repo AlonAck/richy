@@ -18,6 +18,18 @@ struct TransactionDraft: Equatable, Sendable {
     }
 }
 
+/// What a brand-new account needs before its document can exist: the same
+/// answers the web's sign-up collects. `dob` is "YYYY-MM-DD".
+struct AccountDraft: Equatable, Sendable {
+    var displayName: String
+    var email: String?
+    var dob: String
+    var lang: String = "en"
+    var currency: String = "$"
+    var richardNotes: String = ""
+    var openingBalance: Double = 0
+}
+
 enum LedgerError: LocalizedError, Equatable {
     /// The signed-in user has no `users/{uid}` document yet.
     case noAccount
@@ -85,4 +97,9 @@ protocol LedgerService: Sendable {
     func deleteBudget(catId: String, uid: String) async throws
     func saveGoal(_ goal: Goal, uid: String) async throws
     func deleteGoal(id: Int, uid: String) async throws
+
+    /// Creates `users/{uid}` for a signed-in person who has none yet - the
+    /// document the web's sign-up writes, on schema 2 from the start. Never
+    /// overwrites: if the document appeared meanwhile, this is a no-op.
+    func createAccount(_ draft: AccountDraft, uid: String) async throws
 }

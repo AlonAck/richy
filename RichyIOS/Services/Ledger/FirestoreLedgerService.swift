@@ -97,6 +97,44 @@ final class FirestoreLedgerService: LedgerService, @unchecked Sendable {
         }
     }
 
+    // MARK: A new account
+
+    func createAccount(_ draft: AccountDraft, uid: String) async throws {
+        let parent = userRef(uid)
+        let document = FirestoreCodec.newAccountDocument(draft)
+        do {
+            let created = try await db.runTransaction { (txn: FirebaseFirestore.Transaction, errorPointer: NSErrorPointer) -> Any? in
+                let snapshot: DocumentSnapshot
+                do {
+                    snapshot = try txn.getDocument(parent)
+                } catch let error as NSError {
+                    errorPointer?.pointee = error
+                    return nil
+                }
+                if snapshot.exists { return NSNumber(value: false) }
+                txn.setData(document, forDocument: parent)
+                return NSNumber(value: true)
+            }
+            guard (created as? NSNumber)?.boolValue == true else { return }
+            if draft.openingBalance > 0 {
+                let opening = Transaction(id: RichyDate.newId(),
+                                          type: .income,
+                                          amount: draft.openingBalance,
+                                          label: "Opening balance",
+                                          catId: "opening",
+                                          category: "Opening balance",
+                                          date: RichyDate.today(),
+                                          repeatRule: "none",
+                                          pending: false,
+                                          opening: true)
+                try await txDoc(uid, key: String(opening.id)).setData(FirestoreCodec.data(for: opening))
+            }
+            Log.app.info("Account document created from the phone")
+        } catch {
+            throw LedgerError(error)
+        }
+    }
+
     // MARK: Budgets and goals
 
     func saveBudget(_ budget: Budget, uid: String) async throws {

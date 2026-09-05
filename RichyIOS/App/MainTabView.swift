@@ -14,6 +14,25 @@ struct MainTabView: View {
     }
 
     var body: some View {
+        Group {
+            if store.phase == .needsSetup {
+                AccountSetupView(user: user)
+            } else {
+                tabs
+            }
+        }
+        .environment(store)
+        .tint(RichyColor.accent)
+        .safeAreaInset(edge: .top) {
+            if appState.isDemoMode {
+                DemoBanner()
+            }
+        }
+        .onAppear { store.start() }
+        .onDisappear { store.stop() }
+    }
+
+    private var tabs: some View {
         TabView {
             DashboardView(user: user)
                 .tabItem { Label("Dashboard", systemImage: "square.grid.2x2") }
@@ -26,15 +45,6 @@ struct MainTabView: View {
             RichardChatView(user: user)
                 .tabItem { Label("Richard", systemImage: "bubble.left.and.text.bubble.right") }
         }
-        .environment(store)
-        .tint(RichyColor.accent)
-        .safeAreaInset(edge: .top) {
-            if appState.isDemoMode {
-                DemoBanner()
-            }
-        }
-        .onAppear { store.start() }
-        .onDisappear { store.stop() }
     }
 }
 
