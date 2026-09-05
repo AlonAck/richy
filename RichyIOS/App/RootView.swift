@@ -22,7 +22,7 @@ struct RootView: View {
         }
         .animation(.easeInOut(duration: 0.25), value: appState.phase)
         .task {
-            await appState.start()
+            appState.start()
         }
     }
 }

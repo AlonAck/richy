@@ -23,7 +23,7 @@ struct MainTabView: View {
                 .tabItem { Label("Budgets", systemImage: "chart.bar.doc.horizontal") }
             GoalsView()
                 .tabItem { Label("Goals", systemImage: "target") }
-            RichardPlaceholderView()
+            RichardChatView(user: user)
                 .tabItem { Label("Richard", systemImage: "bubble.left.and.text.bubble.right") }
         }
         .environment(store)

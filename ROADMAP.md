@@ -537,12 +537,19 @@ yet compiled)**.
   the regeneration recipe. The `Account` model's `txSchema` decoding was
   fixed on `firestore-split` (the field had been added without CodingKeys,
   which would not have compiled).
+  **Build gate passed 2026-09-05 17:35 UTC:** the whole `RichyIOS/` tree
+  (foundation + the Phase 3 slice) compiles on Xcode 16.4 for the iOS
+  Simulator on a GitHub-hosted macOS runner. `.github/workflows/ios-build.yml`
+  runs on every push that touches `RichyIOS/` and posts the verdict and
+  every error line to issue #16, so the Windows side now has a compiler and
+  a fix loop. A Mac is still needed to run the app, for the plist, and for
+  TestFlight.
 - **Next (owner: Alon):** the iOS app `com.richy.app` is already registered
   in the Firebase project (seen in the console 2026-09-05), so download its
   `GoogleService-Info.plist` from Project settings → Your apps, then one
   Mac session per `RichyIOS/README.md`: clone → open `Richy.xcodeproj` →
   build → sign in with a test account.
-- **Phase 3 started 2026-09-05 (owner: AI), written not compiled:** the
+- **Phase 3 started 2026-09-05 (owner: AI), compiles on CI:** the
   vertical slice is in `RichyIOS/` on `master` — `FirestoreLedgerService`
   (live listeners on `users/{uid}` and `users/{uid}/tx`, one document per
   write, the web's `migrateTx` ported so a phone-only account moves too),
@@ -550,9 +557,12 @@ yet compiled)**.
   spend and budget rows ported from the dashboard), and the five tabs:
   Dashboard, Activity (add / edit / delete), Budgets and Goals (read-only,
   live numbers), Richard (placeholder). Profile opens from the Dashboard
-  toolbar. `FirebaseFirestore` was added to the project. The Mac build and
-  the web/phone parity test in the README are what close the phase; both
-  are Alon's.
+  toolbar. `FirebaseFirestore` was added to the project. Richard's chat
+  followed the same day (`RichardChatView`: prompt rebuilt from the live
+  ledger on every send, the AI disclosure opens every conversation, every
+  reply can be reported from its context menu). What closes the phase is
+  running the app with a test account and the web/phone parity test in the
+  README - that needs a Mac and a person, not CI.
 - **Document split — started 2026-09-04 on branch `firestore-split`, not
   merged.** Transactions move to `users/{uid}/tx/{id}` and every write to
   the parent becomes a field-level `update()`; the parent's array stays

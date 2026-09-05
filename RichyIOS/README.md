@@ -5,9 +5,11 @@ the **same Firebase project and the same accounts** as the web app at
 richy-mgkl.vercel.app, reads and writes the **same Firestore documents**, and
 calls the **same Vercel API**; nothing about the backend is duplicated here.
 
-This folder was written on Windows. **It has not been compiled yet.** The
-first build happens in Xcode on the Mac using the checklist below — until
-that has run, treat "it compiles" as unverified.
+This folder is written on Windows and **compiled on every push** by
+`.github/workflows/ios-build.yml` on a GitHub-hosted macOS runner (Xcode
+16.4, iOS Simulator). The verdict and every error line land as a comment on
+the repo's "iOS build log" issue, so a red build is visible without a Mac.
+What CI cannot do is run the app: that still takes the Mac checklist below.
 
 ## What is here
 
@@ -18,7 +20,8 @@ that has run, treat "it compiles" as unverified.
 | `Features/Transactions/` | `ActivityView` (newest first, grouped by day, swipe to delete, tap to edit), `TransactionFormView` (add/edit), `TransactionRow` |
 | `Features/Budgets/`, `Features/Goals/` | Read-only lists with live numbers; caps, targets and goals are still created on the web |
 | `Features/Ledger/` | `LedgerStore` (one live subscription per session, shared by every tab) and `LedgerMath` (the dashboard arithmetic, ported from the web) |
-| `Features/Auth/`, `Boot/`, `Profile/`, `Richard/` | Sign in / sign up / reset; boot and not-configured screens; profile with sign out and delete account; Richard placeholder with the AI disclosure |
+| `Features/Richard/` | `RichardChatView` + view model: your messages as bubbles, Richard's as text, suggestion chips, the AI disclosure first, a report control on every reply; `RichardPrompt` builds the system prompt from the live ledger on every send |
+| `Features/Auth/`, `Boot/`, `Profile/` | Sign in / sign up / reset; boot and not-configured screens; profile with sign out and delete account |
 | `Components/` | `LoadingView`, `ErrorView`, `EmptyStateView`, `AsyncContentView`, buttons, card, text field, logo |
 | `Models/` | Codable models for the account document: `Transaction`, `Budget`, `Goal`, `Category`, `Folder`, `Account`, chat types |
 | `Services/Ledger/` | `LedgerService` protocol; `FirestoreLedgerService` (live listeners on `users/{uid}` and `users/{uid}/tx`, one document per write, and the one-time account move from the web app's `migrateTx`); `MockLedgerService` (in-memory, with sample data) |
@@ -28,8 +31,8 @@ that has run, treat "it compiles" as unverified.
 | `Richy.xcodeproj` | The Xcode project, committed. Xcode 16 format: each folder above is a synchronised folder, so new files are picked up without touching the project. Packages: FirebaseCore, FirebaseAuth, FirebaseFirestore |
 | `project.yml` | The same project as an XcodeGen spec — only a fallback for regenerating `Richy.xcodeproj`, see below |
 
-Deliberately **not** here yet: Richard's chat, Sign in with Apple / Google,
-creating an account from the phone (sign-up works, but the account document
+Deliberately **not** here yet: Sign in with Apple / Google, saved chat
+history, creating an account from the phone (sign-up works, but the account document
 is still created by the web's onboarding), editing budgets and goals,
 savings pots, business, investing, trips, households, Bank Sync.
 
