@@ -18,7 +18,7 @@ What CI cannot do is run the app: that still takes the Mac checklist below.
 | `App/` | `RichyApp` entry point, `AppState` (session phase), `AppServices` (wiring), `RootView`, `MainTabView` (the web app's five tabs) |
 | `Features/Home/` | `DashboardView`: current balance, this month in/out/net, where the money went, latest activity |
 | `Features/Transactions/` | `ActivityView` (newest first, grouped by day, swipe to delete, tap to edit), `TransactionFormView` (add/edit), `TransactionRow` |
-| `Features/Budgets/`, `Features/Goals/` | Read-only lists with live numbers; caps, targets and goals are still created on the web |
+| `Features/Budgets/`, `Features/Goals/` | Live numbers; add, edit and delete caps, targets and goals from the phone (`BudgetFormView`, `GoalFormView`), written as field-level edits of the account document after a fresh read |
 | `Features/Ledger/` | `LedgerStore` (one live subscription per session, shared by every tab) and `LedgerMath` (the dashboard arithmetic, ported from the web) |
 | `Features/Richard/` | `RichardChatView` + view model: your messages as bubbles, Richard's as text, suggestion chips, the AI disclosure first, a report control on every reply; `RichardPrompt` builds the system prompt from the live ledger on every send |
 | `Features/Auth/`, `Boot/`, `Profile/` | Sign in / sign up / reset; boot and not-configured screens; profile with sign out and delete account |
@@ -33,8 +33,8 @@ What CI cannot do is run the app: that still takes the Mac checklist below.
 
 Deliberately **not** here yet: Sign in with Apple / Google, saved chat
 history, creating an account from the phone (sign-up works, but the account document
-is still created by the web's onboarding), editing budgets and goals,
-savings pots, business, investing, trips, households, Bank Sync.
+is still created by the web's onboarding), savings pots, business,
+investing, trips, households, Bank Sync.
 
 ### How the data flows
 
@@ -44,8 +44,10 @@ is on `txSchema: 2` (FIRESTORE_SPLIT.md); on every launch the app first runs
 the same move the web app runs, so an account that has only ever used the
 phone moves too. Adding, editing or deleting a transaction writes exactly
 one document, so the phone and the web can edit at the same time without
-overwriting each other. The account document itself is never written by
-this app yet.
+overwriting each other. Budgets and goals are arrays on the account
+document; an edit re-reads the document inside a transaction, changes one
+entry and writes back only that array, keeping any key this app does not
+know about.
 
 ## Before the Mac session — things only the account owner can do
 

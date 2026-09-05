@@ -8,6 +8,7 @@ final class MockLedgerService: LedgerService, @unchecked Sendable {
     private var account: Account
     private var transactions: [Transaction]
     private var continuations: [UUID: AsyncThrowingStream<[Transaction], Error>.Continuation] = [:]
+    private var accountContinuations: [UUID: AsyncThrowingStream<Account, Error>.Continuation] = [:]
 
     init(account: Account = MockLedgerService.sampleAccount, transactions: [Transaction] = MockLedgerService.sampleTransactions()) {
         self.account = account
@@ -15,8 +16,65 @@ final class MockLedgerService: LedgerService, @unchecked Sendable {
     }
 
     func accountUpdates(uid: String) -> AsyncThrowingStream<Account, Error> {
-        let current = snapshotAccount()
-        return AsyncThrowingStream { continuation in
+        AsyncThrowingStream { continuation in
+            let id = UUID()
+            lock.lock()
+            accountContinuations[id] = continuation
+            let current = account
+            lock.unlock()
+            continuation.yield(current)
+            continuation.onTermination = { [weak self] _ in
+                guard let self else { return }
+                self.lock.lock()
+                self.accountContinuations[id] = nil
+                self.lock.unlock()
+            }
+        }
+    }
+
+    func saveBudget(_ budget: Budget, uid: String) async throws {
+        mutateAccount { current in
+            var budgets = current.budgets
+            if let index = budgets.firstIndex(where: { $0.catId == budget.catId }) {
+                budgets[index] = budget
+            } else {
+                budgets.append(budget)
+            }
+            return current.replacing(budgets: budgets, goals: current.goals)
+        }
+    }
+
+    func deleteBudget(catId: String, uid: String) async throws {
+        mutateAccount { current in
+            current.replacing(budgets: current.budgets.filter { $0.catId != catId }, goals: current.goals)
+        }
+    }
+
+    func saveGoal(_ goal: Goal, uid: String) async throws {
+        mutateAccount { current in
+            var goals = current.goals
+            if let index = goals.firstIndex(where: { $0.id == goal.id }) {
+                goals[index] = goal
+            } else {
+                goals.append(goal)
+            }
+            return current.replacing(budgets: current.budgets, goals: goals)
+        }
+    }
+
+    func deleteGoal(id: Int, uid: String) async throws {
+        mutateAccount { current in
+            current.replacing(budgets: current.budgets, goals: current.goals.filter { $0.id != id })
+        }
+    }
+
+    private func mutateAccount(_ change: (Account) -> Account) {
+        lock.lock()
+        account = change(account)
+        let current = account
+        let listeners = Array(accountContinuations.values)
+        lock.unlock()
+        for continuation in listeners {
             continuation.yield(current)
         }
     }
@@ -60,12 +118,6 @@ final class MockLedgerService: LedgerService, @unchecked Sendable {
 
     func delete(_ transaction: Transaction, uid: String) async throws {
         mutate { list in list.removeAll { $0.id == transaction.id } }
-    }
-
-    private func snapshotAccount() -> Account {
-        lock.lock()
-        defer { lock.unlock() }
-        return account
     }
 
     private func mutate(_ change: (inout [Transaction]) -> Void) {
@@ -141,5 +193,21 @@ final class MockLedgerService: LedgerService, @unchecked Sendable {
         add(.expense, 310.2, "Groceries", "c2", "Food", daysAgo: 20)
         add(.expense, 45, "Dentist", "c4", "Health", daysAgo: -3, pending: true)
         return out
+    }
+}
+
+private extension Account {
+    /// The demo account with its budgets or goals replaced. The memberwise
+    /// initialiser carries only the fields the demo uses, which is all the
+    /// mock needs.
+    func replacing(budgets: [Budget], goals: [Goal]) -> Account {
+        Account(email: email,
+                currency: currency,
+                onboardingDone: onboardingDone,
+                tx: tx,
+                budgets: budgets,
+                goals: goals,
+                categories: categories,
+                folders: folders)
     }
 }

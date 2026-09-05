@@ -555,8 +555,9 @@ yet compiled)**.
   write, the web's `migrateTx` ported so a phone-only account moves too),
   `LedgerStore` shared by the tabs, `LedgerMath` (balance, month, category
   spend and budget rows ported from the dashboard), and the five tabs:
-  Dashboard, Activity (add / edit / delete), Budgets and Goals (read-only,
-  live numbers), Richard (placeholder). Profile opens from the Dashboard
+  Dashboard, Activity (add / edit / delete), Budgets and Goals (live
+  numbers; add / edit / delete as field-level edits of the account
+  document, same evening), Richard. Profile opens from the Dashboard
   toolbar. `FirebaseFirestore` was added to the project. Richard's chat
   followed the same day (`RichardChatView`: prompt rebuilt from the live
   ledger on every send, the AI disclosure opens every conversation, every

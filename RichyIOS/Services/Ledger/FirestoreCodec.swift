@@ -90,6 +90,37 @@ enum FirestoreCodec {
         return out
     }
 
+    // MARK: Budgets and goals
+
+    /// The web's budget object. `dir` is written explicitly so switching a
+    /// target back to a cap sticks; the other keys only when set.
+    static func data(for budget: Budget) -> [String: Any] {
+        var out: [String: Any] = [
+            "catId": budget.catId,
+            "limit": budget.limit,
+            "dir": budget.isTarget ? "target" : "cap"
+        ]
+        if let category = budget.category { out["category"] = category }
+        if let mode = budget.mode { out["mode"] = mode }
+        if let folderId = budget.folderId { out["folderId"] = folderId }
+        if let track = budget.track { out["track"] = track }
+        return out
+    }
+
+    /// The web's goal object; an empty deadline is stored as "" as the web does.
+    static func data(for goal: Goal) -> [String: Any] {
+        var out: [String: Any] = [
+            "id": goal.id,
+            "name": goal.name,
+            "target": goal.target,
+            "saved": goal.saved,
+            "deadline": goal.deadline ?? ""
+        ]
+        if let linkType = goal.linkType { out["linkType"] = linkType }
+        if let linkId = goal.linkId { out["linkId"] = linkId }
+        return out
+    }
+
     // MARK: Loose scalars
 
     static func looseInt(_ value: Any?) -> Int? {

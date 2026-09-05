@@ -76,4 +76,13 @@ protocol LedgerService: Sendable {
     func add(_ draft: TransactionDraft, uid: String) async throws -> Transaction
     func update(_ transaction: Transaction, uid: String) async throws
     func delete(_ transaction: Transaction, uid: String) async throws
+
+    /// Budgets and goals still live as arrays on the account document. These
+    /// edit exactly one entry with a field-level write of that array, after a
+    /// fresh read, the way the web's `updateUser` patches it - so any key the
+    /// web stores on an entry and this app does not know about survives.
+    func saveBudget(_ budget: Budget, uid: String) async throws
+    func deleteBudget(catId: String, uid: String) async throws
+    func saveGoal(_ goal: Goal, uid: String) async throws
+    func deleteGoal(id: Int, uid: String) async throws
 }

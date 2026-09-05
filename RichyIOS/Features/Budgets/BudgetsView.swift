@@ -1,9 +1,11 @@
 import SwiftUI
 
-/// The account's budgets against this month's spending. Read-only for now:
-/// caps and targets are still set on the web; the numbers here are live.
+/// The account's budgets against this month's spending. Plus to add a cap or
+/// a target, tap to edit, swipe to delete; the numbers are live.
 struct BudgetsView: View {
     @Environment(LedgerStore.self) private var store
+    @State private var showAdd = false
+    @State private var editing: Budget?
 
     private var rows: [BudgetProgress] {
         LedgerMath.budgets(store.account?.budgets ?? [],
@@ -25,13 +27,37 @@ struct BudgetsView: View {
                     if rows.isEmpty {
                         EmptyStateView(icon: "chart.bar.doc.horizontal",
                                        title: "No budgets yet",
-                                       message: "Set a cap or a savings target in Richy on the web and it shows up here with live numbers.")
+                                       message: "A cap says spend no more than this; a target says put aside at least this. Both fill up as the month goes.",
+                                       actionTitle: "Add a budget",
+                                       action: { showAdd = true })
                     } else {
                         list
                     }
                 }
             }
             .navigationTitle("Budgets")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showAdd = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .accessibilityLabel("Add a budget")
+                    .disabled(store.phase != .ready)
+                }
+            }
+            .sheet(isPresented: $showAdd) {
+                BudgetFormView(mode: .add)
+            }
+            .sheet(item: $editing) { budget in
+                BudgetFormView(mode: .edit(budget))
+            }
+            .alert("Couldn't save that", isPresented: store.writeErrorShown) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(store.writeError ?? "")
+            }
         }
     }
 
@@ -40,6 +66,15 @@ struct BudgetsView: View {
             Section {
                 ForEach(rows) { row in
                     BudgetRow(row: row, currency: store.currency)
+                        .contentShape(Rectangle())
+                        .onTapGesture { editing = row.budget }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            Button(role: .destructive) {
+                                Task { await store.deleteBudget(catId: row.budget.catId) }
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                 }
             } header: {
                 Text(RichyDate.monthTitle(for: RichyDate.currentMonth()).uppercased())
@@ -99,6 +134,8 @@ private struct BudgetRow: View {
             }
         }
         .padding(.vertical, Spacing.xs)
+        .accessibilityElement(children: .combine)
+        .accessibilityHint("Tap to edit, swipe to delete")
     }
 }
 

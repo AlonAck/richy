@@ -97,6 +97,76 @@ final class FirestoreLedgerService: LedgerService, @unchecked Sendable {
         }
     }
 
+    // MARK: Budgets and goals
+
+    func saveBudget(_ budget: Budget, uid: String) async throws {
+        let fresh = FirestoreCodec.data(for: budget)
+        try await editArray(uid: uid, field: "budgets") { entries in
+            var next = entries
+            if let index = next.firstIndex(where: { FirestoreCodec.looseString($0["catId"]) == budget.catId }) {
+                next[index] = next[index].merging(fresh) { _, new in new }
+            } else {
+                next.append(fresh)
+            }
+            return next
+        }
+    }
+
+    func deleteBudget(catId: String, uid: String) async throws {
+        try await editArray(uid: uid, field: "budgets") { entries in
+            entries.filter { FirestoreCodec.looseString($0["catId"]) != catId }
+        }
+    }
+
+    func saveGoal(_ goal: Goal, uid: String) async throws {
+        let fresh = FirestoreCodec.data(for: goal)
+        try await editArray(uid: uid, field: "goals") { entries in
+            var next = entries
+            if let index = next.firstIndex(where: { FirestoreCodec.looseInt($0["id"]) == goal.id }) {
+                next[index] = next[index].merging(fresh) { _, new in new }
+            } else {
+                next.append(fresh)
+            }
+            return next
+        }
+    }
+
+    func deleteGoal(id: Int, uid: String) async throws {
+        try await editArray(uid: uid, field: "goals") { entries in
+            entries.filter { FirestoreCodec.looseInt($0["id"]) != id }
+        }
+    }
+
+    /// Read-modify-write of one array field on the account document, inside a
+    /// transaction so two devices editing at once cannot lose each other's
+    /// entry. Only that field is written; nothing else on the document moves.
+    private func editArray(uid: String,
+                           field: String,
+                           _ transform: @escaping ([[String: Any]]) -> [[String: Any]]) async throws {
+        let parent = userRef(uid)
+        do {
+            _ = try await db.runTransaction { (txn: FirebaseFirestore.Transaction, errorPointer: NSErrorPointer) -> Any? in
+                let snapshot: DocumentSnapshot
+                do {
+                    snapshot = try txn.getDocument(parent)
+                } catch let error as NSError {
+                    errorPointer?.pointee = error
+                    return nil
+                }
+                guard snapshot.exists else {
+                    errorPointer?.pointee = NSError(domain: "Richy", code: 404,
+                                                    userInfo: [NSLocalizedDescriptionKey: LedgerError.noAccount.errorDescription ?? "No account document."])
+                    return nil
+                }
+                let current = (snapshot.data()?[field] as? [Any])?.compactMap { $0 as? [String: Any] } ?? []
+                txn.updateData([field: transform(current)], forDocument: parent)
+                return NSNumber(value: true)
+            }
+        } catch {
+            throw LedgerError(error)
+        }
+    }
+
     // MARK: The one-time move (the web app's `migrateTx`)
 
     /// A raw array entry on its way to becoming a document: the document key

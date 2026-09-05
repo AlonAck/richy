@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import SwiftUI
 
 /// The signed-in account's data, live, shared by every tab. Created once per
 /// session by `MainTabView`, started when the shell appears and stopped when
@@ -103,6 +104,33 @@ final class LedgerStore {
     @discardableResult
     func delete(_ transaction: Transaction) async -> Bool {
         await perform { try await self.ledger.delete(transaction, uid: self.uid) }
+    }
+
+    @discardableResult
+    func saveBudget(_ budget: Budget) async -> Bool {
+        await perform { try await self.ledger.saveBudget(budget, uid: self.uid) }
+    }
+
+    @discardableResult
+    func deleteBudget(catId: String) async -> Bool {
+        await perform { try await self.ledger.deleteBudget(catId: catId, uid: self.uid) }
+    }
+
+    @discardableResult
+    func saveGoal(_ goal: Goal) async -> Bool {
+        await perform { try await self.ledger.saveGoal(goal, uid: self.uid) }
+    }
+
+    @discardableResult
+    func deleteGoal(id: Int) async -> Bool {
+        await perform { try await self.ledger.deleteGoal(id: id, uid: self.uid) }
+    }
+
+    /// The alert binding every screen uses for a failed write: shown while a
+    /// message is set, cleared when dismissed.
+    var writeErrorShown: Binding<Bool> {
+        Binding(get: { self.writeError != nil },
+                set: { if !$0 { self.writeError = nil } })
     }
 
     private func perform(_ work: () async throws -> Void) async -> Bool {

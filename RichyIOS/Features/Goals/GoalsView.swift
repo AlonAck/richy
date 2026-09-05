@@ -1,9 +1,11 @@
 import SwiftUI
 
-/// The account's savings goals and how far along each one is. Read-only for
-/// now: goals are created and funded on the web; progress here is live.
+/// The account's savings goals and how far along each one is. Plus to add,
+/// tap to edit, swipe to delete; progress is live.
 struct GoalsView: View {
     @Environment(LedgerStore.self) private var store
+    @State private var showAdd = false
+    @State private var editing: Goal?
 
     private var goals: [Goal] { store.account?.goals ?? [] }
 
@@ -20,13 +22,37 @@ struct GoalsView: View {
                     if goals.isEmpty {
                         EmptyStateView(icon: "target",
                                        title: "No goals yet",
-                                       message: "Name something you are saving for in Richy on the web and watch it fill up here.")
+                                       message: "Name something you are saving for and watch it fill up.",
+                                       actionTitle: "Add a goal",
+                                       action: { showAdd = true })
                     } else {
                         list
                     }
                 }
             }
             .navigationTitle("Goals")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showAdd = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .accessibilityLabel("Add a goal")
+                    .disabled(store.phase != .ready)
+                }
+            }
+            .sheet(isPresented: $showAdd) {
+                GoalFormView(mode: .add)
+            }
+            .sheet(item: $editing) { goal in
+                GoalFormView(mode: .edit(goal))
+            }
+            .alert("Couldn't save that", isPresented: store.writeErrorShown) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(store.writeError ?? "")
+            }
         }
     }
 
@@ -34,6 +60,15 @@ struct GoalsView: View {
         List {
             ForEach(goals) { goal in
                 GoalRow(goal: goal, currency: store.currency)
+                    .contentShape(Rectangle())
+                    .onTapGesture { editing = goal }
+                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        Button(role: .destructive) {
+                            Task { await store.deleteGoal(id: goal.id) }
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
                     .listRowBackground(RichyColor.card)
             }
         }
@@ -80,6 +115,8 @@ private struct GoalRow: View {
             }
         }
         .padding(.vertical, Spacing.xs)
+        .accessibilityElement(children: .combine)
+        .accessibilityHint("Tap to edit, swipe to delete")
     }
 }
 
