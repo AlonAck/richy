@@ -564,8 +564,10 @@ yet compiled)**.
   in the `tx` subcollection, read back through the signed-in session. The
   earlier confusion was a leftover June document carrying the same email
   under a login that no longer maps to it; it is not the live account.
-  Remaining before merge: the add/edit/delete and two-tab checks in
-  `FIRESTORE_SPLIT.md` step 2, or Alon's call to merge on this evidence.
+  **Merged to `master` 2026-09-05 on Alon's call ("merge").** Accounts
+  move one by one as people open the app. The add/edit/delete and two-tab
+  checks in `FIRESTORE_SPLIT.md` step 2 were not run first; the first days
+  on production are that test.
   Full write-up in `FIRESTORE_SPLIT.md`. **Next (owner: AI, no Mac
   needed), after the merge:** a listener on the subcollection, then
   `richardChats`, then wiring `promptId` into `api/chat.js`.

@@ -117,7 +117,10 @@ only additions are reconciled - the transition window is one app open.
    edit and delete transactions; reload; open a second tab and make a
    different change in each; nothing should be lost in either.
 3. **Merge to `master`.** That deploys it. Accounts move one by one as
-   people open the app.
+   people open the app. **Done 2026-09-05** - steps 1 and 2 were verified
+   on Alon's own account first (schema 2, six transactions in the
+   subcollection, no array); the add/edit/delete and two-tab checks were
+   skipped on Alon's call.
 
 ## What the iOS app must do
 
