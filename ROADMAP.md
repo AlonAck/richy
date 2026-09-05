@@ -559,9 +559,13 @@ yet compiled)**.
   **Status 2026-09-05:** the rules with the `tx` block are published (since
   2026-09-04 14:57, verified in the console), the preview host is on the
   Firebase Auth authorized-domain list, and the preview serves the branch
-  bundle. The first test attempt signed the preview in with a different
-  Google account than the document being watched, so no move had run yet;
-  the split itself is still unverified against a real account.
+  bundle. **Verified 2026-09-05 12:07 UTC:** Alon's own account moved on
+  sign-in at the preview - `txSchema: 2`, no `tx` array, six transactions
+  in the `tx` subcollection, read back through the signed-in session. The
+  earlier confusion was a leftover June document carrying the same email
+  under a login that no longer maps to it; it is not the live account.
+  Remaining before merge: the add/edit/delete and two-tab checks in
+  `FIRESTORE_SPLIT.md` step 2, or Alon's call to merge on this evidence.
   Full write-up in `FIRESTORE_SPLIT.md`. **Next (owner: AI, no Mac
   needed), after the merge:** a listener on the subcollection, then
   `richardChats`, then wiring `promptId` into `api/chat.js`.
