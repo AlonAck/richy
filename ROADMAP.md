@@ -542,6 +542,17 @@ yet compiled)**.
   `GoogleService-Info.plist` from Project settings → Your apps, then one
   Mac session per `RichyIOS/README.md`: clone → open `Richy.xcodeproj` →
   build → sign in with a test account.
+- **Phase 3 started 2026-09-05 (owner: AI), written not compiled:** the
+  vertical slice is in `RichyIOS/` on `master` — `FirestoreLedgerService`
+  (live listeners on `users/{uid}` and `users/{uid}/tx`, one document per
+  write, the web's `migrateTx` ported so a phone-only account moves too),
+  `LedgerStore` shared by the tabs, `LedgerMath` (balance, month, category
+  spend and budget rows ported from the dashboard), and the five tabs:
+  Dashboard, Activity (add / edit / delete), Budgets and Goals (read-only,
+  live numbers), Richard (placeholder). Profile opens from the Dashboard
+  toolbar. `FirebaseFirestore` was added to the project. The Mac build and
+  the web/phone parity test in the README are what close the phase; both
+  are Alon's.
 - **Document split — started 2026-09-04 on branch `firestore-split`, not
   merged.** Transactions move to `users/{uid}/tx/{id}` and every write to
   the parent becomes a field-level `update()`; the parent's array stays

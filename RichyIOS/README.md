@@ -2,36 +2,53 @@
 
 The native iPhone client for Richy. Real SwiftUI, no WebView. It signs in to
 the **same Firebase project and the same accounts** as the web app at
-richy-mgkl.vercel.app and calls the **same Vercel API**; nothing about the
-backend is duplicated here.
+richy-mgkl.vercel.app, reads and writes the **same Firestore documents**, and
+calls the **same Vercel API**; nothing about the backend is duplicated here.
 
 This folder was written on Windows. **It has not been compiled yet.** The
 first build happens in Xcode on the Mac using the checklist below — until
 that has run, treat "it compiles" as unverified.
 
-## What is here (the foundation)
+## What is here
 
 | Folder | Contents |
 | --- | --- |
-| `App/` | `RichyApp` entry point, `AppState` (session phase), `AppServices` (wiring), `RootView`, `MainTabView` |
-| `Features/` | `Auth` (sign in / sign up / reset), `Boot`, `Home` and `Richard` placeholders, `Profile` (sign out, delete account) |
+| `App/` | `RichyApp` entry point, `AppState` (session phase), `AppServices` (wiring), `RootView`, `MainTabView` (the web app's five tabs) |
+| `Features/Home/` | `DashboardView`: current balance, this month in/out/net, where the money went, latest activity |
+| `Features/Transactions/` | `ActivityView` (newest first, grouped by day, swipe to delete, tap to edit), `TransactionFormView` (add/edit), `TransactionRow` |
+| `Features/Budgets/`, `Features/Goals/` | Read-only lists with live numbers; caps, targets and goals are still created on the web |
+| `Features/Ledger/` | `LedgerStore` (one live subscription per session, shared by every tab) and `LedgerMath` (the dashboard arithmetic, ported from the web) |
+| `Features/Auth/`, `Boot/`, `Profile/`, `Richard/` | Sign in / sign up / reset; boot and not-configured screens; profile with sign out and delete account; Richard placeholder with the AI disclosure |
 | `Components/` | `LoadingView`, `ErrorView`, `EmptyStateView`, `AsyncContentView`, buttons, card, text field, logo |
 | `Models/` | Codable models for the account document: `Transaction`, `Budget`, `Goal`, `Category`, `Folder`, `Account`, chat types |
+| `Services/Ledger/` | `LedgerService` protocol; `FirestoreLedgerService` (live listeners on `users/{uid}` and `users/{uid}/tx`, one document per write, and the one-time account move from the web app's `migrateTx`); `MockLedgerService` (in-memory, with sample data) |
 | `Services/` | `APIClient` (actor, async/await), `AuthService` (Firebase + mock), `ChatService`, `AccountService`, `FirebaseBootstrap` |
-| `DesignSystem/` | Colours (light/dark pairs from the web palette), typography, spacing, radii |
-| `Utilities/` | `KeychainStore`, `Loadable`, `Money`, `Log`, `UserFacingError` |
-| `Richy.xcodeproj` | The Xcode project, committed. Xcode 16 format: each folder above is a synchronised folder, so new files are picked up without touching the project |
+| `DesignSystem/` | Colours (light/dark pairs from the web palette), typography, spacing, radii, category icons |
+| `Utilities/` | `KeychainStore`, `Loadable`, `Money`, `RichyDate` (the web's UTC day and month keys), `Log`, `UserFacingError` |
+| `Richy.xcodeproj` | The Xcode project, committed. Xcode 16 format: each folder above is a synchronised folder, so new files are picked up without touching the project. Packages: FirebaseCore, FirebaseAuth, FirebaseFirestore |
 | `project.yml` | The same project as an XcodeGen spec — only a fallback for regenerating `Richy.xcodeproj`, see below |
 
-Deliberately **not** here yet: Firestore reads/writes (the backend has to split
-the single user document first — branch `firestore-split`), Sign in with
-Apple / Google, the real dashboard, transactions, budgets, goals, Richard chat
-UI.
+Deliberately **not** here yet: Richard's chat, Sign in with Apple / Google,
+creating an account from the phone (sign-up works, but the account document
+is still created by the web's onboarding), editing budgets and goals,
+savings pots, business, investing, trips, households, Bank Sync.
+
+### How the data flows
+
+`users/{uid}` is read with a live listener and decoded into `Account`.
+Transactions live in the `users/{uid}/tx/{id}` subcollection once an account
+is on `txSchema: 2` (FIRESTORE_SPLIT.md); on every launch the app first runs
+the same move the web app runs, so an account that has only ever used the
+phone moves too. Adding, editing or deleting a transaction writes exactly
+one document, so the phone and the web can edit at the same time without
+overwriting each other. The account document itself is never written by
+this app yet.
 
 ## Before the Mac session — things only the account owner can do
 
-1. Firebase console → project **richy-91667** → *Add app* → **iOS**, bundle id
-   **`com.richy.app`** → download **`GoogleService-Info.plist`**.
+1. Firebase console → project **richy-91667** → the iOS app **`com.richy.app`**
+   is already registered → Project settings → Your apps → download
+   **`GoogleService-Info.plist`**.
 2. Put that file at `RichyIOS/Resources/GoogleService-Info.plist`. It is
    gitignored on purpose (repo convention for anything Firebase issues).
 3. Firebase console → Authentication → *Sign-in method* → confirm
@@ -70,13 +87,21 @@ tools: `Richy.xcodeproj` is committed and opens directly.
    name, an availability annotation, a missing import. Fix it in place, or
    send the error text back.
 6. **⌘R without** `GoogleService-Info.plist` → the app shows *"Richy isn't
-   connected to Firebase yet"* and offers demo mode. Open any file with a
-   `#Preview` → the canvas renders.
+   connected to Firebase yet"* and offers demo mode: sample data, every
+   screen works, nothing is saved. Open any file with a `#Preview` → the
+   canvas renders.
 7. Put `GoogleService-Info.plist` into `RichyIOS/Resources/` in Finder — the
    project watches that folder, there is no Xcode step — then **⌘R** →
    welcome screen → sign in with a **test account, never a real user's** →
-   tab shell → Profile shows the email → Sign out → cold start renders the
-   shell instantly from the Keychain, then settles.
+   the Dashboard shows that account's balance and month; Activity lists its
+   transactions.
+8. **The parity test.** Add a transaction on the phone → open the same
+   account on the web → it is there within seconds. Edit or delete one on
+   the web → the phone updates by itself. If the test account had never
+   moved to schema 2, the phone moves it on first sign-in; the web then
+   reads the subcollection like any other account.
+9. Sign out → cold start renders the shell instantly from the Keychain,
+   then settles.
 
 **Delete account** on Profile calls the real `/api/delete-account` and is
 irreversible. Only exercise it against a throwaway account created for the
@@ -102,22 +127,27 @@ cd ~/richy/RichyIOS && curl -L https://github.com/yonaskolb/XcodeGen/releases/la
 ```
 
 This overwrites `Richy.xcodeproj` and writes `Info.plist` (gitignored). If
-the regenerated project is the one that built, commit it.
+the regenerated project is the one that built, commit it. `project.yml`
+lists FirebaseFirestore alongside FirebaseAuth; keep it that way.
 
 ### If the build fails
 
 Nothing here was compiled before the Mac session, so a first-build error is
 expected to be small and local: a symbol name, an availability annotation, a
 missing import. Fix it in place and note it in the commit message — the
-Windows side cannot see the compiler.
+Windows side cannot see the compiler. One known risk: this module defines
+its own `Transaction` type, which shadows SwiftUI's and Firestore's; if the
+compiler reports an ambiguous `Transaction`, qualify the app's as
+`Richy.Transaction` at that spot.
 
 ## Architecture in one paragraph
 
 Views never talk to Firebase or HTTP directly. `AppServices` holds one
 instance of each service behind a protocol (`AuthService`, `ChatService`,
-`AccountService`, `TokenProvider`); the real implementations wrap the
-Firebase SDK and `APIClient`, the mocks are in-memory. `AppState` follows the
-auth service's `AsyncStream` of users and switches the root screen. Feature
-view models are `@Observable` `@MainActor` classes created by their views
+`AccountService`, `LedgerService`, `TokenProvider`); the real implementations
+wrap the Firebase SDK and `APIClient`, the mocks are in-memory. `AppState`
+follows the auth service's `AsyncStream` of users and switches the root
+screen; `LedgerStore` follows the ledger service's streams and feeds every
+tab. Feature views are `@Observable` `@MainActor` state plus SwiftUI, created
 from the environment's services, so every screen previews with mocks and
 nothing in a preview touches the network.

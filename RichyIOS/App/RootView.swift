@@ -4,6 +4,7 @@ import SwiftUI
 /// other routing at this level: features own their own navigation stacks.
 struct RootView: View {
     @Environment(AppState.self) private var appState
+    @Environment(\.services) private var services
 
     var body: some View {
         Group {
@@ -15,7 +16,8 @@ struct RootView: View {
             case .signedOut:
                 AuthFlowView()
             case .signedIn(let user):
-                MainTabView(user: user)
+                MainTabView(user: user, ledger: services.ledger)
+                    .id(user.uid)
             }
         }
         .animation(.easeInOut(duration: 0.25), value: appState.phase)

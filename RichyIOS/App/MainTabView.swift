@@ -1,27 +1,40 @@
 import SwiftUI
 
-/// The signed-in shell. Three tabs for the foundation; Activity, Budgets and
-/// Goals join the bar with their features.
+/// The signed-in shell: the web app's five tabs. Profile opens from the
+/// Dashboard's toolbar, as on the web. One `LedgerStore` is created here per
+/// session and shared with every tab through the environment.
 struct MainTabView: View {
     let user: AuthUser
     @Environment(AppState.self) private var appState
-    @Environment(\.services) private var services
+    @State private var store: LedgerStore
+
+    init(user: AuthUser, ledger: any LedgerService) {
+        self.user = user
+        _store = State(initialValue: LedgerStore(uid: user.uid, ledger: ledger))
+    }
 
     var body: some View {
         TabView {
-            HomePlaceholderView()
-                .tabItem { Label("Dashboard", systemImage: "sparkles") }
+            DashboardView(user: user)
+                .tabItem { Label("Dashboard", systemImage: "square.grid.2x2") }
+            ActivityView()
+                .tabItem { Label("Activity", systemImage: "waveform.path.ecg") }
+            BudgetsView()
+                .tabItem { Label("Budgets", systemImage: "chart.bar.doc.horizontal") }
+            GoalsView()
+                .tabItem { Label("Goals", systemImage: "target") }
             RichardPlaceholderView()
                 .tabItem { Label("Richard", systemImage: "bubble.left.and.text.bubble.right") }
-            ProfileView(user: user, account: services.account)
-                .tabItem { Label("Profile", systemImage: "person.crop.circle") }
         }
+        .environment(store)
         .tint(RichyColor.accent)
         .safeAreaInset(edge: .top) {
             if appState.isDemoMode {
                 DemoBanner()
             }
         }
+        .onAppear { store.start() }
+        .onDisappear { store.stop() }
     }
 }
 
@@ -37,7 +50,7 @@ private struct DemoBanner: View {
 }
 
 #Preview("Tabs") {
-    MainTabView(user: MockAuthService.demoUser)
+    MainTabView(user: MockAuthService.demoUser, ledger: MockLedgerService())
         .environment(AppState(services: .mock()))
         .environment(\.services, .mock())
 }

@@ -6,6 +6,7 @@ struct ProfileView: View {
     let user: AuthUser
     @State private var model: ProfileViewModel
     @Environment(AppState.self) private var appState
+    @Environment(\.dismiss) private var dismiss
 
     @State private var showDeleteConfirm = false
     @State private var partialMessage: String?
@@ -102,6 +103,12 @@ struct ProfileView: View {
             .background(RichyColor.background)
             .tint(RichyColor.accent)
             .navigationTitle("Profile")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                        .fontWeight(.semibold)
+                }
+            }
             .confirmationDialog("Delete your account?", isPresented: $showDeleteConfirm, titleVisibility: .visible) {
                 Button("Delete everything", role: .destructive) {
                     Task { await deleteAccount() }

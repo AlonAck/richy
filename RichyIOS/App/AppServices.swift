@@ -17,6 +17,7 @@ struct AppServices: Sendable {
     let api: APIClient
     let chat: any ChatService
     let account: any AccountService
+    let ledger: any LedgerService
     let keychain: KeychainStore
 
     /// Production wiring. Falls back to mocks - and says so through `mode` -
@@ -30,6 +31,7 @@ struct AppServices: Sendable {
                            api: api,
                            chat: RichyChatService(client: api),
                            account: RichyAccountService(client: api),
+                           ledger: FirestoreLedgerService(),
                            keychain: KeychainStore())
     }
 
@@ -44,6 +46,7 @@ struct AppServices: Sendable {
                            api: api,
                            chat: MockChatService(),
                            account: MockAccountService(),
+                           ledger: MockLedgerService(),
                            keychain: KeychainStore(service: "com.richy.app.demo"))
     }
 }
