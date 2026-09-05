@@ -1,0 +1,96 @@
+# Compiles the native iOS app on a macOS runner after every push that touches
+# RichyIOS/. The Swift is written on a Windows machine with no compiler, so
+# this is the compiler: errors and warnings land as a comment on the "iOS
+# build log" issue (readable without signing in), the full xcodebuild log is
+# attached to the run, and the job goes red when the build does.
+#
+# Public repository: GitHub-hosted runners, macOS included, are free here.
+
+name: iOS build
+
+on:
+  push:
+    branches: [master, ios-slice]
+    paths:
+      - "RichyIOS/**"
+      - ".github/workflows/ios-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Compile Richy for the iOS Simulator
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pick Xcode
+        run: |
+          ls /Applications | grep -i "^Xcode" || true
+          if [ -d /Applications/Xcode_16.4.app ]; then
+            sudo xcode-select -s /Applications/Xcode_16.4.app
+          fi
+          xcodebuild -version
+          swift --version
+
+      - name: Build
+        id: build
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          cd RichyIOS
+          xcodebuild -project Richy.xcodeproj -scheme Richy \
+            -destination "generic/platform=iOS Simulator" \
+            -configuration Debug \
+            -skipPackagePluginValidation -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
+            build 2>&1 | tee ../build.log
+
+      - name: Summarise
+        if: always()
+        run: |
+          {
+            echo "## iOS build: ${{ steps.build.outcome }}"
+            echo
+            echo "Commit ${{ github.sha }} on ${{ github.ref_name }}"
+            echo
+            echo "Xcode: $(xcodebuild -version | tr '\n' ' ')"
+            echo
+            echo '```'
+            grep -E "(error|warning): " build.log | grep -v "unable to open" | sed -E "s#${GITHUB_WORKSPACE}/##g" | sort -u | head -150 || echo "(no error or warning lines in the log)"
+            echo '```'
+            echo
+            echo "Full log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          } > summary.md
+          cat summary.md >> "$GITHUB_STEP_SUMMARY"
+          cat summary.md
+
+      - name: Post to the build-log issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          number=$(gh issue list --state open --search "iOS build log in:title" --json number,title --jq '[.[] | select(.title == "iOS build log")][0].number')
+          if [ -z "$number" ] || [ "$number" = "null" ]; then
+            number=$(gh issue create --title "iOS build log" --body "Automated. Every push that touches RichyIOS/ compiles the app on a macOS runner and posts the result here. Nothing to do by hand." | grep -oE "[0-9]+$")
+          fi
+          gh issue comment "$number" --body-file summary.md
+
+      - name: Upload full log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log
+          path: build.log
+
+      - name: Fail the job if the build failed
+        if: steps.build.outcome == 'failure'
+        run: exit 1
