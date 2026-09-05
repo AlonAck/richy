@@ -11,8 +11,9 @@ service-account.json
 **/service-account.json
 *-firebase-adminsdk-*.json
 
-# Native iOS app (RichyIOS/) - generated per machine, never committed
-RichyIOS/Richy.xcodeproj/
+# Native iOS app (RichyIOS/) - per-machine files only; Richy.xcodeproj itself is committed
+RichyIOS/Richy.xcodeproj/xcuserdata/
+RichyIOS/Richy.xcodeproj/project.xcworkspace/xcuserdata/
 RichyIOS/Info.plist
 RichyIOS/Resources/GoogleService-Info.plist
 RichyIOS/xcuserdata/
