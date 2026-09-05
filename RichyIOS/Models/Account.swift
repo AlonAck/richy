@@ -37,6 +37,7 @@ struct Account: Decodable, Equatable, Sendable {
     var richyTheme: RichyTheme { RichyTheme(rawValue: theme ?? "") ?? .standard }
 
     enum CodingKeys: String, CodingKey {
+        case txSchema
         case email, dob, handle, lang, currency, theme, darkMode, onboardingDone, catchUpDone
         case plan, richardInstructions, tx, budgets, goals, categories, folders
     }
@@ -50,6 +51,7 @@ struct Account: Decodable, Equatable, Sendable {
          categories: [Category] = [],
          folders: [Folder] = []) {
         self.email = email
+        self.txSchema = 1
         self.dob = nil
         self.handle = nil
         self.lang = nil
@@ -69,6 +71,7 @@ struct Account: Decodable, Equatable, Sendable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        txSchema = try container.decodeIfPresent(Int.self, forKey: .txSchema) ?? 1
         email = try container.decodeIfPresent(String.self, forKey: .email)
         dob = try container.decodeIfPresent(String.self, forKey: .dob)
         handle = try container.decodeIfPresent(String.self, forKey: .handle)

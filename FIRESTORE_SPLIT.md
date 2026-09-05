@@ -98,7 +98,13 @@ only additions are reconciled - the transition window is one app open.
    but every account stays on the array (the move fails cleanly on
    permission-denied).
 2. **Test on the branch's Vercel preview** with a **test account, never a
-   real user's**: open it, watch the console for `Richy: tx move`, confirm
+   real user's**: open it - the preview that serves this branch is
+   https://richy-preview-git-firestore-split-richard201.vercel.app; the
+   `richy` and `richy-mgkl` projects put a Vercel login in front of theirs,
+   `richy-preview` and `richy-cowork-preview` are open - sign up with email
+   + password, add a few transactions, then reload (the move runs at boot,
+   not at signup). Watch the console for `Richy: tx move` (only failures
+   log; success is silent), confirm
    the account document in the console now shows `txSchema: 2` and no `tx`
    field, and that the `tx` subcollection holds every transaction. Then add,
    edit and delete transactions; reload; open a second tab and make a

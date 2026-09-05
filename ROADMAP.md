@@ -435,14 +435,10 @@ items in here so there's one place both tracks read from. **One real
 contradiction with an existing decision was found doing this — see the
 first bullet below — it needs Alon's confirmation, not a silent pick.**
 
-**⚠️ Contradiction with the 2026-08-29 decision above, needs resolving:**
-that decision (confirmed directly with Alon, not to be silently re-decided)
-was Android on the *same* timeline as iOS for the 5 Oct launch. The native
-planning session defaulted to **iOS-first, Android deferred to a later,
-separate workstream** unless explicitly expanded. These can't both be true.
-Given the 33-days-to-launch, zero-native-code-written state, iOS-first is
-probably the more realistic path — but that's a call for Alon to make
-explicitly, not something to resolve by picking whichever doc is newer.
+**Resolved 2026-09-05 — Alon's call: iOS first.** Android is a later,
+separate workstream; the 2026-08-29 "same timeline" decision above is
+superseded for the native track. Recorded here so neither document has to
+be re-read to know which won.
 
 **Decisions already locked (consistent with this file's earlier 08-27/08-29
 entries, no conflict):**
@@ -469,23 +465,17 @@ entries, no conflict):**
   of which individual holds the account, so that item's guidance stands
   as written.
 
-**Proposed native MVP scope — PROPOSED ONLY, not yet checked against the
-Tier 1-3 feature list above, needs Alon's confirmation before it's treated
-as decided:**
-- In scope: email/password auth (+ recovery, existing-account
-  compatibility), Sign in with Apple / account linking if Google sign-in
-  stays, dashboard + budget summary, transactions (view/add/edit), Richard
-  chat with AI consent + visible AI-identification + report/flag controls,
-  profile, data export, full account deletion, settings + legal links.
-- Deferred by default (would need to be explicitly restored): couples/
-  household mode, public handles/achievements/social layer, bank-
-  notification importing, voice/synthetic audio, advanced investing/
-  personalized-advice flows.
-- **This proposed scope would defer both major Tier 2 differentiators
-  (couples mode, Tier 19's motivation/social layer) out of the native MVP
-  entirely** — worth flagging explicitly since both are fully built and
-  live in the web app today. That's a legitimate scope-control call, but
-  it's a product decision with real trade-offs, not a technical default.
+**Native scope — decided 2026-09-05 by Alon: "ship everything".** The
+native app targets full parity with the web app: couples/household mode,
+the motivation/social layer, bank-sync import and Stock Scout (research-only,
+behind the same server guardrail as the web) included. Nothing is deferred
+by default; anything that has to slip is a dated, explicit entry here, never
+a quiet omission. Build order still runs vertical slice → core money flows
+→ Richard → households/social → the rest, so the app is usable at every
+step. The compliance items the earlier "deferred" list was sidestepping
+(social/privacy, UGC/DMCA, bank-notification disclosure, the investing-
+advice line) are therefore in scope for Phase 5 — see the Launch Exposure
+Register.
 
 **Target architecture (native client):** SwiftUI app calling the existing
 Vercel API layer, with Firebase Auth (and, after the document split below,
@@ -541,9 +531,15 @@ yet compiled)**.
   **Not yet compiled** — this machine has no Swift toolchain;
   `RichyIOS/README.md` is the Mac checklist. Do not mark Phase 2 done
   until a build has passed on the Mac.
+  **2026-09-05:** `RichyIOS/Richy.xcodeproj` is committed (Xcode 16
+  format, folder-synchronised groups, Firebase via SPM), so the Mac needs
+  nothing but Xcode — no Homebrew, no XcodeGen; `project.yml` stays only as
+  the regeneration recipe. The `Account` model's `txSchema` decoding was
+  fixed on `firestore-split` (the field had been added without CodingKeys,
+  which would not have compiled).
 - **Next (owner: Alon):** the Firebase iOS app registration and plist,
-  then one Mac session: `xcodegen generate` → build → sign in with a test
-  account.
+  then one Mac session per `RichyIOS/README.md`: clone → open
+  `Richy.xcodeproj` → build → sign in with a test account.
 - **Document split — started 2026-09-04 on branch `firestore-split`, not
   merged.** Transactions move to `users/{uid}/tx/{id}` and every write to
   the parent becomes a field-level `update()`; the parent's array stays
@@ -554,12 +550,16 @@ yet compiled)**.
   Babel transform passes; nothing has run against the real project yet.
   Rollout, in order: publish `firestore.rules` → test the branch's Vercel
   preview with a **test** account → merge to `master` (that is the deploy).
+  The branch preview that serves the split code is
+  https://richy-preview-git-firestore-split-richard201.vercel.app — the
+  `richy` and `richy-mgkl` Vercel projects put a Vercel login in front of
+  their previews; `richy-preview` and `richy-cowork-preview` are open.
   Full write-up in `FIRESTORE_SPLIT.md`. **Next (owner: AI, no Mac
   needed), after the merge:** a listener on the subcollection, then
   `richardChats`, then wiring `promptId` into `api/chat.js`.
-- **Still open, unchanged:** the Android-timeline contradiction at the top
-  of this section, and the PROPOSED-ONLY MVP scope. Both are restated in
-  the artifact; neither blocks the foundation.
+- **Both former open items closed 2026-09-05:** iOS first, and full scope —
+  see the top of this section. The Taking Richy Native artifact still
+  shows them as open; this file wins.
 
 **Safe-build ground rules carried over, still binding:** no live account
 creation, identity verification, store submissions, purchases, OAuth
