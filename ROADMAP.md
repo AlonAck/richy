@@ -537,9 +537,11 @@ yet compiled)**.
   the regeneration recipe. The `Account` model's `txSchema` decoding was
   fixed on `firestore-split` (the field had been added without CodingKeys,
   which would not have compiled).
-- **Next (owner: Alon):** the Firebase iOS app registration and plist,
-  then one Mac session per `RichyIOS/README.md`: clone → open
-  `Richy.xcodeproj` → build → sign in with a test account.
+- **Next (owner: Alon):** the iOS app `com.richy.app` is already registered
+  in the Firebase project (seen in the console 2026-09-05), so download its
+  `GoogleService-Info.plist` from Project settings → Your apps, then one
+  Mac session per `RichyIOS/README.md`: clone → open `Richy.xcodeproj` →
+  build → sign in with a test account.
 - **Document split — started 2026-09-04 on branch `firestore-split`, not
   merged.** Transactions move to `users/{uid}/tx/{id}` and every write to
   the parent becomes a field-level `update()`; the parent's array stays
@@ -554,6 +556,12 @@ yet compiled)**.
   https://richy-preview-git-firestore-split-richard201.vercel.app — the
   `richy` and `richy-mgkl` Vercel projects put a Vercel login in front of
   their previews; `richy-preview` and `richy-cowork-preview` are open.
+  **Status 2026-09-05:** the rules with the `tx` block are published (since
+  2026-09-04 14:57, verified in the console), the preview host is on the
+  Firebase Auth authorized-domain list, and the preview serves the branch
+  bundle. The first test attempt signed the preview in with a different
+  Google account than the document being watched, so no move had run yet;
+  the split itself is still unverified against a real account.
   Full write-up in `FIRESTORE_SPLIT.md`. **Next (owner: AI, no Mac
   needed), after the merge:** a listener on the subcollection, then
   `richardChats`, then wiring `promptId` into `api/chat.js`.
