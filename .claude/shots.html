@@ -17,6 +17,8 @@
   USE:
     .claude/serve.ps1  ->  http://localhost:8899/.claude/shots.html
     Add ?screen=overview|activity|budgets|goals|advisor|notes to jump tabs.
+    Add &hh=1 for a demo household (Collab, the people strip, shared rows),
+    or &merge=1 with ?screen=householdMerge for the post-join merge summary.
     Add &dark=1 for dark mode, &theme=purple|blue|classic to switch palette,
     &flow=journey to replay the sign-up journey.
     Add &device=67|55 to frame at App Store aspect ratios.
@@ -59,6 +61,9 @@
   <a href="?screen=goals">goals</a>
   <a href="?screen=advisor">advisor</a>
   <a href="?screen=notes">notes</a>
+  <a href="?screen=business&biz=1">business</a>
+  <a href="?screen=collab&hh=1">collab</a>
+  <a href="?screen=householdMerge&merge=1">merge</a>
   <b>| mode:</b>
   <a href="?screen=overview&dark=1">dark</a>
   <b>| theme:</b>
@@ -251,6 +256,107 @@ if (new URLSearchParams(location.search).get("hh") === "1") {
     { id: "sh5", type: "expense", amount: 210,  label: "Shared fuel",  catId: "transport", date: d(12), shared: true, owner: "demo-account" }
   ]);
   window.__DEMO_HH.tx = window.__DEMO_SHARED_TX;
+}
+
+// ---- Optional post-join merge summary (?merge=1) ----------------------------
+// HouseholdMergeView needs two things the demo blob has no reason to carry: a
+// household with exactly ONE other member (so the rows can say whose number
+// won by name rather than falling back to "the household's"), and the report
+// acceptInvite writes when a join replaces some of your own budget limits.
+//
+// The kept figures are DEMO.budgets itself, because that is what the merged
+// plan looks like after a join - the household's numbers are already in place,
+// and the report is only the record of what they displaced.
+if (new URLSearchParams(location.search).get("merge") === "1") {
+  window.__DEMO_HH = {
+    name: "Acker household",
+    createdBy: "uid-mika",
+    memberUids: ["uid-mika", "demo-account"],
+    members: [
+      { uid: "uid-mika",     name: "Mika", email: "mika@richy.app" },
+      { uid: "demo-account", name: "Alon", email: "demo@richy.app" }
+    ],
+    pendingEmails: []
+  };
+  window.__DEMO_SHARED_TX = [];
+  window.__DEMO_HH.tx = [];
+  DEMO.householdId = "demo-hh";
+  DEMO.mergeReport = {
+    hid: "demo-hh",
+    name: "Acker household",
+    at: Date.now(),
+    rows: [
+      { catId: "c_food",      category: "Food",      kept: 600, mine: 800 },
+      { catId: "c_transport", category: "Transport", kept: 250, mine: 320 },
+      { catId: "c_fun",       category: "Fun",       kept: 150, mine: 90 },
+      { catId: "c_coffee",    category: "Coffee",    kept: 80,  mine: 120 },
+      { catId: "c_shop",      category: "Shopping",  kept: 300, mine: 420 }
+    ]
+  };
+}
+
+// ---- Optional demo business (?biz=1) ----------------------------------------
+// The Business tab is empty for a fresh account, so its detail screen - hero,
+// action row, P&L, categories - can't be composed or reviewed without one.
+// Seeds a single running side business with enough history for the P&L and the
+// category budgets to have something to say. Off by default so the standard
+// screenshot set is unchanged. Use ?screen=business&biz=1, then tap the card.
+if (new URLSearchParams(location.search).get("biz") === "1") {
+  DEMO.businesses = [{
+    id: "biz_demo",
+    name: "Side Studio",
+    what: "Freelance brand and product design",
+    icon: "briefcase",
+    color: "#8970C6",
+    createdAt: d(150),
+    profile: { structure: "individual", stage: "running", size: "side", monthly: 900, revenueGoal: 4000, runway: 6, goal: "Replace half my salary", notes: "", taxRate: 25 },
+    plan: null,
+    categories: [
+      { key: "marketing", label: "Marketing",     icon: "chart",    color: "#8970C6", planned: 200, plannedRaw: "200", spent: 260, entries: [] },
+      { key: "software",  label: "Software",      icon: "laptop",   color: "#2799C8", planned: 110, plannedRaw: "110", spent: 96,  entries: [] },
+      { key: "equipment", label: "Equipment",     icon: "tool",     color: "#27A85F", planned: 90,  plannedRaw: "90",  spent: 0,   entries: [] },
+      { key: "office",    label: "Office & Rent", icon: "building", color: "#3B82B8", planned: 350, plannedRaw: "350", spent: 350, entries: [] },
+      { key: "fees",      label: "Fees & Legal",  icon: "shield",   color: "#D9546B", planned: 60,  plannedRaw: "60",  spent: 45,  entries: [] },
+      { key: "other",     label: "Other",         icon: "box",      color: "#8B8B8B", planned: 90,  plannedRaw: "90",  spent: 0,   entries: [] }
+    ],
+    entries: [
+      { id: "be1", kind: "deposit",  amount: 1500, date: d(150), fromMain: false, label: "Starting capital" },
+      { id: "be2", kind: "deposit",  amount: 2400, date: d(38),  fromMain: false, label: "Revenue: Nova retainer", revenue: true },
+      { id: "be3", kind: "deposit",  amount: 1750, date: d(12),  fromMain: false, label: "Revenue: Halcyon rebrand", revenue: true },
+      { id: "be4", kind: "withdraw", amount: 350,  date: d(9),   fromMain: false, label: "Desk at Foundry", bizExpense: true, catKey: "office" },
+      { id: "be5", kind: "withdraw", amount: 260,  date: d(7),   fromMain: false, label: "Portfolio ads", bizExpense: true, catKey: "marketing" },
+      { id: "be6", kind: "withdraw", amount: 96,   date: d(4),   fromMain: false, label: "Figma + Adobe", bizExpense: true, catKey: "software" },
+      { id: "be7", kind: "withdraw", amount: 45,   date: d(2),   fromMain: false, label: "Accountant", bizExpense: true, catKey: "fees" }
+    ],
+    invoices: [
+      { id: "bi1", client: "Nova Labs", amount: 1200, status: "unpaid", dueDate: d(-9), issued: d(6) },
+      { id: "bi3", client: "Wren & Co", amount: 640,  status: "unpaid", dueDate: d(11), issued: d(30) },
+      { id: "bi2", client: "Halcyon",   amount: 850,  status: "paid",   dueDate: d(20), issued: d(40), paidAt: d(3) }
+    ],
+    // Set aside on the Halcyon payment, so the Tax pot tab has a real earmark
+    // and Home can show spendable cash sitting below cash on hand.
+    taxPot: { entries: [{ id: "tp1", kind: "reserve", amount: 213, date: d(3), label: "25% of Halcyon", invoiceId: "bi2" }] },
+    // A part-finished roadmap so Build shows progress rather than an empty state.
+    roadmap: {
+      generatedAt: d(60), stage: "running", source: "local",
+      milestones: [
+        { id: "m0", title: "Know your numbers", done: true, doneAt: d(30), tasks: [
+          { id: "t0_0", label: "Log every expense and sale here for one full month", done: true, doneAt: d(40) },
+          { id: "t0_1", label: "Work out your margin on the main product", done: true, doneAt: d(30) }
+        ] },
+        { id: "m1", title: "Double down on what works", done: false, doneAt: null, tasks: [
+          { id: "t1_0", label: "Find which channel brings the most customers", done: true, doneAt: d(9) },
+          { id: "t1_1", label: "Move budget from the weakest channel to the strongest", done: false, doneAt: null },
+          { id: "t1_2", label: "Raise prices on the bestseller if margin is under 50%", done: false, doneAt: null }
+        ] },
+        { id: "m2", title: "Build it to last", done: false, doneAt: null, tasks: [
+          { id: "t2_0", label: "Set up one repeatable way customers come back", done: false, doneAt: null },
+          { id: "t2_1", label: "Set next quarter's revenue target", done: false, doneAt: null }
+        ] }
+      ]
+    },
+    chat: []
+  }];
 }
 
 // ---- Boot the real app, signed in -------------------------------------------

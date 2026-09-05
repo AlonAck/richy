@@ -1,0 +1,69 @@
+# XcodeGen spec for the native Richy iOS app.
+#   brew install xcodegen && xcodegen generate && open Richy.xcodeproj
+# The generated Richy.xcodeproj and Info.plist are gitignored; this file is
+# the source of truth for the project. See README.md for the Mac checklist.
+name: Richy
+
+options:
+  bundleIdPrefix: com.richy
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: false
+
+packages:
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    # 12.15+ needs swift-tools-version 6.1, i.e. Xcode 16.4 or newer. On an
+    # older Xcode replace this line with:   exactVersion: "12.14.0"
+    from: "12.0.0"
+
+targets:
+  Richy:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+      - path: Features
+      - path: Components
+      - path: Models
+      - path: Services
+      - path: DesignSystem
+      - path: Utilities
+      - path: Resources/Assets.xcassets
+      # Not committed. Register the iOS app (bundle id com.richy.app) in the
+      # Firebase console and drop the downloaded file here; without it the
+      # app runs in demo mode and explains what is missing.
+      - path: Resources/GoogleService-Info.plist
+        optional: true
+    dependencies:
+      - package: Firebase
+        product: FirebaseCore
+      - package: Firebase
+        product: FirebaseAuth
+    info:
+      path: Info.plist
+      properties:
+        CFBundleDisplayName: Richy
+        LSRequiresIPhoneOS: true
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        ITSAppUsesNonExemptEncryption: false
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.richy.app
+        PRODUCT_NAME: Richy
+        SWIFT_VERSION: "5.0"
+        SWIFT_STRICT_CONCURRENCY: minimal
+        TARGETED_DEVICE_FAMILY: "1"
+        SUPPORTS_MACCATALYST: "NO"
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_USER_SCRIPT_SANDBOXING: "NO"
+        CODE_SIGN_STYLE: Automatic

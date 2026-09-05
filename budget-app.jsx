@@ -1352,10 +1352,99 @@ for (var _obc in ONBOARD_STRINGS) {
   for (var _obk in ONBOARD_STRINGS[_obc]) TRANSLATIONS[_obc][_obk] = ONBOARD_STRINGS[_obc][_obk];
 }
 
+// Household merge summary (HouseholdMergeView). Kept in its own table for the
+// same reason as ONBOARD_STRINGS: one screen's worth of copy in four languages
+// is unreadable folded into the single-line TRANSLATIONS rows above.
+var HOUSEHOLD_STRINGS = {
+  en: {
+    hmTitleBar:"Household",
+    hmTitle1:"Your household is merged.", hmTitle2:"Here's what changed.",
+    hmIntro:"You both already had a budget in {n} categories. We kept the existing household's number \u2014 tap a category to put yours back.",
+    hmIntro1:"You both already had a budget in the same category. We kept the existing household's number \u2014 tap it to put yours back.",
+    hmCount:"{n} categories overlapped", hmCount1:"1 category overlapped",
+    hmUntouched:"Everything else merged untouched",
+    hmOverlapping:"Overlapping categories", hmTapSwitch:"Tap to switch back",
+    hmKept:"Kept \u00b7 {name}'s", hmKeptGeneric:"Kept \u00b7 household's",
+    hmRestored:"Restored \u00b7 yours",
+    hmReplacedMine:"yours, replaced", hmReplacedTheirs:"{name}'s, replaced", hmReplacedTheirsGeneric:"household's, replaced",
+    hmSpent:"Spent this month {amt}",
+    hmChangeAnytime:"You can change budgets any time", hmEditBudgets:"Edit budgets",
+    hmConfirm:"Confirm and continue",
+    hmKeepMine:"Keep my numbers everywhere", hmKeepTheirs:"Use the household's numbers everywhere",
+    hmSeeChanges:"See what changed when you joined",
+    hmSeeChangesSub:"{n} of your budgets were replaced by the household's", hmSeeChangesSub1:"One of your budgets was replaced by the household's",
+  },
+  he: {
+    hmTitleBar:"\u05de\u05e9\u05e7 \u05d1\u05d9\u05ea",
+    hmTitle1:"\u05de\u05e9\u05e7 \u05d4\u05d1\u05d9\u05ea \u05e9\u05dc\u05db\u05dd \u05d0\u05d5\u05d7\u05d3.", hmTitle2:"\u05d4\u05e0\u05d4 \u05de\u05d4 \u05e9\u05d4\u05e9\u05ea\u05e0\u05d4.",
+    hmIntro:"\u05d1-{n} \u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d5\u05ea \u05d4\u05d9\u05d4 \u05ea\u05e7\u05e6\u05d9\u05d1 \u05dc\u05e9\u05e0\u05d9\u05db\u05dd. \u05e9\u05de\u05e8\u05e0\u05d5 \u05e2\u05dc \u05d4\u05de\u05e1\u05e4\u05e8 \u05e9\u05dc \u05de\u05e9\u05e7 \u05d4\u05d1\u05d9\u05ea \u05d4\u05e7\u05d9\u05d9\u05dd \u2014 \u05d4\u05e7\u05d9\u05e9\u05d5 \u05e2\u05dc \u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4 \u05db\u05d3\u05d9 \u05dc\u05d4\u05d7\u05d6\u05d9\u05e8 \u05d0\u05ea \u05d4\u05de\u05e1\u05e4\u05e8 \u05e9\u05dc\u05db\u05dd.",
+    hmIntro1:"\u05d1\u05d0\u05d5\u05ea\u05d4 \u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4 \u05d4\u05d9\u05d4 \u05ea\u05e7\u05e6\u05d9\u05d1 \u05dc\u05e9\u05e0\u05d9\u05db\u05dd. \u05e9\u05de\u05e8\u05e0\u05d5 \u05e2\u05dc \u05d4\u05de\u05e1\u05e4\u05e8 \u05e9\u05dc \u05de\u05e9\u05e7 \u05d4\u05d1\u05d9\u05ea \u05d4\u05e7\u05d9\u05d9\u05dd \u2014 \u05d4\u05e7\u05d9\u05e9\u05d5 \u05e2\u05dc\u05d9\u05d4 \u05db\u05d3\u05d9 \u05dc\u05d4\u05d7\u05d6\u05d9\u05e8 \u05d0\u05ea \u05d4\u05de\u05e1\u05e4\u05e8 \u05e9\u05dc\u05db\u05dd.",
+    hmCount:"{n} \u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d5\u05ea \u05d7\u05e4\u05e4\u05d5", hmCount1:"\u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4 \u05d0\u05d7\u05ea \u05d7\u05e4\u05e4\u05d4",
+    hmUntouched:"\u05db\u05dc \u05d4\u05e9\u05d0\u05e8 \u05e2\u05d1\u05e8 \u05dc\u05dc\u05d0 \u05e9\u05d9\u05e0\u05d5\u05d9",
+    hmOverlapping:"\u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d5\u05ea \u05d7\u05d5\u05e4\u05e4\u05d5\u05ea", hmTapSwitch:"\u05d4\u05e7\u05d9\u05e9\u05d5 \u05db\u05d3\u05d9 \u05dc\u05d4\u05d7\u05d6\u05d9\u05e8",
+    hmKept:"\u05e0\u05e9\u05de\u05e8 \u00b7 \u05e9\u05dc {name}", hmKeptGeneric:"\u05e0\u05e9\u05de\u05e8 \u00b7 \u05e9\u05dc \u05de\u05e9\u05e7 \u05d4\u05d1\u05d9\u05ea",
+    hmRestored:"\u05e9\u05d5\u05d7\u05d6\u05e8 \u00b7 \u05e9\u05dc\u05db\u05dd",
+    hmReplacedMine:"\u05e9\u05dc\u05db\u05dd, \u05d4\u05d5\u05d7\u05dc\u05e3", hmReplacedTheirs:"\u05e9\u05dc {name}, \u05d4\u05d5\u05d7\u05dc\u05e3", hmReplacedTheirsGeneric:"\u05e9\u05dc \u05de\u05e9\u05e7 \u05d4\u05d1\u05d9\u05ea, \u05d4\u05d5\u05d7\u05dc\u05e3",
+    hmSpent:"\u05d4\u05d5\u05e6\u05d0\u05ea\u05dd \u05d4\u05d7\u05d5\u05d3\u05e9 {amt}",
+    hmChangeAnytime:"\u05d0\u05e4\u05e9\u05e8 \u05dc\u05e9\u05e0\u05d5\u05ea \u05ea\u05e7\u05e6\u05d9\u05d1\u05d9\u05dd \u05d1\u05db\u05dc \u05e2\u05ea", hmEditBudgets:"\u05e2\u05e8\u05d9\u05db\u05ea \u05ea\u05e7\u05e6\u05d9\u05d1\u05d9\u05dd",
+    hmConfirm:"\u05d0\u05d9\u05e9\u05d5\u05e8 \u05d5\u05d4\u05de\u05e9\u05da",
+    hmKeepMine:"\u05dc\u05d4\u05e9\u05d0\u05d9\u05e8 \u05d0\u05ea \u05d4\u05de\u05e1\u05e4\u05e8\u05d9\u05dd \u05e9\u05dc\u05d9 \u05d1\u05db\u05d5\u05dc\u05df", hmKeepTheirs:"\u05dc\u05d4\u05e9\u05ea\u05de\u05e9 \u05d1\u05de\u05e1\u05e4\u05e8\u05d9 \u05de\u05e9\u05e7 \u05d4\u05d1\u05d9\u05ea \u05d1\u05db\u05d5\u05dc\u05df",
+    hmSeeChanges:"\u05de\u05d4 \u05d4\u05e9\u05ea\u05e0\u05d4 \u05db\u05e9\u05d4\u05e6\u05d8\u05e8\u05e4\u05ea\u05dd",
+    hmSeeChangesSub:"{n} \u05de\u05d4\u05ea\u05e7\u05e6\u05d9\u05d1\u05d9\u05dd \u05e9\u05dc\u05db\u05dd \u05d4\u05d5\u05d7\u05dc\u05e4\u05d5 \u05d1\u05e9\u05dc \u05de\u05e9\u05e7 \u05d4\u05d1\u05d9\u05ea", hmSeeChangesSub1:"\u05d0\u05d7\u05d3 \u05d4\u05ea\u05e7\u05e6\u05d9\u05d1\u05d9\u05dd \u05e9\u05dc\u05db\u05dd \u05d4\u05d5\u05d7\u05dc\u05e3 \u05d1\u05e9\u05dc \u05de\u05e9\u05e7 \u05d4\u05d1\u05d9\u05ea",
+  },
+  ar: {
+    hmTitleBar:"\u0627\u0644\u0623\u0633\u0631\u0629",
+    hmTitle1:"\u062a\u0645 \u062f\u0645\u062c \u0623\u0633\u0631\u062a\u0643\u0645.", hmTitle2:"\u0625\u0644\u064a\u0643 \u0645\u0627 \u062a\u063a\u064a\u0651\u0631.",
+    hmIntro:"\u0643\u0627\u0646 \u0644\u062f\u0649 \u0643\u0644\u064a\u0643\u0645\u0627 \u0645\u064a\u0632\u0627\u0646\u064a\u0629 \u0641\u064a {n} \u0641\u0626\u0627\u062a. \u0627\u062d\u062a\u0641\u0638\u0646\u0627 \u0628\u0631\u0642\u0645 \u0627\u0644\u0623\u0633\u0631\u0629 \u0627\u0644\u062d\u0627\u0644\u064a\u0629 \u2014 \u0627\u0636\u063a\u0637 \u0639\u0644\u0649 \u0641\u0626\u0629 \u0644\u0625\u0639\u0627\u062f\u0629 \u0631\u0642\u0645\u0643.",
+    hmIntro1:"\u0643\u0627\u0646 \u0644\u062f\u0649 \u0643\u0644\u064a\u0643\u0645\u0627 \u0645\u064a\u0632\u0627\u0646\u064a\u0629 \u0641\u064a \u0627\u0644\u0641\u0626\u0629 \u0646\u0641\u0633\u0647\u0627. \u0627\u062d\u062a\u0641\u0638\u0646\u0627 \u0628\u0631\u0642\u0645 \u0627\u0644\u0623\u0633\u0631\u0629 \u0627\u0644\u062d\u0627\u0644\u064a\u0629 \u2014 \u0627\u0636\u063a\u0637 \u0639\u0644\u064a\u0647\u0627 \u0644\u0625\u0639\u0627\u062f\u0629 \u0631\u0642\u0645\u0643.",
+    hmCount:"\u062a\u062f\u0627\u062e\u0644\u062a {n} \u0641\u0626\u0627\u062a", hmCount1:"\u062a\u062f\u0627\u062e\u0644\u062a \u0641\u0626\u0629 \u0648\u0627\u062d\u062f\u0629",
+    hmUntouched:"\u0627\u0646\u062a\u0642\u0644 \u0643\u0644 \u0645\u0627 \u0639\u062f\u0627 \u0630\u0644\u0643 \u062f\u0648\u0646 \u062a\u063a\u064a\u064a\u0631",
+    hmOverlapping:"\u0627\u0644\u0641\u0626\u0627\u062a \u0627\u0644\u0645\u062a\u062f\u0627\u062e\u0644\u0629", hmTapSwitch:"\u0627\u0636\u063a\u0637 \u0644\u0644\u062a\u0628\u062f\u064a\u0644",
+    hmKept:"\u0645\u062d\u0641\u0648\u0638 \u00b7 \u0644\u0640{name}", hmKeptGeneric:"\u0645\u062d\u0641\u0648\u0638 \u00b7 \u0644\u0644\u0623\u0633\u0631\u0629",
+    hmRestored:"\u0627\u0633\u062a\u064f\u0639\u064a\u062f \u00b7 \u0644\u0643",
+    hmReplacedMine:"\u0631\u0642\u0645\u0643\u060c \u0627\u0633\u062a\u064f\u0628\u062f\u0644", hmReplacedTheirs:"\u0631\u0642\u0645 {name}\u060c \u0627\u0633\u062a\u064f\u0628\u062f\u0644", hmReplacedTheirsGeneric:"\u0631\u0642\u0645 \u0627\u0644\u0623\u0633\u0631\u0629\u060c \u0627\u0633\u062a\u064f\u0628\u062f\u0644",
+    hmSpent:"\u0623\u0646\u0641\u0642\u062a \u0647\u0630\u0627 \u0627\u0644\u0634\u0647\u0631 {amt}",
+    hmChangeAnytime:"\u064a\u0645\u0643\u0646\u0643 \u062a\u063a\u064a\u064a\u0631 \u0627\u0644\u0645\u064a\u0632\u0627\u0646\u064a\u0627\u062a \u0641\u064a \u0623\u064a \u0648\u0642\u062a", hmEditBudgets:"\u062a\u0639\u062f\u064a\u0644 \u0627\u0644\u0645\u064a\u0632\u0627\u0646\u064a\u0627\u062a",
+    hmConfirm:"\u062a\u0623\u0643\u064a\u062f \u0648\u0645\u062a\u0627\u0628\u0639\u0629",
+    hmKeepMine:"\u0627\u062d\u062a\u0641\u0638 \u0628\u0623\u0631\u0642\u0627\u0645\u064a \u0641\u064a \u0627\u0644\u0643\u0644", hmKeepTheirs:"\u0627\u0633\u062a\u062e\u062f\u0645 \u0623\u0631\u0642\u0627\u0645 \u0627\u0644\u0623\u0633\u0631\u0629 \u0641\u064a \u0627\u0644\u0643\u0644",
+    hmSeeChanges:"\u0645\u0627 \u0627\u0644\u0630\u064a \u062a\u063a\u064a\u0651\u0631 \u0639\u0646\u062f \u0627\u0646\u0636\u0645\u0627\u0645\u0643",
+    hmSeeChangesSub:"\u0627\u0633\u062a\u064f\u0628\u062f\u0644\u062a {n} \u0645\u0646 \u0645\u064a\u0632\u0627\u0646\u064a\u0627\u062a\u0643 \u0628\u0623\u0631\u0642\u0627\u0645 \u0627\u0644\u0623\u0633\u0631\u0629", hmSeeChangesSub1:"\u0627\u0633\u062a\u064f\u0628\u062f\u0644\u062a \u0625\u062d\u062f\u0649 \u0645\u064a\u0632\u0627\u0646\u064a\u0627\u062a\u0643 \u0628\u0631\u0642\u0645 \u0627\u0644\u0623\u0633\u0631\u0629",
+  },
+  ru: {
+    hmTitleBar:"\u0414\u043e\u043c\u043e\u0445\u043e\u0437\u044f\u0439\u0441\u0442\u0432\u043e",
+    hmTitle1:"\u0412\u0430\u0448\u0435 \u0434\u043e\u043c\u043e\u0445\u043e\u0437\u044f\u0439\u0441\u0442\u0432\u043e \u043e\u0431\u044a\u0435\u0434\u0438\u043d\u0435\u043d\u043e.", hmTitle2:"\u0412\u043e\u0442 \u0447\u0442\u043e \u0438\u0437\u043c\u0435\u043d\u0438\u043b\u043e\u0441\u044c.",
+    hmIntro:"\u0423 \u0432\u0430\u0441 \u043e\u0431\u043e\u0438\u0445 \u0443\u0436\u0435 \u0431\u044b\u043b \u0431\u044e\u0434\u0436\u0435\u0442 \u0432 {n} \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u044f\u0445. \u041c\u044b \u0441\u043e\u0445\u0440\u0430\u043d\u0438\u043b\u0438 \u0446\u0438\u0444\u0440\u0443 \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u044e\u0449\u0435\u0433\u043e \u0434\u043e\u043c\u043e\u0445\u043e\u0437\u044f\u0439\u0441\u0442\u0432\u0430 \u2014 \u043d\u0430\u0436\u043c\u0438\u0442\u0435 \u043d\u0430 \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u044e, \u0447\u0442\u043e\u0431\u044b \u0432\u0435\u0440\u043d\u0443\u0442\u044c \u0441\u0432\u043e\u044e.",
+    hmIntro1:"\u0423 \u0432\u0430\u0441 \u043e\u0431\u043e\u0438\u0445 \u0443\u0436\u0435 \u0431\u044b\u043b \u0431\u044e\u0434\u0436\u0435\u0442 \u0432 \u043e\u0434\u043d\u043e\u0439 \u0438 \u0442\u043e\u0439 \u0436\u0435 \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u0438. \u041c\u044b \u0441\u043e\u0445\u0440\u0430\u043d\u0438\u043b\u0438 \u0446\u0438\u0444\u0440\u0443 \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u044e\u0449\u0435\u0433\u043e \u0434\u043e\u043c\u043e\u0445\u043e\u0437\u044f\u0439\u0441\u0442\u0432\u0430 \u2014 \u043d\u0430\u0436\u043c\u0438\u0442\u0435 \u043d\u0430 \u043d\u0435\u0451, \u0447\u0442\u043e\u0431\u044b \u0432\u0435\u0440\u043d\u0443\u0442\u044c \u0441\u0432\u043e\u044e.",
+    hmCount:"\u0421\u043e\u0432\u043f\u0430\u043b\u043e \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u0439: {n}", hmCount1:"\u0421\u043e\u0432\u043f\u0430\u043b\u0430 1 \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u044f",
+    hmUntouched:"\u0412\u0441\u0451 \u043e\u0441\u0442\u0430\u043b\u044c\u043d\u043e\u0435 \u043f\u0435\u0440\u0435\u043d\u0435\u0441\u0435\u043d\u043e \u0431\u0435\u0437 \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u0439",
+    hmOverlapping:"\u0421\u043e\u0432\u043f\u0430\u0432\u0448\u0438\u0435 \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u0438", hmTapSwitch:"\u041d\u0430\u0436\u043c\u0438\u0442\u0435, \u0447\u0442\u043e\u0431\u044b \u0432\u0435\u0440\u043d\u0443\u0442\u044c",
+    hmKept:"\u0421\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u043e \u00b7 {name}", hmKeptGeneric:"\u0421\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u043e \u00b7 \u0434\u043e\u043c\u043e\u0445\u043e\u0437\u044f\u0439\u0441\u0442\u0432\u0430",
+    hmRestored:"\u0412\u043e\u0437\u0432\u0440\u0430\u0449\u0435\u043d\u043e \u00b7 \u0432\u0430\u0448\u0435",
+    hmReplacedMine:"\u0432\u0430\u0448\u0430, \u0437\u0430\u043c\u0435\u043d\u0435\u043d\u0430", hmReplacedTheirs:"{name}, \u0437\u0430\u043c\u0435\u043d\u0435\u043d\u0430", hmReplacedTheirsGeneric:"\u0434\u043e\u043c\u043e\u0445\u043e\u0437\u044f\u0439\u0441\u0442\u0432\u0430, \u0437\u0430\u043c\u0435\u043d\u0435\u043d\u0430",
+    hmSpent:"\u041f\u043e\u0442\u0440\u0430\u0447\u0435\u043d\u043e \u0432 \u044d\u0442\u043e\u043c \u043c\u0435\u0441\u044f\u0446\u0435 {amt}",
+    hmChangeAnytime:"\u0411\u044e\u0434\u0436\u0435\u0442\u044b \u043c\u043e\u0436\u043d\u043e \u0438\u0437\u043c\u0435\u043d\u0438\u0442\u044c \u0432 \u043b\u044e\u0431\u043e\u0439 \u043c\u043e\u043c\u0435\u043d\u0442", hmEditBudgets:"\u0418\u0437\u043c\u0435\u043d\u0438\u0442\u044c \u0431\u044e\u0434\u0436\u0435\u0442\u044b",
+    hmConfirm:"\u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044c \u0438 \u043f\u0440\u043e\u0434\u043e\u043b\u0436\u0438\u0442\u044c",
+    hmKeepMine:"\u041e\u0441\u0442\u0430\u0432\u0438\u0442\u044c \u043c\u043e\u0438 \u0446\u0438\u0444\u0440\u044b \u0432\u0435\u0437\u0434\u0435", hmKeepTheirs:"\u0418\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u044c \u0446\u0438\u0444\u0440\u044b \u0434\u043e\u043c\u043e\u0445\u043e\u0437\u044f\u0439\u0441\u0442\u0432\u0430 \u0432\u0435\u0437\u0434\u0435",
+    hmSeeChanges:"\u0427\u0442\u043e \u0438\u0437\u043c\u0435\u043d\u0438\u043b\u043e\u0441\u044c \u043f\u0440\u0438 \u0432\u0441\u0442\u0443\u043f\u043b\u0435\u043d\u0438\u0438",
+    hmSeeChangesSub:"\u0412\u0430\u0448\u0438\u0445 \u0431\u044e\u0434\u0436\u0435\u0442\u043e\u0432 \u0437\u0430\u043c\u0435\u043d\u0435\u043d\u043e \u043d\u0430 \u0446\u0438\u0444\u0440\u044b \u0434\u043e\u043c\u043e\u0445\u043e\u0437\u044f\u0439\u0441\u0442\u0432\u0430: {n}", hmSeeChangesSub1:"\u041e\u0434\u0438\u043d \u0438\u0437 \u0432\u0430\u0448\u0438\u0445 \u0431\u044e\u0434\u0436\u0435\u0442\u043e\u0432 \u0437\u0430\u043c\u0435\u043d\u0451\u043d \u043d\u0430 \u0446\u0438\u0444\u0440\u0443 \u0434\u043e\u043c\u043e\u0445\u043e\u0437\u044f\u0439\u0441\u0442\u0432\u0430",
+  },
+};
+for (var _hhc in HOUSEHOLD_STRINGS) {
+  if (!TRANSLATIONS[_hhc]) continue;
+  for (var _hhk in HOUSEHOLD_STRINGS[_hhc]) TRANSLATIONS[_hhc][_hhk] = HOUSEHOLD_STRINGS[_hhc][_hhk];
+}
+
 function tr(key) {
   var code = _lang.code || "en";
   return (TRANSLATIONS[code] && TRANSLATIONS[code][key]) || (TRANSLATIONS.en[key]) || key;
 }
+
+// Hebrew and Arabic run right-to-left; setLang() puts that on
+// document.documentElement.dir and the whole app inherits it. Almost nothing
+// needs to ask - flexbox, logical CSS properties and `text-align: start` all
+// flip on their own. The exception is a glyph that points somewhere, like a
+// disclosure chevron, which has to be mirrored explicitly.
+function isRTL() { var c = _lang.code; return c === "he" || c === "ar"; }
 
 function fmtCur(sym, n) {
   var abs = Math.abs(n || 0);
@@ -3391,6 +3480,39 @@ function mergeHouseholdPlan(hh, mine) {
   return changed ? out : null;
 }
 
+// The budgets BOTH sides already had, at different limits.
+//
+// mergeHouseholdPlan is deliberately non-destructive, but "non-destructive" is
+// not the same as "invisible": where both sides hold the same key the
+// household's entry wins, which for `budgets` silently rewrites the joiner's
+// own limits. Categories and goals are only ever carried across, so nothing of
+// theirs is replaced there - budgets are the one array where joining changes a
+// number the joiner chose. That is the one part of a join a user can be
+// surprised by, and it used to happen with no notice at all.
+//
+// So the same pair of documents that feeds the merge also produces this list,
+// which HouseholdMergeView shows them afterwards so they can put any of it
+// back. Read-only: it decides nothing, it only reports. Limits that already
+// agreed are left out, because nothing changed for the user there.
+function householdBudgetOverlaps(hh, mine) {
+  var theirs = Array.isArray(hh && hh.budgets) ? hh.budgets : [];
+  var ours = Array.isArray(mine && mine.budgets) ? mine.budgets : [];
+  var byCat = {};
+  theirs.forEach(function(b) { if (b && b.catId != null) byCat[b.catId] = b; });
+  var out = [];
+  var seen = {};
+  ours.forEach(function(b) {
+    if (!b || b.catId == null || seen[b.catId]) return;
+    var t = byCat[b.catId];
+    if (!t) return;                                  // only the joiner had it - carried across untouched
+    var kept = Number(t.limit) || 0, was = Number(b.limit) || 0;
+    if (kept === was) return;                        // same number on both sides - nothing was replaced
+    seen[b.catId] = true;
+    out.push({ catId: b.catId, category: b.category || t.category || "", kept: kept, mine: was });
+  });
+  return out;
+}
+
 var CLOUD = {
   // Subscribe to sign-in state. cb receives the Firebase user (or null).
   // Returns an unsubscribe function. Fires once immediately with the restored
@@ -3585,8 +3707,15 @@ var CLOUD = {
     }).then(function() {
       return ref.get();
     }).then(function(snap) {
-      var merged = mergeHouseholdPlan(snap.exists ? snap.data() : {}, mine || {});
-      return merged ? ref.set(merged, { merge: true }) : null;
+      // This snapshot is the household as it stood BEFORE the merge write
+      // below, so it is the only moment both plans exist side by side - which
+      // is why the overlap report is taken here rather than reconstructed
+      // afterwards from a document that has already been merged.
+      var hh = snap.exists ? snap.data() : {};
+      var overlaps = householdBudgetOverlaps(hh, mine || {});
+      var merged = mergeHouseholdPlan(hh, mine || {});
+      return Promise.resolve(merged ? ref.set(merged, { merge: true }) : null)
+        .then(function() { return { name: hh.name || "", overlaps: overlaps }; });
     });
   },
   leaveHousehold: function(hid, member) {
@@ -20691,6 +20820,7 @@ function CollabView(props) {
   function validEmail(s) { return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((s || "").trim()); }
 
   var inHousehold = !!(props.householdId && hh);
+  var mergeCount = ((props.mergeReport && props.mergeReport.rows) || []).length;
 
   return (
     <div>
@@ -20737,6 +20867,25 @@ function CollabView(props) {
 
       {inHousehold && (
         <div>
+          {/* The merge summary, for as long as it is unconfirmed. Joining
+              replaced some of this member's own budget limits with the
+              household's (see householdBudgetOverlaps); until they have said
+              yes to that, the way back to it stays on this screen. */}
+          {mergeCount > 0 && (
+            <button onClick={props.onOpenMerge}
+              style={{ width: "100%", boxSizing: "border-box", textAlign: "start", cursor: "pointer", border: "1.5px solid " + T.orangeDim, background: T.card, borderRadius: 20, boxShadow: T.cardShadow, padding: "16px 18px", marginBottom: 14, display: "flex", alignItems: "center", gap: 12, fontFamily: UI }}>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <SVGIcon id="refresh" size={19} color={T.orange} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{tr("hmSeeChanges")}</div>
+                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>
+                  {tr(mergeCount === 1 ? "hmSeeChangesSub1" : "hmSeeChangesSub").replace("{n}", mergeCount)}
+                </div>
+              </div>
+              <span style={{ display: "flex", flexShrink: 0, transform: isRTL() ? "rotate(180deg)" : "none" }}><SVGIcon id="chevron" size={13} color={T.ink3} /></span>
+            </button>
+          )}
           <Card style={{ padding: "22px", marginBottom: 16, textAlign: "center" }}>
             <div style={{ width: 54, height: 54, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
               <SVGIcon id="home" size={26} color={T.orange} />
@@ -20805,6 +20954,191 @@ function CollabView(props) {
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+
+// ── Household merge summary ─────────────────────────────────────────────────
+// Shown straight after joining a household, and reachable again from Collab
+// until it is confirmed.
+//
+// Joining MERGES two plans rather than letting either side overwrite the other
+// (mergeHouseholdPlan). Goals and categories are only ever carried across, so
+// nothing of the joiner's is lost there. Budgets are the exception: where both
+// members already budgeted the same category the household's number wins, and
+// the joiner's own limit is replaced. Non-destructive, but not invisible - it
+// changes a number they chose, and before this screen it happened silently.
+//
+// So every replaced limit is listed with what it was and what it is now, and a
+// tap puts any of them back. NOTHING is written until Confirm: the household
+// document is shared and live, so committing on each tap would walk a partner's
+// screen through a half-made decision. Leaving without confirming simply leaves
+// the merged plan as it stands, and the card in Collab leads back here.
+function HouseholdMergeView(props) {
+  var rows = (props.report && props.report.rows) || [];
+  var budgets = props.budgets || [];
+  var _f = useState({}); var flipped = _f[0]; var setFlipped = _f[1];
+
+  var byCat = {};
+  budgets.forEach(function(b) { if (b && b.catId != null) byCat[b.catId] = b; });
+  // resolveBudget owns every "what is this budget pointed at and what has
+  // landed against it" question in the app, including folder budgets and the
+  // synced tags - so the name, colour, icon and month-to-date figure on these
+  // rows are the same ones the Budgets tab shows, from the same resolver.
+  var ctx = {
+    categories: props.categories, folders: props.folders, tx: props.tx,
+    businesses: props.businesses, investing: props.investing, savings: props.savings,
+    ym: curMonth(),
+  };
+
+  // "Kept - Mika's" needs one other member to name. A household can hold more
+  // than two people, and then no single name is the honest label for the
+  // number that won, so it falls back to the household itself.
+  var others = ((props.household && props.household.members) || []).filter(function(m) { return m && m.uid !== props.myUid; });
+  var partner = others.length === 1 ? (((others[0].name || "").trim()) || (others[0].email || "").split("@")[0]) : "";
+  function keptTag() { return partner ? tr("hmKept").replace("{name}", partner) : tr("hmKeptGeneric"); }
+  function theirsLabel() { return partner ? tr("hmReplacedTheirs").replace("{name}", partner) : tr("hmReplacedTheirsGeneric"); }
+
+  var allFlipped = rows.length > 0 && rows.every(function(r) { return !!flipped[r.catId]; });
+
+  function toggle(catId) {
+    setFlipped(function(f) {
+      var next = {};
+      for (var k in f) next[k] = f[k];
+      next[catId] = !next[catId];
+      return next;
+    });
+  }
+  // One control for both directions: all mine, or all theirs. Which one it
+  // offers depends on where the list currently stands, so the button is never
+  // a no-op.
+  function toggleAll() {
+    var goMine = !allFlipped;
+    setFlipped(function() {
+      var next = {};
+      if (goMine) rows.forEach(function(r) { next[r.catId] = true; });
+      return next;
+    });
+  }
+  // The only write. Restores this member's own limit on every flipped row and
+  // leaves the rest of the plan exactly as the merge left it. A row whose
+  // budget has since been deleted by a partner simply has nothing to write
+  // back to, and is skipped rather than resurrected.
+  function commit(dest) {
+    var want = {};
+    rows.forEach(function(r) { if (flipped[r.catId]) want[r.catId] = r.mine; });
+    var touched = false;
+    var next = budgets.map(function(b) {
+      if (!b || !Object.prototype.hasOwnProperty.call(want, b.catId) || b.limit === want[b.catId]) return b;
+      touched = true;
+      return Object.assign({}, b, { limit: want[b.catId] });
+    });
+    props.onConfirm(touched ? next : null, dest);
+  }
+
+  var locale = ({ en: "en-US", he: "he-IL", ar: "ar-SA", ru: "ru-RU" })[_lang.code] || "en-US";
+  var period = curMonth();
+  try { period = new Date().toLocaleDateString(locale, { month: "short", year: "numeric" }); } catch (e) {}
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 8, marginTop: 4 }}>
+        <RichyLogo size={26} style={{ borderRadius: 8, flexShrink: 0 }} />
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.ink3 }}>
+          {tr("hmTitleBar") + " \u00b7 " + period}
+        </div>
+      </div>
+
+      <div style={{ fontFamily: DISP, fontWeight: DISP_WEIGHT, fontSize: 28, lineHeight: 1.24, letterSpacing: "-0.02em", color: T.ink, marginBottom: 8 }}>
+        {tr("hmTitle1")}<br />{tr("hmTitle2")}
+      </div>
+      <div style={{ fontSize: 14, lineHeight: 1.55, color: T.ink2, marginBottom: 14 }}>
+        {tr(rows.length === 1 ? "hmIntro1" : "hmIntro").replace("{n}", rows.length)}
+      </div>
+
+      <div style={{ display: "flex", gap: 9, alignItems: "center", flexWrap: "wrap", marginBottom: 14 }}>
+        <span style={{ fontSize: 11.5, fontWeight: 700, color: T.orange, background: T.orangeDim, borderRadius: 999, padding: "6px 11px" }}>
+          {tr(rows.length === 1 ? "hmCount1" : "hmCount").replace("{n}", rows.length)}
+        </span>
+        <span style={{ fontSize: 11.5, color: T.ink3 }}>{tr("hmUntouched")}</span>
+      </div>
+
+      <Card style={{ borderRadius: 22, overflow: "hidden", marginBottom: 14 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "13px 16px 11px", borderBottom: "0.5px solid " + T.sep }}>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.ink3 }}>{tr("hmOverlapping")}</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: T.ink3, flexShrink: 0 }}>{tr("hmTapSwitch")}</span>
+        </div>
+        {rows.map(function(r, i) {
+          var live = byCat[r.catId] || { catId: r.catId, category: r.category, limit: r.kept };
+          var res = resolveBudget(live, ctx);
+          var on = !!flipped[r.catId];
+          return (
+            <button key={r.catId} onClick={function() { toggle(r.catId); }} aria-pressed={on}
+              style={{
+                position: "relative", width: "100%", boxSizing: "border-box", textAlign: "start",
+                background: on ? T.orangeDim : "transparent", border: "none",
+                borderBottom: i < rows.length - 1 ? "0.5px solid " + T.sep : "none",
+                padding: "13px 16px", display: "flex", gap: 12, alignItems: "flex-start",
+                cursor: "pointer", fontFamily: UI, transition: "background var(--m-quick) ease",
+              }}>
+              {/* Logical inset, so the marker sits on the leading edge in
+                  Hebrew and Arabic without a mirrored code path. */}
+              {on && <span aria-hidden="true" style={{ position: "absolute", insetInlineStart: "0px", top: "0px", bottom: "0px", width: "2.5px", background: T.orange }} />}
+              <CatBadge icon={res.icon} color={res.color} size={34} soft={true} />
+              <div style={{ flex: 1, display: "grid", gap: 4, minWidth: 0 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10 }}>
+                  <span style={{ fontSize: 14.5, fontWeight: 600, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{res.name}</span>
+                  <span dir="ltr" style={{ fontSize: 16.5, fontWeight: 700, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.015em", color: T.ink, flexShrink: 0 }}>{dollars(on ? r.mine : r.kept)}</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10 }}>
+                  <span style={{ fontSize: 11.5, color: T.ink3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{tr("hmSpent").replace("{amt}", dollars(res.amount))}</span>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: on ? T.orange : T.ink3, flexShrink: 0 }}>{on ? tr("hmRestored") : keptTag()}</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 1 }}>
+                  <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke={T.ink3} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                    <path d="M4 8h13l-3-3" /><path d="M20 16H7l3 3" />
+                  </svg>
+                  <span dir="ltr" style={{ fontSize: 11.5, color: T.ink3, textDecoration: "line-through" }}>{dollars(on ? r.kept : r.mine)}</span>
+                  <span style={{ fontSize: 11.5, color: T.ink3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{on ? theirsLabel() : tr("hmReplacedMine")}</span>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </Card>
+
+      <div style={{ textAlign: "center", marginBottom: 18 }}>
+        <span style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5 }}>
+          {tr("hmChangeAnytime")}
+          {" \u00b7 "}
+          {/* Commits first. The Budgets tab is where these limits live, so
+              arriving there with the taps on this screen still pending would
+              show numbers the user thinks they have already changed. */}
+          <button onClick={function() { commit("budgets"); }}
+            style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.orange }}>
+            {tr("hmEditBudgets")}
+          </button>
+        </span>
+      </div>
+
+      {/* Sticky rather than fixed, so it never covers the last row on a short
+          list, and lifted clear of the floating nav pill (bottom 20px + its
+          own height) so the two pieces of chrome don't overlap. */}
+      <div style={{
+        position: "sticky", bottom: "calc(110px + env(safe-area-inset-bottom, 0px))", zIndex: 20,
+        marginLeft: -16, marginRight: -16, marginBottom: -16, padding: "13px 16px 15px",
+        background: T.sheetGlass,
+        backdropFilter: "blur(30px) saturate(180%)", WebkitBackdropFilter: "blur(30px) saturate(180%)",
+        borderTop: "0.5px solid " + T.glassBorder,
+        boxShadow: T.glassLiftUp + ", inset 0 1px 0 " + T.navRimTop,
+      }}>
+        <BigBtn label={tr("hmConfirm")} onPress={function() { commit(null); }} />
+        <button onClick={toggleAll}
+          style={{ width: "100%", marginTop: 4, border: "none", background: "transparent", padding: "7px 0", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, color: T.orange }}>
+          {allFlipped ? tr("hmKeepTheirs") : tr("hmKeepMine")}
+        </button>
+      </div>
     </div>
   );
 }
@@ -33397,6 +33731,12 @@ export default function App() {
   // before the redeclaration ran - reorder either one and the portfolio silently
   // becomes the invite list.
   var _ivt = useState([]); var invites = _ivt[0]; var setInvites = _ivt[1];
+  // What joining a household replaced, for HouseholdMergeView. Persisted in
+  // the user blob rather than held only in memory: it is written the moment a
+  // join completes, and a reload before the member has answered it would
+  // otherwise lose the only record that their own budget limits were changed.
+  // Cleared when they confirm.
+  var _mrp = useState(null); var mergeReport = _mrp[0]; var setMergeReport = _mrp[1];
   // In-memory mirror of the signed-in user's full Firestore document, so writes
   // can merge against it without an async read-before-write each time.
   var blobRef = useRef({});
@@ -33435,6 +33775,7 @@ export default function App() {
     setNotes(data.notes || []);
     setFoundMoney(data.foundMoney || { tally: 0, dismissed: [], acted: [] });
     setDecisions(data.decisions || []);
+    setMergeReport(data.mergeReport || null);
     // Trim on load too, so an account that already grew past the limit heals
     // itself on its next write instead of staying permanently unsaveable.
     setRichardChats(trimChatArchive(data.richardChats || []));
@@ -33737,12 +34078,36 @@ export default function App() {
     // subscription, so the first snapshot already carries both sides.
     return CLOUD.acceptInvite(hid, meAsMember(), {
       budgets: budgets, goals: goals, categories: categories
-    }).then(function() {
+    }).then(function(res) {
+      // acceptInvite reports which of MY budget limits the household's
+      // replaced (householdBudgetOverlaps). Show that rather than letting it
+      // happen silently - but only when something actually changed, so a join
+      // with no overlap still lands straight in the household.
+      var rows = (res && res.overlaps) || [];
+      var report = rows.length ? { hid: hid, name: (res && res.name) || "", at: Date.now(), rows: rows } : null;
       setHouseholdId(hid);
       setInvites([]);
-      save({ householdId: hid });
+      setMergeReport(report);
+      save({ householdId: hid, mergeReport: report });
+      if (report) { prevTabRef.current = "collab"; setTab("householdMerge"); }
     });
   }
+  // The single write behind HouseholdMergeView. `next` is the budgets array
+  // with this member's own limits restored on the rows they flipped, or null
+  // when they accepted the household's numbers as they stand. Either way the
+  // report is retired, so the card in Collab stops offering it.
+  //
+  // Passing budgets EXPLICITLY matters: save() guards the ambient rebuild path
+  // against writing an empty plan array, and an explicit key is how a
+  // deliberate edit says it means it.
+  function onConfirmMerge(next, dest) {
+    var patch = { mergeReport: null };
+    if (next) { setBudgets(next); patch.budgets = next; }
+    setMergeReport(null);
+    save(patch);
+    setTab(dest === "budgets" ? "budgets" : "collab");
+  }
+
   function onLeaveHousehold() {
     if (!householdId) return Promise.resolve();
     // Pass the exact member object from the loaded doc so arrayRemove matches.
@@ -33773,7 +34138,7 @@ export default function App() {
     CLOUD.signOut();
     blobRef.current = {};
     setUser(null); setAccountKey(null); setTab("overview");
-    setHouseholdId(null); setHousehold(null); setInvites([]);
+    setHouseholdId(null); setHousehold(null); setInvites([]); setMergeReport(null);
     setTx([]); setBudgets([]); setGoals([]); setTrips([]); setSavings([]); setBusinesses([]); setInvesting([]); setInvestorProfile(null); setNotes([]); setFolders([]); setCategories([]); setFoundMoney({ tally: 0, dismissed: [], acted: [] }); setDecisions([]); setBankSync(null); setLeumiFinteka(null); setCustomBanners([]); setMotivation(motivDefault()); setSocial({ handle: "", following: [], followers: [], requests: [] });
     // Language is deliberately NOT reset here (unlike theme) - it's a device
     // preference AuthScreen itself now renders in, and wiping it back to "en"
@@ -34734,7 +35099,7 @@ export default function App() {
             </button>
           </div>
           <span style={{ flex: 1, minWidth: 0, fontSize: 18, fontWeight: currentTab === "advisor" ? RICHARD_DISP_WEIGHT : DISP_WEIGHT, fontFamily: currentTab === "advisor" ? RICHARD_DISP : DISP, color: T.ink, textAlign: "center", letterSpacing: "-0.02em", lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "periodMode" ? "Date Range" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "whatsapp" ? "WhatsApp Alerts" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "badges" ? "Badges" : currentTab === "settings" ? "Settings" : currentTab === "person" ? personName : currentTab === "social" ? "Friends" : currentTab === "findPeople" ? "Find people" : currentTab === "analysis" ? "Full Analysis" : currentTab === "investPlan" ? "Your investing plan" : currentTab === "investorOnboard" ? "Investing basics" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
+            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "householdMerge" ? tr("hmTitleBar") : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "periodMode" ? "Date Range" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "whatsapp" ? "WhatsApp Alerts" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "badges" ? "Badges" : currentTab === "settings" ? "Settings" : currentTab === "person" ? personName : currentTab === "social" ? "Friends" : currentTab === "findPeople" ? "Find people" : currentTab === "analysis" ? "Full Analysis" : currentTab === "investPlan" ? "Your investing plan" : currentTab === "investorOnboard" ? "Investing basics" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
           </span>
           <div style={{ width: 122, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
             <HeaderShortcutBar current={currentTab} items={[
@@ -34749,7 +35114,7 @@ export default function App() {
           carries a backdrop-filter, which makes it the containing block for any
           position:fixed descendant and would pin this to the header instead of
           the viewport. At root level it stays parked in the bottom-left corner. */}
-      {currentTab !== "advisor" && (
+      {currentTab !== "advisor" && currentTab !== "householdMerge" && (
           <button onClick={function() {
               nativeHaptic("MEDIUM");
               if (currentTab === "activity") setSheet(function(v) { return !v; });
@@ -34863,7 +35228,8 @@ export default function App() {
         }} />}
         {currentTab === "editOpeningBalance" && <EditOpeningBalanceView tx={tx} onComplete={handleEditOpeningBalance} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "logMonth" && <LogMonthView categories={categories} tx={tx} budgets={budgets} onComplete={handleLogMonth} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
-        {currentTab === "collab" && <CollabView household={household} householdId={householdId} invites={invites} myUid={accountKey} onCreate={onCreateHousehold} onInvite={onInviteMember} onCancelInvite={onCancelInvite} onAccept={onAcceptInvite} onLeave={onLeaveHousehold} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "collab" && <CollabView household={household} householdId={householdId} invites={invites} myUid={accountKey} mergeReport={mergeReport} onCreate={onCreateHousehold} onInvite={onInviteMember} onCancelInvite={onCancelInvite} onAccept={onAcceptInvite} onLeave={onLeaveHousehold} onOpenMerge={function() { prevTabRef.current = "collab"; setTab("householdMerge"); }} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "householdMerge" && <HouseholdMergeView report={mergeReport} household={household} myUid={accountKey} budgets={budgets} categories={categories} folders={folders} tx={tx} businesses={businesses} investing={investing} savings={savings} onConfirm={onConfirmMerge} />}
         {currentTab === "debts" && <DebtView debts={debts} onSaveDebts={onSaveDebts} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "currency" && <CurrencyView currency={currency} onCurrencyChange={onSaveCurrency} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "nickname" && <NicknameView value={user} onSave={function(name) { onSaveNickname(name); setTab(prevTabRef.current || "profile"); }} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
