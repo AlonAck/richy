@@ -575,6 +575,17 @@ yet compiled)**.
   sign into the existing Firebase user for that email - no duplicate uids.
   Still to check on a device: the Google sheet returns to the app, and the
   Apple sheet works once a paid team enables the capability.
+- **Accounts created from the phone, 2026-09-05 evening:** sign-up collects
+  name, date of birth and currency like the web, applies the same 16+ gate
+  client-side, and writes `users/{uid}` right after the login exists - the
+  web's sign-up document (default folders, categories, synced tags,
+  `consentAt`, `termsVersion`) on schema 2. A first Google or Apple sign-in
+  lands on `AccountSetupView`, which collects the same answers. The consent
+  line on both names Anthropic and what is sent (Phase 5 item 5). The web's
+  ten-step onboarding and Richard's first plan are not on the phone; an
+  account made on the phone gets them the first time it opens the web.
+  Server-side rejection of under-16 sign-ups (Phase 5 item 16) is still
+  unverified for both clients.
 - **Document split — started 2026-09-04 on branch `firestore-split`, not
   merged.** Transactions move to `users/{uid}/tx/{id}` and every write to
   the parent becomes a field-level `update()`; the parent's array stays
