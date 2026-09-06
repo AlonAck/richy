@@ -15873,6 +15873,7 @@ function Trips(props) {
   var _dc = useState(null); var delCat = _dc[0]; var setDelCat = _dc[1];
   var _mvt = useState(""); var moveTarget = _mvt[0]; var setMoveTarget = _mvt[1];
   var _dec = useState(null); var delEntryConfirm = _dec[0]; var setDelEntryConfirm = _dec[1];
+  var _dtc = useState(null); var delTripConfirm = _dtc[0]; var setDelTripConfirm = _dtc[1];
   var _eaf = useState(null); var editAllocFor = _eaf[0]; var setEditAllocFor = _eaf[1];
   var _eafm = useState({ label: "", color: "" }); var editAllocForm = _eafm[0]; var setEditAllocForm = _eafm[1];
 
@@ -16260,7 +16261,7 @@ function Trips(props) {
     } else {
       props.onSaveTrips(props.trips.filter(function(x) { return x.id !== trip.id; }));
     }
-    setView("list"); setActiveId(null);
+    setDelTripConfirm(null); setView("list"); setActiveId(null);
   }
   // Ending a trip just archives it into Trip History (Profile menu) - it stops
   // showing in the active trip list, but any balance already tracked against it
@@ -16928,10 +16929,26 @@ function Trips(props) {
           </button>
         )}
 
-        <button onClick={function() { removeTrip(trip); }}
-          style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "8px 0 4px" }}>
-          {tr("deleteTrip")}
-        </button>
+        {delTripConfirm === trip.id ? (
+          <div style={{ background: "rgba(220,50,50,0.07)", borderRadius: 12, padding: "12px 14px", marginTop: 6 }}>
+            <div style={{ fontSize: 13, color: T.ink2, marginBottom: 10, lineHeight: 1.45 }}>{tr("deleteTripConfirm")}</div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={function() { removeTrip(trip); }}
+                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 10, background: T.red, color: "#fff" }}>
+                {tr("delete")}
+              </button>
+              <button onClick={function() { setDelTripConfirm(null); }}
+                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "10px 0", borderRadius: 10, background: T.fill2, color: T.ink2 }}>
+                {tr("notNow")}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button onClick={function() { setDelTripConfirm(trip.id); }}
+            style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "8px 0 4px" }}>
+            {tr("deleteTrip")}
+          </button>
+        )}
 
         <Overlay open={!!logFor} onClose={function() { setLogFor(null); }} title={logFor ? (tr("logExpenseTitle") + " - " + logFor.label) : tr("logExpenseTitle")}>
           <FormRow label={tr("txLabel")} value={logForm.label} onChange={function(e) { setLogField("label", e.target.value); }} />
