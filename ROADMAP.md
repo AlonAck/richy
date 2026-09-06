@@ -282,9 +282,10 @@ report recommends fixing them.
 CI, no lint and no error telemetry** anywhere in this repo — no `test` script, no
 `.github/`, no reporter. Five audits have now found bugs by hand-reading 35,000
 lines because there is no other signal. Two safety systems that were fully built
-were never wired to a button (`RW_ACTIONS`; and `deleteTripConfirm`, which is
-translated into all four languages and referenced nowhere). The report argues
-telemetry plus a five-check pre-commit gate should come **before** the next bug fix.
+were never wired to a button (`RW_ACTIONS`; and `deleteTripConfirm`, which was
+translated into all four languages and referenced nowhere — now wired, `cb4ccd4`,
+see Closed table above). The report argues telemetry plus a five-check pre-commit
+gate should come **before** the next bug fix.
 
 ### Genuinely NEW, both P0, found 30 Aug — the two most urgent items on this page
 
@@ -325,6 +326,12 @@ telemetry plus a five-check pre-commit gate should come **before** the next bug 
 | Service worker cached an error page as the app shell — permanent white screen, no recovery | `88fc56d` — `r.ok` guard before both `c.put()` calls. Verified by running the built handler against 200/404/500/502/503 and an offline fetch: non-OK responses are never cached, a good cached shell survives an outage, and offline boot still works |
 | Couples-mode stale closure dropped every transaction added since the effect last ran | `f1ad55b` — functional `setTx`, fixed alongside the household wipe in the same seven lines |
 | **NEW-1:** creating or joining a household silently wiped every budget, goal and category, and orphaned every historical `catId` | `f1ad55b` — four layers: seed the household doc on create, merge (union, existing wins) on join, adopt only plan fields the doc actually carries, and a `save()` guard that refuses to write an empty plan array over a non-empty one while still allowing an explicit delete |
+
+### Closed since 2 September — `qa-audit-2026-09-02.md`, verified 6 Sep
+
+| Finding | Closed by |
+|---|---|
+| ~~Deleting a trip (`removeTrip`, wired directly to the delete button) instantly destroyed the trip, every budget bucket and every logged expense, with zero confirmation~~ (§5.7) | `cb4ccd4` — delete button now sets a `delTripConfirm` state and renders the same inline red confirm card (Delete / Cancel) used for capital/account deletion, using the `deleteTripConfirm` string that already existed in all four languages but was never wired to anything. `removeTrip` only fires from the confirm card. Verified by re-reading `Trips(props)`: the button no longer calls `removeTrip` directly. |
 
 ### Still open, with evidence it is getting worse — re-verified 30 Aug
 
