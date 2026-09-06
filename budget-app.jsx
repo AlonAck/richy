@@ -12828,12 +12828,45 @@ function GoalAtRiskDetail(props) {
   var gp = watch.goalPlans.filter(function(g) { return String(g.goalId) === String(props.goalId); })[0];
   var goal = (props.goals || []).filter(function(g) { return String(g.id) === String(props.goalId); })[0];
   var _sheet = useState(false); var sheetOpen = _sheet[0]; var setSheetOpen = _sheet[1];
+  var _gac = useState(null); var goalActionConfirm = _gac[0]; var setGoalActionConfirm = _gac[1];
+  var _gau = useState(null); var goalActionUndo = _gau[0]; var setGoalActionUndo = _gau[1];
+
+  function undoGoalAction() {
+    if (!goalActionUndo || !goal) return;
+    if (goalActionUndo.action === "month") {
+      props.onSaveGoals(props.goals.map(function(g) { return g.id === goal.id ? Object.assign({}, g, { deadline: goalActionUndo.prevDeadline }) : g; }));
+    } else if (goalActionUndo.action === "aim") {
+      props.onSaveGoals(props.goals.map(function(g) { return g.id === goal.id ? Object.assign({}, g, { target: goalActionUndo.prevTarget }) : g; }));
+    }
+    setGoalActionUndo(null);
+  }
+  function goalActionUndoCard() {
+    return (
+      <div style={{ background: "rgba(220,50,50,0.07)", borderRadius: 14, padding: "14px 16px", marginTop: 16 }}>
+        <div style={{ fontSize: 13.5, color: T.ink, marginBottom: 10, lineHeight: 1.45 }}>
+          {goalActionUndo.action === "month" ? "Deadline pushed to " + goal.deadline + "." : "Target changed to " + dollars(goal.target) + "."}
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={undoGoalAction}
+            style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 10, background: T.red, color: "#fff" }}>
+            Undo
+          </button>
+          <button onClick={function() { setGoalActionUndo(null); props.onNavigate("goals"); }}
+            style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "10px 0", borderRadius: 10, background: T.fill2, color: T.ink2 }}>
+            Done
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!gp || !goal) {
     return (
       <div>
         <SubViewBack onBack={function() { props.onNavigate("goals"); }} label="Goals" />
-        <div style={{ fontSize: 15, color: T.ink2 }}>This goal is back on pace - nothing to fix here anymore.</div>
+        {goalActionUndo && goal ? goalActionUndoCard() : (
+          <div style={{ fontSize: 15, color: T.ink2 }}>This goal is back on pace - nothing to fix here anymore.</div>
+        )}
       </div>
     );
   }
@@ -12856,22 +12889,30 @@ function GoalAtRiskDetail(props) {
   }
   function cancelAndBack(ids) { cancelFindings(ids); props.onNavigate("goals"); }
 
-  function giveOneMoreMonth() {
-    var d = new Date(goal.deadline + "T12:00:00");
-    d.setMonth(d.getMonth() + 1);
-    var newDeadline = d.toISOString().slice(0, 10);
-    props.onSaveGoals(props.goals.map(function(g) { return g.id === goal.id ? Object.assign({}, g, { deadline: newDeadline }) : g; }));
-    props.onNavigate("goals");
-  }
-  function aimForReal() {
-    props.onSaveGoals(props.goals.map(function(g) { return g.id === goal.id ? Object.assign({}, g, { target: aimTargetValue() }) : g; }));
-    props.onNavigate("goals");
-  }
   // What the user will actually have by the existing deadline at the current
   // real saving rate (gp.actualPerMonth - the same trailing-3-month average
   // detectGoalRisk built the whole plan from) - never a rounded guess.
   function aimTargetValue() {
     return round2(saved + (gp.actualPerMonth * (gp.monthsLeft || 0)));
+  }
+  function newDeadlineForOneMoreMonth() {
+    var d = new Date(goal.deadline + "T12:00:00");
+    d.setMonth(d.getMonth() + 1);
+    return d.toISOString().slice(0, 10);
+  }
+  // Both rows silently overwrote the goal's saved deadline/target with no
+  // confirm and no way back. Now they only stage the change (goalActionConfirm)
+  // - applyGiveOneMoreMonth/applyAimForReal run on explicit confirm, and record
+  // the prior value in goalActionUndo so the change can be reversed with one tap.
+  function applyGiveOneMoreMonth() {
+    setGoalActionUndo({ action: "month", prevDeadline: goal.deadline });
+    props.onSaveGoals(props.goals.map(function(g) { return g.id === goal.id ? Object.assign({}, g, { deadline: newDeadlineForOneMoreMonth() }) : g; }));
+    setGoalActionConfirm(null);
+  }
+  function applyAimForReal() {
+    setGoalActionUndo({ action: "aim", prevTarget: goal.target });
+    props.onSaveGoals(props.goals.map(function(g) { return g.id === goal.id ? Object.assign({}, g, { target: aimTargetValue() }) : g; }));
+    setGoalActionConfirm(null);
   }
 
   var heroStyle = { margin: "16px 0 0", borderRadius: 18, background: T.heroBg2 || T.heroBg, boxShadow: T.heroShadow, padding: 16, position: "relative", overflow: "hidden" };
@@ -12914,7 +12955,29 @@ function GoalAtRiskDetail(props) {
         </div>
       </div>
 
-      {plan.covers ? (
+      {goalActionUndo ? (
+        <div style={{ paddingTop: 24 }}>{goalActionUndoCard()}</div>
+      ) : goalActionConfirm ? (
+        <div style={{ paddingTop: 24 }}>
+          <div style={{ background: "rgba(220,50,50,0.07)", borderRadius: 14, padding: "14px 16px" }}>
+            <div style={{ fontSize: 13.5, color: T.ink, marginBottom: 10, lineHeight: 1.45 }}>
+              {goalActionConfirm === "month"
+                ? "Push the deadline from " + goal.deadline + " to " + newDeadlineForOneMoreMonth() + "? Your saved target stays the same."
+                : "Change the target from " + dollars(goal.target) + " to " + dollars(aimTargetValue()) + ", keeping the " + goal.deadline + " deadline?"}
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={goalActionConfirm === "month" ? applyGiveOneMoreMonth : applyAimForReal}
+                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 10, background: T.red, color: "#fff" }}>
+                {tr("yesDo")}
+              </button>
+              <button onClick={function() { setGoalActionConfirm(null); }}
+                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "10px 0", borderRadius: 10, background: T.fill2, color: T.ink2 }}>
+                {tr("notNow")}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : plan.covers ? (
         <div>
           <div style={{ margin: "16px 0 0", background: T.card, borderRadius: 18, boxShadow: RW_CARD_SHADOW, padding: 16, display: "flex", alignItems: "center" }}>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -12960,21 +13023,23 @@ function GoalAtRiskDetail(props) {
           </div>
 
           <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
-            <button onClick={giveOneMoreMonth} style={{ textAlign: "start", width: "100%", background: T.card, borderRadius: 18, border: "none", boxShadow: RW_CARD_SHADOW, padding: 16, display: "flex", gap: 13, alignItems: "center", cursor: "pointer", fontFamily: UI }}>
+            <button onClick={function() { setGoalActionConfirm("month"); }} style={{ textAlign: "start", width: "100%", background: T.card, borderRadius: 18, border: "1px solid " + T.orange, boxShadow: RW_CARD_SHADOW, padding: 16, display: "flex", gap: 13, alignItems: "center", cursor: "pointer", fontFamily: UI }}>
               <IconBadge icon="calendar" bg={T.orange} size={40} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>Give it one more month</div>
-                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>{(function() { var d = new Date(goal.deadline + "T12:00:00"); d.setMonth(d.getMonth() + 1); return "Due " + d.toISOString().slice(0, 10) + " instead"; })()}</div>
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 3 }}>Rewrites your goal's deadline</div>
+                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>{"Due " + newDeadlineForOneMoreMonth() + " instead"}</div>
               </div>
-              <SVGIcon id="chevron" size={16} color={T.ink3} />
+              <SVGIcon id="edit" size={16} color={T.orange} />
             </button>
-            <button onClick={aimForReal} style={{ textAlign: "start", width: "100%", background: T.card, borderRadius: 18, border: "none", boxShadow: RW_CARD_SHADOW, padding: 16, display: "flex", gap: 13, alignItems: "center", cursor: "pointer", fontFamily: UI }}>
+            <button onClick={function() { setGoalActionConfirm("aim"); }} style={{ textAlign: "start", width: "100%", background: T.card, borderRadius: 18, border: "1px solid " + T.orange, boxShadow: RW_CARD_SHADOW, padding: 16, display: "flex", gap: 13, alignItems: "center", cursor: "pointer", fontFamily: UI }}>
               <IconBadge icon="goals" bg={T.orange} size={40} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>Aim for what you'll actually have</div>
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 3 }}>Rewrites your goal's target</div>
                 <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>{dollars(aimTargetValue()) + " by " + goal.deadline + ", keeping the date"}</div>
               </div>
-              <SVGIcon id="chevron" size={16} color={T.ink3} />
+              <SVGIcon id="edit" size={16} color={T.orange} />
             </button>
           </div>
 
