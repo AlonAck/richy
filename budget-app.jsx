@@ -6777,6 +6777,115 @@ function richardNotesBlock(label, text) {
   return "IMPORTANT " + label + " - TREAT AS HARD FACTS THAT OVERRIDE DEFAULT ASSUMPTIONS, NOT AS BACKGROUND: \"" + String(text).trim() + "\". Let these notes reshape the actual numbers: if they say a cost is covered by someone else or does not apply, allocate 0 to it and redistribute that money to what the user will actually spend on; if they describe who the user is (age, student, someone else paying) or constraints they have, every allocation, tip, and piece of advice must visibly account for it. ";
 }
 
+// ---- Richard's voice --------------------------------------------------------
+// How Richard talks is the user's call; what he may say is not. Three built-in
+// voices plus "create your own". The choice travels to api/chat.js as
+// structured data ({ preset, tone, detail, humor, traits }) and is rendered
+// into the prompt THERE, behind the server guardrail - the client never sends
+// voice prose. Custom traits are judged by Sonnet on the server before the
+// sheet lets the user keep them (checkRichardTrait below).
+var RICHARD_VOICES = [
+  { id: "minimal", name: "Minimalist", desc: "Finds the one thing that matters, names it, stops talking.", tone: 3, detail: 2, humor: 1 },
+  { id: "cheer", name: "Cheerful", desc: "Notices what went right before what to change.", tone: 1, detail: 3, humor: 4 },
+  { id: "aggressive", name: "Aggressive", desc: "Numbers first, no cushioning, a fix for this week.", tone: 5, detail: 3, humor: 1 }
+];
+var RICHARD_VOICE_DEFAULT = "minimal";
+var RICHARD_VOICE_DIALS = [
+  { key: "tone", label: "Tone", lo: "Warm", hi: "Blunt", names: ["Gentle", "Warm", "Even", "Direct", "Blunt"] },
+  { key: "detail", label: "Detail", lo: "Brief", hi: "Deep", names: ["One line", "Brief", "Balanced", "Thorough", "Deep"] },
+  { key: "humor", label: "Humor", lo: "None", hi: "Playful", names: ["None", "Dry", "Light", "Warm", "Playful"] }
+];
+var RICHARD_TRAIT_MAX = 6;
+var RICHARD_TRAIT_CHARS = 120;
+var RICHARD_VOICE_NAME_CHARS = 32;
+// Mirror of TRAIT_RULES in api/_prompts.js - instant feedback while typing.
+// The server copy is the one that counts, and Sonnet judges what a regex
+// cannot (a stock tip phrased politely still gets refused).
+var RICHARD_TRAIT_RULES = [
+  { re: /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]|emoji|emoticon|smiley/iu, reason: "Richard never uses emojis, in any voice." },
+  { re: /(ignore|forget|override|disregard|bypass|reveal|print|show|leak).{0,30}(rule|instruction|limit|guardrail|prompt)|jailbreak|system prompt/i, reason: "A voice changes how Richard speaks, not his rules." },
+  { re: /(you are|you're|act as|pretend|roleplay|role-play|call yourself|your name is|rename|impersonat)/i, reason: "Richard stays Richard - his name and identity aren't adjustable." },
+  { re: /(recommend|pick|suggest|tell me|which|best|buy|sell|hold|short|dump).{0,40}(stock|share|ticker|etf|crypto|coin|bitcoin|securit|index fund|mutual fund)|(stock|ticker|etf|crypto|coin).{0,40}(recommend|pick|buy|sell|hold|to invest)/i, reason: "Richard never gives verdicts on specific securities or assets." },
+  { re: /(guarantee|promise|predict|forecast).{0,30}(return|profit|gain|price|market)|beat the market|sure thing/i, reason: "Richard won't predict or guarantee outcomes." },
+  { re: /(manage|invest|move|trade|allocate).{0,20}(my money|for me|my portfolio|my savings)|execute (a )?trade/i, reason: "Richard explains; he never acts on your money." },
+  { re: /(licensed|certified|registered|professional).{0,20}(advisor|adviser|planner)|as a financial advisor/i, reason: "Richard is an AI assistant, not a licensed advisor." },
+  { re: /(insult|humiliate|shame|mock|swear|curse|profan|rude to me|cruel|racist|sexist)/i, reason: "Blunt is fine; contempt isn't." }
+];
+// The friendly refusal every rejected trait gets, whichever layer caught it.
+var RICHARD_TRAIT_REFUSAL = "This one doesn't fit our terms of service, so Richard can't take it on.";
+// Local pre-check. Returns { ok: false, title, msg } for an obvious miss, or
+// null when the trait needs the server's verdict. Never returns a pass - only
+// Sonnet does that.
+function richardTraitPrecheck(text) {
+  var t = String(text || "").replace(/\s+/g, " ").trim();
+  if (!t) return null;
+  if (t.length > RICHARD_TRAIT_CHARS) return { ok: false, title: "Too long.", msg: "Keep a trait under " + RICHARD_TRAIT_CHARS + " characters." };
+  if (t.length < 6) return { ok: false, title: "Too short.", msg: "Describe the behaviour in a few words." };
+  for (var i = 0; i < RICHARD_TRAIT_RULES.length; i++) {
+    if (RICHARD_TRAIT_RULES[i].re.test(t)) return { ok: false, title: "Can't add this one.", msg: RICHARD_TRAIT_REFUSAL + " " + RICHARD_TRAIT_RULES[i].reason };
+  }
+  return null;
+}
+function richardVoiceDialsOf(raw, fallback) {
+  var out = {};
+  RICHARD_VOICE_DIALS.forEach(function(d) {
+    var v = raw && parseInt(raw[d.key], 10);
+    out[d.key] = (v >= 1 && v <= 5) ? v : fallback[d.key];
+  });
+  return out;
+}
+// Normalises whatever is stored (or nothing) into the shape the app uses.
+// `stored` says whether the account had a voice record at all - the one-time
+// announcement keys off it, so it is never written back.
+function richardVoiceOf(raw) {
+  raw = raw && typeof raw === "object" ? raw : null;
+  var ids = RICHARD_VOICES.map(function(p) { return p.id; });
+  var id = raw && (ids.indexOf(raw.id) >= 0 || raw.id === "custom") ? raw.id : RICHARD_VOICE_DEFAULT;
+  var dials = {};
+  RICHARD_VOICES.forEach(function(p) { dials[p.id] = richardVoiceDialsOf(raw && raw.dials && raw.dials[p.id], p); });
+  dials.custom = richardVoiceDialsOf(raw && raw.dials && raw.dials.custom, { tone: 3, detail: 3, humor: 2 });
+  var traits = [];
+  if (raw && Array.isArray(raw.traits)) {
+    raw.traits.forEach(function(t) {
+      var s = String(t || "").replace(/\s+/g, " ").trim().slice(0, RICHARD_TRAIT_CHARS);
+      if (s && traits.length < RICHARD_TRAIT_MAX) traits.push(s);
+    });
+  }
+  return {
+    id: id, dials: dials, traits: traits,
+    customName: raw && typeof raw.customName === "string" ? raw.customName.slice(0, RICHARD_VOICE_NAME_CHARS) : "",
+    introSeen: !!(raw && raw.introSeen),
+    stored: !!raw
+  };
+}
+// What is persisted: the same object minus the load-time flag.
+function richardVoiceRecord(v) {
+  return { id: v.id, dials: v.dials, traits: v.traits, customName: v.customName, introSeen: !!v.introSeen };
+}
+function richardVoiceName(v, id) {
+  var which = id || (v && v.id) || RICHARD_VOICE_DEFAULT;
+  if (which === "custom") return (v && v.customName && v.customName.trim()) || "Your voice";
+  for (var i = 0; i < RICHARD_VOICES.length; i++) if (RICHARD_VOICES[i].id === which) return RICHARD_VOICES[i].name;
+  return RICHARD_VOICES[0].name;
+}
+// The wire shape api/chat.js expects. Only the Advisor chat sends it.
+function richardVoicePayload(v) {
+  v = v || richardVoiceOf(null);
+  var d = v.dials[v.id] || v.dials[RICHARD_VOICE_DEFAULT];
+  return { preset: v.id, tone: d.tone, detail: d.detail, humor: d.humor, traits: v.id === "custom" ? v.traits : [] };
+}
+// A sample line so the user hears the voice before choosing it. Fixed figures
+// on purpose - it is a demonstration of delivery, not a reading of their data.
+function richardVoicePreview(id, d, traits, name) {
+  var who = (name && String(name).trim()) ? String(name).trim().split(" ")[0] : "there";
+  var open = ["Good news, " + who + ": ", "You're in good shape, " + who + ". ", "Here's where you stand. ", "Straight answer: ", "Blunt version: "][d.tone - 1];
+  var core = d.detail === 1 ? "31% saved, target 20%. Home " + dollars(100) + " over." : "Savings rate 31%, above your 20% target. Home is " + dollars(100) + " over budget.";
+  if (d.detail >= 4) core += " Groceries ran 18% above similar months and two subscriptions overlap - about " + dollars(640) + " recoverable.";
+  var flavor = ({ minimal: " Cut the overlap first.", cheer: " Nice work keeping it there.", aggressive: " Fix Home this week.", custom: (traits && traits.length) ? " Next step: trim Home by " + dollars(100) + "." : "" })[id] || "";
+  var joke = ["", "", " Nothing dramatic.", " Your subscriptions are getting along better than your budget.", " Two subscriptions are paying rent on your account - and it isn't you."][d.humor - 1];
+  return open + core + flavor + joke;
+}
+
 // Render Richard's lightly-structured text: **bold** inline, "- " bullets, and
 // short paragraphs. Deliberately tiny - no markdown engine, just the few marks
 // we ask Richard to use.
@@ -16921,8 +17030,14 @@ var AI_MODEL_FAST = "claude-haiku-4-5";
 // captive portal) never settles on its own, which would leave the caller's
 // loading state stuck on forever. Every caller already has an error path - the
 // deadline is what makes that path reachable.
-function callClaude(messages, system, maxTokens, callback, model, timeoutMs) {
-  var apiUrl = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "data:" || location.protocol === "file:") ? "https://richy-mgkl.vercel.app/api/chat" : "/api/chat";
+// Optional 7th arg `extra` adds structured fields to the request body (today:
+// the Advisor's `voice`). Data only - the proxy renders it; prose never rides
+// here.
+function richardApiUrl() {
+  return (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "data:" || location.protocol === "file:") ? "https://richy-mgkl.vercel.app/api/chat" : "/api/chat";
+}
+function callClaude(messages, system, maxTokens, callback, model, timeoutMs, extra) {
+  var apiUrl = richardApiUrl();
   // Exactly one of {success, error, timeout} may reach the caller, and the timer
   // is always cleared - so a late-arriving response can't re-fire a callback the
   // timeout already settled.
@@ -16951,15 +17066,17 @@ function callClaude(messages, system, maxTokens, callback, model, timeoutMs) {
     .then(function(token) {
       var headers = { "Content-Type": "application/json" };
       if (token) headers.Authorization = "Bearer " + token;
+      var reqBody = {
+        messages: messages,
+        system: system,
+        maxTokens: maxTokens || 800,
+        model: model || AI_MODEL_CORE,
+      };
+      if (extra && typeof extra === "object") { for (var xk in extra) reqBody[xk] = extra[xk]; }
       var opts = {
         method: "POST",
         headers: headers,
-        body: JSON.stringify({
-          messages: messages,
-          system: system,
-          maxTokens: maxTokens || 800,
-          model: model || AI_MODEL_CORE,
-        }),
+        body: JSON.stringify(reqBody),
       };
       if (ctrl) opts.signal = ctrl.signal;
       return fetch(apiUrl, opts);
@@ -16993,6 +17110,30 @@ function callClaude(messages, system, maxTokens, callback, model, timeoutMs) {
 // makes every downgraded surface easy to audit or promote after launch testing.
 function callClaudeFast(messages, system, maxTokens, callback, timeoutMs) {
   return callClaude(messages, system, maxTokens, callback, AI_MODEL_FAST, timeoutMs);
+}
+
+// Asks the proxy (and through it, Sonnet) whether a custom voice trait keeps
+// Richard's rules. cb(err, verdict) with verdict = { ok, reason }. An
+// unreachable judge is an error, never a pass - the sheet shows a retry.
+function checkRichardTrait(text, cb) {
+  var done = false;
+  var timer = setTimeout(function() { finish(new Error("The check took too long. Try again in a moment."), null); }, 30000);
+  function finish(err, v) { if (done) return; done = true; clearTimeout(timer); cb(err, v); }
+  CLOUD.getIdToken()
+    .catch(function() { return null; })
+    .then(function(token) {
+      var headers = { "Content-Type": "application/json" };
+      if (token) headers.Authorization = "Bearer " + token;
+      return fetch(richardApiUrl(), { method: "POST", headers: headers, body: JSON.stringify({ kind: "voiceCheck", trait: String(text || "") }) });
+    })
+    .then(function(res) { return res.text(); })
+    .then(function(raw) {
+      var data;
+      try { data = JSON.parse(raw); } catch (e) { finish(new Error("Richy couldn't check that trait just now. Try again in a moment."), null); return; }
+      if (!data || data.error) { finish(new Error((data && data.error && data.error.message) || "Richy couldn't check that trait just now."), null); return; }
+      finish(null, { ok: data.ok === true, reason: typeof data.reason === "string" ? data.reason : "" });
+    })
+    .catch(function(err) { finish(new Error("Fetch failed: " + ((err && err.message) || "network error")), null); });
 }
 
 // Big-Decision CFO: the user poses a high-stakes money question ("can I afford
@@ -17382,6 +17523,275 @@ function incomeAuditBlock(tx, oData, cs) {
   return out;
 }
 
+// === RICHARD'S VOICE SHEET ===================================================
+// Pick how Richard talks: three built-in voices or "create your own", each
+// with three dials. Edits live here until "Use <name>"; closing the sheet
+// discards them, like every other sheet in the app. Custom traits go through
+// checkRichardTrait (Sonnet, on the server) before they are kept - a refusal
+// shows the friendly terms-of-service line and the trait never lands.
+function RichardVoiceSheet(props) {
+  var base = props.voice || richardVoiceOf(null);
+  var _sel = useState(base.id); var sel = _sel[0]; var setSel = _sel[1];
+  var _dials = useState(function() { return JSON.parse(JSON.stringify(base.dials)); }); var dials = _dials[0]; var setDials = _dials[1];
+  var _name = useState(base.customName || ""); var customName = _name[0]; var setCustomName = _name[1];
+  var _traits = useState(base.traits.slice()); var traits = _traits[0]; var setTraits = _traits[1];
+  var _draft = useState(""); var draft = _draft[0]; var setDraft = _draft[1];
+  var _verdict = useState(null); var verdict = _verdict[0]; var setVerdict = _verdict[1];   // { ok, title, msg, retry? }
+  var _checking = useState(false); var checking = _checking[0]; var setChecking = _checking[1];
+  var _closing = useState(false); var closing = _closing[0]; var setClosing = _closing[1];
+  var checkSeq = useRef(0);
+  var closeTimer = useRef(null);
+  useEffect(function() { return function() { if (closeTimer.current) clearTimeout(closeTimer.current); checkSeq.current++; }; }, []);
+
+  var accent = T.orange;
+  var isCustom = sel === "custom";
+  var d = dials[sel] || dials[RICHARD_VOICE_DEFAULT];
+  var selName = sel === "custom" ? (customName.trim() || "Your voice") : richardVoiceName(null, sel);
+  var appliedName = richardVoiceName(base);
+  var unchanged = sel === base.id && JSON.stringify(dials[sel]) === JSON.stringify(base.dials[sel])
+    && (!isCustom || (customName.trim() === (base.customName || "").trim() && JSON.stringify(traits) === JSON.stringify(base.traits)));
+  // What the verdict box shows: the local pre-check the moment it fails, the
+  // server's word otherwise. Nothing is shown for an empty draft.
+  var pre = richardTraitPrecheck(draft);
+  var shown = checking ? null : (pre || verdict);
+  var canAdd = !!draft.trim() && !pre && !checking;
+
+  function close() {
+    if (closing) return;
+    setClosing(true);
+    closeTimer.current = setTimeout(function() { props.onClose(); }, 240);
+  }
+  function setDial(key, n) {
+    setDials(function(p) {
+      var next = Object.assign({}, p);
+      next[sel] = Object.assign({}, p[sel], {});
+      next[sel][key] = n;
+      return next;
+    });
+  }
+  function onDraft(e) { setDraft(e.target.value.slice(0, RICHARD_TRAIT_CHARS + 40)); setVerdict(null); }
+  function addTrait() {
+    var t = draft.replace(/\s+/g, " ").trim();
+    if (!t || checking) return;
+    var p = richardTraitPrecheck(t);
+    if (p) { setVerdict(p); return; }
+    if (traits.length >= RICHARD_TRAIT_MAX) { setVerdict({ ok: false, title: "That's plenty.", msg: "A voice holds up to " + RICHARD_TRAIT_MAX + " traits. Remove one to add another." }); return; }
+    if (traits.some(function(x) { return x.toLowerCase() === t.toLowerCase(); })) { setVerdict({ ok: false, title: "Already in.", msg: "This voice already has that trait." }); return; }
+    var seq = ++checkSeq.current;
+    setChecking(true); setVerdict(null);
+    checkRichardTrait(t, function(err, v) {
+      if (seq !== checkSeq.current) return;
+      setChecking(false);
+      if (err) { setVerdict({ ok: false, retry: true, title: "Couldn't check that one.", msg: err.message }); return; }
+      if (!v.ok) { setVerdict({ ok: false, title: "Can't add this one.", msg: RICHARD_TRAIT_REFUSAL + (v.reason ? " " + v.reason : "") }); return; }
+      setTraits(function(prev) { return prev.concat([t]); });
+      setDraft("");
+      setVerdict({ ok: true, title: "Passes Richy's rules.", msg: "Richard will take it on." });
+    });
+  }
+  function removeTrait(i) { setTraits(function(prev) { return prev.filter(function(_, j) { return j !== i; }); }); }
+  function apply() {
+    props.onApply({ id: sel, dials: dials, traits: traits, customName: customName.trim(), introSeen: true, stored: true });
+  }
+
+  function label(text, top) {
+    return <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.ink3, margin: (top == null ? 24 : top) + "px 0 10px", fontFamily: UI }}>{text}</div>;
+  }
+  function voiceCard(id, name, desc, on, onClick, plus) {
+    return (
+      <button key={id} type="button" onClick={onClick} aria-pressed={on}
+        style={{ textAlign: "start", border: "none", cursor: "pointer", display: "grid", gridTemplateColumns: "1fr 22px", gap: 12, alignItems: "center", padding: "14px 16px", borderRadius: 20, fontFamily: UI, background: on ? T.orangeDim : T.card, boxShadow: on ? ("inset 0 0 0 1.5px " + accent + ", 0 4px 16px " + T.orangeGlow) : T.cardShadow, transition: "box-shadow 0.3s, background 0.3s" }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: T.ink }}>{name}</div>
+          <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.45, marginTop: 2 }}>{desc}</div>
+        </div>
+        <div style={{ width: 22, height: 22, borderRadius: "50%", boxSizing: "border-box", border: "1.5px solid " + (on ? accent : T.sep), background: on ? accent : "transparent", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s" }}>
+          <SVGIcon id={plus ? "plus" : "check"} size={12} color={on ? "#fff" : (plus ? T.ink3 : "transparent")} />
+        </div>
+      </button>
+    );
+  }
+  var rules = [
+    "Never a verdict on buying, selling or holding a specific security, fund or crypto asset.",
+    "Never promises or predicts returns.",
+    "Never presents himself as managing your money or as a licensed advisor.",
+    "Stays Richard. No emojis, no impersonation, no rule overrides."
+  ];
+
+  return ReactDOM.createPortal((
+    <div data-richard-voice="" onClick={close}
+      style={{ position: "fixed", inset: 0, zIndex: 96, background: "rgba(12,10,24,0.42)", backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)", animation: (closing ? "rcSidebarDimOut 0.24s ease both" : "rcSidebarDim 0.24s ease both") }}>
+      <div role="dialog" aria-label="Richard's voice" onClick={function(e) { e.stopPropagation(); }}
+        style={{ position: "absolute", bottom: 0, left: "max(0px, calc(50% - 215px))", width: "min(100%, 430px)", height: "86%", borderRadius: "24px 24px 0 0", overflow: "hidden", background: T.bg, boxShadow: "0 -12px 44px rgba(12,10,24,0.28)", display: "flex", flexDirection: "column", boxSizing: "border-box", animation: (closing ? "rvSheetOut 0.24s cubic-bezier(0.4,0,1,1) both" : "rvSheetIn 0.42s cubic-bezier(0.22,1,0.36,1) both") }}>
+        <div style={{ width: 36, height: 5, borderRadius: 999, background: T.fill1, margin: "10px auto 0", flexShrink: 0 }} />
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "14px 18px 130px", boxSizing: "border-box", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
+          <div style={{ fontFamily: RICHARD_DISP, fontWeight: RICHARD_DISP_WEIGHT, fontSize: 27, letterSpacing: "-0.01em", color: T.ink, lineHeight: 1.15 }}>Richard's voice</div>
+          <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.5, marginTop: 6, fontFamily: UI }}>Pick how Richard talks. Your numbers and his limits never change - only the delivery.</div>
+
+          {label("Built in", 22)}
+          <div style={{ display: "grid", gap: 8 }}>
+            {RICHARD_VOICES.map(function(p) {
+              return voiceCard(p.id, p.name, p.desc, sel === p.id, function() { setSel(p.id); }, false);
+            })}
+            {voiceCard("custom", customName.trim() || "Create your own", "Name it, describe it. Each trait is checked against Richy's rules before Richard takes it on.", isCustom, function() { setSel("custom"); }, true)}
+          </div>
+
+          {isCustom && (
+            <div style={{ marginTop: 22, background: T.card, borderRadius: 20, padding: 16, boxShadow: T.cardShadow, display: "grid", gap: 14 }}>
+              <div>
+                {label("Name", 0)}
+                <input value={customName} onChange={function(e) { setCustomName(e.target.value.slice(0, RICHARD_VOICE_NAME_CHARS)); }} placeholder="e.g. The quiet accountant" aria-label="Voice name"
+                  style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid " + T.sep, outline: "none", background: T.fill0, borderRadius: 13, padding: "12px 14px", fontSize: 15, color: T.ink, fontFamily: UI }} />
+              </div>
+              <div>
+                {label("Add a trait", 0)}
+                <div style={{ display: "flex", gap: 8 }}>
+                  <input value={draft} onChange={onDraft} onKeyDown={function(e) { if (e.key === "Enter") { e.preventDefault(); addTrait(); } }} placeholder="Ends every answer with one next step" aria-label="New trait" disabled={checking}
+                    style={{ flex: 1, minWidth: 0, boxSizing: "border-box", border: "1.5px solid " + (shown ? (shown.ok ? T.green : T.red) : T.sep), outline: "none", background: T.fill0, borderRadius: 13, padding: "12px 14px", fontSize: 15, color: T.ink, fontFamily: UI, transition: "border-color 0.3s", opacity: checking ? 0.7 : 1 }} />
+                  <button type="button" onClick={addTrait} disabled={!canAdd}
+                    style={{ border: "none", cursor: canAdd ? "pointer" : "default", borderRadius: 13, padding: "0 16px", fontSize: 14, fontWeight: 700, fontFamily: UI, color: canAdd ? "#fff" : T.ink3, background: canAdd ? T.btn : T.fill1, boxShadow: canAdd ? "0 4px 14px " + T.orangeGlow : "none", transition: "all 0.3s" }}>
+                    {checking ? <ThinkingDots size={4} color={T.ink3} /> : "Add"}
+                  </button>
+                </div>
+                {checking && (
+                  <div aria-live="polite" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, fontSize: 13, color: T.ink3, fontFamily: UI, fontWeight: 600 }}>
+                    <ThinkingDots size={4} color={T.ink3} />Checking it against Richy's rules
+                  </div>
+                )}
+                {shown && (
+                  <div role="status" style={{ display: "flex", alignItems: "flex-start", gap: 8, marginTop: 10, padding: "10px 12px", borderRadius: 13, background: shown.ok ? T.greenDim : T.redDim, animation: "rcSidebarDim 0.25s ease both" }}>
+                    <div style={{ width: 18, height: 18, borderRadius: "50%", flexShrink: 0, background: shown.ok ? T.green : T.red, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1 }}>
+                      <SVGIcon id={shown.ok ? "check" : "close"} size={10} color="#fff" />
+                    </div>
+                    <div style={{ fontSize: 13, lineHeight: 1.45, color: T.ink, fontFamily: UI }}>
+                      <strong>{shown.title}</strong> {shown.msg}
+                      {shown.retry && <button type="button" onClick={addTrait} style={{ border: "none", background: "none", padding: "0 0 0 6px", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, color: accent }}>Try again</button>}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {traits.length > 0 && (
+                <div>
+                  {label("In this voice", 0)}
+                  <div style={{ display: "grid", gap: 6 }}>
+                    {traits.map(function(t, i) {
+                      return (
+                        <div key={i} style={{ display: "grid", gridTemplateColumns: "18px 1fr 20px", gap: 10, alignItems: "center", padding: "9px 10px", borderRadius: 12, background: T.greenDim }}>
+                          <div style={{ width: 18, height: 18, borderRadius: "50%", background: T.green, display: "flex", alignItems: "center", justifyContent: "center" }}><SVGIcon id="check" size={10} color="#fff" /></div>
+                          <div dir="auto" style={{ fontSize: 14, color: T.ink, lineHeight: 1.4, fontFamily: UI, textAlign: "start" }}>{t}</div>
+                          <button type="button" onClick={function() { removeTrait(i); }} aria-label="Remove trait" style={{ border: "none", background: "transparent", cursor: "pointer", padding: 0, width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center" }}><SVGIcon id="close" size={12} color={T.ink3} /></button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {label("Tune " + selName)}
+          <div style={{ background: T.card, borderRadius: 20, padding: "6px 16px", boxShadow: T.cardShadow }}>
+            {RICHARD_VOICE_DIALS.map(function(dl, i) {
+              var v = d[dl.key];
+              return (
+                <div key={dl.key} style={{ padding: "12px 0", borderBottom: i < RICHARD_VOICE_DIALS.length - 1 ? "0.5px solid " + T.sep : "none" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, fontFamily: UI }}>{dl.label}</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: accent, fontFamily: UI }}>{dl.names[v - 1]}</div>
+                  </div>
+                  <div role="radiogroup" aria-label={dl.label} style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 6, marginTop: 10 }}>
+                    {[1, 2, 3, 4, 5].map(function(n) {
+                      return (
+                        <button key={n} type="button" role="radio" aria-checked={n === v} aria-label={dl.names[n - 1]} onClick={function() { setDial(dl.key, n); }}
+                          style={{ border: "none", cursor: "pointer", height: 10, borderRadius: 999, padding: 0, background: n <= v ? T.btn : T.fill1, boxShadow: n === v ? "0 2px 8px " + T.orangeGlow : "none", transition: "background 0.3s, box-shadow 0.3s" }} />
+                      );
+                    })}
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, fontSize: 11, fontWeight: 600, color: T.ink3, fontFamily: UI }}><span>{dl.lo}</span><span>{dl.hi}</span></div>
+                </div>
+              );
+            })}
+          </div>
+
+          {label("Richard would say")}
+          <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+            <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: "#151311", border: "1px solid rgba(200,152,58,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontFamily: UI, fontSize: 15, fontWeight: MARK_WEIGHT, color: "#C8983A", lineHeight: 1 }}>R</span>
+            </div>
+            <div style={{ flex: 1, minWidth: 0, background: T.card, color: T.ink, borderRadius: "18px 18px 18px 5px", padding: "12px 14px", fontSize: 14.5, lineHeight: 1.55, boxShadow: T.cardShadow, fontFamily: RICHARD_BODY }}>{richardVoicePreview(sel, d, traits, props.username)}</div>
+          </div>
+
+          {label("What every voice keeps")}
+          <div style={{ background: "#151311", borderRadius: 20, padding: "14px 16px", display: "grid", gap: 10, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)" }}>
+            {rules.map(function(r, i) {
+              return (
+                <div key={i} style={{ display: "grid", gridTemplateColumns: "16px 1fr", gap: 10, alignItems: "start", fontSize: 13, lineHeight: 1.45, color: "#EDE8E2", fontFamily: UI }}>
+                  <span style={{ marginTop: 2, display: "flex" }}><SVGIcon id="check" size={16} color="#C8983A" /></span>{r}
+                </div>
+              );
+            })}
+            <div style={{ fontSize: 11.5, color: "#A09080", lineHeight: 1.45, marginTop: 2, fontFamily: UI }}>These live on Richy's side, not in your settings. A voice can change how he speaks, never what he is allowed to say.</div>
+          </div>
+        </div>
+
+        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "14px 18px calc(22px + env(safe-area-inset-bottom, 0px))", background: "linear-gradient(180deg," + jrRgba(T.bg, 0) + " 0%," + jrRgba(T.bg, 0.94) + " 32%)" }}>
+          <button type="button" onClick={apply}
+            style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 14, padding: "15px 0", fontSize: 16, fontWeight: 700, fontFamily: UI, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", background: T.btn, boxShadow: "0 6px 18px " + T.orangeGlow }}>
+            {unchanged ? "Keep " + appliedName : "Use " + selName}
+          </button>
+        </div>
+      </div>
+    </div>
+  ), document.body);
+}
+
+// === "RICHARD, IN THE VOICE YOU CHOOSE" ======================================
+// One-time full-screen announcement for accounts that already knew Richard
+// before voices existed. Two exits and nothing else: meet the voices (opens
+// the sheet) or later. Either way it is marked seen and never returns.
+function RichardVoiceIntro(props) {
+  var orb = function(size, left, top, right, color, anim) {
+    var st = { position: "absolute", width: size, height: size, borderRadius: "50%", top: top, background: "radial-gradient(circle," + color + " 0%, rgba(0,0,0,0) 70%)", filter: "blur(30px)", animation: anim, pointerEvents: "none" };
+    if (left != null) st.left = left; else st.right = right;
+    return <div style={st} />;
+  };
+  var words = ["Richard,", "in the", "voice", "you", "choose."];
+  return ReactDOM.createPortal((
+    <div data-richard-voice-intro="" role="dialog" aria-label="New in Richy: Richard's voices"
+      style={{ position: "fixed", inset: 0, zIndex: 97, background: "#0D0C18", overflow: "hidden", display: "flex", justifyContent: "center", animation: "rcSidebarDim 0.4s ease both" }}>
+      <div style={{ position: "relative", width: "100%", maxWidth: 430, height: "100%", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "0 18px calc(30px + env(safe-area-inset-bottom, 0px))", boxSizing: "border-box", overflow: "hidden" }}>
+        {orb(320, -90, 60, null, "rgba(157,120,232,0.55)", "rvOrb 9s ease-in-out infinite")}
+        {orb(260, null, 240, -70, "rgba(200,151,58,0.5)", "rvOrb2 11s ease-in-out infinite")}
+        {orb(220, 80, 420, null, "rgba(92,122,227,0.35)", "rvOrb 13s ease-in-out infinite reverse")}
+
+        <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "flex-start", marginBottom: "auto", paddingTop: "calc(96px + env(safe-area-inset-top, 0px))" }}>
+          <div style={{ width: 58, height: 58, borderRadius: 18, background: "#0D0C18", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 12px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.18), 0 0 0 1px rgba(255,255,255,0.08)", animation: "rvWord 0.7s cubic-bezier(0.22,1,0.36,1) both" }}>
+            <span style={{ fontFamily: RICHARD_DISP, fontWeight: MARK_WEIGHT, fontSize: 32, color: "#C8973A", transform: "translateY(1px)" }}>R</span>
+          </div>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C8973A", marginTop: 34, fontFamily: UI, animation: "rvWord 0.7s 0.2s cubic-bezier(0.22,1,0.36,1) both" }}>New in Richy</div>
+          <h2 style={{ fontFamily: RICHARD_DISP, fontWeight: RICHARD_DISP_WEIGHT, fontSize: 50, lineHeight: 1.02, letterSpacing: "-0.02em", color: "#EDE8E2", margin: "12px 0 0" }}>
+            {words.map(function(w, i) {
+              return <span key={w} style={{ display: "inline-block", marginRight: "0.22em", animation: "rvWord 0.8s " + (0.35 + i * 0.17) + "s cubic-bezier(0.22,1,0.36,1) both" }}>{w}</span>;
+            })}
+          </h2>
+        </div>
+
+        <div style={{ position: "relative", borderRadius: 24, overflow: "hidden", background: "rgba(28,25,21,0.62)", backdropFilter: "blur(30px) saturate(180%)", WebkitBackdropFilter: "blur(30px) saturate(180%)", boxShadow: "0 16px 48px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.10)", padding: "20px 20px 18px", animation: "rvRise 0.9s 1.2s cubic-bezier(0.22,1,0.36,1) both" }}>
+          <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "linear-gradient(180deg,rgba(255,255,255,0.14) 0%,rgba(255,255,255,0) 38%),linear-gradient(120deg,rgba(157,120,232,0.22) 0%,rgba(157,120,232,0) 50%,rgba(200,151,58,0.16) 100%)" }} />
+          <div style={{ position: "relative", fontSize: 15, lineHeight: 1.55, color: "#EDE8E2", fontFamily: UI }}>Pick one of three built-in voices, tune it, or write your own - every trait is checked against Richy's rules before Richard takes it on.</div>
+          <div style={{ position: "relative", fontSize: 12.5, lineHeight: 1.5, color: "#B8AA9A", marginTop: 10, fontFamily: UI }}>Why: Richard's limits on investment advice live with Richy, not in a text box - so what he says stays within the law wherever you are.</div>
+          <div style={{ position: "relative", display: "flex", gap: 10, marginTop: 18 }}>
+            <button type="button" onClick={props.onMeet}
+              style={{ flex: 1, border: "none", cursor: "pointer", borderRadius: 14, padding: "14px 0", fontSize: 16, fontWeight: 700, fontFamily: UI, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", background: T.btn, boxShadow: "0 4px 14px " + T.orangeGlow + ", inset 0 1px 0 rgba(255,255,255,0.35)" }}>Meet the voices</button>
+            <button type="button" onClick={props.onLater}
+              style={{ border: "none", cursor: "pointer", borderRadius: 14, padding: "14px 18px", fontSize: 15, fontWeight: 700, fontFamily: UI, color: "#EDE8E2", background: "rgba(255,255,255,0.10)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.18)" }}>Later</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  ), document.body);
+}
+
 function Advisor(props) {
   // Seed from the App-level cache so re-entering the tab restores the last
   // analysis without a fresh (token-burning) API call. useState reads the prop
@@ -17408,6 +17818,30 @@ function Advisor(props) {
   // through a slower, higher-effort model call with a structured verdict reply.
   var _fmode = useState(false);
   var focusMode = _fmode[0]; var setFocusMode = _fmode[1];
+  // Richard's voice: the picker sheet, and the one-time announcement. The
+  // announcement is for accounts that already knew Richard: no voice record
+  // yet, but past chats. New users never see it - they meet the voice pill on
+  // the greeting instead. The record is written on the first visit either
+  // way, so the takeover cannot come back once dismissed (or never shown).
+  var _vopen = useState(false); var voiceOpen = _vopen[0]; var setVoiceOpen = _vopen[1];
+  var _vintro = useState(false); var voiceIntro = _vintro[0]; var setVoiceIntro = _vintro[1];
+  var voiceStored = !!(props.richardVoice && props.richardVoice.stored);
+  useEffect(function() {
+    if (props.isActive === false || !props.richardVoice || !props.onSaveVoice) return;
+    var v = props.richardVoice;
+    if (!v.stored) {
+      var due = (props.chats || []).length > 0;
+      props.onSaveVoice(Object.assign({}, v, { introSeen: !due }));
+      if (due) setVoiceIntro(true);
+    } else if (!v.introSeen) {
+      setVoiceIntro(true);
+    }
+  }, [props.isActive, voiceStored]);
+  function seenVoiceIntro(openSheet) {
+    setVoiceIntro(false);
+    if (props.onSaveVoice && props.richardVoice) props.onSaveVoice(Object.assign({}, props.richardVoice, { introSeen: true }));
+    if (openSheet) setVoiceOpen(true);
+  }
   // Composer attachments. An image is downscaled to a small JPEG and sent as a
   // real vision content block; a text/CSV file is read and folded into the
   // message. Anything the model genuinely cannot read is refused with a reason
@@ -17655,7 +18089,14 @@ function Advisor(props) {
       // The circle's center rides on CSS vars set from the button's live position.
       + "@keyframes rcFocusReveal{from{clip-path:circle(2% at var(--fx,50%) var(--fy,30%));-webkit-clip-path:circle(2% at var(--fx,50%) var(--fy,30%));}to{clip-path:circle(165% at var(--fx,50%) var(--fy,30%));-webkit-clip-path:circle(165% at var(--fx,50%) var(--fy,30%));}}"
       // The pill itself pulses once as the wave leaves it, selling the "source" read.
-      + "@keyframes rcFocusPulse{0%{transform:scale(1);}35%{transform:scale(1.12);}100%{transform:scale(1);}}";
+      + "@keyframes rcFocusPulse{0%{transform:scale(1);}35%{transform:scale(1.12);}100%{transform:scale(1);}}"
+      // Richard's voice sheet and its one-time announcement.
+      + "@keyframes rvSheetIn{from{transform:translateY(100%);}to{transform:none;}}"
+      + "@keyframes rvSheetOut{from{transform:none;}to{transform:translateY(100%);}}"
+      + "@keyframes rvWord{from{opacity:0;transform:translateY(18px);filter:blur(8px);}to{opacity:1;transform:none;filter:blur(0);}}"
+      + "@keyframes rvRise{from{opacity:0;transform:translateY(40px);}to{opacity:1;transform:none;}}"
+      + "@keyframes rvOrb{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(18px,-22px) scale(1.12);}}"
+      + "@keyframes rvOrb2{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-24px,16px) scale(1.08);}}";
     document.head.appendChild(st);
   }, []);
   // Previous-chats history overlay. The live `chat` above is the current session;
@@ -18810,6 +19251,10 @@ function Advisor(props) {
     setChat(nc);
     setChatLoading(true);
     var customInstructionsPrefix = richardUserCtx(props.richardInstructions);
+    // The chosen voice rides as data; api/chat.js renders it behind the
+    // guardrail. Both paths below send it - Focus Mode keeps its labeled
+    // format, the voice only colours the delivery inside it.
+    var voiceExtra = { voice: richardVoicePayload(props.richardVoice) };
     // Voice turns always take the normal conversational path - Focus Mode's
     // labeled sections are a reading format, not a listening one.
     if (focusMode && !isVoice) {
@@ -18842,7 +19287,7 @@ function Advisor(props) {
           animMsgRef.current = -1;
           setChat(function(p) { return p.concat([{ role: "assistant", text: reply, focus: parsed || undefined }]); });
         },
-        AI_MODEL_CORE, 90000);
+        AI_MODEL_CORE, 90000, voiceExtra);
       return;
     }
     callClaude(
@@ -18921,7 +19366,8 @@ function Advisor(props) {
             setPendingAction(action);
           }
         }
-      }
+      },
+      AI_MODEL_CORE, undefined, voiceExtra
     );
   }
 
@@ -19653,11 +20099,20 @@ function Advisor(props) {
                 style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "12px 18px 20px", display: "flex", flexDirection: "column", gap: 16, boxSizing: "border-box", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", scrollBehavior: "smooth" }}>
                 {chat.length === 0 && (
                   <div data-richard-empty="" style={{ flex: 1, minHeight: 300, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "24px 4px" }}>
-                    <button onClick={toggleFocusMode} aria-pressed={focusMode}
-                      style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 38, border: focusMode ? "none" : "0.5px solid " + T.sep, background: focusMode ? T.btn : T.card, color: focusMode ? "#fff" : T.ink2, fontSize: 12.5, fontWeight: 700, fontFamily: UI, padding: "9px 14px", borderRadius: 999, cursor: "pointer", boxShadow: focusMode ? "0 6px 18px " + T.orangeGlow : "none", transition: "background 0.45s ease, box-shadow 0.45s ease, color 0.45s ease", animation: focusTrans ? "rcFocusPulse 0.5s cubic-bezier(0.34,1.56,0.64,1) both" : "none" }}>
-                      <SVGIcon id="spark" size={13} color={focusMode ? "#fff" : T.orange} />
-                      {focusMode ? "Focus Mode on" : "Focus Mode"}
-                    </button>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 8, marginBottom: 38 }}>
+                      <button onClick={toggleFocusMode} aria-pressed={focusMode}
+                        style={{ display: "flex", alignItems: "center", gap: 6, border: focusMode ? "none" : "0.5px solid " + T.sep, background: focusMode ? T.btn : T.card, color: focusMode ? "#fff" : T.ink2, fontSize: 12.5, fontWeight: 700, fontFamily: UI, padding: "9px 14px", borderRadius: 999, cursor: "pointer", boxShadow: focusMode ? "0 6px 18px " + T.orangeGlow : "none", transition: "background 0.45s ease, box-shadow 0.45s ease, color 0.45s ease", animation: focusTrans ? "rcFocusPulse 0.5s cubic-bezier(0.34,1.56,0.64,1) both" : "none" }}>
+                        <SVGIcon id="spark" size={13} color={focusMode ? "#fff" : T.orange} />
+                        {focusMode ? "Focus Mode on" : "Focus Mode"}
+                      </button>
+                      {/* Richard's voice: the current one by name, tap to change. */}
+                      <button type="button" onClick={function() { setVoiceOpen(true); }} aria-haspopup="dialog" aria-label={"Richard's voice: " + richardVoiceName(props.richardVoice)} data-richard-voice-pill=""
+                        style={{ display: "flex", alignItems: "center", gap: 7, border: "0.5px solid " + T.sep, background: T.card, color: T.ink2, fontSize: 12.5, fontWeight: 700, fontFamily: UI, padding: "7px 11px 7px 8px", borderRadius: 999, cursor: "pointer" }}>
+                        <span style={{ width: 18, height: 18, borderRadius: "50%", background: "#151311", border: "1px solid rgba(200,152,58,0.24)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI, fontSize: 10, fontWeight: MARK_WEIGHT, color: "#C8983A", lineHeight: 1, boxSizing: "border-box" }}>R</span>
+                        {richardVoiceName(props.richardVoice)}
+                        <SVGIcon id="chevron" size={11} color={T.ink3} />
+                      </button>
+                    </div>
                     <div style={{ width: 48, height: 48, flexShrink: 0, borderRadius: "50%", background: "#151311", border: "1px solid rgba(200,152,58,0.24)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <span style={{ fontFamily: UI, fontSize: 24, fontWeight: MARK_WEIGHT, color: "#C8983A", lineHeight: 1 }}>R</span>
                     </div>
@@ -20059,6 +20514,9 @@ function Advisor(props) {
                     right: <span style={{ fontSize: 12, fontWeight: 700, fontFamily: UI, color: focusMode ? "#8970C6" : T.ink3 }}>{focusMode ? "On" : "Off"}</span>,
                     noChevron: true,
                     onClick: function() { setFocusMode(function(v) { return !v; }); } });
+                  rows.push({ key: "voice", icon: "user", label: "Richard's voice", tint: T.orangeDim, color: T.orange,
+                    right: <span style={{ fontSize: 12, fontWeight: 700, fontFamily: UI, color: T.ink3 }}>{richardVoiceName(props.richardVoice)}</span>,
+                    onClick: function() { setHistoryOpen(false); setVoiceOpen(true); } });
                   if (props.onOpenFullAnalysis) rows.push({ key: "analysis", icon: "chart", label: "Full Analysis", tint: T.orangeDim, color: T.orange,
                     onClick: function() { setHistoryOpen(false); setChatExpanded(false); props.onOpenFullAnalysis(); } });
                   if (props.onOpenInstructions) rows.push({ key: "teach", icon: "edit", label: "Teach Richard", tint: T.orangeDim, color: T.orange,
@@ -20168,6 +20626,15 @@ function Advisor(props) {
           </div>
         </div>
       ), document.body)}
+
+      {voiceOpen && (
+        <RichardVoiceSheet voice={props.richardVoice} username={props.username}
+          onClose={function() { setVoiceOpen(false); }}
+          onApply={function(v) { if (props.onSaveVoice) props.onSaveVoice(v); setVoiceOpen(false); }} />
+      )}
+      {voiceIntro && !voiceOpen && (
+        <RichardVoiceIntro onMeet={function() { seenVoiceIntro(true); }} onLater={function() { seenVoiceIntro(false); }} />
+      )}
       </div>
     </div>
   );
@@ -32975,6 +33442,9 @@ export default function App() {
   var richardInstructions = _ri[0]; var setRichardInstructions = _ri[1];
   var _rn2 = useState("");
   var richardNotes = _rn2[0]; var setRichardNotes = _rn2[1];
+  // How Richard talks (preset, dials, custom traits). See RICHARD_VOICES.
+  var _rvoice = useState(richardVoiceOf(null));
+  var richardVoice = _rvoice[0]; var setRichardVoice = _rvoice[1];
   var _ud = useState("");
   var userDob = _ud[0]; var setUserDob = _ud[1];
   var _pjc = useState(false);
@@ -33159,6 +33629,7 @@ export default function App() {
     setRichPlan(data.plan || "");
     setRichardInstructions(data.richardInstructions || "");
     setRichardNotes(data.richardNotes || "");
+    setRichardVoice(richardVoiceOf(data.richardVoice));
     setOnboardingData(data.onboardingData || {});
     setMonthAnalysis(data.monthAnalysis || null);
     setEntryMethod(data.entryMethod === "import" ? "import" : "manual");
@@ -34235,6 +34706,11 @@ export default function App() {
   }, [tab]);
 
   function onSaveInstructions(text) { setRichardInstructions(text); save({ richardInstructions: text }); }
+  function onSaveVoice(v) {
+    var next = richardVoiceOf(richardVoiceRecord(v));
+    setRichardVoice(next);
+    save({ richardVoice: richardVoiceRecord(next) });
+  }
 
   // What Richard sees as user-provided context: the editable custom instructions
   // plus the free-form "Notes for Richard" the user wrote at signup. Both flow
@@ -34598,7 +35074,7 @@ export default function App() {
     if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
-    if (id === "advisor") return <Advisor isActive={id === currentTab} tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} widgets={widgets} onSaveWidgets={onSaveWidgets} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} onBackToOverview={function() { setTab("overview"); }} onOpenInstructions={function() { prevTabRef.current = "advisor"; setTab("instructions"); setSheet(false); }} onOpenProfile={function() { prevTabRef.current = "advisor"; setTab("profile"); setSheet(false); }} />;
+    if (id === "advisor") return <Advisor isActive={id === currentTab} tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} richardVoice={richardVoice} onSaveVoice={onSaveVoice} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} widgets={widgets} onSaveWidgets={onSaveWidgets} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} onBackToOverview={function() { setTab("overview"); }} onOpenInstructions={function() { prevTabRef.current = "advisor"; setTab("instructions"); setSheet(false); }} onOpenProfile={function() { prevTabRef.current = "advisor"; setTab("profile"); setSheet(false); }} />;
     return null;
   }
   applyTheme(theme);      // keep the live T palette in sync with the chosen design every render

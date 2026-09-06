@@ -82,8 +82,40 @@ module.exports = async function handler(req, res) {
   }
 
   var body = req.body || {};
+
+  // ---- custom voice: trait check ---------------------------------------------
+  // "Create your own" voice. Before the client may keep a trait, Sonnet judges
+  // whether it stays inside Richard's rules (TRAIT_JUDGE in api/_prompts.js).
+  // The obvious cases are refused by the regex rules first, so they cost no
+  // API call. Fails CLOSED: if the judge cannot be reached or does not answer
+  // in the agreed shape, the trait is not accepted - the client shows a retry,
+  // never a pass. Shares the auth, rate limit and CORS above on purpose.
+  if (body.kind === "voiceCheck") {
+    var trait = typeof body.trait === "string" ? body.trait.replace(/\s+/g, " ").trim() : "";
+    var pre = prompts.checkTraitLocally(trait);
+    if (pre) { res.status(200).json({ ok: false, reason: pre }); return; }
+    var judge = await callAnthropic(apiKey, {
+      model: "claude-sonnet-5",
+      max_tokens: 200,
+      thinking: { type: "disabled" },
+      system: prompts.TRAIT_JUDGE,
+      messages: [{ role: "user", content: "Proposed trait:\n" + trait }]
+    }, 20000);
+    var verdict = (judge.error || judge.status !== 200) ? null : parseVerdict(judge.text);
+    if (!verdict) {
+      res.status(502).json({ error: { type: "judge_unavailable", message: "Richy couldn't check that trait just now. Try again in a moment." } });
+      return;
+    }
+    res.status(200).json({ ok: verdict.ok === true, reason: verdict.ok === true ? "" : String(verdict.reason || "").slice(0, 240) });
+    return;
+  }
+
   var messages = body.messages || [];
   var system = body.system || "";
+  // The user's chosen voice, as structured data. Rendered server-side and
+  // placed between the client text and GUARDRAIL - it can shape delivery,
+  // never override the rules that follow it.
+  var voice = prompts.voiceBlock(body.voice);
 
   // ---- input ceiling ----------------------------------------------------------
   // maxTokens below bounds the OUTPUT only. Input was previously unbounded, so a
@@ -143,23 +175,33 @@ module.exports = async function handler(req, res) {
   // JSON it can parse. Widen any one of them without the others and either the
   // platform kills the function mid-flight (browser gets an HTML error page and
   // JSON.parse throws) or the client gives up on a reply that was already coming.
-  var ctrl = new AbortController();
-  var timer = setTimeout(function () { ctrl.abort(); }, 45000);
-  try {
-    var anthropicBody = {
-      model: model,
-      max_tokens: maxTokens,
-      // The server-owned guardrail rides after the client text so it has the
-      // last word. Client prompts are unchanged; this line is the one a
-      // tampered client cannot remove.
-      system: system + prompts.GUARDRAIL,
-      messages: messages
-    };
-    // Sonnet 5 enables adaptive thinking by default. Richard's existing calls
-    // were non-thinking calls, so keep that behavior for predictable latency,
-    // output shape and launch cost. Haiku 4.5 is non-thinking by default.
-    if (model === "claude-sonnet-5") anthropicBody.thinking = { type: "disabled" };
+  var anthropicBody = {
+    model: model,
+    max_tokens: maxTokens,
+    // The server-owned guardrail rides after the client text AND after the
+    // voice block so it has the last word. Client prompts are unchanged; this
+    // line is the one a tampered client cannot remove.
+    system: system + voice + prompts.GUARDRAIL,
+    messages: messages
+  };
+  // Sonnet 5 enables adaptive thinking by default. Richard's existing calls
+  // were non-thinking calls, so keep that behavior for predictable latency,
+  // output shape and launch cost. Haiku 4.5 is non-thinking by default.
+  if (model === "claude-sonnet-5") anthropicBody.thinking = { type: "disabled" };
 
+  var result = await callAnthropic(apiKey, anthropicBody, 45000);
+  if (result.error) { res.status(result.status).json({ error: result.error }); return; }
+  res.status(result.status).json(result.data);
+};
+
+// One bounded call to the Messages API. Resolves to { status, data, text } on
+// any HTTP answer (including Anthropic's own error payloads, passed through
+// with their status), or { status, error } when the call itself failed - it
+// never throws, so every caller maps failures the same way.
+async function callAnthropic(apiKey, payload, timeoutMs) {
+  var ctrl = new AbortController();
+  var timer = setTimeout(function () { ctrl.abort(); }, timeoutMs);
+  try {
     var response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -167,19 +209,35 @@ module.exports = async function handler(req, res) {
         "x-api-key": apiKey,
         "anthropic-version": "2023-06-01"
       },
-      body: JSON.stringify(anthropicBody),
+      body: JSON.stringify(payload),
       signal: ctrl.signal
     });
-
     var data = await response.json();
-    res.status(response.status).json(data);
+    var text = "";
+    if (data && Array.isArray(data.content)) {
+      data.content.forEach(function (c) { if (c && c.type === "text" && typeof c.text === "string") text += c.text; });
+    }
+    return { status: response.status, data: data, text: text };
   } catch (err) {
     if (err && err.name === "AbortError") {
-      res.status(504).json({ error: { type: "timeout", message: "Richard took too long to answer. Please try again." } });
-      return;
+      return { status: 504, error: { type: "timeout", message: "Richard took too long to answer. Please try again." } };
     }
-    res.status(500).json({ error: { type: "proxy_error", message: err.message || "Unknown error" } });
+    return { status: 500, error: { type: "proxy_error", message: err.message || "Unknown error" } };
   } finally {
     clearTimeout(timer);
   }
-};
+}
+
+// The judge must answer {"ok": boolean, "reason": string}. Anything else -
+// prose, a fenced block with no object, a missing boolean - is "no verdict",
+// which the caller treats as unavailable, not as a pass.
+function parseVerdict(text) {
+  var m = /\{[\s\S]*\}/.exec(text || "");
+  if (!m) return null;
+  try {
+    var v = JSON.parse(m[0]);
+    return (v && typeof v.ok === "boolean") ? v : null;
+  } catch (e) {
+    return null;
+  }
+}
