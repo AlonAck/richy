@@ -11,8 +11,15 @@
 > a full `git log` read and a line-by-line diff of everything uncommitted
 > in the working tree as of 2026-09-02.
 >
-> **Last updated: 2026-09-02** (previous: 2026-08-18). This was a full
-> re-audit, not a light touch — the 08-18 version turned out to already be
+> **Last updated: 2026-09-05** — a fifth audit landed
+> (`reports/qa-audit-2026-09-05.md`) and its findings are folded into TIER 0
+> below. It re-verified the 09-02 criticals (all still open), audited the
+> uncommitted Business Account v2 diff for the first time (two CRITICALs), and
+> opened a legal front no prior audit covered (undisclosed phone-number
+> collection via Meta, and account deletion that does not erase it).
+> The 2026-09-03 entry added Business Account v2 under "In progress,
+> uncommitted". Everything else below is the 2026-09-02
+> version, which was a full re-audit, not a light touch — the 08-18 version turned out to already be
 > missing two entire shipped feature tracks (the motivation/gamification
 > layer, the social follow graph) that had shipped 2026-08-12 to 08-14,
 > *before* that version was written. Whoever wrote 08-18 either didn't
@@ -87,6 +94,53 @@ visible to Alon's collaborator until pushed:**
   since it changes which model writes user-facing copy across a dozen
   surfaces simultaneously, not a single one.
 
+- **Business Account v2 — the account became a hub.** The business detail
+  screen was one long scroll of eleven stacked cards; it is now five faces
+  driven by the bottom bar, the same pattern the Investing hub already uses
+  (`BUSINESS_HUB_TABS`, `businessHubTabs()`, App-level `businessHubTab`):
+  **Home** (month + cash + the ledger cards), **Invoices** (list, plus a real
+  invoice detail), **Tax pot**, **Build** (goal, roadmap, ideas, weekly
+  review, plan), **Richard**. Three things are genuinely new rather than
+  moved:
+  - **`bizAttention()` — one ranked "Needs you" list.** Overdue invoices, a
+    short tax pot, runway under three months, over-budget categories,
+    invoices due inside a week, a quiet revenue month, the next roadmap
+    step — each row carries the tab that fixes it and a plain line from
+    Richard. Every figure is measured off the ledger, so the same list
+    safely feeds the hero, the tab summaries and the chat chips.
+  - **The tax pot is now real money, not an estimate.** It was a display-only
+    number (quarter revenue × rate). It is now an **earmark ledger**
+    (`biz.taxPot.entries`, with `bizTaxReserved` / `bizSpendableCash` /
+    `bizTaxDue` / `bizTaxShort`) that deliberately does **not** touch the
+    cash ledger, so net worth never moves — what changes is that the hero
+    stops calling earmarked money spendable. Marking an invoice paid books
+    the revenue **and** sets aside the tax share in one write; un-paying
+    reverses both; deleting a paid invoice takes its ledger rows with it.
+    **CORRECTION (05-09 audit): "un-paying reverses both" is not true once a
+    manual release exists.** The undo filters the pot on `invoiceId`, and
+    `moveTaxPot` writes release rows without one, so the reserve is deleted
+    while the release survives — `bizTaxReserved` goes negative and
+    `bizSpendableCash` then reports MORE cash than the business has. Second
+    CRITICAL: "Pay from pot" writes only to the earmark ledger, so paying a
+    real tax bill never moves cash. **Do not commit this diff until both are
+    fixed** — see `reports/qa-audit-2026-09-05.md` §2.
+  - **Every tab reports its own state in the bar.** `GlassTabBar` learned an
+    optional `sum` line, so the bar reads "Home −$45 · Invoices 1 overdue ·
+    Tax pot $824.50 short · Build 3 of 7 · Richard 2 things" without the
+    owner opening a single screen. The main app tab bar is unchanged.
+
+  Fixed on the way through: the hero rendered a loss as a positive number in
+  red (`dollars()` is unsigned by design and this call site never prepended
+  the sign); opening an account from the list never told the App, so the
+  exit label said "Back to Dashboard" instead of naming the account; and
+  `bizIdeas()` told a business with two years of revenue to "get your first
+  sale" whenever the current month happened to be quiet.
+
+  Source: the Claude Design "Business Account v2" mockup, implemented against
+  the real data model rather than transcribed — the mockup's VAT/osek-murshe
+  specifics were dropped for the app's existing single set-aside rate, and
+  its static copy was replaced with lines computed off the owner's ledger.
+
 **Not shipped:** any live bank connection. "Sync your bank" on the Overview
 is a demo-only Israeli-bank simulation (Leumi), now clearly labelled as a
 demo per the 25/30 Aug audits — still not a real integration.
@@ -131,6 +185,76 @@ scratch — read those files. Line numbers in the two older reports no
 longer resolve (the file grew ~3,900 lines); the 30 Aug report anchors to
 code strings instead, which is why it's quoted below in preference to the
 older two where they overlap.
+
+### Genuinely NEW, found 5 Sep — legal first, because they are cheap and they are false statements
+
+Full detail and anchors in `reports/qa-audit-2026-09-05.md`. Ordered the way that
+report recommends fixing them.
+
+- **P0 — Account deletion does not erase the user's phone number.**
+  `api/whatsapp.js:17-19` writes `whatsappOptIn/{uid}` and
+  `whatsappPhones/{phone} -> uid`. `api/delete-account.js` contains **zero**
+  references to either, so a map from a real phone number to a now-deleted
+  account is retained indefinitely. This makes `privacy.html:123` ("permanently
+  erases your account: your database records...") **false as written today**, and
+  it is precisely what Apple tests under 5.1.1(v). **One function. Do it first.**
+
+- **P0 — WhatsApp Alerts is undisclosed in both legal documents.** The feature is
+  live (`budget-app.jsx:32812`, reachable at Profile -> Settings) and delivers
+  Richard Watch output — leak amounts, budget warnings — to **Meta** directly
+  (`api/whatsapp.js:61`, `https://graph.facebook.com/`). Grepping
+  `whatsapp|meta platforms|phone number` returns **0** for both `privacy.html` and
+  `terms.html`; Meta is absent from the processor table at `privacy.html:95`; and
+  `privacy.html:76` sets a minimal-collection expectation while omitting the phone
+  number entirely.
+
+- **P0 — the investing-advice guardrail escape has a third instance, and it is the
+  worst one.** Alongside the still-open `investPlanOrders` / `investPlanFor` items
+  below: **Stock Scout** asks the model to "Rank the 2 or 3 strongest ideas"
+  (`budget-app.jsx:26290`) and return a per-ticker `confidence` field (`:26292`)
+  personalised to the user's risk profile (`:26288`), rendered as a coloured pill
+  under "Why Richard likes it" (`:26862`, `:26881`) — on the same request where the
+  server guardrail forbids ratings (`api/_prompts.js:233`, appended at
+  `api/chat.js:155`). Its offline fallback `localStockScout` (`:26259`) ranks
+  tickers by momentum in plain client code with **no model and no guardrail at
+  all**. Scout was recorded closed on 26 August; the rebuild left the ranking in.
+  **Now proven three times over: the guardrail has to sit where financial strings
+  are rendered, not at the API boundary.**
+
+- **P1 — the 09-02 Day-1 list was not done.** Re-verified against the live tree:
+  the four Richard Watch header keys (`watchBrief`, `watchGoal`, `watchForecast`,
+  `watchOuts`) are still in **no dictionary**, and the header still falls through to
+  `tr(currentTab)` (`:35040`), which returns the raw key (`:1439`, `|| key`) — so
+  all four screens still show a camelCase identifier as their title in every
+  language. `safeToSpend` still reads **$0.00** at the Year and All Time timeframes
+  (`:9856` sums monthly caps against timeframe-scoped spend). Sign Out still
+  discards queued writes and cancels the retry (`:34068`, no `flushSave()`).
+
+- **P1 — Escape and Android Back close 3 of the app's 11 modals; on the other 8,
+  Back navigates the screen underneath the still-open modal.** `closeTopLayer`
+  (`:34851`) knows about the Richard panel, the add sheet and the timeframe menu and
+  returns `false` for everything else, so `backRef` falls through to a nav pop. No
+  overlay traps focus; `aria-modal` appears once in 35,203 lines.
+
+- **P1 — two counters moved the wrong way since 30 Aug.** Empty `catch` blocks
+  51 -> **53**; `aria-label` coverage 47/413 buttons -> **46/432**. Nineteen new
+  buttons shipped and accessibility went backwards. (`.finally(` is still **0**.)
+
+- **P2 — App Review notes would fail submission as written.**
+  `APP_STORE_LISTING.md:136-137` still says `[FILL IN before submitting]` where the
+  demo account credentials go — the most common Guideline 2.1 rejection for a
+  Finance app. `:176-179` omits four declarable data categories (phone number,
+  photos forwarded to Anthropic, public handle, IP/request logs). `:154` tells Apple
+  the Leumi demo uses "clearly fictional" transactions, but `LEUMI_DEMO_MERCHANTS`
+  (`:11048`) is Shufersal, Rami Levy, Paz, Bezeq and Wolt at realistic prices.
+
+**Process finding, and the report's main recommendation.** There are **no tests, no
+CI, no lint and no error telemetry** anywhere in this repo — no `test` script, no
+`.github/`, no reporter. Five audits have now found bugs by hand-reading 35,000
+lines because there is no other signal. Two safety systems that were fully built
+were never wired to a button (`RW_ACTIONS`; and `deleteTripConfirm`, which is
+translated into all four languages and referenced nowhere). The report argues
+telemetry plus a five-check pre-commit gate should come **before** the next bug fix.
 
 ### Genuinely NEW, both P0, found 30 Aug — the two most urgent items on this page
 
