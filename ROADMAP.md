@@ -11,7 +11,17 @@
 > a full `git log` read and a line-by-line diff of everything uncommitted
 > in the working tree as of 2026-09-02.
 >
-> **Last updated: 2026-09-05** — a fifth audit landed
+> **Last updated: 2026-09-06** — a sixth audit landed
+> (`reports/qa-audit-2026-09-06.md`), folded into TIER 0 below. It swept the
+> ground the fifth one named as unswept — the onboarding funnel, the Richard chat
+> flow, and the full money-in/money-out matrix — and found the two worst defects in
+> the product to date: **Richard substitutes a canned keyword bot for a real answer
+> on every network or quota failure**, and **two badge families can never fire for
+> any user**. It also raised a scope question the other five never touched: the
+> App Store listing describes six features that do not exist in the native binary
+> now scheduled for submission.
+>
+> **Previously, 2026-09-05** — a fifth audit landed
 > (`reports/qa-audit-2026-09-05.md`) and its findings are folded into TIER 0
 > below. It re-verified the 09-02 criticals (all still open), audited the
 > uncommitted Business Account v2 diff for the first time (two CRITICALs), and
@@ -185,6 +195,118 @@ scratch — read those files. Line numbers in the two older reports no
 longer resolve (the file grew ~3,900 lines); the 30 Aug report anchors to
 code strings instead, which is why it's quoted below in preference to the
 older two where they overlap.
+
+### Genuinely NEW, found 6 Sep — Richard first, because he is the differentiator
+
+Full detail and anchors in `reports/qa-audit-2026-09-06.md`. All verified against
+`f0871d9`; each is marked live or uncommitted.
+
+- **P0 — LIVE — every Richard chat failure is disguised as a real answer.**
+  `var response = err || !text ? Richard(msg) : text;` (`budget-app.jsx:19412`)
+  discards `err` and substitutes `Richard()` (`:18473`), a ~250-line keyword bot.
+  Offline, 429 rate limit, 401 expired session, 413 over-length and 504 timeout all
+  collapse into a confident generic paragraph. **Every one of those has a
+  well-written server message that the user can never see.** The Focus Mode branch
+  47 lines earlier (`:19365`) does it correctly — copy that. **Most likely single
+  cause of the "Richard gives generic advice" complaints.**
+
+- **P0 — LIVE — seven badges and two ranks can never be earned by anyone.**
+  `cushionMonths` (`:3297`) divides by `onboardingData.monthlyEssentials`, and
+  `savingsTargetPct` (`:3282`) — **neither key is written anywhere in 36,153 lines**;
+  onboarding writes `essentials`. Separately `grep "cleared:"` returns nothing, so
+  `d.cleared` (`:3360`) is never set. Dead: `g-06`–`g-09`, `i-04`, `i-05`, `i-07`,
+  the **Wall Builder** rank (`:2966`) and the **Debt Breaker** rank (`:2968`).
+  Also makes the "green month" streak mean "did not go negative" rather than "hit my
+  target". **Three lines.** The retention layer in `MOTIVATION_SYSTEM.md` has a hole
+  in it.
+
+- **P0 — LIVE — "Redo Questionnaire" is a one-tap trap that then deletes your
+  budgets.** `handleRetakePlan` (`:35829`) persists `onboardingDone: false` to
+  Firestore immediately; the render gate then swaps the whole app for
+  `OnboardingScreen` with **no `oData` prop** (blank fields) and **no cancel
+  control**, while `backRef` swallows Back (`:35747`). The flag is server-side, so a
+  reinstall does not help. Completing it runs `merged.budgets = suggestedBudgets`
+  (`:35582`) — an assignment, not a merge — wiping every custom limit. The savings
+  block four lines below **is** correctly guarded.
+
+- **P0 — LIVE — tapping Save on your financial details deletes `coreProblem`.**
+  `EditFinancialView.handleSave` (`:32273`) rebuilds `onboardingData` from nine
+  fields and `onSaveFinancial` (`:35358`) writes it as a whole-object replace,
+  dropping `coreProblem`, `moneyLeaks`, `overspendEst` and five preference keys.
+  `coreProblem` is written in one place and read in **seven**, including Richard's
+  main chat system prompt (`:19345`). One `Object.assign`.
+
+- **P1 — LIVE — Richard confirms a goal contribution that never happens.**
+  `case "goalAdd":` (`:17452`) validates amount and name length only. Its
+  neighbours all check reality (`hasSavings`, `hasOpenNote`, `hasCat`); there is no
+  `hasGoal`, and `ctx.goals` is passed at `:19353` and never read. A name mismatch
+  is a silent no-op, and for a linked goal it writes `g.saved`, which
+  `goalSavedAmount` never reads. The manual UI guards this with `if (!isLinked)`;
+  Richard's path does not.
+
+- **P1 — LIVE — a paid-off debt cannot be marked paid off.**
+  `!(parseFloat(form.balance) > 0)` (`:22834`, `:23007`) blocks saving a zero
+  balance in edit mode, and `DebtView` has no payment ledger at all. The only way to
+  record a payoff is Delete, which erases the history and the badge with it.
+
+- **P1 — LIVE — a 20-turn wall, hit silently.** `sendChat` sends the whole thread
+  uncapped (`:19294`) against the server's `MAX_MESSAGES = 40` (`api/chat.js:130`),
+  so turn 21 always 413s straight into the fallback above. Two attached images kill
+  a thread permanently (`downscaleImage` re-sends every image every turn).
+
+- **P1 — LIVE — the business capital-history delete is correct and unreachable.**
+  `deleteCapEntry` (`:28283`) is complete and bound to a button, but `capHistory`
+  is `.slice(0, 6)` (`:29192`) with no "See all". Six entries later, a mistyped
+  revenue row and the phantom tax bill it created are permanently un-deletable.
+  **Same bug class as `deleteTripConfirm` and `RW_ACTIONS`: built, then not
+  rendered.**
+
+- **P1 — UNCOMMITTED — "Pay from pot" reports cash in the wrong direction.**
+  `moveTaxPot` writes only to `biz.taxPot.entries`, never `biz.entries`. Because
+  `bizSpendableCash = businessCash - bizTaxReserved` (`:22361`) and a release
+  *reduces* `bizTaxReserved`, paying a £3,000 tax bill makes Richy report **£3,000
+  more** spendable cash than before. Pot-history rows also have no delete control.
+  **Business v2 does not get committed until this is fixed.**
+
+- **P1 — LIVE — closing the tab drops the last 800 ms of work.** Saves are debounced
+  800 ms (`:34964`) and there is **no `beforeunload` and no `pagehide` handler** in
+  the file. Same defect as the Sign Out one below, different trigger. The crash
+  screen meanwhile promises "Your data is safe in the cloud", which is false in
+  exactly that case.
+
+- **P1 — LIVE — 49 modal sheets, none of which manage focus.** `Overlay` (`:6436`)
+  has no `role="dialog"`, no `aria-modal`, no focus on open, no restore on close, no
+  Escape, and no `inert` behind it — so Tab from an open sheet lands on the page
+  underneath. One component fixes all 49.
+
+- **P1 — legal, all NEW.** `api/emailjs` (`:7049`) sends the user's email address
+  to an **undeclared processor**; `privacy.html:74` states display preferences
+  "never leave your device" while `onSaveTheme`/`onSaveDarkMode`/`onSaveLang`
+  (`:35374`, `:35385`, `:35386`) all write them to Firestore; and the Google/Apple
+  consent screen (`SSOFinishScreen`, `:7447`) is **100% hardcoded English** in a
+  four-language app, on the one screen where comprehension is legally load-bearing.
+
+- **P1 — SCOPE, not a bug — the App Store listing describes a product that is not
+  in the binary.** `RichyIOS/` is 6,538 lines to the web app's 36,153 (~18%) and
+  ROADMAP is at Phase 2 of 8 with 17 days to submission, against a "ship everything,
+  nothing deferred" commitment. `APP_STORE_LISTING.md` sells savings accounts, a
+  debt payoff tracker, trips, IOU notes with reminders, household sharing and CSV
+  import — **none of which exist in `RichyIOS/`**, as its own README says. That is
+  Guideline 2.3.1. A user who signs up on the phone also never gets the
+  questionnaire or Richard's plan, and there is no path to either. **Decide the date
+  deliberately: slip to 2 Nov (recommended), ship reduced scope with a rewritten
+  listing, or revert to the Capacitor wrap.**
+
+- **P2 — measurement correction.** `T.ink3` is **fixed** (`b551786`) and measures
+  4.65:1 / 5.14:1 — it should stop being counted as a defect, and the "still-open"
+  reference further down this file is stale. The palettes that were **never
+  measured** are `JOURNEY_DARK.ink3` (**3.48:1**, 74 sites) and the hero card's
+  `heroMut` / `heroFaint` (**2.82:1** and **1.95:1**, 99 sites) — the latter on the
+  most-looked-at surface in the app. Six colour values.
+
+- **Closed 6 Sep:** `cb4ccd4` wired `deleteTripConfirm`; `953c884` relabelled the
+  fake "Cancel" to "Dismiss" (the honest option — the strings are still hardcoded
+  English, though).
 
 ### Genuinely NEW, found 5 Sep — legal first, because they are cheap and they are false statements
 
@@ -519,9 +641,12 @@ their goals." Nine detectors, 30-day forecast, Daily Brief, Goal-at-Risk
 plan — see Current State Snapshot above for the uncommitted Overview
 integration that puts this on the home screen for the first time. Caveat,
 directly from the audit that shipped the same day: **it was built on top
-of two known, still-open defects (the `ink3` contrast failure and the UTC
+of two known, then-open defects (the `ink3` contrast failure and the UTC
 date bug) instead of after fixing them, and both got measurably worse
-while it was being built.** Don't repeat that with the Overview
+while it was being built.** (`ink3` was closed by `b551786` and re-measured
+on 6 Sep at 4.65–5.14:1; the UTC date bug is still open and is now at 71
+sites. The palettes that still fail are `JOURNEY_DARK.ink3` and the hero
+card's `heroMut`/`heroFaint` — see the 6 Sep audit.) Don't repeat that with the Overview
 integration — land the Tier 0 items in the same window, not after.
 
 ---
