@@ -12929,7 +12929,7 @@ function GoalAtRiskDetail(props) {
           </div>
 
           <div style={{ paddingTop: 24 }}>
-            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: DISP, letterSpacing: "-0.01em", color: T.ink }}>{"Cancelling " + plan.picked.length + " thing" + (plan.picked.length === 1 ? "" : "s") + " covers it - " + dollars(plan.monthly) + "/mo freed"}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: DISP, letterSpacing: "-0.01em", color: T.ink }}>{"Dismissing " + plan.picked.length + " thing" + (plan.picked.length === 1 ? "" : "s") + " covers it - " + dollars(plan.monthly) + "/mo freed"}</div>
             {plan.shortfall === 0 && plan.monthly > gp.gapPerMonth && <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 8 }}>{"That is " + dollars(round2(plan.monthly - gp.gapPerMonth)) + "/mo more than the gap."}</div>}
 
             <div style={{ marginTop: 16, background: T.card, borderRadius: 18, boxShadow: RW_CARD_SHADOW }}>
@@ -12948,15 +12948,15 @@ function GoalAtRiskDetail(props) {
           </div>
 
           <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 8 }}>
-            <BigBtn label="Cancel both" onPress={function() { cancelAndBack(plan.picked.map(function(p) { return p.id; })); }} />
+            <BigBtn label="Dismiss both" onPress={function() { cancelAndBack(plan.picked.map(function(p) { return p.id; })); }} />
             <button onClick={function() { setSheetOpen(true); }} style={{ width: "100%", height: 44, border: "none", borderRadius: 12, background: "none", color: T.orange, fontFamily: UI, fontSize: 14.5, fontWeight: 600, cursor: "pointer" }}>Pick different ones</button>
           </div>
         </div>
       ) : (
         <div>
           <div style={{ paddingTop: 24 }}>
-            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: DISP, letterSpacing: "-0.01em", color: T.ink, lineHeight: 1.3 }}>I can't close this one with cancellations alone.</div>
-            <div style={{ fontSize: 15, color: T.ink2, marginTop: 8, lineHeight: 1.45 }}>Everything left to cancel comes to <b style={{ color: T.ink, fontVariantNumeric: "tabular-nums" }}>{dollars(plan.monthly) + "/mo"}</b>. That gets you most of the way - here are the two honest ways to finish it.</div>
+            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: DISP, letterSpacing: "-0.01em", color: T.ink, lineHeight: 1.3 }}>I can't close this one by dismissing leaks alone.</div>
+            <div style={{ fontSize: 15, color: T.ink2, marginTop: 8, lineHeight: 1.45 }}>Everything left to dismiss comes to <b style={{ color: T.ink, fontVariantNumeric: "tabular-nums" }}>{dollars(plan.monthly) + "/mo"}</b>. That gets you most of the way - here are the two honest ways to finish it.</div>
           </div>
 
           <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
@@ -12979,7 +12979,7 @@ function GoalAtRiskDetail(props) {
           </div>
 
           <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 8 }}>
-            <BigBtn label={plan.picked.length ? ("Cancel " + (plan.picked[0].merchant || plan.picked[0].title) + " anyway") : "Cancel anyway"} onPress={function() { if (plan.picked.length) cancelAndBack(plan.picked.map(function(p) { return p.id; })); }} disabled={!plan.picked.length} />
+            <BigBtn label={plan.picked.length ? ("Dismiss " + (plan.picked[0].merchant || plan.picked[0].title) + " anyway") : "Dismiss anyway"} onPress={function() { if (plan.picked.length) cancelAndBack(plan.picked.map(function(p) { return p.id; })); }} disabled={!plan.picked.length} />
             <button onClick={function() { props.onNavigate("goals"); }} style={{ width: "100%", height: 44, border: "none", borderRadius: 12, background: "none", color: T.orange, fontFamily: UI, fontSize: 14.5, fontWeight: 600, cursor: "pointer" }}>Leave it for now</button>
           </div>
         </div>
@@ -13006,7 +13006,7 @@ function PickCancelSheet(props) {
   var spare = round2(monthly - gap);
 
   return (
-    <Overlay open={props.open} onClose={props.onClose} title="Pick what to cancel">
+    <Overlay open={props.open} onClose={props.onClose} title="Pick what to dismiss">
       <div style={{ fontSize: 12.5, color: T.ink2, marginTop: -8, marginBottom: 16, fontVariantNumeric: "tabular-nums" }}>{"You need " + dollars(gap) + "/mo to get this goal back on pace."}</div>
       <div style={{ background: T.fill0, borderRadius: 18 }}>
         {pool.map(function(f, i) {
@@ -13028,7 +13028,7 @@ function PickCancelSheet(props) {
           <span style={{ fontSize: 12.5, color: T.ink2 }}>{pickedIds.length === 0 ? "Nothing selected yet" : (pickedIds.length + " selected" + (covers ? (" - covers it, " + dollars(spare) + "/mo spare") : ""))}</span>
           <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: covers ? T.green : T.ink }}>{dollars(monthly)}<span style={{ fontSize: 12, fontWeight: 400, color: T.ink3 }}>/mo</span></span>
         </div>
-        <BigBtn label={"Cancel these " + pickedIds.length} disabled={pickedIds.length === 0} onPress={function() { props.onConfirm(pickedIds); }} />
+        <BigBtn label={"Dismiss these " + pickedIds.length} disabled={pickedIds.length === 0} onPress={function() { props.onConfirm(pickedIds); }} />
       </div>
     </Overlay>
   );
