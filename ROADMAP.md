@@ -332,6 +332,7 @@ gate should come **before** the next bug fix.
 | Finding | Closed by |
 |---|---|
 | ~~Deleting a trip (`removeTrip`, wired directly to the delete button) instantly destroyed the trip, every budget bucket and every logged expense, with zero confirmation~~ (§5.7) | `cb4ccd4` — delete button now sets a `delTripConfirm` state and renders the same inline red confirm card (Delete / Cancel) used for capital/account deletion, using the `deleteTripConfirm` string that already existed in all four languages but was never wired to anything. `removeTrip` only fires from the confirm card. Verified by re-reading `Trips(props)`: the button no longer calls `removeTrip` directly. |
+| ~~The goal-rescue screen's "Cancel these N" / "Cancel both" / "Cancel {merchant} anyway" buttons (`cancelFindings`) promised cancellation but only ever appended ids to `foundMoney.dismissed`~~ (§5.4, copy half only — the plan-emptying side effect is still open) | `953c884` — every button and headline on `GoalAtRiskDetail`/`PickCancelSheet` now says "Dismiss" instead of "Cancel". Verified by re-reading both components: no remaining label claims to cancel anything. |
 
 ### Still open, with evidence it is getting worse — re-verified 30 Aug
 
