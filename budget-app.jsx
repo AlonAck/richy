@@ -1434,6 +1434,203 @@ for (var _hhc in HOUSEHOLD_STRINGS) {
   for (var _hhk in HOUSEHOLD_STRINGS[_hhc]) TRANSLATIONS[_hhc][_hhk] = HOUSEHOLD_STRINGS[_hhc][_hhk];
 }
 
+// Richard Watch strings (Daily Brief / Goal Rescue / Next 30 Days / Watch-outs)
+// - kept in their own block for the same reason as FOLDER_STRINGS. This
+// feature shipped with zero tr() calls, so every key below is new. The four
+// tab ids (watchBrief/watchGoal/watchForecast/watchOuts) double as dictionary
+// keys so the header title bar's tr(currentTab) fallback resolves to real
+// text instead of the raw key.
+var RW_STRINGS = {
+  en: {
+    watchBrief:"Daily Brief", watchGoal:"Goal Rescue", watchForecast:"Next 30 Days", watchOuts:"Watch-outs",
+    rwRichardLabel:"Richard", rwSweptWord:"swept",
+    rwNewLeak:"new leak", rwNewLeaks:"new leaks", rwWorth:"worth", rwPlusConj:"plus", rwAndConj:"and",
+    rwThingToWatch:"thing to watch", rwThingsToWatch:"things to watch", rwToClaimBack:"to claim back",
+    rwRecoverable:"Recoverable", rwOpen:"Open", rwNow:"Now", rwSoon:"Soon", rwWatchLabel:"Watch",
+    rwIncluded:"Included", rwAbove:"above",
+    rwNothingToday:"Nothing needs you today.",
+    rwNothingTodaySub:"I went through your charges, your budgets and your goals this morning. Everything is where it should be.",
+    rwNextCharge:"Next charge", rwInOneDay:"in 1 day", rwInNDays:"in {n} days",
+    rwChargeComingOne:"1 charge coming", rwChargesComingN:"{n} charges coming",
+    rwSeeEverything:"See everything I checked",
+    rwBudgetPace:"Budget pace", rwBudgetPaceOver:"Budget pace · already over",
+    rwPaceOverLine:"{cat} is already {amt} over", rwPaceOnTrackLine:"{cat} is on pace to go over",
+    rwOverTheCap:"over the cap", rwKeepsItUnder:"keeps it under",
+    rwSpentAgainstCap:"{spent} against a {limit} cap, {n} days still to go.", rwSpentOfLimit:"{spent} of {limit}",
+    rwDaysLeftPlain:"{n} days left",
+    rwRaiseCap:"Raise the cap", rwSeeWhatsInIt:"See what's in it",
+    rwCashCliff:"Cash cliff", rwMonthEndsShort:"This month ends {amt} short", rwShort:"short",
+    rwIncomeLabel:"In", rwPlusKnownCharges:"Plus {amt} of known charges still to land.",
+    rwConfHigh:"High", rwConfLikely:"Likely", rwConfLow:"Low",
+    rwFromHistory:"From your own history, not a guess at the calendar.",
+    rwTotalLabel:"Total", rwAcrossOneCharge:"across 1 charge", rwAcrossNCharges:"across {n} charges",
+    rwThisWeek:"This week", rwNextWeek:"Next week", rwLater:"Later", rwNothingHorizon:"Nothing on the horizon yet.",
+    rwNothingToWatchNow:"Nothing to watch right now.",
+    rwBehindBy:"Behind by", rwSavedOfTarget:"{saved} saved of {target}", rwDueDate:"due {date}",
+    rwOneMonthLeft:"1 month left", rwNMonthsLeft:"{n} months left", rwToGoLine:"{amt} to go, {months}",
+    rwMoCovered:"{amt}/mo covered", rwMoStillShort:"{amt}/mo still short",
+    rwNeeds:"Needs", rwCurrentlySaving:"Currently saving",
+    rwDismissingOneCovers:"Dismissing 1 thing covers it - {amt}/mo freed",
+    rwDismissingNCovers:"Dismissing {n} things covers it - {amt}/mo freed",
+    rwMoreThanGap:"That is {amt}/mo more than the gap.",
+    rwDismissBoth:"Dismiss both", rwPickDifferent:"Pick different ones",
+    rwCantClose:"I can't close this one by dismissing leaks alone.",
+    rwEverythingLeft:"Everything left to dismiss comes to {amt}. That gets you most of the way - here are the two honest ways to finish it.",
+    rwGiveOneMoreMonth:"Give it one more month", rwRewritesDeadline:"Rewrites your goal's deadline", rwDueInstead:"Due {date} instead",
+    rwAimForReal:"Aim for what you'll actually have", rwRewritesTarget:"Rewrites your goal's target", rwByDateKeeping:"{amt} by {date}, keeping the date",
+    rwDismissMerchantAnyway:"Dismiss {merchant} anyway", rwDismissAnywayPlain:"Dismiss anyway", rwLeaveForNow:"Leave it for now",
+    rwPushDeadlineConfirm:"Push the deadline from {old} to {new}? Your saved target stays the same.",
+    rwChangeTargetConfirm:"Change the target from {old} to {new}, keeping the {date} deadline?",
+    rwDeadlinePushedTo:"Deadline pushed to {date}.", rwTargetChangedTo:"Target changed to {amt}.",
+    rwUndo:"Undo", rwDone:"Done", rwBackOnPace:"This goal is back on pace - nothing to fix here anymore.",
+    rwPickWhatToDismiss:"Pick what to dismiss", rwNeedAmtToGetBack:"You need {amt}/mo to get this goal back on pace.",
+    rwNothingSelected:"Nothing selected yet", rwNSelectedCovers:"{n} selected - covers it, {amt}/mo spare",
+    rwNSelected:"{n} selected", rwDismissTheseN:"Dismiss these {n}",
+  },
+  he: {
+    watchBrief:"עדכון יומי", watchGoal:"יעד בסיכון", watchForecast:"30 הימים הבאים", watchOuts:"אזהרות",
+    rwRichardLabel:"ריצ'רד", rwSweptWord:"נסרק",
+    rwNewLeak:"דליפה חדשה", rwNewLeaks:"דליפות חדשות", rwWorth:"בשווי", rwPlusConj:"בתוספת", rwAndConj:"וכן",
+    rwThingToWatch:"דבר לעקוב אחריו", rwThingsToWatch:"דברים לעקוב אחריהם", rwToClaimBack:"לקבל בחזרה",
+    rwRecoverable:"ניתן לחיסכון", rwOpen:"פתוחות", rwNow:"עכשיו", rwSoon:"בקרוב", rwWatchLabel:"למעקב",
+    rwIncluded:"נכלל", rwAbove:"למעלה",
+    rwNothingToday:"שום דבר לא דורש אותך היום.",
+    rwNothingTodaySub:"עברתי על ההוצאות, התקציבים והיעדים שלך הבוקר. הכל במקום.",
+    rwNextCharge:"החיוב הבא", rwInOneDay:"בעוד יום", rwInNDays:"בעוד {n} ימים",
+    rwChargeComingOne:"חיוב אחד בדרך", rwChargesComingN:"{n} חיובים בדרך",
+    rwSeeEverything:"ראה את כל מה שבדקתי",
+    rwBudgetPace:"קצב תקציב", rwBudgetPaceOver:"קצב תקציב · כבר חרג",
+    rwPaceOverLine:"{cat} כבר חרג ב-{amt}", rwPaceOnTrackLine:"{cat} בקצב לחריגה",
+    rwOverTheCap:"מעל התקרה", rwKeepsItUnder:"ישאיר את זה מתחת לתקרה",
+    rwSpentAgainstCap:"{spent} מתוך תקרה של {limit}, נותרו {n} ימים.", rwSpentOfLimit:"{spent} מתוך {limit}",
+    rwDaysLeftPlain:"נותרו {n} ימים",
+    rwRaiseCap:"הגדל את התקרה", rwSeeWhatsInIt:"ראה מה כלול בזה",
+    rwCashCliff:"מצוק מזומנים", rwMonthEndsShort:"החודש מסתיים בגירעון של {amt}", rwShort:"בגירעון",
+    rwIncomeLabel:"נכנס", rwPlusKnownCharges:"ובנוסף {amt} של חיובים ידועים שעוד יגיעו.",
+    rwConfHigh:"גבוהה", rwConfLikely:"סביר", rwConfLow:"נמוכה",
+    rwFromHistory:"מבוסס על ההיסטוריה שלך, לא ניחוש לוח שנה.",
+    rwTotalLabel:"סך הכל", rwAcrossOneCharge:"בפריסה על חיוב אחד", rwAcrossNCharges:"בפריסה על {n} חיובים",
+    rwThisWeek:"השבוע", rwNextWeek:"שבוע הבא", rwLater:"בהמשך", rwNothingHorizon:"אין עדיין שום דבר באופק.",
+    rwNothingToWatchNow:"אין כרגע שום דבר לעקוב אחריו.",
+    rwBehindBy:"בפיגור של", rwSavedOfTarget:"{saved} נחסך מתוך {target}", rwDueDate:"מועד {date}",
+    rwOneMonthLeft:"נותר חודש אחד", rwNMonthsLeft:"נותרו {n} חודשים", rwToGoLine:"{amt} עד ליעד, {months}",
+    rwMoCovered:"{amt}/חודש מכוסה", rwMoStillShort:"{amt}/חודש עדיין חסר",
+    rwNeeds:"נדרש", rwCurrentlySaving:"נחסך כרגע",
+    rwDismissingOneCovers:"דחיית פריט אחד סוגרת את הפער - {amt}/חודש התפנו",
+    rwDismissingNCovers:"דחיית {n} פריטים סוגרת את הפער - {amt}/חודש התפנו",
+    rwMoreThanGap:"זה {amt}/חודש יותר מהפער.",
+    rwDismissBoth:"דחה את שניהם", rwPickDifferent:"בחר אחרים",
+    rwCantClose:"אי אפשר לסגור את זה רק על ידי דחיית דליפות.",
+    rwEverythingLeft:"כל מה שנשאר לדחות מגיע ל-{amt}. זה מקרב אותך רוב הדרך - הנה שתי הדרכים ההגונות לסיים את זה.",
+    rwGiveOneMoreMonth:"תן לזה עוד חודש", rwRewritesDeadline:"משנה את מועד היעד שלך", rwDueInstead:"מועד {date} במקום זאת",
+    rwAimForReal:"כוון למה שבאמת יהיה לך", rwRewritesTarget:"משנה את סכום היעד שלך", rwByDateKeeping:"{amt} עד {date}, בלי לשנות את המועד",
+    rwDismissMerchantAnyway:"דחה את {merchant} בכל זאת", rwDismissAnywayPlain:"דחה בכל זאת", rwLeaveForNow:"השאר את זה בינתיים",
+    rwPushDeadlineConfirm:"לדחות את המועד מ-{old} ל-{new}? היעד השמור שלך יישאר ללא שינוי.",
+    rwChangeTargetConfirm:"לשנות את היעד מ-{old} ל-{new}, תוך שמירה על מועד {date}?",
+    rwDeadlinePushedTo:"המועד נדחה ל-{date}.", rwTargetChangedTo:"היעד השתנה ל-{amt}.",
+    rwUndo:"בטל", rwDone:"סיום", rwBackOnPace:"היעד הזה חזר למסלול - אין כאן יותר מה לתקן.",
+    rwPickWhatToDismiss:"בחר מה לדחות", rwNeedAmtToGetBack:"דרושים לך {amt}/חודש כדי להחזיר את היעד למסלול.",
+    rwNothingSelected:"עדיין לא נבחר כלום", rwNSelectedCovers:"{n} נבחרו - סוגר את הפער, נותרו {amt}/חודש",
+    rwNSelected:"{n} נבחרו", rwDismissTheseN:"דחה את {n} האלה",
+  },
+  ar: {
+    watchBrief:"الملخص اليومي", watchGoal:"هدف في خطر", watchForecast:"الأيام الثلاثون القادمة", watchOuts:"تنبيهات",
+    rwRichardLabel:"ريتشارد", rwSweptWord:"تم الفحص",
+    rwNewLeak:"تسرب جديد", rwNewLeaks:"تسربات جديدة", rwWorth:"بقيمة", rwPlusConj:"بالإضافة إلى", rwAndConj:"و",
+    rwThingToWatch:"أمر يستحق المتابعة", rwThingsToWatch:"أمور تستحق المتابعة", rwToClaimBack:"لاستردادها",
+    rwRecoverable:"قابل للاسترداد", rwOpen:"مفتوحة", rwNow:"الآن", rwSoon:"قريبا", rwWatchLabel:"للمتابعة",
+    rwIncluded:"مشمول", rwAbove:"أعلاه",
+    rwNothingToday:"لا شيء يحتاج إليك اليوم.",
+    rwNothingTodaySub:"راجعت مصاريفك وميزانياتك وأهدافك هذا الصباح. كل شيء على ما يرام.",
+    rwNextCharge:"الرسوم القادمة", rwInOneDay:"خلال يوم واحد", rwInNDays:"خلال {n} أيام",
+    rwChargeComingOne:"رسوم واحدة قادمة", rwChargesComingN:"{n} رسوم قادمة",
+    rwSeeEverything:"عرض كل ما تحققت منه",
+    rwBudgetPace:"وتيرة الميزانية", rwBudgetPaceOver:"وتيرة الميزانية · تم التجاوز بالفعل",
+    rwPaceOverLine:"{cat} تجاوزت بالفعل بمقدار {amt}", rwPaceOnTrackLine:"{cat} في مسار لتجاوز الحد",
+    rwOverTheCap:"فوق الحد", rwKeepsItUnder:"يبقيها ضمن الحد",
+    rwSpentAgainstCap:"{spent} من أصل حد {limit}، تبقّى {n} أيام.", rwSpentOfLimit:"{spent} من {limit}",
+    rwDaysLeftPlain:"تبقّى {n} أيام",
+    rwRaiseCap:"رفع الحد", rwSeeWhatsInIt:"عرض ما يتضمنه",
+    rwCashCliff:"هاوية السيولة", rwMonthEndsShort:"ينتهي هذا الشهر بعجز قدره {amt}", rwShort:"بعجز",
+    rwIncomeLabel:"داخل", rwPlusKnownCharges:"بالإضافة إلى {amt} من رسوم معروفة لم تصل بعد.",
+    rwConfHigh:"عالية", rwConfLikely:"مرجّحة", rwConfLow:"منخفضة",
+    rwFromHistory:"من سجلّك الفعلي، وليس تخمينا بالتقويم.",
+    rwTotalLabel:"الإجمالي", rwAcrossOneCharge:"عبر رسوم واحدة", rwAcrossNCharges:"عبر {n} رسوم",
+    rwThisWeek:"هذا الأسبوع", rwNextWeek:"الأسبوع القادم", rwLater:"لاحقا", rwNothingHorizon:"لا شيء في الأفق بعد.",
+    rwNothingToWatchNow:"لا يوجد حاليا ما يستدعي المتابعة.",
+    rwBehindBy:"متأخر بمقدار", rwSavedOfTarget:"تم توفير {saved} من {target}", rwDueDate:"الموعد {date}",
+    rwOneMonthLeft:"تبقّى شهر واحد", rwNMonthsLeft:"تبقّى {n} أشهر", rwToGoLine:"{amt} متبقٍ، {months}",
+    rwMoCovered:"{amt}/شهريا مغطى", rwMoStillShort:"{amt}/شهريا لا يزال ناقصا",
+    rwNeeds:"مطلوب", rwCurrentlySaving:"يُدّخر حاليا",
+    rwDismissingOneCovers:"تجاهل عنصر واحد يغطي الفجوة - {amt}/شهريا تحرر",
+    rwDismissingNCovers:"تجاهل {n} عناصر يغطي الفجوة - {amt}/شهريا تحرر",
+    rwMoreThanGap:"هذا أكثر بـ {amt}/شهريا من الفجوة.",
+    rwDismissBoth:"تجاهل كليهما", rwPickDifferent:"اختر غيرها",
+    rwCantClose:"لا يمكن سد هذه الفجوة بتجاهل التسربات وحدها.",
+    rwEverythingLeft:"كل ما تبقى تجاهله يصل إلى {amt}. هذا يقربك من الهدف - إليك طريقتان صادقتان لإنهائه.",
+    rwGiveOneMoreMonth:"امنحه شهرا إضافيا", rwRewritesDeadline:"يغيّر موعد هدفك", rwDueInstead:"الموعد {date} بدلا من ذلك",
+    rwAimForReal:"استهدف ما ستملكه فعليا", rwRewritesTarget:"يغيّر قيمة هدفك", rwByDateKeeping:"{amt} بحلول {date}، مع إبقاء الموعد كما هو",
+    rwDismissMerchantAnyway:"تجاهل {merchant} على أي حال", rwDismissAnywayPlain:"تجاهل على أي حال", rwLeaveForNow:"اتركه الآن",
+    rwPushDeadlineConfirm:"تأجيل الموعد من {old} إلى {new}؟ سيبقى هدفك المحفوظ كما هو.",
+    rwChangeTargetConfirm:"تغيير الهدف من {old} إلى {new}، مع إبقاء موعد {date}؟",
+    rwDeadlinePushedTo:"تم تأجيل الموعد إلى {date}.", rwTargetChangedTo:"تم تغيير الهدف إلى {amt}.",
+    rwUndo:"تراجع", rwDone:"تم", rwBackOnPace:"عاد هذا الهدف إلى مساره - لا شيء آخر لإصلاحه هنا.",
+    rwPickWhatToDismiss:"اختر ما تريد تجاهله", rwNeedAmtToGetBack:"تحتاج {amt}/شهريا لإعادة هذا الهدف إلى مساره.",
+    rwNothingSelected:"لم يتم اختيار شيء بعد", rwNSelectedCovers:"تم اختيار {n} - يغطي الفجوة، يتبقى {amt}/شهريا",
+    rwNSelected:"تم اختيار {n}", rwDismissTheseN:"تجاهل هذه الـ {n}",
+  },
+  ru: {
+    watchBrief:"Ежедневная сводка", watchGoal:"Цель под угрозой", watchForecast:"Следующие 30 дней", watchOuts:"Предупреждения",
+    rwRichardLabel:"Ричард", rwSweptWord:"проверено",
+    rwNewLeak:"новая утечка", rwNewLeaks:"новых утечки", rwWorth:"на сумму", rwPlusConj:"плюс", rwAndConj:"и",
+    rwThingToWatch:"пункт для наблюдения", rwThingsToWatch:"пункта для наблюдения", rwToClaimBack:"к возврату",
+    rwRecoverable:"Можно вернуть", rwOpen:"Открыто", rwNow:"Сейчас", rwSoon:"Скоро", rwWatchLabel:"Наблюдение",
+    rwIncluded:"Учтено", rwAbove:"выше",
+    rwNothingToday:"Сегодня ничего не требует внимания.",
+    rwNothingTodaySub:"Утром я проверил ваши траты, бюджеты и цели. Всё в порядке.",
+    rwNextCharge:"Следующее списание", rwInOneDay:"через 1 день", rwInNDays:"через {n} дн.",
+    rwChargeComingOne:"1 списание ожидается", rwChargesComingN:"{n} списаний ожидается",
+    rwSeeEverything:"Показать всё, что я проверил",
+    rwBudgetPace:"Темп бюджета", rwBudgetPaceOver:"Темп бюджета · уже превышен",
+    rwPaceOverLine:"{cat} уже превышена на {amt}", rwPaceOnTrackLine:"{cat} движется к превышению",
+    rwOverTheCap:"сверх лимита", rwKeepsItUnder:"удержит в пределах лимита",
+    rwSpentAgainstCap:"{spent} из лимита {limit}, осталось {n} дн.", rwSpentOfLimit:"{spent} из {limit}",
+    rwDaysLeftPlain:"осталось {n} дн.",
+    rwRaiseCap:"Повысить лимит", rwSeeWhatsInIt:"Посмотреть, что входит",
+    rwCashCliff:"Кассовый разрыв", rwMonthEndsShort:"Месяц закончится с нехваткой {amt}", rwShort:"не хватает",
+    rwIncomeLabel:"Доход", rwPlusKnownCharges:"Плюс ещё {amt} известных списаний впереди.",
+    rwConfHigh:"Высокая", rwConfLikely:"Вероятно", rwConfLow:"Низкая",
+    rwFromHistory:"На основе вашей истории, а не догадки по календарю.",
+    rwTotalLabel:"Итого", rwAcrossOneCharge:"по 1 списанию", rwAcrossNCharges:"по {n} списаниям",
+    rwThisWeek:"На этой неделе", rwNextWeek:"На следующей неделе", rwLater:"Позже", rwNothingHorizon:"Пока ничего не предвидится.",
+    rwNothingToWatchNow:"Сейчас не за чем следить.",
+    rwBehindBy:"Отставание на", rwSavedOfTarget:"накоплено {saved} из {target}", rwDueDate:"срок {date}",
+    rwOneMonthLeft:"остался 1 месяц", rwNMonthsLeft:"осталось {n} мес.", rwToGoLine:"{amt} до цели, {months}",
+    rwMoCovered:"{amt}/мес покрыто", rwMoStillShort:"{amt}/мес всё ещё не хватает",
+    rwNeeds:"Нужно", rwCurrentlySaving:"Сейчас откладывается",
+    rwDismissingOneCovers:"Отклонение 1 пункта закрывает разрыв - высвобождается {amt}/мес",
+    rwDismissingNCovers:"Отклонение {n} пунктов закрывает разрыв - высвобождается {amt}/мес",
+    rwMoreThanGap:"Это на {amt}/мес больше, чем нужно.",
+    rwDismissBoth:"Отклонить оба", rwPickDifferent:"Выбрать другие",
+    rwCantClose:"Закрыть это одним отклонением утечек не получится.",
+    rwEverythingLeft:"Всё, что осталось отклонить, даёт {amt}. Это почти закрывает разрыв - вот два честных способа закончить.",
+    rwGiveOneMoreMonth:"Дать ещё один месяц", rwRewritesDeadline:"Изменит срок вашей цели", rwDueInstead:"Срок {date} вместо этого",
+    rwAimForReal:"Ориентироваться на реальную сумму", rwRewritesTarget:"Изменит сумму вашей цели", rwByDateKeeping:"{amt} к {date}, сохранив срок",
+    rwDismissMerchantAnyway:"Всё равно отклонить {merchant}", rwDismissAnywayPlain:"Всё равно отклонить", rwLeaveForNow:"Оставить пока как есть",
+    rwPushDeadlineConfirm:"Перенести срок с {old} на {new}? Сохранённая сумма цели не изменится.",
+    rwChangeTargetConfirm:"Изменить сумму цели с {old} на {new}, сохранив срок {date}?",
+    rwDeadlinePushedTo:"Срок перенесён на {date}.", rwTargetChangedTo:"Сумма цели изменена на {amt}.",
+    rwUndo:"Отменить", rwDone:"Готово", rwBackOnPace:"Эта цель снова в графике - здесь больше нечего исправлять.",
+    rwPickWhatToDismiss:"Выберите, что отклонить", rwNeedAmtToGetBack:"Нужно {amt}/мес, чтобы вернуть цель в график.",
+    rwNothingSelected:"Пока ничего не выбрано", rwNSelectedCovers:"Выбрано {n} - закрывает разрыв, останется {amt}/мес",
+    rwNSelected:"Выбрано {n}", rwDismissTheseN:"Отклонить эти {n}",
+  },
+};
+for (var _rwc in RW_STRINGS) {
+  if (!TRANSLATIONS[_rwc]) continue;
+  for (var _rwk in RW_STRINGS[_rwc]) TRANSLATIONS[_rwc][_rwk] = RW_STRINGS[_rwc][_rwk];
+}
+
 function tr(key) {
   var code = _lang.code || "en";
   return (TRANSLATIONS[code] && TRANSLATIONS[code][key]) || (TRANSLATIONS.en[key]) || key;
@@ -12563,7 +12760,7 @@ function rwMoneyBlock(s) {
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
         <div style={{ width: 20, height: 2, borderRadius: 1, background: T.ink3, marginTop: 8 }} />
-        <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.ink3, marginTop: 8, maxWidth: 72, textAlign: "end" }}>Included<br />above</div>
+        <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.ink3, marginTop: 8, maxWidth: 72, textAlign: "end" }}>{tr("rwIncluded")}<br />{tr("rwAbove")}</div>
       </div>
     );
   }
@@ -12605,23 +12802,23 @@ function PaceCard(props) {
       <div style={{ display: "flex", gap: 13, alignItems: "center" }}>
         <IconBadge icon="budgets" bg={T.red} size={40} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.ink3 }}>{p.blown ? "Budget pace · already over" : "Budget pace"}</div>
-          <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginTop: 3 }}>{p.blown ? (p.category + " is already " + dollars(p.overNow) + " over") : (p.category + " is on pace to go over")}</div>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.ink3 }}>{p.blown ? tr("rwBudgetPaceOver") : tr("rwBudgetPace")}</div>
+          <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginTop: 3 }}>{p.blown ? tr("rwPaceOverLine").replace("{cat}", p.category).replace("{amt}", dollars(p.overNow)) : tr("rwPaceOnTrackLine").replace("{cat}", p.category)}</div>
         </div>
       </div>
       {p.blown ? (
         <div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 16 }}>
             <span style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: T.red }}>{dollars(p.overNow)}</span>
-            <span style={{ fontSize: 12.5, color: T.ink3 }}>over the cap</span>
+            <span style={{ fontSize: 12.5, color: T.ink3 }}>{tr("rwOverTheCap")}</span>
           </div>
-          <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 8 }}>{dollars(p.spent) + " against a " + dollars(p.limit) + " cap, " + p.daysLeft + " days still to go."}</div>
+          <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 8 }}>{tr("rwSpentAgainstCap").replace("{spent}", dollars(p.spent)).replace("{limit}", dollars(p.limit)).replace("{n}", p.daysLeft)}</div>
         </div>
       ) : (
         <div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 16 }}>
             <span style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{dollars(p.dailyAllowance)}<span style={{ fontSize: 15, fontWeight: 400, color: T.ink3 }}>/day</span></span>
-            <span style={{ fontSize: 12.5, color: T.ink3 }}>keeps it under</span>
+            <span style={{ fontSize: 12.5, color: T.ink3 }}>{tr("rwKeepsItUnder")}</span>
           </div>
           <div style={{ marginTop: 16, position: "relative" }}>
             <div style={{ display: "flex", height: 8, borderRadius: 4, overflow: "hidden", background: T.fill1 }}>
@@ -12631,14 +12828,14 @@ function PaceCard(props) {
             <div style={{ position: "absolute", insetInlineStart: pct + "%", top: -3, width: 2, height: 14, background: T.ink, borderRadius: 1 }} />
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-            <span style={{ fontSize: 12.5, color: T.ink3, fontVariantNumeric: "tabular-nums" }}>{dollars(p.spent) + " of " + dollars(p.limit)}</span>
-            <span style={{ fontSize: 12.5, color: T.ink3, fontVariantNumeric: "tabular-nums" }}>{p.daysLeft + " days left"}</span>
+            <span style={{ fontSize: 12.5, color: T.ink3, fontVariantNumeric: "tabular-nums" }}>{tr("rwSpentOfLimit").replace("{spent}", dollars(p.spent)).replace("{limit}", dollars(p.limit))}</span>
+            <span style={{ fontSize: 12.5, color: T.ink3, fontVariantNumeric: "tabular-nums" }}>{tr("rwDaysLeftPlain").replace("{n}", p.daysLeft)}</span>
           </div>
         </div>
       )}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 16 }}>
-        <button onClick={props.onRaiseCap} style={rwPillButtonStyle("accent-ghost")}>Raise the cap</button>
-        <button onClick={props.onSeeWhatsInIt} style={rwPillButtonStyle()}>See what's in it</button>
+        <button onClick={props.onRaiseCap} style={rwPillButtonStyle("accent-ghost")}>{tr("rwRaiseCap")}</button>
+        <button onClick={props.onSeeWhatsInIt} style={rwPillButtonStyle()}>{tr("rwSeeWhatsInIt")}</button>
       </div>
     </div>
   );
@@ -12651,26 +12848,26 @@ function CliffCard(props) {
       <div style={{ display: "flex", gap: 13, alignItems: "center" }}>
         <IconBadge icon="chart" bg={T.red} size={40} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.ink3 }}>Cash cliff</div>
-          <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginTop: 3 }}>{"This month ends " + dollars(c.shortfall) + " short"}</div>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.ink3 }}>{tr("rwCashCliff")}</div>
+          <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginTop: 3 }}>{tr("rwMonthEndsShort").replace("{amt}", dollars(c.shortfall))}</div>
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 16 }}>
         <span style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: T.red }}>{dollars(c.shortfall)}</span>
-        <span style={{ fontSize: 12.5, color: T.ink3 }}>short</span>
+        <span style={{ fontSize: 12.5, color: T.ink3 }}>{tr("rwShort")}</span>
       </div>
       <div style={{ display: "flex", marginTop: 16 }}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>In</div>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>{tr("rwIncomeLabel")}</div>
           <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums", marginTop: 4 }}>{dollars(c.income)}</div>
         </div>
         <div style={{ width: 1, background: T.sep, margin: "0 16px" }} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>Spent</div>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>{tr("spent")}</div>
           <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums", marginTop: 4, color: T.red }}>{dollars(c.spent)}</div>
         </div>
       </div>
-      {c.committed > 0 && <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 16 }}>{"Plus " + dollars(c.committed) + " of known charges still to land."}</div>}
+      {c.committed > 0 && <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 16 }}>{tr("rwPlusKnownCharges").replace("{amt}", dollars(c.committed))}</div>}
     </div>
   );
 }
@@ -12720,36 +12917,36 @@ function DailyBrief(props) {
     return (
       <div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-          <SubViewBack onBack={function() { props.onNavigate("overview"); }} label="Dashboard" />
+          <SubViewBack onBack={function() { props.onNavigate("overview"); }} label={tr("overview")} />
         </div>
         <div style={{ paddingTop: 8 }}>
           <div style={{ width: 44, height: 44, borderRadius: 15, background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
             <SVGIcon id="check" size={22} color={T.green} />
           </div>
-          <div style={{ fontSize: 26, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em" }}>Nothing needs you today.</div>
-          <div style={{ fontSize: 15, color: T.ink2, marginTop: 12, lineHeight: 1.45 }}>I went through your charges, your budgets and your goals this morning. Everything is where it should be.</div>
+          <div style={{ fontSize: 26, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em" }}>{tr("rwNothingToday")}</div>
+          <div style={{ fontSize: 15, color: T.ink2, marginTop: 12, lineHeight: 1.45 }}>{tr("rwNothingTodaySub")}</div>
         </div>
 
         <div style={{ marginTop: 28, background: T.card, borderRadius: 18, boxShadow: RW_CARD_SHADOW }}>
           {next && (
             <div style={{ display: "flex", alignItems: "center", gap: 16, height: 64, padding: "0 16px", borderBottom: t.upcomingCount > 0 ? "1px solid " + T.sep : "none" }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>Next charge</div>
-                <div style={{ fontSize: 15, color: T.ink, marginTop: 3 }}>{next.merchant + " - in " + next.inDays + " day" + (next.inDays === 1 ? "" : "s")}</div>
+                <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>{tr("rwNextCharge")}</div>
+                <div style={{ fontSize: 15, color: T.ink, marginTop: 3 }}>{next.merchant + " - " + (next.inDays === 1 ? tr("rwInOneDay") : tr("rwInNDays").replace("{n}", next.inDays))}</div>
               </div>
               <div style={{ fontSize: 15, fontWeight: 600, color: T.ink, fontVariantNumeric: "tabular-nums" }}>{dollars(next.amount)}</div>
             </div>
           )}
           <div style={{ display: "flex", alignItems: "center", gap: 16, height: 64, padding: "0 16px" }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>Next 30 days</div>
-              <div style={{ fontSize: 15, color: T.ink, marginTop: 3 }}>{t.upcomingCount + " charge" + (t.upcomingCount === 1 ? "" : "s") + " coming"}</div>
+              <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>{tr("watchForecast")}</div>
+              <div style={{ fontSize: 15, color: T.ink, marginTop: 3 }}>{t.upcomingCount === 1 ? tr("rwChargeComingOne") : tr("rwChargesComingN").replace("{n}", t.upcomingCount)}</div>
             </div>
             <div style={{ fontSize: 15, fontWeight: 600, color: T.ink, fontVariantNumeric: "tabular-nums" }}>{dollars(t.upcomingTotal)}</div>
           </div>
         </div>
 
-        <button onClick={function() { props.onNavigate("watchForecast"); }} style={Object.assign({}, rwPillButtonStyle(), { width: "100%", marginTop: 16 })}>See everything I checked</button>
+        <button onClick={function() { props.onNavigate("watchForecast"); }} style={Object.assign({}, rwPillButtonStyle(), { width: "100%", marginTop: 16 })}>{tr("rwSeeEverything")}</button>
       </div>
     );
   }
@@ -12757,41 +12954,41 @@ function DailyBrief(props) {
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontFamily: UI, fontSize: 13.5, color: T.ink2 }}>{"Richard" + (swept ? (" · swept " + swept) : "")}</span>
+        <span style={{ fontFamily: UI, fontSize: 13.5, color: T.ink2 }}>{tr("rwRichardLabel") + (swept ? (" · " + tr("rwSweptWord") + " " + swept) : "")}</span>
       </div>
 
-      <div style={{ fontSize: 26, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", marginTop: 10 }}>Daily brief</div>
+      <div style={{ fontSize: 26, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", marginTop: 10 }}>{tr("watchBrief")}</div>
       {/* Leak count and risk count stay apart here too - t.signals mixes both,
           and calling a budget-pace or goal-behind row a "leak" would be wrong. */}
       <div style={{ fontSize: 15, color: T.ink, marginTop: 8, lineHeight: 1.45 }}>
-        {watch.leaks.length > 0 && <span>{watch.leaks.length + " new leak" + (watch.leaks.length === 1 ? "" : "s")}{t.recoverableMonthly > 0 && <span>{" worth "}<b style={{ fontVariantNumeric: "tabular-nums" }}>{dollars(t.recoverableMonthly) + "/mo"}</b></span>}</span>}
-        {watch.leaks.length > 0 && t.oneOffTotal > 0 && <span> plus </span>}
-        {t.oneOffTotal > 0 && <span><b style={{ fontVariantNumeric: "tabular-nums" }}>{dollars(t.oneOffTotal)}</b>{" to claim back"}</span>}
-        {watch.risks.length > 0 && <span>{(watch.leaks.length > 0 ? " and " : "") + watch.risks.length + " thing" + (watch.risks.length === 1 ? "" : "s") + " to watch"}</span>}
+        {watch.leaks.length > 0 && <span>{watch.leaks.length + " " + (watch.leaks.length === 1 ? tr("rwNewLeak") : tr("rwNewLeaks"))}{t.recoverableMonthly > 0 && <span>{" " + tr("rwWorth") + " "}<b style={{ fontVariantNumeric: "tabular-nums" }}>{dollars(t.recoverableMonthly) + "/mo"}</b></span>}</span>}
+        {watch.leaks.length > 0 && t.oneOffTotal > 0 && <span>{" " + tr("rwPlusConj") + " "}</span>}
+        {t.oneOffTotal > 0 && <span><b style={{ fontVariantNumeric: "tabular-nums" }}>{dollars(t.oneOffTotal)}</b>{" " + tr("rwToClaimBack")}</span>}
+        {watch.risks.length > 0 && <span>{(watch.leaks.length > 0 ? (" " + tr("rwAndConj") + " ") : "") + watch.risks.length + " " + (watch.risks.length === 1 ? tr("rwThingToWatch") : tr("rwThingsToWatch"))}</span>}
         {"."}
       </div>
 
       <div style={{ marginTop: 20, background: T.card, borderRadius: 18, boxShadow: RW_CARD_SHADOW, padding: 16, display: "flex", alignItems: "stretch" }}>
         <div style={{ flex: 1.35, minWidth: 0 }}>
           <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: T.ink }}>{dollars(t.recoverableMonthly)}<span style={{ fontSize: 12, fontWeight: 400, color: T.ink3 }}>/mo</span></div>
-          <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3, marginTop: 4 }}>Recoverable</div>
+          <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3, marginTop: 4 }}>{tr("rwRecoverable")}</div>
         </div>
         <div style={{ width: 1, background: T.sep, margin: "0 12px" }} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums", color: T.ink }}>{dollars(t.oneOffTotal)}</div>
-          <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.ink3, marginTop: 4 }}>To claim back</div>
+          <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.ink3, marginTop: 4 }}>{tr("rwToClaimBack")}</div>
         </div>
         <div style={{ width: 1, background: T.sep, margin: "0 12px" }} />
         <div style={{ flex: 0.62, minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums", color: T.ink }}>{t.signals}</div>
-          <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.ink3, marginTop: 4 }}>Open</div>
+          <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.ink3, marginTop: 4 }}>{tr("rwOpen")}</div>
         </div>
       </div>
 
       {["now", "soon", "watch"].map(function(band) {
         var rows = bands[band];
         if (!rows.length) return null;
-        var label = band === "now" ? "Now" : band === "soon" ? "Soon" : "Watch";
+        var label = band === "now" ? tr("rwNow") : band === "soon" ? tr("rwSoon") : tr("rwWatchLabel");
         return (
           <div key={band} style={{ marginTop: 24 }}>
             <WatchSectionHeader label={label} count={rows.length} />
@@ -12844,16 +13041,16 @@ function GoalAtRiskDetail(props) {
     return (
       <div style={{ background: "rgba(220,50,50,0.07)", borderRadius: 14, padding: "14px 16px", marginTop: 16 }}>
         <div style={{ fontSize: 13.5, color: T.ink, marginBottom: 10, lineHeight: 1.45 }}>
-          {goalActionUndo.action === "month" ? "Deadline pushed to " + goal.deadline + "." : "Target changed to " + dollars(goal.target) + "."}
+          {goalActionUndo.action === "month" ? tr("rwDeadlinePushedTo").replace("{date}", goal.deadline) : tr("rwTargetChangedTo").replace("{amt}", dollars(goal.target))}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           <button onClick={undoGoalAction}
             style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 10, background: T.red, color: "#fff" }}>
-            Undo
+            {tr("rwUndo")}
           </button>
           <button onClick={function() { setGoalActionUndo(null); props.onNavigate("goals"); }}
             style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "10px 0", borderRadius: 10, background: T.fill2, color: T.ink2 }}>
-            Done
+            {tr("rwDone")}
           </button>
         </div>
       </div>
@@ -12863,9 +13060,9 @@ function GoalAtRiskDetail(props) {
   if (!gp || !goal) {
     return (
       <div>
-        <SubViewBack onBack={function() { props.onNavigate("goals"); }} label="Goals" />
+        <SubViewBack onBack={function() { props.onNavigate("goals"); }} label={tr("goals")} />
         {goalActionUndo && goal ? goalActionUndoCard() : (
-          <div style={{ fontSize: 15, color: T.ink2 }}>This goal is back on pace - nothing to fix here anymore.</div>
+          <div style={{ fontSize: 15, color: T.ink2 }}>{tr("rwBackOnPace")}</div>
         )}
       </div>
     );
@@ -12919,13 +13116,13 @@ function GoalAtRiskDetail(props) {
 
   return (
     <div>
-      <SubViewBack onBack={function() { props.onNavigate("goals"); }} label="Goals" />
+      <SubViewBack onBack={function() { props.onNavigate("goals"); }} label={tr("goals")} />
       <div style={{ fontSize: 24, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em" }}>{goal.name}</div>
 
       <div style={heroStyle}>
         <div style={{ position: "absolute", insetBlockStart: -40, insetInlineEnd: -30, width: 160, height: 160, borderRadius: "50%", background: "radial-gradient(circle," + (T.heroGlow1 || "rgba(255,255,255,0.3)") + ",transparent 70%)", pointerEvents: "none" }} />
         <div style={{ position: "relative" }}>
-          <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut }}>Behind by</div>
+          <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut }}>{tr("rwBehindBy")}</div>
           <div style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: T.heroInk, marginTop: 8 }}>{dollars(gp.gapPerMonth)}<span style={{ fontSize: 15, fontWeight: 400, color: T.heroMut }}>/mo</span></div>
 
           {plan.covers ? (
@@ -12934,11 +13131,11 @@ function GoalAtRiskDetail(props) {
                 <div style={{ width: pct + "%", height: "100%", borderRadius: 4, background: T.heroInk }} />
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-                <span style={{ fontSize: 12.5, color: T.heroInk, fontVariantNumeric: "tabular-nums" }}>{dollars(saved) + " saved of " + dollars(goal.target)}</span>
-                <span style={{ fontSize: 12.5, color: T.heroMut, fontVariantNumeric: "tabular-nums" }}>{"due " + goal.deadline}</span>
+                <span style={{ fontSize: 12.5, color: T.heroInk, fontVariantNumeric: "tabular-nums" }}>{tr("rwSavedOfTarget").replace("{saved}", dollars(saved)).replace("{target}", dollars(goal.target))}</span>
+                <span style={{ fontSize: 12.5, color: T.heroMut, fontVariantNumeric: "tabular-nums" }}>{tr("rwDueDate").replace("{date}", goal.deadline)}</span>
               </div>
               <div style={{ height: 1, background: T.heroSep || "rgba(255,255,255,0.2)", margin: "16px 0" }} />
-              <div style={{ fontSize: 12.5, color: T.heroInk, fontVariantNumeric: "tabular-nums" }}>{dollars(goal.target - saved) + " to go, " + (gp.monthsLeft != null ? gp.monthsLeft : "") + " month" + (gp.monthsLeft === 1 ? "" : "s") + " left"}</div>
+              <div style={{ fontSize: 12.5, color: T.heroInk, fontVariantNumeric: "tabular-nums" }}>{tr("rwToGoLine").replace("{amt}", dollars(goal.target - saved)).replace("{months}", gp.monthsLeft === 1 ? tr("rwOneMonthLeft") : tr("rwNMonthsLeft").replace("{n}", gp.monthsLeft != null ? gp.monthsLeft : ""))}</div>
             </div>
           ) : (
             <div>
@@ -12947,8 +13144,8 @@ function GoalAtRiskDetail(props) {
                 <div style={{ flex: 1, background: "repeating-linear-gradient(135deg," + (T.heroSep || "rgba(255,255,255,0.28)") + " 0 4px, transparent 4px 8px)" }} />
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-                <span style={{ fontSize: 12.5, color: T.heroInk, fontVariantNumeric: "tabular-nums" }}>{dollars(plan.monthly) + "/mo covered"}</span>
-                <span style={{ fontSize: 12.5, color: T.heroMut, fontVariantNumeric: "tabular-nums" }}>{dollars(plan.shortfall) + "/mo still short"}</span>
+                <span style={{ fontSize: 12.5, color: T.heroInk, fontVariantNumeric: "tabular-nums" }}>{tr("rwMoCovered").replace("{amt}", dollars(plan.monthly))}</span>
+                <span style={{ fontSize: 12.5, color: T.heroMut, fontVariantNumeric: "tabular-nums" }}>{tr("rwMoStillShort").replace("{amt}", dollars(plan.shortfall))}</span>
               </div>
             </div>
           )}
@@ -12962,8 +13159,8 @@ function GoalAtRiskDetail(props) {
           <div style={{ background: "rgba(220,50,50,0.07)", borderRadius: 14, padding: "14px 16px" }}>
             <div style={{ fontSize: 13.5, color: T.ink, marginBottom: 10, lineHeight: 1.45 }}>
               {goalActionConfirm === "month"
-                ? "Push the deadline from " + goal.deadline + " to " + newDeadlineForOneMoreMonth() + "? Your saved target stays the same."
-                : "Change the target from " + dollars(goal.target) + " to " + dollars(aimTargetValue()) + ", keeping the " + goal.deadline + " deadline?"}
+                ? tr("rwPushDeadlineConfirm").replace("{old}", goal.deadline).replace("{new}", newDeadlineForOneMoreMonth())
+                : tr("rwChangeTargetConfirm").replace("{old}", dollars(goal.target)).replace("{new}", dollars(aimTargetValue())).replace("{date}", goal.deadline)}
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               <button onClick={goalActionConfirm === "month" ? applyGiveOneMoreMonth : applyAimForReal}
@@ -12981,19 +13178,19 @@ function GoalAtRiskDetail(props) {
         <div>
           <div style={{ margin: "16px 0 0", background: T.card, borderRadius: 18, boxShadow: RW_CARD_SHADOW, padding: 16, display: "flex", alignItems: "center" }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>Needs</div>
+              <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>{tr("rwNeeds")}</div>
               <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums", marginTop: 4 }}>{dollars(gp.needPerMonth)}<span style={{ fontSize: 12, fontWeight: 400, color: T.ink3 }}>/mo</span></div>
             </div>
             <div style={{ width: 1, background: T.sep, margin: "0 16px", alignSelf: "stretch" }} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>Currently saving</div>
+              <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>{tr("rwCurrentlySaving")}</div>
               <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums", marginTop: 4, color: T.ink3 }}>{dollars(gp.actualPerMonth)}<span style={{ fontSize: 12, fontWeight: 400 }}>/mo</span></div>
             </div>
           </div>
 
           <div style={{ paddingTop: 24 }}>
-            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: DISP, letterSpacing: "-0.01em", color: T.ink }}>{"Dismissing " + plan.picked.length + " thing" + (plan.picked.length === 1 ? "" : "s") + " covers it - " + dollars(plan.monthly) + "/mo freed"}</div>
-            {plan.shortfall === 0 && plan.monthly > gp.gapPerMonth && <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 8 }}>{"That is " + dollars(round2(plan.monthly - gp.gapPerMonth)) + "/mo more than the gap."}</div>}
+            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: DISP, letterSpacing: "-0.01em", color: T.ink }}>{(plan.picked.length === 1 ? tr("rwDismissingOneCovers") : tr("rwDismissingNCovers").replace("{n}", plan.picked.length)).replace("{amt}", dollars(plan.monthly))}</div>
+            {plan.shortfall === 0 && plan.monthly > gp.gapPerMonth && <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 8 }}>{tr("rwMoreThanGap").replace("{amt}", dollars(round2(plan.monthly - gp.gapPerMonth)))}</div>}
 
             <div style={{ marginTop: 16, background: T.card, borderRadius: 18, boxShadow: RW_CARD_SHADOW }}>
               {plan.picked.map(function(p, i) {
@@ -13011,41 +13208,41 @@ function GoalAtRiskDetail(props) {
           </div>
 
           <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 8 }}>
-            <BigBtn label="Dismiss both" onPress={function() { cancelAndBack(plan.picked.map(function(p) { return p.id; })); }} />
-            <button onClick={function() { setSheetOpen(true); }} style={{ width: "100%", height: 44, border: "none", borderRadius: 12, background: "none", color: T.orange, fontFamily: UI, fontSize: 14.5, fontWeight: 600, cursor: "pointer" }}>Pick different ones</button>
+            <BigBtn label={tr("rwDismissBoth")} onPress={function() { cancelAndBack(plan.picked.map(function(p) { return p.id; })); }} />
+            <button onClick={function() { setSheetOpen(true); }} style={{ width: "100%", height: 44, border: "none", borderRadius: 12, background: "none", color: T.orange, fontFamily: UI, fontSize: 14.5, fontWeight: 600, cursor: "pointer" }}>{tr("rwPickDifferent")}</button>
           </div>
         </div>
       ) : (
         <div>
           <div style={{ paddingTop: 24 }}>
-            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: DISP, letterSpacing: "-0.01em", color: T.ink, lineHeight: 1.3 }}>I can't close this one by dismissing leaks alone.</div>
-            <div style={{ fontSize: 15, color: T.ink2, marginTop: 8, lineHeight: 1.45 }}>Everything left to dismiss comes to <b style={{ color: T.ink, fontVariantNumeric: "tabular-nums" }}>{dollars(plan.monthly) + "/mo"}</b>. That gets you most of the way - here are the two honest ways to finish it.</div>
+            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: DISP, letterSpacing: "-0.01em", color: T.ink, lineHeight: 1.3 }}>{tr("rwCantClose")}</div>
+            <div style={{ fontSize: 15, color: T.ink2, marginTop: 8, lineHeight: 1.45 }}>{tr("rwEverythingLeft").replace("{amt}", dollars(plan.monthly) + "/mo")}</div>
           </div>
 
           <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
             <button onClick={function() { setGoalActionConfirm("month"); }} style={{ textAlign: "start", width: "100%", background: T.card, borderRadius: 18, border: "1px solid " + T.orange, boxShadow: RW_CARD_SHADOW, padding: 16, display: "flex", gap: 13, alignItems: "center", cursor: "pointer", fontFamily: UI }}>
               <IconBadge icon="calendar" bg={T.orange} size={40} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>Give it one more month</div>
-                <div style={{ fontSize: 10.5, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 3 }}>Rewrites your goal's deadline</div>
-                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>{"Due " + newDeadlineForOneMoreMonth() + " instead"}</div>
+                <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{tr("rwGiveOneMoreMonth")}</div>
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 3 }}>{tr("rwRewritesDeadline")}</div>
+                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>{tr("rwDueInstead").replace("{date}", newDeadlineForOneMoreMonth())}</div>
               </div>
               <SVGIcon id="edit" size={16} color={T.orange} />
             </button>
             <button onClick={function() { setGoalActionConfirm("aim"); }} style={{ textAlign: "start", width: "100%", background: T.card, borderRadius: 18, border: "1px solid " + T.orange, boxShadow: RW_CARD_SHADOW, padding: 16, display: "flex", gap: 13, alignItems: "center", cursor: "pointer", fontFamily: UI }}>
               <IconBadge icon="goals" bg={T.orange} size={40} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>Aim for what you'll actually have</div>
-                <div style={{ fontSize: 10.5, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 3 }}>Rewrites your goal's target</div>
-                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>{dollars(aimTargetValue()) + " by " + goal.deadline + ", keeping the date"}</div>
+                <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{tr("rwAimForReal")}</div>
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 3 }}>{tr("rwRewritesTarget")}</div>
+                <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>{tr("rwByDateKeeping").replace("{amt}", dollars(aimTargetValue())).replace("{date}", goal.deadline)}</div>
               </div>
               <SVGIcon id="edit" size={16} color={T.orange} />
             </button>
           </div>
 
           <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 8 }}>
-            <BigBtn label={plan.picked.length ? ("Dismiss " + (plan.picked[0].merchant || plan.picked[0].title) + " anyway") : "Dismiss anyway"} onPress={function() { if (plan.picked.length) cancelAndBack(plan.picked.map(function(p) { return p.id; })); }} disabled={!plan.picked.length} />
-            <button onClick={function() { props.onNavigate("goals"); }} style={{ width: "100%", height: 44, border: "none", borderRadius: 12, background: "none", color: T.orange, fontFamily: UI, fontSize: 14.5, fontWeight: 600, cursor: "pointer" }}>Leave it for now</button>
+            <BigBtn label={plan.picked.length ? tr("rwDismissMerchantAnyway").replace("{merchant}", plan.picked[0].merchant || plan.picked[0].title) : tr("rwDismissAnywayPlain")} onPress={function() { if (plan.picked.length) cancelAndBack(plan.picked.map(function(p) { return p.id; })); }} disabled={!plan.picked.length} />
+            <button onClick={function() { props.onNavigate("goals"); }} style={{ width: "100%", height: 44, border: "none", borderRadius: 12, background: "none", color: T.orange, fontFamily: UI, fontSize: 14.5, fontWeight: 600, cursor: "pointer" }}>{tr("rwLeaveForNow")}</button>
           </div>
         </div>
       )}
@@ -13071,8 +13268,8 @@ function PickCancelSheet(props) {
   var spare = round2(monthly - gap);
 
   return (
-    <Overlay open={props.open} onClose={props.onClose} title="Pick what to dismiss">
-      <div style={{ fontSize: 12.5, color: T.ink2, marginTop: -8, marginBottom: 16, fontVariantNumeric: "tabular-nums" }}>{"You need " + dollars(gap) + "/mo to get this goal back on pace."}</div>
+    <Overlay open={props.open} onClose={props.onClose} title={tr("rwPickWhatToDismiss")}>
+      <div style={{ fontSize: 12.5, color: T.ink2, marginTop: -8, marginBottom: 16, fontVariantNumeric: "tabular-nums" }}>{tr("rwNeedAmtToGetBack").replace("{amt}", dollars(gap))}</div>
       <div style={{ background: T.fill0, borderRadius: 18 }}>
         {pool.map(function(f, i) {
           var on = !!sel[f.id];
@@ -13090,10 +13287,10 @@ function PickCancelSheet(props) {
       </div>
       <div style={{ marginTop: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
-          <span style={{ fontSize: 12.5, color: T.ink2 }}>{pickedIds.length === 0 ? "Nothing selected yet" : (pickedIds.length + " selected" + (covers ? (" - covers it, " + dollars(spare) + "/mo spare") : ""))}</span>
+          <span style={{ fontSize: 12.5, color: T.ink2 }}>{pickedIds.length === 0 ? tr("rwNothingSelected") : (covers ? tr("rwNSelectedCovers").replace("{n}", pickedIds.length).replace("{amt}", dollars(spare)) : tr("rwNSelected").replace("{n}", pickedIds.length))}</span>
           <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: covers ? T.green : T.ink }}>{dollars(monthly)}<span style={{ fontSize: 12, fontWeight: 400, color: T.ink3 }}>/mo</span></span>
         </div>
-        <BigBtn label={"Dismiss these " + pickedIds.length} disabled={pickedIds.length === 0} onPress={function() { props.onConfirm(pickedIds); }} />
+        <BigBtn label={tr("rwDismissTheseN").replace("{n}", pickedIds.length)} disabled={pickedIds.length === 0} onPress={function() { props.onConfirm(pickedIds); }} />
       </div>
     </Overlay>
   );
@@ -13106,7 +13303,7 @@ function PickCancelSheet(props) {
 function ConfidenceMeter(props) {
   var level = props.level;
   var filled = level === "high" ? 3 : level === "med" ? 2 : 1;
-  var word = level === "high" ? "High" : level === "med" ? "Likely" : "Low";
+  var word = level === "high" ? tr("rwConfHigh") : level === "med" ? tr("rwConfLikely") : tr("rwConfLow");
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
       <span style={{ display: "flex", gap: 2 }}>
@@ -13137,16 +13334,18 @@ function NextThirtyDays(props) {
     bands[key].push(f);
   });
 
+  var bandLabel = { "This week": tr("rwThisWeek"), "Next week": tr("rwNextWeek"), "Later": tr("rwLater") };
+
   return (
     <div>
-      <SubViewBack onBack={function() { props.onNavigate("watchBrief"); }} label="Daily brief" />
-      <div style={{ fontSize: 24, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em" }}>Next 30 days</div>
-      <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 8 }}>From your own history, not a guess at the calendar.</div>
+      <SubViewBack onBack={function() { props.onNavigate("watchBrief"); }} label={tr("watchBrief")} />
+      <div style={{ fontSize: 24, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em" }}>{tr("watchForecast")}</div>
+      <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 8 }}>{tr("rwFromHistory")}</div>
 
       <div style={{ margin: "20px 0", background: T.card, borderRadius: 18, boxShadow: RW_CARD_SHADOW, padding: 16, display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
         <div>
-          <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>Total</div>
-          <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 4 }}>{"across " + forecast.length + " charge" + (forecast.length === 1 ? "" : "s")}</div>
+          <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>{tr("rwTotalLabel")}</div>
+          <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 4 }}>{forecast.length === 1 ? tr("rwAcrossOneCharge") : tr("rwAcrossNCharges").replace("{n}", forecast.length)}</div>
         </div>
         <div style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: T.ink }}>{dollars(total)}</div>
       </div>
@@ -13156,7 +13355,7 @@ function NextThirtyDays(props) {
         if (!rows.length) return null;
         return (
           <div key={band} style={{ marginBottom: 20 }}>
-            <WatchSectionHeader label={band} count={rows.length} />
+            <WatchSectionHeader label={bandLabel[band]} count={rows.length} />
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {rows.map(function(f, i) {
                 return (
@@ -13180,7 +13379,7 @@ function NextThirtyDays(props) {
         );
       })}
 
-      {forecast.length === 0 && <div style={{ fontSize: 15, color: T.ink3, textAlign: "center", padding: "40px 0" }}>Nothing on the horizon yet.</div>}
+      {forecast.length === 0 && <div style={{ fontSize: 15, color: T.ink3, textAlign: "center", padding: "40px 0" }}>{tr("rwNothingHorizon")}</div>}
     </div>
   );
 }
@@ -13201,8 +13400,8 @@ function WatchOuts(props) {
 
   return (
     <div>
-      <SubViewBack onBack={function() { props.onNavigate("watchBrief"); }} label="Daily brief" />
-      <div style={{ fontSize: 24, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em" }}>Watch-outs</div>
+      <SubViewBack onBack={function() { props.onNavigate("watchBrief"); }} label={tr("watchBrief")} />
+      <div style={{ fontSize: 24, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em" }}>{tr("watchOuts")}</div>
 
       <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 16 }}>
         {paceRows.map(function(r) {
@@ -13210,7 +13409,7 @@ function WatchOuts(props) {
         })}
         {cliffRows.map(function(r) { return <CliffCard key={r.id} cliff={r.meta} />; })}
         {paceRows.length === 0 && cliffRows.length === 0 && (
-          <div style={{ fontSize: 15, color: T.ink3, textAlign: "center", padding: "40px 0" }}>Nothing to watch right now.</div>
+          <div style={{ fontSize: 15, color: T.ink3, textAlign: "center", padding: "40px 0" }}>{tr("rwNothingToWatchNow")}</div>
         )}
       </div>
     </div>
