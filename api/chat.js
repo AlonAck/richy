@@ -127,8 +127,15 @@ module.exports = async function handler(req, res) {
   // money. Reject rather than truncate: silently trimming a prompt produces a
   // confidently wrong answer built on half the user's numbers, which is worse
   // than a visible error.
+  // 20,000 was set before the chat prompt grew: the static half of it alone is
+  // ~16,000 characters, so a real Hebrew account with a handful of budgets,
+  // folders, pots and widgets lands around 19,000 and a busy one goes over -
+  // which is what shipped a flagship that answered every question with 413.
+  // 45,000 keeps a genuine billing ceiling (it is still a fraction of
+  // MAX_TOTAL_CHARS) while leaving the user's own data real room. The client
+  // trims its data block before posting; this is the backstop, not the budget.
   var MAX_MESSAGES = 40;
-  var MAX_SYSTEM_CHARS = 20000;
+  var MAX_SYSTEM_CHARS = 45000;
   var MAX_TOTAL_CHARS = 100000;
 
   if (!Array.isArray(messages) || messages.length === 0) {

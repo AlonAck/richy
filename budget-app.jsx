@@ -94,7 +94,7 @@ var THEMES = {
     btn: "linear-gradient(135deg,#9D78E8 0%,#B493F2 55%,#CBB6FA 100%)",
     heroShadow: "0 12px 40px rgba(137,112,198,0.32), 0 2px 8px rgba(137,112,198,0.16)",
     heroGlow1: "rgba(255,255,255,0.34)", heroGlow2: "rgba(255,255,255,0.16)",
-    heroText: "#2A1F4D", heroMut: "rgba(42,31,77,0.6)", heroFaint: "rgba(42,31,77,0.45)",
+    heroText: "#2A1F4D", heroMut: "rgba(42,31,77,0.82)", heroFaint: "rgba(42,31,77,0.7)",
     heroSep: "rgba(42,31,77,0.12)", heroTrack: "rgba(42,31,77,0.09)",
     heroPos: "#188A4A", heroNeg: "#C73A36",
     heroPillBg: "#FFFFFF", heroPillText: "#1A1410", heroRangeBg: "rgba(42,31,77,0.08)",
@@ -115,7 +115,7 @@ var THEMES = {
       btn: "linear-gradient(135deg,#8A62E2 0%,#7B55D2 55%,#6B48C0 100%)",
       heroShadow: "0 10px 30px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.09)",
       heroGlow1: "rgba(183,155,255,0.26)", heroGlow2: "rgba(124,92,220,0.18)",
-      heroText: "#EDE7FF", heroMut: "rgba(237,231,255,0.62)", heroFaint: "rgba(237,231,255,0.44)",
+      heroText: "#EDE7FF", heroMut: "rgba(237,231,255,0.82)", heroFaint: "rgba(237,231,255,0.7)",
       heroSep: "rgba(255,255,255,0.12)", heroTrack: "rgba(255,255,255,0.10)",
       heroPos: "#3DDC84", heroNeg: "#FF7A6B",
       heroPillBg: "rgba(255,255,255,0.16)", heroPillText: "#F3EEFF", heroRangeBg: "rgba(255,255,255,0.08)",
@@ -135,7 +135,7 @@ var THEMES = {
     btn: "linear-gradient(135deg,#E07848,#C8673A)",
     heroShadow: "0 1px 1px rgba(0,0,0,0.06), 0 14px 34px rgba(40,28,16,0.34)",
     heroGlow1: "rgba(224,120,72,0.30)", heroGlow2: "rgba(200,152,58,0.16)",
-    heroText: "#FFFFFF", heroMut: "rgba(255,255,255,0.5)", heroFaint: "rgba(255,255,255,0.4)",
+    heroText: "#FFFFFF", heroMut: "rgba(255,255,255,0.82)", heroFaint: "rgba(255,255,255,0.7)",
     heroSep: "rgba(255,255,255,0.1)", heroTrack: "rgba(255,255,255,0.08)",
     heroPos: "#4ADE80", heroNeg: "#FF7A6B",
     heroPillBg: "rgba(255,255,255,0.92)", heroPillText: "#141210", heroRangeBg: "rgba(255,255,255,0.08)",
@@ -156,7 +156,7 @@ var THEMES = {
       btn: "linear-gradient(135deg,#D2703F,#B25A30)",
       heroShadow: "0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)",
       heroGlow1: "rgba(232,138,92,0.26)", heroGlow2: "rgba(200,152,58,0.14)",
-      heroText: "#F7F1EA", heroMut: "rgba(247,241,234,0.58)", heroFaint: "rgba(247,241,234,0.42)",
+      heroText: "#F7F1EA", heroMut: "rgba(247,241,234,0.82)", heroFaint: "rgba(247,241,234,0.7)",
       trendLineA: "#E88A5C", trendLineB: "#F0AE80", trendArea: "#E88A5C",
       trendDot: "#F3B488", trendDotStroke: "#2A231A", trendGlow: "#E88A5C",
       gridStrong: "rgba(255,255,255,0.14)", gridMid: "rgba(255,255,255,0.09)", gridFaint: "rgba(255,255,255,0.06)",
@@ -178,7 +178,7 @@ var THEMES = {
     btn: "linear-gradient(135deg,#5C7AE3 0%,#4C5E9C 55%,#3C4C82 100%)",
     heroShadow: "0 12px 40px rgba(60,76,130,0.30), 0 2px 8px rgba(60,76,130,0.16)",
     heroGlow1: "rgba(255,255,255,0.36)", heroGlow2: "rgba(255,255,255,0.16)",
-    heroText: "#242C52", heroMut: "rgba(36,44,82,0.62)", heroFaint: "rgba(36,44,82,0.46)",
+    heroText: "#242C52", heroMut: "rgba(36,44,82,0.82)", heroFaint: "rgba(36,44,82,0.7)",
     heroSep: "rgba(36,44,82,0.13)", heroTrack: "rgba(36,44,82,0.10)",
     heroPos: "#188A4A", heroNeg: "#C73A36",
     heroPillBg: "#FFFFFF", heroPillText: "#1B2140", heroRangeBg: "rgba(36,44,82,0.08)",
@@ -201,7 +201,7 @@ var THEMES = {
       btn: "linear-gradient(135deg,#5F7DE6 0%,#4E67CC 55%,#4055A8 100%)",
       heroShadow: "0 10px 30px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.09)",
       heroGlow1: "rgba(126,155,242,0.26)", heroGlow2: "rgba(92,122,227,0.16)",
-      heroText: "#E7EDFC", heroMut: "rgba(231,237,252,0.62)", heroFaint: "rgba(231,237,252,0.44)",
+      heroText: "#E7EDFC", heroMut: "rgba(231,237,252,0.82)", heroFaint: "rgba(231,237,252,0.7)",
       heroSep: "rgba(255,255,255,0.12)", heroTrack: "rgba(255,255,255,0.10)",
       heroPos: "#3DDC84", heroNeg: "#FF7A6B",
       heroPillBg: "rgba(255,255,255,0.16)", heroPillText: "#EEF3FF", heroRangeBg: "rgba(255,255,255,0.08)",
@@ -471,6 +471,44 @@ var COLOR_BANK = [
 
 // Folders are more than headers - see the "Folder intelligence" block below for
 // the full shape (colour, icon, 50/30/20 role, auto-fill rule).
+// ── Launch flags ─────────────────────────────────────────────────────────────
+// One place to decide what is in the 5 October build. Everything here is code
+// that works; these are scope and compliance calls, not bug fixes, so they are
+// switches rather than deletions - flip one back on and the feature returns
+// intact.
+//
+//   investingHub / businessHub  Two whole hubs nothing in the app introduces
+//                               (four unlabelled taps deep in an account
+//                               picker), and Investing is also the largest
+//                               regulatory surface. Off for v1; the code is
+//                               untouched and ships dark.
+//   investOrderTicket           The plan engine's per-user, per-ticker order
+//                               ticket (VTI 32% / $160 / share counts). A
+//                               suitability questionnaire ending in an amount
+//                               to put in a named security is the shape of
+//                               personalised advice. Off pending counsel.
+//   stockScout                  "Find me the next big pick" with a confidence
+//                               rating, one tap from a Buy sheet - the exact
+//                               thing the server guardrail forbids the model
+//                               from doing. Off pending counsel.
+//   leumiDemo                   Names a real bank inside a pre-launch build.
+//                               Labelled DEMO and purged on disconnect, so
+//                               this is a question for counsel rather than a
+//                               defect - the switch is here so it can be
+//                               answered with one line.
+//   testimonials                Three quotes attributed to "early user" and
+//                               "family tester" on a product that has not
+//                               launched. Off until they can be attributed to
+//                               real, named people who agreed to it.
+var LAUNCH = {
+  investingHub: false,
+  businessHub: false,
+  investOrderTicket: false,
+  stockScout: false,
+  leumiDemo: true,
+  testimonials: false
+};
+
 var DEFAULT_FOLDERS = [
   { id: "f1", name: "Essentials",      color: "#2799C8", icon: "home" },
   { id: "f2", name: "Lifestyle",       color: "#AF52DE", icon: "star" },
@@ -561,15 +599,51 @@ const RICHARD_DISP_WEIGHT = 700;
 // RICHARD_DISP silently renders bold anyway. Body copy (anything that isn't a
 // headline/verdict/label) uses this stack instead, which skips straight to
 // fonts every OS ships at true regular weight.
-const RICHARD_BODY = 'Georgia, "Times New Roman", serif';
+// Georgia has no Hebrew and no Arabic. Every Hebrew reply Richard wrote fell
+// through this whole stack to an unstyled system font at a size chosen for
+// Latin - which is a large part of why his answers read as headlines rather
+// than as conversation for a Hebrew user. These are the serif faces the
+// platforms actually ship for those scripts, named before the generic fallback:
+// Frank Ruhl Libre and David are the standard Hebrew book serifs (David Libre
+// on Android, Times New Roman carries Hebrew on Windows), and Geeza Pro / Noto
+// Naskh cover Arabic. Latin readers still get Georgia first, unchanged.
+const RICHARD_BODY = 'Georgia, "Frank Ruhl Libre", "David Libre", "Times New Roman", "Geeza Pro", "Noto Naskh Arabic", "Noto Serif Hebrew", serif';
 
 var _currency = { sym: "$" };
 // Seeds from the device's last-picked language (mirrored by applyLangDir())
 // so pre-login screens - AuthScreen, the welcome/intro carousel - render in
 // the user's language on a fresh load, instead of always starting English
 // and only catching up once a signed-in user's saved data loads.
+// Which of the four shipped languages this device is asking for. The app used
+// to fall back to "en" and never read navigator.language at all, so a phone set
+// to Hebrew opened Richy in English and stayed there through eight screens
+// before it was even offered a language chip.
+var SUPPORTED_LANGS = { en: 1, he: 1, ar: 1, ru: 1 };
+function deviceLang() {
+  try {
+    var list = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || navigator.userLanguage];
+    for (var i = 0; i < list.length; i++) {
+      var code = String(list[i] || "").toLowerCase().split("-")[0];
+      // "iw" is the legacy ISO code for Hebrew and is still what some Android
+      // builds report.
+      if (code === "iw") code = "he";
+      if (SUPPORTED_LANGS[code]) return code;
+    }
+  } catch (e) {}
+  return "en";
+}
+// The currency that goes with a language when the user has not said otherwise.
+// Getting this wrong is expensive: the sign-up form asks for a starting balance
+// BEFORE currency is chosen, so an Israeli typing 12000 had $12,000 written
+// into their ledger as a real transaction.
+var LANG_CURRENCY = { he: "₪", ar: "₪", ru: "₽", en: "$" };
+function deviceCurrency(lang) { return LANG_CURRENCY[lang || deviceLang()] || "$"; }
 var _lang = { code: (function() {
-  try { return localStorage.getItem("cb_lang") || "en"; } catch (e) { return "en"; }
+  try {
+    var saved = localStorage.getItem("cb_lang");
+    if (saved && SUPPORTED_LANGS[saved]) return saved;
+  } catch (e) {}
+  return deviceLang();
 })() };
 // Full currency list. Symbols MUST be unique because the app keys the active
 // currency by its symbol (SYM_TO_CODE / _currency.sym), so dollar- and
@@ -742,9 +816,9 @@ var ONBOARD_STRINGS = {
     tsEarlyLabel:"What early users say", tsQuote1:"It's the first budget I didn't abandon in week two.", tsQuote1Who:"early user",
     tsQuote2:"Richard caught a subscription I'd been paying for a year.", tsQuote2Who:"early user",
     tsQuote3:"Feels like someone's actually watching over my money, not a spreadsheet.", tsQuote3Who:"family tester",
-    whTitle1:"Your money has a", whTitle2:"manager now.",
+    whTitle1:"Your money has a", whTitle2:"coach now.",
     whSub:"A beautiful budget, paired with Richard — a money coach who actually knows your numbers.",
-    whBadge1Sub:"Your personal CFO", whBadge2Stat:"50 currencies", whBadge2Sub:"4 languages",
+    whBadge1Sub:"Your personal money coach", whBadge2Stat:"50 currencies", whBadge2Sub:"4 languages",
     whBarTitle:"A typical month of spending", whBarUntrackedLabel:"Untracked", whBarUntrackedValue:"~15% vanishes",
     whBarRichyLabel:"With Richy", whBarRichyValue:"seen & planned",
     whBarFootnote:"Illustrative — commonly cited estimates of untracked personal spending.",
@@ -757,7 +831,7 @@ var ONBOARD_STRINGS = {
     icChatQ:"Can I afford a weekend trip?", icChatA:"Yes — if food stays under 180 this week. Want me to watch it for you?",
     icRichardChecking:"Richard is checking your numbers",
     icChipLeak:"Found a leak", icChipLeakSub:"unused subscription", icChipPrivate:"Private", icChipPrivateSub:"your data stays yours",
-    icSlide2Head:"Richard works for you.", icSlide2Sub:"A personal CFO who reviews your month, hunts down leaks, and answers straight questions with straight numbers.",
+    icSlide2Head:"Richard works for you.", icSlide2Sub:"A personal money coach who reviews your month, hunts down leaks, and answers straight questions with straight numbers.",
     icYourGoal:"Your goal", icGoalProgress:"3,500 of 10,000", icGoalPace:"On pace for October. Richard will nudge you if you drift.",
     icChipTrip:"Trip planned", icChipTripSub:"Tokyo · 5,000", icChipBudget:"Under budget", icChipBudgetSub:"3 weeks straight",
     icSlide3Head:"Goals that actually land.", icSlide3Sub:"Budgets shaped to your real numbers — plus trips, savings pots, and a plan that updates as life happens.",
@@ -847,7 +921,7 @@ var ONBOARD_STRINGS = {
     obQ7Head:"How much slips away each month?", obQ7Sub:"Money spent that you can't quite account for.",
     obQ8Head:"Where do you stand today?", obQ8Sub:"Honest numbers make a better plan.",
     obQ9Head:"One goal. Make it real.", obQ9Sub:"Something specific you're going for.",
-    obGreeting:"Hi {name}. I'm **Richard** — your money's new manager. Nine quick questions, and then I'll show you something most people never see about their own money.",
+    obGreeting:"Hi {name}. I'm **Richard** — your money's new coach. Nine quick questions, and then I'll show you something most people never see about their own money.",
     obYourCoffee:"Your coffee: {price}", obDateRangeLabel:"Date Range",
     obDateRangeExplain:"How Richy measures \"this week/month/year.\" Defaults to the current calendar month - change it anytime in Profile.",
     obThisMonth:"This Month", obPastMonth:"Past Month", obCustomRange:"Custom Range", obFrom:"From", obTo:"To",
@@ -891,12 +965,12 @@ var ONBOARD_STRINGS = {
     fmCancelFallback:"Hello, I'd like to cancel my {merchant} subscription effective immediately. Please confirm in writing that the cancellation is processed and that no further charges will be made. Thank you, [Your Name]",
   },
   he: {
-    tsEarlyLabel:"מה אומרים משתמשים ראשונים", tsQuote1:"זאת התקציב הראשון שלא נטשתי אחרי שבועיים.", tsQuote1Who:"משתמש ותיק",
-    tsQuote2:"ריצ'רד תפס לי מנוי ששילמתי עליו במשך שנה.", tsQuote2Who:"משתמש ותיק",
+    tsEarlyLabel:"מה אומרים משתמשים ראשונים", tsQuote1:"זאת התקציב הראשון שלא נטשתי אחרי שבועיים.", tsQuote1Who:"משתמש ראשון",
+    tsQuote2:"ריצ'רד תפס לי מנוי ששילמתי עליו במשך שנה.", tsQuote2Who:"משתמש ראשון",
     tsQuote3:"מרגיש כאילו מישהו באמת שומר על הכסף שלי, לא גיליון אקסל.", tsQuote3Who:"בודק משפחתי",
     whTitle1:"לכסף שלך יש", whTitle2:"סדר עכשיו.",
     whSub:"תקציב יפהפה, יחד עם ריצ'רד - מאמן כלכלי שבאמת מכיר את המספרים שלך.",
-    whBadge1Sub:"המנכ\"ל הפיננסי האישי שלך", whBadge2Stat:"50 מטבעות", whBadge2Sub:"4 שפות",
+    whBadge1Sub:"המאמן הפיננסי האישי שלך", whBadge2Stat:"50 מטבעות", whBadge2Sub:"4 שפות",
     whBarTitle:"חודש טיפוסי של הוצאות", whBarUntrackedLabel:"לא במעקב", whBarUntrackedValue:"כ-15% נעלמים",
     whBarRichyLabel:"עם Richy", whBarRichyValue:"רואים ומתכננים",
     whBarFootnote:"להמחשה בלבד - אומדנים נפוצים של הוצאות אישיות שאינן במעקב.",
@@ -909,7 +983,7 @@ var ONBOARD_STRINGS = {
     icChatQ:"אני יכול להרשות לעצמי טיול לסוף שבוע?", icChatA:"כן - אם ההוצאות על אוכל יישארו מתחת ל-180 השבוע. רוצה שאעקוב אחרי זה בשבילך?",
     icRichardChecking:"ריצ'רד בודק את המספרים שלך",
     icChipLeak:"נמצאה דליפה", icChipLeakSub:"מנוי לא בשימוש", icChipPrivate:"פרטי", icChipPrivateSub:"הנתונים שלך נשארים שלך",
-    icSlide2Head:"ריצ'רד עובד בשבילך.", icSlide2Sub:"מנכ\"ל פיננסי אישי שסוקר את החודש שלך, מאתר דליפות, ועונה על שאלות ישירות עם מספרים ישירים.",
+    icSlide2Head:"ריצ'רד עובד בשבילך.", icSlide2Sub:"מאמן פיננסי אישי שסוקר את החודש שלך, מאתר דליפות, ועונה על שאלות ישירות עם מספרים ישירים.",
     icYourGoal:"היעד שלך", icGoalProgress:"3,500 מתוך 10,000", icGoalPace:"בקצב טוב ליעד באוקטובר. ריצ'רד ידחוף אותך אם תסטה.",
     icChipTrip:"טיול מתוכנן", icChipTripSub:"טוקיו · 5,000", icChipBudget:"מתחת לתקציב", icChipBudgetSub:"3 שבועות ברצף",
     icSlide3Head:"יעדים שבאמת מתגשמים.", icSlide3Sub:"תקציבים שמותאמים למספרים האמיתיים שלך - בתוספת טיולים, קופות חיסכון, ותוכנית שמתעדכנת עם החיים.",
@@ -923,42 +997,42 @@ var ONBOARD_STRINGS = {
     auResetPassword:"איפוס סיסמה", auResetPasswordSub:"הזן את האימייל שלך ונשלח לך קישור לאיפוס",
     auErrEmailPw:"הזן אימייל וסיסמה.", auErrValidEmail:"הזן כתובת אימייל תקינה.",
     auErrFullName:"הזן את שמך המלא.", auErrPwLen:"הסיסמה חייבת להכיל לפחות 6 תווים.",
-    auErrPwMatch:"הסיסמאות לא תואמות.", auErrDob:"הזן את תאריך הלידה שלך.",
+    auErrPwMatch:"הסיסמאות לא תואמות.", auErrDob:"הזינו את תאריך הלידה.",
     auErrAgeMin:"Richy מיועד לגילאי 16 ומעלה - עדיין לא נוכל ליצור את החשבון שלך.",
-    auErrAgeMax:"תאריך הלידה לא נראה תקין - אנא בדוק אותו.",
+    auErrAgeMax:"תאריך הלידה לא נראה תקין - אנא בדקו אותו.",
     auErrConsent:"אנא אשר את תנאי השימוש ומדיניות הפרטיות כדי להמשיך.",
     auErrEmailTaken:"כבר יש לך חשבון עם האימייל הזה. התחבר למטה.",
-    auErrEmailAddr:"הזן את כתובת האימייל שלך.", auNoticeResetSent:"בדוק את האימייל שלך לקישור איפוס.",
+    auErrEmailAddr:"הזינו את כתובת האימייל שלכם.", auNoticeResetSent:"בדקו את האימייל לקישור איפוס.",
     auOrContinueWith:"או המשך עם", auContinueGoogle:"המשך עם Google",
     auEmailPlaceholder:"אימייל", auPasswordPlaceholder:"סיסמה", auForgotPassword:"שכחת סיסמה?",
     auYourEmailPlaceholder:"כתובת האימייל שלך", auNextSetPassword:"בשלב הבא תגדיר סיסמה ועוד כמה פרטים.",
     auFullNamePlaceholder:"שם מלא", auSetPasswordPlaceholder:"הגדר סיסמה", auRepeatPasswordPlaceholder:"חזור על הסיסמה",
     auDobLabel:"תאריך לידה", auStartBalPlaceholder:"יתרת פתיחה (רשות)",
     auAgreeToPrefix:"אני מסכים ל", auAgreeToAnd:" ול", auTermsLink:"תנאי השימוש", auPrivacyLink:"מדיניות הפרטיות",
-    auOptionalRichardIntro:"רשות - שורה או שתיים כדי שריצ'רד יכיר אותך מההתחלה. תבחר שפה ומטבע מיד אחרי זה.",
+    auOptionalRichardIntro:"רשות - שורה או שתיים כדי שריצ'רד יכיר אתכם מההתחלה. בחירת שפה ומטבע מיד אחרי זה.",
     auNotesForRichard:"הערות לריצ'רד",
-    auNotesPlaceholder:"כל דבר שריצ'רד צריך לדעת עליך - היעדים שלך, הרגלי הכסף, למה אתה חוסך...",
+    auNotesPlaceholder:"כל דבר שריצ'רד צריך לדעת עליכם - היעדים, הרגלי הכסף, למה אתם חוסכים...",
     auShowPassword:"הצג סיסמה", auHidePassword:"הסתר סיסמה",
     auSignInBtn:"התחבר", auSendResetLink:"שלח קישור איפוס", auCreateAccountBtn:"צור חשבון",
-    auByContinuingPre:"בהמשך אתה מסכים ל", auByContinuingPost:", ומאשר שאתה בן 16 ומעלה.",
+    auByContinuingPre:"בהמשך יש הסכמה ל", auByContinuingPost:", ואישור שגילכם 16 ומעלה.",
     auRememberIt:"נזכרת בה? ", auNewHere:"חדש כאן? ", auHaveAccount:"כבר יש לך חשבון? ",
     auBackToSignIn:"חזרה להתחברות", auCreateAccountLink:"צור חשבון", auSignInLink:"התחבר",
     auSyncedSecurely:"מסונכרן בבטחה לחשבון שלך",
 
-    cuHeadline:"אתה באמצע {month}.",
+    cuHeadline:"אנחנו באמצע {month}.",
     cuSpentEarlier:"הוצא מוקדם יותר ב{month}", cuMonthIncome:"הכנסת {month}",
     cuIntro:"זה רשות. סכום כללי מספיק כדי שהתקציבים שלך ירגישו אמיתיים מהיום הראשון - אין צורך לזכור כל קנייה. אפשר לדלג לגמרי, או לערוך הכל מאוחר יותר בפעילות.",
     cuIncomeReceived:"הכנסות שהתקבלו ב{month} הזה", cuQuickTotal:"סכום כולל", cuByCategory:"לפי קטגוריה",
     cuRoughlySpent:"בערך הוצאת עד כה ב{month} הזה",
     cuBallpark:"מספר גס אחד. אפשר לעבור ל\"לפי קטגוריה\" בכל רגע לפירוט.",
-    cuSpentSoFar:"הוצאת עד כה ב{month} הזה", cuAddToMonth:"הוסף לחודש שלי",
-    cuSkipFresh:"דלג - התחל מאפס", cuPreferAuto:"מעדיף אוטומטי? הגדר סנכרון התראות במקום",
-    cmPact:"ההתחייבות", cmReadyTakeBack:"מוכן לקחת שליטה בחזרה?", cmReadyTakeBackName:"מוכן לקחת שליטה בחזרה, {name}?",
+    cuSpentSoFar:"מה יצא עד כה ב{month} הזה", cuAddToMonth:"להוסיף לחודש שלי",
+    cuSkipFresh:"לדלג - להתחיל מאפס", cuPreferAuto:"מעדיפים אוטומטי? אפשר להגדיר סנכרון התראות במקום",
+    cmPact:"ההתחייבות", cmReadyTakeBack:"מוכנים לקחת שליטה בחזרה?", cmReadyTakeBackName:"מוכנים לקחת שליטה בחזרה, {name}?",
     cmItem1:"ארשום מה שאני מוציא - זה לוקח שניות", cmItem2:"אתן לכל {sym} תפקיד בכל חודש",
     cmItem3:"אתן לריצ'רד לסמן מה שהייתי מפספס", cmYesImIn:"כן - אני בפנים", cmLookAround:"אני רק אסתכל קודם",
 
     msLeakKicker:"בואו נהיה כנים", msLeakHeadline:"כל חודש, זה מתגנב לך בין האצבעות בלי שתשים לב.", msLeakSuffix:" לחודש",
-    msLeakSubDerived:"אמרת שאתה לא בטוח - אז השתמשתי במה שטיפוסי: כ-12% מההכנסה לא במעקב.",
+    msLeakSubDerived:"אמרתם שאתם לא בטוחים - אז השתמשתי במה שטיפוסי: כ-12% מההכנסה לא במעקב.",
     msLeakSubPlain:"זה האומדן שלך.",
     msLeakSubSource:"זה האומדן שלך, על סמך מקור דליפה {n} שציינת בעצמך.",
     msLeakSubSources:"זה האומדן שלך, על סמך {n} מקורות דליפה שציינת בעצמך.",
@@ -985,21 +1059,21 @@ var ONBOARD_STRINGS = {
     obContinueNoWait:"המשך בלי לחכות", obContinueNoWaitAria:"המשך בלי לחכות לתוכנית שלך",
     obPlanReady:"התוכנית שלך מוכנה.", obPlanBuiltForYou:"ריצ'רד בנה את זה במיוחד בשבילך.",
     obHowAddTx:"איך תרצה להוסיף עסקאות?", obChangeAnytimeProfile:"אפשר לשנות את זה בכל עת בפרופיל.",
-    obManualEntry:"הזן ידנית", obManualEntrySub:"רשום כל עסקה בעצמך - שליטה מלאה",
-    obImportCsv:"ייבא מקובץ CSV", obImportCsvSub:"העלה דף חשבון בנק או אשראי כדי למלא אותן",
+    obManualEntry:"הזנה ידנית", obManualEntrySub:"לרשום כל עסקה בעצמכם - שליטה מלאה",
+    obImportCsv:"ייבוא מקובץ CSV", obImportCsvSub:"העלאת דף חשבון בנק או אשראי כדי למלא אותן",
     obSetupBudgetsQ:"להגדיר תקציבים אוטומטית?",
     obBasedOnNumbers:"על סמך המספרים שלך, ריצ'רד מציע את המגבלות החודשיות האלה:",
     obYesSetUp:"כן, הגדר אותם", obSetUpMyself:"אני אגדיר אותם בעצמי", obGetStarted:"בואו נתחיל",
     obQ1Head:"התאם את Richy אליך.", obQ1Sub:"שפה ומטבע - הכל מסתגל, עכשיו.",
-    obQ2Head:"היי {name} - איפה אתה בחיים?", obQ2Sub:"כדי שהתוכנית תתאים למציאות שלך, לא לתבנית.",
+    obQ2Head:"היי {name} - באיזה שלב בחיים?", obQ2Sub:"כדי שהתוכנית תתאים למציאות שלכם, לא לתבנית.",
     obQ3Head:"מה התסכול הכספי הכי גדול שלך?", obQ3Sub:"ריצ'רד בונה את כל התוכנית שלך סביב זה.",
-    obQ4Head:"מה נכנס לחשבון שלך כל חודש?", obQ4Sub:"בערך זה בסדר גמור - משכורת, קצבה, הכנסה נוספת, הכל.",
+    obQ4Head:"מה נכנס לחשבון כל חודש?", obQ4Sub:"בערך זה בסדר גמור - משכורת, קצבה, הכנסה נוספת, הכל.",
     obQ5Head:"כמה עולים לך הדברים ההכרחיים?", obQ5Sub:"שכירות, אוכל, חשבונות, תחבורה. מה שחייבים לשלם.",
-    obQ6Head:"איפה הכסף שלך דולף?", obQ6Sub:"בחר את כל מה שמתאים. ריצ'רד לא שופט.",
+    obQ6Head:"איפה הכסף דולף?", obQ6Sub:"בחרו כל מה שמתאים. ריצ'רד לא שופט.",
     obQ7Head:"כמה בערך נעלם כל חודש?", obQ7Sub:"כסף שהוצאת ולא ממש יודע להסביר על מה.",
-    obQ8Head:"איפה אתה עומד היום?", obQ8Sub:"מספרים כנים בונים תוכנית טובה יותר.",
-    obQ9Head:"יעד אחד. תעשה אותו אמיתי.", obQ9Sub:"משהו ספציפי שאתה שואף אליו.",
-    obGreeting:"היי {name}. אני **ריצ'רד** - המנהל החדש של הכסף שלך. תשע שאלות קצרות, ואז אני אראה לך משהו שרוב האנשים אף פעם לא רואים על הכסף שלהם.",
+    obQ8Head:"איפה הדברים עומדים היום?", obQ8Sub:"מספרים כנים בונים תוכנית טובה יותר.",
+    obQ9Head:"יעד אחד. שיהיה אמיתי.", obQ9Sub:"משהו ספציפי שאתם שואפים אליו.",
+    obGreeting:"היי {name}. אני **ריצ'רד** - המאמן החדש של הכסף שלך. תשע שאלות קצרות, ואז אני אראה לך משהו שרוב האנשים אף פעם לא רואים על הכסף שלהם.",
     obYourCoffee:"הקפה שלך: {price}", obDateRangeLabel:"טווח תאריכים",
     obDateRangeExplain:"איך Richy מודד \"השבוע/החודש/השנה הזו\". ברירת המחדל היא החודש הקלנדרי הנוכחי - אפשר לשנות בכל עת בפרופיל.",
     obThisMonth:"החודש הזה", obPastMonth:"החודש האחרון", obCustomRange:"טווח מותאם אישית", obFrom:"מ-", obTo:"עד",
@@ -1021,7 +1095,7 @@ var ONBOARD_STRINGS = {
     obTargetAmountLabel:"סכום יעד", obTimelineLabel:"ציר זמן",
     obTl1:"6 חודשים", obTl2:"שנה", obTl3:"שנתיים", obTl4:"5+ שנים",
     obLetsGo:"בואו נתחיל", obTapOption:"הקש על אפשרות כדי להמשיך",
-    obPickAtLeastOne:"בחר לפחות אחת - או דלג למטה.",
+    obPickAtLeastOne:"בחרו לפחות אחת - או דלגו למטה.",
     obReallyDontKnow:"באמת אין לי מושג", obSkipForNow:"דלג לעכשיו", obDoTheMath:"בצע את החישוב",
 
     fmTitle:"כסף שנמצא", fmRecovered:"הושב {amt}",
@@ -1035,10 +1109,10 @@ var ONBOARD_STRINGS = {
     fmFallbackMultiNoAmt:"עברתי על ההוצאות שלך ומצאתי {n} דברים שכדאי לבדוק.",
     fmFallbackMultiAmt:"עברתי על ההוצאות שלך ומצאתי {n} דברים שכדאי לבדוק - בערך {amt} בשנה אם תפעל לפיהם.",
     fmDraftPriceMatch:"נסח בקשת התאמת מחיר", fmDraftCancellation:"נסח ביטול", fmDraftRefund:"נסח בקשת זיכוי", fmCountRecovered:"ספור כהושב",
-    fmKeepIt:"השאר את זה", fmLooksFine:"נראה תקין", fmGotIt:"הבנתי",
+    fmKeepIt:"להשאיר", fmLooksFine:"נראה תקין", fmGotIt:"הבנתי",
     fmCopied:"הועתק", fmCopyMessage:"העתק הודעה", fmIDidIt:"עשיתי את זה (+{amt})",
     fmReviewedEverything:"סקרת הכל", fmKeepsWatching:"ריצ'רד ממשיך לעקוב כשיש הוצאות חדשות.",
-    fmFooterNote:"אותר מתוך ההוצאות שרשמת - תמיד אשר לפני שאתה מבטל. ריצ'רד מנסח את ההודעה; אתה שולח אותה.",
+    fmFooterNote:"אותר מתוך ההוצאות שנרשמו - תמיד לאשר לפני ביטול. ריצ'רד מנסח את ההודעה; השליחה שלכם.",
     fmHikeFallback:"שלום, אני לקוח/ה כבר תקופה ושמתי לב שהמחיר עלה לאחרונה ל-{new}. אשמח לשמור על התעריף הקודם שלי, {old} - תוכלו להתאים? אם לא, נא להתייחס לזה כהודעה על ביטול. תודה, [שמך]",
     fmCancelFallback:"שלום, אני מעוניין/ת לבטל את המנוי שלי ל-{merchant} באופן מיידי. נא לאשר בכתב שהביטול בוצע ושלא יבוצעו חיובים נוספים. תודה, [שמך]",
   },
@@ -1046,9 +1120,9 @@ var ONBOARD_STRINGS = {
     tsQuote1:"هذه أول ميزانية لم أتخلَّ عنها في الأسبوع الثاني.", tsQuote1Who:"مستخدم مبكر",
     tsQuote2:"ريتشارد اكتشف اشتراكاً كنت أدفع مقابله منذ سنة.", tsQuote2Who:"مستخدم مبكر",
     tsQuote3:"يبدو وكأن أحدهم يعتني فعلاً بأموالي، وليس جدول بيانات.", tsQuote3Who:"مختبر عائلي",
-    whTitle1:"لأموالك الآن", whTitle2:"مدير.",
-    whSub:"ميزانية جميلة، مع ريتشارد - مستشار يعرف أرقامك فعلاً.",
-    whBadge1Sub:"مديرك المالي الشخصي", whBadge2Stat:"50 عملة", whBadge2Sub:"4 لغات",
+    whTitle1:"لأموالك الآن", whTitle2:"مدرب.",
+    whSub:"ميزانية جميلة، مع ريتشارد - مدرب مالي يعرف أرقامك فعلاً.",
+    whBadge1Sub:"مدربك المالي الشخصي", whBadge2Stat:"50 عملة", whBadge2Sub:"4 لغات",
     whBarTitle:"شهر نموذجي من الإنفاق", whBarUntrackedLabel:"غير متابَع", whBarUntrackedValue:"~15% يختفي",
     whBarRichyLabel:"مع Richy", whBarRichyValue:"مرئي ومخطط له",
     whBarFootnote:"للتوضيح فقط - تقديرات شائعة للإنفاق الشخصي غير المتابَع.",
@@ -1061,7 +1135,7 @@ var ONBOARD_STRINGS = {
     icChatQ:"هل يمكنني تحمل رحلة نهاية أسبوع؟", icChatA:"نعم - إذا بقي إنفاق الطعام أقل من 180 هذا الأسبوع. تريدني أن أراقب ذلك من أجلك؟",
     icRichardChecking:"ريتشارد يتحقق من أرقامك",
     icChipLeak:"وُجد تسرب", icChipLeakSub:"اشتراك غير مستخدم", icChipPrivate:"خاص", icChipPrivateSub:"بياناتك تبقى ملكك",
-    icSlide2Head:"ريتشارد يعمل لصالحك.", icSlide2Sub:"مدير مالي شخصي يراجع شهرك، يكتشف التسريبات، ويجيب على الأسئلة المباشرة بأرقام مباشرة.",
+    icSlide2Head:"ريتشارد يعمل لصالحك.", icSlide2Sub:"مدرب مالي شخصي يراجع شهرك، يكتشف التسريبات، ويجيب على الأسئلة المباشرة بأرقام مباشرة.",
     icYourGoal:"هدفك", icGoalProgress:"3,500 من 10,000", icGoalPace:"بوتيرة جيدة لأكتوبر. ريتشارد سينبهك إذا انحرفت.",
     icChipTrip:"رحلة مخططة", icChipTripSub:"طوكيو · 5,000", icChipBudget:"ضمن الميزانية", icChipBudgetSub:"3 أسابيع متتالية",
     icSlide3Head:"أهداف تتحقق فعلاً.", icSlide3Sub:"ميزانيات مصممة حسب أرقامك الحقيقية - بالإضافة إلى الرحلات، صناديق الادخار، وخطة تتغير مع الحياة.",
@@ -1151,7 +1225,7 @@ var ONBOARD_STRINGS = {
     obQ7Head:"كم يختفي تقريباً كل شهر؟", obQ7Sub:"أموال أنفقتها ولا يمكنك تفسيرها تماماً.",
     obQ8Head:"أين تقف اليوم؟", obQ8Sub:"الأرقام الصادقة تصنع خطة أفضل.",
     obQ9Head:"هدف واحد. اجعله حقيقياً.", obQ9Sub:"شيء محدد تسعى إليه.",
-    obGreeting:"مرحباً {name}. أنا **ريتشارد** - مدير أموالك الجديد. تسعة أسئلة سريعة، ثم سأريك شيئاً لا يراه معظم الناس أبداً عن أموالهم.",
+    obGreeting:"مرحباً {name}. أنا **ريتشارد** - مدرب أموالك الجديد. تسعة أسئلة سريعة، ثم سأريك شيئاً لا يراه معظم الناس أبداً عن أموالهم.",
     obYourCoffee:"قهوتك: {price}", obDateRangeLabel:"النطاق الزمني",
     obDateRangeExplain:"كيف يقيس Richy \"هذا الأسبوع/الشهر/السنة\". الافتراضي هو الشهر التقويمي الحالي - يمكن تغييره في أي وقت من الملف الشخصي.",
     obThisMonth:"هذا الشهر", obPastMonth:"الشهر الماضي", obCustomRange:"نطاق مخصص", obFrom:"من", obTo:"إلى",
@@ -1198,9 +1272,9 @@ var ONBOARD_STRINGS = {
     tsQuote1:"Это первый бюджет, который я не бросил через две недели.", tsQuote1Who:"первый пользователь",
     tsQuote2:"Ричард заметил подписку, за которую я платил целый год.", tsQuote2Who:"первый пользователь",
     tsQuote3:"Ощущение, что за моими деньгами действительно присматривают, а не таблица.", tsQuote3Who:"тестировщик из семьи",
-    whTitle1:"У ваших денег теперь", whTitle2:"есть менеджер.",
-    whSub:"Прекрасный бюджет вместе с Ричардом - советником, который действительно знает ваши цифры.",
-    whBadge1Sub:"Ваш личный финансовый директор", whBadge2Stat:"50 валют", whBadge2Sub:"4 языка",
+    whTitle1:"У ваших денег теперь", whTitle2:"есть тренер.",
+    whSub:"Прекрасный бюджет вместе с Ричардом - финансовым тренером, который действительно знает ваши цифры.",
+    whBadge1Sub:"Ваш личный финансовый тренер", whBadge2Stat:"50 валют", whBadge2Sub:"4 языка",
     whBarTitle:"Типичный месяц расходов", whBarUntrackedLabel:"Без учёта", whBarUntrackedValue:"~15% исчезает",
     whBarRichyLabel:"С Richy", whBarRichyValue:"видно и спланировано",
     whBarFootnote:"Иллюстративно - распространённые оценки неучтённых личных расходов.",
@@ -1213,7 +1287,7 @@ var ONBOARD_STRINGS = {
     icChatQ:"Могу ли я позволить себе поездку на выходные?", icChatA:"Да - если расходы на еду останутся ниже 180 на этой неделе. Хотите, я буду за этим следить?",
     icRichardChecking:"Ричард проверяет ваши цифры",
     icChipLeak:"Найдена утечка", icChipLeakSub:"неиспользуемая подписка", icChipPrivate:"Конфиденциально", icChipPrivateSub:"ваши данные остаются вашими",
-    icSlide2Head:"Ричард работает на вас.", icSlide2Sub:"Личный финансовый директор, который анализирует ваш месяц, находит утечки и отвечает на прямые вопросы прямыми цифрами.",
+    icSlide2Head:"Ричард работает на вас.", icSlide2Sub:"Личный финансовый тренер, который анализирует ваш месяц, находит утечки и отвечает на прямые вопросы прямыми цифрами.",
     icYourGoal:"Ваша цель", icGoalProgress:"3 500 из 10 000", icGoalPace:"В графике к октябрю. Ричард подтолкнёт вас, если собьётесь с курса.",
     icChipTrip:"Поездка спланирована", icChipTripSub:"Токио · 5 000", icChipBudget:"В рамках бюджета", icChipBudgetSub:"3 недели подряд",
     icSlide3Head:"Цели, которые действительно достигаются.", icSlide3Sub:"Бюджеты, подстроенные под ваши реальные цифры - плюс поездки, копилки и план, который меняется вместе с жизнью.",
@@ -1303,7 +1377,7 @@ var ONBOARD_STRINGS = {
     obQ7Head:"Сколько ускользает каждый месяц?", obQ7Sub:"Деньги, которые потрачены, а куда - не совсем понятно.",
     obQ8Head:"На каком этапе вы сейчас?", obQ8Sub:"Честные цифры дают лучший план.",
     obQ9Head:"Одна цель. Сделайте её реальной.", obQ9Sub:"Что-то конкретное, к чему вы стремитесь.",
-    obGreeting:"Привет, {name}. Я **Ричард** - новый менеджер ваших денег. Девять коротких вопросов, а затем я покажу вам то, что большинство людей никогда не видят в своих деньгах.",
+    obGreeting:"Привет, {name}. Я **Ричард** - новый тренер ваших денег. Девять коротких вопросов, а затем я покажу вам то, что большинство людей никогда не видят в своих деньгах.",
     obYourCoffee:"Ваш кофе: {price}", obDateRangeLabel:"Период",
     obDateRangeExplain:"Как Richy измеряет «эту неделю/месяц/год». По умолчанию - текущий календарный месяц, изменить можно в любой момент в Профиле.",
     obThisMonth:"Этот месяц", obPastMonth:"Прошедший месяц", obCustomRange:"Свой период", obFrom:"С", obTo:"По",
@@ -1631,6 +1705,272 @@ for (var _rwc in RW_STRINGS) {
   for (var _rwk in RW_STRINGS[_rwc]) TRANSLATIONS[_rwc][_rwk] = RW_STRINGS[_rwc][_rwk];
 }
 
+// ── Tier 1: the screens a Hebrew user actually lives on ──────────────────────
+// The header title bar ends in tr(currentTab), and tr() returns the KEY when a
+// screen has no entry - which is how nine screens shipped with titles like
+// "watchBrief" and "debts". Every tab id the app can route to now has a key
+// here, and so does every English literal that used to sit in the header chain
+// itself. The rest of this block is the Dashboard, Activity, Budgets, Goals,
+// Profile and Settings copy the audit found untranslated.
+//
+// Default category and folder NAMES stay canonical English in storage - they
+// are matching keys for transactions, budgets and Richard's action tags - and
+// are localised at render time by catDisplay()/folderDisplay() below.
+var T1_STRINGS = {
+  en: {
+    // screen titles
+    debts:"Debts", instructions:"Richard's Instructions", investing:"Investing", stock:"Stock", scout:"Stock Scout",
+    privacy:"Privacy & Data", password:"Password", editEmail:"Email", editDob:"Date of Birth",
+    editFinancial:"Financial Profile", business:"Business", collab:"Collab", entryMethod:"Adding transactions",
+    periodMode:"Date Range", bankSync:"Bank Sync", whatsapp:"WhatsApp Alerts", editOpeningBalance:"Opening balance",
+    logMonth:"Log this month", tripHistory:"Trip History", badges:"Badges", settings:"Settings",
+    social:"Friends", findPeople:"Find people", analysis:"Full Analysis", investPlan:"Your investing plan",
+    investorOnboard:"Investing basics", trips:"Trips", tripPlan:"Plan a trip",
+    // Richard failure surface
+    richardUnavailable:"Richard isn't available right now", retry:"Retry", offlineAnswer:"Offline answer",
+    richardOfflineNote:"Written on your device - Richard never saw this question.",
+    // default category / folder display names
+    catHousing:"Housing", catFood:"Food", catTransport:"Transport", catHealth:"Health",
+    catEntertainment:"Entertainment", catShopping:"Shopping", catSalary:"Salary",
+    catInvestments:"Investments", catSavings:"Savings", catOther:"Other",
+    folEssentials:"Essentials", folLifestyle:"Lifestyle", folIncomeWealth:"Income & Wealth",
+    // dashboard
+    safeToSpend:"Safe to spend", nextSevenDays:"Next 7 days", richardsNextMove:"Richard's next move",
+    moneyWatcher:"Money watcher", yourWidgets:"Your widgets", builtByRichard:"Built by Richard",
+    accounts:"Accounts", getTheMost:"Get the most from Richy", seeAllN:"See all {n}",
+    // create actions the empty states used to point at the wrong button for
+    newGoal:"New goal", newNote:"New note", newCategory:"New category", planATrip:"Plan a trip",
+    noGoalsSub:"Name what you're saving for and I'll work out the monthly number.",
+    noBudgetsSub2:"Set a limit for a category and I'll keep the pace for you.",
+    noNotesSub:"Log what you lent or borrowed and I'll remind you to settle it.",
+    // settings groups
+    setAccount:"Account", setMoney:"Money", setRichard:"Richard", setPrivacySec:"Privacy & security",
+    back:"Back",
+    close:"Close",
+    mvOnTrack:"On track", mvWatch:"Worth a look", mvAttention:"Needs attention",
+    moreOptions:"More options",
+    perDay:"Per day", currentBalance:"Current balance",
+    svGivePlanTitle:"Give this pot a plan", svGivePlanSub:"Four questions, and I'll work out the monthly number and the date it lands.",
+    importCsv:"Import CSV",
+    dbNoDebts:"No debts tracked", dbNoDebtsSub:"Add a card, loan, or overdraft with its balance and interest rate, and I'll show you the fastest way out.", dbAddFirst:"Add your first debt", dbTotalOwed:"Total owed",
+    obTypeItInstead:"type it instead",
+    pfBadges:"Badges", pfManage:"Manage", pfYourData:"Your data", pfRecentActivity:"Recent activity", pfGreenMonth:"Green month", pfBudgetRuns:"Budget runs", pfNoRuns:"No runs going yet", pfSharedBudgets:"Shared budgets", pfNotSharing:"Not sharing with anyone", pfBudgetBooks:"Budget books", pfTripHistory:"Trip history", pfYourPlan:"Your plan", pfYourPlanSub:"Richard's read on your money", pfBankSync:"Bank sync", pfPrivacy:"Privacy and data", pfPrivacySub:"Export, sharing, delete", pfNothingTracked:"Nothing tracked", pfNoBadgesYet:"Nothing earned yet. Log a transaction, set a budget, confirm a week - they start arriving quickly.", pfConfirm:"Confirm", pfNOfM:"{n} of {m}", pfSettings:"Settings", pfNMembers:"{n} members", pfOneMember:"1 member", pfNEnded:"{n} ended", pfNTotal:"{n} total", pfNOf12:"{n} of 12 this year",
+    setAiRichard:"AI & Richard", setVisual:"Visual", setYourPlan:"Your plan", setInstructions:"Richard's instructions", setWhatsApp:"WhatsApp alerts", setOpeningBalance:"Opening balance", setLogMonth:"Log this month", setEntryMethod:"Adding transactions", setDateRange:"Date range", setBankSync:"Bank Sync", setAppearance:"Appearance", setYourName:"Your name", setCollab:"Collab", setDebts:"Debts", setPrivacy:"Privacy & data", valCustom:"Custom", valDefault:"Default", valOn:"On", valOff:"Off", valCsvImport:"CSV import", valManual:"Manual", valPastMonth:"Past month", valThisMonth:"This month", valTrackedN:"{n} tracked", valInviteN:"{n} invites", valInvite1:"1 invite", dashTipDebtTitle:"Crush your debt", dashTipDebtSub:"Payoff plan and a debt-free date", dashTipCollabTitle:"Add your partner", dashTipCollabSub:"Share budgets and goals", dashTipSyncTitle:"Set up Bank Sync", dashTipSyncSub:"Log expenses from your phone's payment notifications", dashTipTripTitle:"Plan a trip", dashTipTripSub:"Let Richard split your travel budget", setLanguageSub:"App language", setCurrencySub:"How money is shown", openAnAccount:"Open an account", totalSetAside:"Total set aside", businessLabel:"Business", investingLabel:"Investing",
+    dscBigDecision:"Richard is an AI, not a licensed financial advisor - always do your own research before a decision this size.",
+    dscInvestRisk:"Richard is an AI assistant, not a licensed financial advisor. Investing involves risk, including the possible loss of your money, and past performance doesn't guarantee future results.",
+    dscAiMistakes:"Richard is an AI assistant and can make mistakes. This isn't licensed financial advice.",
+    dscTake:"Richard's take is a perspective, not financial advice.",
+    dscGuide:"Richard is a guide, not a licensed financial advisor. Invest only what you can afford to leave alone.",
+    dscScout:"Richard's scouting is research to explore, not financial advice. He can be wrong - always do your own homework.",
+    seededDebtName:"Debt from sign-up",
+    seededDebtNote:"You told me about this when you joined. Add the rate and the minimum payment and I'll build the payoff plan.",
+  },
+  he: {
+    debts:"חובות", instructions:"ההוראות לריצ'רד", investing:"השקעות", stock:"מניה", scout:"סורק המניות",
+    privacy:"פרטיות ונתונים", password:"סיסמה", editEmail:"אימייל", editDob:"תאריך לידה",
+    editFinancial:"פרופיל פיננסי", business:"עסק", collab:"שיתוף", entryMethod:"הוספת עסקאות",
+    periodMode:"טווח תאריכים", bankSync:"סנכרון בנק", whatsapp:"התראות וואטסאפ", editOpeningBalance:"יתרת פתיחה",
+    logMonth:"תיעוד החודש", tripHistory:"היסטוריית טיולים", badges:"תגים", settings:"הגדרות",
+    social:"חברים", findPeople:"חיפוש אנשים", analysis:"ניתוח מלא", investPlan:"תוכנית ההשקעות שלך",
+    investorOnboard:"יסודות ההשקעה", trips:"טיולים", tripPlan:"תכנון טיול",
+    richardUnavailable:"ריצ'רד לא זמין כרגע", retry:"נסה שוב", offlineAnswer:"תשובה לא מקוונת",
+    richardOfflineNote:"נכתב במכשיר שלך - ריצ'רד לא ראה את השאלה הזו.",
+    catHousing:"דיור", catFood:"אוכל", catTransport:"תחבורה", catHealth:"בריאות",
+    catEntertainment:"בילויים", catShopping:"קניות", catSalary:"משכורת",
+    catInvestments:"השקעות", catSavings:"חיסכון", catOther:"אחר",
+    folEssentials:"הכרחי", folLifestyle:"אורח חיים", folIncomeWealth:"הכנסה והון",
+    safeToSpend:"אפשר להוציא", nextSevenDays:"7 הימים הקרובים", richardsNextMove:"הצעד הבא של ריצ'רד",
+    moneyWatcher:"שומר הכסף", yourWidgets:"הווידג'טים שלך", builtByRichard:"נבנה על ידי ריצ'רד",
+    accounts:"חשבונות", getTheMost:"להפיק את המרב מריצ'י", seeAllN:"הצג את כל {n}",
+    newGoal:"יעד חדש", newNote:"רישום חדש", newCategory:"קטגוריה חדשה", planATrip:"תכנן טיול",
+    noGoalsSub:"תנו שם למה שאתם חוסכים אליו ואחשב את הסכום החודשי.",
+    noBudgetsSub2:"הגדירו תקרה לקטגוריה ואשמור לכם על הקצב.",
+    noNotesSub:"רשמו מה הלוויתם או לוויתם ואזכיר לכם לסגור את החשבון.",
+    setAccount:"חשבון", setMoney:"כסף", setRichard:"ריצ'רד", setPrivacySec:"פרטיות ואבטחה",
+    back:"חזרה",
+    close:"סגור",
+    mvOnTrack:"במסלול", mvWatch:"שווה מבט", mvAttention:"דורש התייחסות",
+    moreOptions:"עוד אפשרויות",
+    perDay:"ליום", currentBalance:"יתרה נוכחית",
+    svGivePlanTitle:"לתת לקופה הזאת תוכנית", svGivePlanSub:"ארבע שאלות, ואחשב את הסכום החודשי ואת התאריך שבו זה נסגר.",
+    importCsv:"ייבוא CSV",
+    dbNoDebts:"אין חובות במעקב", dbNoDebtsSub:"הוסיפו כרטיס, הלוואה או מסגרת עם היתרה והריבית, ואראה לכם את הדרך המהירה ביותר לצאת מזה.", dbAddFirst:"הוספת החוב הראשון", dbTotalOwed:"סך החוב",
+    obTypeItInstead:"אפשר להקליד במקום",
+    pfBadges:"תגים", pfManage:"ניהול", pfYourData:"הנתונים שלך", pfRecentActivity:"פעילות אחרונה", pfGreenMonth:"חודש ירוק", pfBudgetRuns:"רצפי תקציב", pfNoRuns:"אין רצף פעיל עדיין", pfSharedBudgets:"תקציבים משותפים", pfNotSharing:"לא משתפים עם אף אחד", pfBudgetBooks:"ספרי תקציב", pfTripHistory:"היסטוריית טיולים", pfYourPlan:"התוכנית שלך", pfYourPlanSub:"מה שריצ'רד רואה בכסף שלך", pfBankSync:"סנכרון בנק", pfPrivacy:"פרטיות ונתונים", pfPrivacySub:"ייצוא, שיתוף, מחיקה", pfNothingTracked:"אין מעקב", pfNoBadgesYet:"עוד לא הרווחתם תגים. רשמו עסקה, הגדירו תקציב, אשרו שבוע - הם מגיעים מהר.", pfConfirm:"אישור", pfNOfM:"{n} מתוך {m}", pfSettings:"הגדרות", pfNMembers:"{n} חברים", pfOneMember:"חבר אחד", pfNEnded:"{n} הסתיימו", pfNTotal:"{n} בסך הכל", pfNOf12:"{n} מתוך 12 השנה",
+    setAiRichard:"ריצ'רד ו-AI", setVisual:"תצוגה", setYourPlan:"התוכנית שלך", setInstructions:"ההוראות לריצ'רד", setWhatsApp:"התראות וואטסאפ", setOpeningBalance:"יתרת פתיחה", setLogMonth:"תיעוד החודש", setEntryMethod:"הוספת עסקאות", setDateRange:"טווח תאריכים", setBankSync:"סנכרון בנק", setAppearance:"מראה", setYourName:"השם שלך", setCollab:"שיתוף", setDebts:"חובות", setPrivacy:"פרטיות ונתונים", valCustom:"מותאם", valDefault:"ברירת מחדל", valOn:"פעיל", valOff:"כבוי", valCsvImport:"ייבוא CSV", valManual:"ידני", valPastMonth:"החודש האחרון", valThisMonth:"החודש הנוכחי", valTrackedN:"{n} במעקב", valInviteN:"{n} הזמנות", valInvite1:"הזמנה אחת", dashTipDebtTitle:"לסגור את החובות", dashTipDebtSub:"תוכנית סגירה ותאריך שבו נגמר החוב", dashTipCollabTitle:"לצרף את בן/בת הזוג", dashTipCollabSub:"שיתוף תקציבים ויעדים", dashTipSyncTitle:"להפעיל סנכרון בנק", dashTipSyncSub:"רישום הוצאות מהתראות התשלום בטלפון", dashTipTripTitle:"לתכנן טיול", dashTipTripSub:"ריצ'רד יחלק את תקציב הנסיעה", setLanguageSub:"שפת האפליקציה", setCurrencySub:"איך הכסף מוצג", openAnAccount:"פתיחת חשבון", totalSetAside:"סך הכל בצד", businessLabel:"עסק", investingLabel:"השקעות",
+    dscBigDecision:"ריצ'רד הוא AI ולא יועץ פיננסי מורשה - תמיד ערכו בדיקה עצמאית לפני החלטה בסדר גודל כזה.",
+    dscInvestRisk:"ריצ'רד הוא עוזר AI ולא יועץ פיננסי מורשה. השקעה כרוכה בסיכון, כולל אפשרות לאובדן הכסף, ותשואות עבר אינן מבטיחות תשואות עתידיות.",
+    dscAiMistakes:"ריצ'רד הוא עוזר AI ועלול לטעות. זה אינו ייעוץ פיננסי מורשה.",
+    dscTake:"הדעה של ריצ'רד היא נקודת מבט, לא ייעוץ פיננסי.",
+    dscGuide:"ריצ'רד הוא מדריך, לא יועץ פיננסי מורשה. השקיעו רק כסף שאתם יכולים להשאיר בצד.",
+    dscScout:"הסריקה של ריצ'רד היא חומר למחקר, לא ייעוץ פיננסי. הוא עלול לטעות - תמיד בדקו בעצמכם.",
+    seededDebtName:"חוב מההרשמה",
+    seededDebtNote:"סיפרת לי על זה כשנרשמת. הוסיפו את הריבית ואת התשלום המינימלי ואבנה תוכנית סגירה.",
+  },
+  ar: {
+    debts:"الديون", instructions:"تعليمات ريتشارد", investing:"الاستثمار", stock:"سهم", scout:"كشّاف الأسهم",
+    privacy:"الخصوصية والبيانات", password:"كلمة المرور", editEmail:"البريد الإلكتروني", editDob:"تاريخ الميلاد",
+    editFinancial:"الملف المالي", business:"الأعمال", collab:"المشاركة", entryMethod:"إضافة المعاملات",
+    periodMode:"النطاق الزمني", bankSync:"مزامنة البنك", whatsapp:"تنبيهات واتساب", editOpeningBalance:"الرصيد الافتتاحي",
+    logMonth:"تسجيل هذا الشهر", tripHistory:"سجل الرحلات", badges:"الشارات", settings:"الإعدادات",
+    social:"الأصدقاء", findPeople:"البحث عن أشخاص", analysis:"التحليل الكامل", investPlan:"خطة الاستثمار",
+    investorOnboard:"أساسيات الاستثمار", trips:"الرحلات", tripPlan:"تخطيط رحلة",
+    richardUnavailable:"ريتشارد غير متاح الآن", retry:"إعادة المحاولة", offlineAnswer:"إجابة دون اتصال",
+    richardOfflineNote:"كُتبت على جهازك - ريتشارد لم يطلع على هذا السؤال.",
+    catHousing:"السكن", catFood:"الطعام", catTransport:"المواصلات", catHealth:"الصحة",
+    catEntertainment:"الترفيه", catShopping:"التسوق", catSalary:"الراتب",
+    catInvestments:"الاستثمارات", catSavings:"المدخرات", catOther:"أخرى",
+    folEssentials:"الأساسيات", folLifestyle:"نمط الحياة", folIncomeWealth:"الدخل والثروة",
+    safeToSpend:"يمكن إنفاقه", nextSevenDays:"الأيام السبعة القادمة", richardsNextMove:"خطوة ريتشارد التالية",
+    moneyWatcher:"حارس المال", yourWidgets:"عناصرك", builtByRichard:"من إعداد ريتشارد",
+    accounts:"الحسابات", getTheMost:"استفد من ريتشي إلى أقصى حد", seeAllN:"عرض الكل ({n})",
+    newGoal:"هدف جديد", newNote:"سجل جديد", newCategory:"فئة جديدة", planATrip:"تخطيط رحلة",
+    noGoalsSub:"سمِّ ما تدّخر من أجله وسأحسب المبلغ الشهري.",
+    noBudgetsSub2:"حدد سقفًا لفئة وسأتابع الإيقاع نيابة عنك.",
+    noNotesSub:"سجّل ما أقرضته أو اقترضته وسأذكّرك بتسويته.",
+    setAccount:"الحساب", setMoney:"المال", setRichard:"ريتشارد", setPrivacySec:"الخصوصية والأمان",
+    back:"رجوع",
+    close:"إغلاق",
+    mvOnTrack:"على المسار", mvWatch:"يستحق نظرة", mvAttention:"يتطلب انتباهاً",
+    moreOptions:"خيارات إضافية",
+    perDay:"يومياً", currentBalance:"الرصيد الحالي",
+    svGivePlanTitle:"امنح هذا الوعاء خطة", svGivePlanSub:"أربعة أسئلة، وسأحسب المبلغ الشهري والتاريخ الذي يكتمل فيه.",
+    importCsv:"استيراد CSV",
+    dbNoDebts:"لا ديون متتبَّعة", dbNoDebtsSub:"أضف بطاقة أو قرضاً أو سحباً على المكشوف مع الرصيد ونسبة الفائدة، وسأريك أسرع طريق للخروج.", dbAddFirst:"أضف أول دين", dbTotalOwed:"إجمالي المستحق",
+    obTypeItInstead:"اكتبه بدلاً من ذلك",
+    pfBadges:"الشارات", pfManage:"إدارة", pfYourData:"بياناتك", pfRecentActivity:"النشاط الأخير", pfGreenMonth:"شهر أخضر", pfBudgetRuns:"سلاسل الميزانية", pfNoRuns:"لا توجد سلسلة بعد", pfSharedBudgets:"ميزانيات مشتركة", pfNotSharing:"لا تشارك مع أحد", pfBudgetBooks:"دفاتر الميزانية", pfTripHistory:"سجل الرحلات", pfYourPlan:"خطتك", pfYourPlanSub:"قراءة ريتشارد لأموالك", pfBankSync:"مزامنة البنك", pfPrivacy:"الخصوصية والبيانات", pfPrivacySub:"تصدير، مشاركة، حذف", pfNothingTracked:"لا شيء متتبَّع", pfNoBadgesYet:"لم تكسب شيئاً بعد. سجّل معاملة، حدّد ميزانية، أكّد أسبوعاً - وستبدأ بالوصول سريعاً.", pfConfirm:"تأكيد", pfNOfM:"{n} من {m}", pfSettings:"الإعدادات", pfNMembers:"{n} أعضاء", pfOneMember:"عضو واحد", pfNEnded:"{n} منتهية", pfNTotal:"{n} إجمالاً", pfNOf12:"{n} من 12 هذا العام",
+    setAiRichard:"ريتشارد والذكاء الاصطناعي", setVisual:"المظهر", setYourPlan:"خطتك", setInstructions:"تعليمات ريتشارد", setWhatsApp:"تنبيهات واتساب", setOpeningBalance:"الرصيد الافتتاحي", setLogMonth:"تسجيل هذا الشهر", setEntryMethod:"إضافة المعاملات", setDateRange:"النطاق الزمني", setBankSync:"مزامنة البنك", setAppearance:"الشكل", setYourName:"اسمك", setCollab:"المشاركة", setDebts:"الديون", setPrivacy:"الخصوصية والبيانات", valCustom:"مخصص", valDefault:"افتراضي", valOn:"مفعّل", valOff:"معطّل", valCsvImport:"استيراد CSV", valManual:"يدوي", valPastMonth:"الشهر الماضي", valThisMonth:"هذا الشهر", valTrackedN:"{n} متتبَّع", valInviteN:"{n} دعوات", valInvite1:"دعوة واحدة", dashTipDebtTitle:"تخلّص من ديونك", dashTipDebtSub:"خطة سداد وتاريخ للتحرر من الدين", dashTipCollabTitle:"أضف شريكك", dashTipCollabSub:"شارك الميزانيات والأهداف", dashTipSyncTitle:"فعّل مزامنة البنك", dashTipSyncSub:"سجّل المصروفات من إشعارات الدفع على هاتفك", dashTipTripTitle:"خطّط رحلة", dashTipTripSub:"دع ريتشارد يوزّع ميزانية سفرك", setLanguageSub:"لغة التطبيق", setCurrencySub:"كيف تُعرض الأموال", openAnAccount:"فتح حساب", totalSetAside:"إجمالي المخصص", businessLabel:"أعمال", investingLabel:"استثمار",
+    dscBigDecision:"ريتشارد ذكاء اصطناعي وليس مستشاراً مالياً مرخصاً - تحقق بنفسك قبل قرار بهذا الحجم.",
+    dscInvestRisk:"ريتشارد مساعد ذكاء اصطناعي وليس مستشاراً مالياً مرخصاً. الاستثمار ينطوي على مخاطر، بما في ذلك احتمال خسارة أموالك، والأداء السابق لا يضمن النتائج المستقبلية.",
+    dscAiMistakes:"ريتشارد مساعد ذكاء اصطناعي وقد يخطئ. هذه ليست استشارة مالية مرخصة.",
+    dscTake:"رأي ريتشارد وجهة نظر، وليس استشارة مالية.",
+    dscGuide:"ريتشارد مرشد وليس مستشاراً مالياً مرخصاً. استثمر فقط ما يمكنك تركه جانباً.",
+    dscScout:"بحث ريتشارد مادة للاستكشاف وليس استشارة مالية. قد يخطئ - تحقق دائماً بنفسك.",
+    seededDebtName:"دين من التسجيل",
+    seededDebtNote:"أخبرتني بهذا عند التسجيل. أضف الفائدة والحد الأدنى للدفع وسأبني خطة السداد.",
+  },
+  ru: {
+    debts:"Долги", instructions:"Инструкции Ричарду", investing:"Инвестиции", stock:"Акция", scout:"Поиск акций",
+    privacy:"Приватность и данные", password:"Пароль", editEmail:"Эл. почта", editDob:"Дата рождения",
+    editFinancial:"Финансовый профиль", business:"Бизнес", collab:"Совместно", entryMethod:"Добавление операций",
+    periodMode:"Период", bankSync:"Синхронизация с банком", whatsapp:"Оповещения в WhatsApp", editOpeningBalance:"Начальный баланс",
+    logMonth:"Записать месяц", tripHistory:"История поездок", badges:"Значки", settings:"Настройки",
+    social:"Друзья", findPeople:"Найти людей", analysis:"Полный анализ", investPlan:"Ваш инвестиционный план",
+    investorOnboard:"Основы инвестирования", trips:"Поездки", tripPlan:"Спланировать поездку",
+    richardUnavailable:"Ричард сейчас недоступен", retry:"Повторить", offlineAnswer:"Ответ офлайн",
+    richardOfflineNote:"Составлено на вашем устройстве - Ричард этот вопрос не видел.",
+    catHousing:"Жильё", catFood:"Еда", catTransport:"Транспорт", catHealth:"Здоровье",
+    catEntertainment:"Развлечения", catShopping:"Покупки", catSalary:"Зарплата",
+    catInvestments:"Инвестиции", catSavings:"Сбережения", catOther:"Другое",
+    folEssentials:"Необходимое", folLifestyle:"Образ жизни", folIncomeWealth:"Доход и капитал",
+    safeToSpend:"Можно потратить", nextSevenDays:"Ближайшие 7 дней", richardsNextMove:"Следующий шаг Ричарда",
+    moneyWatcher:"Хранитель денег", yourWidgets:"Ваши виджеты", builtByRichard:"Собрано Ричардом",
+    accounts:"Счета", getTheMost:"Возьмите от Richy максимум", seeAllN:"Показать все ({n})",
+    newGoal:"Новая цель", newNote:"Новая запись", newCategory:"Новая категория", planATrip:"Спланировать поездку",
+    noGoalsSub:"Назовите, на что копите, и я рассчитаю сумму в месяц.",
+    noBudgetsSub2:"Задайте лимит для категории, и я буду следить за темпом.",
+    noNotesSub:"Запишите, что одолжили или взяли в долг, и я напомню закрыть.",
+    setAccount:"Аккаунт", setMoney:"Деньги", setRichard:"Ричард", setPrivacySec:"Приватность и безопасность",
+    back:"Назад",
+    close:"Закрыть",
+    mvOnTrack:"В графике", mvWatch:"Стоит взглянуть", mvAttention:"Требует внимания",
+    moreOptions:"Больше настроек",
+    perDay:"В день", currentBalance:"Текущий баланс",
+    svGivePlanTitle:"Дайте этому счёту план", svGivePlanSub:"Четыре вопроса, и я рассчитаю сумму в месяц и дату, когда цель закроется.",
+    importCsv:"Импорт CSV",
+    dbNoDebts:"Долги не отслеживаются", dbNoDebtsSub:"Добавьте карту, кредит или овердрафт с остатком и ставкой, и я покажу самый быстрый выход.", dbAddFirst:"Добавить первый долг", dbTotalOwed:"Всего долга",
+    obTypeItInstead:"ввести вручную",
+    pfBadges:"Значки", pfManage:"Управление", pfYourData:"Ваши данные", pfRecentActivity:"Последние события", pfGreenMonth:"Зелёный месяц", pfBudgetRuns:"Серии бюджета", pfNoRuns:"Серий пока нет", pfSharedBudgets:"Общие бюджеты", pfNotSharing:"Ни с кем не делитесь", pfBudgetBooks:"Книги бюджета", pfTripHistory:"История поездок", pfYourPlan:"Ваш план", pfYourPlanSub:"Как Ричард видит ваши деньги", pfBankSync:"Синхронизация с банком", pfPrivacy:"Приватность и данные", pfPrivacySub:"Экспорт, доступ, удаление", pfNothingTracked:"Ничего не отслеживается", pfNoBadgesYet:"Пока ничего не заработано. Запишите операцию, задайте бюджет, подтвердите неделю - они начнут приходить быстро.", pfConfirm:"Подтвердить", pfNOfM:"{n} из {m}", pfSettings:"Настройки", pfNMembers:"{n} участников", pfOneMember:"1 участник", pfNEnded:"{n} завершено", pfNTotal:"{n} всего", pfNOf12:"{n} из 12 в этом году",
+    setAiRichard:"Ричард и ИИ", setVisual:"Оформление", setYourPlan:"Ваш план", setInstructions:"Инструкции Ричарду", setWhatsApp:"Оповещения в WhatsApp", setOpeningBalance:"Начальный баланс", setLogMonth:"Записать месяц", setEntryMethod:"Добавление операций", setDateRange:"Период", setBankSync:"Синхронизация с банком", setAppearance:"Тема", setYourName:"Ваше имя", setCollab:"Совместно", setDebts:"Долги", setPrivacy:"Приватность и данные", valCustom:"Своё", valDefault:"По умолчанию", valOn:"Вкл", valOff:"Выкл", valCsvImport:"Импорт CSV", valManual:"Вручную", valPastMonth:"Прошлый месяц", valThisMonth:"Текущий месяц", valTrackedN:"{n} в учёте", valInviteN:"{n} приглашений", valInvite1:"1 приглашение", dashTipDebtTitle:"Закрыть долги", dashTipDebtSub:"План погашения и дата свободы от долга", dashTipCollabTitle:"Добавить партнёра", dashTipCollabSub:"Общие бюджеты и цели", dashTipSyncTitle:"Настроить синхронизацию", dashTipSyncSub:"Записывать траты из уведомлений об оплате", dashTipTripTitle:"Спланировать поездку", dashTipTripSub:"Ричард распределит бюджет поездки", setLanguageSub:"Язык приложения", setCurrencySub:"Как показываются деньги", openAnAccount:"Открыть счёт", totalSetAside:"Всего отложено", businessLabel:"Бизнес", investingLabel:"Инвестиции",
+    dscBigDecision:"Ричард - это ИИ, а не лицензированный финансовый советник. Перед решением такого масштаба проверьте всё сами.",
+    dscInvestRisk:"Ричард - ИИ-помощник, а не лицензированный финансовый советник. Инвестирование связано с риском, включая возможную потерю денег, а прошлая доходность не гарантирует будущую.",
+    dscAiMistakes:"Ричард - ИИ-помощник и может ошибаться. Это не лицензированная финансовая консультация.",
+    dscTake:"Мнение Ричарда - это точка зрения, а не финансовая консультация.",
+    dscGuide:"Ричард - проводник, а не лицензированный финансовый советник. Вкладывайте только то, что можете оставить в стороне.",
+    dscScout:"Поиск Ричарда - это материал для изучения, а не финансовая консультация. Он может ошибаться - всегда проверяйте сами.",
+    seededDebtName:"Долг из анкеты",
+    seededDebtNote:"Вы указали его при регистрации. Добавьте ставку и минимальный платёж, и я составлю план погашения.",
+  },
+};
+for (var _t1c in T1_STRINGS) {
+  if (!TRANSLATIONS[_t1c]) continue;
+  for (var _t1k in T1_STRINGS[_t1c]) TRANSLATIONS[_t1c][_t1k] = T1_STRINGS[_t1c][_t1k];
+}
+
+// Built-in category and folder names are storage keys, not copy: transactions
+// match on them, budgets are filed under them and Richard's action tags name
+// them exactly. So they stay English in the document and are translated only
+// where a human reads them. A user-renamed or user-created one has no key and
+// is shown exactly as typed.
+var DEFAULT_CAT_KEY = {
+  Housing:"catHousing", Food:"catFood", Transport:"catTransport", Health:"catHealth",
+  Entertainment:"catEntertainment", Shopping:"catShopping", Salary:"catSalary",
+  Investments:"catInvestments", Savings:"catSavings", Other:"catOther"
+};
+var DEFAULT_FOLDER_KEY = { Essentials:"folEssentials", Lifestyle:"folLifestyle", "Income & Wealth":"folIncomeWealth" };
+function catDisplay(nameOrCat) {
+  var n = nameOrCat && typeof nameOrCat === "object" ? nameOrCat.name : nameOrCat;
+  if (!n) return "";
+  var k = DEFAULT_CAT_KEY[n];
+  return k ? tr(k) : n;
+}
+function folderDisplay(nameOrFolder) {
+  var n = nameOrFolder && typeof nameOrFolder === "object" ? nameOrFolder.name : nameOrFolder;
+  if (!n) return "";
+  var k = DEFAULT_FOLDER_KEY[n];
+  return k ? tr(k) : n;
+}
+
+// The header title. Previously a 24-branch ternary of English literals ending
+// in tr(currentTab), so an untranslated tab printed its own id ("watchBrief",
+// "debts") as the screen title. Every branch now resolves through tr(), and
+// SCREEN_TITLE_KEY only exists for the handful of tabs whose id and dictionary
+// key differ.
+// Onboarding's timeline chips are prose ("6 months", "5+ years"). A goal needs
+// a date, so this turns the chosen chip into one. "5+ years" is read as five -
+// the honest floor of what the user picked, not an invented ceiling.
+var TIMELINE_MONTHS = { "6 months": 6, "1 year": 12, "2 years": 24, "5+ years": 60 };
+function timelineDeadline(timeline, fromISO) {
+  var months = TIMELINE_MONTHS[timeline];
+  if (!months) return "";
+  var d = new Date((fromISO || new Date().toISOString().slice(0, 10)) + "T00:00:00Z");
+  d.setUTCMonth(d.getUTCMonth() + months);
+  return d.toISOString().slice(0, 10);
+}
+
+// Which screens have a create sheet of their own, and what the "+" makes there.
+// Every one of these already had the sheet wired to the same `sheet` flag; the
+// button just never opened it, so five kinds of object could not be created by
+// tapping anything - while three empty states told users to tap exactly this.
+var FAB_CREATES = {
+  activity: "addTransaction",
+  budgets: "newBudget",
+  goals: "newGoal",
+  notes: "newNote",
+  categories: "newCategory"
+};
+
+var SCREEN_TITLE_KEY = { plan:"yourPlan", nickname:"name", householdMerge:"hmTitleBar" };
+// The accessible name for a transaction row. Screen readers reported the rows
+// as unnamed because the row itself was a <div> - what they were announcing was
+// its child controls. This is the sentence a person actually needs: what, how
+// much, which category, and that activating it edits.
+function txRowLabel(t, cat) {
+  var kind = t.type === "income" ? tr("income") : catDisplay((cat && cat.name) || t.category);
+  return stripBidi([
+    t.label || kind,
+    (t.type === "income" ? "+" : "-") + dollars(t.amount),
+    kind,
+    t.pending ? tr("markPending") : "",
+    tr("editTransaction")
+  ].filter(Boolean).join(", "));
+}
+
+function screenTitle(tab, personName) {
+  if (tab === "person") return personName || tr("profile");
+  return tr(SCREEN_TITLE_KEY[tab] || tab);
+}
+
 function tr(key) {
   var code = _lang.code || "en";
   return (TRANSLATIONS[code] && TRANSLATIONS[code][key]) || (TRANSLATIONS.en[key]) || key;
@@ -1643,26 +1983,90 @@ function tr(key) {
 // disclosure chevron, which has to be mirrored explicitly.
 function isRTL() { var c = _lang.code; return c === "he" || c === "ar"; }
 
+// ---- money formatting -------------------------------------------------------
+// Two problems solved in one place.
+//
+// (1) Grouping went through toLocaleString on every render. One cached
+//     Intl.NumberFormat per decimal count does the same job once.
+//
+// (2) BIDI. A money string is a left-to-right run ("-", symbol, digits,
+//     separators) and the Unicode bidi algorithm re-orders it when it lands
+//     inside Hebrew or Arabic text - which is why the app shipped "000,9" for
+//     9,000 and "₪2,500.00-" for a negative. The fix is to isolate the run:
+//     U+2066 LEFT-TO-RIGHT ISOLATE ... U+2069 POP DIRECTIONAL ISOLATE is the
+//     plain-string equivalent of <bdi dir="ltr">, and unlike a React element it
+//     survives being concatenated into a sentence, an aria-label or a title -
+//     which is what these helpers are actually used for.
+//
+// The isolate marks are invisible, but they are still characters, so anything
+// that leaves the app for a machine strips them: stripBidi() runs on every
+// prompt inside callClaude and on CSV export.
+var LRI = "⁦", PDI = "⁩";   // LEFT-TO-RIGHT ISOLATE / POP DIRECTIONAL ISOLATE
+// Removes every bidi control character. Money strings carry the isolate marks
+// above so they render correctly inside Hebrew and Arabic; anything leaving the
+// app for a machine (AI prompts, CSV export) runs through here first.
+function stripBidi(s) { return typeof s === "string" ? s.replace(/[⁦-⁩‪-‮‎‏]/g, "") : s; }
+// Same, through arrays and plain objects - message payloads nest text inside
+// content blocks, so a top-level string pass would miss most of it.
+function stripBidiDeep(v) {
+  if (typeof v === "string") return stripBidi(v);
+  if (Array.isArray(v)) return v.map(stripBidiDeep);
+  if (v && typeof v === "object") {
+    var out = {};
+    for (var k in v) if (Object.prototype.hasOwnProperty.call(v, k)) out[k] = stripBidiDeep(v[k]);
+    return out;
+  }
+  return v;
+}
+var _numFmts = {};
+function groupNum(n, d) {
+  var key = d;
+  if (!_numFmts[key]) {
+    try {
+      _numFmts[key] = new Intl.NumberFormat("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+    } catch (e) {
+      _numFmts[key] = { format: function(x) { return x.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d }); } };
+    }
+  }
+  return _numFmts[key].format(n);
+}
+// Unsigned and bidi-isolated. Unsigned by design: the UI call sites that can go
+// negative pair a "-" with a red colour, so a signed fmtCur would render
+// "--$50" there. Those sites now call dollarsNeg()/dollarsDelta(), which put the
+// sign INSIDE the isolate where it belongs.
 function fmtCur(sym, n) {
-  var abs = Math.abs(n || 0);
   var d = SYM_TO_DEC[sym]; if (d == null) d = 2;
-  return (sym || "$") + abs.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+  return LRI + (sym || "$") + groupNum(Math.abs(n || 0), d) + PDI;
 }
 function dollars(n) {
   return fmtCur(_currency.sym, n);
 }
-// fmtCur() is unsigned by design - the ~40 UI call sites that can go negative
-// each prepend their own "-" alongside a red colour, so a signed fmtCur would
-// render "--$50" there. Strings built for Richard have no such colour cue and
-// no such prefix, so an unsigned amount silently reads a loss as a profit and
-// an overdraft as savings. Every money value in an AI prompt goes through here.
+// Strings built for Richard have no colour cue and no sign prefix, so an
+// unsigned amount silently reads a loss as a profit and an overdraft as
+// savings. Every money value in an AI prompt goes through here.
 function dollarsSigned(n) {
-  return ((n || 0) < 0 ? "-" : "") + fmtCur(_currency.sym, n);
+  var sym = _currency.sym;
+  var d = SYM_TO_DEC[sym]; if (d == null) d = 2;
+  return LRI + ((n || 0) < 0 ? "-" : "") + (sym || "$") + groupNum(Math.abs(n || 0), d) + PDI;
+}
+// Always-negative display, for rows that are known outgoings and were written
+// as "-" + dollars(x) before the isolate existed.
+function dollarsNeg(n) {
+  var sym = _currency.sym;
+  var d = SYM_TO_DEC[sym]; if (d == null) d = 2;
+  return LRI + "-" + (sym || "$") + groupNum(Math.abs(n || 0), d) + PDI;
+}
+// Explicit +/- for deltas and ledger rows, sign inside the isolate.
+function dollarsDelta(n, forceSign) {
+  var sym = _currency.sym;
+  var d = SYM_TO_DEC[sym]; if (d == null) d = 2;
+  var s = (n || 0) < 0 ? "-" : (forceSign === false ? "" : "+");
+  return LRI + s + (sym || "$") + groupNum(Math.abs(n || 0), d) + PDI;
 }
 // Whole-unit money, for round figures where cents are noise rather than
 // information: preset chips, contribution amounts, long-range projections.
 function dollarsWhole(n) {
-  return (_currency.sym || "$") + Math.round(Math.abs(n || 0)).toLocaleString("en-US");
+  return LRI + (_currency.sym || "$") + groupNum(Math.round(Math.abs(n || 0)), 0) + PDI;
 }
 
 function round2(n) {
@@ -4247,6 +4651,36 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+// The Debts empty state was the best one in the app - an icon, a reason, and a
+// real button - while Budgets, Goals and Notes had an icon, a reason and an
+// instruction to tap a "+" that opened something else. This is the Debts shape,
+// made shared, so an empty screen always carries the way out of itself.
+function EmptyState(props) {
+  return (
+    <Card style={Object.assign({ padding: "44px 24px 34px", textAlign: "center" }, props.style)}>
+      <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+        <SVGIcon id={props.icon || "spark"} size={24} color={T.orange} />
+      </div>
+      <div dir="auto" style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 4 }}>{props.title}</div>
+      {props.sub && <div dir="auto" style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, maxWidth: 300, margin: "0 auto" }}>{props.sub}</div>}
+      {props.actionLabel && props.onAction && (
+        <button onClick={props.onAction}
+          style={{ marginTop: 18, display: "inline-flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", border: "none", borderRadius: 999, padding: "11px 20px", cursor: "pointer", color: "#fff", fontSize: 14, fontWeight: 700, fontFamily: UI, boxShadow: "0 6px 16px " + T.orangeGlow }}>
+          <SVGIcon id="plus" size={13} color="#fff" />{props.actionLabel}
+        </button>
+      )}
+      {props.secondLabel && props.onSecond && (
+        <div>
+          <button onClick={props.onSecond}
+            style={{ marginTop: 10, display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: "0.5px solid " + T.sep, borderRadius: 999, padding: "9px 17px", cursor: "pointer", color: T.ink2, fontSize: 13, fontWeight: 700, fontFamily: UI }}>
+            <SVGIcon id={props.secondIcon || "spark"} size={13} color={T.ink2} />{props.secondLabel}
+          </button>
+        </div>
+      )}
+    </Card>
+  );
+}
+
 function Card(props) {
   return (
     <div style={Object.assign({
@@ -4973,7 +5407,7 @@ function FocusAnswer(props) {
       {f.why ? section("Why I think that", "#8970C6", <div style={body}>{focusInline(f.why, "why")}</div>, "why") : null}
       {f.risks ? section("How it can get risky", "#C73A36", <div style={body}>{focusInline(f.risks, "rk")}</div>, "risks") : null}
       {f.question ? <div style={{ marginTop: 18, fontFamily: RICHARD_BODY, fontWeight: 400, fontStyle: "italic", fontSize: 15.5, lineHeight: 1.5, color: T.ink, paddingLeft: 13, borderLeft: "3px solid " + T.orange }}>{focusInline(f.question, "q")}</div> : null}
-      <div style={{ marginTop: 12, fontSize: 10.5, fontFamily: UI, color: T.ink3, lineHeight: 1.5 }}>Richard is an AI, not a licensed financial advisor - always do your own research before a decision this size.</div>
+      <div style={{ marginTop: 12, fontSize: 10.5, fontFamily: UI, color: T.ink3, lineHeight: 1.5 }}>{tr("dscBigDecision")}</div>
     </div>
   );
 }
@@ -5463,8 +5897,13 @@ function RollingNum(props) {
   var h = Math.round(size * 1.16);
   var text = String(props.text == null ? "" : props.text);
   var reduced = jrReduced();
+  // The digits are laid out as flex CHILDREN, so in an RTL document the flex
+  // direction reverses them and "₪9,000" renders as "000,9₪". Every figure on
+  // the onboarding sliders came out backwards for Hebrew users because of this
+  // one line. direction:ltr fixes the order; unicodeBidi:isolate stops the run
+  // from disturbing the Hebrew sentence around it.
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", fontFamily: UI, fontWeight: props.weight || 800, fontSize: size, color: color, letterSpacing: "-0.02em", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+    <span dir="ltr" style={{ display: "inline-flex", alignItems: "center", direction: "ltr", unicodeBidi: "isolate", fontFamily: UI, fontWeight: props.weight || 800, fontSize: size, color: color, letterSpacing: "-0.02em", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
       {text.split("").map(function(ch, i) {
         if (!/[0-9]/.test(ch)) {
           return <span key={"s" + i} style={{ display: "inline-block", height: h, lineHeight: h + "px" }}>{ch}</span>;
@@ -6070,7 +6509,7 @@ function QuickAmount(props) {
         ) : (
           <button onClick={function() { setTyping(true); }}
             style={{ background: "none", border: "none", color: J.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: 4 }}>
-            type it instead
+            {tr("obTypeItInstead")}
           </button>
         )}
       </div>
@@ -6902,7 +7341,7 @@ function CatPicker(props) {
                   background: active ? (c.color + "1F") : T.fill1,
                   border: active ? "1.5px solid " + c.color : "1.5px solid transparent" }}>
                 <CatBadge icon={c.icon} color={c.color} size={22} soft={true} />
-                <span style={{ fontSize: 12.5, fontWeight: active ? 700 : 500, color: active ? T.ink : T.ink2, whiteSpace: "nowrap" }}>{c.name}</span>
+                <span style={{ fontSize: 12.5, fontWeight: active ? 700 : 500, color: active ? T.ink : T.ink2, whiteSpace: "nowrap" }}>{catDisplay(c)}</span>
               </button>
             );
           })}
@@ -7231,9 +7670,14 @@ function AmountField(props) {
   );
 }
 
-// EmailJS - sends the real verification code to the user's inbox from the browser.
-// Public key only; safe to ship client-side. The 6-digit check happens in-app.
-var EMAILJS = { service: "service_rl7nf3i", template: "template_q6oxfcp", publicKey: "uqJTHn1oiuh_eKsEs" };
+// The EmailJS-backed 6-digit email verification was replaced by Firebase Auth
+// and nothing has called it since; the account creation path does not verify a
+// code at all. It is deleted here (constants, genCode, sendVerificationEmail)
+// for two reasons: the App Review notes state that network traffic goes only to
+// our own API and Firebase, which shipping a live call to api.emailjs.com
+// contradicts; and the key it carried was a live third-party credential in a
+// public bundle. ROTATE THAT EMAILJS KEY - removing it from the source does not
+// invalidate a key that has already been published.
 
 // Real Google Sign-In via Google Identity Services. The Client ID is public by
 // design (safe to ship). Authorized origins are set in Google Cloud Console.
@@ -7253,33 +7697,6 @@ function decodeJwt(token) {
     }).join(""));
     return JSON.parse(json);
   } catch (e) { return null; }
-}
-
-function genCode() {
-  var s = "";
-  for (var i = 0; i < 6; i++) { s += Math.floor(Math.random() * 10); }
-  return s;
-}
-
-function sendVerificationEmail(email, code) {
-  return fetch("https://api.emailjs.com/api/v1.0/email/send", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      service_id: EMAILJS.service,
-      template_id: EMAILJS.template,
-      user_id: EMAILJS.publicKey,
-      template_params: {
-        code: code,
-        email: email,
-        to_email: email,
-        user_email: email,
-        to: email,
-        recipient: email,
-        reply_to: email,
-      },
-    }),
-  });
 }
 
 function isEmail(s) {
@@ -7370,9 +7787,11 @@ function WelcomeHero(props) {
             ]} />
             <div style={{ fontSize: 11.5, color: J.ink2, textAlign: "center", marginTop: 10, lineHeight: 1.4 }}>{tr("whBarFootnote")}</div>
           </div>
-          <div style={{ marginTop: 20, width: "100%" }}>
-            <TestimonialLine />
-          </div>
+          {LAUNCH.testimonials && (
+            <div style={{ marginTop: 20, width: "100%" }}>
+              <TestimonialLine />
+            </div>
+          )}
         </Stagger>
       </div>
 
@@ -7721,9 +8140,13 @@ function AuthScreen(props) {
   var pendingLogin = _pl[0]; var setPendingLogin = _pl[1];
   var _sb = useState("");
   var startBal = _sb[0]; var setStartBal = _sb[1];
-  var _sl = useState("en");
+  // Hard-coding "en" and "$" here stamped an English, dollar account onto every
+  // new user - including one on a phone already set to Hebrew, who had just
+  // been reading the app in Hebrew. Seed from whatever the app is currently
+  // showing (which is the device's language on a fresh install).
+  var _sl = useState(_lang.code || "en");
   var signupLang = _sl[0]; var setSignupLang = _sl[1];
-  var _sc2 = useState("$");
+  var _sc2 = useState(deviceCurrency(_lang.code));
   var signupCur = _sc2[0]; var setSignupCur = _sc2[1];
   var _cs = useState(false);
   var consent = _cs[0]; var setConsent = _cs[1];
@@ -8215,7 +8638,7 @@ function CatchUpScreen(props) {
                 return (
                   <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderBottom: i < cats.length - 1 ? "0.5px solid " + J.line : "none" }}>
                     <CatBadge icon={c.icon} color={c.color} size={34} soft={true} />
-                    <span style={{ flex: 1, fontSize: 15, color: J.ink, fontWeight: 500 }}>{c.name}</span>
+                    <span style={{ flex: 1, fontSize: 15, color: J.ink, fontWeight: 500 }}>{catDisplay(c)}</span>
                     <div style={fieldBox}>
                       <span style={{ fontSize: 14, color: J.ink3, fontWeight: 600 }}>{sym}</span>
                       <input value={amts[c.id] || ""} onChange={function(e) { setAmt(c.id, e.target.value); }} type="number" inputMode="decimal" placeholder="0" style={amtInput} />
@@ -8581,7 +9004,10 @@ function OnboardingScreen(props) {
   // the rest of the questionnaire and the math story format in the user's
   // own currency; App persists them to the blob on completion.
   var _plc = useState(_lang.code || "en"); var prefLang = _plc[0]; var setPrefLang = _plc[1];
-  var _pcc = useState(_currency.sym || "$"); var prefCur = _pcc[0]; var setPrefCur = _pcc[1];
+  var _pcc = useState(_currency.sym || deviceCurrency(_lang.code)); var prefCur = _pcc[0]; var setPrefCur = _pcc[1];
+  // Once the user picks a currency by hand, changing the language stops moving
+  // it for them.
+  var _ct = useState(false); var curTouched = _ct[0]; var setCurTouched = _ct[1];
   // Date Range preference, same three modes as Profile > Money > Date Range -
   // asked here too so it lands in the account from day one instead of only
   // being discoverable after the fact. Calendar ("This Month") is the default.
@@ -8634,10 +9060,16 @@ function OnboardingScreen(props) {
     });
     var cs = prefCur || _currency.sym || "$";
     var userMsg = "Name: " + props.username + ". Age: " + ageStr + ". Life stage: " + lifeStage + ". PRIMARY CHALLENGE: " + (coreProblem || "building a financial plan") + ". My currency symbol is " + cs + " - use it for every amount. Monthly income: " + cs + (income || "0") + ". Monthly essentials: " + cs + (essentials || "0") + ". Current savings: " + cs + (savings || "0") + ". Total debt: " + cs + (debt || "0") + ". Top goal: " + (goalName || "financial freedom") + ", target " + cs + (goalAmt || "unknown") + ", timeline: " + (timeline || "unspecified") + ". Self-reported money leaks: " + (leakLabels.length ? leakLabels.join(", ") : "not specified") + ". Estimated monthly overspend: " + cs + (overspend || "unknown") + ". Write a plan that directly addresses my primary challenge.";
+    // 400 tokens cut the plan off mid-word - the audited Hebrew account ended on
+    // "...בלי לגעת בחיסכון ה". This is the single most valuable thing the app
+    // produces and the payoff for 28 screens of questions; it does not get to
+    // run out of budget three words from the end. Hebrew and Arabic also cost
+    // noticeably more tokens per character than English, which is why the
+    // truncation showed up there first.
     callClaude(
       [{ role: "user", content: userMsg }],
       system,
-      400,
+      900,
       function(planErr, text) {
         applyPlan((planErr || !text) ? null : text);
       }
@@ -8671,10 +9103,34 @@ function OnboardingScreen(props) {
     );
   }
 
+  // Two things were wrong with this before.
+  //
+  // (1) It ignored the leak question entirely. A user who has just told us she
+  //     overspends on food delivery and going out was handed the largest
+  //     discretionary budgets in the app for exactly those things. The answer
+  //     now moves money: the flagged categories are cut and the difference goes
+  //     to savings, and leakTrimmed() lets the screen say so.
+  //
+  // (2) It is still built from income and essentials alone, because at this
+  //     point in the flow nothing has been logged yet. So these are a STARTING
+  //     POINT, not a verdict - reflowBudgetsAgainstSpend() re-floors every cap
+  //     against what the user actually logs on the catch-up screen a minute
+  //     later, which is what stops the app inventing "you are already over".
+  function leakTrimmed() {
+    var hit = { c5: false, c6: false, c2: false };
+    (leaks || []).forEach(function(id) {
+      if (id === "goingout") hit.c5 = true;
+      if (id === "delivery") { hit.c5 = true; hit.c2 = true; }
+      if (id === "subs") hit.c5 = true;
+      if (id === "impulse" || id === "shopping") hit.c6 = true;
+    });
+    return hit;
+  }
   function suggestBudgets() {
     var inc = parseFloat(income) || 0;
     var ess = parseFloat(essentials) || 0;
     var disc = Math.max(0, inc - ess);
+    var trimmed = leakTrimmed();
     var result = [];
     if (ess > 0) {
       result.push({ catId: "c1", category: "Housing",   limit: Math.round(ess * 0.50) });
@@ -8683,9 +9139,10 @@ function OnboardingScreen(props) {
       result.push({ catId: "c4", category: "Health",    limit: Math.round(ess * 0.10) });
     }
     if (disc > 0) {
-      result.push({ catId: "c5", category: "Entertainment", limit: Math.round(disc * 0.35) });
-      result.push({ catId: "c6", category: "Shopping",      limit: Math.round(disc * 0.35) });
-
+      // A flagged category keeps 60% of what it would otherwise have had - a
+      // real cut the user can feel, not a rounding.
+      result.push({ catId: "c5", category: "Entertainment", limit: Math.round(disc * 0.35 * (trimmed.c5 ? 0.6 : 1)) });
+      result.push({ catId: "c6", category: "Shopping",      limit: Math.round(disc * 0.35 * (trimmed.c6 ? 0.6 : 1)) });
       result.push({ catId: "c11",category: "Other",         limit: Math.round(disc * 0.10) });
     }
     return result.filter(function(b) { return b.limit > 0; });
@@ -8914,7 +9371,18 @@ function OnboardingScreen(props) {
                   {LANGUAGE_OPTIONS.map(function(o, i) {
                     return (
                       <JrChip key={o.code} label={o.label} selected={prefLang === o.code} delay={0.05 + i * 0.05}
-                        onPress={function() { setPrefLang(o.code); applyLangDir(o.code); }} />
+                        onPress={function() {
+                          setPrefLang(o.code);
+                          applyLangDir(o.code);
+                          // Picking עברית and then having to hunt for ₪ on a
+                          // second 16-chip row is how Hebrew users ended up
+                          // with dollar accounts. Move the currency with the
+                          // language unless they have already changed it.
+                          if (!curTouched) {
+                            var sym = deviceCurrency(o.code);
+                            setPrefCur(sym); _currency.sym = sym;
+                          }
+                        }} />
                     );
                   })}
                 </div>
@@ -8923,7 +9391,7 @@ function OnboardingScreen(props) {
                   {CURRENCY_OPTIONS.slice(0, 16).map(function(c, i) {
                     return (
                       <JrChip key={c.sym} label={c.sym} sub={c.code} selected={prefCur === c.sym} delay={0.35 + i * 0.035}
-                        onPress={function() { setPrefCur(c.sym); _currency.sym = c.sym; }} />
+                        onPress={function() { setCurTouched(true); setPrefCur(c.sym); _currency.sym = c.sym; }} />
                     );
                   })}
                 </div>
@@ -9509,11 +9977,29 @@ var MAX_WIDGETS = 6;
 // Useful for every account without assuming a category, savings pot, or goal
 // that a person may not have created. These are the starting dashboard cards;
 // saved widgets (including an intentionally empty list) always take precedence.
+// Only the one that has something to show on day 0. The other two used to ship
+// seeded as well, and on a new account "Spending trend" drew five blank months
+// and "This month vs last" read LAST MONTH 0.00 - two empty cards on the first
+// screen, and removing one had no undo. They are still one tap away in the
+// gallery, and getStarterWidgets() adds the trend back once there is enough
+// history for it to mean anything.
 var DEFAULT_OVERVIEW_WIDGETS = [
-  { id: "default_spending_breakdown", title: "Where your money went", metric: "expense", target: "", shape: "list", timeframe: "month", goal: null, color: "#C8673A", icon: "cart" },
+  { id: "default_spending_breakdown", title: "Where your money went", metric: "expense", target: "", shape: "list", timeframe: "month", goal: null, color: "#C8673A", icon: "cart" }
+];
+var LATER_OVERVIEW_WIDGETS = [
   { id: "default_spending_trend", title: "Spending trend", metric: "expense", target: "", shape: "trend", timeframe: "month", goal: null, color: "#2799C8", icon: "chart" },
   { id: "default_cash_flow", title: "This month vs last", metric: "net", target: "", shape: "compare", timeframe: "month", goal: null, color: "#27A85F", icon: "up" }
 ];
+// A month-comparison widget needs two months to compare. Count the distinct
+// months the account has any transaction in, and only seed the ones that can
+// actually draw something.
+function getStarterWidgets(tx) {
+  var months = {};
+  (tx || []).forEach(function(t) { if (t && t.date) months[t.date.slice(0, 7)] = 1; });
+  var n = Object.keys(months).length;
+  if (n >= 2) return DEFAULT_OVERVIEW_WIDGETS.concat(LATER_OVERVIEW_WIDGETS);
+  return DEFAULT_OVERVIEW_WIDGETS.slice();
+}
 
 // The template gallery behind "+ Add a widget". Covers the metrics every user
 // can use with zero setup first, then the ones that need a category, folder,
@@ -10002,7 +10488,7 @@ function OverviewWidgets(props) {
     <div style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.165s both" }}>
       <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-        <span style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{"Your widgets"}</span>
+        <span style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{tr("yourWidgets")}</span>
         <div style={{ flex: 1 }} />
         {list.length > 0 && <span style={{ fontSize: 11, color: T.ink3 }}>{"Built by Richard"}</span>}
       </div>
@@ -10275,10 +10761,10 @@ function Overview(props) {
     if (props.onDismissTip) props.onDismissTip(id);
   }
   var tips = [
-    { id: "debts",  icon: "credit",  title: "Crush your debt",  sub: "Payoff plan + debt-free date", used: (props.debts || []).length > 0,                       go: function() { if (props.onOpenDebts) props.onOpenDebts(); else nav("debts"); } },
-    { id: "collab", icon: "user",    title: "Add your partner", sub: "Share budgets & goals",        used: !!props.householdId,                                  go: function() { if (props.onOpenCollab) props.onOpenCollab(); else nav("collab"); } },
-    { id: "sync",   icon: "refresh", title: "Set up Bank Sync", sub: "Log expenses from your phone's payment notifications", used: !!(props.bankSync && props.bankSync.enabled),         go: function() { if (props.onSetupSync) props.onSetupSync(); else nav("bankSync"); } },
-    { id: "trip",   icon: "plane",   title: "Plan a trip",      sub: "Let Richard split your travel budget", used: (props.trips || []).length > 0,                go: function() { if (props.onPlanTrip) props.onPlanTrip(); else nav("trips"); } }
+    { id: "debts",  icon: "credit",  title: tr("dashTipDebtTitle"),  sub: tr("dashTipDebtSub"), used: (props.debts || []).length > 0,                       go: function() { if (props.onOpenDebts) props.onOpenDebts(); else nav("debts"); } },
+    { id: "collab", icon: "user",    title: tr("dashTipCollabTitle"), sub: tr("dashTipCollabSub"),        used: !!props.householdId,                                  go: function() { if (props.onOpenCollab) props.onOpenCollab(); else nav("collab"); } },
+    { id: "sync",   icon: "refresh", title: tr("dashTipSyncTitle"), sub: tr("dashTipSyncSub"), used: !!(props.bankSync && props.bankSync.enabled),         go: function() { if (props.onSetupSync) props.onSetupSync(); else nav("bankSync"); } },
+    { id: "trip",   icon: "plane",   title: tr("dashTipTripTitle"), sub: tr("dashTipTripSub"), used: (props.trips || []).length > 0,                go: function() { if (props.onPlanTrip) props.onPlanTrip(); else nav("trips"); } }
   ].filter(function(a) { return !a.used && tipsOff.indexOf(a.id) < 0; });
   // A brand-new account still needs to find these, so they sit high on the page.
   // Once there's a real month of activity they move below the numbers - the
@@ -10288,7 +10774,7 @@ function Overview(props) {
   function tipsCard(delay) {
     return (
       <div style={{ marginBottom: 20, animation: "rcFadeUp var(--m-enter) var(--m-ease) " + delay + "s both" }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, fontFamily: UI }}>{"Get the most from Richy"}</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, fontFamily: UI }}>{tr("getTheMost")}</div>
         <Card style={{ overflow: "hidden" }}>
           {tips.map(function(a, i) {
             return (
@@ -10342,6 +10828,10 @@ function Overview(props) {
       off: b.limit > 0 && (dir === "target" ? s < b.limit : s > b.limit),
     };
   }).sort(function(a,b){ return b.pct - a.pct; });
+  // Already sorted worst-first, so the top three are the three that need a
+  // decision. The rest live one tap away on the tab that owns them.
+  var DASH_BUDGET_ROWS = 3;
+  var dashBudgetRows = budgetRows.slice(0, DASH_BUDGET_ROWS);
 
   // The hero is the one place users should not have to interpret a dashboard.
   // Richard does the arithmetic in the background and exposes four decisions:
@@ -10376,13 +10866,36 @@ function Overview(props) {
   var heroTopLeak = heroWatch.leaks.length ? heroWatch.leaks[0] : null;
   var heroMove = heroTopRisk || heroTopLeak;
   var heroOverCaps = heroCapRows.filter(function(r) { return r.over; }).length;
-  var heroMonthRisk = heroWatch.risks.some(function(r) { return r.type === "cliff"; });
-  var heroMonthStatus = heroMonthRisk ? "Needs attention" : heroOverCaps > 0 ? "Plan needs a tune-up" : "On track";
-  var heroMonthTone = heroMonthRisk ? T.heroNeg : heroOverCaps > 0 ? T.gold : T.heroPos;
+  // One shared verdict - see monthVerdict(). The Dashboard used to compute its
+  // own, which is how it could say "Plan needs a tune-up" while the Advisor
+  // said "EXCELLENT · 85" about the same day.
+  var heroVerdict = monthVerdict({ watch: heroWatch, overCaps: heroOverCaps, savingsRate: savRate, hasIncome: hasIncome });
+
+  // Which of the three banner-shaped modules gets today's single nudge slot.
+  // Priority is by consequence, not by source: something is going wrong this
+  // month, then money you can actually claim back, then the business digest.
+  // A module that loses the slot is not hidden forever - it wins on the first
+  // day nothing above it has anything to say.
+  var nudge = (function() {
+    if (heroWatch.risks.length > 0) return "brief";
+    var fmDismissed = (props.foundMoney && props.foundMoney.dismissed) || [];
+    if (heroWatch.leaks.filter(function(l) { return fmDismissed.indexOf(l.id) === -1; }).length > 0) return "found";
+    if (bizAccts.length > 0 && props.onOpenBusiness) return "business";
+    // Nothing is wrong and nothing is recoverable: the brief's quiet state is
+    // the best screen in the app, so it takes the slot rather than leaving a gap.
+    return "brief";
+  })();
+  var heroMonthRisk = heroVerdict.level === "attention";
+  var heroMonthStatus = heroVerdict.label;
+  var heroMonthTone = heroVerdict.heroTone;
   var heroTodayDate = new Date();
   var heroDaysLeft = new Date(heroTodayDate.getFullYear(), heroTodayDate.getMonth() + 1, 0).getDate() - heroTodayDate.getDate();
   var heroMonthPct = income > 0 ? Math.max(0, Math.min(100, Math.round((expense / income) * 100))) : 0;
-  var heroPageCount = 4;
+  // Two panels by default - safe-to-spend and the month verdict - and a third
+  // only when the watcher has actually found something. Four fixed panels meant
+  // two of them were duplicates and one said "All clear" on a day the rest of
+  // the screen was red.
+  var heroPageCount = heroWatch.leaks.length > 0 ? 3 : 2;
 
   // ===== Hero carousel: swipeable state + draw animation =====
   var _pg = useState(0);    var page = _pg[0];     var setPage = _pg[1];
@@ -10435,10 +10948,29 @@ function Overview(props) {
     return function() { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
   }, [page, range, shift]);
 
+  // RTL breaks scrollLeft. In an RTL document the first panel sits at the RIGHT
+  // edge and scrollLeft counts NEGATIVE as you move through the carousel (the
+  // modern convention; some older engines instead count down from a positive
+  // maximum). Reading it as a plain positive offset is why a Hebrew user could
+  // watch the hero number animate through three panels while the dots went
+  // blank and tapping a dot changed nothing. These two helpers convert between
+  // "panel index" and "whatever this browser calls that scroll position".
+  function heroScrollTarget(el, i) {
+    if (!isRTL()) return i * el.clientWidth;
+    var max = el.scrollWidth - el.clientWidth;
+    // Positive-decreasing convention: panel 0 is at scrollLeft === max.
+    return el.scrollLeft > 0 ? max - i * el.clientWidth : -i * el.clientWidth;
+  }
+  function heroPageFromScroll(el) {
+    var w = el.clientWidth || 1;
+    if (!isRTL()) return Math.round(el.scrollLeft / w);
+    if (el.scrollLeft > 0) return Math.round((el.scrollWidth - el.clientWidth - el.scrollLeft) / w);
+    return Math.round(Math.abs(el.scrollLeft) / w);
+  }
   function goPage(i) {
     setPage(i);
     var el = scrollRef.current;
-    if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+    if (el) el.scrollTo({ left: heroScrollTarget(el, i), behavior: "smooth" });
   }
   // Native scroll-snap drives the carousel; this keeps the dots + chart animation
   // in sync with whichever panel the browser has snapped to.
@@ -10449,9 +10981,8 @@ function Overview(props) {
     // not on every pixel — avoids hammering setPage during the swipe animation.
     if (scrollTimer.current) clearTimeout(scrollTimer.current);
     scrollTimer.current = setTimeout(function() {
-      var w = el.clientWidth || 1;
-      var i = Math.round(el.scrollLeft / w);
-      if (i !== page) setPage(i);
+      var i = heroPageFromScroll(el);
+      if (i !== page && i >= 0 && i < heroPageCount) setPage(i);
     }, 100);
   }
   function pickRange(r) { if (r !== range) { setRange(r); setShift(0); } }
@@ -10904,7 +11435,7 @@ function Overview(props) {
 
       <div style={{ marginBottom: 16, animation: "rcFadeUp var(--m-enter) var(--m-ease) both" }}>
         <div style={{ display: "flex", justifyContent: "center", gap: 7, padding: "0 0 11px" }}>
-          {[0,1,2,3].map(function(i) {
+          {Array.apply(null, { length: heroPageCount }).map(function(_, i) {
             return <div key={i} onClick={function() { goPage(i); }} style={{ width: i === page ? 18 : 6, height: 6, borderRadius: 3, cursor: "pointer", transition: "all 0.3s cubic-bezier(0.22,1,0.36,1)", background: i === page ? T.orange : T.fill4 }} />;
           })}
         </div>
@@ -10919,8 +11450,8 @@ function Overview(props) {
             <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden", padding: "21px 24px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>Safe to spend</div>
-                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>Next 7 days</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>{tr("safeToSpend")}</div>
+                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>{tr("nextSevenDays")}</div>
                 </div>
                 <div onPointerDown={stopDrag} onClick={function() { setHidden(function(v) { return !v; }); }} style={{ cursor: "pointer", padding: 4, display: "flex" }}>
                   <SVGIcon id={hidden ? "eyeoff" : "eye"} size={20} color={HMUT} />
@@ -10938,12 +11469,12 @@ function Overview(props) {
               </div>
               <div style={{ display: "flex", gap: 14, borderTop: "0.5px solid " + HSEP, paddingTop: 13 }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>Per day</div>
+                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>{tr("perDay")}</div>
                   <div style={{ fontSize: 16, fontWeight: 700, color: HINK, letterSpacing: "-0.02em", marginTop: 3 }}>{dollars(safePerDay)}</div>
                 </div>
                 <div style={{ width: "0.5px", background: HSEP }} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>Current balance</div>
+                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>{tr("currentBalance")}</div>
                   <div style={{ fontSize: 16, fontWeight: 700, color: balance < 0 ? HNEG : HINK, letterSpacing: "-0.02em", marginTop: 3 }}>{(balance < 0 ? "-" : "") + dollars(Math.abs(balance))}</div>
                 </div>
               </div>
@@ -10965,65 +11496,50 @@ function Overview(props) {
                   <div style={{ height: "100%", width: (heroMonthPct * dp) + "%", borderRadius: 999, background: heroMonthPct > 100 ? HNEG : heroMonthPct > 85 ? T.gold : HPOS, transition: "width 0.5s ease" }} />
                 </div>
               </div>
-              <div style={{ display: "flex", gap: 11, borderTop: "0.5px solid " + HSEP, paddingTop: 12 }}>
+              <div style={{ display: "flex", gap: 11, borderTop: "0.5px solid " + HSEP, paddingTop: 12, alignItems: "center" }}>
                 {[{ k: "Income", v: dollars(income), c: HPOS }, { k: "Spent", v: dollars(expense), c: HINK }, { k: "Days left", v: String(heroDaysLeft), c: HINK }].map(function(x, i) {
                   return <div key={x.k} style={{ flex: 1, paddingInlineStart: i ? 10 : 0, borderInlineStart: i ? "0.5px solid " + HSEP : "none" }}><div style={{ fontSize: 9.5, fontWeight: 600, letterSpacing: "0.07em", textTransform: "uppercase", color: HFNT }}>{x.k}</div><div style={{ fontSize: 14.5, fontWeight: 700, color: x.c, marginTop: 3, letterSpacing: "-0.02em" }}>{x.v}</div></div>;
                 })}
+                {/* This used to be a whole panel of its own ("Richard's next
+                    move"), which rendered the SAME sentence as the line above -
+                    heroMove is heroTopRisk, and heroTopRisk is what the month
+                    status already reports. One verdict, one way in. */}
+                <button onPointerDown={stopDrag} onClick={function() { nav("watchBrief"); }}
+                  aria-label={heroMove ? "See Richard's plan" : "Open daily brief"}
+                  style={{ flexShrink: 0, height: 32, padding: "0 12px", borderRadius: 10, border: "none", background: T.heroPillBg, color: T.heroPillText, fontFamily: UI, fontSize: 12, fontWeight: 750, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+                  {heroMove ? "Plan" : "Brief"}<SVGIcon id="chevron" size={12} color={T.heroPillText} />
+                </button>
               </div>
             </div>
 
-            {/* Panel 2 - Richard's single next move. The detail lives in Daily
-                Brief; the hero only earns one decision at a time. */}
+            {/* Money watcher. Only once there is something to watch - on day 0
+                this panel said "All clear · No new leaks" beside a Dashboard
+                already showing four red cards, which is both noise and a
+                contradiction. */}
+            {heroWatch.leaks.length > 0 && (
             <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden", padding: "20px 22px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>Richard's next move</span>
-                {/* T[tint] resolves "btn" to a CSS gradient - fine as a background,
-                    invalid as an SVG stroke (silently falls back to black), so a
-                    category-jump signal here needs the solid fallback instead. */}
-                <span style={{ width: 27, height: 27, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", background: T.heroRangeBg }}><SVGIcon id={heroMove ? heroMove.icon : "check"} size={14} color={heroMove ? (heroMove.tint === "btn" ? T.orange : (T[heroMove.tint] || HINK)) : HPOS} /></span>
-              </div>
-              <div style={{ minHeight: 105, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                <div style={{ fontSize: 20, fontWeight: 750, color: HINK, letterSpacing: "-0.025em", lineHeight: 1.18, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                  {heroMove ? heroMove.title : "Nothing needs you right now."}
-                </div>
-                <div style={{ fontSize: 12.5, color: HFNT, lineHeight: 1.42, marginTop: 8, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                  {heroMove ? heroMove.subtitle : "Richard is still watching your budgets, goals and upcoming charges."}
-                </div>
-              </div>
-              <button onPointerDown={stopDrag} onClick={function() { nav("watchBrief"); }}
-                style={{ width: "100%", height: 36, borderRadius: 11, border: "none", background: T.heroPillBg, color: T.heroPillText, fontFamily: UI, fontSize: 12.5, fontWeight: 750, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-                {heroMove ? "See Richard's plan" : "Open daily brief"}<SVGIcon id="chevron" size={13} color={T.heroPillText} />
-              </button>
-            </div>
-
-            {/* Panel 3 - The 24/7 watcher. Summary first; the long finding list
-                remains one tap away so a new user never meets a wall of alerts. */}
-            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden", padding: "20px 22px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>Money watcher</span>
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>{tr("moneyWatcher")}</span>
                 <span style={{ fontSize: 10.5, fontWeight: 700, color: HPOS, display: "flex", alignItems: "center", gap: 5 }}><i style={{ width: 6, height: 6, borderRadius: 6, display: "block", background: HPOS, animation: "rcBadgePulse 2s ease-in-out infinite" }} />24/7</span>
               </div>
               <div>
-                {heroWatch.leaks.length ? (
-                  <div>
-                    <div style={{ fontSize: 35, fontWeight: 750, color: HINK, letterSpacing: "-0.04em", lineHeight: 1 }}>
-                      {heroWatch.totals.recoverableAnnual > 0 ? dollars(heroWatch.totals.recoverableAnnual) : dollars(heroWatch.totals.oneOffTotal)}
-                    </div>
-                    <div style={{ fontSize: 12, color: HFNT, marginTop: 7 }}>{heroWatch.totals.recoverableAnnual > 0 ? "potential to protect each year" : "potentially available to claim back"}</div>
-                    <div style={{ marginTop: 11, display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ width: 25, height: 25, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: T.heroRangeBg, flexShrink: 0 }}><SVGIcon id={heroTopLeak.icon} size={13} color={heroTopLeak.tint === "btn" ? T.orange : (T[heroTopLeak.tint] || HINK)} /></span>
-                      <span style={{ fontSize: 12.5, fontWeight: 650, color: HINK, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{heroTopLeak.title}</span>
-                    </div>
+                <div>
+                  <div style={{ fontSize: 35, fontWeight: 750, color: HINK, letterSpacing: "-0.04em", lineHeight: 1 }}>
+                    {heroWatch.totals.recoverableAnnual > 0 ? dollars(heroWatch.totals.recoverableAnnual) : dollars(heroWatch.totals.oneOffTotal)}
                   </div>
-                ) : (
-                  <div><div style={{ fontSize: 25, fontWeight: 750, color: HINK, letterSpacing: "-0.03em" }}>All clear</div><div style={{ fontSize: 12.5, color: HFNT, lineHeight: 1.45, marginTop: 8 }}>No new leaks, duplicate charges or price jumps found.</div></div>
-                )}
+                  <div style={{ fontSize: 12, color: HFNT, marginTop: 7 }}>{heroWatch.totals.recoverableAnnual > 0 ? "potential to protect each year" : "potentially available to claim back"}</div>
+                  <div style={{ marginTop: 11, display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ width: 25, height: 25, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: T.heroRangeBg, flexShrink: 0 }}><SVGIcon id={heroTopLeak.icon} size={13} color={heroTopLeak.tint === "btn" ? T.orange : (T[heroTopLeak.tint] || HINK)} /></span>
+                    <span style={{ fontSize: 12.5, fontWeight: 650, color: HINK, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{heroTopLeak.title}</span>
+                  </div>
+                </div>
               </div>
               <button onPointerDown={stopDrag} onClick={function() { nav("watchBrief"); }}
                 style={{ width: "100%", height: 36, borderRadius: 11, border: "1px solid " + HSEP, background: "transparent", color: HINK, fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-                {heroWatch.leaks.length ? ("Review " + heroWatch.leaks.length + " finding" + (heroWatch.leaks.length === 1 ? "" : "s")) : "See what Richard checked"}<SVGIcon id="chevron" size={13} color={HINK} />
+                {"Review " + heroWatch.leaks.length + " finding" + (heroWatch.leaks.length === 1 ? "" : "s")}<SVGIcon id="chevron" size={13} color={HINK} />
               </button>
             </div>
+            )}
 
           </div>
         </div>
@@ -11116,16 +11632,25 @@ function Overview(props) {
         );
       })}
 
-      <DailyBriefBanner tx={tx} categories={cats} budgets={budgets} goals={goals} savings={props.savings} businesses={props.businesses} investing={props.investing} foundMoney={props.foundMoney} onOpen={function() { nav("watchBrief"); }} />
-      <FoundMoney tx={tx} categories={cats} foundMoney={props.foundMoney} onSaveFoundMoney={props.onSaveFoundMoney} richardInstructions={props.richardInstructions} lang={props.lang} />
-
-      <BusinessPulse businesses={bizAccts} onOpenBusiness={props.onOpenBusiness} />
+      {/* ONE NUDGE SLOT. These three used to render one after another with no
+          rule between them - no component asked whether another was already
+          showing - so a week-2 dashboard stacked three alert-shaped cards in a
+          row. They are ranked here instead, highest priority wins the slot, and
+          the others wait for a day when they are the most important thing.
+          Nubank's rule is the sharp version of this: if it needs a dismiss
+          button, it was not relevant enough to show. */}
+      {(function() {
+        if (nudge === "brief") return <DailyBriefBanner tx={tx} categories={cats} budgets={budgets} goals={goals} savings={props.savings} businesses={props.businesses} investing={props.investing} foundMoney={props.foundMoney} onOpen={function() { nav("watchBrief"); }} />;
+        if (nudge === "found") return <FoundMoney tx={tx} categories={cats} foundMoney={props.foundMoney} onSaveFoundMoney={props.onSaveFoundMoney} richardInstructions={props.richardInstructions} lang={props.lang} />;
+        if (nudge === "business") return <BusinessPulse businesses={bizAccts} onOpenBusiness={props.onOpenBusiness} />;
+        return null;
+      })()}
 
       <div style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.09s both" }}>
         <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
-            <span style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{props.onOpenInvesting ? "Accounts" : tr("savings")}</span>
+            <span style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{props.onOpenInvesting ? tr("accounts") : tr("savings")}</span>
           </div>
           {(savAccts.length > 0 || bizAccts.length > 0 || invAccts.length > 0) && (
             <button onClick={props.onOpenSavings} style={{ background: "none", border: "none", cursor: "pointer", color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI, display: "flex", alignItems: "center", gap: 2 }}>
@@ -11137,7 +11662,7 @@ function Overview(props) {
           <button onClick={props.onOpenSavings} style={{ width: "100%", textAlign: "start", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, marginBottom: 20, padding: "15px 16px", borderRadius: 18, background: T.card, border: "1px dashed " + T.orange + "66", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)" }}>
             <CatBadge icon="coins" color={T.orange} size={38} soft={true} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>{props.onOpenBusiness ? "Open an account" : tr("addSavingsAccount")}</div>
+              <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>{props.onOpenBusiness ? tr("openAnAccount") : tr("addSavingsAccount")}</div>
               <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>{props.onOpenInvesting ? "A savings pot, a business, or an investing account." : props.onOpenBusiness ? "A savings pot, or a business account with Richard." : tr("emptySavingsSub")}</div>
             </div>
             <SVGIcon id="plus" size={20} color={T.orange} />
@@ -11159,7 +11684,7 @@ function Overview(props) {
                   <CatBadge icon={b.icon || "briefcase"} color={b.color || "#8970C6"} size={36} soft={true} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 15, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.name}</div>
-                    <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1 }}>Business</div>
+                    <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1 }}>{tr("businessLabel")}</div>
                   </div>
                   <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(businessCash(b))}</span>
                 </button>
@@ -11172,7 +11697,7 @@ function Overview(props) {
                   <CatBadge icon={v.icon || "chart"} color={v.color || T.green} size={36} soft={true} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 15, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name}</div>
-                    <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1 }}>Investing</div>
+                    <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1 }}>{tr("investingLabel")}</div>
                   </div>
                   <div style={{ textAlign: "end", flexShrink: 0 }}>
                     <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>{dollars(investingWorth(v))}</div>
@@ -11184,7 +11709,7 @@ function Overview(props) {
               );
             })}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: T.orangeDim }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: T.ink2, textTransform: "uppercase", letterSpacing: "0.08em" }}>{(bizAccts.length > 0 || invAccts.length > 0) ? "Total set aside" : tr("totalSavings")}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: T.ink2, textTransform: "uppercase", letterSpacing: "0.08em" }}>{(bizAccts.length > 0 || invAccts.length > 0) ? tr("totalSetAside") : tr("totalSavings")}</span>
               <span style={{ fontSize: 16, fontWeight: 800, color: T.orange, letterSpacing: "-0.02em" }}>{dollars(savTotal + bizTotal + invTotal)}</span>
             </div>
           </Card>
@@ -11200,13 +11725,18 @@ function Overview(props) {
             </div>
             <span style={{ fontSize: 12, color: T.ink3, display: "flex", alignItems: "center", gap: 4 }}>{budgetRows.filter(function(b){return b.over;}).length > 0 ? budgetRows.filter(function(b){return b.over;}).length + " " + tr("overLimit") : tr("onTrack")}<SVGIcon id="chevron" size={13} color={T.ink3} /></span>
           </div>
+          {/* A home module summarises and links; it never reproduces the tab.
+              Seven unbounded budget rows here AND a Budgets tab is the same
+              content twice, and it is what pushed the tips card - the only
+              feature-discovery surface in the app - off the bottom of a
+              3,425 px page. Three rows, worst first, then a link. */}
           <Card style={{ marginBottom: 20, overflow: "hidden" }}>
-            {budgetRows.map(function(b, i) {
+            {dashBudgetRows.map(function(b, i) {
               return (
-                <div key={b.cat.id || i} style={{ padding: "13px 16px", borderBottom: i < budgetRows.length-1 ? "0.5px solid " + T.sep : "none" }}>
+                <div key={b.cat.id || i} style={{ padding: "13px 16px", borderBottom: i < dashBudgetRows.length-1 ? "0.5px solid " + T.sep : "none" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 8 }}>
                     <CatBadge icon={b.cat.icon} color={b.cat.color} size={32} soft={true} />
-                    <span style={{ flex: 1, fontSize: 14.5, color: T.ink, fontWeight: 600 }}>{b.cat.name}</span>
+                    <span style={{ flex: 1, fontSize: 14.5, color: T.ink, fontWeight: 600 }}>{catDisplay(b.cat)}</span>
                     <span style={{ fontSize: 13, fontWeight: 700, color: b.off ? (b.dir === "target" ? T.gold : T.red) : T.ink2 }}>{b.pct}%</span>
                   </div>
                   <ProgressBar value={b.spent} max={b.limit} color={b.off ? (b.dir === "target" ? T.gold : T.red) : b.cat.color} h={6} />
@@ -11217,6 +11747,16 @@ function Overview(props) {
                 </div>
               );
             })}
+            {budgetRows.length > dashBudgetRows.length && (
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: T.orangeDim }}>
+                <span style={{ fontSize: 12.5, color: T.ink2, fontWeight: 600 }}>
+                  {budgetRows.length - dashBudgetRows.length + " " + tr("onTrack").toLowerCase()}
+                </span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: T.orange, display: "flex", alignItems: "center", gap: 3 }}>
+                  {tr("seeAllN").replace("{n}", budgetRows.length)}<SVGIcon id="chevron" size={13} color={T.orange} />
+                </span>
+              </div>
+            )}
           </Card>
         </div>
       )}
@@ -11272,10 +11812,10 @@ function Overview(props) {
                   <CatBadge icon={t.type === "income" ? "up" : c.icon} color={t.type === "income" ? T.green : c.color} size={36} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 15, color: T.ink, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
-                    <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{t.type === "income" ? tr("income") : c.name} {"  "}{t.date}{t.origCur && t.origCur !== _currency.sym ? "  -  " + fmtCur(t.origCur, t.origAmount) : ""}</div>
+                    <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{t.type === "income" ? tr("income") : catDisplay(c)} {"  "}{t.date}{t.origCur && t.origCur !== _currency.sym ? "  -  " + fmtCur(t.origCur, t.origAmount) : ""}</div>
                   </div>
                   <span style={{ fontSize: 15, fontWeight: 700, color: t.type === "income" ? T.green : T.ink, flexShrink: 0 }}>
-                    {t.type === "income" ? "+" : "-"}{dollars(t.amount)}
+                    {dollarsDelta(t.type === "income" ? t.amount : -t.amount)}
                   </span>
                 </div>
               );
@@ -12267,17 +12807,41 @@ function forecastUpcoming(tx, cats, days) {
 //
 // Folder ("shared") budgets are skipped: their catId is a folder key, and
 // resolving it needs the folder's member list, which this layer does not see.
+// Budget pace was the single biggest source of invented bad news on day 0.
+//
+// The catch-up screen asks the user to type what they have ALREADY spent this
+// month - one lump per category, dated today. Pace then divided that lump by
+// the elapsed fraction of the month (floored at 0.2, so a five-times multiplier
+// early on) and reported the result as a forecast: ₪900 of food became a ₪4,500
+// projection and a "₪9.38/day" allowance, ninety seconds after sign-up.
+//
+// Two guards, and only here. The catchUp flag is deliberately NOT filtered out
+// app-wide - it is read in eleven other places that all count it toward the
+// month's real balance, savings rate and net worth, which is the whole point of
+// the feature. Pace is the one calculation for which a lump sum dated today is
+// meaningless.
+//
+//   1. Catch-up rows are excluded from the spend that drives a projection.
+//   2. No pace alert at all before the 8th, or before 3 real logged expenses -
+//      because until then there is not enough of the month to extrapolate from.
+function isPaceEligible(t, todayISO) {
+  return isAuditableExpense(t, todayISO) && !t.catchUp;
+}
 function detectBudgetPace(tx, budgets, cats) {
   var todayISO = rwToday(), ym = rwYM(todayISO);
   var dim = rwDaysInMonth(ym), dayNo = +todayISO.slice(8, 10);
   var daysLeft = dim - dayNo;
   var out = [];
+  var realExpenses = (tx || []).filter(function(t) {
+    return isPaceEligible(t, todayISO) && rwYM(t.date) === ym;
+  }).length;
+  if (dayNo < 8 || realExpenses < 3) return out;
   (budgets || []).forEach(function(b) {
     if (!b || b.folderId || b.dir === "target") return;
     var limit = +b.limit || 0;
     if (limit <= 0) return;
     var spent = (tx || []).filter(function(t) {
-      return isAuditableExpense(t, todayISO) && rwYM(t.date) === ym && (t.catId === b.catId || t.category === b.category);
+      return isPaceEligible(t, todayISO) && rwYM(t.date) === ym && (t.catId === b.catId || t.category === b.category);
     }).reduce(function(s, t) { return s + t.amount; }, 0);
     if (spent <= 0) return;
     // Floor the elapsed fraction: on the 2nd of the month a single big shop
@@ -12658,6 +13222,71 @@ function rwActionsFor(f) {
 // user is told about a leak once, not every morning until they act.
 //
 //   seen = { ids: [signal ids already shown], date: "YYYY-MM-DD" }
+// ── One verdict on the month ─────────────────────────────────────────────────
+// Three screens used to answer "how is this month going?" with three
+// independent formulas, and on the same day they said "Plan needs a tune-up",
+// "4 things to watch" and "EXCELLENT · 85 out of 100". Whichever one is right,
+// two of them are wrong, and the user has no way to tell which.
+//
+// This is the single answer. It is built from the signals richardWatch already
+// produced plus the month's own totals, so the headline can never disagree with
+// the cards underneath it: a cliff outranks an over-cap, an over-cap outranks a
+// thin savings rate, and "on track" means no signal fired at all.
+//
+//   level   "attention" | "watch" | "good"     the ordering, for tone
+//   score   0-100                              the same judgement as a number
+//   reason  one short sentence, or ""          why it is not "on track"
+//
+// Surfaces render the label; nothing recomputes it.
+var MONTH_VERDICT_KEYS = { attention: "mvAttention", watch: "mvWatch", good: "mvOnTrack" };
+function monthVerdict(input) {
+  var v = input || {};
+  var watch = v.watch || { risks: [], leaks: [] };
+  var risks = watch.risks || [];
+  var cliff = null, pace = [], goalRisk = null;
+  risks.forEach(function(r) {
+    if (r.type === "cliff") cliff = r;
+    else if (r.type === "pace") pace.push(r);
+    else if (r.type === "goalrisk" && !goalRisk) goalRisk = r;
+  });
+  var overCaps = typeof v.overCaps === "number" ? v.overCaps : pace.length;
+  var savingsRate = typeof v.savingsRate === "number" ? v.savingsRate : 0;
+  var hasIncome = !!v.hasIncome;
+
+  var level, score, reason;
+  if (cliff) {
+    level = "attention"; score = 35;
+    reason = cliff.title || "";
+  } else if (overCaps > 0) {
+    level = "watch"; score = 58;
+    reason = pace.length ? pace[0].title : "";
+  } else if (goalRisk) {
+    level = "watch"; score = 62;
+    reason = goalRisk.title || "";
+  } else if (hasIncome && savingsRate < 0) {
+    level = "attention"; score = 40;
+    reason = "";
+  } else if (hasIncome && savingsRate < 10) {
+    level = "watch"; score = 66;
+    reason = "";
+  } else {
+    level = "good";
+    score = savingsRate >= 20 ? 88 : 78;
+    reason = "";
+  }
+  return {
+    level: level,
+    score: score,
+    label: tr(MONTH_VERDICT_KEYS[level]),
+    reason: reason,
+    signals: (watch.risks || []).length,
+    // The one tone every surface uses, so the colour never disagrees with the
+    // word next to it either.
+    tone: level === "attention" ? T.red : level === "watch" ? T.gold : T.green,
+    heroTone: level === "attention" ? T.heroNeg : level === "watch" ? T.gold : T.heroPos
+  };
+}
+
 function buildWatchDigest(watch, seen) {
   var prev = (seen && seen.ids) || [];
   var all = (watch && watch.all) || [];
@@ -12952,6 +13581,9 @@ function rwFormatSwept(iso) {
 // NOW/SOON/WATCH bands; the quiet state (most days, by design) says one
 // sentence and gets out of the way - see the two facts under it, which exist
 // only to prove the sweep actually ran.
+// How many signals the "Now" band may hold. Anything past this is real, but it
+// is not today's work - it drops to "Soon" rather than adding another red card.
+var RW_NOW_CAP = 3;
 function DailyBrief(props) {
   var watch = richardWatch({
     tx: props.tx, categories: props.categories, budgets: props.budgets, goals: props.goals,
@@ -13025,25 +13657,44 @@ function DailyBrief(props) {
         {"."}
       </div>
 
-      <div style={{ marginTop: 20, background: T.card, borderRadius: 18, boxShadow: RW_CARD_SHADOW, padding: 16, display: "flex", alignItems: "stretch" }}>
-        <div style={{ flex: 1.35, minWidth: 0 }}>
-          <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: T.ink }}>{dollars(t.recoverableMonthly)}<span style={{ fontSize: 12, fontWeight: 400, color: T.ink3 }}>/mo</span></div>
-          <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3, marginTop: 4 }}>{tr("rwRecoverable")}</div>
-        </div>
-        <div style={{ width: 1, background: T.sep, margin: "0 12px" }} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums", color: T.ink }}>{dollars(t.oneOffTotal)}</div>
-          <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.ink3, marginTop: 4 }}>{tr("rwToClaimBack")}</div>
-        </div>
-        <div style={{ width: 1, background: T.sep, margin: "0 12px" }} />
-        <div style={{ flex: 0.62, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", fontVariantNumeric: "tabular-nums", color: T.ink }}>{t.signals}</div>
-          <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.ink3, marginTop: 4 }}>{tr("rwOpen")}</div>
-        </div>
-      </div>
+      {/* A stat reading 0.00 is not information, it is a slot that had nothing
+          to put in it - and on day 0 two of these three were exactly that,
+          under four red cards. Each column now only appears when it has a
+          number worth showing, and the strip disappears when none of them do. */}
+      {(t.recoverableMonthly > 0 || t.oneOffTotal > 0) && (function() {
+        var cols = [];
+        if (t.recoverableMonthly > 0) cols.push({ k: "rec", flex: 1.35, big: true, value: dollars(t.recoverableMonthly), suffix: "/mo", label: tr("rwRecoverable") });
+        if (t.oneOffTotal > 0) cols.push({ k: "one", flex: 1, value: dollars(t.oneOffTotal), label: tr("rwToClaimBack") });
+        if (t.signals > 0) cols.push({ k: "sig", flex: 0.62, value: String(t.signals), label: tr("rwOpen") });
+        return (
+          <div style={{ marginTop: 20, background: T.card, borderRadius: 18, boxShadow: RW_CARD_SHADOW, padding: 16, display: "flex", alignItems: "stretch" }}>
+            {cols.map(function(c, ci) {
+              return (
+                <React.Fragment key={c.k}>
+                  {ci > 0 && <div style={{ width: 1, background: T.sep, margin: "0 12px" }} />}
+                  <div style={{ flex: c.flex, minWidth: 0 }}>
+                    <div style={{ fontSize: c.big ? 20 : 15, fontWeight: c.big ? 700 : 600, letterSpacing: c.big ? "-0.02em" : "-0.015em", fontVariantNumeric: "tabular-nums", color: T.ink }}>
+                      {c.value}{c.suffix && <span style={{ fontSize: 12, fontWeight: 400, color: T.ink3 }}>{c.suffix}</span>}
+                    </div>
+                    <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: T.ink3, marginTop: 4 }}>{c.label}</div>
+                  </div>
+                </React.Fragment>
+              );
+            })}
+          </div>
+        );
+      })()}
 
       {["now", "soon", "watch"].map(function(band) {
         var rows = bands[band];
+        // "Now" means act today. Four cards in that band is not four urgent
+        // things, it is a list - and the day-0 version of it was four red cards
+        // built from numbers the user had typed ninety seconds earlier. Three is
+        // the cap; the rest fall to "Soon", which is where a list belongs.
+        if (band === "now" && rows.length > RW_NOW_CAP) rows = rows.slice(0, RW_NOW_CAP);
+        if (band === "soon" && bands.now.length > RW_NOW_CAP) {
+          rows = bands.now.slice(RW_NOW_CAP).concat(rows);
+        }
         if (!rows.length) return null;
         var label = band === "now" ? tr("rwNow") : band === "soon" ? tr("rwSoon") : tr("rwWatchLabel");
         return (
@@ -13699,6 +14350,14 @@ function Activity(props) {
   // owner is the uid of who paid (only relevant on shared txs)
   var _f = useState(blankForm);
   var form = _f[0]; var setForm = _f[1];
+  // "More options" on the add sheet - date, repeat, pending, destination and
+  // household sharing. Collapsed by default; forced open whenever any of them
+  // is no longer at its default, so a value the user set can never be hidden
+  // behind a closed disclosure.
+  var _mo = useState(false); var moreTouched = _mo[0]; var setMoreOpen = _mo[1];
+  var moreOpen = moreTouched
+    || form.repeat !== "none" || form.pending === true || !!form.savingsDest || form.shared === true
+    || form.date !== blankForm.date;
   var _et = useState(null);
   var editTx = _et[0]; var setEditTx = _et[1];
   var _ef = useState(blankForm);
@@ -13806,17 +14465,34 @@ function Activity(props) {
   }
 
   var pressTimer = useRef(null);
+  var longPressFired = useRef(false);
+  // Editing a transaction used to be a 500 ms long-press on a <div> with no
+  // affordance and no accessible name - so the ledger was invisible to a screen
+  // reader and un-editable by anyone who did not already know the gesture. The
+  // row is a real button now; the long-press stays as a shortcut for the muscle
+  // memory of anyone who did.
+  function openEditTx(t) {
+    setEditTx(t);
+    var hasForeign = t.origCur && t.origCur !== mainSym;
+    setEditForm({ type: t.type, amount: String(hasForeign ? t.origAmount : t.amount), label: t.label, catId: t.catId || "", date: t.date, repeat: t.repeat || "none", pending: t.pending || false,
+      cur: hasForeign ? t.origCur : mainSym, rate: hasForeign ? (t.rate || fxStaticRate(t.origCur, mainSym)) : 1, rateLoading: false, rateFallback: false, shared: t.shared || false, owner: t.owner || props.accountKey });
+  }
   function startLongPress(t) {
     pressTimer.current = setTimeout(function() {
-      setEditTx(t);
-      var hasForeign = t.origCur && t.origCur !== mainSym;
-      setEditForm({ type: t.type, amount: String(hasForeign ? t.origAmount : t.amount), label: t.label, catId: t.catId || "", date: t.date, repeat: t.repeat || "none", pending: t.pending || false,
-        cur: hasForeign ? t.origCur : mainSym, rate: hasForeign ? (t.rate || fxStaticRate(t.origCur, mainSym)) : 1, rateLoading: false, rateFallback: false, shared: t.shared || false, owner: t.owner || props.accountKey });
+      longPressFired.current = true;
+      openEditTx(t);
       pressTimer.current = null;
     }, 500);
   }
   function cancelLongPress() {
     if (pressTimer.current) { clearTimeout(pressTimer.current); pressTimer.current = null; }
+  }
+  // The click that follows a completed long-press would otherwise re-open the
+  // sheet the press just opened.
+  function rowActivate(t) {
+    if (longPressFired.current) { longPressFired.current = false; return; }
+    cancelLongPress();
+    openEditTx(t);
   }
 
   function add() {
@@ -13847,6 +14523,7 @@ function Activity(props) {
       props.onSaveTx(props.tx.concat([tx]));
     }
     setForm(blankForm);
+    setMoreOpen(false);
     props.setSheetOpen(false);
   }
 
@@ -13945,14 +14622,14 @@ function Activity(props) {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "flex-start", gap: 8, marginBottom: 12 }}>
-        <button onClick={function() { setImportOpen(true); }} title="Import from CSV"
-          aria-label="Import from CSV" style={{ flexShrink: 0, width: 42, height: 42, borderRadius: "50%", background: importPrimary ? T.btn : T.card, border: importPrimary ? "none" : "1.5px solid " + T.orangeDim, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: importPrimary ? "0 4px 14px rgba(137,112,198,0.32)" : "0 2px 10px rgba(0,0,0,0.05)" }}>
-          <SVGIcon id="down" size={20} color={importPrimary ? "#fff" : T.orange} />
+      <div style={{ display: "flex", justifyContent: "flex-start", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+        <button onClick={function() { setImportOpen(true); }} title={tr("importCsv")}
+          aria-label={tr("importCsv")} style={{ flexShrink: 0, height: 42, padding: "0 15px", borderRadius: 21, background: importPrimary ? T.btn : T.card, border: importPrimary ? "none" : "1.5px solid " + T.orangeDim, cursor: "pointer", display: "flex", alignItems: "center", gap: 7, fontFamily: UI, fontSize: 13, fontWeight: 700, color: importPrimary ? "#fff" : T.orange, boxShadow: importPrimary ? "0 4px 14px rgba(137,112,198,0.32)" : "0 2px 10px rgba(0,0,0,0.05)" }}>
+          <SVGIcon id="down" size={18} color={importPrimary ? "#fff" : T.orange} />{tr("importCsv")}
         </button>
         <button onClick={props.onOpenNotes} title={tr("notes")}
-          aria-label={tr("notes")} style={{ flexShrink: 0, width: 42, height: 42, borderRadius: "50%", background: T.btn, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(137,112,198,0.32)" }}>
-          <SVGIcon id="note" size={20} color="#fff" />
+          aria-label={tr("notes")} style={{ flexShrink: 0, height: 42, padding: "0 15px", borderRadius: 21, background: T.btn, border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, fontFamily: UI, fontSize: 13, fontWeight: 700, color: "#fff", boxShadow: "0 4px 14px rgba(137,112,198,0.32)" }}>
+          <SVGIcon id="note" size={18} color="#fff" />{tr("notes")}
         </button>
         {props.tx.length > 0 && filterOpts.length > 0 && (
           <button type="button" onClick={function() { setFilterOpen(true); }} aria-label={filterCopy.title} title={filterCopy.title}
@@ -13977,7 +14654,7 @@ function Activity(props) {
               <button type="button" key={c.id} onClick={function() { setFilterCat(c.id); setFilterOpen(false); }}
                 style={{ width: "100%", display: "flex", alignItems: "center", gap: 11, border: "1px solid " + (selected ? c.color : T.sep), background: selected ? c.color + "18" : T.card, borderRadius: 14, padding: "13px 14px", color: selected ? c.color : T.ink, cursor: "pointer", fontFamily: UI, fontSize: 15, fontWeight: selected ? 700 : 500, textAlign: "start" }}>
                 <span style={{ width: 10, height: 10, borderRadius: "50%", background: c.color, flexShrink: 0 }} />
-                <span style={{ flex: 1 }}>{c.name}</span>
+                <span style={{ flex: 1 }}>{catDisplay(c)}</span>
                 {selected && <SVGIcon id="check" size={17} color={c.color} />}
               </button>
             );
@@ -14027,12 +14704,28 @@ function Activity(props) {
               style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "8px 12px", borderRadius: 11, border: "1.5px dashed " + sc.color, background: sc.color + "12", cursor: "pointer", fontFamily: UI, marginTop: -1, marginBottom: 7 }}>
               <CatBadge icon={sc.icon} color={sc.color} size={22} soft={true} />
               <span style={{ flex: 1, minWidth: 0, textAlign: "start", fontSize: 12.5, color: T.ink2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                Suggested: <span style={{ fontWeight: 700, color: T.ink }}>{sc.name}</span>
+                Suggested: <span style={{ fontWeight: 700, color: T.ink }}>{catDisplay(sc)}</span>
               </span>
               <span style={{ flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: sc.color }}>Use</span>
             </button>
           );
         })()}
+        {/* "Log in seconds" is the promise on the hero, and this sheet answered
+            it with nine decisions. The five above are the ones that change on
+            almost every entry; the four below are right by default something
+            like 95% of the time (today's date, no repeat, not pending, into the
+            balance), so they wait behind one line instead of standing between
+            the user and the save button. Any that the user has already changed
+            keeps the section open, so nothing they set can hide from them. */}
+        {!moreOpen && (
+          <button onClick={function() { setMoreOpen(true); }}
+            style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 13px", borderRadius: 11, border: "none", background: T.fill1, cursor: "pointer", fontFamily: UI, marginBottom: 10 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: T.ink2 }}>{tr("moreOptions")}</span>
+            <span style={{ display: "flex", transform: "rotate(90deg)" }}><SVGIcon id="chevron" size={13} color={T.ink3} /></span>
+          </button>
+        )}
+        {moreOpen && (
+        <div>
         <FormRow label={tr("date")} value={form.date} onChange={function(e) { setField("date", e.target.value); }} type="date" />
         <div style={{ marginBottom: 7 }}>
           <div style={{ fontSize: 10.5, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 5 }}>{tr("repeat")}</div>
@@ -14104,6 +14797,8 @@ function Activity(props) {
               </div>
             )}
           </div>
+        )}
+        </div>
         )}
         <BigBtn label={tr("addTransaction")} onPress={add} disabled={!form.amount || !form.label} />
       </Overlay>
@@ -14246,7 +14941,7 @@ function Activity(props) {
           <div key={date} style={{ marginBottom: 20 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 4px 8px" }}>
               <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dateLabel(date)}</span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: dayNet >= 0 ? T.green : T.ink2 }}>{dayNet >= 0 ? "+" : "-"}{dollars(dayNet)}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: dayNet >= 0 ? T.green : T.ink2 }}>{dollarsDelta(dayNet)}</span>
             </div>
             <Card style={{ overflow: "hidden" }}>
               {dayItems.map(function(t, i) {
@@ -14276,7 +14971,9 @@ function Activity(props) {
                 }
                 var c = resolveCat(cats, t);
                 return (
-                  <div key={t.id}
+                  <button key={t.id} type="button"
+                    onClick={function() { rowActivate(t); }}
+                    aria-label={txRowLabel(t, c)}
                     onMouseDown={function() { startLongPress(t); }}
                     onMouseUp={cancelLongPress}
                     onMouseLeave={cancelLongPress}
@@ -14284,14 +14981,14 @@ function Activity(props) {
                     onTouchEnd={cancelLongPress}
                     onTouchMove={cancelLongPress}
                     onContextMenu={function(e) { e.preventDefault(); }}
-                    style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 16px", borderBottom: i < dayItems.length - 1 ? "0.5px solid " + T.sep : "none", opacity: t.pending ? 0.62 : 1, cursor: "pointer", userSelect: "none", WebkitUserSelect: "none", overflow: "hidden", animation: freshRows[t.id] ? ROW_IN : "none" }}>
+                    style={{ width: "100%", textAlign: "start", background: "transparent", border: "none", font: "inherit", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, padding: "13px 16px", borderBottom: i < dayItems.length - 1 ? "0.5px solid " + T.sep : "none", opacity: t.pending ? 0.62 : 1, cursor: "pointer", userSelect: "none", WebkitUserSelect: "none", overflow: "hidden", animation: freshRows[t.id] ? ROW_IN : "none" }}>
                     <CatBadge icon={t.type === "income" ? "up" : c.icon} color={t.type === "income" ? T.green : c.color} size={40} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 16, color: T.ink, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", lineHeight: 1.1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
                       <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, display: "flex", alignItems: "center", gap: 6 }}>
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                           <span style={{ width: 6, height: 6, borderRadius: "50%", background: t.type === "income" ? T.green : c.color, display: "inline-block" }} />
-                          {t.type === "income" ? tr("income") : c.name}
+                          {t.type === "income" ? tr("income") : catDisplay(c)}
                         </span>
                         {t.origCur && t.origCur !== _currency.sym && <span style={{ fontSize: 10, fontWeight: 700, color: T.gold, background: T.goldDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.02em" }}>{fmtCur(t.origCur, t.origAmount)}</span>}
                         {t.pending && <span style={{ fontSize: 10, fontWeight: 700, color: T.gold, background: T.goldDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.04em" }}>PENDING</span>}
@@ -14305,9 +15002,9 @@ function Activity(props) {
                       </div>
                     </div>
                     <span style={{ fontSize: 15.5, fontWeight: 700, color: t.type === "income" ? T.green : T.red, letterSpacing: "-0.02em" }}>
-                      {t.type === "income" ? "+" : "-"}{dollars(t.amount)}
+                      {dollarsDelta(t.type === "income" ? t.amount : -t.amount)}
                     </span>
-                  </div>
+                  </button>
                 );
               })}
             </Card>
@@ -14503,6 +15200,7 @@ function Notes(props) {
   }
 
   var pressTimer = useRef(null);
+  var longPressFired = useRef(false);
   var longFired = useRef(false);
   function startLongPress(n) {
     longFired.current = false;
@@ -14721,13 +15419,8 @@ function Notes(props) {
       )}
 
       {props.notes.length === 0 && (
-        <Card style={{ padding: "46px 24px", textAlign: "center" }}>
-          <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
-            <SVGIcon id="note" size={24} color={T.orange} />
-          </div>
-          <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 4 }}>{tr("notesEmpty")}</div>
-          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{tr("notesEmptySub")}</div>
-        </Card>
+        <EmptyState icon="note" title={tr("notesEmpty")} sub={tr("noNotesSub")}
+          actionLabel={tr("newNote")} onAction={function() { props.setSheetOpen(true); }} />
       )}
 
       {dates.map(function(date) {
@@ -14879,6 +15572,9 @@ function SplitPlanSheet(props) {
 // every folder can be answered "not spending" - an Income folder shouldn't be
 // forced into a bucket it doesn't belong in. Then it asks the second question
 // the app used to answer on the user's behalf: what the split should BE.
+// Real logged expenses before the folder-role wizard is worth asking. Below
+// this the Budgets tab shows budgets, which is what it is for.
+var FOLDER_WIZARD_MIN_ROWS = 12;
 function FolderRolesCard(props) {
   var folders = props.folders || [];
   var cats = props.categories || [];
@@ -14894,7 +15590,15 @@ function FolderRolesCard(props) {
   var todo = foldersNeedingRole(folders, cats, props.tx);
   var anyRole = folders.some(function(f) { return folderRole(f); });
   if (!folders.length) return null;
-  if (todo.length && !anyRole && hidden) return null;
+  // Deferred, not deleted. A 265 px classification wizard at the top of the
+  // Budgets tab meant a new user could not see a single complete budget row on
+  // the screen called "Budgets" - and it asks people to sort folders into
+  // Needs/Wants/Savings before they have spent anything to sort. It waits until
+  // the account has a month's worth of real rows behind it, and stays reachable
+  // from the split card in the meantime.
+  var realRows = (props.tx || []).filter(function(t) { return t && t.type === "expense" && !t.catchUp; }).length;
+  var wizardReady = realRows >= FOLDER_WIZARD_MIN_ROWS;
+  if (todo.length && !anyRole && (hidden || !wizardReady)) return null;
 
   function setRole(folder, role) {
     if (!props.onSaveFolders) return;
@@ -14912,7 +15616,7 @@ function FolderRolesCard(props) {
   // Ask mode. The list shrinks itself: answering the folder on screen removes it
   // from `todo`, and the next one takes its place, so there is no wizard state
   // to keep in sync with the data.
-  if (todo.length && !hidden) {
+  if (todo.length && !hidden && wizardReady) {
     var f = todo[0];
     var members = folderCategories(f, cats, folders, props.tx);
     var suggested = suggestFolderRole(f, members);
@@ -14933,7 +15637,7 @@ function FolderRolesCard(props) {
 
         <div style={{ background: "rgba(255,255,255,0.10)", borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <CatBadge icon={folderGlyph(f)} color={folderTint(f)} size={32} />
+            <CatBadge icon={folderGlyph(f)} color={folderTint(f)} size={32} soft={true} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: T.heroInk }}>{f.name}</div>
               <div style={{ fontSize: 11.5, color: T.heroMut, marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -14949,9 +15653,9 @@ function FolderRolesCard(props) {
             return (
               <button key={r.key} onClick={function() { setRole(f, r.key); }}
                 style={{ flex: 1, minWidth: 0, padding: "10px 4px", borderRadius: 12, cursor: "pointer", fontFamily: UI,
-                  background: pick ? r.color : "rgba(255,255,255,0.12)",
+                  background: pick ? r.color + "40" : "rgba(255,255,255,0.12)",
                   border: pick ? "1.5px solid " + r.color : "1.5px solid rgba(255,255,255,0.18)",
-                  color: pick ? "#fff" : T.heroInk, fontSize: 13, fontWeight: 700, transition: PRESS_T }}>
+                  color: T.heroInk, fontSize: 13, fontWeight: 700, transition: PRESS_T }}>
                 {r.label}
               </button>
             );
@@ -15553,7 +16257,7 @@ function Budgets(props) {
                     <div style={{ fontSize: 14, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
                     <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1 }}>{dateLabel(t.date)}</div>
                   </div>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: T.red }}>{"-" + dollars(t.amount)}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: T.red }}>{dollarsNeg(t.amount)}</span>
                 </div>
               );
             })}
@@ -15562,13 +16266,17 @@ function Budgets(props) {
       </Overlay>
 
       {props.budgets.length === 0 && (
-        <Card style={{ padding: "46px 24px", textAlign: "center" }}>
-          <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
-            <SVGIcon id="budgets" size={24} color={T.orange} />
-          </div>
-          <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 4 }}>{tr("noBudgets")}</div>
-          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{tr("noBudgetsSub")}</div>
-        </Card>
+        <EmptyState icon="budgets" title={tr("noBudgets")} sub={tr("noBudgetsSub2")}
+          actionLabel={tr("newBudget")} onAction={function() { props.setSheetOpen(true); }} />
+      )}
+
+      {props.budgets.length > 0 && (
+        <div style={{ display: "flex", gap: 8, padding: "0 2px 14px" }}>
+          <button onClick={function() { props.setSheetOpen(true); }}
+            style={{ display: "flex", alignItems: "center", gap: 5, background: T.orangeDim, border: "none", borderRadius: 20, padding: "8px 14px", cursor: "pointer", color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI }}>
+            <SVGIcon id="plus" size={13} color={T.orange} /> {tr("newBudget")}
+          </button>
+        </div>
       )}
 
       {props.budgets.length > 0 && (
@@ -15643,7 +16351,7 @@ function Budgets(props) {
                   <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 9 }}>
                     <CatBadge icon={r.icon} color={r.color} size={34} soft={true} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ fontSize: 16, color: T.ink, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", lineHeight: 1.1 }}>{r.name}</span>
+                      <span style={{ fontSize: 16, color: T.ink, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", lineHeight: 1.1 }}>{r.isFolder ? folderDisplay(r.name) : catDisplay(r.name)}</span>
                       {r.isFolder && (
                         <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1 }}>
                           {tr("bFolderBudget") + " - " + r.members.length + (r.members.length === 1 ? " category" : " categories") + (r.mode === "exclusive" ? ", exclusive" : "") + (r.live ? ", live" : "")}
@@ -15689,7 +16397,7 @@ function Budgets(props) {
                           style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px 9px 26px", borderTop: "0.5px solid " + T.sep, cursor: "pointer", background: T.fill0 }}>
                           <CatBadge icon={m.icon} color={m.color} size={24} soft={true} />
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", color: T.ink, lineHeight: 1.1 }}>{m.name}</div>
+                            <div style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", color: T.ink, lineHeight: 1.1 }}>{catDisplay(m)}</div>
                             <div style={{ marginTop: 4 }}><ProgressBar value={sr.amount} max={sr.limit} color={budgetOffTrack(sr) ? T.red : m.color} h={4} /></div>
                           </div>
                           <span style={{ fontSize: 12, fontWeight: 600, color: budgetOffTrack(sr) ? T.red : T.ink3 }}>{dollars(sr.amount) + " / " + dollars(sr.limit)}</span>
@@ -15699,16 +16407,13 @@ function Budgets(props) {
                   </div>
                 )}
 
-                <div style={{ display: "flex", borderTop: "0.5px solid " + T.sep }}>
-                  <button onClick={function() { setEditId(r.key); setVal({ limit: String(r.limit), dir: r.dir, mode: r.mode, track: r.track }); }}
-                    style={{ flex: 1, background: "none", border: "none", borderInlineEnd: "0.5px solid " + T.sep, padding: "11px 0", color: T.orange, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
-                    {tr("edit")}
-                  </button>
-                  <button onClick={function() { props.onSaveBudgets(props.budgets.filter(function(b) { return b.catId !== r.key; })); }}
-                    style={{ flex: 1, background: "none", border: "none", padding: "11px 0", color: T.red, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
-                    {tr("delete")}
-                  </button>
-                </div>
+                {/* The permanent Edit | Delete bar is gone. It put two buttons
+                    under every row - fourteen on a seven-budget tab, seven of
+                    them one-tap unconfirmed deletes of real data - to duplicate
+                    two things the row already does: tapping it opens the detail
+                    view, and Edit Limit (which owns "Remove this budget") is one
+                    tap inside that. A destructive action does not belong in a
+                    list row you scroll past. */}
               </div>
             );
           })}
@@ -15930,6 +16635,26 @@ function Goals(props) {
         )}
       </Overlay>
 
+      {/* Labelled doors, not a gesture and not a "+" that means something else
+          on every other screen. "Plan a trip" lives here because Trips was
+          otherwise reachable only from a dashboard tip that, once dismissed,
+          closed the feature permanently - while the intro carousel advertises
+          it by name. */}
+      {props.goals.length > 0 && (
+        <div style={{ display: "flex", gap: 8, padding: "0 2px 14px" }}>
+          <button onClick={function() { props.setSheetOpen(true); }}
+            style={{ display: "flex", alignItems: "center", gap: 5, background: T.orangeDim, border: "none", borderRadius: 20, padding: "8px 14px", cursor: "pointer", color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI }}>
+            <SVGIcon id="plus" size={13} color={T.orange} /> {tr("newGoal")}
+          </button>
+          {props.onPlanTrip && (
+            <button onClick={props.onPlanTrip}
+              style={{ display: "flex", alignItems: "center", gap: 5, background: "transparent", border: "0.5px solid " + T.sep, borderRadius: 20, padding: "8px 14px", cursor: "pointer", color: T.ink2, fontSize: 13, fontWeight: 700, fontFamily: UI }}>
+              <SVGIcon id="plane" size={13} color={T.ink2} /> {tr("planATrip")}
+            </button>
+          )}
+        </div>
+      )}
+
       {props.onOpenTrip && (props.trips || []).filter(function(t) { return !t.ended; }).map(function(t) {
         var tSpent = t.allocations.reduce(function(s, a) { return s + (a.spent || 0); }, 0);
         var tPct = t.total > 0 ? Math.min(100, Math.round((tSpent / t.total) * 100)) : 0;
@@ -15949,13 +16674,9 @@ function Goals(props) {
       })}
 
       {props.goals.length === 0 && (
-        <Card style={{ padding: "46px 24px", textAlign: "center" }}>
-          <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
-            <SVGIcon id="goals" size={24} color={T.orange} />
-          </div>
-          <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 4 }}>{tr("noGoals")}</div>
-          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{tr("noGoalsSub")}</div>
-        </Card>
+        <EmptyState icon="goals" title={tr("noGoals")} sub={tr("noGoalsSub")}
+          actionLabel={tr("newGoal")} onAction={function() { props.setSheetOpen(true); }}
+          secondLabel={props.onPlanTrip ? tr("planATrip") : ""} onSecond={props.onPlanTrip} secondIcon="plane" />
       )}
 
       {props.goals.map(function(g, gi) {
@@ -16028,8 +16749,11 @@ function Goals(props) {
                 if (!isLinked) {
                   btns.push({ key: "money", label: tr("addOrRemove"), color: T.orange, bold: true, onClick: function() { setAddSheet(g); setAddAmt(""); setAddMode(done ? "remove" : "add"); setConfirmAmt(null); } });
                 }
+                // Delete lives inside the edit sheet, where it can be confirmed.
+                // A one-tap unconfirmed delete of a savings goal, sitting in the
+                // footer of every card, is a mis-tap away from erasing the thing
+                // the user opened the app for.
                 btns.push({ key: "edit", label: tr("edit"), color: T.ink2, bold: false, onClick: function() { setEditGoal(g); setEditForm({ name: g.name, target: String(g.target), deadline: g.deadline || "", linkKey: linkKeyOf(g) }); } });
-                btns.push({ key: "delete", label: tr("delete"), color: T.red, bold: false, onClick: function() { props.onSaveGoals(props.goals.filter(function(x) { return x.id !== g.id; })); } });
                 return btns.map(function(b, i) {
                   return (
                     <button key={b.key} onClick={b.onClick}
@@ -17374,6 +18098,40 @@ var AI_MODEL_FAST = "claude-haiku-4-5";
 function richardApiUrl() {
   return (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "data:" || location.protocol === "file:") ? "https://richy-mgkl.vercel.app/api/chat" : "/api/chat";
 }
+// Every error this module hands back carries a `kind`, because callers must
+// treat the two cases differently: a NETWORK drop means the request never
+// reached us and a cached/offline answer is honest, while an API error means
+// the server answered and refused - substituting a canned reply there hides a
+// real, fixable fault (that is how a 20,000-char cap shipped a chat that
+// returned 413 to every message while every user saw a plausible answer).
+// kinds: "network" (never arrived), "timeout", "api" (server refused, has
+// .status), "shape" (2xx we could not read).
+// How much of the user's own data may ride in a Richard prompt. api/chat.js
+// allows 45,000 characters of system prompt in total and the static half of the
+// chat prompt is about 16,000, so this leaves comfortable room for both while
+// keeping a real ceiling on what a very large account can send.
+var RICHARD_CTX_MAX = 22000;
+// Trim a "=== SECTION ===" block of user data to a length, cutting at a section
+// boundary rather than mid-number, and saying what was dropped. Truncating a
+// prompt silently produces a confidently wrong answer built on half the user's
+// figures; this makes the omission visible to the model, which can then say so.
+function trimContextBlock(text, max) {
+  var s = String(text || "");
+  if (s.length <= max) return s;
+  var cut = s.lastIndexOf("\n\n=== ", max);
+  if (cut < max * 0.5) cut = max;             // no usable boundary: hard cut
+  return s.slice(0, cut)
+    + "\n\n=== NOTE ===\n"
+    + "This account has more data than fits in one message, so the sections after this point were left out. "
+    + "If the question needs something that is not above, say plainly that you cannot see it rather than estimating.";
+}
+
+function richardErr(kind, message, status) {
+  var e = new Error(message);
+  e.kind = kind;
+  if (status != null) e.status = status;
+  return e;
+}
 function callClaude(messages, system, maxTokens, callback, model, timeoutMs, extra) {
   var apiUrl = richardApiUrl();
   // Exactly one of {success, error, timeout} may reach the caller, and the timer
@@ -17385,6 +18143,12 @@ function callClaude(messages, system, maxTokens, callback, model, timeoutMs, ext
     if (done) return;
     done = true;
     if (timer) clearTimeout(timer);
+    if (err) {
+      if (!err.kind) err.kind = "network";
+      // One place that knows a Richard call failed, and how. Without this the
+      // only signal a broken flagship gives is silence.
+      try { richardFailureLog(err, { model: model || AI_MODEL_CORE, systemChars: (system || "").length }); } catch (e) {}
+    }
     callback(err, text);
   }
   var ctrl = null;
@@ -17395,7 +18159,7 @@ function callClaude(messages, system, maxTokens, callback, model, timeoutMs, ext
   // cover - a fetch that never settles at all, so no response ever arrives.
   timer = setTimeout(function() {
     if (ctrl) { try { ctrl.abort(); } catch (e) {} }
-    finish(new Error("Timed out: Richard took too long to answer."), null);
+    finish(richardErr("timeout", "Timed out: Richard took too long to answer."), null);
   }, timeoutMs || 55000);
   // The proxy refuses anonymous requests (so the Anthropic key can't be farmed
   // by strangers) - attach the caller's own Firebase ID token.
@@ -17404,9 +18168,12 @@ function callClaude(messages, system, maxTokens, callback, model, timeoutMs, ext
     .then(function(token) {
       var headers = { "Content-Type": "application/json" };
       if (token) headers.Authorization = "Bearer " + token;
+      // Money strings carry invisible bidi isolate marks so they render
+      // correctly inside Hebrew text. The model has no use for them, so they
+      // never leave the client.
       var reqBody = {
-        messages: messages,
-        system: system,
+        messages: stripBidiDeep(messages),
+        system: stripBidi(system),
         maxTokens: maxTokens || 800,
         model: model || AI_MODEL_CORE,
       };
@@ -17419,20 +18186,21 @@ function callClaude(messages, system, maxTokens, callback, model, timeoutMs, ext
       if (ctrl) opts.signal = ctrl.signal;
       return fetch(apiUrl, opts);
     }).then(function(res) {
+    var httpStatus = res.status;
     return res.text().then(function(raw) {
       var data;
       try { data = JSON.parse(raw); } catch(e) {
         // A non-JSON body is almost always an infrastructure error page (a
         // serverless timeout or a 5xx), not something the user can act on -
         // so it must never be shown verbatim. Keep the detail in the console.
-        try { console.warn("callClaude: non-JSON response", raw.slice(0, 300)); } catch (e2) {}
-        finish(new Error("Richard is unavailable right now. Please try again."), null); return;
+        try { console.warn("callClaude: non-JSON response", httpStatus, raw.slice(0, 300)); } catch (e2) {}
+        finish(richardErr("api", "Richard is unavailable right now. Please try again.", httpStatus), null); return;
       }
       if (data.error) {
-        finish(new Error(data.error.type + ": " + data.error.message), null); return;
+        finish(richardErr("api", data.error.type + ": " + data.error.message, httpStatus), null); return;
       }
       if (!data.content || !Array.isArray(data.content)) {
-        finish(new Error("Unexpected response: " + JSON.stringify(data).slice(0, 100)), null); return;
+        finish(richardErr("shape", "Unexpected response: " + JSON.stringify(data).slice(0, 100), httpStatus), null); return;
       }
       var text = "";
       for (var i = 0; i < data.content.length; i++) {
@@ -17440,8 +18208,33 @@ function callClaude(messages, system, maxTokens, callback, model, timeoutMs, ext
       }
       finish(null, text.trim());
     });
-  }).catch(function(err) { finish(new Error("Fetch failed: " + ((err && err.message) || "network error")), null); });
+  }).catch(function(err) { finish(richardErr("network", "Fetch failed: " + ((err && err.message) || "network error")), null); });
 }
+
+// A visible, countable record of every failed Richard call. Kept in memory for
+// the session and mirrored to localStorage so a tester can read it back after a
+// reload; the UI reads richardFailureCount() to decide whether to show the
+// "Richard is having trouble" row. Deliberately tiny - no payloads, no user
+// text, just what failed and how.
+var RICHARD_FAILURES = [];
+function richardFailureLog(err, meta) {
+  var row = {
+    at: Date.now(),
+    kind: (err && err.kind) || "network",
+    status: (err && err.status) || 0,
+    message: String((err && err.message) || "").slice(0, 160),
+    systemChars: (meta && meta.systemChars) || 0,
+    model: (meta && meta.model) || ""
+  };
+  RICHARD_FAILURES.push(row);
+  if (RICHARD_FAILURES.length > 25) RICHARD_FAILURES.shift();
+  try { console.warn("Richard call failed", row); } catch (e) {}
+  try { localStorage.setItem("cb_richard_failures", JSON.stringify(RICHARD_FAILURES)); } catch (e) {}
+}
+function richardFailures() { return RICHARD_FAILURES.slice(); }
+// True when the server actively refused - the case where a canned answer would
+// be a lie rather than a graceful degradation.
+function isServerRefusal(err) { return !!(err && (err.kind === "api" || err.kind === "shape")); }
 
 // Cost-sensitive launch path for short, constrained work: translation,
 // narration, support and compact JSON generation. Keeping this wrapper explicit
@@ -18703,7 +19496,7 @@ function Advisor(props) {
       ? props.notes.map(function(n) { return (n.dir === "owed" ? "Owed to user: " : "User owes: ") + dollars(n.amount) + " - " + n.label; }).join("\n")
       : "none")
     + ((props.businesses || []).length
-      ? "\n\n=== BUSINESSES (managed in Savings -> Business Account, Richard is their CFO) ===\n"
+      ? "\n\n=== BUSINESSES (managed in Savings -> Business Account, Richard is their business coach) ===\n"
         + props.businesses.map(bizContextLine).join("\n")
       : "")
     + "\n\n=== OVERVIEW WIDGETS (cards you built; the exact titles, use them to update or remove one) ===\n"
@@ -18715,6 +19508,14 @@ function Advisor(props) {
         }).join("\n") + "\n(" + (props.widgets || []).length + " of " + MAX_WIDGETS + " slots used)"
       : "none yet")
     + incomeAuditBlock(props.tx, props.onboardingData, cs);
+  // The server-side ceiling is a billing guard, not a budget. It used to be
+  // 20,000 characters against a static prompt of ~16,000, so a real account's
+  // data block pushed the whole request over and every chat message came back
+  // 413. The cap is now 45,000, and this trim is what keeps that number
+  // meaningful: the data block is bounded on the CLIENT, at a section boundary,
+  // with a line saying plainly what was left out - so Richard never quietly
+  // answers from half a user's numbers, and the guard still guards.
+  ctx = trimContextBlock(ctx, RICHARD_CTX_MAX);
 
   function catSpend(c) {
     return props.tx.filter(function(t) { return t.type === "expense" && !isTrip(t) && inMonth(t, ymA) && (t.catId === c.id || t.category === c.name); }).reduce(function(s, t) { return s + t.amount; }, 0);
@@ -18838,20 +19639,20 @@ function Advisor(props) {
 
     // ===== ROTH IRA / 401k / specific accounts =====
     if (has("roth", "ira", "401k", "403b", "retirement account", "tax advantaged")) {
-      return "A Roth IRA lets you invest after-tax money that then grows and is withdrawn completely tax-free in retirement - ideal if you expect to earn more later. A traditional 401k/IRA gives you the tax break now instead. Priority order: (1) 401k up to any employer match (free money), (2) max a Roth IRA, (3) back to maxing the 401k, (4) taxable brokerage. In 2026 the IRA limit is around $7,000/year.";
+      return "Retirement and pension accounts differ by country, and the tax treatment is the whole point of them - so which one suits you is a question for a licensed advisor or your pension agent, not for me. What I can do is the budgeting side: work out how much a month you could genuinely set aside without breaking your cushion, and hold that number steady once you pick a destination for it.";
     }
 
     // ===== SPECIFIC STOCKS / CRYPTO =====
     if (has("what stock", "which stock", "stock should", "stock to buy", "pick stocks", "individual stock")) {
-      return "I can't pick individual stocks for you - and honestly, neither should most people try. Buffett's advice for nearly everyone: a low-cost S&P 500 index fund beats ~90% of professional stock pickers over a decade and you never have to guess. Picking single stocks is closer to gambling unless you're prepared to research deeply and accept big swings.";
+      return "I don't give verdicts on specific securities - that is a licensed investment advisor's job, not mine. The general principle worth knowing is that concentration raises both the upside and the chance of a permanent loss, and diversification trades some of the first for less of the second. What I can answer properly is whether your cash flow and cushion could absorb setting money aside at all - ask me that and I'll use your real numbers.";
     }
     if (has("crypto", "bitcoin", "ethereum", "btc", "nft", "altcoin")) {
-      return "Crypto is highly volatile and speculative - it can swing 50%+ in weeks. The common-sense rule from most advisors: never put in more than you can afford to lose entirely, and treat it as a small slice (under 5-10%) of an otherwise diversified portfolio. Build your emergency fund and index-fund base first; crypto is the spice, not the meal.";
+      return "Crypto is highly volatile and speculative - it can swing 50%+ in weeks. I can't tell you whether to hold any of it or how much; that is a licensed investment advisor's call. The budgeting rule I will stand behind: money you might need in the next year has no business anywhere it can halve, so build the cushion that covers your real months before anything speculative gets a look in.";
     }
 
     // ===== TAX =====
     if (has("tax", "taxes", "deduction", "irs", "write off", "refund")) {
-      return "The biggest legal way to cut taxes is using tax-advantaged accounts: 401k and traditional IRA contributions lower your taxable income today, while a Roth grows tax-free for later. Beyond that: track deductible expenses if you're self-employed, hold investments over a year for lower capital-gains rates, and never turn down a raise over tax fears - you only ever pay the higher rate on the dollars above each bracket, never your whole income.";
+      return "Tax rules are country-specific and change, so anything I say here could be wrong for where you live - a tax advisor is the right call for the specifics. Two things that hold up almost everywhere: keep records of deductible expenses if you are self-employed, and never turn down a raise over tax fears, because the higher rate only ever applies to the money above each bracket, not to your whole income.";
     }
 
     // ===== CREDIT SCORE =====
@@ -18861,7 +19662,7 @@ function Advisor(props) {
 
     // ===== STUDENT LOANS vs INVEST =====
     if (has("student loan", "loans or invest", "pay off or invest", "payoff or invest")) {
-      return "Compare the interest rate to expected investment returns. If your student loan is above ~6-7%, paying it off is a guaranteed return that's hard to beat - prioritize it. If it's low (say under 5%), you can make minimums and invest the rest, since the market has historically returned ~8-10% long term. Either way: grab any 401k employer match first - that's an instant 100% return nothing else matches.";
+      return "Compare the interest rate on the loan with what the money would otherwise do. Clearing a high-rate loan is a certain return equal to its rate, which is the one return nobody has to forecast - so above roughly 6-7% I would pay it down first. Below about 5% it is closer to a judgement call, and where the alternative money goes is a licensed advisor's question rather than mine. If your employer matches pension contributions, take the match before either - that part is not an investment decision, it is unclaimed pay."
     }
 
     // ===== KIDS & MONEY =====
@@ -18889,7 +19690,7 @@ function Advisor(props) {
       return "Congrats! The wealth-building move is to avoid lifestyle inflation - the #1 trap from The Millionaire Next Door. Bank at least half of every raise before you adjust your spending. If your raise is $500/month, send $250+ straight to savings or investing automatically. You were living fine before; let the gap become wealth instead of a bigger apartment.";
     }
     if (has("extra money", "extra cash", "surplus", "leftover", "what should i do with", "what to do with", "spare money", "found money", "bonus")) {
-      var order = "When you have extra money, follow this proven order:\n\n1. High-interest debt (credit cards above ~15%) - pay it off, it's a guaranteed return.\n2. Emergency fund - 3 to 6 months of expenses in a high-yield savings account.\n3. Employer 401k match - free money, never leave it.\n4. Invest the rest - max a Roth IRA, then low-cost index funds.";
+      var order = "When you have extra money, this order holds up almost anywhere:\n\n1. High-interest debt (cards above ~15%) - clearing it is a certain return equal to its rate.\n2. A cushion - three to six months of your real essential costs, somewhere you can reach it.\n3. Any employer pension match - that is unclaimed pay, not an investment call.\n4. Whatever is left, set aside deliberately. Where it goes is a licensed advisor's question, and worth asking one.";
       if (surplus > 0) order += "\n\nYou're running a surplus of about " + dollars(surplus) + " - that's exactly the fuel for these steps.";
       return order;
     }
@@ -18897,7 +19698,7 @@ function Advisor(props) {
     // ===== SAVINGS RATE HEALTH =====
     if (has("savings rate", "saving rate", "am i saving enough", "doing well", "doing good", "healthy", "good rate", "on track", "how am i doing")) {
       if (savings >= 30) return "Your savings rate of " + savings + "% is outstanding - elite territory. The FIRE movement targets 40%+, but above 30% you're building wealth fast. The key now: make sure that surplus is invested, not sitting in cash losing value to inflation.";
-      if (savings >= 20) return "A " + savings + "% savings rate is excellent - beating the 20% standard from the 50/30/20 rule. Morgan Housel argues your savings rate matters more than your investment returns early on, so you're doing the most important thing right. Next: put that surplus to work in index funds.";
+      if (savings >= 20) return "A " + savings + "% savings rate is excellent - beating the 20% standard from the 50/30/20 rule. Morgan Housel argues your savings rate matters more than your investment returns early on, so you are doing the most important thing right. The next question - where that surplus goes - is one for a licensed advisor; my job is keeping the rate where it is.";
       if (savings >= 10) return "At " + savings + "% you're ahead of most people, but there's room to hit 20%. Look at " + (topCat && topCat.val > 0 ? topCat.name + " (" + dollars(topCat.val) + ", your biggest expense)" : "your largest category") + " and try trimming 10-15%.";
       if (savings > 0) return "You're saving " + savings + "%, which is positive - good start. The target is 20%. Your fastest lever is your biggest expense: " + (topCat && topCat.val > 0 ? topCat.name + " at " + dollars(topCat.val) : "your top category") + ". Cutting it by a fifth would move your rate noticeably.";
       return "Right now you're spending everything you earn or more. The Richest Man in Babylon's first rule: pay yourself first - keep at least 10% before any spending. Automate a small payday transfer to savings, then attack your largest expense.";
@@ -18927,7 +19728,7 @@ function Advisor(props) {
 
     // ===== INVEST (general - after specific account/stock/crypto checks) =====
     if (has("invest", "index fund", "etf", "portfolio", "stock market", "grow my money", "where to put money")) {
-      var base = "Investing basics from people who've done it:\n\n1. Buffett's pick for most people: a low-cost S&P 500 index fund - it beats ~90% of active managers over 10 years.\n2. Order of operations: employer 401k match first (free money), then Roth IRA, then taxable brokerage.\n3. Time in the market beats timing the market - start now, stay consistent, don't panic-sell.";
+      var base = "Three principles, none of them a recommendation to buy anything:\n\n1. Cost compounds against you exactly the way returns compound for you - a yearly fee is charged whether the year was good or bad.\n2. Diversification is the only thing that reduces risk without reducing expected return by the same amount.\n3. Time in the market has historically mattered more than timing it - which is an argument for consistency, not for any particular holding.\n\nWhich products fit you is a licensed investment advisor's question, and a fair one to ask.";
       if (surplus > 0) base += "\n\nYou have ~" + dollars(surplus) + " surplus - that's the fuel, once your emergency fund is set.";
       return base;
     }
@@ -18980,7 +19781,7 @@ function Advisor(props) {
 
     // ===== FINANCIAL ADVISOR =====
     if (has("financial advisor", "should i hire", "wealth manager", "planner", "professional help")) {
-      return "Most people don't need to pay for one early on - the basics (spend less than you earn, kill high-interest debt, index funds, max tax-advantaged accounts) you can do yourself. If you do hire one, choose a fee-only fiduciary (legally bound to act in your interest) and avoid anyone earning commissions on what they sell you. Fees compound against you: 1% a year can cost six figures over a lifetime.";
+      return "The budgeting basics - spend less than you earn, clear high-interest debt, build a cushion - you can do yourself, and that is most of the distance. For anything about which products to hold, a licensed advisor is the right answer, and here is how to pick one: prefer a fee-only advisor paid by you rather than by commission on what they sell, and ask what the yearly cost is in money, not in percent. Fees compound against you the same way returns compound for you.";
     }
 
     // ===== BUDGETING APP / TOOLS =====
@@ -19083,19 +19884,24 @@ function Advisor(props) {
   function getAdvice() {
     setLoading(true); setAdvice(null); setErrMsg("");
     var customInstructionsPrefix = richardUserCtx(props.richardInstructions);
-    var system = customInstructionsPrefix + "You are an elite personal finance advisor trained on the wisdom of the world's greatest wealth builders. You have deep knowledge from:\n\nBOOKS & AUTHORS:\n- The Psychology of Money (Morgan Housel): wealth is about behavior not intelligence; saving is about the gap between ego and income; reasonable beats rational\n- Rich Dad Poor Dad (Robert Kiyosaki): assets put money in pocket, liabilities take it out; buy assets first, luxuries last; make money work for you\n- The Millionaire Next Door (Stanley & Danko): most millionaires live below their means, drive used cars, avoid lifestyle inflation\n- I Will Teach You To Be Rich (Ramit Sethi): automate savings, negotiate bills, spend extravagantly on things you love but cut mercilessly elsewhere\n- The Total Money Makeover (Dave Ramsey): debt snowball, emergency fund first, live on less than you earn\n- Think and Grow Rich (Napoleon Hill): definiteness of purpose, the mastermind principle, persistence\n- The Richest Man in Babylon (George Clason): pay yourself first 10%, let savings work, live on 70%, give 20% to debts\n- Money Master the Game (Tony Robbins): asset allocation drives 90% of returns, fees kill wealth, asymmetric risk/reward\n\nINTERVIEWS & QUOTES FROM THE WEALTHY:\n- Warren Buffett: do not save what is left after spending, spend what is left after saving; rule 1 never lose money, rule 2 never forget rule 1; someone is sitting in the shade today because someone planted a tree long ago\n- Charlie Munger: invert always invert; avoid what destroys wealth as much as seeking what builds it; the best thing a human being can do is to help another human being know more\n- Ray Dalio: diversify well and you can reduce risk without reducing returns; pain plus reflection equals progress; he who lives by the crystal ball will eat shattered glass\n- Naval Ravikant: earn with your mind not your time; specific knowledge cannot be taught; build or buy equity in a business\n- Warren Buffett on compounding: the snowball: compound interest is the eighth wonder of the world\n- Mark Cuban: pay off credit cards every month, never carry a balance; savings rates matter more than investment returns early on\n- Grant Cardone: the middle class saves to retire, the wealthy invest to create income now; 40% of income saved minimum\n- Jeff Bezos: focus on what will not change, not what will; think in long time horizons\n- Elon Musk: take as much risk as you can afford, you only live once\n\nPROVEN STRATEGIES:\n- Pay yourself first: automate 10-20% savings before touching income\n- The latte factor: small daily expenses compound into large annual costs\n- 50/30/20 rule: 50% needs, 30% wants, 20% savings and debt\n- Emergency fund: 3-6 months of expenses in liquid savings before investing\n- No lifestyle inflation: when income rises, raise savings rate not spending\n- Avoid car payments: buy used cars with cash or low financing\n- Cook more, eat out less: food is typically the fastest growing expense\n- Cancel subscriptions quarterly: audit recurring charges every 3 months\n- Negotiate everything: bills, salary, rent, insurance premiums\n- House hacking: rent part of your home to cover the mortgage\n- The one-day rule: wait 24 hours before any purchase over $50\n\nHARD LIMIT: keep any mention of investing generic and educational. Never tell the user to put money, or a specific amount, into funds, index products, securities, or any other financial asset, and never react to holdings with a recommendation - that territory belongs to a licensed investment advisor.\n\nReturn ONLY valid JSON, no markdown. Never use emojis or non-ASCII symbols anywhere in any field. Use this structure: {\"score\":72,\"scoreLabel\":\"Good\",\"headline\":\"Summary here.\",\"insights\":[{\"type\":\"strength\",\"title\":\"Title\",\"body\":\"Body.\"},{\"type\":\"warning\",\"title\":\"Title\",\"body\":\"Body.\"},{\"type\":\"tip\",\"title\":\"Title\",\"body\":\"Body.\"}],\"expertQuote\":{\"quote\":\"Quote.\",\"author\":\"Author\"},\"webInsight\":{\"title\":\"Title\",\"body\":\"Body.\"}}";
+    var system = customInstructionsPrefix + "You are an elite personal finance advisor trained on the wisdom of the world's greatest wealth builders. You have deep knowledge from:\n\nBOOKS & AUTHORS:\n- The Psychology of Money (Morgan Housel): wealth is about behavior not intelligence; saving is about the gap between ego and income; reasonable beats rational\n- Rich Dad Poor Dad (Robert Kiyosaki): assets put money in pocket, liabilities take it out; buy assets first, luxuries last; make money work for you\n- The Millionaire Next Door (Stanley & Danko): most millionaires live below their means, drive used cars, avoid lifestyle inflation\n- I Will Teach You To Be Rich (Ramit Sethi): automate savings, negotiate bills, spend extravagantly on things you love but cut mercilessly elsewhere\n- The Total Money Makeover (Dave Ramsey): debt snowball, emergency fund first, live on less than you earn\n- Think and Grow Rich (Napoleon Hill): definiteness of purpose, the mastermind principle, persistence\n- The Richest Man in Babylon (George Clason): pay yourself first 10%, let savings work, live on 70%, give 20% to debts\n- Money Master the Game (Tony Robbins): asset allocation drives 90% of returns, fees kill wealth, asymmetric risk/reward\n\nINTERVIEWS & QUOTES FROM THE WEALTHY:\n- Warren Buffett: do not save what is left after spending, spend what is left after saving; rule 1 never lose money, rule 2 never forget rule 1; someone is sitting in the shade today because someone planted a tree long ago\n- Charlie Munger: invert always invert; avoid what destroys wealth as much as seeking what builds it; the best thing a human being can do is to help another human being know more\n- Ray Dalio: diversify well and you can reduce risk without reducing returns; pain plus reflection equals progress; he who lives by the crystal ball will eat shattered glass\n- Naval Ravikant: earn with your mind not your time; specific knowledge cannot be taught; build or buy equity in a business\n- Warren Buffett on compounding: the snowball: compound interest is the eighth wonder of the world\n- Mark Cuban: pay off credit cards every month, never carry a balance; savings rates matter more than investment returns early on\n- Grant Cardone: the middle class saves to retire, the wealthy invest to create income now; 40% of income saved minimum\n- Jeff Bezos: focus on what will not change, not what will; think in long time horizons\n- Elon Musk: take as much risk as you can afford, you only live once\n\nPROVEN STRATEGIES:\n- Pay yourself first: automate 10-20% savings before touching income\n- The latte factor: small daily expenses compound into large annual costs\n- 50/30/20 rule: 50% needs, 30% wants, 20% savings and debt\n- Emergency fund: 3-6 months of expenses in liquid savings before investing\n- No lifestyle inflation: when income rises, raise savings rate not spending\n- Avoid car payments: buy used cars with cash or low financing\n- Cook more, eat out less: food is typically the fastest growing expense\n- Cancel subscriptions quarterly: audit recurring charges every 3 months\n- Negotiate everything: bills, salary, rent, insurance premiums\n- House hacking: rent part of your home to cover the mortgage\n- The one-day rule: wait 24 hours before any purchase over $50\n\nHARD LIMIT: keep any mention of investing generic and educational. Never tell the user to put money, or a specific amount, into funds, index products, securities, or any other financial asset, and never react to holdings with a recommendation - that territory belongs to a licensed investment advisor.\n\nReturn ONLY valid JSON, no markdown. Never use emojis or decorative symbols in any field - plain sentences only. Letters and punctuation of the reply language are of course fine. Use this structure: {\"score\":72,\"scoreLabel\":\"Good\",\"headline\":\"Summary here.\",\"insights\":[{\"type\":\"strength\",\"title\":\"Title\",\"body\":\"Body.\"},{\"type\":\"warning\",\"title\":\"Title\",\"body\":\"Body.\"},{\"type\":\"tip\",\"title\":\"Title\",\"body\":\"Body.\"}],\"expertQuote\":{\"quote\":\"Quote.\",\"author\":\"Author\"},\"webInsight\":{\"title\":\"Title\",\"body\":\"Body.\"}}";
     var specificity = " Requirements: every insight must cite the user's REAL numbers from the context and end with a concrete, quantified next step - an amount, a percentage, or a date - not an abstract tip like \"build an emergency fund\" or \"cancel some subscriptions.\" A stranger reading this should not be able to mistake it for advice written for anyone else. If you invoke a famous principle or author, it must directly sharpen a specific recommendation tied to their figures; never use a quote as a substitute for a real recommendation. If the data shows debt, address payoff concretely (which balance first, how much per month, roughly when debt-free) rather than defaulting to savings advice.";
     var analysisPrompt = (coreProblem
       ? "Analyze these finances. The user's primary challenge is: " + coreProblem + ". Tailor your insights specifically to this challenge — don't give generic advice. Context: " + ctx
-      : "Analyze these finances and give personalized advice: " + ctx) + specificity;
+      : "Analyze these finances and give personalized advice: " + ctx) + specificity
+      + (props.lang && props.lang !== "en" ? " Write every string in the JSON - headline, insight titles and bodies, the quote and the web insight - entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + ". The JSON keys and the \"type\" values stay in English." : "");
     // Apply a freshly-produced analysis to local state and persist it in the App
     // cache so it survives leaving the tab, until the next transaction.
     function applyAdvice(val) { setAdvice(val); if (props.onSaveAnalysis) props.onSaveAnalysis(val); }
     callClaude([{ role: "user", content: analysisPrompt }], system, 900, function(err, text) {
       setLoading(false);
       if (err) {
-        // API unreachable in this environment - use built-in analysis
-        applyAdvice(localAnalysis());
+        // Built-in analysis, marked as such. `source` drives the badge on the
+        // Advisor screen - an unlabelled fallback is indistinguishable from a
+        // real one, which is exactly how this shipped looking healthy.
+        var la = localAnalysis(); la.source = "local"; la.reason = (err.kind || "network");
+        try { console.warn("monthAnalysis fell back", la.reason, err.message); } catch (e2) {}
+        applyAdvice(la);
         return;
       }
       try {
@@ -19107,8 +19913,11 @@ function Advisor(props) {
         }
         applyAdvice(JSON.parse(cleaned));
       } catch(e) {
-        // Response not parseable - use built-in analysis
-        applyAdvice(localAnalysis());
+        // The model answered but not in JSON we could read. A different failure
+        // from the one above, with a different cause, so it is logged as one.
+        var la2 = localAnalysis(); la2.source = "local"; la2.reason = "parse";
+        try { console.warn("monthAnalysis JSON parse failed", String(text || "").slice(0, 200)); } catch (e2) {}
+        applyAdvice(la2);
       }
     });
   }
@@ -19120,7 +19929,7 @@ function Advisor(props) {
       return { type: "reminder", label: "Set up automatic savings transfer", icon: "spark" };
     }
     if (actionLower.indexOf("roth ira") !== -1 || actionLower.indexOf("401k") !== -1) {
-      return { type: "link", label: "Open a Roth IRA or 401k", icon: "spark" };
+      return { type: "link", label: "Ask a licensed advisor about retirement accounts", icon: "spark" };
     }
     if ((actionLower.indexOf("budget") !== -1 || actionLower.indexOf("allocate") !== -1) && actionLower.indexOf("50/30/20") !== -1) {
       return { type: "action", label: "Apply 50/30/20 to my budgets", icon: "budget", fn: "apply50/30/20" };
@@ -19618,7 +20427,7 @@ function Advisor(props) {
         function(err, reply) {
           setChatLoading(false);
           if (err) {
-            setChat(function(p) { return p.concat([{ role: "assistant", text: "I hit a snag thinking that through - give it another try in a moment. (" + err.message + ")" }]); });
+            setChat(function(p) { animMsgRef.current = -1; return p.concat([{ role: "assistant", failed: true, retry: msg, text: err.message }]); });
             return;
           }
           var parsed = parseFocusAnswer(reply);
@@ -19658,14 +20467,24 @@ function Advisor(props) {
       + "Match the user's words to the template: \"track my coffee\" is merchantSpend or a category, \"as a ring/circle/gauge\" is ring, \"a bar\" is bar, \"show me the biggest ones\" is list, \"over the last few months\" is trend, \"versus last month\" is compare. Pick a sensible icon and a short title yourself rather than asking. If they ask for something no metric covers, say plainly what you can follow instead and offer the closest one - never invent a metric name, and never promise a widget on any screen other than Overview, which is the only place they appear. "
       + "Use the EXACT category, folder, savings pot, goal, note-label and widget-title names given in the data below - never invent or guess a name. "
       + "If the user mentions several things at once, emit several tags. Only emit a tag for a concrete event, or a direct explicit request to change/create something, with real values the user actually stated - never for hypotheticals, plans, or general advice. Do not mention the word ACTION or the tag syntax in your spoken reply; just speak naturally and let the tags do the work."
-      + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a CFO who builds a business plan - send business owners there. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Richy ALSO has real WhatsApp alerts for Richard Watch (Profile -> Settings -> WhatsApp Alerts): the user links their number and texts START to Richy's WhatsApp number to turn it on, then gets the single most urgent Watch signal relayed there once a day - it only ever replies inside a chat the user opened, so if an alert seems missing, tell them to message Richy on WhatsApp to reopen today's window. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (Bank Sync files purchases from the payment notifications the user's own phone already receives - an automation they set up and control on their device, not a bank connection), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use."
+      + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a business coach who builds a business plan - send business owners there. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Richy ALSO has real WhatsApp alerts for Richard Watch (Profile -> Settings -> WhatsApp Alerts): the user links their number and texts START to Richy's WhatsApp number to turn it on, then gets the single most urgent Watch signal relayed there once a day - it only ever replies inside a chat the user opened, so if an alert seems missing, tell them to message Richy on WhatsApp to reopen today's window. Richy ALSO has Collab (Profile -> Collab): two people can join one household and share budgets, goals and categories, each keeping their own login - send anyone asking about splitting money with a partner, a flatmate or a family member there, and say plainly that it shares budgets and goals rather than merging every transaction into one ledger. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (Bank Sync files purchases from the payment notifications the user's own phone already receives - an automation they set up and control on their device, not a bank connection), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use."
       + " Close EVERY reply with exactly one short, specific follow-up question about their situation so the conversation keeps moving."
       + " ABOUT THE NOT-A-LICENSED-ADVISOR REMINDER: do NOT append it to every reply - on everyday budgeting talk it reads as nervous boilerplate and people stop reading it, which defeats its purpose. Include one short, natural version of it ONLY when leaving it out could actually cost them: anything touching investing, specific securities or assets, pensions and retirement accounts, insurance, taxes, loans, mortgages or refinancing, debt consolidation, big irreversible commitments, or any moment you are near the edge of what you can responsibly answer. In those cases say it in your own words as part of the answer, not as a disclaimer tacked on the end. For ordinary spending, saving, budgets, goals and affordability questions, skip it entirely - the app already shows a standing disclaimer on screen." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : "")
       + (isVoice ? " VOICE MODE: the user is talking to you by voice and your reply will be read aloud by text-to-speech. Keep it to 2-4 short conversational sentences of natural spoken language - no lists, no markdown, no asterisks, no symbols that read badly aloud. Numbers still matter: quote the one or two key figures, never a table. When the reminder rule above says a topic needs the not-a-licensed-advisor caveat, it still applies in voice and counts inside the sentence budget - never drop it for brevity on those topics. Action tags still work exactly as described - append them at the very end as usual." : ""),
       500,
       function(err, text) {
         setChatLoading(false);
-        var response = err || !text ? Richard(msg) : text;
+        // A server refusal is NOT an offline moment. Substituting the canned
+        // English answer here is what let a 413 on every message look like a
+        // working chat - so refusals surface as a visible failure row with a
+        // retry, and only a genuine network drop falls back to Richard(), which
+        // is then badged as an offline answer rather than passed off as his.
+        if (isServerRefusal(err)) {
+          setChat(function(p) { animMsgRef.current = -1; return p.concat([{ role: "assistant", failed: true, retry: msg, text: err.message }]); });
+          return;
+        }
+        var offline = !!(err || !text);
+        var response = offline ? Richard(msg) : text;
         var rawUpdates = parseUpdates(response);
         // "Test the change before it's done": every proposed action is checked
         // against the user's real current data before it's allowed anywhere near
@@ -19690,7 +20509,7 @@ function Advisor(props) {
           display = display ? display + "\n\n" + soloCue : soloCue;
         }
         if (!display) display = "Got it - I've noted that below. Tap Apply to update your app.";
-        setChat(function(p) { animMsgRef.current = p.length; return p.concat([{ role: "assistant", text: display }]); });
+        setChat(function(p) { animMsgRef.current = p.length; return p.concat([{ role: "assistant", text: display, offline: offline || undefined, retry: offline ? msg : undefined }]); });
         if (updates.length > 0) {
           setPendingUpdates(updates);
           setPendingAction(null);
@@ -19712,7 +20531,15 @@ function Advisor(props) {
   // Hero cards are now light lavender, so use a deeper green/red that reads on it
   // (the old bright #4ADE80 and light orangeHi washed out on the pale background).
   var GREEN_HERO = T.advGreen;
-  var ringColor = advice && advice.score >= 80 ? GREEN_HERO : advice && advice.score >= 60 ? T.gold : T.advRingLow;
+  // The Financial Health panel now reads the SAME verdict the Dashboard and the
+  // Daily Brief read - see monthVerdict(). The model still writes the prose
+  // underneath it, but it no longer gets to disagree with the two other screens
+  // about whether the month is going well; on the day this was audited it said
+  // "EXCELLENT · 85" while the Dashboard said "Plan needs a tune-up".
+  var advWatch = richardWatch({ tx: props.tx || [], categories: cats, budgets: props.budgets || [], goals: props.goals || [], savings: props.savings, businesses: props.businesses, investing: props.investing, foundMoney: props.foundMoney });
+  var advVerdict = monthVerdict({ watch: advWatch, savingsRate: savings, hasIncome: income > 0 });
+  var healthScore = advVerdict.score;
+  var ringColor = advVerdict.level === "good" ? GREEN_HERO : advVerdict.level === "watch" ? T.gold : T.advRingLow;
   var name = (props.username || "").trim() || "there";
 
   // Three real signals for the dark card's bottom row.
@@ -19723,7 +20550,7 @@ function Advisor(props) {
   var bufferStat = bufferMonths >= 3 ? GREEN_HERO : bufferMonths >= 1 ? T.gold : T.red;
   var bufferTxt = bufferMonths >= 12 ? "12+ mo" : bufferMonths > 0 ? (Math.round(bufferMonths * 10) / 10) + " mo" : "0 mo";
 
-  var greeting = advice ? (advice.score >= 80 ? "You're in good shape, " + name + "." : advice.score >= 60 ? "You're on the right track, " + name + "." : "Let's tighten things up, " + name + ".") : "";
+  var greeting = advice ? (advVerdict.level === "good" ? "You're in good shape, " + name + "." : advVerdict.level === "watch" ? "You're on the right track, " + name + "." : "Let's tighten things up, " + name + ".") : "";
   var subGreeting = "Here's what I'm seeing across your month.";
   // Insight type -> badge icon + accent, matching the synced design's CatBadge rows.
   var insMeta = { strength: { icon: "chart", color: T.green, tag: "Strength" }, warning: { icon: "credit", color: T.red, tag: "Watch" }, tip: { icon: "coins", color: T.gold, tag: "Tip" } };
@@ -19841,7 +20668,7 @@ function Advisor(props) {
     if (surplus > 0) {
       return { icon: "coins", label: "Put your surplus to work",
         title: "You kept " + dollars(surplus) + " this month",
-        action: "Don't let it drift into spending. Automate it into savings or a low-cost index fund on payday - " + dollars(surplus) + "/mo compounds into real wealth.",
+        action: "Don't let it drift into spending. Move it out of the spending balance on payday - " + dollars(surplus) + "/mo, standing order, before you see it.",
         impact: dollars(surplus * 12), impactLabel: "a year, automated" };
     }
     return { icon: "spark", label: "Get the full picture",
@@ -19942,12 +20769,21 @@ function Advisor(props) {
       <div key="health" style={panelStyle({ justifyContent: "space-between" })}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontFamily: RICHARD_DISP, fontSize: 13, letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: RICHARD_DISP_WEIGHT, color: HMUT }}>Financial Health</span>
-          <span style={{ background: ringColor + "26", color: ringColor, fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.03em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 8 }}>{advice.scoreLabel}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            {/* Written on the device, not by Richard. The month analysis matched
+                its hard-coded fallback word for word on the audited account with
+                nothing on screen saying so - a canned verdict that reads exactly
+                like a real one is worse than a visible error. */}
+            {advice && advice.source === "local" && (
+              <span dir="auto" style={{ background: T.heroRangeBg, color: HMUT, fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: "0.04em", textTransform: "uppercase", padding: "4px 8px", borderRadius: 8 }}>{tr("offlineAnswer")}</span>
+            )}
+            <span style={{ background: ringColor + "26", color: ringColor, fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.03em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 8 }}>{advVerdict.label}</span>
+          </div>
         </div>
         <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
-          <RingChart value={advice.score} max={100} size={142} stroke={10} color={ringColor} track={HTRACK} />
+          <RingChart value={healthScore} max={100} size={142} stroke={10} color={ringColor} track={HTRACK} />
           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
-            <span style={{ fontSize: 44, fontWeight: 700, letterSpacing: "-0.03em", color: HINK }}>{advice.score}</span>
+            <span style={{ fontSize: 44, fontWeight: 700, letterSpacing: "-0.03em", color: HINK }}>{healthScore}</span>
             <span style={{ fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: HFNT, marginTop: 4 }}>out of 100</span>
           </div>
         </div>
@@ -20028,7 +20864,7 @@ function Advisor(props) {
             <div style={{ width: "0.5px", background: HSEP }} />
             <div style={{ flex: 1, paddingInlineStart: 14 }}>
               <div style={{ fontSize: 10, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>Spent</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: HNEG, letterSpacing: "-0.02em", marginTop: 3 }}>{"-" + dollars(expense)}</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: HNEG, letterSpacing: "-0.02em", marginTop: 3 }}>{dollarsNeg(expense)}</div>
             </div>
           </div>
         </div>
@@ -20048,7 +20884,7 @@ function Advisor(props) {
               return (
                 <div key={i}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 5 }}>
-                    <span style={{ fontSize: 13, fontWeight: 500, color: T.catNameHero, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "58%" }}>{c.name}</span>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: T.catNameHero, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "58%" }}>{catDisplay(c)}</span>
                     <span style={{ fontSize: 13, fontWeight: 700, color: HINK, letterSpacing: "-0.02em" }}>{dollars(c.spent) + "  " + Math.round((c.spent / catTotal) * 100) + "%"}</span>
                   </div>
                   <div style={{ height: 6, borderRadius: 4, background: HTRACK, overflow: "hidden" }}>
@@ -20368,8 +21204,12 @@ function Advisor(props) {
           composer instead of finishing underneath it. */}
       <div aria-hidden="true" style={{ height: 198 }} />
 
+      {/* Collapsed, the composer clears the tab bar (which the Advisor now
+          keeps, so the AI tab has a visible way back to the rest of the app).
+          Expanded, it deliberately covers it - full-screen chat has its own
+          exit. */}
       {props.isActive !== false && ReactDOM.createPortal((
-        <div style={{ position: "fixed", top: chatExpanded ? 0 : 64, bottom: chatExpanded ? 0 : "calc(24px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, zIndex: chatExpanded ? 45 : 35, display: "flex", flexDirection: "column", pointerEvents: "none", boxSizing: "border-box", background: chatExpanded ? T.bg : "transparent", paddingBottom: chatExpanded ? "calc(14px + env(safe-area-inset-bottom, 0px))" : 0 }}>
+        <div style={{ position: "fixed", top: chatExpanded ? 0 : 64, bottom: chatExpanded ? 0 : "calc(100px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, zIndex: chatExpanded ? 45 : 35, display: "flex", flexDirection: "column", pointerEvents: "none", boxSizing: "border-box", background: chatExpanded ? T.bg : "transparent", paddingBottom: chatExpanded ? "calc(14px + env(safe-area-inset-bottom, 0px))" : 0 }}>
           {chatExpanded && (
             <div role="dialog" aria-label="Richard" data-richard-chat-panel=""
               style={{ position: "relative", overflow: "hidden", flex: 1, minHeight: 0, marginBottom: 10, pointerEvents: "auto", background: T.bg, borderTop: "0.5px solid " + T.sep, boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
@@ -20475,6 +21315,25 @@ function Advisor(props) {
                 )}
                 {chat.length > 0 && chat.map(function(m, i) {
                   var u = m.role === "user";
+                  // Richard refused, loudly. No canned answer, no pretending -
+                  // one red row that says so and offers the question back.
+                  if (m.failed) {
+                    return (
+                      <div key={i} role="alert" style={{ display: "flex", alignItems: "center", gap: 10, background: T.redDim, border: "0.5px solid " + T.red, borderRadius: 14, padding: "11px 13px" }}>
+                        <SVGIcon id="warn" size={16} color={T.red} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div dir="auto" style={{ fontSize: 13, fontWeight: 700, fontFamily: UI, color: T.red }}>{tr("richardUnavailable")}</div>
+                          <div dir="auto" style={{ fontSize: 11.5, fontFamily: UI, color: T.ink3, marginTop: 2, wordBreak: "break-word" }}>{m.text}</div>
+                        </div>
+                        {m.retry && (
+                          <button onClick={function() { setChat(function(p) { return p.filter(function(x, xi) { return xi !== i; }); }); sendChat(m.retry); }}
+                            style={{ border: "0.5px solid " + T.red, background: T.card, color: T.red, fontSize: 12.5, fontWeight: 700, fontFamily: UI, padding: "7px 13px", borderRadius: 999, cursor: "pointer", flexShrink: 0 }}>
+                            {tr("retry")}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  }
                   return (
                     <div key={i} style={{ display: "flex", justifyContent: u ? "flex-end" : "flex-start" }}>
                       {u ? (
@@ -20499,6 +21358,22 @@ function Advisor(props) {
                               reads as his own surface against the white user
                               bubbles, and is set in Garamond - his voice. */}
                           <div dir="auto" style={{ flex: 1, minWidth: 0, padding: "12px 15px", borderRadius: 18, background: T.bg, border: "0.5px solid " + T.sep, fontSize: 14.5, fontFamily: RICHARD_BODY, fontWeight: 400, lineHeight: 1.58, whiteSpace: m.focus ? "normal" : "pre-wrap", color: T.ink, textAlign: "start", unicodeBidi: "plaintext" }}>
+                            {/* A canned reply written on the device, never sent
+                                to Richard. Say so - an unlabelled fallback is
+                                indistinguishable from a real answer. */}
+                            {m.offline && (
+                              <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8, flexWrap: "wrap" }}>
+                                <span dir="auto" style={{ display: "inline-flex", alignItems: "center", gap: 5, background: T.orangeDim, color: T.ink2, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.3, textTransform: "uppercase", padding: "3px 8px", borderRadius: 999 }}>
+                                  <SVGIcon id="warn" size={10} color={T.gold} />{tr("offlineAnswer")}
+                                </span>
+                                {m.retry && (
+                                  <button onClick={function() { setChat(function(p) { return p.filter(function(x, xi) { return xi !== i; }); }); sendChat(m.retry); }}
+                                    style={{ border: "none", background: "transparent", color: T.orange, fontFamily: UI, fontSize: 11.5, fontWeight: 700, padding: 0, cursor: "pointer", textDecoration: "underline" }}>
+                                    {tr("retry")}
+                                  </button>
+                                )}
+                              </div>
+                            )}
                             {m.focus
                               ? <FocusAnswer focus={m.focus} />
                               : <TypeReveal fade text={m.text} size={14.5} font={RICHARD_DISP} animate={i === animMsgRef.current} onTick={pinChatScroll} onDone={function() { animMsgRef.current = -1; }} />}
@@ -21352,7 +22227,7 @@ function Categories(props) {
                       style={{ display: "flex", alignItems: "center", gap: 13, padding: "12px 16px", width: "100%", background: "none", border: "none", borderBottom: i < grp.items.length - 1 ? "0.5px solid " + T.sep : "none", cursor: "pointer", textAlign: "left", fontFamily: UI }}>
                       <CatBadge icon={c.icon} color={c.color} size={38} />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 15, color: T.ink, fontWeight: 600 }}>{c.name}</div>
+                        <div style={{ fontSize: 15, color: T.ink, fontWeight: 600 }}>{catDisplay(c)}</div>
                         <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>{subtitleFor(c)}</div>
                       </div>
                       <SVGIcon id="chevron" size={16} color={T.ink3} />
@@ -21768,7 +22643,7 @@ function FullAnalysisView(props) {
       {threadBlock && <div style={{ padding: "0 14px" }}>{threadBlock}</div>}
 
       <div style={{ textAlign: "center", fontSize: 11.5, color: T.ink3, lineHeight: 1.5, padding: "0 14px 6px" }}>
-        Richard is an AI assistant, not a licensed financial advisor. Always do your own research before making money decisions.
+        {tr("advisorDisclaimer")}
       </div>
 
       {composerBar}
@@ -22602,6 +23477,142 @@ function bizQuarterRevenue(biz) {
   return { revenue: round2(rev), quarter: qNum, qStart: qStart };
 }
 
+// ---- Tax pot ----------------------------------------------------------------
+// Money set aside for tax is an EARMARK, not a transfer: it never leaves the
+// business and must never move net worth, so it lives in its own small ledger
+// (biz.taxPot.entries) instead of the cash ledger. Spendable cash is what's
+// left after the earmark - the number the owner can actually pay themselves
+// from without eating the tax bill.
+function bizTaxReserved(biz) {
+  var ents = ((biz && biz.taxPot) || {}).entries || [];
+  return round2(ents.reduce(function(s, e) {
+    return s + (e.kind === "release" ? -(e.amount || 0) : (e.amount || 0));
+  }, 0));
+}
+function bizSpendableCash(biz) { return round2(businessCash(biz) - bizTaxReserved(biz)); }
+// What this quarter's revenue implies is owed, at the owner's set-aside rate.
+function bizTaxDue(biz) {
+  var q = bizQuarterRevenue(biz);
+  var rate = (biz && biz.profile && biz.profile.taxRate != null) ? biz.profile.taxRate : 25;
+  return { owed: round2(q.revenue * (rate / 100)), rate: rate, quarter: q.quarter, revenue: q.revenue };
+}
+// Short = owed minus already set aside. Over-reserving is fine, so it floors at 0.
+function bizTaxShort(biz) { return round2(Math.max(0, bizTaxDue(biz).owed - bizTaxReserved(biz))); }
+
+// ---- Needs you --------------------------------------------------------------
+// One ranked list of everything asking for the owner's attention, each row
+// carrying the tab that fixes it and a plain line from Richard. Every number is
+// measured off the ledger - nothing here is invented - so the same list can
+// safely feed the hero, the tab summaries and the chat.
+function bizAttention(biz) {
+  if (!biz) return [];
+  var out = [];
+  var today = new Date().toISOString().slice(0, 10);
+  var soon = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+  var ym = curMonth();
+  var stage = (biz.profile && biz.profile.stage) || "idea";
+  var unpaid = (biz.invoices || []).filter(function(i) { return i.status !== "paid"; });
+  var overdue = unpaid.filter(function(i) { return (i.dueDate || "") < today; });
+
+  if (overdue.length) {
+    var oTot = round2(overdue.reduce(function(s, i) { return s + (i.amount || 0); }, 0));
+    var oldest = overdue.slice().sort(function(a, b) { return (a.dueDate || "").localeCompare(b.dueDate || ""); })[0];
+    var lateDays = Math.max(1, Math.round((Date.parse(today) - Date.parse(oldest.dueDate || today)) / 86400000));
+    out.push({ id: "overdue", urgent: true, k: "Unpaid", t: overdue.length === 1 ? oldest.client : overdue.length + " invoices",
+      v: dollars(oTot), s: lateDays + "d late", tab: "invoices",
+      hint: overdue.length === 1
+        ? "A second reminder is usually all it takes. Marking it paid clears this and tops up the tax pot."
+        : "Chase the oldest first - " + oldest.client + " at " + lateDays + " days is the one holding up your cash." });
+  }
+  var due = bizTaxDue(biz);
+  var short = bizTaxShort(biz);
+  if (short > 0 && due.owed > 0) {
+    out.push({ id: "tax", urgent: true, k: "Tax", t: "Q" + due.quarter + " set-aside", v: dollars(due.owed), s: dollars(short) + " short", tab: "tax",
+      hint: unpaid.length
+        ? "Your unpaid invoices cover this once they land. If they slip, move " + dollars(short) + " across before the quarter closes."
+        : "Set aside " + dollars(short) + " now while the money is there - it stops the quarter ending in a scramble." });
+  }
+  var runway = bizRunway(biz);
+  if (runway !== null && runway < 3 && businessCash(biz) > 0) {
+    out.push({ id: "runway", urgent: runway < 2, k: "Runway", t: runway + " months", v: dollars(bizBurn(biz)), s: "/mo burn", tab: "home",
+      hint: runway < 2
+        ? "Under two months. Either revenue lands this month or a cost comes down - pick one deliberately rather than finding out."
+        : "Under three months of cover. Worth deciding now which cost you would cut first if a month goes quiet." });
+  }
+  (biz.categories || []).forEach(function(c) {
+    var planned = c.planned || 0;
+    if (planned <= 0) return;
+    var sp = bizCatMonthSpent(biz, c.key, ym);
+    if (sp <= planned) return;
+    out.push({ id: "over_" + c.key, urgent: false, k: c.label, t: "over budget", v: dollars(sp), s: "of " + dollars(planned), tab: "home",
+      hint: "That is " + dollars(round2(sp - planned)) + " past the plan. Either the budget is wrong or the spend was - both are worth a minute." });
+  });
+  var soonInv = unpaid.filter(function(i) { return (i.dueDate || "") >= today && (i.dueDate || "") <= soon; });
+  if (soonInv.length) {
+    var sTot = round2(soonInv.reduce(function(s, i) { return s + (i.amount || 0); }, 0));
+    out.push({ id: "duesoon", urgent: false, k: "Due soon", t: soonInv.length + (soonInv.length === 1 ? " invoice" : " invoices"), v: dollars(sTot), s: "within 7d", tab: "invoices",
+      hint: "Nothing wrong yet. A short note the day before the due date is the cheapest way to stay off the overdue list." });
+  }
+  if (stage !== "idea" && bizMonthRevenue(biz, ym) === 0) {
+    out.push({ id: "norev", urgent: false, k: "Revenue", t: "nothing logged", v: dollars(0), s: "this month", tab: "home",
+      hint: "Either no sale has landed yet, or one landed and is not recorded. The second is worth two minutes to fix." });
+  }
+  var rm = biz.roadmap;
+  if (rm && (rm.milestones || []).length) {
+    var nextT = null, nextM = null;
+    for (var i = 0; i < rm.milestones.length && !nextT; i++) {
+      var m = rm.milestones[i];
+      for (var j = 0; j < (m.tasks || []).length; j++) { if (!m.tasks[j].done) { nextT = m.tasks[j]; nextM = m; break; } }
+    }
+    if (nextT) {
+      var prog = roadmapProgress(rm);
+      out.push({ id: "roadmap", urgent: false, k: "Next step", t: nextM.title, v: prog.done + "/" + prog.total, s: "done", tab: "build", hint: nextT.label });
+    }
+  }
+  return out;
+}
+
+// The five faces of a business account. Same shape as INVESTING_HUB_TABS, but
+// each tab also reports a one-line state, so the bar itself answers "is
+// anything wrong?" without the owner opening a single screen.
+var BUSINESS_HUB_TABS = [
+  { id: "home", label: "Home", icon: "home" },
+  { id: "invoices", label: "Invoices", icon: "coins" },
+  { id: "tax", label: "Tax pot", icon: "shield" },
+  { id: "build", label: "Build", icon: "up" },
+  { id: "richard", label: "Richard", icon: "advisor" },
+];
+// Live summaries for that bar. Module-level so the App shell can render the bar
+// without reaching inside BusinessView for its state.
+function businessHubTabs(biz) {
+  if (!biz) return BUSINESS_HUB_TABS;
+  var today = new Date().toISOString().slice(0, 10);
+  var pl = bizMonthProfit(biz, curMonth());
+  var unpaid = (biz.invoices || []).filter(function(i) { return i.status !== "paid"; });
+  var overdue = unpaid.filter(function(i) { return (i.dueDate || "") < today; });
+  var unpaidTot = round2(unpaid.reduce(function(s, i) { return s + (i.amount || 0); }, 0));
+  var short = bizTaxShort(biz);
+  var prog = roadmapProgress(biz.roadmap);
+  var urgent = bizAttention(biz).filter(function(a) { return a.urgent; }).length;
+  var sums = {
+    home: (pl.profit === 0 && pl.revenue === 0)
+      ? { s: dollars(pl.spend) + " out", c: T.ink3 }
+      : { s: (pl.profit >= 0 ? "+" : "-") + dollars(Math.abs(pl.profit)), c: pl.profit >= 0 ? T.green : T.red },
+    invoices: overdue.length ? { s: overdue.length + " overdue", c: T.red }
+      : unpaid.length ? { s: dollars(unpaidTot) + " out", c: T.ink2 }
+      : { s: "All on time", c: T.green },
+    tax: short > 0 ? { s: dollars(short) + " short", c: "#C8983A" }
+      : bizTaxDue(biz).owed > 0 ? { s: "Ready", c: T.green }
+      : { s: "Nothing due", c: T.ink3 },
+    build: prog.total ? { s: prog.done + " of " + prog.total, c: T.ink2 } : { s: "No roadmap", c: T.ink3 },
+    richard: urgent ? { s: urgent + (urgent === 1 ? " thing" : " things"), c: T.ink2 } : { s: "Quiet", c: T.green },
+  };
+  return BUSINESS_HUB_TABS.map(function(t) {
+    var v = sums[t.id] || {};
+    return { id: t.id, label: t.label, icon: t.icon, sum: v.s, sumColor: v.c };
+  });
+}
+
 // ---- Business roadmap -------------------------------------------------------
 // A stage-tuned milestone checklist Richard drafts for every business. The
 // offline templates below double as the fallback when the AI is unreachable.
@@ -22622,6 +23633,17 @@ var LOCAL_ROADMAPS = {
     { title: "Build it to last", tasks: ["Set up one repeatable way customers come back", "Write down the weekly routine the business needs", "Set next quarter's revenue target"] }
   ]
 };
+// Something to read on the week nothing sells. Rotated by account id + day so
+// it changes without being random noise.
+var BIZ_QUOTES = [
+  { t: "Do not save what is left after spending; spend what is left after saving.", by: "Warren Buffett" },
+  { t: "The way to get started is to quit talking and begin doing.", by: "Walt Disney" },
+  { t: "Whether you think you can or you think you cannot, you are right.", by: "Henry Ford" },
+  { t: "It does not matter how slowly you go as long as you do not stop.", by: "Confucius" },
+  { t: "Revenue is vanity, profit is sanity, cash is reality.", by: "Old accounting proverb" },
+  { t: "Amateurs talk strategy. Professionals talk logistics.", by: "Omar Bradley" },
+  { t: "Beware of little expenses; a small leak will sink a great ship.", by: "Benjamin Franklin" },
+];
 var MILESTONE_PRAISE = [
   "That milestone is done - real progress. The next one is already lined up for you.",
   "Another milestone down. This is exactly how businesses get built - one finished step at a time.",
@@ -22650,7 +23672,7 @@ function buildRoadmap(biz, richardInstructions, lang, cb) {
   var stage = pf.stage || "idea";
   var custom = richardUserCtx(richardInstructions);
   var langSuffix = (lang && lang !== "en") ? (" Every string value must be written entirely in " + (LANGUAGE_NAMES[lang] || "English") + ".") : "";
-  var sys = custom + "You are Richard, a sharp, warm, honest business CFO inside the Richy app. Build a step-by-step roadmap that takes this owner from where they are today to a working, growing business. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"milestones\":[{\"title\":\"short milestone name\",\"tasks\":[{\"label\":\"one concrete action\"}]}]}. Exactly 3 or 4 milestones, 2 or 3 tasks each, ordered as a path from today to the 12-month goal. Every task must be a single concrete action the owner can physically do, MAXIMUM 16 words - include a number or deliverable where possible (like: talk to 5 potential customers, list 3 competitors and their prices). Keep the whole reply compact enough to never get cut off. Tune it to the stage: idea = validate demand before spending money (talk to real customers, define the offer, land the first paying customer); launching = make it real (legal and fees, set prices, pick one launch channel, first 10 customers, track every sale); running = sharpen the machine (review margins, double down on the best channel, keep customers coming back, systemize the busywork)." + langSuffix;
+  var sys = custom + "You are Richard, a sharp, warm, honest business finance coach inside the Richy app. Build a step-by-step roadmap that takes this owner from where they are today to a working, growing business. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"milestones\":[{\"title\":\"short milestone name\",\"tasks\":[{\"label\":\"one concrete action\"}]}]}. Exactly 3 or 4 milestones, 2 or 3 tasks each, ordered as a path from today to the 12-month goal. Every task must be a single concrete action the owner can physically do, MAXIMUM 16 words - include a number or deliverable where possible (like: talk to 5 potential customers, list 3 competitors and their prices). Keep the whole reply compact enough to never get cut off. Tune it to the stage: idea = validate demand before spending money (talk to real customers, define the offer, land the first paying customer); launching = make it real (legal and fees, set prices, pick one launch channel, first 10 customers, track every sale); running = sharpen the machine (review margins, double down on the best channel, keep customers coming back, systemize the busywork)." + langSuffix;
   var pl = bizMonthProfit(biz, curMonth());
   var usr = "Business: " + (biz.name || "my business") + " - " + (biz.what || "unspecified") + ". Stage: " + stage + ". Scale: " + (pf.size || "side") + ". "
     + "Monthly budget " + dollars(pf.monthly || 0) + ", revenue goal " + dollars(pf.revenueGoal || 0) + ", cash on hand " + dollarsSigned(businessCash(biz)) + ". "
@@ -22720,7 +23742,11 @@ function bizIdeas(biz) {
     var sp = bizCatMonthSpent(biz, c.key, ym);
     if (!big || sp > big.spend) big = { label: c.label, spend: sp };
   });
-  if (stage !== "idea" && pl.revenue === 0) out.push({ title: "Get your first sale", body: "Nothing teaches faster than one real customer. Offer " + (biz.what || "your product") + " directly to 10 people this week - even at a discount - and record the sale here." });
+  // "First sale" only for a business that has genuinely never sold; one with
+  // history and a quiet month needs the opposite advice.
+  var everSold = ((biz.entries) || []).some(function(e) { return e.kind === "deposit" && e.revenue; });
+  if (stage !== "idea" && pl.revenue === 0 && !everSold) out.push({ title: "Get your first sale", body: "Nothing teaches faster than one real customer. Offer " + (biz.what || "your product") + " directly to 10 people this week - even at a discount - and record the sale here." });
+  if (stage !== "idea" && pl.revenue === 0 && everSold) out.push({ title: "Go back to who already paid", body: "No revenue booked this month, but you have customers who have paid before. A direct note to your last three buyers is the cheapest sale you will ever make." });
   if (trend.verdict !== "up" && monthly > 0 && mktSpend < monthly * 0.15) out.push({ title: "Revenue has gone quiet", body: "You've spent " + dollars(mktSpend) + " on marketing this month" + (mktPlanned > mktSpend ? " of " + dollars(mktPlanned) + " budgeted" : "") + ". Put the unspent marketing money into the one channel that brought your last customers." });
   if (pl.margin !== null && pl.margin >= 0.6 && trend.verdict === "up") out.push({ title: "Room to raise prices", body: "Your margin is " + Math.round(pl.margin * 100) + "% and revenue is climbing. Test a 10% price rise on the bestseller - on " + dollars(pl.revenue) + " of monthly sales that's about " + dollars(pl.revenue * 0.1) + " extra profit for zero extra work." });
   if (pl.spend > 0 && big && big.spend > pl.spend * 0.3) out.push({ title: "One cost is eating the budget", body: big.label + " took " + dollars(big.spend) + " this month - over 30% of everything you spent. Get one competing quote or renegotiate before next month's bill." });
@@ -22808,7 +23834,7 @@ function localWeeklyReview(biz) {
 function runWeeklyReview(biz, richardInstructions, lang, cb) {
   var custom = richardUserCtx(richardInstructions);
   var langSuffix = (lang && lang !== "en") ? (" Every string value must be written entirely in " + (LANGUAGE_NAMES[lang] || "English") + ".") : "";
-  var sys = custom + "You are Richard, a sharp, warm, honest business CFO inside the Richy app, delivering the owner's weekly business review. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"status\":\"on-track\" or \"watch\" or \"off-track\",\"headline\":\"one honest sentence, max 18 words, on exactly where the business stands this week\",\"tip\":{\"title\":\"2 to 5 words\",\"body\":\"1 to 2 sentences of concrete advice tied to their real numbers\"},\"warning\":{\"title\":\"2 to 5 words\",\"body\":\"the one risk to watch, tied to a real number\"},\"idea\":{\"title\":\"2 to 5 words\",\"body\":\"one growth or savings idea, with a dollar figure where possible\"},\"taskSuggestion\":{\"label\":\"one concrete task under 14 words, or empty string\",\"milestone\":\"the milestone title to file it under, or empty string\"},\"graduate\":\"\"}. Never repeat last week's headline. Base every claim only on the numbers given - never invent figures. If the business has clearly outgrown its stage (idea stage but real money is moving; launching stage but revenue keeps arriving) set graduate to the next stage, launching or running - otherwise leave it an empty string." + langSuffix;
+  var sys = custom + "You are Richard, a sharp, warm, honest business finance coach inside the Richy app, delivering the owner's weekly business review. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"status\":\"on-track\" or \"watch\" or \"off-track\",\"headline\":\"one honest sentence, max 18 words, on exactly where the business stands this week\",\"tip\":{\"title\":\"2 to 5 words\",\"body\":\"1 to 2 sentences of concrete advice tied to their real numbers\"},\"warning\":{\"title\":\"2 to 5 words\",\"body\":\"the one risk to watch, tied to a real number\"},\"idea\":{\"title\":\"2 to 5 words\",\"body\":\"one growth or savings idea, with a dollar figure where possible\"},\"taskSuggestion\":{\"label\":\"one concrete task under 14 words, or empty string\",\"milestone\":\"the milestone title to file it under, or empty string\"},\"graduate\":\"\"}. Never repeat last week's headline. Base every claim only on the numbers given - never invent figures. If the business has clearly outgrown its stage (idea stage but real money is moving; launching stage but revenue keeps arriving) set graduate to the next stage, launching or running - otherwise leave it an empty string." + langSuffix;
   callClaudeFast([{ role: "user", content: bizWeeklyDigest(biz) }], sys, 600, function(e, text) {
     var ym = curMonth();
     var pl = bizMonthProfit(biz, ym);
@@ -22975,20 +24001,30 @@ function DebtView(props) {
           <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
             <SVGIcon id="credit" size={24} color={T.orange} />
           </div>
-          <div style={{ fontSize: 16, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 5 }}>No debts tracked</div>
-          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 18 }}>Add a card, loan, or overdraft with its balance and interest rate, and I'll show you the fastest way out.</div>
+          <div style={{ fontSize: 16, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 5 }}>{tr("dbNoDebts")}</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 18 }}>{tr("dbNoDebtsSub")}</div>
           <button onClick={openAdd}
-            style={{ background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 13, padding: "12px 22px", fontSize: 14, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px " + T.orangeGlow }}>
-            Add your first debt
-          </button>
+            style={{ background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 13, padding: "12px 22px", fontSize: 14, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px " + T.orangeGlow }}>{tr("dbAddFirst")}</button>
         </Card>
       ) : (
         <div>
           <Card style={{ padding: "18px 20px", marginBottom: 16, background: T.heroBg, boxShadow: T.heroShadow }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: T.heroMut, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Total owed</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.heroMut, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{tr("dbTotalOwed")}</div>
             <div style={{ fontSize: 36, fontWeight: 800, color: T.heroText, letterSpacing: "-0.03em", lineHeight: 1 }}>{dollars(totalDebt)}</div>
             <div style={{ fontSize: 12.5, color: T.heroFaint, marginTop: 7 }}>{debts.length + " " + (debts.length === 1 ? "debt" : "debts") + " · " + dollars(totalMin) + " minimum / month"}</div>
           </Card>
+
+          {/* Onboarding asked for a total debt figure and then forgot the
+              answer; it is now seeded here as a real tracked debt. It arrives
+              with no rate and no minimum because we did not ask for those - and
+              a guessed APR would drive a wrong payoff order - so the row says
+              what it needs to become useful. */}
+          {debts.some(function(d) { return d.fromOnboarding && !(parseFloat(d.apr) > 0); }) && (
+            <div dir="auto" style={{ display: "flex", alignItems: "flex-start", gap: 9, background: T.goldDim, borderRadius: 14, padding: "12px 14px", marginBottom: 14 }}>
+              <SVGIcon id="spark" size={15} color={T.gold} />
+              <span style={{ flex: 1, fontSize: 12.5, color: T.ink2, lineHeight: 1.45 }}>{tr("seededDebtNote")}</span>
+            </div>
+          )}
 
           {debts.map(function(d) {
             return (
@@ -23468,8 +24504,13 @@ function SavingsAccountView(props) {
   var _tb = useState("overview"); var tab = _tb[0]; var setTab = _tb[1];
   var _ed = useState(false); var editingPlan = _ed[0]; var setEditingPlan = _ed[1];
   if (!acct) return null;
-  if (!profile.complete || editingPlan) {
-    return <SavingsPlanOnboard acct={acct} tx={props.tx} onCancel={profile.complete ? function() { setEditingPlan(false); } : props.onBack} onSave={function(next) { props.onSaveProfile(next); setEditingPlan(false); }} />;
+  // Opening a savings pot used to put a four-question plan wizard in front of
+  // it, and cancelling left the screen entirely - so a user could not simply
+  // LOOK at the money they had just set aside. The pot opens; the plan is
+  // offered as a card inside it (see planPrompt below), which is the same
+  // question asked at a moment when the user can see what it is about.
+  if (editingPlan) {
+    return <SavingsPlanOnboard acct={acct} tx={props.tx} onCancel={function() { setEditingPlan(false); }} onSave={function(next) { props.onSaveProfile(next); setEditingPlan(false); }} />;
   }
   var snap = savingsPlanSnapshot(acct, props.tx || []);
   var color = acct.color || T.orange;
@@ -23512,6 +24553,20 @@ function SavingsAccountView(props) {
       </div>
 
       {tab === "overview" && <div>
+        {/* The plan, offered rather than forced. Everything below still works
+            without it - the pot shows its balance, its history and its month -
+            so this is an invitation, not a gate. */}
+        {!profile.complete && (
+          <button onClick={function() { setEditingPlan(true); }}
+            style={{ width: "100%", textAlign: "start", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, marginBottom: 12, padding: "14px 16px", borderRadius: 18, background: T.card, border: "1px dashed " + T.orange + "66", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)" }}>
+            <CatBadge icon="goals" color={T.orange} size={38} soft={true} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div dir="auto" style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>{tr("svGivePlanTitle")}</div>
+              <div dir="auto" style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>{tr("svGivePlanSub")}</div>
+            </div>
+            <SVGIcon id="chevron" size={18} color={T.ink3} />
+          </button>
+        )}
         <Card style={{ padding: "18px 20px 16px", marginBottom: 12, background: T.heroBg, boxShadow: T.heroShadow }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
             <div><div style={{ fontSize: 10.5, color: T.heroMut, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>Saved toward {purpose.label.toLowerCase()}</div><div style={{ fontSize: 36, fontWeight: 800, color: T.heroText, letterSpacing: "-0.035em", lineHeight: 1.05, marginTop: 5 }}>{dollars(snap.balance)}</div></div>
@@ -24874,6 +25929,12 @@ function InvestingView(props) {
     if (action.indexOf("lesson:") === 0) { setHubTab("learn"); setOpenLesson(action.slice(7)); return; }
   }
   function openPlanBuy() {
+    // The order ticket - a suitability questionnaire that ends in "VTI, 32%,
+    // $160, 0.84 shares" for this specific user - is the one investing surface
+    // that reads as personalised advice rather than education. It stays behind
+    // its own flag even when the Investing hub is on, so counsel can clear the
+    // tracker and the lessons without clearing this.
+    if (!LAUNCH.investOrderTicket) { setSheet("buy"); return; }
     if (!plan) { if (props.onOpenPlanOnboard) props.onOpenPlanOnboard(acct.id); return; }
     setPlanAmt(""); setPlanDone(null); setPlanErr(""); setPlanBusy(false); setSheet("planbuy");
     fetchPlanPrices(null);
@@ -25406,7 +26467,7 @@ function InvestingView(props) {
       </button>
 
       <div style={{ textAlign: "center", fontSize: 11, color: T.ink3, margin: "14px 12px 4px", lineHeight: 1.5 }}>
-        Richard is an AI assistant, not a licensed financial advisor. Investing involves risk, including possible loss of principal, and past performance doesn't guarantee future results.
+        {tr("dscInvestRisk")}
       </div>
       </div>
       )}
@@ -25573,7 +26634,7 @@ function InvestingView(props) {
             </div>
           </Card>
           <div style={{ textAlign: "center", fontSize: 11, color: T.ink3, margin: "16px 12px 4px", lineHeight: 1.5 }}>
-            Richard is an AI assistant and can make mistakes. This isn't licensed financial advice.
+            {tr("dscAiMistakes")}
           </div>
         </div>
       )}
@@ -26601,7 +27662,7 @@ function StockView(props) {
                       </button>
                     )}
                   </div>
-                  <div style={{ fontSize: 10.5, color: T.ink3, marginTop: 8, lineHeight: 1.4 }}>Richard's take is a perspective, not financial advice.</div>
+                  <div style={{ fontSize: 10.5, color: T.ink3, marginTop: 8, lineHeight: 1.4 }}>{tr("dscTake")}</div>
                   {props.onOpenInvestorOnboard && !props.investorProfile && (
                     <button onClick={props.onOpenInvestorOnboard}
                       style={{ width: "100%", marginTop: 12, border: "1.5px dashed " + T.orange + "77", background: "none", borderRadius: 12, padding: "11px 0", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.orange }}>
@@ -27005,7 +28066,7 @@ function InvestorOnboardScreen(props) {
           <button onClick={retake} style={{ width: "100%", marginTop: 12, background: "none", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.orange, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
             <SVGIcon id="refresh" size={14} color={T.orange} /> Redo the test
           </button>
-          <div style={{ fontSize: 11.5, color: J.ink3, textAlign: "center", marginTop: 14, lineHeight: 1.45 }}>Richard is a guide, not a licensed financial advisor. Invest only what you can afford to leave alone.</div>
+          <div style={{ fontSize: 11.5, color: J.ink3, textAlign: "center", marginTop: 14, lineHeight: 1.45 }}>{tr("dscGuide")}</div>
         </div>
       </div>
     );
@@ -27783,7 +28844,7 @@ function StockScoutView(props) {
             </div>
           </div>
 
-          <div style={{ fontSize: 11, color: T.ink3, marginTop: 12, lineHeight: 1.45, padding: "0 2px 8px" }}>Richard's scouting is research to explore, not financial advice. He can be wrong - always do your own homework before you buy.</div>
+          <div style={{ fontSize: 11, color: T.ink3, marginTop: 12, lineHeight: 1.45, padding: "0 2px 8px" }}>{tr("dscScout")}</div>
         </div>
       )}
     </div>
@@ -27884,6 +28945,40 @@ function BusinessView(props) {
 
   var _v = useState(props.openBizId ? "detail" : "list"); var view = _v[0]; var setView = _v[1];
   var _aid = useState(props.openBizId || null); var activeId = _aid[0]; var setActiveId = _aid[1];
+  // The open account is a hub with five faces, driven by the bottom bar exactly
+  // like Investing. The local copy keeps the tab working in the dev harness,
+  // where nothing above owns it.
+  var _lht = useState("home"); var localHubTab = _lht[0]; var setLocalHubTab = _lht[1];
+  var hubTab = props.hubTab || localHubTab;
+  function setHubTab(next) {
+    setLocalHubTab(next);
+    if (props.onHubTabChange) props.onHubTabChange(next);
+  }
+  // Opening/closing an account has to be told upstairs: the bottom bar renders
+  // the hub (and its live summaries) off the App's own copy of which account is
+  // open, so the two can never disagree about where you are.
+  function openBiz(id) {
+    setActiveId(id); setView("detail"); setHubTab("home");
+    if (props.onOpenBizChange) props.onOpenBizChange(id);
+  }
+  function closeToList() {
+    setActiveId(null); setView("list");
+    if (props.onOpenBizChange) props.onOpenBizChange(null);
+  }
+  // A tap in the "Needs you" list jumps to the tab that actually fixes it.
+  function goAttention(a) {
+    if (!a) return;
+    if (a.tab === "invoices" && a.id === "overdue") setInvOpen("first-overdue");
+    setHubTab(a.tab || "home");
+  }
+  var _invOpen = useState(null); var invOpen = _invOpen[0]; var setInvOpen = _invOpen[1];
+  // The bar that switches tabs lives in the App shell, so this watches the
+  // resolved tab rather than the local setter: leaving Invoices drops the open
+  // invoice, and coming back lands on the list, not on whatever you last read.
+  useEffect(function() { if (hubTab !== "invoices") setInvOpen(null); }, [hubTab]);
+  var _moreAtt = useState(false); var moreAtt = _moreAtt[0]; var setMoreAtt = _moreAtt[1];
+  var _reserveOpen = useState(false); var reserveOpen = _reserveOpen[0]; var setReserveOpen = _reserveOpen[1];
+  var _reserveForm = useState({ amount: "", mode: "reserve" }); var reserveForm = _reserveForm[0]; var setReserveForm = _reserveForm[1];
   var _st = useState(1); var step = _st[0]; var setStep = _st[1];
   // Jomo-style interview position: one question per screen (bq = business
   // question index), with direction-aware slide transitions. `step` still
@@ -27924,7 +29019,6 @@ function BusinessView(props) {
   // Overview rebuild: invoices ("Needs attention" / Unpaid stat) and the
   // editable tax set-aside rate behind the Tax pot stat.
   var _invAdd = useState(false); var addInvoiceOpen = _invAdd[0]; var setAddInvoiceOpen = _invAdd[1];
-  var _invList = useState(false); var invoicesOpen = _invList[0]; var setInvoicesOpen = _invList[1];
   var _invForm = useState({ client: "", amount: "", dueDate: "" }); var invForm = _invForm[0]; var setInvForm = _invForm[1];
   var _taxSheet = useState(false); var taxSheetOpen = _taxSheet[0]; var setTaxSheetOpen = _taxSheet[1];
 
@@ -27935,6 +29029,9 @@ function BusinessView(props) {
   // Inject the business-tab animation kit once (own id so the tab also works
   // standalone in the dev harness, without the Overview having mounted first).
   useEffect(function() {
+    // The hub faces cross-fade with the same motion the Investing hub uses, so
+    // switching tabs feels identical wherever you are in the app.
+    ensureScoutCss();
     if (document.getElementById("richy-biz-css")) return;
     var st = document.createElement("style");
     st.id = "richy-biz-css";
@@ -28070,11 +29167,38 @@ function BusinessView(props) {
     var reviews = (biz.reviews || []).map(function(r) { return r.id === review.id ? Object.assign({}, r, { taskSuggestion: Object.assign({}, r.taskSuggestion, { added: true }) }) : r; });
     props.onSaveBusinesses(patchBiz(biz.id, { roadmap: Object.assign({}, rm, { milestones: ms }), reviews: reviews }));
   }
+  // An idea only counts once it's a step you'll be held to. These three turn
+  // the Build screen's cards into roadmap tasks, or into a conversation.
+  function ideaOnRoadmap(biz, idea) {
+    var found = false;
+    ((biz.roadmap || {}).milestones || []).forEach(function(m) {
+      (m.tasks || []).forEach(function(t) { if ((t.label || "").toLowerCase() === (idea.title || "").toLowerCase()) found = true; });
+    });
+    return found;
+  }
+  function addIdeaToRoadmap(biz, idea) {
+    var rm = biz.roadmap;
+    if (!rm || ideaOnRoadmap(biz, idea)) return;
+    var mss = rm.milestones || [];
+    if (!mss.length) return;
+    var targetIdx = -1;
+    for (var i = 0; i < mss.length; i++) { if (!mss[i].done) { targetIdx = i; break; } }
+    if (targetIdx === -1) targetIdx = mss.length - 1;
+    var ms = mss.map(function(m, mi) {
+      if (mi !== targetIdx) return m;
+      return Object.assign({}, m, { done: false, doneAt: null, tasks: (m.tasks || []).concat([{ id: "ti_" + Date.now(), label: idea.title, done: false, doneAt: null }]) });
+    });
+    props.onSaveBusinesses(patchBiz(biz.id, { roadmap: Object.assign({}, rm, { milestones: ms }) }));
+  }
+  function discussIdea(biz, idea) {
+    setHubTab("richard");
+    setChatInput(idea.title + " - is it worth it?");
+  }
   function fetchIdeas(biz) {
     if (ideasLoading) return;
     setIdeasLoading(true); setIdeas(null);
     var custom = richardUserCtx(props.richardInstructions);
-    var sys = custom + "You are Richard, a sharp, warm, honest business CFO inside the Richy app. Give the owner growth ideas grounded ONLY in the numbers provided - never invent figures. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"ideas\":[{\"title\":\"2 to 6 words\",\"body\":\"2 to 3 concrete sentences tied to their numbers\",\"impact\":\"one short line like: about $120 more per month, or empty string\"}]} with EXACTLY 3 ideas." + langLine();
+    var sys = custom + "You are Richard, a sharp, warm, honest business finance coach inside the Richy app. Give the owner growth ideas grounded ONLY in the numbers provided - never invent figures. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"ideas\":[{\"title\":\"2 to 6 words\",\"body\":\"2 to 3 concrete sentences tied to their numbers\",\"impact\":\"one short line like: about $120 more per month, or empty string\"}]} with EXACTLY 3 ideas." + langLine();
     callClaudeFast([{ role: "user", content: bizWeeklyDigest(biz) + " Give me 3 growth ideas." }], sys, 500, function(e, text) {
       setIdeasLoading(false);
       if (!e && text) {
@@ -28160,7 +29284,7 @@ function BusinessView(props) {
     setPlanning(true); setErr("");
     var monthly = parseFloat(form.monthly) || 0;
     var custom = richardUserCtx(props.richardInstructions);
-    var sys = custom + "You are Richard, a sharp, warm, honest business CFO and startup advisor inside the Richy app. Build a practical, realistic, encouraging business plan and a monthly operating budget for the user's business, run against the real numbers they give you. The owner's notes, when present, are hard requirements: let them override the stage and scale defaults in the budget split, the plan sections, the tips, and the verdict - a plan that ignores what the owner wrote in their notes is a failed plan. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"summary\":\"2 to 3 sentence plain-English summary of the business and the path to making it work\",\"sections\":[{\"title\":\"short section title\",\"body\":\"2 to 4 sentences of concrete, specific advice\"}],\"categories\":[{\"category\":\"Marketing\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"short actionable tip\"],\"verdict\":{\"assessment\":\"one honest sentence on whether this budget and runway are realistic\",\"keyNumber\":\"the single most important figure e.g. 7 months runway or break-even at $4k/mo\",\"keyNumberLabel\":\"what that figure means in 2 to 4 words\"}}. Provide 4 to 6 sections covering positioning, the first 90 days, pricing and revenue, costs to watch, and the biggest risk. The categories must be chosen only from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer, and the amounts are whole numbers that sum to about the monthly budget. Be honest if the budget or runway looks too thin." + langLine();
+    var sys = custom + "You are Richard, a sharp, warm, honest business finance coach inside the Richy app. Build a practical, realistic, encouraging business plan and a monthly operating budget for the user's business, run against the real numbers they give you. The owner's notes, when present, are hard requirements: let them override the stage and scale defaults in the budget split, the plan sections, the tips, and the verdict - a plan that ignores what the owner wrote in their notes is a failed plan. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"summary\":\"2 to 3 sentence plain-English summary of the business and the path to making it work\",\"sections\":[{\"title\":\"short section title\",\"body\":\"2 to 4 sentences of concrete, specific advice\"}],\"categories\":[{\"category\":\"Marketing\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"short actionable tip\"],\"verdict\":{\"assessment\":\"one honest sentence on whether this budget and runway are realistic\",\"keyNumber\":\"the single most important figure e.g. 7 months runway or break-even at $4k/mo\",\"keyNumberLabel\":\"what that figure means in 2 to 4 words\"}}. Provide 4 to 6 sections covering positioning, the first 90 days, pricing and revenue, costs to watch, and the biggest risk. The categories must be chosen only from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer, and the amounts are whole numbers that sum to about the monthly budget. Be honest if the budget or runway looks too thin." + langLine();
     var usr = "Business name: " + (form.name || "my business") + ". What it does: " + (form.what || "unspecified") + ". "
       + "Legal structure: " + labelOf(STRUCTURES, form.structure) + ". Stage: " + labelOf(STAGES, form.stage) + ". Scale: " + labelOf(SIZES, form.size) + ". "
       + "Planned monthly spend: " + dollars(monthly) + ". Monthly revenue goal: " + dollars(parseFloat(form.revenueGoal) || 0) + ". "
@@ -28211,7 +29335,7 @@ function BusinessView(props) {
     var next = bizes.concat([biz]);
     if (startCap > 0 && fromMain) props.onBusinessMove(tx.concat([transferTx("expense", startCap, biz.name)]), next);
     else props.onSaveBusinesses(next);
-    setActiveId(null); setView("list");
+    closeToList();
   }
   function saveBusiness() {
     if (!planResult) return;
@@ -28242,7 +29366,7 @@ function BusinessView(props) {
     var monthly = parseFloat(form.monthly) || 0;
     var split = planResult.categories.map(function(c) { return c.label + ": " + dollars(c.planned || 0); }).join("; ");
     var custom = richardUserCtx(props.richardInstructions);
-    var sys = custom + "You are Richard, a warm, sharp business CFO inside the Richy app, helping set up a new business budget. "
+    var sys = custom + "You are Richard, a warm, sharp business finance coach inside the Richy app, helping set up a new business budget. "
       + "Business: " + (form.name || "the business") + " - " + (form.what || "unspecified") + ". Structure: " + labelOf(STRUCTURES, form.structure) + ". Stage: " + labelOf(STAGES, form.stage) + ". Scale: " + labelOf(SIZES, form.size) + ". Monthly budget " + dollars(monthly) + ", revenue goal " + dollars(parseFloat(form.revenueGoal) || 0) + ". "
       + richardNotesBlock("NOTES FROM THE OWNER", form.notes)
       + "Current proposed budget split: " + (split || "not set") + ". "
@@ -28354,16 +29478,71 @@ function BusinessView(props) {
     props.onSaveBusinesses(patchBiz(bizId, { invoices: (biz.invoices || []).concat([inv]) }));
     setInvForm({ client: "", amount: "", dueDate: "" }); setAddInvoiceOpen(false);
   }
+  // Marking an invoice paid is the moment the whole account moves: the money
+  // becomes revenue in the ledger, and - if auto set-aside is on - the tax share
+  // is earmarked in the same write, so it never sits in spendable cash pretending
+  // to be yours. Un-paying reverses both, so the two can never drift apart.
   function toggleInvoicePaid(bizId, invId) {
     var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
     if (!biz) return;
-    var next = (biz.invoices || []).map(function(inv) { return inv.id === invId ? Object.assign({}, inv, { status: inv.status === "paid" ? "unpaid" : "paid" }) : inv; });
-    props.onSaveBusinesses(patchBiz(bizId, { invoices: next }));
+    var inv = null;
+    (biz.invoices || []).forEach(function(x) { if (x.id === invId) inv = x; });
+    if (!inv) return;
+    var wasPaid = inv.status === "paid";
+    var patch = { invoices: (biz.invoices || []).map(function(x) { return x.id === invId ? Object.assign({}, x, { status: wasPaid ? "unpaid" : "paid", paidAt: wasPaid ? null : today }) : x; }) };
+    var potEnts = ((biz.taxPot || {}).entries || []);
+    if (wasPaid) {
+      // Undo: drop the revenue row and the set-aside this invoice created.
+      patch.entries = (biz.entries || []).filter(function(e) { return e.invoiceId !== invId; });
+      patch.taxPot = Object.assign({}, biz.taxPot || {}, { entries: potEnts.filter(function(e) { return e.invoiceId !== invId; }) });
+    } else {
+      var amount = round2(inv.amount || 0);
+      patch.entries = (biz.entries || []).concat([{ id: Date.now(), kind: "deposit", amount: amount, date: today, fromMain: false, label: "Invoice paid: " + inv.client, revenue: true, invoiceId: invId }]);
+      if (autoSetAside(biz)) {
+        var rate = (biz.profile && biz.profile.taxRate != null) ? biz.profile.taxRate : 25;
+        var share = round2(amount * (rate / 100));
+        if (share > 0) {
+          patch.taxPot = Object.assign({}, biz.taxPot || {}, {
+            entries: potEnts.concat([{ id: Date.now() + 1, kind: "reserve", amount: share, date: today, label: rate + "% of " + inv.client, invoiceId: invId }])
+          });
+        }
+      }
+    }
+    props.onSaveBusinesses(patchBiz(bizId, patch));
+    if (!wasPaid) setInvOpen(null);
   }
+  // ---- Tax pot: reserve / release --------------------------------------------
+  // Default on. It's the single habit that decides whether a quarter ends calmly.
+  function autoSetAside(biz) { return !(biz && biz.profile && biz.profile.autoSetAside === false); }
+  function toggleAutoSetAside(bizId) {
+    var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
+    if (!biz) return;
+    props.onSaveBusinesses(patchBiz(bizId, { profile: Object.assign({}, biz.profile, { autoSetAside: !autoSetAside(biz) }) }));
+  }
+  function moveTaxPot(bizId, amount, mode, label) {
+    var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
+    var v = round2(parseFloat(amount) || 0);
+    if (!biz || v <= 0) return;
+    var ents = ((biz.taxPot || {}).entries || []);
+    props.onSaveBusinesses(patchBiz(bizId, {
+      taxPot: Object.assign({}, biz.taxPot || {}, {
+        entries: ents.concat([{ id: Date.now(), kind: mode === "release" ? "release" : "reserve", amount: v, date: today, label: label || (mode === "release" ? "Tax paid" : "Set aside") }])
+      })
+    }));
+    setReserveOpen(false); setReserveForm({ amount: "", mode: "reserve" });
+  }
+  // Deleting an invoice takes its ledger footprint with it - a paid invoice
+  // wrote a revenue row and possibly a set-aside, and leaving those behind would
+  // quietly inflate both revenue and the tax pot.
   function deleteInvoice(bizId, invId) {
     var biz = null; for (var i = 0; i < bizes.length; i++) { if (bizes[i].id === bizId) { biz = bizes[i]; break; } }
     if (!biz) return;
-    props.onSaveBusinesses(patchBiz(bizId, { invoices: (biz.invoices || []).filter(function(inv) { return inv.id !== invId; }) }));
+    props.onSaveBusinesses(patchBiz(bizId, {
+      invoices: (biz.invoices || []).filter(function(inv) { return inv.id !== invId; }),
+      entries: (biz.entries || []).filter(function(e) { return e.invoiceId !== invId; }),
+      taxPot: Object.assign({}, biz.taxPot || {}, { entries: ((biz.taxPot || {}).entries || []).filter(function(e) { return e.invoiceId !== invId; }) })
+    }));
+    if (invOpen === invId) setInvOpen(null);
   }
   // ---- Tax set-aside rate (Tax pot stat) -------------------------------------
   function updateTaxRate(bizId, rawVal) {
@@ -28384,11 +29563,11 @@ function BusinessView(props) {
     var next = bizes.filter(function(b) { return b.id !== biz.id; });
     if (bal > 0) props.onBusinessMove(tx.concat([transferTx("income", bal, biz.name, " (closed)")]), next);
     else props.onSaveBusinesses(next);
-    setView("list"); setActiveId(null); setDeleteConfirm(null);
+    closeToList(); setDeleteConfirm(null);
   }
   function deleteBusinessOutright(biz) {
     props.onSaveBusinesses(bizes.filter(function(b) { return b.id !== biz.id; }));
-    setView("list"); setActiveId(null); setDeleteConfirm(null); setDeleteOutrightConfirm(null);
+    closeToList(); setDeleteConfirm(null); setDeleteOutrightConfirm(null);
   }
 
   // ---- Richard CFO chat + replan ------------------------------------------
@@ -28462,9 +29641,13 @@ function BusinessView(props) {
   }
   // The thread lives on the business object itself (biz.chat, capped at 30
   // messages) so the conversation survives reloads and syncs across devices.
-  function sendChat(biz) {
-    if (!chatInput.trim() || chatLoading) return;
-    var msg = chatInput.trim();
+  // `override` lets a suggestion chip send its question straight through
+  // instead of writing it into the box and waiting a render for the state to
+  // catch up.
+  function sendChat(biz, override) {
+    var raw = override != null ? override : chatInput;
+    if (!raw.trim() || chatLoading) return;
+    var msg = raw.trim();
     setChatInput("");
     var nc = (biz.chat || []).concat([{ role: "user", text: msg }]);
     props.onSaveBusinesses(patchBiz(biz.id, { chat: nc.slice(-30) }));
@@ -28481,7 +29664,7 @@ function BusinessView(props) {
       for (var oj = 0; oj < tsC.length && openTasks.length < 6; oj++) { if (!tsC[oj].done) openTasks.push(tsC[oj].label); }
     }
     var custom = richardUserCtx(props.richardInstructions);
-    var sys = custom + "You are Richard, a warm, sharp, honest business CFO inside the Richy app. You are helping the owner run and budget their business and make it succeed. "
+    var sys = custom + "You are Richard, a warm, sharp, honest business finance coach inside the Richy app. You are helping the owner run and budget their business and make it succeed. "
       + "Business: " + (biz.name || "the business") + " - " + (biz.what || "unspecified") + ". Structure: " + labelOf(STRUCTURES, pf.structure) + ". Stage: " + labelOf(STAGES, pf.stage) + ". Scale: " + labelOf(SIZES, pf.size) + ". Revenue goal " + dollars(pf.revenueGoal || 0) + "/month. "
       + "LIVE NUMBERS - " + bizContextLine(biz) + (paceNow ? (" " + paceNow.text) : "") + " "
       + "Monthly budget split: " + (split || "not set") + ". "
@@ -28541,7 +29724,7 @@ function BusinessView(props) {
     setReplanning(true);
     var pf = biz.profile || {};
     var custom = richardUserCtx(props.richardInstructions);
-    var sys = custom + "You are Richard, a sharp, warm, honest business CFO inside the Richy app. Refresh the business plan and monthly operating budget using the latest numbers. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"summary\":\"2 to 3 sentences\",\"sections\":[{\"title\":\"\",\"body\":\"\"}],\"categories\":[{\"category\":\"Marketing\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"\"],\"verdict\":{\"assessment\":\"\",\"keyNumber\":\"\",\"keyNumberLabel\":\"\"}}. Categories only from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer, whole numbers summing to about the monthly budget. 4 to 6 sections." + langLine();
+    var sys = custom + "You are Richard, a sharp, warm, honest business finance coach inside the Richy app. Refresh the business plan and monthly operating budget using the latest numbers. Reply with STRICT JSON only - no markdown, no emojis, no prose outside the JSON. Shape: {\"summary\":\"2 to 3 sentences\",\"sections\":[{\"title\":\"\",\"body\":\"\"}],\"categories\":[{\"category\":\"Marketing\",\"amount\":0,\"note\":\"\"}],\"tips\":[\"\"],\"verdict\":{\"assessment\":\"\",\"keyNumber\":\"\",\"keyNumberLabel\":\"\"}}. Categories only from: Marketing, Software, Equipment, Inventory, Office & Rent, People, Fees & Legal, Other, Buffer, whole numbers summing to about the monthly budget. 4 to 6 sections." + langLine();
     var usr = "Business: " + (biz.name || "my business") + " - " + (biz.what || "unspecified") + ". Structure: " + labelOf(STRUCTURES, pf.structure) + ". Stage: " + labelOf(STAGES, pf.stage) + ". Scale: " + labelOf(SIZES, pf.size) + ". "
       + "Monthly budget " + dollars(pf.monthly || 0) + ", revenue goal " + dollars(pf.revenueGoal || 0) + ", cash on hand " + dollars(businessCash(biz)) + ", spent so far " + dollars(businessSpent(biz)) + ", runway " + ((pf.runway || 0) > 0 ? (pf.runway + " months") : "unspecified") + ". 12-month goal: " + (pf.goal || "unspecified") + ". "
       + richardNotesBlock("NOTES FROM THE OWNER", pf.notes)
@@ -28617,7 +29800,7 @@ function BusinessView(props) {
       <div>
         {backRow(props.backLabel || "Savings", props.onBack)}
         <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, marginBottom: 16, padding: "0 2px" }}>
-          A Business Account walls off money for your venture, gives it its own budget categories, and puts Richard to work as your CFO - building a plan and keeping your spending on track.
+          A Business Account walls off money for your venture, gives it its own budget categories, and puts Richard to work as your business coach - building a plan and keeping your spending on track.
         </div>
         <button onClick={startWizard}
           style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 16, padding: "15px 0", marginBottom: 18, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", fontSize: 16, fontWeight: 700, fontFamily: UI, boxShadow: "0 6px 18px " + T.orangeGlow }}>
@@ -28638,7 +29821,7 @@ function BusinessView(props) {
           var pct = monthly > 0 ? Math.min(100, Math.round((spent / monthly) * 100)) : 0;
           return (
             <Card key={b.id} style={{ marginBottom: 14, overflow: "hidden" }}>
-              <div onClick={function() { setActiveId(b.id); setView("detail"); }} style={{ padding: "18px 18px", cursor: "pointer" }}>
+              <div onClick={function() { openBiz(b.id); }} style={{ padding: "18px 18px", cursor: "pointer" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 11, minWidth: 0 }}>
                     <div style={{ width: 38, height: 38, borderRadius: 12, background: (b.color || T.orange) + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -29180,11 +30363,497 @@ function BusinessView(props) {
     var stage = (biz.profile && biz.profile.stage) || "idea";
     var heroKick = { fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut };
     var heroKick2 = { fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.orange };
+    var tab = hubTab;
+    var attention = bizAttention(biz);
+    var urgentAtt = attention.filter(function(a) { return a.urgent; });
+    var shownAtt = moreAtt ? attention : (urgentAtt.length ? urgentAtt.slice(0, 3) : attention.slice(0, 2));
+    var reserved = bizTaxReserved(biz);
+    var spendable = bizSpendableCash(biz);
+    var taxDue = bizTaxDue(biz);
+    var taxShort = bizTaxShort(biz);
+    // The one-line caption under the header, so each face of the account says
+    // what it is before you read a single number.
+    var HUB_CAPTION = {
+      home: "The month as it stands",
+      invoices: "Who owes you, and how late",
+      tax: "Money kept out of reach of spending",
+      build: "The plan from here to where you want to be",
+      richard: "Your coach, on this business only",
+    };
+    // The "Needs you" strip. Lives inside the hero on Home and stands alone on
+    // Richard, but it is one list from one place - what the account would say
+    // if it could talk.
+    function attentionStrip(inHero) {
+      var muted = inHero ? T.heroMut : T.ink2;
+      var faint = inHero ? T.heroFaint : T.ink3;
+      var strong = inHero ? T.heroInk : T.ink;
+      var line = inHero ? T.heroSep : T.sep;
+      var rest = attention.length - shownAtt.length;
+      return (
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "2px 0 4px" }}>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: faint }}>Needs you</span>
+            {attention.length > 0 && <span style={{ fontSize: 10.5, color: faint }}>{shownAtt.length + " of " + attention.length}</span>}
+          </div>
+          {attention.length === 0 ? (
+            <div style={{ padding: "9px 0 8px", borderTop: "1px solid " + line, fontSize: 12.5, color: muted, lineHeight: 1.45 }}>
+              Nothing urgent. The month is running itself.
+            </div>
+          ) : shownAtt.map(function(a) {
+            return (
+              <div key={a.id} onClick={function() { goAttention(a); }} style={{ padding: "7px 0", borderTop: "1px solid " + line, cursor: "pointer" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 12.5, color: muted, lineHeight: 1.3 }}>
+                  <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.k + " → " + a.t}</span>
+                  <span style={{ whiteSpace: "nowrap", fontWeight: 700, color: strong }}>
+                    {a.v}{a.s ? <span style={{ fontWeight: 400, color: muted }}>{" " + a.s}</span> : null}
+                  </span>
+                </div>
+                <div style={{ display: "flex", gap: 6, alignItems: "flex-start", marginTop: 3 }}>
+                  <span style={{ flexShrink: 0, width: 13, height: 13, borderRadius: 4, background: inHero ? T.heroPillBg : "#0D0C18", color: inHero ? T.heroPillText : "#C8973A", fontFamily: DISP, fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1 }}>R</span>
+                  <span style={{ fontSize: 11, color: muted, lineHeight: 1.35 }}>{a.hint}</span>
+                </div>
+              </div>
+            );
+          })}
+          {attention.length > shownAtt.length || moreAtt ? (
+            <div onClick={function() { setMoreAtt(!moreAtt); }} style={{ padding: "7px 0 6px", borderTop: "1px solid " + line, fontSize: 11.5, color: faint, display: "flex", justifyContent: "space-between", cursor: "pointer" }}>
+              <span>{moreAtt ? "Showing everything" : rest + (rest === 1 ? " quieter thing" : " quieter things")}</span>
+              <span style={{ fontWeight: 600, color: muted }}>{moreAtt ? "Less" : "Show"}</span>
+            </div>
+          ) : null}
+        </div>
+      );
+    }
+    // Conversation openers built off the attention list. If nothing needs the
+    // owner, the chips ask the questions a calm month deserves instead.
+    function chatChips(b) {
+      var out = [];
+      attention.slice(0, 3).forEach(function(a) {
+        if (a.id === "overdue") out.push("Draft a reminder for " + a.t);
+        else if (a.id === "tax") out.push("Can I still pay myself with tax due?");
+        else if (a.id === "runway") out.push("What would you cut first?");
+        else if (a.id.indexOf("over_") === 0) out.push("Is " + a.k + " worth what it costs?");
+        else if (a.id === "norev") out.push("Where should this month's sales come from?");
+        else if (a.id === "roadmap") out.push("How do I start: " + a.t + "?");
+      });
+      if (!out.length) out = ["How much can I safely pay myself?", "What is my weakest number?"];
+      return out.slice(0, 3);
+    }
+
+    // ---- Invoices face -------------------------------------------------------
+    // Who owes you, how late, and what happens to the money when it lands. The
+    // detail screen is the only place in the app where a single tap moves cash,
+    // revenue and the tax pot at once, so it shows all three before you tap.
+    function invoicesFace(b) {
+      var invoices = b.invoices || [];
+      var unpaid = invoices.filter(function(i) { return i.status !== "paid"; });
+      var overdue = unpaid.filter(function(i) { return (i.dueDate || "") < today; });
+      var outstanding = round2(unpaid.reduce(function(s, i) { return s + (i.amount || 0); }, 0));
+      var overdueTot = round2(overdue.reduce(function(s, i) { return s + (i.amount || 0); }, 0));
+      var paidThisMonth = round2(invoices.reduce(function(s, i) {
+        return s + ((i.status === "paid" && (i.paidAt || "").slice(0, 7) === ym) ? (i.amount || 0) : 0);
+      }, 0));
+      var openInv = null;
+      if (invOpen === "first-overdue") openInv = overdue.slice().sort(function(x, y) { return (x.dueDate || "").localeCompare(y.dueDate || ""); })[0] || null;
+      else if (invOpen != null) { invoices.forEach(function(i) { if (i.id === invOpen) openInv = i; }); }
+
+      if (openInv) return invoiceDetail(b, openInv);
+
+      var sorted = invoices.slice().sort(function(x, y) {
+        return ((x.status === "paid" ? 1 : 0) - (y.status === "paid" ? 1 : 0)) || (x.dueDate || "").localeCompare(y.dueDate || "");
+      });
+      var hint = overdue.length
+        ? (overdue.length === 1 ? overdue[0].client + " is the only one late. A second reminder is usually all it takes." : overdue.length + " invoices are past due - chase the oldest first, it's the one holding up your cash.")
+        : unpaid.length ? "Everything is on time. " + dollars(outstanding) + " is still out with clients."
+        : "Nothing outstanding. Add an invoice when you send one and Richard will watch the due date for you.";
+      return (
+        <div data-biz-face="invoices" style={{ animation: "invSectionIn 0.58s cubic-bezier(0.22,0.9,0.3,1) both" }}>
+          <Card style={{ padding: "14px 16px", marginBottom: 14 }}>
+            <div style={{ display: "flex" }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.ink3 }}>Outstanding</div>
+                <div style={{ fontSize: 21, fontWeight: 700, letterSpacing: "-0.02em", marginTop: 4, color: T.ink }}>{dollars(outstanding)}</div>
+              </div>
+              <div style={{ width: 1, background: T.sep }} />
+              <div style={{ flex: 1, minWidth: 0, paddingLeft: 14 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.ink3 }}>Overdue</div>
+                <div style={{ fontSize: 21, fontWeight: 700, letterSpacing: "-0.02em", marginTop: 4, color: overdueTot > 0 ? T.red : T.ink3 }}>{dollars(overdueTot)}</div>
+              </div>
+              <div style={{ width: 1, background: T.sep }} />
+              <div style={{ flex: 1, minWidth: 0, paddingLeft: 14 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.ink3 }}>{"Paid · " + ymLabel(ym).split(" ")[0]}</div>
+                <div style={{ fontSize: 21, fontWeight: 700, letterSpacing: "-0.02em", marginTop: 4, color: paidThisMonth > 0 ? T.green : T.ink3 }}>{dollars(paidThisMonth)}</div>
+              </div>
+            </div>
+          </Card>
+          <div style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "0 4px", marginBottom: 14 }}>
+            <span style={{ flexShrink: 0, width: 16, height: 16, borderRadius: 5, background: "#0D0C18", color: "#C8973A", fontFamily: DISP, fontSize: 10.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1 }}>R</span>
+            <span style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.45 }}>{hint}</span>
+          </div>
+          <button onClick={function() { setAddInvoiceOpen(true); }}
+            style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 14, padding: "13px 0", marginBottom: 14, background: T.btn, color: "#fff", fontSize: 14.5, fontWeight: 700, fontFamily: UI, boxShadow: "0 6px 18px " + T.orangeGlow }}>
+            + New invoice
+          </button>
+          {sorted.length === 0 ? (
+            <Card style={{ padding: "34px 24px", textAlign: "center" }}>
+              <div style={{ width: 46, height: 46, borderRadius: 14, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
+                <SVGIcon id="coins" size={22} color={T.orange} />
+              </div>
+              <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 4 }}>No invoices yet</div>
+              <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5 }}>Log the ones you send and this page becomes the answer to "who owes me?".</div>
+            </Card>
+          ) : (
+            <Card style={{ padding: "2px 16px" }}>
+              {sorted.map(function(inv, i) {
+                var isOver = inv.status !== "paid" && (inv.dueDate || "") < today;
+                var st = inv.status === "paid" ? "Paid" : isOver ? "Overdue" : "Sent";
+                var c = inv.status === "paid" ? T.green : isOver ? T.red : T.blue || "#2E7DD6";
+                return (
+                  <button key={inv.id} onClick={function() { setInvOpen(inv.id); }}
+                    style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", background: "none", border: "none", padding: "13px 0", cursor: "pointer", textAlign: "left", fontFamily: UI, borderTop: i > 0 ? "0.5px solid " + T.sep : "none" }}>
+                    <CatBadge icon="coins" color={c} size={38} soft={true} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14.5, fontWeight: 600, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{inv.client}</div>
+                      <div style={{ fontSize: 12, color: isOver ? T.red : T.ink3, marginTop: 1 }}>{inv.status === "paid" ? ("Paid" + (inv.paidAt ? " " + inv.paidAt : "")) : (isOver ? "Was due " + inv.dueDate : "Due " + inv.dueDate)}</div>
+                    </div>
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                      <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>{dollars(inv.amount)}</div>
+                      <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: c, marginTop: 1 }}>{st}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </Card>
+          )}
+        </div>
+      );
+    }
+
+    // One invoice, and the honest consequence of marking it paid.
+    function invoiceDetail(b, inv) {
+      var isPaid = inv.status === "paid";
+      var isOver = !isPaid && (inv.dueDate || "") < today;
+      var lateDays = isOver ? Math.max(1, Math.round((Date.parse(today) - Date.parse(inv.dueDate)) / 86400000)) : 0;
+      var amount = round2(inv.amount || 0);
+      var rate = (b.profile && b.profile.taxRate != null) ? b.profile.taxRate : 25;
+      var auto = autoSetAside(b);
+      var share = auto ? round2(amount * (rate / 100)) : 0;
+      var toCash = round2(amount - share);
+      var heroBg = isPaid ? "linear-gradient(160deg,#5FB889 0%,#8FD1AC 50%,#C4EAD3 100%)" : T.heroBg;
+      var rows = auto
+        ? [{ l: "Tax pot · " + rate + "% set aside", v: dollars(share), c: "#C8983A" }, { l: "Business cash", v: dollars(toCash), c: T.orange }]
+        : [{ l: "Business cash", v: dollars(amount), c: T.orange }, { l: "Tax pot", v: dollars(0), c: T.ink3 }];
+      return (
+        <div data-biz-face="invoice-detail" style={{ animation: "invSectionIn 0.5s cubic-bezier(0.22,0.9,0.3,1) both" }}>
+          <button onClick={function() { setInvOpen(null); }}
+            style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", padding: "0 0 14px", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 600, color: T.orange }}>
+            <span style={{ display: "flex", transform: "rotate(180deg)" }}><SVGIcon id="chevron" size={16} color={T.orange} /></span>Invoices
+          </button>
+          <div style={{ position: "relative", overflow: "hidden", borderRadius: 22, background: heroBg, boxShadow: T.heroShadow, padding: "18px 18px 0", marginBottom: 14, transition: "background 0.5s ease" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.heroFaint }}>Invoice</span>
+              <span style={{ background: T.heroPillBg, color: isPaid ? T.heroPos : isOver ? T.heroNeg : T.heroInk, borderRadius: 999, padding: "4px 10px", fontSize: 11, fontWeight: 700 }}>
+                {isPaid ? "Paid" : isOver ? ("Overdue · " + lateDays + " days") : "Sent"}
+              </span>
+            </div>
+            <div style={{ fontFamily: DISP, fontWeight: DISP_WEIGHT, fontSize: 24, letterSpacing: "-0.01em", color: T.heroInk, marginTop: 8 }}>{inv.client}</div>
+            <div style={{ fontSize: 12.5, color: T.heroMut }}>{isPaid ? ("Paid" + (inv.paidAt ? " " + inv.paidAt : "")) : ("Due " + inv.dueDate)}</div>
+            <div style={{ fontSize: 40, fontWeight: 700, letterSpacing: "-0.02em", margin: "10px 0 12px", lineHeight: 1, color: T.heroInk }}>{dollars(amount)}</div>
+            <div style={{ display: "flex", borderTop: "1px solid " + T.heroSep, padding: "10px 0" }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroFaint }}>To cash</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: T.heroInk }}>{dollars(auto ? toCash : amount)}</div>
+              </div>
+              <div style={{ width: 1, background: T.heroSep }} />
+              <div style={{ flex: 1, paddingLeft: 14 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroFaint }}>{"Tax · " + rate + "%"}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: T.heroInk }}>{dollars(share)}</div>
+              </div>
+              <div style={{ width: 1, background: T.heroSep }} />
+              <div style={{ flex: 1, paddingLeft: 14 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroFaint }}>{runway === null ? "Cash after" : "Runway after"}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: T.heroInk }}>{runway === null ? dollars(bizSpendableCash(b) + (isPaid ? 0 : toCash)) : (Math.round((runway + (isPaid ? 0 : (bizBurn(b) > 0 ? toCash / bizBurn(b) : 0))) * 10) / 10) + " mo"}</div>
+              </div>
+            </div>
+            <div style={{ margin: "0 -18px", background: T.heroRangeBg, padding: "8px 18px", fontSize: 12, color: T.heroMut }}>
+              {isPaid ? "Recorded as revenue" + (share > 0 ? " with " + dollars(share) + " kept for tax" : "") + "." : (isOver ? "No payment yet. Marking it paid clears it from Needs you." : "Waiting on the client. Nothing to do yet.")}
+            </div>
+          </div>
+
+          <Card style={{ padding: "14px 16px", marginBottom: 14 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 12 }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: T.ink }}>Set tax aside automatically</div>
+                <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1, lineHeight: 1.4 }}>{"On payment, " + rate + "% is held back so it never looks like spendable cash"}</div>
+              </div>
+              <div onClick={function() { toggleAutoSetAside(b.id); }}
+                style={{ flexShrink: 0, width: 46, height: 28, borderRadius: 999, background: auto ? T.orange : T.fill3, position: "relative", cursor: "pointer", transition: "background 0.3s ease" }}>
+                <div style={{ position: "absolute", top: 2, left: auto ? 20 : 2, width: 24, height: 24, borderRadius: "50%", background: "#fff", boxShadow: "0 2px 6px rgba(0,0,0,0.18)", transition: "left 0.3s cubic-bezier(0.22,1,0.36,1)" }} />
+              </div>
+            </div>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.ink3, marginBottom: 8 }}>{(isPaid ? "This payment became" : "When paid, " + dollars(amount) + " becomes")}</div>
+            <div style={{ display: "grid", gap: 9 }}>
+              {rows.map(function(r, i) {
+                return (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13.5 }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: 8, color: T.ink2 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: "50%", background: r.c }} />{r.l}
+                    </span>
+                    <span style={{ fontWeight: 700, color: T.ink }}>{r.v}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ display: "flex", height: 6, borderRadius: 6, overflow: "hidden", marginTop: 12, gap: 2 }}>
+              <div style={{ flex: Math.max(0.001, share), background: "#C8983A", borderRadius: 6, transition: "flex 0.4s ease" }} />
+              <div style={{ flex: Math.max(0.001, auto ? toCash : amount), background: T.orange, borderRadius: 6, transition: "flex 0.4s ease" }} />
+            </div>
+          </Card>
+
+          <BigBtn label={isPaid ? "Mark unpaid" : "Mark paid"} onPress={function() { toggleInvoicePaid(b.id, inv.id); }} />
+          <button onClick={function() { deleteInvoice(b.id, inv.id); }}
+            style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "12px 0 2px" }}>Delete invoice</button>
+        </div>
+      );
+    }
+
+    // ---- Tax pot face --------------------------------------------------------
+    // The pot is an earmark, not a transfer: the money is still in the account,
+    // it just stops counting as spendable. That distinction is the whole screen.
+    function taxFace(b) {
+      var potEnts = ((b.taxPot || {}).entries || []).slice().sort(function(x, y) { return (y.date || "").localeCompare(x.date || "") || ((y.id || 0) - (x.id || 0)); });
+      var pct = taxDue.owed > 0 ? Math.min(100, Math.round((reserved / taxDue.owed) * 100)) : (reserved > 0 ? 100 : 0);
+      var auto = autoSetAside(b);
+      return (
+        <div data-biz-face="tax" style={{ animation: "invSectionIn 0.58s cubic-bezier(0.22,0.9,0.3,1) both" }}>
+          <div style={{ position: "relative", overflow: "hidden", borderRadius: 22, background: T.heroBg, boxShadow: T.heroShadow, padding: "18px 18px 0", marginBottom: 14 }}>
+            <div style={{ position: "absolute", top: -70, right: -60, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
+            <div style={{ position: "relative" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.heroFaint }}>Set aside</span>
+                <span style={{ background: T.heroPillBg, color: taxShort > 0 ? "#A8761C" : T.heroPos, borderRadius: 999, padding: "4px 10px", fontSize: 11, fontWeight: 700 }}>
+                  {taxShort > 0 ? dollars(taxShort) + " short" : (taxDue.owed > 0 ? "Ready" : "Nothing due yet")}
+                </span>
+              </div>
+              <div style={{ fontSize: 44, fontWeight: 700, letterSpacing: "-0.02em", margin: "6px 0 12px", lineHeight: 1, color: T.heroInk }}><CountUp value={reserved} /></div>
+              <div style={{ display: "flex", borderTop: "1px solid " + T.heroSep, padding: "10px 0" }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroFaint }}>{"Owed · Q" + taxDue.quarter}</div>
+                  <div style={{ fontSize: 17, fontWeight: 700, color: T.heroInk }}>{dollars(taxDue.owed)}</div>
+                </div>
+                <div style={{ width: 1, background: T.heroSep }} />
+                <div style={{ flex: 1, paddingLeft: 14 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroFaint }}>Spendable cash</div>
+                  <div style={{ fontSize: 17, fontWeight: 700, color: spendable < 0 ? T.heroNeg : T.heroInk }}>{dollars(spendable)}</div>
+                </div>
+              </div>
+              <div style={{ margin: "0 -18px", background: T.heroRangeBg, padding: "8px 18px", fontSize: 12, color: T.heroMut }}>
+                {"Rule → "}<b style={{ color: T.heroInk }}>{taxDue.rate + "% of every payment"}</b>{auto ? ", held back automatically" : ", currently set aside by hand"}
+              </div>
+            </div>
+          </div>
+
+          <Card style={{ padding: "14px 16px", marginBottom: 14 }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+              <CatBadge icon="shield" color="#C8983A" size={38} soft={true} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, marginBottom: 6, gap: 8 }}>
+                  <span style={{ fontWeight: 600, color: T.ink }}>{"Q" + taxDue.quarter + " set-aside"}</span>
+                  <span style={{ fontWeight: 700, color: T.ink2, whiteSpace: "nowrap" }}>{dollars(reserved)}<span style={{ color: T.ink3, fontWeight: 400 }}>{" / " + dollars(taxDue.owed)}</span></span>
+                </div>
+                <ProgressBar value={reserved} max={taxDue.owed || 1} color="#C8983A" h={6} />
+              </div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: T.ink3, marginTop: 10, paddingLeft: 50 }}>
+              <span>{dollars(taxDue.revenue) + " revenue booked this quarter"}</span>
+              <span style={{ color: taxShort > 0 ? "#C8983A" : T.green, fontWeight: 700 }}>{taxShort > 0 ? pct + "% covered" : "Covered"}</span>
+            </div>
+            <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 10, paddingLeft: 50 }}>
+              <span style={{ flexShrink: 0, width: 16, height: 16, borderRadius: 5, background: "#0D0C18", color: "#C8973A", fontFamily: DISP, fontSize: 10.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1 }}>R</span>
+              <span style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.45 }}>
+                {taxDue.owed <= 0 ? "No revenue booked this quarter, so nothing is owed yet. The pot starts filling itself with your first paid invoice."
+                  : taxShort > 0 ? "You're " + dollars(taxShort) + " short. Setting it aside now costs nothing - it's your money either way, just fenced off from spending."
+                  : "Fully covered. Whatever the bill turns out to be, the money for it is already out of reach."}
+              </span>
+            </div>
+          </Card>
+
+          <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+            <GlassActionBtn kind="primary" flex={1} label="Set aside" onClick={function() { setReserveForm({ amount: taxShort > 0 ? String(taxShort) : "", mode: "reserve" }); setReserveOpen(true); }} />
+            <GlassActionBtn kind="neutral" flex={1} label="Pay from pot" disabled={reserved <= 0} onClick={function() { setReserveForm({ amount: "", mode: "release" }); setReserveOpen(true); }} />
+          </div>
+
+          <Card style={{ padding: "14px 16px", marginBottom: 14, display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: T.ink }}>{"Set-aside rate · " + taxDue.rate + "%"}</div>
+              <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Richard's estimate of what your bracket and VAT will want back.</div>
+            </div>
+            <button onClick={function() { setTaxSheetOpen(true); }}
+              style={{ background: T.orangeDim, border: "none", borderRadius: 10, padding: "9px 13px", fontSize: 12.5, fontWeight: 700, color: T.orange, cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Change</button>
+          </Card>
+
+          {potEnts.length > 0 && (
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 2px 10px" }}>Pot history</div>
+              <Card style={{ padding: "2px 16px" }}>
+                {potEnts.slice(0, 8).map(function(e, i) {
+                  var rel = e.kind === "release";
+                  return (
+                    <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderTop: i > 0 ? "0.5px solid " + T.sep : "none" }}>
+                      <IconBadge bg={rel ? T.ink3 : "#C8983A"} icon={rel ? "up" : "down"} size={34} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13.5, fontWeight: 600, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{e.label}</div>
+                        <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1 }}>{e.date}</div>
+                      </div>
+                      <div style={{ fontSize: 13.5, fontWeight: 700, color: rel ? T.ink2 : "#C8983A", flexShrink: 0 }}>{(rel ? "-" : "+") + dollars(e.amount)}</div>
+                    </div>
+                  );
+                })}
+              </Card>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ---- Build face ----------------------------------------------------------
+    // Where the account stops being a ledger and becomes a plan. The goal hero
+    // reads off the roadmap, so progress here is real progress, not a mood.
+    function goalHero(b) {
+      var prog = roadmapProgress(b.roadmap);
+      var pctN = prog.total ? Math.round((prog.done / prog.total) * 100) : 0;
+      var avg3 = (function() {
+        var tot = 0, n = 0;
+        for (var i = 1; i <= 3; i++) { var m = ymOffset(i); tot += bizMonthProfit(b, m).profit; n++; }
+        return n ? round2(tot / n) : 0;
+      })();
+      var revGoal = (b.profile && b.profile.revenueGoal) || 0;
+      var headline = (b.profile && b.profile.goal) || (b.what ? ("Build " + b.name + " into a business that pays for itself.") : ("Make " + b.name + " work."));
+      var verdict = prog.total === 0 ? "no roadmap yet - that's the first step"
+        : pctN >= 75 ? "close. The last steps are the ones that count"
+        : avg3 > 0 ? "moving, and the last three months back it up"
+        : "early. The plan matters more than the numbers right now";
+      return (
+        <div style={{ position: "relative", overflow: "hidden", borderRadius: 22, background: T.heroBg, boxShadow: T.heroShadow, padding: "18px 18px 0", marginBottom: 16 }}>
+          <div style={{ position: "absolute", top: -70, right: -60, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
+          <div style={{ position: "relative" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.heroFaint }}>Your goal</span>
+              <span style={{ background: T.heroPillBg, color: T.heroPillText, borderRadius: 999, padding: "4px 10px", fontSize: 11, fontWeight: 700 }}>{pctN + "% there"}</span>
+            </div>
+            <div style={{ fontFamily: DISP, fontWeight: DISP_WEIGHT, fontSize: 22, lineHeight: 1.2, letterSpacing: "-0.01em", margin: "8px 0 12px", color: T.heroInk, maxWidth: 300 }}>{headline}</div>
+            <div style={{ height: 6, borderRadius: 6, background: T.heroTrack, overflow: "hidden", marginBottom: 12 }}>
+              <div style={{ height: "100%", width: pctN + "%", borderRadius: 6, background: T.heroInk, opacity: 0.75, transition: "width 0.5s ease" }} />
+            </div>
+            <div style={{ display: "flex", borderTop: "1px solid " + T.heroSep, padding: "10px 0" }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroFaint }}>Revenue goal</div>
+                <div style={{ fontSize: 17, fontWeight: 700, color: T.heroInk }}>{revGoal > 0 ? dollars(revGoal) : "—"}</div>
+              </div>
+              <div style={{ width: 1, background: T.heroSep }} />
+              <div style={{ flex: 1, paddingLeft: 14 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroFaint }}>Profit · 3 mo avg</div>
+                <div style={{ fontSize: 17, fontWeight: 700, color: avg3 < 0 ? T.heroNeg : T.heroPos }}>{dollars(avg3)}</div>
+              </div>
+              <div style={{ width: 1, background: T.heroSep }} />
+              <div style={{ flex: 1, paddingLeft: 14 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroFaint }}>Steps left</div>
+                <div style={{ fontSize: 17, fontWeight: 700, color: T.heroInk }}>{prog.total ? (prog.total - prog.done) : "—"}</div>
+              </div>
+            </div>
+            <div style={{ margin: "0 -18px", background: T.heroRangeBg, padding: "8px 18px", fontSize: 12, color: T.heroMut }}>
+              {"Richard's read → "}<b style={{ color: T.heroInk }}>{verdict}</b>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Ideas that can become roadmap steps. Richard's AI ideas when they've been
+    // fetched, the deterministic ones off the ledger when they haven't - either
+    // way, one tap turns an idea into a step you'll actually be held to.
+    function ideasFace(b) {
+      var list = (ideas && ideas.length ? ideas : bizIdeas(b)).slice(0, 3);
+      if (!list.length) return null;
+      var TINTS = [T.green, T.orange, "#C8983A"];
+      var ICONS = ["coins", "up", "box"];
+      return (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "0 4px 10px" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.ink3 }}>Ideas from your numbers</span>
+            <button onClick={function() { fetchIdeas(b); }} disabled={ideasLoading}
+              style={{ background: "none", border: "none", padding: 0, fontSize: 12.5, fontWeight: 600, color: T.orange, cursor: ideasLoading ? "default" : "pointer", fontFamily: UI }}>
+              {ideasLoading ? <ThinkingDots size={3.5} color={T.orange} /> : "More ideas"}
+            </button>
+          </div>
+          <div style={{ display: "grid", gap: 10 }}>
+            {list.map(function(idea, i) {
+              var on = ideaOnRoadmap(b, idea);
+              return (
+                <Card key={idea.title + i} style={{ padding: "14px 16px" }}>
+                  <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                    <CatBadge icon={ICONS[i % 3]} color={TINTS[i % 3]} size={34} soft={true} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: T.ink }}>{idea.title}</span>
+                        {idea.impact ? <span style={{ fontSize: 12, fontWeight: 700, color: T.green, whiteSpace: "nowrap", flexShrink: 0 }}>{idea.impact}</span> : null}
+                      </div>
+                      <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.45, marginTop: 3 }}>{idea.body}</div>
+                      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                        <button onClick={function() { addIdeaToRoadmap(b, idea); }} disabled={on || !b.roadmap}
+                          style={{ border: "none", cursor: (on || !b.roadmap) ? "default" : "pointer", background: on ? T.greenDim : T.btn, color: on ? T.green : "#fff", borderRadius: 999, padding: "7px 12px", fontSize: 12, fontWeight: 700, fontFamily: UI, boxShadow: on ? "none" : "0 4px 14px " + T.orangeGlow, opacity: (!on && !b.roadmap) ? 0.45 : 1 }}>
+                          {on ? "On the roadmap" : "Add to roadmap"}
+                        </button>
+                        <button onClick={function() { discussIdea(b, idea); }}
+                          style={{ border: "none", cursor: "pointer", background: T.fill1, color: T.ink2, borderRadius: 999, padding: "7px 12px", fontSize: 12, fontWeight: 600, fontFamily: UI }}>Talk it through</button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    // The one card on this screen that isn't a number. Slow weeks are when
+    // people quit, and the habit it points at is one they actually built.
+    function inspireCard(b) {
+      // Account ids are strings for some accounts and numbers for others, so
+      // the rotation hashes the id rather than doing arithmetic on it.
+      var seed = String(b.id || "").split("").reduce(function(n, ch) { return n + ch.charCodeAt(0); }, 0) + new Date().getUTCDate();
+      var q = BIZ_QUOTES[seed % BIZ_QUOTES.length];
+      var note = reserved > 0
+        ? "You've kept " + dollars(reserved) + " out of reach of spending without thinking about it. That habit is the whole business."
+        : (roadmapProgress(b.roadmap).done > 0
+          ? "You've finished " + roadmapProgress(b.roadmap).done + " real steps. Most people are still deciding on a name."
+          : "Nothing here is decided yet, and that's fine. One finished step this week beats a perfect plan next month.");
+      return (
+        <div style={{ position: "relative", overflow: "hidden", borderRadius: 22, background: "#0D0C18", padding: "20px 18px", marginBottom: 16, color: "#EDE8E2", boxShadow: "0 12px 32px rgba(13,12,24,0.28)" }}>
+          <div style={{ position: "absolute", right: -30, top: -40, fontFamily: DISP, fontWeight: 700, fontSize: 180, lineHeight: 1, color: "#C8973A", opacity: 0.10, pointerEvents: "none" }}>R</div>
+          <div style={{ position: "relative" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(237,232,226,0.5)", marginBottom: 10 }}>For the slow week</div>
+            <div style={{ fontFamily: DISP, fontWeight: DISP_WEIGHT, fontSize: 19, lineHeight: 1.35, letterSpacing: "-0.01em", maxWidth: 300 }}>{q.t}</div>
+            <div style={{ fontSize: 12, color: "rgba(237,232,226,0.6)", marginTop: 10 }}>{"— " + q.by}</div>
+            <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.10)" }}>
+              <span style={{ flexShrink: 0, width: 16, height: 16, borderRadius: 5, background: "#C8973A", color: "#0D0C18", fontFamily: DISP, fontSize: 10.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1 }}>R</span>
+              <span style={{ fontSize: 12.5, color: "rgba(237,232,226,0.8)", lineHeight: 1.45 }}>{note}</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div>
-        {backRow("Business", function() { setView("list"); setActiveId(null); })}
+        {backRow(bizes.length > 1 ? "All businesses" : "Business", closeToList)}
 
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 16, animation: "rcFadeUp 0.5s ease both" }}>
+        {/* Home introduces the account in full; every other face is already
+            inside it, so the name shrinks to a single line and the screen gets
+            on with its own job. */}
+        {tab === "home" ? (
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 6, animation: "rcFadeUp 0.5s ease both" }}>
           <div style={{ minWidth: 0 }}>
             <div style={heroKick2}>{labelOf(STRUCTURES, biz.profile && biz.profile.structure) + " · " + labelOf(STAGES, stage)}</div>
             <div style={{ fontSize: 24, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", lineHeight: 1.15, marginTop: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{biz.name}</div>
@@ -29194,7 +30863,19 @@ function BusinessView(props) {
             <SVGIcon id={biz.icon || "briefcase"} size={22} color="#fff" />
           </div>
         </div>
+        ) : (
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4, animation: "rcFadeUp 0.5s ease both" }}>
+          <div style={{ flexShrink: 0, width: 30, height: 30, borderRadius: 10, background: (biz.color || T.orange) + "1F", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <SVGIcon id={biz.icon || "briefcase"} size={16} color={biz.color || T.orange} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0, fontSize: 20, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{biz.name}</div>
+        </div>
+        )}
 
+        <div style={{ fontSize: 11.5, color: T.ink3, margin: "0 2px 14px" }}>{HUB_CAPTION[tab]}</div>
+
+        {tab === "home" && (
+        <div data-biz-face="home" style={{ animation: "invSectionIn 0.58s cubic-bezier(0.22,0.9,0.3,1) both" }}>
         {(function() {
           var prevPl = bizMonthProfit(biz, ymOffset(1));
           var momPct = (stage !== "idea" && prevPl.profit !== 0 && isFinite(prevPl.profit)) ? Math.round(((pl.profit - prevPl.profit) / Math.abs(prevPl.profit)) * 100) : null;
@@ -29217,7 +30898,7 @@ function BusinessView(props) {
                   </div>
                 ) : (
                   <div>
-                    <div style={{ fontSize: 40, fontWeight: 700, color: pl.profit < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em", margin: "11px 0 3px" }}><CountUp value={pl.profit} /></div>
+                    <div style={{ fontSize: 40, fontWeight: 700, color: pl.profit < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em", margin: "11px 0 3px" }}><CountUp value={pl.profit} format={dollarsSigned} /></div>
                     <div style={{ fontSize: 12.5, color: T.heroMut }}>{"after " + dollars(pl.spend) + " in expenses" + (pl.margin !== null ? " · " + Math.round(pl.margin * 100) + "% margin" : "")}</div>
                   </div>
                 )}
@@ -29234,8 +30915,8 @@ function BusinessView(props) {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14, paddingTop: 12, borderTop: "0.5px solid " + T.heroSep }}>
                   <div>
-                    <div style={{ fontSize: 20, fontWeight: 700, color: bal < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.02em" }}><CountUp value={bal} /></div>
-                    <div style={{ fontSize: 11, color: T.heroMut, marginTop: 1 }}>cash on hand</div>
+                    <div style={{ fontSize: 20, fontWeight: 700, color: spendable < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.02em" }}><CountUp value={spendable} format={dollarsSigned} /></div>
+                    <div style={{ fontSize: 11, color: T.heroMut, marginTop: 1 }}>{reserved > 0 ? ("spendable · " + dollars(reserved) + " held for tax") : "cash on hand"}</div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <div style={{ position: "relative", width: 34, height: 34 }}>
@@ -29245,10 +30926,16 @@ function BusinessView(props) {
                     <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: T.heroMut }}>{health.label}</span>
                   </div>
                 </div>
+                {/* The account's own voice, sunk into the foot of the hero: what
+                    it would tell you if you only had ten seconds. */}
+                <div style={{ margin: "14px -22px -20px", background: T.heroRangeBg, padding: "6px 22px 10px" }}>
+                  {attentionStrip(true)}
+                </div>
               </div>
             </div>
           );
         })()}
+
 
         <div style={{ display: "flex", gap: 10, marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.05s both" }}>
           <GlassActionBtn kind="primary" flex={1} label="Add capital" onClick={function() { openAction(biz.id, "add"); }} />
@@ -29272,10 +30959,10 @@ function BusinessView(props) {
             <div style={{ display: "flex", gap: 8, marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.06s both" }}>
               <div style={Object.assign({}, statCardSt, { cursor: "default" })}>
                 <div style={statLabelSt}>Runway</div>
-                {runway === null ? <div style={statNumSt}>Self-sustaining</div> : <div style={statNumSt}>{(Math.round(runway * 10) / 10)}<span style={{ fontSize: 12, fontWeight: 600, color: T.ink3 }}> mo</span></div>}
-                <div style={statSubSt}>if income paused</div>
+                {runway === null ? <div style={statNumSt}>No burn</div> : <div style={statNumSt}>{(Math.round(runway * 10) / 10)}<span style={{ fontSize: 12, fontWeight: 600, color: T.ink3 }}> mo</span></div>}
+                <div style={statSubSt}>{runway === null ? "revenue covers costs" : "if income paused"}</div>
               </div>
-              <button onClick={function() { setInvoicesOpen(true); }} style={statCardSt}>
+              <button onClick={function() { setHubTab("invoices"); }} style={statCardSt}>
                 <div style={statLabelSt}>Unpaid</div>
                 <div style={statNumSt}>{dollars(unpaidTotal)}</div>
                 <div style={Object.assign({}, statSubSt, { color: overdueInvoices.length ? T.red : T.ink3, display: "flex", alignItems: "center", gap: 4 })}>
@@ -29283,124 +30970,12 @@ function BusinessView(props) {
                   {overdueInvoices.length > 0 ? (overdueInvoices.length + " overdue") : (unpaidInvoices.length ? "due soon" : "all caught up")}
                 </div>
               </button>
-              <button onClick={function() { setTaxSheetOpen(true); }} style={statCardSt}>
+              <button onClick={function() { setHubTab("tax"); }} style={statCardSt}>
                 <div style={statLabelSt}>Tax pot</div>
-                <div style={statNumSt}>{dollars(taxOwed)}</div>
-                <div style={statSubSt}>{"for Q" + qInfo.quarter + " at " + taxRate + "%"}</div>
+                <div style={statNumSt}>{dollars(reserved)}</div>
+                <div style={Object.assign({}, statSubSt, { color: taxShort > 0 ? "#C8983A" : T.ink3 })}>{taxOwed <= 0 ? ("nothing due · Q" + qInfo.quarter) : taxShort > 0 ? (dollars(taxShort) + " short") : ("covers Q" + qInfo.quarter)}</div>
               </button>
             </div>
-          );
-        })()}
-
-        {(function() {
-          var reviews = biz.reviews || [];
-          var latest = reviews[0];
-          if (!latest && !reviewLoading) return null;
-          var stColor = latest ? (latest.status === "on-track" ? T.green : latest.status === "watch" ? "#C8983A" : T.red) : T.ink3;
-          var stBg = latest ? (latest.status === "on-track" ? "rgba(39,168,95,0.12)" : latest.status === "watch" ? "rgba(200,152,58,0.15)" : "rgba(217,84,107,0.12)") : "transparent";
-          var stLabel = latest ? (latest.status === "on-track" ? "On track" : latest.status === "watch" ? "Worth a look" : "Needs attention") : "";
-          var rows = latest ? [
-            { icon: "star", tint: T.green, v: latest.tip },
-            { icon: "shield", tint: "#C8983A", v: latest.warning },
-            { icon: "up", tint: T.orange, v: latest.idea }
-          ].filter(function(r) { return r.v && r.v.body; }) : [];
-          var fwd = { idea: { launching: 1, running: 1 }, launching: { running: 1 }, running: {} };
-          var showGrad = !!(latest && latest.graduate && fwd[stage] && fwd[stage][latest.graduate] && !detectGraduation(biz));
-          return (
-            <Card style={{ padding: "16px 18px", marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.03s both", position: "relative", overflow: "hidden" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>This week with Richard</div>
-                {latest && <span style={{ fontSize: 11, color: T.ink3 }}>{latest.date}</span>}
-              </div>
-              {reviewLoading && !latest && (
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 600, color: T.ink2 }}>
-                    Richard is running your weekly review
-                    <ThinkingDots size={3.5} color={T.orange} />
-                  </div>
-                  <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3 }}>
-                    <ThinkingPhrase phrases={["Pulling this month's numbers", "Comparing to last week", "Writing the honest read"]} />
-                  </div>
-                  <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "45%", background: "linear-gradient(105deg, transparent, rgba(255,255,255,0.5), transparent)", animation: "rcShimmer 1.4s ease infinite", pointerEvents: "none" }} />
-                </div>
-              )}
-              {latest && (
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: stColor, background: stBg, borderRadius: 999, padding: "4px 11px", letterSpacing: "0.03em" }}>{stLabel}</span>
-                    {reviewLoading && <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, color: T.ink3 }}>updating<ThinkingDots size={2.5} color={T.ink3} /></span>}
-                  </div>
-                  <div style={{ fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, lineHeight: 1.4, marginBottom: 6 }}>{latest.headline}</div>
-                  {rows.map(function(r, i) {
-                    return (
-                      <div key={i} style={{ display: "flex", gap: 10, padding: "8px 0", borderTop: i > 0 ? "0.5px solid " + T.sep : "none" }}>
-                        <div style={{ width: 30, height: 30, borderRadius: 9, background: r.tint + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
-                          <SVGIcon id={r.icon} size={15} color={r.tint} />
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 12.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{r.v.title}</div>
-                          <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 1 }}>{r.v.body}</div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {latest.taskSuggestion && !latest.taskSuggestion.added && biz.roadmap && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, background: T.orangeDim, borderRadius: 12, padding: "10px 12px", marginTop: 8 }}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 10.5, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.06em" }}>Suggested step</div>
-                        <div style={{ fontSize: 12.5, color: T.ink, marginTop: 2, lineHeight: 1.4 }}>{latest.taskSuggestion.label}</div>
-                      </div>
-                      <button onClick={function() { addSuggestedTask(biz, latest); }}
-                        style={{ background: T.btn, border: "none", borderRadius: 9, padding: "8px 12px", fontSize: 12, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Add to roadmap</button>
-                    </div>
-                  )}
-                  {showGrad && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, background: T.orangeDim, borderRadius: 12, padding: "10px 12px", marginTop: 8 }}>
-                      <div style={{ flex: 1, fontSize: 12.5, color: T.ink, lineHeight: 1.4 }}>{"Richard thinks it's time to graduate to the " + (latest.graduate === "running" ? "running" : "launch") + " stage."}</div>
-                      <button onClick={function() { graduateBiz(biz, latest.graduate); }}
-                        style={{ background: T.btn, border: "none", borderRadius: 9, padding: "8px 12px", fontSize: 12, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Graduate</button>
-                    </div>
-                  )}
-                  <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                    <button onClick={function() { fetchIdeas(biz); }} disabled={ideasLoading}
-                      style={{ flex: 1, background: T.orangeDim, border: "none", borderRadius: 10, padding: "10px 0", fontSize: 12.5, fontWeight: 700, color: T.orange, cursor: ideasLoading ? "default" : "pointer", fontFamily: UI }}>{ideasLoading ? <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>Thinking<ThinkingDots size={3.5} color={T.orange} /></span> : "Get growth ideas"}</button>
-                    {reviews.length > 1 && (
-                      <button onClick={function() { setPastOpen(!pastOpen); }}
-                        style={{ flex: 1, background: "none", border: "1.5px solid " + T.sep, borderRadius: 10, padding: "10px 0", fontSize: 12.5, fontWeight: 600, color: T.ink2, cursor: "pointer", fontFamily: UI }}>{pastOpen ? "Hide past reviews" : "Past reviews (" + (reviews.length - 1) + ")"}</button>
-                    )}
-                  </div>
-                  {ideas && (
-                    <div style={{ marginTop: 10 }}>
-                      {ideas.map(function(gi, i) {
-                        return (
-                          <div key={i} style={{ background: T.fill0, borderRadius: 12, padding: "11px 13px", marginBottom: i < ideas.length - 1 ? 8 : 0, animation: "rcFadeUp 0.45s ease " + (i * 0.08) + "s both" }}>
-                            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
-                              <div style={{ fontSize: 13, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{gi.title}</div>
-                              {gi.impact ? <div style={{ fontSize: 11.5, fontWeight: 700, color: T.green, flexShrink: 0 }}>{gi.impact}</div> : null}
-                            </div>
-                            <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 3 }}>{gi.body}</div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                  {pastOpen && reviews.length > 1 && (
-                    <div style={{ marginTop: 10, borderTop: "0.5px solid " + T.sep, paddingTop: 4 }}>
-                      {reviews.slice(1).map(function(r) {
-                        var c = r.status === "on-track" ? T.green : r.status === "watch" ? "#C8983A" : T.red;
-                        return (
-                          <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 9, padding: "7px 0" }}>
-                            <span style={{ width: 7, height: 7, borderRadius: "50%", background: c, flexShrink: 0 }} />
-                            <span style={{ fontSize: 11.5, color: T.ink3, flexShrink: 0 }}>{r.date}</span>
-                            <span style={{ flex: 1, fontSize: 12, color: T.ink2, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.headline}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
-            </Card>
           );
         })()}
 
@@ -29454,6 +31029,254 @@ function BusinessView(props) {
           );
         })()}
 
+        {(function() {
+          var created = (biz.createdAt || "").slice(0, 7);
+          var maxBack = created ? Math.max(0, ymDiff(created, curMonth())) : 0;
+          var off = Math.min(plMonthOff, maxBack);
+          var ymSel = ymOffset(off);
+          var mpl = bizMonthProfit(biz, ymSel);
+          var revGoal = (biz.profile && biz.profile.revenueGoal) || 0;
+          var catRows = biz.categories.filter(function(c) { return (c.planned || 0) > 0 || bizCatMonthSpent(biz, c.key, ymSel) > 0; });
+          var stepSt = function(disabled) { return { width: 26, height: 26, borderRadius: 8, border: "none", background: T.fill1, cursor: disabled ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: disabled ? 0.35 : 1, padding: 0 }; };
+          var maxRE = Math.max(mpl.revenue, mpl.spend, 1);
+          var incBarPct = Math.min(100, (mpl.revenue / maxRE) * 100);
+          var expBarPct = Math.min(100, (mpl.spend / maxRE) * 100);
+          return (
+            <Card style={{ padding: "16px 18px", marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.08s both" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Profit & loss</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <button disabled={off >= maxBack} onClick={function() { setPlMonthOff(Math.min(off + 1, maxBack)); }} style={stepSt(off >= maxBack)}>
+                    <span style={{ transform: "rotate(180deg)", display: "flex" }}><SVGIcon id="chevron" size={14} color={T.ink2} /></span>
+                  </button>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: T.ink, minWidth: 62, textAlign: "center", fontFamily: UI }}>{ymLabel(ymSel)}</span>
+                  <button disabled={off <= 0} onClick={function() { setPlMonthOff(Math.max(off - 1, 0)); }} style={stepSt(off <= 0)}>
+                    <SVGIcon id="chevron" size={14} color={T.ink2} />
+                  </button>
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 11 }}>
+                <span style={{ width: 68, fontSize: 12.5, color: T.ink2, flexShrink: 0 }}>Revenue</span>
+                <div style={{ flex: 1, height: 8, background: T.fill1, borderRadius: 8, overflow: "hidden" }}>
+                  <div style={{ width: incBarPct + "%", height: "100%", background: T.green, borderRadius: 8, transition: "width 0.5s ease" }} />
+                </div>
+                <span style={{ width: 64, textAlign: "right", fontSize: 13, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(mpl.revenue)}</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 13 }}>
+                <span style={{ width: 68, fontSize: 12.5, color: T.ink2, flexShrink: 0 }}>Expenses</span>
+                <div style={{ flex: 1, height: 8, background: T.fill1, borderRadius: 8, overflow: "hidden" }}>
+                  <div style={{ width: expBarPct + "%", height: "100%", background: T.ink3, borderRadius: 8, transition: "width 0.5s ease" }} />
+                </div>
+                <span style={{ width: 64, textAlign: "right", fontSize: 13, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(mpl.spend)}</span>
+              </div>
+              <div style={{ borderTop: "0.5px solid " + T.sep, marginTop: 4, paddingTop: 8, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>Profit</span>
+                <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.01em", color: mpl.profit < 0 ? T.red : T.green }}>{(mpl.profit < 0 ? "-" : "") + dollars(Math.abs(mpl.profit))}</span>
+              </div>
+              {mpl.margin !== null && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 5 }}>
+                  <span style={{ fontSize: 12.5, color: T.ink3 }}>Margin</span>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: mpl.margin < 0 ? T.red : T.ink2 }}>{Math.round(mpl.margin * 100) + "%"}</span>
+                </div>
+              )}
+              {stage === "running" && revGoal > 0 && off === 0 && (
+                <div style={{ marginTop: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                    <span style={{ fontSize: 12.5, color: T.ink2, fontWeight: 600 }}>Revenue vs goal</span>
+                    <span style={{ fontSize: 12, color: T.ink3 }}>{dollars(mpl.revenue) + " of " + dollars(revGoal)}</span>
+                  </div>
+                  <ProgressBar value={mpl.revenue} max={revGoal} color={T.green} h={5} />
+                </div>
+              )}
+              {stage === "launching" && mpl.revenue === 0 && off === 0 && (
+                <div style={{ marginTop: 12, background: T.orangeDim, borderRadius: 10, padding: "9px 12px", fontSize: 12.5, color: T.ink, lineHeight: 1.5 }}>
+                  No revenue logged yet. Your first sale is the one number that changes everything - when it lands, record it here.
+                </div>
+              )}
+              {catRows.length > 0 && (
+                <div style={{ marginTop: 14, borderTop: "0.5px solid " + T.sep, paddingTop: 12 }}>
+                  {catRows.map(function(c, i) {
+                    var sp = bizCatMonthSpent(biz, c.key, ymSel);
+                    var ov = sp > (c.planned || 0) && (c.planned || 0) > 0;
+                    return (
+                      <div key={c.key} style={{ marginBottom: i < catRows.length - 1 ? 9 : 0 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                          <span style={{ fontSize: 12.5, color: T.ink2, fontWeight: 600 }}>{c.label}</span>
+                          <span style={{ fontSize: 12, color: ov ? T.red : T.ink3 }}>{dollars(sp) + ((c.planned || 0) > 0 ? " / " + dollars(c.planned) : "")}</span>
+                        </div>
+                        <ProgressBar value={sp} max={c.planned || 1} color={ov ? T.red : c.color} h={4} />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </Card>
+          );
+        })()}
+
+        {(function() {
+          var rows = (biz.entries || []).slice().sort(function(a, b) { return (b.date || "").localeCompare(a.date || "") || ((b.id || 0) - (a.id || 0)); }).slice(0, 6);
+          if (!rows.length) return null;
+          return (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 2px 10px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange }} />
+                  <span style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Recent activity</span>
+                </div>
+              </div>
+              <Card style={{ padding: "2px 16px" }}>
+                {rows.map(function(e, i) {
+                  var cat = e.catKey ? (biz.categories.filter(function(c) { return c.key === e.catKey; })[0] || null) : null;
+                  var icon = cat ? cat.icon : (e.revenue ? "up" : (e.kind === "withdraw" ? "down" : "up"));
+                  var color = cat ? cat.color : (e.revenue ? T.green : T.ink3);
+                  var neg = e.kind === "withdraw";
+                  var amtColor = e.revenue ? T.green : (neg ? T.ink : T.green);
+                  return (
+                    <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderTop: i > 0 ? "0.5px solid " + T.sep : "none" }}>
+                      <CatBadge icon={icon} color={color} size={38} soft={true} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 14.5, fontWeight: 600, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{e.label || (neg ? "Withdraw" : "Deposit")}</div>
+                        <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>{e.date}</div>
+                      </div>
+                      <div style={{ fontSize: 14.5, fontWeight: 700, color: amtColor, letterSpacing: "-0.02em", whiteSpace: "nowrap", flexShrink: 0 }}>{(neg ? "-" : "+") + dollars(e.amount)}</div>
+                    </div>
+                  );
+                })}
+              </Card>
+            </div>
+          );
+        })()}
+
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 2px 10px" }}>Budget categories</div>
+        {biz.categories.map(function(a) {
+          var catMonth = bizCatMonthSpent(biz, a.key, ym);
+          var over = catMonth > a.planned && a.planned > 0;
+          return (
+            <Card key={a.key} style={{ marginBottom: 12, overflow: "hidden" }}>
+              <div style={{ padding: "15px 16px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 10 }}>
+                  <div style={{ width: 34, height: 34, borderRadius: 10, background: a.color + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <SVGIcon id={a.icon} size={18} color={a.color} />
+                  </div>
+                  <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: T.ink }}>{a.label}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: over ? T.red : T.ink2 }}>{dollars(catMonth) + " / " + sym}</span>
+                    <input type="number" value={getDetailEdit(biz.id, "alloc_" + a.key, a.planned)}
+                      onChange={function(e) { setDetailEdit(biz.id, "alloc_" + a.key, e.target.value); }}
+                      onBlur={function(e) { updatePlanned(biz.id, a.key, e.target.value); clearDetailEdit(biz.id, "alloc_" + a.key); }}
+                      style={{ width: 58, border: "none", background: T.fill1, borderRadius: 7, outline: "none", fontSize: 13, fontWeight: 600, color: T.ink, fontFamily: UI, textAlign: "right", padding: "3px 6px", boxSizing: "border-box" }} />
+                  </div>
+                </div>
+                <ProgressBar value={catMonth} max={a.planned || 1} color={over ? T.red : a.color} h={6} />
+                {a.spent > catMonth && <div style={{ fontSize: 11, color: T.ink3, marginTop: 5 }}>{"All time: " + dollars(a.spent)}</div>}
+                {(a.entries || []).length > 0 && (
+                  <div style={{ marginTop: 10 }}>
+                    {a.entries.map(function(e) {
+                      return (
+                        <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0" }}>
+                          <span style={{ fontSize: 13, color: T.ink2 }}>{e.label}</span>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: T.ink }}>{dollars(e.amount)}</span>
+                            <button onClick={function() { deleteExpense(biz.id, a.key, e.id); }} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex" }}><SVGIcon id="trash" size={14} color={T.ink3} /></button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <button onClick={function() { setLogFor({ bizId: biz.id, key: a.key, label: a.label }); setLogForm({ label: "", amount: "" }); }}
+                  style={{ width: "100%", marginTop: 10, background: T.orangeDim, border: "none", borderRadius: 10, padding: "9px 0", color: T.orange, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>+ Log expense</button>
+              </div>
+            </Card>
+          );
+        })}
+
+        <div style={{ position: "relative", overflow: "hidden", borderRadius: 22, padding: "20px 22px", background: T.heroBg, boxShadow: T.heroShadow, marginBottom: 16, marginTop: 4 }}>
+          <div style={{ position: "absolute", bottom: -70, left: -50, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
+          <div style={{ position: "relative" }}>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut }}>Unallocated budget</div>
+            <div style={{ fontSize: 34, fontWeight: 700, color: (monthly - plannedTotal) < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em", marginTop: 8 }}>{((monthly - plannedTotal) < 0 ? "-" : "") + dollars(Math.abs(monthly - plannedTotal))}</div>
+            <div style={{ fontSize: 12.5, color: T.heroMut, marginTop: 6, lineHeight: 1.5 }}>{dollars(monthly) + " monthly budget - " + dollars(plannedTotal) + " allocated"}</div>
+          </div>
+        </div>
+
+        {capHistory.length > 0 && (
+          <Card style={{ padding: "14px 16px", marginBottom: 12 }}>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Capital history</div>
+            {capHistory.map(function(e) {
+              var dep = e.kind !== "withdraw";
+              var entryKey = biz.id + "_" + e.id;
+              var confirming = delCapConfirm === entryKey;
+              return (
+                <div key={e.id} style={{ padding: "7px 0", borderBottom: "0.5px solid " + T.sep }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ width: 26, height: 26, borderRadius: 8, background: (dep ? T.green : T.ink3) + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <SVGIcon id={dep ? "down" : "up"} size={13} color={dep ? T.green : T.ink2} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, color: T.ink, fontWeight: 500 }}>{e.label || (dep ? "Capital" : "Withdraw")}</div>
+                      <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{e.date}</div>
+                    </div>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: dep ? T.green : T.ink2, flexShrink: 0 }}>{(dep ? "+" : "-") + dollars(e.amount)}</span>
+                    <button onClick={function() { setDelCapConfirm(confirming ? null : entryKey); }} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex", flexShrink: 0 }}>
+                      <SVGIcon id="trash" size={13} color={T.ink3} />
+                    </button>
+                  </div>
+                  {confirming && (
+                    <div style={{ marginTop: 6, background: "rgba(220,50,50,0.07)", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ flex: 1, fontSize: 12, color: T.ink2 }}>{"Delete this entry?"}</span>
+                      <button onClick={function() { deleteCapEntry(biz.id, e.id); }}
+                        style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "6px 12px", borderRadius: 8, background: T.red, color: "#fff" }}>
+                        Delete
+                      </button>
+                      <button onClick={function() { setDelCapConfirm(null); }}
+                        style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, padding: "6px 12px", borderRadius: 8, background: T.fill2, color: T.ink2 }}>
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </Card>
+        )}
+
+        {deleteConfirm === biz.id ? (
+          <div style={{ background: "rgba(220,50,50,0.07)", borderRadius: 12, padding: "12px 14px", marginTop: 6 }}>
+            <div style={{ fontSize: 13, color: T.ink2, marginBottom: 10, lineHeight: 1.45 }}>{bal > 0 ? dollars(bal) + " of cash will return to your balance. " : ""}Close this business account?</div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={function() { closeBusiness(biz); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 10, background: T.red, color: "#fff" }}>Close account</button>
+              <button onClick={function() { setDeleteConfirm(null); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "10px 0", borderRadius: 10, background: T.fill2, color: T.ink2 }}>Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <button onClick={function() { setDeleteConfirm(biz.id); }}
+            style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "8px 0 4px" }}>Close business account</button>
+        )}
+
+        {deleteOutrightConfirm === biz.id ? (
+          <div style={{ background: "rgba(220,50,50,0.07)", borderRadius: 12, padding: "12px 14px", marginTop: 8 }}>
+            <div style={{ fontSize: 13, color: T.ink2, marginBottom: 10, lineHeight: 1.45 }}>{bal > 0 ? dollars(bal) + " will be permanently lost. " : ""}Delete this account and its plan? This cannot be undone.</div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={function() { deleteBusinessOutright(biz); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 10, background: T.red, color: "#fff" }}>Delete</button>
+              <button onClick={function() { setDeleteOutrightConfirm(null); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "10px 0", borderRadius: 10, background: T.fill2, color: T.ink2 }}>Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <button onClick={function() { setDeleteOutrightConfirm(biz.id); }}
+            style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "4px 0 2px", textAlign: "left" }}>Delete account</button>
+        )}
+        </div>
+        )}
+
+        {tab === "invoices" && invoicesFace(biz)}
+
+        {tab === "tax" && taxFace(biz)}
+
+        {tab === "build" && (
+        <div data-biz-face="build" style={{ animation: "invSectionIn 0.58s cubic-bezier(0.22,0.9,0.3,1) both" }}>
+          {goalHero(biz)}
         {(function() {
           var rm = biz.roadmap;
           if (!rm && roadmapBuilding) {
@@ -29568,168 +31391,116 @@ function BusinessView(props) {
           );
         })()}
 
+          {ideasFace(biz)}
         {(function() {
-          var created = (biz.createdAt || "").slice(0, 7);
-          var maxBack = created ? Math.max(0, ymDiff(created, curMonth())) : 0;
-          var off = Math.min(plMonthOff, maxBack);
-          var ymSel = ymOffset(off);
-          var mpl = bizMonthProfit(biz, ymSel);
-          var revGoal = (biz.profile && biz.profile.revenueGoal) || 0;
-          var catRows = biz.categories.filter(function(c) { return (c.planned || 0) > 0 || bizCatMonthSpent(biz, c.key, ymSel) > 0; });
-          var stepSt = function(disabled) { return { width: 26, height: 26, borderRadius: 8, border: "none", background: T.fill1, cursor: disabled ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: disabled ? 0.35 : 1, padding: 0 }; };
-          var maxRE = Math.max(mpl.revenue, mpl.spend, 1);
-          var incBarPct = Math.min(100, (mpl.revenue / maxRE) * 100);
-          var expBarPct = Math.min(100, (mpl.spend / maxRE) * 100);
+          var reviews = biz.reviews || [];
+          var latest = reviews[0];
+          if (!latest && !reviewLoading) return null;
+          var stColor = latest ? (latest.status === "on-track" ? T.green : latest.status === "watch" ? "#C8983A" : T.red) : T.ink3;
+          var stBg = latest ? (latest.status === "on-track" ? "rgba(39,168,95,0.12)" : latest.status === "watch" ? "rgba(200,152,58,0.15)" : "rgba(217,84,107,0.12)") : "transparent";
+          var stLabel = latest ? (latest.status === "on-track" ? "On track" : latest.status === "watch" ? "Worth a look" : "Needs attention") : "";
+          var rows = latest ? [
+            { icon: "star", tint: T.green, v: latest.tip },
+            { icon: "shield", tint: "#C8983A", v: latest.warning },
+            { icon: "up", tint: T.orange, v: latest.idea }
+          ].filter(function(r) { return r.v && r.v.body; }) : [];
+          var fwd = { idea: { launching: 1, running: 1 }, launching: { running: 1 }, running: {} };
+          var showGrad = !!(latest && latest.graduate && fwd[stage] && fwd[stage][latest.graduate] && !detectGraduation(biz));
           return (
-            <Card style={{ padding: "16px 18px", marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.08s both" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Profit & loss</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <button disabled={off >= maxBack} onClick={function() { setPlMonthOff(Math.min(off + 1, maxBack)); }} style={stepSt(off >= maxBack)}>
-                    <span style={{ transform: "rotate(180deg)", display: "flex" }}><SVGIcon id="chevron" size={14} color={T.ink2} /></span>
-                  </button>
-                  <span style={{ fontSize: 12.5, fontWeight: 700, color: T.ink, minWidth: 62, textAlign: "center", fontFamily: UI }}>{ymLabel(ymSel)}</span>
-                  <button disabled={off <= 0} onClick={function() { setPlMonthOff(Math.max(off - 1, 0)); }} style={stepSt(off <= 0)}>
-                    <SVGIcon id="chevron" size={14} color={T.ink2} />
-                  </button>
-                </div>
+            <Card style={{ padding: "16px 18px", marginBottom: 16, animation: "rcFadeUp 0.55s ease 0.03s both", position: "relative", overflow: "hidden" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>This week with Richard</div>
+                {latest && <span style={{ fontSize: 11, color: T.ink3 }}>{latest.date}</span>}
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 11 }}>
-                <span style={{ width: 68, fontSize: 12.5, color: T.ink2, flexShrink: 0 }}>Revenue</span>
-                <div style={{ flex: 1, height: 8, background: T.fill1, borderRadius: 8, overflow: "hidden" }}>
-                  <div style={{ width: incBarPct + "%", height: "100%", background: T.green, borderRadius: 8, transition: "width 0.5s ease" }} />
-                </div>
-                <span style={{ width: 64, textAlign: "right", fontSize: 13, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(mpl.revenue)}</span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 13 }}>
-                <span style={{ width: 68, fontSize: 12.5, color: T.ink2, flexShrink: 0 }}>Expenses</span>
-                <div style={{ flex: 1, height: 8, background: T.fill1, borderRadius: 8, overflow: "hidden" }}>
-                  <div style={{ width: expBarPct + "%", height: "100%", background: T.ink3, borderRadius: 8, transition: "width 0.5s ease" }} />
-                </div>
-                <span style={{ width: 64, textAlign: "right", fontSize: 13, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(mpl.spend)}</span>
-              </div>
-              <div style={{ borderTop: "0.5px solid " + T.sep, marginTop: 4, paddingTop: 8, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>Profit</span>
-                <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.01em", color: mpl.profit < 0 ? T.red : T.green }}>{(mpl.profit < 0 ? "-" : "") + dollars(Math.abs(mpl.profit))}</span>
-              </div>
-              {mpl.margin !== null && (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 5 }}>
-                  <span style={{ fontSize: 12.5, color: T.ink3 }}>Margin</span>
-                  <span style={{ fontSize: 12.5, fontWeight: 700, color: mpl.margin < 0 ? T.red : T.ink2 }}>{Math.round(mpl.margin * 100) + "%"}</span>
-                </div>
-              )}
-              {stage === "running" && revGoal > 0 && off === 0 && (
-                <div style={{ marginTop: 12 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                    <span style={{ fontSize: 12.5, color: T.ink2, fontWeight: 600 }}>Revenue vs goal</span>
-                    <span style={{ fontSize: 12, color: T.ink3 }}>{dollars(mpl.revenue) + " of " + dollars(revGoal)}</span>
+              {reviewLoading && !latest && (
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 600, color: T.ink2 }}>
+                    Richard is running your weekly review
+                    <ThinkingDots size={3.5} color={T.orange} />
                   </div>
-                  <ProgressBar value={mpl.revenue} max={revGoal} color={T.green} h={5} />
+                  <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3 }}>
+                    <ThinkingPhrase phrases={["Pulling this month's numbers", "Comparing to last week", "Writing the honest read"]} />
+                  </div>
+                  <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "45%", background: "linear-gradient(105deg, transparent, rgba(255,255,255,0.5), transparent)", animation: "rcShimmer 1.4s ease infinite", pointerEvents: "none" }} />
                 </div>
               )}
-              {stage === "launching" && mpl.revenue === 0 && off === 0 && (
-                <div style={{ marginTop: 12, background: T.orangeDim, borderRadius: 10, padding: "9px 12px", fontSize: 12.5, color: T.ink, lineHeight: 1.5 }}>
-                  No revenue logged yet. Your first sale is the one number that changes everything - when it lands, record it here.
-                </div>
-              )}
-              {catRows.length > 0 && (
-                <div style={{ marginTop: 14, borderTop: "0.5px solid " + T.sep, paddingTop: 12 }}>
-                  {catRows.map(function(c, i) {
-                    var sp = bizCatMonthSpent(biz, c.key, ymSel);
-                    var ov = sp > (c.planned || 0) && (c.planned || 0) > 0;
+              {latest && (
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: stColor, background: stBg, borderRadius: 999, padding: "4px 11px", letterSpacing: "0.03em" }}>{stLabel}</span>
+                    {reviewLoading && <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, color: T.ink3 }}>updating<ThinkingDots size={2.5} color={T.ink3} /></span>}
+                  </div>
+                  <div style={{ fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, lineHeight: 1.4, marginBottom: 6 }}>{latest.headline}</div>
+                  {rows.map(function(r, i) {
                     return (
-                      <div key={c.key} style={{ marginBottom: i < catRows.length - 1 ? 9 : 0 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                          <span style={{ fontSize: 12.5, color: T.ink2, fontWeight: 600 }}>{c.label}</span>
-                          <span style={{ fontSize: 12, color: ov ? T.red : T.ink3 }}>{dollars(sp) + ((c.planned || 0) > 0 ? " / " + dollars(c.planned) : "")}</span>
+                      <div key={i} style={{ display: "flex", gap: 10, padding: "8px 0", borderTop: i > 0 ? "0.5px solid " + T.sep : "none" }}>
+                        <div style={{ width: 30, height: 30, borderRadius: 9, background: r.tint + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                          <SVGIcon id={r.icon} size={15} color={r.tint} />
                         </div>
-                        <ProgressBar value={sp} max={c.planned || 1} color={ov ? T.red : c.color} h={4} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 12.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{r.v.title}</div>
+                          <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 1 }}>{r.v.body}</div>
+                        </div>
                       </div>
                     );
                   })}
+                  {latest.taskSuggestion && !latest.taskSuggestion.added && biz.roadmap && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, background: T.orangeDim, borderRadius: 12, padding: "10px 12px", marginTop: 8 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 10.5, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.06em" }}>Suggested step</div>
+                        <div style={{ fontSize: 12.5, color: T.ink, marginTop: 2, lineHeight: 1.4 }}>{latest.taskSuggestion.label}</div>
+                      </div>
+                      <button onClick={function() { addSuggestedTask(biz, latest); }}
+                        style={{ background: T.btn, border: "none", borderRadius: 9, padding: "8px 12px", fontSize: 12, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Add to roadmap</button>
+                    </div>
+                  )}
+                  {showGrad && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, background: T.orangeDim, borderRadius: 12, padding: "10px 12px", marginTop: 8 }}>
+                      <div style={{ flex: 1, fontSize: 12.5, color: T.ink, lineHeight: 1.4 }}>{"Richard thinks it's time to graduate to the " + (latest.graduate === "running" ? "running" : "launch") + " stage."}</div>
+                      <button onClick={function() { graduateBiz(biz, latest.graduate); }}
+                        style={{ background: T.btn, border: "none", borderRadius: 9, padding: "8px 12px", fontSize: 12, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Graduate</button>
+                    </div>
+                  )}
+                  <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                    <button onClick={function() { fetchIdeas(biz); }} disabled={ideasLoading}
+                      style={{ flex: 1, background: T.orangeDim, border: "none", borderRadius: 10, padding: "10px 0", fontSize: 12.5, fontWeight: 700, color: T.orange, cursor: ideasLoading ? "default" : "pointer", fontFamily: UI }}>{ideasLoading ? <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>Thinking<ThinkingDots size={3.5} color={T.orange} /></span> : "Get growth ideas"}</button>
+                    {reviews.length > 1 && (
+                      <button onClick={function() { setPastOpen(!pastOpen); }}
+                        style={{ flex: 1, background: "none", border: "1.5px solid " + T.sep, borderRadius: 10, padding: "10px 0", fontSize: 12.5, fontWeight: 600, color: T.ink2, cursor: "pointer", fontFamily: UI }}>{pastOpen ? "Hide past reviews" : "Past reviews (" + (reviews.length - 1) + ")"}</button>
+                    )}
+                  </div>
+                  {ideas && (
+                    <div style={{ marginTop: 10 }}>
+                      {ideas.map(function(gi, i) {
+                        return (
+                          <div key={i} style={{ background: T.fill0, borderRadius: 12, padding: "11px 13px", marginBottom: i < ideas.length - 1 ? 8 : 0, animation: "rcFadeUp 0.45s ease " + (i * 0.08) + "s both" }}>
+                            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+                              <div style={{ fontSize: 13, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>{gi.title}</div>
+                              {gi.impact ? <div style={{ fontSize: 11.5, fontWeight: 700, color: T.green, flexShrink: 0 }}>{gi.impact}</div> : null}
+                            </div>
+                            <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 3 }}>{gi.body}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {pastOpen && reviews.length > 1 && (
+                    <div style={{ marginTop: 10, borderTop: "0.5px solid " + T.sep, paddingTop: 4 }}>
+                      {reviews.slice(1).map(function(r) {
+                        var c = r.status === "on-track" ? T.green : r.status === "watch" ? "#C8983A" : T.red;
+                        return (
+                          <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 9, padding: "7px 0" }}>
+                            <span style={{ width: 7, height: 7, borderRadius: "50%", background: c, flexShrink: 0 }} />
+                            <span style={{ fontSize: 11.5, color: T.ink3, flexShrink: 0 }}>{r.date}</span>
+                            <span style={{ flex: 1, fontSize: 12, color: T.ink2, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.headline}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
             </Card>
-          );
-        })()}
-
-        {(function() {
-          var invoices = biz.invoices || [];
-          var unpaid = invoices.filter(function(i) { return i.status !== "paid"; });
-          var top = unpaid.slice().sort(function(a, b) { return (a.dueDate || "").localeCompare(b.dueDate || ""); }).slice(0, 3);
-          return (
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 2px 10px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange }} />
-                  <span style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Needs attention</span>
-                </div>
-                <button onClick={function() { setInvoicesOpen(true); }} style={{ border: "none", background: "none", fontSize: 12, color: T.ink3, cursor: "pointer", fontFamily: UI }}>Invoices ›</button>
-              </div>
-              {top.length === 0 ? (
-                <Card style={{ padding: "16px 18px", display: "flex", alignItems: "center", gap: 12 }}>
-                  <CatBadge icon="flag" color={T.orange} size={40} soft={true} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>No unpaid invoices</div>
-                    <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Track client invoices and see what's overdue at a glance.</div>
-                  </div>
-                  <button onClick={function() { setAddInvoiceOpen(true); }} style={{ background: T.orangeDim, border: "none", borderRadius: 10, padding: "9px 12px", fontSize: 12, fontWeight: 700, color: T.orange, cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>+ Add</button>
-                </Card>
-              ) : (
-                <Card style={{ padding: "2px 16px" }}>
-                  {top.map(function(inv, i) {
-                    var isOver = (inv.dueDate || "") < today;
-                    var stColor = isOver ? T.red : T.orange;
-                    var stBg = isOver ? T.redDim : T.orangeDim;
-                    var stLabel = isOver ? "Overdue" : "Unpaid";
-                    return (
-                      <button key={inv.id} onClick={function() { setInvoicesOpen(true); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", background: "none", border: "none", padding: "13px 0", cursor: "pointer", textAlign: "left", fontFamily: UI, borderTop: i > 0 ? "0.5px solid " + T.sep : "none" }}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 14.5, fontWeight: 600, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{inv.client}</div>
-                          <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>{isOver ? "Was due " + inv.dueDate : "Due " + inv.dueDate}</div>
-                        </div>
-                        <span style={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: stColor, background: stBg, padding: "3px 8px", borderRadius: 7, flexShrink: 0 }}>{stLabel}</span>
-                        <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, whiteSpace: "nowrap", flexShrink: 0, minWidth: 56, textAlign: "right" }}>{dollars(inv.amount)}</div>
-                      </button>
-                    );
-                  })}
-                </Card>
-              )}
-            </div>
-          );
-        })()}
-
-        {(function() {
-          var rows = (biz.entries || []).slice().sort(function(a, b) { return (b.date || "").localeCompare(a.date || "") || ((b.id || 0) - (a.id || 0)); }).slice(0, 6);
-          if (!rows.length) return null;
-          return (
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 2px 10px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange }} />
-                  <span style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>Recent activity</span>
-                </div>
-              </div>
-              <Card style={{ padding: "2px 16px" }}>
-                {rows.map(function(e, i) {
-                  var cat = e.catKey ? (biz.categories.filter(function(c) { return c.key === e.catKey; })[0] || null) : null;
-                  var icon = cat ? cat.icon : (e.revenue ? "up" : (e.kind === "withdraw" ? "down" : "up"));
-                  var color = cat ? cat.color : (e.revenue ? T.green : T.ink3);
-                  var neg = e.kind === "withdraw";
-                  var amtColor = e.revenue ? T.green : (neg ? T.ink : T.green);
-                  return (
-                    <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderTop: i > 0 ? "0.5px solid " + T.sep : "none" }}>
-                      <CatBadge icon={icon} color={color} size={38} soft={true} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14.5, fontWeight: 600, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{e.label || (neg ? "Withdraw" : "Deposit")}</div>
-                        <div style={{ fontSize: 12, color: T.ink3, marginTop: 1 }}>{e.date}</div>
-                      </div>
-                      <div style={{ fontSize: 14.5, fontWeight: 700, color: amtColor, letterSpacing: "-0.02em", whiteSpace: "nowrap", flexShrink: 0 }}>{(neg ? "-" : "+") + dollars(e.amount)}</div>
-                    </div>
-                  );
-                })}
-              </Card>
-            </div>
           );
         })()}
 
@@ -29777,103 +31548,28 @@ function BusinessView(props) {
           </Card>
         )}
 
-        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 2px 10px" }}>Budget categories</div>
-        {biz.categories.map(function(a) {
-          var catMonth = bizCatMonthSpent(biz, a.key, ym);
-          var over = catMonth > a.planned && a.planned > 0;
-          return (
-            <Card key={a.key} style={{ marginBottom: 12, overflow: "hidden" }}>
-              <div style={{ padding: "15px 16px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 10 }}>
-                  <div style={{ width: 34, height: 34, borderRadius: 10, background: a.color + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <SVGIcon id={a.icon} size={18} color={a.color} />
-                  </div>
-                  <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: T.ink }}>{a.label}</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: over ? T.red : T.ink2 }}>{dollars(catMonth) + " / " + sym}</span>
-                    <input type="number" value={getDetailEdit(biz.id, "alloc_" + a.key, a.planned)}
-                      onChange={function(e) { setDetailEdit(biz.id, "alloc_" + a.key, e.target.value); }}
-                      onBlur={function(e) { updatePlanned(biz.id, a.key, e.target.value); clearDetailEdit(biz.id, "alloc_" + a.key); }}
-                      style={{ width: 58, border: "none", background: T.fill1, borderRadius: 7, outline: "none", fontSize: 13, fontWeight: 600, color: T.ink, fontFamily: UI, textAlign: "right", padding: "3px 6px", boxSizing: "border-box" }} />
-                  </div>
-                </div>
-                <ProgressBar value={catMonth} max={a.planned || 1} color={over ? T.red : a.color} h={6} />
-                {a.spent > catMonth && <div style={{ fontSize: 11, color: T.ink3, marginTop: 5 }}>{"All time: " + dollars(a.spent)}</div>}
-                {(a.entries || []).length > 0 && (
-                  <div style={{ marginTop: 10 }}>
-                    {a.entries.map(function(e) {
-                      return (
-                        <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0" }}>
-                          <span style={{ fontSize: 13, color: T.ink2 }}>{e.label}</span>
-                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                            <span style={{ fontSize: 13, fontWeight: 600, color: T.ink }}>{dollars(e.amount)}</span>
-                            <button onClick={function() { deleteExpense(biz.id, a.key, e.id); }} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex" }}><SVGIcon id="trash" size={14} color={T.ink3} /></button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-                <button onClick={function() { setLogFor({ bizId: biz.id, key: a.key, label: a.label }); setLogForm({ label: "", amount: "" }); }}
-                  style={{ width: "100%", marginTop: 10, background: T.orangeDim, border: "none", borderRadius: 10, padding: "9px 0", color: T.orange, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>+ Log expense</button>
-              </div>
-            </Card>
-          );
-        })}
-
-        <div style={{ position: "relative", overflow: "hidden", borderRadius: 22, padding: "20px 22px", background: T.heroBg, boxShadow: T.heroShadow, marginBottom: 16, marginTop: 4 }}>
-          <div style={{ position: "absolute", bottom: -70, left: -50, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
-          <div style={{ position: "relative" }}>
-            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.heroMut }}>Unallocated budget</div>
-            <div style={{ fontSize: 34, fontWeight: 700, color: (monthly - plannedTotal) < 0 ? T.heroNeg : T.heroInk, letterSpacing: "-0.03em", marginTop: 8 }}>{((monthly - plannedTotal) < 0 ? "-" : "") + dollars(Math.abs(monthly - plannedTotal))}</div>
-            <div style={{ fontSize: 12.5, color: T.heroMut, marginTop: 6, lineHeight: 1.5 }}>{dollars(monthly) + " monthly budget - " + dollars(plannedTotal) + " allocated"}</div>
-          </div>
+          {inspireCard(biz)}
         </div>
-
-        {capHistory.length > 0 && (
-          <Card style={{ padding: "14px 16px", marginBottom: 12 }}>
-            <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Capital history</div>
-            {capHistory.map(function(e) {
-              var dep = e.kind !== "withdraw";
-              var entryKey = biz.id + "_" + e.id;
-              var confirming = delCapConfirm === entryKey;
-              return (
-                <div key={e.id} style={{ padding: "7px 0", borderBottom: "0.5px solid " + T.sep }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 26, height: 26, borderRadius: 8, background: (dep ? T.green : T.ink3) + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <SVGIcon id={dep ? "down" : "up"} size={13} color={dep ? T.green : T.ink2} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, color: T.ink, fontWeight: 500 }}>{e.label || (dep ? "Capital" : "Withdraw")}</div>
-                      <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>{e.date}</div>
-                    </div>
-                    <span style={{ fontSize: 13.5, fontWeight: 700, color: dep ? T.green : T.ink2, flexShrink: 0 }}>{(dep ? "+" : "-") + dollars(e.amount)}</span>
-                    <button onClick={function() { setDelCapConfirm(confirming ? null : entryKey); }} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex", flexShrink: 0 }}>
-                      <SVGIcon id="trash" size={13} color={T.ink3} />
-                    </button>
-                  </div>
-                  {confirming && (
-                    <div style={{ marginTop: 6, background: "rgba(220,50,50,0.07)", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ flex: 1, fontSize: 12, color: T.ink2 }}>{"Delete this entry?"}</span>
-                      <button onClick={function() { deleteCapEntry(biz.id, e.id); }}
-                        style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "6px 12px", borderRadius: 8, background: T.red, color: "#fff" }}>
-                        Delete
-                      </button>
-                      <button onClick={function() { setDelCapConfirm(null); }}
-                        style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, padding: "6px 12px", borderRadius: 8, background: T.fill2, color: T.ink2 }}>
-                        Cancel
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </Card>
         )}
 
+        {tab === "richard" && (
+        <div data-biz-face="richard" style={{ animation: "invSectionIn 0.58s cubic-bezier(0.22,0.9,0.3,1) both" }}>
+          <Card style={{ padding: "16px 18px", marginBottom: 14 }}>{attentionStrip(false)}</Card>
+          {/* Openers drawn from the same attention list, so every chip is a
+              question about a number that actually exists on this account. */}
+          {chatChips(biz).length > 0 && (
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+              {chatChips(biz).map(function(c, i) {
+                return (
+                  <button key={i} onClick={function() { sendChat(biz, c); }} disabled={chatLoading}
+                    style={{ border: "none", cursor: chatLoading ? "default" : "pointer", background: T.card, borderRadius: 999, padding: "9px 14px", fontSize: 13, fontWeight: 600, color: T.ink, fontFamily: UI, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.07)" }}>{c}</button>
+                );
+              })}
+            </div>
+          )}
         <Card style={{ overflow: "hidden", marginBottom: 12 }}>
           <div style={{ padding: "14px 16px 10px", borderBottom: "0.5px solid " + T.sep }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Ask your CFO</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Ask your coach</div>
             <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3, fontFamily: UI }}>Richard can answer questions and retune your budget</div>
           </div>
           {thread.length > 0 && (
@@ -29910,31 +31606,7 @@ function BusinessView(props) {
               style={{ background: chatInput.trim() && !chatLoading ? T.btn : T.fill3, border: "none", borderRadius: 10, width: 38, height: 38, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 17 }}>^</button>
           </div>
         </Card>
-
-        {deleteConfirm === biz.id ? (
-          <div style={{ background: "rgba(220,50,50,0.07)", borderRadius: 12, padding: "12px 14px", marginTop: 6 }}>
-            <div style={{ fontSize: 13, color: T.ink2, marginBottom: 10, lineHeight: 1.45 }}>{bal > 0 ? dollars(bal) + " of cash will return to your balance. " : ""}Close this business account?</div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={function() { closeBusiness(biz); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 10, background: T.red, color: "#fff" }}>Close account</button>
-              <button onClick={function() { setDeleteConfirm(null); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "10px 0", borderRadius: 10, background: T.fill2, color: T.ink2 }}>Cancel</button>
-            </div>
-          </div>
-        ) : (
-          <button onClick={function() { setDeleteConfirm(biz.id); }}
-            style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "8px 0 4px" }}>Close business account</button>
-        )}
-
-        {deleteOutrightConfirm === biz.id ? (
-          <div style={{ background: "rgba(220,50,50,0.07)", borderRadius: 12, padding: "12px 14px", marginTop: 8 }}>
-            <div style={{ fontSize: 13, color: T.ink2, marginBottom: 10, lineHeight: 1.45 }}>{bal > 0 ? dollars(bal) + " will be permanently lost. " : ""}Delete this account and its plan? This cannot be undone.</div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={function() { deleteBusinessOutright(biz); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 10, background: T.red, color: "#fff" }}>Delete</button>
-              <button onClick={function() { setDeleteOutrightConfirm(null); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "10px 0", borderRadius: 10, background: T.fill2, color: T.ink2 }}>Cancel</button>
-            </div>
-          </div>
-        ) : (
-          <button onClick={function() { setDeleteOutrightConfirm(biz.id); }}
-            style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "4px 0 2px", textAlign: "left" }}>Delete account</button>
+        </div>
         )}
 
         <Overlay open={!!act} onClose={function() { setAct(null); }} title={(act && act.kind === "add" ? "Add capital" : "Withdraw") + (biz ? " - " + biz.name : "")}>
@@ -29984,30 +31656,23 @@ function BusinessView(props) {
           <BigBtn label="Add invoice" disabled={!(invForm.client.trim() && parseFloat(invForm.amount) > 0)} onPress={function() { addInvoice(biz.id); }} />
         </Overlay>
 
-        <Overlay open={invoicesOpen} onClose={function() { setInvoicesOpen(false); }} title={"Invoices" + (biz ? " - " + biz.name : "")}>
-          <button onClick={function() { setAddInvoiceOpen(true); }}
-            style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 12, padding: "11px 0", marginBottom: 12, background: T.orangeDim, color: T.orange, fontSize: 13.5, fontWeight: 700, fontFamily: UI }}>+ Add invoice</button>
-          {(biz.invoices || []).length === 0 ? (
-            <div style={{ fontSize: 13, color: T.ink3, padding: "10px 2px 16px", lineHeight: 1.5 }}>No invoices yet.</div>
-          ) : (
-            (biz.invoices || []).slice().sort(function(a, b) { return ((a.status === "paid") - (b.status === "paid")) || (a.dueDate || "").localeCompare(b.dueDate || ""); }).map(function(inv, i) {
-              var isOver = inv.status !== "paid" && (inv.dueDate || "") < today;
-              return (
-                <div key={inv.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 0", borderTop: i > 0 ? "0.5px solid " + T.sep : "none" }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: T.ink, textDecoration: inv.status === "paid" ? "line-through" : "none" }}>{inv.client}</div>
-                    <div style={{ fontSize: 11.5, color: isOver ? T.red : T.ink3, marginTop: 1 }}>{inv.status === "paid" ? "Paid" : (isOver ? "Overdue since " + inv.dueDate : "Due " + inv.dueDate)}</div>
-                  </div>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(inv.amount)}</span>
-                  <button onClick={function() { toggleInvoicePaid(biz.id, inv.id); }}
-                    style={{ background: inv.status === "paid" ? T.fill2 : T.greenDim, border: "none", borderRadius: 8, padding: "6px 10px", fontSize: 11.5, fontWeight: 700, color: inv.status === "paid" ? T.ink2 : T.green, cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>{inv.status === "paid" ? "Unpay" : "Mark paid"}</button>
-                  <button onClick={function() { deleteInvoice(biz.id, inv.id); }} style={{ background: "none", border: "none", padding: 4, cursor: "pointer", display: "flex", flexShrink: 0 }}><SVGIcon id="trash" size={14} color={T.ink3} /></button>
-                </div>
-              );
-            })
-          )}
+        <Overlay open={reserveOpen} onClose={function() { setReserveOpen(false); }} title={reserveForm.mode === "release" ? "Pay from the tax pot" : "Set money aside for tax"}>
+          <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginBottom: 10 }}>
+            {reserveForm.mode === "release"
+              ? ("Releasing money from the pot when you pay the bill. " + dollars(reserved) + " is set aside right now.")
+              : ("The money stays in the account - it just stops counting as spendable. " + dollars(spendable) + " is spendable today.")}
+          </div>
+          <div style={{ padding: "16px 18px", background: T.fill1, borderRadius: 14, marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <span style={{ fontSize: 22, color: T.ink3, fontWeight: 600 }}>{sym}</span>
+              <input value={reserveForm.amount} onChange={function(e) { var v = e.target.value; setReserveForm(function(pf) { return { amount: v, mode: pf.mode }; }); }} type="number" inputMode="decimal" placeholder="0" autoFocus={true}
+                style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 28, fontFamily: UI, color: T.ink, fontWeight: 700, padding: 0, boxSizing: "border-box", width: "100%" }} />
+            </div>
+          </div>
+          <BigBtn label={reserveForm.mode === "release" ? "Pay from pot" : "Set aside"}
+            disabled={!(parseFloat(reserveForm.amount) > 0) || (reserveForm.mode === "release" && parseFloat(reserveForm.amount) > reserved)}
+            onPress={function() { moveTaxPot(biz.id, reserveForm.amount, reserveForm.mode, reserveForm.mode === "release" ? "Tax paid" : "Set aside by hand"); }} />
         </Overlay>
-
         <Overlay open={taxSheetOpen} onClose={function() { setTaxSheetOpen(false); }} title="Tax set-aside">
           <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginBottom: 10 }}>The share of revenue Richard estimates you should set aside for taxes each quarter.</div>
           <FormRow label="Set-aside rate (%)" value={getDetailEdit(biz.id, "taxRate", (biz.profile && biz.profile.taxRate != null) ? biz.profile.taxRate : 25)}
@@ -30098,7 +31763,7 @@ function LogMonthView(props) {
             <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderBottom: i < cats.length - 1 ? "0.5px solid " + T.sep : "none" }}>
               <CatBadge icon={c.icon} color={c.color} size={34} soft={true} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 15, color: T.ink, fontWeight: 500 }}>{c.name}</div>
+                <div style={{ fontSize: 15, color: T.ink, fontWeight: 500 }}>{catDisplay(c)}</div>
                 {sub && <div style={{ fontSize: 11.5, color: over ? T.red : T.ink3, marginTop: 1 }}>{sub}</div>}
               </div>
               <div style={fieldBox}>
@@ -30720,7 +32385,7 @@ var BANK_SYNC_DEMOS = {
           <BsdBtn label={p >= 2 ? "Open" : p === 1 ? "Installing…" : "Install"} hl={p !== 1} tap={p === 0} />
         </div>
         {p >= 1 && (
-          <div key="bar" style={{ margin: "0 10px", height: 4, borderRadius: 999, background: "rgba(0,0,0,0.07)", overflow: "hidden" }}>
+          <div key="bar" style={{ margin: "0 10px", height: 4, borderRadius: 999, background: T.heroRangeBg, overflow: "hidden" }}>
             <div style={{ height: "100%", width: p >= 2 ? "100%" : "55%", background: T.green, transition: "width 0.9s ease" }} />
           </div>
         )}
@@ -31289,6 +32954,13 @@ function LeumiDemoConsentModal(props) {
 function LeumiFintekaCard(props) {
   var lf = props.leumiFinteka;
   var connected = !!(lf && lf.connected);
+  // LAUNCH.leumiDemo is the one line that answers "should a pre-launch build
+  // name a real bank?". The card is labelled DEMO, disclosed in Richard's
+  // prompt and purged on disconnect, so this is a question for counsel rather
+  // than a defect - but an account that has ALREADY connected keeps seeing the
+  // card either way, because hiding it would strand their sample rows with no
+  // way to disconnect and purge them.
+  if (!LAUNCH.leumiDemo && !connected) return null;
   var _md = useState(false); var modalOpen = _md[0]; var setModalOpen = _md[1];
   var _sb = useState(false); var syncBusy = _sb[0]; var setSyncBusy = _sb[1];
   var _dz = useState(false); var disconnecting = _dz[0]; var setDisconnecting = _dz[1];
@@ -32028,7 +33700,7 @@ function PlanView(props) {
       + "Richy HAS a Debts tracker (Profile -> Debts): the user logs each debt's balance, rate, and minimum, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date. Point anyone paying off debt there, and answer 'what first' with their actual numbers. "
       + "Richy HAS a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): clearly labeled a DEMO, it fills the account with realistic sample transactions to preview the experience, but it is NOT a real connection to the user's actual Bank Leumi account - that needs Bank Leumi to certify Richy as a licensed Open Banking provider first, which hasn't happened. Be direct about this if asked whether it's real. "
       + "Richy HAS real WhatsApp alerts for Richard Watch (Profile -> Settings -> WhatsApp Alerts): the user links their number and texts START to Richy's WhatsApp to turn it on, then Richard relays the single most urgent Watch signal there once a day. It only ever replies inside a chat the user opened - if they ask why an alert didn't arrive, tell them to send Richy any WhatsApp message to reopen today's window. "
-      + "Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (Bank Sync files purchases from the payment notifications the user's own phone already receives - an automation they set up and control on their device, not a bank connection), no fully shared couples ledger yet. If asked about these, acknowledge the gap and offer the best workaround available inside Richy. "
+      + "Richy ALSO has Collab (Profile -> Collab): two people can join one household and share budgets, goals and categories, each keeping their own login - send anyone asking about splitting money with a partner, a flatmate or a family member there, and say plainly that it shares budgets and goals rather than merging every transaction into one ledger. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (Bank Sync files purchases from the payment notifications the user's own phone already receives - an automation they set up and control on their device, not a bank connection), no fully shared couples ledger yet. If asked about these, acknowledge the gap and offer the best workaround available inside Richy. "
       + "Be concise and direct — keep it short unless the user asks for more depth." + RICHARD_FORMAT + " The only bracketed syntax you may use is the action tag described next. "
       + "If you want to suggest a specific concrete change to the user's app, append exactly one action tag at the very end of your reply: "
       + "[ACTION:{\"type\":\"budget\",\"category\":\"Food\",\"limit\":500}] to set a monthly budget limit, or "
@@ -32811,7 +34483,7 @@ function Profile(props) {
           <div style={{ flexShrink: 0 }}>
             <LevelMark initial={initial} level={snap.level} pct={snap.pctToNext} />
           </div>
-          <button onClick={props.onViewSettings} aria-label="Settings"
+          <button onClick={props.onViewSettings} aria-label={tr("pfSettings")}
             style={{ flex: 1, minWidth: 0, background: "none", border: "none", cursor: "pointer", fontFamily: UI, padding: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
             <div style={{ width: 40, height: 40, borderRadius: "50%", background: T.inputBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <SVGIcon id="gear" size={19} color={T.ink2} />
@@ -32924,30 +34596,28 @@ function Profile(props) {
               <div style={{ fontSize: 11.5, color: T.ink2, marginTop: 2 }}>{"Week of " + clean.pending.label + " · " + props.pendingCount + " logged"}</div>
             </div>
             <button onClick={function() { props.onConfirmWeek(clean.pending.key); }}
-              style={{ flexShrink: 0, background: T.orange, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, padding: "8px 15px", borderRadius: 12, cursor: "pointer", fontFamily: UI }}>
-              Confirm
-            </button>
+              style={{ flexShrink: 0, background: T.orange, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, padding: "8px 15px", borderRadius: 12, cursor: "pointer", fontFamily: UI }}>{tr("pfConfirm")}</button>
           </div>
         )}
 
-        <ProfileRow icon="flame" iconBg={T.goldDim} iconColor={T.gold} label="Green month"
-          sub={green.thisYear + " of 12 this year"} value={green.total + " total"} onClick={props.onViewStreaks} />
-        <ProfileRow icon="budgets" iconBg={T.orangeDim} iconColor={T.orange} label="Budget runs"
-          sub={snap.budgets.runs.length ? snap.budgets.runs.slice(0, 3).map(function(r) { return r.name + " " + r.run; }).join(" · ") : "No runs going yet"}
+        <ProfileRow icon="flame" iconBg={T.goldDim} iconColor={T.gold} label={tr("pfGreenMonth")}
+          sub={tr("pfNOf12").replace("{n}", green.thisYear)} value={tr("pfNTotal").replace("{n}", green.total)} onClick={props.onViewStreaks} />
+        <ProfileRow icon="budgets" iconBg={T.orangeDim} iconColor={T.orange} label={tr("pfBudgetRuns")}
+          sub={snap.budgets.runs.length ? snap.budgets.runs.slice(0, 3).map(function(r) { return r.name + " " + r.run; }).join(" · ") : tr("pfNoRuns")}
           value={String(snap.budgets.onTrack)} onClick={props.onViewStreaks} last />
       </Card>
 
       {/* ── Badges ── */}
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", margin: "22px 0 9px", padding: "0 4px" }}>
-        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, fontFamily: UI }}>BADGES</span>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, fontFamily: UI }}>{tr("pfBadges")}</span>
         <button onClick={props.onViewBadges} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12.5, color: T.orange, fontWeight: 600, fontFamily: UI, display: "flex", alignItems: "center", gap: 3 }}>
-          {snap.badges.length + " of " + snap.badgeTotal}<SVGIcon id="chevron" size={12} color={T.orange} />
+          {tr("pfNOfM").replace("{n}", snap.badges.length).replace("{m}", snap.badgeTotal)}<SVGIcon id="chevron" size={12} color={T.orange} />
         </button>
       </div>
       <Card style={{ padding: "15px 0 13px" }}>
         {recent.length === 0 ? (
           <div style={{ padding: "6px 18px 4px", fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>
-            Nothing earned yet. Log a transaction, set a budget, confirm a week - they start arriving quickly.
+            {tr("pfNoBadgesYet")}
           </div>
         ) : (
           <div style={{ display: "flex", gap: 13, padding: "0 16px", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
@@ -32966,13 +34636,13 @@ function Profile(props) {
       </Card>
 
       {/* ── Manage ── */}
-      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, padding: "0 4px", margin: "22px 0 9px", fontFamily: UI }}>MANAGE</div>
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, padding: "0 4px", margin: "22px 0 9px", fontFamily: UI }}>{tr("pfManage")}</div>
       <Card style={{ overflow: "hidden" }}>
-        <ProfileRow icon="home" iconBg={T.greenDim} iconColor={T.green} label="Shared budgets"
-          sub={hh ? hh.name : "Not sharing with anyone"}
+        <ProfileRow icon="home" iconBg={T.greenDim} iconColor={T.green} label={tr("pfSharedBudgets")}
+          sub={hh ? hh.name : tr("pfNotSharing")}
           right={<FaceStack people={members} />}
           onClick={props.onViewCollab} />
-        <ProfileRow icon="goals" iconBg={T.greenDim} iconColor={T.green} label="Budget books"
+        <ProfileRow icon="goals" iconBg={T.greenDim} iconColor={T.green} label={tr("pfBudgetBooks")}
           sub={(props.goals || []).length + " active goal" + ((props.goals || []).length === 1 ? "" : "s")}
           right={goalsTarget > 0 ? (
             <div style={{ textAlign: "right" }}>
@@ -32981,27 +34651,27 @@ function Profile(props) {
             </div>
           ) : null}
           onClick={props.onViewGoals} />
-        <ProfileRow icon="user" iconBg={T.blueDim} iconColor={T.blue} label="Collab"
-          sub={hh ? (members.length + " member" + (members.length === 1 ? "" : "s")) : "Off"}
+        <ProfileRow icon="user" iconBg={T.blueDim} iconColor={T.blue} label={tr("setCollab")}
+          sub={hh ? (members.length === 1 ? tr("pfOneMember") : tr("pfNMembers").replace("{n}", members.length)) : tr("valOff")}
           right={props.inviteCount ? (
             <span style={{ background: T.red, color: "#fff", fontSize: 10.5, fontWeight: 700, borderRadius: 99, padding: "2px 7px" }}>{props.inviteCount}</span>
           ) : null}
           onClick={props.onViewCollab} />
-        <ProfileRow icon="credit" iconBg={"rgba(224,48,48,0.12)"} iconColor={T.red} label="Debts"
-          sub={props.debtCount ? (props.debtCount + " tracked") : "Nothing tracked"} onClick={props.onViewDebts} />
-        <ProfileRow icon="plane" iconBg={T.orangeDim} iconColor={T.orange} label="Trip history"
-          sub={(props.trips || []).filter(function(t) { return t.ended; }).length + " ended"} onClick={props.onViewTripHistory} last />
+        <ProfileRow icon="credit" iconBg={"rgba(224,48,48,0.12)"} iconColor={T.red} label={tr("setDebts")}
+          sub={props.debtCount ? tr("valTrackedN").replace("{n}", props.debtCount) : tr("pfNothingTracked")} onClick={props.onViewDebts} />
+        <ProfileRow icon="plane" iconBg={T.orangeDim} iconColor={T.orange} label={tr("pfTripHistory")}
+          sub={tr("pfNEnded").replace("{n}", (props.trips || []).filter(function(t) { return t.ended; }).length)} onClick={props.onViewTripHistory} last />
       </Card>
 
       {/* ── Your data ── */}
-      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, padding: "0 4px", margin: "22px 0 9px", fontFamily: UI }}>YOUR DATA</div>
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, padding: "0 4px", margin: "22px 0 9px", fontFamily: UI }}>{tr("pfYourData")}</div>
       <Card style={{ overflow: "hidden" }}>
-        <ProfileRow icon="spark" iconBg={T.goldDim} iconColor={T.gold} label="Your plan" sub="Richard's read on your money" onClick={props.onViewPlan} />
-        <ProfileRow icon="refresh" iconBg={T.greenDim} iconColor={T.green} label="Bank sync"
-          sub={props.bankSync && props.bankSync.enabled ? "On" : "Off"}
+        <ProfileRow icon="spark" iconBg={T.goldDim} iconColor={T.gold} label={tr("pfYourPlan")} sub={tr("pfYourPlanSub")} onClick={props.onViewPlan} />
+        <ProfileRow icon="refresh" iconBg={T.greenDim} iconColor={T.green} label={tr("pfBankSync")}
+          sub={props.bankSync && props.bankSync.enabled ? tr("valOn") : tr("valOff")}
           right={props.bankSync && props.bankSync.enabled ? <span style={{ width: 7, height: 7, borderRadius: "50%", background: T.green }} /> : null}
           onClick={props.onViewBankSync} />
-        <ProfileRow icon="shield" iconBg={T.blueDim} iconColor={T.blue} label="Privacy and data" sub="Export, sharing, delete" onClick={props.onViewPrivacy} last />
+        <ProfileRow icon="shield" iconBg={T.blueDim} iconColor={T.blue} label={tr("pfPrivacy")} sub={tr("pfPrivacySub")} onClick={props.onViewPrivacy} last />
       </Card>
 
       {/* ── Recent activity ──
@@ -33010,7 +34680,7 @@ function Profile(props) {
           feed items and no attribution the data cannot support. */}
       {(recent.length > 0 || clean.total > 0) && (
         <div>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, padding: "0 4px", margin: "22px 0 9px", fontFamily: UI }}>RECENT ACTIVITY</div>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.ink3, padding: "0 4px", margin: "22px 0 9px", fontFamily: UI }}>{tr("pfRecentActivity")}</div>
           <Card style={{ overflow: "hidden" }}>
             {props.feed.map(function(f, i) {
               return (
@@ -33142,31 +34812,34 @@ function SettingsView(props) {
     <div>
       <SubViewBack onBack={props.onBack} />
 
-      <ProfileSection icon="spark" title="AI & Richard" bg={T.goldDim} color={T.gold} glow={T.goldGlow}>
-        <ProfileRow icon="spark" iconBg={T.goldDim} iconColor={T.gold} label="Your Plan" onClick={props.onViewPlan} />
-        <ProfileRow icon="note" iconBg={T.goldDim} iconColor={T.gold} label="Richard's Instructions" value={props.richardInstructions ? "Custom" : "Default"} onClick={props.onViewInstructions} />
-        <ProfileRow icon="phone" iconBg={T.goldDim} iconColor={T.gold} label="WhatsApp Alerts" value={props.whatsapp && props.whatsapp.status === "active" ? "On" : "Off"} onClick={props.onViewWhatsApp} last />
+      {/* Every row here was an English literal, so no language switch could
+          reach any of it - and Settings is exactly where a Hebrew user goes
+          when the app is in the wrong language. */}
+      <ProfileSection icon="spark" title={tr("setAiRichard")} bg={T.goldDim} color={T.gold} glow={T.goldGlow}>
+        <ProfileRow icon="spark" iconBg={T.goldDim} iconColor={T.gold} label={tr("setYourPlan")} onClick={props.onViewPlan} />
+        <ProfileRow icon="note" iconBg={T.goldDim} iconColor={T.gold} label={tr("setInstructions")} value={props.richardInstructions ? tr("valCustom") : tr("valDefault")} onClick={props.onViewInstructions} />
+        <ProfileRow icon="phone" iconBg={T.goldDim} iconColor={T.gold} label={tr("setWhatsApp")} value={props.whatsapp && props.whatsapp.status === "active" ? tr("valOn") : tr("valOff")} onClick={props.onViewWhatsApp} last />
       </ProfileSection>
 
-      <ProfileSection icon="coins" title="Money" bg={T.greenDim} color={T.green} glow={T.greenGlow}>
-        <ProfileRow icon="credit" iconBg={T.greenDim} iconColor={T.green} label="Currency" value={curLabel} onClick={props.onViewCurrency} />
-        <ProfileRow icon="briefcase" iconBg={T.greenDim} iconColor={T.green} label="Opening Balance" onClick={props.onViewEditOpeningBalance} />
-        <ProfileRow icon="activity" iconBg={T.greenDim} iconColor={T.green} label="Log This Month" onClick={props.onViewLogMonth} />
-        <ProfileRow icon="edit" iconBg={T.greenDim} iconColor={T.green} label="Adding Transactions" value={props.entryMethod === "import" ? "CSV import" : "Manual"} onClick={props.onViewEntryMethod} />
-        <ProfileRow icon="calendar" iconBg={T.greenDim} iconColor={T.green} label="Date Range" value={props.periodMode === "rolling" ? "Past Month" : props.periodMode === "custom" ? "Custom" : "This Month"} onClick={props.onViewPeriodMode} />
-        <ProfileRow icon="refresh" iconBg={T.greenDim} iconColor={T.green} label="Bank Sync" value={props.bankSync && props.bankSync.enabled ? "On" : "Off"} onClick={props.onViewBankSync} last />
+      <ProfileSection icon="coins" title={tr("setMoney")} bg={T.greenDim} color={T.green} glow={T.greenGlow}>
+        <ProfileRow icon="credit" iconBg={T.greenDim} iconColor={T.green} label={tr("currency")} value={curLabel} onClick={props.onViewCurrency} />
+        <ProfileRow icon="briefcase" iconBg={T.greenDim} iconColor={T.green} label={tr("setOpeningBalance")} onClick={props.onViewEditOpeningBalance} />
+        <ProfileRow icon="activity" iconBg={T.greenDim} iconColor={T.green} label={tr("setLogMonth")} onClick={props.onViewLogMonth} />
+        <ProfileRow icon="edit" iconBg={T.greenDim} iconColor={T.green} label={tr("setEntryMethod")} value={props.entryMethod === "import" ? tr("valCsvImport") : tr("valManual")} onClick={props.onViewEntryMethod} />
+        <ProfileRow icon="calendar" iconBg={T.greenDim} iconColor={T.green} label={tr("setDateRange")} value={props.periodMode === "rolling" ? tr("valPastMonth") : props.periodMode === "custom" ? tr("valCustom") : tr("valThisMonth")} onClick={props.onViewPeriodMode} />
+        <ProfileRow icon="refresh" iconBg={T.greenDim} iconColor={T.green} label={tr("setBankSync")} value={props.bankSync && props.bankSync.enabled ? tr("valOn") : tr("valOff")} onClick={props.onViewBankSync} last />
       </ProfileSection>
 
-      <ProfileSection icon="sun" title="Visual" bg={T.orangeDim} color={T.orange} glow={T.orangeGlow}>
-        <ProfileRow icon="star" iconBg={T.orangeDim} iconColor={T.orange} label="Appearance" value={themeLabelOf(props.theme)} onClick={props.onViewAppearance} />
-        <ProfileRow icon="book" iconBg={T.orangeDim} iconColor={T.orange} label="Language" value={langLabel} onClick={props.onViewLanguage} last />
+      <ProfileSection icon="sun" title={tr("setVisual")} bg={T.orangeDim} color={T.orange} glow={T.orangeGlow}>
+        <ProfileRow icon="star" iconBg={T.orangeDim} iconColor={T.orange} label={tr("setAppearance")} value={themeLabelOf(props.theme)} onClick={props.onViewAppearance} />
+        <ProfileRow icon="book" iconBg={T.orangeDim} iconColor={T.orange} label={tr("language")} value={langLabel} onClick={props.onViewLanguage} last />
       </ProfileSection>
 
-      <ProfileSection icon="user" title="Account" bg={T.blueDim} color={T.blue} glow={T.blueGlow}>
-        <ProfileRow icon="edit" iconBg={T.blueDim} iconColor={T.blue} label="Your Name" value={props.user} onClick={props.onViewNickname} />
-        <ProfileRow icon="home" iconBg={T.blueDim} iconColor={T.blue} label="Collab" value={props.householdName || (props.inviteCount ? props.inviteCount + " invite" + (props.inviteCount === 1 ? "" : "s") : "Off")} onClick={props.onViewCollab} />
-        <ProfileRow icon="credit" iconBg={"rgba(224,48,48,0.12)"} iconColor={T.red} label="Debts" value={props.debtCount ? (props.debtCount + " tracked") : "Off"} onClick={props.onViewDebts} />
-        <ProfileRow icon="shield" iconBg={T.blueDim} iconColor={T.blue} label="Privacy & Data" onClick={props.onViewPrivacy} last />
+      <ProfileSection icon="user" title={tr("setAccount")} bg={T.blueDim} color={T.blue} glow={T.blueGlow}>
+        <ProfileRow icon="edit" iconBg={T.blueDim} iconColor={T.blue} label={tr("setYourName")} value={props.user} onClick={props.onViewNickname} />
+        <ProfileRow icon="home" iconBg={T.blueDim} iconColor={T.blue} label={tr("setCollab")} value={props.householdName || (props.inviteCount ? (props.inviteCount === 1 ? tr("valInvite1") : tr("valInviteN").replace("{n}", props.inviteCount)) : tr("valOff"))} onClick={props.onViewCollab} />
+        <ProfileRow icon="credit" iconBg={"rgba(224,48,48,0.12)"} iconColor={T.red} label={tr("setDebts")} value={props.debtCount ? tr("valTrackedN").replace("{n}", props.debtCount) : tr("valOff")} onClick={props.onViewDebts} />
+        <ProfileRow icon="shield" iconBg={T.blueDim} iconColor={T.blue} label={tr("setPrivacy")} onClick={props.onViewPrivacy} last />
       </ProfileSection>
     </div>
   );
@@ -33353,6 +35026,14 @@ function GlassTabBar(props) {
             <span style={{ fontSize: 9.5, fontWeight: active ? 700 : 400, color: active ? T.orange : T.ink3, letterSpacing: "0.005em", whiteSpace: "nowrap", transition: "color 0.4s ease" }}>
               {t.icon ? t.label : tr(t.id)}
             </span>
+            {/* Optional live state line. A tab that knows its own number can
+                answer "is anything wrong?" from the bar, without being opened -
+                the business hub uses this, the main tabs leave it off. */}
+            {t.sum ? (
+              <span style={{ fontSize: 9, fontWeight: 700, color: t.sumColor || T.ink3, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%", opacity: active ? 1 : 0.75, transition: "opacity 0.4s ease" }}>
+                {t.sum}
+              </span>
+            ) : null}
           </button>
         );
       })}
@@ -33762,6 +35443,10 @@ export default function App() {
   var openGoalRisk = _ogr[0]; var setOpenGoalRisk = _ogr[1];
   var _iht = useState("portfolio");
   var investingHubTab = _iht[0]; var setInvestingHubTab = _iht[1];
+  // The business account is a hub too, so the bottom bar drives it the same way
+  // it drives Investing - one owner for the current face of the account.
+  var _bht = useState("home");
+  var businessHubTab = _bht[0]; var setBusinessHubTab = _bht[1];
   // A new portfolio starts with Richard's questionnaire. The neutral starter
   // account is created only after the user completes it.
   var _pni = useState(false);
@@ -33995,7 +35680,7 @@ export default function App() {
     // Older accounts have no widgets field. Start those accounts with the
     // broadly useful defaults, while an explicit saved [] still means the user
     // chose to keep this section empty.
-    setWidgets(Array.isArray(data.widgets) ? data.widgets.slice(0, MAX_WIDGETS) : DEFAULT_OVERVIEW_WIDGETS);
+    setWidgets(Array.isArray(data.widgets) ? data.widgets.slice(0, MAX_WIDGETS) : getStarterWidgets(data.tx));
     setDismissedTips(data.dismissedTips || []);
     setHouseholdId(data.householdId || null);
     setUserDob(data.dob || "");
@@ -35111,22 +36796,109 @@ export default function App() {
     // emergency fund is never forced onto the main balance. It counts toward net
     // worth from day one but leaves the balance clean.
     var savAmt = parseFloat(oData && oData.savings);
+    var goalNm = ((oData && oData.goalName) || "").trim();
+    var goalTgt = parseFloat(oData && oData.goalAmt);
     if (savAmt > 0 && !(savings && savings.length)) {
       var sToday = new Date().toISOString().slice(0, 10);
-      var ef = { id: "sav_" + Date.now(), name: tr("emergencyFund"), color: "#27A85F", icon: "shield", createdAt: sToday, entries: [{ id: Date.now() + 1, kind: "deposit", amount: round2(savAmt), date: sToday, fromMain: false, label: tr("externalMoney") }] };
+      // The pot used to be called "Emergency Fund" no matter what the user had
+      // just spent nine questions telling us they were saving for. If they named
+      // a goal, the pot carries its name so the two read as one thing.
+      var potName = goalNm || tr("emergencyFund");
+      var ef = { id: "sav_" + Date.now(), name: potName, color: "#27A85F", icon: goalNm ? "target" : "shield", createdAt: sToday, entries: [{ id: Date.now() + 1, kind: "deposit", amount: round2(savAmt), date: sToday, fromMain: false, label: tr("externalMoney") }] };
       setSavings([ef]);
       merged.savings = [ef];
+    }
+    // THE GOAL. Onboarding asked for a name, a target and a timeline, told six
+    // story beats about it, and then wrote nothing - so 28 screens ended on
+    // "0 active goals". It is created here, linked to the pot that holds the
+    // money the user already had, so its progress is real from the first render.
+    if (goalNm && goalTgt > 0 && !(goals && goals.length)) {
+      var gToday = new Date().toISOString().slice(0, 10);
+      var g = {
+        id: Date.now() + 2,
+        name: goalNm,
+        target: round2(goalTgt),
+        saved: 0,
+        deadline: timelineDeadline(oData && oData.timeline, gToday),
+        createdAt: gToday
+      };
+      // The savings pot IS this goal's money, so link them rather than asking
+      // the user to fund the same target twice.
+      if (merged.savings && merged.savings.length && merged.savings[0].name === goalNm) {
+        g.linkType = "savings";
+        g.linkId = merged.savings[0].id;
+      } else if (savAmt > 0) {
+        g.saved = round2(Math.min(savAmt, goalTgt));
+      }
+      setGoals([g]);
+      merged.goals = [g];
+    }
+    // The debt figure was asked for and then forgotten - and Debts was then
+    // advertised only to users who had none. Seed one tracked debt from the
+    // answer so the feature opens with the user's own number in it. Rate and
+    // minimum are left blank on purpose: we did not ask, and a guessed APR
+    // would drive a wrong payoff plan.
+    var debtAmt = parseFloat(oData && oData.debt);
+    if (debtAmt > 0 && !(debts && debts.length)) {
+      var dToday = new Date().toISOString().slice(0, 10);
+      var seeded = [{ id: "debt_" + (Date.now() + 3), name: tr("seededDebtName"), balance: round2(debtAmt), apr: 0, minPayment: 0, createdAt: dToday, fromOnboarding: true }];
+      setDebts(seeded);
+      merged.debts = seeded;
     }
     persistBlob(merged);
   }
 
   // The mid-month catch-up step. Appends the user's already-spent transactions
   // (dated this month) so budgets start real, then marks the step done.
+  // The budget suggestion is computed at onboarding step 6, where the only
+  // numbers that exist are income and essentials - so Housing gets 50% of the
+  // single essentials figure and any user whose rent is more than half of it is
+  // over budget by construction, before they have done anything. (A ₪2,250 cap
+  // against the ₪2,500 rent they type ninety seconds later.)
+  //
+  // The catch-up screen is the first moment the app knows real numbers, so this
+  // runs there: every suggested cap is floored at what the user just told us
+  // they actually spend, rounded up to a sane figure. It only ever raises a cap
+  // and only touches budgets that came from the suggestion, so a limit the user
+  // set by hand is never quietly rewritten.
+  function reflowBudgetsAgainstSpend(allTx) {
+    var current = budgets || [];
+    if (!current.length) return null;
+    var ym = curMonth();
+    var spentBy = {};
+    (allTx || []).forEach(function(t) {
+      if (!t || t.type !== "expense" || !inMonth(t, ym)) return;
+      var key = t.catId || t.category;
+      if (!key) return;
+      spentBy[key] = (spentBy[key] || 0) + (t.amount || 0);
+      if (t.catId && t.category) spentBy[t.category] = (spentBy[t.category] || 0) + (t.amount || 0);
+    });
+    var changed = false;
+    var next = current.map(function(b) {
+      if (b.userSet) return b;
+      var spent = spentBy[b.catId] || spentBy[b.category] || 0;
+      if (spent <= b.limit) return b;
+      // Round up to the nearest 50 so the new cap reads as a decision, not as
+      // an echo of one month's total to the cent.
+      var floored = Math.ceil(spent / 50) * 50;
+      changed = true;
+      return Object.assign({}, b, { limit: floored, raisedFrom: b.limit });
+    });
+    return changed ? next : null;
+  }
+
   function handleCatchUpComplete(newTxs) {
     var merged = (newTxs && newTxs.length) ? tx.concat(newTxs) : tx;
     setTx(merged);
     setCatchUpDone(true);
-    save({ tx: merged, catchUpDone: true });
+    var patch = { tx: merged, catchUpDone: true };
+    var reflowed = reflowBudgetsAgainstSpend(merged);
+    if (reflowed) { setBudgets(reflowed); patch.budgets = reflowed; }
+    // The whole point of onboarding was the goal. Land on it, so the flow ends
+    // on the thing the user named rather than on a dashboard reading "0 active
+    // goals" - which is what it did before the goal was even being created.
+    if (goals && goals.length) { prevTabRef.current = "overview"; setTab("goals"); }
+    save(patch);
   }
 
   // From catch-up: skip the manual recall entirely and go set up Bank Sync so the
@@ -35407,10 +37179,10 @@ export default function App() {
   // and the bar at the bottom of the screen can never disagree about where back
   // goes; the label names the account you're stepping out of when one is open.
   function exitBusiness() { setTab(prevTabRef.current || "overview"); setSheet(false); }
+  var openBizAcct = (businesses || []).filter(function(x) { return String(x.id) === String(openBiz); })[0] || null;
   var openBizName = (function() {
-    var b = (businesses || []).filter(function(x) { return String(x.id) === String(openBiz); })[0];
-    if (!b || !b.name) return "";
-    return b.name.length > 22 ? b.name.slice(0, 21) + "…" : b.name;
+    if (!openBizAcct || !openBizAcct.name) return "";
+    return openBizAcct.name.length > 22 ? openBizAcct.name.slice(0, 21) + "…" : openBizAcct.name;
   })();
   var exitBusinessLabel = openBizName ? "Exit " + openBizName : ("Back to " + (prevTabRef.current === "overview" ? "Dashboard" : "Savings"));
   var MAIN_TAB_IDS = TABS.map(function(t) { return t.id; });
@@ -35420,8 +37192,8 @@ export default function App() {
   // The five swipeable main tabs, produced by id so both the visible page and the
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
-    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} onAddWidget={onAddWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
-    if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
+    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} onAddWidget={onAddWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
+    if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
     if (id === "advisor") return <Advisor isActive={id === currentTab} tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} richardVoice={richardVoice} onSaveVoice={onSaveVoice} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} widgets={widgets} onSaveWidgets={onSaveWidgets} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} onBackToOverview={function() { setTab("overview"); }} onOpenInstructions={function() { prevTabRef.current = "advisor"; setTab("instructions"); setSheet(false); }} onOpenProfile={function() { prevTabRef.current = "advisor"; setTab("profile"); setSheet(false); }} />;
@@ -35488,7 +37260,7 @@ export default function App() {
             </button>
           </div>
           <span style={{ flex: 1, minWidth: 0, fontSize: 18, fontWeight: currentTab === "advisor" ? RICHARD_DISP_WEIGHT : DISP_WEIGHT, fontFamily: currentTab === "advisor" ? RICHARD_DISP : DISP, color: T.ink, textAlign: "center", letterSpacing: "-0.02em", lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {currentTab === "privacy" ? "Privacy & Data" : currentTab === "password" ? "Password" : currentTab === "editEmail" ? "Email" : currentTab === "editDob" ? "Date of Birth" : currentTab === "editFinancial" ? "Financial Profile" : currentTab === "business" ? "Business" : currentTab === "collab" ? "Collab" : currentTab === "householdMerge" ? tr("hmTitleBar") : currentTab === "entryMethod" ? "Adding transactions" : currentTab === "periodMode" ? "Date Range" : currentTab === "bankSync" ? "Bank Sync" : currentTab === "whatsapp" ? "WhatsApp Alerts" : currentTab === "editOpeningBalance" ? "Opening balance" : currentTab === "logMonth" ? "Log this month" : currentTab === "tripHistory" ? "Trip History" : currentTab === "badges" ? "Badges" : currentTab === "settings" ? "Settings" : currentTab === "person" ? personName : currentTab === "social" ? "Friends" : currentTab === "findPeople" ? "Find people" : currentTab === "analysis" ? "Full Analysis" : currentTab === "investPlan" ? "Your investing plan" : currentTab === "investorOnboard" ? "Investing basics" : tr(currentTab === "plan" ? "yourPlan" : currentTab === "nickname" ? "name" : currentTab === "notes" ? "notes" : currentTab)}
+            {screenTitle(currentTab, personName)}
           </span>
           <div style={{ width: 122, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
             <HeaderShortcutBar current={currentTab} items={[
@@ -35506,11 +37278,17 @@ export default function App() {
       {currentTab !== "advisor" && currentTab !== "householdMerge" && (
           <button onClick={function() {
               nativeHaptic("MEDIUM");
-              if (currentTab === "activity") setSheet(function(v) { return !v; });
+              // The "+" used to mean "new transaction" everywhere, including on
+              // the three screens whose own empty states said "tap + to create
+              // your first budget / goal / note". Every one of those screens
+              // already had a create sheet behind the same `sheet` flag - the
+              // button simply never opened it. Now it opens whatever the screen
+              // you are standing on creates.
+              if (FAB_CREATES[currentTab]) setSheet(function(v) { return !v; });
               else { setTab("activity"); setSheet(true); }
             }}
-            aria-label={currentTab === "activity" && sheet ? "Close add transaction" : tr("addTransaction")}
-            style={{ position: "fixed", left: "max(20px, calc(50% - 195px))", bottom: "calc(102px + env(safe-area-inset-bottom, 0px))", background: currentTab === "activity" && sheet ? T.ink : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", border: "none", borderRadius: "50%", width: 36, height: 36, cursor: "pointer", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: currentTab === "activity" && sheet ? "none" : "0 6px 16px " + T.orangeGlow, transform: currentTab === "activity" && sheet ? "rotate(45deg)" : "none", transition: "background var(--m-quick) ease, box-shadow var(--m-quick) ease, transform var(--m-settle) var(--m-spring)", zIndex: 41 }}>
+            aria-label={sheet && FAB_CREATES[currentTab] ? tr("close") : tr(FAB_CREATES[currentTab] || "addTransaction")}
+            style={{ position: "fixed", left: "max(20px, calc(50% - 195px))", bottom: "calc(102px + env(safe-area-inset-bottom, 0px))", background: sheet && FAB_CREATES[currentTab] ? T.ink : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", border: "none", borderRadius: "50%", width: 36, height: 36, cursor: "pointer", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: sheet && FAB_CREATES[currentTab] ? "none" : "0 6px 16px " + T.orangeGlow, transform: sheet && FAB_CREATES[currentTab] ? "rotate(45deg)" : "none", transition: "background var(--m-quick) ease, box-shadow var(--m-quick) ease, transform var(--m-settle) var(--m-spring)", zIndex: 41 }}>
             <SVGIcon id="plus" size={16} color="#fff" />
           </button>
       )}
@@ -35599,12 +37377,12 @@ export default function App() {
         {currentTab === "periodMode" && <PeriodModeView periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onPeriodModeChange={onSavePeriodMode} onPeriodCustomChange={onSavePeriodCustom} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "bankSync" && <BankSyncView bankSync={bankSync} onEnable={onEnableBankSync} onDisable={onDisableBankSync} leumiFinteka={leumiFinteka} onConnectLeumi={onConnectLeumiFinteka} onDisconnectLeumi={onDisconnectLeumiFinteka} onSyncLeumiNow={onSyncLeumiFintekaNow} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "whatsapp" && <WhatsAppAlertsView whatsapp={whatsapp} onLink={onLinkWhatsapp} onUnlink={onUnlinkWhatsapp} onBack={function() { setTab(prevTabRef.current || "settings"); }} />}
-        {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenInvestorOnboard={function() { prevTabRef.current = "savings"; setPendingInvestingStart(true); setTab("investorOnboard"); }} />}
-        {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Dashboard" : "Savings"} onBack={exitBusiness} />}
-        {currentTab === "investing" && <InvestingView investing={investing} tx={tx} goals={goals} openInvId={openInv} hubTab={investingHubTab} onHubTabChange={setInvestingHubTab} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} onOpenInvestorOnboard={function() { prevTabRef.current = "investing"; setTab("investorOnboard"); }} onOpenScout={function() { prevTabRef.current = "investing"; setTab("scout"); }} onOpenPlanOnboard={function(acctId) { prevTabRef.current = "investing"; setOpenInv(acctId || null); setTab("investPlan"); }} backLabel={prevTabRef.current === "overview" ? "Dashboard" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
-        {currentTab === "investPlan" && <InvestPlanOnboard acct={(investing || []).filter(function(a) { return a.id === openInv; })[0] || (investing || [])[0] || null} username={user} onCancel={function() { setTab("investing"); }} onSave={onSaveInvestPlan} />}
-        {currentTab === "scout" && <StockScoutView investing={investing} openInvId={openInv} tx={tx} goals={goals} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} backLabel="Investing" onBack={function() { setTab("investing"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} onTrade={function(acctId, symbol) { setOpenInv(acctId); setInvSheetReq({ kind: "buy", symbol: symbol }); setTab("investing"); }} />}
-        {currentTab === "stock" && <StockView investing={investing} tx={tx} goals={goals} openStock={openStock} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onOpenInvestorOnboard={function() { prevTabRef.current = "stock"; setTab("investorOnboard"); }} backLabel="Investing" onBack={function() { setTab("investing"); }} onTrade={function(symbol, kind) { setOpenInv(openStock ? openStock.acctId : null); setInvSheetReq({ kind: kind, symbol: symbol }); setTab("investing"); }} />}
+        {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenInvestorOnboard={function() { prevTabRef.current = "savings"; setPendingInvestingStart(true); setTab("investorOnboard"); }} />}
+        {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} hubTab={businessHubTab} onHubTabChange={setBusinessHubTab} onOpenBizChange={function(id) { setOpenBiz(id); setBusinessHubTab("home"); }} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Dashboard" : "Savings"} onBack={exitBusiness} />}
+        {currentTab === "investing" && LAUNCH.investingHub && <InvestingView investing={investing} tx={tx} goals={goals} openInvId={openInv} hubTab={investingHubTab} onHubTabChange={setInvestingHubTab} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} onOpenInvestorOnboard={function() { prevTabRef.current = "investing"; setTab("investorOnboard"); }} onOpenScout={!LAUNCH.stockScout ? undefined : function() { prevTabRef.current = "investing"; setTab("scout"); }} onOpenPlanOnboard={function(acctId) { prevTabRef.current = "investing"; setOpenInv(acctId || null); setTab("investPlan"); }} backLabel={prevTabRef.current === "overview" ? "Dashboard" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
+        {currentTab === "investPlan" && LAUNCH.investingHub && <InvestPlanOnboard acct={(investing || []).filter(function(a) { return a.id === openInv; })[0] || (investing || [])[0] || null} username={user} onCancel={function() { setTab("investing"); }} onSave={onSaveInvestPlan} />}
+        {currentTab === "scout" && LAUNCH.stockScout && <StockScoutView investing={investing} openInvId={openInv} tx={tx} goals={goals} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} backLabel="Investing" onBack={function() { setTab("investing"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} onTrade={function(acctId, symbol) { setOpenInv(acctId); setInvSheetReq({ kind: "buy", symbol: symbol }); setTab("investing"); }} />}
+        {currentTab === "stock" && LAUNCH.investingHub && <StockView investing={investing} tx={tx} goals={goals} openStock={openStock} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onOpenInvestorOnboard={function() { prevTabRef.current = "stock"; setTab("investorOnboard"); }} backLabel="Investing" onBack={function() { setTab("investing"); }} onTrade={function(symbol, kind) { setOpenInv(openStock ? openStock.acctId : null); setInvSheetReq({ kind: kind, symbol: symbol }); setTab("investing"); }} />}
         {currentTab === "investorOnboard" && <InvestorOnboardScreen investorProfile={investorProfile} username={user} lang={lang} richardInstructions={richardCtx} today={new Date().toISOString().slice(0, 10)} onSave={onSaveInvestorProfile} onDone={function(completed) {
           if (pendingInvestingStart && completed) {
             var starter = { id: "inv_" + Date.now(), name: "My portfolio", color: INVESTING_COLORS[0], icon: "chart", createdAt: new Date().toISOString().slice(0, 10), cashEntries: [], trades: [], dividends: [], watchlist: [], meta: {}, analyses: {}, chats: {}, priceSnapshotDate: "" };
@@ -35632,7 +37410,11 @@ export default function App() {
           during scroll if backdrop-filter lives on that same element, so the
           glass blur is applied to an inner div instead. The Advisor tab drops
           this bar entirely so its own chat composer owns that space. */}
-      {currentTab !== "advisor" && (
+      {/* The Advisor used to drop the bar entirely, which left the app's AI tab
+          with no visible way back to Dashboard, Activity, Budgets or Goals -
+          only a swipe nobody is told about. The bar stays; the collapsed chat
+          composer sits above it (see the Advisor panel's own bottom offset),
+          and the expanded, full-screen chat still covers it on purpose. */}
       <div style={{ position: "fixed", bottom: "calc(20px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", width: "calc(100% - 32px)", maxWidth: 398, zIndex: 30 }}>
         <div style={{ position: "relative", background: T.navGlass, backdropFilter: "blur(28px) saturate(190%) brightness(1.08)", WebkitBackdropFilter: "blur(28px) saturate(190%) brightness(1.08)", borderRadius: 34, border: "1px solid " + T.glassBorder, boxShadow: "0 12px 40px rgba(0,0,0,0.18), 0 2px 10px rgba(0,0,0,0.08), inset 0 1px 0.5px " + T.navRimTop + ", inset 0 -1px 0.5px " + T.navRimBot }}>
           {/* Specular sheen — the curved-glass glare across the top of the bar. Self-clips
@@ -35640,13 +37422,14 @@ export default function App() {
               isn't cropped). Sits below the buttons in paint order. */}
           <div style={{ position: "absolute", inset: 0, borderRadius: 34, pointerEvents: "none", background: "linear-gradient(180deg, " + T.navSheen + " 0%, rgba(255,255,255,0) 42%, rgba(255,255,255,0) 100%)" }} />
           {currentTab === "business"
-            ? <GlassBackBar label={exitBusinessLabel} onPress={exitBusiness} />
+            ? (openBizAcct
+              ? <GlassTabBar tabs={businessHubTabs(openBizAcct)} current={businessHubTab} onSelect={setBusinessHubTab} />
+              : <GlassBackBar label={exitBusinessLabel} onPress={exitBusiness} />)
             : currentTab === "investing"
               ? <GlassTabBar tabs={INVESTING_HUB_TABS} current={investingHubTab} onSelect={setInvestingHubTab} />
               : <GlassTabBar tabs={TABS} current={currentTab} onSelect={function(id) { setTab(id); setSheet(false); }} />}
         </div>
       </div>
-      )}
     </div>
   );
 }
