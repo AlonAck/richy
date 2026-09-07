@@ -10948,7 +10948,10 @@ function Overview(props) {
             <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden", padding: "20px 22px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>Richard's next move</span>
-                <span style={{ width: 27, height: 27, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", background: T.heroRangeBg }}><SVGIcon id={heroMove ? heroMove.icon : "check"} size={14} color={heroMove ? (T[heroMove.tint] || HINK) : HPOS} /></span>
+                {/* T[tint] resolves "btn" to a CSS gradient - fine as a background,
+                    invalid as an SVG stroke (silently falls back to black), so a
+                    category-jump signal here needs the solid fallback instead. */}
+                <span style={{ width: 27, height: 27, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", background: T.heroRangeBg }}><SVGIcon id={heroMove ? heroMove.icon : "check"} size={14} color={heroMove ? (heroMove.tint === "btn" ? T.orange : (T[heroMove.tint] || HINK)) : HPOS} /></span>
               </div>
               <div style={{ minHeight: 105, display: "flex", flexDirection: "column", justifyContent: "center" }}>
                 <div style={{ fontSize: 20, fontWeight: 750, color: HINK, letterSpacing: "-0.025em", lineHeight: 1.18, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
@@ -10979,7 +10982,7 @@ function Overview(props) {
                     </div>
                     <div style={{ fontSize: 12, color: HFNT, marginTop: 7 }}>{heroWatch.totals.recoverableAnnual > 0 ? "potential to protect each year" : "potentially available to claim back"}</div>
                     <div style={{ marginTop: 11, display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ width: 25, height: 25, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: T.heroRangeBg, flexShrink: 0 }}><SVGIcon id={heroTopLeak.icon} size={13} color={T[heroTopLeak.tint] || HINK} /></span>
+                      <span style={{ width: 25, height: 25, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: T.heroRangeBg, flexShrink: 0 }}><SVGIcon id={heroTopLeak.icon} size={13} color={heroTopLeak.tint === "btn" ? T.orange : (T[heroTopLeak.tint] || HINK)} /></span>
                       <span style={{ fontSize: 12.5, fontWeight: 650, color: HINK, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{heroTopLeak.title}</span>
                     </div>
                   </div>
