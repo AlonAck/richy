@@ -12505,6 +12505,7 @@ function richardWatch(state) {
   var risks = [];
 
   detectBudgetPace(tx, budgets, cats).forEach(function(p) {
+    if (dismissed.indexOf(p.key) !== -1) return;
     risks.push(rwSignal({
       id: p.key, type: "pace",
       title: p.blown
@@ -12714,7 +12715,7 @@ function rwCtaButtonStyle(disabled) {
 // that float over content; these screens have a normal opaque header).
 function WatchBackLink(props) {
   return (
-    <button onClick={props.onPress} aria-label={props.label} style={{ display: "flex", alignItems: "center", gap: 2, height: 44, padding: 0, border: "none", background: "none", cursor: "pointer", marginInlineStart: -6, WebkitTapHighlightColor: "transparent" }}>
+    <button onClick={props.onPress} aria-label={props.label} style={{ display: "flex", alignItems: "center", gap: 2, height: 44, padding: 0, border: "none", background: "none", cursor: "pointer", marginInlineStart: -6, marginBottom: 20, WebkitTapHighlightColor: "transparent" }}>
       <span style={{ display: "flex", transform: "scaleX(-1)" }}><SVGIcon id="chevron" size={19} color={T.orange} /></span>
       <span style={{ fontFamily: UI, fontSize: 15.5, color: T.orange }}>{props.label}</span>
     </button>
@@ -12836,6 +12837,7 @@ function PaceCard(props) {
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 16 }}>
         <button onClick={props.onRaiseCap} style={rwPillButtonStyle("accent-ghost")}>{tr("rwRaiseCap")}</button>
         <button onClick={props.onSeeWhatsInIt} style={rwPillButtonStyle()}>{tr("rwSeeWhatsInIt")}</button>
+        {props.onDismiss && <button onClick={props.onDismiss} style={rwPillButtonStyle()}>{tr("dismiss")}</button>}
       </div>
     </div>
   );
@@ -12885,6 +12887,19 @@ function rwSignalDestination(props, s) {
   return function() {};
 }
 
+// RW_ACTIONS.dismiss was attached to pace/slip signals at construction
+// (rwActionsFor / the risks.push() calls above) but never had anywhere to
+// call back to - the actions array was written, never read. This is that
+// callback: same contract as GoalAtRiskDetail's cancelFindings, so a
+// dismissed signal id is respected everywhere richardWatch() runs, not just
+// on the screen it was dismissed from.
+function rwDismissSignal(props, id) {
+  var fm = props.foundMoney || { tally: 0, dismissed: [], acted: [] };
+  if (props.onSaveFoundMoney) {
+    props.onSaveFoundMoney({ tally: fm.tally || 0, dismissed: (fm.dismissed || []).concat([id]), acted: fm.acted || [] });
+  }
+}
+
 function rwFormatSwept(iso) {
   try {
     var d = new Date(iso);
@@ -12917,7 +12932,7 @@ function DailyBrief(props) {
     return (
       <div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-          <SubViewBack onBack={function() { props.onNavigate("overview"); }} label={tr("overview")} />
+          <WatchBackLink onPress={function() { props.onNavigate("overview"); }} label={tr("overview")} />
         </div>
         <div style={{ paddingTop: 8 }}>
           <div style={{ width: 44, height: 44, borderRadius: 15, background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
@@ -12995,7 +13010,7 @@ function DailyBrief(props) {
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {rows.map(function(s) {
                 if (band === "now" && s.type === "pace") {
-                  return <PaceCard key={s.id} pace={s.meta} onRaiseCap={function() { props.onNavigate("budgets"); }} onSeeWhatsInIt={function() { props.onNavigate("activity"); }} />;
+                  return <PaceCard key={s.id} pace={s.meta} onRaiseCap={function() { props.onNavigate("budgets"); }} onSeeWhatsInIt={function() { props.onNavigate("activity"); }} onDismiss={function() { rwDismissSignal(props, s.id); }} />;
                 }
                 if (band === "now" && s.type === "cliff") {
                   return <CliffCard key={s.id} cliff={s.meta} />;
@@ -13060,7 +13075,7 @@ function GoalAtRiskDetail(props) {
   if (!gp || !goal) {
     return (
       <div>
-        <SubViewBack onBack={function() { props.onNavigate("goals"); }} label={tr("goals")} />
+        <WatchBackLink onPress={function() { props.onNavigate("goals"); }} label={tr("goals")} />
         {goalActionUndo && goal ? goalActionUndoCard() : (
           <div style={{ fontSize: 15, color: T.ink2 }}>{tr("rwBackOnPace")}</div>
         )}
@@ -13116,7 +13131,7 @@ function GoalAtRiskDetail(props) {
 
   return (
     <div>
-      <SubViewBack onBack={function() { props.onNavigate("goals"); }} label={tr("goals")} />
+      <WatchBackLink onPress={function() { props.onNavigate("goals"); }} label={tr("goals")} />
       <div style={{ fontSize: 24, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em" }}>{goal.name}</div>
 
       <div style={heroStyle}>
@@ -13338,7 +13353,7 @@ function NextThirtyDays(props) {
 
   return (
     <div>
-      <SubViewBack onBack={function() { props.onNavigate("watchBrief"); }} label={tr("watchBrief")} />
+      <WatchBackLink onPress={function() { props.onNavigate("watchBrief"); }} label={tr("watchBrief")} />
       <div style={{ fontSize: 24, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em" }}>{tr("watchForecast")}</div>
       <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 8 }}>{tr("rwFromHistory")}</div>
 
@@ -13400,12 +13415,12 @@ function WatchOuts(props) {
 
   return (
     <div>
-      <SubViewBack onBack={function() { props.onNavigate("watchBrief"); }} label={tr("watchBrief")} />
+      <WatchBackLink onPress={function() { props.onNavigate("watchBrief"); }} label={tr("watchBrief")} />
       <div style={{ fontSize: 24, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em" }}>{tr("watchOuts")}</div>
 
       <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 16 }}>
         {paceRows.map(function(r) {
-          return <PaceCard key={r.id} pace={r.meta} onRaiseCap={function() { props.onNavigate("budgets"); }} onSeeWhatsInIt={function() { props.onNavigate("activity"); }} />;
+          return <PaceCard key={r.id} pace={r.meta} onRaiseCap={function() { props.onNavigate("budgets"); }} onSeeWhatsInIt={function() { props.onNavigate("activity"); }} onDismiss={function() { rwDismissSignal(props, r.id); }} />;
         })}
         {cliffRows.map(function(r) { return <CliffCard key={r.id} cliff={r.meta} />; })}
         {paceRows.length === 0 && cliffRows.length === 0 && (
@@ -35503,10 +35518,10 @@ export default function App() {
           })()
         ) : (
         <div key={animKey} style={{ padding: "8px 16px 16px", animation: animDir === "right" ? "navSlideRight var(--m-enter) var(--m-ease) both" : animDir === "left" ? "navSlideLeft var(--m-enter) var(--m-ease) both" : "navFade var(--m-enter) var(--m-ease) both" }}>
-        {currentTab === "watchBrief" && <DailyBrief tx={tx} categories={categories} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} foundMoney={foundMoney} onNavigate={function(t) { setTab(t); }} onOpenGoalRisk={function(id) { setOpenGoalRisk(id); setTab("watchGoal"); }} />}
+        {currentTab === "watchBrief" && <DailyBrief tx={tx} categories={categories} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} onNavigate={function(t) { setTab(t); }} onOpenGoalRisk={function(id) { setOpenGoalRisk(id); setTab("watchGoal"); }} />}
         {currentTab === "watchGoal" && <GoalAtRiskDetail goalId={openGoalRisk} tx={tx} categories={categories} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} onSaveGoals={onSaveGoals} onNavigate={function(t) { setTab(t); }} />}
         {currentTab === "watchForecast" && <NextThirtyDays tx={tx} categories={categories} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} foundMoney={foundMoney} onNavigate={function(t) { setTab(t); }} />}
-        {currentTab === "watchOuts" && <WatchOuts tx={tx} categories={categories} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} foundMoney={foundMoney} onNavigate={function(t) { setTab(t); }} />}
+        {currentTab === "watchOuts" && <WatchOuts tx={tx} categories={categories} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} onNavigate={function(t) { setTab(t); }} />}
         {currentTab === "notes" && <Notes notes={notes} tx={tx} categories={categories} onSaveNotes={onSaveNotes} onSaveTx={onSaveTx} onSettleNote={onSettleNote} sheetOpen={sheet} setSheetOpen={setSheet} onBack={function() { setTab("activity"); setSheet(false); }} onManageCategories={function() { setTab("categories"); setSheet(false); }} />}
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} richardInstructions={richardCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
