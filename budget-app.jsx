@@ -10338,7 +10338,17 @@ function Overview(props) {
   var heroUpcomingWeek = round2(heroUpcomingWeekRows.reduce(function(s, f) { return s + f.amount; }, 0));
   var heroCashRoom = Math.max(0, round2(balance - heroUpcomingWeek));
   var heroCapRows = budgetRows.filter(function(r) { return r.dir === "cap" && r.limit > 0; });
-  var heroBudgetRoom = round2(heroCapRows.reduce(function(s, r) { return s + Math.max(0, r.limit - r.spent); }, 0));
+  // r.limit is a MONTHLY cap, but r.spent follows the header's timeframe
+  // toggle (see spentInCat above). Comparing a year's (or all-time) spend
+  // against one month of cap goes negative for nearly every category, so
+  // heroBudgetRoom summed to 0 and safeToSpend (min(cashRoom, 0)) read
+  // $0.00 the moment the header left "week"/"month". Scale the cap to match
+  // the selected window instead of leaving it pinned to one month.
+  var heroCapMonths = timeframe === "year" ? 12 : timeframe === "all" ? (function() {
+    var firstDate = tx.reduce(function(min, t) { return (!min || t.date < min) ? t.date : min; }, null);
+    return firstDate ? Math.max(1, Math.round(fmDaysBetween(firstDate, today) / 30.44)) : 1;
+  })() : 1;
+  var heroBudgetRoom = round2(heroCapRows.reduce(function(s, r) { return s + Math.max(0, r.limit * heroCapMonths - r.spent); }, 0));
   // When caps exist, safe-to-spend respects both cash and the user's plan. With
   // no caps yet it stays useful by reserving only charges already recognised.
   var safeToSpend = Math.max(0, heroCapRows.length ? Math.min(heroCashRoom, heroBudgetRoom) : heroCashRoom);
