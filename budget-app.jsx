@@ -4205,6 +4205,24 @@ var CLOUD = {
 // blank the whole app - shows a friendly reload screen instead. Wired around
 // <App/> by both the production shell (index.html) and the dev harness
 // (preview.html); the user's data is safe because everything lives in Firestore.
+// Clears every local cache this app writes to (localStorage prefs, and any
+// IndexedDB database under this origin - Firestore's offline persistence
+// cache lives there). Nothing here is the user's real data: that lives in
+// Firestore, which is exactly why the crash screen can say so and mean it.
+// Best-effort throughout - a reload has to happen either way.
+function resetLocalDataAndReload() {
+  try { localStorage.clear(); } catch (e) {}
+  try {
+    if (indexedDB && indexedDB.databases) {
+      indexedDB.databases().then(function (dbs) {
+        (dbs || []).forEach(function (db) { try { indexedDB.deleteDatabase(db.name); } catch (e) {} });
+      }).catch(function () {}).finally(function () { location.reload(); });
+      return;
+    }
+  } catch (e) {}
+  location.reload();
+}
+
 class ErrorBoundary extends React.Component {
   constructor(props) { super(props); this.state = { err: null }; }
   static getDerivedStateFromError(err) { return { err: err }; }
@@ -4222,7 +4240,8 @@ class ErrorBoundary extends React.Component {
           React.createElement("span", { style: { fontFamily: UI, fontSize: 34, fontWeight: MARK_WEIGHT, color: "#C8973A", lineHeight: 1 } }, "R")),
         React.createElement("div", { style: { fontSize: 19, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: ink, marginBottom: 8 } }, "Something went wrong"),
         React.createElement("div", { style: { fontSize: 13.5, color: sub, lineHeight: 1.5, marginBottom: 18 } }, "Your data is safe in the cloud. Reload the app to pick up right where you left off."),
-        React.createElement("button", { onClick: function () { location.reload(); }, style: { border: "none", cursor: "pointer", background: "#C8973A", color: "#fff", fontSize: 14.5, fontWeight: 700, padding: "12px 28px", borderRadius: 12, fontFamily: UI } }, "Reload Richy")
+        React.createElement("button", { onClick: function () { location.reload(); }, style: { border: "none", cursor: "pointer", background: "#C8973A", color: "#fff", fontSize: 14.5, fontWeight: 700, padding: "12px 28px", borderRadius: 12, fontFamily: UI, marginInlineEnd: 10 } }, "Reload Richy"),
+        React.createElement("button", { onClick: resetLocalDataAndReload, style: { border: "none", cursor: "pointer", background: "transparent", color: sub, fontSize: 13, fontWeight: 600, padding: "12px 14px", borderRadius: 12, fontFamily: UI, textDecoration: "underline" } }, "Still stuck? Reset local data and reload")
       )
     );
   }
