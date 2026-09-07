@@ -32315,22 +32315,34 @@ function BadgeGlyph(props) {
   var size = props.size || 56;
   var b = props.badge || {};
   return (
-    <img src={"/badges/" + (T.isDark ? "dark" : "light") + "/" + b.id + ".svg"} alt=""
+    <img src={"/badges/" + (T.isDark ? "dark" : "light") + "/" + b.id + ".svg"} alt={b.name || ""}
       width={size} height={size}
       style={{ width: size, height: size, objectFit: "contain", display: "block" }} />
   );
 }
 
+// Title-cases a RARITY_LABEL value ("MYTHIC" -> "Mythic") for a spoken
+// sentence - the all-caps form is meant to be read as a small badge of text,
+// not spoken letter by letter.
+function rarityTitle(r) {
+  var label = RARITY_LABEL[r] || "";
+  return label.charAt(0) + label.slice(1).toLowerCase();
+}
+
 // One badge, at tile size. A locked badge keeps its silhouette but loses its
 // art and its name: you can see that something is there without being told
 // what, which is the whole point of a collection you have not finished.
+// The button's own aria-label carries the same distinction for screen readers
+// - name and rarity when unlocked, "locked" with no name when not - since
+// none of that is otherwise readable text (icon, image alt, or CSS-only rows).
 function BadgeTile(props) {
   var b = props.badge, locked = props.locked;
   var col = locked ? T.ink3 : rarityColor(b.r);
   var mythic = !locked && b.r === "mythic";
   var size = props.size || 56;
+  var label = locked ? "Locked badge, not yet earned" : (b.name + ", " + rarityTitle(b.r) + " badge, unlocked");
   return (
-    <button onClick={props.onClick} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", width: size + 6, flexShrink: 0, fontFamily: UI }}>
+    <button onClick={props.onClick} aria-label={label} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", width: size + 6, flexShrink: 0, fontFamily: UI }}>
       {locked ? (
         <div style={{ width: size, height: size, borderRadius: Math.round(size * 0.3), margin: "0 auto", background: T.inputBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <SVGIcon id="lock" size={Math.round(size * 0.36)} color={T.ink3} />
