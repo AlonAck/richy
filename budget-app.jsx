@@ -13385,7 +13385,7 @@ function NextThirtyDays(props) {
               {rows.map(function(f, i) {
                 return (
                   <div key={f.date + "-" + f.merchant + "-" + i} style={{ display: "flex", gap: 16, alignItems: "center" }}>
-                    <div style={{ width: 40, flexShrink: 0, textAlign: "end" }}>
+                    <div style={{ width: 60, flexShrink: 0, textAlign: "end" }}>
                       <div style={{ fontSize: 11, color: T.ink3, fontVariantNumeric: "tabular-nums" }}>{f.date}</div>
                       <div style={{ fontSize: 11, color: T.ink3, marginTop: 2, fontVariantNumeric: "tabular-nums" }}>{"+" + f.inDays + "d"}</div>
                     </div>
