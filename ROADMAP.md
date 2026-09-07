@@ -344,11 +344,12 @@ report recommends fixing them.
   are rendered, not at the API boundary.**
 
 - **P1 — the 09-02 Day-1 list was not done.** Re-verified against the live tree:
-  the four Richard Watch header keys (`watchBrief`, `watchGoal`, `watchForecast`,
+  ~~the four Richard Watch header keys (`watchBrief`, `watchGoal`, `watchForecast`,
   `watchOuts`) are still in **no dictionary**, and the header still falls through to
   `tr(currentTab)` (`:35040`), which returns the raw key (`:1439`, `|| key`) — so
   all four screens still show a camelCase identifier as their title in every
-  language. `safeToSpend` still reads **$0.00** at the Year and All Time timeframes
+  language.~~ **CLOSED 7 Sep — `c783967`.** See the Closed table below. `safeToSpend`
+  still reads **$0.00** at the Year and All Time timeframes
   (`:9856` sums monthly caps against timeframe-scoped spend). Sign Out still
   discards queued writes and cancels the retry (`:34068`, no `flushSave()`).
 
@@ -449,13 +450,14 @@ gate should come **before** the next bug fix.
 | Couples-mode stale closure dropped every transaction added since the effect last ran | `f1ad55b` — functional `setTx`, fixed alongside the household wipe in the same seven lines |
 | **NEW-1:** creating or joining a household silently wiped every budget, goal and category, and orphaned every historical `catId` | `f1ad55b` — four layers: seed the household doc on create, merge (union, existing wins) on join, adopt only plan fields the doc actually carries, and a `save()` guard that refuses to write an empty plan array over a non-empty one while still allowing an explicit delete |
 
-### Closed since 2 September — `qa-audit-2026-09-02.md`, verified 6 Sep
+### Closed since 2 September — `qa-audit-2026-09-02.md`, verified 6-7 Sep
 
 | Finding | Closed by |
 |---|---|
 | ~~Deleting a trip (`removeTrip`, wired directly to the delete button) instantly destroyed the trip, every budget bucket and every logged expense, with zero confirmation~~ (§5.7) | `cb4ccd4` — delete button now sets a `delTripConfirm` state and renders the same inline red confirm card (Delete / Cancel) used for capital/account deletion, using the `deleteTripConfirm` string that already existed in all four languages but was never wired to anything. `removeTrip` only fires from the confirm card. Verified by re-reading `Trips(props)`: the button no longer calls `removeTrip` directly. |
 | ~~The goal-rescue screen's "Cancel these N" / "Cancel both" / "Cancel {merchant} anyway" buttons (`cancelFindings`) promised cancellation but only ever appended ids to `foundMoney.dismissed`~~ (§5.4, copy half only — the plan-emptying side effect is still open) | `953c884` — every button and headline on `GoalAtRiskDetail`/`PickCancelSheet` now says "Dismiss" instead of "Cancel". Verified by re-reading both components: no remaining label claims to cancel anything. |
 | ~~`giveOneMoreMonth`/`aimForReal` rendered as plain chevron rows identical to every "go here" row, and one tap silently overwrote the goal's saved deadline/target with no confirm, no undo, no record of the old value~~ (§3.6, confirm/undo/visual half only — the negative-target math is still open) | `262d340` — orange border + "edit" icon + "Rewrites your goal's..." label distinguish the rows from navigation; tapping opens a confirm card showing old -> new value, and confirming shows an Undo/Done card backed by a new `goalActionUndo` state. Verified by re-reading `GoalAtRiskDetail`: `onSaveGoals` for these two changes is only called from the confirm card and from `undoGoalAction`. |
+| ~~The header on all four Richard Watch screens rendered the raw string `watchBrief` (and `watchGoal`/`watchForecast`/`watchOuts`) in every language, and the whole feature had zero `tr()` calls~~ (§3.1 CLOSED, §3.2 CLOSED for screen chrome — the engine's per-finding title/subtitle sentences are still hardcoded English, a separate and larger job) | `c783967` — added a new `RW_STRINGS` dictionary block (en/he/ar/ru, 96 keys, same pattern as `FOLDER_STRINGS`) and routed every static string in `DailyBrief`/`GoalAtRiskDetail`/`PickCancelSheet`/`NextThirtyDays`/`WatchOuts`/`PaceCard`/`CliffCard`/`ConfidenceMeter` through `tr()`. The four tab ids double as dictionary keys so the existing `tr(currentTab)` header fallback now resolves to a real title. Verified by re-reading all four screens for stray literal text (none found) and scripting a key-parity check across all four languages (96/96 keys present, no gaps or duplicates). |
 
 ### Still open, with evidence it is getting worse — re-verified 30 Aug
 
