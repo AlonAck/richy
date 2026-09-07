@@ -10948,7 +10948,7 @@ function Overview(props) {
               </div>
               <div style={{ display: "flex", gap: 11, borderTop: "0.5px solid " + HSEP, paddingTop: 12 }}>
                 {[{ k: "Income", v: dollars(income), c: HPOS }, { k: "Spent", v: dollars(expense), c: HINK }, { k: "Days left", v: String(heroDaysLeft), c: HINK }].map(function(x, i) {
-                  return <div key={x.k} style={{ flex: 1, paddingLeft: i ? 10 : 0, borderLeft: i ? "0.5px solid " + HSEP : "none" }}><div style={{ fontSize: 9.5, fontWeight: 600, letterSpacing: "0.07em", textTransform: "uppercase", color: HFNT }}>{x.k}</div><div style={{ fontSize: 14.5, fontWeight: 700, color: x.c, marginTop: 3, letterSpacing: "-0.02em" }}>{x.v}</div></div>;
+                  return <div key={x.k} style={{ flex: 1, paddingInlineStart: i ? 10 : 0, borderInlineStart: i ? "0.5px solid " + HSEP : "none" }}><div style={{ fontSize: 9.5, fontWeight: 600, letterSpacing: "0.07em", textTransform: "uppercase", color: HFNT }}>{x.k}</div><div style={{ fontSize: 14.5, fontWeight: 700, color: x.c, marginTop: 3, letterSpacing: "-0.02em" }}>{x.v}</div></div>;
                 })}
               </div>
             </div>
@@ -11017,7 +11017,7 @@ function Overview(props) {
         onRemove={props.onRemoveWidget} onAdd={props.onAddWidget} lang={props.lang} />
 
       {props.plan && (
-        <div style={{ background: "rgba(137,112,198,0.04)", borderRadius: 18, padding: "20px 22px", marginBottom: 16, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.04)", borderLeft: "3px solid " + T.orange, animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.09s both" }}>
+        <div style={{ background: "rgba(137,112,198,0.04)", borderRadius: 18, padding: "20px 22px", marginBottom: 16, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.04)", borderInlineStart: "3px solid " + T.orange, animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.09s both" }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: UI, marginBottom: 10 }}>
             {tr("yourPlanByRichard")}
           </div>
@@ -11115,7 +11115,7 @@ function Overview(props) {
           )}
         </div>
         {(savAccts.length === 0 && bizAccts.length === 0 && invAccts.length === 0) ? (
-          <button onClick={props.onOpenSavings} style={{ width: "100%", textAlign: "left", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, marginBottom: 20, padding: "15px 16px", borderRadius: 18, background: T.card, border: "1px dashed " + T.orange + "66", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)" }}>
+          <button onClick={props.onOpenSavings} style={{ width: "100%", textAlign: "start", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, marginBottom: 20, padding: "15px 16px", borderRadius: 18, background: T.card, border: "1px dashed " + T.orange + "66", boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.05)" }}>
             <CatBadge icon="coins" color={T.orange} size={38} soft={true} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>{props.onOpenBusiness ? "Open an account" : tr("addSavingsAccount")}</div>
@@ -11127,7 +11127,7 @@ function Overview(props) {
           <Card style={{ overflow: "hidden", marginBottom: 20 }}>
             {savAccts.map(function(a) {
               return (
-                <button key={a.id} onClick={props.onOpenSavings} style={{ width: "100%", textAlign: "left", background: "none", border: "none", borderBottom: "0.5px solid " + T.sep, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
+                <button key={a.id} onClick={props.onOpenSavings} style={{ width: "100%", textAlign: "start", background: "none", border: "none", borderBottom: "0.5px solid " + T.sep, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
                   <CatBadge icon={a.icon || "coins"} color={a.color || T.orange} size={36} soft={true} />
                   <span style={{ flex: 1, minWidth: 0, fontSize: 15, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.name}</span>
                   <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, flexShrink: 0 }}>{dollars(savingsBalance(a))}</span>
@@ -11136,7 +11136,7 @@ function Overview(props) {
             })}
             {bizAccts.map(function(b) {
               return (
-                <button key={b.id} onClick={function() { props.onOpenBusiness(b.id); }} style={{ width: "100%", textAlign: "left", background: "none", border: "none", borderBottom: "0.5px solid " + T.sep, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
+                <button key={b.id} onClick={function() { props.onOpenBusiness(b.id); }} style={{ width: "100%", textAlign: "start", background: "none", border: "none", borderBottom: "0.5px solid " + T.sep, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
                   <CatBadge icon={b.icon || "briefcase"} color={b.color || "#8970C6"} size={36} soft={true} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 15, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.name}</div>
@@ -11149,13 +11149,13 @@ function Overview(props) {
             {invAccts.map(function(v) {
               var dc = investingDayChange(v);
               return (
-                <button key={v.id} onClick={function() { if (props.onOpenInvesting) props.onOpenInvesting(v.id); }} style={{ width: "100%", textAlign: "left", background: "none", border: "none", borderBottom: "0.5px solid " + T.sep, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
+                <button key={v.id} onClick={function() { if (props.onOpenInvesting) props.onOpenInvesting(v.id); }} style={{ width: "100%", textAlign: "start", background: "none", border: "none", borderBottom: "0.5px solid " + T.sep, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
                   <CatBadge icon={v.icon || "chart"} color={v.color || T.green} size={36} soft={true} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 15, color: T.ink, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name}</div>
                     <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1 }}>Investing</div>
                   </div>
-                  <div style={{ textAlign: "right", flexShrink: 0 }}>
+                  <div style={{ textAlign: "end", flexShrink: 0 }}>
                     <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>{dollars(investingWorth(v))}</div>
                     {dc !== 0 && (
                       <div style={{ fontSize: 11.5, fontWeight: 700, color: dc > 0 ? T.green : T.red, marginTop: 1 }}>{(dc > 0 ? "+" : "") + dollars(dc) + " today"}</div>
@@ -14007,7 +14007,7 @@ function Activity(props) {
             <button onClick={function() { setField("catId", sid); }}
               style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "8px 12px", borderRadius: 11, border: "1.5px dashed " + sc.color, background: sc.color + "12", cursor: "pointer", fontFamily: UI, marginTop: -1, marginBottom: 7 }}>
               <CatBadge icon={sc.icon} color={sc.color} size={22} soft={true} />
-              <span style={{ flex: 1, minWidth: 0, textAlign: "left", fontSize: 12.5, color: T.ink2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              <span style={{ flex: 1, minWidth: 0, textAlign: "start", fontSize: 12.5, color: T.ink2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                 Suggested: <span style={{ fontWeight: 700, color: T.ink }}>{sc.name}</span>
               </span>
               <span style={{ flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: sc.color }}>Use</span>
@@ -14069,7 +14069,7 @@ function Activity(props) {
               </div>
             </button>
             {form.shared && props.household && props.household.members && props.household.members.length > 0 && (
-              <div style={{ display: "flex", gap: 6, paddingLeft: 0 }}>
+              <div style={{ display: "flex", gap: 6, paddingInlineStart: 0 }}>
                 {props.household.members.map(function(m) {
                   var isMe = m.uid === props.accountKey;
                   var sel = form.owner === m.uid;
@@ -14174,7 +14174,7 @@ function Activity(props) {
         <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 10 }}>
           {props.onSetupSync && (
             <button onClick={function() { props.onSetupSync(); }}
-              style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderRadius: 16, border: "1px solid " + T.orangeDim, background: T.card, cursor: "pointer", fontFamily: UI, textAlign: "left", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+              style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderRadius: 16, border: "1px solid " + T.orangeDim, background: T.card, cursor: "pointer", fontFamily: UI, textAlign: "start", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
               <span style={{ width: 38, height: 38, borderRadius: 12, background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <SVGIcon id="refresh" size={19} color={T.green} />
               </span>
@@ -14187,7 +14187,7 @@ function Activity(props) {
           )}
           {props.onSetupCollab && !props.householdId && (
             <button onClick={function() { props.onSetupCollab(); }}
-              style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderRadius: 16, border: "1px solid " + T.orangeDim, background: T.card, cursor: "pointer", fontFamily: UI, textAlign: "left", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+              style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderRadius: 16, border: "1px solid " + T.orangeDim, background: T.card, cursor: "pointer", fontFamily: UI, textAlign: "start", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
               <span style={{ width: 38, height: 38, borderRadius: 12, background: T.blueDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <SVGIcon id="home" size={19} color={T.blue} />
               </span>
@@ -15645,7 +15645,7 @@ function Budgets(props) {
                     <div style={{ flex: 1 }}>
                       <ProgressBar value={r.amount} max={r.limit} color={barColor} h={6} />
                     </div>
-                    <span style={{ fontSize: 12, minWidth: 70, textAlign: "right", color: r.off ? (r.dir === "target" ? T.gold : T.red) : T.ink3, fontWeight: 500 }}>{dollars(r.amount)} ({pct}%)</span>
+                    <span style={{ fontSize: 12, minWidth: 70, textAlign: "end", color: r.off ? (r.dir === "target" ? T.gold : T.red) : T.ink3, fontWeight: 500 }}>{dollars(r.amount)} ({pct}%)</span>
                   </div>
                   <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 6 }}>{remainderLabel(r)}</div>
                   {overAllocated && (
@@ -15682,7 +15682,7 @@ function Budgets(props) {
 
                 <div style={{ display: "flex", borderTop: "0.5px solid " + T.sep }}>
                   <button onClick={function() { setEditId(r.key); setVal({ limit: String(r.limit), dir: r.dir, mode: r.mode, track: r.track }); }}
-                    style={{ flex: 1, background: "none", border: "none", borderRight: "0.5px solid " + T.sep, padding: "11px 0", color: T.orange, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
+                    style={{ flex: 1, background: "none", border: "none", borderInlineEnd: "0.5px solid " + T.sep, padding: "11px 0", color: T.orange, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
                     {tr("edit")}
                   </button>
                   <button onClick={function() { props.onSaveBudgets(props.budgets.filter(function(b) { return b.catId !== r.key; })); }}
@@ -15814,7 +15814,7 @@ function Goals(props) {
       <Overlay open={props.sheetOpen} onClose={function() { props.setSheetOpen(false); }} title={tr("newBudgetBook")}>
         {props.onPlanTrip && (
           <button onClick={function() { props.setSheetOpen(false); props.onPlanTrip(); }}
-            style={{ width: "100%", border: "none", cursor: "pointer", textAlign: "left", marginBottom: 16, borderRadius: 16, padding: "14px 16px", background: T.heroBg2, boxShadow: "0 6px 18px " + T.orangeGlow, display: "flex", alignItems: "center", gap: 12, fontFamily: UI }}>
+            style={{ width: "100%", border: "none", cursor: "pointer", textAlign: "start", marginBottom: 16, borderRadius: 16, padding: "14px 16px", background: T.heroBg2, boxShadow: "0 6px 18px " + T.orangeGlow, display: "flex", alignItems: "center", gap: 12, fontFamily: UI }}>
             <div style={{ width: 40, height: 40, borderRadius: 13, background: "rgba(255,255,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <SVGIcon id="plane" size={20} color={T.heroInk} />
             </div>
@@ -15916,7 +15916,7 @@ function Goals(props) {
         var tPct = t.total > 0 ? Math.min(100, Math.round((tSpent / t.total) * 100)) : 0;
         return (
           <button key={t.id} onClick={function() { props.onOpenTrip(t.id); }}
-            style={{ width: "100%", border: "none", cursor: "pointer", textAlign: "left", marginBottom: 16, borderRadius: 20, padding: "16px 18px", background: T.heroBg2, boxShadow: "0 8px 24px " + T.orangeGlow, display: "flex", alignItems: "center", gap: 14, fontFamily: UI }}>
+            style={{ width: "100%", border: "none", cursor: "pointer", textAlign: "start", marginBottom: 16, borderRadius: 20, padding: "16px 18px", background: T.heroBg2, boxShadow: "0 8px 24px " + T.orangeGlow, display: "flex", alignItems: "center", gap: 14, fontFamily: UI }}>
             <div style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(255,255,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <SVGIcon id={t.icon || "plane"} size={22} color={T.heroInk} />
             </div>
@@ -15957,7 +15957,7 @@ function Goals(props) {
         return (
           <Card key={g.id} style={{ marginBottom: 14, overflow: "hidden", position: "relative", animation: riseIn(gi) }}>
             {celebrate && (
-              <div aria-hidden="true" style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "38%", pointerEvents: "none", zIndex: 2,
+              <div aria-hidden="true" style={{ position: "absolute", top: 0, bottom: 0, insetInlineStart: 0, width: "38%", pointerEvents: "none", zIndex: 2,
                 background: "linear-gradient(90deg,transparent," + T.green + "38,transparent)",
                 animation: "rcSweep 1.1s var(--m-ease) both" }} />
             )}
@@ -16014,7 +16014,7 @@ function Goals(props) {
                 return btns.map(function(b, i) {
                   return (
                     <button key={b.key} onClick={b.onClick}
-                      style={{ flex: 1, background: "none", border: "none", borderRight: i < btns.length - 1 ? "0.5px solid " + T.sep : "none", padding: "13px 0", color: b.color, fontSize: 15, fontWeight: b.bold ? 600 : 400, cursor: "pointer" }}>
+                      style={{ flex: 1, background: "none", border: "none", borderInlineEnd: i < btns.length - 1 ? "0.5px solid " + T.sep : "none", padding: "13px 0", color: b.color, fontSize: 15, fontWeight: b.bold ? 600 : 400, cursor: "pointer" }}>
                       {b.label}
                     </button>
                   );
@@ -19938,7 +19938,7 @@ function Advisor(props) {
         <div style={{ display: "flex", borderTop: "0.5px solid " + HSEP, paddingTop: 14 }}>
           {[{ k: "Saving", v: savingStat.label, d: savingStat.dot }, { k: "Spending", v: spendStat.label, d: spendStat.dot }, { k: "Buffer", v: bufferTxt, d: bufferStat }].map(function(col, ci) {
             return (
-              <div key={col.k} style={{ flex: 1, textAlign: "center", borderRight: ci < 2 ? "0.5px solid " + HSEP : "none" }}>
+              <div key={col.k} style={{ flex: 1, textAlign: "center", borderInlineEnd: ci < 2 ? "0.5px solid " + HSEP : "none" }}>
                 <div style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: HMUT, marginBottom: 6 }}>{col.k}</div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: col.d }} />
@@ -19976,7 +19976,7 @@ function Advisor(props) {
           {moveSeen ? (
             <ResponseStream textStream={move.action} mode="fade" size={14} color={HMUT}
               fadeDuration={900} segmentDelay={26}
-              style={{ position: "absolute", left: 0, top: 0, right: 0 }} />
+              style={{ position: "absolute", insetInlineStart: 0, top: 0, insetInlineEnd: 0 }} />
           ) : null}
         </div>
       </div>
@@ -20007,7 +20007,7 @@ function Advisor(props) {
               <div style={{ fontSize: 16, fontWeight: 700, color: HPOS, letterSpacing: "-0.02em", marginTop: 3 }}>{"+" + dollars(income)}</div>
             </div>
             <div style={{ width: "0.5px", background: HSEP }} />
-            <div style={{ flex: 1, paddingLeft: 14 }}>
+            <div style={{ flex: 1, paddingInlineStart: 14 }}>
               <div style={{ fontSize: 10, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>Spent</div>
               <div style={{ fontSize: 16, fontWeight: 700, color: HNEG, letterSpacing: "-0.02em", marginTop: 3 }}>{"-" + dollars(expense)}</div>
             </div>
@@ -20201,7 +20201,7 @@ function Advisor(props) {
     if (advice.expertQuote && advice.expertQuote.quote) {
       panels.push(
         <div key="quote" style={panelStyle({ justifyContent: "center", position: "relative" })}>
-          <span style={{ position: "absolute", top: 4, left: 14, fontFamily: UI, fontSize: 120, lineHeight: 1, color: HINK, opacity: 0.1, pointerEvents: "none" }}>{'”'}</span>
+          <span style={{ position: "absolute", top: 4, insetInlineStart: 14, fontFamily: UI, fontSize: 120, lineHeight: 1, color: HINK, opacity: 0.1, pointerEvents: "none" }}>{'”'}</span>
           <p style={{ position: "relative", margin: 0, fontSize: 18, lineHeight: 1.5, fontWeight: 600, letterSpacing: "-0.01em", color: HINK }}>{advice.expertQuote.quote}</p>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 16 }}>
             <div style={{ width: 18, height: 2, borderRadius: 2, background: T.gold }} />
@@ -20241,7 +20241,7 @@ function Advisor(props) {
           {/* Way into the Full Analysis page. Sits below every panel rather than
               being one of them, so it stays reachable whichever card you're on. */}
           <button onClick={props.onOpenFullAnalysis}
-            style={{ position: "relative", zIndex: 1, width: "100%", boxSizing: "border-box", textAlign: "left", cursor: "pointer", fontFamily: UI, background: "transparent", border: "none", borderTop: "0.5px solid " + HSEP, padding: "14px 18px", display: "flex", alignItems: "center", gap: 13 }}>
+            style={{ position: "relative", zIndex: 1, width: "100%", boxSizing: "border-box", textAlign: "start", cursor: "pointer", fontFamily: UI, background: "transparent", border: "none", borderTop: "0.5px solid " + HSEP, padding: "14px 18px", display: "flex", alignItems: "center", gap: 13 }}>
             <div style={{ width: 38, height: 38, borderRadius: 12, background: HPB, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <ClaudeMark size={20} color={HPT} />
             </div>
@@ -20268,8 +20268,8 @@ function Advisor(props) {
   var advShader = (
     <ScrollLockBg zIndex={0}>
       <JrShaderBg colors={[T.orange, T.orangeHi, T.orange]} base={T.bg} speed={0.16} intensity={0.55} yScale={0.44} xScale={1.05}
-        style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
-      <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", background: "linear-gradient(180deg," + jrRgba(T.bg, 0.72) + " 0%," + jrRgba(T.bg, 0.34) + " 20%," + jrRgba(T.bg, 0.34) + " 74%," + jrRgba(T.bg, 0.6) + " 100%)" }} />
+        style={{ position: "absolute", top: 0, insetInlineStart: 0, width: "100%", height: "100%" }} />
+      <div style={{ position: "absolute", top: 0, insetInlineStart: 0, width: "100%", height: "100%", pointerEvents: "none", background: "linear-gradient(180deg," + jrRgba(T.bg, 0.72) + " 0%," + jrRgba(T.bg, 0.34) + " 20%," + jrRgba(T.bg, 0.34) + " 74%," + jrRgba(T.bg, 0.6) + " 100%)" }} />
     </ScrollLockBg>
   );
 
@@ -20337,7 +20337,7 @@ function Advisor(props) {
       {advice && advice.error && (
         <Card style={{ padding: "24px", textAlign: "center", marginBottom: 16 }}>
           <div style={{ fontSize: 14, color: T.red, marginBottom: 6 }}>{tr("analysisFailed")}</div>
-          {errMsg && <div style={{ fontSize: 12, color: T.ink3, marginBottom: 14, background: T.fill1, borderRadius: 8, padding: "8px 12px", textAlign: "left" }}>{errMsg}</div>}
+          {errMsg && <div style={{ fontSize: 12, color: T.ink3, marginBottom: 14, background: T.fill1, borderRadius: 8, padding: "8px 12px", textAlign: "start" }}>{errMsg}</div>}
           <button onClick={function() { setAdvice(null); setErrMsg(""); if (props.onSaveAnalysis) props.onSaveAnalysis(null); }}
             style={{ background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 12, padding: "12px 24px", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
             {tr("tryAgain")}
@@ -20654,7 +20654,7 @@ function Advisor(props) {
                 the page behind the overlay bleeds through. */}
             {props.onBackToOverview && (
               <button onClick={props.onBackToOverview} aria-label="Back to Overview"
-                style={{ position: "absolute", bottom: "100%", left: 0, marginBottom: 10, border: "none", cursor: "pointer", width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: T.card, boxShadow: T.isDark ? "0 4px 14px rgba(0,0,0,0.3)" : "0 4px 14px rgba(43,34,25,0.1)" }}>
+                style={{ position: "absolute", bottom: "100%", insetInlineStart: 0, marginBottom: 10, border: "none", cursor: "pointer", width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: T.card, boxShadow: T.isDark ? "0 4px 14px rgba(0,0,0,0.3)" : "0 4px 14px rgba(43,34,25,0.1)" }}>
                 <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={T.ink2} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
               </button>
             )}
