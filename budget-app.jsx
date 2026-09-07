@@ -12074,10 +12074,17 @@ function detectAnnualRenewals(tx, cats, horizonDays) {
     var inDays = rwDayDelta(due, todayISO);
     if (inDays < -7 || inDays > horizon) return;
     var c = catById(cats, items[0].catId);
+    var categoryName = (c && c.name) || items[0].category || "";
+    // Same essential filter every other leak detector runs on `leakable` -
+    // this is the one detector fed raw `tx` instead, so without this check a
+    // yearly car-insurance or property-tax charge would surface as something
+    // to cancel. Still worth tracking for the cash-flow forecast, just not
+    // here as recoverable money.
+    if (looksEssential(items[0].label, categoryName)) return;
     out.push({
       key: "renew-" + key, merchant: items[0].label || key, amount: round2(items[0].amount),
       dueDate: due, inDays: inDays, cycleDays: cycle, confidence: yearly ? "high" : "low",
-      catId: items[0].catId, categoryName: (c && c.name) || items[0].category || ""
+      catId: items[0].catId, categoryName: categoryName
     });
   });
   out.sort(function(a, b) { return a.inDays - b.inDays; });
