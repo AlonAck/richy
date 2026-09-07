@@ -12975,6 +12975,9 @@ function DailyBrief(props) {
 
   return (
     <div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+        <WatchBackLink onPress={function() { props.onNavigate("overview"); }} label={tr("overview")} />
+      </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontFamily: UI, fontSize: 13.5, color: T.ink2 }}>{tr("rwRichardLabel") + (swept ? (" · " + tr("rwSweptWord") + " " + swept) : "")}</span>
       </div>
