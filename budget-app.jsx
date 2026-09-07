@@ -10934,7 +10934,7 @@ function Overview(props) {
                 explain it; no chart-reading required. */}
             <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden", padding: "20px 22px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>This month</span>
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>{tfLabel}</span>
                 <span style={{ padding: "5px 9px", borderRadius: 999, background: T.heroRangeBg, fontSize: 10.5, fontWeight: 700, color: heroMonthTone }}>{heroMonthStatus}</span>
               </div>
               <div>
