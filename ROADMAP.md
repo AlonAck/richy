@@ -348,9 +348,10 @@ report recommends fixing them.
   `watchOuts`) are still in **no dictionary**, and the header still falls through to
   `tr(currentTab)` (`:35040`), which returns the raw key (`:1439`, `|| key`) — so
   all four screens still show a camelCase identifier as their title in every
-  language.~~ **CLOSED 7 Sep — `c783967`.** See the Closed table below. `safeToSpend`
+  language.~~ **CLOSED 7 Sep — `c783967`.** See the Closed table below. ~~`safeToSpend`
   still reads **$0.00** at the Year and All Time timeframes
-  (`:9856` sums monthly caps against timeframe-scoped spend). Sign Out still
+  (`:9856` sums monthly caps against timeframe-scoped spend).~~ **CLOSED 7 Sep —
+  `f106c7c`.** See the Closed table below. Sign Out still
   discards queued writes and cancels the retry (`:34068`, no `flushSave()`).
 
 - **P1 — Escape and Android Back close 3 of the app's 11 modals; on the other 8,
@@ -464,6 +465,8 @@ gate should come **before** the next bug fix.
 | ~~The busy Daily Brief (what most users see) had no back link, unlike the quiet branch~~ (§3.9) | `d4795c1` — busy branch now opens with the same `WatchBackLink` used everywhere else in the file. Verified by re-reading `DailyBrief`: both return paths render a back link before anything else. |
 | ~~A 40px-wide date column at 11px couldn't fit a 10-character ISO date, so every row in Next 30 Days wrapped~~ (§3.9) | `af1c11e` — measured the real rendered width of a sample date in the exact font/size (56.2px) and widened the column to 60px. |
 | ~~`RW_STYLE.jump` uses `tint: "btn"`, a CSS gradient string; the Overview hero's two signal-tint-as-stroke spots passed it straight to `SVGIcon`, which silently falls back to black on an invalid stroke, so a category jump (a common top signal) rendered a black icon~~ (§3.9) | `21f64b0` — both hero spots (`heroMove`, `heroTopLeak`) now resolve `"btn"` to `T.orange`. The FoundMoney list's use of the same tint as an `IconBadge` background was left alone - gradients are valid backgrounds, that spot was never broken. |
+| ~~"Safe to spend" compared timeframe-scoped spend (`r.spent`, following the header's week/month/year/all toggle) against a fixed monthly cap (`r.limit`), so at Year or All every category's room clamped to 0 and the hero read $0.00 in red~~ (§4.1) | `f106c7c` — scales the cap to match the selected window (12x for Year, months-since-first-transaction for All) instead of comparing multi-month spend against one month of cap. Verified with an isolated Node test running the real `round2`/`fmDaysBetween` against the exact formula. |
+| ~~The Month-status panel hardcoded "This month" while the income/expense figures beneath it already followed the header's timeframe toggle~~ (§4.2, label only — `heroDaysLeft` staying calendar-month regardless of timeframe is a separate, still-open nuance) | `7ed667b` — label now renders the already-existing `tfLabel` ("this week"/"this month"/"this year"/"all time"), which had been dropped from this panel in the hero rewrite. |
 
 ### Still open, with evidence it is getting worse — re-verified 30 Aug
 
