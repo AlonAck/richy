@@ -752,14 +752,14 @@ var ONBOARD_STRINGS = {
 
     icSkip:"Skip", icCreateAccount:"Create my account",
     icBalance:"Balance", icCatFood:"Food", icCatTransport:"Transport", icCatFun:"Fun",
-    icChipSalary:"Salary", icChipSalaryAmt:"+$3,000", icChipCoffee:"Coffee", icChipCoffeeAmt:"-$4.50",
+    icChipSalary:"Salary", icChipSalaryAmt:"+3,000", icChipCoffee:"Coffee", icChipCoffeeAmt:"-4.50",
     icSlide1Head:"Every move, seen.", icSlide1Sub:"Log in seconds, in any currency. Your month organizes itself while you live it.",
-    icChatQ:"Can I afford a weekend trip?", icChatA:"Yes — if food stays under $180 this week. Want me to watch it for you?",
+    icChatQ:"Can I afford a weekend trip?", icChatA:"Yes — if food stays under 180 this week. Want me to watch it for you?",
     icRichardChecking:"Richard is checking your numbers",
     icChipLeak:"Found a leak", icChipLeakSub:"unused subscription", icChipPrivate:"Private", icChipPrivateSub:"your data stays yours",
     icSlide2Head:"Richard works for you.", icSlide2Sub:"A personal CFO who reviews your month, hunts down leaks, and answers straight questions with straight numbers.",
-    icYourGoal:"Your goal", icGoalProgress:"$3,500 of $10,000", icGoalPace:"On pace for October. Richard will nudge you if you drift.",
-    icChipTrip:"Trip planned", icChipTripSub:"Tokyo · $5,000", icChipBudget:"Under budget", icChipBudgetSub:"3 weeks straight",
+    icYourGoal:"Your goal", icGoalProgress:"3,500 of 10,000", icGoalPace:"On pace for October. Richard will nudge you if you drift.",
+    icChipTrip:"Trip planned", icChipTripSub:"Tokyo · 5,000", icChipBudget:"Under budget", icChipBudgetSub:"3 weeks straight",
     icSlide3Head:"Goals that actually land.", icSlide3Sub:"Budgets shaped to your real numbers — plus trips, savings pots, and a plan that updates as life happens.",
 
     continueBtn:"Continue",
@@ -904,14 +904,14 @@ var ONBOARD_STRINGS = {
 
     icSkip:"דלג", icCreateAccount:"צור את החשבון שלי",
     icBalance:"יתרה", icCatFood:"אוכל", icCatTransport:"תחבורה", icCatFun:"בילויים",
-    icChipSalary:"משכורת", icChipSalaryAmt:"+3,000$", icChipCoffee:"קפה", icChipCoffeeAmt:"-4.50$",
+    icChipSalary:"משכורת", icChipSalaryAmt:"+3,000", icChipCoffee:"קפה", icChipCoffeeAmt:"-4.50",
     icSlide1Head:"כל תנועה, נראית.", icSlide1Sub:"רשום תוך שניות, בכל מטבע. החודש שלך מסתדר לבד תוך כדי שאתה חי אותו.",
-    icChatQ:"אני יכול להרשות לעצמי טיול לסוף שבוע?", icChatA:"כן - אם ההוצאות על אוכל יישארו מתחת ל-180$ השבוע. רוצה שאעקוב אחרי זה בשבילך?",
+    icChatQ:"אני יכול להרשות לעצמי טיול לסוף שבוע?", icChatA:"כן - אם ההוצאות על אוכל יישארו מתחת ל-180 השבוע. רוצה שאעקוב אחרי זה בשבילך?",
     icRichardChecking:"ריצ'רד בודק את המספרים שלך",
     icChipLeak:"נמצאה דליפה", icChipLeakSub:"מנוי לא בשימוש", icChipPrivate:"פרטי", icChipPrivateSub:"הנתונים שלך נשארים שלך",
     icSlide2Head:"ריצ'רד עובד בשבילך.", icSlide2Sub:"מנכ\"ל פיננסי אישי שסוקר את החודש שלך, מאתר דליפות, ועונה על שאלות ישירות עם מספרים ישירים.",
-    icYourGoal:"היעד שלך", icGoalProgress:"3,500$ מתוך 10,000$", icGoalPace:"בקצב טוב ליעד באוקטובר. ריצ'רד ידחוף אותך אם תסטה.",
-    icChipTrip:"טיול מתוכנן", icChipTripSub:"טוקיו · 5,000$", icChipBudget:"מתחת לתקציב", icChipBudgetSub:"3 שבועות ברצף",
+    icYourGoal:"היעד שלך", icGoalProgress:"3,500 מתוך 10,000", icGoalPace:"בקצב טוב ליעד באוקטובר. ריצ'רד ידחוף אותך אם תסטה.",
+    icChipTrip:"טיול מתוכנן", icChipTripSub:"טוקיו · 5,000", icChipBudget:"מתחת לתקציב", icChipBudgetSub:"3 שבועות ברצף",
     icSlide3Head:"יעדים שבאמת מתגשמים.", icSlide3Sub:"תקציבים שמותאמים למספרים האמיתיים שלך - בתוספת טיולים, קופות חיסכון, ותוכנית שמתעדכנת עם החיים.",
 
     continueBtn:"המשך",
@@ -1056,14 +1056,14 @@ var ONBOARD_STRINGS = {
 
     icSkip:"تخطي", icCreateAccount:"إنشاء حسابي",
     icBalance:"الرصيد", icCatFood:"طعام", icCatTransport:"مواصلات", icCatFun:"ترفيه",
-    icChipSalary:"راتب", icChipSalaryAmt:"+3,000$", icChipCoffee:"قهوة", icChipCoffeeAmt:"-4.50$",
+    icChipSalary:"راتب", icChipSalaryAmt:"+3,000", icChipCoffee:"قهوة", icChipCoffeeAmt:"-4.50",
     icSlide1Head:"كل حركة، مرئية.", icSlide1Sub:"سجّل خلال ثوانٍ، بأي عملة. شهرك ينظم نفسه بينما تعيشه.",
-    icChatQ:"هل يمكنني تحمل رحلة نهاية أسبوع؟", icChatA:"نعم - إذا بقي إنفاق الطعام أقل من 180$ هذا الأسبوع. تريدني أن أراقب ذلك من أجلك؟",
+    icChatQ:"هل يمكنني تحمل رحلة نهاية أسبوع؟", icChatA:"نعم - إذا بقي إنفاق الطعام أقل من 180 هذا الأسبوع. تريدني أن أراقب ذلك من أجلك؟",
     icRichardChecking:"ريتشارد يتحقق من أرقامك",
     icChipLeak:"وُجد تسرب", icChipLeakSub:"اشتراك غير مستخدم", icChipPrivate:"خاص", icChipPrivateSub:"بياناتك تبقى ملكك",
     icSlide2Head:"ريتشارد يعمل لصالحك.", icSlide2Sub:"مدير مالي شخصي يراجع شهرك، يكتشف التسريبات، ويجيب على الأسئلة المباشرة بأرقام مباشرة.",
-    icYourGoal:"هدفك", icGoalProgress:"3,500$ من 10,000$", icGoalPace:"بوتيرة جيدة لأكتوبر. ريتشارد سينبهك إذا انحرفت.",
-    icChipTrip:"رحلة مخططة", icChipTripSub:"طوكيو · 5,000$", icChipBudget:"ضمن الميزانية", icChipBudgetSub:"3 أسابيع متتالية",
+    icYourGoal:"هدفك", icGoalProgress:"3,500 من 10,000", icGoalPace:"بوتيرة جيدة لأكتوبر. ريتشارد سينبهك إذا انحرفت.",
+    icChipTrip:"رحلة مخططة", icChipTripSub:"طوكيو · 5,000", icChipBudget:"ضمن الميزانية", icChipBudgetSub:"3 أسابيع متتالية",
     icSlide3Head:"أهداف تتحقق فعلاً.", icSlide3Sub:"ميزانيات مصممة حسب أرقامك الحقيقية - بالإضافة إلى الرحلات، صناديق الادخار، وخطة تتغير مع الحياة.",
 
     continueBtn:"متابعة",
@@ -1208,14 +1208,14 @@ var ONBOARD_STRINGS = {
 
     icSkip:"Пропустить", icCreateAccount:"Создать аккаунт",
     icBalance:"Баланс", icCatFood:"Еда", icCatTransport:"Транспорт", icCatFun:"Развлечения",
-    icChipSalary:"Зарплата", icChipSalaryAmt:"+3 000$", icChipCoffee:"Кофе", icChipCoffeeAmt:"-4,50$",
+    icChipSalary:"Зарплата", icChipSalaryAmt:"+3 000", icChipCoffee:"Кофе", icChipCoffeeAmt:"-4,50",
     icSlide1Head:"Каждое движение под контролем.", icSlide1Sub:"Записывайте за секунды, в любой валюте. Ваш месяц организуется сам, пока вы живёте им.",
-    icChatQ:"Могу ли я позволить себе поездку на выходные?", icChatA:"Да - если расходы на еду останутся ниже 180$ на этой неделе. Хотите, я буду за этим следить?",
+    icChatQ:"Могу ли я позволить себе поездку на выходные?", icChatA:"Да - если расходы на еду останутся ниже 180 на этой неделе. Хотите, я буду за этим следить?",
     icRichardChecking:"Ричард проверяет ваши цифры",
     icChipLeak:"Найдена утечка", icChipLeakSub:"неиспользуемая подписка", icChipPrivate:"Конфиденциально", icChipPrivateSub:"ваши данные остаются вашими",
     icSlide2Head:"Ричард работает на вас.", icSlide2Sub:"Личный финансовый директор, который анализирует ваш месяц, находит утечки и отвечает на прямые вопросы прямыми цифрами.",
-    icYourGoal:"Ваша цель", icGoalProgress:"3 500$ из 10 000$", icGoalPace:"В графике к октябрю. Ричард подтолкнёт вас, если собьётесь с курса.",
-    icChipTrip:"Поездка спланирована", icChipTripSub:"Токио · 5 000$", icChipBudget:"В рамках бюджета", icChipBudgetSub:"3 недели подряд",
+    icYourGoal:"Ваша цель", icGoalProgress:"3 500 из 10 000", icGoalPace:"В графике к октябрю. Ричард подтолкнёт вас, если собьётесь с курса.",
+    icChipTrip:"Поездка спланирована", icChipTripSub:"Токио · 5 000", icChipBudget:"В рамках бюджета", icChipBudgetSub:"3 недели подряд",
     icSlide3Head:"Цели, которые действительно достигаются.", icSlide3Sub:"Бюджеты, подстроенные под ваши реальные цифры - плюс поездки, копилки и план, который меняется вместе с жизнью.",
 
     continueBtn:"Продолжить",
@@ -7523,11 +7523,11 @@ function IntroCarousel(props) {
           <div style={{ position: "relative", zIndex: 2, paddingBottom: 26 }}>
             <div style={mockCard}>
               <div style={{ fontSize: 11, fontWeight: 700, color: J.ink3, textTransform: "uppercase", letterSpacing: "0.08em" }}>{tr("icBalance")}</div>
-              <div style={{ fontSize: 30, fontWeight: 800, color: J.ink, letterSpacing: "-0.02em", marginTop: 3 }}>$2,840</div>
+              <div style={{ fontSize: 30, fontWeight: 800, color: J.ink, letterSpacing: "-0.02em", marginTop: 3 }}>2,840</div>
               {[
-                { label: tr("icCatFood"), pct: 62, color: T.green, amt: "$412" },
-                { label: tr("icCatTransport"), pct: 38, color: T.blue, amt: "$95" },
-                { label: tr("icCatFun"), pct: 81, color: T.orange, amt: "$203" },
+                { label: tr("icCatFood"), pct: 62, color: T.green, amt: "412" },
+                { label: tr("icCatTransport"), pct: 38, color: T.blue, amt: "95" },
+                { label: tr("icCatFun"), pct: 81, color: T.orange, amt: "203" },
               ].map(function(r) {
                 return (
                   <div key={r.label} style={{ marginTop: 12 }}>
