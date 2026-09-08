@@ -12827,6 +12827,40 @@ function forecastUpcoming(tx, cats, days) {
 function isPaceEligible(t, todayISO) {
   return isAuditableExpense(t, todayISO) && !t.catchUp;
 }
+// The first day of `ym` on which Richy could actually see this user spend.
+//
+// A projection divides spending by the share of the month that has gone by, and
+// that arithmetic silently assumes the account existed on the 1st. For anyone
+// who signed up mid-month it does not: an account created on the 25th has six
+// days of evidence, and dividing those six days of spending by 25/30 of a month
+// reports a category running at 180% of its cap as comfortably under. That is
+// the same defect as the day-0 over-projection this function already guards
+// against, pointing the other way - and it is the one that stays wrong every
+// month a new user joins.
+//
+// Derived from the ledger rather than from a stored signup date, so it is right
+// for accounts that predate the field and cannot go stale:
+//   - any transaction dated before this month means the account was already
+//     running, so the whole month counts (day 1);
+//   - otherwise the earliest dated row in the month is the first day Richy saw
+//     anything, which for a new account is the day they signed up and did
+//     catch-up (those rows are dated that day).
+// A backdated row therefore reads as "watching since then", which is the
+// conservative direction: it widens the window and softens the projection.
+function rwObservedFrom(tx, ym) {
+  var rows = tx || [], earliest = null;
+  for (var i = 0; i < rows.length; i++) {
+    var d = rows[i] && rows[i].date;
+    if (!d) continue;
+    var m = d.slice(0, 7);
+    if (m < ym) return 1;                       // history before this month
+    if (m === ym && (earliest === null || d < earliest)) earliest = d;
+  }
+  if (!earliest) return 1;
+  var day = +earliest.slice(8, 10);
+  return day >= 1 && day <= 31 ? day : 1;
+}
+
 function detectBudgetPace(tx, budgets, cats) {
   var todayISO = rwToday(), ym = rwYM(todayISO);
   var dim = rwDaysInMonth(ym), dayNo = +todayISO.slice(8, 10);
@@ -12835,7 +12869,14 @@ function detectBudgetPace(tx, budgets, cats) {
   var realExpenses = (tx || []).filter(function(t) {
     return isPaceEligible(t, todayISO) && rwYM(t.date) === ym;
   }).length;
-  if (dayNo < 8 || realExpenses < 3) return out;
+  // Eight days of WATCHING, not the eighth of the month. For an account that
+  // existed on the 1st these are the same number, so nothing changes for an
+  // established user; for one created on the 25th it is the difference between
+  // extrapolating from one day and waiting until there is a week to extrapolate
+  // from.
+  var observedFrom = rwObservedFrom(tx, ym);
+  var observedDays = Math.max(1, Math.min(dayNo, dayNo - observedFrom + 1));
+  if (observedDays < 8 || realExpenses < 3) return out;
   (budgets || []).forEach(function(b) {
     if (!b || b.folderId || b.dir === "target") return;
     var limit = +b.limit || 0;
@@ -12844,9 +12885,13 @@ function detectBudgetPace(tx, budgets, cats) {
       return isPaceEligible(t, todayISO) && rwYM(t.date) === ym && (t.catId === b.catId || t.category === b.category);
     }).reduce(function(s, t) { return s + t.amount; }, 0);
     if (spent <= 0) return;
-    // Floor the elapsed fraction: on the 2nd of the month a single big shop
-    // would otherwise project to fifteen times the cap and cry wolf.
-    var elapsed = Math.max(dayNo / dim, 0.2);
+    // Elapsed means "the share of the month Richy has been watching", which is
+    // dayNo/dim for an account that existed on the 1st and less for one that
+    // did not. The old 0.2 floor was there to stop a single big shop on the 2nd
+    // projecting to fifteen times the cap; the eight-observed-day gate above
+    // now does that job properly, and observedDays >= 8 keeps this fraction at
+    // 0.25 or more on its own.
+    var elapsed = observedDays / dim;
     var projected = spent / elapsed;
     if (projected <= limit * 1.05 || daysLeft < 3) return;
     out.push({
