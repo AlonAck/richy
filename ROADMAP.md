@@ -7,11 +7,22 @@
 > `reports/qa-sweep-2026-08-25.md`, `reports/qa-audit-2026-08-30.md`
 > (all three code-verified, file:line or code-string anchored),
 > `reports/security-review-2026-08-15.md`, `reports/richy-sim-latest.html`
-> (10-persona simulation, post-fix run, 2026-07-27), `APP_STORE_LISTING.md`,
+> (10-persona simulation, post-fix run, 2026-07-27), `reports/ux-audit-2026-09-07.docx`
+> (walked live, 6-7 Sep), `APP_STORE_LISTING.md`,
 > a full `git log` read and a line-by-line diff of everything uncommitted
 > in the working tree as of 2026-09-02.
 >
-> **Last updated: 2026-09-06** — a sixth audit landed
+> **Last updated: 2026-09-08** — the 7 Sep UX audit
+> (`reports/ux-audit-2026-09-07.docx`) is folded into TIER 0 below. It is the first
+> review that walked the live app as a new Hebrew user rather than reading the code,
+> and it named **fourteen launch blockers** behind ~90 findings. Four of the fourteen
+> are root causes this file already tracked from the code side and are annotated in
+> place rather than duplicated; ten are new. `1c6b021` closed eleven of them on 7 Sep
+> and every one of those was re-verified against the live tree on 8 Sep — the status
+> in Tier 0 is what the code does, not what that commit's message claims. Two defects
+> that fix left behind are recorded under "Found 8 Sep".
+>
+> **Previously, 2026-09-06** — a sixth audit landed
 > (`reports/qa-audit-2026-09-06.md`), folded into TIER 0 below. It swept the
 > ground the fifth one named as unswept — the onboarding funnel, the Richard chat
 > flow, and the full money-in/money-out matrix — and found the two worst defects in
@@ -196,6 +207,155 @@ longer resolve (the file grew ~3,900 lines); the 30 Aug report anchors to
 code strings instead, which is why it's quoted below in preference to the
 older two where they overlap.
 
+### Genuinely NEW, found 7 Sep — the UX audit's fourteen launch blockers
+
+Source: `reports/ux-audit-2026-09-07.docx` (now tracked, `84cad40`). Unlike the six
+QA audits, this one was **walked live** — a new Hebrew user, all 28 onboarding
+screens, then every tab and settings screen — before nine agents re-read the same
+ground in code. It found ~90 findings, of which fourteen are named launch blockers,
+and it reframed three of them as systemic rather than incidental: **Richard's chat
+was returning 413 to every message and hiding it**, **the Hebrew app is an English
+app in an RTL frame**, and **five kinds of object could not be created by tapping
+anything**.
+
+**Four of the fourteen are the same root causes already tracked above from a
+different angle. They are annotated in place rather than duplicated** — the audit
+saw the user-facing symptom, the QA audits saw the line of code:
+
+| Audit blocker | Already tracked as | Relationship |
+|---|---|---|
+| #1 Richard's chat 413s and substitutes a canned English answer | 6 Sep P0 "every Richard chat failure is disguised as a real answer" + 6 Sep P1 "a 20-turn wall, hit silently" | Same defect pair. The audit supplies the missing number: the static chat prompt is **16,075 chars** against a 20,000 cap, so a real account's data block (~19,100) pushed every request over. Not a new item. |
+| #12 Four investing paths bypass the server guardrail | 5 Sep P0 "the guardrail escape has a third instance" + 30 Aug NEW-2 `investPlanOrders`/`investPlanFor` | Same root cause, and the audit's own words are the one already in this file: the guardrail has to sit where financial strings are rendered. It adds two facets: the **offline fallbacks recommend 401k/Roth IRA in an Israeli app**, and the **investing disclaimers are English-only**. Not a new item. |
+| #13(a) The Bank Leumi demo names a real bank in a pre-launch build | "Bank Leumi DEMO wrote unmarked fake rows" (closed, `b26496e`) | The audit explicitly **downgrades this**: it is labelled, disclosed in Richard's prompt and purged on disconnect, so it is "a question for counsel, not a defect." Do not reopen it as a bug. |
+| #14 Transaction rows are invisible to assistive tech | "accessibility — `aria-label` coverage 46/432 buttons" | The row-level defect is sharper than the count: the row was a `<div>`, so a screen reader announced its children and never the transaction. Folded in, not duplicated. |
+
+**Ten are genuinely new.** All fourteen were re-verified against the live tree on
+8 Sep; `1c6b021` (7 Sep) closed most of them and the status below is what the code
+actually does now, not what that commit's message claims.
+
+- **#2 — CLOSED 7 Sep, `1c6b021`. No way to create a budget, goal, note, category
+  or trip.** The single orange "+" always opened New Transaction, while the empty
+  states on Budgets, Goals and Notes all read "tap + to create your first one."
+  By tap alone five object types could not be created; the only other door was
+  Richard, who was returning 413. Closed by a `FAB_CREATES` map that makes the "+"
+  open whatever the screen it is standing on creates, plus labelled buttons on
+  Budgets/Goals/Notes. Verified: the map covers activity, budgets, goals, notes and
+  categories, and Trips got its own visible "Plan a trip" button on Goals (#10).
+
+- **#3 — CLOSED 7 Sep, `1c6b021`. The onboarding goal was never created.** Twenty-
+  eight screens collected a name, a target and a timeline, told six story beats
+  about that goal, and `handleOnboardingComplete` wrote budgets and a savings pot
+  and never touched `goals` — so the flow ended on a dashboard reading "0 active
+  goals". Verified: the goal is now written beside the budgets block, given a
+  deadline from the timeline chip, linked to the pot when the pot carries its name,
+  and the user is landed on the Goals tab instead of the dashboard.
+
+- **#4 — CLOSED 7 Sep, `1c6b021`. The app manufactured its own bad news on day 0.**
+  `suggestBudgets()` runs at onboarding step 6, where the only numbers in existence
+  are income and essentials, and gives Housing 50% of the single essentials figure —
+  so any user whose rent is more than half their essentials is over budget **by
+  construction**, ninety seconds after sign-up. Closed by `reflowBudgetsAgainstSpend()`
+  at the catch-up screen, the first moment the app knows real numbers: every
+  suggested cap is floored at what the user just said they actually spend, rounded
+  up to the nearest 50. It only ever raises a cap and skips any budget the user set
+  by hand.
+
+- **#5 — CLOSED 7 Sep, `1c6b021`, except the proration. Catch-up totals were
+  extrapolated into a daily pace.** The catch-up screen asks for one lump per
+  category dated today; `detectBudgetPace` divided that lump by the elapsed fraction
+  of the month, floored at 0.2, and reported the result as a forecast — ₪900 of food
+  became a ₪4,500 projection and a "₪9.38/day" allowance, four red cards on day 0.
+  Closed by tagging catch-up rows and excluding them from the pace spend only
+  (`isPaceEligible`), plus a gate of day ≥ 8 and ≥ 3 real logged expenses.
+  **Still open, and it is the mirror image of the original bug:** `elapsed` is still
+  `dayNo / daysInMonth`, which assumes Richy has been watching since the 1st. For an
+  account created on the 25th the gate opens immediately on calendar day 8 logic and
+  the projection is then divided by a near-full month, so a category running at 180%
+  of its cap reports as comfortably under. See the 8 Sep entry below.
+
+- **#6 — CLOSED 7 Sep, `1c6b021`. Hebrew numbers rendered reversed on every
+  onboarding slider.** `RollingNum` lays its digits out as flex *children*, so an
+  RTL document reversed them and ₪9,000 displayed as "000,9₪" — the first number
+  Richy ever computes about a Hebrew user, shown backwards. Verified: the container
+  now carries `dir="ltr"` with `direction:ltr; unicodeBidi:isolate`, which fixes the
+  order without disturbing the Hebrew sentence around it.
+
+- **#7 — CLOSED 7 Sep, `1c6b021`. Nine screens printed a raw internal key as their
+  title.** `watchBrief`, `watchForecast`, `watchGoal`, `watchOuts`, `debts`,
+  `instructions`, `investing`, `stock`, `scout` — `screenTitle` fell through to
+  `tr()`, which returns the key itself when it is missing. The four `watch*` keys
+  were the ones `c783967` closed on 7 Sep; this audit found five more. Verified by
+  script against the live tree: **all 43 routable tab ids now resolve to a real
+  title in all four languages**, and the only id without a dictionary key is
+  `person`, which `screenTitle` special-cases to the person's own name.
+
+- **#8 — CLOSED 7 Sep, `1c6b021`. Money was formatted by hand in three places.**
+  `Intl.NumberFormat` was never used anywhere in the file, producing "₪2,500.00-",
+  "mo/₪0.00" and "of ₪1,125.00 ₪945.00" throughout the Hebrew app. Closed by one
+  cached formatter with the sign inside a bidi isolate, plus `stripBidi` so the
+  isolate marks never reach a model prompt.
+
+- **#9 — CLOSED 7 Sep, `1c6b021`. Three screens gave three verdicts on the same
+  day** — "Plan needs a tune-up" / "4 things to watch" / "EXCELLENT · 85" — from
+  three independent formulas. Verified: one `monthVerdict()` at `:13242` now feeds
+  the Dashboard hero and the Advisor; the other surfaces display it rather than
+  recomputing.
+
+- **#10 — CLOSED 7 Sep, `1c6b021`. Trips was unreachable once its dashboard tip was
+  dismissed** — a feature the intro carousel advertises by name ("Trip planned ·
+  Tokyo · $5,000"), gone for good on day 2. Verified: a visible "Plan a trip" button
+  now sits on the Goals tab, so the feature no longer depends on a dismissible card.
+
+- **#11 — CLOSED 7 Sep, `1c6b021`. Compliance wording the project's own store notes
+  rule against.** The hero said "Your money has a manager now." and "Your personal
+  CFO"; the Hebrew badge said "המנכ"ל הפיננסי האישי שלך"; the Arabic and Russian
+  headlines also said manager. `APP_STORE_LISTING.md:26` already recorded the
+  reasoning — "manager" reads as portfolio management and "advisor" is a regulated
+  title in Israel. Verified: zero occurrences of the manager/CFO strings remain;
+  the app says coach / מאמן / مدرب / тренер throughout.
+
+- **#13(b) — CLOSED 7 Sep, `1c6b021`. Testimonials were attributed to people who
+  cannot exist yet** — "early user" and "family tester" on an unlaunched product,
+  with the Hebrew reading "משתמש ותיק", *veteran* user. Verified: the star row is
+  gone (five gold stars read as a store rating that does not exist — a consumer-
+  deception flag, not decoration) and the attributions are honest.
+
+- **#14 — CLOSED 7 Sep, `1c6b021`. Transaction rows were invisible to assistive
+  tech, and editing one was a 500 ms long-press with no visible affordance.**
+  Verified: the row is a real `<button type="button">` with an `aria-label` built by
+  `txRowLabel()` — what, how much, which category, and that activating it edits.
+  Long-press survives as a shortcut.
+
+**Still open out of the fourteen: #1 (partly), #5 (partly) and #12.** Everything
+else on the list is closed and re-verified. #12 is the one that is not a bug fix —
+it is the product decision this file has been carrying since 30 Aug.
+
+### Found 8 Sep, verifying the above against the live tree
+
+Two defects that `1c6b021` left behind, both inside blockers it otherwise closed.
+Neither is in the audit — they are what a re-read of the shipped code found.
+
+- **P0 — the Retry row on a failed Richard message can never succeed.** Blocker #1
+  correctly stopped disguising a server refusal as an answer: `isServerRefusal()`
+  now renders a red row with a Retry button. But both send paths still post
+  `nc.map(apiMsg)` — **the entire thread, uncapped** — against the server's
+  `MAX_MESSAGES = 40`, and every prior image's full base64 is re-encoded on every
+  turn against `MAX_TOTAL_CHARS = 100000`. So the two conditions that produce a 413
+  are both **monotonic in the thread**: once a conversation crosses either line, it
+  is over, and Retry re-posts the identical over-size payload forever. The old bug
+  hid this behind a plausible paragraph; the fix made it visible and permanent. The
+  cap has to be applied where the request is built, not only where the failure is
+  displayed.
+
+- **P1 — budget pace still extrapolates over the calendar month, not over the window
+  Richy has actually watched.** Blocker #5's gate (day ≥ 8, ≥ 3 real expenses) stops
+  the day-0 cry-wolf, but `elapsed = dayNo / daysInMonth` still assumes the account
+  existed on the 1st. An account created on the 25th passes the day gate on its
+  first day and then has six days of spending divided by a near-complete month, so
+  the projection reads roughly five times low and a category running well over its
+  cap reports as fine. The correct denominator is the observed window, and the
+  correct gate is eight **observed** days rather than eight calendar days.
+
 ### Genuinely NEW, found 6 Sep — Richard first, because he is the differentiator
 
 Full detail and anchors in `reports/qa-audit-2026-09-06.md`. All verified against
@@ -209,6 +369,12 @@ Full detail and anchors in `reports/qa-audit-2026-09-06.md`. All verified agains
   well-written server message that the user can never see.** The Focus Mode branch
   47 lines earlier (`:19365`) does it correctly — copy that. **Most likely single
   cause of the "Richard gives generic advice" complaints.**
+  **CLOSED 7 Sep — `1c6b021`, re-verified 8 Sep.** `isServerRefusal()` splits a
+  server refusal from a dropped connection: the refusal renders a red row carrying
+  the server's own message plus Retry, and only a genuine network drop still falls
+  back to `Richard()`, badged "offline answer" in all four languages. Every failure
+  goes through `richardFailureLog()`. This is the same defect the 7 Sep UX audit
+  raised as its blocker #1 — see that section above; do not track it twice.
 
 - **P0 — LIVE — seven badges and two ranks can never be earned by anyone.**
   `cushionMonths` (`:3297`) divides by `onboardingData.monthlyEssentials`, and
@@ -253,6 +419,11 @@ Full detail and anchors in `reports/qa-audit-2026-09-06.md`. All verified agains
   uncapped (`:19294`) against the server's `MAX_MESSAGES = 40` (`api/chat.js:130`),
   so turn 21 always 413s straight into the fallback above. Two attached images kill
   a thread permanently (`downscaleImage` re-sends every image every turn).
+  **Still open, and worse in one respect after `1c6b021`:** the fallback no longer
+  hides it, so the wall now shows as a red row with a Retry that re-posts the same
+  over-size thread and fails identically, forever. Raising `MAX_SYSTEM_CHARS` did
+  not touch this — the message count and the re-sent image bytes are separate
+  ceilings. See "Found 8 Sep" above; this is the P0 there.
 
 - **P1 — LIVE — the business capital-history delete is correct and unreachable.**
   `deleteCapEntry` (`:28283`) is complete and bound to a button, but `capHistory`
@@ -342,6 +513,14 @@ report recommends fixing them.
   all**. Scout was recorded closed on 26 August; the rebuild left the ranking in.
   **Now proven three times over: the guardrail has to sit where financial strings
   are rendered, not at the API boundary.**
+  **Four times, as of the 7 Sep UX audit** — its blocker #12 is this same root
+  cause and adds two surfaces nobody had counted: the **offline fallbacks recommend
+  401k and Roth IRA accounts, in an Israeli app**, and the **investing disclaimers
+  are English-only**, so the one screen where comprehension is legally load-bearing
+  is unreadable to the audience it is written for. `1c6b021` put Investing, Business,
+  Stock Scout and the order ticket behind `LAUNCH` flags and translated the
+  disclaimers, which buys time but is not the decision. **The decision below is
+  still owed.** Tracked here, not duplicated in the 7 Sep section.
 
 - **P1 — the 09-02 Day-1 list was not done.** Re-verified against the live tree:
   ~~the four Richard Watch header keys (`watchBrief`, `watchGoal`, `watchForecast`,
