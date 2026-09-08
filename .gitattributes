@@ -1,0 +1,16 @@
+# Normalize line endings to LF in the repository regardless of what a local
+# editor/tool wrote to disk. Added 2026-09-07 after discovering nearly every
+# tracked file (62 of 64 modified) had been silently rewritten to CRLF,
+# which was making every diff and QA file:line reference unreliable.
+* text=auto eol=lf
+
+# Known binaries — leave untouched
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.mp4 binary
+*.mov binary
+*.ico binary
+*.pdf binary
+*.docx binary
+*.xlsx binary

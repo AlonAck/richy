@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Richy — button bar mockup v4</title>
+<style>
+  :root {
+    --cream:        #F7F3EE;
+    --bar-fill:     rgba(216, 203, 184, 0.55);
+    --thumb-fill:   rgba(255, 252, 247, 0.90);
+    --ink:          #1A1410;
+    --ink2:         #6B5C4E;
+    --accent:       #C8673A;
+    --spring:       cubic-bezier(0.34, 1.4, 0.64, 1);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #EDEAE4;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 40px 16px 60px;
+    color: var(--ink);
+  }
+  .phone {
+    width: 390px; max-width: 100%;
+    background: var(--cream);
+    border-radius: 28px;
+    padding: 26px 20px 30px;
+    box-shadow: 0 8px 30px rgba(26,20,16,0.10);
+  }
+  .label {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
+    color: var(--ink2); text-transform: uppercase;
+    margin: 0 0 16px 2px;
+  }
+
+  /* ── Bar: one translucent capsule, exactly like the reference tab bar ── */
+  .bar {
+    position: relative;
+    display: flex;
+    height: 62px;
+    padding: 5px;
+    border-radius: 999px;
+    background: var(--bar-fill);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(150%);
+    user-select: none; -webkit-user-select: none;
+    touch-action: none;
+  }
+
+  /* the inner capsule — appears under the finger and SLIDES with it */
+  .thumb {
+    position: absolute;
+    top: 5px; bottom: 5px;
+    left: 0;
+    border-radius: 999px;
+    background: var(--thumb-fill);
+    opacity: 0;
+    transform: scale(0.94);
+    transition:
+      transform 0.42s var(--spring),
+      left      0.42s var(--spring),
+      width     0.42s var(--spring),
+      opacity   0.22s ease;
+    pointer-events: none;
+  }
+  .bar.active .thumb { opacity: 1; transform: scale(1); }
+
+  .bar-btn {
+    position: relative; z-index: 1;
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px;
+    background: none; border: none; padding: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    font-family: inherit;
+    font-size: 11.5px; font-weight: 500; letter-spacing: 0.01em;
+    color: var(--ink);
+    transition: color 0.25s ease;
+  }
+  .bar-btn.lit { color: var(--accent); }
+  .bar-btn svg { display: block; }
+
+  .caption {
+    font-size: 13px; color: var(--ink2);
+    margin: 16px 2px 0; line-height: 1.55;
+  }
+  .hint {
+    font-size: 12px; color: var(--ink2); opacity: 0.75;
+    text-align: center; margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="phone">
+    <div class="label">Option A — v4</div>
+
+    <div class="bar" id="bar">
+      <div class="thumb" id="thumb"></div>
+
+      <button class="bar-btn" data-i="0">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M20.59 13.41L11 3.83A2 2 0 0 0 9.59 3.24L4 3a1 1 0 0 0-1 1l.24 5.59a2 2 0 0 0 .59 1.41l9.58 9.58a2 2 0 0 0 2.83 0l4.35-4.35a2 2 0 0 0 0-2.82Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          <circle cx="7.6" cy="7.6" r="1.15" fill="currentColor"/>
+        </svg>
+        Labels
+      </button>
+
+      <button class="bar-btn" data-i="1">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M4.8 20c1.3-3.7 4.4-5.6 7.2-5.6s5.9 1.9 7.2 5.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        Profile
+      </button>
+    </div>
+
+    <div class="caption">Built to the reference tab bar: one translucent capsule, icon above label, and an inner capsule that appears under your finger and <em>slides</em> across as you drag — the same mechanic as Apple's tab bars. The touched item's icon and label warm to Richy's accent. No shadows, no dividers, no per-button boxes.</div>
+  </div>
+  <div class="hint">press and drag across the bar</div>
+
+<script>
+  const bar   = document.getElementById('bar');
+  const thumb = document.getElementById('thumb');
+  const btns  = [...bar.querySelectorAll('.bar-btn')];
+
+  function btnAt(clientX) {
+    const r = bar.getBoundingClientRect();
+    const x = Math.min(Math.max(clientX - r.left, 0), r.width);
+    return btns.find(b => {
+      const br = b.getBoundingClientRect();
+      return x >= br.left - r.left && x <= br.right - r.left;
+    }) || btns[x < r.width / 2 ? 0 : btns.length - 1];
+  }
+
+  function moveTo(btn) {
+    const r  = bar.getBoundingClientRect();
+    const br = btn.getBoundingClientRect();
+    thumb.style.left  = (br.left - r.left) + 'px';
+    thumb.style.width = br.width + 'px';
+    btns.forEach(b => b.classList.toggle('lit', b === btn));
+  }
+
+  function start(x) { bar.classList.add('active'); moveTo(btnAt(x)); }
+  function move(x)  { if (bar.classList.contains('active')) moveTo(btnAt(x)); }
+  function end()    { bar.classList.remove('active'); btns.forEach(b => b.classList.remove('lit')); }
+
+  bar.addEventListener('pointerdown',  e => start(e.clientX));
+  bar.addEventListener('pointermove',  e => move(e.clientX));
+  window.addEventListener('pointerup',   end);
+  window.addEventListener('pointercancel', end);
+  bar.addEventListener('pointerleave', end);
+</script>
+</body>
+</html>

@@ -18,3 +18,14 @@ RichyIOS/Info.plist
 RichyIOS/Resources/GoogleService-Info.plist
 RichyIOS/xcuserdata/
 RichyIOS/.build/
+
+# Skill reference media (2026-09-08) — 87MB of screen recordings across the
+# .claude/ and .agents/ mirrors. Kept on disk for design reference, out of
+# history so clones (incl. the macOS CI runner on every RichyIOS/ push) stay small.
+.claude/skills/*/reference/*.mp4
+.claude/skills/*/reference/*.mov
+.agents/skills/*/reference/*.mp4
+.agents/skills/*/reference/*.mov
+
+# Rendered ad video — regenerate from marketing/ads/blender/
+marketing/ads/renders/

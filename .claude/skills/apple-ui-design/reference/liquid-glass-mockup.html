@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Richy — liquid glass levels for the header bar</title>
+<style>
+  /* Registered so the conic rim's angle can actually interpolate — an
+     unregistered custom property would jump instead of sweep. */
+  @property --rim-angle { syntax:'<angle>'; initial-value:205deg; inherits:false; }
+
+  :root{
+    --ink:#1A1410; --ink2:#6B5C4E; --accent:#C8673A;
+    --spring:cubic-bezier(0.34,1.32,0.5,1);
+    --settle:0.52s;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; padding:28px 16px 60px;
+    font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif;
+    background:#EDEAE4; color:var(--ink);
+  }
+  h1{font-size:17px; margin:0 0 4px;}
+  .sub{font-size:13px; color:var(--ink2); margin:0 0 22px; line-height:1.5;}
+  .toggles{display:flex; gap:8px; margin-bottom:22px; flex-wrap:wrap;}
+  .toggles button{
+    font:inherit; font-size:12.5px; font-weight:600; padding:8px 14px; border-radius:999px;
+    border:1px solid rgba(0,0,0,0.12); background:#fff; color:var(--ink); cursor:pointer;
+  }
+  .toggles button.on{background:var(--ink); color:#fff; border-color:var(--ink);}
+
+  .phone{
+    width:390px; max-width:100%; margin:0 auto 26px;
+    border-radius:28px; overflow:hidden;
+    box-shadow:0 8px 30px rgba(26,20,16,0.14);
+    position:relative;
+  }
+  .content{
+    height:230px; position:relative;
+    background:
+      radial-gradient(circle at 18% 22%, #E07848 0 16%, transparent 42%),
+      radial-gradient(circle at 76% 16%, #5C7AE3 0 14%, transparent 40%),
+      radial-gradient(circle at 34% 76%, #27A85F 0 15%, transparent 44%),
+      radial-gradient(circle at 88% 72%, #C8983A 0 13%, transparent 38%),
+      linear-gradient(160deg,#FDF5EC 0%,#F5E8D8 100%);
+  }
+  .content .stripes{
+    position:absolute; inset:0;
+    background:repeating-linear-gradient(90deg, rgba(26,20,16,0.16) 0 2px, transparent 2px 26px);
+  }
+  .content .rows{position:absolute; inset:0; padding:74px 18px 0; display:grid; gap:9px;}
+  .content .rows div{height:13px; border-radius:99px; background:rgba(26,20,16,0.22);}
+  .content .rows div:nth-child(2){width:72%;}
+  .content .rows div:nth-child(3){width:86%;}
+  .content .rows div:nth-child(4){width:60%;}
+
+  .header{
+    position:absolute; inset-inline:0; top:0; height:66px;
+    display:flex; align-items:center; justify-content:flex-end;
+    padding-inline:16px;
+    background:rgba(250,247,242,0.60);
+    -webkit-backdrop-filter:blur(20px) saturate(170%);
+    backdrop-filter:blur(20px) saturate(170%);
+    border-bottom:0.5px solid rgba(0,0,0,0.06);
+  }
+  .label{
+    position:absolute; inset-inline-start:16px; top:14px;
+    font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--ink2); z-index:6; max-width:140px; line-height:1.35;
+  }
+
+  /* ── shared skeleton ──────────────────────────────────────────── */
+  .bar{position:relative; display:flex; padding:3px; border-radius:999px; isolation:isolate;}
+  .bar .thumb{
+    position:absolute; top:3px; bottom:3px; left:3px; width:76px;
+    border-radius:999px; pointer-events:none; z-index:0; opacity:0;
+    transition:transform var(--settle) var(--spring), width var(--settle) var(--spring),
+               opacity .22s ease, scale .3s var(--spring);
+  }
+  .bar .spec{
+    position:absolute; top:0; bottom:0; left:0; width:96px;
+    border-radius:999px; pointer-events:none; z-index:4; opacity:0;
+    transition:transform var(--settle) var(--spring), opacity .3s ease;
+  }
+  .bar button{
+    position:relative; z-index:5; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:2px;
+    background:none; border:none; padding:7px 13px; cursor:pointer;
+    font-family:inherit; font-size:10px; font-weight:500; color:var(--ink2);
+    -webkit-tap-highlight-color:transparent;
+    transition:transform var(--settle) var(--spring), color .25s ease;
+  }
+  .bar button.on{color:var(--accent); font-weight:700;}
+  .bar button:active{transform:scale(0.90);}
+  .bar svg{display:block;}
+
+  .rim{
+    position:absolute; inset:0; border-radius:999px; padding:1.5px;
+    pointer-events:none; z-index:3;
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;
+            mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask-composite:exclude;
+  }
+
+  /* ═══ A — what is in the app now ═══════════════════════════════ */
+  .lvl-a{
+    background:rgba(255,255,255,0.50);
+    -webkit-backdrop-filter:blur(20px) saturate(190%) brightness(1.06);
+    backdrop-filter:blur(20px) saturate(190%) brightness(1.06);
+    border:1px solid rgba(0,0,0,0.08);
+    box-shadow:inset 0 1px 0.5px rgba(255,255,255,0.90),
+               inset 0 -1px 0.5px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .lvl-a::before{
+    content:""; position:absolute; inset:0; border-radius:999px; pointer-events:none;
+    background:linear-gradient(180deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 46%);
+  }
+  .lvl-a .thumb{
+    background:rgba(255,255,255,0.62);
+    box-shadow:inset 0 1px 0.5px rgba(255,255,255,0.95), inset 0 -1px 1px rgba(0,0,0,0.07), 0 2px 7px rgba(0,0,0,0.12);
+  }
+
+  /* ═══ D — “Lens”: safe ceiling, pure CSS ══════════════════════ */
+  .lvl-d{
+    background:linear-gradient(150deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.13) 100%);
+    -webkit-backdrop-filter:blur(5px) saturate(300%) brightness(1.22) contrast(1.06);
+    backdrop-filter:blur(5px) saturate(300%) brightness(1.22) contrast(1.06);
+    box-shadow:inset 0 0 20px rgba(255,255,255,0.34), inset 0 -2px 3px rgba(0,0,0,0.20),
+               0 8px 22px rgba(26,20,16,0.20), 0 2px 5px rgba(26,20,16,0.12);
+  }
+  .lvl-d .rim{
+    background:conic-gradient(from 205deg,
+      rgba(255,255,255,0.98) 0deg, rgba(255,206,150,0.80) 55deg, rgba(255,255,255,0.22) 145deg,
+      rgba(160,196,255,0.70) 232deg, rgba(255,255,255,0.88) 315deg, rgba(255,255,255,0.98) 360deg);
+  }
+  .lvl-d .spec{background:radial-gradient(closest-side at 50% -14%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.42) 40%, rgba(255,255,255,0) 78%);}
+  .lvl-d .thumb{
+    background:linear-gradient(160deg, rgba(255,255,255,0.62), rgba(255,255,255,0.28));
+    box-shadow:inset 0 1.5px 1.5px rgba(255,255,255,1), inset 0 -1.5px 2px rgba(0,0,0,0.14),
+               inset 0 0 10px rgba(255,255,255,0.40), 0 4px 12px rgba(26,20,16,0.22);
+  }
+
+  /* ═══ F — “Prism”: the ceiling ════════════════════════════════ */
+  .lvl-f{
+    background:linear-gradient(150deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.09) 100%);
+    -webkit-backdrop-filter:blur(2px) saturate(340%) brightness(1.26) contrast(1.10) url(#prism);
+    backdrop-filter:blur(2px) saturate(340%) brightness(1.26) contrast(1.10) url(#prism);
+    box-shadow:
+      inset 0 0 26px rgba(255,255,255,0.40),
+      inset 0 -2.5px 4px rgba(0,0,0,0.24),
+      inset 0 2.5px 4px rgba(255,255,255,0.55),
+      0 12px 30px rgba(26,20,16,0.24),
+      0 3px 7px rgba(26,20,16,0.16),
+      0 1px 1px rgba(26,20,16,0.20);          /* tight contact shadow */
+  }
+  /* outer rim: sweeps continuously, so the lit part of the edge travels the
+     way it does when you tilt real glass under a light */
+  .lvl-f .rim{
+    background:conic-gradient(from var(--rim-angle),
+      rgba(255,255,255,1) 0deg, rgba(255,190,120,0.92) 52deg, rgba(255,255,255,0.16) 142deg,
+      rgba(132,178,255,0.86) 230deg, rgba(255,255,255,0.95) 312deg, rgba(255,255,255,1) 360deg);
+    animation:rimSweep 9s linear infinite;
+  }
+  /* second, tighter inner rim — gives the edge actual thickness instead of
+     one hairline pretending to be a bevel */
+  .lvl-f .rim2{
+    position:absolute; inset:1.5px; border-radius:999px; padding:1px;
+    pointer-events:none; z-index:3;
+    background:linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.05) 45%, rgba(0,0,0,0.14));
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;
+            mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask-composite:exclude;
+  }
+  @keyframes rimSweep{ to{ --rim-angle:565deg; } }
+  .lvl-f .spec{
+    background:radial-gradient(closest-side at 50% -14%, rgba(255,255,255,1) 0%, rgba(255,255,255,0.50) 36%, rgba(255,255,255,0) 78%);
+  }
+  /* periodic glare sweep travelling across the whole bar */
+  .lvl-f .sweep{
+    position:absolute; inset:0; border-radius:999px; pointer-events:none; z-index:4; overflow:hidden;
+  }
+  .lvl-f .sweep::after{
+    content:""; position:absolute; top:-40%; bottom:-40%; width:38px;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,0.60), transparent);
+    filter:blur(5px); transform:translateX(-60px) rotate(18deg);
+    animation:glareSweep 7s ease-in-out infinite;
+  }
+  @keyframes glareSweep{
+    0%,62%{transform:translateX(-60px) rotate(18deg);}
+    82%,100%{transform:translateX(210px) rotate(18deg);}
+  }
+  /* caustic: light focused THROUGH the glass, pooled on the content below it */
+  .lvl-f .caustic{
+    position:absolute; left:6%; right:6%; top:88%; height:26px;
+    border-radius:50%; pointer-events:none; z-index:-1;
+    background:radial-gradient(ellipse at 50% 0%, rgba(255,236,205,0.85), rgba(255,236,205,0) 70%);
+    filter:blur(7px); mix-blend-mode:screen;
+  }
+  .lvl-f .thumb{
+    background:linear-gradient(160deg, rgba(255,255,255,0.58), rgba(255,255,255,0.22));
+    box-shadow:inset 0 2px 2px rgba(255,255,255,1), inset 0 -2px 2.5px rgba(0,0,0,0.16),
+               inset 0 0 14px rgba(255,255,255,0.50), 0 6px 16px rgba(26,20,16,0.26);
+  }
+  .bar.moving .thumb{scale:1.09 0.92;}
+
+  @media (prefers-reduced-motion:reduce){
+    .lvl-f .rim{animation:none;}
+    .lvl-f .sweep::after{animation:none; opacity:0;}
+  }
+
+  .cap{width:390px; max-width:100%; margin:0 auto 30px; font-size:12.5px; color:var(--ink2); line-height:1.6;}
+  .cap b{color:var(--ink);}
+  .cap code{font-size:11.5px; background:rgba(0,0,0,0.06); padding:1px 5px; border-radius:4px;}
+
+  /* ── dark ─────────────────────────────────────────────────────── */
+  body.dark{background:#0D0B0A; color:#EDE8E2;}
+  body.dark .sub, body.dark .cap{color:#A09080;}
+  body.dark .cap b{color:#EDE8E2;}
+  body.dark .cap code{background:rgba(255,255,255,0.10);}
+  body.dark .toggles button{background:#221E1A; color:#EDE8E2; border-color:rgba(255,255,255,0.14);}
+  body.dark .toggles button.on{background:#EDE8E2; color:#141210;}
+  body.dark .label{color:#A09080;}
+  body.dark .content{background:
+      radial-gradient(circle at 18% 22%, #E88A5C 0 16%, transparent 42%),
+      radial-gradient(circle at 76% 16%, #7E9BF2 0 14%, transparent 40%),
+      radial-gradient(circle at 34% 76%, #3DDC84 0 15%, transparent 44%),
+      radial-gradient(circle at 88% 72%, #E8B44C 0 13%, transparent 38%),
+      linear-gradient(160deg,#231D17 0%,#141110 100%);}
+  body.dark .content .stripes{background:repeating-linear-gradient(90deg, rgba(255,255,255,0.16) 0 2px, transparent 2px 26px);}
+  body.dark .content .rows div{background:rgba(255,255,255,0.20);}
+  body.dark .header{background:rgba(19,17,16,0.60); border-bottom-color:rgba(255,255,255,0.07);}
+  body.dark .bar button{color:#A09080;}
+  body.dark .bar button.on{color:#E88A5C;}
+
+  body.dark .lvl-a{background:rgba(26,23,20,0.52); border-color:rgba(255,255,255,0.14);
+    box-shadow:inset 0 1px 0.5px rgba(255,255,255,0.30), inset 0 -1px 0.5px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.30);}
+  body.dark .lvl-a::before{background:linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 46%);}
+  body.dark .lvl-a .thumb{background:rgba(255,255,255,0.14);
+    box-shadow:inset 0 1px 0.5px rgba(255,255,255,0.40), inset 0 -1px 1px rgba(0,0,0,0.30), 0 2px 7px rgba(0,0,0,0.30);}
+
+  body.dark .lvl-d{background:linear-gradient(150deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.06) 100%);
+    box-shadow:inset 0 0 20px rgba(255,255,255,0.12), inset 0 -2px 3px rgba(0,0,0,0.55),
+      0 8px 24px rgba(0,0,0,0.58), 0 2px 5px rgba(0,0,0,0.40);}
+  body.dark .lvl-d .rim{background:conic-gradient(from 205deg,
+      rgba(255,255,255,0.90) 0deg, rgba(255,196,130,0.62) 55deg, rgba(255,255,255,0.10) 145deg,
+      rgba(140,182,255,0.55) 232deg, rgba(255,255,255,0.72) 315deg, rgba(255,255,255,0.90) 360deg);}
+  body.dark .lvl-d .spec{background:radial-gradient(closest-side at 50% -14%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.20) 40%, rgba(255,255,255,0) 78%);}
+  body.dark .lvl-d .thumb{background:linear-gradient(160deg, rgba(255,255,255,0.20), rgba(255,255,255,0.07));
+    box-shadow:inset 0 1.5px 1.5px rgba(255,255,255,0.52), inset 0 -1.5px 2px rgba(0,0,0,0.45),
+      inset 0 0 10px rgba(255,255,255,0.12), 0 4px 12px rgba(0,0,0,0.48);}
+
+  body.dark .lvl-f{background:linear-gradient(150deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.012) 50%, rgba(255,255,255,0.045) 100%);
+    box-shadow:inset 0 0 26px rgba(255,255,255,0.15), inset 0 -2.5px 4px rgba(0,0,0,0.62),
+      inset 0 2.5px 4px rgba(255,255,255,0.22),
+      0 14px 34px rgba(0,0,0,0.64), 0 3px 8px rgba(0,0,0,0.46), 0 1px 1px rgba(0,0,0,0.50);}
+  body.dark .lvl-f .rim{background:conic-gradient(from var(--rim-angle),
+      rgba(255,255,255,0.96) 0deg, rgba(255,182,110,0.76) 52deg, rgba(255,255,255,0.08) 142deg,
+      rgba(120,168,255,0.72) 230deg, rgba(255,255,255,0.82) 312deg, rgba(255,255,255,0.96) 360deg);}
+  body.dark .lvl-f .rim2{background:linear-gradient(180deg, rgba(255,255,255,0.42), rgba(255,255,255,0.02) 45%, rgba(0,0,0,0.42));}
+  body.dark .lvl-f .spec{background:radial-gradient(closest-side at 50% -14%, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0.24) 36%, rgba(255,255,255,0) 78%);}
+  body.dark .lvl-f .sweep::after{background:linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);}
+  body.dark .lvl-f .caustic{background:radial-gradient(ellipse at 50% 0%, rgba(255,206,140,0.42), rgba(255,206,140,0) 70%);}
+  body.dark .lvl-f .thumb{background:linear-gradient(160deg, rgba(255,255,255,0.17), rgba(255,255,255,0.05));
+    box-shadow:inset 0 2px 2px rgba(255,255,255,0.58), inset 0 -2px 2.5px rgba(0,0,0,0.50),
+      inset 0 0 14px rgba(255,255,255,0.16), 0 6px 16px rgba(0,0,0,0.52);}
+</style>
+</head>
+<body>
+
+<h1>Header bar — how much “liquid glass”?</h1>
+<p class="sub"><b>Tap a bar</b> to move the lens. <b>Move your pointer across a
+phone</b> (or tilt, on a real device) — F's highlight tracks it. Toggle dark to
+check both grounds.</p>
+
+<div class="toggles">
+  <button id="tLight" class="on">Light</button>
+  <button id="tDark">Dark</button>
+  <button id="tTilt">Enable tilt (iPhone)</button>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <!-- PRISM: real chromatic dispersion. The backdrop is displaced three times
+       at three different strengths, then R, G and B are taken from the three
+       results and recombined — so the edge splits light into colour the way a
+       thick glass rim genuinely does. A little fractal noise is mixed into the
+       edge map so the bend is organic rather than mathematically clean. -->
+  <filter id="prism" x="-15%" y="-40%" width="130%" height="180%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.006 0.014" numOctaves="2" seed="7" result="noise"/>
+    <feImage result="edge" href="data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' width='300' height='60'&gt;&lt;defs&gt;&lt;linearGradient id='h' x1='0' x2='1'&gt;&lt;stop offset='0' stop-color='%23000'/&gt;&lt;stop offset='0.5' stop-color='%23808080'/&gt;&lt;stop offset='1' stop-color='%23fff'/&gt;&lt;/linearGradient&gt;&lt;linearGradient id='v' y1='0' y2='1'&gt;&lt;stop offset='0' stop-color='%23000'/&gt;&lt;stop offset='0.5' stop-color='%23808080'/&gt;&lt;stop offset='1' stop-color='%23fff'/&gt;&lt;/linearGradient&gt;&lt;/defs&gt;&lt;rect width='300' height='60' rx='30' fill='url(%23h)'/&gt;&lt;rect width='300' height='60' rx='30' fill='url(%23v)' style='mix-blend-mode:screen;opacity:0.5'/&gt;&lt;/svg&gt;"/>
+    <feComposite in="edge" in2="noise" operator="arithmetic" k1="0" k2="0.88" k3="0.12" k4="0" result="map"/>
+
+    <feDisplacementMap in="SourceGraphic" in2="map" scale="40" xChannelSelector="R" yChannelSelector="G" result="dR"/>
+    <feDisplacementMap in="SourceGraphic" in2="map" scale="30" xChannelSelector="R" yChannelSelector="G" result="dG"/>
+    <feDisplacementMap in="SourceGraphic" in2="map" scale="20" xChannelSelector="R" yChannelSelector="G" result="dB"/>
+
+    <feColorMatrix in="dR" type="matrix" result="rO"
+      values="1 0 0 0 0   0 0 0 0 0   0 0 0 0 0   0 0 0 1 0"/>
+    <feColorMatrix in="dG" type="matrix" result="gO"
+      values="0 0 0 0 0   0 1 0 0 0   0 0 0 0 0   0 0 0 1 0"/>
+    <feColorMatrix in="dB" type="matrix" result="bO"
+      values="0 0 0 0 0   0 0 0 0 0   0 0 1 0 0   0 0 0 1 0"/>
+
+    <feBlend in="rO" in2="gO" mode="screen" result="rg"/>
+    <feBlend in="rg" in2="bO" mode="screen"/>
+  </filter>
+</svg>
+
+<span id="phones"></span>
+
+<script>
+const ICONS = {
+  categories:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L2.5 12.5V3.5h9l8.6 8.6a2 2 0 010 2.8zM7 7.5h.01"/></svg>',
+  user:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8"/></svg>'
+};
+const LEVELS = [
+  ['lvl-a', 0, 'A — in the app now',
+   '<b>Frosted, not liquid.</b> Flat blur behind a half-opaque white fill and one hairline rim. Nothing bends, nothing catches light, and it sits flat on the content rather than above it.'],
+  ['lvl-d', 1, 'D — “Lens” (safe ceiling)',
+   '<b>Near-transparent body, conic lit rim.</b> The backdrop does the colouring instead of a white wash, and the rim\'s brightness travels around the perimeter picking up a warm fringe one side, cool the other. Pure CSS — survives WKWebView intact.'],
+  ['lvl-f', 2, 'F — “Prism” (ceiling)',
+   '<b>Everything, at once.</b> Real <b>chromatic dispersion</b> — the backdrop is refracted three times at three strengths and R/G/B recombined, so the rim genuinely splits light into colour. Plus a <b>second inner bevel</b> for real edge thickness, a rim highlight that <b>sweeps continuously</b>, a periodic <b>glare</b> across the surface, a <b>caustic</b> pooled on the content beneath, a <b>contact shadow</b>, and a lens that <b>squishes</b> as it travels. The highlight also <b>tracks your pointer</b> (or device tilt). <b>Catch:</b> <code>backdrop-filter:url()</code> is unreliable in WKWebView, so on the real iPhone the dispersion may drop and leave you with roughly D plus the animation.']
+];
+document.getElementById('phones').innerHTML = LEVELS.map(([cls,kind,title,cap])=>`
+  <div class="phone">
+    <div class="content">
+      <div class="stripes"></div>
+      <div class="rows"><div></div><div></div><div></div><div></div></div>
+      <div class="header">
+        <span class="label">${title}</span>
+        <div class="bar ${cls}">
+          ${kind===2?'<div class="caustic"></div>':''}
+          <div class="thumb"></div>
+          ${kind>=1?'<div class="rim"></div>':''}
+          ${kind===2?'<div class="rim2"></div><div class="sweep"></div>':''}
+          <div class="spec"></div>
+          <button data-i="0">${ICONS.categories}Categories</button>
+          <button data-i="1">${ICONS.user}Profile</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="cap">${cap}</div>`).join('');
+
+document.querySelectorAll('.bar').forEach(bar=>{
+  const thumb = bar.querySelector('.thumb');
+  const spec  = bar.querySelector('.spec');
+  const btns  = [...bar.querySelectorAll('button')];
+  let t;
+  btns.forEach(b=>b.addEventListener('click',()=>{
+    const r = bar.getBoundingClientRect(), br = b.getBoundingClientRect();
+    thumb.style.opacity = 1;
+    thumb.style.width = br.width+'px';
+    thumb.style.transform = 'translateX('+(br.left-r.left-3)+'px)';
+    spec.style.opacity = 1;
+    spec.style.transform = 'translateX('+(br.left-r.left+br.width/2-48)+'px)';
+    btns.forEach(x=>x.classList.toggle('on', x===b));
+    bar.classList.add('moving');
+    clearTimeout(t); t = setTimeout(()=>bar.classList.remove('moving'), 260);
+  }));
+});
+
+// Pointer-tracked highlight on F only — the light source moving relative to
+// the glass, rather than the glass moving. Falls back to nothing on touch.
+const fBar = document.querySelector('.lvl-f');
+if (fBar){
+  const fSpec = fBar.querySelector('.spec');
+  fBar.closest('.phone').addEventListener('pointermove', e=>{
+    const r = fBar.getBoundingClientRect();
+    const x = Math.max(-40, Math.min(r.width, e.clientX - r.left));
+    fSpec.style.opacity = 1;
+    fSpec.style.transition = 'transform .16s linear, opacity .3s ease';
+    fSpec.style.transform = 'translateX('+(x-48)+'px)';
+  });
+  // iOS needs an explicit user gesture before it will hand over motion data.
+  tTilt.onclick = async ()=>{
+    try{
+      if (typeof DeviceOrientationEvent !== 'undefined' && DeviceOrientationEvent.requestPermission){
+        const p = await DeviceOrientationEvent.requestPermission();
+        if (p !== 'granted') { tTilt.textContent = 'Tilt denied'; return; }
+      }
+      window.addEventListener('deviceorientation', ev=>{
+        const r = fBar.getBoundingClientRect();
+        const g = Math.max(-40, Math.min(40, ev.gamma||0));      // left/right tilt
+        fSpec.style.opacity = 1;
+        fSpec.style.transition = 'transform .12s linear, opacity .3s ease';
+        fSpec.style.transform = 'translateX('+(((g+40)/80)*r.width - 48)+'px)';
+      });
+      tTilt.textContent = 'Tilt on';
+      tTilt.classList.add('on');
+    }catch(err){ tTilt.textContent = 'Tilt unavailable'; }
+  };
+}
+
+const setMode = d => {
+  document.body.classList.toggle('dark', d);
+  tLight.classList.toggle('on', !d); tDark.classList.toggle('on', d);
+};
+tLight.onclick = ()=>setMode(false);
+tDark.onclick  = ()=>setMode(true);
+</script>
+</body>
+</html>
