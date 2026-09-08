@@ -18126,6 +18126,72 @@ function trimContextBlock(text, max) {
     + "If the question needs something that is not above, say plainly that you cannot see it rather than estimating.";
 }
 
+// The other two ceilings in api/chat.js, enforced where the request is built.
+//
+// Raising MAX_SYSTEM_CHARS to 45,000 fixed the prompt half of the 413s. It did
+// not touch the other two refusals, and both of those grow monotonically with
+// the conversation: every turn adds two entries against MAX_MESSAGES = 40, and
+// every image is re-encoded in full on every later turn against
+// MAX_TOTAL_CHARS = 100,000 (downscaleImage caps one image just under 60,000
+// characters, so two of them exceed that ceiling on their own).
+//
+// Monotonic is the important word. A thread that crosses either line never
+// comes back, so the visible-failure work is what exposed the real cost: the
+// user now gets a red row with a Retry button that re-posts the identical
+// over-size payload and fails identically, forever. Bounding the request here
+// is what makes that Retry mean something.
+//
+// Three rules, in order:
+//   1. At most CHAT_SEND_MAX entries, and never opening on an assistant turn -
+//      the API requires the first message to be the user's.
+//   2. Image bytes only on the newest image. Older ones become a line of text,
+//      which is what the model needs to follow the thread without paying for
+//      the same pixels on every subsequent turn.
+//   3. A character budget on top of both, trimmed from the oldest end. The
+//      newest user turn is never dropped - it is the message being sent, and a
+//      single image plus the largest possible system prompt still fits under
+//      the server's total.
+var CHAT_SEND_MAX = 30;        // entries posted, against the server's 40
+var CHAT_SEND_CHARS = 55000;   // messages budget = MAX_TOTAL_CHARS 100,000 less
+                               // MAX_SYSTEM_CHARS 45,000, so this holds whatever
+                               // the system prompt turns out to be: anything
+                               // over 45,000 is refused on the system rule
+                               // instead, which is its own honest error
+function boundThreadMsg(m) {
+  return ((m && m.text) || "").length + (m && m.att && m.att.b64 ? m.att.b64.length : 0);
+}
+function boundThread(msgs) {
+  var out = (msgs || []).slice(-CHAT_SEND_MAX);
+  while (out.length && out[0].role !== "user") out = out.slice(1);
+
+  var lastImg = -1;
+  for (var i = out.length - 1; i >= 0; i--) {
+    var a = out[i] && out[i].att;
+    if (a && a.kind === "image" && a.b64) { lastImg = i; break; }
+  }
+  out = out.map(function(m, idx) {
+    if (idx === lastImg) return m;
+    if (m && m.att && m.att.kind === "image") {
+      return Object.assign({}, m, {
+        att: null,
+        text: (m.text ? m.text + "\n" : "") + "[an image was attached earlier in this conversation]"
+      });
+    }
+    return m;
+  });
+
+  var total = out.reduce(function(s, m) { return s + boundThreadMsg(m); }, 0);
+  while (out.length > 1 && total > CHAT_SEND_CHARS) {
+    total -= boundThreadMsg(out[0]);
+    out = out.slice(1);
+    while (out.length > 1 && out[0].role !== "user") {
+      total -= boundThreadMsg(out[0]);
+      out = out.slice(1);
+    }
+  }
+  return out;
+}
+
 function richardErr(kind, message, status) {
   var e = new Error(message);
   e.kind = kind;
@@ -20422,7 +20488,7 @@ function Advisor(props) {
         + "Keep every section tight - only what matters to THEM, never generic filler. Do not add any text outside the labeled lines and do not write your own disclaimer; the app displays one."
         + (props.lang && props.lang !== "en" ? " Write all section CONTENT in " + (LANGUAGE_NAMES[props.lang] || "English") + " (labels stay in English)." : "");
       callClaude(
-        nc.map(apiMsg),
+        boundThread(nc).map(apiMsg),
         focusSys, 1800,
         function(err, reply) {
           setChatLoading(false);
@@ -20438,7 +20504,7 @@ function Advisor(props) {
       return;
     }
     callClaude(
-      nc.map(apiMsg),
+      boundThread(nc).map(apiMsg),
       customInstructionsPrefix + "You are Richard, a smart assistant inside the Richy personal finance app. You are calm, warm, direct, and knowledgeable - a trusted friend who is an expert in money and can help with anything the user asks. You have deep knowledge from The Psychology of Money, Rich Dad Poor Dad, The Millionaire Next Door, I Will Teach You To Be Rich, The Total Money Makeover, Think and Grow Rich, The Richest Man in Babylon, and wisdom from Warren Buffett, Charlie Munger, Ray Dalio, Naval Ravikant, Mark Cuban, Grant Cardone and other wealth builders. You can answer questions about personal finance, investments, budgeting, debt, taxes, and wealth-building. HARD LIMIT on investments: never give an opinion on whether to buy, sell, or hold any SPECIFIC security, fund, or other financial asset, never react to specific holdings with a recommendation, and never suggest an amount to put into one - for those questions give the general educational principle and the tradeoff, then say that call belongs with a licensed investment advisor. The budgeting side (whether their cash flow could absorb investing at all) is yours to answer fully. You can also answer questions about how to use the Richy app (it has tabs: Overview, Activity for transactions, Budgets for spending limits, Goals for savings targets, and Advisor which is where we are now; categories are managed via the tag icon on Overview or the Manage link in pickers). You can answer general knowledge and technical questions too - if someone asks about math, technology, or anything else, answer helpfully. Always refer back to the user's real financial data when relevant. Current user financial data: " + ctx + "." + (coreProblem ? " The user's primary financial challenge is: " + coreProblem + ". Connect your advice to this when relevant." : "")
       + " BE SPECIFIC, NEVER GENERIC. The user has heard \"build an emergency fund, cancel some subscriptions, invest in index funds\" a hundred times - generic tips read as a failure and are the top complaint about advisors like you. Anchor every answer in THEIR actual numbers above: quote their real figures, do the arithmetic, and end with a concrete next step that has an amount or a date attached. When they ask whether they can afford something (a purchase, a trip, a rent level, a big decision), compute it against their real income, essentials, savings and cash flow and give a direct answer - yes, no, or \"here is exactly what it would take\" - with the numbers shown, not a list of things to consider. When they ask about debt, give a payoff order, a specific monthly amount, and an estimated debt-free timeframe derived from their balances and rates; never just \"pay it down\" or \"build savings first.\" Cite a principle or a name only when it sharpens a specific recommendation - never decorate generic advice with a famous quote. If you truly lack a number needed to answer precisely, ask the one question that would unlock it instead of retreating to textbook advice."
       + " IMPORTANT - YOU CAN UPDATE THE APP FOR THE USER, ACROSS EVERYTHING except Business/Investing accounts and Trips (those have their own dedicated tools). When the user tells you about a real money event, or directly asks you to change or create something in the app, acknowledge it warmly in words AND append one or more action tags at the very END of your reply (after your sentence, on their own). The app validates and shows the user a confirmation card before anything is applied - nothing you emit takes effect until they tap Apply, so it is fine to be generous about proposing a tag when the user's intent is clear. Action formats (use valid JSON, no spaces in keys): "
