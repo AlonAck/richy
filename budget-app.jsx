@@ -4863,6 +4863,339 @@ function riseIn(i) {
 }
 // Press feedback: the same pair of transitions on every tappable surface.
 var PRESS_T = "transform var(--m-press) ease, box-shadow var(--m-quick) ease";
+
+// === LIQUID GLASS BUTTON ===
+// Port of the shadcn-format component in components/ui/liquid-glass-button.tsx
+// (21st.dev "Liquid Glass Button" - the LiquidButton export) to the app's
+// inline-style, ES5-function house style. This is THE button primitive:
+// BigBtn, JrBtn, GlassActionBtn and every filled <button> in the app render
+// through it, so there is one glass implementation to tune, not three.
+//
+// Layers, bottom to top - the upstream stacks them the same way:
+//   .rc-lq-glass  the backdrop: blur + saturate, the same frosted pass the
+//                 app's nav bars use. The upstream points backdrop-filter at
+//                 an SVG displacement filter (turbulence -> displace -> blur)
+//                 for a wobbly "liquid" refraction. That path is left out on
+//                 purpose: only Chromium can run it at all (WebKit - every
+//                 iPhone and the Capacitor shell - ignores it), and measured in
+//                 Chromium with 37 capsules on screen it took the frame from
+//                 9ms to ~385ms, with 12s stalls. Not shippable.
+//   .rc-lq-tint   the variant colour: clear for neutral, the live accent for
+//                 primary, green/red for their states. Where the upstream is
+//                 always clear with text-primary, Richy needs a filled primary
+//                 CTA that reads as THE action on a screen (rule: one
+//                 commit action per screen carries colour, the rest are clear).
+//   .rc-lq-rim    the upstream's inset-shadow stack, verbatim: a hairline on
+//                 the top-left edge, a shade on the bottom-right, an inner
+//                 vignette and a soft drop. Two stacks, because a white rim
+//                 over a cream page is invisible and a black rim over a
+//                 near-black card is too.
+//   .rc-lq-label  the children, above everything, pointer-events off so the
+//                 press always lands on the button itself.
+//
+// No shine. There is no specular sweep and no moving highlight on any button
+// (Alon: "remove the shine", 9 Sep 2026, after the first gallery); the rim's
+// static hairline is the only light on the glass.
+//
+// Touch (Alon, same day): "change the output only when the finger leaves the
+// button", and on a long press "follow the movement of the finger by making
+// it a little bigger". So:
+//   - A tap commits on RELEASE, never on press. Releasing outside the capsule
+//     (plus ~28px of slop, the iOS control rule) cancels without firing.
+//   - Hold ~340ms (the HeaderShortcutBar threshold) and the capsule LIFTS:
+//     scales to 1.06 with a MEDIUM haptic, then follows the finger - 1:1 for
+//     the first stretch, rubber-banding beyond it so it eases toward a limit
+//     instead of running away. Release inside commits, outside cancels, and
+//     either way it springs home on --m-spring.
+//   The gesture values never touch React state (the header bar's lesson):
+//   rect measured once at lift, moves coalesced into one rAF, transform
+//   written straight to node.style. Native click still carries a plain tap
+//   (so propagation and keyboard activation behave exactly like a raw
+//   <button>); only a lifted release fires the handler itself, and swallows
+//   the click that may follow so nothing lands twice.
+//
+// Colour comes from the live T palette at render time (rule 1 of the colour
+// system: every value has a dark pair), so the capsules re-mix for violet /
+// ember / ocean and for dark mode with no stylesheet change. Hover, press,
+// reduced-motion and reduced-transparency states live in ensureLiquidCss(),
+// since an inline style cannot express them; the per-render colours travel
+// down as custom properties the same way GlassActionBtn's did.
+//
+// Props (all optional):
+//   variant   "primary" | "neutral" (default) | "green" | "red" | "gold" | "ghost"
+//   soft      true = the variant hue as a light wash with hue-coloured ink
+//             (the old T.orangeDim/T.greenDim/T.redDim secondary look) instead
+//             of a filled capsule with white ink.
+//   color     hex to tint with instead of the variant's hue (BigBtn's red).
+//   ink       label colour override.
+//   size      "sm" | "md" (default, 44px - the HIG minimum target) | "lg" | "xl"
+//             | "icon" (a circle; iconSize sets its diameter, default 44).
+//   full      width: 100% (a screen-bottom CTA). Labels may wrap on full
+//             buttons and never on pills.
+//   flex      flex value for a row of capsules.
+//   blur      false = no backdrop layer (a caller that knows it sits over a
+//             live canvas; JrShaderBg also flips this globally while mounted).
+//   busy      shows the busy label (or the children) with ThinkingDots and
+//             disables the button; disabled empties the glass out.
+//   onClick / onPress  either name; the rest of the props (aria-*, title,
+//             key, id, tabIndex, type, onPointerDown...) go straight to the
+//             <button>, so it is a drop-in for a raw <button>.
+var LQ_SIZES = {
+  sm: { h: 34, fs: 12.5, px: 14, gap: 6 },
+  md: { h: 44, fs: 14.5, px: 18, gap: 8 },
+  lg: { h: 52, fs: 16, px: 24, gap: 8 },
+  xl: { h: 56, fs: 17, px: 28, gap: 9 },
+};
+var LQ_RIM_LIGHT = "0 0 6px rgba(0,0,0,0.03),0 2px 6px rgba(0,0,0,0.08),inset 3px 3px 0.5px -3px rgba(0,0,0,0.9),inset -3px -3px 0.5px -3px rgba(0,0,0,0.85),inset 1px 1px 1px -0.5px rgba(0,0,0,0.6),inset -1px -1px 1px -0.5px rgba(0,0,0,0.6),inset 0 0 6px 6px rgba(0,0,0,0.12),inset 0 0 2px 2px rgba(0,0,0,0.06)";
+var LQ_RIM_DARK = "0 0 8px rgba(0,0,0,0.03),0 2px 6px rgba(0,0,0,0.08),inset 3px 3px 0.5px -3.5px rgba(255,255,255,0.09),inset -3px -3px 0.5px -3.5px rgba(255,255,255,0.85),inset 1px 1px 1px -0.5px rgba(255,255,255,0.6),inset -1px -1px 1px -0.5px rgba(255,255,255,0.6),inset 0 0 6px 6px rgba(255,255,255,0.12),inset 0 0 2px 2px rgba(255,255,255,0.06),0 0 12px rgba(0,0,0,0.15)";
+// Props LiquidButton consumes itself; everything else is forwarded to the DOM.
+var LQ_OWN = { variant: 1, soft: 1, color: 1, ink: 1, size: 1, iconSize: 1, height: 1, fontSize: 1, weight: 1, full: 1, flex: 1, blur: 1, busy: 1, busyLabel: 1, wrap: 1, onPress: 1, onClick: 1, disabled: 1, children: 1, style: 1, className: 1, onPointerDown: 1, onPointerMove: 1, onPointerUp: 1, onPointerCancel: 1, onPointerLeave: 1 };
+var LQ_HOLD_MS = 340;   // hold before the capsule lifts (same as HeaderShortcutBar)
+var LQ_SLOP = 28;       // release this far outside still counts as inside
+var LQ_FREE = 24;       // px the lifted capsule follows 1:1 before rubber-banding
+var LQ_SCROLL = 10;     // a finger travelling this far before the hold is scrolling
+
+function lqPalette(variant, soft, color) {
+  var d = !!T.isDark;
+  var v = variant || "neutral";
+  var hue = color || (v === "green" ? T.green : v === "red" ? T.red : v === "gold" ? T.gold : T.orange);
+  var lift = d ? "0 16px 34px rgba(0,0,0,0.55)" : "0 14px 30px rgba(40,28,16,0.22),0 2px 6px rgba(40,28,16,0.10)";
+  var p = { rim: d ? LQ_RIM_DARK : LQ_RIM_LIGHT, tint: "transparent", ink: T.orange, textShadow: "none", shadow: "none", shadowHov: null, shadowLift: lift, solid: d ? T.darkCard2 : T.card };
+  if (v === "ghost") {
+    p.rim = "none"; p.ink = T.ink2; p.solid = "transparent";
+    return p;
+  }
+  if (v === "neutral") {
+    // Clear glass. The white wash is what keeps the label legible over busy
+    // content on the light side; on dark it is a faint lift, no more.
+    p.tint = d ? "linear-gradient(180deg,rgba(255,255,255,0.10),rgba(255,255,255,0.05))" : "linear-gradient(180deg,rgba(255,255,255,0.62),rgba(255,255,255,0.34))";
+    return p;
+  }
+  if (soft) {
+    p.tint = "linear-gradient(180deg," + jrRgba(hue, d ? 0.22 : 0.14) + "," + jrRgba(hue, d ? 0.30 : 0.24) + ")";
+    p.ink = d ? hue : jrShade(hue, 0.28);
+    p.solid = "linear-gradient(" + jrRgba(hue, d ? 0.26 : 0.16) + "," + jrRgba(hue, d ? 0.26 : 0.16) + ")," + (d ? T.darkCard2 : T.card);
+    return p;
+  }
+  // Filled: the hue as translucent glass under white ink. The dark side leans
+  // on a darkened hue so white text keeps its contrast over a near-black card.
+  p.tint = d
+    ? "linear-gradient(180deg," + jrShadeRgba(hue, 0.30, 0.88) + "," + jrShadeRgba(hue, 0.46, 0.96) + ")"
+    : "linear-gradient(180deg," + jrRgba(hue, 0.74) + "," + jrShadeRgba(hue, 0.18, 0.92) + ")";
+  p.ink = "#FFFFFF";
+  p.textShadow = "0 1px 1px " + jrShadeRgba(hue, 0.62, 0.35);
+  p.shadow = "0 6px 18px " + jrRgba(hue, d ? 0.30 : 0.34) + ",0 1px 2px rgba(0,0,0,0.10)";
+  p.shadowHov = "0 9px 24px " + jrRgba(hue, d ? 0.38 : 0.42) + ",0 1px 2px rgba(0,0,0,0.10)";
+  p.shadowLift = "0 16px 34px " + jrRgba(hue, d ? 0.46 : 0.50) + ",0 2px 6px rgba(0,0,0,0.12)";
+  p.solid = d ? jrShade(hue, 0.3) : hue;
+  return p;
+}
+// Still glass, just emptied out: no tint, no glow, and the CSS skips the states.
+function lqDisabledPalette() {
+  var d = !!T.isDark;
+  return {
+    rim: d ? LQ_RIM_DARK : LQ_RIM_LIGHT,
+    tint: d ? "linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.09))" : "linear-gradient(180deg," + jrRgba(T.ink, 0.03) + "," + jrRgba(T.ink, 0.06) + ")",
+    ink: T.ink3, textShadow: "none", shadow: "none", shadowHov: null, shadowLift: "none",
+    solid: d ? T.darkCard2 : T.card,
+  };
+}
+
+// A live canvas on screen (JrShaderBg, JrFocusRaysBg) means a backdrop
+// filter above it would re-filter at 60fps forever, even under reduced
+// motion (see JrReadingLight). Each canvas bumps this while mounted and the
+// stylesheet drops every capsule to plain tinted glass for the duration.
+var _lqShaderCount = 0;
+function lqShaderLive(delta) {
+  _lqShaderCount = Math.max(0, _lqShaderCount + delta);
+  if (typeof document === "undefined" || !document.documentElement) return;
+  if (_lqShaderCount > 0) document.documentElement.classList.add("rc-shader-live");
+  else document.documentElement.classList.remove("rc-shader-live");
+}
+
+function ensureLiquidCss() {
+  if (typeof document === "undefined") return;
+  var id = "richy-liquid-css";
+  if (document.getElementById(id)) return;
+  var st = document.createElement("style"); st.id = id;
+  st.textContent = [
+    ".rc-lq{position:relative;isolation:isolate;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;margin:0;border:none;border-radius:999px;background:transparent;cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation;box-shadow:var(--lq-sh,none);transition:transform var(--m-press) ease,box-shadow var(--m-quick) ease,color var(--m-quick) ease;}",
+    ".rc-lq.rc-lq-full{display:flex;width:100%;}",
+    ".rc-lq:disabled{cursor:default;}",
+    ".rc-lq>span{border-radius:inherit;}",
+    ".rc-lq-glass{position:absolute;inset:0;z-index:0;pointer-events:none;-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);}",
+    ".rc-lq-noblur .rc-lq-glass,html.rc-shader-live .rc-lq-glass{display:none;}",
+    ".rc-lq-tint{position:absolute;inset:0;z-index:1;pointer-events:none;background:var(--lq-tint,transparent);transition:background var(--m-quick) ease;}",
+    ".rc-lq-rim{position:absolute;inset:0;z-index:2;pointer-events:none;box-shadow:var(--lq-rim,none);transition:box-shadow var(--m-quick) ease;}",
+    ".rc-lq-label{position:relative;z-index:3;display:inline-flex;align-items:center;justify-content:center;min-width:0;max-width:100%;pointer-events:none;line-height:1.2;}",
+    // Hover only where a pointer can hover, so touch never sticks a scale on.
+    "@media (hover:hover){.rc-lq:hover:not(:disabled){transform:scale(1.03);box-shadow:var(--lq-sh-hov,var(--lq-sh,none));}}",
+    // Press: the squish; lifted (long press): bigger, floating, and the
+    // inline transform written by the gesture takes over from :active.
+    ".rc-lq.rc-lq-down:not(:disabled){transform:scale(0.97);}",
+    ".rc-lq.rc-lq-lift:not(:disabled){box-shadow:var(--lq-sh-lift,var(--lq-sh,none));z-index:5;}",
+    // Reduce Transparency: no see-through surfaces at all, the same call the
+    // iOS build makes - the glass goes and an opaque card takes its place.
+    "@media (prefers-reduced-transparency:reduce){.rc-lq-glass{display:none;}.rc-lq-tint{background:var(--lq-solid,var(--lq-tint));}}",
+    "@media (prefers-reduced-motion:reduce){.rc-lq{transition:none;}.rc-lq:hover:not(:disabled),.rc-lq.rc-lq-down:not(:disabled){transform:none;}}",
+  ].join("");
+  document.head.appendChild(st);
+}
+if (typeof document !== "undefined") ensureLiquidCss();
+
+// Follow curve for a lifted capsule: 1:1 for LQ_FREE px, then |over|^0.68
+// (the HeaderShortcutBar rubber-band), capped so it eases toward a limit.
+function lqFollow(v) {
+  var s = v < 0 ? -1 : 1, a = Math.abs(v);
+  if (a > LQ_FREE) a = LQ_FREE + Math.min(Math.pow(a - LQ_FREE, 0.68), 36);
+  return s * a;
+}
+
+function LiquidButton(props) {
+  useEffect(function() { ensureLiquidCss(); }, []);
+  var ref = useRef(null);
+  var gRef = useRef(null);          // the live gesture, off React's render path
+  var swallowRef = useRef(0);       // timestamp: a lifted release already fired
+  var variant = props.variant || "neutral";
+  var dis = !!props.disabled || !!props.busy;
+  var icon = props.size === "icon";
+  var sz = LQ_SIZES[props.size] || LQ_SIZES.md;
+  var p = dis ? lqDisabledPalette() : lqPalette(variant, props.soft, props.color);
+  if (props.ink && !dis) p.ink = props.ink;
+  var h = props.height || (icon ? (props.iconSize || 44) : sz.h);
+  var wrap = props.wrap != null ? !!props.wrap : !!props.full;
+  var cls = "rc-lq" + (props.full ? " rc-lq-full" : "") + (props.blur === false ? " rc-lq-noblur" : "") + (props.className ? " " + props.className : "");
+  var style = {
+    height: h, minHeight: h,
+    width: icon ? h : (props.full ? "100%" : undefined),
+    minWidth: icon ? h : undefined,
+    padding: icon ? 0 : "0 " + sz.px + "px",
+    fontFamily: UI, fontSize: props.fontSize || (icon ? 15 : sz.fs), fontWeight: props.weight || 700, letterSpacing: "-0.01em",
+    color: p.ink, textShadow: p.textShadow,
+    flex: props.flex != null ? props.flex : undefined,
+    "--lq-rim": p.rim, "--lq-tint": p.tint, "--lq-solid": p.solid,
+    "--lq-sh": p.shadow, "--lq-sh-hov": p.shadowHov || p.shadow, "--lq-sh-lift": p.shadowLift,
+  };
+  if (props.style) Object.assign(style, props.style);
+  var action = props.onClick || props.onPress;
+
+  // While lifted, the finger drives the capsule, not the page: a non-passive
+  // touchmove is the only thing that can stop the scroll once it has begun.
+  useEffect(function() {
+    var node = ref.current;
+    if (!node) return;
+    function onTouchMove(e) { var G = gRef.current; if (G && G.lifted) e.preventDefault(); }
+    node.addEventListener("touchmove", onTouchMove, { passive: false });
+    return function() {
+      node.removeEventListener("touchmove", onTouchMove);
+      var G = gRef.current; if (G) { clearTimeout(G.timer); if (G.raf) cancelAnimationFrame(G.raf); gRef.current = null; }
+    };
+  }, []);
+
+  function paint(G) {
+    var node = ref.current; if (!node) return;
+    node.style.transform = "translate(" + lqFollow(G.dx) + "px," + lqFollow(G.dy) + "px) scale(1.06)";
+  }
+  function settle(G, commit, e) {
+    gRef.current = null;
+    clearTimeout(G.timer);
+    if (G.raf) cancelAnimationFrame(G.raf);
+    var node = ref.current;
+    if (node) {
+      node.classList.remove("rc-lq-down");
+      if (G.lifted) {
+        node.classList.remove("rc-lq-lift");
+        node.style.transition = "transform var(--m-settle) var(--m-spring), box-shadow var(--m-quick) ease";
+        node.style.transform = "";
+        try { node.releasePointerCapture(G.id); } catch (x) {}
+        setTimeout(function() { node.style.transition = ""; node.style.willChange = ""; }, 600);
+      }
+    }
+    if (G.lifted) {
+      // The click that may follow a lifted release is ours, not a second tap.
+      swallowRef.current = Date.now();
+      if (commit && action) action(e);
+    }
+  }
+  function onDown(e) {
+    if (props.onPointerDown) props.onPointerDown(e);
+    if (dis || (e.pointerType === "mouse" && e.button !== 0)) return;
+    var node = ref.current; if (!node) return;
+    if (gRef.current) settle(gRef.current, false, e);
+    var G = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, dy: 0, lifted: false, timer: 0, raf: 0, rect: null };
+    gRef.current = G;
+    node.classList.add("rc-lq-down");
+    G.timer = setTimeout(function() {
+      if (gRef.current !== G) return;
+      G.lifted = true;
+      G.rect = node.getBoundingClientRect();
+      try { node.setPointerCapture(G.id); } catch (x) {}
+      node.classList.remove("rc-lq-down");
+      node.classList.add("rc-lq-lift");
+      node.style.willChange = "transform";
+      node.style.transition = "transform 0.26s var(--m-spring), box-shadow var(--m-quick) ease";
+      nativeHaptic("MEDIUM");
+      paint(G);
+    }, LQ_HOLD_MS);
+  }
+  function onMove(e) {
+    if (props.onPointerMove) props.onPointerMove(e);
+    var G = gRef.current; if (!G || e.pointerId !== G.id) return;
+    G.dx = e.clientX - G.x0; G.dy = e.clientY - G.y0;
+    if (!G.lifted) {
+      // Travelling before the hold completes is a scroll, not a press.
+      if (Math.abs(G.dx) > LQ_SCROLL || Math.abs(G.dy) > LQ_SCROLL) settle(G, false, e);
+      return;
+    }
+    if (!G.raf) G.raf = requestAnimationFrame(function() { G.raf = 0; paint(G); });
+  }
+  function onUp(e) {
+    if (props.onPointerUp) props.onPointerUp(e);
+    var G = gRef.current; if (!G || e.pointerId !== G.id) return;
+    var r = G.rect || ref.current.getBoundingClientRect();
+    var inside = e.clientX >= r.left - LQ_SLOP && e.clientX <= r.right + LQ_SLOP && e.clientY >= r.top - LQ_SLOP && e.clientY <= r.bottom + LQ_SLOP;
+    // A plain tap is left to the native click (same propagation, same
+    // keyboard path as a raw <button>); only a lifted release commits here.
+    settle(G, inside, e);
+  }
+  function onCancel(e) {
+    if (props.onPointerCancel) props.onPointerCancel(e);
+    var G = gRef.current; if (G) settle(G, false, e);
+  }
+  function onLeave(e) {
+    if (props.onPointerLeave) props.onPointerLeave(e);
+    var G = gRef.current;
+    // Captured (lifted) pointers never leave; an unlifted finger sliding off
+    // the capsule just drops the press so the hold cannot fire later.
+    if (G && !G.lifted) settle(G, false, e);
+  }
+  function onClick(e) {
+    if (dis) return;
+    if (Date.now() - swallowRef.current < 500) { e.preventDefault(); e.stopPropagation(); return; }
+    if (action) action(e);
+  }
+
+  var dom = {};
+  for (var k in props) { if (!LQ_OWN[k]) dom[k] = props[k]; }
+  dom.ref = ref;
+  dom.className = cls;
+  dom.style = style;
+  dom.disabled = dis;
+  dom.onClick = onClick;
+  dom.onPointerDown = onDown; dom.onPointerMove = onMove; dom.onPointerUp = onUp; dom.onPointerCancel = onCancel; dom.onPointerLeave = onLeave;
+  var label = props.busy
+    ? <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>{props.busyLabel || props.children}<ThinkingDots size={4.5} color={p.ink === "#FFFFFF" ? "rgba(255,255,255,0.9)" : p.ink} /></span>
+    : props.children;
+  return (
+    <button {...dom}>
+      {props.blur === false ? null : <span className="rc-lq-glass" aria-hidden="true" />}
+      <span className="rc-lq-tint" aria-hidden="true" />
+      <span className="rc-lq-rim" aria-hidden="true" />
+      <span className="rc-lq-label" style={{ gap: sz.gap, whiteSpace: wrap ? "normal" : "nowrap" }}>{label}</span>
+    </button>
+  );
+}
+
 // Fill a bar or ring from zero on first paint. Render at 0, flip on the next
 // frame, and the element's own transition does the rest. The timer is a backstop
 // for a hidden tab, where rAF is paused: without it a screen rendered in the
@@ -6054,28 +6387,14 @@ function LaurelBadge(props) {
 // Journey CTA: press-scale, disabled-to-enabled crossfade, spinner-in-button.
 function JrBtn(props) {
   useEffect(function() { ensureJourneyCss(); ensureLoadingCss(); }, []);
-  var _pr = useState(false); var pressed = _pr[0]; var setPressed = _pr[1];
   var off = props.disabled || props.busy;
   return (
-    <button onClick={function() { if (!off && props.onPress) props.onPress(); }}
-      onPointerDown={function() { if (!off) setPressed(true); }}
-      onPointerUp={function() { setPressed(false); }}
-      onPointerLeave={function() { setPressed(false); }}
-      style={Object.assign({
-        width: "100%", border: "none", borderRadius: 16, padding: "17px 0", fontSize: 17, fontFamily: UI, fontWeight: 700, letterSpacing: "-0.01em",
-        background: props.disabled ? J.fill3 : props.ghost ? "none" : T.btn,
-        color: props.disabled ? J.ink3 : props.ghost ? J.ink2 : "#fff",
-        cursor: off ? "default" : "pointer",
-        boxShadow: props.disabled || props.ghost ? "none" : "0 6px 20px " + T.orangeGlow + ", 0 2px 6px rgba(0,0,0,0.1)",
-        transform: pressed ? "scale(0.97)" : "scale(1)",
-        transition: "transform 0.12s ease, background 0.35s ease, box-shadow 0.35s ease, color 0.35s ease",
-        boxSizing: "border-box",
-        animation: props.pulse && !off ? "rcjPulseGlow 2.2s ease-in-out infinite" : "none"
-      }, props.style)}>
-      {props.busy
-        ? <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>{props.busyLabel || "Please wait"}<ThinkingDots size={4.5} color="rgba(255,255,255,0.9)" /></span>
-        : props.label}
-    </button>
+    <LiquidButton variant={props.ghost ? "ghost" : "primary"} size="xl" full
+      disabled={props.disabled} busy={props.busy} busyLabel={props.busyLabel || "Please wait"}
+      onClick={props.onPress}
+      style={Object.assign({ animation: props.pulse && !off ? "rcjPulseGlow 2.2s ease-in-out infinite" : "none" }, props.style)}>
+      {props.label}
+    </LiquidButton>
   );
 }
 
@@ -6123,32 +6442,22 @@ function JrChip(props) {
 // Small circular icon button (back chevron etc.) with press squish.
 function JrIconBtn(props) {
   useEffect(function() { ensureJourneyCss(); }, []);
-  var _pr = useState(false); var pressed = _pr[0]; var setPressed = _pr[1];
   return (
-    <button onClick={props.onPress}
-      onPointerDown={function() { setPressed(true); }}
-      onPointerUp={function() { setPressed(false); }}
-      onPointerLeave={function() { setPressed(false); }}
-      style={{ width: props.size || 34, height: props.size || 34, borderRadius: "50%", border: "1.5px solid " + J.line, background: J.card, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", padding: 0, flexShrink: 0, boxSizing: "border-box", transform: pressed ? "scale(0.86)" : "scale(1)", transition: "transform 0.13s ease" }}>
+    <LiquidButton size="icon" iconSize={props.size || 34} onClick={props.onPress} aria-label={props.label} title={props.label}>
       <span style={{ transform: "rotate(" + (props.rotate || 0) + "deg)", display: "flex" }}>
         <SVGIcon id={props.icon || "chevron"} size={16} color={J.ink2} />
       </span>
-    </button>
+    </LiquidButton>
   );
 }
 
 // Stepper - / + button: bigger tap target, purple flash + squish on press.
 function JrStepBtn(props) {
   useEffect(function() { ensureJourneyCss(); }, []);
-  var _pr = useState(false); var pressed = _pr[0]; var setPressed = _pr[1];
   return (
-    <button onClick={props.onPress}
-      onPointerDown={function() { setPressed(true); }}
-      onPointerUp={function() { setPressed(false); }}
-      onPointerLeave={function() { setPressed(false); }}
-      style={{ width: 46, height: 46, borderRadius: "50%", border: "1.5px solid " + (pressed ? T.orange : J.line), background: pressed ? T.orangeDim : J.card, color: pressed ? T.orange : J.ink2, fontSize: 22, fontWeight: 600, cursor: "pointer", boxShadow: pressed ? "0 2px 14px " + T.orangeGlow : "0 2px 10px rgba(0,0,0,0.06)", fontFamily: UI, boxSizing: "border-box", flexShrink: 0, lineHeight: 1, transform: pressed ? "scale(0.9)" : "scale(1)", transition: "transform 0.12s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease" }}>
+    <LiquidButton size="icon" iconSize={46} fontSize={22} weight={600} ink={J.ink2} onClick={props.onPress} aria-label={props.aria || props.label}>
       {props.label}
-    </button>
+    </LiquidButton>
   );
 }
 
@@ -6615,6 +6924,7 @@ function JrShaderBg(props) {
     if (!gl) return; // no WebGL -> container background shows through
     var S = stateRef.current;
     S.gl = gl;
+    lqShaderLive(1);
 
     var vs = "attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }";
     var fs = [
@@ -6752,6 +7062,7 @@ function JrShaderBg(props) {
     document.addEventListener("visibilitychange", onVis);
 
     return function() {
+      lqShaderLive(-1);
       if (S.raf) cancelAnimationFrame(S.raf);
       window.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", onVis);
@@ -6846,11 +7157,13 @@ function JrFocusRaysBg(props) {
       gl.drawArrays(gl.TRIANGLES, 0, 6);
       raf = requestAnimationFrame(frame);
     }
+    lqShaderLive(1);
     raf = requestAnimationFrame(frame);
     function onVis() { hidden = document.hidden; }
     window.addEventListener("resize", resize);
     document.addEventListener("visibilitychange", onVis);
     return function() {
+      lqShaderLive(-1);
       if (raf) cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", onVis);
@@ -7255,29 +7568,14 @@ function SegRow(props) {
 }
 
 function BigBtn(props) {
-  var _p = useState(false); var pressed = _p[0]; var setPressed = _p[1];
-  var live = !props.disabled;
+  // Screen-bottom commit action. Was a flat T.btn gradient slab; now the
+  // filled primary liquid-glass capsule (LiquidButton). `color` keeps the
+  // destructive red the delete confirmations pass.
   return (
-    <button onClick={props.disabled ? undefined : props.onPress}
-      onPointerDown={function() { if (live) setPressed(true); }}
-      onPointerUp={function() { setPressed(false); }}
-      onPointerLeave={function() { setPressed(false); }}
-      onPointerCancel={function() { setPressed(false); }}
-      style={{
-        width: "100%",
-        background: props.disabled ? T.fill3 : (props.color || T.btn),
-        color: props.disabled ? T.ink3 : "#fff",
-        textShadow: props.disabled ? "none" : "0 1px 2px rgba(42,31,77,0.35)",
-        border: "none", borderRadius: 14, padding: "13px 0",
-        fontSize: 16, fontFamily: UI, fontWeight: 700,
-        cursor: props.disabled ? "default" : "pointer",
-        marginTop: 10,
-        boxShadow: props.disabled ? "none" : (pressed ? "0 2px 8px " + T.orangeGlow : "0 4px 14px " + T.orangeGlow),
-        transform: pressed ? "scale(0.975)" : "scale(1)",
-        transition: PRESS_T,
-      }}>
+    <LiquidButton variant="primary" size="xl" full color={props.color} disabled={props.disabled}
+      onClick={props.onPress} style={Object.assign({ marginTop: 10 }, props.style)}>
       {props.label}
-    </button>
+    </LiquidButton>
   );
 }
 
@@ -28969,82 +29267,23 @@ function StockScoutView(props) {
 // personal balance is logged as a transfer (so net worth is unchanged); expenses
 // and revenue are pot-only moves that change the business cash and net worth.
 // Liquid-glass action capsule - design 1A ("Tinted glass pills") from the
-// Claude Design canvas "Action Buttons - Liquid Glass".
-//
-// The shared recipe is tint / shade / shine / glass: colour lives in a
-// translucent tint layer rather than a flat fill, the 1px top rim is the shine,
-// the inset bottom is the shade, and blur+saturate is held at the system value
-// (blur(18px) saturate(180%)). The canvas hard-codes its violet; here every
-// layer is derived from the live T palette, so the capsules follow purple /
-// classic / blue and re-mix for dark mode - where the white shine drops to a
-// fraction of its light-mode alpha and the primary tint darkens so white label
-// ink keeps its contrast against a near-black card.
+// Claude Design canvas "Action Buttons - Liquid Glass". The tint / shade /
+// shine / glass recipe it introduced now lives in LiquidButton (see the
+// LIQUID GLASS BUTTON section), which every button in the app renders through;
+// this is the hub's three-kind wrapper over it.
 //
 // kind: "primary" (accent; carries the one specular sweep) | "green" | "neutral".
 function GlassActionBtn(props) {
+  // Thin wrapper kept for its call sites; the capsule itself is LiquidButton,
+  // so the business hub and the rest of the app share one glass. "green" was
+  // the lighter, green-inked weight in design 1A, hence `soft`.
   var kind = props.kind || "neutral";
-  var dis = !!props.disabled;
-  var d = !!T.isDark;
-  // Shine factor: the canvas's white rims and washes are far too hot over a
-  // dark card, so every white alpha runs through here.
-  var sf = d ? 0.36 : 1;
-  function w(a) { return "rgba(255,255,255," + (Math.round(a * sf * 1000) / 1000) + ")"; }
-  var glass = "blur(18px) saturate(180%)";
-  var tint, shine, rim, sh, shHov, ink, txtShadow, sweep = null;
-
-  if (dis) {
-    // Still glass, just emptied out: no tint, no glow, and CSS skips the states.
-    shine = "linear-gradient(180deg," + w(0.62) + "," + w(0.22) + " 48%,rgba(255,255,255,0) 66%)";
-    tint = "linear-gradient(180deg," + jrRgba(T.ink, d ? 0.10 : 0.02) + "," + jrRgba(T.ink, d ? 0.16 : 0.05) + ")";
-    rim = "1px solid " + w(0.5);
-    sh = "inset 0 1px 0 " + w(0.7) + ",inset 0 -5px 10px " + (d ? "rgba(0,0,0,0.26)" : jrRgba(T.ink, 0.05)) + ",0 1px 2px rgba(0,0,0,0.04)";
-    shHov = sh;
-    ink = T.ink3;
-  } else if (kind === "primary") {
-    var acc = T.orange;
-    shine = "linear-gradient(180deg," + w(0.5) + "," + w(0.1) + " 44%,rgba(255,255,255,0) 62%)";
-    tint = d
-      ? "linear-gradient(180deg," + jrShadeRgba(acc, 0.30, 0.88) + "," + jrShadeRgba(acc, 0.46, 0.96) + ")"
-      : "linear-gradient(180deg," + jrRgba(acc, 0.72) + "," + jrShadeRgba(acc, 0.18, 0.90) + ")";
-    rim = "1px solid " + w(0.5);
-    sh = "inset 0 1px 0 " + w(0.8) + ",inset 0 -7px 14px " + jrShadeRgba(acc, 0.62, d ? 0.34 : 0.28) + ",0 6px 18px " + jrRgba(acc, d ? 0.30 : 0.38) + ",0 1px 2px rgba(0,0,0,0.1)";
-    shHov = "inset 0 1px 0 " + w(0.9) + ",inset 0 -7px 14px " + jrShadeRgba(acc, 0.62, d ? 0.30 : 0.24) + ",0 9px 24px " + jrRgba(acc, d ? 0.38 : 0.46) + ",0 1px 2px rgba(0,0,0,0.1)";
-    ink = "#FFFFFF";
-    txtShadow = "0 1px 1px " + jrShadeRgba(acc, 0.62, 0.35);
-    sweep = w(0.5); // primary only - every button shining at once is noise
-  } else if (kind === "green") {
-    var g = T.green;
-    shine = "linear-gradient(180deg," + w(0.72) + "," + w(0.18) + " 46%," + w(0.04) + " 64%)";
-    tint = "linear-gradient(180deg," + jrRgba(g, d ? 0.16 : 0.14) + "," + jrRgba(g, d ? 0.28 : 0.30) + ")";
-    rim = "1px solid " + w(0.6);
-    sh = "inset 0 1px 0 " + w(0.9) + ",inset 0 -6px 12px " + jrShadeRgba(g, 0.55, d ? 0.22 : 0.14) + ",0 5px 16px " + jrRgba(g, d ? 0.16 : 0.20) + ",0 1px 2px rgba(0,0,0,0.06)";
-    shHov = "inset 0 1px 0 " + w(1) + ",inset 0 -6px 12px " + jrShadeRgba(g, 0.55, d ? 0.19 : 0.12) + ",0 8px 22px " + jrRgba(g, d ? 0.22 : 0.26) + ",0 1px 2px rgba(0,0,0,0.06)";
-    ink = d ? g : jrShade(g, 0.42);
-  } else {
-    shine = "linear-gradient(180deg," + w(0.78) + "," + w(0.30) + " 48%," + w(0.1) + " 66%)";
-    tint = d
-      ? "linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.11))"
-      : "linear-gradient(180deg," + jrRgba(T.ink, 0.03) + "," + jrRgba(T.ink, 0.09) + ")";
-    rim = "1px solid " + w(0.7);
-    sh = "inset 0 1px 0 " + w(0.95) + ",inset 0 -6px 12px " + (d ? "rgba(0,0,0,0.30)" : jrRgba(T.ink, 0.08)) + ",0 4px 14px " + (d ? "rgba(0,0,0,0.34)" : jrRgba(T.ink, 0.10)) + ",0 1px 2px rgba(0,0,0,0.05)";
-    shHov = "inset 0 1px 0 " + w(1) + ",inset 0 -6px 12px " + (d ? "rgba(0,0,0,0.26)" : jrRgba(T.ink, 0.07)) + ",0 7px 20px " + (d ? "rgba(0,0,0,0.42)" : jrRgba(T.ink, 0.14)) + ",0 1px 2px rgba(0,0,0,0.05)";
-    ink = d ? T.ink2 : jrShade(T.ink2, 0.14);
-  }
-
   return (
-    <button className="rc-gbtn" onClick={dis ? undefined : props.onClick} disabled={dis}
-      style={{
-        flex: props.flex != null ? props.flex : 1, minWidth: 0, height: 54, boxSizing: "border-box",
-        border: rim, borderRadius: 999, cursor: dis ? "default" : "pointer",
-        fontFamily: UI, fontSize: 14.5, fontWeight: 600, letterSpacing: "-0.01em", whiteSpace: "nowrap",
-        color: ink, textShadow: txtShadow || "none",
-        background: shine + "," + tint,
-        backdropFilter: glass, WebkitBackdropFilter: glass,
-        "--gb-sh": sh, "--gb-sh-hov": shHov, "--gb-sweep": sweep || "transparent"
-      }}>
-      {sweep ? <span className="rc-gbtn-sweep" /> : null}
-      <span style={{ position: "relative" }}>{props.label}</span>
-    </button>
+    <LiquidButton variant={kind === "primary" ? "primary" : kind === "green" ? "green" : "neutral"} soft={kind === "green"}
+      size="lg" height={54} flex={props.flex != null ? props.flex : 1}
+      disabled={props.disabled} onClick={props.onClick} style={{ minWidth: 0 }}>
+      {props.label}
+    </LiquidButton>
   );
 }
 
@@ -29151,16 +29390,7 @@ function BusinessView(props) {
       + "@keyframes rcShimmer{from{transform:translateX(-110%) skewX(-12deg);}to{transform:translateX(240%) skewX(-12deg);}}"
       + "@keyframes rcPillIn{from{opacity:0;transform:translateY(8px) scale(0.96);}to{opacity:1;transform:none;}}"
       + "@keyframes rcBadgePulse{0%,100%{opacity:1;}50%{opacity:0.35;}}"
-      + ".rc-hero-scroll{scrollbar-width:none;-ms-overflow-style:none;}.rc-hero-scroll::-webkit-scrollbar{display:none;width:0;height:0;}"
-      // Liquid-glass action capsules (design 1A). Hover and press can't live in
-      // an inline style, so the two shadows travel as custom properties and the
-      // states are matched here.
-      + "@keyframes rcSweep{0%{transform:translateX(-140%) rotate(-14deg);}55%{transform:translateX(240%) rotate(-14deg);}100%{transform:translateX(240%) rotate(-14deg);}}"
-      + ".rc-gbtn{position:relative;overflow:hidden;box-shadow:var(--gb-sh);transition:transform 300ms cubic-bezier(.2,.8,.2,1),box-shadow 300ms ease;}"
-      + ".rc-gbtn:hover:not(:disabled){box-shadow:var(--gb-sh-hov);}"
-      + ".rc-gbtn:active:not(:disabled){transform:scale(0.975);}"
-      + ".rc-gbtn-sweep{position:absolute;top:-30%;left:0;width:36%;height:190%;background:linear-gradient(90deg,rgba(255,255,255,0),var(--gb-sweep),rgba(255,255,255,0));filter:blur(6px);animation:rcSweep 5.5s cubic-bezier(.4,0,.2,1) infinite;pointer-events:none;}"
-      + "@media (prefers-reduced-motion:reduce){.rc-gbtn{transition:none;}.rc-gbtn-sweep{animation:none;opacity:0;}}";
+      + ".rc-hero-scroll{scrollbar-width:none;-ms-overflow-style:none;}.rc-hero-scroll::-webkit-scrollbar{display:none;width:0;height:0;}";
     document.head.appendChild(st);
   }, []);
 
