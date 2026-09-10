@@ -4953,6 +4953,8 @@ var LQ_SIZES = {
 // denser hairline along the bottom that gives the capsule thickness, and a
 // soft halo of the glass's own colour spilling outside it. None of it moves -
 // a highlight that sits still is not the shine that was removed.
+// Dialled back about a third on 10 Sep (Alon: "reduce the liquid glass shine a
+// bit") - same lining, same shapes, just less light in every layer of it.
 // The shaping that used to be black is tinted instead, which is what took the
 // darkness out of the light stack.
 var LQ_LILAC = "#B49BF0";     // the cast the clear glass carries
@@ -4965,26 +4967,26 @@ function lqRim(d, hue, lit) {
   var k = lit ? 1.25 : 1;
   var a = function(x) { return Math.min(1, x * k); };
   if (d) return [
-    "0 0 0 0.5px " + jrRgba(LQ_LILAC_HI, a(0.14)),
+    "0 0 0 0.5px " + jrRgba(LQ_LILAC_HI, a(0.10)),
     "0 2px 8px rgba(0,0,0,0.28)",
-    "0 0 14px " + jrRgba(hue, a(0.24)),
-    "inset 0 0 0 1px " + jrRgba(LQ_LILAC_HI, a(0.20)),
-    "inset 0 1.5px 1px -0.5px " + jrRgba(LQ_LILAC_HI, a(0.58)),
-    "inset 0 -1.5px 1px -0.5px " + jrRgba(LQ_LILAC_HI, a(0.34)),
-    "inset 0 7px 10px -9px " + jrRgba(LQ_LILAC_HI, a(0.80)),
-    "inset 0 0 6px 6px " + jrRgba(LQ_LILAC_HI, a(0.07)),
+    "0 0 14px " + jrRgba(hue, a(0.16)),
+    "inset 0 0 0 1px " + jrRgba(LQ_LILAC_HI, a(0.14)),
+    "inset 0 1.5px 1px -0.5px " + jrRgba(LQ_LILAC_HI, a(0.40)),
+    "inset 0 -1.5px 1px -0.5px " + jrRgba(LQ_LILAC_HI, a(0.26)),
+    "inset 0 7px 10px -9px " + jrRgba(LQ_LILAC_HI, a(0.54)),
+    "inset 0 0 6px 6px " + jrRgba(LQ_LILAC_HI, a(0.05)),
   ].join(",");
   return [
-    "0 0 0 0.5px " + jrRgba(hue, a(0.22)),
+    "0 0 0 0.5px " + jrRgba(hue, a(0.16)),
     "0 2px 6px rgba(40,28,16,0.07)",
-    "0 0 12px " + jrRgba(hue, a(0.18)),
-    "inset 0 0 0 1px rgba(255,255,255," + a(0.60).toFixed(2) + ")",
-    "inset 0 1.5px 1px -0.5px rgba(255,255,255," + a(0.95).toFixed(2) + ")",
-    "inset 0 -2px 2px -1.5px " + jrRgba(hue, 0.42),
-    "inset 0 9px 12px -11px rgba(255,255,255,0.92)",
-    "inset 3px 3px 0.5px -3px " + jrRgba(hue, 0.30),
-    "inset -3px -3px 0.5px -3px " + jrRgba(hue, 0.26),
-    "inset 0 0 6px 6px " + jrRgba(hue, 0.06),
+    "0 0 12px " + jrRgba(hue, a(0.12)),
+    "inset 0 0 0 1px rgba(255,255,255," + a(0.42).toFixed(2) + ")",
+    "inset 0 1.5px 1px -0.5px rgba(255,255,255," + a(0.66).toFixed(2) + ")",
+    "inset 0 -2px 2px -1.5px " + jrRgba(hue, 0.34),
+    "inset 0 9px 12px -11px rgba(255,255,255,0.62)",
+    "inset 3px 3px 0.5px -3px " + jrRgba(hue, 0.22),
+    "inset -3px -3px 0.5px -3px " + jrRgba(hue, 0.19),
+    "inset 0 0 6px 6px " + jrRgba(hue, 0.05),
   ].join(",");
 }
 // Clear glass, lilac rather than plain white (Alon, 10 Sep: "more of a lilac
