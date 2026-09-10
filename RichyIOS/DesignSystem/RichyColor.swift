@@ -42,10 +42,10 @@ enum RichyColor {
     static let separator = Color(light: 0x000000, dark: 0xFFFFFF, lightAlpha: 0.06, darkAlpha: 0.07)
     static let fill = Color(light: 0x000000, dark: 0xFFFFFF, lightAlpha: 0.04, darkAlpha: 0.06)
 
-    // Accent: the default "Mika's Violet" theme. See RichyTheme for the others.
-    static let accent = RichyTheme.purple.accent
-    static let accentHi = RichyTheme.purple.accentHi
-    static let accentDim = RichyTheme.purple.accentDim
+    // Accent: the default "Cornflower Ocean" theme. See RichyTheme for the others.
+    static let accent = RichyTheme.standard.accent
+    static let accentHi = RichyTheme.standard.accentHi
+    static let accentDim = RichyTheme.standard.accentDim
     static let heroText = Color(light: 0x2A1F4D, dark: 0xEDE7FF)
 
     // Status marks - brighter and more saturated on dark.

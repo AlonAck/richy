@@ -8,7 +8,7 @@ enum RichyTheme: String, CaseIterable, Codable, Sendable {
     case classic
     case blue
 
-    static let standard = RichyTheme.purple
+    static let standard = RichyTheme.blue
 
     var label: String {
         switch self {
