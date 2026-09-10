@@ -4994,10 +4994,26 @@ var LQ_SLOP = 28;       // release this far outside still counts as inside
 var LQ_FREE = 24;       // px the lifted capsule follows 1:1 before rubber-banding
 var LQ_SCROLL = 10;     // a finger travelling this far before the hold is scrolling
 
+// A capsule is a light material, so an accent picked as ink can be too dark
+// for it - the ocean theme's deep navy is the case in the app. Where the
+// theme keeps a bright end of the same accent (its cornflower), the glass
+// takes that instead and the gradient falls back part of the way toward the
+// accent, so the capsule reads light while white labels keep their contrast.
+// The ink is never lifted: it still has to sit on parchment.
+function lqLum(hex) { var c = jrHex(hex); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
+function lqMix(a, b, t) {
+  var x = jrHex(a), y = jrHex(b);
+  function h2(i) { var v = Math.round((x[i] + (y[i] - x[i]) * t) * 255); v = v < 0 ? 0 : v > 255 ? 255 : v; var q = v.toString(16); return q.length < 2 ? "0" + q : q; }
+  return "#" + h2(0) + h2(1) + h2(2);
+}
 function lqPalette(variant, soft, color, forceDark) {
   var d = forceDark == null ? !!T.isDark : !!forceDark;
   var v = variant || "neutral";
   var hue = color || (v === "green" ? T.green : v === "red" ? T.red : v === "gold" ? T.gold : T.orange);
+  // gh/gb: what the glass is made of, top and bottom. Same as the accent
+  // unless the accent is too dark to be glass (see lqLum above).
+  var gh = hue, gb = hue;
+  if (!d && !color && T.orangeHi && lqLum(hue) < 0.32) { gh = T.orangeHi; gb = lqMix(T.orangeHi, hue, 0.45); }
   var lift = d ? "0 16px 34px rgba(0,0,0,0.55)" : "0 14px 30px rgba(40,28,16,0.22),0 2px 6px rgba(40,28,16,0.10)";
   var p = { rim: lqRim(d), tint: "transparent", ink: T.orange, textShadow: "none", shadow: "none", shadowHov: null, shadowLift: lift, solid: d ? T.darkCard2 : T.card };
   if (v === "ghost") {
@@ -5011,10 +5027,10 @@ function lqPalette(variant, soft, color, forceDark) {
   if (soft) {
     // Soft: the hue washed over the same lilac glass, and the lining picks up
     // the hue the way a tinted pane of glass lights its own edge.
-    p.rim = lqRim(d, hue);
-    p.tint = "linear-gradient(180deg," + jrRgba(hue, d ? 0.26 : 0.16) + "," + jrRgba(hue, d ? 0.34 : 0.26) + ")";
+    p.rim = lqRim(d, gh);
+    p.tint = "linear-gradient(180deg," + jrRgba(gh, d ? 0.26 : 0.16) + "," + jrRgba(gb, d ? 0.34 : 0.26) + ")";
     p.ink = d ? hue : jrShade(hue, 0.24);
-    p.solid = "linear-gradient(" + jrRgba(hue, d ? 0.26 : 0.16) + "," + jrRgba(hue, d ? 0.26 : 0.16) + ")," + (d ? T.darkCard2 : T.card);
+    p.solid = "linear-gradient(" + jrRgba(gb, d ? 0.26 : 0.16) + "," + jrRgba(gb, d ? 0.26 : 0.16) + ")," + (d ? T.darkCard2 : T.card);
     return p;
   }
   // Filled: the hue as translucent glass under white ink - the pure hue, the
@@ -5022,16 +5038,16 @@ function lqPalette(variant, soft, color, forceDark) {
   // toward black. Light runs from a lighter top (the hue lifted toward white)
   // to the hue itself; dark only nudges the hue down so white ink still
   // clears contrast over a near-black card, and stays bright otherwise.
-  p.rim = lqRim(d, hue);
+  p.rim = lqRim(d, gh);
   p.tint = d
     ? "linear-gradient(180deg," + jrShadeRgba(hue, 0.08, 0.92) + "," + jrShadeRgba(hue, 0.22, 0.96) + ")"
-    : "linear-gradient(180deg," + jrRgba(hue, 0.70) + "," + jrRgba(hue, 0.90) + ")";
+    : "linear-gradient(180deg," + jrRgba(gh, 0.70) + "," + jrRgba(gb, 0.90) + ")";
   p.ink = "#FFFFFF";
-  p.textShadow = "0 1px 1px " + jrShadeRgba(hue, 0.62, 0.35);
-  p.shadow = "0 6px 18px " + jrRgba(hue, d ? 0.30 : 0.34) + ",0 1px 2px rgba(0,0,0,0.10)";
-  p.shadowHov = "0 9px 24px " + jrRgba(hue, d ? 0.38 : 0.42) + ",0 1px 2px rgba(0,0,0,0.10)";
-  p.shadowLift = "0 16px 34px " + jrRgba(hue, d ? 0.46 : 0.50) + ",0 2px 6px rgba(0,0,0,0.12)";
-  p.solid = d ? jrShade(hue, 0.3) : hue;
+  p.textShadow = "0 1px 1px " + jrShadeRgba(gb, 0.62, 0.35);
+  p.shadow = "0 6px 18px " + jrRgba(gb, d ? 0.30 : 0.34) + ",0 1px 2px rgba(0,0,0,0.10)";
+  p.shadowHov = "0 9px 24px " + jrRgba(gb, d ? 0.38 : 0.42) + ",0 1px 2px rgba(0,0,0,0.10)";
+  p.shadowLift = "0 16px 34px " + jrRgba(gb, d ? 0.46 : 0.50) + ",0 2px 6px rgba(0,0,0,0.12)";
+  p.solid = d ? jrShade(hue, 0.3) : gb;
   return p;
 }
 // Still glass, just emptied out: no tint, no glow, and the CSS skips the states.
