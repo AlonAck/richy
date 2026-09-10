@@ -29,7 +29,7 @@ first-time scope-limited sync, not a re-sync.
 
 - `tokens.js` was stale (old purple/"Mika's Violet" theme) before this run;
   refreshed to the cornflower-blue flagship (`#3C4C82`/`#5C7AE3`) — see the
-  repo's `.claude/skills/apple-ui-design/SKILL.md` for the full palette.
+  repo's `.claude/skills/richy-apple-design/SKILL.md` for the full palette.
 - The live project's `guidelines/colors-violet.html` (and similar) likely
   still documents the old purple flagship — out of scope for this sync
   (guidelines/ is untouched per the decision above), but worth a follow-up

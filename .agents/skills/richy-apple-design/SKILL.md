@@ -1,5 +1,5 @@
 ---
-name: apple-ui-design
+name: richy-apple-design
 description: Apply Apple's Human Interface Guidelines and Liquid Glass material language to Richy — typography, spacing, motion, native-feeling components, and the real glass system (LiquidButton on web, RichyGlass/LiquidPress on native) — fused with Richy's own identity: cornflower blue as the flagship accent, warm cream grounds, Hebrew-first RTL. Use whenever touching UI code, redesigning a screen, adding a component, or reviewing a screen for visual consistency, on either budget-app.jsx (web) or RichyIOS (native SwiftUI). For a brand-agnostic, pure-Apple version of this same material system (no Richy colors/fonts), use the separate final-apple-designer skill instead — this one is the fusion, that one is the source it's fused from. This is a design-system pass on both the existing web app and the native iOS build, not a decision about whether to build native — see NATIVE_BUILD.md / ROADMAP.md for that.
 status: published
 ---

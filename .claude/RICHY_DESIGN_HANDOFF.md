@@ -19,7 +19,7 @@ doesn't have to be re-explained — read all of it before writing any code,
 not just this section.
 
 **Your actual first task**, once you've read the rest of this file and
-`.claude/skills/apple-ui-design/SKILL.md`:
+`.claude/skills/richy-apple-design/SKILL.md`:
 
 1. Find the real code for the component described in §5 — Alon calls the two
    buttons "Labels" and "Profile" shortcuts in this document, but **that
@@ -32,7 +32,7 @@ not just this section.
    Alon that you've found the right thing before changing it, since a wrong
    guess here means editing the wrong screen.
 2. Once confirmed, replace it with the approved design in
-   `.claude/skills/apple-ui-design/reference/button-bar-mockup.html` (the
+   `.claude/skills/richy-apple-design/reference/button-bar-mockup.html` (the
    "Decided component patterns" section of `SKILL.md` has the full spec).
 3. After that one ships and Alon has actually seen it running in the app
    (not just a mockup), move on to inventorying the rest of the app's
@@ -94,7 +94,7 @@ open question.
 
 ## 3. The design system — read this file first, always
 
-**`.claude/skills/apple-ui-design/SKILL.md`** is the actual source of truth
+**`.claude/skills/richy-apple-design/SKILL.md`** is the actual source of truth
 for how anything should look or move. Read it in full before touching any
 UI code. Don't treat the summary below as a substitute for reading it — it
 has exact color tokens, spacing scale, motion curves, and a growing
@@ -119,7 +119,7 @@ don't reopen it elsewhere with new left/right-hardcoded styles.
 
 ## 4. The reference material Alon gave, and exactly what's in it
 
-Two real screen recordings, saved in `.claude/skills/apple-ui-design/reference/`,
+Two real screen recordings, saved in `.claude/skills/richy-apple-design/reference/`,
 with a full plain-language writeup of both in `reference/notes.md`:
 
 **`claude-ios-nav-and-modelsheet-2026-08-27.mov`** — the Claude iOS app
@@ -195,7 +195,7 @@ animation). The process, in order, matters as much as the result:
    blurred capsule, icon above label, a single sliding inner capsule as the
    only moving part, tinting to Richy's orange accent when active. This is
    what shipped. Full spec and the working HTML reference are both in
-   `.claude/skills/apple-ui-design/SKILL.md` under "Decided component
+   `.claude/skills/richy-apple-design/SKILL.md` under "Decided component
    patterns" and `reference/button-bar-mockup.html`.
 
 **Apply this same loop to every other screen/component**: read the
