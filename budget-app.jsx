@@ -5018,13 +5018,18 @@ function lqPalette(variant, soft, color, forceDark) {
   var gh = hue, gb = hue;
   if (!d && !color && T.orangeHi && lqLum(hue) < 0.32) { gh = T.orangeHi; gb = lqMix(T.orangeHi, hue, 0.45); }
   var lift = d ? "0 16px 34px rgba(0,0,0,0.55)" : "0 14px 30px rgba(40,28,16,0.22),0 2px 6px rgba(40,28,16,0.10)";
-  var p = { rim: lqRim(d), tint: "transparent", ink: T.orange, textShadow: "none", shadow: "none", shadowHov: null, shadowLift: lift, solid: d ? T.darkCard2 : T.card };
+  var p = { rim: lqRim(d), tint: "transparent", ink: T.orange, textShadow: "none", shadow: "none", shadowHov: null, shadowLift: lift, solid: d ? T.darkCard2 : T.card, glow: d ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.80)" };
   if (v === "ghost") {
-    p.rim = "none"; p.ink = T.ink2; p.solid = "transparent";
+    p.rim = "none"; p.ink = T.ink2; p.solid = "transparent"; p.glow = "transparent";
     return p;
   }
   if (v === "neutral") {
     p.tint = d ? LQ_GLASS_DARK : LQ_GLASS_LIGHT;
+    // Glass always keeps a shadow under it: it is what holds the control
+    // apart from the content it floats over (WWDC25). Small, because the
+    // content underneath is meant to stay the loud thing.
+    p.shadow = d ? "0 1px 2px rgba(0,0,0,0.34),0 4px 14px rgba(0,0,0,0.28)" : "0 1px 2px rgba(40,28,16,0.10),0 4px 12px rgba(40,28,16,0.07)";
+    p.shadowHov = d ? "0 2px 4px rgba(0,0,0,0.38),0 8px 20px rgba(0,0,0,0.34)" : "0 2px 4px rgba(40,28,16,0.12),0 8px 18px rgba(40,28,16,0.10)";
     return p;
   }
   if (soft) {
@@ -5033,6 +5038,7 @@ function lqPalette(variant, soft, color, forceDark) {
     p.rim = lqRim(d, gh);
     p.tint = "linear-gradient(180deg," + jrRgba(gh, d ? 0.26 : 0.16) + "," + jrRgba(gb, d ? 0.34 : 0.26) + ")";
     p.ink = d ? hue : jrShade(hue, 0.24);
+    p.glow = d ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.66)";
     p.solid = "linear-gradient(" + jrRgba(gb, d ? 0.26 : 0.16) + "," + jrRgba(gb, d ? 0.26 : 0.16) + ")," + (d ? T.darkCard2 : T.card);
     return p;
   }
@@ -5046,6 +5052,7 @@ function lqPalette(variant, soft, color, forceDark) {
     ? "linear-gradient(180deg," + jrShadeRgba(hue, 0.08, 0.92) + "," + jrShadeRgba(hue, 0.22, 0.96) + ")"
     : "linear-gradient(180deg," + jrRgba(gh, 0.70) + "," + jrRgba(gb, 0.90) + ")";
   p.ink = "#FFFFFF";
+  p.glow = "rgba(255,255,255,0.34)";
   p.textShadow = "0 1px 1px " + jrShadeRgba(gb, 0.62, 0.35);
   p.shadow = "0 6px 18px " + jrRgba(gb, d ? 0.30 : 0.34) + ",0 1px 2px rgba(0,0,0,0.10)";
   p.shadowHov = "0 9px 24px " + jrRgba(gb, d ? 0.38 : 0.42) + ",0 1px 2px rgba(0,0,0,0.10)";
@@ -5059,7 +5066,7 @@ function lqDisabledPalette(forceDark) {
   return {
     rim: lqRim(d),
     tint: d ? "linear-gradient(180deg," + jrRgba(LQ_LILAC, 0.10) + "," + jrRgba(LQ_LILAC, 0.06) + ")" : "linear-gradient(180deg," + jrRgba(LQ_LILAC, 0.14) + "," + jrRgba(LQ_LILAC, 0.09) + ")",
-    ink: T.ink3, textShadow: "none", shadow: "none", shadowHov: null, shadowLift: "none",
+    ink: T.ink3, textShadow: "none", shadow: "none", shadowHov: null, shadowLift: "none", glow: "transparent",
     solid: d ? T.darkCard2 : T.card,
   };
 }
@@ -5085,10 +5092,20 @@ function ensureLiquidCss() {
     ".rc-lq.rc-lq-full{display:flex;width:100%;}",
     ".rc-lq:disabled{cursor:default;}",
     ".rc-lq>span{border-radius:inherit;}",
-    ".rc-lq-glass{position:absolute;inset:0;z-index:0;pointer-events:none;-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);}",
+    // Lensing. The blur and the saturation come from the capsule's own size:
+    // a bigger piece of glass reads as a thicker material, which bends more
+    // light (WWDC25, Meet Liquid Glass). contrast() is the cheap stand-in for
+    // the way real lensing concentrates what is behind it.
+    ".rc-lq-glass{position:absolute;inset:0;z-index:0;pointer-events:none;-webkit-backdrop-filter:blur(var(--lq-blur,14px)) saturate(var(--lq-sat,160%)) contrast(1.04);backdrop-filter:blur(var(--lq-blur,14px)) saturate(var(--lq-sat,160%)) contrast(1.04);}",
     ".rc-lq-noblur .rc-lq-glass,html.rc-shader-live .rc-lq-glass{display:none;}",
     ".rc-lq-tint{position:absolute;inset:0;z-index:1;pointer-events:none;background:var(--lq-tint,transparent);transition:background var(--m-quick) ease;}",
     ".rc-lq-rim{position:absolute;inset:0;z-index:2;pointer-events:none;box-shadow:var(--lq-rim,none);transition:box-shadow var(--m-quick) ease;}",
+    // "When you interact with Liquid Glass, the material illuminates from
+    // within... starting right under your fingertips, the glow spreads
+    // throughout the element" (WWDC25). It starts where the finger landed and
+    // opens out; it is press feedback, not the resting shine that came off.
+    ".rc-lq-tint::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transform:scale(0.35);transform-origin:var(--lq-gx,50%) var(--lq-gy,50%);background:radial-gradient(circle at var(--lq-gx,50%) var(--lq-gy,50%),var(--lq-glow,transparent),transparent 72%);transition:opacity var(--m-quick) ease,transform var(--m-enter) var(--m-ease);}",
+    ".rc-lq.rc-lq-down .rc-lq-tint::after,.rc-lq.rc-lq-lift .rc-lq-tint::after{opacity:1;transform:scale(1);}",
     ".rc-lq-label{position:relative;z-index:3;display:inline-flex;align-items:center;justify-content:center;min-width:0;max-width:100%;pointer-events:none;line-height:1.2;}",
     // Hover only where a pointer can hover, so touch never sticks a scale on.
     "@media (hover:hover){.rc-lq:hover:not(:disabled){transform:scale(1.03);box-shadow:var(--lq-sh-hov,var(--lq-sh,none));}}",
@@ -5099,7 +5116,12 @@ function ensureLiquidCss() {
     // Reduce Transparency: no see-through surfaces at all, the same call the
     // iOS build makes - the glass goes and an opaque card takes its place.
     "@media (prefers-reduced-transparency:reduce){.rc-lq-glass{display:none;}.rc-lq-tint{background:var(--lq-solid,var(--lq-tint));}}",
-    "@media (prefers-reduced-motion:reduce){.rc-lq{transition:none;}.rc-lq:hover:not(:disabled),.rc-lq.rc-lq-down:not(:disabled){transform:none;}}",
+    // Increase Contrast: "elements predominantly black or white, highlighted
+    // with a contrasting border" (WWDC25). currentColor is the label ink, so
+    // the border is by definition the one colour guaranteed to read here.
+    "@media (prefers-contrast:more){.rc-lq-glass{display:none;}.rc-lq-tint{background:var(--lq-solid,var(--lq-tint));}.rc-lq-tint::after{display:none;}.rc-lq-rim{box-shadow:inset 0 0 0 2px currentColor;}}",
+    // Reduce Motion: the elastic properties go, the feedback stays.
+    "@media (prefers-reduced-motion:reduce){.rc-lq{transition:none;}.rc-lq:hover:not(:disabled),.rc-lq.rc-lq-down:not(:disabled){transform:none;}.rc-lq-tint::after{transform:none;transition:opacity var(--m-quick) ease;}}",
   ].join("");
   document.head.appendChild(st);
 }
@@ -5132,6 +5154,16 @@ function lqStretchCss(st, invert) {
   return " rotate(" + st.a.toFixed(1) + "deg) scale(" + x.toFixed(3) + "," + y.toFixed(3) + ") rotate(" + (-st.a).toFixed(1) + "deg)";
 }
 
+// How thick this piece of glass reads, 0 at the smallest capsule and 1 at
+// the largest: a bigger surface bends more light (WWDC25).
+function lqThick(h) { return Math.max(0, Math.min(1, (h - 34) / 22)); }
+// Reduce Motion turns off the elastic behaviour, not the feedback.
+var _lqStill = null;
+function lqStill() {
+  if (_lqStill === null && typeof matchMedia === "function") { try { _lqStill = matchMedia("(prefers-reduced-motion: reduce)"); } catch (e) { _lqStill = false; } }
+  return !!(_lqStill && _lqStill.matches);
+}
+
 function LiquidButton(props) {
   useEffect(function() { ensureLiquidCss(); }, []);
   var ref = useRef(null);
@@ -5154,7 +5186,8 @@ function LiquidButton(props) {
     fontFamily: UI, fontSize: props.fontSize || (icon ? 15 : sz.fs), fontWeight: props.weight || 700, letterSpacing: "-0.01em",
     color: p.ink, textShadow: p.textShadow,
     flex: props.flex != null ? props.flex : undefined,
-    "--lq-rim": p.rim, "--lq-tint": p.tint, "--lq-solid": p.solid,
+    "--lq-rim": p.rim, "--lq-tint": p.tint, "--lq-solid": p.solid, "--lq-glow": p.glow || "transparent",
+    "--lq-blur": (12 + 5 * lqThick(h)).toFixed(1) + "px", "--lq-sat": (152 + 22 * lqThick(h)).toFixed(0) + "%",
     "--lq-sh": p.shadow, "--lq-sh-hov": p.shadowHov || p.shadow, "--lq-sh-lift": p.shadowLift,
   };
   if (props.style) Object.assign(style, props.style);
@@ -5174,7 +5207,7 @@ function LiquidButton(props) {
   }, []);
 
   function paint(G) {
-    var node = ref.current; if (!node) return;
+    var node = ref.current; if (!node || G.still) return;
     var st = lqStretch(G.dx, G.dy);
     node.style.transform = "translate(" + lqFollow(G.dx).toFixed(1) + "px," + lqFollow(G.dy).toFixed(1) + "px) scale(1.06)" + lqStretchCss(st, false);
     if (G.lab) G.lab.style.transform = lqStretchCss(st, true).slice(1);
@@ -5209,12 +5242,19 @@ function LiquidButton(props) {
     if (dis || (e.pointerType === "mouse" && e.button !== 0)) return;
     var node = ref.current; if (!node) return;
     if (gRef.current) settle(gRef.current, false, e);
-    var G = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, dy: 0, lifted: false, timer: 0, raf: 0, rect: null, lab: null };
+    var G = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, dy: 0, lifted: false, still: false, timer: 0, raf: 0, rect: null, lab: null };
     gRef.current = G;
     node.classList.add("rc-lq-down");
+    // Where the finger landed, for the glow that spreads from it.
+    var r0 = node.getBoundingClientRect();
+    if (r0.width && r0.height) {
+      node.style.setProperty("--lq-gx", (((e.clientX - r0.left) / r0.width) * 100).toFixed(1) + "%");
+      node.style.setProperty("--lq-gy", (((e.clientY - r0.top) / r0.height) * 100).toFixed(1) + "%");
+    }
     G.timer = setTimeout(function() {
       if (gRef.current !== G) return;
       G.lifted = true;
+      G.still = lqStill();
       G.rect = node.getBoundingClientRect();
       try { node.setPointerCapture(G.id); } catch (x) {}
       node.classList.remove("rc-lq-down");

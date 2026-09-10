@@ -124,12 +124,32 @@ these.
   cornflower) instead of lightening arbitrarily — cornflower blue's own
   navy accent (`#3C4C82`) is the actual case this rule exists for; the
   glass renders in `#5C7AE3` instead so it still reads as light material.
-- **Gesture physics** (`LQ_HOLD_MS` 340ms, `LQ_FREE` 24px, rubber-band
-  beyond that): press squishes, a 340ms hold lifts the capsule with a
-  medium haptic, dragging follows 1:1 then rubber-bands, release inside
-  commits, outside cancels, always springs back.
+- **Gesture physics** (`LQ_HOLD_MS` 340ms, `LQ_FREE` 6px, `LQ_PULL` 14px):
+  press squishes, a 340ms hold lifts the capsule with a medium haptic, and
+  the drag then stays *local* — 1:1 for 6px, easing onto a hard 20px ceiling
+  however far the finger travels. The pull goes into the shape instead:
+  `lqStretch` elongates the capsule along the drag and thins it across
+  (`LQ_STRETCH` 0.15, reached over `LQ_STRETCH_AT` 80px), rotating with the
+  direction of the pull, and the label is counter-scaled so the words keep
+  their shape. Release inside commits, outside cancels, always springs back.
+  Measured: 7.9px of travel at 10px of drag, 19.8px at 120px, 20.0px at
+  300px. Alon, 10 Sep: "it moves too much... it should be local, and mostly
+  stretch".
+- **Material behaviours from WWDC25 session 219** (`lqPalette` +
+  `ensureLiquidCss`): lensing scales with the capsule — `lqThick` drives
+  `--lq-blur` 12→17px and `--lq-sat` 152→174%, because a bigger piece of
+  glass reads as a thicker material that bends more light. A press
+  illuminates the glass from under the fingertip outward (`--lq-gx` /
+  `--lq-gy` set on pointerdown, `.rc-lq-tint::after` radial glow, `--lq-glow`
+  per variant). That is the session's *interaction* feedback, not the
+  resting specular sheen — Alon had that removed and it stays removed.
+  Clear glass also keeps a small resting shadow, since a shadow is what
+  holds glass apart from the content it floats over.
 - **Accessibility**: `prefers-reduced-transparency` drops to a solid card;
-  `prefers-reduced-motion` removes hover/press transforms.
+  `prefers-contrast: more` drops the glass and gives the capsule a hard 2px
+  border in the label colour; `prefers-reduced-motion` removes hover/press
+  transforms *and* the lift and stretch (`lqStill()` short-circuits the
+  paint), keeping the haptic and the commit-on-release.
 
 ### Native — `RichyGlass.swift` + `LiquidPress.swift` (`RichyIOS/DesignSystem/`)
 
