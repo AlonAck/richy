@@ -4,6 +4,7 @@
   "private": true,
   "description": "Standalone component bundle extracted from Richy's budget-app.jsx, for syncing to claude.ai/design.",
   "main": "dist/richy-ds.js",
+  "types": "src/richy-ds.d.ts",
   "scripts": {
     "build": "node build.mjs"
   },
@@ -12,6 +13,7 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "esbuild": "^0.24.0"
+    "esbuild": "^0.24.0",
+    "@types/react": "^18.3.0"
   }
 }

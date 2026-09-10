@@ -1,0 +1,14 @@
+{
+  "projectId": "414c2899-91fb-4611-aebd-31883deefa1a",
+  "shape": "package",
+  "pkg": "richy-design-system",
+  "globalName": "RichyDS",
+  "buildCmd": "npm run build",
+  "readmeHeader": ".design-sync/conventions.md",
+  "componentSrcMap": {
+    "T": null
+  },
+  "overrides": {
+    "Card": { "cardMode": "column" }
+  }
+}

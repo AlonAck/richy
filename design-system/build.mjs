@@ -15,9 +15,4 @@ await esbuild.build({
   define: { "process.env.NODE_ENV": '"production"' },
 });
 
-writeFileSync(
-  "dist/styles.css",
-  "/* Richy design system — components are styled inline via JS (T tokens), so this file is intentionally minimal. */\n"
-);
-
 console.log("Built dist/richy-ds.js (window.RichyDS.*)");
