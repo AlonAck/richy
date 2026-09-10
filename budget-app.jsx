@@ -477,14 +477,11 @@ var COLOR_BANK = [
 // switches rather than deletions - flip one back on and the feature returns
 // intact.
 //
-//   investingHub                The largest regulatory surface in the app -
-//                               live markets, holdings and a plan engine - so
-//                               it stays dark for v1. The code is untouched;
-//                               flip the switch and the hub comes back.
-//                               businessHub went out on the same audit finding
-//                               and is back on: a business account is a
-//                               budgeting tool, not a regulated activity, and
-//                               the Accounts hub reads half-built without it.
+//   investingHub / businessHub  Two whole hubs nothing in the app introduces
+//                               (four unlabelled taps deep in an account
+//                               picker), and Investing is also the largest
+//                               regulatory surface. Off for v1; the code is
+//                               untouched and ships dark.
 //   investOrderTicket           The plan engine's per-user, per-ticker order
 //                               ticket (VTI 32% / $160 / share counts). A
 //                               suitability questionnaire ending in an amount
@@ -505,7 +502,7 @@ var COLOR_BANK = [
 //                               real, named people who agreed to it.
 var LAUNCH = {
   investingHub: false,
-  businessHub: true,
+  businessHub: false,
   investOrderTicket: false,
   stockScout: false,
   leumiDemo: true,
@@ -1740,12 +1737,6 @@ var T1_STRINGS = {
     // dashboard
     safeToSpend:"Safe to spend", nextSevenDays:"Next 7 days", richardsNextMove:"Richard's next move",
     moneyWatcher:"Money watcher", yourWidgets:"Your widgets", builtByRichard:"Built by Richard",
-    heroMoveClearTitle:"Nothing needs you right now.", heroMoveClearSub:"Richard is still watching your budgets, goals and upcoming charges.",
-    heroMovePlan:"See Richard’s plan", heroMoveBrief:"Open daily brief", heroMoveTitle:"Richard’s next move",
-    heroWatchClearTitle:"All clear", heroWatchClearSub:"No new leaks, duplicate charges or price jumps found.", heroWatchClearCta:"See what Richard checked",
-    wsToday:"Today", wsThisWeek:"This week", wsCaption:"Today and the next 7 days",
-    wsDaySpent:"{spent} of today’s {cap} spent", wsDayOver:"{over} over today’s {cap}",
-    wsSafeSetup:"Log your income and a few expenses, and Richard will work out what is safe to spend.",
     accounts:"Accounts", getTheMost:"Get the most from Richy", seeAllN:"See all {n}",
     // create actions the empty states used to point at the wrong button for
     newGoal:"New goal", newNote:"New note", newCategory:"New category", planATrip:"Plan a trip",
@@ -1790,12 +1781,6 @@ var T1_STRINGS = {
     folEssentials:"הכרחי", folLifestyle:"אורח חיים", folIncomeWealth:"הכנסה והון",
     safeToSpend:"אפשר להוציא", nextSevenDays:"7 הימים הקרובים", richardsNextMove:"הצעד הבא של ריצ'רד",
     moneyWatcher:"שומר הכסף", yourWidgets:"הווידג'טים שלך", builtByRichard:"נבנה על ידי ריצ'רד",
-    heroMoveClearTitle:"אין כרגע משהו שדורש אתכם.", heroMoveClearSub:"ריצ'רד ממשיך לעקוב אחרי התקציבים, היעדים והחיובים הקרובים.",
-    heroMovePlan:"לתוכנית של ריצ'רד", heroMoveBrief:"פתיחת התקציר היומי", heroMoveTitle:"הצעד הבא של ריצ'רד",
-    heroWatchClearTitle:"הכל תקין", heroWatchClearSub:"לא נמצאו דליפות, חיובים כפולים או קפיצות מחיר.", heroWatchClearCta:"מה ריצ׳רד בדק",
-    wsToday:"היום", wsThisWeek:"השבוע", wsCaption:"היום ושבעת הימים הקרובים",
-    wsDaySpent:"{spent} מתוך {cap} של היום", wsDayOver:"{over} מעל {cap} של היום",
-    wsSafeSetup:"רשמו הכנסה וכמה הוצאות, וריצ'רד יחשב כמה אפשר להוציא.",
     accounts:"חשבונות", getTheMost:"להפיק את המרב מריצ'י", seeAllN:"הצג את כל {n}",
     newGoal:"יעד חדש", newNote:"רישום חדש", newCategory:"קטגוריה חדשה", planATrip:"תכנן טיול",
     noGoalsSub:"תנו שם למה שאתם חוסכים אליו ואחשב את הסכום החודשי.",
@@ -1838,12 +1823,6 @@ var T1_STRINGS = {
     folEssentials:"الأساسيات", folLifestyle:"نمط الحياة", folIncomeWealth:"الدخل والثروة",
     safeToSpend:"يمكن إنفاقه", nextSevenDays:"الأيام السبعة القادمة", richardsNextMove:"خطوة ريتشارد التالية",
     moneyWatcher:"حارس المال", yourWidgets:"عناصرك", builtByRichard:"من إعداد ريتشارد",
-    heroMoveClearTitle:"لا شيء يحتاجك الآن.", heroMoveClearSub:"لا يزال ريتشارد يراقب ميزانياتك وأهدافك والرسوم القادمة.",
-    heroMovePlan:"اطلع على خطة ريتشارد", heroMoveBrief:"افتح الموجز اليومي", heroMoveTitle:"خطوة ريتشارد التالية",
-    heroWatchClearTitle:"كل شيء سليم", heroWatchClearSub:"لم يُعثر على تسربات أو رسوم مكررة أو قفزات في الأسعار.", heroWatchClearCta:"ما الذي فحصه ريتشارد",
-    wsToday:"اليوم", wsThisWeek:"هذا الأسبوع", wsCaption:"اليوم والأيام السبعة القادمة",
-    wsDaySpent:"{spent} من أصل {cap} لليوم", wsDayOver:"{over} فوق {cap} لليوم",
-    wsSafeSetup:"سجّل دخلك وبعض المصاريف، وسيحسب ريتشارد ما يمكن إنفاقه بأمان.",
     accounts:"الحسابات", getTheMost:"استفد من ريتشي إلى أقصى حد", seeAllN:"عرض الكل ({n})",
     newGoal:"هدف جديد", newNote:"سجل جديد", newCategory:"فئة جديدة", planATrip:"تخطيط رحلة",
     noGoalsSub:"سمِّ ما تدّخر من أجله وسأحسب المبلغ الشهري.",
@@ -1886,12 +1865,6 @@ var T1_STRINGS = {
     folEssentials:"Необходимое", folLifestyle:"Образ жизни", folIncomeWealth:"Доход и капитал",
     safeToSpend:"Можно потратить", nextSevenDays:"Ближайшие 7 дней", richardsNextMove:"Следующий шаг Ричарда",
     moneyWatcher:"Хранитель денег", yourWidgets:"Ваши виджеты", builtByRichard:"Собрано Ричардом",
-    heroMoveClearTitle:"Сейчас ничего не требует вашего внимания.", heroMoveClearSub:"Ричард продолжает следить за бюджетами, целями и ближайшими списаниями.",
-    heroMovePlan:"Посмотреть план Ричарда", heroMoveBrief:"Открыть сводку дня", heroMoveTitle:"Следующий шаг Ричарда",
-    heroWatchClearTitle:"Всё чисто", heroWatchClearSub:"Не найдено утечек, двойных списаний или скачков цен.", heroWatchClearCta:"Что проверил Ричард",
-    wsToday:"Сегодня", wsThisWeek:"На этой неделе", wsCaption:"Сегодня и ближайшие 7 дней",
-    wsDaySpent:"{spent} из {cap} на сегодня", wsDayOver:"{over} сверх {cap} на сегодня",
-    wsSafeSetup:"Запишите доход и несколько трат, и Ричард посчитает безопасную сумму.",
     accounts:"Счета", getTheMost:"Возьмите от Richy максимум", seeAllN:"Показать все ({n})",
     newGoal:"Новая цель", newNote:"Новая запись", newCategory:"Новая категория", planATrip:"Спланировать поездку",
     noGoalsSub:"Назовите, на что копите, и я рассчитаю сумму в месяц.",
@@ -4877,15 +4850,6 @@ function ensureMotionCss() {
     "@keyframes rcRowIn{from{opacity:0;transform:translateY(-8px);max-height:0}to{opacity:1;transform:none;max-height:120px}}",
     "@keyframes rcSweep{from{transform:translateX(-130%) skewX(-14deg)}to{transform:translateX(360%) skewX(-14deg)}}",
     "@keyframes rcNudge{0%{transform:none}38%{transform:translateY(-5px)}100%{transform:none}}",
-    // Scroll reveal. Every section below the fold used to run its entrance on
-    // mount, so by the time you scrolled down to it the movement was long over
-    // and the page felt dead exactly where it should feel alive. These classes
-    // hold a section at rest until it crosses into view, then rise it once. One
-    // move per section, never replayed on scroll-up - that restraint is what
-    // separates this from a page that keeps twitching.
-    "@keyframes rcReveal{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}",
-    ".rc-reveal-hidden{opacity:0}",
-    ".rc-reveal-in{animation:rcReveal calc(0.58s * var(--m-scale)) var(--m-ease) both}",
   ].join("");
   document.head.appendChild(st);
 }
@@ -4898,61 +4862,6 @@ function riseIn(i) {
   return "rcRise var(--m-enter) var(--m-ease) calc(var(--m-stagger) * " + step + ") both";
 }
 // Press feedback: the same pair of transitions on every tappable surface.
-// Holds a node invisible until it scrolls into view, then rises it once.
-//
-// Two escapes are resolved on the first render rather than in the effect, so a
-// reduced-motion reader and a browser without IntersectionObserver never commit
-// the hidden state at all - getting that wrong is a blank page, not a missing
-// animation. A node already on screen at mount is shown without waiting for the
-// observer to fire, which is what keeps the top of the page instant.
-function useReveal(delay) {
-  var ref = useRef(null);
-  var _sh = useState(function() {
-    var reduce = false;
-    try { reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); } catch (e) {}
-    return (reduce || typeof IntersectionObserver === "undefined") ? "static" : "hidden";
-  });
-  var shown = _sh[0]; var setShown = _sh[1];
-
-  useEffect(function() {
-    if (shown !== "hidden") return;
-    var el = ref.current;
-    if (!el) { setShown("in"); return; }
-    var vh = window.innerHeight || document.documentElement.clientHeight || 0;
-    if (el.getBoundingClientRect().top < vh * 0.92) { setShown("in"); return; }
-    var done = false;
-    function reveal() { if (!done) { done = true; clearTimeout(timer); io.disconnect(); setShown("in"); } }
-    var io = new IntersectionObserver(function(entries) {
-      for (var i = 0; i < entries.length; i++) {
-        if (entries[i].isIntersecting) { reveal(); return; }
-      }
-    }, { rootMargin: "0px 0px -10% 0px", threshold: 0.01 });
-    io.observe(el);
-    // A section that stays at opacity 0 is a blank page, not a missed
-    // animation, so nothing here may depend on the observer actually firing.
-    // Some environments never deliver a callback at all (a backgrounded or
-    // occluded tab is one), and this hands those readers the content anyway.
-    var timer = setTimeout(reveal, 2500);
-    return function() { clearTimeout(timer); io.disconnect(); };
-  }, []);
-
-  return {
-    ref: ref,
-    className: shown === "hidden" ? "rc-reveal-hidden" : shown === "in" ? "rc-reveal-in" : undefined,
-    style: (shown === "in" && delay) ? { animationDelay: delay } : null
-  };
-}
-// The same behaviour as a wrapper, for lists where the caller cannot hold a hook
-// per item.
-function Reveal(props) {
-  var r = useReveal(props.delay);
-  return (
-    <div ref={r.ref} className={r.className} style={Object.assign({}, props.style || {}, r.style || {})}>
-      {props.children}
-    </div>
-  );
-}
-
 var PRESS_T = "transform var(--m-press) ease, box-shadow var(--m-quick) ease";
 
 // === LIQUID GLASS BUTTON ===
@@ -4999,7 +4908,7 @@ var PRESS_T = "transform var(--m-press) ease, box-shadow var(--m-quick) ease";
 //     instead of running away. Release inside commits, outside cancels, and
 //     either way it springs home on --m-spring.
 //   The gesture values never touch React state (the header bar's lesson):
-//   rect measured once at lift, moves coalesced into one rAF, transform
+//   rect measured once at lift, one rAF loop while lifted, transform
 //   written straight to node.style. Native click still carries a plain tap
 //   (so propagation and keyboard activation behave exactly like a raw
 //   <button>); only a lifted release fires the handler itself, and swallows
@@ -5048,24 +4957,29 @@ var LQ_SIZES = {
 // darkness out of the light stack.
 var LQ_LILAC = "#B49BF0";     // the cast the clear glass carries
 var LQ_LILAC_HI = "#EFE9FF";  // its bright end, used for the lining
-function lqRim(d, hue) {
+function lqRim(d, hue, lit) {
   hue = hue || LQ_LILAC;
+  // lit = the light has gathered on this piece of glass (a finger is on it).
+  // Same stack, brighter lining - in the WWDC film a pressed control does not
+  // change shape, its light does.
+  var k = lit ? 1.7 : 1;
+  var a = function(x) { return Math.min(1, x * k); };
   if (d) return [
-    "0 0 0 0.5px " + jrRgba(LQ_LILAC_HI, 0.14),
+    "0 0 0 0.5px " + jrRgba(LQ_LILAC_HI, a(0.14)),
     "0 2px 8px rgba(0,0,0,0.28)",
-    "0 0 14px " + jrRgba(hue, 0.24),
-    "inset 0 0 0 1px " + jrRgba(LQ_LILAC_HI, 0.20),
-    "inset 0 1.5px 1px -0.5px " + jrRgba(LQ_LILAC_HI, 0.58),
-    "inset 0 -1.5px 1px -0.5px " + jrRgba(LQ_LILAC_HI, 0.34),
-    "inset 0 7px 10px -9px " + jrRgba(LQ_LILAC_HI, 0.80),
-    "inset 0 0 6px 6px " + jrRgba(LQ_LILAC_HI, 0.07),
+    "0 0 14px " + jrRgba(hue, a(0.24)),
+    "inset 0 0 0 1px " + jrRgba(LQ_LILAC_HI, a(0.20)),
+    "inset 0 1.5px 1px -0.5px " + jrRgba(LQ_LILAC_HI, a(0.58)),
+    "inset 0 -1.5px 1px -0.5px " + jrRgba(LQ_LILAC_HI, a(0.34)),
+    "inset 0 7px 10px -9px " + jrRgba(LQ_LILAC_HI, a(0.80)),
+    "inset 0 0 6px 6px " + jrRgba(LQ_LILAC_HI, a(0.07)),
   ].join(",");
   return [
-    "0 0 0 0.5px " + jrRgba(hue, 0.22),
+    "0 0 0 0.5px " + jrRgba(hue, a(0.22)),
     "0 2px 6px rgba(40,28,16,0.07)",
-    "0 0 12px " + jrRgba(hue, 0.18),
-    "inset 0 0 0 1px rgba(255,255,255,0.60)",
-    "inset 0 1.5px 1px -0.5px rgba(255,255,255,0.95)",
+    "0 0 12px " + jrRgba(hue, a(0.18)),
+    "inset 0 0 0 1px rgba(255,255,255," + a(0.60).toFixed(2) + ")",
+    "inset 0 1.5px 1px -0.5px rgba(255,255,255," + a(0.95).toFixed(2) + ")",
     "inset 0 -2px 2px -1.5px " + jrRgba(hue, 0.42),
     "inset 0 9px 12px -11px rgba(255,255,255,0.92)",
     "inset 3px 3px 0.5px -3px " + jrRgba(hue, 0.30),
@@ -5084,8 +4998,23 @@ var LQ_HOLD_MS = 340;   // hold before the capsule lifts (same as HeaderShortcut
 var LQ_SLOP = 28;       // release this far outside still counts as inside
 var LQ_FREE = 6;        // px the lifted capsule follows 1:1 before it gives
 var LQ_PULL = 14;       // px more it can ever travel, however far the finger goes
-var LQ_STRETCH = 0.15;  // most it elongates along the drag, as a fraction
+// The capsule barely changes shape. In the WWDC film a dragged piece of glass
+// keeps its silhouette exactly - what moves is the light on it and the content
+// bending underneath. This is a trace of give, not a rubber band (Alon, 10
+// Sep: "way too much - watch the video again").
+var LQ_STRETCH = 0.045; // most it elongates along the drag, as a fraction
 var LQ_STRETCH_AT = 80; // px of drag that reaches most of that stretch
+// The gel (Alon, 10 Sep: "give the drag more of a moving gel"). Nothing the
+// finger does reaches the capsule directly any more - every value is pulled
+// toward its target by a spring that lags and overshoots, so the shape keeps
+// moving after the finger stops and catches up a beat late.
+var LQ_GEL_K = 0.16;    // how hard the gel is pulled toward the finger
+var LQ_GEL_D = 0.78;    // how much of that pull survives each frame
+var LQ_GEL_SPEED = 14;  // extra stretch per px/ms of finger speed
+var LQ_GEL_CAP = 0.065; // the most it will ever deform
+var LQ_GEL_LEAD = 0.10; // how far the scale origin trails the pull, 0-1
+var LQ_GEL_MAX = 0.075; // hard limit on the wobble, so a flick cannot go silly
+var LQ_GEL_LIGHT = 34;  // how far the light slides toward the leading edge, %
 var LQ_SCROLL = 10;     // a finger travelling this far before the hold is scrolling
 
 // A capsule is a light material, so an accent picked as ink can be too dark
@@ -5109,9 +5038,9 @@ function lqPalette(variant, soft, color, forceDark) {
   var gh = hue, gb = hue;
   if (!d && !color && T.orangeHi && lqLum(hue) < 0.32) { gh = T.orangeHi; gb = lqMix(T.orangeHi, hue, 0.45); }
   var lift = d ? "0 16px 34px rgba(0,0,0,0.55)" : "0 14px 30px rgba(40,28,16,0.22),0 2px 6px rgba(40,28,16,0.10)";
-  var p = { rim: lqRim(d), tint: "transparent", ink: T.orange, textShadow: "none", shadow: "none", shadowHov: null, shadowLift: lift, solid: d ? T.darkCard2 : T.card, glow: d ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.80)" };
+  var p = { rim: lqRim(d), rimLit: lqRim(d, null, 1), tint: "transparent", ink: T.orange, textShadow: "none", shadow: "none", shadowHov: null, shadowLift: lift, solid: d ? T.darkCard2 : T.card, glow: d ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.80)" };
   if (v === "ghost") {
-    p.rim = "none"; p.ink = T.ink2; p.solid = "transparent"; p.glow = "transparent";
+    p.rim = "none"; p.rimLit = "none"; p.ink = T.ink2; p.solid = "transparent"; p.glow = "transparent";
     return p;
   }
   if (v === "neutral") {
@@ -5126,7 +5055,7 @@ function lqPalette(variant, soft, color, forceDark) {
   if (soft) {
     // Soft: the hue washed over the same lilac glass, and the lining picks up
     // the hue the way a tinted pane of glass lights its own edge.
-    p.rim = lqRim(d, gh);
+    p.rim = lqRim(d, gh); p.rimLit = lqRim(d, gh, 1);
     p.tint = "linear-gradient(180deg," + jrRgba(gh, d ? 0.26 : 0.16) + "," + jrRgba(gb, d ? 0.34 : 0.26) + ")";
     p.ink = d ? hue : jrShade(hue, 0.24);
     p.glow = d ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.66)";
@@ -5138,7 +5067,7 @@ function lqPalette(variant, soft, color, forceDark) {
   // toward black. Light runs from a lighter top (the hue lifted toward white)
   // to the hue itself; dark only nudges the hue down so white ink still
   // clears contrast over a near-black card, and stays bright otherwise.
-  p.rim = lqRim(d, gh);
+  p.rim = lqRim(d, gh); p.rimLit = lqRim(d, gh, 1);
   p.tint = d
     ? "linear-gradient(180deg," + jrShadeRgba(hue, 0.08, 0.92) + "," + jrShadeRgba(hue, 0.22, 0.96) + ")"
     : "linear-gradient(180deg," + jrRgba(gh, 0.70) + "," + jrRgba(gb, 0.90) + ")";
@@ -5155,7 +5084,7 @@ function lqPalette(variant, soft, color, forceDark) {
 function lqDisabledPalette(forceDark) {
   var d = forceDark == null ? !!T.isDark : !!forceDark;
   return {
-    rim: lqRim(d),
+    rim: lqRim(d), rimLit: lqRim(d),
     tint: d ? "linear-gradient(180deg," + jrRgba(LQ_LILAC, 0.10) + "," + jrRgba(LQ_LILAC, 0.06) + ")" : "linear-gradient(180deg," + jrRgba(LQ_LILAC, 0.14) + "," + jrRgba(LQ_LILAC, 0.09) + ")",
     ink: T.ink3, textShadow: "none", shadow: "none", shadowHov: null, shadowLift: "none", glow: "transparent",
     solid: d ? T.darkCard2 : T.card,
@@ -5197,6 +5126,9 @@ function ensureLiquidCss() {
     // opens out; it is press feedback, not the resting shine that came off.
     ".rc-lq-tint::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transform:scale(0.35);transform-origin:var(--lq-gx,50%) var(--lq-gy,50%);background:radial-gradient(circle at var(--lq-gx,50%) var(--lq-gy,50%),var(--lq-glow,transparent),transparent 72%);transition:opacity var(--m-quick) ease,transform var(--m-enter) var(--m-ease);}",
     ".rc-lq.rc-lq-down .rc-lq-tint::after,.rc-lq.rc-lq-lift .rc-lq-tint::after{opacity:1;transform:scale(1);}",
+    // Light gathers on the glass under a finger; the silhouette is what shows
+    // it. The shape itself does not change - that is the whole point.
+    ".rc-lq.rc-lq-down .rc-lq-rim,.rc-lq.rc-lq-lift .rc-lq-rim{box-shadow:var(--lq-rim-lit,var(--lq-rim,none));}",
     ".rc-lq-label{position:relative;z-index:3;display:inline-flex;align-items:center;justify-content:center;min-width:0;max-width:100%;pointer-events:none;line-height:1.2;}",
     // Hover only where a pointer can hover, so touch never sticks a scale on.
     "@media (hover:hover){.rc-lq:hover:not(:disabled){transform:scale(1.03);box-shadow:var(--lq-sh-hov,var(--lq-sh,none));}}",
@@ -5227,15 +5159,19 @@ function lqFollow(v) {
   if (a > LQ_FREE) a = LQ_FREE + LQ_PULL * (1 - Math.exp(-(a - LQ_FREE) / (LQ_PULL * 2)));
   return s * a;
 }
-// What the drag does instead of moving it: the glass elongates along the
-// direction of the pull and thins across it, the way a drop of liquid does.
-// Returns the angle of the pull and the two scales, or null when there is
-// nothing to stretch yet.
-function lqStretch(dx, dy) {
+// Where the stretch wants to be, for a given pull and finger speed: part of
+// it is how far you have dragged, part is how fast you are moving - a gel
+// deforms more when it is yanked than when it is eased along.
+function lqStretchTarget(dx, dy, speed) {
   var m = Math.sqrt(dx * dx + dy * dy);
-  if (m < 0.5) return null;
-  var e = LQ_STRETCH * (1 - Math.exp(-m / LQ_STRETCH_AT));
-  return { a: Math.atan2(dy, dx) * 180 / Math.PI, sx: 1 + e, sy: 1 - e * 0.55 };
+  var e = LQ_STRETCH * (1 - Math.exp(-m / LQ_STRETCH_AT)) + (speed || 0) * LQ_GEL_SPEED * 0.01;
+  return Math.min(e, LQ_GEL_CAP);
+}
+// The rendered deformation: an eased amount and an eased direction, which is
+// what keeps the angle from snapping around when the pull crosses an axis.
+function lqStretch(e, dirx, diry) {
+  if (e < 0.002) return null;
+  return { a: Math.atan2(diry, dirx) * 180 / Math.PI, sx: 1 + e, sy: 1 - e * 0.55 };
 }
 // The words ride the glass but must not be squashed by it, so the label gets
 // the inverse of whatever the capsule is doing.
@@ -5277,7 +5213,7 @@ function LiquidButton(props) {
     fontFamily: UI, fontSize: props.fontSize || (icon ? 15 : sz.fs), fontWeight: props.weight || 700, letterSpacing: "-0.01em",
     color: p.ink, textShadow: p.textShadow,
     flex: props.flex != null ? props.flex : undefined,
-    "--lq-rim": p.rim, "--lq-tint": p.tint, "--lq-solid": p.solid, "--lq-glow": p.glow || "transparent",
+    "--lq-rim": p.rim, "--lq-rim-lit": p.rimLit || p.rim, "--lq-tint": p.tint, "--lq-solid": p.solid, "--lq-glow": p.glow || "transparent",
     "--lq-blur": (12 + 5 * lqThick(h)).toFixed(1) + "px", "--lq-sat": (152 + 22 * lqThick(h)).toFixed(0) + "%",
     "--lq-sh": p.shadow, "--lq-sh-hov": p.shadowHov || p.shadow, "--lq-sh-lift": p.shadowLift,
   };
@@ -5297,11 +5233,37 @@ function LiquidButton(props) {
     };
   }, []);
 
-  function paint(G) {
-    var node = ref.current; if (!node || G.still) return;
-    var st = lqStretch(G.dx, G.dy);
-    node.style.transform = "translate(" + lqFollow(G.dx).toFixed(1) + "px," + lqFollow(G.dy).toFixed(1) + "px) scale(1.06)" + lqStretchCss(st, false);
-    if (G.lab) G.lab.style.transform = lqStretchCss(st, true).slice(1);
+  // One frame of gel. Every rendered value chases its target through a
+  // spring, so the capsule trails the finger, overshoots a little when the
+  // finger stops, and settles - instead of being welded to the pointer.
+  function step(G) {
+    var node = ref.current;
+    if (!node || G.still || gRef.current !== G || !G.lifted) { G.raf = 0; return; }
+    var tx = lqFollow(G.dx), ty = lqFollow(G.dy);
+    G.vx = (G.vx + (tx - G.tx) * LQ_GEL_K) * LQ_GEL_D; G.tx += G.vx;
+    G.vy = (G.vy + (ty - G.ty) * LQ_GEL_K) * LQ_GEL_D; G.ty += G.vy;
+    var target = lqStretchTarget(G.dx, G.dy, G.speed);
+    G.ve = (G.ve + (target - G.e) * LQ_GEL_K) * LQ_GEL_D; G.e += G.ve;
+    if (G.e < 0) G.e = 0;
+    // the spring may overshoot its target, but only so far
+    if (G.e > LQ_GEL_MAX) { G.e = LQ_GEL_MAX; if (G.ve > 0) G.ve = 0; }
+    // the direction eases too, so a change of course bends rather than snaps
+    var m = Math.sqrt(G.dx * G.dx + G.dy * G.dy);
+    if (m > 0.5) { G.dirx += (G.dx / m - G.dirx) * 0.18; G.diry += (G.dy / m - G.diry) * 0.18; }
+    G.speed *= 0.88;
+    var st = lqStretch(G.e, G.dirx, G.diry);
+    // The scale origin trails behind the pull, so the capsule reaches toward
+    // the finger instead of fattening evenly about its middle.
+    var ox = (50 - G.dirx * LQ_GEL_LEAD * 100).toFixed(1) + "%";
+    var oy = (50 - G.diry * LQ_GEL_LEAD * 100).toFixed(1) + "%";
+    node.style.transformOrigin = ox + " " + oy;
+    // "Lights move in space, causing light to travel around the material,
+    // defining its silhouette" - so the glow slides to the leading edge.
+    node.style.setProperty("--lq-gx", (50 + G.dirx * LQ_GEL_LIGHT).toFixed(1) + "%");
+    node.style.setProperty("--lq-gy", (50 + G.diry * LQ_GEL_LIGHT).toFixed(1) + "%");
+    node.style.transform = "translate(" + G.tx.toFixed(2) + "px," + G.ty.toFixed(2) + "px) scale(1.06)" + lqStretchCss(st, false);
+    if (G.lab) { G.lab.style.transformOrigin = ox + " " + oy; G.lab.style.transform = lqStretchCss(st, true).slice(1); }
+    G.raf = requestAnimationFrame(function() { step(G); });
   }
   function settle(G, commit, e) {
     gRef.current = null;
@@ -5315,6 +5277,8 @@ function LiquidButton(props) {
         node.style.transition = "transform var(--m-settle) var(--m-spring), box-shadow var(--m-quick) ease";
         node.style.transform = "";
         if (G.lab) { G.lab.style.transition = "transform var(--m-settle) var(--m-spring)"; G.lab.style.transform = ""; }
+        node.style.transformOrigin = "";
+        if (G.lab) G.lab.style.transformOrigin = "";
         try { node.releasePointerCapture(G.id); } catch (x) {}
         setTimeout(function() {
           node.style.transition = ""; node.style.willChange = "";
@@ -5333,7 +5297,8 @@ function LiquidButton(props) {
     if (dis || (e.pointerType === "mouse" && e.button !== 0)) return;
     var node = ref.current; if (!node) return;
     if (gRef.current) settle(gRef.current, false, e);
-    var G = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, dy: 0, lifted: false, still: false, timer: 0, raf: 0, rect: null, lab: null };
+    var G = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, dy: 0, lifted: false, still: false, timer: 0, raf: 0, rect: null, lab: null,
+              tx: 0, ty: 0, vx: 0, vy: 0, e: 0, ve: 0, dirx: 1, diry: 0, speed: 0, lastX: e.clientX, lastY: e.clientY, lastT: e.timeStamp || Date.now() };
     gRef.current = G;
     node.classList.add("rc-lq-down");
     // Where the finger landed, for the glow that spreads from it.
@@ -5355,7 +5320,7 @@ function LiquidButton(props) {
       node.style.willChange = "transform";
       node.style.transition = "transform 0.26s var(--m-spring), box-shadow var(--m-quick) ease";
       nativeHaptic("MEDIUM");
-      paint(G);
+      if (!G.still) G.raf = requestAnimationFrame(function() { step(G); });
     }, LQ_HOLD_MS);
   }
   function onMove(e) {
@@ -5367,7 +5332,13 @@ function LiquidButton(props) {
       if (Math.abs(G.dx) > LQ_SCROLL || Math.abs(G.dy) > LQ_SCROLL) settle(G, false, e);
       return;
     }
-    if (!G.raf) G.raf = requestAnimationFrame(function() { G.raf = 0; paint(G); });
+    // How fast the finger is going, smoothed - the gel deforms more when it
+    // is yanked than when it is eased along.
+    var now = e.timeStamp || Date.now();
+    var dt = Math.max(8, now - G.lastT);
+    var sp = Math.sqrt(Math.pow(e.clientX - G.lastX, 2) + Math.pow(e.clientY - G.lastY, 2)) / dt;
+    G.speed = G.speed * 0.6 + sp * 0.4;
+    G.lastX = e.clientX; G.lastY = e.clientY; G.lastT = now;
   }
   function onUp(e) {
     if (props.onPointerUp) props.onPointerUp(e);
@@ -10469,13 +10440,7 @@ var WIDGET_METRICS = {
   balance:       { title: "Balance",      unit: "money",   needs: null,       better: "higher", running: true },
   savingsPot:    { title: "Saved",        unit: "money",   needs: "savings",  better: "higher", running: true },
   netWorth:      { title: "Net worth",    unit: "money",   needs: null,       better: "higher", snapshot: true },
-  goalProgress:  { title: "Saved",        unit: "money",   needs: "goal",     better: "higher", snapshot: true },
-  // Not a sum of rows like the rest: safe-to-spend is the hero’s own verdict
-  // (cash on hand, less what is already committed this week, held inside the
-  // caps the user set). The number is handed down through the widget context
-  // rather than recomputed here, so this card and the banner above it can
-  // never print two different answers to the same question.
-  safeToSpend:   { title: "Safe to spend", unit: "money",  needs: null,       better: "higher", snapshot: true }
+  goalProgress:  { title: "Saved",        unit: "money",   needs: "goal",     better: "higher", snapshot: true }
 };
 // HOW it looks. "Shape" is the word people actually reach for ("make it a
 // ring"), so it is the word the spec uses.
@@ -10507,7 +10472,6 @@ var MAX_WIDGETS = 6;
 // gallery, and getStarterWidgets() adds the trend back once there is enough
 // history for it to mean anything.
 var DEFAULT_OVERVIEW_WIDGETS = [
-  { id: "default_safe_to_spend", title: "Safe to spend", metric: "safeToSpend", target: "", shape: "safe", timeframe: "week", goal: null, color: "#27A85F", icon: "shield" },
   { id: "default_spending_breakdown", title: "Where your money went", metric: "expense", target: "", shape: "list", timeframe: "month", goal: null, color: "#C8673A", icon: "cart" }
 ];
 var LATER_OVERVIEW_WIDGETS = [
@@ -10529,7 +10493,6 @@ function getStarterWidgets(tx) {
 // can use with zero setup first, then the ones that need a category, folder,
 // budget, goal or pot picked (needsPicker names which list to pick from).
 var WIDGET_TEMPLATES = [
-  { key: "safeToSpend", title: "Safe to spend", metric: "safeToSpend", shape: "safe", timeframe: "week", icon: "shield", color: "#27A85F", desc: "What is left for today, and for the next seven days" },
   { key: "spendByCategory", title: "Where your money went", metric: "expense", shape: "list", timeframe: "month", icon: "cart", color: "#C8673A", desc: "Your biggest spending categories this month" },
   { key: "spendTrend", title: "Spending trend", metric: "expense", shape: "trend", timeframe: "month", icon: "chart", color: "#2799C8", desc: "Six months of spending, bar by bar" },
   { key: "cashFlow", title: "This month vs last", metric: "net", shape: "compare", timeframe: "month", icon: "up", color: "#27A85F", desc: "Compare what's left over, month to month" },
@@ -10714,46 +10677,11 @@ function widgetRows(w, wc) {
 
 // Everything a shape could need, in one pass. Cheap at these data sizes, and it
 // keeps the renderer free of per-metric special cases.
-// The hero already worked out the week figure; splitting it into a day is this
-// card’s only arithmetic. Returning { empty: true } rather than a zero matters -
-// a brand new account has no ledger to reason about, and printing $0.00 there
-// reads as a verdict when it is really an absence.
-function safeToSpendReading(wc) {
-  var safe = wc && wc.safe;
-  if (!safe || safe.week == null) return null;
-  if (!safe.hasLedger) return { empty: true };
-  var todayISO = new Date().toISOString().slice(0, 10);
-  var perDay = round2(safe.week / 7);
-  var spentToday = widgetSum(widgetFlowTx(wc).filter(function(t) {
-    return t.type === "expense" && (t.date || "") === todayISO;
-  }));
-  return {
-    empty: false,
-    week: round2(safe.week),
-    perDay: perDay,
-    spentToday: spentToday,
-    todayLeft: round2(Math.max(0, perDay - spentToday)),
-    todayOver: spentToday > perDay
-  };
-}
-
 function widgetCompute(w, wc) {
   var metric = WIDGET_METRICS[w.metric] ? w.metric : "expense";
   var meta = WIDGET_METRICS[metric];
   var tf = WIDGET_TIMEFRAMES[w.timeframe] ? w.timeframe : "month";
   var shape = WIDGET_SHAPES[w.shape] ? w.shape : "stat";
-  // Its own shape, its own timeframe, its own reading - none of the fallback
-  // juggling below applies, so it leaves before any of it runs.
-  if (metric === "safeToSpend") {
-    var reading = safeToSpendReading(wc);
-    return {
-      shape: "safe", metric: metric, meta: meta, timeframe: "week",
-      value: reading && !reading.empty ? reading.week : 0,
-      prev: null, goal: null, series: null, rows: null,
-      safe: reading,
-      bad: !!(reading && !reading.empty && reading.week <= 0)
-    };
-  }
   // A shape that needs history can't be drawn for a metric that has none, and a
   // gauge with nothing to measure against is just a number - fall back rather
   // than draw something misleading.
@@ -10804,7 +10732,6 @@ function widgetFormat(v, unit) {
 // One line of plain English under the title, so a widget always says what it is
 // measuring and over what period without the user having to remember.
 function widgetCaption(w, res) {
-  if (res.metric === "safeToSpend") return tr("wsCaption");
   var tfWord = res.timeframe === "week" ? "this week" : res.timeframe === "year" ? "this year" : res.timeframe === "all" ? "all time" : "this month";
   var subject = w.target ? String(w.target) : res.meta.title;
   var base = res.metric === "merchantSpend" ? "“" + subject + "”"
@@ -10887,38 +10814,6 @@ function WidgetCard(props) {
   var deltaGood = delta == null || delta === 0 ? null : (res.meta.better === "lower" ? delta < 0 : delta > 0);
 
   function body() {
-    if (res.shape === "safe") {
-      var s = res.safe;
-      if (!s || s.empty) {
-        return <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.55 }}>{tr("wsSafeSetup")}</div>;
-      }
-      // Two readings of one number, side by side: the week is the promise, the
-      // day is what the user is actually deciding about at the till.
-      var todayTint = s.todayOver ? T.red : color;
-      return (
-        <div>
-          <div style={{ display: "flex", alignItems: "stretch", gap: 14 }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em" }}>{tr("wsToday")}</div>
-              <div style={{ fontSize: 27, fontWeight: 700, color: todayTint, letterSpacing: "-0.03em", marginTop: 3 }}>{dollars(s.todayLeft)}</div>
-            </div>
-            <div style={{ width: 1, background: T.sep, flexShrink: 0 }} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.07em" }}>{tr("wsThisWeek")}</div>
-              <div style={{ fontSize: 27, fontWeight: 700, color: s.week > 0 ? T.ink : T.red, letterSpacing: "-0.03em", marginTop: 3 }}>{dollars(s.week)}</div>
-            </div>
-          </div>
-          <div style={{ marginTop: 13 }}>
-            <ProgressBar value={Math.min(s.spentToday, s.perDay)} max={s.perDay || 1} color={todayTint} h={5} />
-            <div style={{ fontSize: 11.5, color: s.todayOver ? T.red : T.ink3, fontWeight: s.todayOver ? 600 : 400, marginTop: 7 }}>
-              {s.todayOver
-                ? tr("wsDayOver").replace("{over}", dollars(round2(s.spentToday - s.perDay))).replace("{cap}", dollars(s.perDay))
-                : tr("wsDaySpent").replace("{spent}", dollars(s.spentToday)).replace("{cap}", dollars(s.perDay))}
-            </div>
-          </div>
-        </div>
-      );
-    }
     if (res.shape === "ring") {
       var pct = Math.min(100, Math.round((res.value / res.goal) * 100));
       return (
@@ -11073,9 +10968,7 @@ function OverviewWidgets(props) {
   var wc = {
     tx: props.tx || [], categories: props.categories || [], folders: props.folders || [],
     savings: props.savings || [], businesses: props.businesses || [], investing: props.investing || [],
-    goals: props.goals || [], budgets: props.budgets || [],
-    // Handed down rather than recomputed - see safeToSpendReading().
-    safe: props.safe || null
+    goals: props.goals || [], budgets: props.budgets || []
   };
   var _add = useState(false); var adding = _add[0]; var setAdding = _add[1];
   var atMax = list.length >= MAX_WIDGETS;
@@ -11088,14 +10981,12 @@ function OverviewWidgets(props) {
         {list.length > 0 && <span style={{ fontSize: 11, color: T.ink3 }}>{"Built by Richard"}</span>}
       </div>
       <div style={{ marginBottom: 20 }}>
-        {list.map(function(w, i) {
+        {list.map(function(w) {
           var res = widgetCompute(w, wc);
           var color = /^#[0-9a-fA-F]{6}$/.test(w.color || "") ? w.color : T.orange;
           return (
-            <Reveal key={w.id} delay={(i * 0.06) + "s"}>
-              <WidgetCard widget={w} result={res} color={color}
-                onRemove={function() { if (props.onRemove) props.onRemove(w.id); }} />
-            </Reveal>
+            <WidgetCard key={w.id} widget={w} result={res} color={color}
+              onRemove={function() { if (props.onRemove) props.onRemove(w.id); }} />
           );
         })}
         {!atMax && props.onAdd && (
@@ -11160,7 +11051,7 @@ function AddWidgetOverlay(props) {
     var sys = "You design ONE dashboard widget for a personal finance app, from the user's plain-English request. "
       + "Reply with ONLY a JSON object, no prose, no markdown fences. Shape: "
       + "{\"title\":string (<=40 chars), \"metric\":string, \"shape\":string, \"timeframe\":string, \"target\":string (omit or empty if the metric needs none), \"icon\":string, \"color\":\"#rrggbb\"}. "
-      + "metric is one of: categorySpend (target = exact category name), folderSpend (target = exact folder name), merchantSpend (target = any word), expense, income, net, savingsRate, txCount, budgetLeft (target = a category that already has a budget), balance, savingsPot (target = exact pot name), netWorth, goalProgress (target = exact goal name), safeToSpend (no target - what is left to spend today and this week). "
+      + "metric is one of: categorySpend (target = exact category name), folderSpend (target = exact folder name), merchantSpend (target = any word), expense, income, net, savingsRate, txCount, budgetLeft (target = a category that already has a budget), balance, savingsPot (target = exact pot name), netWorth, goalProgress (target = exact goal name). "
       + "shape is one of: stat, bar, ring, list, trend, compare. timeframe is week, month, year, or all. "
       + "icon must be exactly one of: " + WIDGET_ICONS.join(", ") + ". "
       + "Use ONLY these exact names - never invent one: categories [" + (wc.categories || []).map(function(c) { return c.name; }).join(", ") + "], folders [" + (wc.folders || []).map(function(f) { return f.name; }).join(", ") + "], goals [" + (wc.goals || []).map(function(g) { return g.name; }).join(", ") + "], savings pots [" + (wc.savings || []).map(function(s) { return s.name; }).join(", ") + "], budgeted categories [" + (wc.budgets || []).map(function(b) { var c = catById(wc.categories, b.catId) || catByName(wc.categories, b.category); return c ? c.name : null; }).filter(Boolean).join(", ") + "]. "
@@ -11492,9 +11383,7 @@ function Overview(props) {
   // only when the watcher has actually found something. Four fixed panels meant
   // two of them were duplicates and one said "All clear" on a day the rest of
   // the screen was red.
-  // Four panels, in order of what a person actually asks: what can I spend,
-  // how is the month going, what should I do next, what has Richard caught.
-  var heroPageCount = 4;
+  var heroPageCount = heroWatch.leaks.length > 0 ? 3 : 2;
 
   // ===== Hero carousel: swipeable state + draw animation =====
   var _pg = useState(0);    var page = _pg[0];     var setPage = _pg[1];
@@ -11519,15 +11408,6 @@ function Overview(props) {
   var chartRef = useRef(null);   // the trend svg, so the scrubber can measure it
   var dragRef = useRef({ active: false, startX: 0, vw: 366 });
   var scrollRef = useRef(null);
-
-  // One handle per section below the fold. They replace fixed mount delays: a
-  // 0.18s delay on "Recent activity" only ever played to someone who could not
-  // see it yet.
-  var revStats = useReveal(null);
-  var revAccounts = useReveal(null);
-  var revBudgets = useReveal(null);
-  var revGoals = useReveal(null);
-  var revActivity = useReveal(null);
 
   // Inject the entrance keyframe once.
   useEffect(function() {
@@ -12104,65 +11984,46 @@ function Overview(props) {
                   <div style={{ height: "100%", width: (heroMonthPct * dp) + "%", borderRadius: 999, background: heroMonthPct > 100 ? HNEG : heroMonthPct > 85 ? T.gold : HPOS, transition: "width 0.5s ease" }} />
                 </div>
               </div>
-              <div style={{ display: "flex", gap: 11, borderTop: "0.5px solid " + HSEP, paddingTop: 12 }}>
+              <div style={{ display: "flex", gap: 11, borderTop: "0.5px solid " + HSEP, paddingTop: 12, alignItems: "center" }}>
                 {[{ k: "Income", v: dollars(income), c: HPOS }, { k: "Spent", v: dollars(expense), c: HINK }, { k: "Days left", v: String(heroDaysLeft), c: HINK }].map(function(x, i) {
                   return <div key={x.k} style={{ flex: 1, paddingInlineStart: i ? 10 : 0, borderInlineStart: i ? "0.5px solid " + HSEP : "none" }}><div style={{ fontSize: 9.5, fontWeight: 600, letterSpacing: "0.07em", textTransform: "uppercase", color: HFNT }}>{x.k}</div><div style={{ fontSize: 14.5, fontWeight: 700, color: x.c, marginTop: 3, letterSpacing: "-0.02em" }}>{x.v}</div></div>;
                 })}
+                {/* This used to be a whole panel of its own ("Richard's next
+                    move"), which rendered the SAME sentence as the line above -
+                    heroMove is heroTopRisk, and heroTopRisk is what the month
+                    status already reports. One verdict, one way in. */}
+                <LiquidButton variant="neutral" size="sm" ink={T.heroText} onPointerDown={stopDrag} onClick={function() { nav("watchBrief"); }}
+                  aria-label={heroMove ? "See Richard's plan" : "Open daily brief"}
+                  style={{ flexShrink: 0 }}>
+                  {heroMove ? "Plan" : "Brief"}<SVGIcon id="chevron" size={12} color={T.heroText} />
+                </LiquidButton>
               </div>
             </div>
 
-            {/* Panel 2 - Richard’s single next move. The detail lives in Daily
-                Brief; the hero only earns one decision at a time. */}
-            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden", padding: "20px 22px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>{tr("heroMoveTitle")}</span>
-                {/* T[tint] resolves "btn" to a CSS gradient - fine as a background,
-                    invalid as an SVG stroke (silently falls back to black), so a
-                    category-jump signal here needs the solid fallback instead. */}
-                <span style={{ width: 27, height: 27, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", background: T.heroRangeBg }}><SVGIcon id={heroMove ? heroMove.icon : "check"} size={14} color={heroMove ? (heroMove.tint === "btn" ? T.orange : (T[heroMove.tint] || HINK)) : HPOS} /></span>
-              </div>
-              <div style={{ minHeight: 105, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                <div style={{ fontSize: 20, fontWeight: 750, color: HINK, letterSpacing: "-0.025em", lineHeight: 1.18, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                  {heroMove ? heroMove.title : tr("heroMoveClearTitle")}
-                </div>
-                <div style={{ fontSize: 12.5, color: HFNT, lineHeight: 1.42, marginTop: 8, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                  {heroMove ? heroMove.subtitle : tr("heroMoveClearSub")}
-                </div>
-              </div>
-              <LiquidButton variant="primary" size="sm" full onPointerDown={stopDrag} onClick={function() { nav("watchBrief"); }}>
-                {heroMove ? tr("heroMovePlan") : tr("heroMoveBrief")}<SVGIcon id="chevron" size={13} color="#fff" />
-              </LiquidButton>
-            </div>
-
-            {/* Panel 3 - The 24/7 watcher. Summary first; the long finding list
-                remains one tap away so a new user never meets a wall of alerts. */}
-            {true && (
+            {/* Money watcher. Only once there is something to watch - on day 0
+                this panel said "All clear · No new leaks" beside a Dashboard
+                already showing four red cards, which is both noise and a
+                contradiction. */}
+            {heroWatch.leaks.length > 0 && (
             <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden", padding: "20px 22px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>{tr("moneyWatcher")}</span>
                 <span style={{ fontSize: 10.5, fontWeight: 700, color: HPOS, display: "flex", alignItems: "center", gap: 5 }}><i style={{ width: 6, height: 6, borderRadius: 6, display: "block", background: HPOS, animation: "rcBadgePulse 2s ease-in-out infinite" }} />24/7</span>
               </div>
               <div>
-                {heroTopLeak ? (
-                  <div>
-                    <div style={{ fontSize: 35, fontWeight: 750, color: HINK, letterSpacing: "-0.04em", lineHeight: 1 }}>
-                      {heroWatch.totals.recoverableAnnual > 0 ? dollars(heroWatch.totals.recoverableAnnual) : dollars(heroWatch.totals.oneOffTotal)}
-                    </div>
-                    <div style={{ fontSize: 12, color: HFNT, marginTop: 7 }}>{heroWatch.totals.recoverableAnnual > 0 ? "potential to protect each year" : "potentially available to claim back"}</div>
-                    <div style={{ marginTop: 11, display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ width: 25, height: 25, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: T.heroRangeBg, flexShrink: 0 }}><SVGIcon id={heroTopLeak.icon} size={13} color={heroTopLeak.tint === "btn" ? T.orange : (T[heroTopLeak.tint] || HINK)} /></span>
-                      <span style={{ fontSize: 12.5, fontWeight: 650, color: HINK, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{heroTopLeak.title}</span>
-                    </div>
+                <div>
+                  <div style={{ fontSize: 35, fontWeight: 750, color: HINK, letterSpacing: "-0.04em", lineHeight: 1 }}>
+                    {heroWatch.totals.recoverableAnnual > 0 ? dollars(heroWatch.totals.recoverableAnnual) : dollars(heroWatch.totals.oneOffTotal)}
                   </div>
-                ) : (
-                  <div>
-                    <div style={{ fontSize: 25, fontWeight: 750, color: HINK, letterSpacing: "-0.03em" }}>{tr("heroWatchClearTitle")}</div>
-                    <div style={{ fontSize: 12.5, color: HFNT, lineHeight: 1.45, marginTop: 8 }}>{tr("heroWatchClearSub")}</div>
+                  <div style={{ fontSize: 12, color: HFNT, marginTop: 7 }}>{heroWatch.totals.recoverableAnnual > 0 ? "potential to protect each year" : "potentially available to claim back"}</div>
+                  <div style={{ marginTop: 11, display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ width: 25, height: 25, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: T.heroRangeBg, flexShrink: 0 }}><SVGIcon id={heroTopLeak.icon} size={13} color={heroTopLeak.tint === "btn" ? T.orange : (T[heroTopLeak.tint] || HINK)} /></span>
+                    <span style={{ fontSize: 12.5, fontWeight: 650, color: HINK, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{heroTopLeak.title}</span>
                   </div>
-                )}
+                </div>
               </div>
               <LiquidButton variant="neutral" size="sm" full ink={HINK} onPointerDown={stopDrag} onClick={function() { nav("watchBrief"); }}>
-                {heroTopLeak ? ("Review " + heroWatch.leaks.length + " finding" + (heroWatch.leaks.length === 1 ? "" : "s")) : tr("heroWatchClearCta")}<SVGIcon id="chevron" size={13} color={HINK} />
+                {"Review " + heroWatch.leaks.length + " finding" + (heroWatch.leaks.length === 1 ? "" : "s")}<SVGIcon id="chevron" size={13} color={HINK} />
               </LiquidButton>
             </div>
             )}
@@ -12175,7 +12036,6 @@ function Overview(props) {
           overview, before the supporting account and activity sections. */}
       <OverviewWidgets widgets={props.widgets} tx={tx} categories={cats} folders={props.folders}
         savings={savAccts} businesses={bizAccts} investing={invAccts} goals={goals} budgets={budgets}
-        safe={{ week: safeToSpend, perDay: safePerDay, hasLedger: tx.length > 0 }}
         onRemove={props.onRemoveWidget} onAdd={props.onAddWidget} lang={props.lang} />
 
       {props.plan && (
@@ -12202,7 +12062,7 @@ function Overview(props) {
       )}
 
       {(income > 0 || expense > 0) && (
-        <div ref={revStats.ref} className={revStats.className} style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+        <div style={{ display: "flex", gap: 10, marginBottom: 20, animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.06s both" }}>
           <div onClick={function() { nav("advisor"); }} style={{ flex: 1, background: !hasIncome ? T.card : (savRate >= 20 ? T.greenDim : savRate > 0 ? T.orangeDim : "rgba(200,152,58,0.10)"), borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer" }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{tr("savingsRate")}</div>
             <div style={{ fontSize: 26, fontWeight: 700, color: !hasIncome ? T.ink3 : (savRate >= 20 ? T.green : savRate > 0 ? T.orange : T.gold), letterSpacing: "-0.02em" }}>{!hasIncome ? "-" : savRate + "%"}</div>
@@ -12273,7 +12133,7 @@ function Overview(props) {
         return null;
       })()}
 
-      <div ref={revAccounts.ref} className={revAccounts.className}>
+      <div style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.09s both" }}>
         <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
@@ -12344,7 +12204,7 @@ function Overview(props) {
       </div>
 
       {budgetRows.length > 0 && (
-        <div ref={revBudgets.ref} className={revBudgets.className} onClick={function() { nav("budgets"); }} style={{ cursor: "pointer" }}>
+        <div onClick={function() { nav("budgets"); }} style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.12s both", cursor: "pointer" }}>
           <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
@@ -12389,7 +12249,7 @@ function Overview(props) {
       )}
 
       {goals.length > 0 && (
-        <div ref={revGoals.ref} className={revGoals.className} onClick={function() { nav("goals"); }} style={{ cursor: "pointer" }}>
+        <div onClick={function() { nav("goals"); }} style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.15s both", cursor: "pointer" }}>
           <div style={{ padding: "0 2px 10px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
@@ -12424,7 +12284,7 @@ function Overview(props) {
       )}
 
       {recent.length > 0 && (
-        <div ref={revActivity.ref} className={revActivity.className} onClick={function() { nav("activity"); }} style={{ cursor: "pointer" }}>
+        <div onClick={function() { nav("activity"); }} style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.18s both", cursor: "pointer" }}>
           <div style={{ padding: "0 2px 10px", display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 3, height: 16, borderRadius: 2, background: T.orange, flexShrink: 0 }} />
             <span style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{tr("recent")}</span>
@@ -13521,14 +13381,8 @@ function detectBudgetPace(tx, budgets, cats) {
     var elapsed = observedDays / dim;
     var projected = spent / elapsed;
     if (projected <= limit * 1.05 || daysLeft < 3) return;
-    // Budgets have stored a catId rather than a name for a while now, so the
-    // name has to be looked up - reading b.category straight off the row put
-    // the literal word "undefined" at the front of every pace headline.
-    var paceCat = null;
-    (cats || []).forEach(function(c) { if (c && c.id === b.catId) paceCat = c; });
     out.push({
-      key: "pace-" + (b.catId || b.category) + "-" + ym, catId: b.catId,
-      category: (paceCat && paceCat.name) || b.category || "This budget",
+      key: "pace-" + (b.catId || b.category) + "-" + ym, catId: b.catId, category: b.category,
       limit: round2(limit), spent: round2(spent), projected: round2(projected),
       over: round2(projected - limit), pct: Math.round((spent / limit) * 100),
       daysLeft: daysLeft,
@@ -21175,7 +21029,7 @@ function Advisor(props) {
       + "[ACTION:{\"kind\":\"editTx\",\"merchant\":\"Salary\",\"type\":\"income\",\"amount\":4880,\"set\":{\"amount\":1626}}] CORRECTS transactions already logged. The top-level fields are filters that pick the rows (category = exact category name, merchant = substring of the label, type = expense or income, amount = the exact current amount, dateFrom/dateTo = YYYY-MM-DD inclusive); \"set\" holds the new values and may contain amount, label, category, date, and type. At least one filter is required. Prefer the exact amount plus one more filter so you hit precisely the row the user means. "
       + "THESE TWO ARE HOW YOU FIX THE APP'S OVERALL NUMBERS. The user cannot edit a savings rate, a monthly analysis or a budget's verdict directly - those are all computed from the raw rows in the data below. So when the user says a headline figure is wrong (\"my income says 4880 but that isn't right\", \"I already started this month with 3254\", \"that was money I had, not money I made\"), do not just agree or explain: find the ROW that produced it in the data below, say plainly which figure was wrong and what it should be, and emit the tags that fix it. That often means TWO tags together - correct the income row down to what was really earned AND set the opening balance to the part they already had - because moving money from income to opening balance is exactly what makes the savings rate, the monthly analysis and the budgets recompute correctly. State what will change as a result (\"your savings rate goes from 12% to 48%\") so they can check your arithmetic before they tap Apply. If their correction doesn't add up against the rows you can see, say so and ask, rather than guessing at a split. "
       + "[ACTION:{\"kind\":\"widget\",\"op\":\"add\",\"title\":\"Coffee watch\",\"metric\":\"categorySpend\",\"target\":\"Food\",\"shape\":\"ring\",\"timeframe\":\"month\",\"goal\":200,\"icon\":\"coffee\",\"color\":\"#C8973A\"}] BUILDS A WIDGET on their Overview screen (op is add, update, or remove - for remove, pass only the exact title). This is a real feature: the user can ask for a card that follows anything below, drawn in whichever shape they ask for, and you fill in the template. "
-      + "metric (what it follows) is one of: categorySpend (target = exact category name), folderSpend (target = exact folder name), merchantSpend (target = a word matched against transaction labels, e.g. \"Starbucks\"), expense, income, net, savingsRate, txCount, budgetLeft (target = a category that HAS a budget), balance, savingsPot (target = exact pot name), netWorth, goalProgress (target = exact goal name), safeToSpend (no target - what is left to spend today and this week). "
+      + "metric (what it follows) is one of: categorySpend (target = exact category name), folderSpend (target = exact folder name), merchantSpend (target = a word matched against transaction labels, e.g. \"Starbucks\"), expense, income, net, savingsRate, txCount, budgetLeft (target = a category that HAS a budget), balance, savingsPot (target = exact pot name), netWorth, goalProgress (target = exact goal name). "
       + "shape (how it looks) is one of: stat (one big number plus the change since last period), bar (a progress bar toward the goal), ring (the same as a gauge), list (the biggest rows behind the total), trend (six periods as mini bars), compare (this period beside the last one). timeframe is week, month, year, or all. "
       + "goal is optional and only means something for bar and ring; leave it out and they fall back to a plain number, except that a category with a budget or a goal with a target borrows that automatically. For spending metrics the goal reads as a ceiling to stay under, for saving and income metrics as a target to get past - you don't need to say which. icon must be one of: " + WIDGET_ICONS.join(", ") + ". color is a #rrggbb hex. Up to " + MAX_WIDGETS + " widgets total; adding one with the title of an existing widget replaces it. "
       + "Match the user's words to the template: \"track my coffee\" is merchantSpend or a category, \"as a ring/circle/gauge\" is ring, \"a bar\" is bar, \"show me the biggest ones\" is list, \"over the last few months\" is trend, \"versus last month\" is compare. Pick a sensible icon and a short title yourself rather than asking. If they ask for something no metric covers, say plainly what you can follow instead and offer the closest one - never invent a metric name, and never promise a widget on any screen other than Overview, which is the only place they appear. "
