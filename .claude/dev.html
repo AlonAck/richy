@@ -62,7 +62,12 @@ function fetchSource(attempt){
 }
 fetchSource(1).then(function(src){
   var code = src
-    .replace(/^\s*import[^\n]*\n/gm, "")
+    // Anchored at column 0 and requiring whitespace after the keyword. The old
+    // pattern (`^\s*import[^\n]*`) also ate any INDENTED line whose first word
+    // merely started with "import" - which silently deleted all four
+    // `importCsv:"Import CSV"` translation lines, so the Activity tab's import
+    // button rendered the raw key in the harness and nowhere else.
+    .replace(/^import\s[^\n]*\n/gm, "")
     .replace(/export default function App/, "function App");
   // T/UI/DISP are `const`, so eval() keeps them inside its own block and the
   // harness code below can't see them (unlike the hoisted function
@@ -122,6 +127,15 @@ fetchSource(1).then(function(src){
   // to be painted too - otherwise a dark preview renders dark-palette
   // components on a light page (rule 1 of the colour system, in reverse).
   try { var _pageBg = qs.get("dark") === "1" ? DARK_BG : LIGHT_BG; document.documentElement.style.background = _pageBg; document.body.style.background = _pageBg; document.getElementById("root").style.background = _pageBg; } catch (e) {}
+  // ?lang=he|ar|ru switches the app language and the page direction for EVERY
+  // view, not just the two that used to set it by hand - Richy is Hebrew-first,
+  // so any new screen should be checkable in RTL from the harness.
+  var _hl = qs.get("lang");
+  if (_hl && _hl !== "en") {
+    try { _lang.code = _hl; } catch (e) {}
+    document.documentElement.lang = _hl;
+    document.documentElement.dir = (_hl === "he" || _hl === "ar") ? "rtl" : "ltr";
+  }
   var view = qs.get("view") || "overview";
   var mockTrips = qs.get("seed") ? [{
     id: 99, name: "Tokyo Spring", destination: "Tokyo", days: 8, startDate: "2026-06-28", style: "comfort", total: 5000, icon: "umbrella",
@@ -331,6 +345,56 @@ fetchSource(1).then(function(src){
       });
     }
     el = React.createElement(ActivityHarness);
+  } else if (view === "csvimport") {
+    // The CSV importer, pre-loaded with a file built to land one row in each
+    // band against mockTx: an exact repeat (auto-skipped), a raw merchant name
+    // for something already typed by hand (a question), two genuinely new rows,
+    // and one line the file lists twice (kept, counted as a twin).
+    var csvSeed = [
+      "Date,Description,Amount",
+      iso(7) + ",Whole Foods,-420.00",
+      iso(3) + ",OSTERIA ROMA #4471,-260.00",
+      iso(2) + ",IKEA Brooklyn,-320.00",
+      iso(2) + ",Bus fare,-2.90",
+      iso(2) + ",Bus fare,-2.90",
+      iso(1) + ",ACME PAYROLL,3000.00"
+    ].join("\n");
+    function CsvImportHarness() {
+      var _tx = React.useState(mockTx); var ctx = _tx[0]; var setCtx = _tx[1];
+      var _open = React.useState(true); var open = _open[0]; var setOpen = _open[1];
+      window.__csvTx = function(){ return ctx; };
+      window.__csvSeed = csvSeed;
+      return React.createElement("div", null,
+        React.createElement(ImportSheet, {
+          open: open, onClose: function(){ setOpen(false); }, categories: mockCats, tx: ctx,
+          onImport: function(txs, report){ setCtx(ctx.concat(txs)); window.__csvImported = txs; window.__csvReport = report; }
+        }),
+        React.createElement("button", { onClick: function(){ setOpen(true); }, style: { padding: "10px 14px" } }, "Open importer")
+      );
+    }
+    el = React.createElement(CsvImportHarness, {});
+  } else if (view === "csvnudge") {
+    // The Advisor's bank-file banner on its own, so the drop-in and the two
+    // copy variants can be checked without signing in. ?kind=none for an empty
+    // account, anything else for the thin one.
+    function CsvNudgeHarness() {
+      var kind = qs.get("kind") === "none" ? "none" : "thin";
+      var _on = React.useState(true); var on = _on[0]; var setOn = _on[1];
+      return React.createElement("div", { style: { minHeight: 400 } },
+        on ? React.createElement(CsvNudgeToast, {
+          state: { kind: kind, count: kind === "none" ? 0 : 9, through: "", imported: false },
+          onSeen: function(){ window.__csvSeen = true; },
+          onClose: function(){ setOn(false); window.__csvClosed = true; },
+          onImport: function(){ window.__clicked = "importCsv"; }
+        }) : null,
+        React.createElement(CsvSureCard, {
+          state: { kind: kind, count: kind === "none" ? 0 : 9, through: "", imported: false },
+          onImport: function(){ window.__clicked = "importCsv"; },
+          onDismiss: function(){ window.__clicked = "csvDismiss"; }
+        })
+      );
+    }
+    el = React.createElement(CsvNudgeHarness, {});
   } else if (view === "budgets") {
     var budgetsMockTx = [
       { id: 101, type: "expense", amount: 1800, label: "Rent",   catId: "c1", category: "Housing",       date: iso(0) },
@@ -597,6 +661,9 @@ fetchSource(1).then(function(src){
     _currency.sym = qs.get("cur") || "$";
     el = React.createElement(OnboardingScreen, {
       username: "Alon Acker", dob: "1995-03-14", lang: "en",
+      // ?step=6 jumps straight to the plan screen (entry method + budgets),
+      // which otherwise needs all ten questions answered first.
+      startStep: qs.get("step") ? parseInt(qs.get("step"), 10) : undefined,
       onComplete: function(plan, oData, budgets, em) { window.__done = { plan: plan, oData: oData, budgets: budgets, em: em }; document.title = "ONBOARDING DONE"; }
     });
   } else if (view === "quickamount") {
@@ -749,6 +816,12 @@ fetchSource(1).then(function(src){
         householdId: used ? "hh_mock" : null,
         bankSync: used ? { enabled: true } : null,
         dismissedTips: dismissedTips,
+        // ?csvin=1 marks a bank file as already imported, which is what retires
+        // the "Sure that's everything?" card.
+        csvImport: qs.get("csvin") ? { at: iso(2), count: 120, from: iso(35), to: iso(2) } : null,
+        csvNudge: null,
+        onImportCsv: function(){ window.__clicked = "importCsv"; },
+        onCsvNudgeOff: function(){ window.__clicked = "csvDismiss"; },
         onDismissTip: function(id){ setDt(dismissedTips.concat([id])); window.__clicked = "dismissTip_" + id; },
         onOpenDebts: function(){ window.__clicked = "debts"; },
         onOpenCollab: function(){ window.__clicked = "collab"; },

@@ -1755,7 +1755,7 @@ var T1_STRINGS = {
     dbNoDebts:"No debts tracked", dbNoDebtsSub:"Add a card, loan, or overdraft with its balance and interest rate, and I'll show you the fastest way out.", dbAddFirst:"Add your first debt", dbTotalOwed:"Total owed",
     obTypeItInstead:"type it instead",
     pfBadges:"Badges", pfManage:"Manage", pfYourData:"Your data", pfRecentActivity:"Recent activity", pfGreenMonth:"Green month", pfBudgetRuns:"Budget runs", pfNoRuns:"No runs going yet", pfSharedBudgets:"Shared budgets", pfNotSharing:"Not sharing with anyone", pfBudgetBooks:"Budget books", pfTripHistory:"Trip history", pfYourPlan:"Your plan", pfYourPlanSub:"Richard's read on your money", pfBankSync:"Bank sync", pfPrivacy:"Privacy and data", pfPrivacySub:"Export, sharing, delete", pfNothingTracked:"Nothing tracked", pfNoBadgesYet:"Nothing earned yet. Log a transaction, set a budget, confirm a week - they start arriving quickly.", pfConfirm:"Confirm", pfNOfM:"{n} of {m}", pfSettings:"Settings", pfNMembers:"{n} members", pfOneMember:"1 member", pfNEnded:"{n} ended", pfNTotal:"{n} total", pfNOf12:"{n} of 12 this year",
-    setAiRichard:"AI & Richard", setVisual:"Visual", setYourPlan:"Your plan", setInstructions:"Richard's instructions", setWhatsApp:"WhatsApp alerts", setOpeningBalance:"Opening balance", setLogMonth:"Log this month", setEntryMethod:"Adding transactions", setDateRange:"Date range", setBankSync:"Bank Sync", setAppearance:"Appearance", setYourName:"Your name", setCollab:"Collab", setDebts:"Debts", setPrivacy:"Privacy & data", valCustom:"Custom", valDefault:"Default", valOn:"On", valOff:"Off", valCsvImport:"CSV import", valManual:"Manual", valPastMonth:"Past month", valThisMonth:"This month", valTrackedN:"{n} tracked", valInviteN:"{n} invites", valInvite1:"1 invite", dashTipDebtTitle:"Crush your debt", dashTipDebtSub:"Payoff plan and a debt-free date", dashTipCollabTitle:"Add your partner", dashTipCollabSub:"Share budgets and goals", dashTipSyncTitle:"Set up Bank Sync", dashTipSyncSub:"Log expenses from your phone's payment notifications", dashTipTripTitle:"Plan a trip", dashTipTripSub:"Let Richard split your travel budget", setLanguageSub:"App language", setCurrencySub:"How money is shown", openAnAccount:"Open an account", totalSetAside:"Total set aside", businessLabel:"Business", investingLabel:"Investing",
+    setAiRichard:"AI & Richard", setVisual:"Visual", setYourPlan:"Your plan", setInstructions:"Richard's instructions", setOpeningBalance:"Opening balance", setLogMonth:"Log this month", setEntryMethod:"Adding transactions", setDateRange:"Date range", setBankSync:"Bank Sync", setAppearance:"Appearance", setYourName:"Your name", setCollab:"Collab", setDebts:"Debts", setPrivacy:"Privacy & data", valCustom:"Custom", valDefault:"Default", valOn:"On", valOff:"Off", valCsvImport:"CSV import", valManual:"Manual", valPastMonth:"Past month", valThisMonth:"This month", valTrackedN:"{n} tracked", valInviteN:"{n} invites", valInvite1:"1 invite", dashTipDebtTitle:"Crush your debt", dashTipDebtSub:"Payoff plan and a debt-free date", dashTipCollabTitle:"Add your partner", dashTipCollabSub:"Share budgets and goals", dashTipSyncTitle:"Set up Bank Sync", dashTipSyncSub:"Log expenses from your phone's payment notifications", dashTipTripTitle:"Plan a trip", dashTipTripSub:"Let Richard split your travel budget", setLanguageSub:"App language", setCurrencySub:"How money is shown", openAnAccount:"Open an account", totalSetAside:"Total set aside", businessLabel:"Business", investingLabel:"Investing",
     dscBigDecision:"Richard is an AI, not a licensed financial advisor - always do your own research before a decision this size.",
     dscInvestRisk:"Richard is an AI assistant, not a licensed financial advisor. Investing involves risk, including the possible loss of your money, and past performance doesn't guarantee future results.",
     dscAiMistakes:"Richard is an AI assistant and can make mistakes. This isn't licensed financial advice.",
@@ -1797,7 +1797,7 @@ var T1_STRINGS = {
     dbNoDebts:"אין חובות במעקב", dbNoDebtsSub:"הוסיפו כרטיס, הלוואה או מסגרת עם היתרה והריבית, ואראה לכם את הדרך המהירה ביותר לצאת מזה.", dbAddFirst:"הוספת החוב הראשון", dbTotalOwed:"סך החוב",
     obTypeItInstead:"אפשר להקליד במקום",
     pfBadges:"תגים", pfManage:"ניהול", pfYourData:"הנתונים שלך", pfRecentActivity:"פעילות אחרונה", pfGreenMonth:"חודש ירוק", pfBudgetRuns:"רצפי תקציב", pfNoRuns:"אין רצף פעיל עדיין", pfSharedBudgets:"תקציבים משותפים", pfNotSharing:"לא משתפים עם אף אחד", pfBudgetBooks:"ספרי תקציב", pfTripHistory:"היסטוריית טיולים", pfYourPlan:"התוכנית שלך", pfYourPlanSub:"מה שריצ'רד רואה בכסף שלך", pfBankSync:"סנכרון בנק", pfPrivacy:"פרטיות ונתונים", pfPrivacySub:"ייצוא, שיתוף, מחיקה", pfNothingTracked:"אין מעקב", pfNoBadgesYet:"עוד לא הרווחתם תגים. רשמו עסקה, הגדירו תקציב, אשרו שבוע - הם מגיעים מהר.", pfConfirm:"אישור", pfNOfM:"{n} מתוך {m}", pfSettings:"הגדרות", pfNMembers:"{n} חברים", pfOneMember:"חבר אחד", pfNEnded:"{n} הסתיימו", pfNTotal:"{n} בסך הכל", pfNOf12:"{n} מתוך 12 השנה",
-    setAiRichard:"ריצ'רד ו-AI", setVisual:"תצוגה", setYourPlan:"התוכנית שלך", setInstructions:"ההוראות לריצ'רד", setWhatsApp:"התראות וואטסאפ", setOpeningBalance:"יתרת פתיחה", setLogMonth:"תיעוד החודש", setEntryMethod:"הוספת עסקאות", setDateRange:"טווח תאריכים", setBankSync:"סנכרון בנק", setAppearance:"מראה", setYourName:"השם שלך", setCollab:"שיתוף", setDebts:"חובות", setPrivacy:"פרטיות ונתונים", valCustom:"מותאם", valDefault:"ברירת מחדל", valOn:"פעיל", valOff:"כבוי", valCsvImport:"ייבוא CSV", valManual:"ידני", valPastMonth:"החודש האחרון", valThisMonth:"החודש הנוכחי", valTrackedN:"{n} במעקב", valInviteN:"{n} הזמנות", valInvite1:"הזמנה אחת", dashTipDebtTitle:"לסגור את החובות", dashTipDebtSub:"תוכנית סגירה ותאריך שבו נגמר החוב", dashTipCollabTitle:"לצרף את בן/בת הזוג", dashTipCollabSub:"שיתוף תקציבים ויעדים", dashTipSyncTitle:"להפעיל סנכרון בנק", dashTipSyncSub:"רישום הוצאות מהתראות התשלום בטלפון", dashTipTripTitle:"לתכנן טיול", dashTipTripSub:"ריצ'רד יחלק את תקציב הנסיעה", setLanguageSub:"שפת האפליקציה", setCurrencySub:"איך הכסף מוצג", openAnAccount:"פתיחת חשבון", totalSetAside:"סך הכל בצד", businessLabel:"עסק", investingLabel:"השקעות",
+    setAiRichard:"ריצ'רד ו-AI", setVisual:"תצוגה", setYourPlan:"התוכנית שלך", setInstructions:"ההוראות לריצ'רד", setOpeningBalance:"יתרת פתיחה", setLogMonth:"תיעוד החודש", setEntryMethod:"הוספת עסקאות", setDateRange:"טווח תאריכים", setBankSync:"סנכרון בנק", setAppearance:"מראה", setYourName:"השם שלך", setCollab:"שיתוף", setDebts:"חובות", setPrivacy:"פרטיות ונתונים", valCustom:"מותאם", valDefault:"ברירת מחדל", valOn:"פעיל", valOff:"כבוי", valCsvImport:"ייבוא CSV", valManual:"ידני", valPastMonth:"החודש האחרון", valThisMonth:"החודש הנוכחי", valTrackedN:"{n} במעקב", valInviteN:"{n} הזמנות", valInvite1:"הזמנה אחת", dashTipDebtTitle:"לסגור את החובות", dashTipDebtSub:"תוכנית סגירה ותאריך שבו נגמר החוב", dashTipCollabTitle:"לצרף את בן/בת הזוג", dashTipCollabSub:"שיתוף תקציבים ויעדים", dashTipSyncTitle:"להפעיל סנכרון בנק", dashTipSyncSub:"רישום הוצאות מהתראות התשלום בטלפון", dashTipTripTitle:"לתכנן טיול", dashTipTripSub:"ריצ'רד יחלק את תקציב הנסיעה", setLanguageSub:"שפת האפליקציה", setCurrencySub:"איך הכסף מוצג", openAnAccount:"פתיחת חשבון", totalSetAside:"סך הכל בצד", businessLabel:"עסק", investingLabel:"השקעות",
     dscBigDecision:"ריצ'רד הוא AI ולא יועץ פיננסי מורשה - תמיד ערכו בדיקה עצמאית לפני החלטה בסדר גודל כזה.",
     dscInvestRisk:"ריצ'רד הוא עוזר AI ולא יועץ פיננסי מורשה. השקעה כרוכה בסיכון, כולל אפשרות לאובדן הכסף, ותשואות עבר אינן מבטיחות תשואות עתידיות.",
     dscAiMistakes:"ריצ'רד הוא עוזר AI ועלול לטעות. זה אינו ייעוץ פיננסי מורשה.",
@@ -1839,7 +1839,7 @@ var T1_STRINGS = {
     dbNoDebts:"لا ديون متتبَّعة", dbNoDebtsSub:"أضف بطاقة أو قرضاً أو سحباً على المكشوف مع الرصيد ونسبة الفائدة، وسأريك أسرع طريق للخروج.", dbAddFirst:"أضف أول دين", dbTotalOwed:"إجمالي المستحق",
     obTypeItInstead:"اكتبه بدلاً من ذلك",
     pfBadges:"الشارات", pfManage:"إدارة", pfYourData:"بياناتك", pfRecentActivity:"النشاط الأخير", pfGreenMonth:"شهر أخضر", pfBudgetRuns:"سلاسل الميزانية", pfNoRuns:"لا توجد سلسلة بعد", pfSharedBudgets:"ميزانيات مشتركة", pfNotSharing:"لا تشارك مع أحد", pfBudgetBooks:"دفاتر الميزانية", pfTripHistory:"سجل الرحلات", pfYourPlan:"خطتك", pfYourPlanSub:"قراءة ريتشارد لأموالك", pfBankSync:"مزامنة البنك", pfPrivacy:"الخصوصية والبيانات", pfPrivacySub:"تصدير، مشاركة، حذف", pfNothingTracked:"لا شيء متتبَّع", pfNoBadgesYet:"لم تكسب شيئاً بعد. سجّل معاملة، حدّد ميزانية، أكّد أسبوعاً - وستبدأ بالوصول سريعاً.", pfConfirm:"تأكيد", pfNOfM:"{n} من {m}", pfSettings:"الإعدادات", pfNMembers:"{n} أعضاء", pfOneMember:"عضو واحد", pfNEnded:"{n} منتهية", pfNTotal:"{n} إجمالاً", pfNOf12:"{n} من 12 هذا العام",
-    setAiRichard:"ريتشارد والذكاء الاصطناعي", setVisual:"المظهر", setYourPlan:"خطتك", setInstructions:"تعليمات ريتشارد", setWhatsApp:"تنبيهات واتساب", setOpeningBalance:"الرصيد الافتتاحي", setLogMonth:"تسجيل هذا الشهر", setEntryMethod:"إضافة المعاملات", setDateRange:"النطاق الزمني", setBankSync:"مزامنة البنك", setAppearance:"الشكل", setYourName:"اسمك", setCollab:"المشاركة", setDebts:"الديون", setPrivacy:"الخصوصية والبيانات", valCustom:"مخصص", valDefault:"افتراضي", valOn:"مفعّل", valOff:"معطّل", valCsvImport:"استيراد CSV", valManual:"يدوي", valPastMonth:"الشهر الماضي", valThisMonth:"هذا الشهر", valTrackedN:"{n} متتبَّع", valInviteN:"{n} دعوات", valInvite1:"دعوة واحدة", dashTipDebtTitle:"تخلّص من ديونك", dashTipDebtSub:"خطة سداد وتاريخ للتحرر من الدين", dashTipCollabTitle:"أضف شريكك", dashTipCollabSub:"شارك الميزانيات والأهداف", dashTipSyncTitle:"فعّل مزامنة البنك", dashTipSyncSub:"سجّل المصروفات من إشعارات الدفع على هاتفك", dashTipTripTitle:"خطّط رحلة", dashTipTripSub:"دع ريتشارد يوزّع ميزانية سفرك", setLanguageSub:"لغة التطبيق", setCurrencySub:"كيف تُعرض الأموال", openAnAccount:"فتح حساب", totalSetAside:"إجمالي المخصص", businessLabel:"أعمال", investingLabel:"استثمار",
+    setAiRichard:"ريتشارد والذكاء الاصطناعي", setVisual:"المظهر", setYourPlan:"خطتك", setInstructions:"تعليمات ريتشارد", setOpeningBalance:"الرصيد الافتتاحي", setLogMonth:"تسجيل هذا الشهر", setEntryMethod:"إضافة المعاملات", setDateRange:"النطاق الزمني", setBankSync:"مزامنة البنك", setAppearance:"الشكل", setYourName:"اسمك", setCollab:"المشاركة", setDebts:"الديون", setPrivacy:"الخصوصية والبيانات", valCustom:"مخصص", valDefault:"افتراضي", valOn:"مفعّل", valOff:"معطّل", valCsvImport:"استيراد CSV", valManual:"يدوي", valPastMonth:"الشهر الماضي", valThisMonth:"هذا الشهر", valTrackedN:"{n} متتبَّع", valInviteN:"{n} دعوات", valInvite1:"دعوة واحدة", dashTipDebtTitle:"تخلّص من ديونك", dashTipDebtSub:"خطة سداد وتاريخ للتحرر من الدين", dashTipCollabTitle:"أضف شريكك", dashTipCollabSub:"شارك الميزانيات والأهداف", dashTipSyncTitle:"فعّل مزامنة البنك", dashTipSyncSub:"سجّل المصروفات من إشعارات الدفع على هاتفك", dashTipTripTitle:"خطّط رحلة", dashTipTripSub:"دع ريتشارد يوزّع ميزانية سفرك", setLanguageSub:"لغة التطبيق", setCurrencySub:"كيف تُعرض الأموال", openAnAccount:"فتح حساب", totalSetAside:"إجمالي المخصص", businessLabel:"أعمال", investingLabel:"استثمار",
     dscBigDecision:"ريتشارد ذكاء اصطناعي وليس مستشاراً مالياً مرخصاً - تحقق بنفسك قبل قرار بهذا الحجم.",
     dscInvestRisk:"ريتشارد مساعد ذكاء اصطناعي وليس مستشاراً مالياً مرخصاً. الاستثمار ينطوي على مخاطر، بما في ذلك احتمال خسارة أموالك، والأداء السابق لا يضمن النتائج المستقبلية.",
     dscAiMistakes:"ريتشارد مساعد ذكاء اصطناعي وقد يخطئ. هذه ليست استشارة مالية مرخصة.",
@@ -1881,7 +1881,7 @@ var T1_STRINGS = {
     dbNoDebts:"Долги не отслеживаются", dbNoDebtsSub:"Добавьте карту, кредит или овердрафт с остатком и ставкой, и я покажу самый быстрый выход.", dbAddFirst:"Добавить первый долг", dbTotalOwed:"Всего долга",
     obTypeItInstead:"ввести вручную",
     pfBadges:"Значки", pfManage:"Управление", pfYourData:"Ваши данные", pfRecentActivity:"Последние события", pfGreenMonth:"Зелёный месяц", pfBudgetRuns:"Серии бюджета", pfNoRuns:"Серий пока нет", pfSharedBudgets:"Общие бюджеты", pfNotSharing:"Ни с кем не делитесь", pfBudgetBooks:"Книги бюджета", pfTripHistory:"История поездок", pfYourPlan:"Ваш план", pfYourPlanSub:"Как Ричард видит ваши деньги", pfBankSync:"Синхронизация с банком", pfPrivacy:"Приватность и данные", pfPrivacySub:"Экспорт, доступ, удаление", pfNothingTracked:"Ничего не отслеживается", pfNoBadgesYet:"Пока ничего не заработано. Запишите операцию, задайте бюджет, подтвердите неделю - они начнут приходить быстро.", pfConfirm:"Подтвердить", pfNOfM:"{n} из {m}", pfSettings:"Настройки", pfNMembers:"{n} участников", pfOneMember:"1 участник", pfNEnded:"{n} завершено", pfNTotal:"{n} всего", pfNOf12:"{n} из 12 в этом году",
-    setAiRichard:"Ричард и ИИ", setVisual:"Оформление", setYourPlan:"Ваш план", setInstructions:"Инструкции Ричарду", setWhatsApp:"Оповещения в WhatsApp", setOpeningBalance:"Начальный баланс", setLogMonth:"Записать месяц", setEntryMethod:"Добавление операций", setDateRange:"Период", setBankSync:"Синхронизация с банком", setAppearance:"Тема", setYourName:"Ваше имя", setCollab:"Совместно", setDebts:"Долги", setPrivacy:"Приватность и данные", valCustom:"Своё", valDefault:"По умолчанию", valOn:"Вкл", valOff:"Выкл", valCsvImport:"Импорт CSV", valManual:"Вручную", valPastMonth:"Прошлый месяц", valThisMonth:"Текущий месяц", valTrackedN:"{n} в учёте", valInviteN:"{n} приглашений", valInvite1:"1 приглашение", dashTipDebtTitle:"Закрыть долги", dashTipDebtSub:"План погашения и дата свободы от долга", dashTipCollabTitle:"Добавить партнёра", dashTipCollabSub:"Общие бюджеты и цели", dashTipSyncTitle:"Настроить синхронизацию", dashTipSyncSub:"Записывать траты из уведомлений об оплате", dashTipTripTitle:"Спланировать поездку", dashTipTripSub:"Ричард распределит бюджет поездки", setLanguageSub:"Язык приложения", setCurrencySub:"Как показываются деньги", openAnAccount:"Открыть счёт", totalSetAside:"Всего отложено", businessLabel:"Бизнес", investingLabel:"Инвестиции",
+    setAiRichard:"Ричард и ИИ", setVisual:"Оформление", setYourPlan:"Ваш план", setInstructions:"Инструкции Ричарду", setOpeningBalance:"Начальный баланс", setLogMonth:"Записать месяц", setEntryMethod:"Добавление операций", setDateRange:"Период", setBankSync:"Синхронизация с банком", setAppearance:"Тема", setYourName:"Ваше имя", setCollab:"Совместно", setDebts:"Долги", setPrivacy:"Приватность и данные", valCustom:"Своё", valDefault:"По умолчанию", valOn:"Вкл", valOff:"Выкл", valCsvImport:"Импорт CSV", valManual:"Вручную", valPastMonth:"Прошлый месяц", valThisMonth:"Текущий месяц", valTrackedN:"{n} в учёте", valInviteN:"{n} приглашений", valInvite1:"1 приглашение", dashTipDebtTitle:"Закрыть долги", dashTipDebtSub:"План погашения и дата свободы от долга", dashTipCollabTitle:"Добавить партнёра", dashTipCollabSub:"Общие бюджеты и цели", dashTipSyncTitle:"Настроить синхронизацию", dashTipSyncSub:"Записывать траты из уведомлений об оплате", dashTipTripTitle:"Спланировать поездку", dashTipTripSub:"Ричард распределит бюджет поездки", setLanguageSub:"Язык приложения", setCurrencySub:"Как показываются деньги", openAnAccount:"Открыть счёт", totalSetAside:"Всего отложено", businessLabel:"Бизнес", investingLabel:"Инвестиции",
     dscBigDecision:"Ричард - это ИИ, а не лицензированный финансовый советник. Перед решением такого масштаба проверьте всё сами.",
     dscInvestRisk:"Ричард - ИИ-помощник, а не лицензированный финансовый советник. Инвестирование связано с риском, включая возможную потерю денег, а прошлая доходность не гарантирует будущую.",
     dscAiMistakes:"Ричард - ИИ-помощник и может ошибаться. Это не лицензированная финансовая консультация.",
@@ -1895,6 +1895,121 @@ var T1_STRINGS = {
 for (var _t1c in T1_STRINGS) {
   if (!TRANSLATIONS[_t1c]) continue;
   for (var _t1k in T1_STRINGS[_t1c]) TRANSLATIONS[_t1c][_t1k] = T1_STRINGS[_t1c][_t1k];
+}
+
+// ---- CSV import: the plain-language pitch and the nudges ---------------------
+// The import is the single biggest jump in how useful Richy is - an empty app
+// judges nothing - so three surfaces push it: the signup flow, the dashboard,
+// and the Advisor tab. All three assume the reader has never heard the word
+// "CSV" and explain it in shop-and-amount terms, not file-format terms. These
+// live on already-translated screens, so they are translated too. (The inside
+// of ImportSheet is still English-only, like the rest of that sheet - tracked
+// with the wider i18n gap in ROADMAP.md.)
+var CSV_STRINGS = {
+  en: {
+    csvWhatIs:"What's a CSV?",
+    csvWhatIsBody:"It's the list of your own purchases that your bank already lets you download. One line per purchase: the date, the shop, the amount. Nothing for you to fill in.",
+    csvHow1:"Open your bank or credit card app.",
+    csvHow2:"Go to Transactions, Activity or Statements.",
+    csvHow3:"Tap Export, Download or Share, and pick CSV or Excel.",
+    csvHow4:"Come back here and drop the file in. That's it.",
+    csvHowNote:"Only Excel on offer? Open it and choose Save as CSV - Richy reads that too.",
+    csvWhySafe:"The file is read on your own device. Richy never asks for your bank password.",
+    csvShowMe:"Show me how",
+    csvHide:"Got it",
+    csvRecommended:"Recommended",
+    csvOnboardPush:"This is the fastest way to make Richy useful: a whole month of real purchases in one go, instead of typing them one by one.",
+    csvSureTitle:"Sure that's everything?",
+    csvSureNone:"Richy can only judge what it can see, and right now it sees nothing. One file from your bank fills in a whole month.",
+    csvSureThin:"Richy can see {n} transactions. A normal month has 40 or more card charges, so there's probably spending it doesn't know about.",
+    csvSureStale:"Your last bank file ended on {date}. Everything since then is only what you typed in by hand.",
+    csvSureCta:"Bring in my bank file",
+    csvSureDismiss:"It's all in there",
+    csvToastTitle:"Richard is working half-blind",
+    csvToastBodyNone:"He hasn't seen a single purchase yet. Import your bank file and his advice starts being about you.",
+    csvToastBodyThin:"He can see {n} transactions. Import your bank file so his advice is about your real month.",
+    csvToastCta:"Import it",
+    csvToastDismiss:"Dismiss",
+  },
+  he: {
+    csvWhatIs:"מה זה CSV?",
+    csvWhatIsBody:"זו רשימת הקניות שלכם שהבנק כבר נותן להוריד. שורה לכל קנייה: התאריך, החנות והסכום. אין מה למלא.",
+    csvHow1:"פתחו את אפליקציית הבנק או כרטיס האשראי.",
+    csvHow2:"היכנסו לתנועות, לפעילות או לדפי החשבון.",
+    csvHow3:"לחצו על ייצוא, הורדה או שיתוף ובחרו CSV או Excel.",
+    csvHow4:"חזרו לכאן והעלו את הקובץ. זה הכל.",
+    csvHowNote:"יש רק Excel? פתחו אותו ובחרו שמירה בשם CSV - ריצ'י קורא גם את זה.",
+    csvWhySafe:"הקובץ נקרא במכשיר שלכם. ריצ'י לא מבקש את הסיסמה לבנק.",
+    csvShowMe:"תראו לי איך",
+    csvHide:"הבנתי",
+    csvRecommended:"מומלץ",
+    csvOnboardPush:"זו הדרך המהירה להפוך את ריצ'י לשימושי: חודש שלם של קניות אמיתיות בפעם אחת, במקום להקליד אחת-אחת.",
+    csvSureTitle:"בטוחים שזה הכל?",
+    csvSureNone:"ריצ'י יכול לנתח רק את מה שהוא רואה, וכרגע הוא לא רואה כלום. קובץ אחד מהבנק ממלא חודש שלם.",
+    csvSureThin:"ריצ'י רואה {n} עסקאות. בחודש רגיל יש 40 חיובים ומעלה, כך שכנראה יש הוצאות שהוא לא מכיר.",
+    csvSureStale:"קובץ הבנק האחרון שלכם נגמר ב-{date}. כל מה שקרה מאז הוא רק מה שהקלדתם ביד.",
+    csvSureCta:"להעלות קובץ מהבנק",
+    csvSureDismiss:"הכל בפנים",
+    csvToastTitle:"ריצ'רד עובד חצי בעיוורון",
+    csvToastBodyNone:"הוא עוד לא ראה אף קנייה. העלו קובץ מהבנק והעצות שלו יתחילו להיות עליכם.",
+    csvToastBodyThin:"הוא רואה {n} עסקאות. העלו קובץ מהבנק כדי שהעצות יהיו על החודש האמיתי שלכם.",
+    csvToastCta:"להעלות",
+    csvToastDismiss:"סגירה",
+  },
+  ar: {
+    csvWhatIs:"ما هو ملف CSV؟",
+    csvWhatIsBody:"إنها قائمة مشترياتك التي يتيح لك مصرفك تنزيلها بالفعل. سطر لكل عملية: التاريخ والمتجر والمبلغ. لا شيء عليك كتابته.",
+    csvHow1:"افتح تطبيق المصرف أو بطاقة الائتمان.",
+    csvHow2:"اذهب إلى المعاملات أو النشاط أو كشوف الحساب.",
+    csvHow3:"اضغط تصدير أو تنزيل أو مشاركة، واختر CSV أو Excel.",
+    csvHow4:"ارجع إلى هنا وأضف الملف. هذا كل شيء.",
+    csvHowNote:"المتاح Excel فقط؟ افتحه واختر حفظ باسم CSV - ريتشي يقرأه أيضًا.",
+    csvWhySafe:"يُقرأ الملف على جهازك. ريتشي لا يطلب كلمة مرور المصرف أبدًا.",
+    csvShowMe:"أرِني كيف",
+    csvHide:"فهمت",
+    csvRecommended:"موصى به",
+    csvOnboardPush:"هذه أسرع طريقة لجعل ريتشي مفيدًا: شهر كامل من المشتريات الحقيقية بخطوة واحدة، بدل كتابتها واحدة واحدة.",
+    csvSureTitle:"متأكد أن هذا كل شيء؟",
+    csvSureNone:"ريتشي يحكم على ما يراه فقط، وهو الآن لا يرى شيئًا. ملف واحد من مصرفك يملأ شهرًا كاملًا.",
+    csvSureThin:"يرى ريتشي {n} معاملة. الشهر العادي فيه 40 عملية أو أكثر، لذا هناك على الأرجح مصروفات لا يعرفها.",
+    csvSureStale:"آخر ملف مصرفي لك ينتهي في {date}. كل ما بعده هو ما كتبته بيدك فقط.",
+    csvSureCta:"أضف ملف مصرفي",
+    csvSureDismiss:"كل شيء موجود",
+    csvToastTitle:"ريتشارد يعمل نصف أعمى",
+    csvToastBodyNone:"لم يرَ أي عملية شراء بعد. أضف ملف مصرفك لتصبح نصائحه عنك.",
+    csvToastBodyThin:"يرى {n} معاملة. أضف ملف مصرفك لتكون نصائحه عن شهرك الحقيقي.",
+    csvToastCta:"أضفه",
+    csvToastDismiss:"إغلاق",
+  },
+  ru: {
+    csvWhatIs:"Что такое CSV?",
+    csvWhatIsBody:"Это список ваших же покупок, который банк и так даёт скачать. Одна строка на покупку: дата, магазин, сумма. Заполнять ничего не нужно.",
+    csvHow1:"Откройте приложение банка или карты.",
+    csvHow2:"Зайдите в Операции, Историю или Выписки.",
+    csvHow3:"Нажмите Экспорт, Скачать или Поделиться и выберите CSV или Excel.",
+    csvHow4:"Вернитесь сюда и добавьте файл. Всё.",
+    csvHowNote:"Есть только Excel? Откройте его и сохраните как CSV - Richy прочитает и это.",
+    csvWhySafe:"Файл читается на вашем устройстве. Richy никогда не просит пароль от банка.",
+    csvShowMe:"Покажите как",
+    csvHide:"Понятно",
+    csvRecommended:"Рекомендуем",
+    csvOnboardPush:"Это самый быстрый способ сделать Richy полезным: месяц реальных покупок за один раз, вместо ручного ввода.",
+    csvSureTitle:"Точно всё?",
+    csvSureNone:"Richy судит только по тому, что видит, а сейчас он не видит ничего. Один файл из банка заполнит целый месяц.",
+    csvSureThin:"Richy видит {n} операций. В обычном месяце их 40 и больше, значит какие-то траты он не знает.",
+    csvSureStale:"Последний файл из банка закончился {date}. Всё после этого - только то, что вы вбили руками.",
+    csvSureCta:"Загрузить файл из банка",
+    csvSureDismiss:"Всё уже здесь",
+    csvToastTitle:"Ричард работает почти вслепую",
+    csvToastBodyNone:"Он ещё не видел ни одной покупки. Загрузите файл из банка - и советы станут про вас.",
+    csvToastBodyThin:"Он видит {n} операций. Загрузите файл из банка, чтобы советы были про ваш реальный месяц.",
+    csvToastCta:"Загрузить",
+    csvToastDismiss:"Закрыть",
+  },
+};
+for (var _cvc in CSV_STRINGS) {
+  if (!TRANSLATIONS[_cvc]) continue;
+  for (var _cvk in CSV_STRINGS[_cvc]) TRANSLATIONS[_cvc][_cvk] = CSV_STRINGS[_cvc][_cvk];
 }
 
 // Built-in category and folder names are storage keys, not copy: transactions
@@ -9464,7 +9579,9 @@ var TIMELINES = ["6 months", "1 year", "2 years", "5+ years"];
 var TIMELINE_TKEYS = { "6 months": "obTl1", "1 year": "obTl2", "2 years": "obTl3", "5+ years": "obTl4" };
 
 function OnboardingScreen(props) {
-  var _s = useState(1); var step = _s[0]; var setStep = _s[1];
+  // startStep exists so the dev harness can open the plan screen (step 6)
+  // without answering ten questions first; the app never passes it.
+  var _s = useState(props.startStep || 1); var step = _s[0]; var setStep = _s[1];
   var _cp = useState(""); var coreProblem = _cp[0]; var setCoreProblem = _cp[1];
   var _ls = useState(""); var lifeStage = _ls[0]; var setLifeStage = _ls[1];
   var _inc = useState(""); var income = _inc[0]; var setIncome = _inc[1];
@@ -9478,7 +9595,10 @@ function OnboardingScreen(props) {
   var _er = useState(""); var err = _er[0]; var setErr = _er[1];
   var _gp = useState(""); var genPlan = _gp[0]; var setGenPlan = _gp[1];
   var _god = useState(null); var genOData = _god[0]; var setGenOData = _god[1];
-  var _em = useState("manual"); var entryMethod = _em[0]; var setEntryMethod = _em[1];
+  // Starts on the import: an app with a real month in it is worth something on
+  // day one, and hand-logging is the reason most accounts stay empty. One tap
+  // switches, and Profile changes it forever after.
+  var _em = useState("import"); var entryMethod = _em[0]; var setEntryMethod = _em[1];
   // Journey additions: 9-screen questionnaire index, travel direction for the
   // slide transitions, the money-leak answers feeding the math story, and the
   // "q" -> "story" phase switch. The legacy step/loading states still drive
@@ -9674,21 +9794,31 @@ function OnboardingScreen(props) {
             <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: J.ink, marginBottom: 6 }}>{tr("obHowAddTx")}</div>
             <div style={{ fontSize: 13, color: J.ink3, marginBottom: 16, lineHeight: 1.55 }}>{tr("obChangeAnytimeProfile")}</div>
             {[
-              { id: "manual", label: tr("obManualEntry"), sub: tr("obManualEntrySub") },
-              { id: "import", label: tr("obImportCsv"), sub: tr("obImportCsvSub") }
+              { id: "import", label: tr("obImportCsv"), sub: tr("obImportCsvSub"), pick: true },
+              { id: "manual", label: tr("obManualEntry"), sub: tr("obManualEntrySub") }
             ].map(function(opt) {
               var sel = entryMethod === opt.id;
               return (
                 <button key={opt.id} onClick={function() { setEntryMethod(opt.id); }} className="jr-press"
-                  style={{ width: "100%", textAlign: "left", marginBottom: 10, background: sel ? "rgba(137,112,198,0.06)" : J.card, border: "1.5px solid " + (sel ? T.orange : J.line), borderRadius: 14, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, fontFamily: UI, boxSizing: "border-box", boxShadow: sel ? "0 0 0 3px " + T.orangeDim : "none", transition: "box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease" }}>
+                  style={{ width: "100%", textAlign: "start", marginBottom: 10, background: sel ? "rgba(137,112,198,0.06)" : J.card, border: "1.5px solid " + (sel ? T.orange : J.line), borderRadius: 14, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, fontFamily: UI, boxSizing: "border-box", boxShadow: sel ? "0 0 0 3px " + T.orangeDim : "none", transition: "box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease" }}>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 15, fontWeight: sel ? 700 : 600, color: J.ink }}>{opt.label}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 15, fontWeight: sel ? 700 : 600, color: J.ink }}>{opt.label}</span>
+                      {opt.pick && (
+                        <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: T.orange, background: T.orangeDim, borderRadius: 999, padding: "3px 7px" }}>{tr("csvRecommended")}</span>
+                      )}
+                    </div>
                     <div style={{ fontSize: 12.5, color: J.ink3, marginTop: 2 }}>{opt.sub}</div>
                   </div>
                   {sel && <div style={{ width: 22, height: 22, borderRadius: "50%", background: "linear-gradient(145deg," + T.orangeHi + "," + T.orange + ")", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, animation: "rcjCheckPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both", boxShadow: "0 3px 10px " + T.orangeGlow }}><SVGIcon id="check" size={12} color="#fff" /></div>}
                 </button>
               );
             })}
+            {/* The push, and the answer to the question it raises. Most people
+                have never knowingly handled a CSV, so the word alone is enough
+                to send them to manual entry and a half-empty app. */}
+            <div style={{ fontSize: 12.5, color: J.ink2, lineHeight: 1.55, marginTop: 4 }}>{tr("csvOnboardPush")}</div>
+            <CsvExplainer startOpen={entryMethod === "import"} ink={J.ink} ink2={J.ink2} ink3={J.ink3} style={{ marginTop: 2 }} />
           </div>
 
           {proposed.length > 0 && (
@@ -11262,6 +11392,13 @@ function Overview(props) {
   // dashboard is for your money first, feature pitches second.
   var tipsUpTop = tx.filter(function(t) { return !isOpening(t); }).length < 5;
 
+  // "Sure that's everything?" - the dashboard's push toward a bank file. It
+  // asks only when the ledger looks too quiet to be the whole truth, or when
+  // the last file imported has gone stale, and it retires itself the moment
+  // the numbers say otherwise. Waved off, it stays away for a month.
+  var csvState = csvNudgeState(tx, props.csvImport, props.csvNudge);
+  var showCsvSure = !!(csvState.kind && props.onImportCsv);
+
   function tipsCard(delay) {
     return (
       <div style={{ marginBottom: 20, animation: "rcFadeUp var(--m-enter) var(--m-ease) " + delay + "s both" }}>
@@ -12052,6 +12189,13 @@ function Overview(props) {
         </div>
       )}
 
+      {showCsvSure && (
+        <div style={{ animation: "rcFadeUp var(--m-enter) var(--m-ease) 0.04s both" }}>
+          <CsvSureCard state={csvState} onImport={props.onImportCsv}
+            onDismiss={function() { if (props.onCsvNudgeOff) props.onCsvNudgeOff(); }} />
+        </div>
+      )}
+
       {tips.length > 0 && tipsUpTop && tipsCard(0.05)}
 
       {tx.length === 0 && (
@@ -12527,6 +12671,224 @@ function suggestCatId(label, txList, cats) {
 // duplicates within the same file. type + date + abs amount + first chars of label.
 function dupKey(type, date, amount, label) {
   return (type || "") + "|" + (date || "") + "|" + Number(amount || 0).toFixed(2) + "|" + (label || "").toLowerCase().trim().slice(0, 40);
+}
+
+// ===== PROBABLE-DUPLICATE MATCHING ===========================================
+// An exact dupKey match is too strict to be the only test. A user who typed
+// "Coffee 4.50" by hand and then imports the same charge as
+// "STARBUCKS #1123 SEATTLE 4.50" has one purchase in real life and two rows
+// here, and no string comparison will ever join them. So each candidate row is
+// SCORED against what the app already holds, and the score decides who
+// answers the question:
+//
+//   >= DUP_CERTAIN  the same purchase - skipped without asking
+//   >= DUP_MAYBE    a look-alike      - Richard, then the user, is asked
+//   below that      genuinely new     - added without asking
+//
+// The bands are deliberately asymmetric: adding a duplicate is a visible
+// annoyance the user can delete, but silently dropping a real purchase is
+// invisible and corrupts every number in the app. So the auto-skip band also
+// demands a near-exact amount AND a same-or-next-day date (dupGuard below);
+// anything softer than that becomes a question instead of a silent drop.
+var DUP_CERTAIN = 0.86;
+var DUP_MAYBE = 0.55;
+
+// Word-set similarity of two labels after merchant cleanup, 0..1. Jaccard over
+// tokens, with a substring shortcut so "starbucks" scores full marks against
+// "starbucks coffee seattle" instead of 0.33.
+function labelSimilarity(a, b) {
+  var na = normalizeMerchant(a), nb = normalizeMerchant(b);
+  if (!na || !nb) return 0;
+  if (na === nb) return 1;
+  if (na.indexOf(nb) !== -1 || nb.indexOf(na) !== -1) return 0.9;
+  var ta = na.split(" ").filter(Boolean), tb = nb.split(" ").filter(Boolean);
+  var setB = {}; tb.forEach(function(w) { setB[w] = 1; });
+  var hits = 0;
+  ta.forEach(function(w) { if (setB[w]) hits++; });
+  if (!hits) return 0;
+  var union = ta.length + tb.length - hits;
+  return union > 0 ? hits / union : 0;
+}
+
+// Whole days between two ISO dates (both midday-anchored, so DST can't make a
+// same-day pair read as 0.96 of a day).
+function dayGap(a, b) {
+  if (!a || !b) return 999;
+  var t1 = Date.parse(a + "T12:00:00"), t2 = Date.parse(b + "T12:00:00");
+  if (isNaN(t1) || isNaN(t2)) return 999;
+  return Math.round(Math.abs(t1 - t2) / 86400000);
+}
+
+// How likely `cand` and `prev` are the SAME real-world purchase. 0..1.
+function dupScore(cand, prev) {
+  if (!cand || !prev) return 0;
+  // Money moving the other way is never the same event.
+  if ((cand.type || "") !== (prev.type || "")) return 0;
+  var a = Math.abs(Number(cand.amount) || 0), b = Math.abs(Number(prev.amount) || 0);
+  var big = Math.max(a, b);
+  if (!big) return 0;
+  var rel = Math.abs(a - b) / big;
+  // A tip, a rounding or a currency-conversion cent can move the posted amount
+  // a little; a different amount beyond ~5% is a different purchase.
+  var amtS = rel < 0.001 ? 1 : rel <= 0.02 ? 0.8 : rel <= 0.05 ? 0.5 : 0;
+  if (amtS === 0) return 0;
+  var gap = dayGap(cand.date, prev.date);
+  var dateS = gap === 0 ? 1 : gap === 1 ? 0.85 : gap <= 3 ? 0.6 : gap <= 7 ? 0.3 : 0;
+  if (dateS === 0) return 0;
+  var labS = labelSimilarity(cand.label, prev.label);
+  var catS = (cand.catId && prev.catId && cand.catId === prev.catId) ? 1 : 0;
+  var score = 0.40 * amtS + 0.22 * dateS + 0.33 * labS + 0.05 * catS;
+  // Same amount, same day, but nothing else in common - rent and a laptop can
+  // both be 1,200 on the 1st. With no shared name and two categories that
+  // actively disagree there is no reason to suspect one purchase, so it stays
+  // out of the question queue entirely.
+  //
+  // `catSure: false` marks a candidate Richy could not categorise, which landed
+  // it in Other. That is the ABSENCE of a category, not a contradiction, and
+  // reading it as disagreement is what let "OSTERIA ROMA #4471" slip past the
+  // "Dinner" the user had already typed for the same amount on the same day.
+  var catsDisagree = !catS && !!(cand.catId && prev.catId) && cand.catSure !== false;
+  if (labS === 0 && catsDisagree) return Math.min(score, DUP_MAYBE - 0.05);
+  // The guard: an auto-skip has to be a near-exact amount on the same or the
+  // next day. Everything else tops out as a look-alike worth asking about.
+  if (amtS < 1 || dateS < 0.85) return Math.min(score, DUP_CERTAIN - 0.01);
+  return score;
+}
+
+// Highest-scoring existing transaction for one candidate.
+function bestDupMatch(cand, list) {
+  var best = null, bestScore = 0;
+  for (var i = 0; i < (list || []).length; i++) {
+    var s = dupScore(cand, list[i]);
+    if (s > bestScore) { bestScore = s; best = list[i]; }
+  }
+  return { score: bestScore, match: best };
+}
+
+// Sort every candidate into fresh / duplicate / look-alike, in two passes:
+// first against what the app already holds, then against the rows of this same
+// file already accepted - so one charge exported under two spellings collapses
+// instead of landing twice.
+//
+// One deliberate exception: a row that is an EXACT twin of an earlier row in
+// the same file is KEPT. Two identical bus fares in one day are real, a bank
+// export rarely repeats a line, and the old behaviour lost the second one
+// silently. `twins` counts them so the summary can say so out loud. Note the
+// order: the app check runs first, so a file that lists a charge twice and the
+// app already has it still skips both.
+function classifyImportRows(cands, existing) {
+  var base = existing || [];
+  var accepted = [];
+  var fresh = [], dupes = [], maybes = [], twins = 0;
+  var seenInFile = {};
+  (cands || []).forEach(function(c) {
+    var key = dupKey(c.type, c.date, c.amount, c.label);
+    var twin = !!seenInFile[key];
+    seenInFile[key] = true;
+    var r = bestDupMatch(c, base);
+    if (r.score >= DUP_CERTAIN) { dupes.push({ tx: c, match: r.match, score: r.score }); return; }
+    if (r.score >= DUP_MAYBE) { maybes.push({ tx: c, match: r.match, score: r.score }); return; }
+    if (twin) { twins++; fresh.push(c); accepted.push(c); return; }
+    var r2 = bestDupMatch(c, accepted);
+    if (r2.score >= DUP_CERTAIN) { dupes.push({ tx: c, match: r2.match, score: r2.score, inFile: true }); return; }
+    if (r2.score >= DUP_MAYBE) { maybes.push({ tx: c, match: r2.match, score: r2.score, inFile: true }); return; }
+    fresh.push(c);
+    accepted.push(c);
+  });
+  return { fresh: fresh, dupes: dupes, maybes: maybes, twins: twins };
+}
+
+// ---- Richard settles the look-alikes ----------------------------------------
+// The bands above are arithmetic, and arithmetic cannot tell that "AMZN Mktp
+// US*2H4" and "Amazon order" are one purchase. Every pair that lands in the
+// middle band goes to the fast model (Haiku) in ONE batched call, which resolves
+// the obvious ones so the user is only asked about what is genuinely unclear.
+//
+// Only the look-alike lines travel - date, name, amount, category - never the
+// file. A failure here is not a guess: pairs come back unresolved and the user
+// is asked, which is exactly what would have happened without the call.
+// cb(err, verdicts) where verdicts is { <index>: { same: bool, sure: bool } }.
+var CSV_JUDGE_MAX = 40;
+function judgeLookalikes(pairs, cb) {
+  var list = (pairs || []).slice(0, CSV_JUDGE_MAX);
+  if (!list.length) { cb(null, {}); return; }
+  var payload = list.map(function(p, i) {
+    return {
+      i: i,
+      fileRow: { date: p.tx.date, name: String(p.tx.label || "").slice(0, 60), amount: p.tx.amount },
+      otherRow: { date: p.match.date, name: String(p.match.label || "").slice(0, 60), amount: p.match.amount, category: p.match.category || "" }
+    };
+  });
+  var sys = "You compare pairs of money records. For each pair, decide whether both describe THE SAME single real-world purchase (one event recorded twice) or TWO DIFFERENT purchases that happen to look similar."
+    + " A bank export often names a shop in raw form (STARBUCKS #1123 SEATTLE) while the person typed a plain word (Coffee) - those are the same purchase."
+    + " Two visits to the same shop on the same day for the same amount are two purchases, not one, unless the names show it is one record."
+    + " Reply with JSON only: an array of {\"i\":<index>,\"same\":true|false,\"sure\":true|false}."
+    + " Set sure=false whenever a reasonable person would need to ask the owner. No prose, no markdown fence.";
+  callClaudeFast([{ role: "user", content: JSON.stringify(payload) }], sys, 700, function(err, reply) {
+    if (err) { cb(err, null); return; }
+    var arr = null;
+    try {
+      var raw = String(reply || "").replace(/^[^\[]*/, "").replace(/[^\]]*$/, "");
+      arr = JSON.parse(raw);
+    } catch (e) { arr = null; }
+    if (!Array.isArray(arr)) { cb(richardErr("shape", "Richard's answer could not be read."), null); return; }
+    var out = {};
+    arr.forEach(function(v) {
+      if (!v || typeof v.i !== "number" || v.i < 0 || v.i >= list.length) return;
+      out[v.i] = { same: !!v.same, sure: !!v.sure };
+    });
+    cb(null, out);
+  }, 25000);
+}
+
+// ---- What the file did NOT bring in -----------------------------------------
+// The honest closing line of an import. Everything here is measured from the
+// rows themselves, so it is exact rather than a model's impression: the window
+// the file covers, days inside that window with nothing at all, whether any
+// money came IN, how many rows Richy could not name a category for, how far
+// behind today the file stops, and - the useful one - how much hand-typed
+// history sits inside the same window that the bank file never mentioned
+// (cash, another card, a second account).
+// Returns { from, to, gaps[], noIncome, uncategorized, staleDays, handOnly, tips[] }.
+function importGapReport(built, existingTx, cats, twins) {
+  var rows = (built || []).filter(function(t) { return t && t.date; });
+  var out = { from: "", to: "", gapDays: 0, noIncome: false, uncategorized: 0, staleDays: 0, handOnly: 0, twins: twins || 0, tips: [] };
+  if (!rows.length) return out;
+  var dates = rows.map(function(t) { return t.date; }).sort();
+  out.from = dates[0];
+  out.to = dates[dates.length - 1];
+  // Days inside the covered window with no row at all.
+  var have = {};
+  dates.forEach(function(d) { have[d] = 1; });
+  var span = dayGap(out.from, out.to) + 1;
+  if (span > 1 && span <= 400) {
+    var cursor = Date.parse(out.from + "T12:00:00");
+    for (var i = 0; i < span; i++) {
+      var iso = new Date(cursor + i * 86400000).toISOString().slice(0, 10);
+      if (!have[iso]) out.gapDays++;
+    }
+  }
+  out.noIncome = !rows.some(function(t) { return t.type === "income"; });
+  var otherCat = catByName(cats || [], "Other");
+  var otherId = otherCat ? otherCat.id : "";
+  out.uncategorized = rows.filter(function(t) { return !t.catId || (otherId && t.catId === otherId); }).length;
+  var today = new Date().toISOString().slice(0, 10);
+  out.staleDays = out.to < today ? dayGap(out.to, today) : 0;
+  // Hand-typed rows inside the same window that the file never listed. These
+  // are the transactions the bank genuinely does not know about.
+  out.handOnly = (existingTx || []).filter(function(t) {
+    if (!t || !t.date || isOpening(t) || isTransfer(t)) return false;
+    if (t.date < out.from || t.date > out.to) return false;
+    return bestDupMatch(t, rows).score < DUP_MAYBE;
+  }).length;
+
+  if (out.gapDays >= 3) out.tips.push("There " + (out.gapDays === 1 ? "is 1 day" : "are " + out.gapDays + " days") + " in that stretch with no spending at all. If those were cash days, or a card you haven't exported, add them by hand or export that card too.");
+  if (out.noIncome) out.tips.push("Nothing came in - the file is all spending. If your salary lands in a different account, export that one as well, or log it once as a repeating income.");
+  if (out.uncategorized > 0) out.tips.push(out.uncategorized + " " + (out.uncategorized === 1 ? "row" : "rows") + " landed in Other because the shop name was new. Open them in Activity and set the category once - Richy remembers the name next time.");
+  if (out.staleDays >= 4) out.tips.push("The file stops " + out.staleDays + " days ago. Export again at the end of the month, or turn on Bank Sync so new purchases file themselves.");
+  if (out.handOnly > 0) out.tips.push(out.handOnly + " " + (out.handOnly === 1 ? "transaction you" : "transactions you") + " logged by hand in that same window " + (out.handOnly === 1 ? "isn't" : "aren't") + " in the bank file. That's normal for cash or another card - worth a look in Activity in case one was a guess.");
+  if (out.twins > 0) out.tips.push("Your file listed " + out.twins + " " + (out.twins === 1 ? "line" : "lines") + " twice. Both copies were kept, because two identical charges on one day are usually two real purchases - delete one in Activity if it wasn't.");
+  return out;
 }
 
 // ===== BANK SYNC ==============================================================
@@ -14655,6 +15017,219 @@ function WatchOuts(props) {
   );
 }
 
+// ===== CSV: THE PITCH ========================================================
+// One explainer, one banner, one decision function - reused by the signup flow,
+// the dashboard, the Advisor tab and the import sheet itself, so the app makes
+// the same promise in the same words everywhere.
+
+function ensureCsvCss() {
+  if (document.getElementById("rc-csv-anim")) return;
+  var st = document.createElement("style");
+  st.id = "rc-csv-anim";
+  st.textContent = "@keyframes rcCsvBannerIn{from{opacity:0;transform:translate(-50%,-16px)}to{opacity:1;transform:translate(-50%,0)}}"
+    + "@keyframes rcCsvStepIn{from{opacity:0;transform:translateY(9px) scale(0.97)}to{opacity:1;transform:none}}"
+    + "@keyframes rcCsvPanelIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}"
+    // The wrapper animates its own height (measured, so it can land on the
+    // real content height); the card inside eases in on top of it. Two layers,
+    // because putting the overshoot curve on height alone makes the panel
+    // stretch past its content and show a gap at the bottom.
+    + ".rc-csv-panel{overflow:hidden;height:0}"
+    + ".rc-csv-panel.is-anim{transition:height 0.34s cubic-bezier(0.25,0.1,0.25,1)}"
+    + ".rc-csv-chev{transition:transform 0.34s cubic-bezier(0.34,1.56,0.64,1)}"
+    + "@media (prefers-reduced-motion: reduce){"
+    + "[data-csv-banner]{animation:none!important;transform:translate(-50%,0)!important}"
+    + "[data-csv-step],[data-csv-card]{animation:none!important}"
+    + ".rc-csv-panel.is-anim{transition:none!important}"
+    + ".rc-csv-chev{transition:none!important}}";
+  document.head.appendChild(st);
+}
+
+// Whether - and how loudly - to ask for a file. Pure, so the dashboard card and
+// the Advisor banner can never disagree about what the account looks like.
+// kind: "none" (nothing logged), "thin" (a suspiciously quiet month),
+// "stale" (imported once, long ago), "" (leave them alone).
+function csvNudgeState(tx, csvImport, nudge, todayISO) {
+  var today = todayISO || new Date().toISOString().slice(0, 10);
+  var real = (tx || []).filter(function(t) { return t && !isOpening(t) && !isTransfer(t); });
+  var count = real.length;
+  var through = (csvImport && csvImport.to) || "";
+  var imported = !!(csvImport && csvImport.count);
+  var state = { kind: "", count: count, through: through, imported: imported };
+  // Waved off recently. A month later the question is fair again - by then the
+  // answer has probably changed.
+  if (nudge && nudge.off && dayGap(nudge.off, today) < 30) return state;
+  if (count < 3) state.kind = "none";
+  else if (!imported && count < 25) state.kind = "thin";
+  else if (imported && through && dayGap(through, today) > 30) state.kind = "stale";
+  return state;
+}
+
+// The line each nudge leads with, for a given state.
+function csvNudgeBody(state) {
+  if (state.kind === "stale") return tr("csvSureStale").replace("{date}", state.through);
+  if (state.kind === "thin") return tr("csvSureThin").replace("{n}", state.count);
+  return tr("csvSureNone");
+}
+
+// "What's a CSV?" - collapsed to a single quiet line until asked, because a
+// reader who already knows shouldn't have to scroll past four steps.
+// A disclosure that unfolds by animating its MEASURED height, so it lands
+// exactly on its content instead of a guessed max-height. Children stay mounted
+// while it closes - unmounting mid-transition would collapse the height with
+// nothing left to animate - and it returns to height:auto once open, so a
+// language switch or a font-size change can still grow it.
+function CsvReveal(props) {
+  var open = !!props.open;
+  var wrapRef = useRef(null);
+  var firstRef = useRef(true);
+  var timerRef = useRef(null);
+  useEffect(function() { ensureCsvCss(); }, []);
+  useEffect(function() {
+    var el = wrapRef.current;
+    if (!el) return;
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
+    // The first paint is a state, not a transition: a panel that starts open
+    // should simply be open.
+    if (firstRef.current) {
+      firstRef.current = false;
+      el.classList.remove("is-anim");
+      el.style.height = open ? "auto" : "0px";
+      return;
+    }
+    var still = false;
+    try { still = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+    if (still) { el.classList.remove("is-anim"); el.style.height = open ? "auto" : "0px"; return; }
+    // Give the transition a real start value: opening from 0, closing from the
+    // height it currently occupies (auto cannot be interpolated).
+    el.style.height = open ? "0px" : el.scrollHeight + "px";
+    el.classList.add("is-anim");
+    void el.offsetHeight;
+    el.style.height = open ? el.scrollHeight + "px" : "0px";
+    if (open) {
+      timerRef.current = setTimeout(function() {
+        if (wrapRef.current) { wrapRef.current.classList.remove("is-anim"); wrapRef.current.style.height = "auto"; }
+      }, 360);
+    }
+    return function() { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [open]);
+  return (
+    <div ref={wrapRef} className="rc-csv-panel" aria-hidden={!open}>
+      {props.children}
+    </div>
+  );
+}
+
+function CsvExplainer(props) {
+  var _o = useState(!!props.startOpen);
+  var open = _o[0]; var setOpen = _o[1];
+  useEffect(function() { ensureCsvCss(); }, []);
+  var accent = props.accent || T.orange;
+  var ink = props.ink || T.ink;
+  var ink2 = props.ink2 || T.ink2;
+  var ink3 = props.ink3 || T.ink3;
+  var steps = [tr("csvHow1"), tr("csvHow2"), tr("csvHow3"), tr("csvHow4")];
+  return (
+    <div style={Object.assign({}, props.style)}>
+      <button type="button" onClick={function() { setOpen(!open); }} aria-expanded={open}
+        style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, minHeight: 44, padding: "10px 2px", background: "none", border: "none", cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
+        <span style={{ width: 20, height: 20, borderRadius: 7, background: accent + "1F", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <SVGIcon id="search" size={11} color={accent} />
+        </span>
+        <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: ink2 }}>{tr("csvWhatIs")}</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: accent, flexShrink: 0 }}>{open ? tr("csvHide") : tr("csvShowMe")}</span>
+        {/* Points down when closed, up when open. A vertical chevron needs no
+            RTL mirroring, unlike the disclosure arrows elsewhere. */}
+        <span className="rc-csv-chev" style={{ display: "flex", flexShrink: 0, transform: "rotate(" + (open ? -90 : 90) + "deg)" }}>
+          <SVGIcon id="chevron" size={13} color={accent} />
+        </span>
+      </button>
+      <CsvReveal open={open}>
+        <div data-csv-card="" style={{ background: T.fill1, borderRadius: 16, padding: "14px 16px", marginTop: 2, animation: open ? "rcCsvPanelIn 0.3s cubic-bezier(0.25,0.1,0.25,1) both" : "none" }}>
+          <div style={{ fontSize: 13, color: ink2, lineHeight: 1.55, marginBottom: 14 }}>{tr("csvWhatIsBody")}</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
+            {steps.map(function(s, i) {
+              return (
+                <div key={i} data-csv-step="" style={{ display: "flex", alignItems: "flex-start", gap: 10, animation: open ? "rcCsvStepIn 0.42s cubic-bezier(0.34,1.56,0.64,1) " + (0.08 + i * 0.07).toFixed(2) + "s both" : "none" }}>
+                  <span style={{ width: 21, height: 21, borderRadius: "50%", background: accent, color: "#fff", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1, fontVariantNumeric: "tabular-nums" }}>{i + 1}</span>
+                  <span style={{ flex: 1, fontSize: 13, color: ink, lineHeight: 1.5 }}>{s}</span>
+                </div>
+              );
+            })}
+          </div>
+          <div data-csv-step="" style={{ fontSize: 12, color: ink3, lineHeight: 1.5, marginTop: 13, animation: open ? "rcCsvStepIn 0.42s cubic-bezier(0.34,1.56,0.64,1) 0.36s both" : "none" }}>{tr("csvHowNote")}</div>
+          <div data-csv-step="" style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 10, paddingTop: 10, borderTop: "0.5px solid " + T.sep, animation: open ? "rcCsvStepIn 0.42s cubic-bezier(0.34,1.56,0.64,1) 0.42s both" : "none" }}>
+            <SVGIcon id="lock" size={12} color={ink3} />
+            <span style={{ flex: 1, fontSize: 12, color: ink3, lineHeight: 1.45 }}>{tr("csvWhySafe")}</span>
+          </div>
+        </div>
+      </CsvReveal>
+    </div>
+  );
+}
+
+// The Advisor's banner. An iOS-style notification that drops in under the
+// header, gets out of the way on its own, and counts as seen the moment it
+// appears - so it can't come back tomorrow and the day after.
+function CsvNudgeToast(props) {
+  useEffect(function() {
+    ensureCsvCss();
+    if (props.onSeen) props.onSeen();
+    var t = setTimeout(function() { if (props.onClose) props.onClose(); }, 9000);
+    return function() { clearTimeout(t); };
+  }, []);
+  var body = props.state.kind === "none" ? tr("csvToastBodyNone") : tr("csvToastBodyThin").replace("{n}", props.state.count);
+  return (
+    <div data-csv-banner="" role="status"
+      style={{ position: "fixed", top: "calc(74px + env(safe-area-inset-top, 0px))", left: "50%", transform: "translate(-50%,0)", width: "calc(100% - 26px)", maxWidth: 404, zIndex: 44, boxSizing: "border-box", background: T.card, borderRadius: 20, border: "1px solid " + T.hairline, boxShadow: "0 14px 38px rgba(0,0,0,0.20)", padding: "13px 14px", display: "flex", alignItems: "flex-start", gap: 11, animation: "rcCsvBannerIn 0.42s cubic-bezier(0.34,1.56,0.64,1) both", fontFamily: UI }}>
+      <span style={{ width: 34, height: 34, borderRadius: 12, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <SVGIcon id="down" size={17} color={T.orange} />
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{tr("csvToastTitle")}</div>
+        <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.45, marginTop: 3 }}>{body}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 9 }}>
+          <LiquidButton variant="primary" size="md" onClick={function() { if (props.onClose) props.onClose(); if (props.onImport) props.onImport(); }}>
+            {tr("csvToastCta")}
+          </LiquidButton>
+          <button type="button" onClick={function() { if (props.onClose) props.onClose(); }}
+            style={{ minHeight: 44, padding: "0 12px", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
+            {tr("csvToastDismiss")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// The dashboard's version of the same question: quieter, permanent until
+// answered, and it names what the app actually knows rather than nagging.
+function CsvSureCard(props) {
+  var state = props.state;
+  return (
+    <Card style={{ padding: "18px 18px 16px", marginBottom: 20 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+        <span style={{ width: 38, height: 38, borderRadius: 13, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <SVGIcon id="down" size={19} color={T.orange} />
+        </span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 16, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{tr("csvSureTitle")}</div>
+          <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginTop: 4 }}>{csvNudgeBody(state)}</div>
+        </div>
+      </div>
+      <CsvExplainer style={{ marginTop: 8 }} />
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10 }}>
+        <LiquidButton variant="primary" size="lg" onClick={props.onImport} style={{ flex: 1 }}>
+          {tr("csvSureCta")}
+        </LiquidButton>
+        <button type="button" onClick={props.onDismiss}
+          style={{ minHeight: 44, padding: "0 12px", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", flexShrink: 0 }}>
+          {tr("csvSureDismiss")}
+        </button>
+      </div>
+    </Card>
+  );
+}
+
 function ImportSheet(props) {
   var cats = props.categories || [];
   var _raw = useState(""); var raw = _raw[0]; var setRaw = _raw[1];
@@ -14668,10 +15243,24 @@ function ImportSheet(props) {
   var _built = useState([]); var built = _built[0]; var setBuilt = _built[1];
   var _dup = useState(0); var dupes = _dup[0]; var setDupes = _dup[1];
   var _err = useState(""); var err = _err[0]; var setErr = _err[1];
+  // The classification of this file against what the app already holds, and the
+  // interview state that resolves whatever the arithmetic couldn't settle.
+  // queue = the maybe-indexes still worth a question; qIdx walks it.
+  var _plan = useState(null); var plan = _plan[0]; var setPlan = _plan[1];
+  var _dec = useState({}); var decisions = _dec[0]; var setDecisions = _dec[1];
+  var _q = useState([]); var queue = _q[0]; var setQueue = _q[1];
+  var _qi = useState(0); var qIdx = _qi[0]; var setQIdx = _qi[1];
+  var _ai = useState(true); var askAi = _ai[0]; var setAskAi = _ai[1];
+  // The column controls, folded away unless the guess needs a human.
+  var _adv = useState(false); var showAdv = _adv[0]; var setShowAdv = _adv[1];
+  var _aid = useState({ settled: 0, failed: false }); var aiRes = _aid[0]; var setAiRes = _aid[1];
+  var _rep = useState(null); var report = _rep[0]; var setReport = _rep[1];
 
   function reset() {
     setRaw(""); setStep("paste"); setRows([]); setHasHeader(true);
     setMap({ date: -1, amount: -1, desc: -1, debit: -1, credit: -1 }); setSplitAmt(false); setPreferDMY(true); setAllExpenses(false); setBuilt([]); setDupes(0); setErr("");
+    setPlan(null); setDecisions({}); setQueue([]); setQIdx(0); setAiRes({ settled: 0, failed: false }); setReport(null);
+    setShowAdv(false);
   }
   function close() { reset(); props.onClose(); }
 
@@ -14688,18 +15277,22 @@ function ImportSheet(props) {
     var parsed = parseCSV(raw);
     if (parsed.length < 1 || parsed[0].length < 2) { setErr("Could not read any rows. Paste CSV text or choose a .csv file."); return; }
     var detected = sniffMap(parsed, true);
-    setRows(parsed); setMap(detected); setSplitAmt(detected.debit >= 0 || detected.credit >= 0); setStep("map");
+    var split = detected.debit >= 0 || detected.credit >= 0;
+    // Open the column controls only when the guess left a real hole. A file
+    // that was read cleanly should never show them unprompted.
+    var gotAmount = split ? (detected.debit >= 0 || detected.credit >= 0) : detected.amount >= 0;
+    setShowAdv(!(gotAmount && detected.date >= 0 && detected.desc >= 0));
+    setRows(parsed); setMap(detected); setSplitAmt(split); setStep("map");
   }
 
+  // Every readable row, turned into a candidate transaction. No deduping here -
+  // that is classifyImportRows' job, and keeping the two apart is what lets a
+  // look-alike be questioned instead of silently dropped.
   function buildTxs() {
     var dataRows = hasHeader ? rows.slice(1) : rows;
-    var out = []; var skipped = 0;
+    var out = [];
     var base = Date.now();
     var today = new Date().toISOString().slice(0, 10);
-    // Seed the seen-set with what's already in the app so re-importing the same
-    // statement doesn't double-count, then keep deduping within the file itself.
-    var seen = {};
-    (props.tx || []).forEach(function(t) { seen[dupKey(t.type, t.date, t.amount, t.label)] = true; });
     dataRows.forEach(function(r, i) {
       var amt;
       if (splitAmt) {
@@ -14717,18 +15310,67 @@ function ImportSheet(props) {
       var type = allExpenses ? "expense" : (amt < 0 ? "expense" : "income");
       var label = desc.slice(0, 60);
       var amount = round2(Math.abs(amt));
-      var key = dupKey(type, dateStr, amount, label);
-      if (seen[key]) { skipped++; return; }
-      seen[key] = true;
       // Learn from the user's own history first, then keyword map; income still
       // prefers Salary when present.
-      var catId = type === "income"
-        ? ((catByName(cats, "Salary") || {}).id || suggestCatId(desc, props.tx, cats) || guessImportCatId(desc, cats))
-        : (suggestCatId(desc, props.tx, cats) || guessImportCatId(desc, cats));
+      var learned = type === "income"
+        ? ((catByName(cats, "Salary") || {}).id || suggestCatId(desc, props.tx, cats))
+        : suggestCatId(desc, props.tx, cats);
+      var catId = learned || guessImportCatId(desc, cats);
       var c = catById(cats, catId) || { id: "", name: "Other" };
-      out.push({ type: type, amount: amount, label: label, catId: c.id, category: c.name, date: dateStr, id: base + i, repeat: "none", pending: false });
+      // Whether that category is a real read or the Other fallback. The
+      // duplicate scorer needs the difference: an unknown category is no
+      // signal, while two known-but-different categories are a real one.
+      var catSure = !!learned || !!keywordCatName(desc);
+      out.push({ type: type, amount: amount, label: label, catId: c.id, category: c.name, date: dateStr, id: base + i, repeat: "none", pending: false, catSure: catSure });
     });
-    return { txs: out, skipped: skipped };
+    return out;
+  }
+
+  // The rows that will actually be written: everything the scorer called new,
+  // plus each look-alike the user (or Richard) decided was new after all.
+  // catSure is scaffolding for the scorer, not part of a transaction, so it is
+  // dropped here rather than persisted into every imported row forever.
+  function chosenTxs(res, dec) {
+    var out = (res.fresh || []).slice();
+    (res.maybes || []).forEach(function(m, i) { if (dec[i] === "add") out.push(m.tx); });
+    return out.map(function(t) {
+      var clean = {}; for (var k in t) { if (k !== "catSure") clean[k] = t[k]; }
+      return clean;
+    }).sort(function(a, b) { return (a.date || "").localeCompare(b.date || ""); });
+  }
+
+  // Interview over (or never needed): total it up, measure what the file did
+  // not cover, and show the summary.
+  function finishPlan(res, dec) {
+    var txs = chosenTxs(res, dec);
+    var skipped = (res.dupes || []).length + (res.maybes || []).filter(function(m, i) { return dec[i] === "skip"; }).length;
+    if (!txs.length) {
+      setErr(skipped ? "Every row in this file is already in your transactions - nothing new to bring in." : "No valid transactions found. Check your column choices.");
+      setStep("map");
+      return;
+    }
+    setBuilt(txs); setDupes(skipped);
+    setReport(importGapReport(txs, props.tx || [], cats, res.twins));
+    setStep("preview");
+  }
+
+  // Ask the fast model about the middle band, then interview the user about
+  // whatever it still couldn't settle. A failed call is not a guess: every pair
+  // falls through to the user, which is what would have happened anyway.
+  function runJudge(res) {
+    setStep("check");
+    judgeLookalikes(res.maybes, function(jErr, verdicts) {
+      var dec = {}; var left = []; var settled = 0;
+      res.maybes.forEach(function(m, i) {
+        var v = verdicts && verdicts[i];
+        if (v && v.sure) { dec[i] = v.same ? "skip" : "add"; settled++; }
+        else left.push(i);
+      });
+      setAiRes({ settled: settled, failed: !!jErr });
+      setDecisions(dec);
+      if (!left.length) { finishPlan(res, dec); return; }
+      setQueue(left); setQIdx(0); setStep("review");
+    });
   }
 
   function goPreview() {
@@ -14739,21 +15381,46 @@ function ImportSheet(props) {
       setErr("Pick which column holds the amount.");
       return;
     }
-    var res = buildTxs();
-    if (!res.txs.length) {
-      setErr(res.skipped ? "Every row is already in your transactions - nothing new to import." : "No valid transactions found. Check your column choices.");
-      return;
-    }
-    setBuilt(res.txs); setDupes(res.skipped); setStep("preview");
+    var cands = buildTxs();
+    if (!cands.length) { setErr("No valid transactions found. Check your column choices."); return; }
+    var res = classifyImportRows(cands, props.tx || []);
+    setPlan(res); setDecisions({}); setAiRes({ settled: 0, failed: false });
+    if (!res.maybes.length) { finishPlan(res, {}); return; }
+    if (askAi) { runJudge(res); return; }
+    setQueue(res.maybes.map(function(m, i) { return i; })); setQIdx(0); setStep("review");
+  }
+
+  // One answer in the interview. Answering the last question closes it out.
+  function answerMaybe(choice) {
+    if (!plan) return;
+    var idx = queue[qIdx];
+    var dec = {}; for (var k in decisions) dec[k] = decisions[k];
+    dec[idx] = choice;
+    setDecisions(dec);
+    if (qIdx + 1 < queue.length) { setQIdx(qIdx + 1); return; }
+    finishPlan(plan, dec);
+  }
+
+  // The escape hatch, for a file with more look-alikes than anyone wants to
+  // read: settle every remaining question the same way in one tap.
+  function answerRest(choice) {
+    if (!plan) return;
+    var dec = {}; for (var k in decisions) dec[k] = decisions[k];
+    for (var i = qIdx; i < queue.length; i++) dec[queue[i]] = choice;
+    setDecisions(dec);
+    finishPlan(plan, dec);
   }
 
   function doImport() {
-    props.onImport(built);
+    props.onImport(built, report);
     close();
   }
 
   var selStyle = { width: "100%", padding: "9px 11px", borderRadius: 11, border: "1.5px solid " + T.sep, background: T.card, fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", marginTop: 4 };
-  var lblStyle = { fontSize: 10.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em" };
+  // Sentence case, not the app's usual uppercase eyebrow: these labels are
+  // plain questions ("Where's the date?"), and a question in all caps reads as
+  // shouting rather than helping.
+  var lblStyle = { fontSize: 12.5, fontWeight: 600, color: T.ink2, display: "block", lineHeight: 1.4 };
   var colOptions = rows.length ? rows[0].map(function(h, i) { return { i: i, name: hasHeader ? (h || ("Column " + (i + 1))) : ("Column " + (i + 1)) }; }) : [];
 
   function colSelect(field, label) {
@@ -14768,6 +15435,45 @@ function ImportSheet(props) {
     );
   }
 
+  // What the columns step leads with. Named in the words a reader would use -
+  // "the shop name", not "the description column" - because the whole point of
+  // this screen is that they never have to think about columns at all.
+  var amountFound = splitAmt ? (map.debit >= 0 || map.credit >= 0) : map.amount >= 0;
+  var missingBits = [];
+  if (map.date < 0) missingBits.push("the date");
+  if (!amountFound) missingBits.push("the amount");
+  if (map.desc < 0) missingBits.push("the shop name");
+  var mapOk = missingBits.length === 0;
+
+  // The first few rows exactly as they will read in Activity. Three rows only,
+  // so this stays cheap enough to recompute on every keystroke of the settings.
+  var mapPreview = (function() {
+    if (!rows.length) return [];
+    var dataRows = hasHeader ? rows.slice(1) : rows;
+    var today = new Date().toISOString().slice(0, 10);
+    var out = [];
+    for (var i = 0; i < dataRows.length && out.length < 3; i++) {
+      var r = dataRows[i]; var amt;
+      if (splitAmt) {
+        var dv = map.debit >= 0 ? parseImportAmount(r[map.debit]) : NaN;
+        var cv = map.credit >= 0 ? parseImportAmount(r[map.credit]) : NaN;
+        if (!isNaN(dv) && dv !== 0) amt = -Math.abs(dv);
+        else if (!isNaN(cv) && cv !== 0) amt = Math.abs(cv);
+        else continue;
+      } else {
+        amt = parseImportAmount(map.amount >= 0 ? r[map.amount] : "");
+      }
+      if (isNaN(amt) || amt === 0) continue;
+      out.push({
+        date: parseImportDate(map.date >= 0 ? r[map.date] : "", preferDMY) || today,
+        label: ((map.desc >= 0 ? r[map.desc] : "") || "Imported").slice(0, 40),
+        amount: round2(Math.abs(amt)),
+        income: allExpenses ? false : amt > 0
+      });
+    }
+    return out;
+  })();
+
   var totalIn = built.filter(function(t) { return t.type === "income"; }).reduce(function(s, t) { return s + t.amount; }, 0);
   var totalOut = built.filter(function(t) { return t.type === "expense"; }).reduce(function(s, t) { return s + t.amount; }, 0);
 
@@ -14775,9 +15481,10 @@ function ImportSheet(props) {
     <Overlay open={props.open} onClose={close} title="Import from CSV">
       {step === "paste" && (
         <div>
-          <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginBottom: 12 }}>
-            Export a statement from your bank or card as CSV, then drop it here. Your data stays on your device - nothing is sent to your bank.
+          <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginBottom: 4 }}>
+            Download a statement from your bank or card, then drop the file in. Richy reads it here on your device, works out which purchases it already knows about, and asks you about anything it isn't sure of.
           </div>
+          <CsvExplainer style={{ marginBottom: 10 }} />
           <label style={{ display: "block", width: "100%", textAlign: "center", padding: "13px 0", borderRadius: 13, border: "1.5px dashed " + T.orange, background: T.orangeDim, color: T.orange, fontSize: 14, fontWeight: 700, fontFamily: UI, cursor: "pointer", marginBottom: 10 }}>
             Choose a .csv file
             <input type="file" accept=".csv,text/csv,text/plain" onChange={handleFile} style={{ display: "none" }} />
@@ -14791,51 +15498,188 @@ function ImportSheet(props) {
         </div>
       )}
 
+      {/* The columns step used to open on six dropdowns and four switches -
+          a wall that reads as a configuration screen, on the one screen where
+          the user has least idea what any of it means. Now it opens on the
+          answer instead: here is what I read out of your file, does it look
+          right? The controls are all still here, one tap away, and they open
+          by themselves when the guess actually failed. */}
       {step === "map" && (
         <div>
-          <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginBottom: 12 }}>
-            We guessed your columns - check them below.
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
+            <span style={{ width: 30, height: 30, borderRadius: 11, background: mapOk ? T.greenDim : T.goldDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <SVGIcon id={mapOk ? "check" : "search"} size={15} color={mapOk ? T.green : T.gold} />
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>
+                {mapOk ? "Read your file" : "One thing I couldn't find"}
+              </div>
+              <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 2 }}>
+                {mapOk
+                  ? (mapPreview.length ? "Here are the first few, the way they'll look in Richy. If that's your spending, you're done." : "Your columns are set, but no row came through. Open the settings below and check them.")
+                  : "I found the rest, but not " + missingBits.join(" or ") + ". Pick " + (missingBits.length > 1 ? "those" : "that") + " below and you're done."}
+              </div>
+            </div>
           </div>
+
+          {mapPreview.length > 0 && (
+            <div style={{ background: T.card, borderRadius: 16, overflow: "hidden", marginBottom: 12, border: "1px solid " + T.hairline }}>
+              {mapPreview.map(function(p, i) {
+                return (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 13px", borderBottom: i < mapPreview.length - 1 ? "0.5px solid " + T.sep : "none" }}>
+                    <span style={{ fontSize: 11.5, color: T.ink3, flexShrink: 0, fontVariantNumeric: "tabular-nums", width: 74 }}>{p.date}</span>
+                    <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.label}</span>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, flexShrink: 0, fontVariantNumeric: "tabular-nums", color: p.income ? T.green : T.ink }}>{(p.income ? "+" : "-") + dollars(p.amount)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {err && <div style={{ fontSize: 13, color: T.red, marginBottom: 10 }}>{err}</div>}
+          {mapOk && <BigBtn label="Looks right - go on" onPress={goPreview} style={{ marginTop: 0 }} />}
+
+          {/* One line, so the Richard check is disclosed where it happens
+              rather than buried in the settings it can be turned off in. */}
+          <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 12, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, flex: 1, minWidth: 180 }}>
+              {askAi
+                ? "Richy skips anything you already logged. If a couple of lines are too close to call, Richard reads just those."
+                : "Richy skips anything you already logged, and asks you about every line that's too close to call."}
+            </span>
+            <button onClick={function() { setAskAi(!askAi); }}
+              style={{ minHeight: 44, padding: "0 4px", background: "none", border: "none", color: T.orange, fontSize: 12, fontWeight: 700, fontFamily: UI, cursor: "pointer", flexShrink: 0 }}>
+              {askAi ? "I'll decide those" : "Let Richard help"}
+            </button>
+          </div>
+
+          <button onClick={function() { setShowAdv(!showAdv); }} aria-expanded={showAdv}
+            style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, minHeight: 44, padding: "8px 2px", marginTop: 2, background: "none", border: "none", cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
+            <span style={{ flex: 1, fontSize: 12.5, fontWeight: 600, color: T.ink3 }}>{mapOk ? "Something look wrong?" : "Column settings"}</span>
+            <span className="rc-csv-chev" style={{ display: "flex", flexShrink: 0, transform: "rotate(" + (showAdv ? -90 : 90) + "deg)" }}>
+              <SVGIcon id="chevron" size={13} color={T.ink3} />
+            </span>
+          </button>
+
+          <CsvReveal open={showAdv}>
+          <div data-csv-card="" style={{ paddingTop: 4 }}>
           <button onClick={function() { setHasHeader(!hasHeader); setMap(sniffMap(rows, !hasHeader)); }}
             style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 13px", borderRadius: 11, border: "none", cursor: "pointer", marginBottom: 10, background: hasHeader ? T.orangeDim : T.fill1, fontFamily: UI }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: hasHeader ? T.orange : T.ink2 }}>First row is a header</span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: hasHeader ? T.orange : T.ink2 }}>The first line is column titles</span>
             <div style={{ width: 18, height: 18, borderRadius: 6, border: "2px solid " + (hasHeader ? T.orange : T.ink3), background: hasHeader ? T.orange : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
               {hasHeader && <SVGIcon id="check" size={10} color="#fff" />}
             </div>
           </button>
-          {colSelect("date", "Date column")}
+          {colSelect("date", "Where's the date?")}
           <button onClick={function() { setSplitAmt(!splitAmt); }}
             style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 13px", borderRadius: 11, border: "none", cursor: "pointer", marginBottom: 9, background: splitAmt ? T.orangeDim : T.fill1, fontFamily: UI }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: splitAmt ? T.orange : T.ink2, textAlign: "left", lineHeight: 1.4 }}>Separate money-in / money-out columns<br /><span style={{ fontSize: 11, color: T.ink3 }}>Turn on if your file has two amount columns</span></span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: splitAmt ? T.orange : T.ink2, textAlign: "start", lineHeight: 1.4 }}>Money in and money out are in two columns<br /><span style={{ fontSize: 11, color: T.ink3 }}>Some banks split them instead of using minus signs</span></span>
             <div style={{ width: 18, height: 18, borderRadius: 6, flexShrink: 0, border: "2px solid " + (splitAmt ? T.orange : T.ink3), background: splitAmt ? T.orange : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
               {splitAmt && <SVGIcon id="check" size={10} color="#fff" />}
             </div>
           </button>
-          {!splitAmt && colSelect("amount", "Amount column")}
-          {splitAmt && colSelect("credit", "Money in column")}
-          {splitAmt && colSelect("debit", "Money out column")}
-          {colSelect("desc", "Description column")}
+          {!splitAmt && colSelect("amount", "Where's the amount?")}
+          {splitAmt && colSelect("credit", "Where's the money coming in?")}
+          {splitAmt && colSelect("debit", "Where's the money going out?")}
+          {colSelect("desc", "Where's the shop name?")}
           <div style={{ marginBottom: 9 }}>
-            <span style={lblStyle}>Date format</span>
+            <span style={lblStyle}>{"Is 03/09 the 3rd of September, or March 9th?"}</span>
             <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
-              {[{ k: true, l: "Day first (DD/MM)" }, { k: false, l: "Month first (MM/DD)" }].map(function(o) {
+              {[{ k: true, l: "Day first" }, { k: false, l: "Month first" }].map(function(o) {
                 var on = preferDMY === o.k;
-                return <button key={String(o.k)} onClick={function() { setPreferDMY(o.k); }} style={{ flex: 1, padding: "8px 0", borderRadius: 9, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, fontFamily: UI, background: on ? T.orangeDim : T.fill1, color: on ? T.orange : T.ink3 }}>{o.l}</button>;
+                return <button key={String(o.k)} onClick={function() { setPreferDMY(o.k); }} style={{ flex: 1, minHeight: 44, padding: "8px 0", borderRadius: 9, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: 600, fontFamily: UI, background: on ? T.orangeDim : T.fill1, color: on ? T.orange : T.ink3 }}>{o.l}</button>;
               })}
             </div>
           </div>
           <button onClick={function() { setAllExpenses(!allExpenses); }}
             style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 13px", borderRadius: 11, border: "none", cursor: "pointer", marginBottom: 10, background: allExpenses ? T.goldDim : T.fill1, fontFamily: UI }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: allExpenses ? T.gold : T.ink2, textAlign: "left", lineHeight: 1.4 }}>Treat every row as an expense<br /><span style={{ fontSize: 11, color: T.ink3 }}>Turn on if your file lists only spending</span></span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: allExpenses ? T.gold : T.ink2, textAlign: "start", lineHeight: 1.4 }}>Every line is money spent<br /><span style={{ fontSize: 11, color: T.ink3 }}>Turn on if the file has no income in it at all</span></span>
             <div style={{ width: 18, height: 18, borderRadius: 6, flexShrink: 0, border: "2px solid " + (allExpenses ? T.gold : T.ink3), background: allExpenses ? T.gold : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
               {allExpenses && <SVGIcon id="check" size={10} color="#fff" />}
             </div>
           </button>
-          {err && <div style={{ fontSize: 13, color: T.red, marginBottom: 10 }}>{err}</div>}
-          <BigBtn label="Preview import" onPress={goPreview} />
-          <button onClick={function() { setStep("paste"); }} style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>Back</button>
+          </div>
+          </CsvReveal>
+          {/* When the guess failed there is no confirm button up top, so the
+              only way on is down here, under the settings that fix it. */}
+          {!mapOk && <BigBtn label="Go on" onPress={goPreview} />}
+          <button onClick={function() { setStep("paste"); }} style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, minHeight: 44 }}>Back</button>
         </div>
       )}
+
+      {/* Richard is looking at the middle band. Deliberately its own step
+          rather than a spinner over the preview: the user is waiting on a
+          real answer, and the count tells them how much is at stake. */}
+      {step === "check" && plan && (
+        <div style={{ padding: "34px 4px 26px", textAlign: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 14 }}>
+            <ThinkingDots size={5} color={T.orange} />
+          </div>
+          <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 6 }}>
+            {"Richard is checking " + plan.maybes.length + " look-alike" + (plan.maybes.length === 1 ? "" : "s")}
+          </div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, maxWidth: 300, margin: "0 auto" }}>
+            {plan.fresh.length + " new, " + plan.dupes.length + " already in. These last few could be either - he settles the clear ones and leaves the rest to you."}
+          </div>
+        </div>
+      )}
+
+      {/* The interview. One question, two answers, both sides of the pair on
+          screen - never a list of checkboxes the user has to reason about in
+          bulk. */}
+      {step === "review" && plan && queue.length > 0 && (function() {
+        var m = plan.maybes[queue[qIdx]];
+        if (!m) return null;
+        // Plain words, not the raw score. "62% alike" is a number the reader
+        // can't act on and immediately want explained.
+        var closeness = m.score >= 0.75 ? "These two look very close." : "These two look similar, but not the same.";
+        function pairRow(label, t, tint) {
+          return (
+            <div style={{ background: tint, borderRadius: 14, padding: "12px 13px" }}>
+              <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3, marginBottom: 6 }}>{label}</div>
+              <div style={{ fontSize: 14.5, fontWeight: 600, color: T.ink, lineHeight: 1.3, overflowWrap: "anywhere" }}>{t.label}</div>
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginTop: 6 }}>
+                <span style={{ fontSize: 12, color: T.ink3, fontVariantNumeric: "tabular-nums" }}>{t.date + (t.category ? " - " + catDisplay(t.category) : "")}</span>
+                <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{dollars(t.amount)}</span>
+              </div>
+            </div>
+          );
+        }
+        return (
+          <div>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
+              <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>Same purchase, or two?</div>
+              <div style={{ fontSize: 11.5, color: T.ink3, fontWeight: 600, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{(qIdx + 1) + " of " + queue.length}</div>
+            </div>
+            <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginBottom: 14 }}>
+              {closeness + (m.inFile ? " Your file lists both - did you buy it twice?" : " Only you know whether you already logged this one by hand.")}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+              {pairRow("In your file", m.tx, T.orangeDim)}
+              <div style={{ textAlign: "center", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>vs</div>
+              {pairRow(m.inFile ? "Also in your file" : "Already in Richy", m.match, T.fill1)}
+            </div>
+            <BigBtn label="Two purchases - add it" onPress={function() { answerMaybe("add"); }} style={{ marginTop: 0 }} />
+            <div style={{ marginTop: 8 }}>
+              <LiquidButton variant="neutral" size="lg" full onClick={function() { answerMaybe("skip"); }}>
+                Same one - skip it
+              </LiquidButton>
+            </div>
+            {queue.length - qIdx > 1 && (
+              <div style={{ display: "flex", gap: 6, marginTop: 12, justifyContent: "center", flexWrap: "wrap" }}>
+                <button onClick={function() { answerRest("add"); }}
+                  style={{ minHeight: 44, padding: "0 12px", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
+                  {"Add all " + (queue.length - qIdx) + " remaining"}
+                </button>
+                <button onClick={function() { answerRest("skip"); }}
+                  style={{ minHeight: 44, padding: "0 12px", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
+                  Skip all remaining
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {step === "preview" && (
         <div>
@@ -14850,7 +15694,8 @@ function ImportSheet(props) {
             </div>
           </div>
           <div style={{ fontSize: 13, fontWeight: 600, color: T.ink2, marginBottom: 8 }}>{built.length} transactions ready - first few shown:</div>
-          {dupes > 0 && <div style={{ fontSize: 12, color: T.ink3, marginTop: -4, marginBottom: 8 }}>{dupes} duplicate{dupes > 1 ? "s" : ""} already in your app {dupes > 1 ? "were" : "was"} skipped.</div>}
+          {dupes > 0 && <div style={{ fontSize: 12, color: T.ink3, marginTop: -4, marginBottom: 8 }}>{dupes + " " + (dupes === 1 ? "line was" : "lines were") + " left out as things you already have."}{aiRes.settled > 0 ? " Richard settled " + aiRes.settled + " of the close calls." : ""}</div>}
+          {aiRes.failed && <div style={{ fontSize: 12, color: T.ink3, marginTop: -4, marginBottom: 8 }}>Richard couldn't be reached to check the look-alikes, so you were asked about each one instead.</div>}
           <div style={{ background: T.card, borderRadius: 13, overflow: "hidden", marginBottom: 12, border: "1px solid " + T.hairline }}>
             {built.slice(0, 8).map(function(t, i) {
               return (
@@ -14862,6 +15707,33 @@ function ImportSheet(props) {
               );
             })}
           </div>
+          {/* What the file did NOT bring in. Measured from the rows, so it is
+              a statement of fact rather than an impression - and the tips are
+              the specific next move for each gap, not general advice. */}
+          {report && (
+            <div style={{ background: T.fill1, borderRadius: 16, padding: "14px 15px", marginBottom: 12 }}>
+              <div style={{ fontSize: 13.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 3 }}>What this covers, and what it doesn't</div>
+              <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5 }}>
+                {report.from === report.to
+                  ? "One day: " + report.from + "."
+                  : report.from + " to " + report.to + ", " + (dayGap(report.from, report.to) + 1) + " days."}
+              </div>
+              {report.tips.length > 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 11 }}>
+                  {report.tips.map(function(tip, i) {
+                    return (
+                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                        <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.orange, flexShrink: 0, marginTop: 6 }} />
+                        <span style={{ flex: 1, fontSize: 12.5, color: T.ink2, lineHeight: 1.5 }}>{tip}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 8 }}>Every day in that stretch has spending, money came in, and nothing needed a category guess. Nothing looks missing.</div>
+              )}
+            </div>
+          )}
           {err && <div style={{ fontSize: 13, color: T.red, marginBottom: 10 }}>{err}</div>}
           <BigBtn label={"Import " + built.length + " transaction" + (built.length > 1 ? "s" : "")} onPress={doImport} />
           <button onClick={function() { setStep("map"); }} style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>Back</button>
@@ -14874,7 +15746,12 @@ function ImportSheet(props) {
 function Activity(props) {
   var cats = props.categories || [];
   var mainSym = _currency.sym;
-  var _imp = useState(false); var importOpen = _imp[0]; var setImportOpen = _imp[1];
+  // The import sheet can be opened from outside this screen (the dashboard
+  // card, the Advisor banner), so the App owns the flag when it passes one and
+  // this local state is only the fallback for a standalone mount.
+  var _imp = useState(false);
+  var importOpen = props.importOpen != null ? props.importOpen : _imp[0];
+  var setImportOpen = props.setImportOpen || _imp[1];
   var importPrimary = props.entryMethod === "import";
   var blankForm = { type: "expense", amount: "", label: "", catId: (cats[0] || {}).id || "", date: new Date().toISOString().slice(0, 10), repeat: "none", pending: false, cur: mainSym, rate: 1, rateLoading: false, rateFallback: false, shared: false, owner: props.accountKey, savingsDest: "" };
   // shared=true means this goes to the household doc; shared=false stays in user doc
@@ -15169,7 +16046,10 @@ function Activity(props) {
         )}
       </div>
       <ImportSheet open={importOpen} onClose={function() { setImportOpen(false); }} categories={cats} tx={props.tx}
-        onImport={function(txs) { props.onSaveTx(props.tx.concat(txs)); }} />
+        onImport={function(txs, report) {
+          if (props.onCsvImport) props.onCsvImport(txs, report);
+          else props.onSaveTx(props.tx.concat(txs));
+        }} />
       <Overlay open={filterOpen} onClose={function() { setFilterOpen(false); }} title={filterCopy.title}>
         <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
           <button type="button" onClick={function() { setFilterCat(""); setFilterOpen(false); }}
@@ -19544,6 +20424,21 @@ function Advisor(props) {
     if (props.onSaveVoice && props.richardVoice) props.onSaveVoice(Object.assign({}, props.richardVoice, { introSeen: true }));
     if (openSheet) setVoiceOpen(true);
   }
+  // The bank-file banner. This tab is where a thin ledger does the most damage -
+  // advice built on four transactions is advice about nothing - so the ask
+  // happens here, once a week at most, and only while there is genuinely too
+  // little to work with. A stale-file account gets the dashboard card instead;
+  // this banner's copy is about seeing too little, not about seeing old data.
+  var _csvT = useState(false); var csvToast = _csvT[0]; var setCsvToast = _csvT[1];
+  var csvState = csvNudgeState(props.tx, props.csvImport, props.csvNudge);
+  var csvWorthAsking = !!(props.onImportCsv && (csvState.kind === "none" || csvState.kind === "thin"));
+  useEffect(function() {
+    if (props.isActive === false || !csvWorthAsking) return;
+    var last = (props.csvNudge && props.csvNudge.toastAt) || "";
+    var today = new Date().toISOString().slice(0, 10);
+    if (last && dayGap(last, today) < 7) return;
+    setCsvToast(true);
+  }, [props.isActive, csvWorthAsking]);
   // Composer attachments. An image is downscaled to a small JPEG and sent as a
   // real vision content block; a text/CSV file is read and folded into the
   // message. Anything the model genuinely cannot read is refused with a reason
@@ -21038,7 +21933,7 @@ function Advisor(props) {
       + "Match the user's words to the template: \"track my coffee\" is merchantSpend or a category, \"as a ring/circle/gauge\" is ring, \"a bar\" is bar, \"show me the biggest ones\" is list, \"over the last few months\" is trend, \"versus last month\" is compare. Pick a sensible icon and a short title yourself rather than asking. If they ask for something no metric covers, say plainly what you can follow instead and offer the closest one - never invent a metric name, and never promise a widget on any screen other than Overview, which is the only place they appear. "
       + "Use the EXACT category, folder, savings pot, goal, note-label and widget-title names given in the data below - never invent or guess a name. "
       + "If the user mentions several things at once, emit several tags. Only emit a tag for a concrete event, or a direct explicit request to change/create something, with real values the user actually stated - never for hypotheticals, plans, or general advice. Do not mention the word ACTION or the tag syntax in your spoken reply; just speak naturally and let the tags do the work."
-      + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a business coach who builds a business plan - send business owners there. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Richy ALSO has real WhatsApp alerts for Richard Watch (Profile -> Settings -> WhatsApp Alerts): the user links their number and texts START to Richy's WhatsApp number to turn it on, then gets the single most urgent Watch signal relayed there once a day - it only ever replies inside a chat the user opened, so if an alert seems missing, tell them to message Richy on WhatsApp to reopen today's window. Richy ALSO has Collab (Profile -> Collab): two people can join one household and share budgets, goals and categories, each keeping their own login - send anyone asking about splitting money with a partner, a flatmate or a family member there, and say plainly that it shares budgets and goals rather than merging every transaction into one ledger. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (Bank Sync files purchases from the payment notifications the user's own phone already receives - an automation they set up and control on their device, not a bank connection), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use."
+      + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Richard as a business coach who builds a business plan - send business owners there. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Richy ALSO has Collab (Profile -> Collab): two people can join one household and share budgets, goals and categories, each keeping their own login - send anyone asking about splitting money with a partner, a flatmate or a family member there, and say plainly that it shares budgets and goals rather than merging every transaction into one ledger. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (Bank Sync files purchases from the payment notifications the user's own phone already receives - an automation they set up and control on their device, not a bank connection), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + RICHARD_FORMAT + " The action tags described above are the only bracketed syntax you may use."
       + " Close EVERY reply with exactly one short, specific follow-up question about their situation so the conversation keeps moving."
       + " ABOUT THE NOT-A-LICENSED-ADVISOR REMINDER: do NOT append it to every reply - on everyday budgeting talk it reads as nervous boilerplate and people stop reading it, which defeats its purpose. Include one short, natural version of it ONLY when leaving it out could actually cost them: anything touching investing, specific securities or assets, pensions and retirement accounts, insurance, taxes, loans, mortgages or refinancing, debt consolidation, big irreversible commitments, or any moment you are near the edge of what you can responsibly answer. In those cases say it in your own words as part of the answer, not as a disclaimer tacked on the end. For ordinary spending, saving, budgets, goals and affordability questions, skip it entirely - the app already shows a standing disclaimer on screen." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : "")
       + (isVoice ? " VOICE MODE: the user is talking to you by voice and your reply will be read aloud by text-to-speech. Keep it to 2-4 short conversational sentences of natural spoken language - no lists, no markdown, no asterisks, no symbols that read badly aloud. Numbers still matter: quote the one or two key figures, never a table. When the reminder rule above says a topic needs the not-a-licensed-advisor caveat, it still applies in voice and counts inside the sentence budget - never drop it for brevity on those topics. Action tags still work exactly as described - append them at the very end as usual." : ""),
@@ -21772,6 +22667,16 @@ function Advisor(props) {
       {/* Lets the final analysis card scroll fully above the persistent
           composer instead of finishing underneath it. */}
       <div aria-hidden="true" style={{ height: 198 }} />
+
+      {/* Drops in under the header, not over the composer, and portals to the
+          body so no transformed ancestor can clip it. Hidden while the chat is
+          full-screen - that surface has the user's whole attention. */}
+      {csvToast && csvWorthAsking && props.isActive !== false && !chatExpanded && ReactDOM.createPortal((
+        <CsvNudgeToast state={csvState}
+          onSeen={function() { if (props.onCsvNudgeShown) props.onCsvNudgeShown(); }}
+          onClose={function() { setCsvToast(false); }}
+          onImport={props.onImportCsv} />
+      ), document.body)}
 
       {/* Collapsed, the composer clears the tab bar (which the Advisor now
           keeps, so the AI tab has a visible way back to the rest of the app).
@@ -36018,6 +36923,20 @@ export default function App() {
   // they know about and simply don't want.
   var _dt = useState([]);
   var dismissedTips = _dt[0]; var setDismissedTips = _dt[1];
+  // The record of CSV imports: { at, count, from, to } for the last one. It is
+  // what retires the import nudges - an account that has brought in a real
+  // month is not asked again until that file goes stale.
+  var _csvi = useState(null);
+  var csvImport = _csvi[0]; var setCsvImport = _csvi[1];
+  // The nudges' own memory: { off } the day the dashboard card was waved off
+  // (silent for a month after), { toastAt } the day the Advisor banner last
+  // showed (weekly at most). Two dates, so neither surface can nag.
+  var _csvn = useState(null);
+  var csvNudge = _csvn[0]; var setCsvNudge = _csvn[1];
+  // Whether the CSV sheet is open. App-level because three screens can open it:
+  // Activity's own button, the dashboard card and the Advisor banner.
+  var _csvo = useState(false);
+  var importCsvOpen = _csvo[0]; var setImportCsvOpen = _csvo[1];
   // Found Money: only the user's DECISIONS persist (the running tally, dismissed
   // finding ids, and a log of acted items). Findings themselves are recomputed
   // from tx each session by findMoney().
@@ -36139,6 +37058,8 @@ export default function App() {
     // chose to keep this section empty.
     setWidgets(Array.isArray(data.widgets) ? data.widgets.slice(0, MAX_WIDGETS) : getStarterWidgets(data.tx));
     setDismissedTips(data.dismissedTips || []);
+    setCsvImport(data.csvImport || null);
+    setCsvNudge(data.csvNudge || null);
     setHouseholdId(data.householdId || null);
     setUserDob(data.dob || "");
     setLang(applyLangDir(data.lang || "en"));
@@ -36766,6 +37687,40 @@ export default function App() {
     if (dismissedTips.indexOf(id) >= 0) return;
     var next = dismissedTips.concat([id]);
     setDismissedTips(next); save({ dismissedTips: next });
+  }
+  // A finished CSV import. The rows and the record of the import are written
+  // together, so the nudges can never claim a file is missing right after one
+  // landed (or survive a write that only half-succeeded).
+  function onCsvImport(txs, report) {
+    var rows = txs || [];
+    if (!rows.length) return;
+    var nextTx = tx.concat(rows);
+    var rec = {
+      at: new Date().toISOString().slice(0, 10),
+      count: ((csvImport && csvImport.count) || 0) + rows.length,
+      from: (report && report.from) || "",
+      to: (report && report.to) || ""
+    };
+    setTx(nextTx); setCsvImport(rec);
+    save({ tx: nextTx, csvImport: rec });
+  }
+  // "It's all in there" - the dashboard card goes quiet for a month.
+  function onCsvNudgeOff() {
+    var next = Object.assign({}, csvNudge || {}, { off: new Date().toISOString().slice(0, 10) });
+    setCsvNudge(next); save({ csvNudge: next });
+  }
+  // The Advisor banner marks itself shown the moment it appears, so it can't
+  // come back on the next visit to the tab.
+  function onCsvNudgeShown() {
+    var today = new Date().toISOString().slice(0, 10);
+    if (csvNudge && csvNudge.toastAt === today) return;
+    var next = Object.assign({}, csvNudge || {}, { toastAt: today });
+    setCsvNudge(next); save({ csvNudge: next });
+  }
+  // The one way in from anywhere: land on Activity with the sheet already open.
+  function openCsvImport() {
+    prevTabRef.current = tab;
+    setTab("activity"); setSheet(false); setImportCsvOpen(true);
   }
   function onSettleNote(nextTx, nextNotes) { setTx(nextTx); setNotes(nextNotes); save({ tx: nextTx, notes: nextNotes }); }
   function onSaveTrips(next) { setTrips(next); save({ trips: next }); }
@@ -37649,11 +38604,11 @@ export default function App() {
   // The five swipeable main tabs, produced by id so both the visible page and the
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
-    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} onAddWidget={onAddWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
-    if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
+    if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} onAddWidget={onAddWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} csvImport={csvImport} csvNudge={csvNudge} onImportCsv={openCsvImport} onCsvNudgeOff={onCsvNudgeOff} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} richardInstructions={richardCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
+    if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} onCsvImport={onCsvImport} importOpen={importCsvOpen} setImportOpen={setImportCsvOpen} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
-    if (id === "advisor") return <Advisor isActive={id === currentTab} tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} richardVoice={richardVoice} onSaveVoice={onSaveVoice} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} widgets={widgets} onSaveWidgets={onSaveWidgets} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} onBackToOverview={function() { setTab("overview"); }} onOpenInstructions={function() { prevTabRef.current = "advisor"; setTab("instructions"); setSheet(false); }} onOpenProfile={function() { prevTabRef.current = "advisor"; setTab("profile"); setSheet(false); }} />;
+    if (id === "advisor") return <Advisor isActive={id === currentTab} tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} richardInstructions={richardCtx} rawInstructions={richardInstructions} onSaveInstructions={onSaveInstructions} richardVoice={richardVoice} onSaveVoice={onSaveVoice} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} widgets={widgets} onSaveWidgets={onSaveWidgets} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={richardChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} csvImport={csvImport} csvNudge={csvNudge} onImportCsv={openCsvImport} onCsvNudgeShown={onCsvNudgeShown} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} onBackToOverview={function() { setTab("overview"); }} onOpenInstructions={function() { prevTabRef.current = "advisor"; setTab("instructions"); setSheet(false); }} onOpenProfile={function() { prevTabRef.current = "advisor"; setTab("profile"); setSheet(false); }} />;
     return null;
   }
   applyTheme(theme);      // keep the live T palette in sync with the chosen design every render
