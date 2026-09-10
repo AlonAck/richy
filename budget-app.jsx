@@ -4991,7 +4991,10 @@ var LQ_GLASS_DARK = "linear-gradient(180deg,rgba(198,180,246,0.20),rgba(150,128,
 var LQ_OWN = { variant: 1, soft: 1, color: 1, ink: 1, dark: 1, size: 1, iconSize: 1, height: 1, fontSize: 1, weight: 1, full: 1, flex: 1, blur: 1, busy: 1, busyLabel: 1, wrap: 1, onPress: 1, onClick: 1, disabled: 1, children: 1, style: 1, className: 1, onPointerDown: 1, onPointerMove: 1, onPointerUp: 1, onPointerCancel: 1, onPointerLeave: 1 };
 var LQ_HOLD_MS = 340;   // hold before the capsule lifts (same as HeaderShortcutBar)
 var LQ_SLOP = 28;       // release this far outside still counts as inside
-var LQ_FREE = 24;       // px the lifted capsule follows 1:1 before rubber-banding
+var LQ_FREE = 6;        // px the lifted capsule follows 1:1 before it gives
+var LQ_PULL = 14;       // px more it can ever travel, however far the finger goes
+var LQ_STRETCH = 0.15;  // most it elongates along the drag, as a fraction
+var LQ_STRETCH_AT = 80; // px of drag that reaches most of that stretch
 var LQ_SCROLL = 10;     // a finger travelling this far before the hold is scrolling
 
 // A capsule is a light material, so an accent picked as ink can be too dark
@@ -5102,12 +5105,31 @@ function ensureLiquidCss() {
 }
 if (typeof document !== "undefined") ensureLiquidCss();
 
-// Follow curve for a lifted capsule: 1:1 for LQ_FREE px, then |over|^0.68
-// (the HeaderShortcutBar rubber-band), capped so it eases toward a limit.
+// A lifted capsule stays where it is and gives instead (Alon, 10 Sep: "it
+// moves too much - it should be local, and mostly stretch"). Travel is 1:1
+// for LQ_FREE px and then eases onto a hard ceiling of LQ_FREE + LQ_PULL,
+// so the button never leaves its own place however far the finger goes.
 function lqFollow(v) {
   var s = v < 0 ? -1 : 1, a = Math.abs(v);
-  if (a > LQ_FREE) a = LQ_FREE + Math.min(Math.pow(a - LQ_FREE, 0.68), 36);
+  if (a > LQ_FREE) a = LQ_FREE + LQ_PULL * (1 - Math.exp(-(a - LQ_FREE) / (LQ_PULL * 2)));
   return s * a;
+}
+// What the drag does instead of moving it: the glass elongates along the
+// direction of the pull and thins across it, the way a drop of liquid does.
+// Returns the angle of the pull and the two scales, or null when there is
+// nothing to stretch yet.
+function lqStretch(dx, dy) {
+  var m = Math.sqrt(dx * dx + dy * dy);
+  if (m < 0.5) return null;
+  var e = LQ_STRETCH * (1 - Math.exp(-m / LQ_STRETCH_AT));
+  return { a: Math.atan2(dy, dx) * 180 / Math.PI, sx: 1 + e, sy: 1 - e * 0.55 };
+}
+// The words ride the glass but must not be squashed by it, so the label gets
+// the inverse of whatever the capsule is doing.
+function lqStretchCss(st, invert) {
+  if (!st) return "";
+  var x = invert ? 1 / st.sx : st.sx, y = invert ? 1 / st.sy : st.sy;
+  return " rotate(" + st.a.toFixed(1) + "deg) scale(" + x.toFixed(3) + "," + y.toFixed(3) + ") rotate(" + (-st.a).toFixed(1) + "deg)";
 }
 
 function LiquidButton(props) {
@@ -5153,7 +5175,9 @@ function LiquidButton(props) {
 
   function paint(G) {
     var node = ref.current; if (!node) return;
-    node.style.transform = "translate(" + lqFollow(G.dx) + "px," + lqFollow(G.dy) + "px) scale(1.06)";
+    var st = lqStretch(G.dx, G.dy);
+    node.style.transform = "translate(" + lqFollow(G.dx).toFixed(1) + "px," + lqFollow(G.dy).toFixed(1) + "px) scale(1.06)" + lqStretchCss(st, false);
+    if (G.lab) G.lab.style.transform = lqStretchCss(st, true).slice(1);
   }
   function settle(G, commit, e) {
     gRef.current = null;
@@ -5166,8 +5190,12 @@ function LiquidButton(props) {
         node.classList.remove("rc-lq-lift");
         node.style.transition = "transform var(--m-settle) var(--m-spring), box-shadow var(--m-quick) ease";
         node.style.transform = "";
+        if (G.lab) { G.lab.style.transition = "transform var(--m-settle) var(--m-spring)"; G.lab.style.transform = ""; }
         try { node.releasePointerCapture(G.id); } catch (x) {}
-        setTimeout(function() { node.style.transition = ""; node.style.willChange = ""; }, 600);
+        setTimeout(function() {
+          node.style.transition = ""; node.style.willChange = "";
+          if (G.lab) { G.lab.style.transition = ""; G.lab.style.willChange = ""; }
+        }, 600);
       }
     }
     if (G.lifted) {
@@ -5181,7 +5209,7 @@ function LiquidButton(props) {
     if (dis || (e.pointerType === "mouse" && e.button !== 0)) return;
     var node = ref.current; if (!node) return;
     if (gRef.current) settle(gRef.current, false, e);
-    var G = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, dy: 0, lifted: false, timer: 0, raf: 0, rect: null };
+    var G = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, dy: 0, lifted: false, timer: 0, raf: 0, rect: null, lab: null };
     gRef.current = G;
     node.classList.add("rc-lq-down");
     G.timer = setTimeout(function() {
@@ -5191,6 +5219,8 @@ function LiquidButton(props) {
       try { node.setPointerCapture(G.id); } catch (x) {}
       node.classList.remove("rc-lq-down");
       node.classList.add("rc-lq-lift");
+      G.lab = node.querySelector(".rc-lq-label");
+      if (G.lab) G.lab.style.willChange = "transform";
       node.style.willChange = "transform";
       node.style.transition = "transform 0.26s var(--m-spring), box-shadow var(--m-quick) ease";
       nativeHaptic("MEDIUM");
