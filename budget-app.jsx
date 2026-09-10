@@ -12839,23 +12839,33 @@ function classifyImportRows(cands, existing) {
   // contend for one transaction, none of them may be settled quietly: they are
   // all demoted to questions and flagged, and judgeLookalikes' verdict is not
   // allowed to merge them either (see runJudge).
-  var claims = {};
+  // Counted against SUPPLY, not against the key: a ledger legitimately holds
+  // repeats (two identical bus fares in one day), and bestDupMatch cannot tell
+  // them apart, so N identical existing rows can absorb N claims without
+  // anything being over-claimed. Only claims beyond that are contention.
+  // Comparing claims to a flat 1 made re-importing the same file re-ask about
+  // every repeated charge it had already filed.
+  var claims = {}, supply = {};
   function claimKey(t) { return t ? dupKey(t.type, t.date, t.amount, t.label) : ""; }
+  base.forEach(function(t) { var k = claimKey(t); supply[k] = (supply[k] || 0) + 1; });
   dupes.concat(maybes).forEach(function(e) {
     if (e.inFile || !e.match) return;
     var k = claimKey(e.match);
     claims[k] = (claims[k] || 0) + 1;
   });
+  function overClaimed(e) {
+    if (e.inFile || !e.match) return false;
+    var k = claimKey(e.match);
+    return (claims[k] || 0) > (supply[k] || 1);
+  }
   var contendedDupes = [];
   dupes = dupes.filter(function(e) {
-    if (e.inFile || !e.match || claims[claimKey(e.match)] < 2) return true;
+    if (!overClaimed(e)) return true;
     e.contended = true;
     contendedDupes.push(e);
     return false;
   });
-  maybes.forEach(function(e) {
-    if (!e.inFile && e.match && claims[claimKey(e.match)] > 1) e.contended = true;
-  });
+  maybes.forEach(function(e) { if (overClaimed(e)) e.contended = true; });
   maybes = maybes.concat(contendedDupes);
 
   return { fresh: fresh, dupes: dupes, maybes: maybes, twins: twins };
@@ -15328,6 +15338,10 @@ function ImportSheet(props) {
     setMap({ date: -1, amount: -1, desc: -1, debit: -1, credit: -1 }); setSplitAmt(false); setPreferDMY(true); setAllExpenses(false); setBuilt([]); setDupes(0); setErr("");
     setPlan(null); setDecisions({}); setQueue([]); setQIdx(0); setAiRes({ settled: 0, failed: false }); setReport(null);
     setShowAdv(false);
+    // askAi is deliberately NOT reset. Someone who just turned the Richard
+    // check off should not find it back on for the next file - silently
+    // re-enabling a check the user switched off is worse than the
+    // inconsistency with every other field here.
   }
   function close() { reset(); props.onClose(); }
 

@@ -352,15 +352,26 @@ fetchSource(1).then(function(src){
     // contending for the one hand-typed "Dinner" (neither may be settled
     // quietly), two genuinely new rows, and one line the file lists twice
     // (kept, counted as a twin).
+    // A statement written the way a bank actually writes one - raw merchant
+    // strings with store numbers - against mockTx, which is written the way a
+    // person actually types - short generic words. That mismatch is where the
+    // scorer earns its keep, and it is what the three 2026-09-10 bugs needed to
+    // reproduce. Every band is represented, with the expected verdict noted:
     var csvSeed = [
       "Date,Description,Amount",
-      iso(7) + ",Whole Foods,-420.00",
-      iso(3) + ",OSTERIA ROMA #4471,-260.00",
-      iso(3) + ",TRATTORIA MILANO 22,-260.00",
-      iso(2) + ",IKEA Brooklyn,-320.00",
-      iso(2) + ",Bus fare,-2.90",
-      iso(2) + ",Bus fare,-2.90",
-      iso(1) + ",ACME PAYROLL,3000.00"
+      iso(7) + ",WHOLE FOODS MKT #10229,-420.00",   // skipped: two name words match "Whole Foods"
+      iso(6) + ",BEST BUY 1442,-89.99",             // skipped: name matches exactly after cleanup
+      iso(8) + ",NETFLIX.COM,-17.99",               // skipped: same brand, different spelling
+      iso(9) + ",RENTAL PMT LANDLORD LLC,-1800.00", // asked: shares only the generic word "rent"
+      iso(5) + ",UBER TRIP HELP.UBER.COM,-95.00",   // asked: shares only "uber"
+      iso(4) + ",ADOBE INC SUBSCRIPTION,-52.99",    // asked: shares only "adobe"
+      iso(3) + ",OSTERIA ROMA #4471,-260.00",       // asked + contended: claims "Dinner"
+      iso(3) + ",TRATTORIA MILANO 22,-260.00",      // asked + contended: claims "Dinner" too
+      iso(2) + ",IKEA BROOKLYN,-320.00",            // added: nothing like it
+      iso(0) + ",PLANETFIT 8009 MEMBER FEE,-39.99", // added: nothing at 39.99
+      iso(2) + ",BUS FARE,-2.90",                   // added
+      iso(2) + ",BUS FARE,-2.90",                   // added, counted as an in-file twin
+      iso(1) + ",ACME LTD PAYROLL AUG,3000.00"      // added: income, no matching salary
     ].join("\n");
     function CsvImportHarness() {
       var _tx = React.useState(mockTx); var ctx = _tx[0]; var setCtx = _tx[1];
