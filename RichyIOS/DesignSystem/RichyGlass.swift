@@ -227,10 +227,11 @@ struct RichyGlassButtonStyle: ButtonStyle {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func makeBody(configuration: Configuration) -> some View {
+        // Real Liquid Glass brings its own press; the lift-and-follow on a
+        // hold (`liquidPress`, the web LiquidButton spec) applies either way.
         let shouldScale = !RichyGlass.isActive && !reduceMotion
         return configuration.label
-            .scaleEffect(shouldScale && configuration.isPressed ? 0.94 : 1)
-            .animation(.spring(response: 0.28, dampingFraction: 0.7), value: configuration.isPressed)
+            .liquidPress(isPressed: shouldScale && configuration.isPressed)
     }
 }
 

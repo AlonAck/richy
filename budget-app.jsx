@@ -4664,17 +4664,17 @@ function EmptyState(props) {
       <div dir="auto" style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 4 }}>{props.title}</div>
       {props.sub && <div dir="auto" style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, maxWidth: 300, margin: "0 auto" }}>{props.sub}</div>}
       {props.actionLabel && props.onAction && (
-        <button onClick={props.onAction}
-          style={{ marginTop: 18, display: "inline-flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", border: "none", borderRadius: 999, padding: "11px 20px", cursor: "pointer", color: "#fff", fontSize: 14, fontWeight: 700, fontFamily: UI, boxShadow: "0 6px 16px " + T.orangeGlow }}>
+        <LiquidButton variant="primary" onClick={props.onAction}
+          style={{ marginTop: 18 }}>
           <SVGIcon id="plus" size={13} color="#fff" />{props.actionLabel}
-        </button>
+        </LiquidButton>
       )}
       {props.secondLabel && props.onSecond && (
         <div>
-          <button onClick={props.onSecond}
-            style={{ marginTop: 10, display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: "0.5px solid " + T.sep, borderRadius: 999, padding: "9px 17px", cursor: "pointer", color: T.ink2, fontSize: 13, fontWeight: 700, fontFamily: UI }}>
+          <LiquidButton variant="neutral" onClick={props.onSecond}
+            style={{ marginTop: 10 }}>
             <SVGIcon id={props.secondIcon || "spark"} size={13} color={T.ink2} />{props.secondLabel}
-          </button>
+          </LiquidButton>
         </div>
       )}
     </Card>
@@ -4928,6 +4928,8 @@ var PRESS_T = "transform var(--m-press) ease, box-shadow var(--m-quick) ease";
 //             of a filled capsule with white ink.
 //   color     hex to tint with instead of the variant's hue (BigBtn's red).
 //   ink       label colour override.
+//   dark      force the dark-side mix (rim, tint) regardless of T.isDark - for
+//             a panel that is dark in both themes (RichardVoiceIntro).
 //   size      "sm" | "md" (default, 44px - the HIG minimum target) | "lg" | "xl"
 //             | "icon" (a circle; iconSize sets its diameter, default 44).
 //   full      width: 100% (a screen-bottom CTA). Labels may wrap on full
@@ -4946,42 +4948,84 @@ var LQ_SIZES = {
   lg: { h: 52, fs: 16, px: 24, gap: 8 },
   xl: { h: 56, fs: 17, px: 28, gap: 9 },
 };
-var LQ_RIM_LIGHT = "0 0 6px rgba(0,0,0,0.03),0 2px 6px rgba(0,0,0,0.08),inset 3px 3px 0.5px -3px rgba(0,0,0,0.9),inset -3px -3px 0.5px -3px rgba(0,0,0,0.85),inset 1px 1px 1px -0.5px rgba(0,0,0,0.6),inset -1px -1px 1px -0.5px rgba(0,0,0,0.6),inset 0 0 6px 6px rgba(0,0,0,0.12),inset 0 0 2px 2px rgba(0,0,0,0.06)";
-var LQ_RIM_DARK = "0 0 8px rgba(0,0,0,0.03),0 2px 6px rgba(0,0,0,0.08),inset 3px 3px 0.5px -3.5px rgba(255,255,255,0.09),inset -3px -3px 0.5px -3.5px rgba(255,255,255,0.85),inset 1px 1px 1px -0.5px rgba(255,255,255,0.6),inset -1px -1px 1px -0.5px rgba(255,255,255,0.6),inset 0 0 6px 6px rgba(255,255,255,0.12),inset 0 0 2px 2px rgba(255,255,255,0.06),0 0 12px rgba(0,0,0,0.15)";
+// The lining, taken from Apple's glass icons (Alon, 10 Sep): a bright
+// hairline that traces the whole edge, a wider bloom just inside the top, a
+// denser hairline along the bottom that gives the capsule thickness, and a
+// soft halo of the glass's own colour spilling outside it. None of it moves -
+// a highlight that sits still is not the shine that was removed.
+// The shaping that used to be black is tinted instead, which is what took the
+// darkness out of the light stack.
+var LQ_LILAC = "#B49BF0";     // the cast the clear glass carries
+var LQ_LILAC_HI = "#EFE9FF";  // its bright end, used for the lining
+function lqRim(d, hue) {
+  hue = hue || LQ_LILAC;
+  if (d) return [
+    "0 0 0 0.5px " + jrRgba(LQ_LILAC_HI, 0.14),
+    "0 2px 8px rgba(0,0,0,0.28)",
+    "0 0 14px " + jrRgba(hue, 0.24),
+    "inset 0 0 0 1px " + jrRgba(LQ_LILAC_HI, 0.20),
+    "inset 0 1.5px 1px -0.5px " + jrRgba(LQ_LILAC_HI, 0.58),
+    "inset 0 -1.5px 1px -0.5px " + jrRgba(LQ_LILAC_HI, 0.34),
+    "inset 0 7px 10px -9px " + jrRgba(LQ_LILAC_HI, 0.80),
+    "inset 0 0 6px 6px " + jrRgba(LQ_LILAC_HI, 0.07),
+  ].join(",");
+  return [
+    "0 0 0 0.5px " + jrRgba(hue, 0.22),
+    "0 2px 6px rgba(40,28,16,0.07)",
+    "0 0 12px " + jrRgba(hue, 0.18),
+    "inset 0 0 0 1px rgba(255,255,255,0.60)",
+    "inset 0 1.5px 1px -0.5px rgba(255,255,255,0.95)",
+    "inset 0 -2px 2px -1.5px " + jrRgba(hue, 0.42),
+    "inset 0 9px 12px -11px rgba(255,255,255,0.92)",
+    "inset 3px 3px 0.5px -3px " + jrRgba(hue, 0.30),
+    "inset -3px -3px 0.5px -3px " + jrRgba(hue, 0.26),
+    "inset 0 0 6px 6px " + jrRgba(hue, 0.06),
+  ].join(",");
+}
+// Clear glass, lilac rather than plain white (Alon, 10 Sep: "more of a lilac
+// colour"). The alphas stay where the white wash had them, so a label over
+// busy content is exactly as legible as before - only the hue changed.
+var LQ_GLASS_LIGHT = "linear-gradient(180deg,rgba(250,247,255,0.78),rgba(226,217,250,0.60))";
+var LQ_GLASS_DARK = "linear-gradient(180deg,rgba(198,180,246,0.20),rgba(150,128,214,0.11))";
 // Props LiquidButton consumes itself; everything else is forwarded to the DOM.
-var LQ_OWN = { variant: 1, soft: 1, color: 1, ink: 1, size: 1, iconSize: 1, height: 1, fontSize: 1, weight: 1, full: 1, flex: 1, blur: 1, busy: 1, busyLabel: 1, wrap: 1, onPress: 1, onClick: 1, disabled: 1, children: 1, style: 1, className: 1, onPointerDown: 1, onPointerMove: 1, onPointerUp: 1, onPointerCancel: 1, onPointerLeave: 1 };
+var LQ_OWN = { variant: 1, soft: 1, color: 1, ink: 1, dark: 1, size: 1, iconSize: 1, height: 1, fontSize: 1, weight: 1, full: 1, flex: 1, blur: 1, busy: 1, busyLabel: 1, wrap: 1, onPress: 1, onClick: 1, disabled: 1, children: 1, style: 1, className: 1, onPointerDown: 1, onPointerMove: 1, onPointerUp: 1, onPointerCancel: 1, onPointerLeave: 1 };
 var LQ_HOLD_MS = 340;   // hold before the capsule lifts (same as HeaderShortcutBar)
 var LQ_SLOP = 28;       // release this far outside still counts as inside
 var LQ_FREE = 24;       // px the lifted capsule follows 1:1 before rubber-banding
 var LQ_SCROLL = 10;     // a finger travelling this far before the hold is scrolling
 
-function lqPalette(variant, soft, color) {
-  var d = !!T.isDark;
+function lqPalette(variant, soft, color, forceDark) {
+  var d = forceDark == null ? !!T.isDark : !!forceDark;
   var v = variant || "neutral";
   var hue = color || (v === "green" ? T.green : v === "red" ? T.red : v === "gold" ? T.gold : T.orange);
   var lift = d ? "0 16px 34px rgba(0,0,0,0.55)" : "0 14px 30px rgba(40,28,16,0.22),0 2px 6px rgba(40,28,16,0.10)";
-  var p = { rim: d ? LQ_RIM_DARK : LQ_RIM_LIGHT, tint: "transparent", ink: T.orange, textShadow: "none", shadow: "none", shadowHov: null, shadowLift: lift, solid: d ? T.darkCard2 : T.card };
+  var p = { rim: lqRim(d), tint: "transparent", ink: T.orange, textShadow: "none", shadow: "none", shadowHov: null, shadowLift: lift, solid: d ? T.darkCard2 : T.card };
   if (v === "ghost") {
     p.rim = "none"; p.ink = T.ink2; p.solid = "transparent";
     return p;
   }
   if (v === "neutral") {
-    // Clear glass. The white wash is what keeps the label legible over busy
-    // content on the light side; on dark it is a faint lift, no more.
-    p.tint = d ? "linear-gradient(180deg,rgba(255,255,255,0.10),rgba(255,255,255,0.05))" : "linear-gradient(180deg,rgba(255,255,255,0.62),rgba(255,255,255,0.34))";
+    p.tint = d ? LQ_GLASS_DARK : LQ_GLASS_LIGHT;
     return p;
   }
   if (soft) {
-    p.tint = "linear-gradient(180deg," + jrRgba(hue, d ? 0.22 : 0.14) + "," + jrRgba(hue, d ? 0.30 : 0.24) + ")";
-    p.ink = d ? hue : jrShade(hue, 0.28);
+    // Soft: the hue washed over the same lilac glass, and the lining picks up
+    // the hue the way a tinted pane of glass lights its own edge.
+    p.rim = lqRim(d, hue);
+    p.tint = "linear-gradient(180deg," + jrRgba(hue, d ? 0.26 : 0.16) + "," + jrRgba(hue, d ? 0.34 : 0.26) + ")";
+    p.ink = d ? hue : jrShade(hue, 0.24);
     p.solid = "linear-gradient(" + jrRgba(hue, d ? 0.26 : 0.16) + "," + jrRgba(hue, d ? 0.26 : 0.16) + ")," + (d ? T.darkCard2 : T.card);
     return p;
   }
-  // Filled: the hue as translucent glass under white ink. The dark side leans
-  // on a darkened hue so white text keeps its contrast over a near-black card.
+  // Filled: the hue as translucent glass under white ink - the pure hue, the
+  // way Apple's tinted glass keeps its colour vivid rather than shading it
+  // toward black. Light runs from a lighter top (the hue lifted toward white)
+  // to the hue itself; dark only nudges the hue down so white ink still
+  // clears contrast over a near-black card, and stays bright otherwise.
+  p.rim = lqRim(d, hue);
   p.tint = d
-    ? "linear-gradient(180deg," + jrShadeRgba(hue, 0.30, 0.88) + "," + jrShadeRgba(hue, 0.46, 0.96) + ")"
-    : "linear-gradient(180deg," + jrRgba(hue, 0.74) + "," + jrShadeRgba(hue, 0.18, 0.92) + ")";
+    ? "linear-gradient(180deg," + jrShadeRgba(hue, 0.08, 0.92) + "," + jrShadeRgba(hue, 0.22, 0.96) + ")"
+    : "linear-gradient(180deg," + jrRgba(hue, 0.70) + "," + jrRgba(hue, 0.90) + ")";
   p.ink = "#FFFFFF";
   p.textShadow = "0 1px 1px " + jrShadeRgba(hue, 0.62, 0.35);
   p.shadow = "0 6px 18px " + jrRgba(hue, d ? 0.30 : 0.34) + ",0 1px 2px rgba(0,0,0,0.10)";
@@ -4991,16 +5035,15 @@ function lqPalette(variant, soft, color) {
   return p;
 }
 // Still glass, just emptied out: no tint, no glow, and the CSS skips the states.
-function lqDisabledPalette() {
-  var d = !!T.isDark;
+function lqDisabledPalette(forceDark) {
+  var d = forceDark == null ? !!T.isDark : !!forceDark;
   return {
-    rim: d ? LQ_RIM_DARK : LQ_RIM_LIGHT,
-    tint: d ? "linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.09))" : "linear-gradient(180deg," + jrRgba(T.ink, 0.03) + "," + jrRgba(T.ink, 0.06) + ")",
+    rim: lqRim(d),
+    tint: d ? "linear-gradient(180deg," + jrRgba(LQ_LILAC, 0.10) + "," + jrRgba(LQ_LILAC, 0.06) + ")" : "linear-gradient(180deg," + jrRgba(LQ_LILAC, 0.14) + "," + jrRgba(LQ_LILAC, 0.09) + ")",
     ink: T.ink3, textShadow: "none", shadow: "none", shadowHov: null, shadowLift: "none",
     solid: d ? T.darkCard2 : T.card,
   };
 }
-
 // A live canvas on screen (JrShaderBg, JrFocusRaysBg) means a backdrop
 // filter above it would re-filter at 60fps forever, even under reduced
 // motion (see JrReadingLight). Each canvas bumps this while mounted and the
@@ -5060,7 +5103,7 @@ function LiquidButton(props) {
   var dis = !!props.disabled || !!props.busy;
   var icon = props.size === "icon";
   var sz = LQ_SIZES[props.size] || LQ_SIZES.md;
-  var p = dis ? lqDisabledPalette() : lqPalette(variant, props.soft, props.color);
+  var p = dis ? lqDisabledPalette(props.dark) : lqPalette(variant, props.soft, props.color, props.dark);
   if (props.ink && !dis) p.ink = props.ink;
   var h = props.height || (icon ? (props.iconSize || 44) : sz.h);
   var wrap = props.wrap != null ? !!props.wrap : !!props.full;
@@ -5858,7 +5901,7 @@ function BootRetryScreen(props) {
         <SVGIcon id="spark" size={30} color={T.ink3} />
         <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginTop: 14 }}>Can't reach your data</div>
         <div style={{ fontSize: 14, color: T.ink3, marginTop: 6, lineHeight: 1.4 }}>Check your connection and try again.</div>
-        <button onClick={props.onRetry} style={{ marginTop: 18, width: "100%", padding: "13px 0", borderRadius: 12, border: "none", background: T.orange, color: "#fff", fontFamily: UI, fontWeight: 700, fontSize: 15, cursor: "pointer" }}>Retry</button>
+        <LiquidButton variant="primary" size="lg" full onClick={props.onRetry} style={{ marginTop: 18 }}>Retry</LiquidButton>
         <button onClick={props.onSignOut} style={{ marginTop: 10, width: "100%", padding: "13px 0", borderRadius: 12, border: "none", background: "transparent", color: T.ink3, fontFamily: UI, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Sign out</button>
       </div>
     </div>
@@ -8388,8 +8431,8 @@ function SSOFinishScreen(props) {
           </span>
         </label>
         {error && <div style={{ fontSize: 13, fontWeight: 600, color: T.red, marginTop: 12, lineHeight: 1.5 }}>{error}</div>}
-        <button onClick={finish}
-          style={{ width: "100%", marginTop: 18, border: "none", borderRadius: 14, padding: "15px 0", background: T.btn, color: "#fff", fontSize: 15.5, fontWeight: 700, fontFamily: UI, cursor: "pointer", boxShadow: "0 6px 18px " + T.orangeGlow }}>Create my account</button>
+        <LiquidButton variant="primary" size="xl" full onClick={finish}
+          style={{ marginTop: 18 }}>Create my account</LiquidButton>
         <button onClick={props.onCancel}
           style={{ width: "100%", marginTop: 10, border: "none", background: "none", color: T.ink3, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", padding: "8px 0" }}>Not you? Sign out</button>
       </div>
@@ -8624,8 +8667,7 @@ function AuthScreen(props) {
         <span style={{ fontSize: 12, color: T.ink3, fontWeight: 500 }}>{tr("auOrContinueWith")}</span>
         <div style={{ flex: 1, height: "0.5px", background: "rgba(0,0,0,0.12)" }} />
       </div>
-      <button onClick={googleSignIn} disabled={busy} className="jr-press"
-        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, background: J.card, border: "1.5px solid " + J.line2, borderRadius: 16, padding: "14px 0", fontSize: 15, fontFamily: UI, fontWeight: 600, color: T.ink, cursor: busy ? "default" : "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
+      <LiquidButton variant="neutral" size="lg" full onClick={googleSignIn} disabled={busy}>
         <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
           <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z" />
           <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z" />
@@ -8633,7 +8675,7 @@ function AuthScreen(props) {
           <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z" />
         </svg>
         {tr("auContinueGoogle")}
-      </button>
+      </LiquidButton>
     </div>
   );
 
@@ -8952,10 +8994,10 @@ function CatchUpScreen(props) {
 
       <div style={{ padding: "14px 22px 40px", borderTop: "0.5px solid " + J.line, background: "rgba(253,245,236,0.85)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", position: "relative", zIndex: 2 }}>
         <JrBtn label={canAdd ? tr("cuAddToMonth") : tr("continueBtn")} onPress={function() { props.onComplete(buildTxs()); }} style={{ padding: "16px 0", fontSize: 16 }} />
-        <button onClick={function() { props.onComplete([]); }} className="jr-press"
-          style={{ width: "100%", background: "none", border: "1.5px solid " + J.line, borderRadius: 14, fontSize: 14.5, fontWeight: 700, color: J.ink2, cursor: "pointer", fontFamily: UI, padding: "13px 0", display: "block", textAlign: "center", marginTop: 10 }}>
+        <LiquidButton variant="neutral" size="lg" full onClick={function() { props.onComplete([]); }}
+          style={{ marginTop: 10 }}>
           {tr("cuSkipFresh")}
-        </button>
+        </LiquidButton>
         {props.onSyncInstead && (
           <button onClick={function() { props.onSyncInstead(); }} className="jr-press"
             style={{ width: "100%", background: "none", border: "none", fontSize: 13.5, fontWeight: 600, color: T.orange, cursor: "pointer", fontFamily: UI, padding: "13px 0 0", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
@@ -10105,9 +10147,9 @@ function FoundMoney(props) {
                   <div style={{ fontSize: 12, color: T.ink3, marginTop: 3, lineHeight: 1.45 }}>{f.subtitle}</div>
 
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 10 }}>
-                    {canDraft && <button onClick={function() { makeDraft(f); }} style={primaryBtn}>{f.type === "hike" ? tr("fmDraftPriceMatch") : f.type === "fee" ? tr("fmDraftRefund") : tr("fmDraftCancellation")}</button>}
-                    {(f.type === "duplicate" || f.type === "fee") && <button onClick={function() { resolve(f, f.type === "fee" ? ((f.meta && f.meta.total) || f.amount) : f.amount); }} style={primaryBtn}>{tr("fmCountRecovered")}</button>}
-                    <button onClick={function() { resolve(f, 0); }} style={ghostBtn}>{dismissLabel(f.type)}</button>
+                    {canDraft && <LiquidButton variant="primary" size="sm" onClick={function() { makeDraft(f); }}>{f.type === "hike" ? tr("fmDraftPriceMatch") : f.type === "fee" ? tr("fmDraftRefund") : tr("fmDraftCancellation")}</LiquidButton>}
+                    {(f.type === "duplicate" || f.type === "fee") && <LiquidButton variant="primary" size="sm" onClick={function() { resolve(f, f.type === "fee" ? ((f.meta && f.meta.total) || f.amount) : f.amount); }}>{tr("fmCountRecovered")}</LiquidButton>}
+                    <LiquidButton variant="neutral" size="sm" onClick={function() { resolve(f, 0); }}>{dismissLabel(f.type)}</LiquidButton>
                   </div>
 
                   {draft && draft.id === f.id && (
@@ -10120,8 +10162,8 @@ function FoundMoney(props) {
                         : <div>
                             <div style={{ fontSize: 13, color: T.ink, lineHeight: 1.55, whiteSpace: "pre-wrap" }}>{draft.text}</div>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 10 }}>
-                              <button onClick={copyDraft} style={primaryBtn}>{copied ? tr("fmCopied") : tr("fmCopyMessage")}</button>
-                              <button onClick={function() { resolve(f, creditOf(f)); }} style={ghostBtn}>{tr("fmIDidIt").replace("{amt}", dollars(creditOf(f)))}</button>
+                              <LiquidButton variant="primary" size="sm" onClick={copyDraft}>{copied ? tr("fmCopied") : tr("fmCopyMessage")}</LiquidButton>
+                              <LiquidButton variant="neutral" size="sm" onClick={function() { resolve(f, creditOf(f)); }}>{tr("fmIDidIt").replace("{amt}", dollars(creditOf(f)))}</LiquidButton>
                             </div>
                           </div>}
                     </div>
@@ -10800,10 +10842,10 @@ function OverviewWidgets(props) {
           );
         })}
         {!atMax && props.onAdd && (
-          <button onClick={function() { setAdding(true); }}
-            style={{ width: "100%", marginTop: list.length ? 0 : 0, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "18px 0", borderRadius: 16, background: "none", border: "1.5px dashed " + T.orange + "88", color: T.orange, fontSize: 14, fontWeight: 700 }}>
+          <LiquidButton variant="neutral" size="lg" full onClick={function() { setAdding(true); }}
+            style={{ marginTop: list.length ? 0 : 0 }}>
             <SVGIcon id="plus" size={18} color={T.orange} />Add a widget
-          </button>
+          </LiquidButton>
         )}
       </div>
       {adding && (
@@ -10916,8 +10958,8 @@ function AddWidgetOverlay(props) {
                       <div style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>{s.title}</div>
                       <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 1 }}>{s.reason}</div>
                     </div>
-                    <button onClick={function() { finishAdd(s); }}
-                      style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "8px 14px", borderRadius: 10, background: s.color || T.orange, color: "#fff", flexShrink: 0 }}>{"Add"}</button>
+                    <LiquidButton variant="primary" size="sm" color={s.color || T.orange} onClick={function() { finishAdd(s); }}
+                      style={{ flexShrink: 0 }}>{"Add"}</LiquidButton>
                   </div>
                 );
               })}
@@ -10946,10 +10988,10 @@ function AddWidgetOverlay(props) {
             <input value={prompt} onChange={function(e) { setPrompt(e.target.value); }} placeholder={"e.g. a ring for my rent budget"} disabled={aiLoading}
               onKeyDown={function(e) { if (e.key === "Enter") askRichard(); }}
               style={{ flex: 1, background: T.card, border: "1px solid " + T.sep, borderRadius: 12, padding: "11px 13px", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box" }} />
-            <button onClick={askRichard} disabled={!prompt.trim() || aiLoading}
-              style={{ border: "none", cursor: prompt.trim() && !aiLoading ? "pointer" : "default", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "0 18px", borderRadius: 12, background: prompt.trim() && !aiLoading ? T.btn : T.fill3, color: prompt.trim() && !aiLoading ? "#fff" : T.ink3, flexShrink: 0 }}>
-              {aiLoading ? <ThinkingDots size={3.5} color="#fff" /> : "Build"}
-            </button>
+            <LiquidButton variant="primary" onClick={askRichard} disabled={!prompt.trim() || aiLoading} busy={aiLoading} busyLabel="Build"
+              style={{ flexShrink: 0 }}>
+              {"Build"}
+            </LiquidButton>
           </div>
           {aiErr && <div style={{ fontSize: 12, color: T.red, marginTop: 8 }}>{aiErr}</div>}
         </div>
@@ -11802,11 +11844,11 @@ function Overview(props) {
                     move"), which rendered the SAME sentence as the line above -
                     heroMove is heroTopRisk, and heroTopRisk is what the month
                     status already reports. One verdict, one way in. */}
-                <button onPointerDown={stopDrag} onClick={function() { nav("watchBrief"); }}
+                <LiquidButton variant="neutral" size="sm" ink={T.heroText} onPointerDown={stopDrag} onClick={function() { nav("watchBrief"); }}
                   aria-label={heroMove ? "See Richard's plan" : "Open daily brief"}
-                  style={{ flexShrink: 0, height: 32, padding: "0 12px", borderRadius: 10, border: "none", background: T.heroPillBg, color: T.heroPillText, fontFamily: UI, fontSize: 12, fontWeight: 750, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
-                  {heroMove ? "Plan" : "Brief"}<SVGIcon id="chevron" size={12} color={T.heroPillText} />
-                </button>
+                  style={{ flexShrink: 0 }}>
+                  {heroMove ? "Plan" : "Brief"}<SVGIcon id="chevron" size={12} color={T.heroText} />
+                </LiquidButton>
               </div>
             </div>
 
@@ -11832,10 +11874,9 @@ function Overview(props) {
                   </div>
                 </div>
               </div>
-              <button onPointerDown={stopDrag} onClick={function() { nav("watchBrief"); }}
-                style={{ width: "100%", height: 36, borderRadius: 11, border: "1px solid " + HSEP, background: "transparent", color: HINK, fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+              <LiquidButton variant="neutral" size="sm" full ink={HINK} onPointerDown={stopDrag} onClick={function() { nav("watchBrief"); }}>
                 {"Review " + heroWatch.leaks.length + " finding" + (heroWatch.leaks.length === 1 ? "" : "s")}<SVGIcon id="chevron" size={13} color={HINK} />
-              </button>
+              </LiquidButton>
             </div>
             )}
 
@@ -13846,9 +13887,9 @@ function PaceCard(props) {
         </div>
       )}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 16 }}>
-        <button onClick={props.onRaiseCap} style={rwPillButtonStyle("accent-ghost")}>{tr("rwRaiseCap")}</button>
-        <button onClick={props.onSeeWhatsInIt} style={rwPillButtonStyle()}>{tr("rwSeeWhatsInIt")}</button>
-        {props.onDismiss && <button onClick={props.onDismiss} style={rwPillButtonStyle()}>{tr("dismiss")}</button>}
+        <LiquidButton variant="primary" soft onClick={props.onRaiseCap}>{tr("rwRaiseCap")}</LiquidButton>
+        <LiquidButton variant="neutral" onClick={props.onSeeWhatsInIt}>{tr("rwSeeWhatsInIt")}</LiquidButton>
+        {props.onDismiss && <LiquidButton variant="neutral" onClick={props.onDismiss}>{tr("dismiss")}</LiquidButton>}
       </div>
     </div>
   );
@@ -13975,7 +14016,7 @@ function DailyBrief(props) {
           </div>
         </div>
 
-        <button onClick={function() { props.onNavigate("watchForecast"); }} style={Object.assign({}, rwPillButtonStyle(), { width: "100%", marginTop: 16 })}>{tr("rwSeeEverything")}</button>
+        <LiquidButton variant="neutral" full onClick={function() { props.onNavigate("watchForecast"); }} style={{ marginTop: 16 }}>{tr("rwSeeEverything")}</LiquidButton>
       </div>
     );
   }
@@ -14095,14 +14136,12 @@ function GoalAtRiskDetail(props) {
           {goalActionUndo.action === "month" ? tr("rwDeadlinePushedTo").replace("{date}", goal.deadline) : tr("rwTargetChangedTo").replace("{amt}", dollars(goal.target))}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={undoGoalAction}
-            style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 10, background: T.red, color: "#fff" }}>
+          <LiquidButton variant="red" flex={1} onClick={undoGoalAction}>
             {tr("rwUndo")}
-          </button>
-          <button onClick={function() { setGoalActionUndo(null); props.onNavigate("goals"); }}
-            style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "10px 0", borderRadius: 10, background: T.fill2, color: T.ink2 }}>
+          </LiquidButton>
+          <LiquidButton variant="neutral" flex={1} onClick={function() { setGoalActionUndo(null); props.onNavigate("goals"); }}>
             {tr("rwDone")}
-          </button>
+          </LiquidButton>
         </div>
       </div>
     );
@@ -14214,14 +14253,12 @@ function GoalAtRiskDetail(props) {
                 : tr("rwChangeTargetConfirm").replace("{old}", dollars(goal.target)).replace("{new}", dollars(aimTargetValue())).replace("{date}", goal.deadline)}
             </div>
             <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={goalActionConfirm === "month" ? applyGiveOneMoreMonth : applyAimForReal}
-                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 10, background: T.red, color: "#fff" }}>
+              <LiquidButton variant="red" flex={1} onClick={goalActionConfirm === "month" ? applyGiveOneMoreMonth : applyAimForReal}>
                 {tr("yesDo")}
-              </button>
-              <button onClick={function() { setGoalActionConfirm(null); }}
-                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "10px 0", borderRadius: 10, background: T.fill2, color: T.ink2 }}>
+              </LiquidButton>
+              <LiquidButton variant="neutral" flex={1} onClick={function() { setGoalActionConfirm(null); }}>
                 {tr("notNow")}
-              </button>
+              </LiquidButton>
             </div>
           </div>
         </div>
@@ -14966,19 +15003,18 @@ function Activity(props) {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "flex-start", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-        <button onClick={function() { setImportOpen(true); }} title={tr("importCsv")}
-          aria-label={tr("importCsv")} style={{ flexShrink: 0, height: 42, padding: "0 15px", borderRadius: 21, background: importPrimary ? T.btn : T.card, border: importPrimary ? "none" : "1.5px solid " + T.orangeDim, cursor: "pointer", display: "flex", alignItems: "center", gap: 7, fontFamily: UI, fontSize: 13, fontWeight: 700, color: importPrimary ? "#fff" : T.orange, boxShadow: importPrimary ? "0 4px 14px rgba(137,112,198,0.32)" : "0 2px 10px rgba(0,0,0,0.05)" }}>
+        <LiquidButton variant={importPrimary ? "primary" : "neutral"} onClick={function() { setImportOpen(true); }} title={tr("importCsv")}
+          aria-label={tr("importCsv")} style={{ flexShrink: 0 }}>
           <SVGIcon id="down" size={18} color={importPrimary ? "#fff" : T.orange} />{tr("importCsv")}
-        </button>
-        <button onClick={props.onOpenNotes} title={tr("notes")}
-          aria-label={tr("notes")} style={{ flexShrink: 0, height: 42, padding: "0 15px", borderRadius: 21, background: T.btn, border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, fontFamily: UI, fontSize: 13, fontWeight: 700, color: "#fff", boxShadow: "0 4px 14px rgba(137,112,198,0.32)" }}>
+        </LiquidButton>
+        <LiquidButton variant="primary" onClick={props.onOpenNotes} title={tr("notes")}
+          aria-label={tr("notes")} style={{ flexShrink: 0 }}>
           <SVGIcon id="note" size={18} color="#fff" />{tr("notes")}
-        </button>
+        </LiquidButton>
         {props.tx.length > 0 && filterOpts.length > 0 && (
-          <button type="button" onClick={function() { setFilterOpen(true); }} aria-label={filterCopy.title} title={filterCopy.title}
-            style={{ width: 42, height: 42, borderRadius: "50%", border: "1px solid " + (filterCat ? T.orange : T.sep), background: filterCat ? T.orangeDim : T.card, color: filterCat ? T.orange : T.ink2, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 9px rgba(0,0,0,0.05)" }}>
+          <LiquidButton type="button" variant={filterCat ? "primary" : "neutral"} soft size="icon" iconSize={42} onClick={function() { setFilterOpen(true); }} aria-label={filterCopy.title} title={filterCopy.title}>
             <SVGIcon id="filter" size={18} color={filterCat ? T.orange : T.ink2} />
-          </button>
+          </LiquidButton>
         )}
       </div>
       <ImportSheet open={importOpen} onClose={function() { setImportOpen(false); }} categories={cats} tx={props.tx}
@@ -15216,10 +15252,9 @@ function Activity(props) {
           </div>
           <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 4 }}>{tr("noTransactions")}</div>
           <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 18 }}>{importPrimary ? "Import a CSV statement to fill in your transactions, or add them by hand." : tr("noTransactionsSub")}</div>
-          <button onClick={function() { if (importPrimary) setImportOpen(true); else props.setSheetOpen(true); }}
-            style={{ background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 13, padding: "12px 22px", fontSize: 14, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px " + T.orangeGlow }}>
+          <LiquidButton variant="primary" size="lg" onClick={function() { if (importPrimary) setImportOpen(true); else props.setSheetOpen(true); }}>
             {importPrimary ? "Import from CSV" : "Add your first transaction"}
-          </button>
+          </LiquidButton>
           <button onClick={function() { if (importPrimary) props.setSheetOpen(true); else setImportOpen(true); }}
             style={{ display: "block", margin: "12px auto 0", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
             {importPrimary ? "or add one manually" : "or import from a CSV file"}
@@ -16063,10 +16098,9 @@ function FolderRolesCard(props) {
           })}
         </div>
 
-        <button onClick={function() { setPlanEdit(true); }}
-          style={{ width: "100%", background: "none", border: "1px dashed rgba(255,255,255,0.28)", borderRadius: 12, padding: "10px 0", cursor: "pointer", color: T.heroInk, fontSize: 13, fontWeight: 600, fontFamily: UI }}>
+        <LiquidButton onClick={function() { setPlanEdit(true); }} variant="neutral" ink={T.heroInk} full>
           Set my own numbers
-        </button>
+        </LiquidButton>
       </div>
     );
   }
@@ -16615,10 +16649,9 @@ function Budgets(props) {
 
       {props.budgets.length > 0 && (
         <div style={{ display: "flex", gap: 8, padding: "0 2px 14px" }}>
-          <button onClick={function() { props.setSheetOpen(true); }}
-            style={{ display: "flex", alignItems: "center", gap: 5, background: T.orangeDim, border: "none", borderRadius: 20, padding: "8px 14px", cursor: "pointer", color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI }}>
+          <LiquidButton onClick={function() { props.setSheetOpen(true); }} variant="primary" soft>
             <SVGIcon id="plus" size={13} color={T.orange} /> {tr("newBudget")}
-          </button>
+          </LiquidButton>
         </div>
       )}
 
@@ -16985,15 +17018,13 @@ function Goals(props) {
           it by name. */}
       {props.goals.length > 0 && (
         <div style={{ display: "flex", gap: 8, padding: "0 2px 14px" }}>
-          <button onClick={function() { props.setSheetOpen(true); }}
-            style={{ display: "flex", alignItems: "center", gap: 5, background: T.orangeDim, border: "none", borderRadius: 20, padding: "8px 14px", cursor: "pointer", color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI }}>
+          <LiquidButton onClick={function() { props.setSheetOpen(true); }} variant="primary" soft>
             <SVGIcon id="plus" size={13} color={T.orange} /> {tr("newGoal")}
-          </button>
+          </LiquidButton>
           {props.onPlanTrip && (
-            <button onClick={props.onPlanTrip}
-              style={{ display: "flex", alignItems: "center", gap: 5, background: "transparent", border: "0.5px solid " + T.sep, borderRadius: 20, padding: "8px 14px", cursor: "pointer", color: T.ink2, fontSize: 13, fontWeight: 700, fontFamily: UI }}>
+            <LiquidButton onClick={props.onPlanTrip} variant="neutral">
               <SVGIcon id="plane" size={13} color={T.ink2} /> {tr("planATrip")}
-            </button>
+            </LiquidButton>
           )}
         </div>
       )}
@@ -17679,10 +17710,9 @@ function Trips(props) {
     return (
       <div>
         {backRow(tr("goals"), props.onBack)}
-        <button onClick={startWizard}
-          style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 16, padding: "15px 0", marginBottom: 18, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", fontSize: 16, fontWeight: 700, fontFamily: UI, boxShadow: "0 6px 18px " + T.orangeGlow }}>
+        <LiquidButton onClick={startWizard} variant="primary" size="xl" full style={{ marginBottom: 18 }}>
           {"+ " + tr("planNewTrip")}
-        </button>
+        </LiquidButton>
         {activeTrips.length === 0 ? (
           <Card style={{ padding: "46px 24px", textAlign: "center" }}>
             <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
@@ -17976,7 +18006,7 @@ function Trips(props) {
                     <input type="number" value={form.total} onChange={function(e) { setField("total", e.target.value); }}
                       style={{ width: 72, border: "none", background: "none", outline: "none", fontSize: 14, fontWeight: 600, color: T.ink, fontFamily: UI, textAlign: "right", padding: 0 }} />
                   </div>
-                  <button onClick={resplitWithRichard} title="Re-split with Richard, using your conversation below" style={{ background: T.orangeDim, border: "none", borderRadius: 10, padding: "6px 12px", fontSize: 12, fontWeight: 700, color: T.orange, cursor: "pointer", fontFamily: UI, whiteSpace: "nowrap" }}>Resplit</button>
+                  <LiquidButton onClick={resplitWithRichard} title="Re-split with Richard, using your conversation below" variant="primary" soft size="sm" style={{ flexShrink: 0 }}>Resplit</LiquidButton>
                 </div>
                 {alloc.map(function(a, idx) {
                   return (
@@ -17996,10 +18026,9 @@ function Trips(props) {
                     </div>
                   );
                 })}
-                <button onClick={function() { setAddCatFor("wizard"); setAddCatForm({ label: "", icon: "box" }); }}
-                  style={{ width: "100%", marginTop: 10, background: "none", border: "1px dashed " + T.sep, borderRadius: 12, padding: "10px 0", color: T.orange, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
+                <LiquidButton onClick={function() { setAddCatFor("wizard"); setAddCatForm({ label: "", icon: "box" }); }} variant="neutral" full style={{ marginTop: 10 }}>
                   {"+ " + tr("addCategory")}
-                </button>
+                </LiquidButton>
                 {tips.length > 0 && (
                   <div style={{ marginTop: 16, background: T.orangeDim, borderRadius: 14, padding: "14px 16px" }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8, fontFamily: UI }}>{tr("tripTips")}</div>
@@ -18047,10 +18076,9 @@ function Trips(props) {
                       placeholder="e.g., Can we spend more on food?"
                       style={{ flex: 1, border: "none", background: T.fill1, borderRadius: 10, padding: "9px 12px", fontSize: 13.5, fontFamily: UI, outline: "none", color: T.ink }}
                     />
-                    <button onClick={sendWizardNote} disabled={!wizardNoteInput.trim() || wizardNoteLoading}
-                      style={{ background: wizardNoteInput.trim() && !wizardNoteLoading ? T.btn : T.fill3, border: "none", borderRadius: 10, width: 38, height: 38, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 17 }}>
+                    <LiquidButton onClick={sendWizardNote} disabled={!wizardNoteInput.trim() || wizardNoteLoading} variant="primary" size="icon" iconSize={38} style={{ flexShrink: 0 }}>
                       ^
-                    </button>
+                    </LiquidButton>
                   </div>
                 </div>
                 <JrBtn label={tr("saveTrip")} disabled={total <= 0} onPress={saveTrip} style={{ marginTop: 18 }} />
@@ -18205,10 +18233,9 @@ function Trips(props) {
               placeholder="e.g., Can we cut the hotel budget?"
               style={{ flex: 1, border: "none", background: T.fill1, borderRadius: 10, padding: "9px 12px", fontSize: 13.5, fontFamily: UI, outline: "none", color: T.ink }}
             />
-            <button onClick={function() { sendTripNote(trip); }} disabled={!tripNoteInput.trim() || tripNoteLoading}
-              style={{ background: tripNoteInput.trim() && !tripNoteLoading ? T.btn : T.fill3, border: "none", borderRadius: 10, width: 38, height: 38, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 17 }}>
+            <LiquidButton onClick={function() { sendTripNote(trip); }} disabled={!tripNoteInput.trim() || tripNoteLoading} variant="primary" size="icon" iconSize={38} style={{ flexShrink: 0 }}>
               ^
-            </button>
+            </LiquidButton>
           </div>
         </Card>
 
@@ -18254,14 +18281,12 @@ function Trips(props) {
                           {confirming && (
                             <div style={{ marginTop: 6, background: "rgba(220,50,50,0.07)", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 8 }}>
                               <span style={{ flex: 1, fontSize: 12, color: T.ink2 }}>{"Delete this expense?"}</span>
-                              <button onClick={function() { deleteEntry(trip.id, a.key, e.id); setDelEntryConfirm(null); }}
-                                style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "6px 12px", borderRadius: 8, background: T.red, color: "#fff" }}>
+                              <LiquidButton onClick={function() { deleteEntry(trip.id, a.key, e.id); setDelEntryConfirm(null); }} variant="red" size="sm">
                                 Delete
-                              </button>
-                              <button onClick={function() { setDelEntryConfirm(null); }}
-                                style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, padding: "6px 12px", borderRadius: 8, background: T.fill2, color: T.ink2 }}>
+                              </LiquidButton>
+                              <LiquidButton onClick={function() { setDelEntryConfirm(null); }} variant="neutral" size="sm">
                                 Cancel
-                              </button>
+                              </LiquidButton>
                             </div>
                           )}
                         </div>
@@ -18269,19 +18294,17 @@ function Trips(props) {
                     })}
                   </div>
                 )}
-                <button onClick={function() { setLogFor({ tripId: trip.id, key: a.key, label: a.label }); setLogForm({ label: "", amount: "" }); }}
-                  style={{ width: "100%", marginTop: 10, background: T.orangeDim, border: "none", borderRadius: 10, padding: "9px 0", color: T.orange, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
+                <LiquidButton onClick={function() { setLogFor({ tripId: trip.id, key: a.key, label: a.label }); setLogForm({ label: "", amount: "" }); }} variant="primary" soft full style={{ marginTop: 10 }}>
                   {"+ " + tr("logExpense")}
-                </button>
+                </LiquidButton>
               </div>
             </Card>
           );
         })}
 
-        <button onClick={function() { setAddCatFor(trip.id); setAddCatForm({ label: "", icon: "box" }); }}
-          style={{ width: "100%", marginBottom: 16, background: "none", border: "1px dashed " + T.sep, borderRadius: 14, padding: "12px 0", color: T.orange, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>
+        <LiquidButton onClick={function() { setAddCatFor(trip.id); setAddCatForm({ label: "", icon: "box" }); }} variant="neutral" full style={{ marginBottom: 16 }}>
           {"+ " + tr("addCategory")}
-        </button>
+        </LiquidButton>
 
         <div style={{ position: "relative", overflow: "hidden", borderRadius: 22, padding: "20px 22px", background: T.heroBg, boxShadow: T.heroShadow, marginBottom: 16 }}>
           <div style={{ position: "absolute", bottom: -70, left: -50, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle," + T.heroGlow1 + ",transparent 65%)", pointerEvents: "none" }} />
@@ -18306,29 +18329,25 @@ function Trips(props) {
         )}
 
         {trip.ended ? (
-          <button onClick={function() { reopenTrip(trip); }}
-            style={{ width: "100%", background: "none", border: "1px solid " + T.sep, color: T.ink2, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", borderRadius: 14, padding: "12px 0", marginBottom: 10 }}>
+          <LiquidButton onClick={function() { reopenTrip(trip); }} variant="neutral" full style={{ marginBottom: 10 }}>
             {"Reopen trip"}
-          </button>
+          </LiquidButton>
         ) : (
-          <button onClick={function() { endTrip(trip); }}
-            style={{ width: "100%", background: "none", border: "1px solid " + T.sep, color: T.ink2, fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: "pointer", borderRadius: 14, padding: "12px 0", marginBottom: 10 }}>
+          <LiquidButton onClick={function() { endTrip(trip); }} variant="neutral" full style={{ marginBottom: 10 }}>
             {"End trip"}
-          </button>
+          </LiquidButton>
         )}
 
         {delTripConfirm === trip.id ? (
           <div style={{ background: "rgba(220,50,50,0.07)", borderRadius: 12, padding: "12px 14px", marginTop: 6 }}>
             <div style={{ fontSize: 13, color: T.ink2, marginBottom: 10, lineHeight: 1.45 }}>{tr("deleteTripConfirm")}</div>
             <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={function() { removeTrip(trip); }}
-                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 10, background: T.red, color: "#fff" }}>
+              <LiquidButton onClick={function() { removeTrip(trip); }} variant="red" flex={1}>
                 {tr("delete")}
-              </button>
-              <button onClick={function() { setDelTripConfirm(null); }}
-                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "10px 0", borderRadius: 10, background: T.fill2, color: T.ink2 }}>
+              </LiquidButton>
+              <LiquidButton onClick={function() { setDelTripConfirm(null); }} variant="neutral" flex={1}>
                 {tr("notNow")}
-              </button>
+              </LiquidButton>
             </div>
           </div>
         ) : (
@@ -18400,14 +18419,12 @@ function Trips(props) {
                 {"Are you sure you want to delete " + (delCat ? delCat.label : "this budget") + "? This cannot be undone."}
               </div>
               <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={function() { setDelCat(null); }}
-                  style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 14, fontWeight: 600, padding: "11px 0", borderRadius: 12, background: T.fill2, color: T.ink2 }}>
+                <LiquidButton onClick={function() { setDelCat(null); }} variant="neutral" flex={1}>
                   Cancel
-                </button>
-                <button onClick={function() { if (delCat) deleteCategoryOutright(delCat.tripId, delCat.key); }}
-                  style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 14, fontWeight: 700, padding: "11px 0", borderRadius: 12, background: T.red, color: "#fff" }}>
+                </LiquidButton>
+                <LiquidButton onClick={function() { if (delCat) deleteCategoryOutright(delCat.tripId, delCat.key); }} variant="red" flex={1}>
                   Delete
-                </button>
+                </LiquidButton>
               </div>
             </div>
           )}
@@ -18840,11 +18857,9 @@ function BigDecisions(props) {
           })}
         </div>
 
-        <button onClick={function() { ask(); }} disabled={loading || !q.trim()} style={{ width: "100%", marginTop: 12, background: (loading || !q.trim()) ? T.fill3 : T.btn, color: (loading || !q.trim()) ? T.ink3 : "#fff", border: "none", borderRadius: 14, padding: "14px 0", fontSize: 15.5, fontFamily: UI, fontWeight: 700, cursor: (loading || !q.trim()) ? "default" : "pointer", boxShadow: (loading || !q.trim()) ? "none" : "0 6px 20px " + T.orangeGlow }}>
-          {loading
-            ? <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>Richard is weighing it<ThinkingDots size={4} color={T.ink3} /></span>
-            : "Get Richard's verdict"}
-        </button>
+        <LiquidButton variant="primary" size="lg" full onClick={function() { ask(); }} disabled={loading || !q.trim()} busy={loading} busyLabel="Richard is weighing it" style={{ marginTop: 12 }}>
+          Get Richard's verdict
+        </LiquidButton>
 
         {loading && (
           <AIWorking compact style={{ marginTop: 12 }} expectedMs={7000}
@@ -18857,10 +18872,10 @@ function BigDecisions(props) {
 
         {verdict && !loading && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 14 }}>
-            {!isTracked && <button onClick={track} style={primaryBtn}>Track this decision</button>}
-            {isTracked && active && active.status !== "resolved" && <button onClick={function() { setStatus(active, "resolved"); }} style={primaryBtn}>Mark resolved</button>}
-            {isTracked && active && active.status === "resolved" && <button onClick={function() { setStatus(active, "open"); }} style={ghostBtn}>Reopen</button>}
-            {isTracked && active && <button onClick={function() { untrack(active); }} style={ghostBtn}>Remove</button>}
+            {!isTracked && <LiquidButton variant="primary" size="sm" onClick={track}>Track this decision</LiquidButton>}
+            {isTracked && active && active.status !== "resolved" && <LiquidButton variant="primary" size="sm" onClick={function() { setStatus(active, "resolved"); }}>Mark resolved</LiquidButton>}
+            {isTracked && active && active.status === "resolved" && <LiquidButton variant="neutral" size="sm" onClick={function() { setStatus(active, "open"); }}>Reopen</LiquidButton>}
+            {isTracked && active && <LiquidButton variant="neutral" size="sm" onClick={function() { untrack(active); }}>Remove</LiquidButton>}
           </div>
         )}
 
@@ -19188,10 +19203,9 @@ function RichardVoiceSheet(props) {
                 <div style={{ display: "flex", gap: 8 }}>
                   <input value={draft} onChange={onDraft} onKeyDown={function(e) { if (e.key === "Enter") { e.preventDefault(); addTrait(); } }} placeholder="Ends every answer with one next step" aria-label="New trait" disabled={checking}
                     style={{ flex: 1, minWidth: 0, boxSizing: "border-box", border: "1.5px solid " + (shown ? (shown.ok ? T.green : T.red) : T.sep), outline: "none", background: T.fill0, borderRadius: 13, padding: "12px 14px", fontSize: 15, color: T.ink, fontFamily: UI, transition: "border-color 0.3s", opacity: checking ? 0.7 : 1 }} />
-                  <button type="button" onClick={addTrait} disabled={!canAdd}
-                    style={{ border: "none", cursor: canAdd ? "pointer" : "default", borderRadius: 13, padding: "0 16px", fontSize: 14, fontWeight: 700, fontFamily: UI, color: canAdd ? "#fff" : T.ink3, background: canAdd ? T.btn : T.fill1, boxShadow: canAdd ? "0 4px 14px " + T.orangeGlow : "none", transition: "all 0.3s" }}>
-                    {checking ? <ThinkingDots size={4} color={T.ink3} /> : "Add"}
-                  </button>
+                  <LiquidButton variant="primary" type="button" onClick={addTrait} disabled={!canAdd} busy={checking} busyLabel="Add">
+                    Add
+                  </LiquidButton>
                 </div>
                 {checking && (
                   <div aria-live="polite" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, fontSize: 13, color: T.ink3, fontFamily: UI, fontWeight: 600 }}>
@@ -19275,10 +19289,9 @@ function RichardVoiceSheet(props) {
         </div>
 
         <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "14px 18px calc(22px + env(safe-area-inset-bottom, 0px))", background: "linear-gradient(180deg," + jrRgba(T.bg, 0) + " 0%," + jrRgba(T.bg, 0.94) + " 32%)" }}>
-          <button type="button" onClick={apply}
-            style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 14, padding: "15px 0", fontSize: 16, fontWeight: 700, fontFamily: UI, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", background: T.btn, boxShadow: "0 6px 18px " + T.orangeGlow }}>
+          <LiquidButton variant="primary" size="xl" full type="button" onClick={apply}>
             {unchanged ? "Keep " + appliedName : "Use " + selName}
-          </button>
+          </LiquidButton>
         </div>
       </div>
     </div>
@@ -19321,10 +19334,8 @@ function RichardVoiceIntro(props) {
           <div style={{ position: "relative", fontSize: 15, lineHeight: 1.55, color: "#EDE8E2", fontFamily: UI }}>Pick one of three built-in voices, tune it, or write your own - every trait is checked against Richy's rules before Richard takes it on.</div>
           <div style={{ position: "relative", fontSize: 12.5, lineHeight: 1.5, color: "#B8AA9A", marginTop: 10, fontFamily: UI }}>Why: Richard's limits on investment advice live with Richy, not in a text box - so what he says stays within the law wherever you are.</div>
           <div style={{ position: "relative", display: "flex", gap: 10, marginTop: 18 }}>
-            <button type="button" onClick={props.onMeet}
-              style={{ flex: 1, border: "none", cursor: "pointer", borderRadius: 14, padding: "14px 0", fontSize: 16, fontWeight: 700, fontFamily: UI, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", background: T.btn, boxShadow: "0 4px 14px " + T.orangeGlow + ", inset 0 1px 0 rgba(255,255,255,0.35)" }}>Meet the voices</button>
-            <button type="button" onClick={props.onLater}
-              style={{ border: "none", cursor: "pointer", borderRadius: 14, padding: "14px 18px", fontSize: 15, fontWeight: 700, fontFamily: UI, color: "#EDE8E2", background: "rgba(255,255,255,0.10)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.18)" }}>Later</button>
+            <LiquidButton variant="primary" size="lg" flex={1} type="button" onClick={props.onMeet}>Meet the voices</LiquidButton>
+            <LiquidButton variant="primary" soft color="#EDE8E2" ink="#EDE8E2" dark size="lg" type="button" onClick={props.onLater}>Later</LiquidButton>
           </div>
         </div>
       </div>
@@ -20992,10 +21003,9 @@ function Advisor(props) {
         </div>
       </div>
       {advice && !advice.error && !loading && (
-        <button onClick={function() { setAdvice(null); getAdvice(); }}
-          style={{ width: 40, height: 40, border: "none", borderRadius: 13, background: stale ? T.orangeDim : T.fill1, boxShadow: stale ? "0 0 0 3px " + T.orangeGlow : "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, transition: "background 0.3s ease, box-shadow 0.3s ease" }}>
+        <LiquidButton variant={stale ? "primary" : "neutral"} soft={stale} size="icon" iconSize={40} onClick={function() { setAdvice(null); getAdvice(); }} style={{ flexShrink: 0 }}>
           <SVGIcon id="refresh" size={18} color={stale ? T.orange : T.ink2} />
-        </button>
+        </LiquidButton>
       )}
     </div>
   );
@@ -21602,10 +21612,9 @@ function Advisor(props) {
         <Card style={{ padding: "24px", textAlign: "center", marginBottom: 16 }}>
           <div style={{ fontSize: 14, color: T.red, marginBottom: 6 }}>{tr("analysisFailed")}</div>
           {errMsg && <div style={{ fontSize: 12, color: T.ink3, marginBottom: 14, background: T.fill1, borderRadius: 8, padding: "8px 12px", textAlign: "start" }}>{errMsg}</div>}
-          <button onClick={function() { setAdvice(null); setErrMsg(""); if (props.onSaveAnalysis) props.onSaveAnalysis(null); }}
-            style={{ background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 12, padding: "12px 24px", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
+          <LiquidButton variant="primary" size="lg" onClick={function() { setAdvice(null); setErrMsg(""); if (props.onSaveAnalysis) props.onSaveAnalysis(null); }}>
             {tr("tryAgain")}
-          </button>
+          </LiquidButton>
         </Card>
       )}
 
@@ -21687,18 +21696,16 @@ function Advisor(props) {
                 {chat.length === 0 && (
                   <div data-richard-empty="" style={{ flex: 1, minHeight: 300, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "24px 4px" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 8, marginBottom: 38 }}>
-                      <button onClick={toggleFocusMode} aria-pressed={focusMode}
-                        style={{ display: "flex", alignItems: "center", gap: 6, border: focusMode ? "none" : "0.5px solid " + T.sep, background: focusMode ? T.btn : T.card, color: focusMode ? "#fff" : T.ink2, fontSize: 12.5, fontWeight: 700, fontFamily: UI, padding: "9px 14px", borderRadius: 999, cursor: "pointer", boxShadow: focusMode ? "0 6px 18px " + T.orangeGlow : "none", transition: "background 0.45s ease, box-shadow 0.45s ease, color 0.45s ease", animation: focusTrans ? "rcFocusPulse 0.5s cubic-bezier(0.34,1.56,0.64,1) both" : "none" }}>
+                      <LiquidButton variant={focusMode ? "primary" : "neutral"} size="sm" onClick={toggleFocusMode} aria-pressed={focusMode} style={{ animation: focusTrans ? "rcFocusPulse 0.5s cubic-bezier(0.34,1.56,0.64,1) both" : "none" }}>
                         <SVGIcon id="spark" size={13} color={focusMode ? "#fff" : T.orange} />
                         {focusMode ? "Focus Mode on" : "Focus Mode"}
-                      </button>
+                      </LiquidButton>
                       {/* Richard's voice: the current one by name, tap to change. */}
-                      <button type="button" onClick={function() { setVoiceOpen(true); }} aria-haspopup="dialog" aria-label={"Richard's voice: " + richardVoiceName(props.richardVoice)} data-richard-voice-pill=""
-                        style={{ display: "flex", alignItems: "center", gap: 7, border: "0.5px solid " + T.sep, background: T.card, color: T.ink2, fontSize: 12.5, fontWeight: 700, fontFamily: UI, padding: "7px 11px 7px 8px", borderRadius: 999, cursor: "pointer" }}>
+                      <LiquidButton variant="neutral" size="sm" type="button" onClick={function() { setVoiceOpen(true); }} aria-haspopup="dialog" aria-label={"Richard's voice: " + richardVoiceName(props.richardVoice)} data-richard-voice-pill="">
                         <span style={{ width: 18, height: 18, borderRadius: "50%", background: "#151311", border: "1px solid rgba(200,152,58,0.24)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI, fontSize: 10, fontWeight: MARK_WEIGHT, color: "#C8983A", lineHeight: 1, boxSizing: "border-box" }}>R</span>
                         {richardVoiceName(props.richardVoice)}
                         <SVGIcon id="chevron" size={11} color={T.ink3} />
-                      </button>
+                      </LiquidButton>
                     </div>
                     <div style={{ width: 48, height: 48, flexShrink: 0, borderRadius: "50%", background: "#151311", border: "1px solid rgba(200,152,58,0.24)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <span style={{ fontFamily: UI, fontSize: 24, fontWeight: MARK_WEIGHT, color: "#C8983A", lineHeight: 1 }}>R</span>
@@ -21735,10 +21742,9 @@ function Advisor(props) {
                           <div dir="auto" style={{ fontSize: 11.5, fontFamily: UI, color: T.ink3, marginTop: 2, wordBreak: "break-word" }}>{m.text}</div>
                         </div>
                         {m.retry && (
-                          <button onClick={function() { setChat(function(p) { return p.filter(function(x, xi) { return xi !== i; }); }); sendChat(m.retry); }}
-                            style={{ border: "0.5px solid " + T.red, background: T.card, color: T.red, fontSize: 12.5, fontWeight: 700, fontFamily: UI, padding: "7px 13px", borderRadius: 999, cursor: "pointer", flexShrink: 0 }}>
+                          <LiquidButton variant="red" soft size="sm" onClick={function() { setChat(function(p) { return p.filter(function(x, xi) { return xi !== i; }); }); sendChat(m.retry); }} style={{ flexShrink: 0 }}>
                             {tr("retry")}
-                          </button>
+                          </LiquidButton>
                         )}
                       </div>
                     );
@@ -21841,7 +21847,7 @@ function Advisor(props) {
                 })}
               </div>
               <div style={{ display: "flex", gap: 6 }}>
-                <button onClick={function() {
+                <LiquidButton variant={hasDelete ? "red" : "primary"} flex={1} onClick={function() {
                   var summary = applyUpdates(pendingUpdates);
                   var n = pendingUpdates.length;
                   var msg;
@@ -21860,14 +21866,12 @@ function Advisor(props) {
                   }
                   setChat(function(p) { return p.concat([{ role: "assistant", text: msg }]); });
                   setPendingUpdates(null);
-                }}
-                  style={{ flex: 1, background: hasDelete ? T.red : T.btn, color: "#fff", textShadow: hasDelete ? "none" : "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 10, padding: "9px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                }}>
                   {hasDelete ? "Yes, delete" : "Apply" + (pendingUpdates.length > 1 ? " all" : "")}
-                </button>
-                <button onClick={function() { setPendingUpdates(null); }}
-                  style={{ flex: 1, background: T.fill3, color: T.ink2, border: "none", borderRadius: 10, padding: "9px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                </LiquidButton>
+                <LiquidButton variant="neutral" flex={1} onClick={function() { setPendingUpdates(null); }}>
                   Not now
-                </button>
+                </LiquidButton>
               </div>
             </div>
           );
@@ -21879,7 +21883,7 @@ function Advisor(props) {
               {tr("richySuggests")}: {pendingAction.label}
             </div>
             <div style={{ display: "flex", gap: 6 }}>
-              <button onClick={function() {
+              <LiquidButton variant="primary" flex={1} onClick={function() {
                 if (pendingAction.type === "action") {
                   if (pendingAction.fn === "apply50/30/20") {
                     var pool = (income || 3000) * 0.8;
@@ -21927,14 +21931,12 @@ function Advisor(props) {
                   }
                 }
                 setPendingAction(null);
-              }}
-                style={{ flex: 1, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 10, padding: "8px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+              }}>
                 {tr("yesDo")}
-              </button>
-              <button onClick={function() { setPendingAction(null); }}
-                style={{ flex: 1, background: T.fill3, color: T.ink2, border: "none", borderRadius: 10, padding: "8px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+              </LiquidButton>
+              <LiquidButton variant="neutral" flex={1} onClick={function() { setPendingAction(null); }}>
                 {tr("notNow")}
-              </button>
+              </LiquidButton>
             </div>
           </div>
         )}
@@ -21956,10 +21958,9 @@ function Advisor(props) {
                 open - without ever stealing flex space and leaving a gap that
                 the page behind the overlay bleeds through. */}
             {props.onBackToOverview && (
-              <button onClick={props.onBackToOverview} aria-label="Back to Overview"
-                style={{ position: "absolute", bottom: "100%", insetInlineStart: 0, marginBottom: 10, border: "none", cursor: "pointer", width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: T.card, boxShadow: T.isDark ? "0 4px 14px rgba(0,0,0,0.3)" : "0 4px 14px rgba(43,34,25,0.1)" }}>
+              <LiquidButton variant="neutral" size="icon" iconSize={36} onClick={props.onBackToOverview} aria-label="Back to Overview" style={{ position: "absolute", bottom: "100%", insetInlineStart: 0, marginBottom: 10 }}>
                 <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={T.ink2} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
-              </button>
+              </LiquidButton>
             )}
             <div style={{ background: T.card, border: "0.5px solid " + (T.isDark ? "rgba(255,255,255,0.14)" : T.hairline), borderRadius: 28, boxShadow: T.isDark ? "0 12px 34px rgba(0,0,0,0.38)" : "0 12px 34px rgba(43,34,25,0.12)", padding: "12px 12px 10px", boxSizing: "border-box" }}>
               <textarea ref={inputRef} value={input} rows={1}
@@ -21978,10 +21979,9 @@ function Advisor(props) {
                     <span style={{ display: "block", fontSize: 12.5, fontWeight: 700, fontFamily: UI, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{attachment.name}</span>
                     <span style={{ display: "block", fontSize: 10.5, fontFamily: UI, color: T.ink3, marginTop: 1 }}>{attachment.kind === "image" ? "Photo · Richard will look at it" : (attachment.clipped ? "Text file · first 12,000 characters" : "Text file · Richard will read it")}</span>
                   </span>
-                  <button type="button" onClick={function() { setAttachment(null); }} aria-label="Remove attachment"
-                    style={{ width: 26, height: 26, flexShrink: 0, border: "none", borderRadius: 8, background: T.fill2, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
+                  <LiquidButton variant="neutral" size="icon" iconSize={26} type="button" onClick={function() { setAttachment(null); }} aria-label="Remove attachment" style={{ flexShrink: 0 }}>
                     <SVGIcon id="close" size={12} color={T.ink2} />
-                  </button>
+                  </LiquidButton>
                 </div>
               )}
               {attachErr && (
@@ -21990,32 +21990,28 @@ function Advisor(props) {
               <input ref={fileInputRef} type="file" onChange={onPickFile}
                 accept="image/*,text/plain,text/csv,.csv,.txt,.md,.tsv,.json" style={{ display: "none" }} />
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
-                <button type="button" onClick={function() { setChatExpanded(true); }} aria-label={tr("askYourAdvisor")} aria-expanded={chatExpanded}
-                  style={{ width: 40, height: 40, flexShrink: 0, border: "1px solid rgba(200,152,58,0.24)", borderRadius: "50%", background: "#151311", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, boxSizing: "border-box" }}>
+                <LiquidButton variant="primary" color="#151311" size="icon" iconSize={40} type="button" onClick={function() { setChatExpanded(true); }} aria-label={tr("askYourAdvisor")} aria-expanded={chatExpanded} style={{ flexShrink: 0 }}>
                   <span style={{ fontFamily: UI, fontSize: 20, fontWeight: MARK_WEIGHT, color: "#C8983A", lineHeight: 1 }}>R</span>
-                </button>
+                </LiquidButton>
                 {/* Attach a photo or a statement file. Every button in this row
                     is 40x40 with a 17px glyph, so the row reads as one family
                     instead of four buttons at slightly different scales. */}
-                <button type="button" onClick={function() { if (fileInputRef.current) fileInputRef.current.click(); }} aria-label="Attach a photo or file" title="Attach a photo or file"
-                  style={{ width: 40, height: 40, flexShrink: 0, border: "0.5px solid " + T.sep, borderRadius: "50%", background: T.isDark ? "rgba(255,255,255,0.06)" : T.fill1, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, boxSizing: "border-box" }}>
+                <LiquidButton variant="neutral" size="icon" iconSize={40} type="button" onClick={function() { if (fileInputRef.current) fileInputRef.current.click(); }} aria-label="Attach a photo or file" title="Attach a photo or file" style={{ flexShrink: 0 }}>
                   <SVGIcon id="plus" size={17} color={T.ink2} />
-                </button>
+                </LiquidButton>
                 <div style={{ flex: 1 }} />
                 {/* Dictate instead of typing. Only rendered where the browser
                     actually supports speech recognition. */}
                 {speechOK && (
-                  <button type="button" onClick={toggleMic} aria-label={recording ? "Stop recording" : "Speak your message"} aria-pressed={recording} title={recording ? "Stop recording" : "Speak your message"}
-                    style={{ width: 40, height: 40, flexShrink: 0, border: recording ? "none" : "0.5px solid " + T.sep, borderRadius: "50%", background: recording ? T.red : (T.isDark ? "rgba(255,255,255,0.06)" : T.fill1), display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, boxSizing: "border-box", animation: recording ? "rclGlow 1.4s ease-in-out infinite" : "none", transition: "background 160ms ease" }}>
+                  <LiquidButton variant={recording ? "red" : "neutral"} size="icon" iconSize={40} type="button" onClick={toggleMic} aria-label={recording ? "Stop recording" : "Speak your message"} aria-pressed={recording} title={recording ? "Stop recording" : "Speak your message"} style={{ flexShrink: 0, animation: recording ? "rclGlow 1.4s ease-in-out infinite" : "none" }}>
                     <SVGIcon id="mic" size={17} color={recording ? "#fff" : T.ink2} />
-                  </button>
+                  </LiquidButton>
                 )}
-                <button type="button" onClick={sendChat} disabled={(!input.trim() && !attachment) || chatLoading} aria-label={tr("sendMessage")}
-                  style={{ width: 40, height: 40, flexShrink: 0, border: "none", borderRadius: "50%", background: (input.trim() || attachment) && !chatLoading ? "#151311" : (T.isDark ? "rgba(255,255,255,0.10)" : "rgba(21,19,17,0.08)"), display: "flex", alignItems: "center", justifyContent: "center", cursor: (input.trim() || attachment) && !chatLoading ? "pointer" : "default", padding: 0, boxSizing: "border-box", transition: "background 160ms ease" }}>
+                <LiquidButton variant="primary" color="#151311" size="icon" iconSize={40} type="button" onClick={sendChat} disabled={(!input.trim() && !attachment) || chatLoading} aria-label={tr("sendMessage")} style={{ flexShrink: 0 }}>
                   {chatLoading
-                    ? <ThinkingDots size={3.8} color="#fff" />
+                    ? <ThinkingDots size={3.8} color={T.ink3} />
                     : <SVGIcon id="up" size={17} color={(input.trim() || attachment) ? "#fff" : T.ink3} />}
-                </button>
+                </LiquidButton>
               </div>
             </div>
           </div>
@@ -22121,10 +22117,9 @@ function Advisor(props) {
                 which read as a different product bolted onto the side. */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 18px 12px", flexShrink: 0 }}>
               <div style={{ fontSize: 19, fontWeight: RICHARD_DISP_WEIGHT, fontFamily: RICHARD_DISP, color: T.ink, letterSpacing: "-0.01em" }}>Richard</div>
-              <button onClick={function() { setHistoryOpen(false); }} aria-label={tr("closeChat")}
-                style={{ width: 32, height: 32, border: "none", borderRadius: "50%", background: T.card, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.06)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, flexShrink: 0 }}>
+              <LiquidButton variant="neutral" size="icon" iconSize={32} onClick={function() { setHistoryOpen(false); }} aria-label={tr("closeChat")} style={{ flexShrink: 0 }}>
                 <SVGIcon id="close" size={15} color={T.ink2} />
-              </button>
+              </LiquidButton>
             </div>
             <div style={{ padding: "0 12px", flexShrink: 0 }}>
               <Card style={{ overflow: "hidden" }}>
@@ -22212,14 +22207,12 @@ function Advisor(props) {
                           </div>
                           {confirming && (
                             <div style={{ display: "flex", gap: 8, padding: "0 14px 12px" }}>
-                              <button onClick={function() { deleteArchivedChat(s.id); setDeleteChatConfirm(null); }}
-                                style={{ border: "none", borderRadius: 10, background: T.redDim, cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.red, padding: "8px 14px" }}>
+                              <LiquidButton variant="red" soft size="sm" onClick={function() { deleteArchivedChat(s.id); setDeleteChatConfirm(null); }}>
                                 Delete
-                              </button>
-                              <button onClick={function() { setDeleteChatConfirm(null); }}
-                                style={{ border: "none", borderRadius: 10, background: T.fill1, cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.ink2, padding: "8px 14px" }}>
+                              </LiquidButton>
+                              <LiquidButton variant="neutral" size="sm" onClick={function() { setDeleteChatConfirm(null); }}>
                                 Cancel
-                              </button>
+                              </LiquidButton>
                             </div>
                           )}
                         </div>
@@ -22568,10 +22561,9 @@ function Categories(props) {
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 4px 12px" }}>
         <span style={{ fontSize: 14, color: T.ink3 }}>{cats.length} categories in {folders.length} folders</span>
-        <button onClick={function() { setNewFolder(true); }}
-          style={{ display: "flex", alignItems: "center", gap: 5, background: T.orangeDim, border: "none", borderRadius: 20, padding: "7px 13px", cursor: "pointer", color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI }}>
+        <LiquidButton variant="primary" soft onClick={function() { setNewFolder(true); }}>
           <SVGIcon id="folder" size={14} color={T.orange} /> New Folder
-        </button>
+        </LiquidButton>
       </div>
 
       {groups.map(function(grp, gi) {
@@ -22815,10 +22807,10 @@ function FullAnalysisView(props) {
           onKeyDown={function(e) { if (e.key === "Enter" && !(e.nativeEvent && e.nativeEvent.isComposing)) { e.preventDefault(); sendFaChat(); } }}
           aria-label="Ask Richard about this analysis" placeholder="Ask about this analysis..." dir="auto"
           style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "10px 0", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box" }} />
-        <button onClick={function() { sendFaChat(); }} disabled={!faInput.trim() || faBusy} aria-label={tr("sendMessage")}
-          style={{ width: 40, height: 40, flexShrink: 0, border: "none", borderRadius: "50%", background: faInput.trim() && !faBusy ? T.ink : T.inputBg, display: "flex", alignItems: "center", justifyContent: "center", cursor: faInput.trim() && !faBusy ? "pointer" : "default", padding: 0, transition: "background 160ms ease" }}>
-          <SVGIcon id="up" size={17} color={faInput.trim() && !faBusy ? T.card : T.ink3} />
-        </button>
+        <LiquidButton onClick={function() { sendFaChat(); }} disabled={!faInput.trim() || faBusy} aria-label={tr("sendMessage")}
+          variant="primary" size="icon" iconSize={40} style={{ flexShrink: 0 }}>
+          <SVGIcon id="up" size={17} color={faInput.trim() && !faBusy ? "#fff" : T.ink3} />
+        </LiquidButton>
       </div>
     </div>
   );
@@ -23204,10 +23196,10 @@ function CollabView(props) {
 
           {err && <div style={{ fontSize: 13, color: T.red, fontFamily: UI, padding: "0 6px 12px" }}>{err}</div>}
 
-          <button onClick={function() { run(props.onLeave()); }} disabled={busy}
-            style={{ width: "100%", background: "rgba(255,59,48,0.08)", color: T.red, border: "none", borderRadius: 16, padding: "15px 0", fontSize: 15, fontFamily: UI, fontWeight: 700, cursor: "pointer" }}>
+          <LiquidButton onClick={function() { run(props.onLeave()); }} disabled={busy}
+            variant="red" soft size="xl" full>
             Leave household
-          </button>
+          </LiquidButton>
         </div>
       )}
     </div>
@@ -24412,8 +24404,8 @@ function DebtView(props) {
           </div>
           <div style={{ fontSize: 16, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 5 }}>{tr("dbNoDebts")}</div>
           <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 18 }}>{tr("dbNoDebtsSub")}</div>
-          <button onClick={openAdd}
-            style={{ background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 13, padding: "12px 22px", fontSize: 14, fontFamily: UI, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px " + T.orangeGlow }}>{tr("dbAddFirst")}</button>
+          <LiquidButton onClick={openAdd}
+            variant="primary" size="lg">{tr("dbAddFirst")}</LiquidButton>
         </Card>
       ) : (
         <div>
@@ -24447,26 +24439,26 @@ function DebtView(props) {
                   <div style={{ fontSize: 19, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em" }}>{dollars(parseFloat(d.balance) || 0)}</div>
                 </div>
                 <div style={{ display: "flex", gap: 8, padding: "0 16px 14px" }}>
-                  <button onClick={function() { openEdit(d); }}
-                    style={{ flex: 1, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "9px 0", borderRadius: 11, background: "none", color: T.orange }}>Edit</button>
+                  <LiquidButton onClick={function() { openEdit(d); }}
+                    variant="neutral" flex={1}>Edit</LiquidButton>
                   {delId === d.id ? (
-                    <button onClick={function() { doDelete(d.id); }}
-                      style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "9px 0", borderRadius: 11, background: T.red, color: "#fff" }}>Tap to confirm</button>
+                    <LiquidButton onClick={function() { doDelete(d.id); }}
+                      variant="red" flex={1}>Tap to confirm</LiquidButton>
                   ) : (
-                    <button onClick={function() { setDelId(d.id); }}
-                      style={{ width: 46, flexShrink: 0, border: "none", cursor: "pointer", background: T.fill1, borderRadius: 11, padding: "9px 0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <LiquidButton onClick={function() { setDelId(d.id); }}
+                      variant="neutral" size="icon" iconSize={44} style={{ flexShrink: 0 }}>
                       <SVGIcon id="trash" size={16} color={T.ink3} />
-                    </button>
+                    </LiquidButton>
                   )}
                 </div>
               </Card>
             );
           })}
 
-          <button onClick={openAdd}
-            style={{ width: "100%", border: "1.5px dashed " + T.orange, background: "none", color: T.orange, borderRadius: 13, padding: "12px 0", fontSize: 14, fontFamily: UI, fontWeight: 700, cursor: "pointer", marginBottom: 18 }}>
+          <LiquidButton onClick={openAdd}
+            variant="neutral" size="lg" full style={{ marginBottom: 18 }}>
             + Add another debt
-          </button>
+          </LiquidButton>
 
           <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em", margin: "6px 2px 10px" }}>Your payoff plan</div>
 
@@ -24984,8 +24976,8 @@ function SavingsAccountView(props) {
           <div style={{ height: 7, borderRadius: 999, background: "rgba(255,255,255,0.14)", overflow: "hidden", marginTop: 15 }}><div style={{ height: "100%", width: snap.progress + "%", minWidth: snap.balance > 0 ? 5 : 0, borderRadius: 999, background: color, transition: "width 0.6s ease" }} /></div>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 7, fontSize: 11.5, color: T.heroFaint }}><span>{dollars(snap.remaining) + " left"}</span><span>{"Goal " + dollars(snap.target)}</span></div>
           <div style={{ display: "flex", gap: 8, marginTop: 15 }}>
-            <button onClick={function() { props.onAdd(0); }} style={{ flex: 1.3, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 800, padding: "11px 0", borderRadius: 11, background: T.btn, color: "#fff", boxShadow: "0 4px 12px " + T.orangeGlow }}><span style={{ display: "inline-flex", verticalAlign: "middle", marginRight: 6 }}><SVGIcon id="plus" size={15} color="#fff" /></span>Add money</button>
-            <button onClick={props.onWithdraw} disabled={snap.balance <= 0} style={{ flex: 1, border: "1px solid rgba(255,255,255,0.24)", cursor: snap.balance > 0 ? "pointer" : "default", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "11px 0", borderRadius: 11, background: "rgba(255,255,255,0.08)", color: snap.balance > 0 ? T.heroText : T.heroFaint }}>Withdraw</button>
+            <LiquidButton onClick={function() { props.onAdd(0); }} variant="primary" flex={1.3}><span style={{ display: "inline-flex", verticalAlign: "middle", marginRight: 6 }}><SVGIcon id="plus" size={15} color="#fff" /></span>Add money</LiquidButton>
+            <LiquidButton onClick={props.onWithdraw} disabled={snap.balance <= 0} variant="neutral" ink={T.heroText} flex={1}>Withdraw</LiquidButton>
           </div>
         </Card>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
@@ -25032,7 +25024,7 @@ function SavingsAccountView(props) {
         <Card style={{ padding: "14px 16px", marginBottom: 12 }}>
           {[25, 50, 75, 100].map(function(m, i) { var hit = snap.progress >= m; var amount = snap.target * m / 100; return <div key={m} style={{ display: "flex", alignItems: "center", gap: 11, padding: "9px 0", borderBottom: i < 3 ? "1px solid " + T.sep : "none" }}><span style={{ width: 28, height: 28, borderRadius: 9, background: hit ? T.green + "1F" : T.fill1, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><SVGIcon id={hit ? "check" : "goals"} size={14} color={hit ? T.green : T.ink3} /></span><div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 650, color: hit ? T.ink : T.ink2 }}>{m + "% funded"}</div><div style={{ fontSize: 10.5, color: T.ink3, marginTop: 1 }}>{dollars(amount)}</div></div><span style={{ fontSize: 11.5, fontWeight: 700, color: hit ? T.green : T.ink3 }}>{hit ? "Reached" : dollars(Math.max(0, amount - snap.balance)) + " away"}</span></div>; })}
         </Card>
-        <button onClick={function() { setEditingPlan(true); }} style={{ width: "100%", border: "1.5px solid " + color, background: "none", color: color, borderRadius: 13, padding: "12px 0", fontFamily: UI, fontSize: 13.5, fontWeight: 750, cursor: "pointer" }}>Redo my savings questionnaire</button>
+        <LiquidButton onClick={function() { setEditingPlan(true); }} variant="neutral" size="lg" full ink={color}>Redo my savings questionnaire</LiquidButton>
         <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.5, textAlign: "center", padding: "12px 14px 0" }}>Changing the plan never changes your balance or history.</div>
       </div>}
     </div>
@@ -25266,15 +25258,15 @@ function SavingsView(props) {
               <SVGIcon id="chevron" size={16} color={T.ink3} />
             </button>
             <div style={{ display: "flex", gap: 8, padding: "0 16px 14px", alignItems: "center" }}>
-              <button onClick={function() { openAction(a.id, "add"); }}
-                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 11, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow }}>{tr("addMoney")}</button>
-              <button onClick={function() { openAction(a.id, "withdraw"); }} disabled={bal <= 0}
-                style={{ flex: 1, border: "1.5px solid " + (bal <= 0 ? T.hairline : T.orange), cursor: bal <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 11, background: "none", color: bal <= 0 ? T.ink3 : T.orange }}>{tr("withdraw")}</button>
-              <button onClick={function() { if (open) { setExpanded(null); } else { setExpanded(a.id); setRenameVal(a.name); } }}
+              <LiquidButton onClick={function() { openAction(a.id, "add"); }}
+                variant="primary" flex={1}>{tr("addMoney")}</LiquidButton>
+              <LiquidButton onClick={function() { openAction(a.id, "withdraw"); }} disabled={bal <= 0}
+                variant="neutral" flex={1}>{tr("withdraw")}</LiquidButton>
+              <LiquidButton onClick={function() { if (open) { setExpanded(null); } else { setExpanded(a.id); setRenameVal(a.name); } }}
                 aria-label={open ? "Hide account details" : "Show account details"}
-                style={{ width: 42, flexShrink: 0, border: "none", cursor: "pointer", background: T.fill1, borderRadius: 11, padding: "10px 0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                variant="neutral" size="icon" iconSize={44} style={{ flexShrink: 0 }}>
                 <div style={{ transform: open ? "rotate(90deg)" : "none", transition: "transform 0.2s", display: "flex" }}><SVGIcon id="chevron" size={16} color={T.ink2} /></div>
-              </button>
+              </LiquidButton>
             </div>
             {open && (
               <div style={{ borderTop: "0.5px solid " + T.sep, padding: "14px 16px", background: T.fill0 }}>
@@ -25305,14 +25297,14 @@ function SavingsView(props) {
                           {confirming && (
                             <div style={{ marginTop: 6, background: "rgba(220,50,50,0.07)", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 8 }}>
                               <span style={{ flex: 1, fontSize: 12, color: T.ink2 }}>{"Delete this entry?"}</span>
-                              <button onClick={function() { deleteEntry(a.id, e.id); }}
-                                style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "6px 12px", borderRadius: 8, background: T.red, color: "#fff" }}>
+                              <LiquidButton onClick={function() { deleteEntry(a.id, e.id); }}
+                                variant="red" size="sm">
                                 Delete
-                              </button>
-                              <button onClick={function() { setDelEntryConfirm(null); }}
-                                style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, padding: "6px 12px", borderRadius: 8, background: T.fill2, color: T.ink2 }}>
+                              </LiquidButton>
+                              <LiquidButton onClick={function() { setDelEntryConfirm(null); }}
+                                variant="neutral" size="sm">
                                 Cancel
-                              </button>
+                              </LiquidButton>
                             </div>
                           )}
                         </div>
@@ -25324,8 +25316,8 @@ function SavingsView(props) {
                 <div style={{ display: "flex", gap: 8, marginBottom: 4 }}>
                   <input value={renameVal} onChange={function(ev) { setRenameVal(ev.target.value); }}
                     style={{ flex: 1, background: T.card, border: "1px solid " + T.sep, borderRadius: 10, padding: "9px 12px", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box" }} />
-                  <button onClick={function() { doRename(a); }} disabled={!renameVal.trim() || renameVal.trim() === a.name}
-                    style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "0 16px", borderRadius: 10, background: (!renameVal.trim() || renameVal.trim() === a.name) ? T.fill3 : T.orange, color: (!renameVal.trim() || renameVal.trim() === a.name) ? T.ink3 : "#fff" }}>{tr("save")}</button>
+                  <LiquidButton onClick={function() { doRename(a); }} disabled={!renameVal.trim() || renameVal.trim() === a.name}
+                    variant="primary">{tr("save")}</LiquidButton>
                 </div>
                 <button onClick={function() { doClose(a); }}
                   style={{ width: "100%", background: "none", border: "none", color: T.red, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 10, padding: "6px 0", textAlign: "left" }}>
@@ -25338,10 +25330,10 @@ function SavingsView(props) {
                       Deleting this account will permanently remove it{bal > 0 ? " and the " + dollars(bal) + " inside it" : ""}. This action is irreversible.
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
-                      <button onClick={function() { doDelete(a); }}
-                        style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "10px 0", borderRadius: 9, background: T.red, color: "#fff" }}>Delete permanently</button>
-                      <button onClick={function() { setDeleteConfirm(null); }}
-                        style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "10px 0", borderRadius: 9, background: T.fill2, color: T.ink2 }}>Cancel</button>
+                      <LiquidButton onClick={function() { doDelete(a); }}
+                        variant="red" flex={1}>Delete permanently</LiquidButton>
+                      <LiquidButton onClick={function() { setDeleteConfirm(null); }}
+                        variant="neutral" flex={1}>Cancel</LiquidButton>
                     </div>
                   </div>
                 ) : (
@@ -25433,10 +25425,10 @@ function SavingsView(props) {
             style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>{tr("dismiss")}</button>
         </Card>
       ) : (
-        <button onClick={function() { if (props.onOpenBusiness) { setPicking(true); } else { setCreating(true); } }}
-          style={{ width: "100%", marginTop: 4, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "14px 0", borderRadius: 14, background: "none", border: "1.5px dashed " + T.orange + "88", color: T.orange, fontSize: 14.5, fontWeight: 700 }}>
+        <LiquidButton onClick={function() { if (props.onOpenBusiness) { setPicking(true); } else { setCreating(true); } }}
+          variant="neutral" size="lg" full style={{ marginTop: 4 }}>
           <SVGIcon id="plus" size={18} color={T.orange} />{props.onOpenBusiness ? "New account" : tr("newSavingsAccount")}
-        </button>
+        </LiquidButton>
       )}
 
       <Overlay open={picking} onClose={function() { setPicking(false); }} title="New account">
@@ -25725,9 +25717,9 @@ function InvestPlanOnboard(props) {
       <div style={{ minHeight: "100vh", background: J.bg, fontFamily: UI, overflowY: "auto", position: "relative", zIndex: 0, overflowX: "hidden" }}>
         <ScoutBeamsBg opacity={0.42} />
         <div style={{ padding: "22px 22px 44px", maxWidth: 428, margin: "0 auto", boxSizing: "border-box", position: "relative" }}>
-          <button onClick={back} style={{ width: 34, height: 34, borderRadius: 11, border: "none", background: J.fill1, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", marginBottom: 18, padding: 0 }}>
+          <LiquidButton size="icon" iconSize={34} onClick={back} style={{ display: "flex", marginBottom: 18 }}>
             <span style={{ display: "inline-flex", transform: "rotate(180deg)" }}><SVGIcon id="chevron" size={16} color={T.ink} /></span>
-          </button>
+          </LiquidButton>
           <div style={{ animation: "rclPhrase 0.5s ease both" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 6 }}>
               <RichyLogo size={26} />
@@ -26514,7 +26506,7 @@ function InvestingView(props) {
             )}
           </div>
         </button>
-        <button onClick={function() { toggleWatch(s); }} style={{ border: "none", background: T.fill1, borderRadius: 9, width: 28, height: 28, cursor: "pointer", color: T.ink3, fontSize: 15, lineHeight: 1, flexShrink: 0 }}>×</button>
+        <LiquidButton variant="neutral" size="icon" iconSize={28} onClick={function() { toggleWatch(s); }} style={{ flexShrink: 0 }}>×</LiquidButton>
       </div>
     );
   }
@@ -26561,10 +26553,9 @@ function InvestingView(props) {
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
           <CatBadge icon={acct.icon || "chart"} color={acct.color || T.green} size={34} soft={true} />
           <div style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.heroText, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{acct.name}</div>
-          <button onClick={function() { setCurMode(curMode === "app" ? "native" : "app"); }}
-            style={{ border: "1px solid " + T.heroSep, background: "transparent", color: T.heroMut, borderRadius: 999, padding: "4px 10px", fontSize: 10.5, fontWeight: 700, fontFamily: UI, cursor: "pointer", letterSpacing: "0.04em" }}>
+          <LiquidButton variant="neutral" size="sm" ink={T.heroText} onClick={function() { setCurMode(curMode === "app" ? "native" : "app"); }}>
             {curMode === "app" ? sym + " " + appCode : "NATIVE"}
-          </button>
+          </LiquidButton>
         </div>
         <div style={{ fontSize: 11, fontWeight: 700, color: T.heroMut, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Portfolio value</div>
         <div style={{ fontSize: 34, fontWeight: 800, color: T.heroText, letterSpacing: "-0.03em", lineHeight: 1 }}><CountUp value={worth} /></div>
@@ -26608,22 +26599,17 @@ function InvestingView(props) {
 
       {/* actions - the managed pair first, then the manual controls */}
       <div style={{ display: "flex", gap: 10, marginBottom: 9 }}>
-        <button onClick={openPlanBuy}
-          style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 15, fontWeight: 800, padding: "13px 0", borderRadius: 14, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 4px 14px " + T.orangeGlow }}>
+        <LiquidButton variant="primary" size="lg" flex={1} onClick={openPlanBuy}>
           <SVGIcon id="plus" size={17} color="#fff" />{plan ? "Invest" : "Build my plan"}
-        </button>
-        <button onClick={function() { setSheet("auto"); }}
-          style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 15, fontWeight: 700, padding: "13px 0", borderRadius: 14, background: T.ink, color: "#fff", boxShadow: "0 4px 14px rgba(20,18,16,0.2)" }}>
+        </LiquidButton>
+        <LiquidButton variant="primary" color={T.ink} size="lg" flex={1} onClick={function() { setSheet("auto"); }}>
           <SVGIcon id="refresh" size={16} color="#fff" />Auto-invest
-        </button>
+        </LiquidButton>
       </div>
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-        <button onClick={function() { openSheet("buy"); }}
-          style={{ flex: 1.4, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "11px 0", borderRadius: 13, background: "none", color: T.orange }}>Buy a stock</button>
-        <button onClick={function() { openSheet("deposit"); }}
-          style={{ flex: 1, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "11px 0", borderRadius: 13, background: "none", color: T.orange }}>Deposit</button>
-        <button onClick={function() { openSheet("withdraw"); }} disabled={cash <= 0}
-          style={{ flex: 1, border: "1.5px solid " + (cash <= 0 ? T.hairline : T.orange), cursor: cash <= 0 ? "default" : "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "11px 0", borderRadius: 13, background: "none", color: cash <= 0 ? T.ink3 : T.orange }}>Withdraw</button>
+        <LiquidButton variant="neutral" flex={1.4} onClick={function() { openSheet("buy"); }}>Buy a stock</LiquidButton>
+        <LiquidButton variant="neutral" flex={1} onClick={function() { openSheet("deposit"); }}>Deposit</LiquidButton>
+        <LiquidButton variant="neutral" flex={1} onClick={function() { openSheet("withdraw"); }} disabled={cash <= 0}>Withdraw</LiquidButton>
       </div>
 
       {/* auto-invest cycle due - Richard never moves money on his own, so a due
@@ -26644,10 +26630,8 @@ function InvestingView(props) {
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-            <button onClick={function() { saveAutoCfg({ lastRunAt: today }); }}
-              style={{ flex: 1, border: "1.5px solid " + T.hairline, background: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "10px 0", borderRadius: 11, color: T.ink2 }}>Skip this one</button>
-            <button onClick={!plan ? function() { if (props.onOpenPlanOnboard) props.onOpenPlanOnboard(acct.id); } : cash > 0 ? runAutoCycle : function() { openSheet("deposit"); }}
-              style={{ flex: 1.4, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 800, padding: "10px 0", borderRadius: 11, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow }}>{!plan ? "Build my plan" : cash > 0 ? "Invest " + dollars(Math.min(autoCfg.amount, cash)) : "Deposit first"}</button>
+            <LiquidButton variant="neutral" flex={1} onClick={function() { saveAutoCfg({ lastRunAt: today }); }}>Skip this one</LiquidButton>
+            <LiquidButton variant="primary" flex={1.4} onClick={!plan ? function() { if (props.onOpenPlanOnboard) props.onOpenPlanOnboard(acct.id); } : cash > 0 ? runAutoCycle : function() { openSheet("deposit"); }}>{!plan ? "Build my plan" : cash > 0 ? "Invest " + dollars(Math.min(autoCfg.amount, cash)) : "Deposit first"}</LiquidButton>
           </div>
         </Card>
       )}
@@ -26992,8 +26976,8 @@ function InvestingView(props) {
                       <div style={{ fontSize: 14.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em" }}>{x.title}</div>
                       <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginTop: 4 }}>{x.text}</div>
                       {x.cta && (
-                        <button onClick={function() { runInsight(x.action); }}
-                          style={{ marginTop: 11, background: tone.bg, color: tone.c, border: "none", borderRadius: 11, padding: "9px 15px", fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>{x.cta}</button>
+                        <LiquidButton variant={x.tone === "orange" ? "primary" : x.tone} soft onClick={function() { runInsight(x.action); }}
+                          style={{ marginTop: 11 }}>{x.cta}</LiquidButton>
                       )}
                     </div>
                   </div>
@@ -27029,17 +27013,17 @@ function InvestingView(props) {
             {coachMsgs.length === 0 && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 12 }}>
                 {["Am I taking too much risk?", "What are my fees?", "What should I do next?"].map(function(q2) {
-                  return <button key={q2} onClick={function() { sendCoach(q2); }} style={{ border: "1px solid " + T.sep, background: T.card, borderRadius: 999, padding: "7px 13px", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.ink2 }}>{q2}</button>;
+                  return <LiquidButton key={q2} variant="neutral" size="sm" onClick={function() { sendCoach(q2); }}>{q2}</LiquidButton>;
                 })}
               </div>
             )}
             <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
               <input value={coachInput} onChange={function(e) { setCoachInput(e.target.value); }} onKeyDown={function(e) { if (e.key === "Enter") sendCoach(); }}
                 placeholder="Ask Richard about your portfolio..." style={{ flex: 1, background: T.fill1, border: "none", borderRadius: 12, padding: "11px 14px", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box" }} />
-              <button onClick={function() { sendCoach(); }} disabled={!coachInput.trim() || coachBusy}
-                style={{ border: "none", cursor: coachInput.trim() && !coachBusy ? "pointer" : "default", background: coachInput.trim() && !coachBusy ? T.btn : T.fill3, borderRadius: 12, width: 42, height: 42, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <LiquidButton variant="primary" size="icon" iconSize={42} onClick={function() { sendCoach(); }} disabled={!coachInput.trim() || coachBusy}
+                style={{ flexShrink: 0 }}>
                 <SVGIcon id="up" size={17} color={coachInput.trim() && !coachBusy ? "#fff" : T.ink3} />
-              </button>
+              </LiquidButton>
             </div>
           </Card>
           <div style={{ textAlign: "center", fontSize: 11, color: T.ink3, margin: "16px 12px 4px", lineHeight: 1.5 }}>
@@ -27160,7 +27144,7 @@ function InvestingView(props) {
                   <div style={{ fontSize: 11, fontWeight: 700, color: quotes[pick.symbol].change >= 0 ? T.green : T.red }}>{(quotes[pick.symbol].change >= 0 ? "+" : "") + quotes[pick.symbol].changePct + "% today"}</div>
                 </div>
               )}
-              <button onClick={function() { setPick(null); setSearchQ(""); setSearchRes(null); }} style={{ border: "none", background: T.fill1, borderRadius: 9, padding: "6px 10px", cursor: "pointer", color: T.ink3, fontSize: 12, fontWeight: 700, fontFamily: UI, flexShrink: 0 }}>Change</button>
+              <LiquidButton variant="neutral" size="sm" onClick={function() { setPick(null); setSearchQ(""); setSearchRes(null); }} style={{ flexShrink: 0 }}>Change</LiquidButton>
             </div>
             {sheet === "sell" && (
               <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 10 }}>
@@ -27250,14 +27234,12 @@ function InvestingView(props) {
               {confirming && (
                 <div style={{ marginTop: 6, background: "rgba(220,50,50,0.07)", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ flex: 1, fontSize: 12, color: T.ink2 }}>{ev.kind === "trade" ? "Delete this trade? Your position math won't be recalculated." : "Delete this entry?"}</span>
-                  <button onClick={function() { deleteActivity(ev); }}
-                    style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "6px 12px", borderRadius: 8, background: T.red, color: "#fff" }}>
+                  <LiquidButton variant="red" size="sm" onClick={function() { deleteActivity(ev); }}>
                     Delete
-                  </button>
-                  <button onClick={function() { setDelActConfirm(null); }}
-                    style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, padding: "6px 12px", borderRadius: 8, background: T.fill2, color: T.ink2 }}>
+                  </LiquidButton>
+                  <LiquidButton variant="neutral" size="sm" onClick={function() { setDelActConfirm(null); }}>
                     Cancel
-                  </button>
+                  </LiquidButton>
                 </div>
               )}
             </div>
@@ -27411,8 +27393,8 @@ function InvestingView(props) {
           </button>
         </Card>
         {autoCfg.roundUps && roundUpPool > 0 && (
-          <button onClick={function() { setSheet("deposit"); setCashAmt(String(roundUpPool)); setCashSrc("balance"); }}
-            style={{ width: "100%", marginBottom: 14, border: "1.5px solid " + T.orange, background: "none", color: T.orange, borderRadius: 13, padding: "11px 0", fontFamily: UI, fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>{"Sweep " + dollars(roundUpPool) + " into this account"}</button>
+          <LiquidButton variant="neutral" full onClick={function() { setSheet("deposit"); setCashAmt(String(roundUpPool)); setCashSrc("balance"); }}
+            style={{ marginBottom: 14 }}>{"Sweep " + dollars(roundUpPool) + " into this account"}</LiquidButton>
         )}
         <div style={{ display: "flex", alignItems: "center", gap: 10, background: T.goldDim, borderRadius: 14, padding: "13px 15px", marginBottom: 4 }}>
           <SVGIcon id="spark" size={18} color={T.gold} />
@@ -27946,8 +27928,7 @@ function StockView(props) {
           <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center" }}>
             <input value={manualVal} onChange={function(e) { setManualVal(e.target.value); }} type="number" inputMode="decimal" placeholder={"Set price (" + cur + ")"}
               style={{ flex: 1, background: T.fill1, border: "none", borderRadius: 10, padding: "9px 12px", fontSize: 13.5, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box" }} />
-            <button onClick={saveManual} disabled={!(parseFloat(manualVal) > 0)}
-              style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "9px 14px", borderRadius: 10, background: parseFloat(manualVal) > 0 ? T.orange : T.fill3, color: parseFloat(manualVal) > 0 ? "#fff" : T.ink3 }}>Set</button>
+            <LiquidButton variant="primary" size="sm" onClick={saveManual} disabled={!(parseFloat(manualVal) > 0)}>Set</LiquidButton>
           </div>
         )}
       </div>
@@ -28073,10 +28054,9 @@ function StockView(props) {
                   </div>
                   <div style={{ fontSize: 10.5, color: T.ink3, marginTop: 8, lineHeight: 1.4 }}>{tr("dscTake")}</div>
                   {props.onOpenInvestorOnboard && !props.investorProfile && (
-                    <button onClick={props.onOpenInvestorOnboard}
-                      style={{ width: "100%", marginTop: 12, border: "1.5px dashed " + T.orange + "77", background: "none", borderRadius: 12, padding: "11px 0", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.orange }}>
+                    <LiquidButton variant="neutral" full onClick={props.onOpenInvestorOnboard} style={{ marginTop: 12 }}>
                       New to investing? Get the basics first
-                    </button>
+                    </LiquidButton>
                   )}
                 </div>
               )}
@@ -28145,11 +28125,9 @@ function StockView(props) {
               </div>
             )}
             <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-              <button onClick={function() { if (props.onTrade) props.onTrade(symbol, "buy"); }}
-                style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 800, padding: "11px 0", borderRadius: 12, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow }}>Buy more</button>
+              <LiquidButton variant="primary" flex={1} onClick={function() { if (props.onTrade) props.onTrade(symbol, "buy"); }}>Buy more</LiquidButton>
               {heldNow && (
-                <button onClick={function() { if (props.onTrade) props.onTrade(symbol, "sell"); }}
-                  style={{ flex: 1, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "11px 0", borderRadius: 12, background: "none", color: T.orange }}>Sell</button>
+                <LiquidButton variant="neutral" flex={1} onClick={function() { if (props.onTrade) props.onTrade(symbol, "sell"); }}>Sell</LiquidButton>
               )}
             </div>
             {myTrades.length > 0 && (
@@ -28178,8 +28156,7 @@ function StockView(props) {
             <div style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>Watching, not holding</div>
             <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Ready to open a position?</div>
           </div>
-          <button onClick={function() { if (props.onTrade) props.onTrade(symbol, "buy"); }}
-            style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 800, padding: "11px 18px", borderRadius: 12, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", boxShadow: "0 3px 10px " + T.orangeGlow, flexShrink: 0 }}>Buy</button>
+          <LiquidButton variant="primary" onClick={function() { if (props.onTrade) props.onTrade(symbol, "buy"); }} style={{ flexShrink: 0 }}>Buy</LiquidButton>
         </Card>
       )}
 
@@ -28216,10 +28193,8 @@ function StockView(props) {
             Deleting {symbol} will permanently remove this stock from your account, including all trades and analysis history. This action is irreversible.
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={doDeleteStock}
-              style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "11px 0", borderRadius: 10, background: T.red, color: "#fff" }}>Delete permanently</button>
-            <button onClick={function() { setDelConfirm(false); }}
-              style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "11px 0", borderRadius: 10, background: T.fill2, color: T.ink2 }}>Cancel</button>
+            <LiquidButton variant="red" flex={1} onClick={doDeleteStock}>Delete permanently</LiquidButton>
+            <LiquidButton variant="neutral" flex={1} onClick={function() { setDelConfirm(false); }}>Cancel</LiquidButton>
           </div>
         </Card>
       ) : (
@@ -28413,9 +28388,9 @@ function InvestorOnboardScreen(props) {
       <div style={{ minHeight: "100vh", background: J.bg, fontFamily: UI, overflowY: "auto", position: "relative", zIndex: 0, overflowX: "hidden" }}>
         <ScoutBeamsBg opacity={0.42} />
         <div style={{ position: "absolute", top: -70, right: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(137,112,198,0.14) 0%,transparent 70%)", pointerEvents: "none", animation: "rcjDrift 9s ease-in-out infinite" }} />
-        <button onClick={function() { props.onDone(false); }} style={{ position: "absolute", top: 18, left: 16, zIndex: 4, width: 34, height: 34, borderRadius: "50%", border: "1.5px solid " + J.line, background: J.card, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, boxShadow: "0 2px 8px rgba(40,28,16,0.08)" }}>
+        <LiquidButton variant="neutral" size="icon" iconSize={34} onClick={function() { props.onDone(false); }} style={{ position: "absolute", top: 18, left: 16, zIndex: 4 }}>
           <span style={{ display: "inline-flex", transform: "rotate(180deg)" }}><SVGIcon id="chevron" size={15} color={J.ink2} /></span>
-        </button>
+        </LiquidButton>
         <div style={{ padding: "52px 24px 48px", position: "relative", maxWidth: 428, margin: "0 auto", boxSizing: "border-box" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
             <div style={{ position: "relative", width: 48, height: 48, flexShrink: 0 }}>
@@ -28487,7 +28462,7 @@ function InvestorOnboardScreen(props) {
       <ScoutBeamsBg opacity={0.42} />
       {showCinema && <ScoutCinema scenes={ONBOARD_CINEMA} onDone={function() { setShowCinema(false); }} />}
       <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "22px 20px 0" }}>
-        {qIndex > 0 ? <JrIconBtn icon="chevron" rotate={180} onPress={goBack} /> : <button onClick={function() { props.onDone(false); }} style={{ width: 34, height: 34, borderRadius: "50%", border: "1.5px solid " + J.line, background: J.card, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, padding: 0 }}><SVGIcon id="close" size={15} color={J.ink2} /></button>}
+        {qIndex > 0 ? <JrIconBtn icon="chevron" rotate={180} onPress={goBack} /> : <LiquidButton variant="neutral" size="icon" iconSize={34} onClick={function() { props.onDone(false); }} style={{ flexShrink: 0 }}><SVGIcon id="close" size={15} color={J.ink2} /></LiquidButton>}
         <JourneyBar pct={((qIndex + 1) / Q_TOTAL) * 100} />
         <div style={{ width: 34, flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: J.ink3, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{(qIndex + 1) + "/" + Q_TOTAL}</div>
       </div>
@@ -28927,15 +28902,15 @@ function ScoutCinema(props) {
         </div>
         <div style={{ fontSize: 15, color: subCol, marginTop: 15, lineHeight: 1.55, maxWidth: 380, marginLeft: "auto", marginRight: "auto", animation: "rscWord 0.75s ease 0.95s both" + (c.last ? "" : ", rscOut 0.55s ease 3.7s both") }}>{c.s}</div>
         {c.last && (
-          <button onClick={function(e) { e.stopPropagation(); finish(); }}
-            style={{ marginTop: 30, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 14.5, fontWeight: 800, color: "#fff", padding: "13px 30px", borderRadius: 999, background: "linear-gradient(145deg," + PU2 + "," + PU + ")", boxShadow: "0 0 28px " + jrRgba(PU, 0.55) + ", 0 6px 18px rgba(0,0,0,0.4)", animation: "rscWord 0.75s ease 1.6s both" }}>
-            {c.cta || "Show me the picks"}</button>
+          <LiquidButton variant="primary" size="lg" onClick={function(e) { e.stopPropagation(); finish(); }}
+            style={{ marginTop: 30, animation: "rscWord 0.75s ease 1.6s backwards" }}>
+            {c.cta || "Show me the picks"}</LiquidButton>
         )}
       </div>
       {/* vignette + skip */}
       <div style={{ position: "absolute", inset: 0, background: "radial-gradient(90% 90% at 50% 50%, transparent 55%, " + vignette + " 100%)", pointerEvents: "none" }} />
-      <button onClick={function(e) { e.stopPropagation(); finish(); }}
-        style={{ position: "absolute", top: 20, right: 18, zIndex: 3, background: chipBg, border: "1px solid " + chipBorder, borderRadius: 999, padding: "7px 16px", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, color: chipText }}>Skip</button>
+      <LiquidButton variant="neutral" size="sm" ink={chipText} onClick={function(e) { e.stopPropagation(); finish(); }}
+        style={{ position: "absolute", top: 20, right: 18, zIndex: 3 }}>Skip</LiquidButton>
       <div style={{ position: "absolute", bottom: 22, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 6, pointerEvents: "none" }}>
         {SC.map(function(_, i) {
           return <div key={i} style={{ width: i === scene ? 18 : 5, height: 5, borderRadius: 999, background: i === scene ? PU2 : dotOff, transition: "width 0.35s ease, background 0.35s ease" }} />;
@@ -29117,11 +29092,11 @@ function StockScoutView(props) {
 
       {showBasics && <ScoutBasicsStory onDone={function() { markScoutBasicsSeen(); setShowBasics(false); }} />}
       {!showBasics && isBeginner && (
-        <button onClick={function() { setShowBasics(true); }}
-          style={{ display: "inline-flex", alignItems: "center", gap: 6, margin: "10px 2px 0", background: T.orangeDim, border: "none", borderRadius: 999, padding: "7px 13px", cursor: "pointer", fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.orange }}>
+        <LiquidButton variant="primary" soft size="sm" onClick={function() { setShowBasics(true); }}
+          style={{ margin: "10px 2px 0" }}>
           <SVGIcon id="book" size={13} color={T.orange} />
           Stock basics
-        </button>
+        </LiquidButton>
       )}
 
       {busy ? (
@@ -29195,8 +29170,8 @@ function StockScoutView(props) {
                 {/* Research only - no Buy CTA on an AI-generated pick card. A
                     user who wants to act goes to the stock's own page and
                     decides there, as a separate deliberate step. */}
-                <button onClick={function() { if (props.onOpenStock) props.onOpenStock(acct.id, p.symbol); }}
-                  style={{ width: "100%", marginTop: 12, border: "1.5px solid " + T.orange, cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "10px 0", borderRadius: 11, background: "none", color: T.orange, boxSizing: "border-box" }}>{"See " + p.symbol}</button>
+                <LiquidButton variant="neutral" full onClick={function() { if (props.onOpenStock) props.onOpenStock(acct.id, p.symbol); }}
+                  style={{ marginTop: 12 }}>{"See " + p.symbol}</LiquidButton>
               </Card>
             );
           })}
@@ -29239,17 +29214,17 @@ function StockScoutView(props) {
             {msgs.length === 0 && (
               <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 7, marginBottom: 14 }}>
                 {[(scout.picks && scout.picks[0] ? "Why " + scout.picks[0].symbol + "?" : "Why these?"), "Is this risky?", "What could go wrong?"].map(function(q) {
-                  return <button key={q} onClick={function() { sendChat(q); }} style={{ border: "1px solid " + T.sep, background: T.card, borderRadius: 999, padding: "8px 13px", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.ink2, boxShadow: "0 2px 10px rgba(0,0,0,.035)" }}>{q}</button>;
+                  return <LiquidButton key={q} variant="neutral" size="sm" onClick={function() { sendChat(q); }}>{q}</LiquidButton>;
                 })}
               </div>
             )}
             <div data-invest-motion style={{ display: "flex", gap: 8, alignItems: "center", padding: "7px 8px 7px 17px", marginTop: 4, background: T.card, border: "1px solid " + T.sep, borderRadius: 28, boxShadow: "0 12px 32px rgba(20,17,14,.10), 0 2px 8px rgba(20,17,14,.05)", animation: "invComposerIn .5s cubic-bezier(0.22,0.9,0.3,1) both" }}>
               <input value={chatInput} onChange={function(e) { setChatInput(e.target.value); }} onKeyDown={function(e) { if (e.key === "Enter" && !(e.nativeEvent && e.nativeEvent.isComposing)) sendChat(); }}
                 aria-label="Ask Richard about the scout" placeholder="Ask Richard anything..." style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "10px 0", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", textAlign: "start" }} />
-              <button onClick={function() { sendChat(); }} disabled={!chatInput.trim() || chatBusy}
-                aria-label="Send message" style={{ border: "none", cursor: chatInput.trim() && !chatBusy ? "pointer" : "default", background: chatInput.trim() && !chatBusy ? T.ink : T.inputBg, borderRadius: "50%", width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, opacity: chatInput.trim() && !chatBusy ? 1 : .72, transition: "opacity .2s ease, transform .2s ease" }}>
-                <SVGIcon id="up" size={17} color={chatInput.trim() && !chatBusy ? T.card : T.ink3} />
-              </button>
+              <LiquidButton variant="primary" size="icon" iconSize={44} onClick={function() { sendChat(); }} disabled={!chatInput.trim() || chatBusy}
+                aria-label="Send message" style={{ flexShrink: 0 }}>
+                <SVGIcon id="up" size={17} color={chatInput.trim() && !chatBusy ? "#fff" : T.ink3} />
+              </LiquidButton>
             </div>
           </div>
 
@@ -30143,10 +30118,10 @@ function BusinessView(props) {
         <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, marginBottom: 16, padding: "0 2px" }}>
           A Business Account walls off money for your venture, gives it its own budget categories, and puts Richard to work as your business coach - building a plan and keeping your spending on track.
         </div>
-        <button onClick={startWizard}
-          style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 16, padding: "15px 0", marginBottom: 18, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", fontSize: 16, fontWeight: 700, fontFamily: UI, boxShadow: "0 6px 18px " + T.orangeGlow }}>
+        <LiquidButton variant="primary" size="xl" full onClick={startWizard}
+          style={{ marginBottom: 18 }}>
           + New Business Account
-        </button>
+        </LiquidButton>
         {bizes.length === 0 ? (
           <Card style={{ padding: "46px 24px", textAlign: "center" }}>
             <div style={{ width: 52, height: 52, borderRadius: 16, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
@@ -30376,9 +30351,9 @@ function BusinessView(props) {
                       onKeyDown={function(e) { if (e.key === "Enter" && !wizLoading) sendWizNote(); }}
                       placeholder="e.g. Spend more on marketing"
                       style={{ flex: 1, border: "none", background: T.fill1, borderRadius: 10, padding: "9px 12px", fontSize: 13.5, fontFamily: UI, outline: "none", color: T.ink }} />
-                    <button onClick={sendWizNote} disabled={!wizInput.trim() || wizLoading}
+                    <LiquidButton variant="primary" size="icon" iconSize={38} onClick={sendWizNote} disabled={!wizInput.trim() || wizLoading}
                       aria-label="Send message"
-                      style={{ background: wizInput.trim() && !wizLoading ? T.btn : T.fill3, border: "none", borderRadius: 10, width: 38, height: 38, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 17 }}>^</button>
+                      style={{ flexShrink: 0 }}>^</LiquidButton>
                   </div>
                 </div>
                 <JrBtn label="Create business account" onPress={saveBusiness} style={{ marginTop: 18 }} />
@@ -30831,10 +30806,10 @@ function BusinessView(props) {
             <span style={{ flexShrink: 0, width: 16, height: 16, borderRadius: 5, background: "#0D0C18", color: "#C8973A", fontFamily: DISP, fontSize: 10.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1 }}>R</span>
             <span style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.45 }}>{hint}</span>
           </div>
-          <button onClick={function() { setAddInvoiceOpen(true); }}
-            style={{ width: "100%", border: "none", cursor: "pointer", borderRadius: 14, padding: "13px 0", marginBottom: 14, background: T.btn, color: "#fff", fontSize: 14.5, fontWeight: 700, fontFamily: UI, boxShadow: "0 6px 18px " + T.orangeGlow }}>
+          <LiquidButton variant="primary" size="lg" full onClick={function() { setAddInvoiceOpen(true); }}
+            style={{ marginBottom: 14 }}>
             + New invoice
-          </button>
+          </LiquidButton>
           {sorted.length === 0 ? (
             <Card style={{ padding: "34px 24px", textAlign: "center" }}>
               <div style={{ width: 46, height: 46, borderRadius: 14, background: T.orangeDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
@@ -31029,8 +31004,8 @@ function BusinessView(props) {
               <div style={{ fontSize: 14, fontWeight: 600, color: T.ink }}>{"Set-aside rate · " + taxDue.rate + "%"}</div>
               <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Richard's estimate of what your bracket and VAT will want back.</div>
             </div>
-            <button onClick={function() { setTaxSheetOpen(true); }}
-              style={{ background: T.orangeDim, border: "none", borderRadius: 10, padding: "9px 13px", fontSize: 12.5, fontWeight: 700, color: T.orange, cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Change</button>
+            <LiquidButton variant="primary" soft onClick={function() { setTaxSheetOpen(true); }}
+              style={{ flexShrink: 0 }}>Change</LiquidButton>
           </Card>
 
           {potEnts.length > 0 && (
@@ -31141,12 +31116,10 @@ function BusinessView(props) {
                       </div>
                       <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.45, marginTop: 3 }}>{idea.body}</div>
                       <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                        <button onClick={function() { addIdeaToRoadmap(b, idea); }} disabled={on || !b.roadmap}
-                          style={{ border: "none", cursor: (on || !b.roadmap) ? "default" : "pointer", background: on ? T.greenDim : T.btn, color: on ? T.green : "#fff", borderRadius: 999, padding: "7px 12px", fontSize: 12, fontWeight: 700, fontFamily: UI, boxShadow: on ? "none" : "0 4px 14px " + T.orangeGlow, opacity: (!on && !b.roadmap) ? 0.45 : 1 }}>
+                        <LiquidButton variant={on ? "green" : "primary"} soft={on} size="sm" onClick={function() { addIdeaToRoadmap(b, idea); }} disabled={on || !b.roadmap}>
                           {on ? "On the roadmap" : "Add to roadmap"}
-                        </button>
-                        <button onClick={function() { discussIdea(b, idea); }}
-                          style={{ border: "none", cursor: "pointer", background: T.fill1, color: T.ink2, borderRadius: 999, padding: "7px 12px", fontSize: 12, fontWeight: 600, fontFamily: UI }}>Talk it through</button>
+                        </LiquidButton>
+                        <LiquidButton variant="neutral" size="sm" onClick={function() { discussIdea(b, idea); }}>Talk it through</LiquidButton>
                       </div>
                     </div>
                   </div>
@@ -31387,13 +31360,13 @@ function BusinessView(props) {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Profit & loss</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <button disabled={off >= maxBack} onClick={function() { setPlMonthOff(Math.min(off + 1, maxBack)); }} style={stepSt(off >= maxBack)}>
+                  <LiquidButton variant="neutral" size="icon" iconSize={26} disabled={off >= maxBack} onClick={function() { setPlMonthOff(Math.min(off + 1, maxBack)); }}>
                     <span style={{ transform: "rotate(180deg)", display: "flex" }}><SVGIcon id="chevron" size={14} color={T.ink2} /></span>
-                  </button>
+                  </LiquidButton>
                   <span style={{ fontSize: 12.5, fontWeight: 700, color: T.ink, minWidth: 62, textAlign: "center", fontFamily: UI }}>{ymLabel(ymSel)}</span>
-                  <button disabled={off <= 0} onClick={function() { setPlMonthOff(Math.max(off - 1, 0)); }} style={stepSt(off <= 0)}>
+                  <LiquidButton variant="neutral" size="icon" iconSize={26} disabled={off <= 0} onClick={function() { setPlMonthOff(Math.max(off - 1, 0)); }}>
                     <SVGIcon id="chevron" size={14} color={T.ink2} />
-                  </button>
+                  </LiquidButton>
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 11 }}>
@@ -31526,8 +31499,8 @@ function BusinessView(props) {
                     })}
                   </div>
                 )}
-                <button onClick={function() { setLogFor({ bizId: biz.id, key: a.key, label: a.label }); setLogForm({ label: "", amount: "" }); }}
-                  style={{ width: "100%", marginTop: 10, background: T.orangeDim, border: "none", borderRadius: 10, padding: "9px 0", color: T.orange, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: UI }}>+ Log expense</button>
+                <LiquidButton variant="primary" soft full onClick={function() { setLogFor({ bizId: biz.id, key: a.key, label: a.label }); setLogForm({ label: "", amount: "" }); }}
+                  style={{ marginTop: 10 }}>+ Log expense</LiquidButton>
               </div>
             </Card>
           );
@@ -31567,14 +31540,12 @@ function BusinessView(props) {
                   {confirming && (
                     <div style={{ marginTop: 6, background: "rgba(220,50,50,0.07)", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{ flex: 1, fontSize: 12, color: T.ink2 }}>{"Delete this entry?"}</span>
-                      <button onClick={function() { deleteCapEntry(biz.id, e.id); }}
-                        style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "6px 12px", borderRadius: 8, background: T.red, color: "#fff" }}>
+                      <LiquidButton variant="red" size="sm" onClick={function() { deleteCapEntry(biz.id, e.id); }}>
                         Delete
-                      </button>
-                      <button onClick={function() { setDelCapConfirm(null); }}
-                        style={{ border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, padding: "6px 12px", borderRadius: 8, background: T.fill2, color: T.ink2 }}>
+                      </LiquidButton>
+                      <LiquidButton variant="neutral" size="sm" onClick={function() { setDelCapConfirm(null); }}>
                         Cancel
-                      </button>
+                      </LiquidButton>
                     </div>
                   )}
                 </div>
@@ -31587,8 +31558,8 @@ function BusinessView(props) {
           <div style={{ background: "rgba(220,50,50,0.07)", borderRadius: 12, padding: "12px 14px", marginTop: 6 }}>
             <div style={{ fontSize: 13, color: T.ink2, marginBottom: 10, lineHeight: 1.45 }}>{bal > 0 ? dollars(bal) + " of cash will return to your balance. " : ""}Close this business account?</div>
             <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={function() { closeBusiness(biz); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 10, background: T.red, color: "#fff" }}>Close account</button>
-              <button onClick={function() { setDeleteConfirm(null); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "10px 0", borderRadius: 10, background: T.fill2, color: T.ink2 }}>Cancel</button>
+              <LiquidButton variant="red" flex={1} onClick={function() { closeBusiness(biz); }}>Close account</LiquidButton>
+              <LiquidButton variant="neutral" flex={1} onClick={function() { setDeleteConfirm(null); }}>Cancel</LiquidButton>
             </div>
           </div>
         ) : (
@@ -31600,8 +31571,8 @@ function BusinessView(props) {
           <div style={{ background: "rgba(220,50,50,0.07)", borderRadius: 12, padding: "12px 14px", marginTop: 8 }}>
             <div style={{ fontSize: 13, color: T.ink2, marginBottom: 10, lineHeight: 1.45 }}>{bal > 0 ? dollars(bal) + " will be permanently lost. " : ""}Delete this account and its plan? This cannot be undone.</div>
             <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={function() { deleteBusinessOutright(biz); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "10px 0", borderRadius: 10, background: T.red, color: "#fff" }}>Delete</button>
-              <button onClick={function() { setDeleteOutrightConfirm(null); }} style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "10px 0", borderRadius: 10, background: T.fill2, color: T.ink2 }}>Cancel</button>
+              <LiquidButton variant="red" flex={1} onClick={function() { deleteBusinessOutright(biz); }}>Delete</LiquidButton>
+              <LiquidButton variant="neutral" flex={1} onClick={function() { setDeleteOutrightConfirm(null); }}>Cancel</LiquidButton>
             </div>
           </div>
         ) : (
@@ -31643,8 +31614,8 @@ function BusinessView(props) {
                   <div style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>No roadmap yet</div>
                   <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Richard can lay out the concrete steps from here to a working business.</div>
                 </div>
-                <button onClick={function() { regenRoadmap(biz); }}
-                  style={{ background: T.btn, border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Build it</button>
+                <LiquidButton variant="primary" onClick={function() { regenRoadmap(biz); }}
+                  style={{ flexShrink: 0 }}>Build it</LiquidButton>
               </Card>
             );
           }
@@ -31671,8 +31642,8 @@ function BusinessView(props) {
                   <DrawRing size={26} stroke={3.5} value={prog.done} max={prog.total || 1} color={T.orange} />
                   <span style={{ fontSize: 12, fontWeight: 700, color: T.ink2 }}>{prog.done + " of " + prog.total}</span>
                   {rm.source === "local" && (
-                    <button onClick={function() { regenRoadmap(biz); }} disabled={roadmapBuilding}
-                      style={{ background: T.orangeDim, border: "none", borderRadius: 9, padding: "5px 10px", fontSize: 11, fontWeight: 700, color: T.orange, cursor: roadmapBuilding ? "default" : "pointer", fontFamily: UI }}>{roadmapBuilding ? <ThinkingDots size={3.5} color={T.orange} /> : "Ask Richard"}</button>
+                    <LiquidButton variant="primary" soft size="sm" onClick={function() { regenRoadmap(biz); }} disabled={roadmapBuilding}
+                      busy={roadmapBuilding} busyLabel="Thinking">Ask Richard</LiquidButton>
                   )}
                 </div>
               </div>
@@ -31691,8 +31662,8 @@ function BusinessView(props) {
                   <div style={{ fontSize: 12.5, color: T.heroMut, marginTop: 3, lineHeight: 1.45 }}>
                     {gradTarget === "launching" ? "Real money is moving - that's a launch. Graduating rebuilds the roadmap for this new stage." : "Revenue is coming in again and again. Graduating rebuilds the roadmap around margins, repeat customers and systems."}
                   </div>
-                  <button onClick={function() { graduateBiz(biz, gradTarget); }}
-                    style={{ marginTop: 10, background: "rgba(255,255,255,0.92)", border: "none", borderRadius: 10, padding: "9px 16px", fontSize: 12.5, fontWeight: 700, color: T.orange, cursor: "pointer", fontFamily: UI }}>Graduate</button>
+                  <LiquidButton variant="neutral" onClick={function() { graduateBiz(biz, gradTarget); }}
+                    style={{ marginTop: 10 }}>Graduate</LiquidButton>
                 </div>
               )}
               {rm.milestones.map(function(m, mi) {
@@ -31791,23 +31762,22 @@ function BusinessView(props) {
                         <div style={{ fontSize: 10.5, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.06em" }}>Suggested step</div>
                         <div style={{ fontSize: 12.5, color: T.ink, marginTop: 2, lineHeight: 1.4 }}>{latest.taskSuggestion.label}</div>
                       </div>
-                      <button onClick={function() { addSuggestedTask(biz, latest); }}
-                        style={{ background: T.btn, border: "none", borderRadius: 9, padding: "8px 12px", fontSize: 12, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Add to roadmap</button>
+                      <LiquidButton variant="primary" size="sm" onClick={function() { addSuggestedTask(biz, latest); }}
+                        style={{ flexShrink: 0 }}>Add to roadmap</LiquidButton>
                     </div>
                   )}
                   {showGrad && (
                     <div style={{ display: "flex", alignItems: "center", gap: 10, background: T.orangeDim, borderRadius: 12, padding: "10px 12px", marginTop: 8 }}>
                       <div style={{ flex: 1, fontSize: 12.5, color: T.ink, lineHeight: 1.4 }}>{"Richard thinks it's time to graduate to the " + (latest.graduate === "running" ? "running" : "launch") + " stage."}</div>
-                      <button onClick={function() { graduateBiz(biz, latest.graduate); }}
-                        style={{ background: T.btn, border: "none", borderRadius: 9, padding: "8px 12px", fontSize: 12, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Graduate</button>
+                      <LiquidButton variant="primary" size="sm" onClick={function() { graduateBiz(biz, latest.graduate); }}
+                        style={{ flexShrink: 0 }}>Graduate</LiquidButton>
                     </div>
                   )}
                   <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                    <button onClick={function() { fetchIdeas(biz); }} disabled={ideasLoading}
-                      style={{ flex: 1, background: T.orangeDim, border: "none", borderRadius: 10, padding: "10px 0", fontSize: 12.5, fontWeight: 700, color: T.orange, cursor: ideasLoading ? "default" : "pointer", fontFamily: UI }}>{ideasLoading ? <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>Thinking<ThinkingDots size={3.5} color={T.orange} /></span> : "Get growth ideas"}</button>
+                    <LiquidButton variant="primary" soft flex={1} onClick={function() { fetchIdeas(biz); }} disabled={ideasLoading}
+                      busy={ideasLoading} busyLabel="Thinking">Get growth ideas</LiquidButton>
                     {reviews.length > 1 && (
-                      <button onClick={function() { setPastOpen(!pastOpen); }}
-                        style={{ flex: 1, background: "none", border: "1.5px solid " + T.sep, borderRadius: 10, padding: "10px 0", fontSize: 12.5, fontWeight: 600, color: T.ink2, cursor: "pointer", fontFamily: UI }}>{pastOpen ? "Hide past reviews" : "Past reviews (" + (reviews.length - 1) + ")"}</button>
+                      <LiquidButton variant="neutral" flex={1} onClick={function() { setPastOpen(!pastOpen); }}>{pastOpen ? "Hide past reviews" : "Past reviews (" + (reviews.length - 1) + ")"}</LiquidButton>
                     )}
                   </div>
                   {ideas && (
@@ -31849,8 +31819,8 @@ function BusinessView(props) {
           <Card style={{ padding: "16px 18px", marginBottom: 16 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: UI }}>Business plan</div>
-              <button onClick={function() { replanWithRichard(biz); }} disabled={replanning}
-                style={{ background: T.orangeDim, border: "none", borderRadius: 9, padding: "5px 11px", fontSize: 11.5, fontWeight: 700, color: T.orange, cursor: replanning ? "default" : "pointer", fontFamily: UI }}>{replanning ? "Updating..." : "Replan"}</button>
+              <LiquidButton variant="primary" soft size="sm" onClick={function() { replanWithRichard(biz); }} disabled={replanning}
+                busy={replanning} busyLabel="Updating">Replan</LiquidButton>
             </div>
             {plan.summary && <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.55, marginBottom: plan.sections && plan.sections.length ? 14 : 0 }}>{plan.summary}</div>}
             {plan.verdict && plan.verdict.assessment && (
@@ -31884,8 +31854,8 @@ function BusinessView(props) {
               <div style={{ fontSize: 14, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>No plan yet</div>
               <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.4 }}>Have Richard draft a business plan and budget for you.</div>
             </div>
-            <button onClick={function() { replanWithRichard(biz); }} disabled={replanning}
-              style={{ background: T.btn, border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: replanning ? "default" : "pointer", fontFamily: UI, flexShrink: 0 }}>{replanning ? <ThinkingDots size={3.5} color="#fff" /> : "Ask Richard"}</button>
+            <LiquidButton variant="primary" onClick={function() { replanWithRichard(biz); }} disabled={replanning}
+              busy={replanning} busyLabel="Thinking" style={{ flexShrink: 0 }}>Ask Richard</LiquidButton>
           </Card>
         )}
 
@@ -31902,8 +31872,7 @@ function BusinessView(props) {
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
               {chatChips(biz).map(function(c, i) {
                 return (
-                  <button key={i} onClick={function() { sendChat(biz, c); }} disabled={chatLoading}
-                    style={{ border: "none", cursor: chatLoading ? "default" : "pointer", background: T.card, borderRadius: 999, padding: "9px 14px", fontSize: 13, fontWeight: 600, color: T.ink, fontFamily: UI, boxShadow: "0 1px 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.07)" }}>{c}</button>
+                  <LiquidButton key={i} variant="neutral" onClick={function() { sendChat(biz, c); }} disabled={chatLoading}>{c}</LiquidButton>
                 );
               })}
             </div>
@@ -31942,9 +31911,9 @@ function BusinessView(props) {
               onKeyDown={function(e) { if (e.key === "Enter" && !chatLoading) sendChat(biz); }}
               placeholder="e.g. Should I spend more on marketing?"
               style={{ flex: 1, border: "none", background: T.fill1, borderRadius: 10, padding: "9px 12px", fontSize: 13.5, fontFamily: UI, outline: "none", color: T.ink }} />
-            <button onClick={function() { sendChat(biz); }} disabled={!chatInput.trim() || chatLoading}
+            <LiquidButton variant="primary" size="icon" iconSize={38} onClick={function() { sendChat(biz); }} disabled={!chatInput.trim() || chatLoading}
               aria-label="Send message"
-              style={{ background: chatInput.trim() && !chatLoading ? T.btn : T.fill3, border: "none", borderRadius: 10, width: 38, height: 38, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 17 }}>^</button>
+              style={{ flexShrink: 0 }}>^</LiquidButton>
           </div>
         </Card>
         </div>
@@ -33017,18 +32986,18 @@ function BankSyncHelpChat(props) {
           <div style={{ padding: "10px 14px 20px", display: "flex", gap: 9, alignItems: "center", boxSizing: "border-box" }}>
             <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }}
               onChange={function(e) { pickImage(e.target.files && e.target.files[0]); e.target.value = ""; }} />
-            <button onClick={function() { if (fileRef.current) fileRef.current.click(); }} aria-label="Attach a screenshot"
-              style={{ width: 44, height: 44, borderRadius: "50%", border: "1.5px solid " + J.line, background: pendingImg ? T.orangeDim : J.card, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.05)", transition: "background 0.25s ease" }}>
+            <LiquidButton onClick={function() { if (fileRef.current) fileRef.current.click(); }} aria-label="Attach a screenshot"
+              variant={pendingImg ? "primary" : "neutral"} soft={!!pendingImg} size="icon" iconSize={44} style={{ flexShrink: 0 }}>
               <SVGIcon id="camera" size={18} color={pendingImg ? T.orange : J.ink3} />
-            </button>
+            </LiquidButton>
             <input value={input} onChange={function(e) { setInput(e.target.value); }}
               onKeyDown={function(e) { if (e.key === "Enter" && !loading) send(); }}
               placeholder={pendingImg ? "Add a note, or just send..." : "Ask about any step..."}
               style={{ flex: 1, minWidth: 0, background: J.card, border: "1.5px solid " + J.line, borderRadius: 999, padding: "12px 16px", fontSize: 14.5, fontFamily: UI, color: J.ink, outline: "none", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} />
-            <button onClick={function() { send(); }} disabled={loading || (!input.trim() && !pendingImg)}
-              style={{ width: 44, height: 44, borderRadius: "50%", border: "none", background: ((!input.trim() && !pendingImg) || loading) ? J.fill3 : T.btn, display: "flex", alignItems: "center", justifyContent: "center", cursor: ((!input.trim() && !pendingImg) || loading) ? "default" : "pointer", flexShrink: 0, boxShadow: ((!input.trim() && !pendingImg) || loading) ? "none" : "0 5px 14px " + T.orangeGlow, transition: "background 0.25s ease, box-shadow 0.25s ease" }}>
+            <LiquidButton onClick={function() { send(); }} disabled={loading || (!input.trim() && !pendingImg)}
+              variant="primary" size="icon" iconSize={44} style={{ flexShrink: 0 }}>
               <SVGIcon id="up" size={18} color={((!input.trim() && !pendingImg) || loading) ? J.ink3 : "#fff"} />
-            </button>
+            </LiquidButton>
           </div>
         </div>
       </div>
@@ -33173,10 +33142,10 @@ function BankSyncJourney(props) {
                   <div style={{ background: J.card, borderRadius: 16, padding: "15px 16px", boxShadow: "0 6px 22px rgba(40,28,16,0.08)", marginBottom: 16, boxSizing: "border-box", animation: "rclPhrase 0.45s ease 0.35s both" }}>
                     <div style={{ fontSize: 10.5, fontWeight: 700, color: J.ink3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>{copyLabel[step.copy]}</div>
                     <div style={{ fontSize: 12.5, fontFamily: UI, color: J.ink, wordBreak: "break-all", lineHeight: 1.55, marginBottom: 12 }}>{copyValue[step.copy]}</div>
-                    <button onClick={function() { copy(step.copy); }}
-                      style={{ width: "100%", background: copied === step.copy ? T.greenDim : T.orangeDim, color: copied === step.copy ? T.green : T.orange, border: "none", borderRadius: 12, padding: "11px 0", fontSize: 14, fontWeight: 700, fontFamily: UI, cursor: "pointer", boxSizing: "border-box", transition: "background 0.2s ease, color 0.2s ease" }}>
+                    <LiquidButton onClick={function() { copy(step.copy); }}
+                      variant={copied === step.copy ? "green" : "primary"} soft full>
                       {copied === step.copy ? "Copied - now paste it on your phone" : "Copy"}
-                    </button>
+                    </LiquidButton>
                   </div>
                 )}
                 {step.subs && (
@@ -33200,10 +33169,10 @@ function BankSyncJourney(props) {
                 </div>
                 <BankSyncDemo id="payoff" />
                 <div style={{ animation: "rclPhrase 0.45s ease 0.35s both" }}>
-                  <button onClick={sendTest} disabled={testState === "sending"}
-                    style={{ width: "100%", background: J.card, color: T.orange, border: "1.5px solid " + T.orangeDim, borderRadius: 16, padding: "15px 0", fontSize: 15.5, fontFamily: UI, fontWeight: 700, cursor: "pointer", opacity: testState === "sending" ? 0.6 : 1, boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                  <LiquidButton onClick={sendTest} disabled={testState === "sending"}
+                    variant="neutral" size="xl" full>
                     {testState === "sending" ? "Sending..." : testState === "sent" ? "Send another test" : "Send a test transaction"}
-                  </button>
+                  </LiquidButton>
                   {testState === "sent" && (
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14, animation: "rclPhrase 0.35s ease both" }}>
                       <span style={{ width: 20, height: 20, borderRadius: "50%", background: T.green, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, animation: "rclPop 0.35s ease both" }}>
@@ -33279,10 +33248,10 @@ function LeumiDemoConsentModal(props) {
             );
           })}
         </div>
-        <button onClick={approve} disabled={busy}
-          style={{ width: "100%", background: T.btn, color: "#fff", border: "none", borderRadius: 16, padding: "15px 0", fontSize: 15.5, fontFamily: UI, fontWeight: 700, cursor: "pointer", opacity: busy ? 0.6 : 1, boxSizing: "border-box", marginBottom: 8 }}>
+        <LiquidButton onClick={approve} disabled={busy}
+          variant="primary" size="xl" full style={{ marginBottom: 8 }}>
           {busy ? "Simulating connection..." : "Simulate approval (Demo)"}
-        </button>
+        </LiquidButton>
         <button onClick={props.onClose} disabled={busy}
           style={{ width: "100%", background: "none", color: T.ink3, border: "none", borderRadius: 16, padding: "12px 0", fontSize: 14.5, fontFamily: UI, fontWeight: 600, cursor: "pointer" }}>
           Cancel
@@ -33338,10 +33307,10 @@ function LeumiFintekaCard(props) {
               <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.45 }}>Preview what a direct Bank Leumi connection would feel like - fills your account with realistic demo transactions, no real bank involved.</div>
             </div>
           </div>
-          <button onClick={function() { setErr(""); setModalOpen(true); }}
-            style={{ width: "100%", background: T.card, color: T.ink, border: "1.5px solid " + T.sep, borderRadius: 14, padding: "13px 0", fontSize: 14.5, fontFamily: UI, fontWeight: 600, cursor: "pointer", boxSizing: "border-box" }}>
+          <LiquidButton onClick={function() { setErr(""); setModalOpen(true); }}
+            variant="neutral" full>
             Connect Bank Leumi (Demo)
-          </button>
+          </LiquidButton>
           {lf && lf.status === "error" && lf.error && (
             <div style={{ fontSize: 12.5, color: T.red, lineHeight: 1.5, marginTop: 10, fontFamily: UI }}>{lf.error}</div>
           )}
@@ -33382,16 +33351,16 @@ function LeumiFintekaCard(props) {
         Demo connection - these are realistic sample transactions, not real activity from a Bank Leumi account.
       </div>
 
-      <button onClick={handleSyncNow} disabled={syncBusy}
-        style={{ width: "100%", background: T.card, color: T.orange, border: "1.5px solid " + T.orangeDim, borderRadius: 16, padding: "14px 0", fontSize: 15, fontFamily: UI, fontWeight: 600, cursor: "pointer", marginBottom: 8, opacity: syncBusy ? 0.6 : 1, boxSizing: "border-box" }}>
+      <LiquidButton onClick={handleSyncNow} disabled={syncBusy}
+        variant="neutral" size="lg" full style={{ marginBottom: 8 }}>
         {syncBusy ? "Syncing..." : "Sync now (Demo)"}
-      </button>
+      </LiquidButton>
       {err && <div style={{ fontSize: 12.5, color: T.red, lineHeight: 1.5, padding: "0 6px 10px", fontFamily: UI }}>{err}</div>}
 
-      <button onClick={handleDisconnect} disabled={disconnecting}
-        style={{ width: "100%", background: "rgba(224,48,48,0.08)", color: T.red, border: "1px solid rgba(224,48,48,0.14)", borderRadius: 16, padding: "14px 0", fontSize: 15, fontFamily: UI, fontWeight: 600, cursor: "pointer", opacity: disconnecting ? 0.6 : 1, boxSizing: "border-box" }}>
+      <LiquidButton onClick={handleDisconnect} disabled={disconnecting}
+        variant="red" soft size="lg" full>
         {disconnecting ? "Disconnecting..." : "Disconnect Bank Leumi"}
-      </button>
+      </LiquidButton>
     </div>
   );
 }
@@ -33472,10 +33441,10 @@ function BankSyncView(props) {
               );
             })}
           </div>
-          <button onClick={handleEnable} disabled={busy}
-            style={{ width: "100%", background: T.btn, color: "#fff", border: "none", borderRadius: 16, padding: "15px 0", fontSize: 16, fontFamily: UI, fontWeight: 600, cursor: "pointer", opacity: busy ? 0.6 : 1, boxSizing: "border-box" }}>
+          <LiquidButton onClick={handleEnable} disabled={busy}
+            variant="primary" size="xl" full>
             {busy ? "Turning on..." : "Set up notification sync"}
-          </button>
+          </LiquidButton>
           {enableErr && (
             <div style={{ fontSize: 12.5, color: T.red, lineHeight: 1.5, marginTop: 10, fontFamily: UI }}>{enableErr}</div>
           )}
@@ -33518,10 +33487,10 @@ function BankSyncView(props) {
       </Card>
 
       <div style={secLabel}>Check it works</div>
-      <button onClick={sendTest} disabled={testState === "sending"}
-        style={{ width: "100%", background: T.card, color: T.orange, border: "1.5px solid " + T.orangeDim, borderRadius: 16, padding: "14px 0", fontSize: 15, fontFamily: UI, fontWeight: 600, cursor: "pointer", marginBottom: 8, opacity: testState === "sending" ? 0.6 : 1, boxSizing: "border-box" }}>
+      <LiquidButton onClick={sendTest} disabled={testState === "sending"}
+        variant="neutral" size="lg" full style={{ marginBottom: 8 }}>
         {testState === "sending" ? "Sending..." : "Send a test transaction"}
-      </button>
+      </LiquidButton>
       {testState === "sent" && (
         <div style={{ fontSize: 12.5, color: T.green, lineHeight: 1.5, padding: "0 6px 10px", fontFamily: UI }}>
           Sent. It should appear in Activity within a few seconds - delete it there once you've seen it.
@@ -33533,10 +33502,10 @@ function BankSyncView(props) {
         </div>
       )}
 
-      <button onClick={handleDisable}
-        style={{ width: "100%", background: "rgba(224,48,48,0.08)", color: T.red, border: "1px solid rgba(224,48,48,0.14)", borderRadius: 16, padding: "14px 0", fontSize: 15, fontFamily: UI, fontWeight: 600, cursor: "pointer", marginTop: 10, boxSizing: "border-box" }}>
+      <LiquidButton onClick={handleDisable}
+        variant="red" soft size="lg" full style={{ marginTop: 10 }}>
         Turn off Bank Sync
-      </button>
+      </LiquidButton>
       <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, padding: "8px 6px 0", fontFamily: UI }}>
         Turning it off keeps everything already synced and simply stops new transactions from arriving.
       </div>
@@ -33684,11 +33653,11 @@ function PrivacyView(props) {
             style={{ width: "100%", background: T.bg, border: "1px solid " + T.sep, borderRadius: 10, padding: "10px 12px", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", marginBottom: 10 }} />
           {delErr && <div style={{ fontSize: 12.5, color: T.red, lineHeight: 1.5, marginBottom: 10 }}>{delErr}</div>}
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={deleteAccount} disabled={delText.trim() !== "DELETE" || delBusy}
-              style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, padding: "11px 0", borderRadius: 10, background: (delText.trim() === "DELETE" && !delBusy) ? T.red : T.fill3, color: (delText.trim() === "DELETE" && !delBusy) ? "#fff" : T.ink3 }}>
-              {delBusy ? "Deleting..." : "Delete everything"}</button>
-            <button onClick={function() { setDelOpen(false); }} disabled={delBusy}
-              style={{ flex: 1, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 600, padding: "11px 0", borderRadius: 10, background: T.fill2, color: T.ink2 }}>Cancel</button>
+            <LiquidButton onClick={deleteAccount} disabled={delText.trim() !== "DELETE" || delBusy}
+              variant="red" flex={1}>
+              {delBusy ? "Deleting..." : "Delete everything"}</LiquidButton>
+            <LiquidButton onClick={function() { setDelOpen(false); }} disabled={delBusy}
+              variant="neutral" flex={1}>Cancel</LiquidButton>
           </div>
         </Card>
       )}
@@ -34135,14 +34104,12 @@ function PlanView(props) {
               : "Create goal: " + (pendingAction.name || "") + " (" + dollars(pendingAction.target || 0) + ")"}
           </div>
           <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={implementAction}
-              style={{ flex: 1, background: T.btn, color: "#fff", textShadow: "0 1px 2px rgba(42,31,77,0.35)", border: "none", borderRadius: 10, padding: "9px 0", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI }}>
+            <LiquidButton variant="primary" flex={1} onClick={implementAction}>
               {tr("implement")}
-            </button>
-            <button onClick={function() { setPendingAction(null); }}
-              style={{ flex: 1, background: T.fill3, color: T.ink2, border: "none", borderRadius: 10, padding: "9px 0", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI }}>
+            </LiquidButton>
+            <LiquidButton variant="neutral" flex={1} onClick={function() { setPendingAction(null); }}>
               {tr("dismiss")}
-            </button>
+            </LiquidButton>
           </div>
         </Card>
       )}
@@ -34153,17 +34120,17 @@ function PlanView(props) {
             onKeyDown={function(e) { if (e.key === "Enter" && !loading) sendMessage(); }}
             placeholder={tr("giveFeedback")}
             style={{ flex: 1, border: "none", background: T.fill1, borderRadius: 12, padding: "10px 14px", fontSize: 14, fontFamily: UI, outline: "none", color: T.ink }} />
-          <button onClick={sendMessage} disabled={!input.trim() || loading}
-            style={{ background: input.trim() && !loading ? T.btn : T.fill3, border: "none", borderRadius: 12, width: 40, height: 40, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 18 }}>
+          <LiquidButton variant="primary" size="icon" iconSize={40} fontSize={18} onClick={sendMessage} disabled={!input.trim() || loading}
+            style={{ flexShrink: 0 }}>
             ^
-          </button>
+          </LiquidButton>
         </div>
       </Card>
 
-      <button onClick={props.onRetake}
-        style={{ width: "100%", background: T.orangeDim, color: T.orange, border: "1.5px solid rgba(137,112,198,0.2)", borderRadius: 16, padding: "16px 0", fontSize: 16, fontFamily: UI, fontWeight: 700, cursor: "pointer", marginBottom: 10 }}>
+      <LiquidButton variant="primary" soft size="xl" full onClick={props.onRetake}
+        style={{ marginBottom: 10 }}>
         {tr("redoQuestionnaire")}
-      </button>
+      </LiquidButton>
     </div>
   );
 }
@@ -34436,10 +34403,10 @@ function SocialStrip(props) {
             </div>
           </div>
         </div>
-        <button onClick={props.onManage}
-          style={{ width: "100%", marginTop: 14, background: T.orangeDim, color: T.orange, border: "none", borderRadius: 13, padding: "11px 0", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI }}>
+        <LiquidButton variant="primary" soft full onClick={props.onManage}
+          style={{ marginTop: 14 }}>
           {reqs ? "Review requests" : "Find people"}
-        </button>
+        </LiquidButton>
       </Card>
     );
   }
@@ -34489,10 +34456,10 @@ function SocialView(props) {
     <div>
       <SubViewBack onBack={props.onBack} />
 
-      <button onClick={props.onFind}
-        style={{ width: "100%", background: T.orangeDim, color: T.orange, border: "none", borderRadius: 16, padding: "14px 0", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 20 }}>
+      <LiquidButton variant="primary" soft size="lg" full onClick={props.onFind}
+        style={{ marginBottom: 20 }}>
         <SVGIcon id="search" size={16} color={T.orange} />Find people
-      </button>
+      </LiquidButton>
 
       {s.requests.length > 0 && (
         <div>
@@ -34506,10 +34473,10 @@ function SocialView(props) {
                     <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink, fontFamily: UI }}>{r.name || ("@" + r.handle)}</div>
                     <div style={{ fontSize: 12, color: T.ink3, fontFamily: UI }}>{"@" + (r.handle || "")}</div>
                   </div>
-                  <button onClick={function() { props.onDecline(r.from); }} aria-label="Decline"
-                    style={{ background: "none", border: "1px solid " + T.sep, borderRadius: 10, padding: "7px 11px", fontSize: 12.5, fontWeight: 600, color: T.ink2, cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Decline</button>
-                  <button onClick={function() { props.onAccept(r.from); }}
-                    style={{ background: T.orange, border: "none", borderRadius: 10, padding: "8px 13px", fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: UI, flexShrink: 0 }}>Accept</button>
+                  <LiquidButton variant="neutral" size="sm" onClick={function() { props.onDecline(r.from); }} aria-label="Decline"
+                    style={{ flexShrink: 0 }}>Decline</LiquidButton>
+                  <LiquidButton variant="primary" size="sm" onClick={function() { props.onAccept(r.from); }}
+                    style={{ flexShrink: 0 }}>Accept</LiquidButton>
                 </div>
               );
             })}
@@ -34542,8 +34509,7 @@ function SocialView(props) {
           return (
             <ProfileRow key={p.uid} icon="user" iconBg={T.blueDim} iconColor={T.blue}
               label={p.name || ("@" + p.handle)} sub={"@" + (p.handle || "")}
-              right={<button onClick={function(e) { e.stopPropagation(); props.onRemoveFollower(p.uid); }}
-                style={{ background: "none", border: "1px solid " + T.sep, borderRadius: 9, padding: "5px 9px", fontSize: 11.5, fontWeight: 600, color: T.ink2, cursor: "pointer", fontFamily: UI }}>Remove</button>}
+              right={<LiquidButton variant="neutral" size="sm" onClick={function(e) { e.stopPropagation(); props.onRemoveFollower(p.uid); }}>Remove</LiquidButton>}
               onClick={function() { props.onOpen(p.uid); }} last={i === s.followers.length - 1} />
           );
         })}
@@ -34604,10 +34570,10 @@ function FindPeopleView(props) {
           <span style={{ fontSize: 17, fontWeight: 700, color: T.ink3, fontFamily: UI }}>@</span>
           <input value={handle} onChange={function(e) { setHandle(clean(e.target.value)); }} placeholder="yourname"
             style={{ flex: 1, minWidth: 0, background: T.inputBg, border: "none", borderRadius: 11, padding: "11px 12px", fontSize: 15, color: T.ink, fontFamily: UI, outline: "none" }} />
-          <button onClick={doClaim} disabled={busy}
-            style={{ background: T.orange, color: "#fff", border: "none", borderRadius: 11, padding: "11px 15px", fontSize: 13.5, fontWeight: 700, cursor: busy ? "default" : "pointer", fontFamily: UI, opacity: busy ? 0.6 : 1, flexShrink: 0 }}>
+          <LiquidButton variant="primary" onClick={doClaim} disabled={busy}
+            style={{ flexShrink: 0 }}>
             {props.myHandle ? "Update" : "Claim"}
-          </button>
+          </LiquidButton>
         </div>
         <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 10, lineHeight: 1.45, fontFamily: UI }}>
           This is how people find you. It is the only thing about you that is publicly readable.
@@ -34629,8 +34595,8 @@ function FindPeopleView(props) {
           <input value={q} onChange={function(e) { setQ(clean(e.target.value)); }} placeholder="theirhandle"
             onKeyDown={function(e) { if (e.key === "Enter") doSearch(); }}
             style={{ flex: 1, minWidth: 0, background: T.inputBg, border: "none", borderRadius: 11, padding: "11px 12px", fontSize: 15, color: T.ink, fontFamily: UI, outline: "none" }} />
-          <button onClick={doSearch} disabled={busy}
-            style={{ background: T.ink, color: T.bg, border: "none", borderRadius: 11, padding: "11px 15px", fontSize: 13.5, fontWeight: 700, cursor: busy ? "default" : "pointer", fontFamily: UI, opacity: busy ? 0.6 : 1, flexShrink: 0 }}>Search</button>
+          <LiquidButton variant="primary" onClick={doSearch} disabled={busy}
+            style={{ flexShrink: 0 }}>Search</LiquidButton>
         </div>
 
         {found && (
@@ -34640,11 +34606,11 @@ function FindPeopleView(props) {
               <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, fontFamily: UI }}>{found.name || ("@" + found.handle)}</div>
               <div style={{ fontSize: 12.5, color: T.ink3, fontFamily: UI }}>{"@" + found.handle}</div>
             </div>
-            <button onClick={function() { props.onRequest(found); setMsg("Request sent to @" + found.handle + "."); setFound(null); }}
+            <LiquidButton variant="primary" onClick={function() { props.onRequest(found); setMsg("Request sent to @" + found.handle + "."); setFound(null); }}
               disabled={already}
-              style={{ background: already ? T.inputBg : T.orange, color: already ? T.ink3 : "#fff", border: "none", borderRadius: 11, padding: "10px 14px", fontSize: 13, fontWeight: 700, cursor: already ? "default" : "pointer", fontFamily: UI, flexShrink: 0 }}>
+              style={{ flexShrink: 0 }}>
               {already ? "Following" : "Request"}
-            </button>
+            </LiquidButton>
           </div>
         )}
         {msg && <div style={{ fontSize: 12.5, color: T.ink2, marginTop: 14, fontFamily: UI, lineHeight: 1.45 }}>{msg}</div>}
@@ -34841,10 +34807,10 @@ function Profile(props) {
           {props.email || ""}{props.email ? "  ·  " : ""}
           {snap.level >= MOTIV.maxLevel ? "Level 50" : snap.pctToNext + "% to level " + (snap.level + 1)}
         </div>
-        <button onClick={props.onViewNickname}
-          style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 11, border: "1px solid " + T.sep, background: "none", borderRadius: 20, padding: "6px 14px", fontSize: 12.5, fontWeight: 600, color: T.ink2, cursor: "pointer", fontFamily: UI }}>
+        <LiquidButton variant="neutral" size="sm" onClick={props.onViewNickname}
+          style={{ marginTop: 11 }}>
           <SVGIcon id="edit" size={12} color={T.ink2} />Edit profile
-        </button>
+        </LiquidButton>
       </div>
 
       {/* ── The people you follow ── */}
@@ -34936,8 +34902,8 @@ function Profile(props) {
               <div style={{ fontSize: 13.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.orange }}>Is this everything?</div>
               <div style={{ fontSize: 11.5, color: T.ink2, marginTop: 2 }}>{"Week of " + clean.pending.label + " · " + props.pendingCount + " logged"}</div>
             </div>
-            <button onClick={function() { props.onConfirmWeek(clean.pending.key); }}
-              style={{ flexShrink: 0, background: T.orange, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, padding: "8px 15px", borderRadius: 12, cursor: "pointer", fontFamily: UI }}>{tr("pfConfirm")}</button>
+            <LiquidButton variant="primary" size="sm" onClick={function() { props.onConfirmWeek(clean.pending.key); }}
+              style={{ flexShrink: 0 }}>{tr("pfConfirm")}</LiquidButton>
           </div>
         )}
 
@@ -35045,10 +35011,10 @@ function Profile(props) {
         </div>
       )}
 
-      <button onClick={props.onLogout}
-        style={{ width: "100%", background: T.card, color: T.red, border: "none", borderRadius: 18, padding: "15px 0", fontSize: 15.5, fontFamily: UI, fontWeight: 700, cursor: "pointer", marginTop: 24, display: "flex", alignItems: "center", justifyContent: "center", gap: 9 }}>
+      <LiquidButton variant="red" soft size="xl" full onClick={props.onLogout}
+        style={{ marginTop: 24 }}>
         <SVGIcon id="logout" size={17} color={T.red} />Sign out
-      </button>
+      </LiquidButton>
       <div style={{ textAlign: "center", fontSize: 12, color: T.ink3, marginTop: 14, fontFamily: UI }}>
         {props.email ? "Signed in as " + props.email : ""}
       </div>
@@ -35103,10 +35069,9 @@ function WhatsAppAlertsView(props) {
           <div>
             <input value={phone} onChange={function(e) { setPhone(e.target.value); }} placeholder="+972501234567" inputMode="tel"
               style={{ width: "100%", boxSizing: "border-box", background: T.bg, border: "1.5px solid " + T.sep, borderRadius: 12, padding: "12px 14px", fontSize: 15, fontFamily: UI, color: T.ink, marginBottom: 10 }} />
-            <button onClick={handleLink} disabled={busy || !phone.trim()}
-              style={{ width: "100%", background: T.btn, color: "#fff", border: "none", borderRadius: 14, padding: "13px 0", fontSize: 14.5, fontFamily: UI, fontWeight: 600, cursor: "pointer", opacity: busy || !phone.trim() ? 0.6 : 1, boxSizing: "border-box" }}>
+            <LiquidButton variant="primary" size="lg" full onClick={handleLink} disabled={busy || !phone.trim()}>
               {busy ? "Saving..." : "Save number"}
-            </button>
+            </LiquidButton>
           </div>
         )}
 
@@ -35129,10 +35094,10 @@ function WhatsAppAlertsView(props) {
       </Card>
 
       {linked && (
-        <button onClick={handleUnlink} disabled={busy}
-          style={{ width: "100%", background: "rgba(224,48,48,0.08)", color: T.red, border: "1px solid rgba(224,48,48,0.14)", borderRadius: 16, padding: "14px 0", fontSize: 15, fontFamily: UI, fontWeight: 600, cursor: "pointer", opacity: busy ? 0.6 : 1, boxSizing: "border-box", marginTop: 8 }}>
+        <LiquidButton variant="red" soft size="lg" full onClick={handleUnlink} disabled={busy}
+          style={{ marginTop: 8 }}>
           {busy ? "Removing..." : "Remove this number"}
-        </button>
+        </LiquidButton>
       )}
       <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, padding: "10px 6px 4px" }}>
         Richy only ever replies inside a conversation you opened - it never sends you a message you didn't ask for by texting first, so this can never rack up a WhatsApp charge on either side. At most a few alerts a day.
@@ -37594,11 +37559,10 @@ export default function App() {
       <div style={{ position: "sticky", top: 0, zIndex: 40, background: T.navBg, backdropFilter: "blur(24px) saturate(180%)", WebkitBackdropFilter: "blur(24px) saturate(180%)", borderBottom: "0.5px solid " + T.sep, boxShadow: "inset 0 1px 0 " + T.glassSpec + ", " + T.glassLiftDown }}>
         <div style={{ display: "flex", alignItems: "center", padding: "14px 20px 14px" }}>
           <div style={{ width: 122, display: "flex", alignItems: "center" }}>
-            <button onClick={function() { setTimeframeMenuOpen(true); }}
-              style={{ background: T.orangeDim, border: "none", borderRadius: 40, padding: "7px 7px 7px 9px", fontSize: 13, fontWeight: 600, color: T.orange, letterSpacing: "0.01em", cursor: "pointer", fontFamily: UI, display: "flex", alignItems: "center", gap: 3, whiteSpace: "nowrap" }}>
+            <LiquidButton variant="primary" soft size="sm" onClick={function() { setTimeframeMenuOpen(true); }}>
               {timeframeLabel}
               <span style={{ display: "flex", transform: "rotate(90deg)" }}><SVGIcon id="chevron" size={9} color={T.orange} /></span>
-            </button>
+            </LiquidButton>
           </div>
           <span style={{ flex: 1, minWidth: 0, fontSize: 18, fontWeight: currentTab === "advisor" ? RICHARD_DISP_WEIGHT : DISP_WEIGHT, fontFamily: currentTab === "advisor" ? RICHARD_DISP : DISP, color: T.ink, textAlign: "center", letterSpacing: "-0.02em", lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {screenTitle(currentTab, personName)}
@@ -37617,7 +37581,9 @@ export default function App() {
           position:fixed descendant and would pin this to the header instead of
           the viewport. At root level it stays parked in the bottom-left corner. */}
       {currentTab !== "advisor" && currentTab !== "householdMerge" && (
-          <button onClick={function() {
+          <LiquidButton variant="primary" size="icon" iconSize={36}
+            color={sheet && FAB_CREATES[currentTab] ? T.ink : undefined}
+            onClick={function() {
               nativeHaptic("MEDIUM");
               // The "+" used to mean "new transaction" everywhere, including on
               // the three screens whose own empty states said "tap + to create
@@ -37629,9 +37595,9 @@ export default function App() {
               else { setTab("activity"); setSheet(true); }
             }}
             aria-label={sheet && FAB_CREATES[currentTab] ? tr("close") : tr(FAB_CREATES[currentTab] || "addTransaction")}
-            style={{ position: "fixed", left: "max(20px, calc(50% - 195px))", bottom: "calc(102px + env(safe-area-inset-bottom, 0px))", background: sheet && FAB_CREATES[currentTab] ? T.ink : "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", border: "none", borderRadius: "50%", width: 36, height: 36, cursor: "pointer", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: sheet && FAB_CREATES[currentTab] ? "none" : "0 6px 16px " + T.orangeGlow, transform: sheet && FAB_CREATES[currentTab] ? "rotate(45deg)" : "none", transition: "background var(--m-quick) ease, box-shadow var(--m-quick) ease, transform var(--m-settle) var(--m-spring)", zIndex: 41 }}>
-            <SVGIcon id="plus" size={16} color="#fff" />
-          </button>
+            style={{ position: "fixed", left: "max(20px, calc(50% - 195px))", bottom: "calc(102px + env(safe-area-inset-bottom, 0px))", zIndex: 41 }}>
+            <span style={{ display: "flex", transform: sheet && FAB_CREATES[currentTab] ? "rotate(45deg)" : "none", transition: "transform var(--m-settle) var(--m-spring)" }}><SVGIcon id="plus" size={16} color="#fff" /></span>
+          </LiquidButton>
       )}
 
       <Overlay open={timeframeMenuOpen} onClose={function() { setTimeframeMenuOpen(false); }} title="Timeframe">
@@ -37659,8 +37625,8 @@ export default function App() {
             <div style={{ fontSize: 12.5, fontWeight: 700, color: T.red, fontFamily: UI, letterSpacing: "-0.01em" }}>Not saved</div>
             <div style={{ fontSize: 12.5, color: T.ink2, fontFamily: UI, lineHeight: 1.45, marginTop: 2 }}>{saveError}</div>
           </div>
-          <button onClick={function() { flushSave(); flushTxQueue().catch(function() {}); }} aria-label="Retry saving"
-            style={{ flexShrink: 0, border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "7px 12px", borderRadius: 9, background: T.red, color: "#fff" }}>Retry</button>
+          <LiquidButton variant="red" size="sm" onClick={function() { flushSave(); flushTxQueue().catch(function() {}); }} aria-label="Retry saving"
+            style={{ flexShrink: 0 }}>Retry</LiquidButton>
         </div>
       )}
 

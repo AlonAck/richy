@@ -12,11 +12,14 @@
   :root{
     --bg:#F7F3EE; --card:#FFFFFF; --ink:#1A1410; --ink2:#6B5C4E; --ink3:#B0A396;
     --sep:rgba(0,0,0,0.08); --purple:#8970C6; --purple-hi:#C8B1FF; --gold:#C8973A;
+    /* Liquid-glass capsule rim (the app's LiquidButton stack, light side) and the disabled wash. */
+    --lq-rim:0 0 0 0.5px rgba(137,112,198,0.22),0 2px 6px rgba(40,28,16,0.07),0 0 12px rgba(137,112,198,0.18),inset 0 0 0 1px rgba(255,255,255,0.60),inset 0 1.5px 1px -0.5px rgba(255,255,255,0.95),inset 0 -2px 2px -1.5px rgba(137,112,198,0.42),inset 0 9px 12px -11px rgba(255,255,255,0.92),inset 3px 3px 0.5px -3px rgba(137,112,198,0.30),inset -3px -3px 0.5px -3px rgba(137,112,198,0.26),inset 0 0 6px 6px rgba(137,112,198,0.06);
+    --lq-dis:linear-gradient(180deg,rgba(180,155,240,0.14),rgba(180,155,240,0.09));
     --font-display:"New York","Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Noto Serif Hebrew","Noto Naskh Arabic",ui-serif,"Times New Roman",serif;
     --font-ui:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   }
-  html.rc-dark{--bg:#131110;--card:#1D1A17;--ink:#F2EDE6;--ink2:#C9BFB4;--ink3:#8F8478;--sep:rgba(255,255,255,0.10);}
-  @media (prefers-color-scheme: dark){ html:not(.rc-light){--bg:#131110;--card:#1D1A17;--ink:#F2EDE6;--ink2:#C9BFB4;--ink3:#8F8478;--sep:rgba(255,255,255,0.10);} }
+  html.rc-dark{--bg:#131110;--card:#1D1A17;--ink:#F2EDE6;--ink2:#C9BFB4;--ink3:#8F8478;--sep:rgba(255,255,255,0.10);--lq-rim:0 0 0 0.5px rgba(239,233,255,0.14),0 2px 8px rgba(0,0,0,0.28),0 0 14px rgba(183,155,255,0.24),inset 0 0 0 1px rgba(239,233,255,0.20),inset 0 1.5px 1px -0.5px rgba(239,233,255,0.58),inset 0 -1.5px 1px -0.5px rgba(239,233,255,0.34),inset 0 7px 10px -9px rgba(239,233,255,0.80),inset 0 0 6px 6px rgba(239,233,255,0.07);--lq-dis:linear-gradient(180deg,rgba(180,155,240,0.10),rgba(180,155,240,0.06));}
+  @media (prefers-color-scheme: dark){ html:not(.rc-light){--bg:#131110;--card:#1D1A17;--ink:#F2EDE6;--ink2:#C9BFB4;--ink3:#8F8478;--sep:rgba(255,255,255,0.10);--lq-rim:0 0 0 0.5px rgba(239,233,255,0.14),0 2px 8px rgba(0,0,0,0.28),0 0 14px rgba(183,155,255,0.24),inset 0 0 0 1px rgba(239,233,255,0.20),inset 0 1.5px 1px -0.5px rgba(239,233,255,0.58),inset 0 -1.5px 1px -0.5px rgba(239,233,255,0.34),inset 0 7px 10px -9px rgba(239,233,255,0.80),inset 0 0 6px 6px rgba(239,233,255,0.07);--lq-dis:linear-gradient(180deg,rgba(180,155,240,0.10),rgba(180,155,240,0.06));} }
   *{box-sizing:border-box;}
   html,body{margin:0;background:var(--bg);}
   body{font-family:var(--font-ui);color:var(--ink2);line-height:1.6;-webkit-font-smoothing:antialiased;}
@@ -47,12 +50,26 @@
     padding:14px 16px;font-size:15px;font-family:var(--font-ui);color:var(--ink);outline:none;
   }
   form.waitlist input[type=email]:focus{border-color:var(--purple);}
+  /* The waitlist CTA is the app's liquid-glass primary capsule (LiquidButton in
+     budget-app.jsx), in plain CSS: a blurred backdrop + violet tint (::before),
+     the rim (::after), white ink on top. No shine, no sweep - by request. */
   form.waitlist button{
-    flex:0 0 auto;border:none;cursor:pointer;border-radius:13px;padding:14px 26px;
-    background:linear-gradient(135deg,#9D78E8 0%,#B493F2 55%,#CBB6FA 100%);
-    color:#fff;font-size:15px;font-weight:700;font-family:var(--font-ui);
+    position:relative;isolation:isolate;overflow:hidden;
+    flex:0 0 auto;border:none;cursor:pointer;border-radius:999px;height:48px;padding:0 26px;
+    background:transparent;color:#fff;font-size:15px;font-weight:700;font-family:var(--font-ui);letter-spacing:-0.01em;
+    text-shadow:0 1px 1px rgba(52,36,110,0.35);
+    box-shadow:0 6px 18px rgba(137,112,198,0.34),0 1px 2px rgba(0,0,0,0.10);
+    -webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;touch-action:manipulation;
+    transition:transform .12s ease,box-shadow .22s ease,color .22s ease;
   }
-  form.waitlist button:disabled{opacity:0.6;cursor:default;}
+  form.waitlist button::before{content:"";position:absolute;inset:0;z-index:-2;border-radius:inherit;-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);background:linear-gradient(180deg,rgba(137,112,198,0.70),rgba(137,112,198,0.90));transition:background .22s ease;}
+  form.waitlist button::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;box-shadow:var(--lq-rim);}
+  @media (hover:hover){form.waitlist button:hover:not(:disabled){transform:scale(1.03);box-shadow:0 9px 24px rgba(137,112,198,0.42),0 1px 2px rgba(0,0,0,0.10);}}
+  form.waitlist button:active:not(:disabled){transform:scale(0.97);}
+  form.waitlist button:disabled{cursor:default;color:var(--ink3);text-shadow:none;box-shadow:none;}
+  form.waitlist button:disabled::before{background:var(--lq-dis);}
+  @media (prefers-reduced-transparency:reduce){form.waitlist button::before{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--purple);}}
+  @media (prefers-reduced-motion:reduce){form.waitlist button{transition:none;}form.waitlist button:hover:not(:disabled),form.waitlist button:active:not(:disabled){transform:none;}}
   .form-note{font-size:12.5px;color:var(--ink3);margin-top:12px;}
   .form-msg{font-size:13.5px;font-weight:600;margin-top:14px;min-height:1.2em;}
   .form-msg.ok{color:#27A85F;}

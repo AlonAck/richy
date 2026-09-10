@@ -1,7 +1,9 @@
 import SwiftUI
 
 /// The accent-filled pill from the web app's `BigBtn`: white text, full width,
-/// a small press-down, dimmed when disabled.
+/// dimmed when disabled. Press feel (squish, lift-and-follow on a hold, commit
+/// on release) is the shared `liquidPress` modifier, the same spec as the
+/// web app's `LiquidButton`.
 struct PrimaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
 
@@ -13,8 +15,7 @@ struct PrimaryButtonStyle: ButtonStyle {
             .padding(.vertical, 14)
             .background(RichyColor.accent, in: Capsule())
             .opacity(isEnabled ? 1 : 0.55)
-            .scaleEffect(configuration.isPressed ? 0.97 : 1)
-            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+            .liquidPress(isPressed: configuration.isPressed)
     }
 }
 
@@ -30,8 +31,7 @@ struct SecondaryButtonStyle: ButtonStyle {
             .padding(.vertical, 14)
             .background(RichyColor.accentDim, in: Capsule())
             .opacity(isEnabled ? 1 : 0.55)
-            .scaleEffect(configuration.isPressed ? 0.97 : 1)
-            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+            .liquidPress(isPressed: configuration.isPressed)
     }
 }
 
