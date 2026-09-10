@@ -36,10 +36,15 @@ Dark Ember (leather-orange).** Grounds stay the same warm cream/near-black
   `#8970C6`/`#B79BFF` — currently `RichyTheme.standard` on native) remain
   as selectable non-default themes, not deleted.
 
-**Open item, not silently fixed here**: native's `RichyTheme.standard` is
-still `.purple`, not `.blue` — if cornflower blue is the flagship, that
-default should probably move too. Flagging rather than changing it as a
-side effect of a design-system doc.
+**Resolved 10 Sep 2026**: native's `RichyTheme.standard` now points at
+`.blue`. That alone was a no-op — `RichyColor.accent`/`accentHi`/`accentDim`
+were hardcoded to `RichyTheme.purple` directly rather than reading
+`.standard` — so both were fixed together
+(`RichyIOS/DesignSystem/RichyTheme.swift`,
+`RichyIOS/DesignSystem/RichyColor.swift`). `RichyColor.heroText`
+(`#2A1F4D`) is still tuned for the violet hero and untouched — it's only
+used on the `DemoBanner` label in `MainTabView.swift` (currently mid-edit
+in another session), low-stakes but worth a look once that settles.
 
 ## Typography
 
