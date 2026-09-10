@@ -477,14 +477,11 @@ var COLOR_BANK = [
 // switches rather than deletions - flip one back on and the feature returns
 // intact.
 //
-//   investingHub                The largest regulatory surface in the app -
-//                               live markets, holdings and a plan engine - so
-//                               it stays dark for v1. The code is untouched;
-//                               flip the switch and the hub comes back.
-//                               businessHub went out on the same audit finding
-//                               and is back on: a business account is a
-//                               budgeting tool, not a regulated activity, and
-//                               the Accounts hub reads half-built without it.
+//   investingHub / businessHub  Two whole hubs nothing in the app introduces
+//                               (four unlabelled taps deep in an account
+//                               picker), and Investing is also the largest
+//                               regulatory surface. Off for v1; the code is
+//                               untouched and ships dark.
 //   investOrderTicket           The plan engine's per-user, per-ticker order
 //                               ticket (VTI 32% / $160 / share counts). A
 //                               suitability questionnaire ending in an amount
@@ -505,7 +502,7 @@ var COLOR_BANK = [
 //                               real, named people who agreed to it.
 var LAUNCH = {
   investingHub: false,
-  businessHub: true,
+  businessHub: false,
   investOrderTicket: false,
   stockScout: false,
   leumiDemo: true,
@@ -1725,7 +1722,7 @@ var T1_STRINGS = {
     debts:"Debts", instructions:"Richard's Instructions", investing:"Investing", stock:"Stock", scout:"Stock Scout",
     privacy:"Privacy & Data", password:"Password", editEmail:"Email", editDob:"Date of Birth",
     editFinancial:"Financial Profile", business:"Business", collab:"Collab", entryMethod:"Adding transactions",
-    periodMode:"Date Range", bankSync:"Bank Sync", editOpeningBalance:"Opening balance",
+    periodMode:"Date Range", bankSync:"Bank Sync", whatsapp:"WhatsApp Alerts", editOpeningBalance:"Opening balance",
     logMonth:"Log this month", tripHistory:"Trip History", badges:"Badges", settings:"Settings",
     social:"Friends", findPeople:"Find people", analysis:"Full Analysis", investPlan:"Your investing plan",
     investorOnboard:"Investing basics", trips:"Trips", tripPlan:"Plan a trip",
@@ -1775,7 +1772,7 @@ var T1_STRINGS = {
     debts:"חובות", instructions:"ההוראות לריצ'רד", investing:"השקעות", stock:"מניה", scout:"סורק המניות",
     privacy:"פרטיות ונתונים", password:"סיסמה", editEmail:"אימייל", editDob:"תאריך לידה",
     editFinancial:"פרופיל פיננסי", business:"עסק", collab:"שיתוף", entryMethod:"הוספת עסקאות",
-    periodMode:"טווח תאריכים", bankSync:"סנכרון בנק", editOpeningBalance:"יתרת פתיחה",
+    periodMode:"טווח תאריכים", bankSync:"סנכרון בנק", whatsapp:"התראות וואטסאפ", editOpeningBalance:"יתרת פתיחה",
     logMonth:"תיעוד החודש", tripHistory:"היסטוריית טיולים", badges:"תגים", settings:"הגדרות",
     social:"חברים", findPeople:"חיפוש אנשים", analysis:"ניתוח מלא", investPlan:"תוכנית ההשקעות שלך",
     investorOnboard:"יסודות ההשקעה", trips:"טיולים", tripPlan:"תכנון טיול",
@@ -1820,7 +1817,7 @@ var T1_STRINGS = {
     debts:"الديون", instructions:"تعليمات ريتشارد", investing:"الاستثمار", stock:"سهم", scout:"كشّاف الأسهم",
     privacy:"الخصوصية والبيانات", password:"كلمة المرور", editEmail:"البريد الإلكتروني", editDob:"تاريخ الميلاد",
     editFinancial:"الملف المالي", business:"الأعمال", collab:"المشاركة", entryMethod:"إضافة المعاملات",
-    periodMode:"النطاق الزمني", bankSync:"مزامنة البنك", editOpeningBalance:"الرصيد الافتتاحي",
+    periodMode:"النطاق الزمني", bankSync:"مزامنة البنك", whatsapp:"تنبيهات واتساب", editOpeningBalance:"الرصيد الافتتاحي",
     logMonth:"تسجيل هذا الشهر", tripHistory:"سجل الرحلات", badges:"الشارات", settings:"الإعدادات",
     social:"الأصدقاء", findPeople:"البحث عن أشخاص", analysis:"التحليل الكامل", investPlan:"خطة الاستثمار",
     investorOnboard:"أساسيات الاستثمار", trips:"الرحلات", tripPlan:"تخطيط رحلة",
@@ -1865,7 +1862,7 @@ var T1_STRINGS = {
     debts:"Долги", instructions:"Инструкции Ричарду", investing:"Инвестиции", stock:"Акция", scout:"Поиск акций",
     privacy:"Приватность и данные", password:"Пароль", editEmail:"Эл. почта", editDob:"Дата рождения",
     editFinancial:"Финансовый профиль", business:"Бизнес", collab:"Совместно", entryMethod:"Добавление операций",
-    periodMode:"Период", bankSync:"Синхронизация с банком", editOpeningBalance:"Начальный баланс",
+    periodMode:"Период", bankSync:"Синхронизация с банком", whatsapp:"Оповещения в WhatsApp", editOpeningBalance:"Начальный баланс",
     logMonth:"Записать месяц", tripHistory:"История поездок", badges:"Значки", settings:"Настройки",
     social:"Друзья", findPeople:"Найти людей", analysis:"Полный анализ", investPlan:"Ваш инвестиционный план",
     investorOnboard:"Основы инвестирования", trips:"Поездки", tripPlan:"Спланировать поездку",
@@ -4980,27 +4977,6 @@ function ensureMotionCss() {
     "@keyframes rcRowIn{from{opacity:0;transform:translateY(-8px);max-height:0}to{opacity:1;transform:none;max-height:120px}}",
     "@keyframes rcSweep{from{transform:translateX(-130%) skewX(-14deg)}to{transform:translateX(360%) skewX(-14deg)}}",
     "@keyframes rcNudge{0%{transform:none}38%{transform:translateY(-5px)}100%{transform:none}}",
-    // Scroll reveal. Every section below the fold used to run its entrance on
-    // mount, so by the time you scrolled down to it the movement was long over
-    // and the page felt dead exactly where it should feel alive. These classes
-    // hold a section at rest until it crosses into view, then rise it once. One
-    // move per section, never replayed on scroll-up - that restraint is what
-    // separates this from a page that keeps twitching.
-    "@keyframes rcReveal{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}",
-    ".rc-reveal-hidden{opacity:0}",
-    ".rc-reveal-in{animation:rcReveal calc(0.58s * var(--m-scale)) var(--m-ease) both}",
-    // A reward is the rare exception to Richy's otherwise quiet motion. Every
-    // animation runs once, tells the badge -> streak -> level story, then stops.
-    "@keyframes rcRewardBackdrop{from{opacity:0}to{opacity:1}}",
-    "@keyframes rcRewardCard{0%{opacity:0;transform:translateY(34px) scale(.94);filter:blur(8px)}60%{opacity:1;transform:translateY(-4px) scale(1.012);filter:blur(0)}100%{opacity:1;transform:none;filter:blur(0)}}",
-    "@keyframes rcRewardGlyph{0%{opacity:0;transform:scale(.35) rotate(-9deg);filter:blur(10px)}58%{opacity:1;transform:scale(1.11) rotate(2deg);filter:blur(0)}100%{opacity:1;transform:none;filter:blur(0)}}",
-    "@keyframes rcRewardHalo{0%{opacity:.85;transform:scale(.35)}100%{opacity:0;transform:scale(1.7)}}",
-    "@keyframes rcRewardSpark{0%{opacity:0;transform:translateY(14px) scale(.2) rotate(0deg)}30%{opacity:1}100%{opacity:0;transform:translateY(-54px) scale(1) rotate(110deg)}}",
-    "@keyframes rcRewardStep{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:none}}",
-    "@keyframes rcRewardProgress{from{transform:scaleX(0)}to{transform:scaleX(var(--reward-progress,1))}}",
-    "@keyframes rcRewardLevel{0%{opacity:0;transform:scale(.62) translateY(12px)}62%{opacity:1;transform:scale(1.12) translateY(-2px)}100%{opacity:1;transform:none}}",
-    ".rc-reward-spark{position:absolute;width:6px;height:12px;border-radius:99px;background:var(--reward-spark,#fff);box-shadow:0 0 12px var(--reward-spark,#fff);animation:rcRewardSpark calc(.9s * var(--m-scale)) var(--m-ease) both}",
-    ".rc-reward-progress{transform-origin:left center;animation:rcRewardProgress calc(1s * var(--m-scale)) var(--m-ease) calc(.95s * var(--m-scale)) both}",
   ].join("");
   document.head.appendChild(st);
 }
@@ -12860,33 +12836,23 @@ function classifyImportRows(cands, existing) {
   // contend for one transaction, none of them may be settled quietly: they are
   // all demoted to questions and flagged, and judgeLookalikes' verdict is not
   // allowed to merge them either (see runJudge).
-  // Counted against SUPPLY, not against the key: a ledger legitimately holds
-  // repeats (two identical bus fares in one day), and bestDupMatch cannot tell
-  // them apart, so N identical existing rows can absorb N claims without
-  // anything being over-claimed. Only claims beyond that are contention.
-  // Comparing claims to a flat 1 made re-importing the same file re-ask about
-  // every repeated charge it had already filed.
-  var claims = {}, supply = {};
+  var claims = {};
   function claimKey(t) { return t ? dupKey(t.type, t.date, t.amount, t.label) : ""; }
-  base.forEach(function(t) { var k = claimKey(t); supply[k] = (supply[k] || 0) + 1; });
   dupes.concat(maybes).forEach(function(e) {
     if (e.inFile || !e.match) return;
     var k = claimKey(e.match);
     claims[k] = (claims[k] || 0) + 1;
   });
-  function overClaimed(e) {
-    if (e.inFile || !e.match) return false;
-    var k = claimKey(e.match);
-    return (claims[k] || 0) > (supply[k] || 1);
-  }
   var contendedDupes = [];
   dupes = dupes.filter(function(e) {
-    if (!overClaimed(e)) return true;
+    if (e.inFile || !e.match || claims[claimKey(e.match)] < 2) return true;
     e.contended = true;
     contendedDupes.push(e);
     return false;
   });
-  maybes.forEach(function(e) { if (overClaimed(e)) e.contended = true; });
+  maybes.forEach(function(e) {
+    if (!e.inFile && e.match && claims[claimKey(e.match)] > 1) e.contended = true;
+  });
   maybes = maybes.concat(contendedDupes);
 
   return { fresh: fresh, dupes: dupes, maybes: maybes, twins: twins };
@@ -19628,9 +19594,8 @@ function trimContextBlock(text, max) {
 // not touch the other two refusals, and both of those grow monotonically with
 // the conversation: every turn adds two entries against MAX_MESSAGES = 40, and
 // every image is re-encoded in full on every later turn against
-// MAX_TOTAL_CHARS = 100,000 (downscaleImage caps one image just under 46,000
-// characters, so two of them plus the system prompt clear that ceiling on their
-// own, without a single word of conversation around them).
+// MAX_TOTAL_CHARS = 100,000 (downscaleImage caps one image just under 60,000
+// characters, so two of them exceed that ceiling on their own).
 //
 // Monotonic is the important word. A thread that crosses either line never
 // comes back, so the visible-failure work is what exposed the real cost: the
@@ -19648,55 +19613,17 @@ function trimContextBlock(text, max) {
 //      newest user turn is never dropped - it is the message being sent, and a
 //      single image plus the largest possible system prompt still fits under
 //      the server's total.
-//
-// A fourth rule that is easy to miss: a row the CLIENT wrote to report a
-// failure is not part of the conversation. Left in, the red row's text goes up
-// as one of Richard's own assistant turns, so the next answer is written by a
-// model that thinks it last said "That conversation is too long for Richard to
-// take in one go."
 var CHAT_SEND_MAX = 30;        // entries posted, against the server's 40
 var CHAT_SEND_CHARS = 55000;   // messages budget = MAX_TOTAL_CHARS 100,000 less
                                // MAX_SYSTEM_CHARS 45,000, so this holds whatever
                                // the system prompt turns out to be: anything
                                // over 45,000 is refused on the system rule
                                // instead, which is its own honest error
-// One photo, encoded once. downscaleImage does the base64 pass a single time
-// when the file is picked, but the send path rebuilt the vision block around it
-// on every later turn - and weighing that block would have re-serialized ~46,000
-// characters per turn on top. Both are cached against the attachment object
-// itself, so a photo costs that pass once no matter how long the thread runs,
-// and is released with the message when the attachment is.
-var imgBlockCache = typeof WeakMap === "function" ? new WeakMap() : null;
-function imgBlock(att) {
-  var hit = imgBlockCache && imgBlockCache.get(att);
-  if (hit) return hit;
-  var block = { type: "image", source: { type: "base64", media_type: att.mediaType, data: att.b64 } };
-  var entry = { block: block, chars: JSON.stringify(block).length };
-  if (imgBlockCache) imgBlockCache.set(att, entry);
-  return entry;
+function boundThreadMsg(m) {
+  return ((m && m.text) || "").length + (m && m.att && m.att.b64 ? m.att.b64.length : 0);
 }
-// Measure a message the way the server measures it. api/chat.js weighs
-// JSON.stringify(messages), so the role/content framing and an image block's
-// wrapper count against the ceiling too - roughly 80 characters per entry and
-// ~120 for a vision block. Counting only text and base64 under-read a full
-// 30-entry window by a couple of thousand characters, which is enough to fail
-// the exact check this budget exists to pass.
-function boundThreadMsg(m, mapFn) {
-  var att = m && m.att;
-  if (att && att.kind === "image" && att.b64) {
-    // 60 covers the role/content/text framing around the two blocks, rounded up
-    // from the 53 it actually is - over-reading is safe here, under-reading is
-    // the bug.
-    return imgBlock(att).chars + JSON.stringify(m.text || "What do you make of this?").length + 60;
-  }
-  try { return JSON.stringify(mapFn(m)).length + 1; } catch (e) {}
-  return ((m && m.text) || "").length + 80;
-}
-// mapFn turns one chat row into one API message (apiMsg). It is passed in
-// rather than applied afterwards so the budget above is measured on the real
-// payload, and so each image is stringified once per send instead of twice.
-function boundThread(msgs, mapFn) {
-  var out = (msgs || []).filter(function(m) { return m && !m.failed; }).slice(-CHAT_SEND_MAX);
+function boundThread(msgs) {
+  var out = (msgs || []).slice(-CHAT_SEND_MAX);
   while (out.length && out[0].role !== "user") out = out.slice(1);
 
   var lastImg = -1;
@@ -19715,21 +19642,16 @@ function boundThread(msgs, mapFn) {
     return m;
   });
 
-  var items = out.map(function(m) {
-    return { role: m.role === "user" ? "user" : "assistant", api: mapFn(m), cost: boundThreadMsg(m, mapFn) };
-  });
-  // Starts at 2 for the array's own brackets, so the budget below is the same
-  // number the server will compute.
-  var total = items.reduce(function(s, it) { return s + it.cost; }, 2);
-  while (items.length > 1 && total > CHAT_SEND_CHARS) {
-    total -= items[0].cost;
-    items = items.slice(1);
-    while (items.length > 1 && items[0].role !== "user") {
-      total -= items[0].cost;
-      items = items.slice(1);
+  var total = out.reduce(function(s, m) { return s + boundThreadMsg(m); }, 0);
+  while (out.length > 1 && total > CHAT_SEND_CHARS) {
+    total -= boundThreadMsg(out[0]);
+    out = out.slice(1);
+    while (out.length > 1 && out[0].role !== "user") {
+      total -= boundThreadMsg(out[0]);
+      out = out.slice(1);
     }
   }
-  return items.map(function(it) { return it.api; });
+  return out;
 }
 
 function richardErr(kind, message, status) {
@@ -21903,14 +21825,7 @@ function Advisor(props) {
         if (data.length < 46000) break;
         q -= 0.13;
       }
-      // One threshold, and it is the same one the loop above aims at. The old
-      // reject line sat at 60,000, so anything between 46,000 and 60,000 was
-      // accepted - and 45,000 of system prompt plus a 59,000-character photo is
-      // 104,000, over the proxy's 100,000 total, on a thread of exactly one
-      // message. Trimming cannot rescue that: there is nothing older to drop, so
-      // the photo was refused on send and refused identically on every Retry.
-      // Under 46,000 leaves roughly 9,000 characters for the question itself.
-      if (data.length >= 46000) { cb(new Error("That image is too detailed to send. Try a smaller crop.")); return; }
+      if (data.length >= 60000) { cb(new Error("That image is too detailed to send. Try a smaller crop.")); return; }
       cb(null, { kind: "image", name: file.name, mediaType: "image/jpeg", b64: data.split(",")[1], preview: data });
     };
     img.onerror = function() { URL.revokeObjectURL(url); cb(new Error("That image couldn't be read.")); };
@@ -21993,7 +21908,7 @@ function Advisor(props) {
   function apiMsg(m) {
     if (m.role === "user" && m.att && m.att.kind === "image" && m.att.b64) {
       return { role: "user", content: [
-        imgBlock(m.att).block,
+        { type: "image", source: { type: "base64", media_type: m.att.mediaType, data: m.att.b64 } },
         { type: "text", text: m.text || "What do you make of this?" }
       ] };
     }
@@ -22017,38 +21932,6 @@ function Advisor(props) {
         + att.text + "\n--- end of file ---";
     }
     var nc = chat.concat([{ role: "user", text: msg, att: att || undefined, shown: att ? (input.trim() || (att.kind === "image" ? "" : "Here's a file - take a look.")) : undefined }]);
-    startChat(nc, msg, isVoice);
-  }
-
-  // Retry re-sends the turn that already failed. It does NOT write a second
-  // copy of the question, which is what the old handler did: it called
-  // sendChat(m.retry), and sendChat appends. Three things went wrong at once.
-  // The user turn was duplicated, so every attempt made the payload BIGGER
-  // than the one that was just refused for being too big. The setChat() that
-  // dropped the red row had not committed yet, so the error text ("That
-  // conversation is too long") was still in the closure and went up as one of
-  // Richard's own assistant turns. And a string argument means "voice" to
-  // sendChat, so retrying a typed question quietly switched it to the
-  // spoken-answer prompt and skipped Focus Mode. Rebuilding the thread here,
-  // from the rows that are actually part of the conversation, fixes all three
-  // and keeps the original attachment attached.
-  function retryChat(idx) {
-    if (chatLoading) return;
-    var row = chat[idx];
-    if (!row || !row.retry) return;
-    // Drop this row and any other client-side failure row, then wind back to
-    // the user turn being retried.
-    var base = chat.filter(function(m, i) { return i !== idx && !m.failed; });
-    while (base.length && base[base.length - 1].role !== "user") base = base.slice(0, -1);
-    if (!base.length) return;
-    setChatExpanded(true);
-    startChat(base, row.retry, !!row.retryVoice);
-  }
-
-  // Everything from here down is shared by a first send and a retry: the
-  // thread is already built, so this only decides how to ask and what to do
-  // with the answer.
-  function startChat(nc, msg, isVoice) {
     setChat(nc);
     setChatLoading(true);
     var customInstructionsPrefix = richardUserCtx(props.richardInstructions);
@@ -22076,12 +21959,12 @@ function Advisor(props) {
         + "Keep every section tight - only what matters to THEM, never generic filler. Do not add any text outside the labeled lines and do not write your own disclaimer; the app displays one."
         + (props.lang && props.lang !== "en" ? " Write all section CONTENT in " + (LANGUAGE_NAMES[props.lang] || "English") + " (labels stay in English)." : "");
       callClaude(
-        boundThread(nc, apiMsg),
+        boundThread(nc).map(apiMsg),
         focusSys, 1800,
         function(err, reply) {
           setChatLoading(false);
           if (err) {
-            setChat(function(p) { animMsgRef.current = -1; return p.concat([{ role: "assistant", failed: true, retry: msg, retryVoice: isVoice || undefined, text: err.message }]); });
+            setChat(function(p) { animMsgRef.current = -1; return p.concat([{ role: "assistant", failed: true, retry: msg, text: err.message }]); });
             return;
           }
           var parsed = parseFocusAnswer(reply);
@@ -22092,7 +21975,7 @@ function Advisor(props) {
       return;
     }
     callClaude(
-      boundThread(nc, apiMsg),
+      boundThread(nc).map(apiMsg),
       customInstructionsPrefix + "You are Richard, a smart assistant inside the Richy personal finance app. You are calm, warm, direct, and knowledgeable - a trusted friend who is an expert in money and can help with anything the user asks. You have deep knowledge from The Psychology of Money, Rich Dad Poor Dad, The Millionaire Next Door, I Will Teach You To Be Rich, The Total Money Makeover, Think and Grow Rich, The Richest Man in Babylon, and wisdom from Warren Buffett, Charlie Munger, Ray Dalio, Naval Ravikant, Mark Cuban, Grant Cardone and other wealth builders. You can answer questions about personal finance, investments, budgeting, debt, taxes, and wealth-building. HARD LIMIT on investments: never give an opinion on whether to buy, sell, or hold any SPECIFIC security, fund, or other financial asset, never react to specific holdings with a recommendation, and never suggest an amount to put into one - for those questions give the general educational principle and the tradeoff, then say that call belongs with a licensed investment advisor. The budgeting side (whether their cash flow could absorb investing at all) is yours to answer fully. You can also answer questions about how to use the Richy app (it has tabs: Overview, Activity for transactions, Budgets for spending limits, Goals for savings targets, and Advisor which is where we are now; categories are managed via the tag icon on Overview or the Manage link in pickers). You can answer general knowledge and technical questions too - if someone asks about math, technology, or anything else, answer helpfully. Always refer back to the user's real financial data when relevant. Current user financial data: " + ctx + "." + (coreProblem ? " The user's primary financial challenge is: " + coreProblem + ". Connect your advice to this when relevant." : "")
       + " BE SPECIFIC, NEVER GENERIC. The user has heard \"build an emergency fund, cancel some subscriptions, invest in index funds\" a hundred times - generic tips read as a failure and are the top complaint about advisors like you. Anchor every answer in THEIR actual numbers above: quote their real figures, do the arithmetic, and end with a concrete next step that has an amount or a date attached. When they ask whether they can afford something (a purchase, a trip, a rent level, a big decision), compute it against their real income, essentials, savings and cash flow and give a direct answer - yes, no, or \"here is exactly what it would take\" - with the numbers shown, not a list of things to consider. When they ask about debt, give a payoff order, a specific monthly amount, and an estimated debt-free timeframe derived from their balances and rates; never just \"pay it down\" or \"build savings first.\" Cite a principle or a name only when it sharpens a specific recommendation - never decorate generic advice with a famous quote. If you truly lack a number needed to answer precisely, ask the one question that would unlock it instead of retreating to textbook advice."
       + " IMPORTANT - YOU CAN UPDATE THE APP FOR THE USER, ACROSS EVERYTHING except Business/Investing accounts and Trips (those have their own dedicated tools). When the user tells you about a real money event, or directly asks you to change or create something in the app, acknowledge it warmly in words AND append one or more action tags at the very END of your reply (after your sentence, on their own). The app validates and shows the user a confirmation card before anything is applied - nothing you emit takes effect until they tap Apply, so it is fine to be generous about proposing a tag when the user's intent is clear. Action formats (use valid JSON, no spaces in keys): "
@@ -22134,7 +22017,7 @@ function Advisor(props) {
         // retry, and only a genuine network drop falls back to Richard(), which
         // is then badged as an offline answer rather than passed off as his.
         if (isServerRefusal(err)) {
-          setChat(function(p) { animMsgRef.current = -1; return p.concat([{ role: "assistant", failed: true, retry: msg, retryVoice: isVoice || undefined, text: err.message }]); });
+          setChat(function(p) { animMsgRef.current = -1; return p.concat([{ role: "assistant", failed: true, retry: msg, text: err.message }]); });
           return;
         }
         var offline = !!(err || !text);
@@ -22163,7 +22046,7 @@ function Advisor(props) {
           display = display ? display + "\n\n" + soloCue : soloCue;
         }
         if (!display) display = "Got it - I've noted that below. Tap Apply to update your app.";
-        setChat(function(p) { animMsgRef.current = p.length; return p.concat([{ role: "assistant", text: display, offline: offline || undefined, retry: offline ? msg : undefined, retryVoice: (offline && isVoice) || undefined }]); });
+        setChat(function(p) { animMsgRef.current = p.length; return p.concat([{ role: "assistant", text: display, offline: offline || undefined, retry: offline ? msg : undefined }]); });
         if (updates.length > 0) {
           setPendingUpdates(updates);
           setPendingAction(null);
@@ -22986,7 +22869,7 @@ function Advisor(props) {
                           <div dir="auto" style={{ fontSize: 11.5, fontFamily: UI, color: T.ink3, marginTop: 2, wordBreak: "break-word" }}>{m.text}</div>
                         </div>
                         {m.retry && (
-                          <LiquidButton variant="red" soft size="sm" onClick={function() { retryChat(i); }} style={{ flexShrink: 0 }}>
+                          <LiquidButton variant="red" soft size="sm" onClick={function() { setChat(function(p) { return p.filter(function(x, xi) { return xi !== i; }); }); sendChat(m.retry); }} style={{ flexShrink: 0 }}>
                             {tr("retry")}
                           </LiquidButton>
                         )}
@@ -23026,7 +22909,7 @@ function Advisor(props) {
                                   <SVGIcon id="warn" size={10} color={T.gold} />{tr("offlineAnswer")}
                                 </span>
                                 {m.retry && (
-                                  <button onClick={function() { retryChat(i); }}
+                                  <button onClick={function() { setChat(function(p) { return p.filter(function(x, xi) { return xi !== i; }); }); sendChat(m.retry); }}
                                     style={{ border: "none", background: "transparent", color: T.orange, fontFamily: UI, fontSize: 11.5, fontWeight: 700, padding: 0, cursor: "pointer", textDecoration: "underline" }}>
                                     {tr("retry")}
                                   </button>
@@ -26474,7 +26357,7 @@ function SavingsView(props) {
     <div>
       <SubViewBack onBack={props.onBack} label={tr("overview")} />
 
-      <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, marginBottom: 18, padding: "0 2px" }}>{props.onOpenInvesting ? "Money set aside outside your spendable balance. Open a savings pot, a business account with a plan from Richard, or an investing account with live markets." : props.onOpenBusiness ? "Money set aside outside your spendable balance. Open a savings pot, or a business account with a plan from Richard." : tr("savingsIntro")}</div>
+      <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, marginBottom: 18, padding: "0 2px" }}>{props.onOpenBusiness ? "Money set aside outside your spendable balance. Open a savings pot, a business account with a plan from Richard, or an investing account with live markets." : tr("savingsIntro")}</div>
 
       {hubCount > 0 && (
         <Card style={{ padding: "18px 20px", marginBottom: 16, background: T.heroBg, boxShadow: T.heroShadow }}>
@@ -35253,6 +35136,7 @@ function PlanView(props) {
       + "Richy CAN import a CSV statement: the Activity tab has an import button that reads a bank or card CSV export entirely on-device (it maps columns, handles separate money-in/money-out columns, auto-categorizes from the user's history, and skips duplicates). If someone is tired of manual entry, point them there. "
       + "Richy HAS a Debts tracker (Profile -> Debts): the user logs each debt's balance, rate, and minimum, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date. Point anyone paying off debt there, and answer 'what first' with their actual numbers. "
       + "Richy HAS a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): clearly labeled a DEMO, it fills the account with realistic sample transactions to preview the experience, but it is NOT a real connection to the user's actual Bank Leumi account - that needs Bank Leumi to certify Richy as a licensed Open Banking provider first, which hasn't happened. Be direct about this if asked whether it's real. "
+      + "Richy HAS real WhatsApp alerts for Richard Watch (Profile -> Settings -> WhatsApp Alerts): the user links their number and texts START to Richy's WhatsApp to turn it on, then Richard relays the single most urgent Watch signal there once a day. It only ever replies inside a chat the user opened - if they ask why an alert didn't arrive, tell them to send Richy any WhatsApp message to reopen today's window. "
       + "Richy ALSO has Collab (Profile -> Collab): two people can join one household and share budgets, goals and categories, each keeping their own login - send anyone asking about splitting money with a partner, a flatmate or a family member there, and say plainly that it shares budgets and goals rather than merging every transaction into one ledger. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (Bank Sync files purchases from the payment notifications the user's own phone already receives - an automation they set up and control on their device, not a bank connection), no fully shared couples ledger yet. If asked about these, acknowledge the gap and offer the best workaround available inside Richy. "
       + "Be concise and direct — keep it short unless the user asks for more depth." + RICHARD_FORMAT + " The only bracketed syntax you may use is the action tag described next. "
       + "If you want to suggest a specific concrete change to the user's app, append exactly one action tag at the very end of your reply: "
@@ -35587,138 +35471,6 @@ function BadgeTile(props) {
         {locked ? " " : RARITY_LABEL[b.r]}
       </div>
     </button>
-  );
-}
-
-// The payoff layer for the motivation system. Richy is deliberately calm in
-// normal use, so earning something gets a true interruption: the badge arrives
-// first, then the streak, then the level. Multiple badges earned by one action
-// are grouped into one honest moment instead of making the user dismiss a stack
-// of near-identical modals (especially important for account backfill).
-function MotivationCelebration(props) {
-  var moment = props.moment;
-  var badges = (moment.badges || []).slice();
-  var rarityOrder = { common: 0, uncommon: 1, rare: 2, epic: 3, legendary: 4, mythic: 5 };
-  badges.sort(function(a, b) { return (rarityOrder[b.def.r] || 0) - (rarityOrder[a.def.r] || 0); });
-  var featured = badges[0] || null;
-  var col = featured ? rarityColor(featured.def.r) : T.orange;
-  var dim = featured ? rarityDim(featured.def.r) : T.orangeDim;
-  var levelUp = moment.levelAfter > moment.levelBefore;
-  var streakUp = moment.streakAfter > moment.streakBefore;
-  var progress = Math.max(0.04, Math.min(1, (moment.pctAfter || 0) / 100));
-  var sparks = [
-    [10, 18, -18, 0], [22, 9, 20, 90], [37, 15, -8, 180], [64, 10, 14, 30],
-    [79, 17, -22, 120], [91, 28, 17, 210], [15, 48, 12, 60], [85, 51, -10, 160],
-    [27, 68, -16, 240], [72, 69, 18, 110], [44, 5, 7, 200], [57, 23, -13, 20]
-  ];
-
-  useEffect(function() {
-    var prior = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    nativeHaptic(featured && rarityOrder[featured.def.r] >= 2 ? "HEAVY" : "MEDIUM");
-    var levelTap = levelUp ? setTimeout(function() { nativeHaptic("HEAVY"); }, 1250) : null;
-    function onKey(e) { if (e.key === "Escape") props.onClose(); }
-    window.addEventListener("keydown", onKey);
-    return function() {
-      document.body.style.overflow = prior;
-      window.removeEventListener("keydown", onKey);
-      if (levelTap) clearTimeout(levelTap);
-    };
-  }, [moment.id]);
-
-  var eyebrow = featured ? "BADGE EARNED" : streakUp ? "STREAK BUILT" : "LEVEL UP";
-  var title = featured ? featured.def.name : streakUp ? "Another clean week" : "You moved up";
-  var detail = featured ? featured.def.desc : "Your books are true. That consistency is doing real work.";
-  var xpGain = Math.max(0, moment.xpAfter - moment.xpBefore);
-
-  return (
-    <div role="dialog" aria-modal="true" aria-label={eyebrow + ": " + title}
-      style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(18,12,8,0.78)", backdropFilter: "blur(16px) saturate(120%)", WebkitBackdropFilter: "blur(16px) saturate(120%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "max(18px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom))", boxSizing: "border-box", animation: "rcRewardBackdrop var(--m-enter) ease both" }}>
-      <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }} aria-hidden="true">
-        <div style={{ position: "absolute", width: 520, height: 520, borderRadius: "50%", left: "50%", top: "42%", transform: "translate(-50%,-50%)", background: "radial-gradient(circle," + dim + " 0%,rgba(137,112,198,0.16) 34%,transparent 68%)" }} />
-        {sparks.map(function(s, i) {
-          return <span key={i} className="rc-reward-spark" style={{ left: s[0] + "%", top: s[1] + "%", transform: "rotate(" + s[2] + "deg)", animationDelay: (0.14 + s[3] / 1000) + "s", "--reward-spark": i % 3 === 0 ? T.gold : i % 3 === 1 ? col : "#fff" }} />;
-        })}
-      </div>
-
-      <div style={{ position: "relative", width: "100%", maxWidth: 398, maxHeight: "calc(100vh - 32px)", overflowY: "auto", background: T.card, border: "1px solid " + (T.isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.72)"), borderRadius: 30, boxShadow: "0 30px 90px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.22)", padding: "26px 22px 20px", boxSizing: "border-box", textAlign: "center", animation: "rcRewardCard calc(.72s * var(--m-scale)) var(--m-spring) both" }}>
-        <button onClick={props.onClose} aria-label="Close reward"
-          style={{ position: "absolute", zIndex: 3, top: 14, right: 14, width: 44, height: 44, borderRadius: "50%", border: "none", background: T.inputBg, color: T.ink3, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <SVGIcon id="close" size={16} color={T.ink3} />
-        </button>
-
-        <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.15em", color: col, fontFamily: UI, animation: "rcRewardStep var(--m-enter) var(--m-ease) .18s both" }}>{eyebrow}</div>
-
-        {featured && (
-          <div style={{ position: "relative", width: 156, height: 156, margin: "15px auto 5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span aria-hidden="true" style={{ position: "absolute", inset: 8, borderRadius: "50%", border: "2px solid " + col, boxShadow: "0 0 36px " + col, animation: "rcRewardHalo calc(1.05s * var(--m-scale)) var(--m-ease) .16s both" }} />
-            <div style={{ position: "relative", filter: "drop-shadow(0 14px 22px rgba(0,0,0,0.22))", animation: "rcRewardGlyph calc(.82s * var(--m-scale)) var(--m-spring) .12s both" }}>
-              <BadgeGlyph badge={featured.def} size={136} />
-            </div>
-          </div>
-        )}
-
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: featured ? 2 : 18, borderRadius: 99, padding: "5px 10px", background: dim, animation: "rcRewardStep var(--m-enter) var(--m-ease) .42s both" }}>
-          <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.1em", color: col }}>{featured ? RARITY_LABEL[featured.def.r] : "PROGRESS"}</span>
-          <span style={{ width: 3, height: 3, borderRadius: "50%", background: col, opacity: .65 }} />
-          <span style={{ fontSize: 11, fontWeight: 800, color: col }}>{"+" + xpGain + " XP"}</span>
-        </div>
-        <h2 style={{ margin: "11px 0 0", color: T.ink, fontFamily: DISP, fontWeight: DISP_WEIGHT, fontSize: 30, lineHeight: 1.08, letterSpacing: "-0.035em", animation: "rcRewardStep var(--m-enter) var(--m-ease) .5s both" }}>{title}</h2>
-        <p style={{ margin: "8px auto 0", maxWidth: 310, color: T.ink2, fontFamily: UI, fontSize: 13.5, lineHeight: 1.5, animation: "rcRewardStep var(--m-enter) var(--m-ease) .57s both" }}>{detail}</p>
-        {badges.length > 1 && (
-          <div style={{ marginTop: 9, color: T.ink3, fontSize: 11.5, fontWeight: 600, animation: "rcRewardStep var(--m-enter) var(--m-ease) .62s both" }}>
-            {"And " + (badges.length - 1) + " more badge" + (badges.length === 2 ? "" : "s") + " joined your collection"}
-          </div>
-        )}
-
-        <div style={{ marginTop: 20, borderRadius: 20, padding: "15px 15px 14px", background: T.bg, border: "1px solid " + T.sep, textAlign: "left", animation: "rcRewardStep var(--m-enter) var(--m-ease) .72s both" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr", alignItems: "center", gap: 13 }}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, color: streakUp ? T.green : T.ink3 }}>
-                <SVGIcon id="flame" size={15} color={streakUp ? T.green : T.ink3} />
-                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em" }}>CLEAN STREAK</span>
-              </div>
-              <div style={{ marginTop: 6, display: "flex", alignItems: "baseline", gap: 5 }}>
-                <span style={{ fontSize: 24, fontWeight: 800, color: T.ink, letterSpacing: "-0.03em", animation: streakUp ? "rcRewardLevel var(--m-settle) var(--m-spring) .88s both" : "none" }}>{moment.streakAfter}</span>
-                <span style={{ fontSize: 11.5, color: T.ink3 }}>week{moment.streakAfter === 1 ? "" : "s"}</span>
-              </div>
-            </div>
-            <div style={{ width: 1, height: 40, background: T.sep }} />
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, color: levelUp ? T.orange : T.ink3 }}>
-                <SVGIcon id="spark" size={15} color={levelUp ? T.orange : T.ink3} />
-                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em" }}>{levelUp ? "LEVEL UP" : "YOUR LEVEL"}</span>
-              </div>
-              <div style={{ marginTop: 6, display: "flex", alignItems: "baseline", gap: 6 }}>
-                {levelUp && <span style={{ fontSize: 13, color: T.ink3, textDecoration: "line-through" }}>{moment.levelBefore}</span>}
-                <span style={{ fontSize: 24, fontWeight: 800, color: levelUp ? T.orange : T.ink, letterSpacing: "-0.03em", animation: levelUp ? "rcRewardLevel calc(.65s * var(--m-scale)) var(--m-spring) 1.12s both" : "none" }}>{moment.levelAfter}</span>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid " + T.sep }}>
-            <div style={{ height: 7, borderRadius: 99, overflow: "hidden", background: T.sep }}>
-              <div className="rc-reward-progress" style={{ width: "100%", height: "100%", borderRadius: 99, background: levelUp ? "linear-gradient(90deg," + T.orange + "," + T.gold + ")" : T.orange, "--reward-progress": progress }} />
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginTop: 7, fontSize: 10.5, color: T.ink3 }}>
-              <span>{moment.xpAfter.toLocaleString() + " XP"}</span>
-              <span>{moment.levelAfter >= MOTIV.maxLevel ? "Highest level reached" : moment.pctAfter + "% to level " + (moment.levelAfter + 1)}</span>
-            </div>
-          </div>
-        </div>
-
-        <button onClick={props.onClose}
-          style={{ width: "100%", minHeight: 50, marginTop: 16, border: "none", borderRadius: 16, background: "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: "#fff", fontFamily: UI, fontSize: 15, fontWeight: 800, cursor: "pointer", boxShadow: "0 10px 24px " + T.orangeGlow, animation: "rcRewardStep var(--m-enter) var(--m-ease) 1.42s both" }}>
-          {props.remaining > 1 ? "Show me the next win" : "Keep building"}
-        </button>
-        {featured && (
-          <button onClick={props.onViewBadges}
-            style={{ minHeight: 44, marginTop: 4, border: "none", background: "none", color: T.ink3, fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
-            See badge collection
-          </button>
-        )}
-      </div>
-    </div>
   );
 }
 
@@ -36397,6 +36149,90 @@ function Profile(props) {
   );
 }
 
+// WhatsApp delivery for Richard Watch's proactive alerts. Deliberately not a
+// "push notification" toggle: because WhatsApp only lets a business send for
+// free inside the 24h window opened by the user's own message, this screen is
+// honest that alerts land only after you've texted the number - see
+// WHATSAPP_SETUP.md for why that's the one design that can never bill anyone.
+function WhatsAppAlertsView(props) {
+  var wa = props.whatsapp;
+  var _phone = useState(""); var phone = _phone[0]; var setPhone = _phone[1];
+  var _busy = useState(false); var busy = _busy[0]; var setBusy = _busy[1];
+  var _err = useState(""); var err = _err[0]; var setErr = _err[1];
+  var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", padding: "18px 4px 8px", fontFamily: UI };
+
+  function handleLink() {
+    if (busy || !phone.trim()) return;
+    setBusy(true); setErr("");
+    Promise.resolve(props.onLink(phone.trim())).then(function() { setBusy(false); setPhone(""); })
+      .catch(function(e) { setErr((e && e.message) || "Couldn't save that number. Check it and try again."); setBusy(false); });
+  }
+  function handleUnlink() {
+    if (!window.confirm("Turn off WhatsApp alerts? Your linked number will be removed.")) return;
+    setBusy(true); setErr("");
+    Promise.resolve(props.onUnlink()).then(function() { setBusy(false); })
+      .catch(function(e) { setErr((e && e.message) || "Couldn't turn this off. Try again."); setBusy(false); });
+  }
+
+  var linked = !!(wa && wa.linked);
+  var status = wa ? wa.status : "not_linked";
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} />
+      <div style={secLabel}>Richard Watch on WhatsApp</div>
+      <Card style={{ padding: "22px 20px", marginBottom: 4 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
+          <div style={{ width: 42, height: 42, borderRadius: 13, background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <SVGIcon id="phone" size={20} color={T.green} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>WhatsApp alerts</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.45 }}>Get Richard's most urgent Watch signal on WhatsApp - a budget about to blow, a goal falling behind - free, because it only ever replies inside a conversation you started.</div>
+          </div>
+        </div>
+
+        {!linked && (
+          <div>
+            <input value={phone} onChange={function(e) { setPhone(e.target.value); }} placeholder="+972501234567" inputMode="tel"
+              style={{ width: "100%", boxSizing: "border-box", background: T.bg, border: "1.5px solid " + T.sep, borderRadius: 12, padding: "12px 14px", fontSize: 15, fontFamily: UI, color: T.ink, marginBottom: 10 }} />
+            <LiquidButton variant="primary" size="lg" full onClick={handleLink} disabled={busy || !phone.trim()}>
+              {busy ? "Saving..." : "Save number"}
+            </LiquidButton>
+          </div>
+        )}
+
+        {linked && status === "pending" && (
+          <div style={{ fontSize: 13.5, color: T.ink, lineHeight: 1.55 }}>
+            Almost there - send <b>START</b> to Richy's WhatsApp number from {wa.phone} to turn alerts on. Nothing is sent to you until you do.
+          </div>
+        )}
+        {linked && status === "active" && (
+          <div style={{ fontSize: 13.5, color: T.ink, lineHeight: 1.55 }}>
+            Alerts are on for {wa.phone}. {wa.windowOpen ? "Richard can message you right now." : "Send Richy any message on WhatsApp to open today's alert window."}
+          </div>
+        )}
+        {linked && status === "revoked" && (
+          <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55 }}>
+            {wa.phone} opted out (replied STOP). Send START again from that number to turn alerts back on.
+          </div>
+        )}
+        {err && <div style={{ fontSize: 12.5, color: T.red, lineHeight: 1.5, marginTop: 10, fontFamily: UI }}>{err}</div>}
+      </Card>
+
+      {linked && (
+        <LiquidButton variant="red" soft size="lg" full onClick={handleUnlink} disabled={busy}
+          style={{ marginTop: 8 }}>
+          {busy ? "Removing..." : "Remove this number"}
+        </LiquidButton>
+      )}
+      <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, padding: "10px 6px 4px" }}>
+        Richy only ever replies inside a conversation you opened - it never sends you a message you didn't ask for by texting first, so this can never rack up a WhatsApp charge on either side. At most a few alerts a day.
+      </div>
+    </div>
+  );
+}
+
 // Everything that configures the app, moved off Profile and behind the gear.
 // Nothing was dropped in the move: every row that used to be on Profile is
 // either here or in the Manage group on the new Profile.
@@ -36414,7 +36250,8 @@ function SettingsView(props) {
           when the app is in the wrong language. */}
       <ProfileSection icon="spark" title={tr("setAiRichard")} bg={T.goldDim} color={T.gold} glow={T.goldGlow}>
         <ProfileRow icon="spark" iconBg={T.goldDim} iconColor={T.gold} label={tr("setYourPlan")} onClick={props.onViewPlan} />
-        <ProfileRow icon="note" iconBg={T.goldDim} iconColor={T.gold} label={tr("setInstructions")} value={props.richardInstructions ? tr("valCustom") : tr("valDefault")} onClick={props.onViewInstructions} last />
+        <ProfileRow icon="note" iconBg={T.goldDim} iconColor={T.gold} label={tr("setInstructions")} value={props.richardInstructions ? tr("valCustom") : tr("valDefault")} onClick={props.onViewInstructions} />
+        <ProfileRow icon="phone" iconBg={T.goldDim} iconColor={T.gold} label={tr("setWhatsApp")} value={props.whatsapp && props.whatsapp.status === "active" ? tr("valOn") : tr("valOff")} onClick={props.onViewWhatsApp} last />
       </ProfileSection>
 
       <ProfileSection icon="coins" title={tr("setMoney")} bg={T.greenDim} color={T.green} glow={T.greenGlow}>
@@ -37120,14 +36957,6 @@ export default function App() {
   // every other number is derived from tx/budgets/goals on read.
   var _mot = useState(motivDefault());
   var motivation = _mot[0]; var setMotivation = _mot[1];
-  // Reward moments are presentation state only. The durable truth stays in the
-  // tiny motivation record; this queue simply turns a newly-recorded fact into
-  // one clear badge -> streak -> level story on the device that earned it.
-  var _rwq = useState([]);
-  var rewardQueue = _rwq[0]; var setRewardQueue = _rwq[1];
-  var motivationProgressRef = useRef(null);
-  var claimedBadgeRef = useRef({});
-  var rewardSeqRef = useRef(0);
   var _pcs = useState("");
   var periodCustomStart = _pcs[0]; var setPeriodCustomStart = _pcs[1];
   var _pce = useState("");
@@ -37143,6 +36972,13 @@ export default function App() {
   // the server (see leumiFinteka/{uid} there). null until first connected.
   var _lft = useState(null);
   var leumiFinteka = _lft[0]; var setLeumiFinteka = _lft[1];
+  // WhatsApp delivery for Richard Watch alerts: { linked, status, phone (masked),
+  // windowOpen, lastInboundAt, lastAlertAt }. Always the live, safe status from
+  // api/whatsapp.js?action=status - never persisted into the blob, since the
+  // phone number and opt-in state are server-owned (whatsappOptIn/{uid}), same
+  // reasoning as leumiFinteka's tokens. null until first fetched.
+  var _wap = useState(null);
+  var whatsapp = _wap[0]; var setWhatsapp = _wap[1];
   // Custom banners Richard can create from Advisor chat (e.g. "put a banner up
   // saying rent is due Friday"). Structured widgets only - text/tone/icon, never
   // raw markup - rendered by CustomBanners under the header on every tab.
@@ -37315,18 +37151,9 @@ export default function App() {
   // the auth, loading and onboarding screens. A hook after a conditional return
   // changes the hook count between renders, which React rejects outright.
   useEffect(function() {
-    motivationProgressRef.current = null;
-    claimedBadgeRef.current = {};
-    setRewardQueue([]);
-  }, [accountKey]);
-
-  useEffect(function() {
     if (!accountKey) return;
     var snap = motivSnapshot(motivData());
-    var previous = motivationProgressRef.current;
-    if (snap.newBadges.length) commitBadges(snap.newBadges, snap, previous);
-    else if (previous && snap.level > previous.level) queueMotivationMoment([], previous, snap, "level");
-    motivationProgressRef.current = snap;
+    if (snap.newBadges.length) commitBadges(snap.newBadges);
   }, [accountKey, tx.length, budgets.length, goals.length, savings.length, motivation.weekConfirms.length]);
 
   // ── Follow graph ──────────────────────────────────────────────────────────
@@ -38233,30 +38060,6 @@ export default function App() {
   function onSaveEntryMethod(m) { var v = m === "import" ? "import" : "manual"; setEntryMethod(v); save({ entryMethod: v }); }
   function onSavePeriodMode(m) { var v = m === "rolling" ? "rolling" : m === "custom" ? "custom" : "calendar"; setPeriodMode(v); save({ periodMode: v }); }
   function onSaveSplitPlan(p) { var v = splitPlanOf(p); setSplitPlan(v); save({ splitPlan: v }); }
-  function queueMotivationMoment(badges, before, after, reason) {
-    if (!after) return;
-    var prior = before || {};
-    var levelBefore = typeof prior.level === "number" ? prior.level : levelFor(Math.max(0, after.xp - (badges || []).reduce(function(sum, row) { return sum + (MOTIV.rarityXp[row.def.r] || 0); }, 0)));
-    var levelAfter = after.level;
-    var streakBefore = prior.clean ? prior.clean.run : after.clean.run;
-    var streakAfter = after.clean.run;
-    if (!(badges || []).length && streakAfter <= streakBefore && levelAfter <= levelBefore && reason !== "clean-week") return;
-    rewardSeqRef.current += 1;
-    setRewardQueue(function(queue) {
-      return queue.concat([{
-        id: "reward-" + rewardSeqRef.current,
-        badges: badges || [],
-        reason: reason || "badge",
-        streakBefore: streakBefore,
-        streakAfter: streakAfter,
-        xpBefore: typeof prior.xp === "number" ? prior.xp : Math.max(0, after.xp - (badges || []).reduce(function(sum, row) { return sum + (MOTIV.rarityXp[row.def.r] || 0); }, 0)),
-        xpAfter: after.xp,
-        levelBefore: levelBefore,
-        levelAfter: levelAfter,
-        pctAfter: after.pctToNext
-      }]);
-    });
-  }
   // Layer 1 of the streak system, in full: the user says "yes, that was
   // everything" for one week. Guarded against double-confirming the same week,
   // and against back-confirming further than the anti-gaming window allows -
@@ -38267,38 +38070,21 @@ export default function App() {
     if (m.weekConfirms.indexOf(key) !== -1) return;
     var oldest = weekAdd(weekKey(isoDay(new Date())), -MOTIV.backConfirmWeeks);
     if (key < oldest) return;
-    var before = motivSnapshot(motivData());
-    var baseNext = { weekConfirms: m.weekConfirms.concat([key]).sort(), pauses: m.pauses, badges: m.badges, seen: m.seen };
-    var after = motivSnapshot(Object.assign({}, motivData(), { motivation: baseNext }));
-    // A clean-week confirmation can earn one or more badges. Record the week and
-    // those badges in one write so a reload can never leave the reward half-done.
-    var held = {};
-    m.badges.forEach(function(row) { held[row.id] = true; });
-    var fresh = after.newBadges.filter(function(row) { return !held[row.def.id] && !claimedBadgeRef.current[row.def.id]; });
-    fresh.forEach(function(row) { claimedBadgeRef.current[row.def.id] = true; });
-    var add = fresh.map(function(row) { return { id: row.def.id, at: row.at, early: row.early, shared: false }; });
-    var next = Object.assign({}, baseNext, { badges: m.badges.concat(add) });
+    var next = { weekConfirms: m.weekConfirms.concat([key]).sort(), pauses: m.pauses, badges: m.badges, seen: m.seen };
     setMotivation(next);
     save({ motivation: next });
-    motivationProgressRef.current = after;
-    queueMotivationMoment(fresh, before, after, "clean-week");
+    nativeHaptic("MEDIUM");
   }
   // Badges are granted on read but must be recorded once, so the earn DATE is
   // real rather than "whenever you last opened the app". Called from the render
   // pass below when the snapshot finds something new.
-  function commitBadges(newly, snap, previous) {
+  function commitBadges(newly) {
     if (!newly || !newly.length) return;
     var m = motivOf({ motivation: motivation });
-    var held = {};
-    m.badges.forEach(function(row) { held[row.id] = true; });
-    var fresh = newly.filter(function(row) { return !held[row.def.id] && !claimedBadgeRef.current[row.def.id]; });
-    if (!fresh.length) return;
-    fresh.forEach(function(row) { claimedBadgeRef.current[row.def.id] = true; });
-    var add = fresh.map(function(n) { return { id: n.def.id, at: n.at, early: n.early, shared: false }; });
+    var add = newly.map(function(n) { return { id: n.def.id, at: n.at, early: n.early, shared: false }; });
     var next = { weekConfirms: m.weekConfirms, pauses: m.pauses, badges: m.badges.concat(add), seen: m.seen };
     setMotivation(next);
     save({ motivation: next });
-    queueMotivationMoment(fresh, previous, snap, "badge");
   }
   function onSavePeriodCustom(field, val) {
     if (field === "start") { setPeriodCustomStart(val); save({ periodCustomStart: val }); }
@@ -38382,6 +38168,60 @@ export default function App() {
     });
   }
 
+  // ---- WhatsApp alerts for Richard Watch --------------------------------------
+  // A real integration (unlike the Leumi demo above) - api/whatsapp.js only ever
+  // sends a free-form reply inside the 24h window opened by the user texting
+  // the business number first, so there's no path here that can incur a WhatsApp
+  // charge. Every call carries the user's own Firebase ID token; the server is
+  // the source of truth, so state here is always just its last response.
+  function whatsappApiUrl() {
+    return (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "data:" || location.protocol === "file:") ? "https://richy-mgkl.vercel.app/api/whatsapp" : "/api/whatsapp";
+  }
+  function whatsappFetch(qs, opts) {
+    return CLOUD.getIdToken().then(function(token) {
+      if (!token) throw new Error("Your session expired. Sign out and back in, then try again.");
+      var headers = { Authorization: "Bearer " + token };
+      if (opts && opts.body) headers["Content-Type"] = "application/json";
+      return fetch(whatsappApiUrl() + qs, { method: (opts && opts.method) || "GET", headers: headers, body: opts && opts.body });
+    }).then(function(r) {
+      return r.json().catch(function() { return {}; }).then(function(j) {
+        if (!r.ok || !j.ok) throw new Error((j.error && j.error.message) || "Something went wrong. Try again.");
+        return j;
+      });
+    });
+  }
+  function refreshWhatsapp() {
+    return whatsappFetch("?action=status").then(function(j) { setWhatsapp(j); return j; });
+  }
+  function onLinkWhatsapp(phone) {
+    return whatsappFetch("?action=link", { method: "POST", body: JSON.stringify({ phone: phone }) })
+      .then(function(j) { setWhatsapp(j); return j; });
+  }
+  function onUnlinkWhatsapp() {
+    return whatsappFetch("?action=unlink", { method: "POST" })
+      .then(function(j) { setWhatsapp(j); return j; });
+  }
+  // A ref (not state) since this only guards a fire-and-forget background call,
+  // not anything rendered - avoids re-running the effect below on every render.
+  var waAlertSentDateRef = useRef("");
+  useEffect(function() {
+    if (!whatsapp || whatsapp.status !== "active" || !whatsapp.windowOpen) return;
+    var todayKey = new Date().toISOString().slice(0, 10);
+    if (waAlertSentDateRef.current === todayKey) return;
+    var watch = richardWatch({ tx: tx, categories: categories, budgets: budgets, goals: goals, savings: savings, businesses: businesses, investing: investing, foundMoney: foundMoney });
+    var top = watch.risks.length ? watch.risks[0] : (watch.leaks.length ? watch.leaks[0] : null);
+    if (!top || top.severity < 50) return;
+    waAlertSentDateRef.current = todayKey;
+    whatsappFetch("?action=send-alert", { method: "POST", body: JSON.stringify({ id: top.id, title: top.title, subtitle: top.subtitle, severity: top.severity }) })
+      .then(function(j) { if (j && j.sent) refreshWhatsapp(); })
+      .catch(function() {});
+  }, [whatsapp, tx, budgets, goals]);
+  // Fetch the live status only when the settings screen for it is open -
+  // there's no reason to hit the server on every app load for a screen most
+  // sessions never visit.
+  useEffect(function() {
+    if (tab === "whatsapp") refreshWhatsapp().catch(function() {});
+  }, [tab]);
 
   function onSaveInstructions(text) { setRichardInstructions(text); save({ richardInstructions: text }); }
   function onSaveVoice(v) {
@@ -38892,15 +38732,6 @@ export default function App() {
 
   return (
     <div style={{ background: T.bg, minHeight: "100vh", maxWidth: 430, margin: "0 auto", fontFamily: UI, paddingBottom: "calc(110px + env(safe-area-inset-bottom, 0px))" }}>
-      {rewardQueue.length > 0 && (
-        <MotivationCelebration key={rewardQueue[0].id} moment={rewardQueue[0]} remaining={rewardQueue.length}
-          onClose={function() { setRewardQueue(function(queue) { return queue.slice(1); }); }}
-          onViewBadges={function() {
-            setRewardQueue(function(queue) { return queue.slice(1); });
-            prevTabRef.current = currentTab;
-            setTab("badges");
-          }} />
-      )}
 
       <div style={{ position: "sticky", top: 0, zIndex: 40, background: T.navBg, backdropFilter: "blur(24px) saturate(180%)", WebkitBackdropFilter: "blur(24px) saturate(180%)", borderBottom: "0.5px solid " + T.sep, boxShadow: "inset 0 1px 0 " + T.glassSpec + ", " + T.glassLiftDown }}>
         <div style={{ display: "flex", alignItems: "center", padding: "14px 20px 14px" }}>
@@ -39016,7 +38847,7 @@ export default function App() {
         {currentTab === "person" && <FriendView uid={openPerson} person={social.following.concat(social.followers).filter(function(p) { return p.uid === openPerson; })[0] || null} stats={(social.following.filter(function(p) { return p.uid === openPerson; })[0] || {}).stats || null} household={household} myUid={accountKey} tx={tx} categories={categories} onBack={function() { setTab(prevTabRef.current === "social" ? "social" : "profile"); }} />}
         {currentTab === "social" && <SocialView social={social} onOpen={function(uid) { prevTabRef.current = "social"; setOpenPerson(uid); setTab("person"); }} onFind={function() { prevTabRef.current = "social"; setTab("findPeople"); }} onAccept={onAcceptFollow} onDecline={onDeclineFollow} onRemoveFollower={onRemoveFollower} onBack={function() { setTab("profile"); }} />}
         {currentTab === "findPeople" && <FindPeopleView myHandle={social.handle} myUid={accountKey} followingUids={social.following.map(function(p) { return p.uid; })} onClaimHandle={onClaimHandle} onFind={CLOUD.findByHandle} onRequest={onRequestFollow} onCopy={copyText} onBack={function() { setTab("social"); }} />}
-        {currentTab === "settings" && <SettingsView user={user} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} richardInstructions={richardInstructions} bankSync={bankSync} householdName={household ? household.name : null} inviteCount={invites.length} debtCount={debts.length} onBack={function() { setTab("profile"); }} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "settings"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "settings"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "settings"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "settings"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "settings"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "settings"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "settings"; setTab("periodMode"); }} onViewBankSync={function() { prevTabRef.current = "settings"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "settings"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "settings"; setTab("editOpeningBalance"); }} onViewCollab={function() { prevTabRef.current = "settings"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "settings"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
+        {currentTab === "settings" && <SettingsView user={user} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} richardInstructions={richardInstructions} bankSync={bankSync} whatsapp={whatsapp} householdName={household ? household.name : null} inviteCount={invites.length} debtCount={debts.length} onBack={function() { setTab("profile"); }} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "settings"; setTab("instructions"); }} onViewWhatsApp={function() { prevTabRef.current = "settings"; setTab("whatsapp"); }} onViewCurrency={function() { prevTabRef.current = "settings"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "settings"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "settings"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "settings"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "settings"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "settings"; setTab("periodMode"); }} onViewBankSync={function() { prevTabRef.current = "settings"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "settings"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "settings"; setTab("editOpeningBalance"); }} onViewCollab={function() { prevTabRef.current = "settings"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "settings"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
         {currentTab === "analysis" && <FullAnalysisView tx={tx} categories={categories} folders={folders} splitPlan={splitPlan} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} username={user} analysis={freshAnalysis ? freshAnalysis.data : null} lang={lang} richardInstructions={richardCtx} onBack={function() { setTab("advisor"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} onAccountDeleted={handleLogout} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
@@ -39029,6 +38860,7 @@ export default function App() {
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "periodMode" && <PeriodModeView periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onPeriodModeChange={onSavePeriodMode} onPeriodCustomChange={onSavePeriodCustom} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "bankSync" && <BankSyncView bankSync={bankSync} onEnable={onEnableBankSync} onDisable={onDisableBankSync} leumiFinteka={leumiFinteka} onConnectLeumi={onConnectLeumiFinteka} onDisconnectLeumi={onDisconnectLeumiFinteka} onSyncLeumiNow={onSyncLeumiFintekaNow} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
+        {currentTab === "whatsapp" && <WhatsAppAlertsView whatsapp={whatsapp} onLink={onLinkWhatsapp} onUnlink={onUnlinkWhatsapp} onBack={function() { setTab(prevTabRef.current || "settings"); }} />}
         {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenInvestorOnboard={function() { prevTabRef.current = "savings"; setPendingInvestingStart(true); setTab("investorOnboard"); }} />}
         {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} hubTab={businessHubTab} onHubTabChange={setBusinessHubTab} onOpenBizChange={function(id) { setOpenBiz(id); setBusinessHubTab("home"); }} username={user} lang={lang} richardInstructions={richardCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Dashboard" : "Savings"} onBack={exitBusiness} />}
         {currentTab === "investing" && LAUNCH.investingHub && <InvestingView investing={investing} tx={tx} goals={goals} openInvId={openInv} hubTab={investingHubTab} onHubTabChange={setInvestingHubTab} username={user} lang={lang} richardInstructions={richardCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} onOpenInvestorOnboard={function() { prevTabRef.current = "investing"; setTab("investorOnboard"); }} onOpenScout={!LAUNCH.stockScout ? undefined : function() { prevTabRef.current = "investing"; setTab("scout"); }} onOpenPlanOnboard={function(acctId) { prevTabRef.current = "investing"; setOpenInv(acctId || null); setTab("investPlan"); }} backLabel={prevTabRef.current === "overview" ? "Dashboard" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}
