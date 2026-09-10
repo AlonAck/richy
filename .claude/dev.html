@@ -348,12 +348,15 @@ fetchSource(1).then(function(src){
   } else if (view === "csvimport") {
     // The CSV importer, pre-loaded with a file built to land one row in each
     // band against mockTx: an exact repeat (auto-skipped), a raw merchant name
-    // for something already typed by hand (a question), two genuinely new rows,
-    // and one line the file lists twice (kept, counted as a twin).
+    // for something already typed by hand (a question), TWO restaurant rows
+    // contending for the one hand-typed "Dinner" (neither may be settled
+    // quietly), two genuinely new rows, and one line the file lists twice
+    // (kept, counted as a twin).
     var csvSeed = [
       "Date,Description,Amount",
       iso(7) + ",Whole Foods,-420.00",
       iso(3) + ",OSTERIA ROMA #4471,-260.00",
+      iso(3) + ",TRATTORIA MILANO 22,-260.00",
       iso(2) + ",IKEA Brooklyn,-320.00",
       iso(2) + ",Bus fare,-2.90",
       iso(2) + ",Bus fare,-2.90",

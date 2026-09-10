@@ -12654,9 +12654,12 @@ function suggestCatId(label, txList, cats) {
     var tl = (t.label || "").trim().toLowerCase();
     if (!tl) continue;
     if (tl === q) { exact[t.catId] = (exact[t.catId] || 0) + 1; continue; }
-    var hit = tl.indexOf(q) !== -1;
+    // A multi-word query found inside a label is strong evidence on its own; a
+    // single word has to land on a word boundary. Without that, "fee" matched
+    // "coffee" and a gym membership was learned as Food.
+    var hit = q.indexOf(" ") !== -1 ? tl.indexOf(q) !== -1 : labelHasWord(tl, q);
     if (!hit) {
-      for (var w = 0; w < qWords.length; w++) { if (tl.indexOf(qWords[w]) !== -1) { hit = true; break; } }
+      for (var w = 0; w < qWords.length; w++) { if (labelHasWord(tl, qWords[w])) { hit = true; break; } }
     }
     if (hit) partial[t.catId] = (partial[t.catId] || 0) + 1;
   }
@@ -12700,14 +12703,43 @@ function labelSimilarity(a, b) {
   var na = normalizeMerchant(a), nb = normalizeMerchant(b);
   if (!na || !nb) return 0;
   if (na === nb) return 1;
-  if (na.indexOf(nb) !== -1 || nb.indexOf(na) !== -1) return 0.9;
   var ta = na.split(" ").filter(Boolean), tb = nb.split(" ").filter(Boolean);
+  // Containment. One side sitting inside the other is only an identity claim
+  // when the inner side is more than one word. A lone generic noun - "coffee"
+  // inside "costa coffee", "store" inside "apple store", "rent" inside "rental
+  // landlord" - names a CATEGORY, not a merchant, and paying full marks for it
+  // silently dropped a real second coffee in testing (2026-09-10). So one word
+  // buys a question, two words buy a match.
+  if (na.indexOf(nb) !== -1 || nb.indexOf(na) !== -1) {
+    return Math.min(ta.length, tb.length) > 1 ? 0.75 : 0.5;
+  }
   var setB = {}; tb.forEach(function(w) { setB[w] = 1; });
   var hits = 0;
   ta.forEach(function(w) { if (setB[w]) hits++; });
   if (!hits) return 0;
   var union = ta.length + tb.length - hits;
   return union > 0 ? hits / union : 0;
+}
+
+// Does `label` contain a word that STARTS with `word`? Plain indexOf let "fee"
+// match "coffee", which taught the categoriser that a gym membership was Food -
+// and that wrong-but-confident category then read as a real disagreement in
+// dupScore and auto-added a duplicate.
+//
+// Deliberately anchored at the start of a word only, not both ends: the same
+// helper backs the add sheet's live category suggestion, where someone typing
+// "starb" should still get Starbucks' category. A leading boundary is all the
+// fix needs - "fee" is a suffix of "coffee", not a prefix of any word in it.
+function labelHasWord(label, word) {
+  if (!label || !word) return false;
+  var i = 0;
+  while (i <= label.length - word.length) {
+    var at = label.indexOf(word, i);
+    if (at < 0) return false;
+    if (at === 0 || !/[a-z0-9]/i.test(label.charAt(at - 1))) return true;
+    i = at + 1;
+  }
+  return false;
 }
 
 // Whole days between two ISO dates (both midday-anchored, so DST can't make a
@@ -12795,6 +12827,40 @@ function classifyImportRows(cands, existing) {
     fresh.push(c);
     accepted.push(c);
   });
+
+  // ---- contention ----------------------------------------------------------
+  // Nothing above notices when TWO file rows both claim the SAME existing
+  // transaction. Found live on 2026-09-10: a ledger holding one hand-typed
+  // "Coffee 4.50" met a statement holding both "STARBUCKS STORE #1123" and
+  // "COSTA COFFEE 118" at 4.50 on that day. Each pair, judged alone, reads as
+  // a duplicate - and the judge (real Haiku, 8 of 9 runs) confidently said so
+  // for both, which would have collapsed two real purchases into one and
+  // deleted a third of that day's spending with no notice.
+  //
+  // At most ONE row can be the same event as one existing transaction, and
+  // which one is genuinely unknowable from the pair. So when several rows
+  // contend for one transaction, none of them may be settled quietly: they are
+  // all demoted to questions and flagged, and judgeLookalikes' verdict is not
+  // allowed to merge them either (see runJudge).
+  var claims = {};
+  function claimKey(t) { return t ? dupKey(t.type, t.date, t.amount, t.label) : ""; }
+  dupes.concat(maybes).forEach(function(e) {
+    if (e.inFile || !e.match) return;
+    var k = claimKey(e.match);
+    claims[k] = (claims[k] || 0) + 1;
+  });
+  var contendedDupes = [];
+  dupes = dupes.filter(function(e) {
+    if (e.inFile || !e.match || claims[claimKey(e.match)] < 2) return true;
+    e.contended = true;
+    contendedDupes.push(e);
+    return false;
+  });
+  maybes.forEach(function(e) {
+    if (!e.inFile && e.match && claims[claimKey(e.match)] > 1) e.contended = true;
+  });
+  maybes = maybes.concat(contendedDupes);
+
   return { fresh: fresh, dupes: dupes, maybes: maybes, twins: twins };
 }
 
@@ -12828,6 +12894,10 @@ function judgeLookalikes(pairs, cb) {
     if (err) { cb(err, null); return; }
     var arr = null;
     try {
+      // Slicing to the outermost brackets is load-bearing, not defensive
+      // tidying: measured against the real model on 2026-09-10, 7 of 9 calls
+      // wrapped the array in a ```json fence despite being told not to. Parsing
+      // the reply as-is would have failed 78% of the time.
       var raw = String(reply || "").replace(/^[^\[]*/, "").replace(/[^\]]*$/, "");
       arr = JSON.parse(raw);
     } catch (e) { arr = null; }
@@ -15363,7 +15433,12 @@ function ImportSheet(props) {
       var dec = {}; var left = []; var settled = 0;
       res.maybes.forEach(function(m, i) {
         var v = verdicts && verdicts[i];
-        if (v && v.sure) { dec[i] = v.same ? "skip" : "add"; settled++; }
+        // A contended pair is one of several file rows claiming the same
+        // existing transaction (see classifyImportRows). The judge only ever
+        // sees one pair at a time, so it cannot know a rival exists - and it
+        // will happily merge both. Its "different" verdict is still welcome
+        // there, because adding a row is never destructive; its "same" is not.
+        if (v && v.sure && !(m.contended && v.same)) { dec[i] = v.same ? "skip" : "add"; settled++; }
         else left.push(i);
       });
       setAiRes({ settled: settled, failed: !!jErr });
@@ -15652,7 +15727,9 @@ function ImportSheet(props) {
               <div style={{ fontSize: 11.5, color: T.ink3, fontWeight: 600, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{(qIdx + 1) + " of " + queue.length}</div>
             </div>
             <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginBottom: 14 }}>
-              {closeness + (m.inFile ? " Your file lists both - did you buy it twice?" : " Only you know whether you already logged this one by hand.")}
+              {m.contended
+                ? "More than one line in your file looks like this one thing you logged, and only one of them can be it. That makes this a question only you can answer."
+                : closeness + (m.inFile ? " Your file lists both - did you buy it twice?" : " Only you know whether you already logged this one by hand.")}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {pairRow("In your file", m.tx, T.orangeDim)}
