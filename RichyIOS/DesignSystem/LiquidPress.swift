@@ -55,7 +55,7 @@ struct LiquidPressModifier: ViewModifier {
     private static let holdSeconds: Double = 0.34
     private static let freeTravel: CGFloat = 6
     private static let maxPull: CGFloat = 14
-    private static let stretch: CGFloat = 0.15
+    private static let stretch: CGFloat = 0.03
     private static let stretchAt: CGFloat = 80
     private static let scrollSlop: CGFloat = 10
     private static let liftScale: CGFloat = 1.06
@@ -107,8 +107,8 @@ struct LiquidPressModifier: ViewModifier {
             .offset(offset)
             .shadow(color: Color.black.opacity(lifted ? 0.18 : 0), radius: lifted ? 18 : 0, y: lifted ? 12 : 0)
             .zIndex(lifted ? 5 : 0)
-            .animation(lifted ? .interactiveSpring(response: 0.26, dampingFraction: 0.72)
-                              : .spring(response: 0.52, dampingFraction: 0.72), value: lift)
+            .animation(lifted ? .interactiveSpring(response: 0.26, dampingFraction: 0.82)
+                              : .spring(response: 0.52, dampingFraction: 0.82), value: lift)
             .animation(.easeOut(duration: 0.12), value: isPressed)
             .simultaneousGesture(gesture, including: isEnabled ? .all : .none)
             .sensoryFeedback(.impact(weight: .medium), trigger: lift.isLifted) { wasLifted, isLifted in

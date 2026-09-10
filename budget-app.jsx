@@ -4962,7 +4962,7 @@ function lqRim(d, hue, lit) {
   // lit = the light has gathered on this piece of glass (a finger is on it).
   // Same stack, brighter lining - in the WWDC film a pressed control does not
   // change shape, its light does.
-  var k = lit ? 1.7 : 1;
+  var k = lit ? 1.25 : 1;
   var a = function(x) { return Math.min(1, x * k); };
   if (d) return [
     "0 0 0 0.5px " + jrRgba(LQ_LILAC_HI, a(0.14)),
@@ -5002,19 +5002,20 @@ var LQ_PULL = 14;       // px more it can ever travel, however far the finger go
 // keeps its silhouette exactly - what moves is the light on it and the content
 // bending underneath. This is a trace of give, not a rubber band (Alon, 10
 // Sep: "way too much - watch the video again").
-var LQ_STRETCH = 0.045; // most it elongates along the drag, as a fraction
+var LQ_STRETCH = 0.03;  // most it elongates along the drag, as a fraction
 var LQ_STRETCH_AT = 80; // px of drag that reaches most of that stretch
 // The gel (Alon, 10 Sep: "give the drag more of a moving gel"). Nothing the
 // finger does reaches the capsule directly any more - every value is pulled
 // toward its target by a spring that lags and overshoots, so the shape keeps
 // moving after the finger stops and catches up a beat late.
-var LQ_GEL_K = 0.16;    // how hard the gel is pulled toward the finger
-var LQ_GEL_D = 0.78;    // how much of that pull survives each frame
-var LQ_GEL_SPEED = 14;  // extra stretch per px/ms of finger speed
-var LQ_GEL_CAP = 0.065; // the most it will ever deform
-var LQ_GEL_LEAD = 0.10; // how far the scale origin trails the pull, 0-1
-var LQ_GEL_MAX = 0.075; // hard limit on the wobble, so a flick cannot go silly
-var LQ_GEL_LIGHT = 34;  // how far the light slides toward the leading edge, %
+var LQ_GEL_K = 0.14;    // how hard the gel is pulled toward the finger
+var LQ_GEL_D = 0.66;    // how much of that pull survives each frame - low
+                        // enough that it lags and settles without bouncing
+var LQ_GEL_SPEED = 8;   // extra stretch per px/ms of finger speed
+var LQ_GEL_CAP = 0.042; // the most it will ever deform
+var LQ_GEL_LEAD = 0.06; // how far the scale origin trails the pull, 0-1
+var LQ_GEL_MAX = 0.05;  // hard limit on the wobble, so a flick cannot go silly
+var LQ_GEL_LIGHT = 20;  // how far the light slides toward the leading edge, %
 var LQ_SCROLL = 10;     // a finger travelling this far before the hold is scrolling
 
 // A capsule is a light material, so an accent picked as ink can be too dark
@@ -5037,8 +5038,8 @@ function lqPalette(variant, soft, color, forceDark) {
   // unless the accent is too dark to be glass (see lqLum above).
   var gh = hue, gb = hue;
   if (!d && !color && T.orangeHi && lqLum(hue) < 0.32) { gh = T.orangeHi; gb = lqMix(T.orangeHi, hue, 0.45); }
-  var lift = d ? "0 16px 34px rgba(0,0,0,0.55)" : "0 14px 30px rgba(40,28,16,0.22),0 2px 6px rgba(40,28,16,0.10)";
-  var p = { rim: lqRim(d), rimLit: lqRim(d, null, 1), tint: "transparent", ink: T.orange, textShadow: "none", shadow: "none", shadowHov: null, shadowLift: lift, solid: d ? T.darkCard2 : T.card, glow: d ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.80)" };
+  var lift = d ? "0 10px 24px rgba(0,0,0,0.42)" : "0 10px 22px rgba(40,28,16,0.16),0 2px 6px rgba(40,28,16,0.08)";
+  var p = { rim: lqRim(d), rimLit: lqRim(d, null, 1), tint: "transparent", ink: T.orange, textShadow: "none", shadow: "none", shadowHov: null, shadowLift: lift, solid: d ? T.darkCard2 : T.card, glow: d ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.42)" };
   if (v === "ghost") {
     p.rim = "none"; p.rimLit = "none"; p.ink = T.ink2; p.solid = "transparent"; p.glow = "transparent";
     return p;
@@ -5058,7 +5059,7 @@ function lqPalette(variant, soft, color, forceDark) {
     p.rim = lqRim(d, gh); p.rimLit = lqRim(d, gh, 1);
     p.tint = "linear-gradient(180deg," + jrRgba(gh, d ? 0.26 : 0.16) + "," + jrRgba(gb, d ? 0.34 : 0.26) + ")";
     p.ink = d ? hue : jrShade(hue, 0.24);
-    p.glow = d ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.66)";
+    p.glow = d ? "rgba(255,255,255,0.09)" : "rgba(255,255,255,0.36)";
     p.solid = "linear-gradient(" + jrRgba(gb, d ? 0.26 : 0.16) + "," + jrRgba(gb, d ? 0.26 : 0.16) + ")," + (d ? T.darkCard2 : T.card);
     return p;
   }
@@ -5072,11 +5073,11 @@ function lqPalette(variant, soft, color, forceDark) {
     ? "linear-gradient(180deg," + jrShadeRgba(hue, 0.08, 0.92) + "," + jrShadeRgba(hue, 0.22, 0.96) + ")"
     : "linear-gradient(180deg," + jrRgba(gh, 0.70) + "," + jrRgba(gb, 0.90) + ")";
   p.ink = "#FFFFFF";
-  p.glow = "rgba(255,255,255,0.34)";
+  p.glow = "rgba(255,255,255,0.20)";
   p.textShadow = "0 1px 1px " + jrShadeRgba(gb, 0.62, 0.35);
   p.shadow = "0 6px 18px " + jrRgba(gb, d ? 0.30 : 0.34) + ",0 1px 2px rgba(0,0,0,0.10)";
   p.shadowHov = "0 9px 24px " + jrRgba(gb, d ? 0.38 : 0.42) + ",0 1px 2px rgba(0,0,0,0.10)";
-  p.shadowLift = "0 16px 34px " + jrRgba(gb, d ? 0.46 : 0.50) + ",0 2px 6px rgba(0,0,0,0.12)";
+  p.shadowLift = "0 10px 24px " + jrRgba(gb, d ? 0.34 : 0.36) + ",0 2px 6px rgba(0,0,0,0.10)";
   p.solid = d ? jrShade(hue, 0.3) : gb;
   return p;
 }
@@ -5124,14 +5125,14 @@ function ensureLiquidCss() {
     // within... starting right under your fingertips, the glow spreads
     // throughout the element" (WWDC25). It starts where the finger landed and
     // opens out; it is press feedback, not the resting shine that came off.
-    ".rc-lq-tint::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transform:scale(0.35);transform-origin:var(--lq-gx,50%) var(--lq-gy,50%);background:radial-gradient(circle at var(--lq-gx,50%) var(--lq-gy,50%),var(--lq-glow,transparent),transparent 72%);transition:opacity var(--m-quick) ease,transform var(--m-enter) var(--m-ease);}",
+    ".rc-lq-tint::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transform:scale(0.72);transform-origin:var(--lq-gx,50%) var(--lq-gy,50%);background:radial-gradient(circle at var(--lq-gx,50%) var(--lq-gy,50%),var(--lq-glow,transparent),transparent 72%);transition:opacity var(--m-quick) ease,transform var(--m-quick) var(--m-ease);}",
     ".rc-lq.rc-lq-down .rc-lq-tint::after,.rc-lq.rc-lq-lift .rc-lq-tint::after{opacity:1;transform:scale(1);}",
     // Light gathers on the glass under a finger; the silhouette is what shows
     // it. The shape itself does not change - that is the whole point.
     ".rc-lq.rc-lq-down .rc-lq-rim,.rc-lq.rc-lq-lift .rc-lq-rim{box-shadow:var(--lq-rim-lit,var(--lq-rim,none));}",
     ".rc-lq-label{position:relative;z-index:3;display:inline-flex;align-items:center;justify-content:center;min-width:0;max-width:100%;pointer-events:none;line-height:1.2;}",
     // Hover only where a pointer can hover, so touch never sticks a scale on.
-    "@media (hover:hover){.rc-lq:hover:not(:disabled){transform:scale(1.03);box-shadow:var(--lq-sh-hov,var(--lq-sh,none));}}",
+    "@media (hover:hover){.rc-lq:hover:not(:disabled){transform:scale(1.02);box-shadow:var(--lq-sh-hov,var(--lq-sh,none));}}",
     // Press: the squish; lifted (long press): bigger, floating, and the
     // inline transform written by the gesture takes over from :active.
     ".rc-lq.rc-lq-down:not(:disabled){transform:scale(0.97);}",
