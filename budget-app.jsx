@@ -37871,7 +37871,7 @@ export default function App() {
           only a swipe nobody is told about. The bar stays; the collapsed chat
           composer sits above it (see the Advisor panel's own bottom offset),
           and the expanded, full-screen chat still covers it on purpose. */}
-      <div style={{ position: "fixed", bottom: "calc(20px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", width: "calc(100% - 32px)", maxWidth: 398, zIndex: 30 }}>
+      <div style={{ position: "fixed", bottom: "calc(10px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", width: "calc(100% - 32px)", maxWidth: 398, zIndex: 30 }}>
         <div style={{ position: "relative", background: T.navGlass, backdropFilter: "blur(28px) saturate(190%) brightness(1.08)", WebkitBackdropFilter: "blur(28px) saturate(190%) brightness(1.08)", borderRadius: 34, border: "1px solid " + T.glassBorder, boxShadow: "0 12px 40px rgba(0,0,0,0.18), 0 2px 10px rgba(0,0,0,0.08), inset 0 1px 0.5px " + T.navRimTop + ", inset 0 -1px 0.5px " + T.navRimBot }}>
           {/* Specular sheen — the curved-glass glare across the top of the bar. Self-clips
               via its own border radius (no overflow:hidden, so the active lens shadow
