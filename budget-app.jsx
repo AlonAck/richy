@@ -477,11 +477,14 @@ var COLOR_BANK = [
 // switches rather than deletions - flip one back on and the feature returns
 // intact.
 //
-//   investingHub / businessHub  Two whole hubs nothing in the app introduces
-//                               (four unlabelled taps deep in an account
-//                               picker), and Investing is also the largest
-//                               regulatory surface. Off for v1; the code is
-//                               untouched and ships dark.
+//   investingHub                The largest regulatory surface in the app -
+//                               live markets, holdings and a plan engine - so
+//                               it stays dark for v1. The code is untouched;
+//                               flip the switch and the hub comes back.
+//                               businessHub went out on the same audit finding
+//                               and is back on: a business account is a
+//                               budgeting tool, not a regulated activity, and
+//                               the Accounts hub reads half-built without it.
 //   investOrderTicket           The plan engine's per-user, per-ticker order
 //                               ticket (VTI 32% / $160 / share counts). A
 //                               suitability questionnaire ending in an amount
@@ -502,7 +505,7 @@ var COLOR_BANK = [
 //                               real, named people who agreed to it.
 var LAUNCH = {
   investingHub: false,
-  businessHub: false,
+  businessHub: true,
   investOrderTicket: false,
   stockScout: false,
   leumiDemo: true,
@@ -26357,7 +26360,7 @@ function SavingsView(props) {
     <div>
       <SubViewBack onBack={props.onBack} label={tr("overview")} />
 
-      <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, marginBottom: 18, padding: "0 2px" }}>{props.onOpenBusiness ? "Money set aside outside your spendable balance. Open a savings pot, a business account with a plan from Richard, or an investing account with live markets." : tr("savingsIntro")}</div>
+      <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55, marginBottom: 18, padding: "0 2px" }}>{props.onOpenInvesting ? "Money set aside outside your spendable balance. Open a savings pot, a business account with a plan from Richard, or an investing account with live markets." : props.onOpenBusiness ? "Money set aside outside your spendable balance. Open a savings pot, or a business account with a plan from Richard." : tr("savingsIntro")}</div>
 
       {hubCount > 0 && (
         <Card style={{ padding: "18px 20px", marginBottom: 16, background: T.heroBg, boxShadow: T.heroShadow }}>
