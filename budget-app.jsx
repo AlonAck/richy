@@ -11694,9 +11694,9 @@ function Overview(props) {
   // only when the watcher has actually found something. Four fixed panels meant
   // two of them were duplicates and one said "All clear" on a day the rest of
   // the screen was red.
-  // Eight panels: the five chart views that were the hero until 88fc56d, then
-  // the three Richard Watch panels that replaced them. Alon wants both sets.
-  var heroPageCount = 8;
+  // Seven panels: balance, the trend, safe to spend and top merchants, then
+  // the three Richard Watch panels that replaced the old chart hero.
+  var heroPageCount = 7;
 
   // ===== Hero carousel: swipeable state + draw animation =====
   var _pg = useState(0);    var page = _pg[0];     var setPage = _pg[1];
@@ -12332,58 +12332,42 @@ function Overview(props) {
               </div>
             </div>
 
-            {/* Panel 2 - Categories */}
-            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
+            {/* Panel 2 - Safe to spend. The answer users came for, not another
+                account total they still have to interpret. */}
+            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden", padding: "21px 24px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>WHERE IT GOES</span>
-                {rangeRow()}
-              </div>
-              {winCats.length === 0 ? (
-                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: HMUT }}>No spending in this period.</div>
-              ) : (
-                <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 18, marginTop: 6 }}>
-                  <div style={{ position: "relative", width: 132, height: 132, flexShrink: 0 }}>
-                    {donutChart()}
-                    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                      <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.1em", color: HFNT }}>SPENT</div>
-                      <div style={{ fontSize: 20, fontWeight: 700, color: HINK, letterSpacing: "-0.03em" }}>{dollars(winExpenseTot)}</div>
-                    </div>
-                  </div>
-                  <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
-                    {winCats.map(function(c, i) {
-                      return (
-                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          <span style={{ width: 9, height: 9, borderRadius: 3, background: c.color, flexShrink: 0 }} />
-                          <span style={{ flex: 1, fontSize: 12, color: T.catNameHero, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: HINK }}>{Math.round((c.val / winExpenseTot) * 100) + "%"}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: HMUT }}>{tr("safeToSpend")}</div>
+                  <div style={{ fontSize: 11, color: HFNT, marginTop: 2 }}>{tr("nextSevenDays")}</div>
                 </div>
-              )}
-            </div>
-
-            {/* Panel 3 - Savings rate */}
-            <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden",padding: "22px 24px", display: "flex", alignItems: "center", gap: 22 }}>
-              <div style={{ position: "relative", width: 120, height: 120, flexShrink: 0 }}>
-                {ringChart()}
-                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                  <div style={{ fontSize: 30, fontWeight: 700, color: HINK, letterSpacing: "-0.03em", lineHeight: 1 }}>{Math.round(Math.max(0, winSav) * dp)}<span style={{ fontSize: 16 }}>%</span></div>
-                  <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.1em", color: HFNT, marginTop: 2 }}>SAVED</div>
+                <div onPointerDown={stopDrag} onClick={function() { setHidden(function(v) { return !v; }); }} style={{ cursor: "pointer", padding: 4, display: "flex" }}>
+                  <SVGIcon id={hidden ? "eyeoff" : "eye"} size={20} color={HMUT} />
                 </div>
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>SAVINGS RATE</div>
-                <div style={{ fontSize: 16, fontWeight: 600, color: HINK, lineHeight: 1.35, marginTop: 8, letterSpacing: "-0.01em" }}>{winIncomeTot > 0 ? "You kept " + dollars(winKept) + " of what you earned." : "No income recorded in this period."}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 10 }}>
-                  <SVGIcon id={winSav >= 0 ? "up" : "down"} size={14} color={winSav >= 0 ? HPOS : HMUT} />
-                  <span style={{ fontSize: 12, fontWeight: 600, color: winSav >= 0 ? HPOS : HMUT }}>{winSav >= 20 ? "Excellent pace" : winSav >= 10 ? "On track" : winSav >= 0 ? "Building up" : "Room to rebalance"}</span>
+              <div>
+                <div style={{ filter: hidden ? "blur(11px)" : "none", userSelect: "none" }}>
+                  <span style={{ fontSize: 43, fontWeight: 750, color: safeToSpend > 0 ? HINK : HNEG, letterSpacing: "-0.04em", lineHeight: 1 }}>{dollars(safeToSpend * dp)}</span>
+                </div>
+                <div style={{ fontSize: 12.5, color: HFNT, lineHeight: 1.4, marginTop: 9 }}>
+                  {heroUpcomingWeek > 0
+                    ? ("After keeping " + dollars(heroUpcomingWeek) + " for " + heroUpcomingWeekRows.length + " known charge" + (heroUpcomingWeekRows.length === 1 ? "" : "s") + ".")
+                    : (heroCapRows.length ? "Based on your balance and remaining budget." : "No known charges need reserving this week.")}
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 14, borderTop: "0.5px solid " + HSEP, paddingTop: 13 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>{tr("perDay")}</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: HINK, letterSpacing: "-0.02em", marginTop: 3 }}>{dollars(safePerDay)}</div>
+                </div>
+                <div style={{ width: "0.5px", background: HSEP }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>{tr("currentBalance")}</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: balance < 0 ? HNEG : HINK, letterSpacing: "-0.02em", marginTop: 3 }}>{(balance < 0 ? "-" : "") + dollars(Math.abs(balance))}</div>
                 </div>
               </div>
             </div>
 
-            {/* Panel 4 - Top merchants */}
+            {/* Panel 3 - Top merchants */}
             <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden",padding: "20px 22px", display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", color: HMUT }}>TOP MERCHANTS</span>
@@ -12408,7 +12392,7 @@ function Overview(props) {
               </div>
             </div>
 
-            {/* Panel 5 - Month status. One verdict, with the three numbers that
+            {/* Panel 4 - Month status. One verdict, with the three numbers that
                 explain it; no chart-reading required. */}
             <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden", padding: "20px 22px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
@@ -12431,7 +12415,7 @@ function Overview(props) {
               </div>
             </div>
 
-            {/* Panel 6 - Richard’s single next move. The detail lives in Daily
+            {/* Panel 5 - Richard’s single next move. The detail lives in Daily
                 Brief; the hero only earns one decision at a time. */}
             <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden", padding: "20px 22px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -12454,7 +12438,7 @@ function Overview(props) {
               </LiquidButton>
             </div>
 
-            {/* Panel 7 - The 24/7 watcher. Summary first; the long finding list
+            {/* Panel 6 - The 24/7 watcher. Summary first; the long finding list
                 remains one tap away so a new user never meets a wall of alerts. */}
             <div style={{ flex: "0 0 100%", width: "100%", height: "100%", boxSizing: "border-box", scrollSnapAlign: "start", overflow: "hidden", padding: "20px 22px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -12488,6 +12472,26 @@ function Overview(props) {
           </div>
         </div>
       </div>
+
+      {(income > 0 || expense > 0) && (
+        <div ref={revStats.ref} className={revStats.className} style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+          <div onClick={function() { nav("advisor"); }} style={{ flex: 1, background: !hasIncome ? T.card : (savRate >= 20 ? T.greenDim : savRate > 0 ? T.orangeDim : "rgba(200,152,58,0.10)"), borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8, minHeight: 25 }}>{tr("savingsRate")}</div>
+            <div style={{ fontSize: 26, fontWeight: 700, color: !hasIncome ? T.ink3 : (savRate >= 20 ? T.green : savRate > 0 ? T.orange : T.gold), letterSpacing: "-0.02em" }}>{!hasIncome ? "-" : savRate + "%"}</div>
+            <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>{!hasIncome ? tr("noIncomeYet") : (savRate >= 20 ? tr("excellent") : savRate >= 10 ? tr("onTrack") : savRate > 0 ? tr("buildItUp") : tr("overspending"))}</div>
+          </div>
+          <div onClick={function() { nav("activity"); }} style={{ flex: 1, background: T.card, borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8, minHeight: 25 }}>{tr("transactions")}</div>
+            <div style={{ fontSize: 26, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{monthTxCount}</div>
+            <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>{tr("thisPeriod")}</div>
+          </div>
+          <div onClick={function() { goPage(2); }} style={{ flex: 1.35, minWidth: 0, background: T.card, borderRadius: 16, padding: "16px 14px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8, minHeight: 25, whiteSpace: "nowrap" }}>{tr("safeToSpend")}</div>
+            <div style={{ fontSize: 21, fontWeight: 700, color: safeToSpend > 0 ? T.ink : T.red, letterSpacing: "-0.025em", whiteSpace: "nowrap" }}>{dollars(safeToSpend)}</div>
+            <div style={{ fontSize: 11, color: T.ink3, marginTop: 3, whiteSpace: "nowrap" }}>{tr("nextSevenDays")}</div>
+          </div>
+        </div>
+      )}
 
       {/* Widgets Richard built on request belong immediately under the cash
           overview, before the supporting account and activity sections. */}
@@ -12524,26 +12528,6 @@ function Overview(props) {
           <div style={{ fontSize: 16, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 5 }}>{tr("noTransactions")}</div>
           <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{tr("overviewEmptySub")}</div>
         </Card>
-      )}
-
-      {(income > 0 || expense > 0) && (
-        <div ref={revStats.ref} className={revStats.className} style={{ display: "flex", gap: 10, marginBottom: 20 }}>
-          <div onClick={function() { nav("advisor"); }} style={{ flex: 1, background: !hasIncome ? T.card : (savRate >= 20 ? T.greenDim : savRate > 0 ? T.orangeDim : "rgba(200,152,58,0.10)"), borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{tr("savingsRate")}</div>
-            <div style={{ fontSize: 26, fontWeight: 700, color: !hasIncome ? T.ink3 : (savRate >= 20 ? T.green : savRate > 0 ? T.orange : T.gold), letterSpacing: "-0.02em" }}>{!hasIncome ? "-" : savRate + "%"}</div>
-            <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>{!hasIncome ? tr("noIncomeYet") : (savRate >= 20 ? tr("excellent") : savRate >= 10 ? tr("onTrack") : savRate > 0 ? tr("buildItUp") : tr("overspending"))}</div>
-          </div>
-          <div onClick={function() { nav("activity"); }} style={{ flex: 1, background: T.card, borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{tr("transactions")}</div>
-            <div style={{ fontSize: 26, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{monthTxCount}</div>
-            <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>{tr("thisPeriod")}</div>
-          </div>
-          <div onClick={function() { nav("goals"); }} style={{ flex: 1, background: T.card, borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{tr("goals")}</div>
-            <div style={{ fontSize: 26, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{goals.length}</div>
-            <div style={{ fontSize: 11, color: T.ink3, marginTop: 3 }}>{goals.length === 1 ? tr("activeGoal") : tr("activeGoals")}</div>
-          </div>
-        </div>
       )}
 
       {liveTrips.map(function(lt) {
