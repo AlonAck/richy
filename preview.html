@@ -130,7 +130,11 @@ function fetchApp(attempt) {
 }
 fetchApp(0).then(function(src){
   var code = src
-    .replace(/^\s*import[^\n]*\n/gm, "")
+    // Strip ES imports. The lookahead matters: without it this also ate any
+    // line that merely starts with an identifier beginning "import", such as
+    // the translation key importCsv, which then rendered as the raw key here
+    // and nowhere else.
+    .replace(/^\s*import(?=[\s{'"*])[^\n]*\n/gm, "")
     .replace(/export default function App/, "function App");
   var out = Babel.transform(code, { presets: ["react"] }).code;
   var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;

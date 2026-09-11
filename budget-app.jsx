@@ -16464,13 +16464,16 @@ function Activity(props) {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "flex-start", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-        <LiquidButton variant={importPrimary ? "primary" : "neutral"} onClick={function() { setImportOpen(true); }} title={tr("importCsv")}
-          aria-label={tr("importCsv")} style={{ flexShrink: 0 }}>
-          <SVGIcon id="down" size={18} color={importPrimary ? "#fff" : T.orange} />{tr("importCsv")}
+        {/* Toolbar glass, Apple-style: the round button carries the symbol and
+            nothing else. The name still reaches a screen reader and a hover
+            tooltip through aria-label/title - only the visible word goes. */}
+        <LiquidButton type="button" variant={importPrimary ? "primary" : "neutral"} size="icon" iconSize={42} onClick={function() { setImportOpen(true); }}
+          title={tr("importCsv")} aria-label={tr("importCsv")} style={{ flexShrink: 0 }}>
+          <SVGIcon id="down" size={18} color={importPrimary ? "#fff" : T.orange} />
         </LiquidButton>
-        <LiquidButton variant="primary" onClick={props.onOpenNotes} title={tr("notes")}
-          aria-label={tr("notes")} style={{ flexShrink: 0 }}>
-          <SVGIcon id="note" size={18} color="#fff" />{tr("notes")}
+        <LiquidButton type="button" variant="primary" size="icon" iconSize={42} onClick={props.onOpenNotes}
+          title={tr("notes")} aria-label={tr("notes")} style={{ flexShrink: 0 }}>
+          <SVGIcon id="note" size={18} color="#fff" />
         </LiquidButton>
         {props.tx.length > 0 && filterOpts.length > 0 && (
           <LiquidButton type="button" variant={filterCat ? "primary" : "neutral"} soft size="icon" iconSize={42} onClick={function() { setFilterOpen(true); }} aria-label={filterCopy.title} title={filterCopy.title}>
