@@ -12864,8 +12864,11 @@ function sniffMap(rows, hasHeader) {
       // Separate money-out / money-in columns (common in real bank exports).
       if (map.debit < 0 && /(debit|withdraw|paid out|money out|spent|outflow)/.test(h) && !/credit|deposit/.test(h)) { map.debit = i; return; }
       if (map.credit < 0 && /(credit|deposit|paid in|money in|received|inflow)/.test(h) && !/debit|withdraw/.test(h)) { map.credit = i; return; }
-      // Single signed-amount column - only if it isn't a debit/credit column.
-      if (map.amount < 0 && /(amount|value|sum|total|paid)/.test(h) && !/(debit|credit|deposit|withdraw)/.test(h)) { map.amount = i; return; }
+      // Single signed-amount column - only if it isn't a debit/credit column,
+      // and not a SECOND date-ish column (a statement with both "Transaction
+      // Date" and "Value Date" must not let the latter's "value" steal the
+      // amount role from the real Amount column that comes after it).
+      if (map.amount < 0 && /(amount|value|sum|total|paid)/.test(h) && !/(debit|credit|deposit|withdraw)/.test(h) && !/date|time|posted/.test(h)) { map.amount = i; return; }
       if (map.desc < 0 && /desc|payee|name|memo|detail|narration|merchant|reference|transaction/.test(h)) { map.desc = i; return; }
     });
   }
