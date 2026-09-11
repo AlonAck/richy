@@ -52,6 +52,7 @@
   <ul>
     <li>Transactions, budgets, goals, notes (money owed), savings accounts, business records, investment holdings, trips, and preferences you record in the app.</li>
     <li>If you enable Bank Sync, purchase notifications forwarded from your own phone (merchant, amount, date). Bank Sync never has your bank credentials — it only receives what your phone's automation sends it.</li>
+    <li>"Connect Bank Leumi (Demo)" is a simulation, clearly labeled DEMO throughout. It never contacts Bank Leumi or any other bank, never asks for banking credentials, and only fills your account with clearly fictional sample transactions so you can preview the experience. No data is sent to or received from a bank through this feature.</li>
     <li>Richy does not currently offer a live bank connection. If official Open Banking connections are introduced in the future (subject to the required regulatory licensing), we will update this policy before launch to describe exactly what is collected and how.</li>
   </ul>
   <h3>Achievements and progress</h3>
@@ -120,7 +121,7 @@
   <h2>6. Your rights and controls</h2>
   <ul>
     <li><strong>Export</strong> — Profile → "Export my data" downloads a complete copy of your data as a JSON file, anytime.</li>
-    <li><strong>Delete</strong> — Profile → "Delete account &amp; data" permanently erases your account: your database records, bank-sync keys, bank connection tokens, and your sign-in account itself. This is immediate and cannot be undone.</li>
+    <li><strong>Delete</strong> — Profile → "Delete account &amp; data" permanently erases your account: your database records, bank-sync keys, your sign-in account itself, and — if you ever have one — any token from the optional direct bank connection described in Section 1. This is immediate and cannot be undone.</li>
     <li><strong>Correct</strong> — everything you've entered can be edited or removed in the app directly.</li>
     <li><strong>Stop sharing</strong> — remove a follower or unfollow someone at any time from Profile → Friends. Wealth-implying badges are never shared unless you switch on that specific badge. Deleting your account also deletes your handle, your public profile and every follow connection.</li>
     <li><strong>Ask us</strong> — for any privacy request you can't do in-app (access, correction, deletion, objection), email <a href="mailto:richysupport@gmail.com">richysupport@gmail.com</a>. We respond within 30 days. You may lodge a complaint with the Israeli Privacy Protection Authority (הרשות להגנת הפרטיות). If you are in the EU/EEA or another jurisdiction with a data-protection authority, you also have the right to lodge a complaint with that authority.</li>
@@ -130,7 +131,7 @@
   <p>Your data is kept for as long as your account exists. When you delete your account, it is removed from the live database immediately. Provider-level backups (e.g. Firebase's infrastructure backups) age out on their standard schedules. Server request logs are retained briefly by Vercel per its standard policy.</p>
 
   <h2>8. Security</h2>
-  <p>All traffic is encrypted in transit (TLS). Database access is enforced by per-user security rules: your records are readable and writable only by your own authenticated session. Bank-sync keys are stored only as one-way hashes. Access tokens for optional bank connections are held server-side and are never exposed to the browser.</p>
+  <p>All traffic is encrypted in transit (TLS). Database access is enforced by per-user security rules: your records are readable and writable only by your own authenticated session. Bank-sync keys are stored only as one-way hashes. Richy does not currently offer a live bank connection; if one is introduced, its access tokens would be held server-side only and never exposed to the browser.</p>
 
   <h2>9. Minimum age</h2>
   <p>Richy is for people aged <strong>16 and over</strong>. We check the date of birth you provide at sign-up and do not accept accounts for anyone younger. If we learn an account belongs to someone under 16, we will delete it.</p>

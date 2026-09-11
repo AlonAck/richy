@@ -175,10 +175,16 @@ start. Network requests are data only: our own API on richy-mgkl.vercel.app,
 and Firebase Authentication / Firestore.
 
 DATA COLLECTION
-Richy collects only what the app needs to function: email, name, date of birth
-(for age verification), and the financial records the user enters themselves.
-No advertising identifiers, no location, no analytics or tracking SDKs. Full
-detail: https://richy-mgkl.vercel.app/privacy.html
+Richy collects: email and name (account), date of birth (age verification),
+and the financial records the user enters themselves. If a user claims a
+public handle, it is visible to other signed-in users so they can be found
+and followed. Alfred chat messages are stored with the account; any photo or
+screenshot a user attaches in a chat is sent to Anthropic (the AI provider),
+the same as the message text. Our host, Vercel, logs standard web-request
+data (IP address, request logs) for every request, as it does for any web
+app. No advertising identifiers, no location, no analytics or tracking SDKs,
+no ads - we never sell data. Full detail:
+https://richy-mgkl.vercel.app/privacy.html
 
 Contact for any questions: richysupport@gmail.com
 ```
