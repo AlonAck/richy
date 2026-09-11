@@ -202,6 +202,64 @@ correct platform's existing scale for whichever surface you're touching,
 and treat reconciling them as a real decision for Alon, not something to
 resolve unilaterally inside an unrelated change.
 
+## Layout and grid — rules earned on the chief pages
+
+### The track is the measure — never cap the text inside it
+
+The single most expensive layout bug, because it looks like a design choice
+rather than a fault. A `max-width` in `ch` set on text that already sits in
+a sized grid column is a second, invisible column edge, and it always wins,
+because it is the narrower of the two. The column then renders with a dead
+strip along one side, and when that strip lands next to the gutter the two
+add up into something a person reads as a hole in the page.
+
+Measured on the Iris chief page, 11 Sep 2026: a `36ch` lede in a 504 px
+track filled about 330 px, so 170 px of the column was empty by instruction
+and sat directly against a 52 px gutter — a 220 px gap in the middle of the
+layout. A `62ch` paragraph inside a 976 px card left 496 px blank, which
+nobody reported, because dead space on the right edge of a card reads as
+margin rather than as a fault.
+
+The rule:
+
+- **Size the track so the line length lands where you want it, then let the
+  text fill the track.** For a comfortable measure, a column of roughly
+  `fontSize x 28` gives about 56 characters; that self-regulates as the
+  viewport shrinks, which a `ch` cap does not.
+- **A `ch` cap is only correct where there is no track** — text running
+  loose in a full-bleed container with no grid to hold it.
+- **If a wide card holds one narrow column of copy, it needs a second
+  column**, not a wider paragraph. Put the thing that belongs beside the
+  copy there: a rule, a note, the controls.
+- **Check for it by measuring, not by looking.** `track width − widest
+  rendered line` should be 0, or the card's own padding. Anything else is
+  dead space.
+
+### Close columns on the same line
+
+Two columns that open on the same line should close on the same line.
+When the prose column runs shorter than the card beside it, pin its last
+element to the bottom (`margin-top:auto` in a flex column) above a hairline,
+so the leftover space becomes a footnote standoff rather than a trailing
+hole. Release the pin at the breakpoint where the grid collapses.
+
+Two gotchas that cost real time:
+
+- **An inline `style="margin:0"` beats `margin-top:auto` from a class.**
+  If the pin does nothing, this is why. Narrow the inline rule to
+  `margin-bottom:0`.
+- **A hairline tuned for white cards disappears on a tinted ground.** Use
+  the stronger border token for rules drawn on the page background.
+
+Independent columns of unequal content — a main list beside a sidebar —
+are exempt. They are not two halves of one block and should not be forced
+to match.
+
+### Balance every heading
+
+`text-wrap: balance` on all heading levels. It costs nothing, and a wider
+column makes widows more likely, not less.
+
 ## Native iOS patterns to match
 
 - **Tab bar**: fixed, glass, active tab gets accent color — not a full
@@ -461,6 +519,11 @@ so they aren't re-proposed:
       flagged app-wide as of the 25 Aug QA sweep; don't add more)
 - [ ] Spacing uses only the correct platform's scale above, no one-off
       pixel values (see the web/native mismatch flagged above)
+- [ ] No `ch` width cap on text that already sits in a sized grid column —
+      measure `track − widest line` and expect 0
+- [ ] Paired columns open and close on the same line; a wide card holding
+      one narrow column of copy has been given a real second column
+- [ ] Headings carry `text-wrap: balance`
 - [ ] Dark mode variant looks intentional, not just inverted
 - [ ] Motion uses the spring curves above, not a plain linear/ease transition
 - [ ] Any new glass control reuses `LiquidButton`/`lqPalette` (web) or
