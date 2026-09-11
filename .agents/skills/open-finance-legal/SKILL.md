@@ -1,6 +1,6 @@
 ---
 name: open-finance-legal
-description: Israeli regulatory constraints on Richy — financial-information-service licensing under חוק שירות מידע פיננסי (ISA), the investment-advice line for the Richard AI assistant, DEMO labelling, Bank Sync exposure, and privacy (Amendment 13, cross-border storage, LLM data processing). Use when working on Open Banking / Open Finance connectivity, Richard's system prompt or content limits, the Leumi DEMO feature, how Bank Sync is marketed, privacy.html / terms.html, or an agreement with a licensed aggregator.
+description: Israeli regulatory constraints on Richy — financial-information-service licensing under חוק שירות מידע פיננסי (ISA), the investment-advice line for the Alfred AI assistant, DEMO labelling, Bank Sync exposure, and privacy (Amendment 13, cross-border storage, LLM data processing). Use when working on Open Banking / Open Finance connectivity, Alfred's system prompt or content limits, the Leumi DEMO feature, how Bank Sync is marketed, privacy.html / terms.html, or an agreement with a licensed aggregator.
 status: draft
 ---
 
@@ -39,12 +39,12 @@ Full Hebrew analysis: [`reference/analysis-he.md`](reference/analysis-he.md).
 
 ## What this means for the code — ranked
 
-### 1. Richard needs a hard content guardrail (most urgent)
+### 1. Alfred needs a hard content guardrail (most urgent)
 
 A disclaimer is currently carrying this, and it does not hold. The relevant
 exemption — s.3(a)(4), ייעוץ השקעות בכלי התקשורת — is conditioned (s.3(b)) on
 telling the user the advice *is not* a substitute for advice that accounts for
-their individual data and needs. Richard is built around doing exactly the
+their individual data and needs. Alfred is built around doing exactly the
 opposite; personalisation to real data is its value. So the exemption is a poor
 fit and the disclaimer built on it does not protect the app.
 
@@ -56,11 +56,11 @@ products, קרנות השתלמות):
 
 - **Outside the definition entirely** — general budgeting talk: spending
   patterns, cash flow, "can I afford X", savings goals. This is most of what
-  Richard does today.
+  Alfred does today.
 - **Across the line** — commentary on a specific security or financial asset,
   and in particular reacting to holdings shown in the investment-tracking
   screen. "I see you're holding X, consider…" is close to a textbook match for
-  the regulated activity, because Richard both sees the actual holdings and
+  the regulated activity, because Alfred both sees the actual holdings and
   gives an opinion on them.
 
 Fix at the system-prompt / logic level in [`api/chat.js`](../../../api/chat.js),
@@ -131,7 +131,7 @@ Amendment 13 has been in force since **14 Aug 2025**; this is present tense.
 
 If the white-label / aggregator route is ever chosen over Richy's own licence,
 the aggregator has to be the one exercising judgement over how the data is used,
-with Richy a pure technology provider. Richard-with-opinions is in tension with
+with Richy a pure technology provider. Alfred-with-opinions is in tension with
 that model. No action now, but worth knowing before architecting around a
 specific path.
 

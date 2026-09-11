@@ -1,17 +1,17 @@
 import SwiftUI
 import UIKit
 
-/// Richard's chat. Your messages are bubbles on the right; Richard's answers
+/// Alfred's chat. Your messages are bubbles on the right; Alfred's answers
 /// are plain text on the left, the way an assistant reads best. The AI
 /// disclosure is the first thing in the conversation and stays under the
 /// composer; every reply can be reported from its context menu.
-struct RichardChatView: View {
+struct AlfredChatView: View {
     let user: AuthUser
 
     @Environment(LedgerStore.self) private var store
     @Environment(\.services) private var services
     @Environment(\.openURL) private var openURL
-    @State private var model: RichardChatViewModel?
+    @State private var model: AlfredChatViewModel?
     @FocusState private var composerFocused: Bool
 
     var body: some View {
@@ -24,7 +24,7 @@ struct RichardChatView: View {
                     LoadingView()
                 }
             }
-            .navigationTitle("Richard")
+            .navigationTitle("Alfred")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -41,8 +41,8 @@ struct RichardChatView: View {
                     let chat = services.chat
                     let store = self.store
                     let user = self.user
-                    model = RichardChatViewModel(chat: chat) {
-                        RichardPrompt.system(store: store, user: user)
+                    model = AlfredChatViewModel(chat: chat) {
+                        AlfredPrompt.system(store: store, user: user)
                     }
                 }
             }
@@ -50,7 +50,7 @@ struct RichardChatView: View {
     }
 
     @ViewBuilder
-    private func conversation(_ model: RichardChatViewModel) -> some View {
+    private func conversation(_ model: AlfredChatViewModel) -> some View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: Spacing.md) {
@@ -70,10 +70,10 @@ struct RichardChatView: View {
 
                     if model.isReplying {
                         HStack(spacing: Spacing.sm) {
-                            RichardAvatar()
+                            AlfredAvatar()
                             ProgressView()
                                 .tint(RichyColor.accent)
-                            Text("Richard is reading your numbers")
+                            Text("Alfred is reading your numbers")
                                 .font(RichyFont.ui(RichyFont.Size.footnote))
                                 .foregroundStyle(RichyColor.ink3)
                         }
@@ -117,10 +117,10 @@ struct RichardChatView: View {
         }
     }
 
-    private func opening(_ model: RichardChatViewModel) -> some View {
+    private func opening(_ model: AlfredChatViewModel) -> some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             HStack(alignment: .top, spacing: Spacing.sm) {
-                RichardAvatar()
+                AlfredAvatar()
                 Text("Hi \(firstName). I have your numbers in front of me. What are we looking at?")
                     .font(RichyFont.ui(RichyFont.Size.body))
                     .foregroundStyle(RichyColor.ink)
@@ -132,12 +132,12 @@ struct RichardChatView: View {
     }
 
     @ViewBuilder
-    private func bubble(_ entry: RichardChatViewModel.Entry, model: RichardChatViewModel) -> some View {
-        if entry.isRichard {
+    private func bubble(_ entry: AlfredChatViewModel.Entry, model: AlfredChatViewModel) -> some View {
+        if entry.isAlfred {
             HStack(alignment: .top, spacing: Spacing.sm) {
-                RichardAvatar()
+                AlfredAvatar()
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(RichardText.attributed(entry.text))
+                    Text(AlfredText.attributed(entry.text))
                         .font(RichyFont.ui(RichyFont.Size.body))
                         .foregroundStyle(RichyColor.ink)
                         .textSelection(.enabled)
@@ -157,7 +157,7 @@ struct RichardChatView: View {
                 }
                 Button(role: .destructive) {
                     model.report(entry)
-                    if let url = RichardText.reportMail(for: entry.text) {
+                    if let url = AlfredText.reportMail(for: entry.text) {
                         openURL(url)
                     }
                 } label: {
@@ -178,11 +178,11 @@ struct RichardChatView: View {
         }
     }
 
-    private func composer(_ model: RichardChatViewModel) -> some View {
+    private func composer(_ model: AlfredChatViewModel) -> some View {
         @Bindable var model = model
         return VStack(spacing: Spacing.xs) {
             HStack(alignment: .bottom, spacing: Spacing.sm) {
-                TextField("Ask Richard", text: $model.draft, axis: .vertical)
+                TextField("Ask Alfred", text: $model.draft, axis: .vertical)
                     .lineLimit(1...5)
                     .font(RichyFont.ui(RichyFont.Size.body))
                     .foregroundStyle(RichyColor.ink)
@@ -210,7 +210,7 @@ struct RichardChatView: View {
                 .disabled(!model.canSend)
                 .accessibilityLabel("Send")
             }
-            Text("Richard is an AI. Replies can be wrong and are not investment advice.")
+            Text("Alfred is an AI. Replies can be wrong and are not investment advice.")
                 .font(RichyFont.ui(RichyFont.Size.caption))
                 .foregroundStyle(RichyColor.ink3)
         }
@@ -229,8 +229,8 @@ struct RichardChatView: View {
     }
 }
 
-/// Richard's mark in the conversation: the logo tile at row scale.
-struct RichardAvatar: View {
+/// Alfred's mark in the conversation: the logo tile at row scale.
+struct AlfredAvatar: View {
     var body: some View {
         Text("R")
             .font(RichyFont.display(15))
@@ -265,9 +265,9 @@ struct FlowChips: View {
     }
 }
 
-/// Richard's lightly structured text, as the web renders it: **bold**
+/// Alfred's lightly structured text, as the web renders it: **bold**
 /// inline and "- " bullets on their own lines.
-enum RichardText {
+enum AlfredText {
     static func attributed(_ text: String) -> AttributedString {
         let bulleted = text
             .split(separator: "\n", omittingEmptySubsequences: false)
@@ -293,15 +293,15 @@ enum RichardText {
         components.scheme = "mailto"
         components.path = "richysupport@gmail.com"
         components.queryItems = [
-            URLQueryItem(name: "subject", value: "Reporting a Richard reply"),
-            URLQueryItem(name: "body", value: "I want to report this reply from Richard in the iOS app:\n\n" + reply + "\n\nWhat was wrong with it:\n")
+            URLQueryItem(name: "subject", value: "Reporting a Alfred reply"),
+            URLQueryItem(name: "body", value: "I want to report this reply from Alfred in the iOS app:\n\n" + reply + "\n\nWhat was wrong with it:\n")
         ]
         return components.url
     }
 }
 
-#Preview("Richard") {
-    RichardChatView(user: MockAuthService.demoUser)
+#Preview("Alfred") {
+    AlfredChatView(user: MockAuthService.demoUser)
         .environment(LedgerStore.preview())
         .environment(\.services, .mock())
 }

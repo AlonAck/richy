@@ -111,7 +111,7 @@ enum FirestoreCodec {
             "dob": draft.dob,
             "lang": draft.lang,
             "currency": draft.currency,
-            "richardNotes": draft.richardNotes,
+            "alfredNotes": draft.alfredNotes,
             "consentAt": Int(now.timeIntervalSince1970 * 1000),
             "termsVersion": termsVersion
         ]

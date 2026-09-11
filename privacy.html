@@ -45,7 +45,7 @@
   <h3>Account data</h3>
   <ul>
     <li><strong>Email address and name</strong> — to create and identify your account.</li>
-    <li><strong>Date of birth</strong> — to verify you meet our minimum age (16) and to let Richard, the AI assistant, give age-appropriate guidance.</li>
+    <li><strong>Date of birth</strong> — to verify you meet our minimum age (16) and to let Alfred, the AI assistant, give age-appropriate guidance.</li>
     <li><strong>Password</strong> — handled entirely by Firebase Authentication (Google). We never see or store your password. If you sign in with Google, Google confirms your identity and we receive your email and name.</li>
   </ul>
   <h3>Financial data you enter</h3>
@@ -65,9 +65,9 @@
     <li><strong>Progress shared with followers</strong> — your level, rank, streaks and the badges you share are stored separately and are readable <strong>only</strong> by people whose follow request you have accepted.</li>
   </ul>
 
-  <h3>Conversations with Richard</h3>
+  <h3>Conversations with Alfred</h3>
   <ul>
-    <li>Messages you send to Richard (the AI assistant) and a summary of your financial situation are processed by Anthropic (the AI provider) to generate responses. Photos and screenshots you choose to attach in chat are also sent to Anthropic so Richard can read them — a screenshot can contain anything that was on your screen, so attach only what you are comfortable sharing. Chat history is stored with your account so you can revisit past conversations.</li>
+    <li>Messages you send to Alfred (the AI assistant) and a summary of your financial situation are processed by Anthropic (the AI provider) to generate responses. Photos and screenshots you choose to attach in chat are also sent to Anthropic so Alfred can read them — a screenshot can contain anything that was on your screen, so attach only what you are comfortable sharing. Chat history is stored with your account so you can revisit past conversations.</li>
   </ul>
   <h3>Stored on your device only</h3>
   <ul>
@@ -78,7 +78,7 @@
   <h2>2. How we use your data</h2>
   <ul>
     <li>To provide the service: storing your records, syncing them across your devices, and showing you your own numbers.</li>
-    <li>To generate personalized guidance from Richard, using your real figures.</li>
+    <li>To generate personalized guidance from Alfred, using your real figures.</li>
     <li>To share a household budget with people you explicitly invite (see section 4).</li>
     <li>To calculate your streaks, level and badges from figures you already recorded, and — only if you claim a handle — to show that progress to followers you have approved (see section 5).</li>
     <li>To respond when you contact support.</li>
@@ -90,7 +90,7 @@
     <tr><th>Provider</th><th>What it does</th><th>What it receives</th></tr>
     <tr><td>Google Firebase (Firestore)</td><td>Database that stores your account data</td><td>All data described in section 1 that syncs to the cloud</td></tr>
     <tr><td>Google Firebase Authentication</td><td>Sign-up, sign-in and passwords</td><td>Email, name, password (never visible to us)</td></tr>
-    <tr><td>Anthropic</td><td>Generates Richard's responses</td><td>Your chat messages and a summary of your financial figures, when you use AI features</td></tr>
+    <tr><td>Anthropic</td><td>Generates Alfred's responses</td><td>Your chat messages and a summary of your financial figures, when you use AI features</td></tr>
     <tr><td>Vercel</td><td>Hosts the app and its server functions</td><td>Standard web-request data (IP address, request logs)</td></tr>
     <tr><td>Frankfurter</td><td>Currency exchange rates</td><td>Nothing personal — only which currencies to convert</td></tr>
     <tr><td>Finnhub / Yahoo Finance / Twelve Data</td><td>Stock market prices for the Investing feature</td><td>Nothing personal — only ticker symbols</td></tr>
@@ -106,7 +106,7 @@
   <h3>What a follower can see</h3>
   <p>Only after you accept their request, and only this: your display name and handle, your level and rank, your current streaks, and the badges you have chosen to share.</p>
   <h3>What a follower can never see</h3>
-  <p>Any amount. Your balance, income, savings, net worth, transactions, budgets, goals, notes, debts, investments and conversations with Richard are not part of the shared record and are not readable by anyone you follow or who follows you. This is enforced by database security rules, not only by the app's screens.</p>
+  <p>Any amount. Your balance, income, savings, net worth, transactions, budgets, goals, notes, debts, investments and conversations with Alfred are not part of the shared record and are not readable by anyone you follow or who follows you. This is enforced by database security rules, not only by the app's screens.</p>
   <h3>Badges that could imply wealth</h3>
   <p>Some badges would disclose or strongly imply your income or net worth (for example, one awarded for reaching a savings figure). Every badge carries a marker for this, and badges marked that way are <strong>excluded from your shared profile by default</strong>. They are shared only if you turn on that specific badge yourself. There is no single switch that shares them all.</p>
   <h3>Requests and revoking</h3>

@@ -24,9 +24,9 @@
 >
 > **Previously, 2026-09-06** — a sixth audit landed
 > (`reports/qa-audit-2026-09-06.md`), folded into TIER 0 below. It swept the
-> ground the fifth one named as unswept — the onboarding funnel, the Richard chat
+> ground the fifth one named as unswept — the onboarding funnel, the Alfred chat
 > flow, and the full money-in/money-out matrix — and found the two worst defects in
-> the product to date: **Richard substitutes a canned keyword bot for a real answer
+> the product to date: **Alfred substitutes a canned keyword bot for a real answer
 > on every network or quota failure**, and **two badge families can never fire for
 > any user**. It also raised a scope question the other five never touched: the
 > App Store listing describes six features that do not exist in the native binary
@@ -59,7 +59,7 @@
 
 ## Current state snapshot
 
-**Shipped and live:** expense tracking, budgeting, savings goals, Richard (AI
+**Shipped and live:** expense tracking, budgeting, savings goals, Alfred (AI
 advisor), CSV/statement import, 50-currency support, debt payoff tracker
 (avalanche/snowball), couples/household mode (shared + private ledger),
 business accounts (P&L-ish, runway, tax pot), investing/net-worth tracker,
@@ -74,7 +74,7 @@ IOU notes, trip planning, EN/HE/AR/RU translation strings.
   is the literal answer to the project brief's "build a system that awards
   the user for using us" — it has been live for three weeks and this file
   never said so until today.
-- **Richard Watch** — an always-on engine (`richardWatch`, nine leak/risk
+- **Alfred Watch** — an always-on engine (`alfredWatch`, nine leak/risk
   detectors, a 30-day cash-flow forecast, a Daily Brief, a Goal-at-Risk
   plan) plus four new screens, shipped 2026-08-30 (`6ef1148`, +3,900
   lines). This is the literal answer to "we need a full system that works
@@ -90,12 +90,12 @@ visible to Alon's collaborator until pushed:**
   Trend / Categories / Savings rate / Top merchants) is being replaced with
   4 decision panels: **Safe to Spend** (7-day cash-room math, reserving
   known upcoming charges), **This Month** (a plain-English verdict — On
-  track / Plan needs a tune-up / Needs attention — not a chart), **Richard's
-  Next Move** (the single highest-severity Richard Watch finding, one tap
+  track / Plan needs a tune-up / Needs attention — not a chart), **Alfred's
+  Next Move** (the single highest-severity Alfred Watch finding, one tap
   to the plan), and **Money Watcher** (the 24/7 badge, recoverable-money
-  total, one tap to the full findings list). This is the first time Richard
+  total, one tap to the full findings list). This is the first time Alfred
   Watch's output appears on the home screen instead of behind a tap — it is
-  the single biggest concrete step yet toward "Richard is much more useful
+  the single biggest concrete step yet toward "Alfred is much more useful
   than a chat at the bottom of the screen." Working diff touches
   `budget-app.jsx` around the `Overview` component's hero carousel
   (`heroWatch`, `safeToSpend`, `heroMonthStatus`, `heroMove` etc.); page
@@ -121,13 +121,13 @@ visible to Alon's collaborator until pushed:**
   (`BUSINESS_HUB_TABS`, `businessHubTabs()`, App-level `businessHubTab`):
   **Home** (month + cash + the ledger cards), **Invoices** (list, plus a real
   invoice detail), **Tax pot**, **Build** (goal, roadmap, ideas, weekly
-  review, plan), **Richard**. Three things are genuinely new rather than
+  review, plan), **Alfred**. Three things are genuinely new rather than
   moved:
   - **`bizAttention()` — one ranked "Needs you" list.** Overdue invoices, a
     short tax pot, runway under three months, over-budget categories,
     invoices due inside a week, a quiet revenue month, the next roadmap
     step — each row carries the tab that fixes it and a plain line from
-    Richard. Every figure is measured off the ledger, so the same list
+    Alfred. Every figure is measured off the ledger, so the same list
     safely feeds the hero, the tab summaries and the chat chips.
   - **The tax pot is now real money, not an estimate.** It was a display-only
     number (quarter revenue × rate). It is now an **earmark ledger**
@@ -147,7 +147,7 @@ visible to Alon's collaborator until pushed:**
     fixed** — see `reports/qa-audit-2026-09-05.md` §2.
   - **Every tab reports its own state in the bar.** `GlassTabBar` learned an
     optional `sum` line, so the bar reads "Home −$45 · Invoices 1 overdue ·
-    Tax pot $824.50 short · Build 3 of 7 · Richard 2 things" without the
+    Tax pot $824.50 short · Build 3 of 7 · Alfred 2 things" without the
     owner opening a single screen. The main app tab bar is unchanged.
 
   Fixed on the way through: the hero rendered a loss as a positive number in
@@ -169,7 +169,7 @@ demo per the 25/30 Aug audits — still not a real integration.
 **Latest user-simulation result (2026-07-27, post-fix, 10 personas):**
 impression 6.4/10, AI-usefulness 5.1/10, NPS 5.5, avg max-WTP $3.70/mo,
 **60% kept / 40% gave up.** Full data: `reports/richy-sim-latest.html`.
-This predates both the motivation layer and Richard Watch — **no
+This predates both the motivation layer and Alfred Watch — **no
 simulation has run against either yet.** Re-running the nightly study
 after the Overview redesign lands is the single best way to find out
 whether either investment is actually moving the churn numbers it was
@@ -188,7 +188,7 @@ see Tier 0. This remains more urgent than any Tier 2-4 feature.
 **Read this callout before anything else in this file.** Two audits (17
 Aug, 25 Aug) both said "fix before building anything new." The one commit
 between the second and third audit was a **3,900-line feature**
-(Richard Watch), not a fix. The third audit (30 Aug) found **two new P0s**
+(Alfred Watch), not a fix. The third audit (30 Aug) found **two new P0s**
 sitting on top of the still-open ones from the first two — including a
 **second, independent instance of a bug already found once** in the exact
 same seven lines. Two defect counts went **up**, not down, while that
@@ -213,7 +213,7 @@ Source: `reports/ux-audit-2026-09-07.docx` (now tracked, `84cad40`). Unlike the 
 QA audits, this one was **walked live** — a new Hebrew user, all 28 onboarding
 screens, then every tab and settings screen — before nine agents re-read the same
 ground in code. It found ~90 findings, of which fourteen are named launch blockers,
-and it reframed three of them as systemic rather than incidental: **Richard's chat
+and it reframed three of them as systemic rather than incidental: **Alfred's chat
 was returning 413 to every message and hiding it**, **the Hebrew app is an English
 app in an RTL frame**, and **five kinds of object could not be created by tapping
 anything**.
@@ -224,9 +224,9 @@ saw the user-facing symptom, the QA audits saw the line of code:
 
 | Audit blocker | Already tracked as | Relationship |
 |---|---|---|
-| #1 Richard's chat 413s and substitutes a canned English answer | 6 Sep P0 "every Richard chat failure is disguised as a real answer" + 6 Sep P1 "a 20-turn wall, hit silently" | Same defect pair. The audit supplies the missing number: the static chat prompt is **16,075 chars** against a 20,000 cap, so a real account's data block (~19,100) pushed every request over. Not a new item. |
+| #1 Alfred's chat 413s and substitutes a canned English answer | 6 Sep P0 "every Alfred chat failure is disguised as a real answer" + 6 Sep P1 "a 20-turn wall, hit silently" | Same defect pair. The audit supplies the missing number: the static chat prompt is **16,075 chars** against a 20,000 cap, so a real account's data block (~19,100) pushed every request over. Not a new item. |
 | #12 Four investing paths bypass the server guardrail | 5 Sep P0 "the guardrail escape has a third instance" + 30 Aug NEW-2 `investPlanOrders`/`investPlanFor` | Same root cause, and the audit's own words are the one already in this file: the guardrail has to sit where financial strings are rendered. It adds two facets: the **offline fallbacks recommend 401k/Roth IRA in an Israeli app**, and the **investing disclaimers are English-only**. Not a new item. |
-| #13(a) The Bank Leumi demo names a real bank in a pre-launch build | "Bank Leumi DEMO wrote unmarked fake rows" (closed, `b26496e`) | The audit explicitly **downgrades this**: it is labelled, disclosed in Richard's prompt and purged on disconnect, so it is "a question for counsel, not a defect." Do not reopen it as a bug. |
+| #13(a) The Bank Leumi demo names a real bank in a pre-launch build | "Bank Leumi DEMO wrote unmarked fake rows" (closed, `b26496e`) | The audit explicitly **downgrades this**: it is labelled, disclosed in Alfred's prompt and purged on disconnect, so it is "a question for counsel, not a defect." Do not reopen it as a bug. |
 | #14 Transaction rows are invisible to assistive tech | "accessibility — `aria-label` coverage 46/432 buttons" | The row-level defect is sharper than the count: the row was a `<div>`, so a screen reader announced its children and never the transaction. Folded in, not duplicated. |
 
 **Ten are genuinely new.** All fourteen were re-verified against the live tree on
@@ -237,7 +237,7 @@ actually does now, not what that commit's message claims.
   or trip.** The single orange "+" always opened New Transaction, while the empty
   states on Budgets, Goals and Notes all read "tap + to create your first one."
   By tap alone five object types could not be created; the only other door was
-  Richard, who was returning 413. Closed by a `FAB_CREATES` map that makes the "+"
+  Alfred, who was returning 413. Closed by a `FAB_CREATES` map that makes the "+"
   open whatever the screen it is standing on creates, plus labelled buttons on
   Budgets/Goals/Notes. Verified: the map covers activity, budgets, goals, notes and
   categories, and Trips got its own visible "Plan a trip" button on Goals (#10).
@@ -335,7 +335,7 @@ it is the product decision this file has been carrying since 30 Aug.
 Two defects that `1c6b021` left behind, both inside blockers it otherwise closed.
 Neither is in the audit — they are what a re-read of the shipped code found.
 
-- **P0 — the Retry row on a failed Richard message can never succeed.** Blocker #1
+- **P0 — the Retry row on a failed Alfred message can never succeed.** Blocker #1
   correctly stopped disguising a server refusal as an answer: `isServerRefusal()`
   now renders a red row with a Retry button. But both send paths still post
   `nc.map(apiMsg)` — **the entire thread, uncapped** — against the server's
@@ -356,24 +356,24 @@ Neither is in the audit — they are what a re-read of the shipped code found.
   cap reports as fine. The correct denominator is the observed window, and the
   correct gate is eight **observed** days rather than eight calendar days.
 
-### Genuinely NEW, found 6 Sep — Richard first, because he is the differentiator
+### Genuinely NEW, found 6 Sep — Alfred first, because he is the differentiator
 
 Full detail and anchors in `reports/qa-audit-2026-09-06.md`. All verified against
 `f0871d9`; each is marked live or uncommitted.
 
-- **P0 — LIVE — every Richard chat failure is disguised as a real answer.**
-  `var response = err || !text ? Richard(msg) : text;` (`budget-app.jsx:19412`)
-  discards `err` and substitutes `Richard()` (`:18473`), a ~250-line keyword bot.
+- **P0 — LIVE — every Alfred chat failure is disguised as a real answer.**
+  `var response = err || !text ? Alfred(msg) : text;` (`budget-app.jsx:19412`)
+  discards `err` and substitutes `Alfred()` (`:18473`), a ~250-line keyword bot.
   Offline, 429 rate limit, 401 expired session, 413 over-length and 504 timeout all
   collapse into a confident generic paragraph. **Every one of those has a
   well-written server message that the user can never see.** The Focus Mode branch
   47 lines earlier (`:19365`) does it correctly — copy that. **Most likely single
-  cause of the "Richard gives generic advice" complaints.**
+  cause of the "Alfred gives generic advice" complaints.**
   **CLOSED 7 Sep — `1c6b021`, re-verified 8 Sep.** `isServerRefusal()` splits a
   server refusal from a dropped connection: the refusal renders a red row carrying
   the server's own message plus Retry, and only a genuine network drop still falls
-  back to `Richard()`, badged "offline answer" in all four languages. Every failure
-  goes through `richardFailureLog()`. This is the same defect the 7 Sep UX audit
+  back to `Alfred()`, badged "offline answer" in all four languages. Every failure
+  goes through `alfredFailureLog()`. This is the same defect the 7 Sep UX audit
   raised as its blocker #1 — see that section above; do not track it twice.
 
 - **P0 — LIVE — seven badges and two ranks can never be earned by anyone.**
@@ -399,16 +399,16 @@ Full detail and anchors in `reports/qa-audit-2026-09-06.md`. All verified agains
   `EditFinancialView.handleSave` (`:32273`) rebuilds `onboardingData` from nine
   fields and `onSaveFinancial` (`:35358`) writes it as a whole-object replace,
   dropping `coreProblem`, `moneyLeaks`, `overspendEst` and five preference keys.
-  `coreProblem` is written in one place and read in **seven**, including Richard's
+  `coreProblem` is written in one place and read in **seven**, including Alfred's
   main chat system prompt (`:19345`). One `Object.assign`.
 
-- **P1 — LIVE — Richard confirms a goal contribution that never happens.**
+- **P1 — LIVE — Alfred confirms a goal contribution that never happens.**
   `case "goalAdd":` (`:17452`) validates amount and name length only. Its
   neighbours all check reality (`hasSavings`, `hasOpenNote`, `hasCat`); there is no
   `hasGoal`, and `ctx.goals` is passed at `:19353` and never read. A name mismatch
   is a silent no-op, and for a linked goal it writes `g.saved`, which
   `goalSavedAmount` never reads. The manual UI guards this with `if (!isLinked)`;
-  Richard's path does not.
+  Alfred's path does not.
 
 - **P1 — LIVE — a paid-off debt cannot be marked paid off.**
   `!(parseFloat(form.balance) > 0)` (`:22834`, `:23007`) blocks saving a zero
@@ -464,7 +464,7 @@ Full detail and anchors in `reports/qa-audit-2026-09-06.md`. All verified agains
   debt payoff tracker, trips, IOU notes with reminders, household sharing and CSV
   import — **none of which exist in `RichyIOS/`**, as its own README says. That is
   Guideline 2.3.1. A user who signs up on the phone also never gets the
-  questionnaire or Richard's plan, and there is no path to either. **Decide the date
+  questionnaire or Alfred's plan, and there is no path to either. **Decide the date
   deliberately: slip to 2 Nov (recommended), ship reduced scope with a rewritten
   listing, or revert to the Capacitor wrap.**
 
@@ -494,7 +494,7 @@ report recommends fixing them.
 
 - **P0 — WhatsApp Alerts is undisclosed in both legal documents.** The feature is
   live (`budget-app.jsx:32812`, reachable at Profile -> Settings) and delivers
-  Richard Watch output — leak amounts, budget warnings — to **Meta** directly
+  Alfred Watch output — leak amounts, budget warnings — to **Meta** directly
   (`api/whatsapp.js:61`, `https://graph.facebook.com/`). Grepping
   `whatsapp|meta platforms|phone number` returns **0** for both `privacy.html` and
   `terms.html`; Meta is absent from the processor table at `privacy.html:95`; and
@@ -506,7 +506,7 @@ report recommends fixing them.
   below: **Stock Scout** asks the model to "Rank the 2 or 3 strongest ideas"
   (`budget-app.jsx:26290`) and return a per-ticker `confidence` field (`:26292`)
   personalised to the user's risk profile (`:26288`), rendered as a coloured pill
-  under "Why Richard likes it" (`:26862`, `:26881`) — on the same request where the
+  under "Why Alfred likes it" (`:26862`, `:26881`) — on the same request where the
   server guardrail forbids ratings (`api/_prompts.js:233`, appended at
   `api/chat.js:155`). Its offline fallback `localStockScout` (`:26259`) ranks
   tickers by momentum in plain client code with **no model and no guardrail at
@@ -523,7 +523,7 @@ report recommends fixing them.
   still owed.** Tracked here, not duplicated in the 7 Sep section.
 
 - **P1 — the 09-02 Day-1 list was not done.** Re-verified against the live tree:
-  ~~the four Richard Watch header keys (`watchBrief`, `watchGoal`, `watchForecast`,
+  ~~the four Alfred Watch header keys (`watchBrief`, `watchGoal`, `watchForecast`,
   `watchOuts`) are still in **no dictionary**, and the header still falls through to
   `tr(currentTab)` (`:35040`), which returns the raw key (`:1439`, `|| key`) — so
   all four screens still show a camelCase identifier as their title in every
@@ -535,7 +535,7 @@ report recommends fixing them.
 
 - **P1 — Escape and Android Back close 3 of the app's 11 modals; on the other 8,
   Back navigates the screen underneath the still-open modal.** `closeTopLayer`
-  (`:34851`) knows about the Richard panel, the add sheet and the timeframe menu and
+  (`:34851`) knows about the Alfred panel, the add sheet and the timeframe menu and
   returns `false` for everything else, so `backRef` falls through to a nav pop. No
   overlay traps focus; `aria-modal` appears once in 35,203 lines.
 
@@ -558,7 +558,7 @@ report recommends fixing them.
   2/3/5/10/100`) can be farmed by shuffling money between your own accounts. It sits
   under a comment promising Profile can never disagree with Overview. Separately, the
   Advisor (`:18266`) and Full Analysis (`:21105`) formulas omit `investingTotal`
-  entirely, which Goals (`:15464`) and Overview (`:10038`) include — so Richard quotes
+  entirely, which Goals (`:15464`) and Overview (`:10038`) include — so Alfred quotes
   a figure that leaves out the whole portfolio — and both are bare `tx.reduce` calls
   with no `isSettled` guard. **Fix is one shared `netWorthOf(state)` helper called
   from all four sites.**
@@ -597,14 +597,14 @@ gate should come **before** the next bug fix.
   category.**~~ **CLOSED 2 Sep — `f1ad55b`.** See the Closed table below.
 - **The investing allocation engine is a second, un-guarded advice
   surface.** `90110af` and `b26496e` correctly closed Stock Scout and put
-  a server-side `GUARDRAIL` in front of every Richard chat call. But
+  a server-side `GUARDRAIL` in front of every Alfred chat call. But
   `investPlanOrders` (`:20842`) and `investPlanFor` (`:22736`) are
   **deterministic client code that never calls `api/chat.js`**, so they
   never see the guardrail. They hardcode named securities (VTI, QQQ, VXUS,
   BND, IBIT), select a plan from the user's risk-reaction questionnaire —
   which is suitability profiling — and return a named ticker, a cash
   amount and a share count. That is exactly what `terms.html:49` says
-  Richard doesn't do ("not to suggest amounts to invest") while
+  Alfred doesn't do ("not to suggest amounts to invest") while
   `terms.html:52` says Investing is "a tracker: it records holdings you
   already own." **This needs a product decision, not a ticket**: strip
   amounts/share counts and decouple plan selection from the questionnaire,
@@ -621,11 +621,11 @@ gate should come **before** the next bug fix.
 | Finding | Closed by |
 |---|---|
 | Stock Scout was unlicensed personalised investment advice | `90110af` — rebuilt research-only |
-| Richard's system prompt was fully client-controlled (security hole + unenforceable ISA boundary) | `b26496e` — server-side prompt registry, investment-advice line enforced |
-| Bank Leumi DEMO wrote unmarked fake rows into the real ledger | `b26496e` — now labelled in UI and in Richard's prompt, styled distinctly, purged on disconnect |
+| Alfred's system prompt was fully client-controlled (security hole + unenforceable ISA boundary) | `b26496e` — server-side prompt registry, investment-advice line enforced |
+| Bank Leumi DEMO wrote unmarked fake rows into the real ledger | `b26496e` — now labelled in UI and in Alfred's prompt, styled distinctly, purged on disconnect |
 | Marketing / legal / store copy misaligned with the law | `8848408` |
 | `T.ink3 = #B0A396` failed WCAG contrast outright (2.23:1 on cream, 2.93:1 dark) across 725 render sites | `b551786` — one token, `#7A6B5C` light / `#978877` dark; measured live at 4.65–5.14:1 on every ground it paints on, including the 9.5px nav labels. `88fc56d` had corrected only the `const T` literal, which `applyDarkMode()` overwrites on every render, so nothing had actually changed on screen |
-| Richard's "Apply 50/30/20" button was a placebo — `fn: "apply5030 20"` vs `=== "apply50/30/20"` | `88fc56d` repaired the string; `4398107` made the handler merge instead of replace. Both were needed: the handler passed a fresh array to `onSaveBudgets`, so the first working tap would have deleted every budget the split doesn't name — exactly the trap the 25 Aug sweep flagged ("Repair the identifier and you activate a budget-wipe. Fix both.") |
+| Alfred's "Apply 50/30/20" button was a placebo — `fn: "apply5030 20"` vs `=== "apply50/30/20"` | `88fc56d` repaired the string; `4398107` made the handler merge instead of replace. Both were needed: the handler passed a fresh array to `onSaveBudgets`, so the first working tap would have deleted every budget the split doesn't name — exactly the trap the 25 Aug sweep flagged ("Repair the identifier and you activate a budget-wipe. Fix both.") |
 | `firestore.rules:60` — an invited-but-not-joined user could rewrite `memberUids`, evict the creator, or wipe the household | `88fc56d` narrowed it to `memberUids`/`pendingEmails`, which denied every real acceptance because `acceptInvite` also writes `members`; `f996866` pinned it properly — accept or decline only, membership fields constrained field by field, everything else denied by default |
 | Service worker cached an error page as the app shell — permanent white screen, no recovery | `88fc56d` — `r.ok` guard before both `c.put()` calls. Verified by running the built handler against 200/404/500/502/503 and an offline fetch: non-OK responses are never cached, a good cached shell survives an outage, and offline boot still works |
 | Couples-mode stale closure dropped every transaction added since the effect last ran | `f1ad55b` — functional `setTx`, fixed alongside the household wipe in the same seven lines |
@@ -638,8 +638,8 @@ gate should come **before** the next bug fix.
 | ~~Deleting a trip (`removeTrip`, wired directly to the delete button) instantly destroyed the trip, every budget bucket and every logged expense, with zero confirmation~~ (§5.7) | `cb4ccd4` — delete button now sets a `delTripConfirm` state and renders the same inline red confirm card (Delete / Cancel) used for capital/account deletion, using the `deleteTripConfirm` string that already existed in all four languages but was never wired to anything. `removeTrip` only fires from the confirm card. Verified by re-reading `Trips(props)`: the button no longer calls `removeTrip` directly. |
 | ~~The goal-rescue screen's "Cancel these N" / "Cancel both" / "Cancel {merchant} anyway" buttons (`cancelFindings`) promised cancellation but only ever appended ids to `foundMoney.dismissed`~~ (§5.4, copy half only — the plan-emptying side effect is still open) | `953c884` — every button and headline on `GoalAtRiskDetail`/`PickCancelSheet` now says "Dismiss" instead of "Cancel". Verified by re-reading both components: no remaining label claims to cancel anything. |
 | ~~`giveOneMoreMonth`/`aimForReal` rendered as plain chevron rows identical to every "go here" row, and one tap silently overwrote the goal's saved deadline/target with no confirm, no undo, no record of the old value~~ (§3.6, confirm/undo/visual half only — the negative-target math is still open) | `262d340` — orange border + "edit" icon + "Rewrites your goal's..." label distinguish the rows from navigation; tapping opens a confirm card showing old -> new value, and confirming shows an Undo/Done card backed by a new `goalActionUndo` state. Verified by re-reading `GoalAtRiskDetail`: `onSaveGoals` for these two changes is only called from the confirm card and from `undoGoalAction`. |
-| ~~The header on all four Richard Watch screens rendered the raw string `watchBrief` (and `watchGoal`/`watchForecast`/`watchOuts`) in every language, and the whole feature had zero `tr()` calls~~ (§3.1 CLOSED, §3.2 CLOSED for screen chrome — the engine's per-finding title/subtitle sentences are still hardcoded English, a separate and larger job) | `c783967` — added a new `RW_STRINGS` dictionary block (en/he/ar/ru, 96 keys, same pattern as `FOLDER_STRINGS`) and routed every static string in `DailyBrief`/`GoalAtRiskDetail`/`PickCancelSheet`/`NextThirtyDays`/`WatchOuts`/`PaceCard`/`CliffCard`/`ConfidenceMeter` through `tr()`. The four tab ids double as dictionary keys so the existing `tr(currentTab)` header fallback now resolves to a real title. Verified by re-reading all four screens for stray literal text (none found) and scripting a key-parity check across all four languages (96/96 keys present, no gaps or duplicates). |
-| ~~`RW_ACTIONS.dismiss` was attached to budget-pace and savings-slip signals at construction but `.actions` was never read anywhere, so a blown-budget warning pinned itself to the Daily Brief for the rest of the month with no way to acknowledge it; `WatchBackLink` was built for these screens' back navigation and never used~~ (§3.3, budget-pace half only — cliff/goalrisk are non-dismissible by design, slip still has no safe UI surface; §3.4, `WatchBackLink` half only — `buildWatchDigest`/`watchPromptPayload` still dead) | `3af9b1c` — `PaceCard` now has a Dismiss button wired through a new `rwDismissSignal()` helper into `foundMoney.dismissed`, filtered back out in `richardWatch()` by the pace signal's stable per-month key; `WatchBackLink` now renders at all five back-navigation spots across the four Watch screens instead of the generic `SubViewBack`. Verified by re-reading `detectBudgetPace`'s key format (stable per category per month) and confirming the engine-level filter runs before the signal is ever constructed. |
+| ~~The header on all four Alfred Watch screens rendered the raw string `watchBrief` (and `watchGoal`/`watchForecast`/`watchOuts`) in every language, and the whole feature had zero `tr()` calls~~ (§3.1 CLOSED, §3.2 CLOSED for screen chrome — the engine's per-finding title/subtitle sentences are still hardcoded English, a separate and larger job) | `c783967` — added a new `RW_STRINGS` dictionary block (en/he/ar/ru, 96 keys, same pattern as `FOLDER_STRINGS`) and routed every static string in `DailyBrief`/`GoalAtRiskDetail`/`PickCancelSheet`/`NextThirtyDays`/`WatchOuts`/`PaceCard`/`CliffCard`/`ConfidenceMeter` through `tr()`. The four tab ids double as dictionary keys so the existing `tr(currentTab)` header fallback now resolves to a real title. Verified by re-reading all four screens for stray literal text (none found) and scripting a key-parity check across all four languages (96/96 keys present, no gaps or duplicates). |
+| ~~`RW_ACTIONS.dismiss` was attached to budget-pace and savings-slip signals at construction but `.actions` was never read anywhere, so a blown-budget warning pinned itself to the Daily Brief for the rest of the month with no way to acknowledge it; `WatchBackLink` was built for these screens' back navigation and never used~~ (§3.3, budget-pace half only — cliff/goalrisk are non-dismissible by design, slip still has no safe UI surface; §3.4, `WatchBackLink` half only — `buildWatchDigest`/`watchPromptPayload` still dead) | `3af9b1c` — `PaceCard` now has a Dismiss button wired through a new `rwDismissSignal()` helper into `foundMoney.dismissed`, filtered back out in `alfredWatch()` by the pace signal's stable per-month key; `WatchBackLink` now renders at all five back-navigation spots across the four Watch screens instead of the generic `SubViewBack`. Verified by re-reading `detectBudgetPace`'s key format (stable per category per month) and confirming the engine-level filter runs before the signal is ever constructed. |
 | ~~`detectAnnualRenewals` was fed the raw transaction list instead of the same essential-filtered `leakable` list every other leak detector uses, so a yearly car-insurance premium, property tax or tuition payment could surface as a "renewal" finding the goal-rescue plan offers to cancel~~ (§3.5, annual-renewals half only — `detectFees` has the same raw-`tx` pattern and is still open, though "essential" isn't quite the right frame for a fee) | `78fefaa` — runs `looksEssential(label, categoryName)` on every candidate group, same lookup `detectRecurring` already uses. Verified with an isolated Node test loading the real function from this file (stubbed DOM): a yearly car-insurance charge is excluded while a same-cadence Amazon Prime renewal still surfaces. |
 | ~~The busy Daily Brief (what most users see) had no back link, unlike the quiet branch~~ (§3.9) | `d4795c1` — busy branch now opens with the same `WatchBackLink` used everywhere else in the file. Verified by re-reading `DailyBrief`: both return paths render a back link before anything else. |
 | ~~A 40px-wide date column at 11px couldn't fit a 10-character ISO date, so every row in Next 30 Days wrapped~~ (§3.9) | `af1c11e` — measured the real rendered width of a sample date in the exact font/size (56.2px) and widened the column to 60px. |
@@ -663,7 +663,7 @@ gate should come **before** the next bug fix.
 | "Redo Questionnaire" has no exit, survives force-quit, wipes budgets on completion | 25 Aug | — | Open |
 | Accessibility — inputs with no label association | 17 Aug | 33 `aria-label` | 47/413 buttons; 0 `htmlFor`, 0 input `id` |
 
-Plus two additions worth folding in from the 30 Aug pass: **Richard can
+Plus two additions worth folding in from the 30 Aug pass: **Alfred can
 delete categories/folders bypassing the destructive-confirm UI** (only
 `kind === "deleteTx"` gets the red treatment; category/folder deletes get
 a mild orange card and skip re-homing/budget cleanup); and **household
@@ -678,10 +678,10 @@ closed either — treat as open until re-checked): debt-edit sets
 session; `Activity.saveEdit` rebuilds transactions from scratch instead of
 merging, dropping `opening`/`trip`/`catchUp`/`bizExpense`/`syncSource`
 flags; boot splash has no timeout; `_stockGet`'s de-dup map never clears
-on a hung fetch; Overview chart / 4 Profile rows / Richard's budget
+on a hung fetch; Overview chart / 4 Profile rows / Alfred's budget
 context hardcoded to `$`; no undo on CSV import; savings-pot deletion
 zeroes linked goals; investing accounts can't be deleted/renamed; business
-"graduate" is one-way, wipes the roadmap, and Richard can trigger it
+"graduate" is one-way, wipes the roadmap, and Alfred can trigger it
 unconfirmed; account-deletion race can report failure after success and
 silently recreate an empty account; App Store copy overstates RTL/
 translation coverage (signup/onboarding/catch-up still have zero `tr()`
@@ -768,13 +768,13 @@ before it gets promoted or surfaced any further.
 Avalanche/snowball, real debt-free-date. The debt-edit save-killer (Tier 0)
 lives in this feature — fix that before promoting debt tracker any further.
 
-### 7. Recurring / Subscription Detection ⭐⭐ — partially built via Richard Watch
-Richard Watch's fee/renewal/overlap/trial/drift detectors (shipped 30 Aug)
+### 7. Recurring / Subscription Detection ⭐⭐ — partially built via Alfred Watch
+Alfred Watch's fee/renewal/overlap/trial/drift detectors (shipped 30 Aug)
 cover a meaningful slice of this — worth re-scoring against the sim's
 "auto-categorization/subscription parsing" theme once the Overview redesign
 that surfaces it is committed and re-simulated.
 
-### 8. Bills & Due-Date Calendar ⭐⭐ — partially built via Richard Watch
+### 8. Bills & Due-Date Calendar ⭐⭐ — partially built via Alfred Watch
 The 30-day forecast / "Next 30 Days" screen covers upcoming known charges;
 a dedicated calendar view is still not built.
 
@@ -789,7 +789,7 @@ buffer-month budgeting is still open (sim theme #2).
 ### 10. Business / Personal Separation ⭐⭐ — ✅ SHIPPED
 Gaps per sim: no invoicing/VAT, no real P&L/payroll forecasting. Also has a
 P0-adjacent bug: business "graduate" is one-way and wipes the roadmap, and
-Richard can trigger it unconfirmed (Tier 0).
+Alfred can trigger it unconfirmed (Tier 0).
 
 ### 11. Remittance / International Transfer Tracking ⭐⭐ — not built
 
@@ -829,7 +829,7 @@ risk around public achievements disclosing financial amounts (Play's
 "never publicly disclose financial/payment data" rule). Recommend a
 dedicated audit pass on this system before it's promoted in marketing.
 
-### 20. Richard Watch — 24/7 Proactive Engine ⭐⭐⭐ — ✅ SHIPPED (engine + screens) 2026-08-30, **Overview integration IN PROGRESS, UNCOMMITTED**
+### 20. Alfred Watch — 24/7 Proactive Engine ⭐⭐⭐ — ✅ SHIPPED (engine + screens) 2026-08-30, **Overview integration IN PROGRESS, UNCOMMITTED**
 The direct, already-built answer to the brief's "we need a full system
 that works 24/7 to find the user's problems and solve them so they achieve
 their goals." Nine detectors, 30-day forecast, Daily Brief, Goal-at-Risk
@@ -846,9 +846,9 @@ integration — land the Tier 0 items in the same window, not after.
 
 ---
 
-## THE MOAT — Richard (the AI advisor)
+## THE MOAT — Alfred (the AI advisor)
 
-Every simulated persona who commented on Richard praised the voice — this is
+Every simulated persona who commented on Alfred praised the voice — this is
 genuinely ahead of the category. Three things now bear on it:
 
 - **The system-prompt injection hole is closed** (`b26496e`) — the LLM path
@@ -858,11 +858,11 @@ genuinely ahead of the category. Three things now bear on it:
   needs to live where financial strings are *rendered*, not just at the API
   boundary, or this pattern will recur every time a new deterministic
   feature touches money advice.
-- **The Overview redesign (uncommitted) is the first time Richard's
+- **The Overview redesign (uncommitted) is the first time Alfred's
   proactive output — not just his chat — appears on the home screen.**
   This is the real test of "much more useful than a chat at the bottom of
   the screen." Once committed, re-run the nightly simulation and watch
-  AI-usefulness specifically (5.1/10 baseline, pre-Richard-Watch,
+  AI-usefulness specifically (5.1/10 baseline, pre-Alfred-Watch,
   pre-motivation-layer, pre-redesign).
 
 Push further once Tier 0 is closed: real natural-language data queries,
@@ -876,7 +876,7 @@ system (recurring bills, bulk recategorization).
 | Phase | Build | Rationale |
 |-------|-------|-----------|
 | **0. Stop the bleeding — 2 days** | Four one-line fixes (`T.ink3` hex, `apply5030 20` typo, `if (!r.ok)` before both `sw.js c.put()` calls, `firestore.rules:60` field pin) + the `save()` empty-array guard (closes NEW-1 and the 25 Aug stale closure in one change) + the functional-form fix for the stale closure | Under an hour of actual fix time for the four one-liners; the `save()` guard is the single highest-leverage change on the page |
-| **1. Reversibility — 5 days** | One 10-second Undo toast pattern applied everywhere (replaces the "eight separate confirmation dialogs" approach); then goal-overflow clipping, the stock-delete cash rewrite + its false confirm copy, `onSaveFinancial` whole-key replace, routing Richard's category/folder deletes through the red destructive card | Converts the entire "dead end" complaint class into a non-issue in one change |
+| **1. Reversibility — 5 days** | One 10-second Undo toast pattern applied everywhere (replaces the "eight separate confirmation dialogs" approach); then goal-overflow clipping, the stock-delete cash rewrite + its false confirm copy, `onSaveFinancial` whole-key replace, routing Alfred's category/folder deletes through the red destructive card | Converts the entire "dead end" complaint class into a non-issue in one change |
 | **2. Stuck screens — 2 days** | One `localToday()`/`localMonth()` helper replacing all 67 UTC sites; `.finally()` on all 13 busy flags; `.catch()` + `saveError` banner on the sync-inbox write; AbortController on both `sendTest` copies | Fixes wrong-day/wrong-month and "the app won't respond" complaints together |
 | **3. Decide, don't ticket** | NEW-2 (investing allocation engine) needs a product decision: strip amounts/share counts, or get licensed | Blocking on the moat, not just a bug |
 | **4. Before submission** | Accessibility sweep (`htmlFor`/`id` on 90 inputs, `aria-label` on 413 buttons, 44px `JrIconBtn`); translate the five untranslated screen groups (Investing, Business/CFO, Debts, Bank Sync, most of Profile) | App Store Guideline 1.5 / Play accessibility concern, not just quality |
@@ -890,13 +890,13 @@ system (recurring bills, bulk recategorization).
 The original brief asked for two specific things beyond the base product:
 **"a full system that works 24/7 to find the user's problems and solve
 them"** and **"a system that awards the user for using us."** Both are now
-**built and shipped** — Richard Watch (30 Aug) and the motivation/rewards
+**built and shipped** — Alfred Watch (30 Aug) and the motivation/rewards
 layer (12-14 Aug). That's real progress, and it went unrecorded in this
 file for three weeks in the second case.
 
 But the pattern that keeps recurring — and the reason this file exists in
 the shape it does — is that **new capability keeps landing ahead of
-already-known defects, not after them.** Richard Watch shipped on top of a
+already-known defects, not after them.** Alfred Watch shipped on top of a
 contrast failure and a date bug that both got worse while it was being
 built. The system-prompt guardrail closed one advice-leak path and missed
 a second, structurally identical one sitting right next to it. The
@@ -954,7 +954,7 @@ the motivation/social layer, bank-sync import and Stock Scout (research-only,
 behind the same server guardrail as the web) included. Nothing is deferred
 by default; anything that has to slip is a dated, explicit entry here, never
 a quiet omission. Build order still runs vertical slice → core money flows
-→ Richard → households/social → the rest, so the app is usable at every
+→ Alfred → households/social → the rest, so the app is usable at every
 step. The compliance items the earlier "deferred" list was sidestepping
 (social/privacy, UGC/DMCA, bank-notification disclosure, the investing-
 advice line) are therefore in scope for Phase 5 — see the Launch Exposure
@@ -966,7 +966,7 @@ Firestore) used directly — mirrors this repo's current client/server split,
 just with a native client instead of the React web app. Built 2026-09-04 in
 the folder shape Alon specified, under `RichyIOS/`: `App/` (entry point,
 `AppState`, `AppServices`, root routing), `Features/<name>/` (Auth, Boot,
-Home, Richard, Profile — views plus `@Observable` view models),
+Home, Alfred, Profile — views plus `@Observable` view models),
 `Components/`, `Models/` (Codable account document), `Services/`
 (Networking, Auth, Firebase, Chat, Account — protocol-backed, with
 in-memory mocks so views never call Firebase/HTTP directly and every screen
@@ -991,14 +991,14 @@ yet compiled)**.
   `api/_prompts.js` is a complete server-side prompt registry with a
   `build()` function, but `api/chat.js` never calls it — it still takes
   `system` verbatim from the client and only appends `GUARDRAIL`, so the
-  27 "You are Richard" prompts still live in the client; and the 25 Aug
+  27 "You are Alfred" prompts still live in the client; and the 25 Aug
   "server-side prompt registry" credit in the Tier 0 closed table is
   therefore only half true.
   **The one finding that gates every native write:** `users/{uid}` is a
   single document that `CLOUD.saveUser()` overwrites wholesale with
   `.set()` from React state. Two signed-in clients would clobber each
   other, which contradicts the "same user, same data" decision above. The
-  split (`tx` and `richardChats` to subcollections, field-level
+  split (`tx` and `alfredChats` to subcollections, field-level
   `update()` on the parent, UUIDs instead of `Date.now()` ids) is backend
   work that needs no Mac and must land before the native app writes
   anything.
@@ -1040,9 +1040,9 @@ yet compiled)**.
   spend and budget rows ported from the dashboard), and the five tabs:
   Dashboard, Activity (add / edit / delete), Budgets and Goals (live
   numbers; add / edit / delete as field-level edits of the account
-  document, same evening), Richard. Profile opens from the Dashboard
-  toolbar. `FirebaseFirestore` was added to the project. Richard's chat
-  followed the same day (`RichardChatView`: prompt rebuilt from the live
+  document, same evening), Alfred. Profile opens from the Dashboard
+  toolbar. `FirebaseFirestore` was added to the project. Alfred's chat
+  followed the same day (`AlfredChatView`: prompt rebuilt from the live
   ledger on every send, the AI disclosure opens every conversation, every
   reply can be reported from its context menu). What closes the phase is
   running the app with a test account and the web/phone parity test in the
@@ -1065,7 +1065,7 @@ yet compiled)**.
   `consentAt`, `termsVersion`) on schema 2. A first Google or Apple sign-in
   lands on `AccountSetupView`, which collects the same answers. The consent
   line on both names Anthropic and what is sent (Phase 5 item 5). The web's
-  ten-step onboarding and Richard's first plan are not on the phone; an
+  ten-step onboarding and Alfred's first plan are not on the phone; an
   account made on the phone gets them the first time it opens the web.
   Server-side rejection of under-16 sign-ups (Phase 5 item 16) is still
   unverified for both clients.
@@ -1080,7 +1080,7 @@ yet compiled)**.
   Rollout, in order: publish `firestore.rules` → test the branch's Vercel
   preview with a **test** account → merge to `master` (that is the deploy).
   The branch preview that serves the split code is
-  https://richy-preview-git-firestore-split-richard201.vercel.app — the
+  https://richy-preview-git-firestore-split-alfred201.vercel.app — the
   `richy` and `richy-mgkl` Vercel projects put a Vercel login in front of
   their previews; `richy-preview` and `richy-cowork-preview` are open.
   **Status 2026-09-05:** the rules with the `tx` block are published (since
@@ -1097,7 +1097,7 @@ yet compiled)**.
   on production are that test.
   Full write-up in `FIRESTORE_SPLIT.md`. **Next (owner: AI, no Mac
   needed), after the merge:** a listener on the subcollection, then
-  `richardChats`, then wiring `promptId` into `api/chat.js`.
+  `alfredChats`, then wiring `promptId` into `api/chat.js`.
 - **Both former open items closed 2026-09-05:** iOS first, and full scope —
   see the top of this section. The Taking Richy Native artifact still
   shows them as open; this file wins.

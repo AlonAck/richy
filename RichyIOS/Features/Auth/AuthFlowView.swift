@@ -57,7 +57,7 @@ private struct WelcomeView: View {
                     Text("Richy")
                         .font(RichyFont.display(RichyFont.Size.hero))
                         .foregroundStyle(RichyColor.ink)
-                    Text("Personal budgeting, made calm. A beautiful budget paired with Richard, an AI money coach who knows your numbers.")
+                    Text("Personal budgeting, made calm. A beautiful budget paired with Alfred, an AI money coach who knows your numbers.")
                         .font(RichyFont.ui(RichyFont.Size.body))
                         .foregroundStyle(RichyColor.ink2)
                         .multilineTextAlignment(.center)

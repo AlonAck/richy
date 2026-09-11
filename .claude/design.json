@@ -338,7 +338,7 @@
       "Apple system font stack (no web fonts)",
       "Casual greeting format",
       "Bottom tab bar with SVG icons",
-      "Richard's name and personality"
+      "Alfred's name and personality"
     ],
     "warnings": [
       "Light-hero themes (purple, blue): hero text is dark, not the primary accent color. #3C4C82 alone is only ~2.3:1 on periwinkle — always check contrast when adding new light-hero themes",

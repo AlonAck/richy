@@ -48,7 +48,7 @@
   {
     "family": "A",
     "name": "Named",
-    "description": "Richard knows what to call you.",
+    "description": "Alfred knows what to call you.",
     "trigger": "nickname set",
     "rarity": "Common",
     "stage": 0,
@@ -232,7 +232,7 @@
   {
     "family": "A",
     "name": "Ten Thousand Coins",
-    "description": "Ten thousand. Richard is genuinely impressed.",
+    "description": "Ten thousand. Alfred is genuinely impressed.",
     "trigger": "10,000 transactions",
     "rarity": "Epic",
     "stage": 0,
@@ -1842,7 +1842,7 @@
   {
     "family": "H",
     "name": "Tenfold",
-    "description": "Ten times. Richard has removed his hat.",
+    "description": "Ten times. Alfred has removed his hat.",
     "trigger": "≥ 10×",
     "rarity": "Mythic",
     "stage": 0,
@@ -2578,7 +2578,7 @@
   {
     "family": "M",
     "name": "First Find",
-    "description": "Richard found money and you went and got it.",
+    "description": "Alfred found money and you went and got it.",
     "trigger": "first Found Money item acted on",
     "rarity": "Common",
     "stage": 0,
@@ -3176,7 +3176,7 @@
   {
     "family": "P",
     "name": "Ten Years",
-    "description": "A decade. Richard has no words.",
+    "description": "A decade. Alfred has no words.",
     "trigger": "3,650 days",
     "rarity": "Mythic",
     "stage": 0,
@@ -3521,7 +3521,7 @@
   {
     "family": "S",
     "name": "Nothing Left to Find",
-    "description": "Twelve periods. No overruns. And Richard could not find you a single wasted shekel.",
+    "description": "Twelve periods. No overruns. And Alfred could not find you a single wasted shekel.",
     "trigger": "12 consecutive P, 0 overruns, 0 open Found Money findings",
     "rarity": "Mythic",
     "stage": 0,

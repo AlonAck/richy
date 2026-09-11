@@ -26,7 +26,7 @@ struct AccountDraft: Equatable, Sendable {
     var dob: String
     var lang: String = "en"
     var currency: String = "$"
-    var richardNotes: String = ""
+    var alfredNotes: String = ""
     var openingBalance: Double = 0
 }
 

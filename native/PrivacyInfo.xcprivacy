@@ -92,9 +92,9 @@
       </array>
     </dict>
 
-    <!-- Chat messages to Richard, stored with the account so the user can
+    <!-- Chat messages to Alfred, stored with the account so the user can
          revisit past conversations. privacy.html §1: "Messages you send to
-         Richard ... Chat history is stored with your account." Declared as
+         Alfred ... Chat history is stored with your account." Declared as
          user content rather than a financial type because the message body is
          free text the user wrote. -->
     <dict>

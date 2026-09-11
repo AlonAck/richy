@@ -91,7 +91,7 @@ def mat_chocolate():
 
 
 def mat_orb():
-    """Richard's orb — soft periwinkle swirl, gently self-lit. Surface trickery only
+    """Alfred's orb — soft periwinkle swirl, gently self-lit. Surface trickery only
     (no volumetrics on this GPU): noise-driven ramp between the three theme blues,
     a white lift so it never collapses into one flat ball, fresnel rim."""
     m = bpy.data.materials.new("orb")

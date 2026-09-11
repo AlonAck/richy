@@ -1,4 +1,4 @@
-// Anthropic proxy for Richard (the AI advisor). Locked down: every request must
+// Anthropic proxy for Alfred (the AI advisor). Locked down: every request must
 // carry a valid Firebase ID token, so only signed-in Richy users can spend the
 // API key - an anonymous caller who finds this URL gets a 401, not a free relay.
 var admin = require("firebase-admin");
@@ -66,7 +66,7 @@ module.exports = async function handler(req, res) {
   // ---- who is calling ---------------------------------------------------------
   var hdr = req.headers.authorization || "";
   var m = /^Bearer (.+)$/.exec(hdr);
-  if (!m) { res.status(401).json({ error: { type: "unauthenticated", message: "Sign in to talk to Richard." } }); return; }
+  if (!m) { res.status(401).json({ error: { type: "unauthenticated", message: "Sign in to talk to Alfred." } }); return; }
   var uid;
   try {
     var decoded = await admin.auth().verifyIdToken(m[1]);
@@ -77,7 +77,7 @@ module.exports = async function handler(req, res) {
     return;
   }
   if (rateLimited(uid)) {
-    res.status(429).json({ error: { type: "rate_limited", message: "Richard needs a short breather - try again in a few minutes." } });
+    res.status(429).json({ error: { type: "rate_limited", message: "Alfred needs a short breather - try again in a few minutes." } });
     return;
   }
 
@@ -85,7 +85,7 @@ module.exports = async function handler(req, res) {
 
   // ---- custom voice: trait check ---------------------------------------------
   // "Create your own" voice. Before the client may keep a trait, Sonnet judges
-  // whether it stays inside Richard's rules (TRAIT_JUDGE in api/_prompts.js).
+  // whether it stays inside Alfred's rules (TRAIT_JUDGE in api/_prompts.js).
   // The obvious cases are refused by the regex rules first, so they cost no
   // API call. Fails CLOSED: if the judge cannot be reached or does not answer
   // in the agreed shape, the trait is not accepted - the client shows a retry,
@@ -122,7 +122,7 @@ module.exports = async function handler(req, res) {
   // tampered client could post a multi-hundred-thousand-token payload and be
   // billed for it 30 times per 5-minute window - output caps do nothing about
   // that, because input is where the volume is. These limits sit well above any
-  // real Richard conversation (the largest genuine prompt is a portfolio
+  // real Alfred conversation (the largest genuine prompt is a portfolio
   // snapshot plus a short history) and well below anything that costs real
   // money. Reject rather than truncate: silently trimming a prompt produces a
   // confidently wrong answer built on half the user's numbers, which is worse
@@ -143,7 +143,7 @@ module.exports = async function handler(req, res) {
     return;
   }
   if (messages.length > MAX_MESSAGES) {
-    res.status(413).json({ error: { type: "request_too_large", message: "That conversation is too long for Richard to take in one go." } });
+    res.status(413).json({ error: { type: "request_too_large", message: "That conversation is too long for Alfred to take in one go." } });
     return;
   }
   if (typeof system !== "string" || system.length > MAX_SYSTEM_CHARS) {
@@ -159,7 +159,7 @@ module.exports = async function handler(req, res) {
     return;
   }
   if (totalChars > MAX_TOTAL_CHARS) {
-    res.status(413).json({ error: { type: "request_too_large", message: "That request is too large for Richard to take in one go." } });
+    res.status(413).json({ error: { type: "request_too_large", message: "That request is too large for Alfred to take in one go." } });
     return;
   }
 
@@ -191,7 +191,7 @@ module.exports = async function handler(req, res) {
     system: system + voice + prompts.GUARDRAIL,
     messages: messages
   };
-  // Sonnet 5 enables adaptive thinking by default. Richard's existing calls
+  // Sonnet 5 enables adaptive thinking by default. Alfred's existing calls
   // were non-thinking calls, so keep that behavior for predictable latency,
   // output shape and launch cost. Haiku 4.5 is non-thinking by default.
   if (model === "claude-sonnet-5") anthropicBody.thinking = { type: "disabled" };
@@ -227,7 +227,7 @@ async function callAnthropic(apiKey, payload, timeoutMs) {
     return { status: response.status, data: data, text: text };
   } catch (err) {
     if (err && err.name === "AbortError") {
-      return { status: 504, error: { type: "timeout", message: "Richard took too long to answer. Please try again." } };
+      return { status: 504, error: { type: "timeout", message: "Alfred took too long to answer. Please try again." } };
     }
     return { status: 500, error: { type: "proxy_error", message: err.message || "Unknown error" } };
   } finally {

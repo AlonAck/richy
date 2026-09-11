@@ -1,4 +1,4 @@
-# Final assembly: rendered PNG frame sequence + Richard VO + burned subtitles +
+# Final assembly: rendered PNG frame sequence + Alfred VO + burned subtitles +
 # compliance strip → single-pass H.264/AAC encode via Blender's sequencer.
 # Run: blender -b --factory-startup -P mux_ad.py -- <ad1|ad2> <frames_dir> <out_path>
 import sys
@@ -13,7 +13,7 @@ AUDIO = os.path.join(SCRATCH, "audio")
 ASSETS = os.path.join(SCRATCH, "adref", "assets")
 
 # (audio file | None, subtitle png | None, start frame, end frame)
-# VO: ElevenLabs "George" — Richard's canonical voice. End-card lines have no
+# VO: ElevenLabs "George" — Alfred's canonical voice. End-card lines have no
 # subtitle strip; the card itself carries the words.
 PLAN = {
     "ad1": [

@@ -48,12 +48,12 @@ not a live view of the repo.
 ## 1. What Richy is, and what this specific work is
 
 Richy is a Hebrew-language personal budgeting app (repo: this folder, live
-at richy-mgkl.vercel.app). Its differentiator is Richard, an AI financial
+at richy-mgkl.vercel.app). Its differentiator is Alfred, an AI financial
 advisor meant to actively find and solve the user's money problems — not
 just a chat box bolted onto a tracker. Long-term, Alon wants Richy on the
 App Store (and eventually Google Play), backed by a real marketing push, a
 rewards/brand system that makes people come back and tell friends, and a
-24/7 proactive version of Richard that goes well beyond the current
+24/7 proactive version of Alfred that goes well beyond the current
 "Spotted Leaks" feature. All of that is the north star — full context on it
 is in the project's own instructions and in `ROADMAP.md` / `MOTIVATION_SYSTEM.md`
 / `CAMPAIGN_LAUNCH_2026-10.md` / `DISCOVERABILITY_PLAN_2026-08-19.md` /
@@ -77,7 +77,7 @@ still genuinely open about it).
    without verifying, and don't assume something is fixed just because time
    has passed.
 2. **Design, second.** Everything in this document.
-3. **New features (the 24/7 Richard system, the rewards/streaks system in
+3. **New features (the 24/7 Alfred system, the rewards/streaks system in
    `MOTIVATION_SYSTEM.md`) come after that** — Alon said he wants some of
    this "partially in v1" (the Oct 5 launch), but design and bug-fixing
    outrank building new feature surface area right now.

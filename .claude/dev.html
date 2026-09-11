@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -237,7 +237,7 @@ fetchSource(1).then(function(src){
       // Mirrors the App: within its own month the saved analysis is ALWAYS handed
       // back (it survives tx changes) and analysisStale flags that the numbers
       // moved on since it ran - but a record stamped with an earlier month has
-      // expired, so it is withheld entirely and Richard re-reads from scratch.
+      // expired, so it is withheld entirely and Alfred re-reads from scratch.
       var fresh = (ma && ma.ym === curMonth()) ? ma : null;
       var cached = fresh ? fresh.data : null;
       var stale = !!(fresh && fresh.sig !== sig());
@@ -295,7 +295,7 @@ fetchSource(1).then(function(src){
         profile: { structure: "individual", stage: "launching", size: "side", monthly: 1200, revenueGoal: 3000, runway: 6, goal: "quit my job in a year" },
         plan: { summary: "A lean handmade-candle side business. Start small, prove people will pay, then scale what works.", sections: [{ title: "Positioning", body: "Lean into a signature scent and a story only you can tell." }, { title: "First 90 days", body: "Sell at two local markets and open a simple online shop." }], tips: ["Reinvest early profit into the scents that sell.", "Keep a buffer for slow months."], verdict: { assessment: "Six months of runway is healthy for a side project at this budget.", keyNumber: "6 months", keyNumberLabel: "of runway" }, generatedAt: "2026-04-15" },
         categories: seedCats,
-        chat: [{ role: "user", text: "How should I price my candles?" }, { role: "richard", text: "Aim for 3 to 4 times your material cost - premium scents and packaging can go higher." }],
+        chat: [{ role: "user", text: "How should I price my candles?" }, { role: "alfred", text: "Aim for 3 to 4 times your material cost - premium scents and packaging can go higher." }],
         entries: [
           { id: 1,  kind: "deposit",  amount: 2000, date: "2026-04-15", fromMain: true,  label: "From balance" },
           { id: 50, kind: "withdraw", amount: 300,  date: "2026-04-20", fromMain: false, label: "Logo design",    bizExpense: true, catKey: "marketing" },
@@ -321,7 +321,7 @@ fetchSource(1).then(function(src){
       function exit(){ window.__clicked = "exitBusiness"; }
       return React.createElement(React.Fragment, null,
         React.createElement(BusinessView, {
-          businesses: bz, tx: tx, openBizId: qs.get("seed") ? "biz_1" : null, username: "Alon", lang: "en", richardInstructions: "",
+          businesses: bz, tx: tx, openBizId: qs.get("seed") ? "biz_1" : null, username: "Alon", lang: "en", alfredInstructions: "",
           onSaveBusinesses: function(n){ setBz(n); },
           onBusinessMove: function(ntx, nb){ setTx(ntx); setBz(nb); },
           onBack: exit, backLabel: "Savings"
@@ -502,7 +502,7 @@ fetchSource(1).then(function(src){
         });
       }
       return React.createElement(InvestingView, {
-        investing: iv, tx: tx, goals: mockGoals, openInvId: "inv_1", username: "Alon", lang: "en", richardInstructions: "",
+        investing: iv, tx: tx, goals: mockGoals, openInvId: "inv_1", username: "Alon", lang: "en", alfredInstructions: "",
         investorProfile: qs.get("profile") ? { experience: "never", involvement: "monthly", amount: "few", risk: "hold", generatedAt: "2026-07-08" } : null,
         onSaveInvesting: function(n){ setIv(n); },
         onMove: function(ntx, ni){ setTx(ntx); setIv(ni); },
@@ -533,7 +533,7 @@ fetchSource(1).then(function(src){
       window.__invState = function(){ return { investing: iv }; };
       return React.createElement(StockView, {
         investing: iv, tx: mockTx, goals: mockGoals, openStock: { acctId: "inv_1", symbol: sym },
-        username: "Alon", lang: "en", richardInstructions: "",
+        username: "Alon", lang: "en", alfredInstructions: "",
         investorProfile: qs.get("profile") ? { experience: "never", involvement: "monthly", amount: "few", risk: "hold" } : null,
         onSaveInvesting: function(n){ setIv(n); },
         onOpenInvestorOnboard: function(){ window.__clicked = "onboard"; },
@@ -554,7 +554,7 @@ fetchSource(1).then(function(src){
       var _iv = React.useState(seedInv); var iv = _iv[0]; var setIv = _iv[1];
       window.__invState = function(){ return { investing: iv }; };
       return React.createElement(StockScoutView, {
-        investing: iv, openInvId: "inv_1", tx: mockTx, goals: mockGoals, username: "Alon", lang: "en", richardInstructions: "",
+        investing: iv, openInvId: "inv_1", tx: mockTx, goals: mockGoals, username: "Alon", lang: "en", alfredInstructions: "",
         investorProfile: qs.get("profile") ? { experience: "never", involvement: "monthly", amount: "few", risk: "hold" } : null,
         onSaveInvesting: function(n){ setIv(n); },
         onBack: function(){ window.__clicked = "back"; }, backLabel: "Investing",
@@ -569,7 +569,7 @@ fetchSource(1).then(function(src){
       var p = _p[0]; var setP = _p[1];
       window.__profile = function(){ return p; };
       return React.createElement(InvestorOnboardScreen, {
-        investorProfile: p, username: "Alon", lang: "en", richardInstructions: "", today: "2026-07-08",
+        investorProfile: p, username: "Alon", lang: "en", alfredInstructions: "", today: "2026-07-08",
         onSave: function(n){ setP(n); window.__saved = n; },
         onDone: function(){ window.__clicked = "done"; }
       });
@@ -627,7 +627,7 @@ fetchSource(1).then(function(src){
       var _k = React.useState(0); var k = _k[0]; var setK = _k[1];
       var _done = React.useState([]); var done = _done[0]; var setDone = _done[1];
       var copy = "This text is fading in word by word. The fade mode creates a smooth and elegant text reveal. You can customize the fadeDuration but also the segmentDelay to control the speed of the animation.";
-      // Richard's answers carry markdown, which ResponseStream would flatten, so
+      // Alfred's answers carry markdown, which ResponseStream would flatten, so
       // they reveal through TypeReveal's block fade instead. Same feel, structure intact.
       var mdCopy = "**The short version**\nYour savings rate is 12%, which is thin for what you earn.\n- Dining ran $610 this month\n- Subscriptions add another $84 on top\nTrim either one and you clear 20% without touching the rest of your life.";
       // Recreated per replay so the stream identity changes and remounts cleanly.

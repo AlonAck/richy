@@ -2,8 +2,8 @@ import SwiftUI
 
 /// The first screen after sign-in: the balance, this month at a glance, where
 /// the money went, and the latest activity. Numbers come from `LedgerMath`,
-/// the same arithmetic as the web dashboard. Richard's safe-to-spend hero and
-/// the widgets he builds arrive with the Richard feature.
+/// the same arithmetic as the web dashboard. Alfred's safe-to-spend hero and
+/// the widgets he builds arrive with the Alfred feature.
 struct DashboardView: View {
     let user: AuthUser
 

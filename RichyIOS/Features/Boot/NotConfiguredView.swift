@@ -34,7 +34,7 @@ struct NotConfiguredView: View {
                     }
                     .buttonStyle(SecondaryButtonStyle())
                     .padding(.top, Spacing.sm)
-                    Text("Demo mode runs on in-memory services. Nothing is saved and Richard's replies are canned.")
+                    Text("Demo mode runs on in-memory services. Nothing is saved and Alfred's replies are canned.")
                         .font(RichyFont.ui(RichyFont.Size.footnote))
                         .foregroundStyle(RichyColor.ink3)
                 }

@@ -42,8 +42,8 @@ struct MainTabView: View {
                 .tabItem { Label("Budgets", systemImage: "chart.bar.doc.horizontal") }
             GoalsView()
                 .tabItem { Label("Goals", systemImage: "target") }
-            RichardChatView(user: user)
-                .tabItem { Label("Richard", systemImage: "bubble.left.and.text.bubble.right") }
+            AlfredChatView(user: user)
+                .tabItem { Label("Alfred", systemImage: "bubble.left.and.text.bubble.right") }
         }
     }
 }

@@ -31,7 +31,7 @@ The gradient shimmer's port drops the `as`/`className` props (every call site
 wants a span with inline styles), swaps `useMemo` for a per-render rebuild, and
 adds a `color-mix()` feature gate — without that gate, a browser missing
 `color-mix` invalidates the whole gradient and the transparent text-fill leaves
-the text invisible. It powers `ThinkingPhrase`, so every "Richard is thinking"
+the text invisible. It powers `ThinkingPhrase`, so every "Alfred is thinking"
 wait shimmers; pass `shimmer={false}` to opt a call site out. The band defaults
 to the live theme accent (`T.orangeHi → T.orange → T.gold`) rather than
 `sunrise`, so it re-tints with the theme.

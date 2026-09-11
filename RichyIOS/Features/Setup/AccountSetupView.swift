@@ -91,16 +91,16 @@ struct AccountSetupView: View {
                 .listRowBackground(RichyColor.card)
 
                 Section {
-                    TextField("Anything Richard should know? (optional)", text: $notes, axis: .vertical)
+                    TextField("Anything Alfred should know? (optional)", text: $notes, axis: .vertical)
                         .lineLimit(2...5)
                 } footer: {
-                    Text("For example: my rent is paid by my parents, or I get paid every two weeks. Richard treats this as fact.")
+                    Text("For example: my rent is paid by my parents, or I get paid every two weeks. Alfred treats this as fact.")
                 }
                 .listRowBackground(RichyColor.card)
 
                 Section {
                     Toggle(isOn: $consent) {
-                        Text("I'm 16 or older and I agree to the Terms and the Privacy Policy. I understand Richard is an AI: the numbers I keep in Richy are sent to Richy's server and on to Anthropic to generate his replies.")
+                        Text("I'm 16 or older and I agree to the Terms and the Privacy Policy. I understand Alfred is an AI: the numbers I keep in Richy are sent to Richy's server and on to Anthropic to generate his replies.")
                             .font(RichyFont.ui(RichyFont.Size.footnote))
                             .foregroundStyle(RichyColor.ink2)
                     }
@@ -165,7 +165,7 @@ struct AccountSetupView: View {
         var draft = AccountDraft(displayName: trimmedName, email: user.email, dob: dobText)
         draft.lang = lang
         draft.currency = currency
-        draft.richardNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        draft.alfredNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
         draft.openingBalance = openingBalance
         if !(await store.createAccount(draft)) {
             errorMessage = store.writeError ?? "Could not create your account. Try again."

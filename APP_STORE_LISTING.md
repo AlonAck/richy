@@ -29,7 +29,7 @@ regulated title in Israel; neither is licensed. -->
 
 ## Promotional text — 170 char limit (editable without a new build)
 
-**`Richard now reads your whole month and tells you what actually changed — not just what you spent. Plus faster budgets, and full Hebrew and Arabic support.`** (152)
+**`Alfred now reads your whole month and tells you what actually changed — not just what you spent. Plus faster budgets, and full Hebrew and Arabic support.`** (152)
 
 Use this field for what's new or seasonal; it appears above the description and
 can be changed any time without submitting a build.
@@ -50,11 +50,11 @@ separately, so repeating wastes characters.
 Richy is a budgeting app that feels calm instead of guilty.
 
 Most money apps hand you a spreadsheet and hope you enjoy it. Richy gives you a
-clear picture of your month — and Richard, an AI money coach who has actually read
+clear picture of your month — and Alfred, an AI money coach who has actually read
 your numbers and talks to you like a person.
 
-MEET RICHARD
-Richard is built into Richy and knows your real figures. Ask him anything:
+MEET ALFRED
+Alfred is built into Richy and knows your real figures. Ask him anything:
 "How much am I really spending on coffee?" · "Can I afford this?" · "What
 should I do with my surplus?" He answers with your actual data, admits when
 something is uncertain, and can log an expense or set a budget for you right
@@ -92,7 +92,7 @@ Export everything as a file whenever you want. Delete your account and all of
 your data permanently, from inside the app, in two taps. No ads. No trackers.
 We never sell your data.
 
-Richard is an AI assistant, not a licensed financial adviser, and nothing in
+Alfred is an AI assistant, not a licensed financial adviser, and nothing in
 Richy is financial advice. Always do your own research before making money
 decisions.
 ```
@@ -104,7 +104,7 @@ decisions.
 The first release of Richy.
 
 Budgets, goals, savings, debt payoff, trips, notes, business accounts and an
-investing tracker — with Richard, an AI money coach who knows your real numbers.
+investing tracker — with Alfred, an AI money coach who knows your real numbers.
 
 Now in English, Hebrew, Arabic and Russian, with full right-to-left layout,
 50 currencies, and offline support.
@@ -157,10 +157,10 @@ real Open Banking connection would require Bank Leumi to certify Richy as a
 licensed third-party provider, which has not happened, and the app says so
 explicitly on that screen.
 
-AI ADVISOR ("RICHARD")
-Richard is powered by a large language model. Richy is an informational tool,
+AI ADVISOR ("ALFRED")
+Alfred is powered by a large language model. Richy is an informational tool,
 not a financial adviser; this disclaimer appears on the advisor screen, the
-investing screens, and in the Terms of Service. Richard cannot move money,
+investing screens, and in the Terms of Service. Alfred cannot move money,
 place trades, or access any external account. The Investing feature is a
 tracker for holdings the user already owns — Richy is not a broker and cannot
 execute transactions.
@@ -210,7 +210,7 @@ in search results, so lead with the strongest):
 | # | Screen | Caption to overlay |
 |---|---|---|
 | 1 | Overview dashboard | "See where the month actually went" |
-| 2 | Advisor chat with Richard | "A money coach who's read your numbers" |
+| 2 | Advisor chat with Alfred | "A money coach who's read your numbers" |
 | 3 | Budgets with progress bars | "Budgets you can read at a glance" |
 | 4 | Goals / budget books | "Give every goal a deadline" |
 | 5 | Debt payoff projection | "A real debt-free date" |

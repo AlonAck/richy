@@ -25,7 +25,7 @@ Three rules everything below obeys:
 2. **Fair across incomes.** A student on ₪4,000/month and a founder on ₪40,000
    must be able to reach the same level. Anything that's really a readout of
    income lives in *badges*, where rarity carries the flex — never in the level.
-3. **No XP for engagement.** Opening the app, chatting with Richard, reading a
+3. **No XP for engagement.** Opening the app, chatting with Alfred, reading a
    lesson, scrolling the overview: zero XP. XP is for money moving the right way
    and for books being true.
 
@@ -117,7 +117,7 @@ needs the money. Both signals exist, neither one blocks the other.
 | Debt payment logged | 5 | capped at 20/period |
 | Savings rate beat your own trailing 3-period average | 30 | the fairness engine — rewards *improvement*, not income |
 | Badge earned | by rarity | 10 / 25 / 60 / 150 / 400 / 1000 |
-| Opening the app, chatting with Richard, reading | **0** | deliberate |
+| Opening the app, chatting with Alfred, reading | **0** | deliberate |
 
 ### Curve
 
@@ -203,7 +203,7 @@ mode). Money thresholds are in the user's own currency at face value — see
 |---|---|---|---|---|---|
 | Opening Balance | | Common | Every ledger starts with one honest number. | opening balance recorded | none |
 | First Coin | | Common | The Richest Man in Babylon started by tracking a single coin. | first transaction logged | none |
-| Named | | Common | Richard knows what to call you. | nickname set | none |
+| Named | | Common | Alfred knows what to call you. | nickname set | none |
 | The Plan | | Common | You answered the hard questions. | onboarding questionnaire completed | none |
 | Categorised | | Common | You made the app fit your life, not the other way round. | first custom category created | none |
 | Filed | | Common | A place for everything. | first folder created | none |
@@ -211,7 +211,7 @@ mode). Money thresholds are in the user's own currency at face value — see
 | Ledger Literate | ★ | Common | Twenty-five entries. The habit is forming. | 25 transactions | none |
 | Hundred Coins | ★★ | Uncommon | One hundred entries. The habit has formed. | 100 transactions | none |
 | Thousand Coins | ★★★ | Rare | A thousand entries. This is who you are now. | 1,000 transactions | none |
-| Ten Thousand Coins | | Epic | Ten thousand. Richard is genuinely impressed. | 10,000 transactions | none |
+| Ten Thousand Coins | | Epic | Ten thousand. Alfred is genuinely impressed. | 10,000 transactions | none |
 
 ### B. Savings rate — the staged family
 
@@ -320,7 +320,7 @@ mode). Money thresholds are in the user's own currency at face value — see
 | Doubled | ★ | Rare | Twice what you started with. | net worth ≥ 2× opening balance | wealth |
 | Tripled | ★★ | Epic | Three times over. | ≥ 3× | wealth |
 | Fivefold | ★★★ | Legendary | Five times what you walked in with. | ≥ 5× | wealth |
-| Tenfold | | Mythic | Ten times. Richard has removed his hat. | ≥ 10× | wealth |
+| Tenfold | | Mythic | Ten times. Alfred has removed his hat. | ≥ 10× | wealth |
 | Hundredfold | | Mythic | One hundred times your opening balance. | ≥ 100× | wealth |
 | Held the Line | | Rare | Twelve periods and you never once dropped below where you began. | net worth ≥ opening balance for 12 consecutive P | habit |
 
@@ -380,7 +380,7 @@ mode). Money thresholds are in the user's own currency at face value — see
 
 | Badge | ★ | Rarity | What the user sees | Trigger | Reveals |
 |---|---|---|---|---|---|
-| First Find | | Common | Richard found money and you went and got it. | first Found Money item acted on | none |
+| First Find | | Common | Alfred found money and you went and got it. | first Found Money item acted on | none |
 | Treasure Hunter | ★ | Uncommon | Five hundred recovered. | foundMoney.tally ≥ 500 | habit |
 | Treasure Hunter | ★★ | Rare | Five thousand recovered. | ≥ 5,000 | habit |
 | Treasure Hunter | ★★★ | Epic | Twenty-five thousand, found in your own accounts. | ≥ 25,000 | wealth |
@@ -421,7 +421,7 @@ mode). Money thresholds are in the user's own currency at face value — see
 | One Year | | Rare | A full year. | 365 days | none |
 | Two Years | | Epic | Two years. | 730 days | none |
 | Five Years | | Legendary | Five years of honest books. | 1,825 days | none |
-| Ten Years | | Mythic | A decade. Richard has no words. | 3,650 days | none |
+| Ten Years | | Mythic | A decade. Alfred has no words. | 3,650 days | none |
 | Early Earner | | Rare | You were here before the badges were. | holds ≥1 backfilled badge | none |
 
 ### Q. Restraint — rewarding the thing that didn't happen
@@ -458,7 +458,7 @@ and that's the point — a badge nobody has is a badge everybody talks about.
 | Perfect Year | Mythic | Twelve green months. Fifty-two clean weeks. Not one budget overrun. | 12 green + 52 clean + 0 overruns in 12 P | habit |
 | The Ascetic | Mythic | You lived on a tenth of what you earned. | expenses ≤10% of income for a full P | wealth |
 | Ghost Month | Legendary | A whole month, essentials only. Nothing else. | full P with 0 discretionary-category spend | habit |
-| Nothing Left to Find | Mythic | Twelve periods. No overruns. And Richard could not find you a single wasted shekel. | 12 consecutive P, 0 overruns, 0 open Found Money findings | habit |
+| Nothing Left to Find | Mythic | Twelve periods. No overruns. And Alfred could not find you a single wasted shekel. | 12 consecutive P, 0 overruns, 0 open Found Money findings | habit |
 | Millionaire's Ledger | Legendary | Seven figures — and still logging every coin. | net worth ≥ 1,000,000 in a green month | wealth |
 | Ten Years Green | Mythic | One hundred and twenty consecutive green months. | 120 consecutive | habit |
 | The Babylonian | Mythic | Level 50, every gate passed. There is nothing left to earn. | max level + all rank gates | wealth |
@@ -473,12 +473,12 @@ Epic, 12 Legendary, 10 Mythic.
 ## 6. Constraints this design is already obeying
 
 **Investing badges and the ISA line.** Per `.claude/skills/open-finance-legal`,
-Richard must not opine on the כדאיות of holding, buying or selling a security.
+Alfred must not opine on the כדאיות of holding, buying or selling a security.
 A badge is app-generated commentary tied to real holdings, so the same line
 applies: nothing in §J rewards buying, names a security, or implies a position
 is good. They reward patience and study only. *Didn't Flinch* is the closest to
 the line — it's framed as behaviour ("you didn't move"), not as a verdict, and
-I'd still run it past whoever reviews the Richard prompt.
+I'd still run it past whoever reviews the Alfred prompt.
 
 **Amendment 13 and the badge list.** Financial data is very likely מידע אישי
 בעל רגישות מיוחדת. That's why `reveals` exists on every row now rather than

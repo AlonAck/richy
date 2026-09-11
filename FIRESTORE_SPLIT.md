@@ -99,7 +99,7 @@ only additions are reconciled - the transition window is one app open.
    permission-denied).
 2. **Test on the branch's Vercel preview** with a **test account, never a
    real user's**: open it - the preview that serves this branch is
-   https://richy-preview-git-firestore-split-richard201.vercel.app; the
+   https://richy-preview-git-firestore-split-alfred201.vercel.app; the
    `richy` and `richy-mgkl` projects put a Vercel login in front of theirs,
    `richy-preview` and `richy-cowork-preview` are open - sign up with email
    + password, add a few transactions, then reload (the move runs when a
@@ -144,7 +144,7 @@ the next step, not this one.
 ## Not in this change (next, in order)
 
 - A live listener on `users/{uid}/tx` (cost, and cross-client live updates).
-- `richardChats` to its own subcollection - the other unbounded array, still
+- `alfredChats` to its own subcollection - the other unbounded array, still
   capped by `trimChatArchive()` today.
 - UUID ids instead of `Date.now()` - touches every creation site and the
   assumption that id order is chronological, so it is its own change.

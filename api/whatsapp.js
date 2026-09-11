@@ -1,5 +1,5 @@
-// WhatsApp delivery for Richard Watch alerts (proactive money-leak / budget-risk
-// signals that already exist in-app - see richardWatch() in budget-app.jsx).
+// WhatsApp delivery for Alfred Watch alerts (proactive money-leak / budget-risk
+// signals that already exist in-app - see alfredWatch() in budget-app.jsx).
 //
 // COST SAFETY - the whole point of this file's shape, read before changing it:
 // WhatsApp's Cloud API is free for messages sent as a reply inside the 24-hour
@@ -282,7 +282,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  // ---- send-alert: relay one Richard Watch signal, if and only if it's free --
+  // ---- send-alert: relay one Alfred Watch signal, if and only if it's free --
   if (action === "send-alert" && req.method === "POST") {
     var uid4 = await uidFromRequest(req);
     if (!uid4) { res.status(401).json({ ok: false, error: { code: "unauthenticated" } }); return; }
@@ -308,7 +308,7 @@ module.exports = async function handler(req, res) {
     var sentToday = d4.alertsSentDate === todayKey ? (d4.alertsSentCount || 0) : 0;
     if (sentToday >= MAX_ALERTS_PER_DAY) { res.status(200).json({ ok: true, sent: false, reason: "daily_cap" }); return; }
 
-    var text = "Richard Watch: " + title + (subtitle ? "\n" + subtitle : "") + "\n\nReply STOP to turn off WhatsApp alerts.";
+    var text = "Alfred Watch: " + title + (subtitle ? "\n" + subtitle : "") + "\n\nReply STOP to turn off WhatsApp alerts.";
     try {
       await sendTextMessage(c, d4.phone, text);
     } catch (e) {

@@ -9,15 +9,15 @@
       "autoPort": true
     },
     {
-      "name": "richard",
+      "name": "alfred",
       "runtimeExecutable": "powershell.exe",
-      "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".claude/run-richard.ps1"],
+      "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".claude/run-alfred.ps1"],
       "port": 3931
     },
     {
-      "name": "richard-uicheck",
+      "name": "alfred-uicheck",
       "runtimeExecutable": "powershell.exe",
-      "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "$env:RICHARD_DISABLE_AUTH_LOCAL='true'; & '.claude/run-richard.ps1'"],
+      "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "$env:ALFRED_DISABLE_AUTH_LOCAL='true'; & '.claude/run-alfred.ps1'"],
       "port": 3931
     },
     {

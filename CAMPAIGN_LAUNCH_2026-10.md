@@ -182,7 +182,7 @@ So stop trying. **Take the other side of the trade.**
 
 Manual entry stops being a missing feature and becomes a deliberate stance: your numbers stay
 yours, and the thirty seconds a day you spend typing them in is the entire reason you actually
-know where your money goes. Plus Richard, plus a fifth of the price.
+know where your money goes. Plus Alfred, plus a fifth of the price.
 
 This is the only positioning available to you that is simultaneously **true, defensible, on-brand,
 and impossible for RiseUp to copy** — they cannot say it without torching their own model. Take it.
@@ -204,11 +204,11 @@ don't — your call." Don't let anyone talk you into shipping the message before
 |---|---|---|---|---|
 | M1 | בלי למסור לאף אחד את חשבון הבנק שלך | Without handing anyone your bank account | Distrust | No bank credentials requested — verifiable in 10 seconds |
 | M2 | ₪14.90 בחודש. לא ₪55. | ₪14.90/month. Not ₪55. | Cost | RiseUp's public price is ₪55/mo (₪44 annual) |
-| M3 | ריצ'רד קרא את החודש שלך לפני שאתה שאלת | Richard read your month before you asked | "Another empty tracker" | Live demo of Richard answering on real figures |
+| M3 | ריצ'רד קרא את החודש שלך לפני שאתה שאלת | Alfred read your month before you asked | "Another empty tracker" | Live demo of Alfred answering on real figures |
 | M4 | עברית אמיתית. שקלים אמיתיים. | Real Hebrew. Real shekels. | Localization | Hebrew-first RTL build, ₪ everywhere — see the caveat below |
 
 **Caveat on M4, and I want you to actually hear this one:** your QA audit found the Overview
-chart, four Profile rows, and Richard's own budget context are **hardcoded to `$`**, and flagged
+chart, four Profile rows, and Alfred's own budget context are **hardcoded to `$`**, and flagged
 that the App Store copy already overstates RTL and translation coverage. You cannot run M4 as a
 campaign message and ship hardcoded dollar signs. One screenshot of a `$` in a Hebrew budget
 app, posted in a Facebook group, and this message becomes the joke of the launch. **M4 is
@@ -224,7 +224,7 @@ issued a public warning in January 2026.
 **You are about to run a campaign built on finance influencer content. That is precisely the
 activity the ISA has said it is watching.**
 
-Hard rules for every script, caption, and Richard response in this campaign:
+Hard rules for every script, caption, and Alfred response in this campaign:
 
 - ✅ Allowed: budgeting, cash flow, tracking, saving toward a goal, debt payoff mechanics, "where did it go."
 - ❌ Forbidden: any named financial product, fund, stock, or bank. Any ranking, "recommended,"
@@ -281,8 +281,8 @@ the strategy — you're buying lottery tickets on the algorithm, and you need en
 
 1. **"כמה באמת עלו החגים"** — the holiday cost counter. Running series through the whole
    holiday period. Documentary, not sales.
-2. **"תשאל את ריצ'רד"** — screen-record Richard answering a real budgeting question. This is
-   your best asset; your sim rated AI usefulness 5.1/10, which means Richard is under-explained,
+2. **"תשאל את ריצ'רד"** — screen-record Alfred answering a real budgeting question. This is
+   your best asset; your sim rated AI usefulness 5.1/10, which means Alfred is under-explained,
    not bad.
 3. **"בלי למסור את הבנק"** — the privacy wedge, stated plainly.
 4. **"שבוע ראשון עם ריצ'י"** — a real person's first week. Ships week 6, when you have real users.
@@ -406,7 +406,7 @@ Ship gates in **bold**. Everything before 5 Oct exists to make 5 Oct work.
 
 | ID | Asset | What it is | By |
 |----|-------|-----------|-----|
-| L1 | Marketing landing page | Hebrew, RTL, mobile-first. Hero = the privacy wedge. Waitlist field → App Store badge on 5 Oct. Live Richard demo if you can manage it | **Aug 30** |
+| L1 | Marketing landing page | Hebrew, RTL, mobile-first. Hero = the privacy wedge. Waitlist field → App Store badge on 5 Oct. Live Alfred demo if you can manage it | **Aug 30** |
 | L2 | Hebrew App Store listing | Name, 30-char subtitle, keyword field, description, 6 Hebrew-UI screenshots + preview video | Sep 6 |
 | P1 | רוני character kit | Locked look, voice, 3 pilot videos | Aug 30 |
 | P2 | Holiday spend series | 12–15 videos across weeks 3–6 | Sep 7 → Oct 4 |

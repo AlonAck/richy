@@ -69,10 +69,10 @@ re-diagnose — that report is code-verified. Fix, in this order:
    with no retry. Add a timeout/cleanup so a hung request eventually clears the
    dedup entry and allows retry.
 5. **Hardcoded `$` in 4+ places** — Overview chart, 4 Profile settings rows,
-   Richard's budget context. Replace with the user's actual currency symbol
+   Alfred's budget context. Replace with the user's actual currency symbol
    (there's already a working `mainSym`/currency-symbol mechanism used
    elsewhere in the file — reuse it, don't reinvent).
-6. **Richard's system prompt is client-controlled.** Any user can send an
+6. **Alfred's system prompt is client-controlled.** Any user can send an
    arbitrary system prompt to the Anthropic key. Move prompt construction
    server-side (a prompt registry/endpoint the client cannot override) so the
    ISA "no personalized investment advice" guardrail is actually enforced, not
@@ -85,7 +85,7 @@ re-diagnose — that report is code-verified. Fix, in this order:
 **Acceptance for Phase 1:** manually reproduce each of the 7 bugs against
 current `main` first (confirm they still exist — the QA audit is from Aug 17,
 two days old), then verify each is fixed. No regressions in debt tracker,
-Activity edit, boot flow, investing, currency display, or Richard chat.
+Activity edit, boot flow, investing, currency display, or Alfred chat.
 
 ---
 
@@ -279,13 +279,13 @@ Scope it carefully:
    Xcode environment, not something to guess at from this JS file alone.
 2. If the native scaffolding does exist, the extension should accept a shared
    image (screenshot of a card statement, or a long-press-shared SMS thread),
-   hand it to Richard/the LLM for parsing into a list of proposed
+   hand it to Alfred/the LLM for parsing into a list of proposed
    transactions, and present them for one-tap bulk confirm before writing to
    `tx`. Mirror the CSV import's existing duplicate-detection approach if one
    exists (check for it near the CSV import code) rather than building fresh
    dedup logic.
 3. **Do not send raw financial screenshots to any endpoint without going
-   through the same LLM pathway Richard already uses** — no new third-party
+   through the same LLM pathway Alfred already uses** — no new third-party
    service, no new data flow that hasn't been through the same privacy
    review as existing features.
 
@@ -309,7 +309,7 @@ badge, no promotion** — just findable:
 - Business, Investing, Trips: visible entries in Profile nav if not already.
 - Rename **"CSV import" → "העלאת פירוט מהאשראי"** everywhere it appears in
   UI copy (Activity tab, onboarding's entry-method preference, any settings
-  reference) and in Richard's system prompt (~L15243 already describes the
+  reference) and in Alfred's system prompt (~L15243 already describes the
   capability — update the description text to match the new name, keep the
   underlying function names as-is unless trivial to rename).
 
@@ -375,9 +375,9 @@ function onDismissTip(id) {
 Any tap-through to a suggestion resets `consecutiveDismissals` to 0 and
 increments `shownCount[id]`.
 
-### 8e. Richard integration
+### 8e. Alfred integration
 
-In `richardSystem()` (~L7515), append one line describing the currently-active
+In `alfredSystem()` (~L7515), append one line describing the currently-active
 suggestion (if any) to the system context, e.g.:
 
 ```
@@ -390,9 +390,9 @@ it later in the same conversation."
 This piggybacks on the existing capability description at ~L15243 — don't
 duplicate that text, just add the situational trigger.
 
-**ISA guardrail:** any Richard mention tied to the investing trigger must stay
+**ISA guardrail:** any Alfred mention tied to the investing trigger must stay
 at "track what you already have" register — never "you should invest this."
-Same rule that already governs Richard elsewhere in the file; don't relax it
+Same rule that already governs Alfred elsewhere in the file; don't relax it
 here.
 
 **No push notifications for any of this.** Not in this phase, not as a
@@ -421,7 +421,7 @@ stretch goal.
 - Every "Acceptance" checklist above passes.
 - No existing feature regresses — pay particular attention to: debt tracker,
   Activity edit/delete, CSV import, investing accounts, couples/household mode,
-  Richard chat (all flows), and currency display, since Tier 0 fixes touch all
+  Alfred chat (all flows), and currency display, since Tier 0 fixes touch all
   of them.
 - `git diff` is reviewable in the phase-sized commits described in Section 1 —
   do not squash everything into one commit.

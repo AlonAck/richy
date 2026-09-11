@@ -26,7 +26,7 @@ struct Account: Decodable, Equatable, Sendable {
     let onboardingDone: Bool
     let catchUpDone: Bool
     let plan: String?
-    let richardInstructions: String?
+    let alfredInstructions: String?
     let tx: [Transaction]
     let budgets: [Budget]
     let goals: [Goal]
@@ -39,7 +39,7 @@ struct Account: Decodable, Equatable, Sendable {
     enum CodingKeys: String, CodingKey {
         case txSchema
         case email, dob, handle, lang, currency, theme, darkMode, onboardingDone, catchUpDone
-        case plan, richardInstructions, tx, budgets, goals, categories, folders
+        case plan, alfredInstructions, tx, budgets, goals, categories, folders
     }
 
     init(email: String? = nil,
@@ -61,7 +61,7 @@ struct Account: Decodable, Equatable, Sendable {
         self.onboardingDone = onboardingDone
         self.catchUpDone = true
         self.plan = nil
-        self.richardInstructions = nil
+        self.alfredInstructions = nil
         self.tx = tx
         self.budgets = budgets
         self.goals = goals
@@ -82,7 +82,7 @@ struct Account: Decodable, Equatable, Sendable {
         onboardingDone = try container.decodeIfPresent(Bool.self, forKey: .onboardingDone) ?? false
         catchUpDone = try container.decodeIfPresent(Bool.self, forKey: .catchUpDone) ?? false
         plan = try container.decodeIfPresent(String.self, forKey: .plan)
-        richardInstructions = try container.decodeIfPresent(String.self, forKey: .richardInstructions)
+        alfredInstructions = try container.decodeIfPresent(String.self, forKey: .alfredInstructions)
         tx = container.decodeLossyArray(Transaction.self, forKey: .tx)
         budgets = container.decodeLossyArray(Budget.self, forKey: .budgets)
         goals = container.decodeLossyArray(Goal.self, forKey: .goals)

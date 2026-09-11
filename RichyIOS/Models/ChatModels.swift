@@ -2,7 +2,7 @@ import Foundation
 
 /// The two models `api/chat.js` allows. Anything else is mapped to `core`
 /// server-side, so there is no point sending anything else.
-enum RichardModel: String, Codable, Sendable {
+enum AlfredModel: String, Codable, Sendable {
     /// Quality tier: the Advisor's full conversations.
     case core = "claude-sonnet-5"
     /// Short, tightly scoped work: translation, narration, compact JSON.
@@ -26,7 +26,7 @@ struct ChatRequest: Encodable, Sendable {
     let maxTokens: Int
     let model: String
 
-    init(messages: [ChatMessage], system: String, maxTokens: Int = 800, model: RichardModel = .core) {
+    init(messages: [ChatMessage], system: String, maxTokens: Int = 800, model: AlfredModel = .core) {
         self.messages = messages
         self.system = system
         self.maxTokens = maxTokens

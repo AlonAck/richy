@@ -1,6 +1,6 @@
-# Send Richard Watch alerts over WhatsApp (one-time setup)
+# Send Alfred Watch alerts over WhatsApp (one-time setup)
 
-Richy can now relay Richard Watch's single most urgent proactive signal (a
+Richy can now relay Alfred Watch's single most urgent proactive signal (a
 budget about to blow, a goal falling behind, a subscription worth cancelling)
 to a user's own WhatsApp, in addition to the existing in-app Daily Brief.
 
@@ -78,7 +78,7 @@ Redeploy after adding these.
 3. From that phone, message **START** to Richy's WhatsApp test/business
    number. The webhook flips your status to active and records that a free
    window is open.
-4. Richy checks in on Richard Watch's top signal once a day while a window is
+4. Richy checks in on Alfred Watch's top signal once a day while a window is
    open and relays it as a plain WhatsApp message if one is worth surfacing.
    Reply **STOP** at any time to opt back out.
 

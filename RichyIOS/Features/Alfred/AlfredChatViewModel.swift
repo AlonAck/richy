@@ -1,14 +1,14 @@
-import Foundation
+﻿import Foundation
 import Observation
 
-/// One conversation with Richard. Messages go through `ChatService` (the
+/// One conversation with Alfred. Messages go through `ChatService` (the
 /// existing `/api/chat` route, which owns the model allowlist, the rate limit
 /// and the investment-advice guardrail); the system prompt is rebuilt from
-/// the live ledger for every send so Richard always sees this month's numbers.
+/// the live ledger for every send so Alfred always sees this month's numbers.
 /// Nothing here is persisted yet - the chat lives as long as the screen.
 @MainActor
 @Observable
-final class RichardChatViewModel {
+final class AlfredChatViewModel {
     struct Entry: Identifiable, Equatable {
         let id: UUID
         let role: ChatMessage.Role
@@ -22,7 +22,7 @@ final class RichardChatViewModel {
             reported = false
         }
 
-        var isRichard: Bool { role == .assistant }
+        var isAlfred: Bool { role == .assistant }
     }
 
     private(set) var entries: [Entry] = []
@@ -66,7 +66,7 @@ final class RichardChatViewModel {
 
     /// Re-sends the last question after a failure.
     func retry() async {
-        guard !isReplying, let last = entries.last(where: { !$0.isRichard }) else { return }
+        guard !isReplying, let last = entries.last(where: { !$0.isAlfred }) else { return }
         if entries.last?.id == last.id {
             entries.removeLast()
         }
@@ -76,7 +76,7 @@ final class RichardChatViewModel {
     func report(_ entry: Entry) {
         guard let index = entries.firstIndex(where: { $0.id == entry.id }) else { return }
         entries[index].reported = true
-        Log.app.notice("A Richard reply was reported")
+        Log.app.notice("A Alfred reply was reported")
     }
 
     func clear() {
@@ -96,7 +96,7 @@ final class RichardChatViewModel {
             entries.append(Entry(role: .assistant, text: reply.isEmpty ? "I did not get a reply back. Try asking again." : reply))
         } catch {
             errorMessage = UserFacingError.message(for: error)
-            Log.network.error("Richard reply failed")
+            Log.network.error("Alfred reply failed")
         }
     }
 }

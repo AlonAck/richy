@@ -66,8 +66,8 @@ ported from the web's real usage, not generic Apple HIG numbers):
 ```
 
 Two type roles, same on both platforms: an editorial serif (New York via
-`.design(.serif)` natively; the web's `DISP`/`RICHARD_DISP` vars) for
-titles, marks, and Richard's verdicts — and the system sans (`UI` on web,
+`.design(.serif)` natively; the web's `DISP`/`ALFRED_DISP` vars) for
+titles, marks, and Alfred's verdicts — and the system sans (`UI` on web,
 `RichyFont.ui` natively) for everything else. Numbers especially: tabular
 figures (`fontVariantNumeric: "tabular-nums"` / `.monospacedDigit()`) so
 amounts don't jiggle as digits change.

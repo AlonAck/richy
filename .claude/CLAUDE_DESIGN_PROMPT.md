@@ -2,10 +2,10 @@ Paste everything below the line into Claude Design.
 
 ---
 
-# Design the Richard Watch screens for Richy
+# Design the Alfred Watch screens for Richy
 
 You are designing screens for **Richy**, a Hebrew-first personal finance iPhone
-app. Its differentiator is **Richard** — an AI money advisor that actively finds
+app. Its differentiator is **Alfred** — an AI money advisor that actively finds
 and solves the user's money problems, not a chat box bolted onto a tracker.
 
 The engine behind these screens is already built and returns real, exact numbers.
@@ -94,7 +94,7 @@ against near-black. Every colour needs a real dark counterpart.
   figures** so amounts don't jiggle as digits change.
 - **Serif display** — `"EB Garamond", "Noto Serif Hebrew", Garamond, serif` at
   weight 700, reserved for **editorial moments**: screen titles, a greeting,
-  Richard speaking. This serif is Richy's voice; it is what stops the app
+  Alfred speaking. This serif is Richy's voice; it is what stops the app
   looking like every other fintech. Never set body copy or numbers in it.
 
 ```
@@ -174,7 +174,7 @@ summed together on screen:
 
 ### A. Daily brief — the home of the feature
 
-What Richard found since the user last looked. Ranked by urgency, not by date.
+What Alfred found since the user last looked. Ranked by urgency, not by date.
 Each row carries a horizon: **now / soon / watch** — this is the main thing to
 design around, so a blown budget and a forgotten subscription can share a screen
 without either drowning the other.

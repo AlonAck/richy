@@ -20,7 +20,7 @@ enum APIError: Error, LocalizedError, Equatable, Sendable {
         case .unauthenticated:
             return "Your session expired. Sign in again."
         case .rateLimited:
-            return "Richard needs a short breather - try again in a few minutes."
+            return "Alfred needs a short breather - try again in a few minutes."
         case .timeout:
             return "That took too long. Check your connection and try again."
         case .invalidRequest:

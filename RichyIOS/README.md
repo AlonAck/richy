@@ -20,7 +20,7 @@ What CI cannot do is run the app: that still takes the Mac checklist below.
 | `Features/Transactions/` | `ActivityView` (newest first, grouped by day, swipe to delete, tap to edit), `TransactionFormView` (add/edit), `TransactionRow` |
 | `Features/Budgets/`, `Features/Goals/` | Live numbers; add, edit and delete caps, targets and goals from the phone (`BudgetFormView`, `GoalFormView`), written as field-level edits of the account document after a fresh read |
 | `Features/Ledger/` | `LedgerStore` (one live subscription per session, shared by every tab) and `LedgerMath` (the dashboard arithmetic, ported from the web) |
-| `Features/Richard/` | `RichardChatView` + view model: your messages as bubbles, Richard's as text, suggestion chips, the AI disclosure first, a report control on every reply; `RichardPrompt` builds the system prompt from the live ledger on every send |
+| `Features/Alfred/` | `AlfredChatView` + view model: your messages as bubbles, Alfred's as text, suggestion chips, the AI disclosure first, a report control on every reply; `AlfredPrompt` builds the system prompt from the live ledger on every send |
 | `Features/Auth/`, `Boot/`, `Profile/` | Sign in / sign up / reset with email; Continue with Google (Firebase's web flow, no extra SDK) and Continue with Apple (`SocialSignInButtons`); boot and not-configured screens; profile with sign out and delete account |
 | `Components/` | `LoadingView`, `ErrorView`, `EmptyStateView`, `AsyncContentView`, buttons, card, text field, logo |
 | `Models/` | Codable models for the account document: `Transaction`, `Budget`, `Goal`, `Category`, `Folder`, `Account`, chat types |
@@ -32,7 +32,7 @@ What CI cannot do is run the app: that still takes the Mac checklist below.
 | `project.yml` | The same project as an XcodeGen spec — only a fallback for regenerating `Richy.xcodeproj`, see below |
 
 Deliberately **not** here yet: saved chat history, the web's ten-step
-onboarding questionnaire and Richard's first plan (an account created on
+onboarding questionnaire and Alfred's first plan (an account created on
 the phone gets it the first time it opens the web), savings pots, business,
 investing, trips, households, Bank Sync.
 

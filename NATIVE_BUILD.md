@@ -122,7 +122,7 @@ biometrics is both a genuine native feature and something users expect.
 ## 5. Test on a real device
 
 - Plug in an iPhone, select it as the run target, hit Run.
-- Test signup (consent checkbox + 16+ age gate), Richard chat, offline launch
+- Test signup (consent checkbox + 16+ age gate), Alfred chat, offline launch
   (airplane mode after first run), Hebrew/Arabic RTL, account deletion, export.
 
 ## 6. App Store Connect setup
@@ -147,7 +147,7 @@ the only blank to fill is the demo account's email and password.
 | Contact Info → Name | Yes | Yes | No | App Functionality |
 | Sensitive Info → Date of Birth (Other User Content) | Yes | Yes | No | App Functionality (age verification) |
 | Financial Info → Other Financial Info (transactions, budgets, holdings the user enters) | Yes | Yes | No | App Functionality |
-| User Content → Other User Content (chat messages with Richard) | Yes | Yes | No | App Functionality |
+| User Content → Other User Content (chat messages with Alfred) | Yes | Yes | No | App Functionality |
 | Identifiers / Location / Browsing History / Advertising Data | **No** | — | — | — |
 
 "Data Used to Track You": **none**. No third-party advertising or analytics SDKs.

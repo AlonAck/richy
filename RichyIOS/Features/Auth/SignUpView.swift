@@ -20,7 +20,7 @@ struct SignUpView: View {
                          subtitle: "One account for the web and the app. Your data follows you.") {
             RichyTextField(title: "Your name",
                            text: $model.fullName,
-                           placeholder: "How Richard should address you",
+                           placeholder: "How Alfred should address you",
                            contentType: .name,
                            autocapitalization: .words)
             RichyTextField(title: "Email",
@@ -61,7 +61,7 @@ struct SignUpView: View {
                 .tint(RichyColor.ink)
             }
             Toggle(isOn: $consent) {
-                Text("I'm 16 or older and I agree to the Terms and the Privacy Policy. I understand Richard is an AI: the numbers I keep in Richy are sent to Richy's server and on to Anthropic to generate his replies.")
+                Text("I'm 16 or older and I agree to the Terms and the Privacy Policy. I understand Alfred is an AI: the numbers I keep in Richy are sent to Richy's server and on to Anthropic to generate his replies.")
                     .font(RichyFont.ui(RichyFont.Size.footnote))
                     .foregroundStyle(RichyColor.ink2)
             }
