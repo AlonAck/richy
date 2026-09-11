@@ -12856,13 +12856,17 @@ function sniffMap(rows, hasHeader) {
   if (hasHeader) {
     rows[0].forEach(function(hRaw, i) {
       var h = (hRaw || "").toLowerCase();
-      if (map.date < 0 && /date|time|posted/.test(h)) map.date = i;
+      // Each header cell can only fill ONE role - stop at the first match.
+      // Without the early returns, a column literally named "Value Date"
+      // matched BOTH the date pattern (via "date") and the amount pattern
+      // (via "value"), so the date column got read as the price too.
+      if (map.date < 0 && /date|time|posted/.test(h)) { map.date = i; return; }
       // Separate money-out / money-in columns (common in real bank exports).
-      if (map.debit < 0 && /(debit|withdraw|paid out|money out|spent|outflow)/.test(h) && !/credit|deposit/.test(h)) map.debit = i;
-      if (map.credit < 0 && /(credit|deposit|paid in|money in|received|inflow)/.test(h) && !/debit|withdraw/.test(h)) map.credit = i;
+      if (map.debit < 0 && /(debit|withdraw|paid out|money out|spent|outflow)/.test(h) && !/credit|deposit/.test(h)) { map.debit = i; return; }
+      if (map.credit < 0 && /(credit|deposit|paid in|money in|received|inflow)/.test(h) && !/debit|withdraw/.test(h)) { map.credit = i; return; }
       // Single signed-amount column - only if it isn't a debit/credit column.
-      if (map.amount < 0 && /(amount|value|sum|total|paid)/.test(h) && !/(debit|credit|deposit|withdraw)/.test(h)) map.amount = i;
-      if (map.desc < 0 && /desc|payee|name|memo|detail|narration|merchant|reference|transaction/.test(h)) map.desc = i;
+      if (map.amount < 0 && /(amount|value|sum|total|paid)/.test(h) && !/(debit|credit|deposit|withdraw)/.test(h)) { map.amount = i; return; }
+      if (map.desc < 0 && /desc|payee|name|memo|detail|narration|merchant|reference|transaction/.test(h)) { map.desc = i; return; }
     });
   }
   var hasSplit = map.debit >= 0 || map.credit >= 0;
