@@ -551,7 +551,7 @@ report recommends fixing them.
   the Leumi demo uses "clearly fictional" transactions, but `LEUMI_DEMO_MERCHANTS`
   (`:11048`) is Shufersal, Rami Levy, Paz, Bezeq and Wolt at realistic prices.
 
-- **P0 — four net-worth formulas, three different answers.** `motivSnapshot`
+- ~~**P0 — four net-worth formulas, three different answers.** `motivSnapshot`
   (`:3291`) filters transfers out of income/expense **and still adds `savTotal`**, so
   moving $1,000 into your own savings pot raises the net worth Profile shows by
   $1,000 out of nothing — and the `h-01`…`h-06` badges (`netWorth >= opening ×
@@ -561,7 +561,20 @@ report recommends fixing them.
   entirely, which Goals (`:15464`) and Overview (`:10038`) include — so Alfred quotes
   a figure that leaves out the whole portfolio — and both are bare `tx.reduce` calls
   with no `isSettled` guard. **Fix is one shared `netWorthOf(state)` helper called
-  from all four sites.**
+  from all four sites.**~~ **CLOSED 11 Sep.** `netWorthOf(state)` now lives at
+  `:2884` and is the only net-worth formula in the app. Six call sites, not four —
+  the audit missed the dashboard `netWorth` widget tile and the `linkType ===
+  "networth"` branch of `goalSavedAmount`, both of which carried their own copy.
+  Verified end-to-end through the compiled production bundle: on a test account
+  worth $10,200, moving $1,000 into an own savings pot used to push Profile to
+  $11,200 while every other screen held at $10,200, and 60 shuffles of the user's
+  own money read $610,200 and awarded all six `h-0*` badges. After the fix all six
+  screens read $10,200 flat through every shuffle and only `h-01`/`h-02` — the two
+  the real $10,200 against a $5,000 opening genuinely earns — are awarded.
+  Internal transfers net out because the main-ledger side of the transfer is
+  counted, not dropped; external pot deposits, real spend, trip lump-sums and
+  held shares still move the number, and pending, future and `catchUp` rows still
+  do not (18/18 regression checks).
 
 - **P1 — a CSV import is the highest-volume irreversible action in the app.** Rows
   are committed with `props.onSaveTx(props.tx.concat(txs))` (`:13644`) carrying no

@@ -2882,6 +2882,41 @@ function mainSpendBalance(tx) {
     return !t.pending && !t.catchUp && t.date <= today;
   }).reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0);
 }
+// === NET WORTH - THE SINGLE SOURCE OF TRUTH ===
+// Every screen that says "net worth" calls this one function. It exists because
+// there used to be four formulas giving three answers: Profile filtered internal
+// transfers OUT of the main balance while still counting the pot they landed in,
+// so moving $1,000 into your own savings pot minted $1,000 of net worth out of
+// nothing - and the h-01..h-06 badges (netWorth >= opening x 2/3/5/10/100) could
+// be farmed by shuffling the same money between your own accounts. Advisor and
+// Full Analysis left the investing portfolio out entirely and counted pending and
+// future-dated rows as if they had already happened.
+//
+// The definition, and why each piece is what it is:
+//   main balance - all settled income minus all settled expense, all-time, via
+//     mainSpendBalance(). Internal transfers ARE counted here, and that is the
+//     whole point: a transfer writes an offsetting row on the main ledger (see
+//     transferTx() in the savings, investing and business hubs) to match the
+//     entry in the pot, so the two sides cancel and net worth does not move.
+//     Dropping the main-ledger side while keeping the pot entry is the double
+//     count. The opening balance is counted too - it is net worth the user
+//     already had, which is exactly what the h-* badges measure growth against.
+//   settled - not pending, not future-dated, not catchUp. The first two have not
+//     happened yet; catchUp rows are onboarding's synthetic recap of a month that
+//     is already reflected in the balance, so counting them double-counts.
+//   pots - savings + business cash + investing (cash plus holdings at the last
+//     persisted price). An EXTERNAL deposit (fromMain false) legitimately raises
+//     net worth: that is money the user already held and the app had not seen.
+//
+// Takes a loose state bag so every caller can pass whatever it already has -
+// { tx, savings, businesses, investing }. Missing keys count as empty.
+function netWorthOf(state) {
+  var s = state || {};
+  return round2(mainSpendBalance(s.tx || [])
+    + savingsTotal(s.savings || [])
+    + businessTotal(s.businesses || [])
+    + investingTotal(s.investing || []));
+}
 // A goal's effective "saved" amount. Manually-tracked goals use their stored
 // g.saved; a goal linked to an account, the main balance, or net worth derives
 // its progress live from that source - so a synced goal never sits at a stale 0%.
@@ -2890,7 +2925,7 @@ function mainSpendBalance(tx) {
 function goalSavedAmount(g, tx, savings, businesses, investing) {
   if (!g) return 0;
   if (g.linkType === "balance") return mainSpendBalance(tx);
-  if (g.linkType === "networth") return mainSpendBalance(tx) + savingsTotal(savings || []) + businessTotal(businesses || []) + investingTotal(investing || []);
+  if (g.linkType === "networth") return netWorthOf({ tx: tx, savings: savings, businesses: businesses, investing: investing });
   if (g.linkType === "savings") { var a = (savings || []).filter(function(x) { return String(x.id) === String(g.linkId); })[0]; return a ? savingsBalance(a) : (g.saved || 0); }
   if (g.linkType === "business") { var b = (businesses || []).filter(function(x) { return String(x.id) === String(g.linkId); })[0]; return b ? businessCash(b) : (g.saved || 0); }
   if (g.linkType === "investing") { var v = (investing || []).filter(function(x) { return String(x.id) === String(g.linkId); })[0]; return v ? investingWorth(v) : (g.saved || 0); }
@@ -4047,12 +4082,13 @@ function motivSnapshot(data) {
   var bud = budgetRunState(data.budgets || [], bctx);
 
   // Money reads, all through the existing helpers so Profile can never disagree
-  // with Overview about what the user is worth.
+  // with Overview about what the user is worth. Net worth is netWorthOf() and
+  // nothing else - this used to be its own reduce that dropped internal transfers
+  // from the main balance while still counting the pot they moved into, which is
+  // what let the h-* badges be farmed by moving money between your own accounts.
   var savTotal = savingsTotal(data.savings || []);
   var todayIso = isoDay(today);
-  var allIncome = tx.filter(function(t) { return t.type === "income" && !isTransfer(t) && motivSettled(t, todayIso); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var allExpense = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && motivSettled(t, todayIso); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var netWorth = round2(allIncome - allExpense + savTotal + businessTotal(data.businesses || []) + investingTotal(data.investing || []));
+  var netWorth = netWorthOf(data);
   var openingTx = tx.filter(function(t) { return isOpening(t); })[0];
   var opening = openingTx ? (openingTx.amount || 0) : 0;
   var essentials = Number((data.onboardingData || {}).monthlyEssentials || 0);
@@ -10870,13 +10906,7 @@ function widgetValueAt(w, wc, back) {
       .reduce(function(s, e) { return s + (e.kind === "withdraw" ? -(e.amount || 0) : (e.amount || 0)); }, 0));
   }
   // Snapshots: no history to walk honestly, so they always read "right now".
-  if (metric === "netWorth") {
-    var t2 = new Date().toISOString().slice(0, 10);
-    var all = (wc.tx || []).filter(function(t) { return !t.pending && !t.catchUp && (t.date || "") <= t2; });
-    return round2(widgetSum(all.filter(function(t) { return t.type === "income"; }))
-      - widgetSum(all.filter(function(t) { return t.type === "expense"; }))
-      + savingsTotal(wc.savings || []) + businessTotal(wc.businesses || []) + investingTotal(wc.investing || []));
-  }
+  if (metric === "netWorth") return netWorthOf(wc);
   if (metric === "goalProgress") {
     var g = (wc.goals || []).filter(function(x) { return x.name === w.target; })[0];
     if (!g) return 0;
@@ -11548,7 +11578,7 @@ function Overview(props) {
   var bizTotal = businessTotal(bizAccts);
   var invAccts = props.investing || [];
   var invTotal = investingTotal(invAccts);
-  var netWorth = balance + savTotal + bizTotal + invTotal;
+  var netWorth = netWorthOf(props);
   // Cash-flow stats follow the selected timeframe. Opening balance is net worth,
   // not income, so it is excluded here (else the savings rate reads 100%).
   // Internal transfers to/from savings pots are excluded too - moving your own
@@ -18336,9 +18366,7 @@ function Goals(props) {
     var expense = txs.filter(function(t) { return t.type === "expense" && settled(t); }).reduce(function(s, t) { return s + t.amount; }, 0);
     return income - expense;
   }
-  function netWorthCalc() {
-    return mainBalanceCalc() + savingsTotal(props.savings || []) + businessTotal(props.businesses || []) + investingTotal(props.investing || []);
-  }
+  function netWorthCalc() { return netWorthOf(props); }
   function linkedBalanceOf(g) {
     if (g.linkType === "balance") return mainBalanceCalc();
     if (g.linkType === "networth") return netWorthCalc();
@@ -21302,8 +21330,11 @@ function Advisor(props) {
   // Cash-flow is this month (matches the dashboard); net worth is all-time.
   var income = props.tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
   var expense = props.tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && inMonth(t, ymA); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  // Net worth = main balance (all-time tx) + every savings pot + business cash.
-  var netWorth = props.tx.reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0) + savingsTotal(props.savings || []) + businessTotal(props.businesses || []);
+  // Net worth is netWorthOf() - the same number Overview, Goals and Profile show.
+  // This used to be a bare reduce that counted pending and future-dated rows and
+  // left the investing portfolio out, so Alfred quoted a figure missing the whole
+  // portfolio and disagreeing with every screen the user could see.
+  var netWorth = netWorthOf(props);
   var savings = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
   var topCats = cats.map(function(c) { return { name: c.name, spent: catSpend(c) }; }).filter(function(c) { return c.spent > 0; }).sort(function(a, b) { return b.spent - a.spent; }).slice(0, 5);
   var budgetLines = props.budgets.map(function(b) {
@@ -24215,7 +24246,7 @@ function FullAnalysisView(props) {
 
   var income = tx.filter(function(t) { return t.type === "income" && !isOpening(t) && !isTransfer(t) && inMonth(t, ym); }).reduce(function(s, t) { return s + t.amount; }, 0);
   var expense = tx.filter(function(t) { return t.type === "expense" && !isTransfer(t) && !isTrip(t) && inMonth(t, ym); }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var netWorth = tx.reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0) + savingsTotal(props.savings || []) + businessTotal(props.businesses || []);
+  var netWorth = netWorthOf(props);
   var reviewed = tx.filter(function(t) { return inMonth(t, ym) && !isTransfer(t); }).length;
 
   var savRate = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
