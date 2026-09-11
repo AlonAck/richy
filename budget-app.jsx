@@ -2100,6 +2100,9 @@ function timelineDeadline(timeline, fromISO) {
 // Every one of these already had the sheet wired to the same `sheet` flag; the
 // button just never opened it, so five kinds of object could not be created by
 // tapping anything - while three empty states told users to tap exactly this.
+// Screens that carry their own bottom composer: the + would land on top of the
+// text field. householdMerge is a full-screen decision with nothing to add to.
+var FAB_HIDDEN_ON = { advisor: 1, analysis: 1, householdMerge: 1 };
 var FAB_CREATES = {
   activity: "addTransaction",
   budgets: "newBudget",
@@ -39116,7 +39119,7 @@ export default function App() {
           carries a backdrop-filter, which makes it the containing block for any
           position:fixed descendant and would pin this to the header instead of
           the viewport. At root level it stays parked in the bottom-left corner. */}
-      {currentTab !== "advisor" && currentTab !== "householdMerge" && (
+      {!FAB_HIDDEN_ON[currentTab] && (
           <LiquidButton variant="primary" size="icon" iconSize={36}
             color={sheet && FAB_CREATES[currentTab] ? T.ink : undefined}
             onClick={function() {
@@ -39175,7 +39178,7 @@ export default function App() {
             // already parked in place; animating it would double up the motion.
             var entryAnim;
             if (skipEntryAnimRef.current) { skipEntryAnimRef.current = false; entryAnim = "none"; }
-            else { entryAnim = animDir === "right" ? "navSlideRight var(--m-enter) var(--m-ease) both" : animDir === "left" ? "navSlideLeft var(--m-enter) var(--m-ease) both" : "navFade var(--m-enter) var(--m-ease) both"; }
+            else { entryAnim = animDir === "right" ? "navSlideRight var(--m-enter) var(--m-ease) backwards" : animDir === "left" ? "navSlideLeft var(--m-enter) var(--m-ease) backwards" : "navFade var(--m-enter) var(--m-ease) backwards"; }
             return (
               // Track is transform-driven imperatively during a drag (see the native
               // touch effect); no transform in JSX so React never fights those writes.
@@ -39192,7 +39195,7 @@ export default function App() {
             );
           })()
         ) : (
-        <div key={animKey} style={{ padding: "8px 16px 16px", animation: animDir === "right" ? "navSlideRight var(--m-enter) var(--m-ease) both" : animDir === "left" ? "navSlideLeft var(--m-enter) var(--m-ease) both" : "navFade var(--m-enter) var(--m-ease) both" }}>
+        <div key={animKey} style={{ padding: "8px 16px 16px", animation: animDir === "right" ? "navSlideRight var(--m-enter) var(--m-ease) backwards" : animDir === "left" ? "navSlideLeft var(--m-enter) var(--m-ease) backwards" : "navFade var(--m-enter) var(--m-ease) backwards" }}>
         {currentTab === "watchBrief" && <DailyBrief tx={tx} categories={categories} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} onNavigate={function(t) { setTab(t); }} onOpenGoalRisk={function(id) { setOpenGoalRisk(id); setTab("watchGoal"); }} />}
         {currentTab === "watchGoal" && <GoalAtRiskDetail goalId={openGoalRisk} tx={tx} categories={categories} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} onSaveGoals={onSaveGoals} onNavigate={function(t) { setTab(t); }} />}
         {currentTab === "watchForecast" && <NextThirtyDays tx={tx} categories={categories} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} foundMoney={foundMoney} onNavigate={function(t) { setTab(t); }} />}
