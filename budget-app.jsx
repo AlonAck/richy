@@ -1759,6 +1759,10 @@ var T1_STRINGS = {
     mvOnTrack:"On track", mvWatch:"Worth a look", mvAttention:"Needs attention",
     moreOptions:"More options",
     perDay:"Per day", currentBalance:"Current balance",
+    stsCapped:"Your budget caps stop it here - your cash alone would allow {cash}.",
+    stsCharges1:"{bal} balance, less {top} due this week.",
+    stsChargesN:"{bal} balance, less {held} held for {n} charges. Biggest is {top}.",
+    stsClear:"{bal} balance, and nothing due out this week.", stsThrough:"Through",
     svGivePlanTitle:"Give this pot a plan", svGivePlanSub:"Four questions, and I'll work out the monthly number and the date it lands.",
     importCsv:"Import CSV",
     dbNoDebts:"No debts tracked", dbNoDebtsSub:"Add a card, loan, or overdraft with its balance and interest rate, and I'll show you the fastest way out.", dbAddFirst:"Add your first debt", dbTotalOwed:"Total owed",
@@ -1807,6 +1811,10 @@ var T1_STRINGS = {
     mvOnTrack:"במסלול", mvWatch:"שווה מבט", mvAttention:"דורש התייחסות",
     moreOptions:"עוד אפשרויות",
     perDay:"ליום", currentBalance:"יתרה נוכחית",
+    stsCapped:"תקרות התקציב עוצרות כאן - המזומן לבדו היה מאפשר {cash}.",
+    stsCharges1:"יתרה {bal}, פחות {top} שיורד השבוע.",
+    stsChargesN:"יתרה {bal}, פחות {held} ששמורים ל-{n} חיובים. הגדול ביותר {top}.",
+    stsClear:"יתרה {bal}, ואין חיובים צפויים השבוע.", stsThrough:"עד",
     svGivePlanTitle:"לתת לקופה הזאת תוכנית", svGivePlanSub:"ארבע שאלות, ואחשב את הסכום החודשי ואת התאריך שבו זה נסגר.",
     importCsv:"ייבוא CSV",
     dbNoDebts:"אין חובות במעקב", dbNoDebtsSub:"הוסיפו כרטיס, הלוואה או מסגרת עם היתרה והריבית, ואראה לכם את הדרך המהירה ביותר לצאת מזה.", dbAddFirst:"הוספת החוב הראשון", dbTotalOwed:"סך החוב",
@@ -1855,6 +1863,10 @@ var T1_STRINGS = {
     mvOnTrack:"على المسار", mvWatch:"يستحق نظرة", mvAttention:"يتطلب انتباهاً",
     moreOptions:"خيارات إضافية",
     perDay:"يومياً", currentBalance:"الرصيد الحالي",
+    stsCapped:"حدود ميزانيتك توقفه هنا - النقد وحده كان سيسمح بـ {cash}.",
+    stsCharges1:"رصيد {bal}، ناقص {top} مستحقة هذا الأسبوع.",
+    stsChargesN:"رصيد {bal}، ناقص {held} محجوزة لـ {n} رسوم. الأكبر {top}.",
+    stsClear:"رصيد {bal}، ولا شيء مستحق هذا الأسبوع.", stsThrough:"حتى",
     svGivePlanTitle:"امنح هذا الوعاء خطة", svGivePlanSub:"أربعة أسئلة، وسأحسب المبلغ الشهري والتاريخ الذي يكتمل فيه.",
     importCsv:"استيراد CSV",
     dbNoDebts:"لا ديون متتبَّعة", dbNoDebtsSub:"أضف بطاقة أو قرضاً أو سحباً على المكشوف مع الرصيد ونسبة الفائدة، وسأريك أسرع طريق للخروج.", dbAddFirst:"أضف أول دين", dbTotalOwed:"إجمالي المستحق",
@@ -1903,6 +1915,10 @@ var T1_STRINGS = {
     mvOnTrack:"В графике", mvWatch:"Стоит взглянуть", mvAttention:"Требует внимания",
     moreOptions:"Больше настроек",
     perDay:"В день", currentBalance:"Текущий баланс",
+    stsCapped:"Здесь вас ограничивают бюджеты - по одним деньгам было бы {cash}.",
+    stsCharges1:"Баланс {bal}, минус {top} на этой неделе.",
+    stsChargesN:"Баланс {bal}, минус {held} на {n} списаний. Крупнейшее {top}.",
+    stsClear:"Баланс {bal}, и на этой неделе списаний нет.", stsThrough:"До",
     svGivePlanTitle:"Дайте этому счёту план", svGivePlanSub:"Четыре вопроса, и я рассчитаю сумму в месяц и дату, когда цель закроется.",
     importCsv:"Импорт CSV",
     dbNoDebts:"Долги не отслеживаются", dbNoDebtsSub:"Добавьте карту, кредит или овердрафт с остатком и ставкой, и я покажу самый быстрый выход.", dbAddFirst:"Добавить первый долг", dbTotalOwed:"Всего долга",
@@ -11661,6 +11677,11 @@ function Overview(props) {
   // no caps yet it stays useful by reserving only charges already recognised.
   var safeToSpend = Math.max(0, heroCapRows.length ? Math.min(heroCashRoom, heroBudgetRoom) : heroCashRoom);
   var safePerDay = round2(safeToSpend / 7);
+  // Which limit actually bound safeToSpend, and the biggest charge behind the
+  // reservation - the two things the panel needs to explain its own number.
+  var stsCapped = heroCapRows.length > 0 && heroBudgetRoom < heroCashRoom;
+  var stsTopCharge = heroUpcomingWeekRows.slice().sort(function(a, b) { return b.amount - a.amount; })[0] || null;
+  var stsThroughISO = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
   var heroTopRisk = heroWatch.risks.length ? heroWatch.risks[0] : null;
   var heroTopLeak = heroWatch.leaks.length ? heroWatch.leaks[0] : null;
   var heroMove = heroTopRisk || heroTopLeak;
@@ -12348,10 +12369,18 @@ function Overview(props) {
                 <div style={{ filter: hidden ? "blur(11px)" : "none", userSelect: "none" }}>
                   <span style={{ fontSize: 43, fontWeight: 750, color: safeToSpend > 0 ? HINK : HNEG, letterSpacing: "-0.04em", lineHeight: 1 }}>{dollars(safeToSpend * dp)}</span>
                 </div>
-                <div style={{ fontSize: 12.5, color: HFNT, lineHeight: 1.4, marginTop: 9 }}>
-                  {heroUpcomingWeek > 0
-                    ? ("After keeping " + dollars(heroUpcomingWeek) + " for " + heroUpcomingWeekRows.length + " known charge" + (heroUpcomingWeekRows.length === 1 ? "" : "s") + ".")
-                    : (heroCapRows.length ? "Based on your balance and remaining budget." : "No known charges need reserving this week.")}
+                {/* Clamped to two lines: a long merchant name must not push the
+                    footer off a 242px panel. */}
+                <div style={{ fontSize: 12.5, color: HFNT, lineHeight: 1.4, marginTop: 9, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                  {stsCapped
+                    ? tr("stsCapped").replace("{cash}", dollars(heroCashRoom))
+                    : heroUpcomingWeek > 0
+                      ? tr(heroUpcomingWeekRows.length === 1 ? "stsCharges1" : "stsChargesN")
+                          .replace("{bal}", dollars(balance))
+                          .replace("{held}", dollars(heroUpcomingWeek))
+                          .replace("{n}", String(heroUpcomingWeekRows.length))
+                          .replace("{top}", stsTopCharge ? stsTopCharge.merchant + " " + dollars(stsTopCharge.amount) : "")
+                      : tr("stsClear").replace("{bal}", dollars(balance))}
                 </div>
               </div>
               <div style={{ display: "flex", gap: 14, borderTop: "0.5px solid " + HSEP, paddingTop: 13 }}>
@@ -12360,9 +12389,11 @@ function Overview(props) {
                   <div style={{ fontSize: 16, fontWeight: 700, color: HINK, letterSpacing: "-0.02em", marginTop: 3 }}>{dollars(safePerDay)}</div>
                 </div>
                 <div style={{ width: "0.5px", background: HSEP }} />
+                {/* Was Current balance, which Panel 0 now shows in full. The
+                    useful unknown here is when "next 7 days" actually ends. */}
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>{tr("currentBalance")}</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: balance < 0 ? HNEG : HINK, letterSpacing: "-0.02em", marginTop: 3 }}>{(balance < 0 ? "-" : "") + dollars(Math.abs(balance))}</div>
+                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: HFNT }}>{tr("stsThrough")}</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: HINK, letterSpacing: "-0.02em", marginTop: 3 }}>{new Date(stsThroughISO + "T12:00:00").toLocaleDateString(({ en: "en-US", he: "he-IL", ar: "ar-SA", ru: "ru-RU" })[_lang.code] || "en-US", { month: "short", day: "numeric" })}</div>
                 </div>
               </div>
             </div>
