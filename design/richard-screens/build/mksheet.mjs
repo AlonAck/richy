@@ -3,15 +3,15 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
 const PAGES = [
-  ["sib/Home.dc.html", "Home", "the roster"],
-  ["sib/Talk.dc.html", "Talk", "rail, thread, decisions"],
+  ["Home.dc.html", "Home", "the roster"],
+  ["Talk.dc.html", "Talk", "rail, thread, decisions"],
   ["Iris-Design.dc.html", "Iris", "UX &amp; AI Design"],
-  ["sib/Alfred-Finance.dc.html", "Alfred", "Finance"],
-  ["sib/Amy-Marketing.dc.html", "Amy", "Marketing"],
-  ["sib/Dean-Competitive.dc.html", "Dean", "Competitive Intel"],
-  ["sib/Jake-Startup Advisors.dc.html", "Jake", "Startup Advisors"],
-  ["sib/Mara-Signals.dc.html", "Mara", "User Signals"],
-  ["sib/Victor-QA.dc.html", "Victor", "QA &amp; Security"],
+  ["Alfred-Finance.dc.html", "Alfred", "Finance"],
+  ["Amy-Marketing.dc.html", "Amy", "Marketing"],
+  ["Dean-Competitive.dc.html", "Dean", "Competitive Intel"],
+  ["Jake-Startup Advisors.dc.html", "Jake", "Startup Advisors"],
+  ["Mara-Signals.dc.html", "Mara", "User Signals"],
+  ["Victor-QA.dc.html", "Victor", "QA &amp; Security"],
 ];
 
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -41,8 +41,8 @@ const out = `<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Richard — nine screens</title>
 <style>
-  :root { color-scheme: light; --ground:#F0EEE6; --card:#fff; --ink:#141413; --muted:#6B6A65; --line:#E5E3DA; }
-  :root[data-t="dark"] { color-scheme: dark; --ground:#1F1E1D; --card:#262625; --ink:#F5F4EF; --muted:#A3A199; --line:rgba(255,255,255,.12); }
+  :root { color-scheme: light; --ground:#CED9EA; --card:#fff; --ink:#111823; --muted:#4E5766; --line:#ADBFD8; }
+  :root[data-t="dark"] { color-scheme: dark; --ground:#141A24; --card:#1C2431; --ink:#EAEFF7; --muted:#93A1B5; --line:rgba(255,255,255,.14); }
   * { box-sizing: border-box; }
   body { margin:0; background:var(--ground); color:var(--ink);
     font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
