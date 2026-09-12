@@ -61,9 +61,9 @@
         width:100%;
         box-sizing:border-box;
         padding:10px 14px;
-        border:1px solid var(--r-border);
+        border:1px solid transparent;
         border-radius:10px;
-        background:var(--r-card);
+        background:transparent;
         color:var(--r-ink);
         font-family:inherit;
         text-align:left;
@@ -72,9 +72,14 @@
     }
     .r-x-chief:hover { background:var(--r-hover-fill); }
     .r-x-chief:focus-visible { outline:2px solid var(--r-focus); outline-offset:2px; }
-    /* Selected: a clay spine on the leading edge, a heavier border and a
-       word — so selection survives both greyscale and a lost border. */
-    .r-x-chief-on { border-color:var(--r-border-strong); background:var(--r-accent-wash); }
+    /* Selected: the only chief drawn as a card, plus the accent spine on
+       its leading edge. The others are flat rows on the ground, so the one
+       you are in is a value difference and survives greyscale. */
+    .r-x-chief-on {
+        border-color:var(--r-border);
+        background:var(--r-card);
+        box-shadow:var(--r-shadow);
+    }
     .r-x-chief-on::before {
         content:"";
         position:absolute;
@@ -90,23 +95,14 @@
     .r-x-chief-state { display:flex; align-items:center; gap:7px; font-size:12px; line-height:1.4; color:var(--r-ink-3); margin-top:5px; }
     .r-x-av { width:30px; height:30px; font-size:12.5px; }
     /* Carried only by the chiefs who are stopped without an answer from the
-       CEO. It marks that fact and counts nothing — six of the seven show it,
-       which is the same six the header chip totals. */
+       CEO. Six of the seven show it, so it is texture, not a highlight: in
+       the accent it made the whole rail shout and the selected row vanish. */
     .r-x-wait {
         flex:none;
         font-size:11px;
-        font-weight:600;
+        font-weight:500;
         letter-spacing:0.02em;
-        color:var(--r-accent-text);
-    }
-    .r-x-viewing {
-        display:inline-block;
-        margin-top:4px;
-        font-size:10.5px;
-        font-weight:600;
-        letter-spacing:0.09em;
-        text-transform:uppercase;
-        color:var(--r-accent-text);
+        color:var(--r-ink-muted);
     }
     .r-x-rail-foot {
         flex:none;
@@ -144,7 +140,7 @@
         margin:0;
         padding:16px 24px;
         border-bottom:1px solid var(--r-hairline);
-        font-size:12px;
+        font-size:11.5px;
         line-height:1.5;
         color:var(--r-ink-muted);
     }
@@ -181,9 +177,12 @@
     }
     .r-x-say + .r-x-say { margin-top:10px; }
     .r-x-said-chief { max-width:92%; }
+    /* A lead sentence, not a headline. At 19px it was the largest type on
+       the screen and it sat inside a chat turn, which put the loudest thing
+       in the transcript rather than on the panel that wants an answer. */
     .r-x-lead {
         font-family:var(--r-serif);
-        font-size:19px;
+        font-size:16.5px;
         line-height:1.35;
         font-weight:600;
         letter-spacing:-0.012em;
@@ -271,7 +270,6 @@
     .r-x-mic { gap:9px; min-height:44px; padding-left:18px; padding-right:20px; }
     .r-x-mic svg, .r-x-send svg { display:block; width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
     .r-x-send { width:44px; height:44px; min-height:44px; padding:0; flex:none; }
-    .r-x-hint { margin:10px 0 0; font-size:12px; line-height:1.45; color:var(--r-ink-muted); }
 
     /* ---- Region 3: the decisions panel ---- */
     .r-x-decide {
@@ -284,6 +282,17 @@
        because it carries an action, the question is set as document
        material under a rule, and the standing rule keeps its wash. The
        activate button stays on the floor, always reachable. */
+    .r-x-decide-head { flex:none; margin-bottom:16px; }
+    .r-x-decide-h {
+        font-family:var(--r-serif);
+        font-size:20px;
+        font-weight:600;
+        letter-spacing:-0.012em;
+        line-height:1.2;
+        margin:0 0 4px;
+        text-wrap:balance;
+    }
+    .r-x-decide-sub { margin:0; font-size:12.5px; line-height:1.45; color:var(--r-ink-muted); }
     .r-x-decide-list {
         flex:1 1 auto;
         min-height:0;
@@ -295,7 +304,20 @@
         padding:2px;
         margin:-2px;
     }
-    .r-x-dec { padding:20px; }
+    .r-x-dec {
+        position:relative;
+        padding:20px 20px 20px 23px;
+    }
+    /* The same spine the selected chief carries. One device, two uses: where
+       you are, and what wants you. */
+    .r-x-dec::before {
+        content:"";
+        position:absolute;
+        left:0; top:14px; bottom:14px;
+        width:3px;
+        border-radius:0 999px 999px 0;
+        background:var(--r-accent);
+    }
     .r-x-dec-title {
         font-family:var(--r-serif);
         font-size:19px;
@@ -322,6 +344,15 @@
     .r-x-decision-p { margin:0; font-size:13.5px; line-height:1.6; color:var(--r-ink-3); }
     .r-x-decision .r-actions { margin-top:16px; }
     .r-x-decision .r-btn { padding:10px 16px; font-size:14px; }
+    /* The standing rule is the least urgent thing in the column, so it does
+       not get a filled box. Under a rule, like the open question. */
+    .r-x-decide-list .r-rule {
+        background:transparent;
+        border:none;
+        border-top:1px solid var(--r-border);
+        border-radius:0;
+        padding:16px 0 0;
+    }
     .r-x-panel-foot { flex:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--r-border); }
 
     /* ---- Responsive ---- */
@@ -344,7 +375,18 @@
         .r-x-rail { position:sticky; top:24px; }
         .r-x-rail-list { max-height:56vh; }
         .r-x-thread { max-height:72vh; }
-        .r-x-decide-list { overflow-y:visible; }
+        .r-x-decide-head { flex:none; margin-bottom:16px; }
+    .r-x-decide-h {
+        font-family:var(--r-serif);
+        font-size:20px;
+        font-weight:600;
+        letter-spacing:-0.012em;
+        line-height:1.2;
+        margin:0 0 4px;
+        text-wrap:balance;
+    }
+    .r-x-decide-sub { margin:0; font-size:12.5px; line-height:1.45; color:var(--r-ink-muted); }
+    .r-x-decide-list { overflow-y:visible; }
     }
     /* Under 880 the rail lies down as a horizontal strip above the thread,
        and the page becomes the only vertical scroller on the screen. */
@@ -361,7 +403,10 @@
             padding-bottom:6px;
             scroll-snap-type:x proximity;
         }
-        .r-x-chief { width:auto; flex:0 0 auto; min-width:206px; scroll-snap-align:start; }
+        /* Lying down, a flat row has no hit target to aim at, so the strip
+           puts the cards back and selection leans on the spine. */
+        .r-x-chief { width:auto; flex:0 0 auto; min-width:206px; scroll-snap-align:start; border-color:var(--r-border); background:var(--r-card); }
+        .r-x-chief-on { border-color:var(--r-border-strong); }
         .r-x-rail-foot { margin-top:12px; padding-top:12px; }
         .r-x-thread { max-height:none; }
         .r-x-scroll { overflow-y:visible; }

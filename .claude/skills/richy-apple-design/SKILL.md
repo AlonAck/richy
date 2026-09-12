@@ -294,6 +294,55 @@ to match.
 `text-wrap: balance` on all heading levels. It costs nothing, and a wider
 column makes widows more likely, not less.
 
+## Rank the screen — the reader must always know where to look
+
+Alon put this as the one thing separating a mid designer from a senior one,
+and he is right: a screen can be correct in every part and still fail
+because nothing on it is first. Density is not the fault. Rank is.
+
+Every screen is for exactly one thing. Name it in a sentence before
+styling anything, then make it the loudest object by size, value and
+colour, and deliberately pull everything else down. "Everything is
+important" renders as "nothing is important".
+
+Four counting tests, all of which can be run on a screenshot:
+
+- **Count the primary buttons.** One per region, and never two in the same
+  column. Two strong actions stacked in one panel means the panel is
+  asking for two things at once and the reader picks neither. A utility
+  action (Activate, Export, Settings) is never primary.
+- **Count the accent appearances.** If the accent colour is on the header
+  chip, six list rows, a status pill and a tag, it has stopped ranking
+  anything. Spend it on at most two ideas per screen — typically *where
+  you are* and *what wants you* — and let state dots keep their colour
+  because that is data, not emphasis.
+- **Find the largest type and ask what it is.** If the biggest thing on
+  the screen is a sentence inside a scroll region and the panel that
+  wants a decision is set in an 11px uppercase label, the ranking is
+  upside down. The heading of the region you are meant to act in should
+  be the largest type after the page title.
+- **Count the cards.** Seven bordered cards in a rail is seven objects
+  competing; the one you are actually in cannot win on border weight
+  alone. Make the selected item the only card and the rest flat rows on
+  the ground. Selection then reads as a difference in value, which
+  survives greyscale, a lost border and a glance from two metres away.
+
+Two more that are not countable but catch the same fault:
+
+- **A label repeated on almost every row is texture, not a highlight.**
+  Six rows out of seven reading "On you" in the accent makes the rail
+  shout and the selected row disappear. Set it in a neutral; the
+  distinction is still there for anyone who looks.
+- **A region heading should say what the region wants, not name its
+  category.** "Open with Iris" is a filing label. "Two answers open",
+  with one line saying she is stopped until they are settled, tells the
+  reader what to do and why. The second costs the same pixels.
+
+Fixing rank almost never means deleting content. In the pass that
+produced these rules, not one fact, number or layout moved: the colour,
+the weight and the type sizes did.
+
+
 ## Native iOS patterns to match
 
 - **Tab bar**: fixed, glass, active tab gets accent color — not a full
@@ -558,6 +607,9 @@ so they aren't re-proposed:
 - [ ] Paired columns open and close on the same line; a wide card holding
       one narrow column of copy has been given a real second column
 - [ ] Headings carry `text-wrap: balance`
+- [ ] The screen has ONE place to look: one primary button per region
+      (never two in a column), the accent spent on at most two ideas, and
+      the largest type is the thing the user is there to do
 - [ ] Every text token measured against the GROUND as well as the card,
       and the worse number is the one that has to pass
 - [ ] No fill/stroke accent token used in a `color:` rule — text uses the
