@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/classical-8c9c94ce-c944-456d-ba51-95c18d5072b6/styles.css">
+  <script src="_ds/classical-8c9c94ce-c944-456d-ba51-95c18d5072b6/_ds_bundle.js"></script>
+  <meta name="design_doc_mode" content="page">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap">
+  <style>
+    /* ---- Tokens. Light is the base; every value has a dark pair below. ---- */
+    :root {
+      color-scheme: light;
+      --r-ground:#F0EEE6;
+      --r-card:#FFFFFF;
+      --r-track:#EBE9E0;
+
+      --r-ink:#141413;
+      --r-ink-body:#3D3D3A;
+      --r-ink-2:#4A4945;
+      --r-ink-3:#5E5D59;
+      --r-ink-muted:#6B6A65;
+
+      --r-clay:#D97757;
+      --r-clay-deep:#A8452B;
+      --r-clay-text:#9C4326;
+      --r-clay-tint:rgba(217,119,87,0.14);
+      --r-clay-wash:rgba(217,119,87,0.07);
+      --r-focus:#A8452B;
+
+      --r-quiet:#82807A;
+      --r-ready:#3F8A68; --r-ready-text:#2F7355;
+
+      --r-btn:#141413;
+      --r-btn-hover:#2B2B29;
+      --r-btn-press:#3D3D3A;
+      --r-on-btn:#FAF9F5;
+
+      --r-border:#E5E3DA;
+      --r-border-strong:#DAD8CD;
+      --r-hairline:#EDEBE3;
+      --r-neutral-fill:rgba(20,20,19,0.055);
+      --r-hover-fill:rgba(20,20,19,0.05);
+
+      --r-bar:linear-gradient(90deg,#D97757,#A8452B);
+      --r-shadow:0 1px 2px rgba(20,20,19,0.04);
+
+      --r-serif:'Source Serif 4', Georgia, 'Times New Roman', serif;
+      --r-ease:cubic-bezier(.25,.1,.25,1);
+    }
+
+    /* Dark pair. Applies when the host asks for it, or when the OS does and the
+       host has not pinned light. Every pair below was checked for contrast. */
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --r-ground:#1F1E1D;
+      --r-card:#262625;
+      --r-track:#3A3A37;
+      --r-ink:#F5F4EF;
+      --r-ink-body:#E3E1D9;
+      --r-ink-2:#D6D4CA;
+      --r-ink-3:#C2C0B6;
+      --r-ink-muted:#A3A199;
+      --r-clay:#D97757;
+      --r-clay-deep:#E89B7D;
+      --r-clay-text:#F0A98B;
+      --r-clay-tint:rgba(217,119,87,0.18);
+      --r-clay-wash:rgba(217,119,87,0.10);
+      --r-focus:#E89B7D;
+      --r-quiet:#9A9890;
+      --r-ready:#5FBF92; --r-ready-text:#5FBF92;
+      --r-btn:#F5F4EF;
+      --r-btn-hover:#E3E1D9;
+      --r-btn-press:#C2C0B6;
+      --r-on-btn:#1F1E1D;
+      --r-border:rgba(255,255,255,0.11);
+      --r-border-strong:rgba(255,255,255,0.18);
+      --r-hairline:rgba(255,255,255,0.08);
+      --r-neutral-fill:rgba(255,255,255,0.07);
+      --r-hover-fill:rgba(255,255,255,0.06);
+      --r-shadow:0 1px 2px rgba(0,0,0,0.30);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --r-ground:#1F1E1D;
+        --r-card:#262625;
+        --r-track:#3A3A37;
+        --r-ink:#F5F4EF;
+        --r-ink-body:#E3E1D9;
+        --r-ink-2:#D6D4CA;
+        --r-ink-3:#C2C0B6;
+        --r-ink-muted:#A3A199;
+        --r-clay:#D97757;
+        --r-clay-deep:#E89B7D;
+        --r-clay-text:#F0A98B;
+        --r-clay-tint:rgba(217,119,87,0.18);
+        --r-clay-wash:rgba(217,119,87,0.10);
+        --r-focus:#E89B7D;
+        --r-quiet:#9A9890;
+        --r-ready:#5FBF92; --r-ready-text:#5FBF92;
+        --r-btn:#F5F4EF;
+        --r-btn-hover:#E3E1D9;
+        --r-btn-press:#C2C0B6;
+        --r-on-btn:#1F1E1D;
+        --r-border:rgba(255,255,255,0.11);
+        --r-border-strong:rgba(255,255,255,0.18);
+        --r-hairline:rgba(255,255,255,0.08);
+        --r-neutral-fill:rgba(255,255,255,0.07);
+        --r-hover-fill:rgba(255,255,255,0.06);
+        --r-shadow:0 1px 2px rgba(0,0,0,0.30);
+      }
+    }
+
+    /* ---- Base ---- */
+    *, *::before, *::after { box-sizing:border-box; }
+    body {
+      margin:0;
+      background:var(--r-ground);
+      color:var(--r-ink);
+      -webkit-font-smoothing:antialiased;
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+    }
+    ::selection { background:var(--r-clay-tint); color:var(--r-ink); }
+    a { color:var(--r-clay-deep); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+    a:focus-visible { outline:2px solid var(--r-focus); outline-offset:2px; border-radius:3px; }
+    /* Transform-only entrance: a renderer that freezes animations (offscreen
+       thumbnails, throttled tabs) still shows the page, just unshifted. */
+    @keyframes riseUp { from { transform:translateY(12px); } to { transform:translateY(0); } }
+
+    /* ---- Layout ---- */
+    .r-page {
+      min-height:100vh;
+      min-height:100dvh;
+      padding:clamp(36px,6vw,64px) clamp(20px,4.5vw,40px) clamp(64px,8vw,104px);
+      background:var(--r-ground);
+      color:var(--r-ink);
+    }
+    .r-shell { max-width:1040px; margin:0 auto; animation:riseUp .45s var(--r-ease) both; }
+    .r-head { display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding-bottom:24px; margin-bottom:clamp(32px,4.4vw,48px); border-bottom:1px solid var(--r-border); }
+    .r-head-name { flex:1; min-width:0; }
+    .r-cols { display:grid; grid-template-columns:minmax(0,1.02fr) minmax(0,0.98fr); gap:clamp(28px,4.4vw,52px); align-items:stretch; margin-bottom:24px; }
+    .r-cols-side { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:24px; align-items:start; }
+    /* The decision card is full shell width. One column of 62ch copy inside it
+       left half the card empty, so the standing rule moved into a real second
+       column instead of sitting under the buttons as a full-width strip. */
+    .r-decide { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(0,1fr); gap:clamp(28px,4.4vw,48px); align-items:stretch; }
+    .r-decide-side { display:flex; flex-direction:column; gap:24px; }
+    .r-actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .r-decide-side .r-actions { margin-top:auto; }
+    .r-rule { padding:20px; border-radius:10px; background:var(--r-clay-wash); border:1px solid var(--r-clay-tint); }
+    .r-rule p { font-size:14.5px; line-height:1.55; color:var(--r-ink-body); margin:0; }
+
+    /* ---- Type ---- */
+    .r-h1 { font-family:var(--r-serif); font-size:clamp(34px,6vw,58px); line-height:1.06; font-weight:500; letter-spacing:-0.018em; margin:0 0 24px; text-wrap:balance; }
+    .r-h2 { font-family:var(--r-serif); font-size:clamp(25px,3.4vw,34px); font-weight:600; letter-spacing:-0.015em; line-height:1.16; margin:0 0 16px; text-wrap:balance; }
+    .r-h-section { font-family:var(--r-serif); font-size:clamp(20px,2.4vw,24px); font-weight:600; letter-spacing:-0.012em; margin:0 0 16px; text-wrap:balance; }
+    .r-h-section-next { margin-top:32px; }
+    .r-h-kicker { font-size:11px; font-weight:600; letter-spacing:0.09em; text-transform:uppercase; color:var(--r-ink-muted); margin:0 0 16px; }
+
+    /* ---- Surfaces. Flat, bordered, barely lifted. ---- */
+    .r-card { background:var(--r-card); border:1px solid var(--r-border); border-radius:12px; box-shadow:var(--r-shadow); }
+    .r-chip { display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; background:var(--r-card); border:1px solid var(--r-border); font-size:13px; font-weight:500; }
+    .r-tag { display:inline-flex; align-items:center; padding:6px 12px; border-radius:999px; font-size:12.5px; font-weight:500; }
+    .r-logo { display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:10px; background:var(--r-neutral-fill); color:var(--r-ink); flex:none; }
+    .r-logo svg { display:block; width:21px; height:21px; }
+    .r-logo path { fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .r-avatar { display:flex; align-items:center; justify-content:center; border-radius:999px; background:var(--r-neutral-fill); color:var(--r-ink-3); font-weight:600; flex:none; }
+    .r-list { display:flex; flex-direction:column; }
+    .r-row { padding:16px 20px; border-top:1px solid var(--r-hairline); }
+    .r-row:first-child { border-top:none; }
+
+    /* ---- Buttons. Claude leads with the near-black action, not the accent. ---- */
+    .r-btn {
+      display:inline-flex; align-items:center; justify-content:center; white-space:nowrap;
+      padding:12px 22px; min-height:44px; border-radius:10px;
+      font-family:inherit; font-size:15px; font-weight:500; letter-spacing:-0.005em; cursor:pointer;
+      transition:background-color .18s var(--r-ease), border-color .18s var(--r-ease), color .18s var(--r-ease), opacity .18s var(--r-ease);
+    }
+    .r-btn:focus-visible { outline:2px solid var(--r-focus); outline-offset:2px; }
+    .r-btn-primary { border:1px solid transparent; background:var(--r-btn); color:var(--r-on-btn); }
+    .r-btn-primary:hover { background:var(--r-btn-hover); }
+    .r-btn-primary:active { background:var(--r-btn-press); }
+    .r-btn-secondary { border:1px solid var(--r-border-strong); background:transparent; color:var(--r-ink-body); }
+    .r-btn-secondary:hover { background:var(--r-hover-fill); }
+    .r-btn-secondary:active { background:var(--r-neutral-fill); }
+    .r-btn[disabled] { cursor:not-allowed; opacity:0.45; }
+
+    /* ---- Data marks. Each one encodes a number already stated in the copy. ---- */
+    .r-seg { display:flex; gap:5px; }
+    .r-seg span { flex:1; height:12px; border-radius:4px; }
+    .r-seg span.on { background:var(--r-clay); }
+    .r-seg span.out { background:var(--r-track); border:1.5px dashed var(--r-quiet); }
+    .r-stat { display:flex; justify-content:space-between; align-items:baseline; gap:12px; font-size:14.5px; padding:10px 0; border-top:1px solid var(--r-hairline); }
+    .r-stat b { font-weight:500; color:var(--r-ink-body); }
+    .r-stat span { font-weight:600; font-variant-numeric:tabular-nums; }
+    .r-slim { height:4px; border-radius:999px; background:var(--r-track); overflow:hidden; margin-top:10px; }
+    .r-slim i { display:block; height:100%; border-radius:999px; }
+
+    /* The branch graph. Small and dense on purpose — a wide sparse version of
+       this reads as a doodle. Capped at 300px so it never scales its strokes
+       up; colours match the dots in the list beneath, which names each line. */
+    .r-graph { display:block; width:100%; max-width:340px; height:auto; }
+    .r-graph path { fill:none; stroke-linecap:round; }
+    .r-g-main { stroke:var(--r-ink-muted); stroke-width:2.2; }
+    .r-g-open { stroke:var(--r-quiet); stroke-width:1.8; }
+    .r-g-merge { stroke:var(--r-ready); stroke-width:2.2; }
+    .r-graph circle.open { fill:var(--r-card); stroke:var(--r-quiet); stroke-width:1.6; }
+    .r-graph circle.dot { fill:var(--r-ready); }
+    .r-graph circle.commit { fill:var(--r-ink-muted); }
+    .r-lede-foot { margin-top:24px; }
+    @media (min-width:881px) {
+      .r-lede-foot { margin-top:auto; padding-top:20px; border-top:1px solid var(--r-border); }
+    }
+    .r-graphrow { display:grid; grid-template-columns:minmax(0,340px) minmax(0,1fr); gap:20px; align-items:center; }
+    .r-key { display:flex; flex-direction:column; gap:12px; }
+    .r-key div { display:flex; align-items:center; gap:10px; font-size:12.5px; line-height:1.4; color:var(--r-ink-muted); }
+    .r-key i { width:9px; height:9px; border-radius:999px; flex:none; }
+    .r-key i.merged { background:var(--r-ready); }
+    .r-key i.open { background:var(--r-card); border:1.6px solid var(--r-quiet); }
+    @media (max-width:620px) { .r-graphrow { grid-template-columns:minmax(0,1fr); } }
+
+    /* ---- Responsive ---- */
+    @media (max-width:880px) {
+      .r-cols, .r-cols-side, .r-decide { grid-template-columns:minmax(0,1fr); }
+      .r-h1 br { display:none; }
+    }
+    @media (max-width:560px) {
+      /* Two-column grid: the chip drops to its own row and lines up under the
+         name on its own, with no magic indent to keep in step with the avatar. */
+      .r-head { display:grid; grid-template-columns:38px minmax(0,1fr); column-gap:12px; row-gap:14px; align-items:center; }
+      .r-head-chip { grid-column:2; justify-self:start; }
+      .r-btn { width:100%; }
+    }
+
+    /* ---- Accessibility preferences ---- */
+    @media (prefers-reduced-motion: reduce) {
+      .r-shell { animation:none; }
+      .r-btn { transition:none; }
+    }
+    @media (prefers-contrast: more) {
+      :root { --r-ink-muted:var(--r-ink-3); --r-border:var(--r-border-strong); --r-hairline:var(--r-border-strong); }
+      .r-btn-secondary { border-width:2px; border-color:currentColor; }
+      .r-btn:focus-visible { outline-width:3px; }
+    }
+  </style>
+</helmet>
+
+<div class="r-page">
+  <div class="r-shell">
+
+    <header class="r-head">
+      <div class="r-logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="m7 8l-4 4l4 4m10-8l4 4l-4 4M14 4l-4 16"></path></svg>
+      </div>
+      <div class="r-head-name">
+        <div style="font-size:15px;font-weight:600;letter-spacing:-0.01em;line-height:1.35;">Iris</div>
+        <div style="font-size:13px;color:var(--r-ink-muted);line-height:1.35;">UX &amp; AI Design</div>
+      </div>
+      <div class="r-chip r-head-chip" style="color:var(--r-clay-text);flex:none;">
+        <span aria-hidden="true" style="width:6px;height:6px;border-radius:999px;background:var(--r-clay);display:block;"></span>Merge waiting
+      </div>
+    </header>
+
+    <main>
+    <section class="r-cols">
+      <div style="display:flex;flex-direction:column;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.09em;text-transform:uppercase;color:var(--r-clay-deep);margin-bottom:18px;">UX &amp; AI Design</div>
+        <h1 class="r-h1">A third of it <br>is off the main.</h1>
+        <p style="font-size:18px;line-height:1.55;color:var(--r-ink-body);margin:0;">Four of the six core flows are committed. The voice surface — the orb, the live captions — is finished and sitting on its own branch.</p>
+        <p class="r-lede-foot" style="font-size:15.5px;line-height:1.6;color:var(--r-ink-3);margin-bottom:0;">Hebrew is at 87 per cent; English trails at 64 while marketing reviews the technical terms.</p>
+      </div>
+
+      <div class="r-card" style="padding:24px;display:flex;flex-direction:column;">
+        <h2 class="r-h-kicker">Design coverage</h2>
+
+        <div style="padding-bottom:24px;border-bottom:1px solid var(--r-hairline);">
+          <div class="r-seg" aria-hidden="true">
+            <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="out"></span><span class="out"></span>
+          </div>
+          <p style="font-size:13px;line-height:1.5;color:var(--r-ink-muted);margin:12px 0 16px;">Four of the six core flows are on main.</p>
+          <div class="r-stat"><b>Committed to main</b><span style="color:var(--r-clay-deep);">67%</span></div>
+          <div class="r-stat"><b>On feature branches</b><span style="color:var(--r-ink-3);">33%</span></div>
+        </div>
+
+        <div style="padding-top:24px;margin-top:auto;">
+          <h3 class="r-h-kicker">Localisation</h3>
+          <div style="display:flex;gap:24px;">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:30px;font-weight:600;letter-spacing:-0.03em;line-height:1;font-variant-numeric:tabular-nums;">87<span style="font-size:17px;color:var(--r-ink-muted);">%</span></div>
+              <div class="r-slim" aria-hidden="true"><i style="width:87%;background:var(--r-clay);"></i></div>
+              <div style="font-size:12.5px;color:var(--r-ink-muted);margin-top:9px;line-height:1.45;">Hebrew · numerals and dates done</div>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:30px;font-weight:600;letter-spacing:-0.03em;line-height:1;font-variant-numeric:tabular-nums;color:var(--r-ink-3);">64<span style="font-size:17px;color:var(--r-ink-muted);">%</span></div>
+              <div class="r-slim" aria-hidden="true"><i style="width:64%;background:var(--r-quiet);"></i></div>
+              <div style="font-size:12.5px;color:var(--r-ink-muted);margin-top:9px;line-height:1.45;">English · terms in review</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="r-card r-decide" style="padding:clamp(24px,3.2vw,32px);margin-bottom:24px;">
+      <div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+          <span class="r-tag" style="background:var(--r-neutral-fill);color:var(--r-ink-2);">Grounded in the design system</span>
+          <span class="r-tag" style="background:var(--r-clay-tint);color:var(--r-clay-text);">Merge decision</span>
+        </div>
+        <h2 class="r-h2">Move the voice surface onto main</h2>
+        <p style="font-size:15.5px;line-height:1.6;color:var(--r-ink-body);margin:0;">The orb holds above sixty frames on the GPU layer, the captions survive six inches to forty, and the accessibility pass came back clean. The two experiments stay on their branches another week.</p>
+      </div>
+      <div class="r-decide-side">
+        <div class="r-rule">
+          <h3 class="r-h-kicker" style="margin-bottom:8px;">Standing rule</h3>
+          <p>Iris may ship interface work on her own. A change to the design language itself comes to you.</p>
+        </div>
+        <div class="r-actions">
+          <button type="button" class="r-btn r-btn-primary">Approve</button>
+          <button type="button" class="r-btn r-btn-secondary">Not now</button>
+          <button type="button" class="r-btn r-btn-secondary">Push back</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="r-cols-side">
+      <section>
+        <h2 class="r-h-section">Branches</h2>
+        <div class="r-card r-list">
+          <div class="r-graphrow" style="padding:20px 20px 16px;">
+            <svg class="r-graph" viewBox="0 0 260 80" role="img" aria-label="Three branches leave main. One curves back and rejoins it; the other two run on with open ends.">
+              <path class="r-g-main" d="M8 68 H252"></path>
+              <circle class="commit" cx="20" cy="68" r="1.8"></circle>
+              <circle class="commit" cx="38" cy="68" r="1.8"></circle>
+              <circle class="commit" cx="56" cy="68" r="1.8"></circle>
+              <path class="r-g-open" d="M74 68 C84 68 84 12 94 12 H226"></path>
+              <circle class="open" cx="232" cy="12" r="3.5"></circle>
+              <path class="r-g-open" d="M96 68 C106 68 106 32 116 32 H226"></path>
+              <circle class="open" cx="232" cy="32" r="3.5"></circle>
+              <path class="r-g-merge" d="M118 68 C128 68 128 50 138 50 H186 C196 50 196 68 206 68"></path>
+              <circle class="dot" cx="206" cy="68" r="4"></circle>
+            </svg>
+            <div class="r-key">
+              <div><i class="merged" aria-hidden="true"></i>Rejoins main this week</div>
+              <div><i class="open" aria-hidden="true"></i>Still on its own branch</div>
+            </div>
+          </div>
+          <div class="r-row" style="display:flex;gap:12px;">
+            <span aria-hidden="true" style="width:7px;height:7px;border-radius:999px;background:var(--r-ready);margin-top:7px;flex:none;"></span>
+            <div style="min-width:0;"><p style="font-size:14.5px;line-height:1.55;margin:0 0 6px;color:var(--r-ink-body);"><strong style="font-weight:600;color:var(--r-ink);">voice-surface</strong> — ready to merge. Orb shader, live captions, and the narrowed prose column.</p><div style="font-size:12.5px;color:var(--r-ink-muted);">Accessibility pass clean · WCAG 2.1 AA</div></div>
+          </div>
+          <div class="r-row" style="display:flex;gap:12px;">
+            <span aria-hidden="true" style="width:7px;height:7px;border-radius:999px;background:var(--r-quiet);margin-top:7px;flex:none;"></span>
+            <div style="min-width:0;"><p style="font-size:14.5px;line-height:1.55;margin:0 0 6px;color:var(--r-ink-body);"><strong style="font-weight:600;color:var(--r-ink);">mobile-dashboard</strong> — an experiment. The department cards do not survive the narrow column yet.</p><div style="font-size:12.5px;color:var(--r-ink-muted);">Not proposed for merge</div></div>
+          </div>
+          <div class="r-row" style="display:flex;gap:12px;">
+            <span aria-hidden="true" style="width:7px;height:7px;border-radius:999px;background:var(--r-quiet);margin-top:7px;flex:none;"></span>
+            <div style="min-width:0;"><p style="font-size:14.5px;line-height:1.55;margin:0 0 6px;color:var(--r-ink-body);"><strong style="font-weight:600;color:var(--r-ink);">voice-grid</strong> — an experiment. Seven chiefs on one screen; legible, but it invites you to read rather than listen.</p><div style="font-size:12.5px;color:var(--r-ink-muted);">Contradicts the voice-first premise</div></div>
+          </div>
+        </div>
+
+        <h2 class="r-h-section r-h-section-next">Richard has questions</h2>
+        <div class="r-card" style="padding:20px;">
+          <p style="font-size:14.5px;line-height:1.6;margin:0;color:var(--r-ink-body);">English at 64 per cent is a marketing review, not a design one. Do you want Iris to ship Hebrew-only for the 23 Sep submission and let English follow, or hold the surface until both are whole?</p>
+        </div>
+      </section>
+
+      <aside>
+        <h2 class="r-h-section">The team</h2>
+        <div class="r-card r-list" style="margin-bottom:32px;">
+          <div class="r-row" style="display:flex;align-items:center;gap:12px;">
+            <div class="r-avatar" aria-hidden="true" style="width:32px;height:32px;font-size:13px;">I</div>
+            <div style="min-width:0;"><div style="font-size:14.5px;font-weight:600;line-height:1.35;">Iris</div><div style="font-size:12.5px;color:var(--r-ink-muted);line-height:1.35;">UX &amp; AI Design</div></div>
+          </div>
+          <div class="r-row" style="display:flex;align-items:center;gap:12px;">
+            <div class="r-avatar" aria-hidden="true" style="width:32px;height:32px;font-size:13px;">M</div>
+            <div style="min-width:0;"><div style="font-size:14.5px;font-weight:600;line-height:1.35;">Motion</div><div style="font-size:12.5px;color:var(--r-ink-muted);line-height:1.35;">Orb and transitions</div></div>
+          </div>
+        </div>
+
+        <h2 class="r-h-section">What the chief read</h2>
+        <div class="r-list">
+          <div style="padding:14px 0;border-bottom:1px solid var(--r-hairline);"><div style="font-size:14px;font-weight:600;color:var(--r-ink);margin-bottom:2px;">Orb shader profile</div><div style="font-size:13px;line-height:1.5;color:var(--r-ink-muted);">Above 60fps on the GPU layer, six devices</div></div>
+          <div style="padding:14px 0;border-bottom:1px solid var(--r-hairline);"><div style="font-size:14px;font-weight:600;color:var(--r-ink);margin-bottom:2px;">Caption layout tests</div><div style="font-size:13px;line-height:1.5;color:var(--r-ink-muted);">6-inch through 40-inch, no breakage</div></div>
+          <div style="padding:14px 0;border-bottom:1px solid var(--r-hairline);"><div style="font-size:14px;font-weight:600;color:var(--r-ink);margin-bottom:2px;">Accessibility review</div><div style="font-size:13px;line-height:1.5;color:var(--r-ink-muted);">WCAG 2.1 AA — contrast and keyboard clean</div></div>
+          <div style="padding:14px 0;"><div style="font-size:14px;font-weight:600;color:var(--r-ink);margin-bottom:2px;">i18n manifest</div><div style="font-size:13px;line-height:1.5;color:var(--r-ink-muted);">Hebrew 87% · English 64%</div></div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:32px;">
+          <button type="button" class="r-btn r-btn-primary">Activate Iris</button>
+          <button type="button" class="r-btn r-btn-secondary">Talk to her</button>
+        </div>
+      </aside>
+    </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

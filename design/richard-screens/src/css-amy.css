@@ -1,0 +1,32 @@
+    /* Amy's mark: the bullseye. Three nested rings, one lane out of each ring
+       to the channel it carries, and the proposed spend leaving organic's pin
+       and crossing inward to the core. Sized for the 260x80 viewBox, so the
+       strokes never scale past hairline weight. */
+    .r-m-ring { fill:none; stroke:var(--r-quiet); stroke-width:1.8; }
+    .r-m-ring-core { fill:none; stroke:var(--r-ink-muted); stroke-width:2.2; }
+
+    /* Lanes: the funded channel carries the heavier stroke. */
+    .r-m-lane { stroke:var(--r-ink-muted); stroke-width:2.2; }
+    .r-m-lane-soft { stroke:var(--r-quiet); stroke-width:1.8; }
+
+    /* The move itself — the only clay in the drawing, because it is the only
+       thing on the page still waiting on a decision. */
+    .r-m-move { stroke:var(--r-clay); stroke-width:2.2; stroke-linejoin:round; }
+
+    /* Where a lane leaves its ring. */
+    .r-m-pin { fill:var(--r-ink-muted); }
+    .r-m-pin-soft { fill:var(--r-quiet); }
+
+    /* Node state follows the set: hollow is still pending, and nothing here has
+       moved yet. The destination is outlined in clay, the other two in quiet. */
+    .r-m-node-in { fill:var(--r-card); stroke:var(--r-clay); stroke-width:1.8; }
+    .r-m-node-out { fill:var(--r-card); stroke:var(--r-quiet); stroke-width:1.6; }
+
+    /* Legend swatches. The dots inherit their 9px box and pill radius from
+       .r-key i and only add colour; the move swatch keeps the same 9px
+       footprint so the three lines share a left edge, and only flattens to a
+       bar. Its class is doubled to out-rank .r-key i without reaching outside
+       the .r-m- namespace. */
+    .r-m-key-in { background:var(--r-card); border:1.6px solid var(--r-clay); }
+    .r-m-key-out { background:var(--r-card); border:1.6px solid var(--r-quiet); }
+    .r-m-key-move.r-m-key-move { width:9px; height:3px; background:var(--r-clay); }

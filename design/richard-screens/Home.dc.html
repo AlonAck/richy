@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/classical-8c9c94ce-c944-456d-ba51-95c18d5072b6/styles.css">
+  <script src="_ds/classical-8c9c94ce-c944-456d-ba51-95c18d5072b6/_ds_bundle.js"></script>
+  <meta name="design_doc_mode" content="page">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap">
+  <style>
+    /* ---- Tokens. Light is the base; every value has a dark pair below. ---- */
+    :root {
+      color-scheme: light;
+      --r-ground:#F0EEE6;
+      --r-card:#FFFFFF;
+      --r-track:#EBE9E0;
+
+      --r-ink:#141413;
+      --r-ink-body:#3D3D3A;
+      --r-ink-2:#4A4945;
+      --r-ink-3:#5E5D59;
+      --r-ink-muted:#6B6A65;
+
+      --r-clay:#D97757;
+      --r-clay-deep:#A8452B;
+      --r-clay-text:#9C4326;
+      --r-clay-tint:rgba(217,119,87,0.14);
+      --r-clay-wash:rgba(217,119,87,0.07);
+      --r-focus:#A8452B;
+
+      --r-quiet:#82807A;
+      --r-ready:#3F8A68; --r-ready-text:#2F7355;
+
+      --r-btn:#141413;
+      --r-btn-hover:#2B2B29;
+      --r-btn-press:#3D3D3A;
+      --r-on-btn:#FAF9F5;
+
+      --r-border:#E5E3DA;
+      --r-border-strong:#DAD8CD;
+      --r-hairline:#EDEBE3;
+      --r-neutral-fill:rgba(20,20,19,0.055);
+      --r-hover-fill:rgba(20,20,19,0.05);
+
+      --r-bar:linear-gradient(90deg,#D97757,#A8452B);
+      --r-shadow:0 1px 2px rgba(20,20,19,0.04);
+
+      --r-serif:'Source Serif 4', Georgia, 'Times New Roman', serif;
+      --r-ease:cubic-bezier(.25,.1,.25,1);
+    }
+
+    /* Dark pair. Applies when the host asks for it, or when the OS does and the
+       host has not pinned light. Every pair below was checked for contrast. */
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --r-ground:#1F1E1D;
+      --r-card:#262625;
+      --r-track:#3A3A37;
+      --r-ink:#F5F4EF;
+      --r-ink-body:#E3E1D9;
+      --r-ink-2:#D6D4CA;
+      --r-ink-3:#C2C0B6;
+      --r-ink-muted:#A3A199;
+      --r-clay:#D97757;
+      --r-clay-deep:#E89B7D;
+      --r-clay-text:#F0A98B;
+      --r-clay-tint:rgba(217,119,87,0.18);
+      --r-clay-wash:rgba(217,119,87,0.10);
+      --r-focus:#E89B7D;
+      --r-quiet:#9A9890;
+      --r-ready:#5FBF92; --r-ready-text:#5FBF92;
+      --r-btn:#F5F4EF;
+      --r-btn-hover:#E3E1D9;
+      --r-btn-press:#C2C0B6;
+      --r-on-btn:#1F1E1D;
+      --r-border:rgba(255,255,255,0.11);
+      --r-border-strong:rgba(255,255,255,0.18);
+      --r-hairline:rgba(255,255,255,0.08);
+      --r-neutral-fill:rgba(255,255,255,0.07);
+      --r-hover-fill:rgba(255,255,255,0.06);
+      --r-shadow:0 1px 2px rgba(0,0,0,0.30);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --r-ground:#1F1E1D;
+        --r-card:#262625;
+        --r-track:#3A3A37;
+        --r-ink:#F5F4EF;
+        --r-ink-body:#E3E1D9;
+        --r-ink-2:#D6D4CA;
+        --r-ink-3:#C2C0B6;
+        --r-ink-muted:#A3A199;
+        --r-clay:#D97757;
+        --r-clay-deep:#E89B7D;
+        --r-clay-text:#F0A98B;
+        --r-clay-tint:rgba(217,119,87,0.18);
+        --r-clay-wash:rgba(217,119,87,0.10);
+        --r-focus:#E89B7D;
+        --r-quiet:#9A9890;
+        --r-ready:#5FBF92; --r-ready-text:#5FBF92;
+        --r-btn:#F5F4EF;
+        --r-btn-hover:#E3E1D9;
+        --r-btn-press:#C2C0B6;
+        --r-on-btn:#1F1E1D;
+        --r-border:rgba(255,255,255,0.11);
+        --r-border-strong:rgba(255,255,255,0.18);
+        --r-hairline:rgba(255,255,255,0.08);
+        --r-neutral-fill:rgba(255,255,255,0.07);
+        --r-hover-fill:rgba(255,255,255,0.06);
+        --r-shadow:0 1px 2px rgba(0,0,0,0.30);
+      }
+    }
+
+    /* ---- Base ---- */
+    *, *::before, *::after { box-sizing:border-box; }
+    body {
+      margin:0;
+      background:var(--r-ground);
+      color:var(--r-ink);
+      -webkit-font-smoothing:antialiased;
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+    }
+    ::selection { background:var(--r-clay-tint); color:var(--r-ink); }
+    a { color:var(--r-clay-deep); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+    a:focus-visible { outline:2px solid var(--r-focus); outline-offset:2px; border-radius:3px; }
+    /* Transform-only entrance: a renderer that freezes animations (offscreen
+       thumbnails, throttled tabs) still shows the page, just unshifted. */
+    @keyframes riseUp { from { transform:translateY(12px); } to { transform:translateY(0); } }
+
+    /* ---- Layout ---- */
+    .r-page {
+      min-height:100vh;
+      min-height:100dvh;
+      padding:clamp(36px,6vw,64px) clamp(20px,4.5vw,40px) clamp(64px,8vw,104px);
+      background:var(--r-ground);
+      color:var(--r-ink);
+    }
+    .r-shell { max-width:1040px; margin:0 auto; animation:riseUp .45s var(--r-ease) both; }
+    .r-head { display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding-bottom:24px; margin-bottom:clamp(32px,4.4vw,48px); border-bottom:1px solid var(--r-border); }
+    .r-head-name { flex:1; min-width:0; }
+    .r-cols { display:grid; grid-template-columns:minmax(0,1.02fr) minmax(0,0.98fr); gap:clamp(28px,4.4vw,52px); align-items:stretch; margin-bottom:24px; }
+    .r-cols-side { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:24px; align-items:start; }
+    /* The decision card is full shell width. One column of 62ch copy inside it
+       left half the card empty, so the standing rule moved into a real second
+       column instead of sitting under the buttons as a full-width strip. */
+    .r-decide { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(0,1fr); gap:clamp(28px,4.4vw,48px); align-items:stretch; }
+    .r-decide-side { display:flex; flex-direction:column; gap:24px; }
+    .r-actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .r-decide-side .r-actions { margin-top:auto; }
+    .r-rule { padding:20px; border-radius:10px; background:var(--r-clay-wash); border:1px solid var(--r-clay-tint); }
+    .r-rule p { font-size:14.5px; line-height:1.55; color:var(--r-ink-body); margin:0; }
+
+    /* ---- Type ---- */
+    .r-h1 { font-family:var(--r-serif); font-size:clamp(34px,6vw,58px); line-height:1.06; font-weight:500; letter-spacing:-0.018em; margin:0 0 24px; text-wrap:balance; }
+    .r-h2 { font-family:var(--r-serif); font-size:clamp(25px,3.4vw,34px); font-weight:600; letter-spacing:-0.015em; line-height:1.16; margin:0 0 16px; text-wrap:balance; }
+    .r-h-section { font-family:var(--r-serif); font-size:clamp(20px,2.4vw,24px); font-weight:600; letter-spacing:-0.012em; margin:0 0 16px; text-wrap:balance; }
+    .r-h-section-next { margin-top:32px; }
+    .r-h-kicker { font-size:11px; font-weight:600; letter-spacing:0.09em; text-transform:uppercase; color:var(--r-ink-muted); margin:0 0 16px; }
+
+    /* ---- Surfaces. Flat, bordered, barely lifted. ---- */
+    .r-card { background:var(--r-card); border:1px solid var(--r-border); border-radius:12px; box-shadow:var(--r-shadow); }
+    .r-chip { display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; background:var(--r-card); border:1px solid var(--r-border); font-size:13px; font-weight:500; }
+    .r-tag { display:inline-flex; align-items:center; padding:6px 12px; border-radius:999px; font-size:12.5px; font-weight:500; }
+    .r-logo { display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:10px; background:var(--r-neutral-fill); color:var(--r-ink); flex:none; }
+    .r-logo svg { display:block; width:21px; height:21px; }
+    .r-logo path { fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .r-avatar { display:flex; align-items:center; justify-content:center; border-radius:999px; background:var(--r-neutral-fill); color:var(--r-ink-3); font-weight:600; flex:none; }
+    .r-list { display:flex; flex-direction:column; }
+    .r-row { padding:16px 20px; border-top:1px solid var(--r-hairline); }
+    .r-row:first-child { border-top:none; }
+
+    /* ---- Buttons. Claude leads with the near-black action, not the accent. ---- */
+    .r-btn {
+      display:inline-flex; align-items:center; justify-content:center; white-space:nowrap;
+      padding:12px 22px; min-height:44px; border-radius:10px;
+      font-family:inherit; font-size:15px; font-weight:500; letter-spacing:-0.005em; cursor:pointer;
+      transition:background-color .18s var(--r-ease), border-color .18s var(--r-ease), color .18s var(--r-ease), opacity .18s var(--r-ease);
+    }
+    .r-btn:focus-visible { outline:2px solid var(--r-focus); outline-offset:2px; }
+    .r-btn-primary { border:1px solid transparent; background:var(--r-btn); color:var(--r-on-btn); }
+    .r-btn-primary:hover { background:var(--r-btn-hover); }
+    .r-btn-primary:active { background:var(--r-btn-press); }
+    .r-btn-secondary { border:1px solid var(--r-border-strong); background:transparent; color:var(--r-ink-body); }
+    .r-btn-secondary:hover { background:var(--r-hover-fill); }
+    .r-btn-secondary:active { background:var(--r-neutral-fill); }
+    .r-btn[disabled] { cursor:not-allowed; opacity:0.45; }
+
+    /* ---- Data marks. Each one encodes a number already stated in the copy. ---- */
+    .r-seg { display:flex; gap:5px; }
+    .r-seg span { flex:1; height:12px; border-radius:4px; }
+    .r-seg span.on { background:var(--r-clay); }
+    .r-seg span.out { background:var(--r-track); border:1.5px dashed var(--r-quiet); }
+    .r-stat { display:flex; justify-content:space-between; align-items:baseline; gap:12px; font-size:14.5px; padding:10px 0; border-top:1px solid var(--r-hairline); }
+    .r-stat b { font-weight:500; color:var(--r-ink-body); }
+    .r-stat span { font-weight:600; font-variant-numeric:tabular-nums; }
+    .r-slim { height:4px; border-radius:999px; background:var(--r-track); overflow:hidden; margin-top:10px; }
+    .r-slim i { display:block; height:100%; border-radius:999px; }
+
+    /* The branch graph. Small and dense on purpose — a wide sparse version of
+       this reads as a doodle. Capped at 300px so it never scales its strokes
+       up; colours match the dots in the list beneath, which names each line. */
+    .r-graph { display:block; width:100%; max-width:340px; height:auto; }
+    .r-graph path { fill:none; stroke-linecap:round; }
+    .r-g-main { stroke:var(--r-ink-muted); stroke-width:2.2; }
+    .r-g-open { stroke:var(--r-quiet); stroke-width:1.8; }
+    .r-g-merge { stroke:var(--r-ready); stroke-width:2.2; }
+    .r-graph circle.open { fill:var(--r-card); stroke:var(--r-quiet); stroke-width:1.6; }
+    .r-graph circle.dot { fill:var(--r-ready); }
+    .r-graph circle.commit { fill:var(--r-ink-muted); }
+    .r-lede-foot { margin-top:24px; }
+    @media (min-width:881px) {
+      .r-lede-foot { margin-top:auto; padding-top:20px; border-top:1px solid var(--r-border); }
+    }
+    .r-graphrow { display:grid; grid-template-columns:minmax(0,340px) minmax(0,1fr); gap:20px; align-items:center; }
+    .r-key { display:flex; flex-direction:column; gap:12px; }
+    .r-key div { display:flex; align-items:center; gap:10px; font-size:12.5px; line-height:1.4; color:var(--r-ink-muted); }
+    .r-key i { width:9px; height:9px; border-radius:999px; flex:none; }
+    .r-key i.merged { background:var(--r-ready); }
+    .r-key i.open { background:var(--r-card); border:1.6px solid var(--r-quiet); }
+    @media (max-width:620px) { .r-graphrow { grid-template-columns:minmax(0,1fr); } }
+
+    /* ---- Responsive ---- */
+    @media (max-width:880px) {
+      .r-cols, .r-cols-side, .r-decide { grid-template-columns:minmax(0,1fr); }
+      .r-h1 br { display:none; }
+    }
+    @media (max-width:560px) {
+      /* Two-column grid: the chip drops to its own row and lines up under the
+         name on its own, with no magic indent to keep in step with the avatar. */
+      .r-head { display:grid; grid-template-columns:38px minmax(0,1fr); column-gap:12px; row-gap:14px; align-items:center; }
+      .r-head-chip { grid-column:2; justify-self:start; }
+      .r-btn { width:100%; }
+    }
+
+    /* ---- Accessibility preferences ---- */
+    @media (prefers-reduced-motion: reduce) {
+      .r-shell { animation:none; }
+      .r-btn { transition:none; }
+    }
+    @media (prefers-contrast: more) {
+      :root { --r-ink-muted:var(--r-ink-3); --r-border:var(--r-border-strong); --r-hairline:var(--r-border-strong); }
+      .r-btn-secondary { border-width:2px; border-color:currentColor; }
+      .r-btn:focus-visible { outline-width:3px; }
+    }
+
+    /* ---- Page-specific: this chief's own data mark ---- */
+    /* ---- Home: the roster. Seven entries that are not equal, so the rows are
+       not equal either. A chief who cannot move without the CEO carries a clay
+       rail, his own page's headline, a real figure and the question in his own
+       words; the two unwired ones carry a dashed rail and hollow nodes where
+       the figure would be. Dean, who is not stopped, sits in his own quieter
+       card below the six. Below both, the dates the seven share — the one
+       structure on the page that is not a list of people. ---- */
+
+    /* One meaning per colour, held across every mark on this page:
+         clay        = unresolved, and it is on your desk
+         green       = clear, moving without you
+         dashed edge = nothing wired behind it
+       Every mark is captioned in HTML as well, so none of them carries a
+       reading the words beside it do not already state. */
+
+    /* Section heads carry a note on the right so the group is never a bare
+       label, and so the rail's meaning is stated rather than guessed. */
+    .r-x-group { display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:16px; }
+    .r-x-group .r-h-section { margin-bottom:0; }
+    .r-x-group-note { flex:1 1 280px; max-width:420px; font-size:12.5px; line-height:1.45; color:var(--r-ink-muted); }
+
+    /* ---- The roster entry ---- */
+    .r-x-roster { overflow:hidden; }
+    .r-x-entry {
+        display:grid;
+        /* The middle track IS the measure. 1.55fr against 1fr puts the copy at
+           roughly 75 characters at the shell's full width, which is where the
+           reference sets it. A cap on the text itself would only draw a second
+           and narrower column edge inside this one. */
+        grid-template-columns:40px minmax(0,1.55fr) minmax(0,1fr);
+        column-gap:24px;
+        row-gap:16px;
+        padding:24px;
+        border-top:1px solid var(--r-hairline);
+        border-left:2px solid var(--r-hairline);
+    }
+    .r-x-entry:first-child { border-top:none; }
+    /* Weight, not decoration: the rail is the answer to "can this one move
+       without me". Dashed means stopped and with nothing behind it yet. */
+    .r-x-entry--blocked { border-left-color:var(--r-clay); }
+    .r-x-entry--unwired { border-left-style:dashed; }
+    .r-x-entry--quiet { border-left-color:var(--r-border-strong); }
+
+    .r-x-id { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .r-x-name { font-family:var(--r-serif); font-size:19px; font-weight:600; letter-spacing:-0.012em; line-height:1.2; }
+    .r-x-dept { font-size:12.5px; line-height:1.4; color:var(--r-ink-muted); margin-top:2px; }
+    .r-x-line { font-family:var(--r-serif); font-size:17px; line-height:1.35; letter-spacing:-0.008em; color:var(--r-ink); margin:16px 0 8px; }
+    .r-x-need { font-size:14.5px; line-height:1.55; color:var(--r-ink-body); margin:0; }
+
+    /* The chief's own question, kept in the entry rather than repeated in a
+       second pass over the same seven people further down. Clay-tinted rail:
+       an unanswered question is the same unresolved state the outer rail
+       marks, one step quieter. */
+    .r-x-ask { margin-top:16px; padding-left:16px; border-left:2px solid var(--r-clay-tint); }
+    .r-x-ask-q { font-size:14.5px; line-height:1.6; color:var(--r-ink-2); margin:0; }
+    .r-x-ask-q + .r-x-ask-q { margin-top:8px; }
+    .r-x-ask-note { font-size:12.5px; line-height:1.45; color:var(--r-ink-muted); margin:8px 0 0; }
+    /* Nothing is being asked, so the rail is not clay and the words are not
+       weighted as a question. */
+    .r-x-ask--none { border-left-color:var(--r-border-strong); }
+    .r-x-ask--none .r-x-ask-q { color:var(--r-ink-muted); }
+
+    /* The figure column. It holds the mark, its caption and the way in, so it
+       is never the short side of the row. */
+    .r-x-mark { display:flex; flex-direction:column; align-items:stretch; }
+    /* auto pins the way in to the foot of a tall row; the caption's own 24px
+       keeps the gap honest when the row is short and auto resolves to zero. */
+    .r-x-mark .r-btn { margin-top:auto; width:100%; }
+    .r-x-num { font-size:30px; font-weight:600; letter-spacing:-0.03em; line-height:1; font-variant-numeric:tabular-nums; color:var(--r-ink); }
+    .r-x-num small { font-size:15px; font-weight:500; letter-spacing:0; color:var(--r-ink-muted); }
+    .r-x-cap { font-size:12.5px; line-height:1.45; color:var(--r-ink-muted); margin:8px 0 24px; }
+
+    /* ---- Data marks ---- */
+    /* Cells inside .r-seg and legend dots inside .r-key are the same two
+       classes, so a colour cannot drift between the key and the mark. The
+       shell's own .on is deliberately unused here: it reads as "finished" on
+       the reference page, which is the opposite of what clay means on this
+       one, where it is always the thing still on the CEO's desk. */
+    .r-m-pending { background:var(--r-clay); }
+    .r-m-clear { background:var(--r-ready); }
+    /* Unresolved and unwired at once: clay hue, dashed edge. */
+    .r-m-dry { box-sizing:border-box; background:var(--r-clay-tint); border:1.5px dashed var(--r-clay); }
+    /* Half-closed: filled faintly, outlined fully, so it reads as a cell that
+       is part way rather than as a gap between two cells. */
+    .r-m-seg-half { background:var(--r-clay-tint); box-shadow:inset 0 0 0 1.5px var(--r-clay); }
+    /* No source wired: a node with nothing in it. */
+    .r-m-nodes { display:flex; align-items:center; gap:8px; }
+    .r-m-nodes i { width:12px; height:12px; border-radius:999px; background:var(--r-card); border:1.5px dashed var(--r-quiet); flex:none; }
+
+    /* ---- The dates they share ---- */
+    /* Two real columns: the date and its distance on the left, what happens
+       and who carries it on the right. The right track sets the measure and
+       lands near 55 characters at full width. */
+    .r-x-when {
+        display:grid;
+        grid-template-columns:minmax(0,132px) minmax(0,1fr);
+        column-gap:24px;
+        row-gap:8px;
+        padding:20px 24px;
+        border-top:1px solid var(--r-hairline);
+    }
+    .r-x-when:first-child { border-top:none; }
+    .r-x-when-key, .r-x-when-body { min-width:0; }
+    .r-x-when-date { font-family:var(--r-serif); font-size:19px; font-weight:600; letter-spacing:-0.012em; line-height:1.2; color:var(--r-ink); font-variant-numeric:tabular-nums; }
+    .r-x-when-sub { font-size:12.5px; line-height:1.4; color:var(--r-ink-muted); margin-top:4px; }
+    .r-x-when-line { font-size:14.5px; line-height:1.55; color:var(--r-ink-body); margin:0; }
+    .r-x-when-who { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+
+    /* What is already behind him. Dates only, no card: the quiet column beside
+       the three that still have to be answered. */
+    .r-x-past { padding:14px 0; border-bottom:1px solid var(--r-hairline); }
+    .r-x-past:last-child { border-bottom:none; }
+    .r-x-past-key { font-size:14px; font-weight:600; color:var(--r-ink); margin-bottom:2px; font-variant-numeric:tabular-nums; }
+    .r-x-past-line { font-size:13px; line-height:1.5; color:var(--r-ink-muted); margin:0; }
+    .r-x-past-who { font-size:12px; line-height:1.4; color:var(--r-ink-3); margin-top:6px; }
+
+    /* ---- Responsive ---- */
+    @media (max-width:880px) {
+        /* The figure column drops under the sentence it belongs to rather than
+           under the avatar, so it stays in the same measure as the copy. */
+        .r-x-entry { grid-template-columns:40px minmax(0,1fr); }
+        .r-x-mark { grid-column:2; }
+        /* The column is gone, so the way in sizes to its own label rather
+           than stretching the width of the entry. */
+        .r-x-mark .r-btn { width:auto; align-self:flex-start; }
+        .r-x-group-note { max-width:none; }
+    }
+    @media (max-width:560px) {
+        /* The avatar column stays down to 390px: it still leaves about 260px of
+           text track, and dropping the column while keeping the avatar would
+           strand each initial on a row of its own above the name. */
+        .r-x-entry { padding:24px 16px; column-gap:16px; }
+        .r-x-mark .r-btn { width:100%; }
+        .r-x-name { font-size:18px; }
+        .r-x-line { font-size:16px; }
+        .r-x-group { gap:8px; }
+        /* 132px of date column is more than a 390px screen can lend. */
+        .r-x-when { grid-template-columns:minmax(0,1fr); padding:20px 16px; }
+        .r-x-when-sub { margin-top:2px; }
+    }
+
+    /* ---- Accessibility preferences ---- */
+    @media (prefers-contrast: more) {
+        .r-x-entry { border-top-color:var(--r-border-strong); border-left-color:var(--r-border-strong); }
+        .r-x-entry--blocked { border-left-color:var(--r-clay-deep); }
+        .r-x-ask { border-left-color:var(--r-clay-deep); }
+        .r-x-ask--none { border-left-color:var(--r-ink-muted); }
+        .r-x-when { border-top-color:var(--r-border-strong); }
+        .r-x-past { border-bottom-color:var(--r-border-strong); }
+        .r-m-nodes i { border-color:var(--r-ink-3); border-width:2px; }
+        .r-m-dry { border-color:var(--r-clay-deep); border-width:2px; }
+        .r-m-seg-half { box-shadow:inset 0 0 0 2px var(--r-clay-deep); }
+    }
+  </style>
+</helmet>
+
+<div class="r-page">
+  <div class="r-shell">
+
+    <header class="r-head">
+      <div class="r-logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="m7 8l-4 4l4 4m10-8l4 4l-4 4M14 4l-4 16"></path></svg>
+      </div>
+      <div class="r-head-name">
+        <div style="font-size:15px;font-weight:600;letter-spacing:-0.01em;line-height:1.35;">Richard</div>
+        <div style="font-size:13px;color:var(--r-ink-muted);line-height:1.35;">Seven chiefs</div>
+      </div>
+      <div class="r-chip r-head-chip" style="color:var(--r-clay-text);flex:none;">
+        <span aria-hidden="true" style="width:6px;height:6px;border-radius:999px;background:var(--r-clay);display:block;"></span>All seven waiting on you
+      </div>
+    </header>
+
+    <main>
+    <section class="r-cols">
+      <div style="display:flex;flex-direction:column;">
+        <div class="r-h-kicker" style="color:var(--r-clay-deep);">The roster</div>
+        <h1 class="r-h1">All seven <br>are waiting on you.</h1>
+        <p style="font-size:18px;line-height:1.55;color:var(--r-ink-body);margin:0;">Amy's window opens in 48 hours and shuts again until March. The 23 Sep submission is fourteen days out, and Jake cannot commit the date or the scope without you.</p>
+        <p class="r-lede-foot" style="font-size:15.5px;line-height:1.6;color:var(--r-ink-3);margin-bottom:0;">Two of the seven have no source wired at all. Alfred's ledger is ruled but empty; Mara has reported nothing, which is the correct answer.</p>
+      </div>
+
+      <aside class="r-card" style="padding:24px;display:flex;flex-direction:column;">
+        <h2 class="r-h-kicker">The seven departments</h2>
+
+        <div style="padding-bottom:24px;border-bottom:1px solid var(--r-hairline);">
+          <div class="r-seg" aria-hidden="true">
+            <span class="r-m-pending"></span><span class="r-m-pending"></span><span class="r-m-pending"></span><span class="r-m-pending"></span><span class="r-m-dry"></span><span class="r-m-dry"></span><span class="r-m-clear"></span>
+          </div>
+          <p style="font-size:13px;line-height:1.5;color:var(--r-ink-muted);margin:16px 0 16px;">Four are waiting on an answer, and two more are waiting with nothing wired behind them. Those six are stopped until you answer. Dean is not stopped — he delivered four items overnight — but he is still owed an answer on the one price he could not settle.</p>
+          <div class="r-key">
+            <div><i class="r-m-pending" aria-hidden="true"></i>Stopped without your answer — Iris, Amy, Jake, Victor</div>
+            <div><i class="r-m-dry" aria-hidden="true"></i>Stopped, and nothing wired behind it — Alfred, Mara</div>
+            <div><i class="r-m-clear" aria-hidden="true"></i>Waiting, but still moving — Dean</div>
+          </div>
+        </div>
+
+        <div style="padding-top:24px;margin-top:auto;">
+          <h3 class="r-h-kicker">Where you are needed</h3>
+          <div class="r-stat"><b>Waiting on your answer</b><span style="color:var(--r-clay-deep);">All seven</span></div>
+          <div class="r-stat"><b>Stopped until you answer</b><span style="color:var(--r-ink-3);">Six</span></div>
+          <div class="r-stat"><b>Nothing to report until wired</b><span style="color:var(--r-ink-3);">Two</span></div>
+        </div>
+      </aside>
+    </section>
+
+    <section style="margin-top:24px;margin-bottom:32px;">
+      <div class="r-x-group">
+        <h2 class="r-h-section">Waiting on you</h2>
+        <div class="r-x-group-note">Six chiefs: what each one needs, and the question in their own words. Clay marks where you are the blocker; a dashed rail means nothing is wired behind it yet.</div>
+      </div>
+
+      <div class="r-card r-list r-x-roster">
+
+        <article class="r-x-entry r-x-entry--blocked">
+          <div class="r-avatar" aria-hidden="true" style="width:40px;height:40px;font-size:15px;">A</div>
+          <div style="min-width:0;">
+            <div class="r-x-id">
+              <span class="r-x-name">Amy</span>
+              <span class="r-chip" style="color:var(--r-clay-text);">
+                <span aria-hidden="true" style="width:6px;height:6px;border-radius:999px;background:var(--r-clay);display:block;"></span>Proposal waiting
+              </span>
+            </div>
+            <div class="r-x-dept">Marketing</div>
+            <p class="r-x-line">Two days to Rosh Hashanah.</p>
+            <p class="r-x-need">Approve moving ₪18k from organic into paid search before the window opens. Amy cannot spend or publish without your approval.</p>
+            <div class="r-x-ask">
+              <p class="r-x-ask-q">If we speak to the holiday, do we speak as a budgeting app or as an advisor? The second is the stronger line and the one the ISA constrains. I would rather you settle it than have Amy guess.</p>
+            </div>
+          </div>
+          <div class="r-x-mark">
+            <div class="r-x-num">48<small> h</small></div>
+            <p class="r-x-cap">Until the window opens. An eleven-day paid push, then shut until March.</p>
+            <button type="button" class="r-btn r-btn-secondary">Open Amy</button>
+          </div>
+        </article>
+
+        <article class="r-x-entry r-x-entry--blocked">
+          <div class="r-avatar" aria-hidden="true" style="width:40px;height:40px;font-size:15px;">J</div>
+          <div style="min-width:0;">
+            <div class="r-x-id">
+              <span class="r-x-name">Jake</span>
+              <span class="r-chip" style="color:var(--r-clay-text);">
+                <span aria-hidden="true" style="width:6px;height:6px;border-radius:999px;background:var(--r-clay);display:block;"></span>Needs you
+              </span>
+            </div>
+            <div class="r-x-dept">Startup Advisors</div>
+            <p class="r-x-line">Fourteen days. Scope still open.</p>
+            <p class="r-x-need">He cannot commit either date or the scope without you. The decision has been waiting since 6 Sep.</p>
+            <div class="r-x-ask">
+              <p class="r-x-ask-q">Submit on 23 Sep with eight subsystems deferred? The alternative is 5 Oct with the listing honoured.</p>
+              <p class="r-x-ask-note">His page carries no questions block. This is the decision card's own heading.</p>
+            </div>
+          </div>
+          <div class="r-x-mark">
+            <div class="r-x-num">14<small> days</small></div>
+            <p class="r-x-cap">To the 23 Sep submission. The fallback on the table is 5 Oct.</p>
+            <button type="button" class="r-btn r-btn-secondary">Open Jake</button>
+          </div>
+        </article>
+
+        <article class="r-x-entry r-x-entry--blocked">
+          <div class="r-avatar" aria-hidden="true" style="width:40px;height:40px;font-size:15px;">V</div>
+          <div style="min-width:0;">
+            <div class="r-x-id">
+              <span class="r-x-name">Victor</span>
+              <span class="r-chip" style="color:var(--r-ink-2);">
+                <span aria-hidden="true" style="width:6px;height:6px;border-radius:999px;background:var(--r-ready);display:block;"></span>4 open
+              </span>
+            </div>
+            <div class="r-x-dept">QA &amp; Security</div>
+            <p class="r-x-line">Four of seven stop the line.</p>
+            <p class="r-x-need">He wants the submission held until the four open items are closed — two of them sit in flows App Review will touch. Anything that blocks a submission comes to you.</p>
+            <div class="r-x-ask">
+              <p class="r-x-ask-q">The boundThread and budget-pace fixes landed at 22:45 on 8 Sep; ROADMAP's own stamp is 8 Sep and still lists them open. Which do you want treated as the record — the code, or the plan? Victor and Jake are answering that differently.</p>
+              <p class="r-x-ask-q">And second: should the demo account for App Review be a real account with seeded data, or a throwaway? The listing has read [FILL IN] since 19 Aug.</p>
+            </div>
+          </div>
+          <div class="r-x-mark">
+            <div class="r-seg" aria-hidden="true">
+              <span class="r-m-pending"></span><span class="r-m-pending"></span><span class="r-m-pending"></span><span class="r-m-pending"></span><span class="r-m-seg-half"></span><span class="r-m-clear"></span><span class="r-m-clear"></span>
+            </div>
+            <p class="r-x-cap">Seven stop-the-line items — four open in clay, one half done, two closed. Three days to close the four.</p>
+            <button type="button" class="r-btn r-btn-secondary">Open Victor</button>
+          </div>
+        </article>
+
+        <article class="r-x-entry r-x-entry--blocked">
+          <div class="r-avatar" aria-hidden="true" style="width:40px;height:40px;font-size:15px;">I</div>
+          <div style="min-width:0;">
+            <div class="r-x-id">
+              <span class="r-x-name">Iris</span>
+              <span class="r-chip" style="color:var(--r-clay-text);">
+                <span aria-hidden="true" style="width:6px;height:6px;border-radius:999px;background:var(--r-clay);display:block;"></span>Merge waiting
+              </span>
+            </div>
+            <div class="r-x-dept">UX &amp; AI Design</div>
+            <p class="r-x-line">A third of it is off the main.</p>
+            <p class="r-x-need">She needs your approval to move the voice surface onto main. She may ship interface work on her own, but the page puts this merge to you.</p>
+            <div class="r-x-ask">
+              <p class="r-x-ask-q">English at 64 per cent is a marketing review, not a design one. Do you want Iris to ship Hebrew-only for the 23 Sep submission and let English follow, or hold the surface until both are whole?</p>
+            </div>
+          </div>
+          <div class="r-x-mark">
+            <div class="r-x-num">67<small>%</small></div>
+            <div class="r-slim" aria-hidden="true"><i style="width:67%;background:var(--r-clay);"></i></div>
+            <p class="r-x-cap">Committed to main. The other 33% is on feature branches — three are listed.</p>
+            <button type="button" class="r-btn r-btn-secondary">Open Iris</button>
+          </div>
+        </article>
+
+        <article class="r-x-entry r-x-entry--blocked r-x-entry--unwired">
+          <div class="r-avatar" aria-hidden="true" style="width:40px;height:40px;font-size:15px;">A</div>
+          <div style="min-width:0;">
+            <div class="r-x-id">
+              <span class="r-x-name">Alfred</span>
+              <span class="r-chip" style="color:var(--r-ink-muted);">
+                <span aria-hidden="true" style="width:6px;height:6px;border-radius:999px;background:var(--r-quiet);display:block;"></span>Unwired
+              </span>
+            </div>
+            <div class="r-x-dept">Finance</div>
+            <p class="r-x-line">The ledger is ruled but empty.</p>
+            <p class="r-x-need">One read-only connection — the primary bank account, or the accounting system (Stripe, Wise, Carta, or an internal ledger) — fills all three rows. Alfred reports and alerts only; he has no authority to spend.</p>
+            <div class="r-x-ask">
+              <p class="r-x-ask-q">Amy is asking to move ₪18k and I cannot tell you what fraction of a month that is. Would you rather wire Alfred before answering her, or answer her on judgement and wire him after?</p>
+            </div>
+          </div>
+          <div class="r-x-mark">
+            <div class="r-m-nodes" aria-hidden="true"><i></i><i></i><i></i></div>
+            <p class="r-x-cap">Bank account, accounting system, payment processor — none configured. Runway, cash and monthly burn each read “—”.</p>
+            <button type="button" class="r-btn r-btn-secondary">Open Alfred</button>
+          </div>
+        </article>
+
+        <article class="r-x-entry r-x-entry--blocked r-x-entry--unwired">
+          <div class="r-avatar" aria-hidden="true" style="width:40px;height:40px;font-size:15px;">M</div>
+          <div style="min-width:0;">
+            <div class="r-x-id">
+              <span class="r-x-name">Mara</span>
+              <span class="r-chip" style="color:var(--r-ink-muted);">
+                <span aria-hidden="true" style="width:6px;height:6px;border-radius:999px;background:var(--r-quiet);display:block;"></span>Dormant
+              </span>
+            </div>
+            <div class="r-x-dept">User Signals</div>
+            <p class="r-x-line">Nothing to report, sir.</p>
+            <p class="r-x-need">One wired source — product analytics, the CRM, or observability — with read-only credentials or an export path, and this page fills itself.</p>
+            <div class="r-x-ask r-x-ask--none">
+              <p class="r-x-ask-q">Mara puts no question to you. Her page asks only that a source be connected.</p>
+              <p class="r-x-ask-note">Mara will not estimate a number she cannot source. An empty department is preferable to a confident guess.</p>
+            </div>
+          </div>
+          <div class="r-x-mark">
+            <div class="r-m-nodes" aria-hidden="true"><i></i><i></i><i></i></div>
+            <p class="r-x-cap">Product analytics, CRM and billing, observability — no sources connected. Four steps and she runs nightly.</p>
+            <button type="button" class="r-btn r-btn-secondary">Open Mara</button>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <section style="margin-bottom:48px;">
+      <div class="r-x-group">
+        <h2 class="r-h-section">Waiting, but not stopped</h2>
+        <div class="r-x-group-note">He kept working through the night. One answer is still outstanding.</div>
+      </div>
+
+      <div class="r-card r-list r-x-roster">
+        <article class="r-x-entry r-x-entry--quiet">
+          <div class="r-avatar" aria-hidden="true" style="width:40px;height:40px;font-size:15px;">D</div>
+          <div style="min-width:0;">
+            <div class="r-x-id">
+              <span class="r-x-name">Dean</span>
+              <span class="r-chip" style="color:var(--r-ink-2);">
+                <span aria-hidden="true" style="width:6px;height:6px;border-radius:999px;background:var(--r-ready);display:block;"></span>4 items overnight
+              </span>
+            </div>
+            <div class="r-x-dept">Competitive Intel</div>
+            <p class="r-x-line">Riseup came home.</p>
+            <p class="r-x-need">Nothing on his page says he is stopped, and he is the only one of the seven who can say that. One price he could not settle: Riseup's Israeli monthly reads ₪45 on the billing page, taken from cache after the request was refused, and ₪55 in the App Store entry.</p>
+            <div class="r-x-ask">
+              <p class="r-x-ask-q">I would rather not average ₪45 and ₪55 into a number neither source supports. Do you want Dean to buy a month of Riseup and read the receipt, or leave the price open in the ledger?</p>
+            </div>
+          </div>
+          <div class="r-x-mark">
+            <div class="r-x-num">4<small> items</small></div>
+            <p class="r-x-cap">Overnight. Riseup UK closed; Monarch $95/yr and Copilot $110/yr, verified twice.</p>
+            <button type="button" class="r-btn r-btn-secondary">Open Dean</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="r-x-group">
+        <h2 class="r-h-section">The dates they share</h2>
+        <div class="r-x-group-note">Where the seven converge. Each date below is named on the pages beside it.</div>
+      </div>
+
+      <div class="r-cols-side">
+        <div>
+          <h3 class="r-h-kicker">Ahead</h3>
+          <div class="r-card r-list">
+
+            <div class="r-x-when">
+              <div class="r-x-when-key">
+                <div class="r-x-when-date">In two days</div>
+                <div class="r-x-when-sub">48 hours to the window</div>
+              </div>
+              <div class="r-x-when-body">
+                <p class="r-x-when-line">Rosh Hashanah. Search intent for financial planning peaks in the 48 hours before it; the paid push runs eleven days, and the window shuts until March.</p>
+                <div class="r-x-when-who"><span class="r-tag" style="background:var(--r-neutral-fill);color:var(--r-ink-2);">Amy</span></div>
+              </div>
+            </div>
+
+            <div class="r-x-when">
+              <div class="r-x-when-key">
+                <div class="r-x-when-date">23 Sep</div>
+                <div class="r-x-when-sub">fourteen days out</div>
+              </div>
+              <div class="r-x-when-body">
+                <p class="r-x-when-line">App Store submission. Jake cannot commit the date or the scope; Iris asks whether English follows after it; Victor wants it held until the four open items are closed. Alfred counts the same fourteen days without naming the date.</p>
+                <div class="r-x-when-who">
+                  <span class="r-tag" style="background:var(--r-neutral-fill);color:var(--r-ink-2);">Jake</span>
+                  <span class="r-tag" style="background:var(--r-neutral-fill);color:var(--r-ink-2);">Iris</span>
+                  <span class="r-tag" style="background:var(--r-neutral-fill);color:var(--r-ink-2);">Victor</span>
+                  <span class="r-tag" style="background:var(--r-neutral-fill);color:var(--r-ink-2);">Alfred</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="r-x-when">
+              <div class="r-x-when-key">
+                <div class="r-x-when-date">5 Oct</div>
+                <div class="r-x-when-sub">the fallback</div>
+              </div>
+              <div class="r-x-when-body">
+                <p class="r-x-when-line">The other date on Jake's table: 5 Oct, with the listing honoured rather than eight subsystems deferred.</p>
+                <div class="r-x-when-who"><span class="r-tag" style="background:var(--r-neutral-fill);color:var(--r-ink-2);">Jake</span></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <aside>
+          <h3 class="r-h-kicker">Behind you</h3>
+          <div class="r-list">
+            <div class="r-x-past">
+              <div class="r-x-past-key">09 Sep</div>
+              <p class="r-x-past-line">Jake verified the fixed-defect commits 8ac5599 and 680f582. Dean traced the Riseup UK DNS redirect at 02:30.</p>
+              <div class="r-x-past-who">Jake · Dean</div>
+            </div>
+            <div class="r-x-past">
+              <div class="r-x-past-key">8 Sep</div>
+              <p class="r-x-past-line">P0 and P1 closed in the live tree, the fixes landing at 22:45 that night. ROADMAP's own stamp is 8 Sep and still lists them open.</p>
+              <div class="r-x-past-who">Jake · Victor</div>
+            </div>
+            <div class="r-x-past">
+              <div class="r-x-past-key">6 Sep</div>
+              <p class="r-x-past-line">The date call ROADMAP put to you on 6 Sep is unmade, and has been waiting since.</p>
+              <div class="r-x-past-who">Jake</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

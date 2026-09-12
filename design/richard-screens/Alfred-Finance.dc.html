@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/classical-8c9c94ce-c944-456d-ba51-95c18d5072b6/styles.css">
+  <script src="_ds/classical-8c9c94ce-c944-456d-ba51-95c18d5072b6/_ds_bundle.js"></script>
+  <meta name="design_doc_mode" content="page">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap">
+  <style>
+    /* ---- Tokens. Light is the base; every value has a dark pair below. ---- */
+    :root {
+      color-scheme: light;
+      --r-ground:#F0EEE6;
+      --r-card:#FFFFFF;
+      --r-track:#EBE9E0;
+
+      --r-ink:#141413;
+      --r-ink-body:#3D3D3A;
+      --r-ink-2:#4A4945;
+      --r-ink-3:#5E5D59;
+      --r-ink-muted:#6B6A65;
+
+      --r-clay:#D97757;
+      --r-clay-deep:#A8452B;
+      --r-clay-text:#9C4326;
+      --r-clay-tint:rgba(217,119,87,0.14);
+      --r-clay-wash:rgba(217,119,87,0.07);
+      --r-focus:#A8452B;
+
+      --r-quiet:#82807A;
+      --r-ready:#3F8A68; --r-ready-text:#2F7355;
+
+      --r-btn:#141413;
+      --r-btn-hover:#2B2B29;
+      --r-btn-press:#3D3D3A;
+      --r-on-btn:#FAF9F5;
+
+      --r-border:#E5E3DA;
+      --r-border-strong:#DAD8CD;
+      --r-hairline:#EDEBE3;
+      --r-neutral-fill:rgba(20,20,19,0.055);
+      --r-hover-fill:rgba(20,20,19,0.05);
+
+      --r-bar:linear-gradient(90deg,#D97757,#A8452B);
+      --r-shadow:0 1px 2px rgba(20,20,19,0.04);
+
+      --r-serif:'Source Serif 4', Georgia, 'Times New Roman', serif;
+      --r-ease:cubic-bezier(.25,.1,.25,1);
+    }
+
+    /* Dark pair. Applies when the host asks for it, or when the OS does and the
+       host has not pinned light. Every pair below was checked for contrast. */
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --r-ground:#1F1E1D;
+      --r-card:#262625;
+      --r-track:#3A3A37;
+      --r-ink:#F5F4EF;
+      --r-ink-body:#E3E1D9;
+      --r-ink-2:#D6D4CA;
+      --r-ink-3:#C2C0B6;
+      --r-ink-muted:#A3A199;
+      --r-clay:#D97757;
+      --r-clay-deep:#E89B7D;
+      --r-clay-text:#F0A98B;
+      --r-clay-tint:rgba(217,119,87,0.18);
+      --r-clay-wash:rgba(217,119,87,0.10);
+      --r-focus:#E89B7D;
+      --r-quiet:#9A9890;
+      --r-ready:#5FBF92; --r-ready-text:#5FBF92;
+      --r-btn:#F5F4EF;
+      --r-btn-hover:#E3E1D9;
+      --r-btn-press:#C2C0B6;
+      --r-on-btn:#1F1E1D;
+      --r-border:rgba(255,255,255,0.11);
+      --r-border-strong:rgba(255,255,255,0.18);
+      --r-hairline:rgba(255,255,255,0.08);
+      --r-neutral-fill:rgba(255,255,255,0.07);
+      --r-hover-fill:rgba(255,255,255,0.06);
+      --r-shadow:0 1px 2px rgba(0,0,0,0.30);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --r-ground:#1F1E1D;
+        --r-card:#262625;
+        --r-track:#3A3A37;
+        --r-ink:#F5F4EF;
+        --r-ink-body:#E3E1D9;
+        --r-ink-2:#D6D4CA;
+        --r-ink-3:#C2C0B6;
+        --r-ink-muted:#A3A199;
+        --r-clay:#D97757;
+        --r-clay-deep:#E89B7D;
+        --r-clay-text:#F0A98B;
+        --r-clay-tint:rgba(217,119,87,0.18);
+        --r-clay-wash:rgba(217,119,87,0.10);
+        --r-focus:#E89B7D;
+        --r-quiet:#9A9890;
+        --r-ready:#5FBF92; --r-ready-text:#5FBF92;
+        --r-btn:#F5F4EF;
+        --r-btn-hover:#E3E1D9;
+        --r-btn-press:#C2C0B6;
+        --r-on-btn:#1F1E1D;
+        --r-border:rgba(255,255,255,0.11);
+        --r-border-strong:rgba(255,255,255,0.18);
+        --r-hairline:rgba(255,255,255,0.08);
+        --r-neutral-fill:rgba(255,255,255,0.07);
+        --r-hover-fill:rgba(255,255,255,0.06);
+        --r-shadow:0 1px 2px rgba(0,0,0,0.30);
+      }
+    }
+
+    /* ---- Base ---- */
+    *, *::before, *::after { box-sizing:border-box; }
+    body {
+      margin:0;
+      background:var(--r-ground);
+      color:var(--r-ink);
+      -webkit-font-smoothing:antialiased;
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+    }
+    ::selection { background:var(--r-clay-tint); color:var(--r-ink); }
+    a { color:var(--r-clay-deep); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+    a:focus-visible { outline:2px solid var(--r-focus); outline-offset:2px; border-radius:3px; }
+    /* Transform-only entrance: a renderer that freezes animations (offscreen
+       thumbnails, throttled tabs) still shows the page, just unshifted. */
+    @keyframes riseUp { from { transform:translateY(12px); } to { transform:translateY(0); } }
+
+    /* ---- Layout ---- */
+    .r-page {
+      min-height:100vh;
+      min-height:100dvh;
+      padding:clamp(36px,6vw,64px) clamp(20px,4.5vw,40px) clamp(64px,8vw,104px);
+      background:var(--r-ground);
+      color:var(--r-ink);
+    }
+    .r-shell { max-width:1040px; margin:0 auto; animation:riseUp .45s var(--r-ease) both; }
+    .r-head { display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding-bottom:24px; margin-bottom:clamp(32px,4.4vw,48px); border-bottom:1px solid var(--r-border); }
+    .r-head-name { flex:1; min-width:0; }
+    .r-cols { display:grid; grid-template-columns:minmax(0,1.02fr) minmax(0,0.98fr); gap:clamp(28px,4.4vw,52px); align-items:stretch; margin-bottom:24px; }
+    .r-cols-side { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:24px; align-items:start; }
+    /* The decision card is full shell width. One column of 62ch copy inside it
+       left half the card empty, so the standing rule moved into a real second
+       column instead of sitting under the buttons as a full-width strip. */
+    .r-decide { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(0,1fr); gap:clamp(28px,4.4vw,48px); align-items:stretch; }
+    .r-decide-side { display:flex; flex-direction:column; gap:24px; }
+    .r-actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .r-decide-side .r-actions { margin-top:auto; }
+    .r-rule { padding:20px; border-radius:10px; background:var(--r-clay-wash); border:1px solid var(--r-clay-tint); }
+    .r-rule p { font-size:14.5px; line-height:1.55; color:var(--r-ink-body); margin:0; }
+
+    /* ---- Type ---- */
+    .r-h1 { font-family:var(--r-serif); font-size:clamp(34px,6vw,58px); line-height:1.06; font-weight:500; letter-spacing:-0.018em; margin:0 0 24px; text-wrap:balance; }
+    .r-h2 { font-family:var(--r-serif); font-size:clamp(25px,3.4vw,34px); font-weight:600; letter-spacing:-0.015em; line-height:1.16; margin:0 0 16px; text-wrap:balance; }
+    .r-h-section { font-family:var(--r-serif); font-size:clamp(20px,2.4vw,24px); font-weight:600; letter-spacing:-0.012em; margin:0 0 16px; text-wrap:balance; }
+    .r-h-section-next { margin-top:32px; }
+    .r-h-kicker { font-size:11px; font-weight:600; letter-spacing:0.09em; text-transform:uppercase; color:var(--r-ink-muted); margin:0 0 16px; }
+
+    /* ---- Surfaces. Flat, bordered, barely lifted. ---- */
+    .r-card { background:var(--r-card); border:1px solid var(--r-border); border-radius:12px; box-shadow:var(--r-shadow); }
+    .r-chip { display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; background:var(--r-card); border:1px solid var(--r-border); font-size:13px; font-weight:500; }
+    .r-tag { display:inline-flex; align-items:center; padding:6px 12px; border-radius:999px; font-size:12.5px; font-weight:500; }
+    .r-logo { display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:10px; background:var(--r-neutral-fill); color:var(--r-ink); flex:none; }
+    .r-logo svg { display:block; width:21px; height:21px; }
+    .r-logo path { fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .r-avatar { display:flex; align-items:center; justify-content:center; border-radius:999px; background:var(--r-neutral-fill); color:var(--r-ink-3); font-weight:600; flex:none; }
+    .r-list { display:flex; flex-direction:column; }
+    .r-row { padding:16px 20px; border-top:1px solid var(--r-hairline); }
+    .r-row:first-child { border-top:none; }
+
+    /* ---- Buttons. Claude leads with the near-black action, not the accent. ---- */
+    .r-btn {
+      display:inline-flex; align-items:center; justify-content:center; white-space:nowrap;
+      padding:12px 22px; min-height:44px; border-radius:10px;
+      font-family:inherit; font-size:15px; font-weight:500; letter-spacing:-0.005em; cursor:pointer;
+      transition:background-color .18s var(--r-ease), border-color .18s var(--r-ease), color .18s var(--r-ease), opacity .18s var(--r-ease);
+    }
+    .r-btn:focus-visible { outline:2px solid var(--r-focus); outline-offset:2px; }
+    .r-btn-primary { border:1px solid transparent; background:var(--r-btn); color:var(--r-on-btn); }
+    .r-btn-primary:hover { background:var(--r-btn-hover); }
+    .r-btn-primary:active { background:var(--r-btn-press); }
+    .r-btn-secondary { border:1px solid var(--r-border-strong); background:transparent; color:var(--r-ink-body); }
+    .r-btn-secondary:hover { background:var(--r-hover-fill); }
+    .r-btn-secondary:active { background:var(--r-neutral-fill); }
+    .r-btn[disabled] { cursor:not-allowed; opacity:0.45; }
+
+    /* ---- Data marks. Each one encodes a number already stated in the copy. ---- */
+    .r-seg { display:flex; gap:5px; }
+    .r-seg span { flex:1; height:12px; border-radius:4px; }
+    .r-seg span.on { background:var(--r-clay); }
+    .r-seg span.out { background:var(--r-track); border:1.5px dashed var(--r-quiet); }
+    .r-stat { display:flex; justify-content:space-between; align-items:baseline; gap:12px; font-size:14.5px; padding:10px 0; border-top:1px solid var(--r-hairline); }
+    .r-stat b { font-weight:500; color:var(--r-ink-body); }
+    .r-stat span { font-weight:600; font-variant-numeric:tabular-nums; }
+    .r-slim { height:4px; border-radius:999px; background:var(--r-track); overflow:hidden; margin-top:10px; }
+    .r-slim i { display:block; height:100%; border-radius:999px; }
+
+    /* The branch graph. Small and dense on purpose — a wide sparse version of
+       this reads as a doodle. Capped at 300px so it never scales its strokes
+       up; colours match the dots in the list beneath, which names each line. */
+    .r-graph { display:block; width:100%; max-width:340px; height:auto; }
+    .r-graph path { fill:none; stroke-linecap:round; }
+    .r-g-main { stroke:var(--r-ink-muted); stroke-width:2.2; }
+    .r-g-open { stroke:var(--r-quiet); stroke-width:1.8; }
+    .r-g-merge { stroke:var(--r-ready); stroke-width:2.2; }
+    .r-graph circle.open { fill:var(--r-card); stroke:var(--r-quiet); stroke-width:1.6; }
+    .r-graph circle.dot { fill:var(--r-ready); }
+    .r-graph circle.commit { fill:var(--r-ink-muted); }
+    .r-lede-foot { margin-top:24px; }
+    @media (min-width:881px) {
+      .r-lede-foot { margin-top:auto; padding-top:20px; border-top:1px solid var(--r-border); }
+    }
+    .r-graphrow { display:grid; grid-template-columns:minmax(0,340px) minmax(0,1fr); gap:20px; align-items:center; }
+    .r-key { display:flex; flex-direction:column; gap:12px; }
+    .r-key div { display:flex; align-items:center; gap:10px; font-size:12.5px; line-height:1.4; color:var(--r-ink-muted); }
+    .r-key i { width:9px; height:9px; border-radius:999px; flex:none; }
+    .r-key i.merged { background:var(--r-ready); }
+    .r-key i.open { background:var(--r-card); border:1.6px solid var(--r-quiet); }
+    @media (max-width:620px) { .r-graphrow { grid-template-columns:minmax(0,1fr); } }
+
+    /* ---- Responsive ---- */
+    @media (max-width:880px) {
+      .r-cols, .r-cols-side, .r-decide { grid-template-columns:minmax(0,1fr); }
+      .r-h1 br { display:none; }
+    }
+    @media (max-width:560px) {
+      /* Two-column grid: the chip drops to its own row and lines up under the
+         name on its own, with no magic indent to keep in step with the avatar. */
+      .r-head { display:grid; grid-template-columns:38px minmax(0,1fr); column-gap:12px; row-gap:14px; align-items:center; }
+      .r-head-chip { grid-column:2; justify-self:start; }
+      .r-btn { width:100%; }
+    }
+
+    /* ---- Accessibility preferences ---- */
+    @media (prefers-reduced-motion: reduce) {
+      .r-shell { animation:none; }
+      .r-btn { transition:none; }
+    }
+    @media (prefers-contrast: more) {
+      :root { --r-ink-muted:var(--r-ink-3); --r-border:var(--r-border-strong); --r-hairline:var(--r-border-strong); }
+      .r-btn-secondary { border-width:2px; border-color:currentColor; }
+      .r-btn:focus-visible { outline-width:3px; }
+    }
+
+    /* ---- Page-specific: this chief's own data mark ---- */
+    /* Alfred's ledger mark reuses .r-graph, .r-g-main and the hollow circle.open
+       node wholesale. One stroke treatment carries the whole drawing, because
+       every line in it means the same thing — a row that is ruled but unfilled —
+       so there is no second kind of line for a second class to mark. The only
+       thing this page adds is a legend swatch for that ruling, since .r-key i
+       ships round dots only; 3px matches the 2.2 stroke at the capped 340px.
+       The type selector is there to beat `.r-key i`, which is the same weight. */
+    .r-key .r-key .r-key i.r-m-key-ruled { width:16px; height:3px; border-radius:999px; background:var(--r-ink-muted); }
+  </style>
+</helmet>
+
+<div class="r-page">
+  <div class="r-shell">
+
+    <header class="r-head">
+      <div class="r-logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="m7 8l-4 4l4 4m10-8l4 4l-4 4M14 4l-4 16"></path></svg>
+      </div>
+      <div class="r-head-name">
+        <div style="font-size:15px;font-weight:600;letter-spacing:-0.01em;line-height:1.35;">Alfred</div>
+        <div style="font-size:13px;color:var(--r-ink-muted);line-height:1.35;">Finance</div>
+      </div>
+      <div class="r-chip r-head-chip" style="color:var(--r-ink-muted);flex:none;">
+        <span aria-hidden="true" style="width:6px;height:6px;border-radius:999px;border:1.5px solid var(--r-quiet);display:block;"></span>Unwired
+      </div>
+    </header>
+
+    <main>
+    <section class="r-cols">
+      <div style="display:flex;flex-direction:column;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.09em;text-transform:uppercase;color:var(--r-clay-deep);margin-bottom:18px;">Finance</div>
+        <h1 class="r-h1">The ledger is <br>ruled but empty.</h1>
+        <p style="font-size:18px;line-height:1.55;color:var(--r-ink-body);margin:0;">Three rows, sir: cash, monthly burn, and the runway that follows from them. None is connected, so none is filled.</p>
+        <p class="r-lede-foot" style="font-size:15.5px;line-height:1.6;color:var(--r-ink-3);margin-bottom:0;">With fourteen days to a submission and a spend decision on Amy's desk, this is the page I would least like to leave blank.</p>
+      </div>
+
+      <div class="r-card" style="padding:24px;display:flex;flex-direction:column;">
+        <h2 class="r-h-kicker">The ledger</h2>
+
+        <div>
+          <div style="display:grid;grid-template-columns:96px minmax(0,1fr) 40px;gap:16px;align-items:center;padding:16px 0;border-top:1px solid var(--r-hairline);">
+            <div style="font-size:14.5px;font-weight:600;">Runway</div>
+            <div class="r-seg" aria-hidden="true"><span class="out"></span></div>
+            <div style="font-size:15px;color:var(--r-ink-muted);text-align:right;">—</div>
+          </div>
+          <div style="display:grid;grid-template-columns:96px minmax(0,1fr) 40px;gap:16px;align-items:center;padding:16px 0;border-top:1px solid var(--r-hairline);">
+            <div style="font-size:14.5px;font-weight:600;">Cash</div>
+            <div class="r-seg" aria-hidden="true"><span class="out"></span></div>
+            <div style="font-size:15px;color:var(--r-ink-muted);text-align:right;">—</div>
+          </div>
+          <div style="display:grid;grid-template-columns:96px minmax(0,1fr) 40px;gap:16px;align-items:center;padding:16px 0;border-top:1px solid var(--r-hairline);">
+            <div style="font-size:14.5px;font-weight:600;">Monthly burn</div>
+            <div class="r-seg" aria-hidden="true"><span class="out"></span></div>
+            <div style="font-size:15px;color:var(--r-ink-muted);text-align:right;">—</div>
+          </div>
+        </div>
+
+        <div style="padding-top:24px;margin-top:auto;border-top:1px solid var(--r-hairline);">
+          <p style="font-size:13px;line-height:1.5;color:var(--r-ink-muted);margin:0;">Alfred alerts when runway falls below four months. He cannot alert on a number he does not have.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="r-card r-decide" style="padding:clamp(24px,3.2vw,32px);margin-bottom:24px;">
+      <div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+          <span class="r-tag" style="background:var(--r-neutral-fill);color:var(--r-ink-2);">Awaiting read-only access</span>
+        </div>
+        <h2 class="r-h2">One read-only connection fills all three rows</h2>
+        <p style="font-size:15.5px;line-height:1.6;color:var(--r-ink-body);margin:0;">The primary bank account, or the accounting system — Stripe, Wise, Carta, or an internal ledger. Alfred reads; he never moves money and never authorises a transfer.</p>
+      </div>
+      <div class="r-decide-side">
+        <div class="r-rule">
+          <h3 class="r-h-kicker" style="margin-bottom:8px;">Standing rule</h3>
+          <p>Alfred reports and alerts only. He has no authority to spend or to authorise a transfer.</p>
+        </div>
+        <div class="r-actions">
+          <button type="button" class="r-btn r-btn-primary">Connect an account</button>
+          <button type="button" class="r-btn r-btn-secondary">Not now</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="r-cols-side">
+      <section>
+        <h2 class="r-h-section">What each row will carry</h2>
+        <div class="r-card r-list">
+          <div class="r-graphrow" style="padding:20px 20px 16px;">
+            <svg class="r-graph" viewBox="0 0 260 80" role="img" aria-label="One unmade connection at the left fans out into the ledger's three ruled rows — runway, cash and monthly burn. Every node is hollow: nothing is wired, so no row ends in a figure.">
+              <circle class="open" cx="14" cy="40" r="4.5"></circle>
+              <path class="r-g-main" d="M21 40 H232"></path>
+              <path class="r-g-main" d="M40 40 Q48 40 48 32 V22 Q48 14 56 14 H232"></path>
+              <path class="r-g-main" d="M40 40 Q48 40 48 48 V58 Q48 66 56 66 H232"></path>
+              <circle class="open" cx="240" cy="14" r="4.5"></circle>
+              <circle class="open" cx="240" cy="40" r="4.5"></circle>
+              <circle class="open" cx="240" cy="66" r="4.5"></circle>
+            </svg>
+            <div class="r-key">
+              <div><i class="r-m-key-ruled" aria-hidden="true"></i>Ruled row — runway, cash and monthly burn</div>
+              <div><i class="open" aria-hidden="true"></i>Hollow — the connection is unmade, so the row is empty</div>
+            </div>
+          </div>
+          <div class="r-row" style="display:flex;gap:12px;">
+            <span aria-hidden="true" style="width:7px;height:7px;border-radius:999px;border:1.5px solid var(--r-quiet);margin-top:7px;flex:none;"></span>
+            <div style="min-width:0;"><p style="font-size:14.5px;line-height:1.55;margin:0;color:var(--r-ink-body);"><strong style="font-weight:600;color:var(--r-ink);">Runway</strong> — months remaining, cash divided by the observed thirty-day burn.</p></div>
+          </div>
+          <div class="r-row" style="display:flex;gap:12px;">
+            <span aria-hidden="true" style="width:7px;height:7px;border-radius:999px;border:1.5px solid var(--r-quiet);margin-top:7px;flex:none;"></span>
+            <div style="min-width:0;"><p style="font-size:14.5px;line-height:1.55;margin:0;color:var(--r-ink-body);"><strong style="font-weight:600;color:var(--r-ink);">Cash</strong> — the balance across every wired account, refreshed nightly.</p></div>
+          </div>
+          <div class="r-row" style="display:flex;gap:12px;">
+            <span aria-hidden="true" style="width:7px;height:7px;border-radius:999px;border:1.5px solid var(--r-quiet);margin-top:7px;flex:none;"></span>
+            <div style="min-width:0;"><p style="font-size:14.5px;line-height:1.55;margin:0;color:var(--r-ink-body);"><strong style="font-weight:600;color:var(--r-ink);">Monthly burn</strong> — a rolling thirty-day average of salaries, services and infrastructure.</p></div>
+          </div>
+          <div class="r-row" style="display:flex;gap:12px;">
+            <span aria-hidden="true" style="width:7px;height:7px;border-radius:999px;border:1.5px solid var(--r-quiet);margin-top:7px;flex:none;"></span>
+            <div style="min-width:0;"><p style="font-size:14.5px;line-height:1.55;margin:0;color:var(--r-ink-body);"><strong style="font-weight:600;color:var(--r-ink);">Bill calendar</strong> — the fixed costs ahead and the dates they fall.</p></div>
+          </div>
+        </div>
+
+        <h2 class="r-h-section r-h-section-next">Richard has questions</h2>
+        <div class="r-card" style="padding:20px;">
+          <p style="font-size:14.5px;line-height:1.6;margin:0;color:var(--r-ink-body);">Amy is asking to move ₪18k and I cannot tell you what fraction of a month that is. Would you rather wire Alfred before answering her, or answer her on judgement and wire him after?</p>
+        </div>
+      </section>
+
+      <aside>
+        <h2 class="r-h-section">The team</h2>
+        <div class="r-card r-list" style="margin-bottom:32px;">
+          <div class="r-row" style="display:flex;align-items:center;gap:12px;">
+            <div class="r-avatar" aria-hidden="true" style="width:32px;height:32px;font-size:13px;">A</div>
+            <div style="min-width:0;"><div style="font-size:14.5px;font-weight:600;line-height:1.35;">Alfred</div><div style="font-size:12.5px;color:var(--r-ink-muted);line-height:1.35;">Finance · reporting only</div></div>
+          </div>
+        </div>
+
+        <h2 class="r-h-section">Sources checked</h2>
+        <div class="r-list">
+          <div style="padding:14px 0;border-bottom:1px solid var(--r-hairline);"><div style="font-size:14px;font-weight:600;color:var(--r-ink);margin-bottom:2px;">Bank account</div><div style="font-size:13px;line-height:1.5;color:var(--r-ink-muted);">None configured</div></div>
+          <div style="padding:14px 0;border-bottom:1px solid var(--r-hairline);"><div style="font-size:14px;font-weight:600;color:var(--r-ink);margin-bottom:2px;">Accounting system</div><div style="font-size:13px;line-height:1.5;color:var(--r-ink-muted);">None configured</div></div>
+          <div style="padding:14px 0;"><div style="font-size:14px;font-weight:600;color:var(--r-ink);margin-bottom:2px;">Payment processor</div><div style="font-size:13px;line-height:1.5;color:var(--r-ink-muted);">None configured</div></div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:32px;">
+          <button type="button" class="r-btn r-btn-primary" disabled>Activate Alfred</button>
+          <button type="button" class="r-btn r-btn-secondary">Talk to him</button>
+        </div>
+      </aside>
+    </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

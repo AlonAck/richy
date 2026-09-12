@@ -1,0 +1,8 @@
+    /* Alfred's ledger mark reuses .r-graph, .r-g-main and the hollow circle.open
+       node wholesale. One stroke treatment carries the whole drawing, because
+       every line in it means the same thing — a row that is ruled but unfilled —
+       so there is no second kind of line for a second class to mark. The only
+       thing this page adds is a legend swatch for that ruling, since .r-key i
+       ships round dots only; 3px matches the 2.2 stroke at the capped 340px.
+       The type selector is there to beat `.r-key i`, which is the same weight. */
+    .r-key .r-key .r-key i.r-m-key-ruled { width:16px; height:3px; border-radius:999px; background:var(--r-ink-muted); }

@@ -1,0 +1,140 @@
+<div class="r-page">
+  <div class="r-shell">
+
+    <header class="r-head">
+      <div class="r-logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="m7 8l-4 4l4 4m10-8l4 4l-4 4M14 4l-4 16"></path></svg>
+      </div>
+      <div class="r-head-name">
+        <div style="font-size:15px;font-weight:600;letter-spacing:-0.01em;line-height:1.35;">Alfred</div>
+        <div style="font-size:13px;color:var(--r-ink-muted);line-height:1.35;">Finance</div>
+      </div>
+      <div class="r-chip r-head-chip" style="color:var(--r-ink-muted);flex:none;">
+        <span aria-hidden="true" style="width:6px;height:6px;border-radius:999px;border:1.5px solid var(--r-quiet);display:block;"></span>Unwired
+      </div>
+    </header>
+
+    <main>
+    <section class="r-cols">
+      <div style="display:flex;flex-direction:column;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.09em;text-transform:uppercase;color:var(--r-clay-deep);margin-bottom:18px;">Finance</div>
+        <h1 class="r-h1">The ledger is <br>ruled but empty.</h1>
+        <p style="font-size:18px;line-height:1.55;color:var(--r-ink-body);margin:0;">Three rows, sir: cash, monthly burn, and the runway that follows from them. None is connected, so none is filled.</p>
+        <p class="r-lede-foot" style="font-size:15.5px;line-height:1.6;color:var(--r-ink-3);margin-bottom:0;">With fourteen days to a submission and a spend decision on Amy's desk, this is the page I would least like to leave blank.</p>
+      </div>
+
+      <div class="r-card" style="padding:24px;display:flex;flex-direction:column;">
+        <h2 class="r-h-kicker">The ledger</h2>
+
+        <div>
+          <div style="display:grid;grid-template-columns:96px minmax(0,1fr) 40px;gap:16px;align-items:center;padding:16px 0;border-top:1px solid var(--r-hairline);">
+            <div style="font-size:14.5px;font-weight:600;">Runway</div>
+            <div class="r-seg" aria-hidden="true"><span class="out"></span></div>
+            <div style="font-size:15px;color:var(--r-ink-muted);text-align:right;">—</div>
+          </div>
+          <div style="display:grid;grid-template-columns:96px minmax(0,1fr) 40px;gap:16px;align-items:center;padding:16px 0;border-top:1px solid var(--r-hairline);">
+            <div style="font-size:14.5px;font-weight:600;">Cash</div>
+            <div class="r-seg" aria-hidden="true"><span class="out"></span></div>
+            <div style="font-size:15px;color:var(--r-ink-muted);text-align:right;">—</div>
+          </div>
+          <div style="display:grid;grid-template-columns:96px minmax(0,1fr) 40px;gap:16px;align-items:center;padding:16px 0;border-top:1px solid var(--r-hairline);">
+            <div style="font-size:14.5px;font-weight:600;">Monthly burn</div>
+            <div class="r-seg" aria-hidden="true"><span class="out"></span></div>
+            <div style="font-size:15px;color:var(--r-ink-muted);text-align:right;">—</div>
+          </div>
+        </div>
+
+        <div style="padding-top:24px;margin-top:auto;border-top:1px solid var(--r-hairline);">
+          <p style="font-size:13px;line-height:1.5;color:var(--r-ink-muted);margin:0;">Alfred alerts when runway falls below four months. He cannot alert on a number he does not have.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="r-card r-decide" style="padding:clamp(24px,3.2vw,32px);margin-bottom:24px;">
+      <div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+          <span class="r-tag" style="background:var(--r-neutral-fill);color:var(--r-ink-2);">Awaiting read-only access</span>
+        </div>
+        <h2 class="r-h2">One read-only connection fills all three rows</h2>
+        <p style="font-size:15.5px;line-height:1.6;color:var(--r-ink-body);margin:0;">The primary bank account, or the accounting system — Stripe, Wise, Carta, or an internal ledger. Alfred reads; he never moves money and never authorises a transfer.</p>
+      </div>
+      <div class="r-decide-side">
+        <div class="r-rule">
+          <h3 class="r-h-kicker" style="margin-bottom:8px;">Standing rule</h3>
+          <p>Alfred reports and alerts only. He has no authority to spend or to authorise a transfer.</p>
+        </div>
+        <div class="r-actions">
+          <button type="button" class="r-btn r-btn-primary">Connect an account</button>
+          <button type="button" class="r-btn r-btn-secondary">Not now</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="r-cols-side">
+      <section>
+        <h2 class="r-h-section">What each row will carry</h2>
+        <div class="r-card r-list">
+          <div class="r-graphrow" style="padding:20px 20px 16px;">
+            <svg class="r-graph" viewBox="0 0 260 80" role="img" aria-label="One unmade connection at the left fans out into the ledger's three ruled rows — runway, cash and monthly burn. Every node is hollow: nothing is wired, so no row ends in a figure.">
+              <circle class="open" cx="14" cy="40" r="4.5"></circle>
+              <path class="r-g-main" d="M21 40 H232"></path>
+              <path class="r-g-main" d="M40 40 Q48 40 48 32 V22 Q48 14 56 14 H232"></path>
+              <path class="r-g-main" d="M40 40 Q48 40 48 48 V58 Q48 66 56 66 H232"></path>
+              <circle class="open" cx="240" cy="14" r="4.5"></circle>
+              <circle class="open" cx="240" cy="40" r="4.5"></circle>
+              <circle class="open" cx="240" cy="66" r="4.5"></circle>
+            </svg>
+            <div class="r-key">
+              <div><i class="r-m-key-ruled" aria-hidden="true"></i>Ruled row — runway, cash and monthly burn</div>
+              <div><i class="open" aria-hidden="true"></i>Hollow — the connection is unmade, so the row is empty</div>
+            </div>
+          </div>
+          <div class="r-row" style="display:flex;gap:12px;">
+            <span aria-hidden="true" style="width:7px;height:7px;border-radius:999px;border:1.5px solid var(--r-quiet);margin-top:7px;flex:none;"></span>
+            <div style="min-width:0;"><p style="font-size:14.5px;line-height:1.55;margin:0;color:var(--r-ink-body);"><strong style="font-weight:600;color:var(--r-ink);">Runway</strong> — months remaining, cash divided by the observed thirty-day burn.</p></div>
+          </div>
+          <div class="r-row" style="display:flex;gap:12px;">
+            <span aria-hidden="true" style="width:7px;height:7px;border-radius:999px;border:1.5px solid var(--r-quiet);margin-top:7px;flex:none;"></span>
+            <div style="min-width:0;"><p style="font-size:14.5px;line-height:1.55;margin:0;color:var(--r-ink-body);"><strong style="font-weight:600;color:var(--r-ink);">Cash</strong> — the balance across every wired account, refreshed nightly.</p></div>
+          </div>
+          <div class="r-row" style="display:flex;gap:12px;">
+            <span aria-hidden="true" style="width:7px;height:7px;border-radius:999px;border:1.5px solid var(--r-quiet);margin-top:7px;flex:none;"></span>
+            <div style="min-width:0;"><p style="font-size:14.5px;line-height:1.55;margin:0;color:var(--r-ink-body);"><strong style="font-weight:600;color:var(--r-ink);">Monthly burn</strong> — a rolling thirty-day average of salaries, services and infrastructure.</p></div>
+          </div>
+          <div class="r-row" style="display:flex;gap:12px;">
+            <span aria-hidden="true" style="width:7px;height:7px;border-radius:999px;border:1.5px solid var(--r-quiet);margin-top:7px;flex:none;"></span>
+            <div style="min-width:0;"><p style="font-size:14.5px;line-height:1.55;margin:0;color:var(--r-ink-body);"><strong style="font-weight:600;color:var(--r-ink);">Bill calendar</strong> — the fixed costs ahead and the dates they fall.</p></div>
+          </div>
+        </div>
+
+        <h2 class="r-h-section r-h-section-next">Richard has questions</h2>
+        <div class="r-card" style="padding:20px;">
+          <p style="font-size:14.5px;line-height:1.6;margin:0;color:var(--r-ink-body);">Amy is asking to move ₪18k and I cannot tell you what fraction of a month that is. Would you rather wire Alfred before answering her, or answer her on judgement and wire him after?</p>
+        </div>
+      </section>
+
+      <aside>
+        <h2 class="r-h-section">The team</h2>
+        <div class="r-card r-list" style="margin-bottom:32px;">
+          <div class="r-row" style="display:flex;align-items:center;gap:12px;">
+            <div class="r-avatar" aria-hidden="true" style="width:32px;height:32px;font-size:13px;">A</div>
+            <div style="min-width:0;"><div style="font-size:14.5px;font-weight:600;line-height:1.35;">Alfred</div><div style="font-size:12.5px;color:var(--r-ink-muted);line-height:1.35;">Finance · reporting only</div></div>
+          </div>
+        </div>
+
+        <h2 class="r-h-section">Sources checked</h2>
+        <div class="r-list">
+          <div style="padding:14px 0;border-bottom:1px solid var(--r-hairline);"><div style="font-size:14px;font-weight:600;color:var(--r-ink);margin-bottom:2px;">Bank account</div><div style="font-size:13px;line-height:1.5;color:var(--r-ink-muted);">None configured</div></div>
+          <div style="padding:14px 0;border-bottom:1px solid var(--r-hairline);"><div style="font-size:14px;font-weight:600;color:var(--r-ink);margin-bottom:2px;">Accounting system</div><div style="font-size:13px;line-height:1.5;color:var(--r-ink-muted);">None configured</div></div>
+          <div style="padding:14px 0;"><div style="font-size:14px;font-weight:600;color:var(--r-ink);margin-bottom:2px;">Payment processor</div><div style="font-size:13px;line-height:1.5;color:var(--r-ink-muted);">None configured</div></div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:32px;">
+          <button type="button" class="r-btn r-btn-primary" disabled>Activate Alfred</button>
+          <button type="button" class="r-btn r-btn-secondary">Talk to him</button>
+        </div>
+      </aside>
+    </div>
+    </main>
+  </div>
+</div>

@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/classical-8c9c94ce-c944-456d-ba51-95c18d5072b6/styles.css">
+  <script src="_ds/classical-8c9c94ce-c944-456d-ba51-95c18d5072b6/_ds_bundle.js"></script>
+  <meta name="design_doc_mode" content="page">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap">
+  <style>
+    /* ---- Tokens. Light is the base; every value has a dark pair below. ---- */
+    :root {
+      color-scheme: light;
+      --r-ground:#F0EEE6;
+      --r-card:#FFFFFF;
+      --r-track:#EBE9E0;
+
+      --r-ink:#141413;
+      --r-ink-body:#3D3D3A;
+      --r-ink-2:#4A4945;
+      --r-ink-3:#5E5D59;
+      --r-ink-muted:#6B6A65;
+
+      --r-clay:#D97757;
+      --r-clay-deep:#A8452B;
+      --r-clay-text:#9C4326;
+      --r-clay-tint:rgba(217,119,87,0.14);
+      --r-clay-wash:rgba(217,119,87,0.07);
+      --r-focus:#A8452B;
+
+      --r-quiet:#82807A;
+      --r-ready:#3F8A68; --r-ready-text:#2F7355;
+
+      --r-btn:#141413;
+      --r-btn-hover:#2B2B29;
+      --r-btn-press:#3D3D3A;
+      --r-on-btn:#FAF9F5;
+
+      --r-border:#E5E3DA;
+      --r-border-strong:#DAD8CD;
+      --r-hairline:#EDEBE3;
+      --r-neutral-fill:rgba(20,20,19,0.055);
+      --r-hover-fill:rgba(20,20,19,0.05);
+
+      --r-bar:linear-gradient(90deg,#D97757,#A8452B);
+      --r-shadow:0 1px 2px rgba(20,20,19,0.04);
+
+      --r-serif:'Source Serif 4', Georgia, 'Times New Roman', serif;
+      --r-ease:cubic-bezier(.25,.1,.25,1);
+    }
+
+    /* Dark pair. Applies when the host asks for it, or when the OS does and the
+       host has not pinned light. Every pair below was checked for contrast. */
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --r-ground:#1F1E1D;
+      --r-card:#262625;
+      --r-track:#3A3A37;
+      --r-ink:#F5F4EF;
+      --r-ink-body:#E3E1D9;
+      --r-ink-2:#D6D4CA;
+      --r-ink-3:#C2C0B6;
+      --r-ink-muted:#A3A199;
+      --r-clay:#D97757;
+      --r-clay-deep:#E89B7D;
+      --r-clay-text:#F0A98B;
+      --r-clay-tint:rgba(217,119,87,0.18);
+      --r-clay-wash:rgba(217,119,87,0.10);
+      --r-focus:#E89B7D;
+      --r-quiet:#9A9890;
+      --r-ready:#5FBF92; --r-ready-text:#5FBF92;
+      --r-btn:#F5F4EF;
+      --r-btn-hover:#E3E1D9;
+      --r-btn-press:#C2C0B6;
+      --r-on-btn:#1F1E1D;
+      --r-border:rgba(255,255,255,0.11);
+      --r-border-strong:rgba(255,255,255,0.18);
+      --r-hairline:rgba(255,255,255,0.08);
+      --r-neutral-fill:rgba(255,255,255,0.07);
+      --r-hover-fill:rgba(255,255,255,0.06);
+      --r-shadow:0 1px 2px rgba(0,0,0,0.30);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --r-ground:#1F1E1D;
+        --r-card:#262625;
+        --r-track:#3A3A37;
+        --r-ink:#F5F4EF;
+        --r-ink-body:#E3E1D9;
+        --r-ink-2:#D6D4CA;
+        --r-ink-3:#C2C0B6;
+        --r-ink-muted:#A3A199;
+        --r-clay:#D97757;
+        --r-clay-deep:#E89B7D;
+        --r-clay-text:#F0A98B;
+        --r-clay-tint:rgba(217,119,87,0.18);
+        --r-clay-wash:rgba(217,119,87,0.10);
+        --r-focus:#E89B7D;
+        --r-quiet:#9A9890;
+        --r-ready:#5FBF92; --r-ready-text:#5FBF92;
+        --r-btn:#F5F4EF;
+        --r-btn-hover:#E3E1D9;
+        --r-btn-press:#C2C0B6;
+        --r-on-btn:#1F1E1D;
+        --r-border:rgba(255,255,255,0.11);
+        --r-border-strong:rgba(255,255,255,0.18);
+        --r-hairline:rgba(255,255,255,0.08);
+        --r-neutral-fill:rgba(255,255,255,0.07);
+        --r-hover-fill:rgba(255,255,255,0.06);
+        --r-shadow:0 1px 2px rgba(0,0,0,0.30);
+      }
+    }
+
+    /* ---- Base ---- */
+    *, *::before, *::after { box-sizing:border-box; }
+    body {
+      margin:0;
+      background:var(--r-ground);
+      color:var(--r-ink);
+      -webkit-font-smoothing:antialiased;
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+    }
+    ::selection { background:var(--r-clay-tint); color:var(--r-ink); }
+    a { color:var(--r-clay-deep); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+    a:focus-visible { outline:2px solid var(--r-focus); outline-offset:2px; border-radius:3px; }
+    /* Transform-only entrance: a renderer that freezes animations (offscreen
+       thumbnails, throttled tabs) still shows the page, just unshifted. */
+    @keyframes riseUp { from { transform:translateY(12px); } to { transform:translateY(0); } }
+
+    /* ---- Layout ---- */
+    .r-page {
+      min-height:100vh;
+      min-height:100dvh;
+      padding:clamp(36px,6vw,64px) clamp(20px,4.5vw,40px) clamp(64px,8vw,104px);
+      background:var(--r-ground);
+      color:var(--r-ink);
+    }
+    .r-shell { max-width:1040px; margin:0 auto; animation:riseUp .45s var(--r-ease) both; }
+    .r-head { display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding-bottom:24px; margin-bottom:clamp(32px,4.4vw,48px); border-bottom:1px solid var(--r-border); }
+    .r-head-name { flex:1; min-width:0; }
+    .r-cols { display:grid; grid-template-columns:minmax(0,1.02fr) minmax(0,0.98fr); gap:clamp(28px,4.4vw,52px); align-items:stretch; margin-bottom:24px; }
+    .r-cols-side { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:24px; align-items:start; }
+    /* The decision card is full shell width. One column of 62ch copy inside it
+       left half the card empty, so the standing rule moved into a real second
+       column instead of sitting under the buttons as a full-width strip. */
+    .r-decide { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(0,1fr); gap:clamp(28px,4.4vw,48px); align-items:stretch; }
+    .r-decide-side { display:flex; flex-direction:column; gap:24px; }
+    .r-actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .r-decide-side .r-actions { margin-top:auto; }
+    .r-rule { padding:20px; border-radius:10px; background:var(--r-clay-wash); border:1px solid var(--r-clay-tint); }
+    .r-rule p { font-size:14.5px; line-height:1.55; color:var(--r-ink-body); margin:0; }
+
+    /* ---- Type ---- */
+    .r-h1 { font-family:var(--r-serif); font-size:clamp(34px,6vw,58px); line-height:1.06; font-weight:500; letter-spacing:-0.018em; margin:0 0 24px; text-wrap:balance; }
+    .r-h2 { font-family:var(--r-serif); font-size:clamp(25px,3.4vw,34px); font-weight:600; letter-spacing:-0.015em; line-height:1.16; margin:0 0 16px; text-wrap:balance; }
+    .r-h-section { font-family:var(--r-serif); font-size:clamp(20px,2.4vw,24px); font-weight:600; letter-spacing:-0.012em; margin:0 0 16px; text-wrap:balance; }
+    .r-h-section-next { margin-top:32px; }
+    .r-h-kicker { font-size:11px; font-weight:600; letter-spacing:0.09em; text-transform:uppercase; color:var(--r-ink-muted); margin:0 0 16px; }
+
+    /* ---- Surfaces. Flat, bordered, barely lifted. ---- */
+    .r-card { background:var(--r-card); border:1px solid var(--r-border); border-radius:12px; box-shadow:var(--r-shadow); }
+    .r-chip { display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; background:var(--r-card); border:1px solid var(--r-border); font-size:13px; font-weight:500; }
+    .r-tag { display:inline-flex; align-items:center; padding:6px 12px; border-radius:999px; font-size:12.5px; font-weight:500; }
+    .r-logo { display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:10px; background:var(--r-neutral-fill); color:var(--r-ink); flex:none; }
+    .r-logo svg { display:block; width:21px; height:21px; }
+    .r-logo path { fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .r-avatar { display:flex; align-items:center; justify-content:center; border-radius:999px; background:var(--r-neutral-fill); color:var(--r-ink-3); font-weight:600; flex:none; }
+    .r-list { display:flex; flex-direction:column; }
+    .r-row { padding:16px 20px; border-top:1px solid var(--r-hairline); }
+    .r-row:first-child { border-top:none; }
+
+    /* ---- Buttons. Claude leads with the near-black action, not the accent. ---- */
+    .r-btn {
+      display:inline-flex; align-items:center; justify-content:center; white-space:nowrap;
+      padding:12px 22px; min-height:44px; border-radius:10px;
+      font-family:inherit; font-size:15px; font-weight:500; letter-spacing:-0.005em; cursor:pointer;
+      transition:background-color .18s var(--r-ease), border-color .18s var(--r-ease), color .18s var(--r-ease), opacity .18s var(--r-ease);
+    }
+    .r-btn:focus-visible { outline:2px solid var(--r-focus); outline-offset:2px; }
+    .r-btn-primary { border:1px solid transparent; background:var(--r-btn); color:var(--r-on-btn); }
+    .r-btn-primary:hover { background:var(--r-btn-hover); }
+    .r-btn-primary:active { background:var(--r-btn-press); }
+    .r-btn-secondary { border:1px solid var(--r-border-strong); background:transparent; color:var(--r-ink-body); }
+    .r-btn-secondary:hover { background:var(--r-hover-fill); }
+    .r-btn-secondary:active { background:var(--r-neutral-fill); }
+    .r-btn[disabled] { cursor:not-allowed; opacity:0.45; }
+
+    /* ---- Data marks. Each one encodes a number already stated in the copy. ---- */
+    .r-seg { display:flex; gap:5px; }
+    .r-seg span { flex:1; height:12px; border-radius:4px; }
+    .r-seg span.on { background:var(--r-clay); }
+    .r-seg span.out { background:var(--r-track); border:1.5px dashed var(--r-quiet); }
+    .r-stat { display:flex; justify-content:space-between; align-items:baseline; gap:12px; font-size:14.5px; padding:10px 0; border-top:1px solid var(--r-hairline); }
+    .r-stat b { font-weight:500; color:var(--r-ink-body); }
+    .r-stat span { font-weight:600; font-variant-numeric:tabular-nums; }
+    .r-slim { height:4px; border-radius:999px; background:var(--r-track); overflow:hidden; margin-top:10px; }
+    .r-slim i { display:block; height:100%; border-radius:999px; }
+
+    /* The branch graph. Small and dense on purpose — a wide sparse version of
+       this reads as a doodle. Capped at 300px so it never scales its strokes
+       up; colours match the dots in the list beneath, which names each line. */
+    .r-graph { display:block; width:100%; max-width:340px; height:auto; }
+    .r-graph path { fill:none; stroke-linecap:round; }
+    .r-g-main { stroke:var(--r-ink-muted); stroke-width:2.2; }
+    .r-g-open { stroke:var(--r-quiet); stroke-width:1.8; }
+    .r-g-merge { stroke:var(--r-ready); stroke-width:2.2; }
+    .r-graph circle.open { fill:var(--r-card); stroke:var(--r-quiet); stroke-width:1.6; }
+    .r-graph circle.dot { fill:var(--r-ready); }
+    .r-graph circle.commit { fill:var(--r-ink-muted); }
+    .r-lede-foot { margin-top:24px; }
+    @media (min-width:881px) {
+      .r-lede-foot { margin-top:auto; padding-top:20px; border-top:1px solid var(--r-border); }
+    }
+    .r-graphrow { display:grid; grid-template-columns:minmax(0,340px) minmax(0,1fr); gap:20px; align-items:center; }
+    .r-key { display:flex; flex-direction:column; gap:12px; }
+    .r-key div { display:flex; align-items:center; gap:10px; font-size:12.5px; line-height:1.4; color:var(--r-ink-muted); }
+    .r-key i { width:9px; height:9px; border-radius:999px; flex:none; }
+    .r-key i.merged { background:var(--r-ready); }
+    .r-key i.open { background:var(--r-card); border:1.6px solid var(--r-quiet); }
+    @media (max-width:620px) { .r-graphrow { grid-template-columns:minmax(0,1fr); } }
+
+    /* ---- Responsive ---- */
+    @media (max-width:880px) {
+      .r-cols, .r-cols-side, .r-decide { grid-template-columns:minmax(0,1fr); }
+      .r-h1 br { display:none; }
+    }
+    @media (max-width:560px) {
+      /* Two-column grid: the chip drops to its own row and lines up under the
+         name on its own, with no magic indent to keep in step with the avatar. */
+      .r-head { display:grid; grid-template-columns:38px minmax(0,1fr); column-gap:12px; row-gap:14px; align-items:center; }
+      .r-head-chip { grid-column:2; justify-self:start; }
+      .r-btn { width:100%; }
+    }
+
+    /* ---- Accessibility preferences ---- */
+    @media (prefers-reduced-motion: reduce) {
+      .r-shell { animation:none; }
+      .r-btn { transition:none; }
+    }
+    @media (prefers-contrast: more) {
+      :root { --r-ink-muted:var(--r-ink-3); --r-border:var(--r-border-strong); --r-hairline:var(--r-border-strong); }
+      .r-btn-secondary { border-width:2px; border-color:currentColor; }
+      .r-btn:focus-visible { outline-width:3px; }
+    }
+
+    /* ---- Page-specific: this chief's own data mark ---- */
+    /* ================================================================
+       The talk screen. An application surface, not a document: the
+       page owns the viewport height and the three regions scroll
+       inside themselves. Everything below is prefixed .r-x- (layout
+       and components) or .r-m- (a data mark).
+       ================================================================ */
+
+    /* ---- Shell overrides. The page stops growing; the regions scroll.
+       Selected through the shell wrapper this screen owns, so the body
+       root stays the plain .r-page every other page uses. ---- */
+    .r-page:has(> .r-x-wide) {
+        height:100dvh;
+        min-height:0;
+        overflow:hidden;
+        box-sizing:border-box;
+        padding:clamp(20px,3vw,32px) clamp(16px,3.5vw,32px);
+    }
+    .r-x-wide {
+        max-width:1280px;
+        height:100%;
+        min-height:0;
+        display:flex;
+        flex-direction:column;
+    }
+    .r-x-head { padding-bottom:16px; margin-bottom:24px; }
+    .r-x-main { flex:1 1 auto; min-height:0; display:flex; }
+
+    /* ---- The three regions. Rail, thread, decisions. ---- */
+    .r-x-talk {
+        flex:1 1 auto;
+        min-height:0;
+        display:grid;
+        grid-template-columns:248px minmax(0,1fr) 320px;
+        grid-template-areas:"rail thread decide";
+        gap:24px;
+    }
+
+    /* ---- Region 1: the chief rail ---- */
+    .r-x-rail {
+        grid-area:rail;
+        min-height:0;
+        display:flex;
+        flex-direction:column;
+    }
+    .r-x-rail-list {
+        flex:1 1 auto;
+        min-height:0;
+        overflow-y:auto;
+        scrollbar-width:thin;
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+        padding:2px;
+        margin:-2px;
+    }
+    .r-x-chief {
+        position:relative;
+        display:grid;
+        grid-template-columns:30px minmax(0,1fr);
+        gap:10px;
+        width:100%;
+        box-sizing:border-box;
+        padding:10px 14px;
+        border:1px solid var(--r-border);
+        border-radius:10px;
+        background:var(--r-card);
+        color:var(--r-ink);
+        font-family:inherit;
+        text-align:left;
+        cursor:pointer;
+        transition:background-color .18s var(--r-ease), border-color .18s var(--r-ease);
+    }
+    .r-x-chief:hover { background:var(--r-hover-fill); }
+    .r-x-chief:focus-visible { outline:2px solid var(--r-focus); outline-offset:2px; }
+    /* Selected: a clay spine on the leading edge, a heavier border and a
+       word — so selection survives both greyscale and a lost border. */
+    .r-x-chief-on { border-color:var(--r-border-strong); background:var(--r-clay-wash); }
+    .r-x-chief-on::before {
+        content:"";
+        position:absolute;
+        left:-1px; top:12px; bottom:12px;
+        width:3px;
+        border-radius:999px;
+        background:var(--r-clay);
+    }
+    .r-x-chief-top { display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+    .r-x-chief-name { font-size:14.5px; font-weight:600; line-height:1.35; letter-spacing:-0.01em; }
+    .r-x-chief-on .r-x-chief-name { color:var(--r-ink); }
+    .r-x-chief-dept { display:block; font-size:12px; line-height:1.4; color:var(--r-ink-muted); margin-top:1px; }
+    .r-x-chief-state { display:flex; align-items:center; gap:7px; font-size:12px; line-height:1.4; color:var(--r-ink-3); margin-top:5px; }
+    .r-x-av { width:30px; height:30px; font-size:12.5px; }
+    /* Carried only by the chiefs who are stopped without an answer from the
+       CEO. It marks that fact and counts nothing — six of the seven show it,
+       which is the same six the header chip totals. */
+    .r-x-wait {
+        flex:none;
+        font-size:11px;
+        font-weight:600;
+        letter-spacing:0.02em;
+        color:var(--r-clay-text);
+    }
+    .r-x-viewing {
+        display:inline-block;
+        margin-top:4px;
+        font-size:10.5px;
+        font-weight:600;
+        letter-spacing:0.09em;
+        text-transform:uppercase;
+        color:var(--r-clay-text);
+    }
+    .r-x-rail-foot {
+        flex:none;
+        margin-top:16px;
+        padding-top:16px;
+        border-top:1px solid var(--r-border);
+    }
+    .r-x-rail-foot p { margin:0; font-size:12.5px; line-height:1.5; color:var(--r-ink-muted); }
+
+    /* A state mark: one dot per chief, paired with the word beside it. */
+    .r-m-dot { width:7px; height:7px; border-radius:999px; flex:none; }
+    .r-m-dot-wait { background:var(--r-clay); }
+    .r-m-dot-run { background:var(--r-ready); }
+    .r-m-dot-off { background:var(--r-card); border:1.5px solid var(--r-quiet); }
+
+    /* ---- Region 2: the thread ---- */
+    .r-x-thread {
+        grid-area:thread;
+        min-height:0;
+        display:flex;
+        flex-direction:column;
+        overflow:hidden;
+    }
+    .r-x-thread-head {
+        flex:none;
+        display:flex;
+        align-items:center;
+        gap:12px;
+        padding:16px 24px;
+        border-bottom:1px solid var(--r-hairline);
+    }
+    /* What the transcript is, said before it is read. */
+    .r-x-sample {
+        flex:none;
+        margin:0;
+        padding:16px 24px;
+        border-bottom:1px solid var(--r-hairline);
+        font-size:12px;
+        line-height:1.5;
+        color:var(--r-ink-muted);
+    }
+    .r-x-scroll {
+        flex:1 1 auto;
+        min-height:0;
+        overflow-y:auto;
+        scrollbar-width:thin;
+        padding:24px;
+        display:flex;
+        flex-direction:column;
+        gap:24px;
+    }
+    .r-x-scroll:focus-visible { outline:2px solid var(--r-focus); outline-offset:-2px; border-radius:4px; }
+
+    /* Two speakers, told apart by shape before colour: the chief hangs off
+       an avatar and runs as plain set text; the CEO is a filled block,
+       right-aligned, with no avatar and a squared trailing corner. */
+    .r-x-turn { display:block; }
+    .r-x-turn-chief { display:grid; grid-template-columns:32px minmax(0,1fr); gap:12px; }
+    .r-x-turn-av { width:32px; height:32px; font-size:13px; margin-top:2px; }
+    .r-x-who {
+        margin:0 0 4px;
+        font-size:12.5px;
+        font-weight:600;
+        letter-spacing:-0.005em;
+        color:var(--r-ink);
+    }
+    .r-x-say {
+        margin:0;
+        font-size:15px;
+        line-height:1.6;
+        color:var(--r-ink-body);
+    }
+    .r-x-say + .r-x-say { margin-top:10px; }
+    .r-x-said-chief { max-width:92%; }
+    .r-x-lead {
+        font-family:var(--r-serif);
+        font-size:19px;
+        line-height:1.35;
+        font-weight:600;
+        letter-spacing:-0.012em;
+        color:var(--r-ink);
+        margin:0 0 8px;
+    }
+    .r-x-turn-ceo { display:flex; justify-content:flex-end; }
+    .r-x-said-ceo {
+        max-width:80%;
+        padding:14px 16px;
+        border-radius:12px 12px 4px 12px;
+        background:var(--r-neutral-fill);
+        border:1px solid var(--r-hairline);
+    }
+    .r-x-said-ceo .r-x-who {
+        text-align:right;
+        font-size:10.5px;
+        font-weight:600;
+        letter-spacing:0.09em;
+        text-transform:uppercase;
+        color:var(--r-ink-muted);
+    }
+    .r-x-said-ceo .r-x-say { font-size:14.5px; color:var(--r-ink-2); }
+
+    /* A mark inside a turn. It draws the shape of the figure the sentence
+       states and carries the numbers the sentence leaves out — the same
+       .r-seg and .r-slim the chief pages use, not a second pill of copy. */
+    .r-x-msg-mark { margin-top:16px; }
+    .r-x-msg-mark-cap {
+        margin:8px 0 0;
+        font-size:12.5px;
+        line-height:1.5;
+        color:var(--r-ink-muted);
+        font-variant-numeric:tabular-nums;
+    }
+    .r-x-bars { display:flex; flex-direction:column; gap:8px; }
+    .r-x-bar {
+        display:grid;
+        grid-template-columns:62px minmax(0,1fr) 38px;
+        align-items:center;
+        gap:12px;
+    }
+    .r-x-bar .r-slim { margin-top:0; }
+    .r-x-bar-k { font-size:12.5px; line-height:1.4; color:var(--r-ink-muted); }
+    .r-x-bar-v {
+        font-size:12.5px;
+        font-weight:600;
+        line-height:1.4;
+        text-align:right;
+        color:var(--r-ink);
+        font-variant-numeric:tabular-nums;
+    }
+
+    /* ---- The composer. Drawn at rest: nothing listening, nothing typed. ---- */
+    .r-x-composer-wrap {
+        flex:none;
+        padding:16px 24px;
+        border-top:1px solid var(--r-hairline);
+        background:var(--r-card);
+        border-radius:0 0 12px 12px;
+    }
+    .r-x-composer {
+        display:grid;
+        grid-template-columns:minmax(0,1fr) auto auto;
+        gap:8px;
+        align-items:center;
+    }
+    .r-x-field {
+        min-width:0;
+        box-sizing:border-box;
+        width:100%;
+        min-height:44px;
+        padding:10px 16px;
+        border:1px solid var(--r-border-strong);
+        border-radius:10px;
+        background:var(--r-ground);
+        color:var(--r-ink);
+        font-family:inherit;
+        font-size:15px;
+        line-height:1.4;
+    }
+    .r-x-field::placeholder { color:var(--r-ink-muted); }
+    .r-x-field:focus-visible { outline:2px solid var(--r-focus); outline-offset:1px; border-color:var(--r-border-strong); }
+    /* Both buttons are .r-btn — only their size is this screen's business. */
+    .r-x-mic { gap:9px; min-height:44px; padding-left:18px; padding-right:20px; }
+    .r-x-mic svg, .r-x-send svg { display:block; width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .r-x-send { width:44px; height:44px; min-height:44px; padding:0; flex:none; }
+    .r-x-hint { margin:10px 0 0; font-size:12px; line-height:1.45; color:var(--r-ink-muted); }
+
+    /* ---- Region 3: the decisions panel ---- */
+    .r-x-decide {
+        grid-area:decide;
+        min-height:0;
+        display:flex;
+        flex-direction:column;
+    }
+    /* Three different shapes, not three cards: the decision is a card
+       because it carries an action, the question is set as document
+       material under a rule, and the standing rule keeps its wash. The
+       activate button stays on the floor, always reachable. */
+    .r-x-decide-list {
+        flex:1 1 auto;
+        min-height:0;
+        overflow-y:auto;
+        scrollbar-width:thin;
+        display:flex;
+        flex-direction:column;
+        gap:16px;
+        padding:2px;
+        margin:-2px;
+    }
+    .r-x-dec { padding:20px; }
+    .r-x-dec-title {
+        font-family:var(--r-serif);
+        font-size:19px;
+        font-weight:600;
+        letter-spacing:-0.012em;
+        line-height:1.25;
+        margin:12px 0 8px;
+        text-wrap:balance;
+    }
+    .r-x-dec p { margin:0; font-size:14px; line-height:1.6; color:var(--r-ink-body); }
+    .r-x-dec .r-actions { margin-top:16px; }
+    .r-x-dec .r-btn { padding:10px 16px; font-size:14px; }
+    .r-x-decision { padding-top:16px; border-top:1px solid var(--r-border); }
+    .r-x-decision-h {
+        font-family:var(--r-serif);
+        font-size:17px;
+        font-weight:600;
+        letter-spacing:-0.01em;
+        line-height:1.3;
+        color:var(--r-ink);
+        margin:0 0 8px;
+        text-wrap:balance;
+    }
+    .r-x-decision-p { margin:0; font-size:13.5px; line-height:1.6; color:var(--r-ink-3); }
+    .r-x-decision .r-actions { margin-top:16px; }
+    .r-x-decision .r-btn { padding:10px 16px; font-size:14px; }
+    .r-x-panel-foot { flex:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--r-border); }
+
+    /* ---- Responsive ---- */
+    /* Under 1180 the page stops owning the viewport: the rail keeps its
+       column, the decisions panel drops under the thread, and the whole
+       screen scrolls as one. Nothing is dropped, only re-ordered. */
+    @media (max-width:1180px) {
+        .r-page:has(> .r-x-wide) { height:auto; min-height:100dvh; overflow:visible; }
+        .r-x-wide { height:auto; }
+        .r-x-main { display:block; }
+        .r-x-talk {
+            grid-template-columns:236px minmax(0,1fr);
+            grid-template-areas:"rail thread" "rail decide";
+            grid-template-rows:auto auto;
+            align-items:start;
+        }
+        /* The rail is bounded so that it always fits the band it is pinned
+           in. A rail taller than the viewport cannot stick, and its column
+           would then run empty beside the decisions panel. */
+        .r-x-rail { position:sticky; top:24px; }
+        .r-x-rail-list { max-height:56vh; }
+        .r-x-thread { max-height:72vh; }
+        .r-x-decide-list { overflow-y:visible; }
+    }
+    /* Under 880 the rail lies down as a horizontal strip above the thread,
+       and the page becomes the only vertical scroller on the screen. */
+    @media (max-width:880px) {
+        .r-x-talk {
+            grid-template-columns:minmax(0,1fr);
+            grid-template-areas:"rail" "thread" "decide";
+        }
+        .r-x-rail { position:static; }
+        .r-x-rail-list {
+            max-height:none;
+            flex-direction:row;
+            overflow-x:auto;
+            padding-bottom:6px;
+            scroll-snap-type:x proximity;
+        }
+        .r-x-chief { width:auto; flex:0 0 auto; min-width:206px; scroll-snap-align:start; }
+        .r-x-rail-foot { margin-top:12px; padding-top:12px; }
+        .r-x-thread { max-height:none; }
+        .r-x-scroll { overflow-y:visible; }
+        .r-x-said-chief, .r-x-said-ceo { max-width:100%; }
+    }
+    @media (max-width:560px) {
+        .r-x-thread-head { padding:14px 16px; flex-wrap:wrap; }
+        .r-x-sample { padding:16px; }
+        .r-x-scroll { padding:16px; gap:20px; }
+        .r-x-composer-wrap { padding:16px; }
+        .r-x-composer { grid-template-columns:minmax(0,1fr) auto; }
+        .r-x-field { grid-column:1 / -1; }
+        .r-x-mic { padding-left:16px; padding-right:16px; }
+        .r-x-turn-chief { grid-template-columns:26px minmax(0,1fr); gap:10px; }
+        .r-x-turn-av { width:26px; height:26px; font-size:11.5px; }
+        .r-x-bar { grid-template-columns:56px minmax(0,1fr) 38px; gap:10px; }
+        .r-x-dec .r-btn, .r-x-decision .r-btn { width:100%; }
+    }
+
+    /* ---- Accessibility preferences ---- */
+    @media (prefers-reduced-motion: reduce) {
+        .r-x-chief { transition:none; }
+        .r-x-rail-list { scroll-snap-type:none; }
+    }
+    @media (prefers-contrast: more) {
+        .r-x-chief { border-color:var(--r-border-strong); }
+        .r-x-chief-on { border-width:2px; border-color:var(--r-ink-3); }
+        .r-x-chief-on::before { width:4px; left:-2px; }
+        .r-x-said-ceo { border-color:var(--r-border-strong); border-width:2px; }
+        .r-x-field { border-width:2px; border-color:currentColor; }
+        .r-x-chief:focus-visible, .r-x-field:focus-visible, .r-x-scroll:focus-visible { outline-width:3px; }
+    }
+  </style>
+</helmet>
+
+<div class="r-page">
+  <div class="r-shell r-x-wide">
+
+    <header class="r-head r-x-head">
+      <div class="r-logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="m7 8l-4 4l4 4m10-8l4 4l-4 4M14 4l-4 16"></path></svg>
+      </div>
+      <div class="r-head-name">
+        <h1 style="font-size:15px;font-weight:600;letter-spacing:-0.01em;line-height:1.35;margin:0;">Chiefs</h1>
+        <div style="font-size:13px;color:var(--r-ink-muted);line-height:1.35;">Seven departments · one line open at a time</div>
+      </div>
+      <div class="r-chip r-head-chip" style="color:var(--r-clay-text);flex:none;">
+        <span aria-hidden="true" style="width:6px;height:6px;border-radius:999px;background:var(--r-clay);display:block;"></span>All seven waiting on you
+      </div>
+    </header>
+
+    <main class="r-x-main">
+    <div class="r-x-talk">
+
+      <aside class="r-x-rail" aria-label="Chiefs">
+        <h2 class="r-h-kicker" style="flex:none;">The seven</h2>
+        <div class="r-x-rail-list">
+
+          <button type="button" class="r-x-chief r-x-chief-on" aria-current="true">
+            <span class="r-avatar r-x-av" aria-hidden="true">I</span>
+            <span>
+              <span class="r-x-chief-top">
+                <span class="r-x-chief-name">Iris</span>
+                <span class="r-x-wait">On you</span>
+              </span>
+              <span class="r-x-chief-dept">UX &amp; AI Design</span>
+              <span class="r-x-chief-state"><i class="r-m-dot r-m-dot-wait" aria-hidden="true"></i>Merge waiting</span>
+              <span class="r-x-viewing">Open in the thread</span>
+            </span>
+          </button>
+
+          <button type="button" class="r-x-chief">
+            <span class="r-avatar r-x-av" aria-hidden="true">A</span>
+            <span>
+              <span class="r-x-chief-top">
+                <span class="r-x-chief-name">Alfred</span>
+                <span class="r-x-wait">On you</span>
+              </span>
+              <span class="r-x-chief-dept">Finance</span>
+              <span class="r-x-chief-state"><i class="r-m-dot r-m-dot-off" aria-hidden="true"></i>Unwired</span>
+            </span>
+          </button>
+
+          <button type="button" class="r-x-chief">
+            <span class="r-avatar r-x-av" aria-hidden="true">A</span>
+            <span>
+              <span class="r-x-chief-top">
+                <span class="r-x-chief-name">Amy</span>
+                <span class="r-x-wait">On you</span>
+              </span>
+              <span class="r-x-chief-dept">Marketing</span>
+              <span class="r-x-chief-state"><i class="r-m-dot r-m-dot-wait" aria-hidden="true"></i>Proposal waiting</span>
+            </span>
+          </button>
+
+          <button type="button" class="r-x-chief">
+            <span class="r-avatar r-x-av" aria-hidden="true">D</span>
+            <span>
+              <span class="r-x-chief-top">
+                <span class="r-x-chief-name">Dean</span>
+              </span>
+              <span class="r-x-chief-dept">Competitive Intel</span>
+              <span class="r-x-chief-state"><i class="r-m-dot r-m-dot-run" aria-hidden="true"></i>4 items overnight</span>
+            </span>
+          </button>
+
+          <button type="button" class="r-x-chief">
+            <span class="r-avatar r-x-av" aria-hidden="true">J</span>
+            <span>
+              <span class="r-x-chief-top">
+                <span class="r-x-chief-name">Jake</span>
+                <span class="r-x-wait">On you</span>
+              </span>
+              <span class="r-x-chief-dept">Startup Advisors</span>
+              <span class="r-x-chief-state"><i class="r-m-dot r-m-dot-wait" aria-hidden="true"></i>Needs you</span>
+            </span>
+          </button>
+
+          <button type="button" class="r-x-chief">
+            <span class="r-avatar r-x-av" aria-hidden="true">M</span>
+            <span>
+              <span class="r-x-chief-top">
+                <span class="r-x-chief-name">Mara</span>
+                <span class="r-x-wait">On you</span>
+              </span>
+              <span class="r-x-chief-dept">User Signals</span>
+              <span class="r-x-chief-state"><i class="r-m-dot r-m-dot-off" aria-hidden="true"></i>Dormant</span>
+            </span>
+          </button>
+
+          <button type="button" class="r-x-chief">
+            <span class="r-avatar r-x-av" aria-hidden="true">V</span>
+            <span>
+              <span class="r-x-chief-top">
+                <span class="r-x-chief-name">Victor</span>
+                <span class="r-x-wait">On you</span>
+              </span>
+              <span class="r-x-chief-dept">QA &amp; Security</span>
+              <span class="r-x-chief-state"><i class="r-m-dot r-m-dot-run" aria-hidden="true"></i>4 open</span>
+            </span>
+          </button>
+
+        </div>
+        <div class="r-x-rail-foot">
+          <h3 class="r-h-kicker" style="margin-bottom:8px;">Shared deadline</h3>
+          <p>23 Sep — App Store submission. Jake counts fourteen days to it.</p>
+        </div>
+      </aside>
+
+      <section class="r-card r-x-thread" aria-label="Conversation with Iris">
+        <div class="r-x-thread-head">
+          <div class="r-avatar" aria-hidden="true" style="width:36px;height:36px;font-size:14px;">I</div>
+          <div style="flex:1;min-width:0;">
+            <h2 style="font-size:15px;font-weight:600;letter-spacing:-0.01em;line-height:1.35;margin:0;">Iris</h2>
+            <div style="font-size:12.5px;color:var(--r-ink-muted);line-height:1.35;">UX &amp; AI Design</div>
+          </div>
+          <div class="r-chip" style="color:var(--r-clay-text);flex:none;">
+            <span aria-hidden="true" style="width:6px;height:6px;border-radius:999px;background:var(--r-clay);display:block;"></span>Merge waiting
+          </div>
+        </div>
+
+        <p class="r-x-sample">A sample exchange. Iris's replies are her chief page, read back a line at a time; the prompts facing them are examples of how the line is used, not a record of what was said.</p>
+
+        <div class="r-x-scroll" tabindex="0" role="log" aria-label="Messages with Iris, oldest first">
+
+          <article class="r-x-turn r-x-turn-chief">
+            <div class="r-avatar r-x-turn-av" aria-hidden="true">I</div>
+            <div class="r-x-said-chief">
+              <p class="r-x-who">Iris</p>
+              <p class="r-x-lead">A third of it is off the main.</p>
+              <p class="r-x-say">Four of the six core flows are committed. The voice surface — the orb, the live captions — is finished and sitting on its own branch.</p>
+              <div class="r-x-msg-mark">
+                <div class="r-seg" aria-hidden="true">
+                  <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="out"></span><span class="out"></span>
+                </div>
+                <p class="r-x-msg-mark-cap">67% committed to main · 33% on feature branches.</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="r-x-turn r-x-turn-ceo">
+            <div class="r-x-said-ceo">
+              <p class="r-x-who">You</p>
+              <p class="r-x-say">Finished, or ready? They are not the same word.</p>
+            </div>
+          </article>
+
+          <article class="r-x-turn r-x-turn-chief">
+            <div class="r-avatar r-x-turn-av" aria-hidden="true">I</div>
+            <div class="r-x-said-chief">
+              <p class="r-x-who">Iris</p>
+              <p class="r-x-say">Ready. The orb shader holds above 60fps on the GPU layer across six devices. Caption layout was tested from six inches through forty, with no breakage. The accessibility review came back clean — WCAG 2.1 AA, contrast and keyboard.</p>
+            </div>
+          </article>
+
+          <article class="r-x-turn r-x-turn-ceo">
+            <div class="r-x-said-ceo">
+              <p class="r-x-who">You</p>
+              <p class="r-x-say">And the two languages?</p>
+            </div>
+          </article>
+
+          <article class="r-x-turn r-x-turn-chief">
+            <div class="r-avatar r-x-turn-av" aria-hidden="true">I</div>
+            <div class="r-x-said-chief">
+              <p class="r-x-who">Iris</p>
+              <p class="r-x-say">Hebrew has its numerals and dates done. English still has the terms in review — and that last part is a marketing review, not a design one.</p>
+              <div class="r-x-msg-mark r-x-bars">
+                <div class="r-x-bar">
+                  <span class="r-x-bar-k">Hebrew</span>
+                  <span class="r-slim" aria-hidden="true"><i style="width:87%;background:var(--r-clay);"></i></span>
+                  <span class="r-x-bar-v">87%</span>
+                </div>
+                <div class="r-x-bar">
+                  <span class="r-x-bar-k">English</span>
+                  <span class="r-slim" aria-hidden="true"><i style="width:64%;background:var(--r-quiet);"></i></span>
+                  <span class="r-x-bar-v">64%</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="r-x-turn r-x-turn-ceo">
+            <div class="r-x-said-ceo">
+              <p class="r-x-who">You</p>
+              <p class="r-x-say">What else is still off the main?</p>
+            </div>
+          </article>
+
+          <article class="r-x-turn r-x-turn-chief">
+            <div class="r-avatar r-x-turn-av" aria-hidden="true">I</div>
+            <div class="r-x-said-chief">
+              <p class="r-x-who">Iris</p>
+              <p class="r-x-say">Three branches are listed. <strong style="font-weight:600;color:var(--r-ink);">voice-surface</strong> is the one ready to merge. <strong style="font-weight:600;color:var(--r-ink);">mobile-dashboard</strong> and <strong style="font-weight:600;color:var(--r-ink);">voice-grid</strong> are experiments — voice-grid puts all seven chiefs on one screen — and both stay on their branches another week.</p>
+            </div>
+          </article>
+
+          <article class="r-x-turn r-x-turn-chief">
+            <div class="r-avatar r-x-turn-av" aria-hidden="true">I</div>
+            <div class="r-x-said-chief">
+              <p class="r-x-who">Iris</p>
+              <p class="r-x-say">I may ship interface work on my own; a change to the design language itself comes to you. The merge onto main is the one I cannot make alone, and there is a question sitting behind it about the 23 Sep submission. Both are in the panel beside this.</p>
+            </div>
+          </article>
+
+        </div>
+
+        <div class="r-x-composer-wrap">
+          <div class="r-x-composer">
+            <input class="r-x-field" type="text" name="reply" autocomplete="off" placeholder="Write to Iris" aria-label="Write a message to Iris">
+            <button type="button" class="r-btn r-btn-primary r-x-mic" aria-label="Hold to speak to Iris">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"></path></svg>Hold to speak
+            </button>
+            <button type="button" class="r-btn r-btn-secondary r-x-send" aria-label="Send the message">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z"></path></svg>
+            </button>
+          </div>
+          <p class="r-x-hint">Voice or text. Hold the button to speak; release to send.</p>
+        </div>
+      </section>
+
+      <aside class="r-x-decide" aria-label="Open decisions for Iris">
+        <h2 class="r-h-kicker" style="flex:none;">Open with Iris</h2>
+        <div class="r-x-decide-list">
+
+        <div class="r-card r-x-dec">
+          <span class="r-tag" style="background:var(--r-clay-tint);color:var(--r-clay-text);">Merge decision</span>
+          <h3 class="r-x-dec-title">Move the voice surface onto main</h3>
+          <p>The orb holds above sixty frames on the GPU layer, the captions survive six inches to forty, and the accessibility pass came back clean. The two experiments stay on their branches another week.</p>
+          <div class="r-actions">
+            <button type="button" class="r-btn r-btn-primary">Approve</button>
+            <button type="button" class="r-btn r-btn-secondary">Not now</button>
+            <button type="button" class="r-btn r-btn-secondary">Push back</button>
+          </div>
+        </div>
+
+        <div class="r-x-decision">
+          <h3 class="r-h-kicker" style="margin-bottom:8px;">Open question</h3>
+          <p class="r-x-decision-h">Hebrew first, or hold for both?</p>
+          <p class="r-x-decision-p">English at 64 per cent is a marketing review, not a design one. Do you want Iris to ship Hebrew-only for the 23 Sep submission and let English follow, or hold the surface until both are whole?</p>
+          <div class="r-actions">
+            <button type="button" class="r-btn r-btn-secondary">Answer in the thread</button>
+          </div>
+        </div>
+
+        <div class="r-rule">
+          <h3 class="r-h-kicker" style="margin-bottom:8px;">Standing rule</h3>
+          <p>Iris may ship interface work on her own. A change to the design language itself comes to you.</p>
+        </div>
+
+        </div>
+
+        <div class="r-x-panel-foot">
+          <button type="button" class="r-btn r-btn-primary" style="width:100%;">Activate Iris</button>
+        </div>
+      </aside>
+
+    </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

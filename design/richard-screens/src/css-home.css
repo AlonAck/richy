@@ -1,0 +1,153 @@
+    /* ---- Home: the roster. Seven entries that are not equal, so the rows are
+       not equal either. A chief who cannot move without the CEO carries a clay
+       rail, his own page's headline, a real figure and the question in his own
+       words; the two unwired ones carry a dashed rail and hollow nodes where
+       the figure would be. Dean, who is not stopped, sits in his own quieter
+       card below the six. Below both, the dates the seven share — the one
+       structure on the page that is not a list of people. ---- */
+
+    /* One meaning per colour, held across every mark on this page:
+         clay        = unresolved, and it is on your desk
+         green       = clear, moving without you
+         dashed edge = nothing wired behind it
+       Every mark is captioned in HTML as well, so none of them carries a
+       reading the words beside it do not already state. */
+
+    /* Section heads carry a note on the right so the group is never a bare
+       label, and so the rail's meaning is stated rather than guessed. */
+    .r-x-group { display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:16px; }
+    .r-x-group .r-h-section { margin-bottom:0; }
+    .r-x-group-note { flex:1 1 280px; max-width:420px; font-size:12.5px; line-height:1.45; color:var(--r-ink-muted); }
+
+    /* ---- The roster entry ---- */
+    .r-x-roster { overflow:hidden; }
+    .r-x-entry {
+        display:grid;
+        /* The middle track IS the measure. 1.55fr against 1fr puts the copy at
+           roughly 75 characters at the shell's full width, which is where the
+           reference sets it. A cap on the text itself would only draw a second
+           and narrower column edge inside this one. */
+        grid-template-columns:40px minmax(0,1.55fr) minmax(0,1fr);
+        column-gap:24px;
+        row-gap:16px;
+        padding:24px;
+        border-top:1px solid var(--r-hairline);
+        border-left:2px solid var(--r-hairline);
+    }
+    .r-x-entry:first-child { border-top:none; }
+    /* Weight, not decoration: the rail is the answer to "can this one move
+       without me". Dashed means stopped and with nothing behind it yet. */
+    .r-x-entry--blocked { border-left-color:var(--r-clay); }
+    .r-x-entry--unwired { border-left-style:dashed; }
+    .r-x-entry--quiet { border-left-color:var(--r-border-strong); }
+
+    .r-x-id { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .r-x-name { font-family:var(--r-serif); font-size:19px; font-weight:600; letter-spacing:-0.012em; line-height:1.2; }
+    .r-x-dept { font-size:12.5px; line-height:1.4; color:var(--r-ink-muted); margin-top:2px; }
+    .r-x-line { font-family:var(--r-serif); font-size:17px; line-height:1.35; letter-spacing:-0.008em; color:var(--r-ink); margin:16px 0 8px; }
+    .r-x-need { font-size:14.5px; line-height:1.55; color:var(--r-ink-body); margin:0; }
+
+    /* The chief's own question, kept in the entry rather than repeated in a
+       second pass over the same seven people further down. Clay-tinted rail:
+       an unanswered question is the same unresolved state the outer rail
+       marks, one step quieter. */
+    .r-x-ask { margin-top:16px; padding-left:16px; border-left:2px solid var(--r-clay-tint); }
+    .r-x-ask-q { font-size:14.5px; line-height:1.6; color:var(--r-ink-2); margin:0; }
+    .r-x-ask-q + .r-x-ask-q { margin-top:8px; }
+    .r-x-ask-note { font-size:12.5px; line-height:1.45; color:var(--r-ink-muted); margin:8px 0 0; }
+    /* Nothing is being asked, so the rail is not clay and the words are not
+       weighted as a question. */
+    .r-x-ask--none { border-left-color:var(--r-border-strong); }
+    .r-x-ask--none .r-x-ask-q { color:var(--r-ink-muted); }
+
+    /* The figure column. It holds the mark, its caption and the way in, so it
+       is never the short side of the row. */
+    .r-x-mark { display:flex; flex-direction:column; align-items:stretch; }
+    /* auto pins the way in to the foot of a tall row; the caption's own 24px
+       keeps the gap honest when the row is short and auto resolves to zero. */
+    .r-x-mark .r-btn { margin-top:auto; width:100%; }
+    .r-x-num { font-size:30px; font-weight:600; letter-spacing:-0.03em; line-height:1; font-variant-numeric:tabular-nums; color:var(--r-ink); }
+    .r-x-num small { font-size:15px; font-weight:500; letter-spacing:0; color:var(--r-ink-muted); }
+    .r-x-cap { font-size:12.5px; line-height:1.45; color:var(--r-ink-muted); margin:8px 0 24px; }
+
+    /* ---- Data marks ---- */
+    /* Cells inside .r-seg and legend dots inside .r-key are the same two
+       classes, so a colour cannot drift between the key and the mark. The
+       shell's own .on is deliberately unused here: it reads as "finished" on
+       the reference page, which is the opposite of what clay means on this
+       one, where it is always the thing still on the CEO's desk. */
+    .r-m-pending { background:var(--r-clay); }
+    .r-m-clear { background:var(--r-ready); }
+    /* Unresolved and unwired at once: clay hue, dashed edge. */
+    .r-m-dry { box-sizing:border-box; background:var(--r-clay-tint); border:1.5px dashed var(--r-clay); }
+    /* Half-closed: filled faintly, outlined fully, so it reads as a cell that
+       is part way rather than as a gap between two cells. */
+    .r-m-seg-half { background:var(--r-clay-tint); box-shadow:inset 0 0 0 1.5px var(--r-clay); }
+    /* No source wired: a node with nothing in it. */
+    .r-m-nodes { display:flex; align-items:center; gap:8px; }
+    .r-m-nodes i { width:12px; height:12px; border-radius:999px; background:var(--r-card); border:1.5px dashed var(--r-quiet); flex:none; }
+
+    /* ---- The dates they share ---- */
+    /* Two real columns: the date and its distance on the left, what happens
+       and who carries it on the right. The right track sets the measure and
+       lands near 55 characters at full width. */
+    .r-x-when {
+        display:grid;
+        grid-template-columns:minmax(0,132px) minmax(0,1fr);
+        column-gap:24px;
+        row-gap:8px;
+        padding:20px 24px;
+        border-top:1px solid var(--r-hairline);
+    }
+    .r-x-when:first-child { border-top:none; }
+    .r-x-when-key, .r-x-when-body { min-width:0; }
+    .r-x-when-date { font-family:var(--r-serif); font-size:19px; font-weight:600; letter-spacing:-0.012em; line-height:1.2; color:var(--r-ink); font-variant-numeric:tabular-nums; }
+    .r-x-when-sub { font-size:12.5px; line-height:1.4; color:var(--r-ink-muted); margin-top:4px; }
+    .r-x-when-line { font-size:14.5px; line-height:1.55; color:var(--r-ink-body); margin:0; }
+    .r-x-when-who { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+
+    /* What is already behind him. Dates only, no card: the quiet column beside
+       the three that still have to be answered. */
+    .r-x-past { padding:14px 0; border-bottom:1px solid var(--r-hairline); }
+    .r-x-past:last-child { border-bottom:none; }
+    .r-x-past-key { font-size:14px; font-weight:600; color:var(--r-ink); margin-bottom:2px; font-variant-numeric:tabular-nums; }
+    .r-x-past-line { font-size:13px; line-height:1.5; color:var(--r-ink-muted); margin:0; }
+    .r-x-past-who { font-size:12px; line-height:1.4; color:var(--r-ink-3); margin-top:6px; }
+
+    /* ---- Responsive ---- */
+    @media (max-width:880px) {
+        /* The figure column drops under the sentence it belongs to rather than
+           under the avatar, so it stays in the same measure as the copy. */
+        .r-x-entry { grid-template-columns:40px minmax(0,1fr); }
+        .r-x-mark { grid-column:2; }
+        /* The column is gone, so the way in sizes to its own label rather
+           than stretching the width of the entry. */
+        .r-x-mark .r-btn { width:auto; align-self:flex-start; }
+        .r-x-group-note { max-width:none; }
+    }
+    @media (max-width:560px) {
+        /* The avatar column stays down to 390px: it still leaves about 260px of
+           text track, and dropping the column while keeping the avatar would
+           strand each initial on a row of its own above the name. */
+        .r-x-entry { padding:24px 16px; column-gap:16px; }
+        .r-x-mark .r-btn { width:100%; }
+        .r-x-name { font-size:18px; }
+        .r-x-line { font-size:16px; }
+        .r-x-group { gap:8px; }
+        /* 132px of date column is more than a 390px screen can lend. */
+        .r-x-when { grid-template-columns:minmax(0,1fr); padding:20px 16px; }
+        .r-x-when-sub { margin-top:2px; }
+    }
+
+    /* ---- Accessibility preferences ---- */
+    @media (prefers-contrast: more) {
+        .r-x-entry { border-top-color:var(--r-border-strong); border-left-color:var(--r-border-strong); }
+        .r-x-entry--blocked { border-left-color:var(--r-clay-deep); }
+        .r-x-ask { border-left-color:var(--r-clay-deep); }
+        .r-x-ask--none { border-left-color:var(--r-ink-muted); }
+        .r-x-when { border-top-color:var(--r-border-strong); }
+        .r-x-past { border-bottom-color:var(--r-border-strong); }
+        .r-m-nodes i { border-color:var(--r-ink-3); border-width:2px; }
+        .r-m-dry { border-color:var(--r-clay-deep); border-width:2px; }
+        .r-m-seg-half { box-shadow:inset 0 0 0 2px var(--r-clay-deep); }
+    }

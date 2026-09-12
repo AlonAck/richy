@@ -1,0 +1,396 @@
+    /* ================================================================
+       The talk screen. An application surface, not a document: the
+       page owns the viewport height and the three regions scroll
+       inside themselves. Everything below is prefixed .r-x- (layout
+       and components) or .r-m- (a data mark).
+       ================================================================ */
+
+    /* ---- Shell overrides. The page stops growing; the regions scroll.
+       Selected through the shell wrapper this screen owns, so the body
+       root stays the plain .r-page every other page uses. ---- */
+    .r-page:has(> .r-x-wide) {
+        height:100dvh;
+        min-height:0;
+        overflow:hidden;
+        box-sizing:border-box;
+        padding:clamp(20px,3vw,32px) clamp(16px,3.5vw,32px);
+    }
+    .r-x-wide {
+        max-width:1280px;
+        height:100%;
+        min-height:0;
+        display:flex;
+        flex-direction:column;
+    }
+    .r-x-head { padding-bottom:16px; margin-bottom:24px; }
+    .r-x-main { flex:1 1 auto; min-height:0; display:flex; }
+
+    /* ---- The three regions. Rail, thread, decisions. ---- */
+    .r-x-talk {
+        flex:1 1 auto;
+        min-height:0;
+        display:grid;
+        grid-template-columns:248px minmax(0,1fr) 320px;
+        grid-template-areas:"rail thread decide";
+        gap:24px;
+    }
+
+    /* ---- Region 1: the chief rail ---- */
+    .r-x-rail {
+        grid-area:rail;
+        min-height:0;
+        display:flex;
+        flex-direction:column;
+    }
+    .r-x-rail-list {
+        flex:1 1 auto;
+        min-height:0;
+        overflow-y:auto;
+        scrollbar-width:thin;
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+        padding:2px;
+        margin:-2px;
+    }
+    .r-x-chief {
+        position:relative;
+        display:grid;
+        grid-template-columns:30px minmax(0,1fr);
+        gap:10px;
+        width:100%;
+        box-sizing:border-box;
+        padding:10px 14px;
+        border:1px solid var(--r-border);
+        border-radius:10px;
+        background:var(--r-card);
+        color:var(--r-ink);
+        font-family:inherit;
+        text-align:left;
+        cursor:pointer;
+        transition:background-color .18s var(--r-ease), border-color .18s var(--r-ease);
+    }
+    .r-x-chief:hover { background:var(--r-hover-fill); }
+    .r-x-chief:focus-visible { outline:2px solid var(--r-focus); outline-offset:2px; }
+    /* Selected: a clay spine on the leading edge, a heavier border and a
+       word — so selection survives both greyscale and a lost border. */
+    .r-x-chief-on { border-color:var(--r-border-strong); background:var(--r-clay-wash); }
+    .r-x-chief-on::before {
+        content:"";
+        position:absolute;
+        left:-1px; top:12px; bottom:12px;
+        width:3px;
+        border-radius:999px;
+        background:var(--r-clay);
+    }
+    .r-x-chief-top { display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+    .r-x-chief-name { font-size:14.5px; font-weight:600; line-height:1.35; letter-spacing:-0.01em; }
+    .r-x-chief-on .r-x-chief-name { color:var(--r-ink); }
+    .r-x-chief-dept { display:block; font-size:12px; line-height:1.4; color:var(--r-ink-muted); margin-top:1px; }
+    .r-x-chief-state { display:flex; align-items:center; gap:7px; font-size:12px; line-height:1.4; color:var(--r-ink-3); margin-top:5px; }
+    .r-x-av { width:30px; height:30px; font-size:12.5px; }
+    /* Carried only by the chiefs who are stopped without an answer from the
+       CEO. It marks that fact and counts nothing — six of the seven show it,
+       which is the same six the header chip totals. */
+    .r-x-wait {
+        flex:none;
+        font-size:11px;
+        font-weight:600;
+        letter-spacing:0.02em;
+        color:var(--r-clay-text);
+    }
+    .r-x-viewing {
+        display:inline-block;
+        margin-top:4px;
+        font-size:10.5px;
+        font-weight:600;
+        letter-spacing:0.09em;
+        text-transform:uppercase;
+        color:var(--r-clay-text);
+    }
+    .r-x-rail-foot {
+        flex:none;
+        margin-top:16px;
+        padding-top:16px;
+        border-top:1px solid var(--r-border);
+    }
+    .r-x-rail-foot p { margin:0; font-size:12.5px; line-height:1.5; color:var(--r-ink-muted); }
+
+    /* A state mark: one dot per chief, paired with the word beside it. */
+    .r-m-dot { width:7px; height:7px; border-radius:999px; flex:none; }
+    .r-m-dot-wait { background:var(--r-clay); }
+    .r-m-dot-run { background:var(--r-ready); }
+    .r-m-dot-off { background:var(--r-card); border:1.5px solid var(--r-quiet); }
+
+    /* ---- Region 2: the thread ---- */
+    .r-x-thread {
+        grid-area:thread;
+        min-height:0;
+        display:flex;
+        flex-direction:column;
+        overflow:hidden;
+    }
+    .r-x-thread-head {
+        flex:none;
+        display:flex;
+        align-items:center;
+        gap:12px;
+        padding:16px 24px;
+        border-bottom:1px solid var(--r-hairline);
+    }
+    /* What the transcript is, said before it is read. */
+    .r-x-sample {
+        flex:none;
+        margin:0;
+        padding:16px 24px;
+        border-bottom:1px solid var(--r-hairline);
+        font-size:12px;
+        line-height:1.5;
+        color:var(--r-ink-muted);
+    }
+    .r-x-scroll {
+        flex:1 1 auto;
+        min-height:0;
+        overflow-y:auto;
+        scrollbar-width:thin;
+        padding:24px;
+        display:flex;
+        flex-direction:column;
+        gap:24px;
+    }
+    .r-x-scroll:focus-visible { outline:2px solid var(--r-focus); outline-offset:-2px; border-radius:4px; }
+
+    /* Two speakers, told apart by shape before colour: the chief hangs off
+       an avatar and runs as plain set text; the CEO is a filled block,
+       right-aligned, with no avatar and a squared trailing corner. */
+    .r-x-turn { display:block; }
+    .r-x-turn-chief { display:grid; grid-template-columns:32px minmax(0,1fr); gap:12px; }
+    .r-x-turn-av { width:32px; height:32px; font-size:13px; margin-top:2px; }
+    .r-x-who {
+        margin:0 0 4px;
+        font-size:12.5px;
+        font-weight:600;
+        letter-spacing:-0.005em;
+        color:var(--r-ink);
+    }
+    .r-x-say {
+        margin:0;
+        font-size:15px;
+        line-height:1.6;
+        color:var(--r-ink-body);
+    }
+    .r-x-say + .r-x-say { margin-top:10px; }
+    .r-x-said-chief { max-width:92%; }
+    .r-x-lead {
+        font-family:var(--r-serif);
+        font-size:19px;
+        line-height:1.35;
+        font-weight:600;
+        letter-spacing:-0.012em;
+        color:var(--r-ink);
+        margin:0 0 8px;
+    }
+    .r-x-turn-ceo { display:flex; justify-content:flex-end; }
+    .r-x-said-ceo {
+        max-width:80%;
+        padding:14px 16px;
+        border-radius:12px 12px 4px 12px;
+        background:var(--r-neutral-fill);
+        border:1px solid var(--r-hairline);
+    }
+    .r-x-said-ceo .r-x-who {
+        text-align:right;
+        font-size:10.5px;
+        font-weight:600;
+        letter-spacing:0.09em;
+        text-transform:uppercase;
+        color:var(--r-ink-muted);
+    }
+    .r-x-said-ceo .r-x-say { font-size:14.5px; color:var(--r-ink-2); }
+
+    /* A mark inside a turn. It draws the shape of the figure the sentence
+       states and carries the numbers the sentence leaves out — the same
+       .r-seg and .r-slim the chief pages use, not a second pill of copy. */
+    .r-x-msg-mark { margin-top:16px; }
+    .r-x-msg-mark-cap {
+        margin:8px 0 0;
+        font-size:12.5px;
+        line-height:1.5;
+        color:var(--r-ink-muted);
+        font-variant-numeric:tabular-nums;
+    }
+    .r-x-bars { display:flex; flex-direction:column; gap:8px; }
+    .r-x-bar {
+        display:grid;
+        grid-template-columns:62px minmax(0,1fr) 38px;
+        align-items:center;
+        gap:12px;
+    }
+    .r-x-bar .r-slim { margin-top:0; }
+    .r-x-bar-k { font-size:12.5px; line-height:1.4; color:var(--r-ink-muted); }
+    .r-x-bar-v {
+        font-size:12.5px;
+        font-weight:600;
+        line-height:1.4;
+        text-align:right;
+        color:var(--r-ink);
+        font-variant-numeric:tabular-nums;
+    }
+
+    /* ---- The composer. Drawn at rest: nothing listening, nothing typed. ---- */
+    .r-x-composer-wrap {
+        flex:none;
+        padding:16px 24px;
+        border-top:1px solid var(--r-hairline);
+        background:var(--r-card);
+        border-radius:0 0 12px 12px;
+    }
+    .r-x-composer {
+        display:grid;
+        grid-template-columns:minmax(0,1fr) auto auto;
+        gap:8px;
+        align-items:center;
+    }
+    .r-x-field {
+        min-width:0;
+        box-sizing:border-box;
+        width:100%;
+        min-height:44px;
+        padding:10px 16px;
+        border:1px solid var(--r-border-strong);
+        border-radius:10px;
+        background:var(--r-ground);
+        color:var(--r-ink);
+        font-family:inherit;
+        font-size:15px;
+        line-height:1.4;
+    }
+    .r-x-field::placeholder { color:var(--r-ink-muted); }
+    .r-x-field:focus-visible { outline:2px solid var(--r-focus); outline-offset:1px; border-color:var(--r-border-strong); }
+    /* Both buttons are .r-btn — only their size is this screen's business. */
+    .r-x-mic { gap:9px; min-height:44px; padding-left:18px; padding-right:20px; }
+    .r-x-mic svg, .r-x-send svg { display:block; width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .r-x-send { width:44px; height:44px; min-height:44px; padding:0; flex:none; }
+    .r-x-hint { margin:10px 0 0; font-size:12px; line-height:1.45; color:var(--r-ink-muted); }
+
+    /* ---- Region 3: the decisions panel ---- */
+    .r-x-decide {
+        grid-area:decide;
+        min-height:0;
+        display:flex;
+        flex-direction:column;
+    }
+    /* Three different shapes, not three cards: the decision is a card
+       because it carries an action, the question is set as document
+       material under a rule, and the standing rule keeps its wash. The
+       activate button stays on the floor, always reachable. */
+    .r-x-decide-list {
+        flex:1 1 auto;
+        min-height:0;
+        overflow-y:auto;
+        scrollbar-width:thin;
+        display:flex;
+        flex-direction:column;
+        gap:16px;
+        padding:2px;
+        margin:-2px;
+    }
+    .r-x-dec { padding:20px; }
+    .r-x-dec-title {
+        font-family:var(--r-serif);
+        font-size:19px;
+        font-weight:600;
+        letter-spacing:-0.012em;
+        line-height:1.25;
+        margin:12px 0 8px;
+        text-wrap:balance;
+    }
+    .r-x-dec p { margin:0; font-size:14px; line-height:1.6; color:var(--r-ink-body); }
+    .r-x-dec .r-actions { margin-top:16px; }
+    .r-x-dec .r-btn { padding:10px 16px; font-size:14px; }
+    .r-x-decision { padding-top:16px; border-top:1px solid var(--r-border); }
+    .r-x-decision-h {
+        font-family:var(--r-serif);
+        font-size:17px;
+        font-weight:600;
+        letter-spacing:-0.01em;
+        line-height:1.3;
+        color:var(--r-ink);
+        margin:0 0 8px;
+        text-wrap:balance;
+    }
+    .r-x-decision-p { margin:0; font-size:13.5px; line-height:1.6; color:var(--r-ink-3); }
+    .r-x-decision .r-actions { margin-top:16px; }
+    .r-x-decision .r-btn { padding:10px 16px; font-size:14px; }
+    .r-x-panel-foot { flex:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--r-border); }
+
+    /* ---- Responsive ---- */
+    /* Under 1180 the page stops owning the viewport: the rail keeps its
+       column, the decisions panel drops under the thread, and the whole
+       screen scrolls as one. Nothing is dropped, only re-ordered. */
+    @media (max-width:1180px) {
+        .r-page:has(> .r-x-wide) { height:auto; min-height:100dvh; overflow:visible; }
+        .r-x-wide { height:auto; }
+        .r-x-main { display:block; }
+        .r-x-talk {
+            grid-template-columns:236px minmax(0,1fr);
+            grid-template-areas:"rail thread" "rail decide";
+            grid-template-rows:auto auto;
+            align-items:start;
+        }
+        /* The rail is bounded so that it always fits the band it is pinned
+           in. A rail taller than the viewport cannot stick, and its column
+           would then run empty beside the decisions panel. */
+        .r-x-rail { position:sticky; top:24px; }
+        .r-x-rail-list { max-height:56vh; }
+        .r-x-thread { max-height:72vh; }
+        .r-x-decide-list { overflow-y:visible; }
+    }
+    /* Under 880 the rail lies down as a horizontal strip above the thread,
+       and the page becomes the only vertical scroller on the screen. */
+    @media (max-width:880px) {
+        .r-x-talk {
+            grid-template-columns:minmax(0,1fr);
+            grid-template-areas:"rail" "thread" "decide";
+        }
+        .r-x-rail { position:static; }
+        .r-x-rail-list {
+            max-height:none;
+            flex-direction:row;
+            overflow-x:auto;
+            padding-bottom:6px;
+            scroll-snap-type:x proximity;
+        }
+        .r-x-chief { width:auto; flex:0 0 auto; min-width:206px; scroll-snap-align:start; }
+        .r-x-rail-foot { margin-top:12px; padding-top:12px; }
+        .r-x-thread { max-height:none; }
+        .r-x-scroll { overflow-y:visible; }
+        .r-x-said-chief, .r-x-said-ceo { max-width:100%; }
+    }
+    @media (max-width:560px) {
+        .r-x-thread-head { padding:14px 16px; flex-wrap:wrap; }
+        .r-x-sample { padding:16px; }
+        .r-x-scroll { padding:16px; gap:20px; }
+        .r-x-composer-wrap { padding:16px; }
+        .r-x-composer { grid-template-columns:minmax(0,1fr) auto; }
+        .r-x-field { grid-column:1 / -1; }
+        .r-x-mic { padding-left:16px; padding-right:16px; }
+        .r-x-turn-chief { grid-template-columns:26px minmax(0,1fr); gap:10px; }
+        .r-x-turn-av { width:26px; height:26px; font-size:11.5px; }
+        .r-x-bar { grid-template-columns:56px minmax(0,1fr) 38px; gap:10px; }
+        .r-x-dec .r-btn, .r-x-decision .r-btn { width:100%; }
+    }
+
+    /* ---- Accessibility preferences ---- */
+    @media (prefers-reduced-motion: reduce) {
+        .r-x-chief { transition:none; }
+        .r-x-rail-list { scroll-snap-type:none; }
+    }
+    @media (prefers-contrast: more) {
+        .r-x-chief { border-color:var(--r-border-strong); }
+        .r-x-chief-on { border-width:2px; border-color:var(--r-ink-3); }
+        .r-x-chief-on::before { width:4px; left:-2px; }
+        .r-x-said-ceo { border-color:var(--r-border-strong); border-width:2px; }
+        .r-x-field { border-width:2px; border-color:currentColor; }
+        .r-x-chief:focus-visible, .r-x-field:focus-visible, .r-x-scroll:focus-visible { outline-width:3px; }
+    }

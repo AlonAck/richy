@@ -1,0 +1,13 @@
+    /* Dean's mark has a third state the shared .r-key dots cannot say: a line
+       that simply stops. The swatch is a terminator bar, not a node, and it
+       occupies the same 9px slot as the dots so all three legend rows keep
+       one text edge. */
+    .r-m-key-line-end {
+        display: block;
+        width: 2px;
+        height: 13px;
+        margin: 0 3.5px;
+        border-radius: 1px;
+        background: var(--r-ink-muted);
+        flex: none;
+    }

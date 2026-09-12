@@ -1,0 +1,13 @@
+    /* Mara's mark carries two marks the shell has no pair for, and both are
+       told apart by shape rather than by shade: a report slot is a hollow
+       square, the port is an open bracket. Only the source dots reuse the
+       shell's circle.open — a <rect> gets no stroke from .r-graph path, so
+       the slot node has to state its own. */
+    .r-m-slot-node { fill:var(--r-card); stroke:var(--r-ink-muted); stroke-width:1.8; }
+
+    /* Legend swatches. `.r-key i` is a 9px round dot, so each of these has to
+       outweigh its width, height and radius — hence the doubled class. The
+       port keeps the dots' 12.6px slot with margin, so all three rows of the
+       legend hold one text edge. */
+    .r-m-key-slot.r-m-key-slot { border-radius:2px; background:var(--r-card); border:1.8px solid var(--r-ink-muted); }
+    .r-m-key-port.r-m-key-port { width:7px; height:12px; margin:0 1.9px; border-radius:0 2px 2px 0; border:1.8px solid var(--r-ink-muted); border-left:0; }

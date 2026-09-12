@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/classical-8c9c94ce-c944-456d-ba51-95c18d5072b6/styles.css">
+  <script src="_ds/classical-8c9c94ce-c944-456d-ba51-95c18d5072b6/_ds_bundle.js"></script>
+  <meta name="design_doc_mode" content="page">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap">
+  <style>
+    /* ---- Tokens. Light is the base; every value has a dark pair below. ---- */
+    :root {
+      color-scheme: light;
+      --r-ground:#F0EEE6;
+      --r-card:#FFFFFF;
+      --r-track:#EBE9E0;
+
+      --r-ink:#141413;
+      --r-ink-body:#3D3D3A;
+      --r-ink-2:#4A4945;
+      --r-ink-3:#5E5D59;
+      --r-ink-muted:#6B6A65;
+
+      --r-clay:#D97757;
+      --r-clay-deep:#A8452B;
+      --r-clay-text:#9C4326;
+      --r-clay-tint:rgba(217,119,87,0.14);
+      --r-clay-wash:rgba(217,119,87,0.07);
+      --r-focus:#A8452B;
+
+      --r-quiet:#82807A;
+      --r-ready:#3F8A68; --r-ready-text:#2F7355;
+
+      --r-btn:#141413;
+      --r-btn-hover:#2B2B29;
+      --r-btn-press:#3D3D3A;
+      --r-on-btn:#FAF9F5;
+
+      --r-border:#E5E3DA;
+      --r-border-strong:#DAD8CD;
+      --r-hairline:#EDEBE3;
+      --r-neutral-fill:rgba(20,20,19,0.055);
+      --r-hover-fill:rgba(20,20,19,0.05);
+
+      --r-bar:linear-gradient(90deg,#D97757,#A8452B);
+      --r-shadow:0 1px 2px rgba(20,20,19,0.04);
+
+      --r-serif:'Source Serif 4', Georgia, 'Times New Roman', serif;
+      --r-ease:cubic-bezier(.25,.1,.25,1);
+    }
+
+    /* Dark pair. Applies when the host asks for it, or when the OS does and the
+       host has not pinned light. Every pair below was checked for contrast. */
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --r-ground:#1F1E1D;
+      --r-card:#262625;
+      --r-track:#3A3A37;
+      --r-ink:#F5F4EF;
+      --r-ink-body:#E3E1D9;
+      --r-ink-2:#D6D4CA;
+      --r-ink-3:#C2C0B6;
+      --r-ink-muted:#A3A199;
+      --r-clay:#D97757;
+      --r-clay-deep:#E89B7D;
+      --r-clay-text:#F0A98B;
+      --r-clay-tint:rgba(217,119,87,0.18);
+      --r-clay-wash:rgba(217,119,87,0.10);
+      --r-focus:#E89B7D;
+      --r-quiet:#9A9890;
+      --r-ready:#5FBF92; --r-ready-text:#5FBF92;
+      --r-btn:#F5F4EF;
+      --r-btn-hover:#E3E1D9;
+      --r-btn-press:#C2C0B6;
+      --r-on-btn:#1F1E1D;
+      --r-border:rgba(255,255,255,0.11);
+      --r-border-strong:rgba(255,255,255,0.18);
+      --r-hairline:rgba(255,255,255,0.08);
+      --r-neutral-fill:rgba(255,255,255,0.07);
+      --r-hover-fill:rgba(255,255,255,0.06);
+      --r-shadow:0 1px 2px rgba(0,0,0,0.30);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --r-ground:#1F1E1D;
+        --r-card:#262625;
+        --r-track:#3A3A37;
+        --r-ink:#F5F4EF;
+        --r-ink-body:#E3E1D9;
+        --r-ink-2:#D6D4CA;
+        --r-ink-3:#C2C0B6;
+        --r-ink-muted:#A3A199;
+        --r-clay:#D97757;
+        --r-clay-deep:#E89B7D;
+        --r-clay-text:#F0A98B;
+        --r-clay-tint:rgba(217,119,87,0.18);
+        --r-clay-wash:rgba(217,119,87,0.10);
+        --r-focus:#E89B7D;
+        --r-quiet:#9A9890;
+        --r-ready:#5FBF92; --r-ready-text:#5FBF92;
+        --r-btn:#F5F4EF;
+        --r-btn-hover:#E3E1D9;
+        --r-btn-press:#C2C0B6;
+        --r-on-btn:#1F1E1D;
+        --r-border:rgba(255,255,255,0.11);
+        --r-border-strong:rgba(255,255,255,0.18);
+        --r-hairline:rgba(255,255,255,0.08);
+        --r-neutral-fill:rgba(255,255,255,0.07);
+        --r-hover-fill:rgba(255,255,255,0.06);
+        --r-shadow:0 1px 2px rgba(0,0,0,0.30);
+      }
+    }
+
+    /* ---- Base ---- */
+    *, *::before, *::after { box-sizing:border-box; }
+    body {
+      margin:0;
+      background:var(--r-ground);
+      color:var(--r-ink);
+      -webkit-font-smoothing:antialiased;
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+    }
+    ::selection { background:var(--r-clay-tint); color:var(--r-ink); }
+    a { color:var(--r-clay-deep); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+    a:focus-visible { outline:2px solid var(--r-focus); outline-offset:2px; border-radius:3px; }
+    /* Transform-only entrance: a renderer that freezes animations (offscreen
+       thumbnails, throttled tabs) still shows the page, just unshifted. */
+    @keyframes riseUp { from { transform:translateY(12px); } to { transform:translateY(0); } }
+
+    /* ---- Layout ---- */
+    .r-page {
+      min-height:100vh;
+      min-height:100dvh;
+      padding:clamp(36px,6vw,64px) clamp(20px,4.5vw,40px) clamp(64px,8vw,104px);
+      background:var(--r-ground);
+      color:var(--r-ink);
+    }
+    .r-shell { max-width:1040px; margin:0 auto; animation:riseUp .45s var(--r-ease) both; }
+    .r-head { display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding-bottom:24px; margin-bottom:clamp(32px,4.4vw,48px); border-bottom:1px solid var(--r-border); }
+    .r-head-name { flex:1; min-width:0; }
+    .r-cols { display:grid; grid-template-columns:minmax(0,1.02fr) minmax(0,0.98fr); gap:clamp(28px,4.4vw,52px); align-items:stretch; margin-bottom:24px; }
+    .r-cols-side { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:24px; align-items:start; }
+    /* The decision card is full shell width. One column of 62ch copy inside it
+       left half the card empty, so the standing rule moved into a real second
+       column instead of sitting under the buttons as a full-width strip. */
+    .r-decide { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(0,1fr); gap:clamp(28px,4.4vw,48px); align-items:stretch; }
+    .r-decide-side { display:flex; flex-direction:column; gap:24px; }
+    .r-actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .r-decide-side .r-actions { margin-top:auto; }
+    .r-rule { padding:20px; border-radius:10px; background:var(--r-clay-wash); border:1px solid var(--r-clay-tint); }
+    .r-rule p { font-size:14.5px; line-height:1.55; color:var(--r-ink-body); margin:0; }
+
+    /* ---- Type ---- */
+    .r-h1 { font-family:var(--r-serif); font-size:clamp(34px,6vw,58px); line-height:1.06; font-weight:500; letter-spacing:-0.018em; margin:0 0 24px; text-wrap:balance; }
+    .r-h2 { font-family:var(--r-serif); font-size:clamp(25px,3.4vw,34px); font-weight:600; letter-spacing:-0.015em; line-height:1.16; margin:0 0 16px; text-wrap:balance; }
+    .r-h-section { font-family:var(--r-serif); font-size:clamp(20px,2.4vw,24px); font-weight:600; letter-spacing:-0.012em; margin:0 0 16px; text-wrap:balance; }
+    .r-h-section-next { margin-top:32px; }
+    .r-h-kicker { font-size:11px; font-weight:600; letter-spacing:0.09em; text-transform:uppercase; color:var(--r-ink-muted); margin:0 0 16px; }
+
+    /* ---- Surfaces. Flat, bordered, barely lifted. ---- */
+    .r-card { background:var(--r-card); border:1px solid var(--r-border); border-radius:12px; box-shadow:var(--r-shadow); }
+    .r-chip { display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; background:var(--r-card); border:1px solid var(--r-border); font-size:13px; font-weight:500; }
+    .r-tag { display:inline-flex; align-items:center; padding:6px 12px; border-radius:999px; font-size:12.5px; font-weight:500; }
+    .r-logo { display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:10px; background:var(--r-neutral-fill); color:var(--r-ink); flex:none; }
+    .r-logo svg { display:block; width:21px; height:21px; }
+    .r-logo path { fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .r-avatar { display:flex; align-items:center; justify-content:center; border-radius:999px; background:var(--r-neutral-fill); color:var(--r-ink-3); font-weight:600; flex:none; }
+    .r-list { display:flex; flex-direction:column; }
+    .r-row { padding:16px 20px; border-top:1px solid var(--r-hairline); }
+    .r-row:first-child { border-top:none; }
+
+    /* ---- Buttons. Claude leads with the near-black action, not the accent. ---- */
+    .r-btn {
+      display:inline-flex; align-items:center; justify-content:center; white-space:nowrap;
+      padding:12px 22px; min-height:44px; border-radius:10px;
+      font-family:inherit; font-size:15px; font-weight:500; letter-spacing:-0.005em; cursor:pointer;
+      transition:background-color .18s var(--r-ease), border-color .18s var(--r-ease), color .18s var(--r-ease), opacity .18s var(--r-ease);
+    }
+    .r-btn:focus-visible { outline:2px solid var(--r-focus); outline-offset:2px; }
+    .r-btn-primary { border:1px solid transparent; background:var(--r-btn); color:var(--r-on-btn); }
+    .r-btn-primary:hover { background:var(--r-btn-hover); }
+    .r-btn-primary:active { background:var(--r-btn-press); }
+    .r-btn-secondary { border:1px solid var(--r-border-strong); background:transparent; color:var(--r-ink-body); }
+    .r-btn-secondary:hover { background:var(--r-hover-fill); }
+    .r-btn-secondary:active { background:var(--r-neutral-fill); }
+    .r-btn[disabled] { cursor:not-allowed; opacity:0.45; }
+
+    /* ---- Data marks. Each one encodes a number already stated in the copy. ---- */
+    .r-seg { display:flex; gap:5px; }
+    .r-seg span { flex:1; height:12px; border-radius:4px; }
+    .r-seg span.on { background:var(--r-clay); }
+    .r-seg span.out { background:var(--r-track); border:1.5px dashed var(--r-quiet); }
+    .r-stat { display:flex; justify-content:space-between; align-items:baseline; gap:12px; font-size:14.5px; padding:10px 0; border-top:1px solid var(--r-hairline); }
+    .r-stat b { font-weight:500; color:var(--r-ink-body); }
+    .r-stat span { font-weight:600; font-variant-numeric:tabular-nums; }
+    .r-slim { height:4px; border-radius:999px; background:var(--r-track); overflow:hidden; margin-top:10px; }
+    .r-slim i { display:block; height:100%; border-radius:999px; }
+
+    /* The branch graph. Small and dense on purpose — a wide sparse version of
+       this reads as a doodle. Capped at 300px so it never scales its strokes
+       up; colours match the dots in the list beneath, which names each line. */
+    .r-graph { display:block; width:100%; max-width:340px; height:auto; }
+    .r-graph path { fill:none; stroke-linecap:round; }
+    .r-g-main { stroke:var(--r-ink-muted); stroke-width:2.2; }
+    .r-g-open { stroke:var(--r-quiet); stroke-width:1.8; }
+    .r-g-merge { stroke:var(--r-ready); stroke-width:2.2; }
+    .r-graph circle.open { fill:var(--r-card); stroke:var(--r-quiet); stroke-width:1.6; }
+    .r-graph circle.dot { fill:var(--r-ready); }
+    .r-graph circle.commit { fill:var(--r-ink-muted); }
+    .r-lede-foot { margin-top:24px; }
+    @media (min-width:881px) {
+      .r-lede-foot { margin-top:auto; padding-top:20px; border-top:1px solid var(--r-border); }
+    }
+    .r-graphrow { display:grid; grid-template-columns:minmax(0,340px) minmax(0,1fr); gap:20px; align-items:center; }
+    .r-key { display:flex; flex-direction:column; gap:12px; }
+    .r-key div { display:flex; align-items:center; gap:10px; font-size:12.5px; line-height:1.4; color:var(--r-ink-muted); }
+    .r-key i { width:9px; height:9px; border-radius:999px; flex:none; }
+    .r-key i.merged { background:var(--r-ready); }
+    .r-key i.open { background:var(--r-card); border:1.6px solid var(--r-quiet); }
+    @media (max-width:620px) { .r-graphrow { grid-template-columns:minmax(0,1fr); } }
+
+    /* ---- Responsive ---- */
+    @media (max-width:880px) {
+      .r-cols, .r-cols-side, .r-decide { grid-template-columns:minmax(0,1fr); }
+      .r-h1 br { display:none; }
+    }
+    @media (max-width:560px) {
+      /* Two-column grid: the chip drops to its own row and lines up under the
+         name on its own, with no magic indent to keep in step with the avatar. */
+      .r-head { display:grid; grid-template-columns:38px minmax(0,1fr); column-gap:12px; row-gap:14px; align-items:center; }
+      .r-head-chip { grid-column:2; justify-self:start; }
+      .r-btn { width:100%; }
+    }
+
+    /* ---- Accessibility preferences ---- */
+    @media (prefers-reduced-motion: reduce) {
+      .r-shell { animation:none; }
+      .r-btn { transition:none; }
+    }
+    @media (prefers-contrast: more) {
+      :root { --r-ink-muted:var(--r-ink-3); --r-border:var(--r-border-strong); --r-hairline:var(--r-border-strong); }
+      .r-btn-secondary { border-width:2px; border-color:currentColor; }
+      .r-btn:focus-visible { outline-width:3px; }
+    }
+
+    /* ---- Page-specific: this chief's own data mark ---- */
+    /* Victor's release-gate mark. Seven gates stand on one release line: the
+       two closed ones reuse the shell's merged stroke and dot, the half-done
+       one is a hollow node with its left half filled, and the four untouched
+       ones carry the accent because they are what stops the line. The bar and
+       the outlined diamond past it are the release, not yet reached. */
+    .r-m-hold { stroke:var(--r-clay); stroke-width:1.8; }
+    .r-m-stop { stroke:var(--r-clay-deep); stroke-width:2.2; }
+    .r-m-blocker { fill:var(--r-card); stroke:var(--r-clay); stroke-width:1.8; }
+    /* The release is the only diamond in the mark, so it stays legible in
+       greyscale where a fourth hollow circle would not. Doubled, like the
+       half below, only to outweigh the shell's `.r-graph path { fill:none }`. */
+    .r-m-release.r-m-release { fill:var(--r-card); stroke:var(--r-clay-deep); stroke-width:1.8; stroke-linejoin:round; }
+    .r-m-gate-half.r-m-gate-half { fill:var(--r-quiet); stroke:none; }
+
+    /* Legend swatches. The shell already sizes `.r-key i`, so these only add
+       colour — except the stop bar, which has to outweigh that size too. */
+    .r-m-key-half { background:linear-gradient(90deg,var(--r-quiet) 0 50%,var(--r-card) 50% 100%); border:1.6px solid var(--r-quiet); }
+    .r-m-key-blocker { background:var(--r-card); border:1.6px solid var(--r-clay); }
+    .r-m-key-stop.r-m-key-stop { width:3px; height:15px; border-radius:2px; background:var(--r-clay-deep); }
+  </style>
+</helmet>
+
+<div class="r-page">
+  <div class="r-shell">
+
+    <header class="r-head">
+      <div class="r-logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="m7 8l-4 4l4 4m10-8l4 4l-4 4M14 4l-4 16"></path></svg>
+      </div>
+      <div class="r-head-name">
+        <div style="font-size:15px;font-weight:600;letter-spacing:-0.01em;line-height:1.35;">Victor</div>
+        <div style="font-size:13px;color:var(--r-ink-muted);line-height:1.35;">QA &amp; Security</div>
+      </div>
+      <div class="r-chip r-head-chip" style="color:var(--r-clay-text);flex:none;">
+        <span aria-hidden="true" style="width:6px;height:6px;border-radius:999px;background:var(--r-clay);display:block;"></span>4 open
+      </div>
+    </header>
+
+    <main>
+    <section class="r-cols">
+      <div style="display:flex;flex-direction:column;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.09em;text-transform:uppercase;color:var(--r-clay-deep);margin-bottom:18px;">QA &amp; Security</div>
+        <h1 class="r-h1">Four of seven <br>stop the line.</h1>
+        <p style="font-size:18px;line-height:1.55;color:var(--r-ink-body);margin:0;">Seven items would hold a release. Two closed overnight, one is half done, four are untouched.</p>
+        <p class="r-lede-foot" style="font-size:15.5px;line-height:1.6;color:var(--r-ink-3);margin-bottom:0;">And 242 lines sit uncommitted, so the macOS runner has never once compiled what is on this machine.</p>
+      </div>
+
+      <div class="r-card" style="padding:24px;display:flex;flex-direction:column;">
+        <h2 class="r-h-kicker">Stop-the-line items</h2>
+
+        <div style="padding-bottom:24px;border-bottom:1px solid var(--r-hairline);">
+          <div class="r-stat"><b>Closed overnight</b><span style="color:var(--r-ready-text);">2</span></div>
+          <div class="r-stat"><b>Half done, in review</b><span style="color:var(--r-ink-3);">1</span></div>
+          <div class="r-stat"><b>Untouched</b><span style="color:var(--r-clay-deep);">4</span></div>
+        </div>
+
+        <div style="padding-top:24px;margin-top:auto;">
+          <h3 class="r-h-kicker">Uncommitted lines</h3>
+          <div style="display:flex;gap:24px;">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:30px;font-weight:600;letter-spacing:-0.03em;line-height:1;font-variant-numeric:tabular-nums;">242</div>
+              <div style="font-size:12.5px;color:var(--r-ink-muted);margin-top:8px;line-height:1.45;">Lines unstaged · six files</div>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:30px;font-weight:600;letter-spacing:-0.03em;line-height:1;font-variant-numeric:tabular-nums;color:var(--r-clay-deep);">0</div>
+              <div style="font-size:12.5px;color:var(--r-ink-muted);margin-top:8px;line-height:1.45;">Of the 242, compiled on CI</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="r-card r-decide" style="padding:clamp(24px,3.2vw,32px);margin-bottom:24px;">
+      <div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+          <span class="r-tag" style="background:var(--r-neutral-fill);color:var(--r-ink-2);">Grounded in the live tree</span>
+          <span class="r-tag" style="background:var(--r-clay-tint);color:var(--r-clay-text);">Submission decision</span>
+        </div>
+        <h2 class="r-h2">Hold the submission until the four are closed</h2>
+        <p style="font-size:15.5px;line-height:1.6;color:var(--r-ink-body);margin:0;">Two of the four sit in flows App Review will touch. Victor puts them at three days, and the runner must go green before anything is pushed.</p>
+      </div>
+      <div class="r-decide-side">
+        <div class="r-rule">
+          <h3 class="r-h-kicker" style="margin-bottom:8px;">Standing rule</h3>
+          <p>Victor may close defects that are not customer-visible on his own. Anything that blocks a submission comes to you.</p>
+        </div>
+        <div class="r-actions">
+          <button type="button" class="r-btn r-btn-primary">Approve</button>
+          <button type="button" class="r-btn r-btn-secondary">Not now</button>
+          <button type="button" class="r-btn r-btn-secondary">Push back</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="r-cols-side">
+      <section>
+        <h2 class="r-h-section">Item by item</h2>
+        <div class="r-card r-list">
+          <div class="r-graphrow" style="padding:20px 20px 16px;">
+            <svg class="r-graph" viewBox="0 0 260 80" role="img" aria-label="Seven gates stand on one release line: two are filled and closed, one is half filled, and four are hollow. The line stops at a bar short of the release, drawn as an open diamond that nothing has reached.">
+              <path class="r-g-main" d="M8 62 H204"></path>
+              <path class="r-g-merge" d="M24 62 Q30 62 30 56 V22"></path>
+              <circle class="dot" cx="30" cy="18" r="4"></circle>
+              <path class="r-g-merge" d="M51 62 Q57 62 57 56 V22"></path>
+              <circle class="dot" cx="57" cy="18" r="4"></circle>
+              <path class="r-g-open" d="M78 62 Q84 62 84 56 V22"></path>
+              <circle class="open" cx="84" cy="18" r="4"></circle>
+              <path class="r-m-gate-half" d="M84 14 A4 4 0 0 0 84 22 Z"></path>
+              <path class="r-m-hold" d="M105 62 Q111 62 111 56 V22"></path>
+              <circle class="r-m-blocker" cx="111" cy="18" r="4"></circle>
+              <path class="r-m-hold" d="M132 62 Q138 62 138 56 V22"></path>
+              <circle class="r-m-blocker" cx="138" cy="18" r="4"></circle>
+              <path class="r-m-hold" d="M159 62 Q165 62 165 56 V22"></path>
+              <circle class="r-m-blocker" cx="165" cy="18" r="4"></circle>
+              <path class="r-m-hold" d="M186 62 Q192 62 192 56 V22"></path>
+              <circle class="r-m-blocker" cx="192" cy="18" r="4"></circle>
+              <path class="r-m-stop" d="M204 50 V74"></path>
+              <path class="r-g-open" d="M214 62 H241"></path>
+              <path class="r-m-release" d="M246 57 L251 62 L246 67 L241 62 Z"></path>
+            </svg>
+            <div class="r-key">
+              <div><i class="merged" aria-hidden="true"></i>Closed overnight — two</div>
+              <div><i class="r-m-key-half" aria-hidden="true"></i>Half done, in review — one</div>
+              <div><i class="r-m-key-blocker" aria-hidden="true"></i>Untouched — four</div>
+              <div><i class="r-m-key-stop" aria-hidden="true"></i>The line stops short of the release</div>
+            </div>
+          </div>
+          <div class="r-row" style="display:flex;gap:12px;">
+            <span aria-hidden="true" style="width:7px;height:7px;border-radius:999px;background:var(--r-clay);margin-top:7px;flex:none;"></span>
+            <div style="min-width:0;"><p style="font-size:14.5px;line-height:1.55;margin:0;color:var(--r-ink-body);">Chat request unbounded on one send path</p></div>
+          </div>
+          <div class="r-row" style="display:flex;gap:12px;">
+            <span aria-hidden="true" style="width:7px;height:7px;border-radius:999px;background:var(--r-clay);margin-top:7px;flex:none;"></span>
+            <div style="min-width:0;"><p style="font-size:14.5px;line-height:1.55;margin:0;color:var(--r-ink-body);">Sync retry has no 2G fallback</p></div>
+          </div>
+          <div class="r-row" style="display:flex;gap:12px;">
+            <span aria-hidden="true" style="width:7px;height:7px;border-radius:999px;background:var(--r-clay);margin-top:7px;flex:none;"></span>
+            <div style="min-width:0;"><p style="font-size:14.5px;line-height:1.55;margin:0;color:var(--r-ink-body);">Glass pass clips bounds on iOS 16</p></div>
+          </div>
+          <div class="r-row" style="display:flex;gap:12px;">
+            <span aria-hidden="true" style="width:7px;height:7px;border-radius:999px;background:var(--r-clay);margin-top:7px;flex:none;"></span>
+            <div style="min-width:0;"><p style="font-size:14.5px;line-height:1.55;margin:0;color:var(--r-ink-body);">Demo account for App Review unfilled</p></div>
+          </div>
+          <div class="r-row" style="display:flex;gap:12px;">
+            <span aria-hidden="true" style="width:7px;height:7px;border-radius:999px;background:var(--r-quiet);margin-top:7px;flex:none;"></span>
+            <div style="min-width:0;"><p style="font-size:14.5px;line-height:1.55;margin:0;color:var(--r-ink-body);">Export parser in review</p></div>
+          </div>
+          <div class="r-row" style="display:flex;gap:12px;">
+            <span aria-hidden="true" style="width:7px;height:7px;border-radius:999px;background:var(--r-ready);margin-top:7px;flex:none;"></span>
+            <div style="min-width:0;"><p style="font-size:14.5px;line-height:1.55;margin:0;color:var(--r-ink-muted);text-decoration:line-through;">Hebrew numerals in date picker</p></div>
+          </div>
+          <div class="r-row" style="display:flex;gap:12px;">
+            <span aria-hidden="true" style="width:7px;height:7px;border-radius:999px;background:var(--r-ready);margin-top:7px;flex:none;"></span>
+            <div style="min-width:0;"><p style="font-size:14.5px;line-height:1.55;margin:0;color:var(--r-ink-muted);text-decoration:line-through;">Budget pace divides by observed days</p></div>
+          </div>
+        </div>
+
+        <h2 class="r-h-section r-h-section-next">Richard has questions</h2>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div class="r-card" style="padding:20px;">
+            <p style="font-size:14.5px;line-height:1.6;margin:0 0 16px;color:var(--r-ink-body);">The boundThread and budget-pace fixes landed at 22:45 on 8 Sep; ROADMAP's own stamp is 8 Sep and still lists them open. Which do you want treated as the record — the code, or the plan? Victor and Jake are answering that differently.</p>
+            <div class="r-actions">
+              <button type="button" class="r-btn r-btn-secondary">Settle it</button>
+            </div>
+          </div>
+          <div class="r-card" style="padding:20px;">
+            <p style="font-size:14.5px;line-height:1.6;margin:0;color:var(--r-ink-body);">Should the demo account for App Review be a real account with seeded data, or a throwaway? The listing has read [FILL IN] since 19 Aug.</p>
+          </div>
+        </div>
+      </section>
+
+      <aside>
+        <h2 class="r-h-section">The team</h2>
+        <div class="r-card r-list" style="margin-bottom:32px;">
+          <div class="r-row" style="display:flex;align-items:center;gap:12px;">
+            <div class="r-avatar" aria-hidden="true" style="width:32px;height:32px;font-size:13px;">V</div>
+            <div style="min-width:0;"><div style="font-size:14.5px;font-weight:600;line-height:1.35;">Victor</div><div style="font-size:12.5px;color:var(--r-ink-muted);line-height:1.35;">QA &amp; Security lead</div></div>
+          </div>
+          <div class="r-row" style="display:flex;align-items:center;gap:12px;">
+            <div class="r-avatar" aria-hidden="true" style="width:32px;height:32px;font-size:13px;">S</div>
+            <div style="min-width:0;"><div style="font-size:14.5px;font-weight:600;line-height:1.35;">Security</div><div style="font-size:12.5px;color:var(--r-ink-muted);line-height:1.35;">Dependency and secret scans</div></div>
+          </div>
+        </div>
+
+        <h2 class="r-h-section">What the chief read</h2>
+        <div class="r-list">
+          <div style="padding:14px 0;border-bottom:1px solid var(--r-hairline);"><div style="font-size:14px;font-weight:600;color:var(--r-ink);margin-bottom:2px;">budget-app.jsx</div><div style="font-size:13px;line-height:1.5;color:var(--r-ink-muted);">:18208, :20536, :20552, :12864–12894</div></div>
+          <div style="padding:14px 0;border-bottom:1px solid var(--r-hairline);"><div style="font-size:14px;font-weight:600;color:var(--r-ink);margin-bottom:2px;">git status, git log</div><div style="font-size:13px;line-height:1.5;color:var(--r-ink-muted);">Six files unstaged · 242 insertions</div></div>
+          <div style="padding:14px 0;"><div style="font-size:14px;font-weight:600;color:var(--r-ink);margin-bottom:2px;">CI workflow</div><div style="font-size:13px;line-height:1.5;color:var(--r-ink-muted);">82 new lines, never run on the macOS runner</div></div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:32px;">
+          <button type="button" class="r-btn r-btn-primary">Activate Victor</button>
+          <button type="button" class="r-btn r-btn-secondary">Talk to him</button>
+        </div>
+      </aside>
+    </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
