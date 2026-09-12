@@ -37,7 +37,7 @@
     .r-x-entry:first-child { border-top:none; }
     /* Weight, not decoration: the rail is the answer to "can this one move
        without me". Dashed means stopped and with nothing behind it yet. */
-    .r-x-entry--blocked { border-left-color:var(--r-clay); }
+    .r-x-entry--blocked { border-left-color:var(--r-accent); }
     .r-x-entry--unwired { border-left-style:dashed; }
     .r-x-entry--quiet { border-left-color:var(--r-border-strong); }
 
@@ -51,7 +51,7 @@
        second pass over the same seven people further down. Clay-tinted rail:
        an unanswered question is the same unresolved state the outer rail
        marks, one step quieter. */
-    .r-x-ask { margin-top:16px; padding-left:16px; border-left:2px solid var(--r-clay-tint); }
+    .r-x-ask { margin-top:16px; padding-left:16px; border-left:2px solid var(--r-accent-tint); }
     .r-x-ask-q { font-size:14.5px; line-height:1.6; color:var(--r-ink-2); margin:0; }
     .r-x-ask-q + .r-x-ask-q { margin-top:8px; }
     .r-x-ask-note { font-size:12.5px; line-height:1.45; color:var(--r-ink-muted); margin:8px 0 0; }
@@ -76,13 +76,13 @@
        shell's own .on is deliberately unused here: it reads as "finished" on
        the reference page, which is the opposite of what clay means on this
        one, where it is always the thing still on the CEO's desk. */
-    .r-m-pending { background:var(--r-clay); }
+    .r-m-pending { background:var(--r-accent); }
     .r-m-clear { background:var(--r-ready); }
     /* Unresolved and unwired at once: clay hue, dashed edge. */
-    .r-m-dry { box-sizing:border-box; background:var(--r-clay-tint); border:1.5px dashed var(--r-clay); }
+    .r-m-dry { box-sizing:border-box; background:var(--r-accent-tint); border:1.5px dashed var(--r-accent); }
     /* Half-closed: filled faintly, outlined fully, so it reads as a cell that
        is part way rather than as a gap between two cells. */
-    .r-m-seg-half { background:var(--r-clay-tint); box-shadow:inset 0 0 0 1.5px var(--r-clay); }
+    .r-m-seg-half { background:var(--r-accent-tint); box-shadow:inset 0 0 0 1.5px var(--r-accent); }
     /* No source wired: a node with nothing in it. */
     .r-m-nodes { display:flex; align-items:center; gap:8px; }
     .r-m-nodes i { width:12px; height:12px; border-radius:999px; background:var(--r-card); border:1.5px dashed var(--r-quiet); flex:none; }
@@ -142,12 +142,12 @@
     /* ---- Accessibility preferences ---- */
     @media (prefers-contrast: more) {
         .r-x-entry { border-top-color:var(--r-border-strong); border-left-color:var(--r-border-strong); }
-        .r-x-entry--blocked { border-left-color:var(--r-clay-deep); }
-        .r-x-ask { border-left-color:var(--r-clay-deep); }
+        .r-x-entry--blocked { border-left-color:var(--r-accent-deep); }
+        .r-x-ask { border-left-color:var(--r-accent-deep); }
         .r-x-ask--none { border-left-color:var(--r-ink-muted); }
         .r-x-when { border-top-color:var(--r-border-strong); }
         .r-x-past { border-bottom-color:var(--r-border-strong); }
         .r-m-nodes i { border-color:var(--r-ink-3); border-width:2px; }
-        .r-m-dry { border-color:var(--r-clay-deep); border-width:2px; }
-        .r-m-seg-half { box-shadow:inset 0 0 0 2px var(--r-clay-deep); }
+        .r-m-dry { border-color:var(--r-accent-deep); border-width:2px; }
+        .r-m-seg-half { box-shadow:inset 0 0 0 2px var(--r-accent-deep); }
     }

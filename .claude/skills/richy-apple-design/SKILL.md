@@ -105,6 +105,40 @@ Rule 1 of this color system, unchanged: **no value without a dark pair.**
 Status marks (green/red/gold/blue) get brighter and more saturated on
 dark; large tinted areas get deeper, never a flat invert.
 
+### The binding surface is whichever one is darker
+
+Contrast is normally checked against the card, because on a near-white
+ground the card is the tighter pairing and anything that reads on it
+reads everywhere. A tinted or coloured ground inverts that: the page
+becomes the harder surface, and a token that passes at 4.5:1 on a white
+card can sit at 3.8:1 on the ground a few centimetres away. Measure every
+text token against **both** surfaces and keep the worse number.
+
+Two things always follow a ground getting darker, and both are easy to
+miss because the headings still look fine:
+
+- **The muted tier fails first.** It has the least headroom, so it is the
+  token that quietly drops under the floor while nothing looks wrong.
+- **A hairline tuned for white cards vanishes.** Rules drawn on the ground
+  need the stronger border token, not the hairline.
+
+### A palette of light tints cannot set text
+
+A brand palette handed over as three or four swatches is usually all
+surface colours. Check the darkest one before planning around it: if it
+sets under 4.5:1 on your lightest surface, the palette is the fill and the
+mark, and text has to come from darker members of the same family. Derive
+them, name them apart (`--accent` for fills and strokes, `--accent-text`
+for type), and never let a fill token leak into a `color:` rule. Splitting
+those two costs nothing up front and is expensive to retrofit once every
+screen is built.
+
+Related: on a coloured ground a near-black primary button reads as a hole
+punched in the page, not as the strongest action. Move the button to the
+dark end of the palette instead, and keep hover and press as lighter steps
+in the same family.
+
+
 ## Materials & Liquid Glass — Richy's real implementation
 
 Richy already has a working Liquid Glass system, independently built on
@@ -524,6 +558,10 @@ so they aren't re-proposed:
 - [ ] Paired columns open and close on the same line; a wide card holding
       one narrow column of copy has been given a real second column
 - [ ] Headings carry `text-wrap: balance`
+- [ ] Every text token measured against the GROUND as well as the card,
+      and the worse number is the one that has to pass
+- [ ] No fill/stroke accent token used in a `color:` rule — text uses the
+      separate darker text form of that accent
 - [ ] Dark mode variant looks intentional, not just inverted
 - [ ] Motion uses the spring curves above, not a plain linear/ease transition
 - [ ] Any new glass control reuses `LiquidButton`/`lqPalette` (web) or

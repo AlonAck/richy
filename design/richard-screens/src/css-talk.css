@@ -74,14 +74,14 @@
     .r-x-chief:focus-visible { outline:2px solid var(--r-focus); outline-offset:2px; }
     /* Selected: a clay spine on the leading edge, a heavier border and a
        word — so selection survives both greyscale and a lost border. */
-    .r-x-chief-on { border-color:var(--r-border-strong); background:var(--r-clay-wash); }
+    .r-x-chief-on { border-color:var(--r-border-strong); background:var(--r-accent-wash); }
     .r-x-chief-on::before {
         content:"";
         position:absolute;
         left:-1px; top:12px; bottom:12px;
         width:3px;
         border-radius:999px;
-        background:var(--r-clay);
+        background:var(--r-accent);
     }
     .r-x-chief-top { display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
     .r-x-chief-name { font-size:14.5px; font-weight:600; line-height:1.35; letter-spacing:-0.01em; }
@@ -97,7 +97,7 @@
         font-size:11px;
         font-weight:600;
         letter-spacing:0.02em;
-        color:var(--r-clay-text);
+        color:var(--r-accent-text);
     }
     .r-x-viewing {
         display:inline-block;
@@ -106,7 +106,7 @@
         font-weight:600;
         letter-spacing:0.09em;
         text-transform:uppercase;
-        color:var(--r-clay-text);
+        color:var(--r-accent-text);
     }
     .r-x-rail-foot {
         flex:none;
@@ -118,7 +118,7 @@
 
     /* A state mark: one dot per chief, paired with the word beside it. */
     .r-m-dot { width:7px; height:7px; border-radius:999px; flex:none; }
-    .r-m-dot-wait { background:var(--r-clay); }
+    .r-m-dot-wait { background:var(--r-accent); }
     .r-m-dot-run { background:var(--r-ready); }
     .r-m-dot-off { background:var(--r-card); border:1.5px solid var(--r-quiet); }
 

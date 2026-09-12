@@ -3,17 +3,17 @@
        one is a hollow node with its left half filled, and the four untouched
        ones carry the accent because they are what stops the line. The bar and
        the outlined diamond past it are the release, not yet reached. */
-    .r-m-hold { stroke:var(--r-clay); stroke-width:1.8; }
-    .r-m-stop { stroke:var(--r-clay-deep); stroke-width:2.2; }
-    .r-m-blocker { fill:var(--r-card); stroke:var(--r-clay); stroke-width:1.8; }
+    .r-m-hold { stroke:var(--r-accent); stroke-width:1.8; }
+    .r-m-stop { stroke:var(--r-accent-deep); stroke-width:2.2; }
+    .r-m-blocker { fill:var(--r-card); stroke:var(--r-accent); stroke-width:1.8; }
     /* The release is the only diamond in the mark, so it stays legible in
        greyscale where a fourth hollow circle would not. Doubled, like the
        half below, only to outweigh the shell's `.r-graph path { fill:none }`. */
-    .r-m-release.r-m-release { fill:var(--r-card); stroke:var(--r-clay-deep); stroke-width:1.8; stroke-linejoin:round; }
+    .r-m-release.r-m-release { fill:var(--r-card); stroke:var(--r-accent-deep); stroke-width:1.8; stroke-linejoin:round; }
     .r-m-gate-half.r-m-gate-half { fill:var(--r-quiet); stroke:none; }
 
     /* Legend swatches. The shell already sizes `.r-key i`, so these only add
        colour — except the stop bar, which has to outweigh that size too. */
     .r-m-key-half { background:linear-gradient(90deg,var(--r-quiet) 0 50%,var(--r-card) 50% 100%); border:1.6px solid var(--r-quiet); }
-    .r-m-key-blocker { background:var(--r-card); border:1.6px solid var(--r-clay); }
-    .r-m-key-stop.r-m-key-stop { width:3px; height:15px; border-radius:2px; background:var(--r-clay-deep); }
+    .r-m-key-blocker { background:var(--r-card); border:1.6px solid var(--r-accent); }
+    .r-m-key-stop.r-m-key-stop { width:3px; height:15px; border-radius:2px; background:var(--r-accent-deep); }

@@ -3,5 +3,5 @@
        add the one state the shell has no name for — a node that is waiting on
        the chief. Clay, hollow, on both fork ends, because neither date has
        been chosen. */
-    .r-m-await { fill:var(--r-card); stroke:var(--r-clay); stroke-width:2; }
-    .r-m-key-await { background:var(--r-card); border:1.6px solid var(--r-clay); }
+    .r-m-await { fill:var(--r-card); stroke:var(--r-accent); stroke-width:2; }
+    .r-m-key-await { background:var(--r-card); border:1.6px solid var(--r-accent); }

@@ -11,7 +11,7 @@
 
     /* The move itself — the only clay in the drawing, because it is the only
        thing on the page still waiting on a decision. */
-    .r-m-move { stroke:var(--r-clay); stroke-width:2.2; stroke-linejoin:round; }
+    .r-m-move { stroke:var(--r-accent); stroke-width:2.2; stroke-linejoin:round; }
 
     /* Where a lane leaves its ring. */
     .r-m-pin { fill:var(--r-ink-muted); }
@@ -19,7 +19,7 @@
 
     /* Node state follows the set: hollow is still pending, and nothing here has
        moved yet. The destination is outlined in clay, the other two in quiet. */
-    .r-m-node-in { fill:var(--r-card); stroke:var(--r-clay); stroke-width:1.8; }
+    .r-m-node-in { fill:var(--r-card); stroke:var(--r-accent); stroke-width:1.8; }
     .r-m-node-out { fill:var(--r-card); stroke:var(--r-quiet); stroke-width:1.6; }
 
     /* Legend swatches. The dots inherit their 9px box and pill radius from
@@ -27,6 +27,6 @@
        footprint so the three lines share a left edge, and only flattens to a
        bar. Its class is doubled to out-rank .r-key i without reaching outside
        the .r-m- namespace. */
-    .r-m-key-in { background:var(--r-card); border:1.6px solid var(--r-clay); }
+    .r-m-key-in { background:var(--r-card); border:1.6px solid var(--r-accent); }
     .r-m-key-out { background:var(--r-card); border:1.6px solid var(--r-quiet); }
-    .r-m-key-move.r-m-key-move { width:9px; height:3px; background:var(--r-clay); }
+    .r-m-key-move.r-m-key-move { width:9px; height:3px; background:var(--r-accent); }
