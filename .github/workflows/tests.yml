@@ -1,0 +1,49 @@
+# Runs the CSV import regression tests on every push that touches the app or
+# the tests themselves.
+#
+# Same reasoning as the iOS build workflow: the app is written on a Windows
+# machine, so this is where the tests actually get run. The suite lifts the
+# pure helpers straight out of budget-app.jsx, so it fails if a refactor
+# renames or removes one rather than quietly testing nothing.
+
+name: tests
+
+on:
+  push:
+    paths:
+      - "budget-app.jsx"
+      - "tests/**"
+      - ".github/workflows/tests.yml"
+  pull_request:
+    paths:
+      - "budget-app.jsx"
+      - "tests/**"
+      - ".github/workflows/tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The import summary counts days between dates. Running the suite east
+        # of UTC+12 and west of UTC catches the timezone mistakes that a
+        # UTC-only run reports as passing.
+        tz: [UTC, Asia/Jerusalem, Pacific/Auckland, America/Los_Angeles]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Run tests (TZ=${{ matrix.tz }})
+        env:
+          TZ: ${{ matrix.tz }}
+        run: node --test tests/csv-import.test.mjs
