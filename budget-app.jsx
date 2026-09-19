@@ -12850,32 +12850,63 @@ function dateLabel(date) {
 
 function pad2(n) { n = String(n); return n.length < 2 ? "0" + n : n; }
 
+// How many times `ch` appears OUTSIDE quotes in the opening lines. Counting
+// raw characters instead got a real file wrong: a semicolon-delimited export
+// whose headers read "Posted, value";"Merchant, full" has as many commas as
+// semicolons, the comma won the tie, and every row collapsed into one cell.
+function delimCount(text, ch) {
+  var n = 0, inQ = false, lines = 0;
+  for (var i = 0; i < text.length && lines < 5; i++) {
+    var c = text.charAt(i);
+    if (c === '"') { if (inQ && text.charAt(i + 1) === '"') i++; else inQ = !inQ; continue; }
+    if (inQ) continue;
+    if (c === "\n") { lines++; continue; }
+    if (c === ch) n++;
+  }
+  return n;
+}
+
 // Split CSV text into rows of cells. Auto-detects the delimiter (comma,
-// semicolon, or tab) and respects double-quoted fields with escaped quotes.
+// semicolon, tab or pipe) and respects double-quoted fields with escaped
+// quotes.
+//
+// The scan runs over the WHOLE text rather than line by line, because a quoted
+// field is allowed to contain a newline and real statements use that for a
+// multi-line merchant address. Splitting on every newline first tore such a row
+// in half and pushed its amount into a label cell, so the charge parsed as NaN
+// and vanished from the import without a word.
 function parseCSV(text) {
   text = (text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-  var firstLine = text.split("\n")[0] || "";
-  var counts = { ",": (firstLine.match(/,/g) || []).length, ";": (firstLine.match(/;/g) || []).length, "\t": (firstLine.match(/\t/g) || []).length };
-  var delim = ","; var best = -1;
-  for (var d in counts) { if (counts[d] > best) { best = counts[d]; delim = d; } }
-  var rows = [];
-  var lines = text.split("\n").filter(function(l) { return l.trim() !== ""; });
-  lines.forEach(function(line) {
-    var cells = [], cur = "", inQ = false;
-    for (var i = 0; i < line.length; i++) {
-      var ch = line[i];
-      if (inQ) {
-        if (ch === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else inQ = false; }
-        else cur += ch;
-      } else {
-        if (ch === '"') inQ = true;
-        else if (ch === delim) { cells.push(cur); cur = ""; }
-        else cur += ch;
-      }
+  var cands = [",", ";", "\t", "|"];
+  var delim = ",", best = -1;
+  for (var k = 0; k < cands.length; k++) {
+    var n = delimCount(text, cands[k]);
+    if (n > best) { best = n; delim = cands[k]; }
+  }
+  var rows = [], cells = [], cur = "", inQ = false;
+  // A newline that survived inside a quoted field becomes a space: it is part
+  // of the shop name, and a line break inside a label renders as a broken row.
+  function endCell() { cells.push(cur.replace(/[\n\t]+/g, " ").trim()); cur = ""; }
+  function endRow() {
+    endCell();
+    var any = false;
+    for (var j = 0; j < cells.length; j++) { if (cells[j] !== "") { any = true; break; } }
+    if (any) rows.push(cells);
+    cells = [];
+  }
+  for (var i = 0; i < text.length; i++) {
+    var ch = text.charAt(i);
+    if (inQ) {
+      if (ch === '"') { if (text.charAt(i + 1) === '"') { cur += '"'; i++; } else inQ = false; }
+      else cur += ch;
+    } else {
+      if (ch === '"') inQ = true;
+      else if (ch === delim) endCell();
+      else if (ch === "\n") endRow();
+      else cur += ch;
     }
-    cells.push(cur);
-    rows.push(cells.map(function(c) { return c.trim(); }));
-  });
+  }
+  if (cur !== "" || cells.length) endRow();
   return rows;
 }
 
@@ -12927,12 +12958,25 @@ function sniffMap(rows, hasHeader) {
   return map;
 }
 
+// A date only counts if it exists on a calendar. The old range check accepted
+// any day up to 31, so a corrupt cell could store "2025-02-31" - a string that
+// sorts and filters like a real date but is not one. The round-trip through
+// Date.UTC settles leap years too.
+function isoIfReal(y, mon, day) {
+  if (!(y >= 1900 && y <= 2200) || !(mon >= 1 && mon <= 12) || !(day >= 1 && day <= 31)) return "";
+  var dt = new Date(Date.UTC(y, mon - 1, day));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mon - 1 || dt.getUTCDate() !== day) return "";
+  return y + "-" + pad2(mon) + "-" + pad2(day);
+}
+
 // Parse a date cell to ISO yyyy-mm-dd. preferDMY decides ambiguous d/m vs m/d.
+// Returns "" when the cell is not a date - callers must decide what to do with
+// that rather than receiving an invented one.
 function parseImportDate(s, preferDMY) {
-  s = (s || "").trim();
+  s = (s || "").trim().replace(/[\u200e\u200f\u061c]/g, "");
   if (!s) return "";
   var iso = s.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
-  if (iso) return iso[1] + "-" + pad2(iso[2]) + "-" + pad2(iso[3]);
+  if (iso) return isoIfReal(parseInt(iso[1], 10), parseInt(iso[2], 10), parseInt(iso[3], 10));
   var parts = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
   if (parts) {
     var a = parseInt(parts[1], 10), b = parseInt(parts[2], 10), y = parseInt(parts[3], 10);
@@ -12942,10 +12986,16 @@ function parseImportDate(s, preferDMY) {
     else if (b > 12) { mon = a; day = b; }
     else if (preferDMY) { day = a; mon = b; }
     else { mon = a; day = b; }
-    if (mon >= 1 && mon <= 12 && day >= 1 && day <= 31) return y + "-" + pad2(mon) + "-" + pad2(day);
+    return isoIfReal(y, mon, day);
   }
-  var t = Date.parse(s);
-  if (!isNaN(t)) { var dt = new Date(t); return dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate()); }
+  // Date.parse is the last resort and it is far too willing: handed "ABC 5" it
+  // answers 2001-05-01, and "12" becomes 2001-12-01. Pointed at a mis-mapped
+  // column it stamped real purchases with fictional dates that looked plausible
+  // enough to survive review. So it only sees a cell that names a month.
+  if (/\d/.test(s) && /(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(s)) {
+    var t = Date.parse(s);
+    if (!isNaN(t)) { var dt = new Date(t); return isoIfReal(dt.getFullYear(), dt.getMonth() + 1, dt.getDate()); }
+  }
   return "";
 }
 
@@ -12954,6 +13004,11 @@ function parseImportDate(s, preferDMY) {
 function parseImportAmount(s) {
   s = (s || "").trim();
   if (!s) return NaN;
+  // Normalise the many characters a statement uses for "minus" BEFORE looking
+  // for one, and drop the RTL marks and non-breaking spaces that Hebrew and
+  // European exports wrap their numbers in. A U+2212 minus read as no minus at
+  // all, which turned every expense in the file into income.
+  s = s.replace(/[\u2212\u2012\u2013\u2014\uff0d]/g, "-").replace(/[\u200e\u200f\u061c\u00a0\u202f]/g, "");
   var neg = /^\(.*\)$/.test(s) || s.indexOf("-") !== -1;
   var cleaned = s.replace(/[^0-9.,]/g, "");
   var lastComma = cleaned.lastIndexOf(",");
@@ -12969,6 +13024,30 @@ function parseImportAmount(s) {
   var n = parseFloat(cleaned);
   if (isNaN(n)) return NaN;
   return neg ? -Math.abs(n) : Math.abs(n);
+}
+
+// How much of a shop name an imported row keeps. Shared by the real build and
+// the on-screen preview, which used to cut at different lengths and so showed
+// the user a shorter name than the one that actually landed.
+var IMPORT_LABEL_MAX = 60;
+
+// Imported rows are numbered from their own space, far above anything
+// Date.now() will return for the next several thousand years.
+//
+// Every other transaction in the app takes `id: Date.now()`, while an import
+// used to hand out `base + i` from one Date.now() call - so a 600-row file
+// claimed a 600ms block of ids that a transaction added moments later could
+// land inside. That is not a cosmetic clash: tx.id IS the Firestore document
+// id, so the second write silently overwrote the first and a transaction
+// disappeared. `taken` (seeded with the ids already in the account) closes the
+// remaining gap between two imports.
+var IMPORT_ID_SPACE = 1e15;
+var importIdSeq = 0;
+function nextImportId(taken) {
+  var id = IMPORT_ID_SPACE + (Date.now() % 1e9) * 1e6 + (importIdSeq++ % 1e6);
+  while (taken && taken[id]) id++;
+  if (taken) taken[id] = 1;
+  return id;
 }
 
 var IMPORT_CAT_KEYWORDS = {
@@ -13288,10 +13367,34 @@ function judgeLookalikes(pairs, cb) {
     var out = {};
     arr.forEach(function(v) {
       if (!v || typeof v.i !== "number" || v.i < 0 || v.i >= list.length) return;
+      // First verdict per pair wins. A reply that names the same pair twice is
+      // a model that contradicted itself, and letting the later line overwrite
+      // the earlier one turns that confusion into a silent skip.
+      if (out[v.i]) { out[v.i].sure = false; return; }
       out[v.i] = { same: !!v.same, sure: !!v.sure };
     });
     cb(null, out);
   }, 25000);
+}
+
+// Days between two ISO dates (inclusive) that `have` does not mention.
+//
+// Walks the calendar in UTC. The old loop anchored each day at local midday and
+// then read it back with toISOString(), which is a UTC clock: east of UTC+12
+// that lands on the previous day, so every single day of a COMPLETE file came
+// back as a gap and the summary told the user they had days with no spending
+// at all. UTC in, UTC out - no local timezone touches the arithmetic.
+function importGapDays(from, to, have) {
+  if (!from || !to) return 0;
+  var start = Date.parse(from + "T00:00:00Z"), end = Date.parse(to + "T00:00:00Z");
+  if (isNaN(start) || isNaN(end) || end < start) return 0;
+  var span = Math.round((end - start) / 86400000) + 1;
+  if (span <= 1 || span > 400) return 0;
+  var missing = 0;
+  for (var i = 0; i < span; i++) {
+    if (!have[new Date(start + i * 86400000).toISOString().slice(0, 10)]) missing++;
+  }
+  return missing;
 }
 
 // ---- What the file did NOT bring in -----------------------------------------
@@ -13303,9 +13406,9 @@ function judgeLookalikes(pairs, cb) {
 // history sits inside the same window that the bank file never mentioned
 // (cash, another card, a second account).
 // Returns { from, to, gaps[], noIncome, uncategorized, staleDays, handOnly, tips[] }.
-function importGapReport(built, existingTx, cats, twins) {
+function importGapReport(built, existingTx, cats, twins, undated) {
   var rows = (built || []).filter(function(t) { return t && t.date; });
-  var out = { from: "", to: "", gapDays: 0, noIncome: false, uncategorized: 0, staleDays: 0, handOnly: 0, twins: twins || 0, tips: [] };
+  var out = { from: "", to: "", gapDays: 0, noIncome: false, uncategorized: 0, staleDays: 0, handOnly: 0, twins: twins || 0, undated: undated || 0, tips: [] };
   if (!rows.length) return out;
   var dates = rows.map(function(t) { return t.date; }).sort();
   out.from = dates[0];
@@ -13313,14 +13416,7 @@ function importGapReport(built, existingTx, cats, twins) {
   // Days inside the covered window with no row at all.
   var have = {};
   dates.forEach(function(d) { have[d] = 1; });
-  var span = dayGap(out.from, out.to) + 1;
-  if (span > 1 && span <= 400) {
-    var cursor = Date.parse(out.from + "T12:00:00");
-    for (var i = 0; i < span; i++) {
-      var iso = new Date(cursor + i * 86400000).toISOString().slice(0, 10);
-      if (!have[iso]) out.gapDays++;
-    }
-  }
+  out.gapDays = importGapDays(out.from, out.to, have);
   out.noIncome = !rows.some(function(t) { return t.type === "income"; });
   var otherCat = catByName(cats || [], "Other");
   var otherId = otherCat ? otherCat.id : "";
@@ -13335,6 +13431,7 @@ function importGapReport(built, existingTx, cats, twins) {
     return bestDupMatch(t, rows).score < DUP_MAYBE;
   }).length;
 
+  if (out.undated > 0) out.tips.push(out.undated + " " + (out.undated === 1 ? "row had a date Richy could not read, so it" : "rows had a date Richy could not read, so they") + " landed on today. If that is most of the file, go back and check the date column - otherwise fix " + (out.undated === 1 ? "it" : "them") + " in Activity.");
   if (out.gapDays >= 3) out.tips.push("There " + (out.gapDays === 1 ? "is 1 day" : "are " + out.gapDays + " days") + " in that stretch with no spending at all. If those were cash days, or a card you haven't exported, add them by hand or export that card too.");
   if (out.noIncome) out.tips.push("Nothing came in - the file is all spending. If your salary lands in a different account, export that one as well, or log it once as a repeating income.");
   if (out.uncategorized > 0) out.tips.push(out.uncategorized + " " + (out.uncategorized === 1 ? "row" : "rows") + " landed in Other because the shop name was new. Open them in Activity and set the category once - Richy remembers the name next time.");
@@ -15714,6 +15811,10 @@ function ImportSheet(props) {
   var _adv = useState(false); var showAdv = _adv[0]; var setShowAdv = _adv[1];
   var _aid = useState({ settled: 0, failed: false }); var aiRes = _aid[0]; var setAiRes = _aid[1];
   var _rep = useState(null); var report = _rep[0]; var setReport = _rep[1];
+  // How many rows of this file had a date cell Richy could not read. Measured
+  // in buildTxs, spent in the summary - a ref because it must survive the
+  // classify/interview round trip without re-rendering anything.
+  var undatedRef = useRef(0);
 
   function reset() {
     setRaw(""); setStep("paste"); setRows([]); setHasHeader(true);
@@ -15727,11 +15828,26 @@ function ImportSheet(props) {
   }
   function close() { reset(); props.onClose(); }
 
+  // Reading the chosen file. Three things here are not decoration: a file that
+  // fails to read used to do NOTHING at all, leaving the user staring at a
+  // screen that said "could not read any rows" about a file that was never
+  // read; an enormous file would lock the tab up before saying so; and because
+  // a file input only fires onChange when its VALUE changes, picking the same
+  // file again after going back did nothing until the input is cleared.
+  var IMPORT_MAX_BYTES = 8 * 1024 * 1024;
   function handleFile(e) {
-    var f = e.target.files && e.target.files[0];
+    var input = e.target;
+    var f = input.files && input.files[0];
+    input.value = "";
     if (!f) return;
+    if (f.size > IMPORT_MAX_BYTES) {
+      setErr("That file is larger than 8MB, which is far bigger than a bank statement. Export a single account or a shorter date range.");
+      return;
+    }
+    setErr("");
     var reader = new FileReader();
     reader.onload = function(ev) { setRaw((ev.target && ev.target.result) || ""); };
+    reader.onerror = function() { setErr("That file could not be read. Try exporting it again, or paste the text below instead."); };
     reader.readAsText(f);
   }
 
@@ -15754,8 +15870,28 @@ function ImportSheet(props) {
   function buildTxs() {
     var dataRows = hasHeader ? rows.slice(1) : rows;
     var out = [];
-    var base = Date.now();
     var today = new Date().toISOString().slice(0, 10);
+    var taken = {};
+    (props.tx || []).forEach(function(t) { if (t && t.id != null) taken[t.id] = 1; });
+    // One category lookup per DISTINCT shop name. suggestCatId walks the whole
+    // ledger, so calling it per row made a 600-row file against a few thousand
+    // transactions into millions of string comparisons and froze the screen
+    // with no sign the app was still alive.
+    var catMemo = {};
+    function catFor(desc, type) {
+      var key = type + "|" + desc.toLowerCase();
+      if (!(key in catMemo)) {
+        // The user's own history first, then the keyword map. Salary is only a
+        // FALLBACK for money coming in: reaching for it first filed every
+        // refund, tax return and gift as salary, and stamped each one
+        // catSure - which is a signal the duplicate scorer trusts.
+        var learned = suggestCatId(desc, props.tx, cats);
+        if (!learned && type === "income") learned = (catByName(cats, "Salary") || {}).id || "";
+        catMemo[key] = { learned: learned, sure: !!learned || !!keywordCatName(desc) };
+      }
+      return catMemo[key];
+    }
+    var undated = 0;
     dataRows.forEach(function(r, i) {
       var amt;
       if (splitAmt) {
@@ -15769,23 +15905,24 @@ function ImportSheet(props) {
       }
       if (isNaN(amt) || amt === 0) return;
       var desc = (map.desc >= 0 ? r[map.desc] : "") || "Imported";
-      var dateStr = parseImportDate(map.date >= 0 ? r[map.date] : "", preferDMY) || today;
+      // A row whose date cell could not be read still gets today, because a
+      // transaction has to sit somewhere - but it is COUNTED, and the summary
+      // says how many, so a mis-mapped date column is visible instead of
+      // quietly piling a whole statement onto this morning.
+      var dateStr = parseImportDate(map.date >= 0 ? r[map.date] : "", preferDMY);
+      if (!dateStr) { undated++; dateStr = today; }
       var type = allExpenses ? "expense" : (amt < 0 ? "expense" : "income");
-      var label = desc.slice(0, 60);
+      var label = desc.slice(0, IMPORT_LABEL_MAX);
       var amount = round2(Math.abs(amt));
-      // Learn from the user's own history first, then keyword map; income still
-      // prefers Salary when present.
-      var learned = type === "income"
-        ? ((catByName(cats, "Salary") || {}).id || suggestCatId(desc, props.tx, cats))
-        : suggestCatId(desc, props.tx, cats);
-      var catId = learned || guessImportCatId(desc, cats);
+      var guess = catFor(desc, type);
+      var catId = guess.learned || guessImportCatId(desc, cats);
       var c = catById(cats, catId) || { id: "", name: "Other" };
       // Whether that category is a real read or the Other fallback. The
       // duplicate scorer needs the difference: an unknown category is no
       // signal, while two known-but-different categories are a real one.
-      var catSure = !!learned || !!keywordCatName(desc);
-      out.push({ type: type, amount: amount, label: label, catId: c.id, category: c.name, date: dateStr, id: base + i, repeat: "none", pending: false, catSure: catSure });
+      out.push({ type: type, amount: amount, label: label, catId: c.id, category: c.name, date: dateStr, id: nextImportId(taken), repeat: "none", pending: false, catSure: guess.sure });
     });
+    out.undated = undated;
     return out;
   }
 
@@ -15813,7 +15950,7 @@ function ImportSheet(props) {
       return;
     }
     setBuilt(txs); setDupes(skipped);
-    setReport(importGapReport(txs, props.tx || [], cats, res.twins));
+    setReport(importGapReport(txs, props.tx || [], cats, res.twins, undatedRef.current));
     setStep("preview");
   }
 
@@ -15850,6 +15987,7 @@ function ImportSheet(props) {
       return;
     }
     var cands = buildTxs();
+    undatedRef.current = cands.undated || 0;
     if (!cands.length) { setErr("No valid transactions found. Check your column choices."); return; }
     var res = classifyImportRows(cands, props.tx || []);
     setPlan(res); setDecisions({}); setAiRes({ settled: 0, failed: false });
@@ -15934,7 +16072,7 @@ function ImportSheet(props) {
       if (isNaN(amt) || amt === 0) continue;
       out.push({
         date: parseImportDate(map.date >= 0 ? r[map.date] : "", preferDMY) || today,
-        label: ((map.desc >= 0 ? r[map.desc] : "") || "Imported").slice(0, 40),
+        label: ((map.desc >= 0 ? r[map.desc] : "") || "Imported").slice(0, IMPORT_LABEL_MAX),
         amount: round2(Math.abs(amt)),
         income: allExpenses ? false : amt > 0
       });
@@ -38169,11 +38307,19 @@ export default function App() {
     var rows = txs || [];
     if (!rows.length) return;
     var nextTx = tx.concat(rows);
+    // from/to describe everything imported SO FAR, so they widen rather than
+    // get replaced. Overwriting them meant that importing an older statement
+    // second moved `to` backwards, and the nudge then told a user who was
+    // fully up to date that their file was months stale.
+    var prevFrom = (csvImport && csvImport.from) || "";
+    var prevTo = (csvImport && csvImport.to) || "";
+    var newFrom = (report && report.from) || "";
+    var newTo = (report && report.to) || "";
     var rec = {
       at: new Date().toISOString().slice(0, 10),
       count: ((csvImport && csvImport.count) || 0) + rows.length,
-      from: (report && report.from) || "",
-      to: (report && report.to) || ""
+      from: (prevFrom && newFrom) ? (prevFrom < newFrom ? prevFrom : newFrom) : (prevFrom || newFrom),
+      to: (prevTo && newTo) ? (prevTo > newTo ? prevTo : newTo) : (prevTo || newTo)
     };
     setTx(nextTx); setCsvImport(rec);
     save({ tx: nextTx, csvImport: rec });
