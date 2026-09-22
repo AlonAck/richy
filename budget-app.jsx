@@ -12891,35 +12891,90 @@ function dateLabel(date) {
 
 function pad2(n) { n = String(n); return n.length < 2 ? "0" + n : n; }
 
-// Split CSV text into rows of cells. Auto-detects the delimiter (comma,
-// semicolon, or tab) and respects double-quoted fields with escaped quotes.
-function parseCSV(text) {
-  text = (text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-  var firstLine = text.split("\n")[0] || "";
-  var counts = { ",": (firstLine.match(/,/g) || []).length, ";": (firstLine.match(/;/g) || []).length, "\t": (firstLine.match(/\t/g) || []).length };
-  var delim = ","; var best = -1;
-  for (var d in counts) { if (counts[d] > best) { best = counts[d]; delim = d; } }
-  var rows = [];
-  var lines = text.split("\n").filter(function(l) { return l.trim() !== ""; });
-  lines.forEach(function(line) {
-    var cells = [], cur = "", inQ = false;
-    for (var i = 0; i < line.length; i++) {
-      var ch = line[i];
-      if (inQ) {
-        if (ch === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else inQ = false; }
-        else cur += ch;
-      } else {
-        if (ch === '"') inQ = true;
-        else if (ch === delim) { cells.push(cur); cur = ""; }
-        else cur += ch;
-      }
+// The separators worth considering, in the order that breaks a tie. Comma is
+// first because it is the format's name; semicolon is second because it is
+// what Excel writes on every machine whose decimal separator is a comma -
+// which is most of Europe and all of Israel. A file like that used to arrive
+// as one column per line and be turned away as having no columns at all.
+var CSV_DELIMS = [",", ";", "\t", "|"];
+var CSV_SNIFF_BYTES = 200000;   // enough of the file to judge the separator by
+var CSV_SNIFF_ROWS = 40;
+
+// The scanner both the sniffing and the real parse run through, so the columns
+// counted are the columns read. Quotes are honoured the way a spreadsheet
+// writes them: doubled to escape, and allowed to carry a line break inside a
+// field - a description like "PAYPAL\n*SPOTIFY" used to split into two rows,
+// one of which had no date and no amount.
+function csvScan(text, delim, maxRows) {
+  var rows = [], cells = [], cur = "", inQ = false;
+  function endRow() {
+    cells.push(cur); cur = "";
+    var out = [], any = false;
+    for (var c = 0; c < cells.length; c++) {
+      // Collapsed, not just trimmed: a quoted field can carry a line break,
+      // and a cell holding one would read as two lines in the preview and
+      // stop matching the same shop logged any other way.
+      var v = String(cells[c]).replace(/\s+/g, " ").trim();
+      out.push(v);
+      if (v !== "") any = true;
     }
-    cells.push(cur);
-    rows.push(cells.map(function(c) { return c.trim(); }));
-  });
+    cells = [];
+    if (any) rows.push(out);
+  }
+  for (var i = 0; i < text.length; i++) {
+    var ch = text.charAt(i);
+    if (inQ) {
+      if (ch !== "\"") { cur += ch; continue; }
+      if (text.charAt(i + 1) === "\"") { cur += "\""; i++; continue; }
+      inQ = false;
+      continue;
+    }
+    if (ch === "\"") { inQ = true; continue; }
+    if (ch === delim) { cells.push(cur); cur = ""; continue; }
+    if (ch === "\n") {
+      endRow();
+      if (maxRows && rows.length >= maxRows) return rows;
+      continue;
+    }
+    cur += ch;
+  }
+  if (cur !== "" || cells.length) endRow();
   return rows;
 }
 
+// Which separator this file is actually written with. Judged on the rows, not
+// on the first line: the first line of a bank statement is the report title,
+// which usually holds no separator at all, and reading the file by that one
+// line is how a perfectly good statement came to have "no columns".
+//
+// The winner is the separator that the most rows AGREE on - a comma inside a
+// shop name splits two rows out of forty, a real semicolon splits all forty -
+// and, where two agree equally often, the one that finds more columns.
+function csvPickDelim(text) {
+  var sample = text.length > CSV_SNIFF_BYTES ? text.slice(0, CSV_SNIFF_BYTES) : text;
+  var best = CSV_DELIMS[0], bestAgree = 0, bestWidth = 0;
+  for (var d = 0; d < CSV_DELIMS.length; d++) {
+    var rows = csvScan(sample, CSV_DELIMS[d], CSV_SNIFF_ROWS);
+    var seen = {}, agree = 0, width = 0;
+    for (var i = 0; i < rows.length; i++) {
+      var w = rows[i].length;
+      if (w < 2) continue;
+      seen[w] = (seen[w] || 0) + 1;
+      if (seen[w] > agree || (seen[w] === agree && w > width)) { agree = seen[w]; width = w; }
+    }
+    if (agree > bestAgree || (agree === bestAgree && agree > 0 && width > bestWidth)) {
+      best = CSV_DELIMS[d]; bestAgree = agree; bestWidth = width;
+    }
+  }
+  return best;
+}
+
+// Split CSV text into rows of cells.
+function parseCSV(text) {
+  text = String(text == null ? "" : text).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+  return csvScan(text, csvPickDelim(text), 0);
+}
 // Guess which columns hold the date, amount, and description.
 function sniffMap(rows, hasHeader) {
   var map = { date: -1, amount: -1, desc: -1, debit: -1, credit: -1 };
@@ -13087,6 +13142,27 @@ function csvDecodeBytes(buf) {
     if (le2 != null && le2.indexOf(CSV_NUL) === -1) return { text: le2, encoding: "utf-16le" };
   }
   if (strict != null) return { text: strict, encoding: "utf-8" };
+  // Still here means the bytes are not UTF-8. Before settling on the Hebrew
+  // codepage, look for the other thing they might be: UTF-16 with its mark
+  // stripped, which a Hebrew file cannot sneak past the fatal decode above
+  // the way an English one can. Half its bytes are zero, and which half says
+  // which way round it is.
+  // Not zero bytes: the giveaway is that every second byte is TINY. One
+  // script's worth of text in UTF-16 shares a high byte - 0x00 for Latin,
+  // 0x05 for Hebrew, 0x06 for Arabic, 0x04 for Cyrillic - while windows-1255
+  // and anything else that lands here spreads its bytes across the range.
+  var pairs = Math.min(bytes.length >> 1, 512), lowOdd = 0, lowEven = 0;
+  for (var p = 0; p < pairs; p++) {
+    if (bytes[p * 2 + 1] < 0x09) lowOdd++;      // high byte of a little-endian pair
+    if (bytes[p * 2] < 0x09) lowEven++;         // high byte of a big-endian pair
+  }
+  if (pairs >= 8 && (lowOdd > pairs * 0.8 || lowEven > pairs * 0.8)) {
+    var isLE = lowOdd >= lowEven;
+    var wide = attempt(isLE ? "utf-16le" : "utf-16be", null, false);
+    if (wide != null && wide.indexOf(CSV_NUL) === -1) {
+      return { text: wide, encoding: isLE ? "utf-16le" : "utf-16be" };
+    }
+  }
   var heb = attempt("windows-1255", null, false);
   if (heb != null) return { text: heb, encoding: "windows-1255" };
   return { text: attempt("utf-8", null, false) || "", encoding: "utf-8" };
@@ -13119,6 +13195,18 @@ function csvDecodeBytes(buf) {
 var SHEET_MAX_ROWS = 20000;   // a statement is hundreds of rows; this is a guard
 var SHEET_MAX_COLS = 256;
 var SHEET_MAX_TABLES = 300;   // nested layout tables in a bank's HTML export
+// The limits that hold whatever the file turns out to be. A statement is a few
+// hundred kilobytes; everything past these numbers is either a mistake or an
+// attempt to make a phone chew through something it should not. A .xlsx is a
+// zip, and a zip is the classic way to hand a parser forty kilobytes that
+// unpack into gigabytes - so the budget is spent as the bytes arrive, not
+// checked after they have all been held in memory.
+var SHEET_MAX_BYTES = 25 * 1024 * 1024;      // the file on disk
+var SHEET_MAX_INFLATE = 64 * 1024 * 1024;    // everything unpacked out of one
+var SHEET_MAX_ENTRIES = 2000;                // parts inside the package
+var SHEET_MAX_STRINGS = 300000;              // the shared-string table
+var SHEET_DAMAGED = "That file couldn't be opened - it looks damaged. Try downloading it from your bank again.";
+var SHEET_TOO_BIG = "That file unpacks to far more than a statement ever holds, so Richy stopped reading it.";
 
 // --- the small XML/HTML tools ------------------------------------------------
 // Deliberately not DOMParser: this same code runs in the test runner, where
@@ -13142,31 +13230,46 @@ function sheetAttr(tag, name) {
   var m = new RegExp("\\s" + name + "\\s*=\\s*(\"[^\"]*\"|'[^']*')").exec(String(tag || ""));
   return m ? sheetUnxml(m[1].slice(1, -1)) : "";
 }
+// The same, for an attribute whose namespace prefix is convention rather than
+// rule - r:id, ss:Index, ss:Type. The prefix is whatever the file happened to
+// declare, so only the local name is matched.
+function sheetAttrNS(tag, local) {
+  var m = new RegExp("\\s" + SHEET_NS + local + "\\s*=\\s*(\"[^\"]*\"|'[^']*')").exec(String(tag || ""));
+  return m ? sheetUnxml(m[1].slice(1, -1)) : "";
+}
 // Every <name ...>...</name> in document order, open tag and inner text. The
 // alternation lets <t/> and <c r="A1"/> match too: the greedy attribute run
 // swallows the slash, so the tag TEXT is what says the element closed itself.
+// Excel writes <row> and <c>; plenty of other things that write .xlsx files -
+// Java exporters, older Microsoft tooling, the systems Israeli banks print
+// from - write <x:row> and <x:c> instead. Both are the same element to XML,
+// so the prefix is optional everywhere a name is matched here.
+var SHEET_NS = "(?:[A-Za-z_][\\w.-]*:)?";
 function sheetEachTag(xml, name, fn) {
   xml = String(xml || "");
-  var re = new RegExp("<" + name + "(\\s[^>]*|/)?>", "g");
-  var end = "</" + name + ">";
+  var open = new RegExp("<" + SHEET_NS + name + "(\\s[^>]*|/)?>", "g");
+  var close = new RegExp("</" + SHEET_NS + name + "\\s*>", "g");
   var m;
-  while ((m = re.exec(xml))) {
+  while ((m = open.exec(xml))) {
     if (/\/>$/.test(m[0])) { fn(m[0], ""); continue; }
-    var at = xml.indexOf(end, re.lastIndex);
-    fn(m[0], at === -1 ? xml.slice(re.lastIndex) : xml.slice(re.lastIndex, at));
-    if (at === -1) return;
-    re.lastIndex = at + end.length;
+    close.lastIndex = open.lastIndex;
+    var c = close.exec(xml);
+    fn(m[0], c ? xml.slice(open.lastIndex, c.index) : xml.slice(open.lastIndex));
+    if (!c) return;
+    open.lastIndex = close.lastIndex;
   }
 }
 // The inside of the first <name> element. Needed because styles.xml holds two
 // lists of <xf> elements and only the second one is what cells point at.
 function sheetSection(xml, name) {
   xml = String(xml || "");
-  var m = new RegExp("<" + name + "(\\s[^>]*)?>").exec(xml);
+  var m = new RegExp("<" + SHEET_NS + name + "(\\s[^>]*)?>").exec(xml);
   if (!m) return "";
   var start = m.index + m[0].length;
-  var at = xml.indexOf("</" + name + ">", start);
-  return at === -1 ? xml.slice(start) : xml.slice(start, at);
+  var close = new RegExp("</" + SHEET_NS + name + "\\s*>", "g");
+  close.lastIndex = start;
+  var c = close.exec(xml);
+  return c ? xml.slice(start, c.index) : xml.slice(start);
 }
 // One place where a cell becomes a string. A spreadsheet cell can hold a hard
 // newline; parseCSV works line by line, so a row that could carry one would
@@ -13225,7 +13328,7 @@ function zipEntries(bytes) {
     }
   }
   var out = {}, p = cdOff, seen = 0;
-  while (seen < count && p + 46 <= n) {
+  while (seen < count && seen < SHEET_MAX_ENTRIES && p + 46 <= n) {
     if (!(bytes[p] === 0x50 && bytes[p + 1] === 0x4b && bytes[p + 2] === 0x01 && bytes[p + 3] === 0x02)) break;
     var nameLen = sheetU16(bytes, p + 28);
     var name = "";
@@ -13253,39 +13356,80 @@ function zipEntryBytes(bytes, ent) {
 // DEFLATE through the platform's own decompressor. Shipping a JavaScript
 // inflater would be another 200 lines of bit-twiddling in a file that is
 // already long, to do what every engine Richy runs on already does natively.
-function sheetInflate(raw, cb) {
+// `limit` is how many bytes this entry is allowed to become. The output is
+// taken a chunk at a time and the count checked as it goes, so a file that
+// claims to be small and unpacks forever is stopped part-way rather than
+// after the phone has already held all of it.
+function sheetInflate(raw, limit, cb) {
   if (typeof DecompressionStream !== "function") {
     cb(new Error("This browser can't open .xlsx files. Save the file as CSV and Richy will read it.")); return;
   }
+  var ds, reader;
+  // Every promise here is deliberately swallowed. Cancelling the read aborts
+  // the write that is still feeding it, and a rejection nobody is listening
+  // for becomes an unhandled error on the page - which is how stopping a
+  // hostile file safely would end up looking like a crash.
+  function hush(p) { if (p && p.then) p.then(null, function() {}); }
   try {
-    var ds = new DecompressionStream("deflate-raw");
+    ds = new DecompressionStream("deflate-raw");
     var w = ds.writable.getWriter();
-    w.write(raw);
-    w.close();
-    new Response(ds.readable).arrayBuffer().then(
-      function(ab) { cb(null, new Uint8Array(ab)); },
-      function() { cb(new Error("That Excel file couldn't be opened. It may be damaged - try downloading it again.")); }
-    );
-  } catch (e) {
-    cb(new Error("That Excel file couldn't be opened. It may be damaged - try downloading it again."));
+    hush(w.write(raw));
+    hush(w.close());
+    reader = ds.readable.getReader();
+  } catch (e) { cb(new Error(SHEET_DAMAGED)); return; }
+  var parts = [], total = 0, ended = false;
+  function stop(err, out) {
+    if (ended) return;
+    ended = true;
+    if (err) { try { hush(reader.cancel()); } catch (e) {} }
+    cb(err, out);
   }
+  function pump() {
+    reader.read().then(function(r) {
+      if (ended) return;
+      if (r.done) {
+        var joined = new Uint8Array(total), at = 0;
+        for (var i = 0; i < parts.length; i++) { joined.set(parts[i], at); at += parts[i].length; }
+        stop(null, joined);
+        return;
+      }
+      total += r.value.length;
+      if (total > limit) { stop(new Error(SHEET_TOO_BIG)); return; }
+      parts.push(r.value);
+      pump();
+    }, function() { stop(new Error(SHEET_DAMAGED)); });
+  }
+  pump();
 }
-function zipEntryText(bytes, ent, cb) {
+// `budget` is one object per file, carrying what is left of the unpacking
+// allowance across every part read out of it - so a hundred parts that are
+// each just under the limit cannot add up past it.
+function zipEntryText(bytes, ent, budget, cb) {
   var raw = zipEntryBytes(bytes, ent);
-  if (!raw) { cb(new Error("That Excel file looks damaged - Richy couldn't open part of it.")); return; }
-  if (ent.method === 0) { cb(null, sheetUtf8(raw)); return; }
+  if (!raw) { cb(new Error(SHEET_DAMAGED)); return; }
+  if (ent.size > budget.left) { cb(new Error(SHEET_TOO_BIG)); return; }
+  if (ent.method === 0) {
+    budget.left -= raw.length;
+    if (budget.left < 0) { cb(new Error(SHEET_TOO_BIG)); return; }
+    cb(null, sheetUtf8(raw));
+    return;
+  }
   if (ent.method !== 8) { cb(new Error("That Excel file uses a compression Richy can't open. Save it as CSV and it will read straight in.")); return; }
-  sheetInflate(raw, function(err, out) { if (err) cb(err); else cb(null, sheetUtf8(out)); });
+  sheetInflate(raw, budget.left, function(err, out) {
+    if (err) { cb(err); return; }
+    budget.left -= out.length;
+    cb(null, sheetUtf8(out));
+  });
 }
 // The named entries that exist, as text. Missing ones are simply absent - a
 // workbook with no styles or no shared strings is legal and common.
-function zipReadText(bytes, entries, names, cb) {
+function zipReadText(bytes, entries, names, budget, cb) {
   var out = {}, i = 0;
   function next() {
     while (i < names.length && !entries[names[i]]) i++;
     if (i >= names.length) { cb(null, out); return; }
     var name = names[i++];
-    zipEntryText(bytes, entries[name], function(err, text) {
+    zipEntryText(bytes, entries[name], budget, function(err, text) {
       if (err) { cb(err); return; }
       out[name] = text;
       next();
@@ -13300,10 +13444,10 @@ function xlsxSharedStrings(xml) {
   sheetEachTag(xml, "si", function(open, inner) {
     // Rich text splits one string across runs, and the phonetic guides Excel
     // adds are not part of the text a person sees.
-    var body = inner.replace(/<rPh[\s\S]*?<\/rPh>/g, "");
+    var body = inner.replace(new RegExp("<" + SHEET_NS + "rPh[\\s\\S]*?</" + SHEET_NS + "rPh>", "g"), "");
     var txt = "";
     sheetEachTag(body, "t", function(o, t) { txt += sheetUnxml(t); });
-    out.push(txt);
+    if (out.length < SHEET_MAX_STRINGS) out.push(txt);
   });
   return out;
 }
@@ -13382,7 +13526,10 @@ function xlsxSheetRows(xml, shared, dateStyles, date1904) {
       if (t === "inlineStr") {
         sheetEachTag(cInner, "t", function(o, txt) { v += sheetUnxml(txt); });
       } else {
-        var vm = /<v(?:\s[^>]*)?>([\s\S]*?)<\/v>/.exec(cInner);
+        // The one tag matched by hand rather than through sheetEachTag, so it
+        // needs the same tolerance for a namespace prefix: <x:v> is a value
+        // exactly as much as <v> is.
+        var vm = new RegExp("<" + SHEET_NS + "v(?:\\s[^>]*)?>([\\s\\S]*?)</" + SHEET_NS + "v>").exec(cInner);
         var raw = vm ? sheetUnxml(vm[1]) : "";
         if (t === "s") { var idx = parseInt(raw, 10); v = (shared && shared[idx] != null) ? shared[idx] : ""; }
         else if (t === "b") v = raw === "1" ? "TRUE" : raw === "0" ? "FALSE" : "";
@@ -13433,7 +13580,7 @@ function xlsxRelMap(relsXml, base) {
 function xlsxSheetList(wbXml, rels, entries, base) {
   var shown = [], hidden = [];
   sheetEachTag(sheetSection(wbXml, "sheets"), "sheet", function(open) {
-    var path = rels.id[sheetAttr(open, "r:id")];
+    var path = rels.id[sheetAttrNS(open, "id")];
     if (!path || !entries[path]) return;
     var state = sheetAttr(open, "state").toLowerCase();
     var one = { name: sheetAttr(open, "name"), path: path };
@@ -13456,7 +13603,8 @@ function xlsxSheetList(wbXml, rels, entries, base) {
 function xlsxRead(bytes, cb) {
   var entries = zipEntries(bytes);
   if (!entries) { cb(new Error("That file looks damaged - Richy couldn't open it. Try downloading it from your bank again.")); return; }
-  zipReadText(bytes, entries, ["_rels/.rels"], function(e0, pkg) {
+  var budget = { left: SHEET_MAX_INFLATE };
+  zipReadText(bytes, entries, ["_rels/.rels"], budget, function(e0, pkg) {
     if (e0) { cb(e0); return; }
     var wbPath = "";
     if (pkg["_rels/.rels"]) {
@@ -13477,7 +13625,7 @@ function xlsxRead(bytes, cb) {
     }
     var base = wbPath.replace(/[^\/]*$/, "");                       // "xl/workbook.xml" -> "xl/"
     var relsPath = base + "_rels/" + wbPath.slice(base.length) + ".rels";
-    zipReadText(bytes, entries, [wbPath, relsPath], function(e1, book) {
+    zipReadText(bytes, entries, [wbPath, relsPath], budget, function(e1, book) {
       if (e1) { cb(e1); return; }
       var wb = book[wbPath] || "";
       var date1904 = /date1904\s*=\s*"(1|true)"/i.test(wb);
@@ -13486,13 +13634,13 @@ function xlsxRead(bytes, cb) {
       if (!sheets.length) { cb(new Error("There are no sheets in that Excel file.")); return; }
       var sharedPath = rels.type.sharedStrings || base + "sharedStrings.xml";
       var stylesPath = rels.type.styles || base + "styles.xml";
-      zipReadText(bytes, entries, [sharedPath, stylesPath], function(e2, side) {
+      zipReadText(bytes, entries, [sharedPath, stylesPath], budget, function(e2, side) {
         if (e2) { cb(e2); return; }
         var shared = xlsxSharedStrings(side[sharedPath] || "");
         var styles = xlsxDateStyles(side[stylesPath] || "");
         (function step(i) {
           if (i >= sheets.length) { cb(new Error("There are no rows in that Excel file. Check you exported your transactions and not an empty sheet.")); return; }
-          zipReadText(bytes, entries, [sheets[i].path], function(e3, one) {
+          zipReadText(bytes, entries, [sheets[i].path], budget, function(e3, one) {
             if (e3) { cb(e3); return; }
             var rows = xlsxSheetRows(one[sheets[i].path] || "", shared, styles, date1904);
             if (sheetHasRows(rows)) { cb(null, { kind: "xlsx", rows: rows, sheet: sheets[i].name }); return; }
@@ -13586,16 +13734,16 @@ function xmlssRows(text) {
       sheetEachTag(rInner, "Cell", function(cOpen, cInner) {
         // ss:Index is how this format writes a gap: the next cell states which
         // column it is in and the ones before it are simply missing.
-        var idx = parseInt(sheetAttr(cOpen, "ss:Index") || "0", 10);
+        var idx = parseInt(sheetAttrNS(cOpen, "Index") || "0", 10);
         if (idx > 0) while (cells.length < idx - 1 && cells.length < SHEET_MAX_COLS) cells.push("");
         var v = "";
         sheetEachTag(cInner, "Data", function(dOpen, dInner) {
           var raw = htmlText(dInner);      // <B>, <Font> and friends live inside Data
-          if (sheetAttr(dOpen, "ss:Type") === "DateTime") raw = raw.replace(/T[\d:.]*$/, "");
+          if (sheetAttrNS(dOpen, "Type") === "DateTime") raw = raw.replace(/T[\d:.]*$/, "");
           v += raw;
         });
         if (cells.length < SHEET_MAX_COLS) cells.push(sheetCleanCell(v));
-        var across = parseInt(sheetAttr(cOpen, "ss:MergeAcross") || "0", 10);
+        var across = parseInt(sheetAttrNS(cOpen, "MergeAcross") || "0", 10);
         for (var k = 0; k < across && k < 40 && cells.length < SHEET_MAX_COLS; k++) cells.push("");
       });
       if (sheetHasContent(cells)) rows.push(cells);
@@ -13613,12 +13761,52 @@ function sheetIsOle(b) {
   return b.length > 8 && b[0] === 0xd0 && b[1] === 0xcf && b[2] === 0x11 && b[3] === 0xe0
     && b[4] === 0xa1 && b[5] === 0xb1 && b[6] === 0x1a && b[7] === 0xe1;
 }
+// The files people genuinely pick by mistake, each answered with what it is
+// and what to do instead. A PDF is the commonest by a distance - most banks
+// offer it before they offer anything Richy can add up - and a photo of a
+// statement is the second.
+function sheetMagicRefusal(b) {
+  function at(i, list) {
+    for (var k = 0; k < list.length; k++) if (b[i + k] !== list[k]) return false;
+    return true;
+  }
+  if (at(0, [0x25, 0x50, 0x44, 0x46])) {
+    return "That's a PDF. Richy reads the numbers in a file, not the words on a printed page - go back to your bank and export the same period as CSV or Excel.";
+  }
+  if (at(0, [0x89, 0x50, 0x4e, 0x47]) || at(0, [0xff, 0xd8, 0xff]) || at(0, [0x47, 0x49, 0x46, 0x38])
+    || at(0, [0x42, 0x4d]) || at(4, [0x66, 0x74, 0x79, 0x70]) || (at(0, [0x52, 0x49, 0x46, 0x46]) && at(8, [0x57, 0x45, 0x42, 0x50]))) {
+    return "That's a picture. Richy can't read numbers off a screenshot - export the statement itself as CSV or Excel.";
+  }
+  if (at(0, [0x4d, 0x5a]) || at(0, [0x7f, 0x45, 0x4c, 0x46]) || at(0, [0xca, 0xfe, 0xba, 0xbe]) || at(0, [0xcf, 0xfa, 0xed, 0xfe])) {
+    return "That's a program, not a statement. Richy only opens CSV and Excel files.";
+  }
+  if (at(0, [0x1f, 0x8b]) || at(0, [0x52, 0x61, 0x72, 0x21]) || at(0, [0x37, 0x7a, 0xbc, 0xaf]) || at(0, [0x42, 0x5a, 0x68]) || at(0, [0xfd, 0x37, 0x7a, 0x58])) {
+    return "That's a compressed archive. Unpack it and choose the CSV or Excel file inside.";
+  }
+  if (at(0, [0x53, 0x51, 0x4c, 0x69, 0x74, 0x65])) {
+    return "That's a database file, not a statement. Export your transactions as CSV or Excel.";
+  }
+  return "";
+}
+// Text, or something only pretending to be. Anything that decodes to control
+// characters is not a statement, and reading it anyway produces rows of
+// mojibake that look enough like data to be imported by accident.
+function sheetLooksBinary(text) {
+  var n = Math.min(text.length, 4096), bad = 0;
+  for (var i = 0; i < n; i++) {
+    var c = text.charCodeAt(i);
+    if (c === 0) return true;
+    if (c < 9 || (c > 13 && c < 32) || c === 0xfffd) bad++;
+  }
+  return n > 0 && bad / n > 0.05;
+}
 // "" for anything that should be read as delimited text. The .xls files card
 // issuers hand out are one of these two far more often than they are Excel.
 function sheetMarkupKind(text) {
   text = String(text || "");
   var head = text.slice(0, 2000).toLowerCase();
-  if (head.indexOf("urn:schemas-microsoft-com:office:spreadsheet") !== -1 || /<workbook[\s>]/i.test(head)) return "xmlss";
+  if (head.indexOf("urn:schemas-microsoft-com:office:spreadsheet") !== -1
+    || new RegExp("<" + SHEET_NS + "workbook[\\s>]", "i").test(head)) return "xmlss";
   if (/<table[\s>]/i.test(text) && (/<t[dr][\s>]/i.test(text) || /<\/t[dr]>/i.test(text))) return "html";
   return "";
 }
@@ -13631,6 +13819,10 @@ function sheetMarkupKind(text) {
 function sheetReadBytes(buf, name, cb) {
   var bytes = new Uint8Array(buf || new ArrayBuffer(0));
   if (!bytes.length) { cb(new Error("That file was empty.")); return; }
+  if (bytes.length > SHEET_MAX_BYTES) {
+    cb(new Error("That file is " + Math.round(bytes.length / 1048576) + " MB, which is far larger than any statement. Export a shorter date range, or save it as CSV."));
+    return;
+  }
   var ext = (String(name || "").match(/\.([a-z0-9]+)$/i) || ["", ""])[1].toLowerCase();
   if (sheetIsOle(bytes)) {
     // The 1997 binary. Reading it means an OLE compound-file walk and the BIFF
@@ -13640,6 +13832,12 @@ function sheetReadBytes(buf, name, cb) {
     return;
   }
   if (sheetIsZip(bytes)) { xlsxRead(bytes, cb); return; }
+  // Everything else people actually pick by mistake, named rather than read.
+  // A parser handed a PNG will find "rows" in it eventually; saying what the
+  // file is costs nothing and is the difference between a fixable mistake and
+  // a screen of nonsense.
+  var known = sheetMagicRefusal(bytes);
+  if (known) { cb(new Error(known)); return; }
   var dec = csvDecodeBytes(buf);
   var markup = sheetMarkupKind(dec.text);
   if (markup) {
@@ -13651,6 +13849,10 @@ function sheetReadBytes(buf, name, cb) {
     return;
   }
   if (!dec.text.trim()) { cb(new Error("That file was empty.")); return; }
+  if (sheetLooksBinary(dec.text)) {
+    cb(new Error("Richy couldn't find any text in that file, so it isn't a statement it can read. Export it again as CSV or Excel."));
+    return;
+  }
   // Plain text with a spreadsheet name on it is still plain text - Israeli
   // banks label tab-separated exports .xls all the time - so it goes down the
   // CSV path, where the delimiter is sniffed rather than assumed.
@@ -16949,7 +17151,16 @@ function ImportSheet(props) {
     // that were sitting right there underneath it.
     var widest = 0;
     for (var wi = 0; wi < parsed.length; wi++) if (parsed[wi].length > widest) widest = parsed[wi].length;
-    if (parsed.length < 1 || widest < 2) { setErr("Could not read any rows. Choose a CSV or Excel file, or paste the text in."); return; }
+    if (!parsed.length) { setErr("Richy couldn't find a single line in that. Choose a CSV or Excel file, or paste the text in."); return; }
+    // Saying WHICH of the two things went wrong, with the count, is the
+    // difference between a user fixing their export and giving up: a file
+    // that came through as one column is a different problem from a file
+    // that came through empty.
+    if (widest < 2) {
+      setErr("Richy read " + parsed.length + (parsed.length === 1 ? " line" : " lines")
+        + " but only one column. A statement needs the date, the shop and the amount side by side - if this file looks like one column in Excel too, export it again from your bank.");
+      return;
+    }
     var sk = csvSkeleton(parsed);
     var fp = csvFingerprint(sk);
     setFingerprint(fp);

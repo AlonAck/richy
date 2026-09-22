@@ -22,9 +22,11 @@ function crc32(buf) {
 }
 const enc = (s) => new TextEncoder().encode(s);
 
-// files: [{ name, data: string|Uint8Array, store?: true }]. `store` writes the
-// entry uncompressed, which is legal, which Excel does for tiny parts, and
-// which the reader has to handle without an inflate at all.
+// files: [{ name, data: string|Uint8Array, store?: true, lieSize?: number }].
+// `store` writes the entry uncompressed, which is legal, which Excel does for
+// tiny parts, and which the reader has to handle without an inflate at all.
+// `lieSize` writes a false uncompressed size into the directory - what a zip
+// bomb does, so that a reader trusting the header unpacks whatever arrives.
 export function zipBuild(files) {
   const chunks = [], central = [];
   let offset = 0;
@@ -41,7 +43,7 @@ export function zipBuild(files) {
     lv.setUint16(8, f.store ? 0 : 8, true);
     lv.setUint32(14, sum, true);
     lv.setUint32(18, comp.length, true);
-    lv.setUint32(22, data.length, true);
+    lv.setUint32(22, f.lieSize === undefined ? data.length : f.lieSize, true);
     lv.setUint16(26, name.length, true);
     lh.set(name, 30);
 
@@ -53,7 +55,7 @@ export function zipBuild(files) {
     cv.setUint16(10, f.store ? 0 : 8, true);
     cv.setUint32(16, sum, true);
     cv.setUint32(20, comp.length, true);
-    cv.setUint32(24, data.length, true);
+    cv.setUint32(24, f.lieSize === undefined ? data.length : f.lieSize, true);
     cv.setUint16(28, name.length, true);
     cv.setUint32(42, offset, true);
     cd.set(name, 46);
@@ -270,3 +272,134 @@ export function odsFile() {
     { name: "content.xml", data: "<?xml version=\"1.0\"?><office:document-content/>" }
   ]);
 }
+
+// --- a workbook written by something that is not Excel -----------------------
+// Every element carries a namespace prefix. This is legal XML and the same
+// document to a parser that resolves namespaces; to one matching "<row" it is
+// an empty file. Java exporters and older Microsoft tooling write it, and so
+// do several of the systems banks print statements from.
+export function prefixedXlsx() {
+  const main = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+  const rel = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+  return zipBuild([
+    { name: "_rels/.rels", data: "<Relationships><Relationship Id=\"rId1\" Type=\"" + rel + "/officeDocument\" Target=\"xl/workbook.xml\"/></Relationships>" },
+    { name: "xl/workbook.xml", data: "<x:workbook xmlns:x=\"" + main + "\" xmlns:rr=\"" + rel + "\">"
+      + "<x:sheets><x:sheet name=\"עובר ושב\" sheetId=\"1\" rr:id=\"rId1\"/></x:sheets></x:workbook>" },
+    { name: "xl/_rels/workbook.xml.rels", data: "<Relationships>"
+      + "<Relationship Id=\"rId1\" Type=\"" + rel + "/worksheet\" Target=\"worksheets/sheet1.xml\"/>"
+      + "<Relationship Id=\"rId2\" Type=\"" + rel + "/sharedStrings\" Target=\"sharedStrings.xml\"/>"
+      + "</Relationships>" },
+    { name: "xl/styles.xml", data: "<x:styleSheet xmlns:x=\"" + main + "\">"
+      + "<x:cellXfs count=\"2\"><x:xf numFmtId=\"0\"/><x:xf numFmtId=\"14\"/></x:cellXfs></x:styleSheet>" },
+    { name: "xl/sharedStrings.xml", data: "<x:sst xmlns:x=\"" + main + "\">"
+      + "<x:si><x:t>תאריך</x:t></x:si><x:si><x:t>תיאור</x:t></x:si><x:si><x:t>סכום</x:t></x:si>"
+      + "<x:si><x:t>שופרסל דיל</x:t></x:si><x:si><x:t>ארומה</x:t></x:si></x:sst>" },
+    { name: "xl/worksheets/sheet1.xml", data: "<x:worksheet xmlns:x=\"" + main + "\"><x:sheetData>"
+      + "<x:row r=\"1\"><x:c r=\"A1\" t=\"s\"><x:v>0</x:v></x:c><x:c r=\"B1\" t=\"s\"><x:v>1</x:v></x:c><x:c r=\"C1\" t=\"s\"><x:v>2</x:v></x:c></x:row>"
+      + "<x:row r=\"2\"><x:c r=\"A2\" s=\"1\"><x:v>" + serial1900("2026-09-02") + "</x:v></x:c><x:c r=\"B2\" t=\"s\"><x:v>3</x:v></x:c><x:c r=\"C2\"><x:v>-342.9</x:v></x:c></x:row>"
+      + "<x:row r=\"3\"><x:c r=\"A3\" s=\"1\"><x:v>" + serial1900("2026-09-04") + "</x:v></x:c><x:c r=\"B3\" t=\"s\"><x:v>4</x:v></x:c><x:c r=\"C3\"><x:v>-32</x:v></x:c></x:row>"
+      + "</x:sheetData></x:worksheet>" }
+  ]);
+}
+
+// --- files that are not statements -------------------------------------------
+// Header bytes only: the point of each is that Richy names the format instead
+// of reading its first eight bytes as a shop name.
+function headed(sig, size) {
+  const b = new Uint8Array(size || 512);
+  b.set(sig, 0);
+  return b;
+}
+export const NOT_A_STATEMENT = {
+  pdf:    () => headed([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x37]),
+  png:    () => headed([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+  jpeg:   () => headed([0xff, 0xd8, 0xff, 0xe0]),
+  gif:    () => headed([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]),
+  bmp:    () => headed([0x42, 0x4d, 0x36, 0x00]),
+  heic:   () => { const b = headed([0x00, 0x00, 0x00, 0x18]); b.set([0x66, 0x74, 0x79, 0x70], 4); return b; },
+  exe:    () => headed([0x4d, 0x5a, 0x90, 0x00]),
+  elf:    () => headed([0x7f, 0x45, 0x4c, 0x46]),
+  macho:  () => headed([0xcf, 0xfa, 0xed, 0xfe]),
+  gzip:   () => headed([0x1f, 0x8b, 0x08, 0x00]),
+  rar:    () => headed([0x52, 0x61, 0x72, 0x21, 0x1a, 0x07]),
+  sevenz: () => headed([0x37, 0x7a, 0xbc, 0xaf, 0x27, 0x1c]),
+  bzip2:  () => headed([0x42, 0x5a, 0x68, 0x39]),
+  xz:     () => headed([0xfd, 0x37, 0x7a, 0x58, 0x5a, 0x00]),
+  sqlite: () => headed([0x53, 0x51, 0x4c, 0x69, 0x74, 0x65, 0x20, 0x66])
+};
+
+// Not a header Richy knows - just 4KB of noise with a .csv name on it, which
+// is what a renamed binary looks like. It must not be decoded into rows of
+// mojibake and imported as if it were money.
+export function binaryJunk(n) {
+  const b = new Uint8Array(n || 4096);
+  let seed = 7;
+  for (let i = 0; i < b.length; i++) { seed = (seed * 1103515245 + 12345) & 0x7fffffff; b[i] = (seed >> 7) & 0xff; }
+  b[0] = 0x51; b[1] = 0x77;                    // nothing Richy has a name for
+  return b;
+}
+
+// --- zips that are not trying to be helpful ----------------------------------
+// The cheap bomb: a tiny payload whose directory claims half a gigabyte. A
+// reader that trusts the header allocates for it.
+export function zipBombDeclared() {
+  return zipBuild([
+    { name: "_rels/.rels", data: "<Relationships><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/></Relationships>" },
+    { name: "xl/workbook.xml", data: "<workbook/>", lieSize: 512 * 1024 * 1024 }
+  ]);
+}
+// The real one: an entry that genuinely unpacks past the limit, with a
+// directory that says it is small. Only counting the bytes as they arrive
+// catches this.
+export function zipBombReal(megabytes) {
+  const big = new Uint8Array((megabytes || 70) * 1024 * 1024);   // zeros compress to nothing
+  return zipBuild([
+    { name: "_rels/.rels", data: "<Relationships><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/></Relationships>" },
+    { name: "xl/workbook.xml", data: big, lieSize: 900 }
+  ]);
+}
+// Thousands of parts, none of them a workbook.
+export function manyEntriesZip(n) {
+  const files = [];
+  for (let i = 0; i < (n || 5000); i++) files.push({ name: "part" + i + ".xml", data: "<a/>", store: true });
+  return zipBuild(files);
+}
+// Entry names that try to climb out of the folder they are unpacked into.
+// Richy never writes any of them to disk - it reads parts by name out of
+// memory - and this is the test that says so.
+export function traversalZip() {
+  return zipBuild([
+    { name: "../../../../etc/passwd", data: "root:x:0:0", store: true },
+    { name: "C:/Windows/System32/evil.dll", data: "MZ", store: true },
+    { name: "xl/workbook.xml", data: "<workbook><sheets/></workbook>" }
+  ]);
+}
+
+// The classic XML entity bomb, named .xls. Nothing here expands entities it
+// was not born knowing, so this is inert text - but a reader that handed the
+// file to a DOM parser would spend the phone's memory on it.
+export const ENTITY_BOMB = [
+  "<?xml version=\"1.0\"?>",
+  "<!DOCTYPE lolz [",
+  "  <!ENTITY lol \"lol\">",
+  "  <!ENTITY lol1 \"&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;\">",
+  "  <!ENTITY lol2 \"&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;\">",
+  "  <!ENTITY lol3 \"&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;\">",
+  "  <!ENTITY lol4 \"&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;\">",
+  "]>",
+  "<Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\" xmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\">",
+  "<Worksheet ss:Name=\"x\"><Table>",
+  "<Row><Cell><Data ss:Type=\"String\">&lol4;</Data></Cell><Cell><Data ss:Type=\"String\">&lol4;</Data></Cell></Row>",
+  "</Table></Worksheet></Workbook>"
+].join("\n");
+
+// A bank's HTML export with a script in it. The rows must come out as text,
+// and the script must not come out at all.
+export const HTML_WITH_SCRIPT = [
+  "<html><body><script>window.alert('x');var stolen=document.cookie;</script>",
+  "<table>",
+  "<tr><th>תאריך</th><th>בית עסק</th><th>סכום</th></tr>",
+  "<tr><td>01/09/2026</td><td>ארומה <script>alert(1)</script></td><td>32.00</td></tr>",
+  "<tr><td>02/09/2026</td><td>&lt;img src=x onerror=alert(1)&gt;</td><td>19.90</td></tr>",
+  "</table></body></html>"
+].join("\n");

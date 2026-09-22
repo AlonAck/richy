@@ -22,12 +22,21 @@ function grabFunction(name) {
 
 function grabVar(name) {
   // Single-line `var NAME = ...;` declarations only - every constant these
-  // tests need is written that way. Stops at the first semicolon so a trailing
-  // end-of-line comment does not defeat the match.
-  const re = new RegExp("^var " + name + " = [^;\\n]*;", "m");
+  // tests need is written that way. Cuts at the first semicolon OUTSIDE a
+  // string, so that a trailing end-of-line comment does not defeat the match
+  // and a value that contains a semicolon (the delimiter list) survives it.
+  const re = new RegExp("^var " + name + " = ", "m");
   const m = re.exec(SRC);
   if (!m) throw new Error("var not found in budget-app.jsx: " + name);
-  return m[0];
+  let q = null;
+  for (let i = m.index + m[0].length; i < SRC.length; i++) {
+    const ch = SRC[i];
+    if (q) { if (ch === "\\") i++; else if (ch === q) q = null; continue; }
+    if (ch === "\"" || ch === "'") { q = ch; continue; }
+    if (ch === ";") return SRC.slice(m.index, i + 1);
+    if (ch === "\n") break;
+  }
+  throw new Error("unterminated var in budget-app.jsx: " + name);
 }
 
 // A multi-line concatenated string constant (the two system prompts).
@@ -39,13 +48,14 @@ function grabPrompt(name) {
   return SRC.slice(at, end + 1);
 }
 
-const VARS = ["SHEET_MAX_ROWS", "SHEET_MAX_COLS", "SHEET_MAX_TABLES", "XLSX_DATE_FMT_IDS",
+const VARS = ["SHEET_NS", "CSV_DELIMS", "CSV_SNIFF_BYTES", "CSV_SNIFF_ROWS", "SHEET_MAX_ROWS", "SHEET_MAX_COLS", "SHEET_MAX_TABLES", "XLSX_DATE_FMT_IDS",
+  "SHEET_MAX_BYTES", "SHEET_MAX_INFLATE", "SHEET_MAX_ENTRIES", "SHEET_MAX_STRINGS", "SHEET_DAMAGED", "SHEET_TOO_BIG",
   "CSV_HEAD_MAX", "CSV_SHAPE_MAX", "CSV_CELL_MAX", "CSV_NUL",
   "CSV_SEP_CELL", "CSV_SEP_ROW", "CSV_SEP_PART",
   "CSV_SHOPS_PER_CALL", "CSV_SHOPS_MAX", "CSV_SHOP_EXAMPLES",
   "AI_MODEL_CSV_MAP", "AI_MODEL_CSV_SHOPS"];
 
-const FNS = ["pad2", "parseCSV", "sniffMap", "parseImportDate", "parseImportAmount",
+const FNS = ["pad2", "parseCSV", "csvScan", "csvPickDelim", "sniffMap", "parseImportDate", "parseImportAmount",
   "normalizeMerchant", "shopKey", "labelSimilarity", "dayGap", "dupScore",
   "csvDecodeBytes", "csvIsDateCell", "csvIsNumberCell", "csvCellKind", "csvRowKinds",
   "csvRowIsData", "csvFirstDataRow", "csvMaskCell", "csvColumnProfiles", "csvSkeleton",
@@ -54,7 +64,7 @@ const FNS = ["pad2", "parseCSV", "sniffMap", "parseImportDate", "parseImportAmou
   // The spreadsheet reader. Everything from the zip directory up to "what kind
   // of file is this" is pulled in, because a .xlsx is read byte by byte and
   // the tests build real ones to feed it.
-  "sheetChar", "sheetUnxml", "sheetAttr", "sheetEachTag", "sheetSection",
+  "sheetChar", "sheetUnxml", "sheetAttr", "sheetAttrNS", "sheetEachTag", "sheetSection",
   "sheetCleanCell", "sheetHasContent", "sheetHasRows", "sheetUtf8",
   "sheetU16", "sheetU32", "zipEntries", "zipEntryBytes", "sheetInflate",
   "zipEntryText", "zipReadText", "xlsxSharedStrings", "sheetFmtIsDate",
@@ -62,7 +72,7 @@ const FNS = ["pad2", "parseCSV", "sniffMap", "parseImportDate", "parseImportAmou
   "xlsxSheetList", "xlsxRelPath", "xlsxRelMap", "xlsxRead",
   "htmlText", "htmlTableRegions", "htmlRowCells",
   "htmlRegionRows", "sheetTableScore", "htmlSheetRows", "xmlssRows",
-  "sheetIsZip", "sheetIsOle", "sheetMarkupKind", "sheetReadBytes", "sheetReadNote",
+  "sheetIsZip", "sheetIsOle", "sheetMagicRefusal", "sheetLooksBinary", "sheetMarkupKind", "sheetReadBytes", "sheetReadNote",
   // These two make a network call in the app. They are pulled in anyway so the
   // code that reads a real model's answer - the fence stripping, the
   // out-of-range clamping, the per-chunk failure handling - is the code under

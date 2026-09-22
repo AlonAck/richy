@@ -7,7 +7,9 @@
   "scripts": {
     "build": "node build.mjs",
     "test:csv": "node tests/csv-import/offline.test.mjs",
-    "test:csv:live": "node tests/csv-import/live-haiku.mjs"
+    "test:csv:live": "node tests/csv-import/live-haiku.mjs",
+    "test:files": "node tests/csv-import/files.test.mjs",
+    "test": "node tests/csv-import/offline.test.mjs && node tests/csv-import/files.test.mjs"
   },
   "dependencies": {
     "firebase": "10.12.2",
