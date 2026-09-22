@@ -94,3 +94,85 @@ jobs:
       - name: Fail the job if the build failed
         if: steps.build.outcome == 'failure'
         run: exit 1
+
+  # The Liquid Glass code in DesignSystem/RichyGlass.swift sits behind
+  # `#if compiler(>=6.2)`, so the job above - pinned to Xcode 16.4 - never
+  # compiles it. This job builds the same app with the newest Xcode on the
+  # runner; when that is Xcode 26 or later, the glass path gets a compiler for
+  # the first time. Advisory only: it never turns the push red, because a
+  # failure here can just as easily mean the runner image moved.
+  glass:
+    name: Compile the Liquid Glass path
+    runs-on: macos-15
+    timeout-minutes: 60
+    continue-on-error: true
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Look for an iOS 26 SDK
+        id: sdk
+        run: |
+          newest=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$newest" ]; then echo "found=no" >> "$GITHUB_OUTPUT"; exit 0; fi
+          sudo xcode-select -s "$newest"
+          version=$(swift --version 2>&1 | grep -oE "Swift version [0-9]+\.[0-9]+" | head -1 | awk '{print $3}')
+          if [ -z "$version" ]; then echo "found=no" >> "$GITHUB_OUTPUT"; exit 0; fi
+          major=${version%%.*}
+          minor=${version##*.}
+          echo "Newest Xcode: $newest (Swift $version)"
+          if [ "$major" -gt 6 ] || { [ "$major" -eq 6 ] && [ "$minor" -ge 2 ]; }; then
+            echo "found=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=no" >> "$GITHUB_OUTPUT"
+          fi
+          echo "xcode=$newest" >> "$GITHUB_OUTPUT"
+          echo "swift=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        id: build
+        if: steps.sdk.outputs.found == 'yes'
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          cd RichyIOS
+          xcodebuild -project Richy.xcodeproj -scheme Richy \
+            -destination "generic/platform=iOS Simulator" \
+            -configuration Debug \
+            -skipPackagePluginValidation -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
+            build 2>&1 | tee ../glass.log
+
+      - name: Report
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ steps.sdk.outputs.found }}" != "yes" ]; then
+            echo "No iOS 26 SDK on this runner (Swift ${{ steps.sdk.outputs.swift }}). The glass path was not compiled." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          {
+            echo "## Liquid Glass path: ${{ steps.build.outcome }}"
+            echo
+            echo "Commit ${{ github.sha }} built with ${{ steps.sdk.outputs.xcode }} (Swift ${{ steps.sdk.outputs.swift }})."
+            echo "This is the \`#if compiler(>=6.2)\` code the pinned Xcode 16.4 job never sees."
+            echo
+            echo '```'
+            grep -E "(error|warning): " glass.log | grep -v "unable to open" | sed -E "s#${GITHUB_WORKSPACE}/##g" | sort -u | head -100 || echo "(no error or warning lines in the log)"
+            echo '```'
+          } > glass-summary.md
+          cat glass-summary.md >> "$GITHUB_STEP_SUMMARY"
+          number=$(gh issue list --state open --search "iOS build log in:title" --json number,title --jq '[.[] | select(.title == "iOS build log")][0].number')
+          if [ -n "$number" ] && [ "$number" != "null" ]; then
+            gh issue comment "$number" --body-file glass-summary.md
+          fi
+
+      - name: Upload full log
+        if: steps.sdk.outputs.found == 'yes'
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log-glass
+          path: glass.log

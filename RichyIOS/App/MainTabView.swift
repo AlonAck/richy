@@ -45,17 +45,25 @@ struct MainTabView: View {
             AlfredChatView(user: user)
                 .tabItem { Label("Alfred", systemImage: "bubble.left.and.text.bubble.right") }
         }
+        // The bar is glass from iOS 26 on with nothing asked of us; this lets
+        // it shrink out of the way while a ledger scrolls, and gives the
+        // reading screens their full height back.
+        .richyTabBarMinimize()
     }
 }
 
+/// A standing notice about the session, not part of any screen's content - so
+/// it belongs on the glass layer, as a pill that floats over whatever tab is
+/// open rather than a bar welded across the top of it.
 private struct DemoBanner: View {
     var body: some View {
-        Text("Demo mode - nothing here is saved")
+        Label("Demo mode - nothing here is saved", systemImage: "eye")
             .font(RichyFont.ui(RichyFont.Size.caption, weight: .semibold))
             .foregroundStyle(RichyColor.heroText)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 6)
-            .background(RichyColor.accentHi)
+            .padding(.horizontal, Spacing.lg)
+            .padding(.vertical, 8)
+            .richyGlass(tint: RichyColor.accentHi)
+            .padding(.bottom, Spacing.sm)
     }
 }
 

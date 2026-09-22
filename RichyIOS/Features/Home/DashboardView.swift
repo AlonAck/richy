@@ -11,6 +11,8 @@ struct DashboardView: View {
     @Environment(\.services) private var services
     @State private var showProfile = false
     @State private var showAdd = false
+    /// Which side of the ledger the quick-add cluster asked for.
+    @State private var addType: TransactionType = .expense
 
     private var firstName: String {
         if let name = user.displayName, let first = name.split(separator: " ").first, !first.isEmpty {
@@ -41,6 +43,17 @@ struct DashboardView: View {
                     }
                 }
             }
+            // The glass layer, over the whole screen and under the nav bar.
+            // Only where there is a ledger to add to: the empty state carries
+            // its own call to action and does not need a second one.
+            .overlay {
+                if store.phase == .ready && !store.isEmpty {
+                    QuickAddCluster { type in
+                        addType = type
+                        showAdd = true
+                    }
+                }
+            }
             .navigationTitle("Dashboard")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -56,7 +69,7 @@ struct DashboardView: View {
                 ProfileView(user: user, account: services.account)
             }
             .sheet(isPresented: $showAdd) {
-                TransactionFormView(mode: .add)
+                TransactionFormView(mode: .add, initialType: addType)
             }
         }
     }
@@ -87,7 +100,9 @@ struct DashboardView: View {
                 recentCard(recent)
             }
             .padding(.horizontal, Spacing.screen)
-            .padding(.bottom, Spacing.xxl)
+            // Room for the floating cluster, so the last card can always be
+            // scrolled clear of it.
+            .padding(.bottom, Spacing.xxl + 66)
         }
     }
 

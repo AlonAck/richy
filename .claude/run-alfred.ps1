@@ -1,3 +1,3 @@
 $env:Path = "C:\Program Files\nodejs;" + $env:Path
 Set-Location "C:\Users\ackal\Downloads\Budget App\Alfred"
-npm run dev -- --port 3931
+npm run dev -- --port 3931 -H 0.0.0.0

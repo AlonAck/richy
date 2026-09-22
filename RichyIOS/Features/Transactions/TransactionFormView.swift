@@ -22,12 +22,17 @@ struct TransactionFormView: View {
     @State private var isSaving = false
     @State private var errorMessage: String?
     @FocusState private var amountFocused: Bool
+    /// Scopes the morphing of the expense/income switch.
+    @Namespace private var glass
 
-    init(mode: Mode) {
+    /// - Parameter initialType: which side of the ledger a new entry starts
+    ///   on. The quick-add cluster names it before the sheet opens, so the
+    ///   form arrives already set to what was tapped.
+    init(mode: Mode, initialType: TransactionType = .expense) {
         self.mode = mode
         switch mode {
         case .add:
-            _type = State(initialValue: .expense)
+            _type = State(initialValue: initialType == .income ? .income : .expense)
             _amountText = State(initialValue: "")
             _label = State(initialValue: "")
             _catId = State(initialValue: "")
@@ -66,28 +71,10 @@ struct TransactionFormView: View {
         NavigationStack {
             Form {
                 Section {
-                    Picker("Type", selection: $type) {
-                        Text("Expense").tag(TransactionType.expense)
-                        Text("Income").tag(TransactionType.income)
-                    }
-                    .pickerStyle(.segmented)
+                    amountHero
                 }
                 .listRowBackground(Color.clear)
-                .listRowInsets(EdgeInsets())
-
-                Section("Amount") {
-                    HStack(spacing: Spacing.sm) {
-                        Text(store.currency)
-                            .font(RichyFont.display(RichyFont.Size.title))
-                            .foregroundStyle(RichyColor.ink3)
-                        TextField("0.00", text: $amountText)
-                            .keyboardType(.decimalPad)
-                            .font(RichyFont.display(RichyFont.Size.title))
-                            .foregroundStyle(RichyColor.ink)
-                            .focused($amountFocused)
-                    }
-                }
-                .listRowBackground(RichyColor.card)
+                .listRowInsets(EdgeInsets(top: Spacing.sm, leading: 0, bottom: Spacing.lg, trailing: 0))
 
                 Section("Details") {
                     TextField("What was it?", text: $label)
@@ -153,6 +140,75 @@ struct TransactionFormView: View {
                 }
             }
         }
+    }
+
+    // MARK: The hero
+
+    /// What the whole sheet is for: which way the money went, and how much.
+    /// The switch is the one glass control on this screen - a control that
+    /// floats over the form rather than a row inside it. The amount below it
+    /// is content, and stays plain.
+    private var amountHero: some View {
+        VStack(spacing: Spacing.lg) {
+            typeSwitch
+            HStack(alignment: .firstTextBaseline, spacing: Spacing.sm) {
+                Text(store.currency)
+                    .font(RichyFont.display(RichyFont.Size.title))
+                    .foregroundStyle(RichyColor.ink3)
+                TextField("0.00", text: $amountText)
+                    .keyboardType(.decimalPad)
+                    .font(RichyFont.display(RichyFont.Size.hero))
+                    .monospacedDigit()
+                    .foregroundStyle(type == .income ? RichyColor.green : RichyColor.ink)
+                    .focused($amountFocused)
+                    .accessibilityLabel("Amount")
+            }
+            .animation(.easeInOut(duration: 0.2), value: type)
+        }
+        .padding(.horizontal, Spacing.lg)
+    }
+
+    /// Expense or income, as two halves of one pill. The lit half is a single
+    /// piece of glass carrying one identity, so on iOS 26 it does not fade
+    /// out on one side and in on the other - it stretches across the track
+    /// and settles, the way the system's own segmented glass does. Older
+    /// systems get the same pill sliding on a spring.
+    private var typeSwitch: some View {
+        RichyGlassContainer(spacing: 14) {
+            HStack(spacing: 6) {
+                segment("Expense", value: .expense, tint: RichyColor.accent)
+                segment("Income", value: .income, tint: RichyColor.green)
+            }
+            .padding(4)
+            .background(RichyColor.fill, in: Capsule(style: .continuous))
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Type")
+    }
+
+    @ViewBuilder
+    private func segment(_ title: String, value: TransactionType, tint: Color) -> some View {
+        let isSelected = type == value
+        Button {
+            withAnimation(.spring(response: 0.34, dampingFraction: 0.82)) { type = value }
+        } label: {
+            // Named `face`, not `label`: the view already has a `label` field
+            // for the transaction's own text.
+            let face = Text(title)
+                .font(RichyFont.ui(RichyFont.Size.body, weight: .semibold))
+                .foregroundStyle(isSelected ? Color.white : RichyColor.ink2)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+            if isSelected {
+                face
+                    .richyGlass(tint: tint, interactive: true)
+                    .richyGlassID("transaction-type", in: glass)
+            } else {
+                face.contentShape(Capsule(style: .continuous))
+            }
+        }
+        .buttonStyle(RichyGlassButtonStyle())
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : [.isButton])
     }
 
     private func save() async {

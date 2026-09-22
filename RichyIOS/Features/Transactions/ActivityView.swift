@@ -1,11 +1,13 @@
 import SwiftUI
 
 /// Every transaction, newest first, grouped by day. Tap to edit, swipe to
-/// delete, plus to add - the web app's Activity tab.
+/// delete, and the floating glass cluster to add - the web app's Activity tab.
 struct ActivityView: View {
     @Environment(LedgerStore.self) private var store
     @State private var showAdd = false
     @State private var editing: Transaction?
+    /// Which side of the ledger the quick-add cluster asked for.
+    @State private var addType: TransactionType = .expense
 
     var body: some View {
         NavigationStack {
@@ -28,20 +30,20 @@ struct ActivityView: View {
                     }
                 }
             }
-            .navigationTitle("Activity")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
+            // The plus that used to sit in the toolbar is now the floating
+            // cluster below: same action, within a thumb's reach of the list
+            // it acts on, and it names the two kinds of entry up front.
+            .overlay {
+                if store.phase == .ready && !store.isEmpty {
+                    QuickAddCluster { type in
+                        addType = type
                         showAdd = true
-                    } label: {
-                        Image(systemName: "plus")
                     }
-                    .accessibilityLabel("Add a transaction")
-                    .disabled(store.phase != .ready)
                 }
             }
+            .navigationTitle("Activity")
             .sheet(isPresented: $showAdd) {
-                TransactionFormView(mode: .add)
+                TransactionFormView(mode: .add, initialType: addType)
             }
             .sheet(item: $editing) { record in
                 TransactionFormView(mode: .edit(record))
@@ -84,6 +86,11 @@ struct ActivityView: View {
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
         .background(RichyColor.background)
+        // Rows stay opaque: glass is for the layer above the content, and a
+        // ledger row is content. What the list gives the glass is something
+        // worth refracting - so leave room for the cluster to sit over it and
+        // still let the last row scroll clear.
+        .safeAreaPadding(.bottom, 74)
     }
 
     /// The alert shows while a write error is set and clears it on dismiss.

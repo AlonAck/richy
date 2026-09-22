@@ -31,6 +31,18 @@ service cloud.firestore {
       match /tx/{txId} {
         allow read, write: if request.auth != null && request.auth.uid == uid;
       }
+
+      // Alfred's chat archive, one document per saved session, keyed by the
+      // session id. The second unbounded array to leave the parent document
+      // (FIRESTORE_SPLIT.md): every new message used to rewrite the whole
+      // archive, and a long-lived account pushed the 1 MiB document ceiling.
+      // Owner-only, exactly like tx above. Publishing this ahead of the code
+      // is safe - until a client knows about the subcollection nothing writes
+      // here, and until an account carries chatSchema 2 the array on the
+      // parent is still the truth.
+      match /alfredChats/{chatId} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
     }
 
     // Bank Sync key -> uid mapping. Created by the owner when enabling Bank
@@ -186,13 +198,6 @@ service cloud.firestore {
     // client read/write. Only the Admin SDK (server function, bypasses rules)
     // ever touches these. The client only ever sees the SAFE status fields via
     // the ?action=status endpoint, mirrored into its own users/{uid}.leumiFinteka.
-
-    // WhatsApp Richard Watch alerts (api/whatsapp.js): whatsappOptIn/{uid} holds
-    // the linked phone number and the opt-in/session state that gates every
-    // outbound message; whatsappPhones/{phone} maps an inbound sender back to a
-    // uid. Same pattern as leumiFinteka above - deliberately absent here so the
-    // catch-all deny covers them; only the Admin SDK touches them, and the
-    // client only ever sees safe status via ?action=status.
 
     // Everything else is denied by default.
     match /{document=**} {

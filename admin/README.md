@@ -47,3 +47,21 @@ Requires Node installed (it isn't on this machine yet — get it at https://node
 - Deletes all docs in the `users` collection (batched, 400 at a time).
 - Deletes all Auth accounts (paged, up to 1000 per delete call).
 - Prints running counts and a final total.
+
+# Richy admin — purge WhatsApp leftovers
+
+`purge-whatsapp.js` deletes every document left over in the Firestore
+`whatsappOptIn` and `whatsappPhones` collections from before WhatsApp Alerts
+was decommissioned (2026-09-10). It does **not** touch Auth accounts or the
+`users` collection — only those two narrow collections.
+
+Same credentials setup as `reset-users.js` above (Cloud Shell is easiest).
+It will not run without `--yes`.
+
+```
+node purge-whatsapp.js --yes
+```
+
+Run this once. After it's run (and `api/whatsapp.js` / `WHATSAPP_SETUP.md`
+are deleted from the repo root), the WhatsApp Alerts removal is fully
+complete.

@@ -169,9 +169,14 @@ module.exports = async function handler(req, res) {
   // tightly-scoped work. Legacy model names are mapped down here as well, so an
   // older cached client cannot keep invoking the expensive launch models.
   var ALLOWED_MODELS = { "claude-sonnet-5": 1, "claude-haiku-4-5": 1 };
+  // Dated snapshot ids map onto the alias they pin. Without this a caller that
+  // asks for a snapshot by its full id falls through to the default below and
+  // silently runs on Sonnet - paying the quality tier for work that was costed
+  // and prompted for the fast one, with nothing in the reply to say so.
   var LEGACY_MODEL_MAP = {
     "claude-sonnet-4-6": "claude-sonnet-5",
-    "claude-opus-4-8": "claude-sonnet-5"
+    "claude-opus-4-8": "claude-sonnet-5",
+    "claude-haiku-4-5-20251001": "claude-haiku-4-5"
   };
   var requestedModel = LEGACY_MODEL_MAP[body.model] || body.model;
   var model = (requestedModel && ALLOWED_MODELS[requestedModel]) ? requestedModel : "claude-sonnet-5";

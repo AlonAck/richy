@@ -22,6 +22,18 @@
 > in Tier 0 is what the code does, not what that commit's message claims. Two defects
 > that fix left behind are recorded under "Found 8 Sep".
 >
+> **UPDATE 2026-09-10** — WhatsApp Alerts removed entirely, closing two Tier 0
+> P0s (account deletion not erasing the phone-number mapping; undisclosed
+> data-sharing with Meta) by deleting the feature rather than fixing its
+> disclosure and deletion gaps. See the two `~~struck~~` entries in the 5 Sep
+> section below. `api/whatsapp.js` and `WHATSAPP_SETUP.md` couldn't be
+> physically deleted this session (no git/shell access to this machine from
+> the session that made this change) — `api/whatsapp.js` is left as a stub
+> that always returns 410 and touches neither Firestore nor Meta, which closes
+> the compliance exposure even though the file itself is still sitting there.
+> Next session with shell access: delete both files for real, and purge any
+> `whatsappOptIn`/`whatsappPhones` documents already in Firestore.
+>
 > **Previously, 2026-09-06** — a sixth audit landed
 > (`reports/qa-audit-2026-09-06.md`), folded into TIER 0 below. It swept the
 > ground the fifth one named as unswept — the onboarding funnel, the Alfred chat
@@ -346,6 +358,21 @@ Neither is in the audit — they are what a re-read of the shipped code found.
   hid this behind a plausible paragraph; the fix made it visible and permanent. The
   cap has to be applied where the request is built, not only where the failure is
   displayed.
+  **CLOSED 10 Sep — `8ac5599` plus this pass.** `boundThread()` builds the outbound
+  thread against both server ceilings: at most 30 entries, image bytes only on the
+  newest photo, and a character budget trimmed from the oldest end. Four things that
+  commit left standing are fixed here. Retry called `sendChat(m.retry)`, which
+  **appended** the question again, so every attempt posted a payload larger than the
+  one just refused; `retryChat()` re-sends the existing turn instead. That append
+  also read a `chat` closure the row-removal had not committed yet, so the red row's
+  own error text went up as one of Alfred's assistant turns — `boundThread()` now
+  drops `failed` rows outright. A string argument means "voice" to `sendChat`, so
+  retrying a typed question silently switched it to the spoken-answer prompt and
+  skipped Focus Mode. And `downscaleImage` rejected only at 60,000 characters while
+  aiming at 46,000, so an accepted photo plus a 45,000-character system prompt could
+  clear the 100,000 total **on a thread of one message**, where trimming has nothing
+  to drop — one threshold now, at 46,000. Verified with the server's own arithmetic
+  over a 300-turn thread, nine photos, and ten consecutive retries.
 
 - **P1 — budget pace still extrapolates over the calendar month, not over the window
   Richy has actually watched.** Blocker #5's gate (day ≥ 8, ≥ 3 real expenses) stops
@@ -484,22 +511,40 @@ Full detail and anchors in `reports/qa-audit-2026-09-06.md`. All verified agains
 Full detail and anchors in `reports/qa-audit-2026-09-05.md`. Ordered the way that
 report recommends fixing them.
 
-- **P0 — Account deletion does not erase the user's phone number.**
+- ~~**P0 — Account deletion does not erase the user's phone number.**
   `api/whatsapp.js:17-19` writes `whatsappOptIn/{uid}` and
   `whatsappPhones/{phone} -> uid`. `api/delete-account.js` contains **zero**
   references to either, so a map from a real phone number to a now-deleted
   account is retained indefinitely. This makes `privacy.html:123` ("permanently
   erases your account: your database records...") **false as written today**, and
-  it is precisely what Apple tests under 5.1.1(v). **One function. Do it first.**
+  it is precisely what Apple tests under 5.1.1(v).~~ **CLOSED 10 Sep — removed the
+  whole WhatsApp Alerts feature rather than fixing deletion.** See both entries
+  below and `WHATSAPP_SETUP.md`. **UPDATE 11 Sep:** `admin/purge-whatsapp.js` now
+  exists (same pattern as `admin/reset-users.js` — Admin SDK, `--yes` confirmation,
+  batched deletes) to purge any `whatsappOptIn`/`whatsappPhones` documents left
+  over in Firestore from before the removal. It needs to actually be **run** by
+  Alon (Admin SDK credentials required — see `admin/README.md`) before this is
+  fully closed. Low risk pre-launch, but do it before submission.
 
-- **P0 — WhatsApp Alerts is undisclosed in both legal documents.** The feature is
+- ~~**P0 — WhatsApp Alerts is undisclosed in both legal documents.** The feature is
   live (`budget-app.jsx:32812`, reachable at Profile -> Settings) and delivers
   Alfred Watch output — leak amounts, budget warnings — to **Meta** directly
   (`api/whatsapp.js:61`, `https://graph.facebook.com/`). Grepping
   `whatsapp|meta platforms|phone number` returns **0** for both `privacy.html` and
   `terms.html`; Meta is absent from the processor table at `privacy.html:95`; and
   `privacy.html:76` sets a minimal-collection expectation while omitting the phone
-  number entirely.
+  number entirely.~~ **CLOSED 10 Sep — the feature is removed, not just disclosed.**
+  `api/whatsapp.js` is now an inert stub (410 Gone, no Firestore writes, no calls
+  to Meta); every UI entry point, translation string, and both places Alfred's
+  own system prompt described the feature to himself are removed from
+  `budget-app.jsx`. Physical deletion of `api/whatsapp.js` and
+  `WHATSAPP_SETUP.md` is still owed — this session had no git/shell access to
+  this machine to delete files outright, only to stage/edit/write them back.
+  **UPDATE 11 Sep: still true** — a following session also had no working
+  shell on this machine (device bridge's shell couldn't mount the folder) and
+  could only add/update files, not delete them. These two files are the only
+  remaining piece of this item; deleting them takes Alon seconds in Explorer,
+  or the next session with a working shell/git connection.
 
 - **P0 — the investing-advice guardrail escape has a third instance, and it is the
   worst one.** Alongside the still-open `investPlanOrders` / `investPlanFor` items
@@ -1120,3 +1165,39 @@ creation, identity verification, store submissions, purchases, OAuth
 authorization, or destructive-deletion testing without explicit
 confirmation at the time; no real user financial data in any test/staging
 work; Anthropic and other privileged credentials never move client-side.
+
+- **2026-09-10 (Windows session, no Mac) — drift found and reconciled,
+  master priority plan written.**
+  **Drift:** this section's last entry was 05 Sep, but `RichyIOS/DesignSystem/`
+  has moved past it since. Added: `RichyGlass.swift` (a glass/liquid surface
+  system), `RichyTheme.swift` (three switchable accent themes — purple/
+  classic/blue, ported from the web palette), and `LiquidPress.swift` — a
+  hold-to-lift, drag-and-stretch button-physics modifier headed "Alon's
+  spec, 9-10 Sep 2026," explicitly porting `budget-app.jsx`'s `LiquidButton`
+  press feel into SwiftUI, written the same day `budget-app.jsx` itself was
+  edited (~15:11 UTC, 10 Sep). `Features/Budgets/` and `Features/Goals/`
+  (list + form views) are present and wired into `MainTabView`'s five tabs.
+  None of this has been compiled or device-tested — same "written, not
+  verified" status as the rest of Phase 2/3, now current as of 82 Swift
+  files / ~285KB. Confirmed by direct read: `AIDisclosure.swift` is a
+  passive disclosure line inside the chat view, not an affirmative consent
+  gate — the Launch Exposure Register's "you disclose it, but never ask
+  permission" finding still holds for the native build specifically.
+  **Open tension, stated plainly:** the 02 Sep Launch Exposure Register
+  measured `RichyIOS/` at 6,538 lines against the web app's 36,153 (~18%),
+  Phase 2-of-8, 33 days to launch. It's now 25 days to launch. A byte-size
+  proxy this session (82 files, ~285KB vs. `budget-app.jsx`'s ~2.6MB) does
+  not translate reliably to the lines metric — Swift's whitespace-heavy
+  style doesn't compress to bytes the way JS does, so this is *not* a
+  corrected percentage, just a flag that the 18% figure is stale and an
+  actual recount (`wc -l` on the Mac, or via git once the device-bash
+  bridge is back) hasn't been re-run. **This still needs a real, dated
+  decision — slip to a later date, ship reduced scope with a rewritten
+  `APP_STORE_LISTING.md`, or confirm full parity is actually achievable in
+  25 days — not a quiet re-affirmation of "ship everything."**
+  **Output:** a merged, ranked priority list — this section, Tier 0 above,
+  and the Launch Exposure Register folded into one document with an owner
+  per item (Alon-only / AI-now, no Mac / needs-Mac) and a ready-to-paste
+  prompt for each AI-doable item. This file stays the phase-status record;
+  update *this* section, not that document, once a phase's evidence gate
+  actually passes.

@@ -1725,7 +1725,7 @@ var T1_STRINGS = {
     debts:"Debts", instructions:"Alfred's Instructions", investing:"Investing", stock:"Stock", scout:"Stock Scout",
     privacy:"Privacy & Data", password:"Password", editEmail:"Email", editDob:"Date of Birth",
     editFinancial:"Financial Profile", business:"Business", collab:"Collab", entryMethod:"Adding transactions",
-    periodMode:"Date Range", bankSync:"Bank Sync", whatsapp:"WhatsApp Alerts", editOpeningBalance:"Opening balance",
+    periodMode:"Date Range", bankSync:"Bank Sync", editOpeningBalance:"Opening balance",
     logMonth:"Log this month", tripHistory:"Trip History", badges:"Badges", settings:"Settings",
     social:"Friends", findPeople:"Find people", analysis:"Full Analysis", investPlan:"Your investing plan",
     investorOnboard:"Investing basics", trips:"Trips", tripPlan:"Plan a trip",
@@ -1782,7 +1782,7 @@ var T1_STRINGS = {
     debts:"חובות", instructions:"ההוראות לריצ'רד", investing:"השקעות", stock:"מניה", scout:"סורק המניות",
     privacy:"פרטיות ונתונים", password:"סיסמה", editEmail:"אימייל", editDob:"תאריך לידה",
     editFinancial:"פרופיל פיננסי", business:"עסק", collab:"שיתוף", entryMethod:"הוספת עסקאות",
-    periodMode:"טווח תאריכים", bankSync:"סנכרון בנק", whatsapp:"התראות וואטסאפ", editOpeningBalance:"יתרת פתיחה",
+    periodMode:"טווח תאריכים", bankSync:"סנכרון בנק", editOpeningBalance:"יתרת פתיחה",
     logMonth:"תיעוד החודש", tripHistory:"היסטוריית טיולים", badges:"תגים", settings:"הגדרות",
     social:"חברים", findPeople:"חיפוש אנשים", analysis:"ניתוח מלא", investPlan:"תוכנית ההשקעות שלך",
     investorOnboard:"יסודות ההשקעה", trips:"טיולים", tripPlan:"תכנון טיול",
@@ -1834,7 +1834,7 @@ var T1_STRINGS = {
     debts:"الديون", instructions:"تعليمات ريتشارد", investing:"الاستثمار", stock:"سهم", scout:"كشّاف الأسهم",
     privacy:"الخصوصية والبيانات", password:"كلمة المرور", editEmail:"البريد الإلكتروني", editDob:"تاريخ الميلاد",
     editFinancial:"الملف المالي", business:"الأعمال", collab:"المشاركة", entryMethod:"إضافة المعاملات",
-    periodMode:"النطاق الزمني", bankSync:"مزامنة البنك", whatsapp:"تنبيهات واتساب", editOpeningBalance:"الرصيد الافتتاحي",
+    periodMode:"النطاق الزمني", bankSync:"مزامنة البنك", editOpeningBalance:"الرصيد الافتتاحي",
     logMonth:"تسجيل هذا الشهر", tripHistory:"سجل الرحلات", badges:"الشارات", settings:"الإعدادات",
     social:"الأصدقاء", findPeople:"البحث عن أشخاص", analysis:"التحليل الكامل", investPlan:"خطة الاستثمار",
     investorOnboard:"أساسيات الاستثمار", trips:"الرحلات", tripPlan:"تخطيط رحلة",
@@ -1886,7 +1886,7 @@ var T1_STRINGS = {
     debts:"Долги", instructions:"Инструкции Ричарду", investing:"Инвестиции", stock:"Акция", scout:"Поиск акций",
     privacy:"Приватность и данные", password:"Пароль", editEmail:"Эл. почта", editDob:"Дата рождения",
     editFinancial:"Финансовый профиль", business:"Бизнес", collab:"Совместно", entryMethod:"Добавление операций",
-    periodMode:"Период", bankSync:"Синхронизация с банком", whatsapp:"Оповещения в WhatsApp", editOpeningBalance:"Начальный баланс",
+    periodMode:"Период", bankSync:"Синхронизация с банком", editOpeningBalance:"Начальный баланс",
     logMonth:"Записать месяц", tripHistory:"История поездок", badges:"Значки", settings:"Настройки",
     social:"Друзья", findPeople:"Найти людей", analysis:"Полный анализ", investPlan:"Ваш инвестиционный план",
     investorOnboard:"Основы инвестирования", trips:"Поездки", tripPlan:"Спланировать поездку",
@@ -1957,7 +1957,7 @@ var CSV_STRINGS = {
     csvHow3:"Tap Export, Download or Share, and pick CSV or Excel.",
     csvHow4:"Come back here and drop the file in. That's it.",
     csvHowNote:"Only Excel on offer? Open it and choose Save as CSV - Richy reads that too.",
-    csvWhySafe:"The file is read on your own device. Richy never asks for your bank password.",
+    csvWhySafe:"The file is read on your own device. Alfred sees only the column titles at the top of it, and the names of shops Richy doesn't recognise - never your amounts, dates or balance. Richy never asks for your bank password.",
     csvShowMe:"Show me how",
     csvHide:"Got it",
     csvRecommended:"Recommended",
@@ -1982,7 +1982,7 @@ var CSV_STRINGS = {
     csvHow3:"לחצו על ייצוא, הורדה או שיתוף ובחרו CSV או Excel.",
     csvHow4:"חזרו לכאן והעלו את הקובץ. זה הכל.",
     csvHowNote:"יש רק Excel? פתחו אותו ובחרו שמירה בשם CSV - ריצ'י קורא גם את זה.",
-    csvWhySafe:"הקובץ נקרא במכשיר שלכם. ריצ'י לא מבקש את הסיסמה לבנק.",
+    csvWhySafe:"הקובץ נקרא במכשיר שלכם. ריצ'רד רואה רק את כותרות העמודות שבראש הקובץ ואת שמות החנויות שריצ'י לא מכיר - אף פעם לא את הסכומים, התאריכים או היתרה. ריצ'י לא מבקש את הסיסמה לבנק.",
     csvShowMe:"תראו לי איך",
     csvHide:"הבנתי",
     csvRecommended:"מומלץ",
@@ -2007,7 +2007,7 @@ var CSV_STRINGS = {
     csvHow3:"اضغط تصدير أو تنزيل أو مشاركة، واختر CSV أو Excel.",
     csvHow4:"ارجع إلى هنا وأضف الملف. هذا كل شيء.",
     csvHowNote:"المتاح Excel فقط؟ افتحه واختر حفظ باسم CSV - ريتشي يقرأه أيضًا.",
-    csvWhySafe:"يُقرأ الملف على جهازك. ريتشي لا يطلب كلمة مرور المصرف أبدًا.",
+    csvWhySafe:"يُقرأ الملف على جهازك. لا يرى ريتشارد سوى عناوين الأعمدة في أعلى الملف وأسماء المتاجر التي لا يعرفها ريتشي - وليس مبالغك أو تواريخك أو رصيدك أبدًا. ريتشي لا يطلب كلمة مرور المصرف أبدًا.",
     csvShowMe:"أرِني كيف",
     csvHide:"فهمت",
     csvRecommended:"موصى به",
@@ -2032,7 +2032,7 @@ var CSV_STRINGS = {
     csvHow3:"Нажмите Экспорт, Скачать или Поделиться и выберите CSV или Excel.",
     csvHow4:"Вернитесь сюда и добавьте файл. Всё.",
     csvHowNote:"Есть только Excel? Откройте его и сохраните как CSV - Richy прочитает и это.",
-    csvWhySafe:"Файл читается на вашем устройстве. Richy никогда не просит пароль от банка.",
+    csvWhySafe:"Файл читается на вашем устройстве. Ричард видит только заголовки столбцов в начале файла и названия магазинов, которых Richy не знает, — никогда суммы, даты или баланс. Richy никогда не просит пароль от банка.",
     csvShowMe:"Покажите как",
     csvHide:"Понятно",
     csvRecommended:"Рекомендуем",
@@ -4455,6 +4455,35 @@ var CLOUD = {
       return out;
     });
   },
+  // A live view of the same collection. Until this existed the web app read
+  // transactions exactly once, at boot, so an edit made on the phone (whose
+  // FirestoreLedgerService has listened since Phase 3) stayed invisible on the
+  // laptop until a reload - the one-document-per-transaction split made two
+  // clients safe to write, not to watch each other.
+  //
+  // Local echoes are dropped. Firestore raises a snapshot for this client's own
+  // write before the server confirms it, flagged hasPendingWrites; acting on
+  // one would replace the optimistic state the UI already shows with an
+  // identical copy, and would move the diff baseline to a list the server has
+  // not accepted yet. The confirmed snapshot that follows carries the same
+  // data, so nothing is lost by waiting for it.
+  //
+  // An error ends the subscription. It is logged and swallowed: the session
+  // keeps whatever it loaded at boot, which is a stale ledger at worst, where
+  // treating a dropped link as "no transactions" would look like data loss.
+  subscribeTx: function(uid, cb) {
+    if (!cloudReady() || !uid) return function() {};
+    return _fsdb().collection("users").doc(uid).collection("tx").onSnapshot(
+      function(qs) {
+        if (qs.metadata && qs.metadata.hasPendingWrites) return;
+        var out = [];
+        qs.forEach(function(d) { var t = d.data(); if (t && t.id != null) out.push(t); });
+        out.sort(txById);
+        cb(out);
+      },
+      function(err) { try { console.warn("Richy: tx listener stopped:", (err && err.code) || err); } catch (e) {} }
+    );
+  },
   // Writes whole documents (`puts`) and removes ids (`dels`) in batches of at
   // most TX_BATCH_LIMIT operations, one after another, so a failure leaves a
   // clean prefix that a retry simply rewrites.
@@ -5056,6 +5085,18 @@ function ensureMotionCss() {
     "@keyframes rcReveal{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}",
     ".rc-reveal-hidden{opacity:0}",
     ".rc-reveal-in{animation:rcReveal calc(0.58s * var(--m-scale)) var(--m-ease) both}",
+    // A reward is the rare exception to Richy's otherwise quiet motion. Every
+    // animation runs once, tells the badge -> streak -> level story, then stops.
+    "@keyframes rcRewardBackdrop{from{opacity:0}to{opacity:1}}",
+    "@keyframes rcRewardCard{0%{opacity:0;transform:translateY(34px) scale(.94);filter:blur(8px)}60%{opacity:1;transform:translateY(-4px) scale(1.012);filter:blur(0)}100%{opacity:1;transform:none;filter:blur(0)}}",
+    "@keyframes rcRewardGlyph{0%{opacity:0;transform:scale(.35) rotate(-9deg);filter:blur(10px)}58%{opacity:1;transform:scale(1.11) rotate(2deg);filter:blur(0)}100%{opacity:1;transform:none;filter:blur(0)}}",
+    "@keyframes rcRewardHalo{0%{opacity:.85;transform:scale(.35)}100%{opacity:0;transform:scale(1.7)}}",
+    "@keyframes rcRewardSpark{0%{opacity:0;transform:translateY(14px) scale(.2) rotate(0deg)}30%{opacity:1}100%{opacity:0;transform:translateY(-54px) scale(1) rotate(110deg)}}",
+    "@keyframes rcRewardStep{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:none}}",
+    "@keyframes rcRewardProgress{from{transform:scaleX(0)}to{transform:scaleX(var(--reward-progress,1))}}",
+    "@keyframes rcRewardLevel{0%{opacity:0;transform:scale(.62) translateY(12px)}62%{opacity:1;transform:scale(1.12) translateY(-2px)}100%{opacity:1;transform:none}}",
+    ".rc-reward-spark{position:absolute;width:6px;height:12px;border-radius:99px;background:var(--reward-spark,#fff);box-shadow:0 0 12px var(--reward-spark,#fff);animation:rcRewardSpark calc(.9s * var(--m-scale)) var(--m-ease) both}",
+    ".rc-reward-progress{transform-origin:left center;animation:rcRewardProgress calc(1s * var(--m-scale)) var(--m-ease) calc(.95s * var(--m-scale)) both}",
   ].join("");
   document.head.appendChild(st);
 }
@@ -12884,28 +12925,68 @@ function sniffMap(rows, hasHeader) {
   var map = { date: -1, amount: -1, desc: -1, debit: -1, credit: -1 };
   if (!rows.length) return map;
   if (hasHeader) {
+    // יתרה is the running balance. It is the single most dangerous column in
+    // an Israeli bank export, because it is a number sitting next to the
+    // amount and reading it as the amount makes every figure in the app wrong
+    // in a way that still looks plausible.
+    var HE_BALANCE = /יתרה/;
+    var HE_DATE = /תאריך|ת\. ?ערך|ת\. ?עסקה/;
+    var HE_AMOUNT = /סכום|עלות/;
+    var HE_DEBIT = /חובה|משיכה|הוצאה/;
+    var HE_CREDIT = /זכות|הפקדה|הכנסה/;
+    var HE_DESC = /בית ?העסק|בית ?עסק|שם ?בית|תיאור|פירוט|פעולה|תנועה|הערות|ספק/;
+
+    // A card statement usually carries BOTH "סכום עסקה" (what the shop
+    // charged, possibly in a foreign currency) and "סכום חיוב" (what the card
+    // actually took, in shekels). The second is the one that happened to this
+    // person's money, and a left-to-right first-match pass would take the
+    // first. So it is claimed up front.
+    rows[0].forEach(function(hRaw, i) {
+      if (map.amount >= 0) return;
+      var h = String(hRaw || "");
+      if (/סכום/.test(h) && /חיוב/.test(h) && !HE_BALANCE.test(h)) map.amount = i;
+    });
+
     rows[0].forEach(function(hRaw, i) {
       var h = (hRaw || "").toLowerCase();
       // Each header cell can only fill ONE role - stop at the first match.
       // Without the early returns, a column literally named "Value Date"
       // matched BOTH the date pattern (via "date") and the amount pattern
       // (via "value"), so the date column got read as the price too.
-      if (map.date < 0 && /date|time|posted/.test(h)) { map.date = i; return; }
+      if (i === map.amount) return;
+      if (map.date < 0 && (/date|time|posted/.test(h) || HE_DATE.test(h))) { map.date = i; return; }
       // Separate money-out / money-in columns (common in real bank exports).
-      if (map.debit < 0 && /(debit|withdraw|paid out|money out|spent|outflow)/.test(h) && !/credit|deposit/.test(h)) { map.debit = i; return; }
-      if (map.credit < 0 && /(credit|deposit|paid in|money in|received|inflow)/.test(h) && !/debit|withdraw/.test(h)) { map.credit = i; return; }
+      // On the Hebrew side חיוב/זיכוי are only a split PAIR when they stand
+      // alone; inside "סכום חיוב" the word means "charged", and treating that
+      // as a debit column would split one amount across two roles.
+      var heDebit = HE_DEBIT.test(h) || (/חיוב/.test(h) && !/סכום/.test(h));
+      var heCredit = HE_CREDIT.test(h) || (/זיכוי/.test(h) && !/סכום/.test(h));
+      if (map.debit < 0 && ((/(debit|withdraw|paid out|money out|spent|outflow)/.test(h) && !/credit|deposit/.test(h)) || (heDebit && !heCredit))) { map.debit = i; return; }
+      if (map.credit < 0 && ((/(credit|deposit|paid in|money in|received|inflow)/.test(h) && !/debit|withdraw/.test(h)) || (heCredit && !heDebit))) { map.credit = i; return; }
       // Single signed-amount column - only if it isn't a debit/credit column,
       // and not a SECOND date-ish column (a statement with both "Transaction
       // Date" and "Value Date" must not let the latter's "value" steal the
       // amount role from the real Amount column that comes after it).
-      if (map.amount < 0 && /(amount|value|sum|total|paid)/.test(h) && !/(debit|credit|deposit|withdraw)/.test(h) && !/date|time|posted/.test(h)) { map.amount = i; return; }
-      if (map.desc < 0 && /desc|payee|name|memo|detail|narration|merchant|reference|transaction/.test(h)) { map.desc = i; return; }
+      if (map.amount < 0
+        && ((/(amount|value|sum|total|paid)/.test(h) && !/(debit|credit|deposit|withdraw)/.test(h) && !/date|time|posted/.test(h))
+          || (HE_AMOUNT.test(h) && !HE_BALANCE.test(h) && !HE_DATE.test(h)))) { map.amount = i; return; }
+      if (map.desc < 0 && (/desc|payee|name|memo|detail|narration|merchant|reference|transaction/.test(h) || HE_DESC.test(h))) { map.desc = i; return; }
     });
   }
   var hasSplit = map.debit >= 0 || map.credit >= 0;
   var sample = rows.slice(hasHeader ? 1 : 0).slice(0, 6);
   var ncol = rows[0].length;
+  // Columns the positional pass below must not touch. A running balance is a
+  // well-behaved column of numbers and would otherwise be the first thing it
+  // reached for.
+  var banned = {};
+  if (hasHeader) {
+    rows[0].forEach(function(hRaw, i) {
+      if (/יתרה|balance/i.test(String(hRaw || ""))) banned[i] = 1;
+    });
+  }
   for (var c = 0; c < ncol; c++) {
+    if (banned[c]) continue;
     if (c === map.date || c === map.amount || c === map.desc || c === map.debit || c === map.credit) continue;
     var vals = sample.map(function(r) { return r[c] || ""; });
     var nonEmpty = vals.filter(function(v) { return v !== ""; });
@@ -12969,6 +13050,435 @@ function parseImportAmount(s) {
   var n = parseFloat(cleaned);
   if (isNaN(n)) return NaN;
   return neg ? -Math.abs(n) : Math.abs(n);
+}
+
+// ===== CSV IMPORT: READING THE FILE ==========================================
+// Israeli bank and card exports are not UTF-8 as often as anyone would like.
+// Leumi, Hapoalim, Isracard, Max and Cal all still hand out windows-1255, and
+// a cp1255 file decoded as UTF-8 turns every Hebrew shop name into mojibake
+// BEFORE any column guessing runs - so the guess is working from garbage and
+// no amount of cleverness downstream can recover it. This was the single
+// biggest cause of a misread Israeli file.
+//
+// Detection order: a byte-order mark settles it outright; otherwise UTF-8 is
+// tried in FATAL mode, which throws on the 0xE0-0xFA range that carries Hebrew
+// in cp1255 - so a failure here is a positive identification, not a guess.
+var CSV_NUL = String.fromCharCode(0);
+function csvDecodeBytes(buf) {
+  var bytes = new Uint8Array(buf || new ArrayBuffer(0));
+  function attempt(label, sub, fatal) {
+    try { return new TextDecoder(label, { fatal: !!fatal }).decode(sub || bytes); }
+    catch (e) { return null; }
+  }
+  if (bytes.length >= 2 && bytes[0] === 0xff && bytes[1] === 0xfe) {
+    var le = attempt("utf-16le", bytes.subarray(2), false);
+    if (le != null) return { text: le, encoding: "utf-16le" };
+  }
+  if (bytes.length >= 2 && bytes[0] === 0xfe && bytes[1] === 0xff) {
+    var be = attempt("utf-16be", bytes.subarray(2), false);
+    if (be != null) return { text: be, encoding: "utf-16be" };
+  }
+  var strict = attempt("utf-8", null, true);
+  // A UTF-16 file with no BOM is still valid UTF-8 byte-wise (ASCII text
+  // interleaved with NULs), so it passes the fatal decode and has to be caught
+  // by the NULs it leaves behind. Excel's "Save as Unicode Text" writes these.
+  if (strict != null && strict.indexOf(CSV_NUL) !== -1) {
+    var le2 = attempt("utf-16le", null, false);
+    if (le2 != null && le2.indexOf(CSV_NUL) === -1) return { text: le2, encoding: "utf-16le" };
+  }
+  if (strict != null) return { text: strict, encoding: "utf-8" };
+  var heb = attempt("windows-1255", null, false);
+  if (heb != null) return { text: heb, encoding: "windows-1255" };
+  return { text: attempt("utf-8", null, false) || "", encoding: "utf-8" };
+}
+
+// cb(err, { text, encoding }).
+function csvReadFile(file, cb) {
+  var reader = new FileReader();
+  reader.onerror = function() { cb(new Error("That file couldn't be read.")); };
+  reader.onload = function(ev) {
+    var buf = ev.target && ev.target.result;
+    if (!buf) { cb(new Error("That file was empty.")); return; }
+    var out;
+    try { out = csvDecodeBytes(buf); }
+    catch (e) { cb(new Error("That file couldn't be read.")); return; }
+    if (!out.text.trim()) { cb(new Error("That file was empty.")); return; }
+    cb(null, out);
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ===== CSV IMPORT: WHAT THE MODEL IS ALLOWED TO SEE ==========================
+// The import screen promises, in every language Richy speaks, that the file is
+// read on the user's own device. Posting twenty raw rows to a model to have
+// its columns identified would make that sentence false, so the mapping call
+// is given the file's SHAPE and never its contents:
+//
+//   head      the rows ABOVE the data - the report title, the account line,
+//             the column titles - as text, with any run of 3+ digits masked
+//             so an account number cannot ride along.
+//   shape     the first few DATA rows with every cell replaced by its kind
+//             ("date", "number", "text", "empty"). No values at all.
+//   profiles  per column, measured over the whole file: dominant kind, how
+//             full it is, how many distinct values, whether any number in it
+//             is negative. Aggregates, so nothing individual survives them.
+//
+// That is enough to name the columns and find the header row, and it means no
+// amount, no date, no balance, no account number and no shop name is sent.
+// Shop names DO leave the device later, in the categorisation call below, and
+// the copy in CSV_STRINGS says so.
+var CSV_HEAD_MAX = 8;       // title/header rows sent as text
+var CSV_SHAPE_MAX = 6;      // data rows sent as kinds only
+var CSV_CELL_MAX = 48;      // per-cell character cap in head
+
+// Deliberately stricter than Date.parse, which reads "5" and "Shufersal 4" as
+// dates. A cell is a date only if it is shaped like one.
+function csvIsDateCell(s) {
+  s = String(s == null ? "" : s).trim();
+  if (!s) return false;
+  if (/^\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}/.test(s)) return true;
+  return /^\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}/.test(s);
+}
+// A number is a cell that is NOTHING BUT a number: digits, separators, sign,
+// brackets, bidi marks and a currency symbol. The date test runs first because
+// parseImportAmount happily reads "01/09/2026" as 1092026.
+function csvIsNumberCell(s) {
+  s = String(s == null ? "" : s).trim();
+  if (!s || csvIsDateCell(s)) return false;
+  if (!/\d/.test(s)) return false;
+  var rest = s.replace(/[\d\s.,()+\-‎‏⁦-⁩₪$€£]/g, "");
+  if (rest !== "") return false;
+  return !isNaN(parseImportAmount(s));
+}
+function csvCellKind(s) {
+  var t = String(s == null ? "" : s).trim();
+  if (!t) return "empty";
+  if (csvIsDateCell(t)) return "date";
+  if (csvIsNumberCell(t)) return "number";
+  return "text";
+}
+function csvRowKinds(r, ncol) {
+  var out = [];
+  for (var i = 0; i < ncol; i++) out.push(csvCellKind((r || [])[i]));
+  return out;
+}
+function csvRowIsData(kinds) {
+  var d = 0, n = 0;
+  for (var i = 0; i < kinds.length; i++) {
+    if (kinds[i] === "date") d++;
+    else if (kinds[i] === "number") n++;
+  }
+  return d >= 1 && n >= 1;
+}
+// Where the real rows start. A title line like "Statement 01/09/2026, balance
+// 1,234" has a date AND a number and would fool a single-row test, so the test
+// is that TWO rows in a row are data-shaped AND carry a date in the SAME
+// column - metadata lines do not repeat their shape, data rows always do.
+function csvFirstDataRow(rows, ncol) {
+  var lim = Math.min(rows.length, 14);
+  var sigs = [];
+  for (var i = 0; i < lim; i++) sigs.push(csvRowKinds(rows[i], ncol));
+  for (var a = 0; a + 1 < lim; a++) {
+    if (!csvRowIsData(sigs[a]) || !csvRowIsData(sigs[a + 1])) continue;
+    for (var c = 0; c < ncol; c++) {
+      if (sigs[a][c] === "date" && sigs[a + 1][c] === "date") return a;
+    }
+  }
+  for (var b = 0; b < lim; b++) if (csvRowIsData(sigs[b])) return b;
+  return rows.length;
+}
+function csvMaskCell(s) {
+  var t = String(s == null ? "" : s).replace(/\s+/g, " ").trim();
+  t = t.replace(/\d{3,}/g, "###");
+  return t.length > CSV_CELL_MAX ? t.slice(0, CSV_CELL_MAX) + "..." : t;
+}
+function csvColumnProfiles(rows, ncol, firstDataRow) {
+  var data = rows.slice(firstDataRow);
+  var out = [];
+  for (var c = 0; c < ncol; c++) {
+    var kinds = { empty: 0, date: 0, number: 0, text: 0 };
+    var seen = {}, distinct = 0, filled = 0, negatives = false;
+    for (var i = 0; i < data.length; i++) {
+      var v = (data[i] || [])[c];
+      var k = csvCellKind(v);
+      kinds[k]++;
+      if (k === "empty") continue;
+      filled++;
+      if (k === "number") { var n = parseImportAmount(v); if (!isNaN(n) && n < 0) negatives = true; }
+      var key = String(v).trim().toLowerCase();
+      if (!seen[key]) { seen[key] = 1; distinct++; }
+    }
+    var dom = "empty", domN = -1;
+    for (var kk in kinds) { if (kinds[kk] > domN) { domN = kinds[kk]; dom = kk; } }
+    out.push({
+      i: c,
+      kind: dom,
+      filledPct: data.length ? Math.round(100 * filled / data.length) : 0,
+      // Words, not counts: "how many different values" is the signal that
+      // separates a shop column (nearly all different) from a card-name or
+      // branch column (a handful), and a count would leak how big the file is.
+      variety: !filled ? "empty" : distinct <= 1 ? "one value" : distinct <= 5 ? "a few values"
+        : distinct * 2 >= filled ? "mostly different" : "many values",
+      hasNegatives: negatives
+    });
+  }
+  return out;
+}
+function csvSkeleton(rows) {
+  var ncol = 0;
+  (rows || []).forEach(function(r) { if (r && r.length > ncol) ncol = r.length; });
+  var firstDataRow = csvFirstDataRow(rows || [], ncol);
+  var head = (rows || []).slice(0, Math.min(firstDataRow, CSV_HEAD_MAX)).map(function(r) {
+    var o = []; for (var i = 0; i < ncol; i++) o.push(csvMaskCell((r || [])[i])); return o;
+  });
+  var shape = (rows || []).slice(firstDataRow, firstDataRow + CSV_SHAPE_MAX).map(function(r) {
+    return csvRowKinds(r, ncol);
+  });
+  return {
+    columns: ncol,
+    rowsAboveData: firstDataRow,
+    head: head,
+    shape: shape,
+    profiles: csvColumnProfiles(rows || [], ncol, firstDataRow)
+  };
+}
+
+// Separators for the fingerprint's flattened head. Any character that cannot
+// appear in a column title would do; these are simply unambiguous to read.
+var CSV_SEP_CELL = "<|>";
+var CSV_SEP_ROW = "<||>";
+var CSV_SEP_PART = "<|||>";
+
+// djb2. A cache key, not a secret - it never leaves the device.
+function csvHash(s) {
+  var h = 5381;
+  for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
+}
+// The identity of a file FORMAT, so the same bank next month costs no model
+// call. Every digit is masked, not just long runs: a title row carrying the
+// statement month ("Report for 09/2026") would otherwise mint a new
+// fingerprint every month and the cache would never hit.
+function csvFingerprint(sk) {
+  var head = (sk.head || []).map(function(r) {
+    return r.map(function(c) {
+      return String(c).toLowerCase().replace(/\d+/g, "#").replace(/\s+/g, " ").trim();
+    }).join(CSV_SEP_CELL);
+  }).join(CSV_SEP_ROW);
+  return csvHash(sk.columns + CSV_SEP_PART + sk.rowsAboveData + CSV_SEP_PART + head);
+}
+
+// Day-first or month-first, decided from the rows themselves rather than asked
+// of the model - a column where any day exceeds 12 settles it outright, and
+// arithmetic that certain has no business being a guess. Israeli exports are
+// day-first, which is the default when the data cannot say.
+function csvDetectDateFormat(rows, col, firstDataRow) {
+  if (col == null || col < 0) return { preferDMY: true, sure: false, reason: "no date column" };
+  var dmy = 0, mdy = 0, iso = 0;
+  var data = rows.slice(firstDataRow);
+  for (var i = 0; i < data.length; i++) {
+    var s = String(((data[i] || [])[col]) || "").trim();
+    if (/^\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}/.test(s)) { iso++; continue; }
+    var m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+    if (!m) continue;
+    var a = parseInt(m[1], 10), b = parseInt(m[2], 10);
+    if (a > 12 && b <= 12) dmy++;
+    else if (b > 12 && a <= 12) mdy++;
+  }
+  if (iso && !dmy && !mdy) return { preferDMY: true, sure: true, reason: "yyyy-mm-dd" };
+  if (dmy && !mdy) return { preferDMY: true, sure: true, reason: dmy + " rows have a day over 12" };
+  if (mdy && !dmy) return { preferDMY: false, sure: true, reason: mdy + " rows have a month over 12" };
+  // Both shapes present: the file is inconsistent, or one reading is wrong.
+  // Say so rather than averaging - the user gets the toggle and the sentence.
+  if (dmy && mdy) return { preferDMY: dmy >= mdy, sure: false, conflict: true, reason: "the file has dates that disagree" };
+  return { preferDMY: true, sure: false, reason: "every date could be read either way" };
+}
+
+// Whether money out is a minus sign, a separate column, or the whole file.
+// Measured, then cross-checked against what the model said.
+function csvDetectSign(rows, map, firstDataRow, modelSays) {
+  if (map.debit >= 0 || map.credit >= 0) return { splitAmt: true, allExpenses: false, reason: "money in and money out are separate columns" };
+  if (map.amount < 0) return { splitAmt: false, allExpenses: false, reason: "" };
+  var neg = 0, pos = 0;
+  var data = rows.slice(firstDataRow);
+  for (var i = 0; i < data.length; i++) {
+    var n = parseImportAmount(((data[i] || [])[map.amount]) || "");
+    if (isNaN(n) || n === 0) continue;
+    if (n < 0) neg++; else pos++;
+  }
+  if (neg) return { splitAmt: false, allExpenses: false, reason: neg + " rows are negative, so a minus sign means money out" };
+  // Not one negative anywhere. On a card statement that is the normal case -
+  // every line is a charge - and reading them as income would show the user a
+  // month of invented earnings. The model's own reading has to agree before
+  // this is applied, and the preview still shows the toggle.
+  if (pos && modelSays === "all_rows_are_charges") return { splitAmt: false, allExpenses: true, reason: "nothing in the file is negative, so every line is money out" };
+  return { splitAmt: false, allExpenses: false, reason: "" };
+}
+
+// ===== CSV IMPORT: THE MAPPING CALL (Haiku) ==================================
+var AI_MODEL_CSV_MAP = "claude-haiku-4-5-20251001";
+var AI_MODEL_CSV_SHOPS = "claude-sonnet-5";
+
+var CSV_MAP_SYSTEM = "You map the columns of a bank or credit-card statement export."
+  + "\n\nYou are given the file's STRUCTURE, never its contents:"
+  + "\n- head: the rows above the data, as text. One of them is usually the real column-title row; any rows above that are report titles or account metadata. Runs of three or more digits are masked as ###."
+  + "\n- shape: the first data rows, each cell given only as its kind (date, number, text, empty). No values."
+  + "\n- profiles: one entry per column, measured over the whole file - its dominant kind, how full it is, how much its values vary, and whether any number in it is negative."
+  + "\n\nIsraeli exports (Leumi, Hapoalim, Isracard, Max, Cal) are the common case. Their titles are usually Hebrew: תאריך or תאריך עסקה is the date, שם בית העסק or תיאור or פירוט is the shop, סכום or סכום חיוב or סכום העסקה is the amount, חובה and זכות (on a bank export) or חיוב and זיכוי are a money-out / money-in pair, יתרה is the running balance, which is NEVER the amount, and אסמכתא is a reference number, which is never the amount either however numeric it looks."
+  + "\n\nAnswer with JSON only, exactly this shape:"
+  + "\n{\"header_row_index\":<int|null>,\"date_column\":<int|null>,\"shop_column\":<int|null>,\"amount_column\":<int|null>,\"debit_column\":<int|null>,\"credit_column\":<int|null>,\"date_format\":\"dd/mm/yyyy\"|\"mm/dd/yyyy\"|\"yyyy-mm-dd\"|\"unknown\",\"amount_sign_convention\":\"negative_is_expense\"|\"all_rows_are_charges\"|\"split_columns\"|\"unknown\",\"confidence\":{\"header_row_index\":\"high\"|\"medium\"|\"low\",\"date_column\":\"high\"|\"medium\"|\"low\",\"shop_column\":\"high\"|\"medium\"|\"low\",\"amount_column\":\"high\"|\"medium\"|\"low\"}}"
+  + "\n\nRules:"
+  + "\n- Column numbers are 0-based over the whole row. Use null when the file has no such column."
+  + "\n- header_row_index is the 0-based index INTO head of the column-title row, or null when the file has no titles."
+  + "\n- Prefer a transaction date over a value or posting date when both exist."
+  + "\n- Never choose a running-balance column as the amount."
+  + "\n- Set amount_column when one column carries the whole amount. Set debit_column and credit_column instead when money out and money in are split, and leave amount_column null."
+  + "\n- The shop column varies from row to row. A column whose variety is \"one value\" or \"a few values\" is a card name, a branch or a transaction type, not the shop."
+  + "\n- A reference, confirmation or voucher number is a column of numbers that is nearly all different and has no negatives. It is never the amount, whatever its position."
+  + "\n- Be honest with confidence. A \"low\" sends the user to map it themselves, which is a far better outcome than a confident wrong guess."
+  + "\nNo prose, no markdown fence.";
+
+// The reply is sliced to its outermost braces before parsing. Not defensive
+// tidying: judgeLookalikes measured the same model fencing its JSON in 7 of 9
+// real calls on 2026-09-10 despite being told not to.
+function csvParseJsonBlock(reply, open, close) {
+  var s = String(reply || "");
+  var a = s.indexOf(open), b = s.lastIndexOf(close);
+  if (a < 0 || b <= a) return null;
+  try { return JSON.parse(s.slice(a, b + 1)); } catch (e) { return null; }
+}
+function csvCol(v, ncol) {
+  var n = typeof v === "number" ? v : parseInt(v, 10);
+  if (isNaN(n) || n < 0 || n >= ncol) return -1;
+  return n;
+}
+function csvConf(v) {
+  var s = String(v || "").toLowerCase();
+  return (s === "high" || s === "medium" || s === "low") ? s : "low";
+}
+
+// cb(err, reading). reading is null when the answer could not be read at all.
+function mapColumnsWithAI(sk, cb) {
+  var payload = { columns: sk.columns, head: sk.head, shape: sk.shape, profiles: sk.profiles };
+  callClaude([{ role: "user", content: JSON.stringify(payload) }], CSV_MAP_SYSTEM, 600, function(err, reply) {
+    if (err) { cb(err, null); return; }
+    var v = csvParseJsonBlock(reply, "{", "}");
+    if (!v || typeof v !== "object") { cb(alfredErr("shape", "The column reading could not be understood."), null); return; }
+    var conf = v.confidence || {};
+    cb(null, {
+      headerRowIndex: (typeof v.header_row_index === "number" && v.header_row_index >= 0 && v.header_row_index < sk.head.length) ? v.header_row_index : -1,
+      date: csvCol(v.date_column, sk.columns),
+      desc: csvCol(v.shop_column, sk.columns),
+      amount: csvCol(v.amount_column, sk.columns),
+      debit: csvCol(v.debit_column, sk.columns),
+      credit: csvCol(v.credit_column, sk.columns),
+      dateFormat: String(v.date_format || "unknown"),
+      sign: String(v.amount_sign_convention || "unknown"),
+      confidence: {
+        header: csvConf(conf.header_row_index),
+        date: csvConf(conf.date_column),
+        desc: csvConf(conf.shop_column),
+        amount: csvConf(conf.amount_column)
+      }
+    });
+  }, AI_MODEL_CSV_MAP, 25000);
+}
+
+// ===== CSV IMPORT: SHOP -> CATEGORY (Sonnet) =================================
+// Sonnet rather than the fast model, on purpose. Israeli merchant strings are
+// the hard case - mixed Hebrew and English, branch numbers, and payment
+// processors standing in for the real shop ("PAYBOX", "מקס איט") - and the volume
+// is distinct SHOP NAMES per import, tens to low hundreds, not rows. Only the
+// shops the user has never had categorised before are ever sent.
+//
+// api/chat.js caps output at 2,000 tokens, so the list is sent in chunks that
+// comfortably fit rather than one call that would be cut off mid-array.
+var CSV_SHOPS_PER_CALL = 50;
+var CSV_SHOPS_MAX = 200;
+var CSV_SHOP_EXAMPLES = 12;
+
+var CSV_SHOPS_SYSTEM = "You sort shop names from a bank or credit-card statement into budget categories."
+  + "\n\nYou are given a list of shop names and the closed set of categories you may use."
+  + "\nAnswer with JSON only: an array of {\"shop\":<the name, copied exactly as given>,\"category\":<one of the categories>,\"confidence\":\"high\"|\"medium\"|\"low\"}."
+  + "\n\n- Use ONLY the category names given to you. Never invent one, never translate one."
+  + "\n- Return one entry for every shop you were given, in the same order."
+  + "\n- The names are messy on purpose: mixed Hebrew and English, branch numbers, chain abbreviations, and payment processors standing in for the real merchant. Read past the noise."
+  + "\n- A payment processor or a bank reference you cannot resolve to a real merchant gets \"low\" confidence. Low is an honest answer; the user is shown it and can correct it."
+  + "\n- When the examples show how this person already sorts a similar shop, follow their habit rather than your own instinct."
+  + "\nNo prose, no markdown fence.";
+
+// shops: array of display names. cats: the app's category list. examples:
+// [{ shop, category }] the user has already confirmed.
+// cb(err, { <shop>: { category, confidence } }, meta)
+function categorizeShopsWithAI(shops, cats, examples, cb) {
+  var names = (cats || []).map(function(c) { return c.name; }).filter(Boolean);
+  var list = (shops || []).slice(0, CSV_SHOPS_MAX);
+  var overflow = Math.max(0, (shops || []).length - list.length);
+  if (!list.length || !names.length) { cb(null, {}, { overflow: overflow, calls: 0 }); return; }
+
+  var chunks = [];
+  for (var i = 0; i < list.length; i += CSV_SHOPS_PER_CALL) chunks.push(list.slice(i, i + CSV_SHOPS_PER_CALL));
+
+  var out = {}, calls = 0, failed = 0;
+  var exBlock = (examples || []).slice(0, CSV_SHOP_EXAMPLES);
+
+  // Sequential, not parallel: the proxy rate-limits per user (30 per 5
+  // minutes) and four simultaneous calls from one import is how an import of a
+  // big year-end export would spend that budget on itself.
+  function step(n) {
+    if (n >= chunks.length) {
+      // Every chunk failing is a failure; some succeeding is a partial answer
+      // worth keeping - the shops that came back are categorised and the rest
+      // fall through to the keyword map, visibly, in the preview.
+      if (failed === chunks.length) { cb(alfredErr("network", "Alfred could not be reached to sort the shops."), out, { overflow: overflow, calls: calls, failed: failed }); return; }
+      cb(null, out, { overflow: overflow, calls: calls, failed: failed });
+      return;
+    }
+    var body = { categories: names, shops: chunks[n] };
+    if (exBlock.length) body.how_this_person_already_sorts = exBlock;
+    callClaude([{ role: "user", content: JSON.stringify(body) }], CSV_SHOPS_SYSTEM, 1800, function(err, reply) {
+      calls++;
+      if (err) { failed++; step(n + 1); return; }
+      var arr = csvParseJsonBlock(reply, "[", "]");
+      if (!Array.isArray(arr)) { failed++; step(n + 1); return; }
+      arr.forEach(function(row) {
+        if (!row || typeof row.shop !== "string") return;
+        var cat = String(row.category || "");
+        // A category outside the closed set is dropped, not coerced. The shop
+        // then falls through to the keyword map and shows up in the preview
+        // for the user to set - which is the honest outcome for an answer we
+        // could not use.
+        if (names.indexOf(cat) === -1) return;
+        out[row.shop] = { category: cat, confidence: csvConf(row.confidence) };
+      });
+      step(n + 1);
+    }, AI_MODEL_CSV_SHOPS, 40000);
+  }
+  step(0);
+}
+
+// ===== CSV IMPORT: THE LOG ===================================================
+// What tells us later whether the fast model is actually good enough for the
+// mapping, or whether a particular bank deserves a hardcoded parser instead of
+// a call every time. Two things are worth recording: a mapping the model was
+// not confident about, and a category the USER changed after the model chose
+// it - the second is the real accuracy signal, because it is a measured
+// disagreement rather than the model's own opinion of itself.
+//
+// Local only. Mirrors ALFRED_FAILURES' shape so there is one way to read this
+// class of diagnostic back; nothing here is ever sent anywhere.
+var CSV_LOG_MAX = 200;
+var CSV_LOG = [];
+function csvLog(kind, row) {
+  var e = { at: Date.now(), kind: kind };
+  for (var k in (row || {})) e[k] = row[k];
+  CSV_LOG.push(e);
+  while (CSV_LOG.length > CSV_LOG_MAX) CSV_LOG.shift();
+  try { localStorage.setItem("cb_csv_log", JSON.stringify(CSV_LOG)); } catch (er) {}
+}
+function csvImportLog() {
+  if (CSV_LOG.length) return CSV_LOG.slice();
+  try { return JSON.parse(localStorage.getItem("cb_csv_log") || "[]"); } catch (e) { return []; }
 }
 
 var IMPORT_CAT_KEYWORDS = {
@@ -13464,9 +13974,34 @@ function normalizeMerchant(label) {
   var s = (label || "").toLowerCase();
   s = s.replace(/[#*].*$/, " ");                 // drop store/ref after # or *
   s = s.replace(/\d{2,}/g, " ");                 // drop long digit runs (ids/dates)
-  s = s.replace(/[^a-z0-9&]+/g, " ");            // punctuation -> space
+  // Hebrew and Arabic letters are KEPT. This was /[^a-z0-9&]+/, which in a
+  // Hebrew-language app erased the merchant outright: "מקס איט" and "סינמה
+  // סיטי" both normalised to the empty string, so every Hebrew label scored 0
+  // similarity and nothing built on this - dedup, merchant grouping, the
+  // subscription and leak finders - could see an Israeli card statement at all.
+  s = s.replace(/[^a-z0-9&֐-׿؀-ۿ]+/g, " ");
   s = s.replace(/\b(inc|llc|ltd|co|com|www|the|payment|pmt|recurring|autopay|pos|purchase|debit|card)\b/g, " ");
-  return s.replace(/\s+/g, " ").trim();
+  s = s.replace(/בעמ/g, " ");                     // בע"מ (Ltd), once punctuation is gone
+  s = s.replace(/\s+/g, " ").trim();
+  // A key with no letter left in it is a branch number, not an identity.
+  // Before this, "שופרסל 4" and "רמי לוי 4" both reduced to "4", scored a
+  // perfect 1.00 on labelSimilarity and totalled 0.950 against the same amount
+  // on the same day - over DUP_CERTAIN, so one of two real purchases was
+  // dropped with no question asked. "" makes labelSimilarity answer 0, which
+  // is the honest reading: this name tells us nothing.
+  if (!/[a-z֐-׿؀-ۿ]/.test(s)) return "";
+  return s;
+}
+
+// The identity a shop is remembered under in the user's own shop -> category
+// map. Merchant normalisation is the right key - it already folds "SHUFERSAL
+// DEAL #4471" and "SHUFERSAL DEAL TLV" together - but it can legitimately
+// return "", and an empty key would collapse every such shop into one entry.
+// So the plain label is the fallback.
+function shopKey(label) {
+  var k = normalizeMerchant(label);
+  if (k) return k;
+  return String(label || "").toLowerCase().replace(/\s+/g, " ").trim();
 }
 
 function looksLikeSubscription(label) {
@@ -15694,7 +16229,19 @@ function ImportSheet(props) {
   var _raw = useState(""); var raw = _raw[0]; var setRaw = _raw[1];
   var _step = useState("paste"); var step = _step[0]; var setStep = _step[1];
   var _rows = useState([]); var rows = _rows[0]; var setRows = _rows[1];
-  var _hdr = useState(true); var hasHeader = _hdr[0]; var setHasHeader = _hdr[1];
+  var _hdr = useState(0); var headerRow = _hdr[0]; var setHeaderRow = _hdr[1];
+  // How the file was decoded, and how the columns were read. Both are shown:
+  // a user whose file turned out to be windows-1255, or whose columns came
+  // from a saved mapping rather than a fresh reading, should be able to see
+  // that rather than wonder why this import behaved differently.
+  var _enc = useState(""); var encoding = _enc[0]; var setEncoding = _enc[1];
+  var _read = useState(null); var reading = _read[0]; var setReading = _read[1];
+  var _fp = useState(""); var fingerprint = _fp[0]; var setFingerprint = _fp[1];
+  // shop -> { category, confidence, source } for this import. "source" decides
+  // what the preview asks about: a shop the user already settled is not
+  // re-confirmed, a shop Alfred guessed is.
+  var _shops = useState({}); var shopCats = _shops[0]; var setShopCats = _shops[1];
+  var _shopMeta = useState(null); var shopMeta = _shopMeta[0]; var setShopMeta = _shopMeta[1];
   var _map = useState({ date: -1, amount: -1, desc: -1, debit: -1, credit: -1 }); var map = _map[0]; var setMap = _map[1];
   var _split = useState(false); var splitAmt = _split[0]; var setSplitAmt = _split[1];
   var _dmy = useState(true); var preferDMY = _dmy[0]; var setPreferDMY = _dmy[1];
@@ -15716,7 +16263,8 @@ function ImportSheet(props) {
   var _rep = useState(null); var report = _rep[0]; var setReport = _rep[1];
 
   function reset() {
-    setRaw(""); setStep("paste"); setRows([]); setHasHeader(true);
+    setRaw(""); setStep("paste"); setRows([]); setHeaderRow(0);
+    setEncoding(""); setReading(null); setFingerprint(""); setShopCats({}); setShopMeta(null);
     setMap({ date: -1, amount: -1, desc: -1, debit: -1, credit: -1 }); setSplitAmt(false); setPreferDMY(true); setAllExpenses(false); setBuilt([]); setDupes(0); setErr("");
     setPlan(null); setDecisions({}); setQueue([]); setQIdx(0); setAiRes({ settled: 0, failed: false }); setReport(null);
     setShowAdv(false);
@@ -15730,29 +16278,113 @@ function ImportSheet(props) {
   function handleFile(e) {
     var f = e.target.files && e.target.files[0];
     if (!f) return;
-    var reader = new FileReader();
-    reader.onload = function(ev) { setRaw((ev.target && ev.target.result) || ""); };
-    reader.readAsText(f);
+    setErr("");
+    // readAsText() assumes UTF-8 and has no way to be told otherwise, which is
+    // why a Leumi or Isracard export used to arrive as mojibake and take every
+    // column guess down with it. csvReadFile sniffs the encoding first.
+    csvReadFile(f, function(rErr, out) {
+      if (rErr) { setErr(rErr.message); return; }
+      setEncoding(out.encoding);
+      setRaw(out.text);
+    });
+  }
+
+  // The local guess: sniffMap, given the rows from the header down so its
+  // rows[0] is the title row it expects. Kept as the fallback for an offline
+  // import and for a file with no titles at all, where there is nothing for a
+  // model to read.
+  function localReading(parsed, hRow) {
+    var from = hRow >= 0 ? parsed.slice(hRow) : parsed;
+    return sniffMap(from, hRow >= 0);
+  }
+
+  // Everything that has to happen once the columns are known, whoever worked
+  // them out: settle the date format and the sign convention from the rows
+  // themselves, and decide whether to open the controls.
+  function applyReading(parsed, hRow, m, signSays, source, conf, savedDMY) {
+    var first = hRow >= 0 ? hRow + 1 : 0;
+    var fmt = csvDetectDateFormat(parsed, m.date, first);
+    // The rows win when they actually settle it; the user's last answer for
+    // this same bank wins when they don't.
+    if (!fmt.sure && typeof savedDMY === "boolean" && savedDMY !== fmt.preferDMY) {
+      fmt = { preferDMY: savedDMY, sure: false, reason: "kept the day-first setting you chose for this bank" };
+    }
+    var sign = csvDetectSign(parsed, m, first, signSays);
+    var gotAmount = sign.splitAmt ? (m.debit >= 0 || m.credit >= 0) : m.amount >= 0;
+    var ok = gotAmount && m.date >= 0 && m.desc >= 0;
+    var lowConf = conf && (conf.date === "low" || conf.amount === "low" || conf.desc === "low");
+    setRows(parsed); setHeaderRow(hRow); setMap(m);
+    setSplitAmt(sign.splitAmt); setAllExpenses(sign.allExpenses); setPreferDMY(fmt.preferDMY);
+    setReading({ source: source, confidence: conf || null, dateFormat: fmt, sign: sign });
+    // The controls open by themselves when the reading left a hole OR when the
+    // model said it was unsure. A "low" that opens nothing is a confident
+    // wrong guess wearing a hedge.
+    setShowAdv(!ok || !!lowConf || !!fmt.conflict);
+    if (lowConf || !ok) {
+      csvLog("mapping-uncertain", { source: source, fingerprint: csvFingerprint(csvSkeleton(parsed)),
+        date: m.date, shop: m.desc, amount: m.amount, confidence: conf || null, complete: ok });
+    }
+    setStep("map");
   }
 
   function goMap() {
     setErr("");
     var parsed = parseCSV(raw);
     if (parsed.length < 1 || parsed[0].length < 2) { setErr("Could not read any rows. Paste CSV text or choose a .csv file."); return; }
-    var detected = sniffMap(parsed, true);
-    var split = detected.debit >= 0 || detected.credit >= 0;
-    // Open the column controls only when the guess left a real hole. A file
-    // that was read cleanly should never show them unprompted.
-    var gotAmount = split ? (detected.debit >= 0 || detected.credit >= 0) : detected.amount >= 0;
-    setShowAdv(!(gotAmount && detected.date >= 0 && detected.desc >= 0));
-    setRows(parsed); setMap(detected); setSplitAmt(split); setStep("map");
+    var sk = csvSkeleton(parsed);
+    var fp = csvFingerprint(sk);
+    setFingerprint(fp);
+
+    // A format this user has confirmed before costs nothing: no call, no wait.
+    // This is what keeps the mapping cheap in practice - almost everyone
+    // imports from the same one or two banks every month.
+    var saved = (props.csvMaps || {})[fp];
+    if (saved && saved.map) {
+      applyReading(parsed, typeof saved.headerRow === "number" ? saved.headerRow : 0, saved.map,
+        saved.allExpenses ? "all_rows_are_charges" : "", "saved", null,
+        typeof saved.preferDMY === "boolean" ? saved.preferDMY : undefined);
+      return;
+    }
+
+    // Nothing above the data means no titles to read, so there is nothing a
+    // model could tell us that the rows do not already say. Skip the call.
+    if (!sk.head.length) {
+      applyReading(parsed, -1, localReading(parsed, -1), "", "local", null);
+      return;
+    }
+
+    setStep("reading");
+    mapColumnsWithAI(sk, function(aErr, r) {
+      if (aErr || !r) {
+        // A failed reading is not a guess dressed up as an answer: it falls
+        // back to the local rules, says so on the screen, and opens the
+        // controls if those left a hole - exactly what would have happened
+        // before any of this existed.
+        var hRow = sk.head.length ? sk.head.length - 1 : -1;
+        applyReading(parsed, hRow, localReading(parsed, hRow), "", "local-fallback", null);
+        return;
+      }
+      var hRow = r.headerRowIndex >= 0 ? r.headerRowIndex : (sk.head.length ? sk.head.length - 1 : -1);
+      var m = { date: r.date, amount: r.amount, desc: r.desc, debit: r.debit, credit: r.credit };
+      // A split file must not also carry a single amount column, or buildTxs
+      // reads the same money twice.
+      if (m.debit >= 0 || m.credit >= 0) m.amount = -1;
+      // Anything the model left blank is filled from the local rules rather
+      // than left as a hole for the user to close by hand.
+      var fallback = localReading(parsed, hRow);
+      ["date", "amount", "desc", "debit", "credit"].forEach(function(k) {
+        if (m[k] < 0 && fallback[k] >= 0 && !(k === "amount" && (m.debit >= 0 || m.credit >= 0))) m[k] = fallback[k];
+      });
+      applyReading(parsed, hRow, m, r.sign, "alfred", r.confidence);
+    });
   }
 
   // Every readable row, turned into a candidate transaction. No deduping here -
   // that is classifyImportRows' job, and keeping the two apart is what lets a
   // look-alike be questioned instead of silently dropped.
-  function buildTxs() {
-    var dataRows = hasHeader ? rows.slice(1) : rows;
+  function buildTxs(resolved) {
+    var shops = resolved || shopCats || {};
+    var dataRows = rows.slice(headerRow >= 0 ? headerRow + 1 : 0);
     var out = [];
     var base = Date.now();
     var today = new Date().toISOString().slice(0, 10);
@@ -15773,18 +16405,23 @@ function ImportSheet(props) {
       var type = allExpenses ? "expense" : (amt < 0 ? "expense" : "income");
       var label = desc.slice(0, 60);
       var amount = round2(Math.abs(amt));
-      // Learn from the user's own history first, then keyword map; income still
-      // prefers Salary when present.
-      var learned = type === "income"
+      // Category, in order of how much it is worth: the shop map (which the
+      // user has confirmed, or Alfred has just sorted), then the user's own
+      // history, then the keyword map. Income skips the shop map - a salary
+      // line's "shop" is an employer, and sorting it as a purchase is wrong.
+      var sk = shopKey(desc);
+      var mapped = type === "income" ? null : shops[sk];
+      var fromShop = mapped ? ((catByName(cats, mapped.category) || {}).id || "") : "";
+      var learned = fromShop || (type === "income"
         ? ((catByName(cats, "Salary") || {}).id || suggestCatId(desc, props.tx, cats))
-        : suggestCatId(desc, props.tx, cats);
+        : suggestCatId(desc, props.tx, cats));
       var catId = learned || guessImportCatId(desc, cats);
       var c = catById(cats, catId) || { id: "", name: "Other" };
       // Whether that category is a real read or the Other fallback. The
       // duplicate scorer needs the difference: an unknown category is no
       // signal, while two known-but-different categories are a real one.
       var catSure = !!learned || !!keywordCatName(desc);
-      out.push({ type: type, amount: amount, label: label, catId: c.id, category: c.name, date: dateStr, id: base + i, repeat: "none", pending: false, catSure: catSure });
+      out.push({ type: type, amount: amount, label: label, catId: c.id, category: c.name, date: dateStr, id: base + i, repeat: "none", pending: false, catSure: catSure, shopK: sk });
     });
     return out;
   }
@@ -15798,6 +16435,7 @@ function ImportSheet(props) {
     (res.maybes || []).forEach(function(m, i) { if (dec[i] === "add") out.push(m.tx); });
     return out.map(function(t) {
       var clean = {}; for (var k in t) { if (k !== "catSure") clean[k] = t[k]; }
+      // shopK is kept here on purpose - see doImport.
       return clean;
     }).sort(function(a, b) { return (a.date || "").localeCompare(b.date || ""); });
   }
@@ -15841,6 +16479,54 @@ function ImportSheet(props) {
     });
   }
 
+  // Every distinct shop in the file, and where its category comes from. The
+  // model is asked about the leftovers ONLY - a shop the user has settled
+  // before, or one their own history already answers, never goes out and never
+  // gets re-confirmed in the preview.
+  function resolveShops(cb) {
+    var dataRows = rows.slice(headerRow >= 0 ? headerRow + 1 : 0);
+    var saved = props.shopCats || {};
+    var order = [], seen = {};
+    dataRows.forEach(function(r) {
+      var desc = String((map.desc >= 0 ? r[map.desc] : "") || "").trim();
+      if (!desc) return;
+      var k = shopKey(desc);
+      if (!k || seen[k]) return;
+      seen[k] = 1;
+      order.push({ key: k, label: desc.slice(0, 60) });
+    });
+    var out = {}, ask = [];
+    order.forEach(function(s) {
+      var was = saved[s.key];
+      // A category the USER corrected is pinned: it is never re-asked of the
+      // model and never re-confirmed on screen.
+      if (was && was.category && catByName(cats, was.category)) {
+        out[s.key] = { category: was.category, confidence: "high", source: was.source === "user" ? "user" : "saved", label: s.label };
+        return;
+      }
+      var own = suggestCatId(s.label, props.tx, cats);
+      var ownCat = own ? catById(cats, own) : null;
+      if (ownCat) { out[s.key] = { category: ownCat.name, confidence: "high", source: "history", label: s.label }; return; }
+      ask.push(s);
+    });
+    if (!ask.length) { cb(out, { asked: 0, calls: 0, failed: 0, overflow: 0, err: false }); return; }
+    // A handful of the user's own corrections travel as examples, so Alfred
+    // matches this person's habits rather than his own instinct.
+    var examples = [];
+    Object.keys(saved).forEach(function(k) {
+      if (examples.length >= CSV_SHOP_EXAMPLES) return;
+      var v = saved[k];
+      if (v && v.source === "user" && v.label && v.category) examples.push({ shop: v.label, category: v.category });
+    });
+    categorizeShopsWithAI(ask.map(function(s) { return s.label; }), cats, examples, function(sErr, got, meta) {
+      ask.forEach(function(s) {
+        var g = got[s.label];
+        if (g) out[s.key] = { category: g.category, confidence: g.confidence, source: "alfred", label: s.label };
+      });
+      cb(out, { asked: ask.length, calls: meta.calls, failed: meta.failed, overflow: meta.overflow, err: !!sErr });
+    });
+  }
+
   function goPreview() {
     setErr("");
     if (splitAmt) {
@@ -15849,13 +16535,17 @@ function ImportSheet(props) {
       setErr("Pick which column holds the amount.");
       return;
     }
-    var cands = buildTxs();
-    if (!cands.length) { setErr("No valid transactions found. Check your column choices."); return; }
-    var res = classifyImportRows(cands, props.tx || []);
-    setPlan(res); setDecisions({}); setAiRes({ settled: 0, failed: false });
-    if (!res.maybes.length) { finishPlan(res, {}); return; }
-    if (askAi) { runJudge(res); return; }
-    setQueue(res.maybes.map(function(m, i) { return i; })); setQIdx(0); setStep("review");
+    setStep("sorting");
+    resolveShops(function(resolved, meta) {
+      setShopCats(resolved); setShopMeta(meta);
+      var cands = buildTxs(resolved);
+      if (!cands.length) { setErr("No valid transactions found. Check your column choices."); setStep("map"); return; }
+      var res = classifyImportRows(cands, props.tx || []);
+      setPlan(res); setDecisions({}); setAiRes({ settled: 0, failed: false });
+      if (!res.maybes.length) { finishPlan(res, {}); return; }
+      if (askAi) { runJudge(res); return; }
+      setQueue(res.maybes.map(function(m, i) { return i; })); setQIdx(0); setStep("review");
+    });
   }
 
   // One answer in the interview. Answering the last question closes it out.
@@ -15879,8 +16569,55 @@ function ImportSheet(props) {
     finishPlan(plan, dec);
   }
 
+  // A correction in the preview. It repoints every row of that shop at once -
+  // fixing one line and leaving its five siblings wrong would be worse than
+  // not offering the control - and it is recorded, because a user overruling
+  // Alfred is the only honest measure of whether he was any good.
+  function setShopCategory(key, catName) {
+    var was = shopCats[key] || {};
+    if (was.source === "alfred" && was.category && was.category !== catName) {
+      csvLog("category-corrected", { shop: was.label || key, from: was.category, to: catName, confidence: was.confidence || "" });
+    }
+    var next = {}; for (var k in shopCats) next[k] = shopCats[k];
+    next[key] = { category: catName, confidence: "high", source: "user", label: was.label || key };
+    setShopCats(next);
+    var c = catByName(cats, catName);
+    setBuilt(built.map(function(t) {
+      if (t.shopK !== key) return t;
+      var n = {}; for (var kk in t) n[kk] = t[kk];
+      n.catId = c ? c.id : ""; n.category = catName;
+      return n;
+    }));
+  }
+
+  // The shops the preview actually asks about: the ones Alfred had to guess.
+  // A saved mapping or the user's own history is not re-confirmed every month.
+  var shopsToConfirm = (function() {
+    var keys = {};
+    built.forEach(function(t) { if (t.shopK && shopCats[t.shopK] && shopCats[t.shopK].source === "alfred") keys[t.shopK] = (keys[t.shopK] || 0) + 1; });
+    return Object.keys(keys).map(function(k) {
+      return { key: k, label: shopCats[k].label || k, category: shopCats[k].category, confidence: shopCats[k].confidence, rows: keys[k] };
+    }).sort(function(a, b) { return b.rows - a.rows; });
+  })();
+
   function doImport() {
-    props.onImport(built, report);
+    // Only now, at the single Confirm, do the caches learn anything: the
+    // format so the next file from this bank costs no call, and every shop so
+    // it is never asked about again. Both ride with the rows on one write.
+    var learned = {
+      fingerprint: fingerprint,
+      profile: fingerprint ? {
+        map: { date: map.date, amount: map.amount, desc: map.desc, debit: map.debit, credit: map.credit },
+        headerRow: headerRow, splitAmt: splitAmt, allExpenses: allExpenses, preferDMY: preferDMY,
+        at: new Date().toISOString().slice(0, 10)
+      } : null,
+      shops: shopCats
+    };
+    var rowsOut = built.map(function(t) {
+      var clean = {}; for (var k in t) { if (k !== "shopK") clean[k] = t[k]; }
+      return clean;
+    });
+    props.onImport(rowsOut, report, learned);
     close();
   }
 
@@ -15889,7 +16626,21 @@ function ImportSheet(props) {
   // plain questions ("Where's the date?"), and a question in all caps reads as
   // shouting rather than helping.
   var lblStyle = { fontSize: 12.5, fontWeight: 600, color: T.ink2, display: "block", lineHeight: 1.4 };
-  var colOptions = rows.length ? rows[0].map(function(h, i) { return { i: i, name: hasHeader ? (h || ("Column " + (i + 1))) : ("Column " + (i + 1)) }; }) : [];
+  // Named from the header row wherever it turned out to be, and sized to the
+  // WIDEST row: an export whose title line has two cells and whose data has
+  // nine used to offer two dropdowns for a nine-column file.
+  var colOptions = (function() {
+    if (!rows.length) return [];
+    var ncol = 0;
+    rows.forEach(function(r) { if (r && r.length > ncol) ncol = r.length; });
+    var head = headerRow >= 0 ? (rows[headerRow] || []) : [];
+    var out = [];
+    for (var i = 0; i < ncol; i++) {
+      var h = String(head[i] || "").trim();
+      out.push({ i: i, name: h || ("Column " + (i + 1)) });
+    }
+    return out;
+  })();
 
   function colSelect(field, label) {
     return (
@@ -15917,7 +16668,7 @@ function ImportSheet(props) {
   // so this stays cheap enough to recompute on every keystroke of the settings.
   var mapPreview = (function() {
     if (!rows.length) return [];
-    var dataRows = hasHeader ? rows.slice(1) : rows;
+    var dataRows = rows.slice(headerRow >= 0 ? headerRow + 1 : 0);
     var today = new Date().toISOString().slice(0, 10);
     var out = [];
     for (var i = 0; i < dataRows.length && out.length < 3; i++) {
@@ -15950,7 +16701,7 @@ function ImportSheet(props) {
       {step === "paste" && (
         <div>
           <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginBottom: 4 }}>
-            Download a statement from your bank or card, then drop the file in. Richy reads it here on your device, works out which purchases it already knows about, and asks you about anything it isn't sure of.
+            Download a statement from your bank or card, then drop the file in. Richy reads it here on your device - to find your columns Alfred sees the titles at the top of the file, and the names of shops Richy doesn't recognise, never your amounts or dates. You see everything before a single line is saved.
           </div>
           <CsvExplainer style={{ marginBottom: 10 }} />
           <label style={{ display: "block", width: "100%", textAlign: "center", padding: "13px 0", borderRadius: 13, border: "1.5px dashed " + T.orange, background: T.orangeDim, color: T.orange, fontSize: 14, fontWeight: 700, fontFamily: UI, cursor: "pointer", marginBottom: 10 }}>
@@ -15958,7 +16709,7 @@ function ImportSheet(props) {
             <input type="file" accept=".csv,text/csv,text/plain" onChange={handleFile} style={{ display: "none" }} />
           </label>
           <div style={{ fontSize: 11, color: T.ink3, textAlign: "center", marginBottom: 10 }}>or paste the CSV text below</div>
-          <textarea value={raw} onChange={function(e) { setRaw(e.target.value); }} rows={6}
+          <textarea value={raw} onChange={function(e) { setRaw(e.target.value); setEncoding(""); }} rows={6}
             placeholder={"Date,Description,Amount\n2026-06-01,Grocery Store,-54.20\n2026-06-02,Salary,3000"}
             style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid " + T.hairline2, borderRadius: 13, padding: "11px 13px", fontSize: 13, fontFamily: UI, color: T.ink, outline: "none", resize: "vertical", marginBottom: 10 }} />
           {err && <div style={{ fontSize: 13, color: T.red, marginBottom: 10 }}>{err}</div>}
@@ -16005,6 +16756,34 @@ function ImportSheet(props) {
           )}
 
           {err && <div style={{ fontSize: 13, color: T.red, marginBottom: 10 }}>{err}</div>}
+          {/* Where this reading came from, and anything the file itself
+              settled. A user whose columns came from a saved mapping rather
+              than a fresh look, or whose file turned out not to be UTF-8,
+              should be able to see that instead of wondering why this import
+              behaved differently from the last one. */}
+          {reading && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 12 }}>
+              <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.5 }}>
+                {reading.source === "saved" ? "Read with the column layout you confirmed for this bank last time."
+                  : reading.source === "alfred" ? "Alfred read the column titles at the top of your file. No purchase in it was sent - only the titles."
+                  : reading.source === "local-fallback" ? "Alfred couldn't be reached, so Richy worked the columns out on its own. Worth a look."
+                  : "Richy worked the columns out from the file itself."}
+              </div>
+              {reading.dateFormat && reading.dateFormat.conflict && (
+                <div style={{ fontSize: 11.5, color: T.gold, lineHeight: 1.5 }}>
+                  {"The dates in this file don't agree with each other, so I had to pick. Check the day-first setting below."}
+                </div>
+              )}
+              {reading.sign && reading.sign.allExpenses && (
+                <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.5 }}>{"Nothing in the file is negative, so every line is being read as money out."}</div>
+              )}
+              {encoding && encoding !== "utf-8" && (
+                <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.5 }}>
+                  {"This file is " + (encoding === "windows-1255" ? "in the older Hebrew encoding Israeli banks still use" : encoding) + ", so it was decoded that way. If the shop names read as nonsense, tell me."}
+                </div>
+              )}
+            </div>
+          )}
           {mapOk && <BigBtn label="Looks right - go on" onPress={goPreview} style={{ marginTop: 0 }} />}
 
           {/* One line, so the Alfred check is disclosed where it happens
@@ -16031,13 +16810,33 @@ function ImportSheet(props) {
 
           <CsvReveal open={showAdv}>
           <div data-csv-card="" style={{ paddingTop: 4 }}>
-          <button onClick={function() { setHasHeader(!hasHeader); setMap(sniffMap(rows, !hasHeader)); }}
-            style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 13px", borderRadius: 11, border: "none", cursor: "pointer", marginBottom: 10, background: hasHeader ? T.orangeDim : T.fill1, fontFamily: UI }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: hasHeader ? T.orange : T.ink2 }}>The first line is column titles</span>
-            <div style={{ width: 18, height: 18, borderRadius: 6, border: "2px solid " + (hasHeader ? T.orange : T.ink3), background: hasHeader ? T.orange : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {hasHeader && <SVGIcon id="check" size={10} color="#fff" />}
-            </div>
-          </button>
+          {/* Was a yes/no checkbox, "the first line is column titles", which
+              could not describe an Israeli export at all: those routinely put
+              one to three report and account lines above the titles, and every
+              one of them was being read as a transaction. */}
+          <div style={{ marginBottom: 10 }}>
+            <span style={lblStyle}>Which line has the column titles?</span>
+            <select value={headerRow} onChange={function(e) {
+              var v = parseInt(e.target.value, 10);
+              var m = localReading(rows, v);
+              var first = v >= 0 ? v + 1 : 0;
+              var fmt = csvDetectDateFormat(rows, m.date, first);
+              var sign = csvDetectSign(rows, m, first, "");
+              setHeaderRow(v); setMap(m);
+              setPreferDMY(fmt.preferDMY); setSplitAmt(sign.splitAmt); setAllExpenses(sign.allExpenses);
+              // Deliberately not touching showAdv: these controls are open
+              // because the user opened them, and folding them away under a
+              // hand that is still working is worse than any inconsistency.
+              setReading({ source: "local", confidence: null, dateFormat: fmt, sign: sign });
+            }} style={selStyle}>
+              <option value={-1}>No titles - it starts straight into the purchases</option>
+              {rows.slice(0, 8).map(function(r, i) {
+                var txt = r.map(function(c) { return String(c || "").trim(); }).filter(Boolean).join("  |  ");
+                if (txt.length > 54) txt = txt.slice(0, 54) + "...";
+                return <option key={i} value={i}>{"Line " + (i + 1) + ":  " + (txt || "(empty)")}</option>;
+              })}
+            </select>
+          </div>
           {colSelect("date", "Where's the date?")}
           <button onClick={function() { setSplitAmt(!splitAmt); }}
             style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 13px", borderRadius: 11, border: "none", cursor: "pointer", marginBottom: 9, background: splitAmt ? T.orangeDim : T.fill1, fontFamily: UI }}>
@@ -16078,6 +16877,35 @@ function ImportSheet(props) {
       {/* Alfred is looking at the middle band. Deliberately its own step
           rather than a spinner over the preview: the user is waiting on a
           real answer, and the count tells them how much is at stake. */}
+      {/* Reading the columns. Its own step rather than a spinner, and it says
+          exactly what left the device, because the screen before it promised
+          the file stays here and a vague "thinking..." would read as a dodge. */}
+      {step === "reading" && (
+        <div style={{ padding: "34px 4px 26px", textAlign: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 14 }}>
+            <ThinkingDots size={5} color={T.orange} />
+          </div>
+          <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 6 }}>Working out your columns</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, maxWidth: 320, margin: "0 auto" }}>
+            {"Every bank lays its file out differently. Alfred is reading the titles at the top of yours to find the date, the shop and the amount - just the titles, not a single one of your purchases."}
+          </div>
+        </div>
+      )}
+
+      {/* Sorting the shops. The count is the honest one: shops, not rows, and
+          only the ones nothing already answered. */}
+      {step === "sorting" && (
+        <div style={{ padding: "34px 4px 26px", textAlign: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 14 }}>
+            <ThinkingDots size={5} color={T.orange} />
+          </div>
+          <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 6 }}>Sorting your shops</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, maxWidth: 320, margin: "0 auto" }}>
+            {"Alfred is putting the shops Richy doesn't recognise into categories. You'll see every one he guessed before anything is saved, and you can change any of them."}
+          </div>
+        </div>
+      )}
+
       {step === "check" && plan && (
         <div style={{ padding: "34px 4px 26px", textAlign: "center" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 14 }}>
@@ -16177,6 +17005,48 @@ function ImportSheet(props) {
               );
             })}
           </div>
+          {shopsToConfirm.length > 0 && (
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 13.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 3 }}>
+                {shopsToConfirm.length === 1 ? "One shop Richy didn't know" : shopsToConfirm.length + " shops Richy didn't know"}
+              </div>
+              <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginBottom: 9 }}>
+                {"Alfred sorted these. Change any that look wrong - Richy remembers your answer and never asks about that shop again."}
+              </div>
+              <div style={{ background: T.card, borderRadius: 14, overflow: "hidden", border: "1px solid " + T.hairline }}>
+                {shopsToConfirm.map(function(s, i) {
+                  return (
+                    <div key={s.key} style={{ padding: "10px 12px", borderBottom: i < shopsToConfirm.length - 1 ? "0.5px solid " + T.sep : "none" }}>
+                      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
+                        <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: T.ink, overflowWrap: "anywhere" }}>{s.label}</span>
+                        {/* A low-confidence guess is marked, because "Alfred
+                            wasn't sure" is the one thing that tells the user
+                            which row to actually look at. */}
+                        {s.confidence === "low" && (
+                          <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.gold }}>Unsure</span>
+                        )}
+                        <span style={{ flexShrink: 0, fontSize: 11, color: T.ink3, fontVariantNumeric: "tabular-nums" }}>{s.rows + (s.rows === 1 ? " line" : " lines")}</span>
+                      </div>
+                      <select value={s.category} onChange={function(e) { setShopCategory(s.key, e.target.value); }}
+                        style={{ width: "100%", padding: "7px 10px", borderRadius: 9, border: "1.5px solid " + (s.confidence === "low" ? T.gold : T.sep), background: T.bg, fontSize: 13, fontFamily: UI, color: T.ink, outline: "none" }}>
+                        {cats.map(function(c) { return <option key={c.id} value={c.name}>{catDisplay(c.name)}</option>; })}
+                      </select>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {shopMeta && shopMeta.err && shopMeta.asked > 0 && (
+            <div style={{ fontSize: 12, color: T.ink3, marginTop: -4, marginBottom: 10, lineHeight: 1.5 }}>
+              {"Alfred couldn't be reached to sort " + shopMeta.asked + " new " + (shopMeta.asked === 1 ? "shop" : "shops") + ", so they were matched on keywords instead. Check their categories in Activity afterwards."}
+            </div>
+          )}
+          {shopMeta && !shopMeta.err && shopMeta.overflow > 0 && (
+            <div style={{ fontSize: 12, color: T.ink3, marginTop: -4, marginBottom: 10, lineHeight: 1.5 }}>
+              {"This file has more new shops than Alfred sorts in one go, so " + shopMeta.overflow + " were matched on keywords instead."}
+            </div>
+          )}
           {/* What the file did NOT bring in. Measured from the rows, so it is
               a statement of fact rather than an impression - and the tips are
               the specific next move for each gap, not general advice. */}
@@ -16519,8 +17389,9 @@ function Activity(props) {
         )}
       </div>
       <ImportSheet open={importOpen} onClose={function() { setImportOpen(false); }} categories={cats} tx={props.tx}
-        onImport={function(txs, report) {
-          if (props.onCsvImport) props.onCsvImport(txs, report);
+        shopCats={props.shopCats} csvMaps={props.csvMaps}
+        onImport={function(txs, report, learned) {
+          if (props.onCsvImport) props.onCsvImport(txs, report, learned);
           else props.onSaveTx(props.tx.concat(txs));
         }} />
       <Overlay open={filterOpen} onClose={function() { setFilterOpen(false); }} title={filterCopy.title}>
@@ -19994,8 +20865,9 @@ function trimContextBlock(text, max) {
 // not touch the other two refusals, and both of those grow monotonically with
 // the conversation: every turn adds two entries against MAX_MESSAGES = 40, and
 // every image is re-encoded in full on every later turn against
-// MAX_TOTAL_CHARS = 100,000 (downscaleImage caps one image just under 60,000
-// characters, so two of them exceed that ceiling on their own).
+// MAX_TOTAL_CHARS = 100,000 (downscaleImage caps one image just under 46,000
+// characters, so two of them plus the system prompt clear that ceiling on their
+// own, without a single word of conversation around them).
 //
 // Monotonic is the important word. A thread that crosses either line never
 // comes back, so the visible-failure work is what exposed the real cost: the
@@ -20013,17 +20885,55 @@ function trimContextBlock(text, max) {
 //      newest user turn is never dropped - it is the message being sent, and a
 //      single image plus the largest possible system prompt still fits under
 //      the server's total.
+//
+// A fourth rule that is easy to miss: a row the CLIENT wrote to report a
+// failure is not part of the conversation. Left in, the red row's text goes up
+// as one of Alfred's own assistant turns, so the next answer is written by a
+// model that thinks it last said "That conversation is too long for Alfred to
+// take in one go."
 var CHAT_SEND_MAX = 30;        // entries posted, against the server's 40
 var CHAT_SEND_CHARS = 55000;   // messages budget = MAX_TOTAL_CHARS 100,000 less
                                // MAX_SYSTEM_CHARS 45,000, so this holds whatever
                                // the system prompt turns out to be: anything
                                // over 45,000 is refused on the system rule
                                // instead, which is its own honest error
-function boundThreadMsg(m) {
-  return ((m && m.text) || "").length + (m && m.att && m.att.b64 ? m.att.b64.length : 0);
+// One photo, encoded once. downscaleImage does the base64 pass a single time
+// when the file is picked, but the send path rebuilt the vision block around it
+// on every later turn - and weighing that block would have re-serialized ~46,000
+// characters per turn on top. Both are cached against the attachment object
+// itself, so a photo costs that pass once no matter how long the thread runs,
+// and is released with the message when the attachment is.
+var imgBlockCache = typeof WeakMap === "function" ? new WeakMap() : null;
+function imgBlock(att) {
+  var hit = imgBlockCache && imgBlockCache.get(att);
+  if (hit) return hit;
+  var block = { type: "image", source: { type: "base64", media_type: att.mediaType, data: att.b64 } };
+  var entry = { block: block, chars: JSON.stringify(block).length };
+  if (imgBlockCache) imgBlockCache.set(att, entry);
+  return entry;
 }
-function boundThread(msgs) {
-  var out = (msgs || []).slice(-CHAT_SEND_MAX);
+// Measure a message the way the server measures it. api/chat.js weighs
+// JSON.stringify(messages), so the role/content framing and an image block's
+// wrapper count against the ceiling too - roughly 80 characters per entry and
+// ~120 for a vision block. Counting only text and base64 under-read a full
+// 30-entry window by a couple of thousand characters, which is enough to fail
+// the exact check this budget exists to pass.
+function boundThreadMsg(m, mapFn) {
+  var att = m && m.att;
+  if (att && att.kind === "image" && att.b64) {
+    // 60 covers the role/content/text framing around the two blocks, rounded up
+    // from the 53 it actually is - over-reading is safe here, under-reading is
+    // the bug.
+    return imgBlock(att).chars + JSON.stringify(m.text || "What do you make of this?").length + 60;
+  }
+  try { return JSON.stringify(mapFn(m)).length + 1; } catch (e) {}
+  return ((m && m.text) || "").length + 80;
+}
+// mapFn turns one chat row into one API message (apiMsg). It is passed in
+// rather than applied afterwards so the budget above is measured on the real
+// payload, and so each image is stringified once per send instead of twice.
+function boundThread(msgs, mapFn) {
+  var out = (msgs || []).filter(function(m) { return m && !m.failed; }).slice(-CHAT_SEND_MAX);
   while (out.length && out[0].role !== "user") out = out.slice(1);
 
   var lastImg = -1;
@@ -20042,16 +20952,21 @@ function boundThread(msgs) {
     return m;
   });
 
-  var total = out.reduce(function(s, m) { return s + boundThreadMsg(m); }, 0);
-  while (out.length > 1 && total > CHAT_SEND_CHARS) {
-    total -= boundThreadMsg(out[0]);
-    out = out.slice(1);
-    while (out.length > 1 && out[0].role !== "user") {
-      total -= boundThreadMsg(out[0]);
-      out = out.slice(1);
+  var items = out.map(function(m) {
+    return { role: m.role === "user" ? "user" : "assistant", api: mapFn(m), cost: boundThreadMsg(m, mapFn) };
+  });
+  // Starts at 2 for the array's own brackets, so the budget below is the same
+  // number the server will compute.
+  var total = items.reduce(function(s, it) { return s + it.cost; }, 2);
+  while (items.length > 1 && total > CHAT_SEND_CHARS) {
+    total -= items[0].cost;
+    items = items.slice(1);
+    while (items.length > 1 && items[0].role !== "user") {
+      total -= items[0].cost;
+      items = items.slice(1);
     }
   }
-  return out;
+  return items.map(function(it) { return it.api; });
 }
 
 function alfredErr(kind, message, status) {
@@ -22228,7 +23143,14 @@ function Advisor(props) {
         if (data.length < 46000) break;
         q -= 0.13;
       }
-      if (data.length >= 60000) { cb(new Error("That image is too detailed to send. Try a smaller crop.")); return; }
+      // One threshold, and it is the same one the loop above aims at. The old
+      // reject line sat at 60,000, so anything between 46,000 and 60,000 was
+      // accepted - and 45,000 of system prompt plus a 59,000-character photo is
+      // 104,000, over the proxy's 100,000 total, on a thread of exactly one
+      // message. Trimming cannot rescue that: there is nothing older to drop, so
+      // the photo was refused on send and refused identically on every Retry.
+      // Under 46,000 leaves roughly 9,000 characters for the question itself.
+      if (data.length >= 46000) { cb(new Error("That image is too detailed to send. Try a smaller crop.")); return; }
       cb(null, { kind: "image", name: file.name, mediaType: "image/jpeg", b64: data.split(",")[1], preview: data });
     };
     img.onerror = function() { URL.revokeObjectURL(url); cb(new Error("That image couldn't be read.")); };
@@ -22311,7 +23233,7 @@ function Advisor(props) {
   function apiMsg(m) {
     if (m.role === "user" && m.att && m.att.kind === "image" && m.att.b64) {
       return { role: "user", content: [
-        { type: "image", source: { type: "base64", media_type: m.att.mediaType, data: m.att.b64 } },
+        imgBlock(m.att).block,
         { type: "text", text: m.text || "What do you make of this?" }
       ] };
     }
@@ -22335,6 +23257,38 @@ function Advisor(props) {
         + att.text + "\n--- end of file ---";
     }
     var nc = chat.concat([{ role: "user", text: msg, att: att || undefined, shown: att ? (input.trim() || (att.kind === "image" ? "" : "Here's a file - take a look.")) : undefined }]);
+    startChat(nc, msg, isVoice);
+  }
+
+  // Retry re-sends the turn that already failed. It does NOT write a second
+  // copy of the question, which is what the old handler did: it called
+  // sendChat(m.retry), and sendChat appends. Three things went wrong at once.
+  // The user turn was duplicated, so every attempt made the payload BIGGER
+  // than the one that was just refused for being too big. The setChat() that
+  // dropped the red row had not committed yet, so the error text ("That
+  // conversation is too long") was still in the closure and went up as one of
+  // Alfred's own assistant turns. And a string argument means "voice" to
+  // sendChat, so retrying a typed question quietly switched it to the
+  // spoken-answer prompt and skipped Focus Mode. Rebuilding the thread here,
+  // from the rows that are actually part of the conversation, fixes all three
+  // and keeps the original attachment attached.
+  function retryChat(idx) {
+    if (chatLoading) return;
+    var row = chat[idx];
+    if (!row || !row.retry) return;
+    // Drop this row and any other client-side failure row, then wind back to
+    // the user turn being retried.
+    var base = chat.filter(function(m, i) { return i !== idx && !m.failed; });
+    while (base.length && base[base.length - 1].role !== "user") base = base.slice(0, -1);
+    if (!base.length) return;
+    setChatExpanded(true);
+    startChat(base, row.retry, !!row.retryVoice);
+  }
+
+  // Everything from here down is shared by a first send and a retry: the
+  // thread is already built, so this only decides how to ask and what to do
+  // with the answer.
+  function startChat(nc, msg, isVoice) {
     setChat(nc);
     setChatLoading(true);
     var customInstructionsPrefix = alfredUserCtx(props.alfredInstructions);
@@ -22362,12 +23316,12 @@ function Advisor(props) {
         + "Keep every section tight - only what matters to THEM, never generic filler. Do not add any text outside the labeled lines and do not write your own disclaimer; the app displays one."
         + (props.lang && props.lang !== "en" ? " Write all section CONTENT in " + (LANGUAGE_NAMES[props.lang] || "English") + " (labels stay in English)." : "");
       callClaude(
-        boundThread(nc).map(apiMsg),
+        boundThread(nc, apiMsg),
         focusSys, 1800,
         function(err, reply) {
           setChatLoading(false);
           if (err) {
-            setChat(function(p) { animMsgRef.current = -1; return p.concat([{ role: "assistant", failed: true, retry: msg, text: err.message }]); });
+            setChat(function(p) { animMsgRef.current = -1; return p.concat([{ role: "assistant", failed: true, retry: msg, retryVoice: isVoice || undefined, text: err.message }]); });
             return;
           }
           var parsed = parseFocusAnswer(reply);
@@ -22378,7 +23332,7 @@ function Advisor(props) {
       return;
     }
     callClaude(
-      boundThread(nc).map(apiMsg),
+      boundThread(nc, apiMsg),
       customInstructionsPrefix + "You are Alfred, a smart assistant inside the Richy personal finance app. You are calm, warm, direct, and knowledgeable - a trusted friend who is an expert in money and can help with anything the user asks. You have deep knowledge from The Psychology of Money, Rich Dad Poor Dad, The Millionaire Next Door, I Will Teach You To Be Rich, The Total Money Makeover, Think and Grow Rich, The Richest Man in Babylon, and wisdom from Warren Buffett, Charlie Munger, Ray Dalio, Naval Ravikant, Mark Cuban, Grant Cardone and other wealth builders. You can answer questions about personal finance, investments, budgeting, debt, taxes, and wealth-building. HARD LIMIT on investments: never give an opinion on whether to buy, sell, or hold any SPECIFIC security, fund, or other financial asset, never react to specific holdings with a recommendation, and never suggest an amount to put into one - for those questions give the general educational principle and the tradeoff, then say that call belongs with a licensed investment advisor. The budgeting side (whether their cash flow could absorb investing at all) is yours to answer fully. You can also answer questions about how to use the Richy app (it has tabs: Overview, Activity for transactions, Budgets for spending limits, Goals for savings targets, and Advisor which is where we are now; categories are managed via the tag icon on Overview or the Manage link in pickers). You can answer general knowledge and technical questions too - if someone asks about math, technology, or anything else, answer helpfully. Always refer back to the user's real financial data when relevant. Current user financial data: " + ctx + "." + (coreProblem ? " The user's primary financial challenge is: " + coreProblem + ". Connect your advice to this when relevant." : "")
       + " BE SPECIFIC, NEVER GENERIC. The user has heard \"build an emergency fund, cancel some subscriptions, invest in index funds\" a hundred times - generic tips read as a failure and are the top complaint about advisors like you. Anchor every answer in THEIR actual numbers above: quote their real figures, do the arithmetic, and end with a concrete next step that has an amount or a date attached. When they ask whether they can afford something (a purchase, a trip, a rent level, a big decision), compute it against their real income, essentials, savings and cash flow and give a direct answer - yes, no, or \"here is exactly what it would take\" - with the numbers shown, not a list of things to consider. When they ask about debt, give a payoff order, a specific monthly amount, and an estimated debt-free timeframe derived from their balances and rates; never just \"pay it down\" or \"build savings first.\" Cite a principle or a name only when it sharpens a specific recommendation - never decorate generic advice with a famous quote. If you truly lack a number needed to answer precisely, ask the one question that would unlock it instead of retreating to textbook advice."
       + " IMPORTANT - YOU CAN UPDATE THE APP FOR THE USER, ACROSS EVERYTHING except Business/Investing accounts and Trips (those have their own dedicated tools). When the user tells you about a real money event, or directly asks you to change or create something in the app, acknowledge it warmly in words AND append one or more action tags at the very END of your reply (after your sentence, on their own). The app validates and shows the user a confirmation card before anything is applied - nothing you emit takes effect until they tap Apply, so it is fine to be generous about proposing a tag when the user's intent is clear. Action formats (use valid JSON, no spaces in keys): "
@@ -22420,7 +23374,7 @@ function Advisor(props) {
         // retry, and only a genuine network drop falls back to Alfred(), which
         // is then badged as an offline answer rather than passed off as his.
         if (isServerRefusal(err)) {
-          setChat(function(p) { animMsgRef.current = -1; return p.concat([{ role: "assistant", failed: true, retry: msg, text: err.message }]); });
+          setChat(function(p) { animMsgRef.current = -1; return p.concat([{ role: "assistant", failed: true, retry: msg, retryVoice: isVoice || undefined, text: err.message }]); });
           return;
         }
         var offline = !!(err || !text);
@@ -22449,7 +23403,7 @@ function Advisor(props) {
           display = display ? display + "\n\n" + soloCue : soloCue;
         }
         if (!display) display = "Got it - I've noted that below. Tap Apply to update your app.";
-        setChat(function(p) { animMsgRef.current = p.length; return p.concat([{ role: "assistant", text: display, offline: offline || undefined, retry: offline ? msg : undefined }]); });
+        setChat(function(p) { animMsgRef.current = p.length; return p.concat([{ role: "assistant", text: display, offline: offline || undefined, retry: offline ? msg : undefined, retryVoice: (offline && isVoice) || undefined }]); });
         if (updates.length > 0) {
           setPendingUpdates(updates);
           setPendingAction(null);
@@ -23272,7 +24226,7 @@ function Advisor(props) {
                           <div dir="auto" style={{ fontSize: 11.5, fontFamily: UI, color: T.ink3, marginTop: 2, wordBreak: "break-word" }}>{m.text}</div>
                         </div>
                         {m.retry && (
-                          <LiquidButton variant="red" soft size="sm" onClick={function() { setChat(function(p) { return p.filter(function(x, xi) { return xi !== i; }); }); sendChat(m.retry); }} style={{ flexShrink: 0 }}>
+                          <LiquidButton variant="red" soft size="sm" onClick={function() { retryChat(i); }} style={{ flexShrink: 0 }}>
                             {tr("retry")}
                           </LiquidButton>
                         )}
@@ -23312,7 +24266,7 @@ function Advisor(props) {
                                   <SVGIcon id="warn" size={10} color={T.gold} />{tr("offlineAnswer")}
                                 </span>
                                 {m.retry && (
-                                  <button onClick={function() { setChat(function(p) { return p.filter(function(x, xi) { return xi !== i; }); }); sendChat(m.retry); }}
+                                  <button onClick={function() { retryChat(i); }}
                                     style={{ border: "none", background: "transparent", color: T.orange, fontFamily: UI, fontSize: 11.5, fontWeight: 700, padding: 0, cursor: "pointer", textDecoration: "underline" }}>
                                     {tr("retry")}
                                   </button>
@@ -35539,7 +36493,6 @@ function PlanView(props) {
       + "Richy CAN import a CSV statement: the Activity tab has an import button that reads a bank or card CSV export entirely on-device (it maps columns, handles separate money-in/money-out columns, auto-categorizes from the user's history, and skips duplicates). If someone is tired of manual entry, point them there. "
       + "Richy HAS a Debts tracker (Profile -> Debts): the user logs each debt's balance, rate, and minimum, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date. Point anyone paying off debt there, and answer 'what first' with their actual numbers. "
       + "Richy HAS a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): clearly labeled a DEMO, it fills the account with realistic sample transactions to preview the experience, but it is NOT a real connection to the user's actual Bank Leumi account - that needs Bank Leumi to certify Richy as a licensed Open Banking provider first, which hasn't happened. Be direct about this if asked whether it's real. "
-      + "Richy HAS real WhatsApp alerts for Alfred Watch (Profile -> Settings -> WhatsApp Alerts): the user links their number and texts START to Richy's WhatsApp to turn it on, then Alfred relays the single most urgent Watch signal there once a day. It only ever replies inside a chat the user opened - if they ask why an alert didn't arrive, tell them to send Richy any WhatsApp message to reopen today's window. "
       + "Richy ALSO has Collab (Profile -> Collab): two people can join one household and share budgets, goals and categories, each keeping their own login - send anyone asking about splitting money with a partner, a flatmate or a family member there, and say plainly that it shares budgets and goals rather than merging every transaction into one ledger. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (Bank Sync files purchases from the payment notifications the user's own phone already receives - an automation they set up and control on their device, not a bank connection), no fully shared couples ledger yet. If asked about these, acknowledge the gap and offer the best workaround available inside Richy. "
       + "Be concise and direct — keep it short unless the user asks for more depth." + ALFRED_FORMAT + " The only bracketed syntax you may use is the action tag described next. "
       + "If you want to suggest a specific concrete change to the user's app, append exactly one action tag at the very end of your reply: "
@@ -35874,6 +36827,138 @@ function BadgeTile(props) {
         {locked ? " " : RARITY_LABEL[b.r]}
       </div>
     </button>
+  );
+}
+
+// The payoff layer for the motivation system. Richy is deliberately calm in
+// normal use, so earning something gets a true interruption: the badge arrives
+// first, then the streak, then the level. Multiple badges earned by one action
+// are grouped into one honest moment instead of making the user dismiss a stack
+// of near-identical modals (especially important for account backfill).
+function MotivationCelebration(props) {
+  var moment = props.moment;
+  var badges = (moment.badges || []).slice();
+  var rarityOrder = { common: 0, uncommon: 1, rare: 2, epic: 3, legendary: 4, mythic: 5 };
+  badges.sort(function(a, b) { return (rarityOrder[b.def.r] || 0) - (rarityOrder[a.def.r] || 0); });
+  var featured = badges[0] || null;
+  var col = featured ? rarityColor(featured.def.r) : T.orange;
+  var dim = featured ? rarityDim(featured.def.r) : T.orangeDim;
+  var levelUp = moment.levelAfter > moment.levelBefore;
+  var streakUp = moment.streakAfter > moment.streakBefore;
+  var progress = Math.max(0.04, Math.min(1, (moment.pctAfter || 0) / 100));
+  var sparks = [
+    [10, 18, -18, 0], [22, 9, 20, 90], [37, 15, -8, 180], [64, 10, 14, 30],
+    [79, 17, -22, 120], [91, 28, 17, 210], [15, 48, 12, 60], [85, 51, -10, 160],
+    [27, 68, -16, 240], [72, 69, 18, 110], [44, 5, 7, 200], [57, 23, -13, 20]
+  ];
+
+  useEffect(function() {
+    var prior = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    nativeHaptic(featured && rarityOrder[featured.def.r] >= 2 ? "HEAVY" : "MEDIUM");
+    var levelTap = levelUp ? setTimeout(function() { nativeHaptic("HEAVY"); }, 1250) : null;
+    function onKey(e) { if (e.key === "Escape") props.onClose(); }
+    window.addEventListener("keydown", onKey);
+    return function() {
+      document.body.style.overflow = prior;
+      window.removeEventListener("keydown", onKey);
+      if (levelTap) clearTimeout(levelTap);
+    };
+  }, [moment.id]);
+
+  var eyebrow = featured ? "BADGE EARNED" : streakUp ? "STREAK BUILT" : "LEVEL UP";
+  var title = featured ? featured.def.name : streakUp ? "Another clean week" : "You moved up";
+  var detail = featured ? featured.def.desc : "Your books are true. That consistency is doing real work.";
+  var xpGain = Math.max(0, moment.xpAfter - moment.xpBefore);
+
+  return (
+    <div role="dialog" aria-modal="true" aria-label={eyebrow + ": " + title}
+      style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(18,12,8,0.78)", backdropFilter: "blur(16px) saturate(120%)", WebkitBackdropFilter: "blur(16px) saturate(120%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "max(18px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom))", boxSizing: "border-box", animation: "rcRewardBackdrop var(--m-enter) ease both" }}>
+      <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }} aria-hidden="true">
+        <div style={{ position: "absolute", width: 520, height: 520, borderRadius: "50%", left: "50%", top: "42%", transform: "translate(-50%,-50%)", background: "radial-gradient(circle," + dim + " 0%,rgba(137,112,198,0.16) 34%,transparent 68%)" }} />
+        {sparks.map(function(s, i) {
+          return <span key={i} className="rc-reward-spark" style={{ left: s[0] + "%", top: s[1] + "%", transform: "rotate(" + s[2] + "deg)", animationDelay: (0.14 + s[3] / 1000) + "s", "--reward-spark": i % 3 === 0 ? T.gold : i % 3 === 1 ? col : "#fff" }} />;
+        })}
+      </div>
+
+      <div style={{ position: "relative", width: "100%", maxWidth: 398, maxHeight: "calc(100vh - 32px)", overflowY: "auto", background: T.card, border: "1px solid " + (T.isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.72)"), borderRadius: 30, boxShadow: "0 30px 90px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.22)", padding: "26px 22px 20px", boxSizing: "border-box", textAlign: "center", animation: "rcRewardCard calc(.72s * var(--m-scale)) var(--m-spring) both" }}>
+        <button onClick={props.onClose} aria-label="Close reward"
+          style={{ position: "absolute", zIndex: 3, top: 14, right: 14, width: 44, height: 44, borderRadius: "50%", border: "none", background: T.inputBg, color: T.ink3, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <SVGIcon id="close" size={16} color={T.ink3} />
+        </button>
+
+        <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.15em", color: col, fontFamily: UI, animation: "rcRewardStep var(--m-enter) var(--m-ease) .18s both" }}>{eyebrow}</div>
+
+        {featured && (
+          <div style={{ position: "relative", width: 156, height: 156, margin: "15px auto 5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span aria-hidden="true" style={{ position: "absolute", inset: 8, borderRadius: "50%", border: "2px solid " + col, boxShadow: "0 0 36px " + col, animation: "rcRewardHalo calc(1.05s * var(--m-scale)) var(--m-ease) .16s both" }} />
+            <div style={{ position: "relative", filter: "drop-shadow(0 14px 22px rgba(0,0,0,0.22))", animation: "rcRewardGlyph calc(.82s * var(--m-scale)) var(--m-spring) .12s both" }}>
+              <BadgeGlyph badge={featured.def} size={136} />
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: featured ? 2 : 18, borderRadius: 99, padding: "5px 10px", background: dim, animation: "rcRewardStep var(--m-enter) var(--m-ease) .42s both" }}>
+          <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.1em", color: col }}>{featured ? RARITY_LABEL[featured.def.r] : "PROGRESS"}</span>
+          <span style={{ width: 3, height: 3, borderRadius: "50%", background: col, opacity: .65 }} />
+          <span style={{ fontSize: 11, fontWeight: 800, color: col }}>{"+" + xpGain + " XP"}</span>
+        </div>
+        <h2 style={{ margin: "11px 0 0", color: T.ink, fontFamily: DISP, fontWeight: DISP_WEIGHT, fontSize: 30, lineHeight: 1.08, letterSpacing: "-0.035em", animation: "rcRewardStep var(--m-enter) var(--m-ease) .5s both" }}>{title}</h2>
+        <p style={{ margin: "8px auto 0", maxWidth: 310, color: T.ink2, fontFamily: UI, fontSize: 13.5, lineHeight: 1.5, animation: "rcRewardStep var(--m-enter) var(--m-ease) .57s both" }}>{detail}</p>
+        {badges.length > 1 && (
+          <div style={{ marginTop: 9, color: T.ink3, fontSize: 11.5, fontWeight: 600, animation: "rcRewardStep var(--m-enter) var(--m-ease) .62s both" }}>
+            {"And " + (badges.length - 1) + " more badge" + (badges.length === 2 ? "" : "s") + " joined your collection"}
+          </div>
+        )}
+
+        <div style={{ marginTop: 20, borderRadius: 20, padding: "15px 15px 14px", background: T.bg, border: "1px solid " + T.sep, textAlign: "left", animation: "rcRewardStep var(--m-enter) var(--m-ease) .72s both" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr", alignItems: "center", gap: 13 }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, color: streakUp ? T.green : T.ink3 }}>
+                <SVGIcon id="flame" size={15} color={streakUp ? T.green : T.ink3} />
+                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em" }}>CLEAN STREAK</span>
+              </div>
+              <div style={{ marginTop: 6, display: "flex", alignItems: "baseline", gap: 5 }}>
+                <span style={{ fontSize: 24, fontWeight: 800, color: T.ink, letterSpacing: "-0.03em", animation: streakUp ? "rcRewardLevel var(--m-settle) var(--m-spring) .88s both" : "none" }}>{moment.streakAfter}</span>
+                <span style={{ fontSize: 11.5, color: T.ink3 }}>week{moment.streakAfter === 1 ? "" : "s"}</span>
+              </div>
+            </div>
+            <div style={{ width: 1, height: 40, background: T.sep }} />
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, color: levelUp ? T.orange : T.ink3 }}>
+                <SVGIcon id="spark" size={15} color={levelUp ? T.orange : T.ink3} />
+                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em" }}>{levelUp ? "LEVEL UP" : "YOUR LEVEL"}</span>
+              </div>
+              <div style={{ marginTop: 6, display: "flex", alignItems: "baseline", gap: 6 }}>
+                {levelUp && <span style={{ fontSize: 13, color: T.ink3, textDecoration: "line-through" }}>{moment.levelBefore}</span>}
+                <span style={{ fontSize: 24, fontWeight: 800, color: levelUp ? T.orange : T.ink, letterSpacing: "-0.03em", animation: levelUp ? "rcRewardLevel calc(.65s * var(--m-scale)) var(--m-spring) 1.12s both" : "none" }}>{moment.levelAfter}</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid " + T.sep }}>
+            <div style={{ height: 7, borderRadius: 99, overflow: "hidden", background: T.sep }}>
+              <div className="rc-reward-progress" style={{ width: "100%", height: "100%", borderRadius: 99, background: levelUp ? "linear-gradient(90deg," + T.orange + "," + T.gold + ")" : T.orange, "--reward-progress": progress }} />
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginTop: 7, fontSize: 10.5, color: T.ink3 }}>
+              <span>{moment.xpAfter.toLocaleString() + " XP"}</span>
+              <span>{moment.levelAfter >= MOTIV.maxLevel ? "Highest level reached" : moment.pctAfter + "% to level " + (moment.levelAfter + 1)}</span>
+            </div>
+          </div>
+        </div>
+
+        <button onClick={props.onClose}
+          style={{ width: "100%", minHeight: 50, marginTop: 16, border: "none", borderRadius: 16, background: "linear-gradient(135deg," + T.orangeHi + "," + T.orange + ")", color: "#fff", fontFamily: UI, fontSize: 15, fontWeight: 800, cursor: "pointer", boxShadow: "0 10px 24px " + T.orangeGlow, animation: "rcRewardStep var(--m-enter) var(--m-ease) 1.42s both" }}>
+          {props.remaining > 1 ? "Show me the next win" : "Keep building"}
+        </button>
+        {featured && (
+          <button onClick={props.onViewBadges}
+            style={{ minHeight: 44, marginTop: 4, border: "none", background: "none", color: T.ink3, fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+            See badge collection
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -36552,90 +37637,6 @@ function Profile(props) {
   );
 }
 
-// WhatsApp delivery for Alfred Watch's proactive alerts. Deliberately not a
-// "push notification" toggle: because WhatsApp only lets a business send for
-// free inside the 24h window opened by the user's own message, this screen is
-// honest that alerts land only after you've texted the number - see
-// WHATSAPP_SETUP.md for why that's the one design that can never bill anyone.
-function WhatsAppAlertsView(props) {
-  var wa = props.whatsapp;
-  var _phone = useState(""); var phone = _phone[0]; var setPhone = _phone[1];
-  var _busy = useState(false); var busy = _busy[0]; var setBusy = _busy[1];
-  var _err = useState(""); var err = _err[0]; var setErr = _err[1];
-  var secLabel = { fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.09em", padding: "18px 4px 8px", fontFamily: UI };
-
-  function handleLink() {
-    if (busy || !phone.trim()) return;
-    setBusy(true); setErr("");
-    Promise.resolve(props.onLink(phone.trim())).then(function() { setBusy(false); setPhone(""); })
-      .catch(function(e) { setErr((e && e.message) || "Couldn't save that number. Check it and try again."); setBusy(false); });
-  }
-  function handleUnlink() {
-    if (!window.confirm("Turn off WhatsApp alerts? Your linked number will be removed.")) return;
-    setBusy(true); setErr("");
-    Promise.resolve(props.onUnlink()).then(function() { setBusy(false); })
-      .catch(function(e) { setErr((e && e.message) || "Couldn't turn this off. Try again."); setBusy(false); });
-  }
-
-  var linked = !!(wa && wa.linked);
-  var status = wa ? wa.status : "not_linked";
-
-  return (
-    <div>
-      <SubViewBack onBack={props.onBack} />
-      <div style={secLabel}>Alfred Watch on WhatsApp</div>
-      <Card style={{ padding: "22px 20px", marginBottom: 4 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
-          <div style={{ width: 42, height: 42, borderRadius: 13, background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <SVGIcon id="phone" size={20} color={T.green} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink }}>WhatsApp alerts</div>
-            <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 2, lineHeight: 1.45 }}>Get Alfred's most urgent Watch signal on WhatsApp - a budget about to blow, a goal falling behind - free, because it only ever replies inside a conversation you started.</div>
-          </div>
-        </div>
-
-        {!linked && (
-          <div>
-            <input value={phone} onChange={function(e) { setPhone(e.target.value); }} placeholder="+972501234567" inputMode="tel"
-              style={{ width: "100%", boxSizing: "border-box", background: T.bg, border: "1.5px solid " + T.sep, borderRadius: 12, padding: "12px 14px", fontSize: 15, fontFamily: UI, color: T.ink, marginBottom: 10 }} />
-            <LiquidButton variant="primary" size="lg" full onClick={handleLink} disabled={busy || !phone.trim()}>
-              {busy ? "Saving..." : "Save number"}
-            </LiquidButton>
-          </div>
-        )}
-
-        {linked && status === "pending" && (
-          <div style={{ fontSize: 13.5, color: T.ink, lineHeight: 1.55 }}>
-            Almost there - send <b>START</b> to Richy's WhatsApp number from {wa.phone} to turn alerts on. Nothing is sent to you until you do.
-          </div>
-        )}
-        {linked && status === "active" && (
-          <div style={{ fontSize: 13.5, color: T.ink, lineHeight: 1.55 }}>
-            Alerts are on for {wa.phone}. {wa.windowOpen ? "Alfred can message you right now." : "Send Richy any message on WhatsApp to open today's alert window."}
-          </div>
-        )}
-        {linked && status === "revoked" && (
-          <div style={{ fontSize: 13.5, color: T.ink3, lineHeight: 1.55 }}>
-            {wa.phone} opted out (replied STOP). Send START again from that number to turn alerts back on.
-          </div>
-        )}
-        {err && <div style={{ fontSize: 12.5, color: T.red, lineHeight: 1.5, marginTop: 10, fontFamily: UI }}>{err}</div>}
-      </Card>
-
-      {linked && (
-        <LiquidButton variant="red" soft size="lg" full onClick={handleUnlink} disabled={busy}
-          style={{ marginTop: 8 }}>
-          {busy ? "Removing..." : "Remove this number"}
-        </LiquidButton>
-      )}
-      <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, padding: "10px 6px 4px" }}>
-        Richy only ever replies inside a conversation you opened - it never sends you a message you didn't ask for by texting first, so this can never rack up a WhatsApp charge on either side. At most a few alerts a day.
-      </div>
-    </div>
-  );
-}
-
 // Everything that configures the app, moved off Profile and behind the gear.
 // Nothing was dropped in the move: every row that used to be on Profile is
 // either here or in the Manage group on the new Profile.
@@ -36653,8 +37654,7 @@ function SettingsView(props) {
           when the app is in the wrong language. */}
       <ProfileSection icon="spark" title={tr("setAiAlfred")} bg={T.goldDim} color={T.gold} glow={T.goldGlow}>
         <ProfileRow icon="spark" iconBg={T.goldDim} iconColor={T.gold} label={tr("setYourPlan")} onClick={props.onViewPlan} />
-        <ProfileRow icon="note" iconBg={T.goldDim} iconColor={T.gold} label={tr("setInstructions")} value={props.alfredInstructions ? tr("valCustom") : tr("valDefault")} onClick={props.onViewInstructions} />
-        <ProfileRow icon="phone" iconBg={T.goldDim} iconColor={T.gold} label={tr("setWhatsApp")} value={props.whatsapp && props.whatsapp.status === "active" ? tr("valOn") : tr("valOff")} onClick={props.onViewWhatsApp} last />
+        <ProfileRow icon="note" iconBg={T.goldDim} iconColor={T.gold} label={tr("setInstructions")} value={props.alfredInstructions ? tr("valCustom") : tr("valDefault")} onClick={props.onViewInstructions} last />
       </ProfileSection>
 
       <ProfileSection icon="coins" title={tr("setMoney")} bg={T.greenDim} color={T.green} glow={T.greenGlow}>
@@ -37360,6 +38360,14 @@ export default function App() {
   // every other number is derived from tx/budgets/goals on read.
   var _mot = useState(motivDefault());
   var motivation = _mot[0]; var setMotivation = _mot[1];
+  // Reward moments are presentation state only. The durable truth stays in the
+  // tiny motivation record; this queue simply turns a newly-recorded fact into
+  // one clear badge -> streak -> level story on the device that earned it.
+  var _rwq = useState([]);
+  var rewardQueue = _rwq[0]; var setRewardQueue = _rwq[1];
+  var motivationProgressRef = useRef(null);
+  var claimedBadgeRef = useRef({});
+  var rewardSeqRef = useRef(0);
   var _pcs = useState("");
   var periodCustomStart = _pcs[0]; var setPeriodCustomStart = _pcs[1];
   var _pce = useState("");
@@ -37375,13 +38383,6 @@ export default function App() {
   // the server (see leumiFinteka/{uid} there). null until first connected.
   var _lft = useState(null);
   var leumiFinteka = _lft[0]; var setLeumiFinteka = _lft[1];
-  // WhatsApp delivery for Alfred Watch alerts: { linked, status, phone (masked),
-  // windowOpen, lastInboundAt, lastAlertAt }. Always the live, safe status from
-  // api/whatsapp.js?action=status - never persisted into the blob, since the
-  // phone number and opt-in state are server-owned (whatsappOptIn/{uid}), same
-  // reasoning as leumiFinteka's tokens. null until first fetched.
-  var _wap = useState(null);
-  var whatsapp = _wap[0]; var setWhatsapp = _wap[1];
   // Custom banners Alfred can create from Advisor chat (e.g. "put a banner up
   // saying rent is due Friday"). Structured widgets only - text/tone/icon, never
   // raw markup - rendered by CustomBanners under the header on every tab.
@@ -37402,6 +38403,20 @@ export default function App() {
   // month is not asked again until that file goes stale.
   var _csvi = useState(null);
   var csvImport = _csvi[0]; var setCsvImport = _csvi[1];
+  // What an import learns, so the next one is cheaper and quieter.
+  //
+  // csvMaps:  fingerprint of a file FORMAT -> the column layout the user
+  //           confirmed for it. A second file from the same bank skips the
+  //           model call entirely, which is what keeps this feature close to
+  //           free in practice - almost nobody imports from more than one or
+  //           two banks.
+  // shopCats: shop -> { category, source }. "user" means the user corrected
+  //           it, and a corrected shop is pinned: never re-asked of the model,
+  //           never re-confirmed on screen.
+  var _csvm = useState({});
+  var csvMaps = _csvm[0]; var setCsvMaps = _csvm[1];
+  var _shopc = useState({});
+  var shopCats = _shopc[0]; var setShopCats = _shopc[1];
   // The nudges' own memory: { off } the day the dashboard card was waved off
   // (silent for a month after), { toastAt } the day the Advisor banner last
   // showed (weekly at most). Two dates, so neither surface can nag.
@@ -37463,6 +38478,15 @@ export default function App() {
   var txQueueRef = useRef({ put: {}, del: {} });
   var txChainRef = useRef(Promise.resolve());
   var txRetryRef = useRef(null);
+  // The newest confirmed snapshot from the tx listener, held until it is safe
+  // to apply, and a count of writes currently in flight. A remote list may
+  // never land on top of an edit this client has made but not yet had
+  // confirmed: that would show the user their own change being undone, and
+  // would reset the diff baseline to a list missing it. So a snapshot that
+  // arrives mid-write waits here, and the flush applies it once the queue is
+  // empty again.
+  var txRemoteRef = useRef(null);
+  var txInFlightRef = useRef(0);
   var prevTabRef = useRef("profile");
   var _hp = useState(false); var hasPw = _hp[0]; var setHasPw = _hp[1];
 
@@ -37533,6 +38557,8 @@ export default function App() {
     setWidgets(Array.isArray(data.widgets) ? data.widgets.slice(0, MAX_WIDGETS) : getStarterWidgets(data.tx));
     setDismissedTips(data.dismissedTips || []);
     setCsvImport(data.csvImport || null);
+    setCsvMaps(data.csvMaps || {});
+    setShopCats(data.shopCats || {});
     setCsvNudge(data.csvNudge || null);
     setHouseholdId(data.householdId || null);
     setUserDob(data.dob || "");
@@ -37554,9 +38580,18 @@ export default function App() {
   // the auth, loading and onboarding screens. A hook after a conditional return
   // changes the hook count between renders, which React rejects outright.
   useEffect(function() {
+    motivationProgressRef.current = null;
+    claimedBadgeRef.current = {};
+    setRewardQueue([]);
+  }, [accountKey]);
+
+  useEffect(function() {
     if (!accountKey) return;
     var snap = motivSnapshot(motivData());
-    if (snap.newBadges.length) commitBadges(snap.newBadges);
+    var previous = motivationProgressRef.current;
+    if (snap.newBadges.length) commitBadges(snap.newBadges, snap, previous);
+    else if (previous && snap.level > previous.level) queueMotivationMoment([], previous, snap, "level");
+    motivationProgressRef.current = snap;
   }, [accountKey, tx.length, budgets.length, goals.length, savings.length, motivation.weekConfirms.length]);
 
   // ── Follow graph ──────────────────────────────────────────────────────────
@@ -37951,10 +38986,15 @@ export default function App() {
       var dels = Object.keys(q.del).map(function(k) { return q.del[k]; });
       if (!puts.length && !dels.length) return;
       txQueueRef.current = { put: {}, del: {} };
+      txInFlightRef.current += 1;
       return CLOUD.writeTx(uid, puts, dels).then(function() {
+        txInFlightRef.current -= 1;
         setSaveError("");
         if (txRetryRef.current) { clearTimeout(txRetryRef.current); txRetryRef.current = null; }
+        // Anything the listener saw while this was in the air is safe now.
+        applyRemoteTx();
       }, function(err) {
+        txInFlightRef.current -= 1;
         var cur = txQueueRef.current;
         var back = { put: {}, del: {} };
         puts.forEach(function(t) { back.put[String(t.id)] = t; });
@@ -37976,6 +39016,38 @@ export default function App() {
     var next = txChainRef.current.then(run, run);
     txChainRef.current = next.catch(function() {});
     return next;
+  }
+
+  // Adopt the newest confirmed snapshot from the tx listener, when it is safe
+  // to. Unsafe means a write of ours is queued or in flight: the server has not
+  // seen that edit yet, so the remote list still lacks it, and adopting one
+  // would blink the user's own change off the screen and then hand the next
+  // diff a baseline that re-sends it. Those snapshots wait in txRemoteRef and
+  // land here again the moment the queue drains.
+  //
+  // In a household the shared transactions in state come from the household
+  // document, which has its own listener and remains the authority on them, so
+  // only the private half is replaced. Alone, the snapshot is the whole ledger.
+  function applyRemoteTx() {
+    var remote = txRemoteRef.current;
+    if (!remote) return;
+    if (txInFlightRef.current > 0) return;
+    var q = txQueueRef.current;
+    if (Object.keys(q.put).length || Object.keys(q.del).length) return;
+    txRemoteRef.current = null;
+    var cur = txRef.current || [];
+    var next = householdIdRef.current
+      ? cur.filter(function(t) { return t.shared; }).concat(remote.filter(function(t) { return !t.shared; }))
+      : remote;
+    // The diff baseline is what the server actually holds, always. Without
+    // this line a transaction deleted on the phone would be written straight
+    // back by the next save on the laptop, because the old baseline still
+    // lists it as persisted.
+    txStoreRef.current.persisted = remote;
+    setTx(next);
+    // The in-memory mirror of the document feeds export and the household
+    // copy, so it follows the same list the UI now shows.
+    if (blobRef.current) blobRef.current.tx = next;
   }
 
   // Sub-mode write path for transactions: diff the new array against what is
@@ -38165,7 +39237,7 @@ export default function App() {
   // A finished CSV import. The rows and the record of the import are written
   // together, so the nudges can never claim a file is missing right after one
   // landed (or survive a write that only half-succeeded).
-  function onCsvImport(txs, report) {
+  function onCsvImport(txs, report, learned) {
     var rows = txs || [];
     if (!rows.length) return;
     var nextTx = tx.concat(rows);
@@ -38175,8 +39247,43 @@ export default function App() {
       from: (report && report.from) || "",
       to: (report && report.to) || ""
     };
+    var patchOut = { tx: nextTx, csvImport: rec };
+
+    // The column layout for this bank, saved only now - at the single Confirm,
+    // against a mapping the user has actually seen and had the chance to
+    // change. Caching a reading nobody looked at would make a wrong guess
+    // permanent and invisible.
+    var nextMaps = csvMaps;
+    if (learned && learned.fingerprint && learned.profile) {
+      nextMaps = {}; for (var mk in csvMaps) nextMaps[mk] = csvMaps[mk];
+      nextMaps[learned.fingerprint] = learned.profile;
+      patchOut.csvMaps = nextMaps;
+    }
+
+    // Every shop this import settled. A category the user corrected outranks
+    // one Alfred guessed, and a correction already stored outranks both - so
+    // re-importing an overlapping file can never quietly undo a correction
+    // the user made last month.
+    var nextShops = shopCats;
+    if (learned && learned.shops) {
+      nextShops = {}; for (var sk in shopCats) nextShops[sk] = shopCats[sk];
+      var touched = false;
+      for (var k in learned.shops) {
+        var v = learned.shops[k];
+        if (!v || !v.category) continue;
+        if (v.source === "saved" || v.source === "history") continue;
+        var had = nextShops[k];
+        if (had && had.source === "user" && v.source !== "user") continue;
+        nextShops[k] = { category: v.category, source: v.source === "user" ? "user" : "ai", label: v.label || k, at: rec.at };
+        touched = true;
+      }
+      if (touched) patchOut.shopCats = nextShops;
+    }
+
     setTx(nextTx); setCsvImport(rec);
-    save({ tx: nextTx, csvImport: rec });
+    if (patchOut.csvMaps) setCsvMaps(nextMaps);
+    if (patchOut.shopCats) setShopCats(nextShops);
+    save(patchOut);
   }
   // "It's all in there" - the dashboard card goes quiet for a month.
   function onCsvNudgeOff() {
@@ -38256,6 +39363,10 @@ export default function App() {
   // render; inbox docs are deleted only AFTER the save resolves, so a crash
   // mid-flight re-delivers rather than losing a purchase.
   var txRef = useRef(tx); txRef.current = tx;
+  // Read by applyRemoteTx, which can run from a promise created several
+  // renders ago; a captured value would be the household membership as it was
+  // when that write started.
+  var householdIdRef = useRef(householdId); householdIdRef.current = householdId;
   var catsRef = useRef(categories); catsRef.current = categories;
   var curSymRef = useRef(currency); curSymRef.current = currency;
   var bankSyncRef = useRef(bankSync); bankSyncRef.current = bankSync;
@@ -38307,6 +39418,26 @@ export default function App() {
     });
     return unsub;
   }, [accountKey, bankSyncActive, leumiActive]);
+
+  // ---- Live transactions ------------------------------------------------------
+  // Only in sub mode: an account still on the tx[] array has no subcollection to
+  // watch, and the mode is decided once at boot (prepareTxStore) before
+  // accountKey is set, so by the time this runs it is settled for the session.
+  // The boot read stays where it is - it is the one the Retry screen depends on,
+  // and it has to finish before the first render either way. This listener takes
+  // over afterwards, which is what makes a change on the phone appear on the
+  // laptop, and what keeps the two clients from drifting apart between reloads.
+  // Offline persistence is on with tab synchronisation, so after the first sync
+  // the subscription resumes from the local cache and bills only what changed.
+  var txStoreMode = txStoreRef.current.mode;
+  useEffect(function() {
+    if (!accountKey || txStoreMode !== "sub") return function() {};
+    var unsub = CLOUD.subscribeTx(accountKey, function(remote) {
+      txRemoteRef.current = remote;
+      applyRemoteTx();
+    });
+    return function() { txRemoteRef.current = null; if (typeof unsub === "function") unsub(); };
+  }, [accountKey, txStoreMode]);
 
   // Reminder scheduling. Timers don't survive reload, so we re-derive them from
   // each note's durable `reminder.due` whenever notes change, firing any that are
@@ -38463,6 +39594,30 @@ export default function App() {
   function onSaveEntryMethod(m) { var v = m === "import" ? "import" : "manual"; setEntryMethod(v); save({ entryMethod: v }); }
   function onSavePeriodMode(m) { var v = m === "rolling" ? "rolling" : m === "custom" ? "custom" : "calendar"; setPeriodMode(v); save({ periodMode: v }); }
   function onSaveSplitPlan(p) { var v = splitPlanOf(p); setSplitPlan(v); save({ splitPlan: v }); }
+  function queueMotivationMoment(badges, before, after, reason) {
+    if (!after) return;
+    var prior = before || {};
+    var levelBefore = typeof prior.level === "number" ? prior.level : levelFor(Math.max(0, after.xp - (badges || []).reduce(function(sum, row) { return sum + (MOTIV.rarityXp[row.def.r] || 0); }, 0)));
+    var levelAfter = after.level;
+    var streakBefore = prior.clean ? prior.clean.run : after.clean.run;
+    var streakAfter = after.clean.run;
+    if (!(badges || []).length && streakAfter <= streakBefore && levelAfter <= levelBefore && reason !== "clean-week") return;
+    rewardSeqRef.current += 1;
+    setRewardQueue(function(queue) {
+      return queue.concat([{
+        id: "reward-" + rewardSeqRef.current,
+        badges: badges || [],
+        reason: reason || "badge",
+        streakBefore: streakBefore,
+        streakAfter: streakAfter,
+        xpBefore: typeof prior.xp === "number" ? prior.xp : Math.max(0, after.xp - (badges || []).reduce(function(sum, row) { return sum + (MOTIV.rarityXp[row.def.r] || 0); }, 0)),
+        xpAfter: after.xp,
+        levelBefore: levelBefore,
+        levelAfter: levelAfter,
+        pctAfter: after.pctToNext
+      }]);
+    });
+  }
   // Layer 1 of the streak system, in full: the user says "yes, that was
   // everything" for one week. Guarded against double-confirming the same week,
   // and against back-confirming further than the anti-gaming window allows -
@@ -38473,21 +39628,38 @@ export default function App() {
     if (m.weekConfirms.indexOf(key) !== -1) return;
     var oldest = weekAdd(weekKey(isoDay(new Date())), -MOTIV.backConfirmWeeks);
     if (key < oldest) return;
-    var next = { weekConfirms: m.weekConfirms.concat([key]).sort(), pauses: m.pauses, badges: m.badges, seen: m.seen };
+    var before = motivSnapshot(motivData());
+    var baseNext = { weekConfirms: m.weekConfirms.concat([key]).sort(), pauses: m.pauses, badges: m.badges, seen: m.seen };
+    var after = motivSnapshot(Object.assign({}, motivData(), { motivation: baseNext }));
+    // A clean-week confirmation can earn one or more badges. Record the week and
+    // those badges in one write so a reload can never leave the reward half-done.
+    var held = {};
+    m.badges.forEach(function(row) { held[row.id] = true; });
+    var fresh = after.newBadges.filter(function(row) { return !held[row.def.id] && !claimedBadgeRef.current[row.def.id]; });
+    fresh.forEach(function(row) { claimedBadgeRef.current[row.def.id] = true; });
+    var add = fresh.map(function(row) { return { id: row.def.id, at: row.at, early: row.early, shared: false }; });
+    var next = Object.assign({}, baseNext, { badges: m.badges.concat(add) });
     setMotivation(next);
     save({ motivation: next });
-    nativeHaptic("MEDIUM");
+    motivationProgressRef.current = after;
+    queueMotivationMoment(fresh, before, after, "clean-week");
   }
   // Badges are granted on read but must be recorded once, so the earn DATE is
   // real rather than "whenever you last opened the app". Called from the render
   // pass below when the snapshot finds something new.
-  function commitBadges(newly) {
+  function commitBadges(newly, snap, previous) {
     if (!newly || !newly.length) return;
     var m = motivOf({ motivation: motivation });
-    var add = newly.map(function(n) { return { id: n.def.id, at: n.at, early: n.early, shared: false }; });
+    var held = {};
+    m.badges.forEach(function(row) { held[row.id] = true; });
+    var fresh = newly.filter(function(row) { return !held[row.def.id] && !claimedBadgeRef.current[row.def.id]; });
+    if (!fresh.length) return;
+    fresh.forEach(function(row) { claimedBadgeRef.current[row.def.id] = true; });
+    var add = fresh.map(function(n) { return { id: n.def.id, at: n.at, early: n.early, shared: false }; });
     var next = { weekConfirms: m.weekConfirms, pauses: m.pauses, badges: m.badges.concat(add), seen: m.seen };
     setMotivation(next);
     save({ motivation: next });
+    queueMotivationMoment(fresh, previous, snap, "badge");
   }
   function onSavePeriodCustom(field, val) {
     if (field === "start") { setPeriodCustomStart(val); save({ periodCustomStart: val }); }
@@ -38571,60 +39743,6 @@ export default function App() {
     });
   }
 
-  // ---- WhatsApp alerts for Alfred Watch --------------------------------------
-  // A real integration (unlike the Leumi demo above) - api/whatsapp.js only ever
-  // sends a free-form reply inside the 24h window opened by the user texting
-  // the business number first, so there's no path here that can incur a WhatsApp
-  // charge. Every call carries the user's own Firebase ID token; the server is
-  // the source of truth, so state here is always just its last response.
-  function whatsappApiUrl() {
-    return (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "data:" || location.protocol === "file:") ? "https://richy-mgkl.vercel.app/api/whatsapp" : "/api/whatsapp";
-  }
-  function whatsappFetch(qs, opts) {
-    return CLOUD.getIdToken().then(function(token) {
-      if (!token) throw new Error("Your session expired. Sign out and back in, then try again.");
-      var headers = { Authorization: "Bearer " + token };
-      if (opts && opts.body) headers["Content-Type"] = "application/json";
-      return fetch(whatsappApiUrl() + qs, { method: (opts && opts.method) || "GET", headers: headers, body: opts && opts.body });
-    }).then(function(r) {
-      return r.json().catch(function() { return {}; }).then(function(j) {
-        if (!r.ok || !j.ok) throw new Error((j.error && j.error.message) || "Something went wrong. Try again.");
-        return j;
-      });
-    });
-  }
-  function refreshWhatsapp() {
-    return whatsappFetch("?action=status").then(function(j) { setWhatsapp(j); return j; });
-  }
-  function onLinkWhatsapp(phone) {
-    return whatsappFetch("?action=link", { method: "POST", body: JSON.stringify({ phone: phone }) })
-      .then(function(j) { setWhatsapp(j); return j; });
-  }
-  function onUnlinkWhatsapp() {
-    return whatsappFetch("?action=unlink", { method: "POST" })
-      .then(function(j) { setWhatsapp(j); return j; });
-  }
-  // A ref (not state) since this only guards a fire-and-forget background call,
-  // not anything rendered - avoids re-running the effect below on every render.
-  var waAlertSentDateRef = useRef("");
-  useEffect(function() {
-    if (!whatsapp || whatsapp.status !== "active" || !whatsapp.windowOpen) return;
-    var todayKey = new Date().toISOString().slice(0, 10);
-    if (waAlertSentDateRef.current === todayKey) return;
-    var watch = alfredWatch({ tx: tx, categories: categories, budgets: budgets, goals: goals, savings: savings, businesses: businesses, investing: investing, foundMoney: foundMoney });
-    var top = watch.risks.length ? watch.risks[0] : (watch.leaks.length ? watch.leaks[0] : null);
-    if (!top || top.severity < 50) return;
-    waAlertSentDateRef.current = todayKey;
-    whatsappFetch("?action=send-alert", { method: "POST", body: JSON.stringify({ id: top.id, title: top.title, subtitle: top.subtitle, severity: top.severity }) })
-      .then(function(j) { if (j && j.sent) refreshWhatsapp(); })
-      .catch(function() {});
-  }, [whatsapp, tx, budgets, goals]);
-  // Fetch the live status only when the settings screen for it is open -
-  // there's no reason to hit the server on every app load for a screen most
-  // sessions never visit.
-  useEffect(function() {
-    if (tab === "whatsapp") refreshWhatsapp().catch(function() {});
-  }, [tab]);
 
   function onSaveInstructions(text) { setAlfredInstructions(text); save({ alfredInstructions: text }); }
   function onSaveVoice(v) {
@@ -39079,7 +40197,7 @@ export default function App() {
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
     if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} onAddWidget={onAddWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} csvImport={csvImport} csvNudge={csvNudge} onImportCsv={openCsvImport} onCsvNudgeOff={onCsvNudgeOff} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} alfredInstructions={alfredCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
-    if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} onCsvImport={onCsvImport} importOpen={importCsvOpen} setImportOpen={setImportCsvOpen} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
+    if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} onCsvImport={onCsvImport} shopCats={shopCats} csvMaps={csvMaps} importOpen={importCsvOpen} setImportOpen={setImportCsvOpen} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
     if (id === "advisor") return <Advisor isActive={id === currentTab} tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} alfredInstructions={alfredCtx} rawInstructions={alfredInstructions} onSaveInstructions={onSaveInstructions} alfredVoice={alfredVoice} onSaveVoice={onSaveVoice} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} widgets={widgets} onSaveWidgets={onSaveWidgets} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={alfredChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} csvImport={csvImport} csvNudge={csvNudge} onImportCsv={openCsvImport} onCsvNudgeShown={onCsvNudgeShown} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} onBackToOverview={function() { setTab("overview"); }} onOpenInstructions={function() { prevTabRef.current = "advisor"; setTab("instructions"); setSheet(false); }} onOpenProfile={function() { prevTabRef.current = "advisor"; setTab("profile"); setSheet(false); }} />;
@@ -39135,6 +40253,15 @@ export default function App() {
 
   return (
     <div style={{ background: T.bg, minHeight: "100vh", maxWidth: 430, margin: "0 auto", fontFamily: UI, paddingBottom: "calc(110px + env(safe-area-inset-bottom, 0px))" }}>
+      {rewardQueue.length > 0 && (
+        <MotivationCelebration key={rewardQueue[0].id} moment={rewardQueue[0]} remaining={rewardQueue.length}
+          onClose={function() { setRewardQueue(function(queue) { return queue.slice(1); }); }}
+          onViewBadges={function() {
+            setRewardQueue(function(queue) { return queue.slice(1); });
+            prevTabRef.current = currentTab;
+            setTab("badges");
+          }} />
+      )}
 
       <div style={{ position: "sticky", top: 0, zIndex: 40, background: T.navBg, backdropFilter: "blur(24px) saturate(180%)", WebkitBackdropFilter: "blur(24px) saturate(180%)", borderBottom: "0.5px solid " + T.sep, boxShadow: "inset 0 1px 0 " + T.glassSpec + ", " + T.glassLiftDown }}>
         <div style={{ display: "flex", alignItems: "center", padding: "14px 20px 14px" }}>
@@ -39250,7 +40377,7 @@ export default function App() {
         {currentTab === "person" && <FriendView uid={openPerson} person={social.following.concat(social.followers).filter(function(p) { return p.uid === openPerson; })[0] || null} stats={(social.following.filter(function(p) { return p.uid === openPerson; })[0] || {}).stats || null} household={household} myUid={accountKey} tx={tx} categories={categories} onBack={function() { setTab(prevTabRef.current === "social" ? "social" : "profile"); }} />}
         {currentTab === "social" && <SocialView social={social} onOpen={function(uid) { prevTabRef.current = "social"; setOpenPerson(uid); setTab("person"); }} onFind={function() { prevTabRef.current = "social"; setTab("findPeople"); }} onAccept={onAcceptFollow} onDecline={onDeclineFollow} onRemoveFollower={onRemoveFollower} onBack={function() { setTab("profile"); }} />}
         {currentTab === "findPeople" && <FindPeopleView myHandle={social.handle} myUid={accountKey} followingUids={social.following.map(function(p) { return p.uid; })} onClaimHandle={onClaimHandle} onFind={CLOUD.findByHandle} onRequest={onRequestFollow} onCopy={copyText} onBack={function() { setTab("social"); }} />}
-        {currentTab === "settings" && <SettingsView user={user} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} alfredInstructions={alfredInstructions} bankSync={bankSync} whatsapp={whatsapp} householdName={household ? household.name : null} inviteCount={invites.length} debtCount={debts.length} onBack={function() { setTab("profile"); }} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "settings"; setTab("instructions"); }} onViewWhatsApp={function() { prevTabRef.current = "settings"; setTab("whatsapp"); }} onViewCurrency={function() { prevTabRef.current = "settings"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "settings"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "settings"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "settings"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "settings"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "settings"; setTab("periodMode"); }} onViewBankSync={function() { prevTabRef.current = "settings"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "settings"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "settings"; setTab("editOpeningBalance"); }} onViewCollab={function() { prevTabRef.current = "settings"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "settings"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
+        {currentTab === "settings" && <SettingsView user={user} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} alfredInstructions={alfredInstructions} bankSync={bankSync} householdName={household ? household.name : null} inviteCount={invites.length} debtCount={debts.length} onBack={function() { setTab("profile"); }} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "settings"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "settings"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "settings"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "settings"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "settings"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "settings"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "settings"; setTab("periodMode"); }} onViewBankSync={function() { prevTabRef.current = "settings"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "settings"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "settings"; setTab("editOpeningBalance"); }} onViewCollab={function() { prevTabRef.current = "settings"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "settings"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
         {currentTab === "analysis" && <FullAnalysisView tx={tx} categories={categories} folders={folders} splitPlan={splitPlan} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} username={user} analysis={freshAnalysis ? freshAnalysis.data : null} lang={lang} alfredInstructions={alfredCtx} onBack={function() { setTab("advisor"); }} />}
         {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} onAccountDeleted={handleLogout} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
@@ -39263,7 +40390,6 @@ export default function App() {
         {currentTab === "entryMethod" && <EntryMethodView entryMethod={entryMethod} onEntryMethodChange={onSaveEntryMethod} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "periodMode" && <PeriodModeView periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onPeriodModeChange={onSavePeriodMode} onPeriodCustomChange={onSavePeriodCustom} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
         {currentTab === "bankSync" && <BankSyncView bankSync={bankSync} onEnable={onEnableBankSync} onDisable={onDisableBankSync} leumiFinteka={leumiFinteka} onConnectLeumi={onConnectLeumiFinteka} onDisconnectLeumi={onDisconnectLeumiFinteka} onSyncLeumiNow={onSyncLeumiFintekaNow} onBack={function() { setTab(prevTabRef.current || "profile"); }} />}
-        {currentTab === "whatsapp" && <WhatsAppAlertsView whatsapp={whatsapp} onLink={onLinkWhatsapp} onUnlink={onUnlinkWhatsapp} onBack={function() { setTab(prevTabRef.current || "settings"); }} />}
         {currentTab === "savings" && <SavingsView savings={savings} tx={tx} businesses={businesses} investing={investing} onSaveSavings={onSaveSavings} onMove={onSavingsMove} onSaveInvesting={onSaveInvesting} onInvestingMove={onInvestingMove} onBack={function() { setTab(prevTabRef.current || "overview"); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "savings"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "savings"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenInvestorOnboard={function() { prevTabRef.current = "savings"; setPendingInvestingStart(true); setTab("investorOnboard"); }} />}
         {currentTab === "business" && <BusinessView businesses={businesses} tx={tx} openBizId={openBiz} hubTab={businessHubTab} onHubTabChange={setBusinessHubTab} onOpenBizChange={function(id) { setOpenBiz(id); setBusinessHubTab("home"); }} username={user} lang={lang} alfredInstructions={alfredCtx} onSaveBusinesses={onSaveBusinesses} onBusinessMove={onBusinessMove} backLabel={prevTabRef.current === "overview" ? "Dashboard" : "Savings"} onBack={exitBusiness} />}
         {currentTab === "investing" && LAUNCH.investingHub && <InvestingView investing={investing} tx={tx} goals={goals} openInvId={openInv} hubTab={investingHubTab} onHubTabChange={setInvestingHubTab} username={user} lang={lang} alfredInstructions={alfredCtx} investorProfile={investorProfile} onSaveInvesting={onSaveInvesting} onMove={onInvestingMove} sheetReq={invSheetReq} onClearSheetReq={function() { setInvSheetReq(null); }} onOpenInvestorOnboard={function() { prevTabRef.current = "investing"; setTab("investorOnboard"); }} onOpenScout={!LAUNCH.stockScout ? undefined : function() { prevTabRef.current = "investing"; setTab("scout"); }} onOpenPlanOnboard={function(acctId) { prevTabRef.current = "investing"; setOpenInv(acctId || null); setTab("investPlan"); }} backLabel={prevTabRef.current === "overview" ? "Dashboard" : "Accounts"} onBack={function() { setTab(prevTabRef.current || "savings"); }} onOpenStock={function(acctId, symbol) { setOpenStock({ acctId: acctId, symbol: symbol }); setTab("stock"); }} />}

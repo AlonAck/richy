@@ -1,4 +1,4 @@
-import SwiftUI
+﻿import SwiftUI
 import UIKit
 
 /// Alfred's chat. Your messages are bubbles on the right; Alfred's answers
@@ -178,9 +178,18 @@ struct AlfredChatView: View {
         }
     }
 
+    /// The composer floats on glass, over the conversation rather than on a
+    /// bar welded beneath it: the last thing Alfred said keeps moving under
+    /// it as you scroll, and the panel picks that up.
+    ///
+    /// It is one piece of glass, not three. The field and the send button sit
+    /// *inside* it on flat fills, because glass cannot sample glass - nesting
+    /// them would leave each one reading a different backdrop. The AI notice
+    /// rides inside the same panel so it stays legible over whatever happens
+    /// to be scrolling past.
     private func composer(_ model: AlfredChatViewModel) -> some View {
         @Bindable var model = model
-        return VStack(spacing: Spacing.xs) {
+        return VStack(spacing: Spacing.sm) {
             HStack(alignment: .bottom, spacing: Spacing.sm) {
                 TextField("Ask Alfred", text: $model.draft, axis: .vertical)
                     .lineLimit(1...5)
@@ -188,11 +197,7 @@ struct AlfredChatView: View {
                     .foregroundStyle(RichyColor.ink)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
-                    .background(RichyColor.card, in: RoundedRectangle(cornerRadius: Radius.xl, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: Radius.xl, style: .continuous)
-                            .strokeBorder(RichyColor.separator, lineWidth: 1)
-                    )
+                    .background(RichyColor.fill, in: Capsule(style: .continuous))
                     .focused($composerFocused)
                     .submitLabel(.send)
                     .onSubmit {
@@ -213,11 +218,13 @@ struct AlfredChatView: View {
             Text("Alfred is an AI. Replies can be wrong and are not investment advice.")
                 .font(RichyFont.ui(RichyFont.Size.caption))
                 .foregroundStyle(RichyColor.ink3)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.horizontal, Spacing.screen)
-        .padding(.top, Spacing.sm)
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, Spacing.md)
+        .richyGlass(in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+        .padding(.horizontal, Spacing.md)
         .padding(.bottom, Spacing.sm)
-        .background(RichyColor.background)
     }
 
     private var firstName: String {
@@ -241,25 +248,32 @@ struct AlfredAvatar: View {
     }
 }
 
-/// Tappable suggestion chips that wrap onto new lines.
+/// The opening prompts, as glass chips.
+///
+/// They are controls offered over the conversation, not part of it, so they
+/// belong on the glass layer. There are three of them and they share one
+/// container: each loose piece of glass would otherwise sample its own
+/// backdrop and cost its own set of offscreen textures.
 struct FlowChips: View {
     let items: [String]
     let action: (String) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            ForEach(items, id: \.self) { item in
-                Button {
-                    action(item)
-                } label: {
-                    Text(item)
-                        .font(RichyFont.ui(RichyFont.Size.subhead, weight: .medium))
-                        .foregroundStyle(RichyColor.accent)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 9)
-                        .background(RichyColor.accentDim, in: Capsule())
+        RichyGlassContainer(spacing: 16) {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                ForEach(items, id: \.self) { item in
+                    Button {
+                        action(item)
+                    } label: {
+                        Text(item)
+                            .font(RichyFont.ui(RichyFont.Size.subhead, weight: .medium))
+                            .foregroundStyle(RichyColor.accent)
+                            .padding(.horizontal, 15)
+                            .padding(.vertical, 10)
+                            .richyGlass(tint: RichyColor.accentDim, interactive: true)
+                    }
+                    .buttonStyle(RichyGlassButtonStyle())
                 }
-                .buttonStyle(.plain)
             }
         }
     }
