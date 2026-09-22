@@ -16509,7 +16509,12 @@ function ImportSheet(props) {
       if (ownCat) { out[s.key] = { category: ownCat.name, confidence: "high", source: "history", label: s.label }; return; }
       ask.push(s);
     });
-    if (!ask.length) { cb(out, { asked: 0, calls: 0, failed: 0, overflow: 0, err: false }); return; }
+    if (!ask.length) { cb(out, { asked: 0, skipped: 0, calls: 0, failed: 0, overflow: 0, err: false }); return; }
+    // The user asked to do this themselves. The unrecognised shops fall
+    // through to the keyword map in buildTxs, and the count travels so the
+    // preview can say how many were matched that way rather than leaving it
+    // to be discovered in Activity a week later.
+    if (!askAi) { cb(out, { asked: 0, skipped: ask.length, calls: 0, failed: 0, overflow: 0, err: false }); return; }
     // A handful of the user's own corrections travel as examples, so Alfred
     // matches this person's habits rather than his own instinct.
     var examples = [];
@@ -16518,12 +16523,13 @@ function ImportSheet(props) {
       var v = saved[k];
       if (v && v.source === "user" && v.label && v.category) examples.push({ shop: v.label, category: v.category });
     });
+    setStep("sorting");
     categorizeShopsWithAI(ask.map(function(s) { return s.label; }), cats, examples, function(sErr, got, meta) {
       ask.forEach(function(s) {
         var g = got[s.label];
         if (g) out[s.key] = { category: g.category, confidence: g.confidence, source: "alfred", label: s.label };
       });
-      cb(out, { asked: ask.length, calls: meta.calls, failed: meta.failed, overflow: meta.overflow, err: !!sErr });
+      cb(out, { asked: ask.length, skipped: 0, calls: meta.calls, failed: meta.failed, overflow: meta.overflow, err: !!sErr });
     });
   }
 
@@ -16535,7 +16541,6 @@ function ImportSheet(props) {
       setErr("Pick which column holds the amount.");
       return;
     }
-    setStep("sorting");
     resolveShops(function(resolved, meta) {
       setShopCats(resolved); setShopMeta(meta);
       var cands = buildTxs(resolved);
@@ -16791,8 +16796,8 @@ function ImportSheet(props) {
           <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 12, flexWrap: "wrap" }}>
             <span style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, flex: 1, minWidth: 180 }}>
               {askAi
-                ? "Richy skips anything you already logged. If a couple of lines are too close to call, Alfred reads just those."
-                : "Richy skips anything you already logged, and asks you about every line that's too close to call."}
+                ? "Richy skips anything you already logged. Alfred reads the few lines that are too close to call, and sorts shops Richy doesn't recognise into categories."
+                : "Richy skips anything you already logged and asks you about every line that's too close to call. Shops it doesn't recognise are matched on keywords, not sent to Alfred."}
             </span>
             <button onClick={function() { setAskAi(!askAi); }}
               style={{ minHeight: 44, padding: "0 4px", background: "none", border: "none", color: T.orange, fontSize: 12, fontWeight: 700, fontFamily: UI, cursor: "pointer", flexShrink: 0 }}>
@@ -17040,6 +17045,11 @@ function ImportSheet(props) {
           {shopMeta && shopMeta.err && shopMeta.asked > 0 && (
             <div style={{ fontSize: 12, color: T.ink3, marginTop: -4, marginBottom: 10, lineHeight: 1.5 }}>
               {"Alfred couldn't be reached to sort " + shopMeta.asked + " new " + (shopMeta.asked === 1 ? "shop" : "shops") + ", so they were matched on keywords instead. Check their categories in Activity afterwards."}
+            </div>
+          )}
+          {shopMeta && shopMeta.skipped > 0 && (
+            <div style={{ fontSize: 12, color: T.ink3, marginTop: -4, marginBottom: 10, lineHeight: 1.5 }}>
+              {shopMeta.skipped + " " + (shopMeta.skipped === 1 ? "shop" : "shops") + " Richy didn't recognise " + (shopMeta.skipped === 1 ? "was" : "were") + " matched on keywords, because you asked to sort those yourself. Their categories are a guess - worth a look in Activity."}
             </div>
           )}
           {shopMeta && !shopMeta.err && shopMeta.overflow > 0 && (
