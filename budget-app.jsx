@@ -8020,7 +8020,7 @@ function FormRow(props) {
           {props.opts.map(function(o) { return <option key={o}>{o}</option>; })}
         </select>
       ) : (
-        <input type={props.type || "text"} value={props.value} onChange={props.onChange} placeholder={props.placeholder || ""}
+        <input type={props.type || "text"} inputMode={props.inputMode} value={props.value} onChange={props.onChange} placeholder={props.placeholder || ""}
           style={{ width: "100%", border: "none", background: "none", fontSize: 15, color: T.ink, fontFamily: UI, outline: "none", padding: 0, boxSizing: "border-box" }} />
       )}
     </div>
@@ -16261,13 +16261,23 @@ function ImportSheet(props) {
   var _adv = useState(false); var showAdv = _adv[0]; var setShowAdv = _adv[1];
   var _aid = useState({ settled: 0, failed: false }); var aiRes = _aid[0]; var setAiRes = _aid[1];
   var _rep = useState(null); var report = _rep[0]; var setReport = _rep[1];
+  // The preview is a checklist, not a printout. dropped is keyed by row id and
+  // holds the lines the user took out; openRow is the one line whose editor is
+  // showing; amtDraft is what is being typed into that amount, which is allowed
+  // to be half-written ("12." or "") without that ever reaching the row.
+  var _drop = useState({}); var dropped = _drop[0]; var setDropped = _drop[1];
+  var _orow = useState(null); var openRow = _orow[0]; var setOpenRow = _orow[1];
+  var _amtd = useState(""); var amtDraft = _amtd[0]; var setAmtDraft = _amtd[1];
+  // The coverage report, folded away. It is worth reading once, and open by
+  // default it was most of what turned this screen into a wall of text.
+  var _det = useState(false); var showDetails = _det[0]; var setShowDetails = _det[1];
 
   function reset() {
     setRaw(""); setStep("paste"); setRows([]); setHeaderRow(0);
     setEncoding(""); setReading(null); setFingerprint(""); setShopCats({}); setShopMeta(null);
     setMap({ date: -1, amount: -1, desc: -1, debit: -1, credit: -1 }); setSplitAmt(false); setPreferDMY(true); setAllExpenses(false); setBuilt([]); setDupes(0); setErr("");
     setPlan(null); setDecisions({}); setQueue([]); setQIdx(0); setAiRes({ settled: 0, failed: false }); setReport(null);
-    setShowAdv(false);
+    setShowAdv(false); setDropped({}); setOpenRow(null); setAmtDraft(""); setShowDetails(false);
     // askAi is deliberately NOT reset. Someone who just turned the Alfred
     // check off should not find it back on for the next file - silently
     // re-enabling a check the user switched off is worse than the
@@ -16451,6 +16461,7 @@ function ImportSheet(props) {
       return;
     }
     setBuilt(txs); setDupes(skipped);
+    setDropped({}); setOpenRow(null); setShowDetails(false);
     setReport(importGapReport(txs, props.tx || [], cats, res.twins));
     setStep("preview");
   }
@@ -16574,36 +16585,101 @@ function ImportSheet(props) {
     finishPlan(plan, dec);
   }
 
-  // A correction in the preview. It repoints every row of that shop at once -
-  // fixing one line and leaving its five siblings wrong would be worse than
-  // not offering the control - and it is recorded, because a user overruling
-  // Alfred is the only honest measure of whether he was any good.
-  function setShopCategory(key, catName) {
-    var was = shopCats[key] || {};
-    if (was.source === "alfred" && was.category && was.category !== catName) {
-      csvLog("category-corrected", { shop: was.label || key, from: was.category, to: catName, confidence: was.confidence || "" });
-    }
-    var next = {}; for (var k in shopCats) next[k] = shopCats[k];
-    next[key] = { category: catName, confidence: "high", source: "user", label: was.label || key };
-    setShopCats(next);
-    var c = catByName(cats, catName);
+  // What the checklist will actually write, and what the report is measured
+  // against: everything still ticked.
+  function keptRows(rowsIn, dropIn) {
+    return (rowsIn || []).filter(function(t) { return !(dropIn || {})[t.id]; });
+  }
+  // The coverage report is a statement about what is being imported, so it is
+  // re-measured whenever that changes - untick the only two rows in a week and
+  // that week becomes a gap. Only the edits that can move it call this: a
+  // renamed row cannot, a dropped or recategorised one can.
+  function refreshReport(rowsIn, dropIn) {
+    var keep = keptRows(rowsIn, dropIn);
+    setReport(keep.length ? importGapReport(keep, props.tx || [], cats, plan ? plan.twins : 0) : null);
+  }
+
+  function toggleRow(id) {
+    var next = {}; for (var k in dropped) next[k] = dropped[k];
+    if (next[id]) delete next[id]; else next[id] = true;
+    setDropped(next);
+    if (next[id] && openRow === id) setOpenRow(null);
+    refreshReport(built, next);
+  }
+  function setAllRows(on) {
+    var next = {};
+    if (!on) built.forEach(function(t) { next[t.id] = true; });
+    setDropped(next); setOpenRow(null);
+    refreshReport(built, next);
+  }
+  // Open a line for correction. The amount draft starts from what was read, so
+  // the field is editable text rather than a number that fights the typist.
+  function openEditor(t) {
+    if (openRow === t.id) { setOpenRow(null); return; }
+    setOpenRow(t.id);
+    // Opened at the same precision the row above it shows, so the field reads
+    // as the money it is rather than as "6.2".
+    var dec = SYM_TO_DEC[_currency.sym]; if (dec == null) dec = 2;
+    setAmtDraft(t.amount.toFixed(dec));
+  }
+  function patchRow(id, patch) {
     setBuilt(built.map(function(t) {
-      if (t.shopK !== key) return t;
-      var n = {}; for (var kk in t) n[kk] = t[kk];
-      n.catId = c ? c.id : ""; n.category = catName;
+      if (t.id !== id) return t;
+      var n = {}; for (var k in t) n[k] = t[k];
+      for (var p in patch) n[p] = patch[p];
       return n;
     }));
   }
 
-  // The shops the preview actually asks about: the ones Alfred had to guess.
-  // A saved mapping or the user's own history is not re-confirmed every month.
-  var shopsToConfirm = (function() {
-    var keys = {};
-    built.forEach(function(t) { if (t.shopK && shopCats[t.shopK] && shopCats[t.shopK].source === "alfred") keys[t.shopK] = (keys[t.shopK] || 0) + 1; });
-    return Object.keys(keys).map(function(k) {
-      return { key: k, label: shopCats[k].label || k, category: shopCats[k].category, confidence: shopCats[k].confidence, rows: keys[k] };
-    }).sort(function(a, b) { return b.rows - a.rows; });
-  })();
+  // A correction in the checklist. One line is the default; a shop with several
+  // lines offers to fix them all at once, and when it does the answer is
+  // remembered so Richy never guesses that shop again. Overruling Alfred is
+  // recorded either way - it is the only honest measure of whether he was any
+  // good. Income is never taught to the shop map: a salary line's "shop" is an
+  // employer, and pinning that name to a category would mis-sort a purchase
+  // from a shop of the same name later.
+  function setRowCategory(t, catId, all) {
+    var c = catById(cats, catId);
+    if (!c) return;
+    var was = (t.shopK && shopCats[t.shopK]) || {};
+    if (was.source === "alfred" && was.category && was.category !== c.name) {
+      csvLog("category-corrected", { shop: was.label || t.shopK, from: was.category, to: c.name, confidence: was.confidence || "", scope: all ? "shop" : "row" });
+    }
+    if (all && t.shopK && t.type === "expense") {
+      var next = {}; for (var k in shopCats) next[k] = shopCats[k];
+      next[t.shopK] = { category: c.name, confidence: "high", source: "user", label: was.label || t.label };
+      setShopCats(next);
+    }
+    var nb = built.map(function(r) {
+      var hit = (all && t.shopK) ? (r.shopK === t.shopK && r.type === t.type) : (r.id === t.id);
+      if (!hit) return r;
+      var n = {}; for (var kk in r) n[kk] = r[kk];
+      n.catId = c.id; n.category = c.name;
+      return n;
+    });
+    setBuilt(nb);
+    refreshReport(nb, dropped);
+  }
+
+  // The other lines from the same shop that are NOT on this line's category.
+  // Before a correction there are none, so the offer to fix them all appears
+  // only once there is something to fix, and disappears the moment it is
+  // taken - no toggle to set beforehand, nothing to undo.
+  function shopStragglers(t) {
+    if (!t.shopK) return 0;
+    var n = 0;
+    built.forEach(function(r) { if (r.id !== t.id && r.shopK === t.shopK && r.type === t.type && r.catId !== t.catId) n++; });
+    return n;
+  }
+  // Whether this line's category is Alfred's guess rather than something the
+  // user or their own history settled, and whether he was unsure of it. This is
+  // what the row marks, instead of the separate block of shop dropdowns that
+  // used to sit under the list repeating every name a second time.
+  function rowGuess(t) {
+    var s = (t.shopK && shopCats[t.shopK]) || null;
+    if (!s || s.source !== "alfred") return null;
+    return { unsure: s.confidence === "low" };
+  }
 
   function doImport() {
     // Only now, at the single Confirm, do the caches learn anything: the
@@ -16618,11 +16694,17 @@ function ImportSheet(props) {
       } : null,
       shops: shopCats
     };
-    var rowsOut = built.map(function(t) {
+    // Only the ticked lines, and only what the user left standing: a line
+    // renamed to nothing keeps the placeholder rather than arriving blank.
+    var rowsOut = keptRows(built, dropped).map(function(t) {
       var clean = {}; for (var k in t) { if (k !== "shopK") clean[k] = t[k]; }
+      clean.label = String(t.label || "").trim() || "Imported";
       return clean;
     });
-    props.onImport(rowsOut, report, learned);
+    if (!rowsOut.length) return;
+    // Measured against what is actually being written, so the report can never
+    // describe rows the user took out on the way past.
+    props.onImport(rowsOut, importGapReport(rowsOut, props.tx || [], cats, plan ? plan.twins : 0), learned);
     close();
   }
 
@@ -16697,9 +16779,6 @@ function ImportSheet(props) {
     }
     return out;
   })();
-
-  var totalIn = built.filter(function(t) { return t.type === "income"; }).reduce(function(s, t) { return s + t.amount; }, 0);
-  var totalOut = built.filter(function(t) { return t.type === "expense"; }).reduce(function(s, t) { return s + t.amount; }, 0);
 
   return (
     <Overlay open={props.open} onClose={close} title="Import from CSV">
@@ -16984,111 +17063,213 @@ function ImportSheet(props) {
         );
       })()}
 
-      {step === "preview" && (
-        <div>
-          <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
-            <div style={{ flex: 1, background: T.greenDim, borderRadius: 13, padding: "11px 13px" }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: T.green, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Money In</div>
-              <div style={{ fontSize: 17, fontWeight: 700, color: T.green }}>{dollars(totalIn)}</div>
+      {/* The checklist. Every line the file is about to add, in the shape
+          Activity already uses - badge, name, category, amount - with a tick
+          to take any of them out and a tap to correct what was read off the
+          file. It replaces a printout of the first eight rows, a second list
+          repeating every guessed shop as a dropdown, and four paragraphs of
+          notes, all stacked above the button: the same facts, said once, in
+          the place they belong. */}
+      {step === "preview" && (function() {
+        var kept = keptRows(built, dropped);
+        var inSum = 0, outSum = 0;
+        kept.forEach(function(t) { if (t.type === "income") inSum += t.amount; else outSum += t.amount; });
+        // The one line of arithmetic this screen needs. Anything that is zero
+        // is left unsaid rather than printed as a zero.
+        var money = [];
+        if (outSum > 0) money.push(dollars(outSum) + " out");
+        if (inSum > 0) money.push(dollars(inSum) + " in");
+        if (dupes > 0) money.push(dupes + " already in Richy");
+        // One heading per day, said once, the way Activity stacks them. The
+        // alternative is the same date repeated down forty rows.
+        var days = [], byDay = {};
+        built.forEach(function(t) {
+          if (!byDay[t.date]) { byDay[t.date] = []; days.push(t.date); }
+          byDay[t.date].push(t);
+        });
+        // What belongs to the import as a whole rather than to any one line.
+        // These were four separate paragraphs on this screen; they now sit
+        // with the coverage report, behind one line the reader can open.
+        var notes = [];
+        if (aiRes.failed) notes.push("Alfred couldn't be reached to check the look-alikes, so you were asked about each one instead.");
+        if (dupes > 0 && aiRes.settled > 0) notes.push("Alfred settled " + aiRes.settled + " of the close calls. The rest were yours.");
+        if (shopMeta && shopMeta.err && shopMeta.asked > 0) notes.push("Alfred couldn't be reached to sort " + shopMeta.asked + " new " + (shopMeta.asked === 1 ? "shop" : "shops") + ", so they were matched on keywords. Their categories are a guess - worth a look up there.");
+        if (shopMeta && shopMeta.skipped > 0) notes.push(shopMeta.skipped + " " + (shopMeta.skipped === 1 ? "shop Richy didn't recognise was" : "shops Richy didn't recognise were") + " matched on keywords, because you asked to sort those yourself. Their categories are a guess.");
+        if (shopMeta && !shopMeta.err && shopMeta.overflow > 0) notes.push("This file has more new shops than Alfred sorts in one go, so " + shopMeta.overflow + " were matched on keywords instead.");
+        var detailN = (report ? report.tips.length : 0) + notes.length;
+        // Untick-all stays the offer until there is nothing left ticked. A
+        // half-ticked list flipping the label to "Tick all" would take away
+        // the one control that clears the rest.
+        var anyOn = kept.length > 0;
+        return (
+          <div>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 18, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.01em", lineHeight: 1.15 }}>
+                  {kept.length === 0 ? "Nothing ticked" : kept.length === 1 ? "One line to bring in" : kept.length + " lines to bring in"}
+                </div>
+                {money.length > 0 && (
+                  <div style={{ fontSize: 12, color: T.ink3, marginTop: 3, lineHeight: 1.5 }}>{money.join("  ·  ")}</div>
+                )}
+              </div>
+              <button onClick={function() { setAllRows(!anyOn); }}
+                style={{ flexShrink: 0, minHeight: 44, padding: "0 2px", background: "none", border: "none", color: T.orange, fontSize: 12.5, fontWeight: 700, fontFamily: UI, cursor: "pointer" }}>
+                {anyOn ? "Untick all" : "Tick all"}
+              </button>
             </div>
-            <div style={{ flex: 1, background: T.orangeDim, borderRadius: 13, padding: "11px 13px" }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: T.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Money Out</div>
-              <div style={{ fontSize: 17, fontWeight: 700, color: T.ink }}>{dollars(totalOut)}</div>
+            <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginBottom: 14 }}>
+              {"Untick anything you don't want. Tap a line to fix its name, amount or category."}
             </div>
-          </div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: T.ink2, marginBottom: 8 }}>{built.length} transactions ready - first few shown:</div>
-          {dupes > 0 && <div style={{ fontSize: 12, color: T.ink3, marginTop: -4, marginBottom: 8 }}>{dupes + " " + (dupes === 1 ? "line was" : "lines were") + " left out as things you already have."}{aiRes.settled > 0 ? " Alfred settled " + aiRes.settled + " of the close calls." : ""}</div>}
-          {aiRes.failed && <div style={{ fontSize: 12, color: T.ink3, marginTop: -4, marginBottom: 8 }}>Alfred couldn't be reached to check the look-alikes, so you were asked about each one instead.</div>}
-          <div style={{ background: T.card, borderRadius: 13, overflow: "hidden", marginBottom: 12, border: "1px solid " + T.hairline }}>
-            {built.slice(0, 8).map(function(t, i) {
+
+            {days.map(function(d) {
+              var dayRows = byDay[d];
               return (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderBottom: i < Math.min(built.length, 8) - 1 ? "0.5px solid " + T.sep : "none" }}>
-                  <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.label}</span>
-                  <span style={{ fontSize: 11, color: T.ink3, flexShrink: 0 }}>{t.category}</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, flexShrink: 0, color: t.type === "income" ? T.green : T.ink }}>{(t.type === "income" ? "+" : "-") + dollars(t.amount)}</span>
+                <div key={d} style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: T.ink3, padding: "0 4px 6px" }}>{dateLabel(d)}</div>
+                  <div style={{ background: T.card, borderRadius: 16, overflow: "hidden", border: "1px solid " + T.hairline }}>
+                    {dayRows.map(function(t, i) {
+                      var on = !dropped[t.id];
+                      var c = resolveCat(cats, t);
+                      var g = rowGuess(t);
+                      var isOpen = openRow === t.id;
+                      var left = shopStragglers(t);
+                      return (
+                        <div key={t.id} style={{ borderBottom: i < dayRows.length - 1 ? "0.5px solid " + T.sep : "none", background: isOpen ? T.fill0 : "transparent" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 2, padding: "2px 12px 2px 2px" }}>
+                            <button type="button" role="checkbox" aria-checked={on}
+                              aria-label={(on ? "Leave out " : "Bring in ") + t.label}
+                              onClick={function() { toggleRow(t.id); }}
+                              style={{ width: 44, height: 44, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer" }}>
+                              <span style={{ width: 21, height: 21, borderRadius: 7, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid " + (on ? T.orange : T.ink3), background: on ? T.orange : "transparent" }}>
+                                {on && <SVGIcon id="check" size={12} color="#fff" />}
+                              </span>
+                            </button>
+                            <button type="button" onClick={function() { openEditor(t); }} aria-expanded={isOpen}
+                              style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 11, padding: "9px 0", background: "none", border: "none", font: "inherit", fontFamily: UI, textAlign: "start", cursor: "pointer", opacity: on ? 1 : 0.42 }}>
+                              <CatBadge icon={t.type === "income" ? "up" : c.icon} color={t.type === "income" ? T.green : c.color} size={34} soft={!on} />
+                              <span style={{ flex: 1, minWidth: 0 }}>
+                                <span style={{ display: "block", fontSize: 15, color: T.ink, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", lineHeight: 1.15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</span>
+                                <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: T.ink3, marginTop: 2 }}>
+                                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, minWidth: 0 }}>
+                                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: t.type === "income" ? T.green : c.color, flexShrink: 0 }} />
+                                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.type === "income" ? tr("income") : catDisplay(c)}</span>
+                                  </span>
+                                  {/* The one marker worth carrying on a row:
+                                      Alfred guessed this category and said he
+                                      was unsure of it. It is what tells the
+                                      reader which line to actually look at. */}
+                                  {g && g.unsure && (
+                                    <span style={{ flexShrink: 0, fontSize: 9.5, fontWeight: 700, color: T.gold, background: T.goldDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.04em", textTransform: "uppercase" }}>Unsure</span>
+                                  )}
+                                </span>
+                              </span>
+                              <span style={{ flexShrink: 0, fontSize: 15, fontWeight: 700, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: t.type === "income" ? T.green : T.red, textDecoration: on ? "none" : "line-through" }}>
+                                {dollarsDelta(t.type === "income" ? t.amount : -t.amount)}
+                              </span>
+                            </button>
+                          </div>
+
+                          {/* The push-back, opened on the line it belongs to:
+                              the same three fields the add sheet uses, so a
+                              correction here is the edit the user already
+                              knows how to make. */}
+                          {isOpen && (
+                            <div style={{ padding: "0 12px 12px 12px" }}>
+                              <FormRow label="Name" value={t.label} placeholder="What was it?"
+                                onChange={function(e) { patchRow(t.id, { label: e.target.value }); }} />
+                              <FormRow label={t.type === "income" ? "Amount in" : "Amount"} value={amtDraft} inputMode="decimal"
+                                onChange={function(e) {
+                                  var v = e.target.value;
+                                  setAmtDraft(v);
+                                  // A half-typed amount ("", "12.") stays in
+                                  // the field and never reaches the row, so
+                                  // the totals can't flicker through NaN.
+                                  var n = parseFloat(String(v).replace(",", "."));
+                                  if (isFinite(n) && n > 0) patchRow(t.id, { amount: round2(n) });
+                                }} />
+                              <CatPicker label="Category" categories={cats} value={t.catId}
+                                onChange={function(id) { setRowCategory(t, id, false); }} />
+                              {left > 0 && (
+                                <button onClick={function() { setRowCategory(t, t.catId, true); }}
+                                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "9px 12px", borderRadius: 11, border: "1.5px dashed " + c.color, background: c.color + "12", cursor: "pointer", fontFamily: UI, marginBottom: 7 }}>
+                                  <CatBadge icon={c.icon} color={c.color} size={22} soft={true} />
+                                  <span style={{ flex: 1, minWidth: 0, textAlign: "start", fontSize: 12.5, color: T.ink2, lineHeight: 1.4 }}>
+                                    {"Put the other " + left + " " + (left === 1 ? "line" : "lines") + " from this shop here too, and remember it"}
+                                  </span>
+                                </button>
+                              )}
+                              <div style={{ display: "flex", gap: 7 }}>
+                                <button onClick={function() { toggleRow(t.id); }}
+                                  style={{ flex: 1, minHeight: 44, borderRadius: 11, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: 700, fontFamily: UI, background: on ? T.redDim : T.fill1, color: on ? T.red : T.ink2 }}>
+                                  {on ? "Leave this one out" : "Bring it back"}
+                                </button>
+                                <button onClick={function() { setOpenRow(null); }}
+                                  style={{ flex: 1, minHeight: 44, borderRadius: 11, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: 700, fontFamily: UI, background: T.orangeDim, color: T.orange }}>
+                                  Done
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               );
             })}
-          </div>
-          {shopsToConfirm.length > 0 && (
-            <div style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 13.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 3 }}>
-                {shopsToConfirm.length === 1 ? "One shop Richy didn't know" : shopsToConfirm.length + " shops Richy didn't know"}
-              </div>
-              <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginBottom: 9 }}>
-                {"Alfred sorted these. Change any that look wrong - Richy remembers your answer and never asks about that shop again."}
-              </div>
-              <div style={{ background: T.card, borderRadius: 14, overflow: "hidden", border: "1px solid " + T.hairline }}>
-                {shopsToConfirm.map(function(s, i) {
-                  return (
-                    <div key={s.key} style={{ padding: "10px 12px", borderBottom: i < shopsToConfirm.length - 1 ? "0.5px solid " + T.sep : "none" }}>
-                      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
-                        <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: T.ink, overflowWrap: "anywhere" }}>{s.label}</span>
-                        {/* A low-confidence guess is marked, because "Alfred
-                            wasn't sure" is the one thing that tells the user
-                            which row to actually look at. */}
-                        {s.confidence === "low" && (
-                          <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.gold }}>Unsure</span>
-                        )}
-                        <span style={{ flexShrink: 0, fontSize: 11, color: T.ink3, fontVariantNumeric: "tabular-nums" }}>{s.rows + (s.rows === 1 ? " line" : " lines")}</span>
-                      </div>
-                      <select value={s.category} onChange={function(e) { setShopCategory(s.key, e.target.value); }}
-                        style={{ width: "100%", padding: "7px 10px", borderRadius: 9, border: "1.5px solid " + (s.confidence === "low" ? T.gold : T.sep), background: T.bg, fontSize: 13, fontFamily: UI, color: T.ink, outline: "none" }}>
-                        {cats.map(function(c) { return <option key={c.id} value={c.name}>{catDisplay(c.name)}</option>; })}
-                      </select>
+
+            {/* What the file did NOT bring in, and everything that happened on
+                the way here. Still measured from the rows, so it is a
+                statement of fact rather than an impression - but folded away,
+                because it was most of what made this screen a wall of text.
+                The date range stays on the outside: it is the one thing worth
+                seeing without opening anything. */}
+            {report && (
+              <div style={{ marginBottom: 10 }}>
+                <button onClick={function() { setShowDetails(!showDetails); }} aria-expanded={showDetails}
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, minHeight: 44, padding: "8px 2px", background: "none", border: "none", cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, fontWeight: 600, color: T.ink3, lineHeight: 1.4 }}>
+                    {(report.from === report.to ? report.from : report.from + " to " + report.to) + (detailN > 0 ? " · " + detailN + " thing" + (detailN === 1 ? "" : "s") + " worth knowing" : " · nothing looks missing")}
+                  </span>
+                  <span style={{ display: "flex", flexShrink: 0, transform: "rotate(" + (showDetails ? -90 : 90) + "deg)" }}>
+                    <SVGIcon id="chevron" size={13} color={T.ink3} />
+                  </span>
+                </button>
+                <CsvReveal open={showDetails}>
+                  <div data-csv-card="" style={{ background: T.fill1, borderRadius: 16, padding: "13px 15px" }}>
+                    <div style={{ fontSize: 13.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 3 }}>What this covers, and what it doesn't</div>
+                    <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5 }}>
+                      {report.from === report.to
+                        ? "One day: " + report.from + "."
+                        : report.from + " to " + report.to + ", " + (dayGap(report.from, report.to) + 1) + " days."}
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-          {shopMeta && shopMeta.err && shopMeta.asked > 0 && (
-            <div style={{ fontSize: 12, color: T.ink3, marginTop: -4, marginBottom: 10, lineHeight: 1.5 }}>
-              {"Alfred couldn't be reached to sort " + shopMeta.asked + " new " + (shopMeta.asked === 1 ? "shop" : "shops") + ", so they were matched on keywords instead. Check their categories in Activity afterwards."}
-            </div>
-          )}
-          {shopMeta && shopMeta.skipped > 0 && (
-            <div style={{ fontSize: 12, color: T.ink3, marginTop: -4, marginBottom: 10, lineHeight: 1.5 }}>
-              {shopMeta.skipped + " " + (shopMeta.skipped === 1 ? "shop" : "shops") + " Richy didn't recognise " + (shopMeta.skipped === 1 ? "was" : "were") + " matched on keywords, because you asked to sort those yourself. Their categories are a guess - worth a look in Activity."}
-            </div>
-          )}
-          {shopMeta && !shopMeta.err && shopMeta.overflow > 0 && (
-            <div style={{ fontSize: 12, color: T.ink3, marginTop: -4, marginBottom: 10, lineHeight: 1.5 }}>
-              {"This file has more new shops than Alfred sorts in one go, so " + shopMeta.overflow + " were matched on keywords instead."}
-            </div>
-          )}
-          {/* What the file did NOT bring in. Measured from the rows, so it is
-              a statement of fact rather than an impression - and the tips are
-              the specific next move for each gap, not general advice. */}
-          {report && (
-            <div style={{ background: T.fill1, borderRadius: 16, padding: "14px 15px", marginBottom: 12 }}>
-              <div style={{ fontSize: 13.5, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 3 }}>What this covers, and what it doesn't</div>
-              <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5 }}>
-                {report.from === report.to
-                  ? "One day: " + report.from + "."
-                  : report.from + " to " + report.to + ", " + (dayGap(report.from, report.to) + 1) + " days."}
-              </div>
-              {report.tips.length > 0 ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 11 }}>
-                  {report.tips.map(function(tip, i) {
-                    return (
-                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                        <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.orange, flexShrink: 0, marginTop: 6 }} />
-                        <span style={{ flex: 1, fontSize: 12.5, color: T.ink2, lineHeight: 1.5 }}>{tip}</span>
+                    {(report.tips.length > 0 || notes.length > 0) ? (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 11 }}>
+                        {report.tips.concat(notes).map(function(tip, i) {
+                          return (
+                            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                              <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.orange, flexShrink: 0, marginTop: 6 }} />
+                              <span style={{ flex: 1, fontSize: 12.5, color: T.ink2, lineHeight: 1.5 }}>{tip}</span>
+                            </div>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 8 }}>Every day in that stretch has spending, money came in, and nothing needed a category guess. Nothing looks missing.</div>
-              )}
-            </div>
-          )}
-          {err && <div style={{ fontSize: 13, color: T.red, marginBottom: 10 }}>{err}</div>}
-          <BigBtn label={"Import " + built.length + " transaction" + (built.length > 1 ? "s" : "")} onPress={doImport} />
-          <button onClick={function() { setStep("map"); }} style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>Back</button>
-        </div>
-      )}
+                    ) : (
+                      <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginTop: 8 }}>Every day in that stretch has spending, money came in, and nothing needed a category guess. Nothing looks missing.</div>
+                    )}
+                  </div>
+                </CsvReveal>
+              </div>
+            )}
+            {err && <div style={{ fontSize: 13, color: T.red, marginBottom: 10 }}>{err}</div>}
+            {kept.length === 0 && (
+              <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginBottom: 2 }}>{"Nothing is ticked, so there is nothing to bring in. Tick a line, or go back."}</div>
+            )}
+            <BigBtn label={kept.length === 0 ? "Nothing to bring in" : kept.length === 1 ? "Bring in 1 line" : "Bring in " + kept.length + " lines"} onPress={doImport} disabled={kept.length === 0} />
+            <button onClick={function() { setStep("map"); }} style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>Back</button>
+          </div>
+        );
+      })()}
     </Overlay>
   );
 }
