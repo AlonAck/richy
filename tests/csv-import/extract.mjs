@@ -39,7 +39,8 @@ function grabPrompt(name) {
   return SRC.slice(at, end + 1);
 }
 
-const VARS = ["CSV_HEAD_MAX", "CSV_SHAPE_MAX", "CSV_CELL_MAX", "CSV_NUL",
+const VARS = ["SHEET_MAX_ROWS", "SHEET_MAX_COLS", "SHEET_MAX_TABLES", "XLSX_DATE_FMT_IDS",
+  "CSV_HEAD_MAX", "CSV_SHAPE_MAX", "CSV_CELL_MAX", "CSV_NUL",
   "CSV_SEP_CELL", "CSV_SEP_ROW", "CSV_SEP_PART",
   "CSV_SHOPS_PER_CALL", "CSV_SHOPS_MAX", "CSV_SHOP_EXAMPLES",
   "AI_MODEL_CSV_MAP", "AI_MODEL_CSV_SHOPS"];
@@ -50,6 +51,18 @@ const FNS = ["pad2", "parseCSV", "sniffMap", "parseImportDate", "parseImportAmou
   "csvRowIsData", "csvFirstDataRow", "csvMaskCell", "csvColumnProfiles", "csvSkeleton",
   "csvHash", "csvFingerprint", "csvDetectDateFormat", "csvDetectSign",
   "csvParseJsonBlock", "csvCol", "csvConf", "alfredErr",
+  // The spreadsheet reader. Everything from the zip directory up to "what kind
+  // of file is this" is pulled in, because a .xlsx is read byte by byte and
+  // the tests build real ones to feed it.
+  "sheetChar", "sheetUnxml", "sheetAttr", "sheetEachTag", "sheetSection",
+  "sheetCleanCell", "sheetHasContent", "sheetHasRows", "sheetUtf8",
+  "sheetU16", "sheetU32", "zipEntries", "zipEntryBytes", "sheetInflate",
+  "zipEntryText", "zipReadText", "xlsxSharedStrings", "sheetFmtIsDate",
+  "xlsxDateStyles", "sheetColFromRef", "sheetSerialToDate", "xlsxSheetRows",
+  "xlsxSheetList", "xlsxRelPath", "xlsxRelMap", "xlsxRead",
+  "htmlText", "htmlTableRegions", "htmlRowCells",
+  "htmlRegionRows", "sheetTableScore", "htmlSheetRows", "xmlssRows",
+  "sheetIsZip", "sheetIsOle", "sheetMarkupKind", "sheetReadBytes", "sheetReadNote",
   // These two make a network call in the app. They are pulled in anyway so the
   // code that reads a real model's answer - the fence stripping, the
   // out-of-range clamping, the per-chunk failure handling - is the code under

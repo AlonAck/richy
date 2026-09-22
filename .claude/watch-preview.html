@@ -60,7 +60,7 @@ PinnedDate.now = function () { return new _RealDate(PINNED_NOW).getTime(); };
 Date = PinnedDate;
 
 fetchSource(1).then(function(src){
-  var code = src.replace(/^\s*import[^\n]*\n/gm, "").replace(/export default function App/, "function App");
+  var code = src.replace(/^\s*import(?=[\s{'"*])[^\n]*\n/gm, "").replace(/export default function App/, "function App");
   code += "\ntry { window.__T = T; window.__UI = UI; window.__DISP = DISP; } catch (e) {}\n";
   var out = Babel.transform(code, { presets: ["react"] }).code;
   window.__RICHY_MOCK__ = true;

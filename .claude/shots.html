@@ -363,7 +363,7 @@ if (new URLSearchParams(location.search).get("biz") === "1") {
 // ---- Boot the real app, signed in -------------------------------------------
 fetch("/budget-app.jsx?t=" + Date.now()).then(function (r) { return r.text(); }).then(function (src) {
   var code = src
-    .replace(/^\s*import[^\n]*\n/gm, "")
+    .replace(/^\s*import(?=[\s{'"*])[^\n]*\n/gm, "")
     .replace(/export default function App/, "function App");
 
   // The empty array is unique to Advisor's live chat state. This replacement

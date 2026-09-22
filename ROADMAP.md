@@ -803,7 +803,11 @@ the Tier 0 hardcoded-`$` bugs undermine this everywhere they appear.
 
 ### 3. CSV / Statement Import ⭐⭐⭐ — ✅ SHIPPED (2026-06-23)
 Auto-detects delimiter/columns/date format, entry-method preference in
-onboarding. Gap: no undo/batch-id on import (Tier 0).
+onboarding. Excel added 22 Sep: .xlsx/.xlsm read on-device (zip + sheet XML +
+date formats), plus the .xls files that are really an HTML table or
+SpreadsheetML 2003, which is what Isracard/Cal/Max hand out. Gaps: no
+undo/batch-id on import (Tier 0); the genuine 1997 binary .xls is named and
+refused rather than parsed, and .ods/.numbers are told to re-save.
 
 ### 4. Automatic Categorization ⭐⭐⭐ — not built
 Still the biggest sim ask after bank sync. Worth doing regardless of

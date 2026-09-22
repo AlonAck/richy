@@ -911,7 +911,7 @@ var ONBOARD_STRINGS = {
     obPlanReady:"Your plan is ready.", obPlanBuiltForYou:"Alfred built this just for you.",
     obHowAddTx:"How do you want to add transactions?", obChangeAnytimeProfile:"You can change this anytime in Profile.",
     obManualEntry:"Enter them manually", obManualEntrySub:"Log each transaction yourself - full control",
-    obImportCsv:"Import from a CSV file", obImportCsvSub:"Upload a bank or card statement to fill them in",
+    obImportCsv:"Import from a CSV or Excel file", obImportCsvSub:"Upload a bank or card statement to fill them in",
     obSetupBudgetsQ:"Set up your budgets automatically?",
     obBasedOnNumbers:"Based on your numbers, Alfred suggests these monthly limits:",
     obYesSetUp:"Yes, set them up", obSetUpMyself:"I'll set them up myself", obGetStarted:"Get Started",
@@ -1063,7 +1063,7 @@ var ONBOARD_STRINGS = {
     obPlanReady:"התוכנית שלך מוכנה.", obPlanBuiltForYou:"ריצ'רד בנה את זה במיוחד בשבילך.",
     obHowAddTx:"איך תרצה להוסיף עסקאות?", obChangeAnytimeProfile:"אפשר לשנות את זה בכל עת בפרופיל.",
     obManualEntry:"הזנה ידנית", obManualEntrySub:"לרשום כל עסקה בעצמכם - שליטה מלאה",
-    obImportCsv:"ייבוא מקובץ CSV", obImportCsvSub:"העלאת דף חשבון בנק או אשראי כדי למלא אותן",
+    obImportCsv:"ייבוא מקובץ CSV או Excel", obImportCsvSub:"העלאת דף חשבון בנק או אשראי כדי למלא אותן",
     obSetupBudgetsQ:"להגדיר תקציבים אוטומטית?",
     obBasedOnNumbers:"על סמך המספרים שלך, ריצ'רד מציע את המגבלות החודשיות האלה:",
     obYesSetUp:"כן, הגדר אותם", obSetUpMyself:"אני אגדיר אותם בעצמי", obGetStarted:"בואו נתחיל",
@@ -1215,7 +1215,7 @@ var ONBOARD_STRINGS = {
     obPlanReady:"خطتك جاهزة.", obPlanBuiltForYou:"ريتشارد بنى هذا خصيصاً لك.",
     obHowAddTx:"كيف تريد إضافة المعاملات؟", obChangeAnytimeProfile:"يمكنك تغيير هذا في أي وقت من الملف الشخصي.",
     obManualEntry:"أدخلها يدوياً", obManualEntrySub:"سجّل كل معاملة بنفسك - سيطرة كاملة",
-    obImportCsv:"استيراد من ملف CSV", obImportCsvSub:"ارفع كشف حساب بنكي أو بطاقة لملئها",
+    obImportCsv:"استيراد من ملف CSV أو Excel", obImportCsvSub:"ارفع كشف حساب بنكي أو بطاقة لملئها",
     obSetupBudgetsQ:"إعداد ميزانياتك تلقائياً؟",
     obBasedOnNumbers:"بناءً على أرقامك، يقترح ريتشارد هذه الحدود الشهرية:",
     obYesSetUp:"نعم، أعدّها", obSetUpMyself:"سأعدّها بنفسي", obGetStarted:"ابدأ الآن",
@@ -1367,7 +1367,7 @@ var ONBOARD_STRINGS = {
     obPlanReady:"Ваш план готов.", obPlanBuiltForYou:"Ричард составил его специально для вас.",
     obHowAddTx:"Как вы хотите добавлять транзакции?", obChangeAnytimeProfile:"Вы можете изменить это в любой момент в Профиле.",
     obManualEntry:"Вводить вручную", obManualEntrySub:"Записывайте каждую транзакцию сами - полный контроль",
-    obImportCsv:"Импортировать из CSV-файла", obImportCsvSub:"Загрузите выписку банка или карты, чтобы заполнить их",
+    obImportCsv:"Импортировать из файла CSV или Excel", obImportCsvSub:"Загрузите выписку банка или карты, чтобы заполнить их",
     obSetupBudgetsQ:"Настроить бюджеты автоматически?",
     obBasedOnNumbers:"Исходя из ваших цифр, Ричард предлагает следующие месячные лимиты:",
     obYesSetUp:"Да, настроить", obSetUpMyself:"Я настрою их сам", obGetStarted:"Начать",
@@ -1764,11 +1764,11 @@ var T1_STRINGS = {
     stsChargesN:"{bal} balance, less {held} held for {n} charges. Biggest is {top}.",
     stsClear:"{bal} balance, and nothing due out this week.", stsThrough:"Through",
     svGivePlanTitle:"Give this pot a plan", svGivePlanSub:"Four questions, and I'll work out the monthly number and the date it lands.",
-    importCsv:"Import CSV",
+    importCsv:"Import a statement",
     dbNoDebts:"No debts tracked", dbNoDebtsSub:"Add a card, loan, or overdraft with its balance and interest rate, and I'll show you the fastest way out.", dbAddFirst:"Add your first debt", dbTotalOwed:"Total owed",
     obTypeItInstead:"type it instead",
     pfBadges:"Badges", pfManage:"Manage", pfYourData:"Your data", pfRecentActivity:"Recent activity", pfGreenMonth:"Green month", pfBudgetRuns:"Budget runs", pfNoRuns:"No runs going yet", pfSharedBudgets:"Shared budgets", pfNotSharing:"Not sharing with anyone", pfBudgetBooks:"Budget books", pfTripHistory:"Trip history", pfYourPlan:"Your plan", pfYourPlanSub:"Alfred's read on your money", pfBankSync:"Bank sync", pfPrivacy:"Privacy and data", pfPrivacySub:"Export, sharing, delete", pfNothingTracked:"Nothing tracked", pfNoBadgesYet:"Nothing earned yet. Log a transaction, set a budget, confirm a week - they start arriving quickly.", pfConfirm:"Confirm", pfNOfM:"{n} of {m}", pfSettings:"Settings", pfNMembers:"{n} members", pfOneMember:"1 member", pfNEnded:"{n} ended", pfNTotal:"{n} total", pfNOf12:"{n} of 12 this year",
-    setAiAlfred:"AI & Alfred", setVisual:"Visual", setYourPlan:"Your plan", setInstructions:"Alfred's instructions", setOpeningBalance:"Opening balance", setLogMonth:"Log this month", setEntryMethod:"Adding transactions", setDateRange:"Date range", setBankSync:"Bank Sync", setAppearance:"Appearance", setYourName:"Your name", setCollab:"Collab", setDebts:"Debts", setPrivacy:"Privacy & data", valCustom:"Custom", valDefault:"Default", valOn:"On", valOff:"Off", valCsvImport:"CSV import", valManual:"Manual", valPastMonth:"Past month", valThisMonth:"This month", valTrackedN:"{n} tracked", valInviteN:"{n} invites", valInvite1:"1 invite", dashTipDebtTitle:"Crush your debt", dashTipDebtSub:"Payoff plan and a debt-free date", dashTipCollabTitle:"Add your partner", dashTipCollabSub:"Share budgets and goals", dashTipSyncTitle:"Set up Bank Sync", dashTipSyncSub:"Log expenses from your phone's payment notifications", dashTipTripTitle:"Plan a trip", dashTipTripSub:"Let Alfred split your travel budget", setLanguageSub:"App language", setCurrencySub:"How money is shown", openAnAccount:"Open an account", totalSetAside:"Total set aside", businessLabel:"Business", investingLabel:"Investing",
+    setAiAlfred:"AI & Alfred", setVisual:"Visual", setYourPlan:"Your plan", setInstructions:"Alfred's instructions", setOpeningBalance:"Opening balance", setLogMonth:"Log this month", setEntryMethod:"Adding transactions", setDateRange:"Date range", setBankSync:"Bank Sync", setAppearance:"Appearance", setYourName:"Your name", setCollab:"Collab", setDebts:"Debts", setPrivacy:"Privacy & data", valCustom:"Custom", valDefault:"Default", valOn:"On", valOff:"Off", valCsvImport:"File import", valManual:"Manual", valPastMonth:"Past month", valThisMonth:"This month", valTrackedN:"{n} tracked", valInviteN:"{n} invites", valInvite1:"1 invite", dashTipDebtTitle:"Crush your debt", dashTipDebtSub:"Payoff plan and a debt-free date", dashTipCollabTitle:"Add your partner", dashTipCollabSub:"Share budgets and goals", dashTipSyncTitle:"Set up Bank Sync", dashTipSyncSub:"Log expenses from your phone's payment notifications", dashTipTripTitle:"Plan a trip", dashTipTripSub:"Let Alfred split your travel budget", setLanguageSub:"App language", setCurrencySub:"How money is shown", openAnAccount:"Open an account", totalSetAside:"Total set aside", businessLabel:"Business", investingLabel:"Investing",
     dscBigDecision:"Alfred is an AI, not a licensed financial advisor - always do your own research before a decision this size.",
     dscInvestRisk:"Alfred is an AI assistant, not a licensed financial advisor. Investing involves risk, including the possible loss of your money, and past performance doesn't guarantee future results.",
     dscAiMistakes:"Alfred is an AI assistant and can make mistakes. This isn't licensed financial advice.",
@@ -1816,11 +1816,11 @@ var T1_STRINGS = {
     stsChargesN:"יתרה {bal}, פחות {held} ששמורים ל-{n} חיובים. הגדול ביותר {top}.",
     stsClear:"יתרה {bal}, ואין חיובים צפויים השבוע.", stsThrough:"עד",
     svGivePlanTitle:"לתת לקופה הזאת תוכנית", svGivePlanSub:"ארבע שאלות, ואחשב את הסכום החודשי ואת התאריך שבו זה נסגר.",
-    importCsv:"ייבוא CSV",
+    importCsv:"ייבוא דף חשבון",
     dbNoDebts:"אין חובות במעקב", dbNoDebtsSub:"הוסיפו כרטיס, הלוואה או מסגרת עם היתרה והריבית, ואראה לכם את הדרך המהירה ביותר לצאת מזה.", dbAddFirst:"הוספת החוב הראשון", dbTotalOwed:"סך החוב",
     obTypeItInstead:"אפשר להקליד במקום",
     pfBadges:"תגים", pfManage:"ניהול", pfYourData:"הנתונים שלך", pfRecentActivity:"פעילות אחרונה", pfGreenMonth:"חודש ירוק", pfBudgetRuns:"רצפי תקציב", pfNoRuns:"אין רצף פעיל עדיין", pfSharedBudgets:"תקציבים משותפים", pfNotSharing:"לא משתפים עם אף אחד", pfBudgetBooks:"ספרי תקציב", pfTripHistory:"היסטוריית טיולים", pfYourPlan:"התוכנית שלך", pfYourPlanSub:"מה שריצ'רד רואה בכסף שלך", pfBankSync:"סנכרון בנק", pfPrivacy:"פרטיות ונתונים", pfPrivacySub:"ייצוא, שיתוף, מחיקה", pfNothingTracked:"אין מעקב", pfNoBadgesYet:"עוד לא הרווחתם תגים. רשמו עסקה, הגדירו תקציב, אשרו שבוע - הם מגיעים מהר.", pfConfirm:"אישור", pfNOfM:"{n} מתוך {m}", pfSettings:"הגדרות", pfNMembers:"{n} חברים", pfOneMember:"חבר אחד", pfNEnded:"{n} הסתיימו", pfNTotal:"{n} בסך הכל", pfNOf12:"{n} מתוך 12 השנה",
-    setAiAlfred:"ריצ'רד ו-AI", setVisual:"תצוגה", setYourPlan:"התוכנית שלך", setInstructions:"ההוראות לריצ'רד", setOpeningBalance:"יתרת פתיחה", setLogMonth:"תיעוד החודש", setEntryMethod:"הוספת עסקאות", setDateRange:"טווח תאריכים", setBankSync:"סנכרון בנק", setAppearance:"מראה", setYourName:"השם שלך", setCollab:"שיתוף", setDebts:"חובות", setPrivacy:"פרטיות ונתונים", valCustom:"מותאם", valDefault:"ברירת מחדל", valOn:"פעיל", valOff:"כבוי", valCsvImport:"ייבוא CSV", valManual:"ידני", valPastMonth:"החודש האחרון", valThisMonth:"החודש הנוכחי", valTrackedN:"{n} במעקב", valInviteN:"{n} הזמנות", valInvite1:"הזמנה אחת", dashTipDebtTitle:"לסגור את החובות", dashTipDebtSub:"תוכנית סגירה ותאריך שבו נגמר החוב", dashTipCollabTitle:"לצרף את בן/בת הזוג", dashTipCollabSub:"שיתוף תקציבים ויעדים", dashTipSyncTitle:"להפעיל סנכרון בנק", dashTipSyncSub:"רישום הוצאות מהתראות התשלום בטלפון", dashTipTripTitle:"לתכנן טיול", dashTipTripSub:"ריצ'רד יחלק את תקציב הנסיעה", setLanguageSub:"שפת האפליקציה", setCurrencySub:"איך הכסף מוצג", openAnAccount:"פתיחת חשבון", totalSetAside:"סך הכל בצד", businessLabel:"עסק", investingLabel:"השקעות",
+    setAiAlfred:"ריצ'רד ו-AI", setVisual:"תצוגה", setYourPlan:"התוכנית שלך", setInstructions:"ההוראות לריצ'רד", setOpeningBalance:"יתרת פתיחה", setLogMonth:"תיעוד החודש", setEntryMethod:"הוספת עסקאות", setDateRange:"טווח תאריכים", setBankSync:"סנכרון בנק", setAppearance:"מראה", setYourName:"השם שלך", setCollab:"שיתוף", setDebts:"חובות", setPrivacy:"פרטיות ונתונים", valCustom:"מותאם", valDefault:"ברירת מחדל", valOn:"פעיל", valOff:"כבוי", valCsvImport:"ייבוא קובץ", valManual:"ידני", valPastMonth:"החודש האחרון", valThisMonth:"החודש הנוכחי", valTrackedN:"{n} במעקב", valInviteN:"{n} הזמנות", valInvite1:"הזמנה אחת", dashTipDebtTitle:"לסגור את החובות", dashTipDebtSub:"תוכנית סגירה ותאריך שבו נגמר החוב", dashTipCollabTitle:"לצרף את בן/בת הזוג", dashTipCollabSub:"שיתוף תקציבים ויעדים", dashTipSyncTitle:"להפעיל סנכרון בנק", dashTipSyncSub:"רישום הוצאות מהתראות התשלום בטלפון", dashTipTripTitle:"לתכנן טיול", dashTipTripSub:"ריצ'רד יחלק את תקציב הנסיעה", setLanguageSub:"שפת האפליקציה", setCurrencySub:"איך הכסף מוצג", openAnAccount:"פתיחת חשבון", totalSetAside:"סך הכל בצד", businessLabel:"עסק", investingLabel:"השקעות",
     dscBigDecision:"ריצ'רד הוא AI ולא יועץ פיננסי מורשה - תמיד ערכו בדיקה עצמאית לפני החלטה בסדר גודל כזה.",
     dscInvestRisk:"ריצ'רד הוא עוזר AI ולא יועץ פיננסי מורשה. השקעה כרוכה בסיכון, כולל אפשרות לאובדן הכסף, ותשואות עבר אינן מבטיחות תשואות עתידיות.",
     dscAiMistakes:"ריצ'רד הוא עוזר AI ועלול לטעות. זה אינו ייעוץ פיננסי מורשה.",
@@ -1868,11 +1868,11 @@ var T1_STRINGS = {
     stsChargesN:"رصيد {bal}، ناقص {held} محجوزة لـ {n} رسوم. الأكبر {top}.",
     stsClear:"رصيد {bal}، ولا شيء مستحق هذا الأسبوع.", stsThrough:"حتى",
     svGivePlanTitle:"امنح هذا الوعاء خطة", svGivePlanSub:"أربعة أسئلة، وسأحسب المبلغ الشهري والتاريخ الذي يكتمل فيه.",
-    importCsv:"استيراد CSV",
+    importCsv:"استيراد كشف حساب",
     dbNoDebts:"لا ديون متتبَّعة", dbNoDebtsSub:"أضف بطاقة أو قرضاً أو سحباً على المكشوف مع الرصيد ونسبة الفائدة، وسأريك أسرع طريق للخروج.", dbAddFirst:"أضف أول دين", dbTotalOwed:"إجمالي المستحق",
     obTypeItInstead:"اكتبه بدلاً من ذلك",
     pfBadges:"الشارات", pfManage:"إدارة", pfYourData:"بياناتك", pfRecentActivity:"النشاط الأخير", pfGreenMonth:"شهر أخضر", pfBudgetRuns:"سلاسل الميزانية", pfNoRuns:"لا توجد سلسلة بعد", pfSharedBudgets:"ميزانيات مشتركة", pfNotSharing:"لا تشارك مع أحد", pfBudgetBooks:"دفاتر الميزانية", pfTripHistory:"سجل الرحلات", pfYourPlan:"خطتك", pfYourPlanSub:"قراءة ريتشارد لأموالك", pfBankSync:"مزامنة البنك", pfPrivacy:"الخصوصية والبيانات", pfPrivacySub:"تصدير، مشاركة، حذف", pfNothingTracked:"لا شيء متتبَّع", pfNoBadgesYet:"لم تكسب شيئاً بعد. سجّل معاملة، حدّد ميزانية، أكّد أسبوعاً - وستبدأ بالوصول سريعاً.", pfConfirm:"تأكيد", pfNOfM:"{n} من {m}", pfSettings:"الإعدادات", pfNMembers:"{n} أعضاء", pfOneMember:"عضو واحد", pfNEnded:"{n} منتهية", pfNTotal:"{n} إجمالاً", pfNOf12:"{n} من 12 هذا العام",
-    setAiAlfred:"ريتشارد والذكاء الاصطناعي", setVisual:"المظهر", setYourPlan:"خطتك", setInstructions:"تعليمات ريتشارد", setOpeningBalance:"الرصيد الافتتاحي", setLogMonth:"تسجيل هذا الشهر", setEntryMethod:"إضافة المعاملات", setDateRange:"النطاق الزمني", setBankSync:"مزامنة البنك", setAppearance:"الشكل", setYourName:"اسمك", setCollab:"المشاركة", setDebts:"الديون", setPrivacy:"الخصوصية والبيانات", valCustom:"مخصص", valDefault:"افتراضي", valOn:"مفعّل", valOff:"معطّل", valCsvImport:"استيراد CSV", valManual:"يدوي", valPastMonth:"الشهر الماضي", valThisMonth:"هذا الشهر", valTrackedN:"{n} متتبَّع", valInviteN:"{n} دعوات", valInvite1:"دعوة واحدة", dashTipDebtTitle:"تخلّص من ديونك", dashTipDebtSub:"خطة سداد وتاريخ للتحرر من الدين", dashTipCollabTitle:"أضف شريكك", dashTipCollabSub:"شارك الميزانيات والأهداف", dashTipSyncTitle:"فعّل مزامنة البنك", dashTipSyncSub:"سجّل المصروفات من إشعارات الدفع على هاتفك", dashTipTripTitle:"خطّط رحلة", dashTipTripSub:"دع ريتشارد يوزّع ميزانية سفرك", setLanguageSub:"لغة التطبيق", setCurrencySub:"كيف تُعرض الأموال", openAnAccount:"فتح حساب", totalSetAside:"إجمالي المخصص", businessLabel:"أعمال", investingLabel:"استثمار",
+    setAiAlfred:"ريتشارد والذكاء الاصطناعي", setVisual:"المظهر", setYourPlan:"خطتك", setInstructions:"تعليمات ريتشارد", setOpeningBalance:"الرصيد الافتتاحي", setLogMonth:"تسجيل هذا الشهر", setEntryMethod:"إضافة المعاملات", setDateRange:"النطاق الزمني", setBankSync:"مزامنة البنك", setAppearance:"الشكل", setYourName:"اسمك", setCollab:"المشاركة", setDebts:"الديون", setPrivacy:"الخصوصية والبيانات", valCustom:"مخصص", valDefault:"افتراضي", valOn:"مفعّل", valOff:"معطّل", valCsvImport:"استيراد ملف", valManual:"يدوي", valPastMonth:"الشهر الماضي", valThisMonth:"هذا الشهر", valTrackedN:"{n} متتبَّع", valInviteN:"{n} دعوات", valInvite1:"دعوة واحدة", dashTipDebtTitle:"تخلّص من ديونك", dashTipDebtSub:"خطة سداد وتاريخ للتحرر من الدين", dashTipCollabTitle:"أضف شريكك", dashTipCollabSub:"شارك الميزانيات والأهداف", dashTipSyncTitle:"فعّل مزامنة البنك", dashTipSyncSub:"سجّل المصروفات من إشعارات الدفع على هاتفك", dashTipTripTitle:"خطّط رحلة", dashTipTripSub:"دع ريتشارد يوزّع ميزانية سفرك", setLanguageSub:"لغة التطبيق", setCurrencySub:"كيف تُعرض الأموال", openAnAccount:"فتح حساب", totalSetAside:"إجمالي المخصص", businessLabel:"أعمال", investingLabel:"استثمار",
     dscBigDecision:"ريتشارد ذكاء اصطناعي وليس مستشاراً مالياً مرخصاً - تحقق بنفسك قبل قرار بهذا الحجم.",
     dscInvestRisk:"ريتشارد مساعد ذكاء اصطناعي وليس مستشاراً مالياً مرخصاً. الاستثمار ينطوي على مخاطر، بما في ذلك احتمال خسارة أموالك، والأداء السابق لا يضمن النتائج المستقبلية.",
     dscAiMistakes:"ريتشارد مساعد ذكاء اصطناعي وقد يخطئ. هذه ليست استشارة مالية مرخصة.",
@@ -1920,11 +1920,11 @@ var T1_STRINGS = {
     stsChargesN:"Баланс {bal}, минус {held} на {n} списаний. Крупнейшее {top}.",
     stsClear:"Баланс {bal}, и на этой неделе списаний нет.", stsThrough:"До",
     svGivePlanTitle:"Дайте этому счёту план", svGivePlanSub:"Четыре вопроса, и я рассчитаю сумму в месяц и дату, когда цель закроется.",
-    importCsv:"Импорт CSV",
+    importCsv:"Импорт выписки",
     dbNoDebts:"Долги не отслеживаются", dbNoDebtsSub:"Добавьте карту, кредит или овердрафт с остатком и ставкой, и я покажу самый быстрый выход.", dbAddFirst:"Добавить первый долг", dbTotalOwed:"Всего долга",
     obTypeItInstead:"ввести вручную",
     pfBadges:"Значки", pfManage:"Управление", pfYourData:"Ваши данные", pfRecentActivity:"Последние события", pfGreenMonth:"Зелёный месяц", pfBudgetRuns:"Серии бюджета", pfNoRuns:"Серий пока нет", pfSharedBudgets:"Общие бюджеты", pfNotSharing:"Ни с кем не делитесь", pfBudgetBooks:"Книги бюджета", pfTripHistory:"История поездок", pfYourPlan:"Ваш план", pfYourPlanSub:"Как Ричард видит ваши деньги", pfBankSync:"Синхронизация с банком", pfPrivacy:"Приватность и данные", pfPrivacySub:"Экспорт, доступ, удаление", pfNothingTracked:"Ничего не отслеживается", pfNoBadgesYet:"Пока ничего не заработано. Запишите операцию, задайте бюджет, подтвердите неделю - они начнут приходить быстро.", pfConfirm:"Подтвердить", pfNOfM:"{n} из {m}", pfSettings:"Настройки", pfNMembers:"{n} участников", pfOneMember:"1 участник", pfNEnded:"{n} завершено", pfNTotal:"{n} всего", pfNOf12:"{n} из 12 в этом году",
-    setAiAlfred:"Ричард и ИИ", setVisual:"Оформление", setYourPlan:"Ваш план", setInstructions:"Инструкции Ричарду", setOpeningBalance:"Начальный баланс", setLogMonth:"Записать месяц", setEntryMethod:"Добавление операций", setDateRange:"Период", setBankSync:"Синхронизация с банком", setAppearance:"Тема", setYourName:"Ваше имя", setCollab:"Совместно", setDebts:"Долги", setPrivacy:"Приватность и данные", valCustom:"Своё", valDefault:"По умолчанию", valOn:"Вкл", valOff:"Выкл", valCsvImport:"Импорт CSV", valManual:"Вручную", valPastMonth:"Прошлый месяц", valThisMonth:"Текущий месяц", valTrackedN:"{n} в учёте", valInviteN:"{n} приглашений", valInvite1:"1 приглашение", dashTipDebtTitle:"Закрыть долги", dashTipDebtSub:"План погашения и дата свободы от долга", dashTipCollabTitle:"Добавить партнёра", dashTipCollabSub:"Общие бюджеты и цели", dashTipSyncTitle:"Настроить синхронизацию", dashTipSyncSub:"Записывать траты из уведомлений об оплате", dashTipTripTitle:"Спланировать поездку", dashTipTripSub:"Ричард распределит бюджет поездки", setLanguageSub:"Язык приложения", setCurrencySub:"Как показываются деньги", openAnAccount:"Открыть счёт", totalSetAside:"Всего отложено", businessLabel:"Бизнес", investingLabel:"Инвестиции",
+    setAiAlfred:"Ричард и ИИ", setVisual:"Оформление", setYourPlan:"Ваш план", setInstructions:"Инструкции Ричарду", setOpeningBalance:"Начальный баланс", setLogMonth:"Записать месяц", setEntryMethod:"Добавление операций", setDateRange:"Период", setBankSync:"Синхронизация с банком", setAppearance:"Тема", setYourName:"Ваше имя", setCollab:"Совместно", setDebts:"Долги", setPrivacy:"Приватность и данные", valCustom:"Своё", valDefault:"По умолчанию", valOn:"Вкл", valOff:"Выкл", valCsvImport:"Импорт файла", valManual:"Вручную", valPastMonth:"Прошлый месяц", valThisMonth:"Текущий месяц", valTrackedN:"{n} в учёте", valInviteN:"{n} приглашений", valInvite1:"1 приглашение", dashTipDebtTitle:"Закрыть долги", dashTipDebtSub:"План погашения и дата свободы от долга", dashTipCollabTitle:"Добавить партнёра", dashTipCollabSub:"Общие бюджеты и цели", dashTipSyncTitle:"Настроить синхронизацию", dashTipSyncSub:"Записывать траты из уведомлений об оплате", dashTipTripTitle:"Спланировать поездку", dashTipTripSub:"Ричард распределит бюджет поездки", setLanguageSub:"Язык приложения", setCurrencySub:"Как показываются деньги", openAnAccount:"Открыть счёт", totalSetAside:"Всего отложено", businessLabel:"Бизнес", investingLabel:"Инвестиции",
     dscBigDecision:"Ричард - это ИИ, а не лицензированный финансовый советник. Перед решением такого масштаба проверьте всё сами.",
     dscInvestRisk:"Ричард - ИИ-помощник, а не лицензированный финансовый советник. Инвестирование связано с риском, включая возможную потерю денег, а прошлая доходность не гарантирует будущую.",
     dscAiMistakes:"Ричард - ИИ-помощник и может ошибаться. Это не лицензированная финансовая консультация.",
@@ -1956,7 +1956,7 @@ var CSV_STRINGS = {
     csvHow2:"Go to Transactions, Activity or Statements.",
     csvHow3:"Tap Export, Download or Share, and pick CSV or Excel.",
     csvHow4:"Come back here and drop the file in. That's it.",
-    csvHowNote:"Only Excel on offer? Open it and choose Save as CSV - Richy reads that too.",
+    csvHowNote:"Only Excel on offer? Take it as it comes - Richy reads Excel files too, and nothing needs converting.",
     csvWhySafe:"The file is read on your own device. Alfred sees only the column titles at the top of it, and the names of shops Richy doesn't recognise - never your amounts, dates or balance. Richy never asks for your bank password.",
     csvShowMe:"Show me how",
     csvHide:"Got it",
@@ -1981,7 +1981,7 @@ var CSV_STRINGS = {
     csvHow2:"היכנסו לתנועות, לפעילות או לדפי החשבון.",
     csvHow3:"לחצו על ייצוא, הורדה או שיתוף ובחרו CSV או Excel.",
     csvHow4:"חזרו לכאן והעלו את הקובץ. זה הכל.",
-    csvHowNote:"יש רק Excel? פתחו אותו ובחרו שמירה בשם CSV - ריצ'י קורא גם את זה.",
+    csvHowNote:"יש רק Excel? קחו אותו כמו שהוא - ריצ'י קורא גם קובצי Excel, ואין מה להמיר.",
     csvWhySafe:"הקובץ נקרא במכשיר שלכם. ריצ'רד רואה רק את כותרות העמודות שבראש הקובץ ואת שמות החנויות שריצ'י לא מכיר - אף פעם לא את הסכומים, התאריכים או היתרה. ריצ'י לא מבקש את הסיסמה לבנק.",
     csvShowMe:"תראו לי איך",
     csvHide:"הבנתי",
@@ -2006,7 +2006,7 @@ var CSV_STRINGS = {
     csvHow2:"اذهب إلى المعاملات أو النشاط أو كشوف الحساب.",
     csvHow3:"اضغط تصدير أو تنزيل أو مشاركة، واختر CSV أو Excel.",
     csvHow4:"ارجع إلى هنا وأضف الملف. هذا كل شيء.",
-    csvHowNote:"المتاح Excel فقط؟ افتحه واختر حفظ باسم CSV - ريتشي يقرأه أيضًا.",
+    csvHowNote:"المتاح Excel فقط؟ خذه كما هو - ريتشي يقرأ ملفات Excel أيضًا، ولا حاجة لأي تحويل.",
     csvWhySafe:"يُقرأ الملف على جهازك. لا يرى ريتشارد سوى عناوين الأعمدة في أعلى الملف وأسماء المتاجر التي لا يعرفها ريتشي - وليس مبالغك أو تواريخك أو رصيدك أبدًا. ريتشي لا يطلب كلمة مرور المصرف أبدًا.",
     csvShowMe:"أرِني كيف",
     csvHide:"فهمت",
@@ -2031,7 +2031,7 @@ var CSV_STRINGS = {
     csvHow2:"Зайдите в Операции, Историю или Выписки.",
     csvHow3:"Нажмите Экспорт, Скачать или Поделиться и выберите CSV или Excel.",
     csvHow4:"Вернитесь сюда и добавьте файл. Всё.",
-    csvHowNote:"Есть только Excel? Откройте его и сохраните как CSV - Richy прочитает и это.",
+    csvHowNote:"Есть только Excel? Берите как есть - Richy читает и файлы Excel, конвертировать ничего не нужно.",
     csvWhySafe:"Файл читается на вашем устройстве. Ричард видит только заголовки столбцов в начале файла и названия магазинов, которых Richy не знает, — никогда суммы, даты или баланс. Richy никогда не просит пароль от банка.",
     csvShowMe:"Покажите как",
     csvHide:"Понятно",
@@ -13092,21 +13092,601 @@ function csvDecodeBytes(buf) {
   return { text: attempt("utf-8", null, false) || "", encoding: "utf-8" };
 }
 
-// cb(err, { text, encoding }).
-function csvReadFile(file, cb) {
+// ===== IMPORT: SPREADSHEETS ==================================================
+// Banks hand out Excel at least as often as CSV, and the honest answer to
+// "only Excel on offer?" used to be: open it on a computer, File > Save As,
+// pick CSV, come back. On a phone, where there is nothing to open it in, that
+// answer ends the import. So the picker takes the spreadsheet itself.
+//
+// Three different things arrive under those two extensions:
+//
+//   .xlsx/.xlsm  real Excel: a ZIP of XML. Read below - the zip directory,
+//                DEFLATE through the platform's own DecompressionStream, then
+//                the sheet, the shared-string table, and the number formats
+//                that say which of the numbers are actually dates.
+//   .xls         usually NOT Excel at all. Isracard, Cal and Max hand out an
+//                HTML <table> with an .xls name on it, and older exports hand
+//                out SpreadsheetML 2003 (<Workbook> XML). Both are text, and
+//                both are read here.
+//   .xls         occasionally the real 1997 binary (an OLE compound file).
+//                That one is named rather than guessed at - see sheetReadBytes.
+//
+// All of it is parsing on the user's own device, exactly like the CSV path it
+// feeds into: a file in, rows of cells out, nothing sent anywhere. The rows go
+// straight into the same mapping screen, so everything downstream - the column
+// guess, the saved per-bank layout, the duplicate check - is shared code and
+// cannot drift between a CSV import and an Excel one.
+var SHEET_MAX_ROWS = 20000;   // a statement is hundreds of rows; this is a guard
+var SHEET_MAX_COLS = 256;
+var SHEET_MAX_TABLES = 300;   // nested layout tables in a bank's HTML export
+
+// --- the small XML/HTML tools ------------------------------------------------
+// Deliberately not DOMParser: this same code runs in the test runner, where
+// there is no DOM, and a WebView's parser would quietly "fix" a bank's broken
+// HTML in ways that differ between iOS and Android. These files are always
+// machine-written, so scanning them is honest work, not a shortcut.
+function sheetChar(code) {
+  if (!(code > 0) || code > 0x10ffff) return "";
+  try { return String.fromCodePoint(code); } catch (e) { return ""; }
+}
+function sheetUnxml(s) {
+  s = String(s == null ? "" : s);
+  if (s.indexOf("&") === -1) return s;
+  // &amp; last, or "&amp;lt;" would come out as "<".
+  return s.replace(/&#x([0-9a-fA-F]+);/g, function(_, h) { return sheetChar(parseInt(h, 16)); })
+    .replace(/&#(\d+);/g, function(_, d) { return sheetChar(parseInt(d, 10)); })
+    .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"")
+    .replace(/&apos;/g, "'").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&");
+}
+function sheetAttr(tag, name) {
+  var m = new RegExp("\\s" + name + "\\s*=\\s*(\"[^\"]*\"|'[^']*')").exec(String(tag || ""));
+  return m ? sheetUnxml(m[1].slice(1, -1)) : "";
+}
+// Every <name ...>...</name> in document order, open tag and inner text. The
+// alternation lets <t/> and <c r="A1"/> match too: the greedy attribute run
+// swallows the slash, so the tag TEXT is what says the element closed itself.
+function sheetEachTag(xml, name, fn) {
+  xml = String(xml || "");
+  var re = new RegExp("<" + name + "(\\s[^>]*|/)?>", "g");
+  var end = "</" + name + ">";
+  var m;
+  while ((m = re.exec(xml))) {
+    if (/\/>$/.test(m[0])) { fn(m[0], ""); continue; }
+    var at = xml.indexOf(end, re.lastIndex);
+    fn(m[0], at === -1 ? xml.slice(re.lastIndex) : xml.slice(re.lastIndex, at));
+    if (at === -1) return;
+    re.lastIndex = at + end.length;
+  }
+}
+// The inside of the first <name> element. Needed because styles.xml holds two
+// lists of <xf> elements and only the second one is what cells point at.
+function sheetSection(xml, name) {
+  xml = String(xml || "");
+  var m = new RegExp("<" + name + "(\\s[^>]*)?>").exec(xml);
+  if (!m) return "";
+  var start = m.index + m[0].length;
+  var at = xml.indexOf("</" + name + ">", start);
+  return at === -1 ? xml.slice(start) : xml.slice(start, at);
+}
+// One place where a cell becomes a string. A spreadsheet cell can hold a hard
+// newline; parseCSV works line by line, so a row that could carry one would
+// behave differently depending on which of the two paths read the file.
+function sheetCleanCell(s) {
+  return String(s == null ? "" : s).replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+}
+function sheetHasContent(cells) {
+  for (var i = 0; i < (cells || []).length; i++) if (cells[i] !== "") return true;
+  return false;
+}
+// A sheet with a title in A1 and nothing else is not the statement. Two filled
+// cells on one line is the lowest bar a table can clear.
+function sheetHasRows(rows) {
+  for (var i = 0; i < (rows || []).length; i++) {
+    var filled = 0;
+    for (var j = 0; j < rows[i].length; j++) if (rows[i][j] !== "") filled++;
+    if (filled >= 2) return true;
+  }
+  return false;
+}
+function sheetUtf8(u8) {
+  var text = new TextDecoder("utf-8").decode(u8 || new Uint8Array(0));
+  return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+}
+
+// --- the ZIP a .xlsx really is -----------------------------------------------
+function sheetU16(b, i) { return b[i] | (b[i + 1] << 8); }
+function sheetU32(b, i) { return (b[i] | (b[i + 1] << 8) | (b[i + 2] << 16)) + b[i + 3] * 16777216; }
+
+// name -> { method, csize, size, lho }, read from the central directory rather
+// than by walking local headers: a zip written as a stream leaves the sizes in
+// its local headers at zero and only fills them in here.
+function zipEntries(bytes) {
+  var n = bytes.length;
+  if (n < 22) return null;
+  var eocd = -1;
+  var stop = Math.max(0, n - 22 - 65557);   // the comment field is 64KB at most
+  for (var i = n - 22; i >= stop; i--) {
+    if (bytes[i] === 0x50 && bytes[i + 1] === 0x4b && bytes[i + 2] === 0x05 && bytes[i + 3] === 0x06) { eocd = i; break; }
+  }
+  if (eocd < 0) return null;
+  var count = sheetU16(bytes, eocd + 10);
+  var cdOff = sheetU32(bytes, eocd + 16);
+  // ZIP64: both fields saturate and the real ones live in the record that the
+  // locator just before the EOCD points at.
+  if (cdOff === 0xffffffff || count === 0xffff) {
+    var loc = eocd - 20;
+    if (loc >= 0 && bytes[loc] === 0x50 && bytes[loc + 1] === 0x4b && bytes[loc + 2] === 0x06 && bytes[loc + 3] === 0x07
+      && sheetU32(bytes, loc + 12) === 0) {
+      var z64 = sheetU32(bytes, loc + 8);
+      if (z64 + 56 <= n && bytes[z64] === 0x50 && bytes[z64 + 1] === 0x4b && bytes[z64 + 2] === 0x06 && bytes[z64 + 3] === 0x06) {
+        count = sheetU32(bytes, z64 + 32);
+        cdOff = sheetU32(bytes, z64 + 48);
+      }
+    }
+  }
+  var out = {}, p = cdOff, seen = 0;
+  while (seen < count && p + 46 <= n) {
+    if (!(bytes[p] === 0x50 && bytes[p + 1] === 0x4b && bytes[p + 2] === 0x01 && bytes[p + 3] === 0x02)) break;
+    var nameLen = sheetU16(bytes, p + 28);
+    var name = "";
+    for (var c = 0; c < nameLen; c++) name += String.fromCharCode(bytes[p + 46 + c]);
+    out[name] = {
+      method: sheetU16(bytes, p + 10),
+      csize: sheetU32(bytes, p + 20),
+      size: sheetU32(bytes, p + 24),
+      lho: sheetU32(bytes, p + 42)
+    };
+    p += 46 + nameLen + sheetU16(bytes, p + 30) + sheetU16(bytes, p + 32);
+    seen++;
+  }
+  return seen ? out : null;
+}
+function zipEntryBytes(bytes, ent) {
+  var p = ent.lho;
+  if (p + 30 > bytes.length) return null;
+  if (!(bytes[p] === 0x50 && bytes[p + 1] === 0x4b && bytes[p + 2] === 0x03 && bytes[p + 3] === 0x04)) return null;
+  var start = p + 30 + sheetU16(bytes, p + 26) + sheetU16(bytes, p + 28);
+  var end = start + ent.csize;
+  if (end > bytes.length) return null;
+  return bytes.subarray(start, end);
+}
+// DEFLATE through the platform's own decompressor. Shipping a JavaScript
+// inflater would be another 200 lines of bit-twiddling in a file that is
+// already long, to do what every engine Richy runs on already does natively.
+function sheetInflate(raw, cb) {
+  if (typeof DecompressionStream !== "function") {
+    cb(new Error("This browser can't open .xlsx files. Save the file as CSV and Richy will read it.")); return;
+  }
+  try {
+    var ds = new DecompressionStream("deflate-raw");
+    var w = ds.writable.getWriter();
+    w.write(raw);
+    w.close();
+    new Response(ds.readable).arrayBuffer().then(
+      function(ab) { cb(null, new Uint8Array(ab)); },
+      function() { cb(new Error("That Excel file couldn't be opened. It may be damaged - try downloading it again.")); }
+    );
+  } catch (e) {
+    cb(new Error("That Excel file couldn't be opened. It may be damaged - try downloading it again."));
+  }
+}
+function zipEntryText(bytes, ent, cb) {
+  var raw = zipEntryBytes(bytes, ent);
+  if (!raw) { cb(new Error("That Excel file looks damaged - Richy couldn't open part of it.")); return; }
+  if (ent.method === 0) { cb(null, sheetUtf8(raw)); return; }
+  if (ent.method !== 8) { cb(new Error("That Excel file uses a compression Richy can't open. Save it as CSV and it will read straight in.")); return; }
+  sheetInflate(raw, function(err, out) { if (err) cb(err); else cb(null, sheetUtf8(out)); });
+}
+// The named entries that exist, as text. Missing ones are simply absent - a
+// workbook with no styles or no shared strings is legal and common.
+function zipReadText(bytes, entries, names, cb) {
+  var out = {}, i = 0;
+  function next() {
+    while (i < names.length && !entries[names[i]]) i++;
+    if (i >= names.length) { cb(null, out); return; }
+    var name = names[i++];
+    zipEntryText(bytes, entries[name], function(err, text) {
+      if (err) { cb(err); return; }
+      out[name] = text;
+      next();
+    });
+  }
+  next();
+}
+
+// --- .xlsx: strings, formats, dates, cells -----------------------------------
+function xlsxSharedStrings(xml) {
+  var out = [];
+  sheetEachTag(xml, "si", function(open, inner) {
+    // Rich text splits one string across runs, and the phonetic guides Excel
+    // adds are not part of the text a person sees.
+    var body = inner.replace(/<rPh[\s\S]*?<\/rPh>/g, "");
+    var txt = "";
+    sheetEachTag(body, "t", function(o, t) { txt += sheetUnxml(t); });
+    out.push(txt);
+  });
+  return out;
+}
+// Excel's built-in date formats. 14-22 are the date and time ones, 45-47 the
+// elapsed-time ones, and 27/30/36/50/57 are the date formats in the Japanese,
+// Chinese and Korean builds - which Israeli users do hit, because the file is
+// formatted by whoever exported it, not by whoever reads it.
+var XLSX_DATE_FMT_IDS = "14,15,16,17,18,19,20,21,22,27,30,36,45,46,47,50,57";
+function sheetFmtIsDate(code) {
+  code = String(code || "");
+  if (!code || code === "General") return false;
+  // Strip everything that can hold a letter without meaning a date: colour and
+  // locale brackets, quoted literals, escaped characters, and the fill/skip
+  // markers. What is left is the actual format.
+  code = code.replace(/\[[^\]]*\]/g, "").replace(/"[^"]*"/g, "").replace(/\\./g, "")
+    .replace(/[*_]./g, "").replace(/;@$/, "");
+  return /[ymdhs]/i.test(code);
+}
+// xf index -> is this a date. Cells carry s="3", meaning the 4th <xf> of
+// cellXfs; cellStyleXfs comes first in the file and is NOT what they point at.
+function xlsxDateStyles(stylesXml) {
+  var custom = {};
+  sheetEachTag(sheetSection(stylesXml, "numFmts"), "numFmt", function(open) {
+    custom[sheetAttr(open, "numFmtId")] = sheetAttr(open, "formatCode");
+  });
+  var builtin = ("," + XLSX_DATE_FMT_IDS + ",");
+  var out = [];
+  sheetEachTag(sheetSection(stylesXml, "cellXfs"), "xf", function(open) {
+    var id = sheetAttr(open, "numFmtId") || "0";
+    out.push(custom[id] !== undefined ? sheetFmtIsDate(custom[id]) : builtin.indexOf("," + id + ",") !== -1);
+  });
+  return out;
+}
+// "AB12" -> 27. A cell without a reference falls back to its position, which
+// is what a file written by something other than Excel tends to rely on.
+function sheetColFromRef(ref) {
+  var n = 0, i = 0;
+  ref = String(ref || "").toUpperCase();
+  for (; i < ref.length; i++) {
+    var c = ref.charCodeAt(i);
+    if (c < 65 || c > 90) break;
+    n = n * 26 + (c - 64);
+  }
+  return i ? n - 1 : -1;
+}
+// A serial number to a date string. Excel's 1900 calendar contains 29 February
+// 1900, a day that never existed - Lotus had the bug and Excel kept it - so
+// every serial from 61 on is a day ahead of the real count unless that day is
+// taken back off. Mac Excel's 1904 calendar has no such day and its own epoch.
+function sheetSerialToDate(n, date1904) {
+  if (!isFinite(n) || n < 0 || n > 2958800) return "";
+  var days = Math.floor(n);
+  var frac = n - days;
+  if (!days && frac > 0) {
+    // A time with no date. Returning 1899-12-31 for it would put a "date" in a
+    // column that only ever held clock times, and the column guesser reads
+    // that shape.
+    var mins = Math.round(frac * 1440) % 1440;
+    return pad2(Math.floor(mins / 60)) + ":" + pad2(mins % 60);
+  }
+  var ms = date1904 ? Date.UTC(1904, 0, 1) : Date.UTC(1899, 11, days < 60 ? 31 : 30);
+  var d = new Date(ms + days * 86400000);
+  return d.getUTCFullYear() + "-" + pad2(d.getUTCMonth() + 1) + "-" + pad2(d.getUTCDate());
+}
+function xlsxSheetRows(xml, shared, dateStyles, date1904) {
+  var rows = [];
+  sheetEachTag(sheetSection(xml, "sheetData"), "row", function(rOpen, rInner) {
+    if (rows.length >= SHEET_MAX_ROWS) return;
+    var cells = [];
+    sheetEachTag(rInner, "c", function(cOpen, cInner) {
+      var at = sheetColFromRef(sheetAttr(cOpen, "r"));
+      if (at < 0) at = cells.length;
+      if (at >= SHEET_MAX_COLS) return;
+      var t = sheetAttr(cOpen, "t");
+      var v = "";
+      if (t === "inlineStr") {
+        sheetEachTag(cInner, "t", function(o, txt) { v += sheetUnxml(txt); });
+      } else {
+        var vm = /<v(?:\s[^>]*)?>([\s\S]*?)<\/v>/.exec(cInner);
+        var raw = vm ? sheetUnxml(vm[1]) : "";
+        if (t === "s") { var idx = parseInt(raw, 10); v = (shared && shared[idx] != null) ? shared[idx] : ""; }
+        else if (t === "b") v = raw === "1" ? "TRUE" : raw === "0" ? "FALSE" : "";
+        else if (t === "e") v = "";           // #REF!, #N/A - not a value
+        else if (t === "str" || t === "d") v = raw;
+        else if (raw !== "" && /^-?\d*\.?\d+(e[+-]?\d+)?$/i.test(raw)) {
+          // A number, and its format is the only thing that says whether it is
+          // money or a date: 45901 is both. Reading a date as an amount is the
+          // kind of mistake that still looks plausible on the screen, so the
+          // format decides - and the raw text is kept otherwise, which is how
+          // 412.75 stays 412.75 and never becomes 412.74999999999994.
+          var sIdx = parseInt(sheetAttr(cOpen, "s") || "0", 10);
+          v = (dateStyles && dateStyles[sIdx]) ? sheetSerialToDate(parseFloat(raw), date1904) : raw;
+        } else v = raw;
+      }
+      while (cells.length < at) cells.push("");
+      cells[at] = sheetCleanCell(v);
+    });
+    if (sheetHasContent(cells)) rows.push(cells);
+  });
+  return rows;
+}
+// A relationship Target, resolved against the folder whose .rels file it came
+// from. Targets are relative ("worksheets/sheet1.xml") far more often than
+// absolute ("/xl/worksheets/sheet1.xml"), and both are legal.
+function xlsxRelPath(target, base) {
+  if (!target) return "";
+  return target.charAt(0) === "/" ? target.slice(1) : base + target.replace(/^\.\//, "");
+}
+// A .rels file as two lookups: by Id, which is how a sheet names its file, and
+// by the last word of its Type ("worksheet", "sharedStrings", "styles"), which
+// is how the package names the workbook itself.
+function xlsxRelMap(relsXml, base) {
+  var out = { id: {}, type: {} };
+  sheetEachTag(relsXml, "Relationship", function(open) {
+    var path = xlsxRelPath(sheetAttr(open, "Target"), base);
+    if (!path) return;
+    var id = sheetAttr(open, "Id");
+    var type = sheetAttr(open, "Type").replace(/^.*\//, "");
+    if (id) out.id[id] = path;
+    if (type && !out.type[type]) out.type[type] = path;
+  });
+  return out;
+}
+// The sheets in the order Excel shows them, each with the file that holds it.
+// A hidden sheet goes last rather than being dropped: some exports put the
+// statement on one and the cover page on the visible one.
+function xlsxSheetList(wbXml, rels, entries, base) {
+  var shown = [], hidden = [];
+  sheetEachTag(sheetSection(wbXml, "sheets"), "sheet", function(open) {
+    var path = rels.id[sheetAttr(open, "r:id")];
+    if (!path || !entries[path]) return;
+    var state = sheetAttr(open, "state").toLowerCase();
+    var one = { name: sheetAttr(open, "name"), path: path };
+    if (state === "hidden" || state === "veryhidden") hidden.push(one); else shown.push(one);
+  });
+  var out = shown.concat(hidden);
+  if (out.length) return out;
+  // No usable relationships - fall back to the sheet files themselves, in
+  // their numbered order.
+  var names = [], re = new RegExp("^" + base + "worksheets/sheet\\d+\\.xml$");
+  for (var k in entries) if (re.test(k)) names.push(k);
+  names.sort(function(a, b) { return parseInt(a.replace(/\D/g, ""), 10) - parseInt(b.replace(/\D/g, ""), 10); });
+  return names.map(function(p) { return { name: "", path: p }; });
+}
+// cb(err, { kind, rows, sheet }). Four reads deep, each one naming what it is
+// for: the package says where the workbook is, the workbook says which sheets
+// exist and where its strings and formats live, and then the sheets are tried
+// in order until one actually holds a table - a cover page with a logo on it
+// should not end the import.
+function xlsxRead(bytes, cb) {
+  var entries = zipEntries(bytes);
+  if (!entries) { cb(new Error("That file looks damaged - Richy couldn't open it. Try downloading it from your bank again.")); return; }
+  zipReadText(bytes, entries, ["_rels/.rels"], function(e0, pkg) {
+    if (e0) { cb(e0); return; }
+    var wbPath = "";
+    if (pkg["_rels/.rels"]) {
+      var pkgRels = xlsxRelMap(pkg["_rels/.rels"], "");
+      if (pkgRels.type.officeDocument && entries[pkgRels.type.officeDocument]) wbPath = pkgRels.type.officeDocument;
+    }
+    if (!wbPath && entries["xl/workbook.xml"]) wbPath = "xl/workbook.xml";
+    if (!wbPath) {
+      // Every one of these is a zip, and none of them is Excel. Saying which
+      // is the difference between a user fixing it in ten seconds and giving
+      // up on the import.
+      cb(new Error(entries["mimetype"] || entries["content.xml"]
+        ? "That's a LibreOffice sheet (.ods). Save it as Excel or CSV and Richy will read it."
+        : entries["Index/Document.iwa"] || entries["Metadata/DocumentIdentifier"]
+          ? "That's an Apple Numbers file. Export it as Excel or CSV and Richy will read it."
+          : "That's a zip file, not a statement. Unzip it and choose the CSV or Excel file inside."));
+      return;
+    }
+    var base = wbPath.replace(/[^\/]*$/, "");                       // "xl/workbook.xml" -> "xl/"
+    var relsPath = base + "_rels/" + wbPath.slice(base.length) + ".rels";
+    zipReadText(bytes, entries, [wbPath, relsPath], function(e1, book) {
+      if (e1) { cb(e1); return; }
+      var wb = book[wbPath] || "";
+      var date1904 = /date1904\s*=\s*"(1|true)"/i.test(wb);
+      var rels = xlsxRelMap(book[relsPath] || "", base);
+      var sheets = xlsxSheetList(wb, rels, entries, base);
+      if (!sheets.length) { cb(new Error("There are no sheets in that Excel file.")); return; }
+      var sharedPath = rels.type.sharedStrings || base + "sharedStrings.xml";
+      var stylesPath = rels.type.styles || base + "styles.xml";
+      zipReadText(bytes, entries, [sharedPath, stylesPath], function(e2, side) {
+        if (e2) { cb(e2); return; }
+        var shared = xlsxSharedStrings(side[sharedPath] || "");
+        var styles = xlsxDateStyles(side[stylesPath] || "");
+        (function step(i) {
+          if (i >= sheets.length) { cb(new Error("There are no rows in that Excel file. Check you exported your transactions and not an empty sheet.")); return; }
+          zipReadText(bytes, entries, [sheets[i].path], function(e3, one) {
+            if (e3) { cb(e3); return; }
+            var rows = xlsxSheetRows(one[sheets[i].path] || "", shared, styles, date1904);
+            if (sheetHasRows(rows)) { cb(null, { kind: "xlsx", rows: rows, sheet: sheets[i].name }); return; }
+            step(i + 1);
+          });
+        })(0);
+      });
+    });
+  });
+}
+
+// --- the .xls files that are really HTML -------------------------------------
+function htmlText(s) {
+  return sheetCleanCell(sheetUnxml(String(s || "")
+    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, "")
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<[^>]*>/g, " ")));
+}
+// Every table in the document, innermost included, as inner HTML. Bank exports
+// wrap the statement in two or three layout tables, so the outermost one is
+// almost never the one wanted.
+function htmlTableRegions(text) {
+  var out = [], stack = [], re = /<(\/?)table\b[^>]*>/gi, m;
+  while ((m = re.exec(text)) && out.length < SHEET_MAX_TABLES) {
+    if (m[1]) { if (stack.length) out.push(text.slice(stack.pop(), m.index)); }
+    else if (!/\/>$/.test(m[0])) stack.push(re.lastIndex);
+  }
+  while (stack.length && out.length < SHEET_MAX_TABLES) out.push(text.slice(stack.pop()));
+  return out;
+}
+// Split on the opening tags rather than matching pairs: a bank's export leaves
+// </td> and </tr> off often enough that pair matching loses whole rows.
+function htmlRowCells(tr) {
+  var opens = tr.match(/<t[dh]\b[^>]*>/gi) || [];
+  var parts = tr.split(/<t[dh]\b[^>]*>/gi);
+  parts.shift();
+  var cells = [];
+  for (var i = 0; i < parts.length && cells.length < SHEET_MAX_COLS; i++) {
+    cells.push(htmlText(parts[i].replace(/<\/t[dh]>[\s\S]*$/i, "")));
+    var span = parseInt(sheetAttr(opens[i] || "", "colspan") || "1", 10);
+    for (var k = 1; k < span && k < 40 && cells.length < SHEET_MAX_COLS; k++) cells.push("");
+  }
+  return cells;
+}
+function htmlRegionRows(html) {
+  var parts = html.split(/<tr\b[^>]*>/gi);
+  parts.shift();
+  var rows = [];
+  for (var i = 0; i < parts.length && rows.length < SHEET_MAX_ROWS; i++) {
+    var cells = htmlRowCells(parts[i].replace(/<\/tr>[\s\S]*$/i, ""));
+    if (sheetHasContent(cells)) rows.push(cells);
+  }
+  return rows;
+}
+// How much this table looks like a statement: how many of its rows agree on a
+// width of two or more. A layout table scores its own single-cell rows at
+// nothing, while the data table inside it scores every line it holds.
+function sheetTableScore(rows) {
+  var widths = {}, best = 0, width = 0;
+  for (var i = 0; i < rows.length; i++) {
+    var w = rows[i].length;
+    if (w < 2) continue;
+    widths[w] = (widths[w] || 0) + 1;
+    if (widths[w] > best) { best = widths[w]; width = w; }
+  }
+  return width >= 2 ? best : 0;
+}
+function htmlSheetRows(text) {
+  var regions = htmlTableRegions(text);
+  var best = [], bestScore = 0, bestLen = 0;
+  for (var i = 0; i < regions.length; i++) {
+    var rows = htmlRegionRows(regions[i]);
+    var score = sheetTableScore(rows);
+    // A tie means one table is inside the other and they hold the same rows.
+    // The smaller one is the data table; the bigger one is the wrapper.
+    if (score > bestScore || (score > 0 && score === bestScore && regions[i].length < bestLen)) {
+      best = rows; bestScore = score; bestLen = regions[i].length;
+    }
+  }
+  return best;
+}
+
+// --- SpreadsheetML 2003: <Workbook> XML with an .xls name --------------------
+function xmlssRows(text) {
+  var best = [];
+  sheetEachTag(text, "Worksheet", function(wOpen, wInner) {
+    var rows = [];
+    sheetEachTag(wInner, "Row", function(rOpen, rInner) {
+      if (rows.length >= SHEET_MAX_ROWS) return;
+      var cells = [];
+      sheetEachTag(rInner, "Cell", function(cOpen, cInner) {
+        // ss:Index is how this format writes a gap: the next cell states which
+        // column it is in and the ones before it are simply missing.
+        var idx = parseInt(sheetAttr(cOpen, "ss:Index") || "0", 10);
+        if (idx > 0) while (cells.length < idx - 1 && cells.length < SHEET_MAX_COLS) cells.push("");
+        var v = "";
+        sheetEachTag(cInner, "Data", function(dOpen, dInner) {
+          var raw = htmlText(dInner);      // <B>, <Font> and friends live inside Data
+          if (sheetAttr(dOpen, "ss:Type") === "DateTime") raw = raw.replace(/T[\d:.]*$/, "");
+          v += raw;
+        });
+        if (cells.length < SHEET_MAX_COLS) cells.push(sheetCleanCell(v));
+        var across = parseInt(sheetAttr(cOpen, "ss:MergeAcross") || "0", 10);
+        for (var k = 0; k < across && k < 40 && cells.length < SHEET_MAX_COLS; k++) cells.push("");
+      });
+      if (sheetHasContent(cells)) rows.push(cells);
+    });
+    if (rows.length > best.length) best = rows;
+  });
+  return best;
+}
+
+// --- what kind of file is this ----------------------------------------------
+function sheetIsZip(b) {
+  return b.length > 4 && b[0] === 0x50 && b[1] === 0x4b && (b[2] === 3 || b[2] === 5 || b[2] === 7) && (b[3] === 4 || b[3] === 6 || b[3] === 8);
+}
+function sheetIsOle(b) {
+  return b.length > 8 && b[0] === 0xd0 && b[1] === 0xcf && b[2] === 0x11 && b[3] === 0xe0
+    && b[4] === 0xa1 && b[5] === 0xb1 && b[6] === 0x1a && b[7] === 0xe1;
+}
+// "" for anything that should be read as delimited text. The .xls files card
+// issuers hand out are one of these two far more often than they are Excel.
+function sheetMarkupKind(text) {
+  text = String(text || "");
+  var head = text.slice(0, 2000).toLowerCase();
+  if (head.indexOf("urn:schemas-microsoft-com:office:spreadsheet") !== -1 || /<workbook[\s>]/i.test(head)) return "xmlss";
+  if (/<table[\s>]/i.test(text) && (/<t[dr][\s>]/i.test(text) || /<\/t[dr]>/i.test(text))) return "html";
+  return "";
+}
+
+// The one way in. cb(err, out), where out is either
+//   { kind: "csv", text, encoding }          - the text path, unchanged
+//   { kind, rows, sheet, encoding }          - a table, read without ever
+//                                              becoming text
+// so the screen above can treat a spreadsheet as just another way rows arrive.
+function sheetReadBytes(buf, name, cb) {
+  var bytes = new Uint8Array(buf || new ArrayBuffer(0));
+  if (!bytes.length) { cb(new Error("That file was empty.")); return; }
+  var ext = (String(name || "").match(/\.([a-z0-9]+)$/i) || ["", ""])[1].toLowerCase();
+  if (sheetIsOle(bytes)) {
+    // The 1997 binary. Reading it means an OLE compound-file walk and the BIFF
+    // record stream inside it - a lot of code to sit unverified behind a
+    // format that every tool that can open it can also re-save in one step.
+    cb(new Error("That's the old .xls format from 1997. Open it, save it as .xlsx or CSV, and Richy will read it."));
+    return;
+  }
+  if (sheetIsZip(bytes)) { xlsxRead(bytes, cb); return; }
+  var dec = csvDecodeBytes(buf);
+  var markup = sheetMarkupKind(dec.text);
+  if (markup) {
+    var rows = markup === "xmlss" ? xmlssRows(dec.text) : htmlSheetRows(dec.text);
+    if (sheetHasRows(rows)) { cb(null, { kind: markup, rows: rows, sheet: "", encoding: dec.encoding }); return; }
+    cb(new Error(markup === "html"
+      ? "That file is a web page with no table in it. Export your transactions again and pick CSV or Excel."
+      : "There are no rows in that file. Check you exported your transactions and not an empty sheet."));
+    return;
+  }
+  if (!dec.text.trim()) { cb(new Error("That file was empty.")); return; }
+  // Plain text with a spreadsheet name on it is still plain text - Israeli
+  // banks label tab-separated exports .xls all the time - so it goes down the
+  // CSV path, where the delimiter is sniffed rather than assumed.
+  if (ext === "xlsx" || ext === "xlsm") {
+    cb(new Error("That doesn't look like an Excel file inside, whatever it is named. Export it again from your bank."));
+    return;
+  }
+  cb(null, { kind: "csv", text: dec.text, encoding: dec.encoding });
+}
+
+// cb(err, out) - sheetReadBytes with a File in front of it. The one reader the
+// import screen calls, whatever the user picked.
+function sheetReadFile(file, cb) {
   var reader = new FileReader();
   reader.onerror = function() { cb(new Error("That file couldn't be read.")); };
   reader.onload = function(ev) {
     var buf = ev.target && ev.target.result;
     if (!buf) { cb(new Error("That file was empty.")); return; }
-    var out;
-    try { out = csvDecodeBytes(buf); }
-    catch (e) { cb(new Error("That file couldn't be read.")); return; }
-    if (!out.text.trim()) { cb(new Error("That file was empty.")); return; }
-    cb(null, out);
+    try { sheetReadBytes(buf, (file && file.name) || "", cb); }
+    catch (e) { cb(new Error("That file couldn't be read.")); }
   };
   reader.readAsArrayBuffer(file);
 }
+
+// What the screen says once a spreadsheet is in. A workbook can hold several
+// sheets and Richy picks one, so it says which - a user whose statement is on
+// the second tab needs to be able to see that it was not the one read.
+function sheetReadNote(file, out) {
+  var n = ((out && out.rows) || []).length;
+  var name = (file && file.name) || "";
+  var what = out && out.kind === "xlsx"
+    ? (out.sheet ? "the sheet “" + out.sheet + "”" : "your Excel file")
+    : "the table in it";
+  return (name ? name + " — " : "") + n + (n === 1 ? " line" : " lines") + " read from " + what + ".";
+}
+
 
 // ===== CSV IMPORT: WHAT THE MODEL IS ALLOWED TO SEE ==========================
 // The import screen promises, in every language Richy speaks, that the file is
@@ -16235,6 +16815,13 @@ function ImportSheet(props) {
   // from a saved mapping rather than a fresh reading, should be able to see
   // that rather than wonder why this import behaved differently.
   var _enc = useState(""); var encoding = _enc[0]; var setEncoding = _enc[1];
+  // A spreadsheet arrives as rows, not as text, and it stays that way: turning
+  // it back into CSV to re-parse would mean guessing a delimiter that cannot
+  // collide with a shop name, and losing a cell that holds a comma or a line
+  // break. Set means the last file was a spreadsheet; the textarea is then the
+  // other way in, not a view of this.
+  var _srows = useState(null); var sheetRows = _srows[0]; var setSheetRows = _srows[1];
+  var _snote = useState(""); var sheetNote = _snote[0]; var setSheetNote = _snote[1];
   var _read = useState(null); var reading = _read[0]; var setReading = _read[1];
   var _fp = useState(""); var fingerprint = _fp[0]; var setFingerprint = _fp[1];
   // shop -> { category, confidence, source } for this import. "source" decides
@@ -16273,7 +16860,7 @@ function ImportSheet(props) {
   var _det = useState(false); var showDetails = _det[0]; var setShowDetails = _det[1];
 
   function reset() {
-    setRaw(""); setStep("paste"); setRows([]); setHeaderRow(0);
+    setRaw(""); setStep("paste"); setRows([]); setHeaderRow(0); setSheetRows(null); setSheetNote("");
     setEncoding(""); setReading(null); setFingerprint(""); setShopCats({}); setShopMeta(null);
     setMap({ date: -1, amount: -1, desc: -1, debit: -1, credit: -1 }); setSplitAmt(false); setPreferDMY(true); setAllExpenses(false); setBuilt([]); setDupes(0); setErr("");
     setPlan(null); setDecisions({}); setQueue([]); setQIdx(0); setAiRes({ settled: 0, failed: false }); setReport(null);
@@ -16289,11 +16876,22 @@ function ImportSheet(props) {
     var f = e.target.files && e.target.files[0];
     if (!f) return;
     setErr("");
+    // sheetReadFile sniffs what the file actually IS before anything else:
     // readAsText() assumes UTF-8 and has no way to be told otherwise, which is
     // why a Leumi or Isracard export used to arrive as mojibake and take every
-    // column guess down with it. csvReadFile sniffs the encoding first.
-    csvReadFile(f, function(rErr, out) {
-      if (rErr) { setErr(rErr.message); return; }
+    // column guess down with it - and half the files named .xls are not Excel
+    // at all but an HTML table. Text comes back as text, a spreadsheet comes
+    // back as rows, and the screen below only has to know which.
+    sheetReadFile(f, function(rErr, out) {
+      if (rErr) { setSheetRows(null); setSheetNote(""); setErr(rErr.message); return; }
+      if (out.rows) {
+        setSheetRows(out.rows);
+        setRaw("");
+        setEncoding("");
+        setSheetNote(sheetReadNote(f, out));
+        return;
+      }
+      setSheetRows(null); setSheetNote("");
       setEncoding(out.encoding);
       setRaw(out.text);
     });
@@ -16339,8 +16937,19 @@ function ImportSheet(props) {
 
   function goMap() {
     setErr("");
-    var parsed = parseCSV(raw);
-    if (parsed.length < 1 || parsed[0].length < 2) { setErr("Could not read any rows. Paste CSV text or choose a .csv file."); return; }
+    // A spreadsheet already came back as rows; text still has to be split, and
+    // the delimiter sniffed while it is. Everything from here down is the same
+    // code either way, which is the whole point of reading a sheet into rows
+    // rather than into a second kind of import.
+    var parsed = (sheetRows && sheetRows.length) ? sheetRows : parseCSV(raw);
+    // The widest row, not the first one. The first line of a statement is the
+    // report title - one cell - and whether it arrives padded out with commas
+    // depends on what wrote the file: Excel pads it, a sheet read straight
+    // does not, and judging the file by that line rejected whole statements
+    // that were sitting right there underneath it.
+    var widest = 0;
+    for (var wi = 0; wi < parsed.length; wi++) if (parsed[wi].length > widest) widest = parsed[wi].length;
+    if (parsed.length < 1 || widest < 2) { setErr("Could not read any rows. Choose a CSV or Excel file, or paste the text in."); return; }
     var sk = csvSkeleton(parsed);
     var fp = csvFingerprint(sk);
     setFingerprint(fp);
@@ -16781,23 +17390,39 @@ function ImportSheet(props) {
   })();
 
   return (
-    <Overlay open={props.open} onClose={close} title="Import from CSV">
+    <Overlay open={props.open} onClose={close} title="Import a statement">
       {step === "paste" && (
         <div>
           <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginBottom: 4 }}>
-            Download a statement from your bank or card, then drop the file in. Richy reads it here on your device - to find your columns Alfred sees the titles at the top of the file, and the names of shops Richy doesn't recognise, never your amounts or dates. You see everything before a single line is saved.
+            Download a statement from your bank or card - CSV or Excel, whichever it offers - then drop the file in. Richy reads it here on your device: to find your columns Alfred sees the titles at the top of the file, and the names of shops Richy doesn't recognise, never your amounts or dates. You see everything before a single line is saved.
           </div>
           <CsvExplainer style={{ marginBottom: 10 }} />
           <label style={{ display: "block", width: "100%", textAlign: "center", padding: "13px 0", borderRadius: 13, border: "1.5px dashed " + T.orange, background: T.orangeDim, color: T.orange, fontSize: 14, fontWeight: 700, fontFamily: UI, cursor: "pointer", marginBottom: 10 }}>
-            Choose a .csv file
-            <input type="file" accept=".csv,text/csv,text/plain" onChange={handleFile} style={{ display: "none" }} />
+            {sheetRows ? "Choose a different file" : "Choose a file"}
+            <input type="file" onChange={handleFile} style={{ display: "none" }}
+              accept={".csv,.tsv,.txt,.xlsx,.xlsm,.xls,text/csv,text/plain,text/tab-separated-values,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"} />
           </label>
-          <div style={{ fontSize: 11, color: T.ink3, textAlign: "center", marginBottom: 10 }}>or paste the CSV text below</div>
-          <textarea value={raw} onChange={function(e) { setRaw(e.target.value); setEncoding(""); }} rows={6}
-            placeholder={"Date,Description,Amount\n2026-06-01,Grocery Store,-54.20\n2026-06-02,Salary,3000"}
-            style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid " + T.hairline2, borderRadius: 13, padding: "11px 13px", fontSize: 13, fontFamily: UI, color: T.ink, outline: "none", resize: "vertical", marginBottom: 10 }} />
+          {/* A spreadsheet has no text to show, so what is shown instead is
+              what was actually read out of it - the file, the sheet and the
+              number of lines - rather than an empty box that looks like
+              nothing happened. */}
+          {sheetRows ? (
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 9, background: T.card, border: "1px solid " + T.hairline, borderRadius: 13, padding: "11px 13px", marginBottom: 10 }}>
+              <span style={{ width: 24, height: 24, borderRadius: 9, background: T.greenDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <SVGIcon id="check" size={13} color={T.green} />
+              </span>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: T.ink2, lineHeight: 1.5, wordBreak: "break-word" }}>{sheetNote}</span>
+            </div>
+          ) : (
+            <div>
+              <div style={{ fontSize: 11, color: T.ink3, textAlign: "center", marginBottom: 10 }}>or paste the text of a CSV below</div>
+              <textarea value={raw} onChange={function(e) { setRaw(e.target.value); setEncoding(""); setSheetRows(null); setSheetNote(""); }} rows={6}
+                placeholder={"Date,Description,Amount\n2026-06-01,Grocery Store,-54.20\n2026-06-02,Salary,3000"}
+                style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid " + T.hairline2, borderRadius: 13, padding: "11px 13px", fontSize: 13, fontFamily: UI, color: T.ink, outline: "none", resize: "vertical", marginBottom: 10 }} />
+            </div>
+          )}
           {err && <div style={{ fontSize: 13, color: T.red, marginBottom: 10 }}>{err}</div>}
-          <BigBtn label="Next: map columns" onPress={goMap} disabled={!raw.trim()} />
+          <BigBtn label="Next: map columns" onPress={goMap} disabled={!(sheetRows && sheetRows.length) && !raw.trim()} />
         </div>
       )}
 
@@ -16860,6 +17485,9 @@ function ImportSheet(props) {
               )}
               {reading.sign && reading.sign.allExpenses && (
                 <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.5 }}>{"Nothing in the file is negative, so every line is being read as money out."}</div>
+              )}
+              {sheetNote && (
+                <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.5 }}>{sheetNote}</div>
               )}
               {encoding && encoding !== "utf-8" && (
                 <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.5 }}>
@@ -17822,13 +18450,13 @@ function Activity(props) {
             <SVGIcon id="activity" size={24} color={T.orange} />
           </div>
           <div style={{ fontSize: 17, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, marginBottom: 4 }}>{tr("noTransactions")}</div>
-          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 18 }}>{importPrimary ? "Import a CSV statement to fill in your transactions, or add them by hand." : tr("noTransactionsSub")}</div>
+          <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.5, marginBottom: 18 }}>{importPrimary ? "Import a statement - CSV or Excel - to fill in your transactions, or add them by hand." : tr("noTransactionsSub")}</div>
           <LiquidButton variant="primary" size="lg" onClick={function() { if (importPrimary) setImportOpen(true); else props.setSheetOpen(true); }}>
-            {importPrimary ? "Import from CSV" : "Add your first transaction"}
+            {importPrimary ? "Import a statement" : "Add your first transaction"}
           </LiquidButton>
           <button onClick={function() { if (importPrimary) props.setSheetOpen(true); else setImportOpen(true); }}
             style={{ display: "block", margin: "12px auto 0", background: "none", border: "none", color: T.ink3, fontSize: 12.5, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
-            {importPrimary ? "or add one manually" : "or import from a CSV file"}
+            {importPrimary ? "or add one manually" : "or import a bank file"}
           </button>
         </Card>
       )}
@@ -23557,7 +24185,7 @@ function Advisor(props) {
       + "Match the user's words to the template: \"track my coffee\" is merchantSpend or a category, \"as a ring/circle/gauge\" is ring, \"a bar\" is bar, \"show me the biggest ones\" is list, \"over the last few months\" is trend, \"versus last month\" is compare. Pick a sensible icon and a short title yourself rather than asking. If they ask for something no metric covers, say plainly what you can follow instead and offer the closest one - never invent a metric name, and never promise a widget on any screen other than Overview, which is the only place they appear. "
       + "Use the EXACT category, folder, savings pot, goal, note-label and widget-title names given in the data below - never invent or guess a name. "
       + "If the user mentions several things at once, emit several tags. Only emit a tag for a concrete event, or a direct explicit request to change/create something, with real values the user actually stated - never for hypotheticals, plans, or general advice. Do not mention the word ACTION or the tag syntax in your spoken reply; just speak naturally and let the tags do the work."
-      + " Richy CAN import a CSV bank or card statement from the Activity tab (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Alfred as a business coach who builds a business plan - send business owners there. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Richy ALSO has Collab (Profile -> Collab): two people can join one household and share budgets, goals and categories, each keeping their own login - send anyone asking about splitting money with a partner, a flatmate or a family member there, and say plainly that it shares budgets and goals rather than merging every transaction into one ledger. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (Bank Sync files purchases from the payment notifications the user's own phone already receives - an automation they set up and control on their device, not a bank connection), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + ALFRED_FORMAT + " The action tags described above are the only bracketed syntax you may use."
+      + " Richy CAN import a bank or card statement from the Activity tab - CSV or Excel (.xlsx, and the .xls files card issuers hand out), with no converting needed (it maps columns, handles separate money-in/money-out columns, auto-categorizes from history, and skips duplicates) - point users tired of manual entry there. Richy ALSO has Business Accounts (Overview -> Savings -> Business Account): each walls off business cash from personal money, tracks revenue and expenses with a monthly profit view, budgets spending across business buckets, and includes Alfred as a business coach who builds a business plan - send business owners there. Richy ALSO has a Debts tracker (Profile -> Debts): the user logs each debt's balance, interest rate, and minimum payment, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date and payoff order - send anyone focused on paying off debt there, and when they ask what to pay first, give the avalanche (highest rate) or snowball (smallest balance) answer using their real numbers. Richy ALSO has a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): it's clearly labeled a DEMO - it fills the account with realistic sample transactions so the user can see what direct bank sync would feel like, but it is NOT a real connection to their actual Bank Leumi account (that requires Bank Leumi to certify Richy as a licensed Open Banking provider, which hasn't happened). If a user asks whether their real Leumi transactions will sync, be direct that this feature is a demo/preview only for now, not live. Richy ALSO has Collab (Profile -> Collab): two people can join one household and share budgets, goals and categories, each keeping their own login - send anyone asking about splitting money with a partner, a flatmate or a family member there, and say plainly that it shares budgets and goals rather than merging every transaction into one ledger. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (Bank Sync files purchases from the payment notifications the user's own phone already receives - an automation they set up and control on their device, not a bank connection), no fully shared couples ledger yet. If the user asks about these, acknowledge the gap honestly and offer the best workaround available inside Richy. Be concise and direct." + ALFRED_FORMAT + " The action tags described above are the only bracketed syntax you may use."
       + " Close EVERY reply with exactly one short, specific follow-up question about their situation so the conversation keeps moving."
       + " ABOUT THE NOT-A-LICENSED-ADVISOR REMINDER: do NOT append it to every reply - on everyday budgeting talk it reads as nervous boilerplate and people stop reading it, which defeats its purpose. Include one short, natural version of it ONLY when leaving it out could actually cost them: anything touching investing, specific securities or assets, pensions and retirement accounts, insurance, taxes, loans, mortgages or refinancing, debt consolidation, big irreversible commitments, or any moment you are near the edge of what you can responsibly answer. In those cases say it in your own words as part of the answer, not as a disclaimer tacked on the end. For ordinary spending, saving, budgets, goals and affordability questions, skip it entirely - the app already shows a standing disclaimer on screen." + (props.lang && props.lang !== "en" ? " Respond entirely in " + (LANGUAGE_NAMES[props.lang] || "English") + "." : "")
       + (isVoice ? " VOICE MODE: the user is talking to you by voice and your reply will be read aloud by text-to-speech. Keep it to 2-4 short conversational sentences of natural spoken language - no lists, no markdown, no asterisks, no symbols that read badly aloud. Numbers still matter: quote the one or two key figures, never a table. When the reminder rule above says a topic needs the not-a-licensed-advisor caveat, it still applies in voice and counts inside the sentence budget - never drop it for brevity on those topics. Action tags still work exactly as described - append them at the very end as usual." : ""),
@@ -34949,7 +35577,7 @@ function AppearanceView(props) {
 function EntryMethodView(props) {
   var opts = [
     { id: "manual", label: "Enter manually", sub: "Log each transaction yourself - full control", icon: "edit" },
-    { id: "import", label: "Import from CSV", sub: "Upload a bank or card statement to fill them in", icon: "down" }
+    { id: "import", label: "Import a statement", sub: "Upload a bank or card statement - CSV or Excel - to fill them in", icon: "down" }
   ];
   return (
     <div>
@@ -34977,7 +35605,7 @@ function EntryMethodView(props) {
         })}
       </Card>
       <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.55, padding: "0 6px" }}>
-        This sets your default. Both options stay available anytime in the Activity tab - the + button adds one by hand, the import button brings in a CSV.
+        This sets your default. Both options stay available anytime in the Activity tab - the + button adds one by hand, the import button brings in a bank file.
       </div>
     </div>
   );
@@ -36686,7 +37314,7 @@ function PlanView(props) {
       + "You have deep knowledge from the world's best financial books and thinkers: The Psychology of Money (Morgan Housel — wealth is about behavior, not intelligence; saving is the gap between ego and income); Rich Dad Poor Dad (Kiyosaki — assets put money in your pocket, liabilities take it out; buy assets first); The Millionaire Next Door (Stanley and Danko — most millionaires live below their means, drive used cars, avoid lifestyle inflation); I Will Teach You To Be Rich (Ramit Sethi — automate savings, spend extravagantly on what you love, cut mercilessly elsewhere); The Total Money Makeover (Dave Ramsey — debt snowball, emergency fund first, live on less than you earn); The Richest Man in Babylon (Clason — pay yourself first 10%, live on 70%, give 20% to debts); Money Master the Game (Robbins — asset allocation drives 90% of returns, fees kill wealth). "
       + "You carry the wisdom of Warren Buffett (do not save what is left after spending — spend what is left after saving; rule one: never lose money), Charlie Munger (invert, always invert; avoid what destroys wealth as much as seeking what builds it), Ray Dalio (diversify well and you can reduce risk without reducing returns; pain plus reflection equals progress), Naval Ravikant (earn with your mind not your time; build or buy equity), and Mark Cuban (pay off credit cards every month; savings rates matter more than investment returns early on). "
       + "You know the Richy app deeply: it has tabs for Overview (balance, cash flow, net worth), Activity (all transactions), Budgets (monthly spending limits by category), Goals (savings targets), and Advisor (full AI analysis). Categories are managed via the tag icon on Overview or the Manage link in transaction pickers. "
-      + "Richy CAN import a CSV statement: the Activity tab has an import button that reads a bank or card CSV export entirely on-device (it maps columns, handles separate money-in/money-out columns, auto-categorizes from the user's history, and skips duplicates). If someone is tired of manual entry, point them there. "
+      + "Richy CAN import a statement: the Activity tab has an import button that reads a bank or card export - CSV or Excel, no converting needed - entirely on-device (it maps columns, handles separate money-in/money-out columns, auto-categorizes from the user's history, and skips duplicates). If someone is tired of manual entry, point them there. "
       + "Richy HAS a Debts tracker (Profile -> Debts): the user logs each debt's balance, rate, and minimum, and Richy computes an interest-aware avalanche/snowball payoff plan with a real debt-free date. Point anyone paying off debt there, and answer 'what first' with their actual numbers. "
       + "Richy HAS a Bank Leumi connection preview (Profile -> Bank Sync -> Connect Bank Leumi (Demo)): clearly labeled a DEMO, it fills the account with realistic sample transactions to preview the experience, but it is NOT a real connection to the user's actual Bank Leumi account - that needs Bank Leumi to certify Richy as a licensed Open Banking provider first, which hasn't happened. Be direct about this if asked whether it's real. "
       + "Richy ALSO has Collab (Profile -> Collab): two people can join one household and share budgets, goals and categories, each keeping their own login - send anyone asking about splitting money with a partner, a flatmate or a family member there, and say plainly that it shares budgets and goals rather than merging every transaction into one ledger. Be honest about what Richy currently does not support: no live direct bank connection for any bank yet (Bank Sync files purchases from the payment notifications the user's own phone already receives - an automation they set up and control on their device, not a bank connection), no fully shared couples ledger yet. If asked about these, acknowledge the gap and offer the best workaround available inside Richy. "

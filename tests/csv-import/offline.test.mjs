@@ -7,6 +7,7 @@
 // The model leg is tests/csv-import/live-haiku.mjs, which needs a key.
 import { app } from "./extract.mjs";
 import { ALL, toCp1255, toUtf8, ISRACARD } from "./fixtures.mjs";
+import { leumiXlsx, coverThenDataXlsx, buildXlsx, zipBuild, oddLayoutXlsx, oleXls, odsFile, ISRACARD_HTML, MAX_XMLSS } from "./sheet-fixtures.mjs";
 
 const {
   parseCSV, sniffMap, parseImportDate, parseImportAmount, normalizeMerchant, shopKey,
@@ -327,6 +328,154 @@ group("Reading what the model sends back");
   ok("every chunk failing IS an error", !!sErr && Object.keys(out).length === 0);
 
   setClaude(null);
+}
+
+// ------------------------------------------------- spreadsheets, not text --
+// A .xlsx is a zip of XML and a bank's .xls is usually an HTML page, so none
+// of this can be checked by reading a string: the fixtures build the real
+// bytes - real DEFLATE, real CRCs - and the reader does the same work it does
+// on a file downloaded from Bank Leumi.
+group("Excel files, read on the device");
+{
+  const {
+    sheetReadBytes, sheetReadNote, sheetSerialToDate, sheetFmtIsDate, xlsxDateStyles,
+    xlsxSharedStrings, sheetMarkupKind, sheetColFromRef, htmlSheetRows, sniffMap, csvSkeleton
+  } = app;
+
+  const read = (bytes, name) => new Promise((res) =>
+    sheetReadBytes(bytes.buffer ? bytes.buffer : bytes, name, (err, out) => res(err ? { err: err.message } : out)));
+  const bytesOf = (text) => toUtf8(text);
+  const mapOf = (rows) => {
+    const sk = csvSkeleton(rows);
+    const headerRow = sk.head.length ? sk.head.length - 1 : -1;
+    return { headerRow, map: sniffMap(headerRow >= 0 ? rows.slice(headerRow) : rows, headerRow >= 0) };
+  };
+
+  // --- the date/number line, which is the whole reason a sheet is not a CSV --
+  eq("serial 1 is 1 January 1900", sheetSerialToDate(1, false), "1900-01-01");
+  eq("serial 59 is 28 February 1900", sheetSerialToDate(59, false), "1900-02-28");
+  eq("serial 61 is 1 March 1900 - Excel's phantom leap day is taken back off",
+    sheetSerialToDate(61, false), "1900-03-01");
+  eq("a 2026 serial lands on the right day", sheetSerialToDate(46266, false), "2026-09-01");
+  eq("the Mac 1904 calendar has its own epoch", sheetSerialToDate(1, true), "1904-01-02");
+  eq("a serial with no date part is a clock time, not 1899", sheetSerialToDate(0.5, false), "12:00");
+
+  ok("General is not a date format", !sheetFmtIsDate("General"));
+  ok("a money format is not a date format", !sheetFmtIsDate("#,##0.00"));
+  ok("an accounting format with a shekel in quotes is not a date format",
+    !sheetFmtIsDate("_-* #,##0.00\\ \"₪\"_-;-* #,##0.00\\ \"₪\"_-"));
+  ok("a locale-prefixed date format is a date format", sheetFmtIsDate("[$-409]dd/mm/yyyy;@"));
+  ok("a bare dd/mm/yy is a date format", sheetFmtIsDate("dd/mm/yy"));
+
+  // styles.xml holds TWO lists of <xf>. Cells point at the second one, and a
+  // reader that takes the first reads every date as a number.
+  const styles = "<styleSheet><numFmts><numFmt numFmtId=\"164\" formatCode=\"dd/mm/yyyy;@\"/></numFmts>"
+    + "<cellStyleXfs count=\"3\"><xf numFmtId=\"0\"/><xf numFmtId=\"0\"/><xf numFmtId=\"0\"/></cellStyleXfs>"
+    + "<cellXfs count=\"3\"><xf numFmtId=\"0\"/><xf numFmtId=\"14\"/><xf numFmtId=\"164\"/></cellXfs></styleSheet>";
+  eq("cellXfs is read, not cellStyleXfs", xlsxDateStyles(styles), [false, true, true]);
+
+  eq("rich text split across runs is one string",
+    xlsxSharedStrings("<sst><si><r><t>שופרסל</t></r><r><t xml:space=\"preserve\"> דיל</t></r></si><si><t>פנגו</t></si></sst>"),
+    ["שופרסל דיל", "פנגו"]);
+  eq("&amp; in a shop name comes back as an ampersand",
+    xlsxSharedStrings("<sst><si><t>סופר פארם &amp; בע\"מ</t></si></sst>"), ["סופר פארם & בע\"מ"]);
+  eq("AB is the 28th column", sheetColFromRef("AB12"), 27);
+
+  // --- a real workbook ------------------------------------------------------
+  const leumi = await read(leumiXlsx(), "tnuot.xlsx");
+  eq("a .xlsx is read without ever becoming text", leumi.kind, "xlsx");
+  eq("the sheet is named, so a user can see WHICH tab was read", leumi.sheet, "תנועות");
+  eq("every line arrives", leumi.rows.length, 9);
+  eq("a date cell arrives as a date and not as 46266", leumi.rows[3][0], "2026-09-01");
+  eq("the column guesser agrees it is a date", app.csvCellKind(leumi.rows[3][0]), "date");
+  eq("a reference number that is NOT date-formatted stays a number", leumi.rows[3][2], "1234567");
+  eq("an amount keeps its own digits, with no float dust", leumi.rows[6][3], "412.55");
+  eq("a running balance keeps its own digits too", leumi.rows[3][5], "21450.3");
+  ok("an empty cell holds its place, so the columns still line up",
+    leumi.rows[3][3] === "" && leumi.rows[3][4] === "18500", JSON.stringify(leumi.rows[3]));
+
+  // The invariant that makes this worth doing at all: the same statement, as a
+  // CSV and as a workbook, reaches the mapping screen as the same thing.
+  const asCsv = mapOf(parseCSV(ALL.LEUMI.text));
+  const asXlsx = mapOf(leumi.rows);
+  eq("the same statement maps the same whether it arrives as CSV or as Excel",
+    [asXlsx.headerRow, asXlsx.map.date, asXlsx.map.desc, asXlsx.map.debit, asXlsx.map.credit],
+    [asCsv.headerRow, asCsv.map.date, asCsv.map.desc, asCsv.map.debit, asCsv.map.credit]);
+  ok("the running balance is not read as the amount here either", asXlsx.map.amount === -1);
+
+  const note = sheetReadNote({ name: "tnuot.xlsx" }, leumi);
+  ok("the screen says which file, which sheet and how many lines",
+    note.indexOf("tnuot.xlsx") !== -1 && note.indexOf("תנועות") !== -1 && note.indexOf("9 lines") !== -1, note);
+
+  const stored = await read(leumiXlsx({ storeStrings: true }), "tnuot.xlsx");
+  eq("an uncompressed part inside the zip is read too", stored.rows.length, 9);
+  eq("and its strings survive", stored.rows[4][1], "שופרסל דיל תל אביב");
+
+  const cover = await read(coverThenDataXlsx(), "workbook.xlsx");
+  eq("a cover sheet is skipped for the tab that actually holds the table", cover.sheet, "תנועות");
+  eq("even when that tab is hidden", cover.rows.length, 9);
+
+  const inline = buildXlsx([{ name: "Sheet1", rows: [
+    [{ inline: "Date" }, { inline: "Shop" }, { inline: "Amount" }],
+    [{ date: "2026-09-03", custom: true }, { inline: "Cafe Joe" }, { n: -12.5 }]
+  ] }]);
+  const inl = await read(inline, "export.xlsx");
+  eq("inline strings - what exporters that are not Excel write - are read",
+    inl.rows[1][1], "Cafe Joe");
+  eq("a custom dd/mm/yyyy format is still a date", inl.rows[1][0], "2026-09-03");
+
+  // Nothing in a .xlsx has to live at xl/: the package says where the workbook
+  // is, the workbook says where its sheets and strings are, and an exporter
+  // that is not Excel is free to lay it out differently.
+  const odd = await read(oddLayoutXlsx(), "export.xlsx");
+  eq("a workbook laid out somewhere other than xl/ is still found", odd.sheet, "Statement");
+  eq("and its strings are found with it", odd.rows[1][1], "Cafe Joe");
+  // --- files that are not what their name says -------------------------------
+  const old = await read(oleXls(), "statement.xls");
+  ok("the 1997 binary .xls is named, not read as eight bytes of shop name",
+    old.err && old.err.indexOf(".xls") !== -1, old.err);
+  const ods = await read(odsFile(), "sheet.ods");
+  ok("a LibreOffice sheet says so, rather than failing as a broken Excel file",
+    ods.err && /LibreOffice/.test(ods.err), ods.err);
+  const zip = await read(zipBuild([{ name: "notes.txt", data: "hello" }]), "download.zip");
+  ok("any other zip says to unzip it first", zip.err && /zip file/.test(zip.err), zip.err);
+
+  const hurt = leumiXlsx().slice(0, -40);
+  const broken = await read(hurt, "tnuot.xlsx");
+  ok("a truncated workbook is an error, never half an import", !!broken.err, JSON.stringify(broken).slice(0, 80));
+  ok("an .xlsx name on something that is not a zip is refused rather than read as text",
+    (await read(bytesOf("just some words"), "book.xlsx")).err !== undefined);
+  eq("an empty file is an empty file", (await read(new Uint8Array(0), "x.csv")).err, "That file was empty.");
+
+  // --- the .xls that is really an HTML page ---------------------------------
+  const card = await read(bytesOf(ISRACARD_HTML), "isracard.xls");
+  eq("an HTML page named .xls is read as the table it is", card.kind, "html");
+  eq("the statement table wins, not the layout table wrapped around it", card.rows.length, 8);
+  eq("a row with no closing tags is still five cells",
+    card.rows[2], ["03/09/2026", "מקס איט", "129.00", "129.00", "ש\"ח"]);
+  eq("&nbsp; is a space, not a word", card.rows[3][1], "סינמה סיטי גלילות");
+  eq("&amp; and &quot; come back as themselves", card.rows[7][1], "סופר פארם & בע\"מ");
+  eq("a colspan title row keeps the table's width", card.rows[0].length, 5);
+  const cardMap = mapOf(card.rows);
+  eq("the columns of a card statement are found in it", [cardMap.headerRow, cardMap.map.date, cardMap.map.desc], [1, 0, 1]);
+  eq("and the charged amount is preferred over the transaction amount", cardMap.map.amount, 3);
+  eq("a shop name with a < in it is not an HTML file", sheetMarkupKind("date,shop\n01/09/2026,A < B"), "");
+  eq("a table with no rows in it is not a table", htmlSheetRows("<html><table></table></html>"), []);
+
+  // --- SpreadsheetML 2003 ----------------------------------------------------
+  const max = await read(bytesOf(MAX_XMLSS), "max.xls");
+  eq("the 2003 XML format is read", max.kind, "xmlss");
+  eq("a DateTime is a date", max.rows[2][0], "2026-09-02");
+  eq("bold markup inside a cell is not part of the shop name", max.rows[2][1], "קפה ג'ו");
+  eq("ss:Index leaves the gap it says it leaves", max.rows[3], ["2026-09-06", "", "-119"]);
+  eq("a merged title cell keeps the width", max.rows[0].length, 3);
+
+  // --- text is still text ----------------------------------------------------
+  const csv = await read(toCp1255(ALL.LEUMI.text), "tnuot.csv");
+  eq("a CSV still comes back as text", csv.kind, "csv");
+  eq("with its encoding sniffed exactly as before", csv.encoding, "windows-1255");
+  const tsv = await read(bytesOf("תאריך\tשם בית העסק\tסכום\n01/09/2026\tארומה\t32.00"), "bank.xls");
+  eq("a tab-separated file named .xls goes down the text path, where the delimiter is sniffed", tsv.kind, "csv");
 }
 
 // ------------------------------------------------------------------- report --

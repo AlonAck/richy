@@ -16,7 +16,7 @@ const BUILD_ID = String(Date.now());
 // ---- 1. Compile the app ------------------------------------------------------
 const src = readFileSync("budget-app.jsx", "utf8");
 const code = src
-  .replace(/^\s*import[^\n]*\n/gm, "")
+  .replace(/^\s*import(?=[\s{'"*])[^\n]*\n/gm, "")
   .replace(/export default function App/, "function App");
 
 const compiled = transformSync(code, {
