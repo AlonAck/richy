@@ -17148,7 +17148,12 @@ function ImportSheet(props) {
                               style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 11, padding: "9px 0", background: "none", border: "none", font: "inherit", fontFamily: UI, textAlign: "start", cursor: "pointer", opacity: on ? 1 : 0.42 }}>
                               <CatBadge icon={t.type === "income" ? "up" : c.icon} color={t.type === "income" ? T.green : c.color} size={34} soft={!on} />
                               <span style={{ flex: 1, minWidth: 0 }}>
-                                <span style={{ display: "block", fontSize: 15, color: T.ink, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", lineHeight: 1.15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</span>
+                                {/* Two lines, not Activity's one. A bank
+                                    descriptor is long and the difference
+                                    between two of them is often at the end -
+                                    "#221" against "#222" - and this is the
+                                    screen that exists to catch exactly that. */}
+                                <span style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", fontSize: 15, color: T.ink, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", lineHeight: 1.2, overflow: "hidden", overflowWrap: "anywhere" }}>{t.label}</span>
                                 <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: T.ink3, marginTop: 2 }}>
                                   <span style={{ display: "inline-flex", alignItems: "center", gap: 4, minWidth: 0 }}>
                                     <span style={{ width: 6, height: 6, borderRadius: "50%", background: t.type === "income" ? T.green : c.color, flexShrink: 0 }} />
