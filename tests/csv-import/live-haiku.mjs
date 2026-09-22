@@ -9,10 +9,10 @@
 // out of budget-app.jsx - not a copy - so a pass here is a statement about the
 // code that runs for users, and editing the prompt changes this test too.
 import { execFileSync } from "child_process";
-import { writeFileSync, mkdtempSync } from "fs";
+import { writeFileSync, mkdtempSync, readFileSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
-import { app } from "./extract.mjs";
+import { app, ROOT } from "./extract.mjs";
 import { ALL } from "./fixtures.mjs";
 
 const { parseCSV, csvSkeleton, csvParseJsonBlock, csvCol, csvConf,
@@ -21,12 +21,38 @@ const { parseCSV, csvSkeleton, csvParseJsonBlock, csvCol, csvConf,
 const VIA_CLI = process.argv.includes("--via-cli");
 const DO_SHOPS = process.argv.includes("--shops");
 const DRY = process.argv.includes("--dry");
-const KEY = process.env.ANTHROPIC_API_KEY;
+
+// The key is the same one the deployed proxy uses, so the least error-prone
+// way to get it is not to retype it: `vercel env pull .env.local` writes it
+// here, and .env.local is already gitignored. An environment variable still
+// wins when one is set.
+function keyFromEnvFile() {
+  try {
+    const m = /^\s*ANTHROPIC_API_KEY\s*=\s*"?([^"\r\n]+)"?/m.exec(readFileSync(join(ROOT, ".env.local"), "utf8"));
+    return m ? m[1].trim() : "";
+  } catch (e) { return ""; }
+}
+const KEY = process.env.ANTHROPIC_API_KEY || keyFromEnvFile();
 
 if (!KEY && !VIA_CLI && !DRY) {
-  console.error("No ANTHROPIC_API_KEY. Either set one, pass --via-cli to use the Claude Code\n" +
-    "subscription, or pass --dry to print the payloads without calling anything.");
+  console.error("No API key found.\n\n" +
+    "  Easiest:  vercel env pull .env.local     (then run this again)\n" +
+    "  Or:       $env:ANTHROPIC_API_KEY = \"<the key>\"\n" +
+    "  Or:       --via-cli   to use the Claude Code subscription instead\n" +
+    "  Or:       --dry       to print the payloads without calling anything");
   process.exit(2);
+}
+
+// A placeholder reads as a key to everything except Anthropic, which answers
+// authentication_error once per file - six identical failures that look like a
+// broken harness rather than an unset variable.
+if (KEY && !VIA_CLI && !DRY) {
+  const placeholder = /paste|your|xxx|\.\.\.|here|real-key/i.test(KEY) || KEY.length < 40;
+  if (placeholder) {
+    console.error("ANTHROPIC_API_KEY is still a placeholder: " + JSON.stringify(KEY.slice(0, 18) + "...") +
+      "\nPut the real key in it - Vercel > Project > Settings > Environment Variables.");
+    process.exit(2);
+  }
 }
 
 async function ask(system, user, model, maxTokens) {
@@ -147,7 +173,17 @@ let failed = 0;
 for (const f of files) {
   let r;
   try { r = await mapOne(f); }
-  catch (e) { console.log("FAIL  " + f + "  -> " + e.message); failed++; continue; }
+  catch (e) {
+    console.log("FAIL  " + f + "  -> " + e.message);
+    failed++;
+    // A bad key, a spent quota or an unreachable API says nothing about
+    // whether the mapping works. Stop rather than repeating it per file.
+    if (/authentication_error|permission_error|invalid_request_error: .*credit|rate_limit/i.test(e.message)) {
+      console.log("\nThat is the account answering, not the mapping. Fix it and run again - nothing was read.");
+      process.exit(2);
+    }
+    continue;
+  }
   if (!r.ok) failed++;
   console.log((r.ok ? "ok  " : "FAIL") + "  " + f.padEnd(10) +
     "header:" + r.got.header + " date:" + r.got.date + " shop:" + r.got.shop +
@@ -157,11 +193,14 @@ for (const f of files) {
   if (!r.ok) console.log("        WRONG: " + r.wrong.join(", ") + "  wanted " + JSON.stringify(r.want));
 }
 
+// Counted apart from the files. Folding it in produced "6 of 5 files misread".
+let shopsFailed = false;
 if (DO_SHOPS) {
   console.log("\nPhase 2 - " + AI_MODEL_CSV_SHOPS + " sorting shop names:");
-  try { if (!await shopsOne()) failed++; }
-  catch (e) { console.log("  FAILED: " + e.message); failed++; }
+  try { shopsFailed = !(await shopsOne()); }
+  catch (e) { console.log("  FAILED: " + e.message); shopsFailed = true; }
 }
 
-console.log("\n" + (failed ? failed + " of " + files.length + " files misread" : "every file read correctly"));
-process.exit(failed ? 1 : 0);
+console.log("\n" + (failed ? failed + " of " + files.length + " files misread" : "all " + files.length + " files read correctly"));
+if (DO_SHOPS) console.log(shopsFailed ? "shop sorting: FAILED" : "shop sorting: every name answered, every category in the set");
+process.exit(failed || shopsFailed ? 1 : 0);
