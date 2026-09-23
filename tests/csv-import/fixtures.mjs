@@ -92,11 +92,26 @@ export const HEADERLESS = [
   "03/09/2026,ארומה,32.00"
 ].join("\n");
 
+// --- Cal: a card statement carrying BOTH traps that shipped as bugs on
+// 2026-09-23. A charge DATE sits between the two amounts (it was read as
+// money, turning 29 shekels into 20 million), and one refund is the only
+// minus in the file (it made every charge read as income).
+export const CAL_REFUND = [
+  "פירוט עסקאות בכרטיס",
+  "תאריך עסקה,שם בית העסק,סכום עסקה,תאריך חיוב,סכום חיוב",
+  "02/09/2026,קפה גרג,29.00,02/10/2026,29.00",
+  "04/09/2026,שופרסל דיל,212.40,02/10/2026,212.40",
+  "06/09/2026,זיכוי זארה,-149.90,02/10/2026,-149.90",
+  "09/09/2026,פז יקום,250.00,02/10/2026,250.00",
+  "12/09/2026,נטפליקס,54.90,02/10/2026,54.90"
+].join("\n");
+
 export const ALL = {
   LEUMI: { text: LEUMI, encoding: "windows-1255", bytes: () => toCp1255(LEUMI) },
   ISRACARD: { text: ISRACARD, encoding: "utf-8", bytes: () => toUtf8(ISRACARD) },
   MAX: { text: MAX, encoding: "utf-8", bytes: () => toUtf8(MAX) },
   ENGLISH: { text: ENGLISH, encoding: "utf-8", bytes: () => toUtf8(ENGLISH) },
   US_MDY: { text: US_MDY, encoding: "utf-8", bytes: () => toUtf8(US_MDY) },
-  HEADERLESS: { text: HEADERLESS, encoding: "utf-8", bytes: () => toUtf8(HEADERLESS) }
+  HEADERLESS: { text: HEADERLESS, encoding: "utf-8", bytes: () => toUtf8(HEADERLESS) },
+  CAL_REFUND: { text: CAL_REFUND, encoding: "utf-8", bytes: () => toUtf8(CAL_REFUND) }
 };

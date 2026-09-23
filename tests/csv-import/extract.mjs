@@ -53,13 +53,13 @@ const VARS = ["SHEET_NS", "CSV_DELIMS", "CSV_SNIFF_BYTES", "CSV_SNIFF_ROWS", "SH
   "CSV_HEAD_MAX", "CSV_SHAPE_MAX", "CSV_CELL_MAX", "CSV_NUL",
   "CSV_SEP_CELL", "CSV_SEP_ROW", "CSV_SEP_PART",
   "CSV_SHOPS_PER_CALL", "CSV_SHOPS_MAX", "CSV_SHOP_EXAMPLES",
-  "AI_MODEL_CSV_MAP", "AI_MODEL_CSV_SHOPS"];
+  "AI_MODEL_CSV_MAP", "AI_CSV_MAP_EFFORT", "AI_CSV_MAP_TOKENS", "AI_MODEL_CSV_SHOPS"];
 
 const FNS = ["pad2", "parseCSV", "csvScan", "csvPickDelim", "sniffMap", "parseImportDate", "parseImportAmount",
   "normalizeMerchant", "shopKey", "labelSimilarity", "dayGap", "dupScore",
   "csvDecodeBytes", "csvIsDateCell", "csvIsNumberCell", "csvCellKind", "csvRowKinds",
   "csvRowIsData", "csvFirstDataRow", "csvMaskCell", "csvColumnProfiles", "csvSkeleton",
-  "csvHash", "csvFingerprint", "csvDetectDateFormat", "csvDetectSign", "csvColumnKinds", "csvRepairMap",
+  "csvHash", "csvFingerprint", "csvDetectDateFormat", "csvDetectSign", "csvColumnKinds", "csvRepairMap", "csvFlowWord", "csvFindFlowColumn", "csvRowMoney", "round2",
   "csvParseJsonBlock", "csvCol", "csvConf", "alfredErr",
   // The spreadsheet reader. Everything from the zip directory up to "what kind
   // of file is this" is pulled in, because a .xlsx is read byte by byte and
@@ -86,8 +86,8 @@ const body = [
   // The stand-in for the network. Tests set it; nothing here ever leaves the
   // machine.
   "var __claude = function() { throw new Error('callClaude was not stubbed'); };",
-  "function callClaude(messages, system, maxTokens, callback, model, timeoutMs) {",
-  "  return __claude(messages, system, maxTokens, callback, model, timeoutMs);",
+  "function callClaude(messages, system, maxTokens, callback, model, timeoutMs, extra) {",
+  "  return __claude(messages, system, maxTokens, callback, model, timeoutMs, extra);",
   "}",
   "function setClaude(fn) { __claude = fn; }",
   ...VARS.map(grabVar),

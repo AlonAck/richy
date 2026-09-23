@@ -13999,14 +13999,14 @@ function csvColumnProfiles(rows, ncol, firstDataRow) {
   var out = [];
   for (var c = 0; c < ncol; c++) {
     var kinds = { empty: 0, date: 0, number: 0, text: 0 };
-    var seen = {}, distinct = 0, filled = 0, negatives = false;
+    var seen = {}, distinct = 0, filled = 0, negatives = false, negN = 0, numN = 0;
     for (var i = 0; i < data.length; i++) {
       var v = (data[i] || [])[c];
       var k = csvCellKind(v);
       kinds[k]++;
       if (k === "empty") continue;
       filled++;
-      if (k === "number") { var n = parseImportAmount(v); if (!isNaN(n) && n < 0) negatives = true; }
+      if (k === "number") { var n = parseImportAmount(v); if (!isNaN(n) && n !== 0) { numN++; if (n < 0) { negatives = true; negN++; } } }
       var key = String(v).trim().toLowerCase();
       if (!seen[key]) { seen[key] = 1; distinct++; }
     }
@@ -14021,7 +14021,12 @@ function csvColumnProfiles(rows, ncol, firstDataRow) {
       // branch column (a handful), and a count would leak how big the file is.
       variety: !filled ? "empty" : distinct <= 1 ? "one value" : distinct <= 5 ? "a few values"
         : distinct * 2 >= filled ? "mostly different" : "many values",
-      hasNegatives: negatives
+      hasNegatives: negatives,
+      // How many of its numbers are minus, in words for the same reason as
+      // variety. This is what lets the model tell a bank account (mostly
+      // minus) from a card statement (mostly plain, the odd refund minus).
+      negatives: !numN ? "no numbers" : !negN ? "none" : negN === numN ? "all" : negN * 5 <= numN ? "a few"
+        : negN * 5 >= numN * 4 ? "most" : "some"
     });
   }
   return out;
@@ -14096,25 +14101,144 @@ function csvDetectDateFormat(rows, col, firstDataRow) {
   return { preferDMY: true, sure: false, reason: "every date could be read either way" };
 }
 
-// Whether money out is a minus sign, a separate column, or the whole file.
-// Measured, then cross-checked against what the model said.
-function csvDetectSign(rows, map, firstDataRow, modelSays) {
-  if (map.debit >= 0 || map.credit >= 0) return { splitAmt: true, allExpenses: false, reason: "money in and money out are separate columns" };
-  if (map.amount < 0) return { splitAmt: false, allExpenses: false, reason: "" };
-  var neg = 0, pos = 0;
+// A cell that says which way the money went, for the exports that keep every
+// amount unsigned and put the direction in a column of its own ("DR"/"CR",
+// "חובה"/"זכות"). -1 money out, 1 money in, 0 not a direction word.
+function csvFlowWord(s) {
+  var t = String(s == null ? "" : s).trim().toLowerCase().replace(/[.\s]/g, "");
+  if (!t) return 0;
+  // Not "payment": on a card statement a payment is money INTO the card.
+  if (/^(dr|d|debit|withdrawal|חובה|חיוב|משיכה|הוצאה)$/.test(t)) return -1;
+  if (/^(cr|c|credit|deposit|זכות|זיכוי|הפקדה|הכנסה)$/.test(t)) return 1;
+  return 0;
+}
+// The direction column, if the file has one: a column that is not already the
+// date, shop or money, and nearly every cell of which is a direction word.
+function csvFindFlowColumn(rows, first, map) {
+  var data = (rows || []).slice(first, first + 400);
+  var ncol = 0;
+  data.forEach(function(r) { if (r && r.length > ncol) ncol = r.length; });
+  for (var c = 0; c < ncol; c++) {
+    if (c === map.date || c === map.amount || c === map.desc || c === map.debit || c === map.credit) continue;
+    var filled = 0, words = 0;
+    for (var i = 0; i < data.length; i++) {
+      var v = String(((data[i] || [])[c]) || "").trim();
+      if (!v) continue;
+      filled++;
+      if (csvFlowWord(v)) words++;
+    }
+    if (filled >= 2 && words >= filled * 0.8) return c;
+  }
+  return -1;
+}
+
+// Which way money out points in ONE amount column. The two conventions in the
+// wild are opposite:
+//   a bank account    money out is a minus; salary and transfers in are plus
+//   a card statement  every charge is a plain number; the only minus is a refund
+// The old rule was "any minus in the file means a minus is money out", which
+// is the bank rule applied to every file - so a card statement with a single
+// refund in it imported every charge as income, and a card file with no minus
+// at all did the same unless the model happened to use one exact phrase.
+//
+// Now it is weighed, and every piece of evidence is something the file says:
+//   the titles   "סכום חיוב" / "charge" names a card's amount; a running
+//                balance (יתרה) exists only on a bank account; a card or
+//                current-account name in the lines above the titles
+//   the rows     a line that SAYS it is money in - a salary, a refund - shows
+//                which sign money in carries; and people spend in many small
+//                lines and get paid in few, so the sign most rows carry is out
+//   the model    its reading of the titles, worth the least
+// When the evidence is close the screen says it is unsure and opens the
+// settings, and the rows can always be flipped - all together or one by one.
+//
+// userSays is the answer the user gave for this same bank last time
+// ("positive_out" / "negative_out"); it outranks everything.
+function csvDetectSign(rows, map, firstDataRow, modelSays, userSays) {
+  if (map.debit >= 0 || map.credit >= 0) return { splitAmt: true, positiveOut: false, flowCol: -1, sure: true, why: "money in and money out are separate columns" };
+  if (map.amount < 0) return { splitAmt: false, positiveOut: false, flowCol: -1, sure: false, why: "" };
+
+  var flowCol = csvFindFlowColumn(rows, firstDataRow, map);
+  if (flowCol >= 0) return { splitAmt: false, positiveOut: false, flowCol: flowCol, sure: true, why: "each line is marked as money in or money out" };
+  if (userSays === "positive_out" || userSays === "negative_out") {
+    return { splitAmt: false, positiveOut: userSays === "positive_out", flowCol: -1, sure: true, why: "you set this for this bank last time" };
+  }
+
   var data = rows.slice(firstDataRow);
+  var neg = 0, pos = 0, inPos = 0, inNeg = 0;
+  // Not bare "שכר" (שכר דירה is rent) and not "החזר" (החזר הלוואה is a loan
+  // repayment) - both are money OUT, and a wrong word here flips the file.
+  var SAYS_IN = /זיכוי|משכורת|refund|reversal|cashback|chargeback|salary|payroll|paycheck|wages/i;
   for (var i = 0; i < data.length; i++) {
-    var n = parseImportAmount(((data[i] || [])[map.amount]) || "");
+    var r = data[i] || [];
+    var n = parseImportAmount(r[map.amount] || "");
     if (isNaN(n) || n === 0) continue;
     if (n < 0) neg++; else pos++;
+    if (map.desc >= 0 && SAYS_IN.test(String(r[map.desc] || ""))) { if (n < 0) inNeg++; else inPos++; }
   }
-  if (neg) return { splitAmt: false, allExpenses: false, reason: neg + " rows are negative, so a minus sign means money out" };
-  // Not one negative anywhere. On a card statement that is the normal case -
-  // every line is a charge - and reading them as income would show the user a
-  // month of invented earnings. The model's own reading has to agree before
-  // this is applied, and the preview still shows the toggle.
-  if (pos && modelSays === "all_rows_are_charges") return { splitAmt: false, allExpenses: true, reason: "nothing in the file is negative, so every line is money out" };
-  return { splitAmt: false, allExpenses: false, reason: "" };
+  if (!neg && !pos) return { splitAmt: false, positiveOut: false, flowCol: -1, sure: false, why: "" };
+
+  var headRow = firstDataRow > 0 ? (rows[firstDataRow - 1] || []) : [];
+  var above = rows.slice(0, firstDataRow).map(function(x) { return (x || []).join(" "); }).join(" ");
+  var amtTitle = String(headRow[map.amount] || "");
+  var HE = "[\\u0590-\\u05FF]";
+  function heWord(w) { return new RegExp("(^|[^\\u0590-\\u05FF])" + w + "(?!" + HE + ")").test(above); }
+  var card = 0, bank = 0, cardWhy = "", bankWhy = "";
+  function toCard(w, why) { card += w; if (!cardWhy) cardWhy = why; }
+  function toBank(w, why) { bank += w; if (!bankWhy) bankWhy = why; }
+
+  if (/חיוב|charge/i.test(amtTitle)) toCard(2, "the amount column is titled as a card charge");
+  if (/כרטיס|ישראכרט|אמריקן אקספרס|דיינרס|לאומי קארד|visa|mastercard|master card|diners|amex|american express|credit card|card ending/i.test(above) || heWord("מקס") || heWord("כאל")) {
+    toCard(2, "the file is a card statement");
+  }
+  if (headRow.some(function(h) { return /יתרה|balance/i.test(String(h || "")); })) toBank(2, "the file has a running balance, which only a bank account has");
+  if (/עו"ש|עובר ושב|current account|checking account/i.test(above)) toBank(2, "the file is a bank account");
+
+  // A salary or a refund is money IN. Whichever sign they carry is not money out.
+  if (inPos > inNeg) toBank(3, "lines like salary and refunds are the positive ones");
+  else if (inNeg > inPos) toCard(3, "lines like refunds are the minus ones");
+
+  var total = neg + pos, share = Math.max(neg, pos) / total;
+  if (neg !== pos) {
+    var w = (total >= 5 && share >= 0.8) ? 3 : 1;
+    if (neg > pos) toBank(w, "most lines are minus"); else toCard(w, "most lines are plain numbers");
+  }
+
+  if (modelSays === "positive_is_expense" || modelSays === "all_rows_are_charges") toCard(1, "Alfred read it as a card statement");
+  else if (modelSays === "negative_is_expense") toBank(1, "Alfred read it as a bank account");
+
+  // Nothing negative at all: whatever the file is, a plus has to be money out,
+  // or the user is shown a month of invented earnings. The only doubt is a
+  // bank account that simply dropped its signs - then in and out can't be told
+  // apart from the numbers, and the screen has to say so.
+  if (!neg) {
+    var unsigned = bank > 0;
+    return { splitAmt: false, positiveOut: true, flowCol: -1, sure: !unsigned,
+      why: unsigned ? "every amount is positive, but this looks like a bank account - some of these may be money in" : "nothing in the file is negative, so every line is money out" };
+  }
+  if (!pos) return { splitAmt: false, positiveOut: false, flowCol: -1, sure: true, why: "every line is a minus, so every line is money out" };
+
+  var positiveOut = card > bank || (card === bank && pos > neg);
+  return { splitAmt: false, positiveOut: positiveOut, flowCol: -1, sure: Math.abs(card - bank) >= 2,
+    why: positiveOut ? cardWhy : bankWhy };
+}
+
+// One row's money: how much, and which way. The single place the sign rules
+// are applied, so the preview, the import and the tests cannot disagree.
+function csvRowMoney(r, map, splitAmt, positiveOut) {
+  r = r || [];
+  if (splitAmt) {
+    var dv = map.debit >= 0 ? parseImportAmount(r[map.debit]) : NaN;
+    var cv = map.credit >= 0 ? parseImportAmount(r[map.credit]) : NaN;
+    if (!isNaN(dv) && dv !== 0) return { amount: round2(Math.abs(dv)), type: "expense" };
+    if (!isNaN(cv) && cv !== 0) return { amount: round2(Math.abs(cv)), type: "income" };
+    return null;
+  }
+  var amt = parseImportAmount(map.amount >= 0 ? r[map.amount] : "");
+  if (isNaN(amt) || amt === 0) return null;
+  var said = map.flow >= 0 ? csvFlowWord(r[map.flow]) : 0;
+  var out = said ? said < 0 : (positiveOut ? amt > 0 : amt < 0);
+  return { amount: round2(Math.abs(amt)), type: out ? "expense" : "income" };
 }
 
 // ===== CSV IMPORT: CHECKING THE COLUMNS AGAINST THE ROWS =====================
@@ -14172,6 +14296,16 @@ function csvRepairMap(rows, first, m, fallback) {
     }
   }
 
+  // Money in and money out the wrong way round. When the titles name the pair
+  // outright - חובה/זכות, debit/credit - the local reading took them from
+  // those words, and a reading that has exactly the two swapped is wrong about
+  // every single line in the file. The titles win.
+  if (out.debit >= 0 && out.credit >= 0 && fb.debit >= 0 && fb.credit >= 0
+    && out.debit === fb.credit && out.credit === fb.debit) {
+    fixed.push("inout");
+    out.debit = fb.debit; out.credit = fb.credit;
+  }
+
   if (out.desc >= 0 && (out.desc === out.date || holdsDates(out.desc))) {
     fixed.push("desc");
     out.desc = (fb.desc >= 0 && fb.desc !== out.date && !holdsDates(fb.desc) && free(fb.desc, "desc")) ? fb.desc : -1;
@@ -14179,18 +14313,31 @@ function csvRepairMap(rows, first, m, fallback) {
   return { map: out, fixed: fixed };
 }
 
-// ===== CSV IMPORT: THE MAPPING CALL (Haiku) ==================================
-var AI_MODEL_CSV_MAP = "claude-haiku-4-5-20251001";
+// ===== CSV IMPORT: THE MAPPING CALL (Sonnet, thinking at medium effort) ======
+// Was Haiku. Reading a statement's layout from its titles alone is a judgement
+// call - which of two dates is the purchase, which of two amounts was charged,
+// is this a card or a bank account - and a wrong call here is wrong on every
+// line of the file, not on one. It is also cheap to get right: one call per
+// bank FORMAT, never per file, because the answer is cached by fingerprint and
+// the same bank next month costs nothing. So it gets the quality model, with
+// room to think. The rules after it (csvRepairMap, csvDetectSign) still check
+// its answer against the rows, whoever gives it.
+var AI_MODEL_CSV_MAP = "claude-sonnet-5";
+var AI_CSV_MAP_EFFORT = "medium";
+// Thinking is billed against the output cap, so the cap has to leave room for
+// it on top of the short JSON answer. api/chat.js allows up to 8,000 when an
+// effort is asked for.
+var AI_CSV_MAP_TOKENS = 6000;
 var AI_MODEL_CSV_SHOPS = "claude-sonnet-5";
 
 var CSV_MAP_SYSTEM = "You map the columns of a bank or credit-card statement export."
   + "\n\nYou are given the file's STRUCTURE, never its contents:"
   + "\n- head: the rows above the data, as text. One of them is usually the real column-title row; any rows above that are report titles or account metadata. Runs of three or more digits are masked as ###."
   + "\n- shape: the first data rows, each cell given only as its kind (date, number, text, empty). No values."
-  + "\n- profiles: one entry per column, measured over the whole file - its dominant kind, how full it is, how much its values vary, and whether any number in it is negative."
+  + "\n- profiles: one entry per column, measured over the whole file - its dominant kind, how full it is, how much its values vary, and how many of its numbers are negative (none, a few, some, most, all)."
   + "\n\nIsraeli exports (Leumi, Hapoalim, Isracard, Max, Cal) are the common case. Their titles are usually Hebrew: תאריך or תאריך עסקה is the date, שם בית העסק or תיאור or פירוט is the shop, סכום or סכום חיוב or סכום העסקה is the amount, חובה and זכות (on a bank export) or חיוב and זיכוי are a money-out / money-in pair, יתרה is the running balance, which is NEVER the amount, and אסמכתא is a reference number, which is never the amount either however numeric it looks."
   + "\n\nAnswer with JSON only, exactly this shape:"
-  + "\n{\"header_row_index\":<int|null>,\"date_column\":<int|null>,\"shop_column\":<int|null>,\"amount_column\":<int|null>,\"debit_column\":<int|null>,\"credit_column\":<int|null>,\"date_format\":\"dd/mm/yyyy\"|\"mm/dd/yyyy\"|\"yyyy-mm-dd\"|\"unknown\",\"amount_sign_convention\":\"negative_is_expense\"|\"all_rows_are_charges\"|\"split_columns\"|\"unknown\",\"confidence\":{\"header_row_index\":\"high\"|\"medium\"|\"low\",\"date_column\":\"high\"|\"medium\"|\"low\",\"shop_column\":\"high\"|\"medium\"|\"low\",\"amount_column\":\"high\"|\"medium\"|\"low\"}}"
+  + "\n{\"header_row_index\":<int|null>,\"date_column\":<int|null>,\"shop_column\":<int|null>,\"amount_column\":<int|null>,\"debit_column\":<int|null>,\"credit_column\":<int|null>,\"date_format\":\"dd/mm/yyyy\"|\"mm/dd/yyyy\"|\"yyyy-mm-dd\"|\"unknown\",\"amount_sign_convention\":\"negative_is_expense\"|\"positive_is_expense\"|\"split_columns\"|\"unknown\",\"confidence\":{\"header_row_index\":\"high\"|\"medium\"|\"low\",\"date_column\":\"high\"|\"medium\"|\"low\",\"shop_column\":\"high\"|\"medium\"|\"low\",\"amount_column\":\"high\"|\"medium\"|\"low\"}}"
   + "\n\nRules:"
   + "\n- Column numbers are 0-based over the whole row. Use null when the file has no such column."
   + "\n- header_row_index is the 0-based index INTO head of the column-title row, or null when the file has no titles."
@@ -14200,6 +14347,7 @@ var CSV_MAP_SYSTEM = "You map the columns of a bank or credit-card statement exp
   + "\n- Set amount_column when one column carries the whole amount. Set debit_column and credit_column instead when money out and money in are split, and leave amount_column null."
   + "\n- The shop column varies from row to row. A column whose variety is \"one value\" or \"a few values\" is a card name, a branch or a transaction type, not the shop."
   + "\n- A reference, confirmation or voucher number is a column of numbers that is nearly all different and has no negatives. It is never the amount, whatever its position."
+  + "\n- amount_sign_convention says which way money OUT points in the single amount column. A bank account (it usually has a running balance, יתרה) shows money out as negative and salary or transfers in as positive: negative_is_expense. A credit-card statement (Isracard, Max, Cal, Amex, Diners; an amount titled סכום חיוב) shows every charge as a plain positive number and only refunds (זיכוי) as negative: positive_is_expense. The amount column's negatives profile is the strongest hint - \"none\" or \"a few\" points to a card, \"most\" to a bank account. Use split_columns when money out and money in are separate columns, and unknown when you cannot tell."
   + "\n- Be honest with confidence. A \"low\" sends the user to map it themselves, which is a far better outcome than a confident wrong guess."
   + "\nNo prose, no markdown fence.";
 
@@ -14225,7 +14373,7 @@ function csvConf(v) {
 // cb(err, reading). reading is null when the answer could not be read at all.
 function mapColumnsWithAI(sk, cb) {
   var payload = { columns: sk.columns, head: sk.head, shape: sk.shape, profiles: sk.profiles };
-  callClaude([{ role: "user", content: JSON.stringify(payload) }], CSV_MAP_SYSTEM, 600, function(err, reply) {
+  callClaude([{ role: "user", content: JSON.stringify(payload) }], CSV_MAP_SYSTEM, AI_CSV_MAP_TOKENS, function(err, reply) {
     if (err) { cb(err, null); return; }
     var v = csvParseJsonBlock(reply, "{", "}");
     if (!v || typeof v !== "object") { cb(alfredErr("shape", "The column reading could not be understood."), null); return; }
@@ -14246,7 +14394,10 @@ function mapColumnsWithAI(sk, cb) {
         amount: csvConf(conf.amount_column)
       }
     });
-  }, AI_MODEL_CSV_MAP, 25000);
+  // No client timeout of its own: callClaude's default outlasts the proxy's,
+  // so a slow think comes back as the proxy's clean timeout and the screen
+  // falls back to the local reading.
+  }, AI_MODEL_CSV_MAP, undefined, { effort: AI_CSV_MAP_EFFORT });
 }
 
 // ===== CSV IMPORT: SHOP -> CATEGORY (Sonnet) =================================
@@ -17117,7 +17268,12 @@ function ImportSheet(props) {
   var _map = useState({ date: -1, amount: -1, desc: -1, debit: -1, credit: -1 }); var map = _map[0]; var setMap = _map[1];
   var _split = useState(false); var splitAmt = _split[0]; var setSplitAmt = _split[1];
   var _dmy = useState(true); var preferDMY = _dmy[0]; var setPreferDMY = _dmy[1];
-  var _allExp = useState(false); var allExpenses = _allExp[0]; var setAllExpenses = _allExp[1];
+  // Which way money out points in a single amount column: false = a minus is
+  // money out (a bank account), true = a plain number is (a card statement,
+  // where the only minus is a refund). signByHand marks that the user set it,
+  // which is saved with the bank's layout and outranks every guess next time.
+  var _posOut = useState(false); var positiveOut = _posOut[0]; var setPositiveOut = _posOut[1];
+  var _sbh = useState(false); var signByHand = _sbh[0]; var setSignByHand = _sbh[1];
   var _built = useState([]); var built = _built[0]; var setBuilt = _built[1];
   var _dup = useState(0); var dupes = _dup[0]; var setDupes = _dup[1];
   var _err = useState(""); var err = _err[0]; var setErr = _err[1];
@@ -17147,7 +17303,7 @@ function ImportSheet(props) {
   function reset() {
     setRaw(""); setStep("paste"); setRows([]); setHeaderRow(0); setSheetRows(null); setSheetNote("");
     setEncoding(""); setReading(null); setFingerprint(""); setShopCats({}); setShopMeta(null);
-    setMap({ date: -1, amount: -1, desc: -1, debit: -1, credit: -1 }); setSplitAmt(false); setPreferDMY(true); setAllExpenses(false); setBuilt([]); setDupes(0); setErr("");
+    setMap({ date: -1, amount: -1, desc: -1, debit: -1, credit: -1 }); setSplitAmt(false); setPreferDMY(true); setPositiveOut(false); setSignByHand(false); setBuilt([]); setDupes(0); setErr("");
     setPlan(null); setDecisions({}); setQueue([]); setQIdx(0); setAiRes({ settled: 0, failed: false }); setReport(null);
     setShowAdv(false); setDropped({}); setOpenRow(null); setAmtDraft(""); setShowDetails(false);
     // askAi is deliberately NOT reset. Someone who just turned the Alfred
@@ -17194,7 +17350,7 @@ function ImportSheet(props) {
   // Everything that has to happen once the columns are known, whoever worked
   // them out: settle the date format and the sign convention from the rows
   // themselves, and decide whether to open the controls.
-  function applyReading(parsed, hRow, m, signSays, source, conf, savedDMY) {
+  function applyReading(parsed, hRow, m, signSays, source, conf, savedDMY, userSign) {
     var first = hRow >= 0 ? hRow + 1 : 0;
     // Checked against the rows before anything is built from it - see
     // csvRepairMap. This is also what heals a bad layout saved for this bank.
@@ -17213,17 +17369,20 @@ function ImportSheet(props) {
     if (!fmt.sure && typeof savedDMY === "boolean" && savedDMY !== fmt.preferDMY) {
       fmt = { preferDMY: savedDMY, sure: false, reason: "kept the day-first setting you chose for this bank" };
     }
-    var sign = csvDetectSign(parsed, m, first, signSays);
+    var sign = csvDetectSign(parsed, m, first, signSays, userSign);
+    // A column that marks each line in or out rides on the map, so every
+    // reader of a row - preview, import - follows it the same way.
+    m.flow = sign.flowCol;
     var gotAmount = sign.splitAmt ? (m.debit >= 0 || m.credit >= 0) : m.amount >= 0;
     var ok = gotAmount && m.date >= 0 && m.desc >= 0;
     var lowConf = conf && (conf.date === "low" || conf.amount === "low" || conf.desc === "low");
     setRows(parsed); setHeaderRow(hRow); setMap(m);
-    setSplitAmt(sign.splitAmt); setAllExpenses(sign.allExpenses); setPreferDMY(fmt.preferDMY);
+    setSplitAmt(sign.splitAmt); setPositiveOut(sign.positiveOut); setSignByHand(!!userSign); setPreferDMY(fmt.preferDMY);
     setReading({ source: source, confidence: conf || null, dateFormat: fmt, sign: sign, repaired: repair.fixed });
     // The controls open by themselves when the reading left a hole OR when the
-    // model said it was unsure. A "low" that opens nothing is a confident
-    // wrong guess wearing a hedge.
-    setShowAdv(!ok || !!lowConf || !!fmt.conflict);
+    // model said it was unsure OR when in-versus-out was a close call. A "low"
+    // that opens nothing is a confident wrong guess wearing a hedge.
+    setShowAdv(!ok || !!lowConf || !!fmt.conflict || !sign.sure);
     if (lowConf || !ok) {
       csvLog("mapping-uncertain", { source: source, fingerprint: csvFingerprint(csvSkeleton(parsed)),
         date: m.date, shop: m.desc, amount: m.amount, confidence: conf || null, complete: ok });
@@ -17264,9 +17423,15 @@ function ImportSheet(props) {
     // imports from the same one or two banks every month.
     var saved = (props.csvMaps || {})[fp];
     if (saved && saved.map) {
+      // In-versus-out is re-read from the rows every time unless the user set
+      // it by hand for this bank. A saved GUESS is only a hint: layouts saved
+      // before 2026-09-23 carried the old rule's answer, which read card
+      // statements backwards, and repeating it would repeat the bug.
+      var savedOut = typeof saved.positiveOut === "boolean" ? saved.positiveOut : !!saved.allExpenses;
       applyReading(parsed, typeof saved.headerRow === "number" ? saved.headerRow : 0, saved.map,
-        saved.allExpenses ? "all_rows_are_charges" : "", "saved", null,
-        typeof saved.preferDMY === "boolean" ? saved.preferDMY : undefined);
+        savedOut ? "positive_is_expense" : "", "saved", null,
+        typeof saved.preferDMY === "boolean" ? saved.preferDMY : undefined,
+        saved.signByHand ? (savedOut ? "positive_out" : "negative_out") : "");
       return;
     }
 
@@ -17313,30 +17478,25 @@ function ImportSheet(props) {
     var base = Date.now();
     var today = new Date().toISOString().slice(0, 10);
     dataRows.forEach(function(r, i) {
-      var amt;
-      if (splitAmt) {
-        var dv = map.debit >= 0 ? parseImportAmount(r[map.debit]) : NaN;
-        var cv = map.credit >= 0 ? parseImportAmount(r[map.credit]) : NaN;
-        if (!isNaN(dv) && dv !== 0) amt = -Math.abs(dv);
-        else if (!isNaN(cv) && cv !== 0) amt = Math.abs(cv);
-        else return;
-      } else {
-        amt = parseImportAmount(map.amount >= 0 ? r[map.amount] : "");
-      }
-      if (isNaN(amt) || amt === 0) return;
+      var money = csvRowMoney(r, map, splitAmt, positiveOut);
+      if (!money) return;
       var desc = (map.desc >= 0 ? r[map.desc] : "") || "Imported";
       var dateStr = parseImportDate(map.date >= 0 ? r[map.date] : "", preferDMY) || today;
-      var type = allExpenses ? "expense" : (amt < 0 ? "expense" : "income");
+      var type = money.type;
       var label = desc.slice(0, 60);
-      var amount = round2(Math.abs(amt));
+      var amount = money.amount;
+      // Money back from a shop is not a salary. On a card statement every
+      // money-in line is a refund, and anywhere a line that says זיכוי/refund
+      // is one - it belongs with the shop's category, not in Salary.
+      var refund = type === "income" && (positiveOut || /זיכוי|refund|reversal|chargeback/i.test(desc));
       // Category, in order of how much it is worth: the shop map (which the
       // user has confirmed, or Alfred has just sorted), then the user's own
       // history, then the keyword map. Income skips the shop map - a salary
       // line's "shop" is an employer, and sorting it as a purchase is wrong.
       var sk = shopKey(desc);
-      var mapped = type === "income" ? null : shops[sk];
+      var mapped = (type === "income" && !refund) ? null : shops[sk];
       var fromShop = mapped ? ((catByName(cats, mapped.category) || {}).id || "") : "";
-      var learned = fromShop || (type === "income"
+      var learned = fromShop || (type === "income" && !refund
         ? ((catByName(cats, "Salary") || {}).id || suggestCatId(desc, props.tx, cats))
         : suggestCatId(desc, props.tx, cats));
       var catId = learned || guessImportCatId(desc, cats);
@@ -17603,7 +17763,7 @@ function ImportSheet(props) {
       fingerprint: fingerprint,
       profile: fingerprint ? {
         map: { date: map.date, amount: map.amount, desc: map.desc, debit: map.debit, credit: map.credit },
-        headerRow: headerRow, splitAmt: splitAmt, allExpenses: allExpenses, preferDMY: preferDMY,
+        headerRow: headerRow, splitAmt: splitAmt, positiveOut: positiveOut, signByHand: signByHand, preferDMY: preferDMY,
         at: new Date().toISOString().slice(0, 10)
       } : null,
       shops: shopCats
@@ -17671,26 +17831,26 @@ function ImportSheet(props) {
     if (!rows.length) return [];
     var dataRows = rows.slice(headerRow >= 0 ? headerRow + 1 : 0);
     var today = new Date().toISOString().slice(0, 10);
-    var out = [];
-    for (var i = 0; i < dataRows.length && out.length < 3; i++) {
-      var r = dataRows[i]; var amt;
-      if (splitAmt) {
-        var dv = map.debit >= 0 ? parseImportAmount(r[map.debit]) : NaN;
-        var cv = map.credit >= 0 ? parseImportAmount(r[map.credit]) : NaN;
-        if (!isNaN(dv) && dv !== 0) amt = -Math.abs(dv);
-        else if (!isNaN(cv) && cv !== 0) amt = Math.abs(cv);
-        else continue;
-      } else {
-        amt = parseImportAmount(map.amount >= 0 ? r[map.amount] : "");
-      }
-      if (isNaN(amt) || amt === 0) continue;
-      out.push({
+    var out = [], other = null;
+    function line(r, money) {
+      return {
         date: parseImportDate(map.date >= 0 ? r[map.date] : "", preferDMY) || today,
         label: ((map.desc >= 0 ? r[map.desc] : "") || "Imported").slice(0, 40),
-        amount: round2(Math.abs(amt)),
-        income: allExpenses ? false : amt > 0
-      });
+        amount: money.amount,
+        income: money.type === "income"
+      };
     }
+    for (var i = 0; i < dataRows.length; i++) {
+      var money = csvRowMoney(dataRows[i], map, splitAmt, positiveOut);
+      if (!money) continue;
+      if (out.length < 3) { out.push(line(dataRows[i], money)); continue; }
+      // Three lines that all go the same way cannot show whether in and out
+      // are the right way round. When the file has a line going the other
+      // way, it takes the third slot - one glance then checks the whole file.
+      if (out[0].income !== out[1].income || out[1].income !== out[2].income) break;
+      if ((money.type === "income") !== out[0].income) { other = line(dataRows[i], money); break; }
+    }
+    if (other) out[2] = other;
     return out;
   })();
 
@@ -17785,9 +17945,11 @@ function ImportSheet(props) {
               </div>
               {reading.repaired && reading.repaired.length > 0 && (
                 <div style={{ fontSize: 11.5, color: T.gold, lineHeight: 1.5 }}>
-                  {"The column first read as "
-                    + (/amount|debit|credit/.test(reading.repaired.join(" ")) ? "the amount" : reading.repaired.indexOf("date") !== -1 ? "the date" : "the shop")
-                    + " didn't match what's in it, so Richy switched it. Check the first rows above."}
+                  {reading.repaired.indexOf("inout") !== -1 && reading.repaired.length === 1
+                    ? "Money in and money out were the wrong way round - the column titles say otherwise - so Richy switched them. Check the first rows above."
+                    : "The column first read as "
+                      + (/amount|debit|credit/.test(reading.repaired.join(" ")) ? "the amount" : reading.repaired.indexOf("date") !== -1 ? "the date" : "the shop")
+                      + " didn't match what's in it, so Richy switched it. Check the first rows above."}
                 </div>
               )}
               {reading.dateFormat && reading.dateFormat.conflict && (
@@ -17795,8 +17957,18 @@ function ImportSheet(props) {
                   {"The dates in this file don't agree with each other, so I had to pick. Check the day-first setting below."}
                 </div>
               )}
-              {reading.sign && reading.sign.allExpenses && (
-                <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.5 }}>{"Nothing in the file is negative, so every line is being read as money out."}</div>
+              {/* In versus out, said once in plain words with the reason - and
+                  in gold, with the settings already open, when it was close. */}
+              {reading.sign && !splitAmt && map.amount >= 0 && (
+                <div style={{ fontSize: 11.5, color: (reading.sign.sure || signByHand) ? T.ink3 : T.gold, lineHeight: 1.5 }}>
+                  {map.flow >= 0
+                    ? "Each line in this file says whether it's money in or out, so Richy followed that."
+                    : (positiveOut
+                        ? "Plain amounts are read as money spent, and minus amounts as money back."
+                        : "Minus amounts are read as money spent, and plain amounts as money in.")
+                      + (signByHand ? " (you set this)" : reading.sign.why ? " (" + reading.sign.why + ")" : "")
+                      + ((reading.sign.sure || signByHand) ? "" : " I'm not sure about this one - if the lines above are backwards, flip it below.")}
+                </div>
               )}
               {sheetNote && (
                 <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.5 }}>{sheetNote}</div>
@@ -17845,9 +18017,10 @@ function ImportSheet(props) {
               var m = localReading(rows, v);
               var first = v >= 0 ? v + 1 : 0;
               var fmt = csvDetectDateFormat(rows, m.date, first);
-              var sign = csvDetectSign(rows, m, first, "");
+              var sign = csvDetectSign(rows, m, first, "", signByHand ? (positiveOut ? "positive_out" : "negative_out") : "");
+              m.flow = sign.flowCol;
               setHeaderRow(v); setMap(m);
-              setPreferDMY(fmt.preferDMY); setSplitAmt(sign.splitAmt); setAllExpenses(sign.allExpenses);
+              setPreferDMY(fmt.preferDMY); setSplitAmt(sign.splitAmt); setPositiveOut(sign.positiveOut);
               // Deliberately not touching showAdv: these controls are open
               // because the user opened them, and folding them away under a
               // hand that is still working is worse than any inconsistency.
@@ -17882,13 +18055,27 @@ function ImportSheet(props) {
               })}
             </div>
           </div>
-          <button onClick={function() { setAllExpenses(!allExpenses); }}
-            style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 13px", borderRadius: 11, border: "none", cursor: "pointer", marginBottom: 10, background: allExpenses ? T.goldDim : T.fill1, fontFamily: UI }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: allExpenses ? T.gold : T.ink2, textAlign: "start", lineHeight: 1.4 }}>Every line is money spent<br /><span style={{ fontSize: 11, color: T.ink3 }}>Turn on if the file has no income in it at all</span></span>
-            <div style={{ width: 18, height: 18, borderRadius: 6, flexShrink: 0, border: "2px solid " + (allExpenses ? T.gold : T.ink3), background: allExpenses ? T.gold : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {allExpenses && <SVGIcon id="check" size={10} color="#fff" />}
+          {/* Was "Every line is money spent" - a switch that could only make
+              everything an expense, so a card statement with a refund in it,
+              or a bank file read backwards, had no way to be put right. Now
+              it is the actual question, with both answers shown as numbers. */}
+          {!splitAmt && !(map.flow >= 0) && (
+            <div style={{ marginBottom: 10 }}>
+              <span style={lblStyle}>{"How does this file show money you spent?"}</span>
+              <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+                {[{ k: false, l: "With a minus", s: "-50 spent, 50 in" }, { k: true, l: "As a plain number", s: "50 spent, -50 back" }].map(function(o) {
+                  var on = positiveOut === o.k;
+                  return (
+                    <button key={String(o.k)} onClick={function() { setPositiveOut(o.k); setSignByHand(true); }}
+                      style={{ flex: 1, minHeight: 44, padding: "7px 4px", borderRadius: 9, border: "none", cursor: "pointer", fontFamily: UI, background: on ? T.orangeDim : T.fill1, display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
+                      <span style={{ fontSize: 12.5, fontWeight: 600, color: on ? T.orange : T.ink3 }}>{o.l}</span>
+                      <span style={{ fontSize: 10.5, color: T.ink3, fontVariantNumeric: "tabular-nums" }}>{o.s}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </button>
+          )}
           </div>
           </CsvReveal>
           {/* When the guess failed there is no confirm button up top, so the
@@ -18120,6 +18307,19 @@ function ImportSheet(props) {
                               knows how to make. */}
                           {isOpen && (
                             <div style={{ padding: "0 12px 12px 12px" }}>
+                              {/* In or out, for the one line the file's own
+                                  rule got wrong - a transfer, an odd refund. */}
+                              <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+                                {[{ k: "expense", l: "Money out" }, { k: "income", l: "Money in" }].map(function(o) {
+                                  var sel = t.type === o.k;
+                                  return (
+                                    <button key={o.k} onClick={function() { if (!sel) { patchRow(t.id, { type: o.k }); csvLog("row-flipped", { to: o.k }); } }}
+                                      style={{ flex: 1, minHeight: 44, borderRadius: 9, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: 600, fontFamily: UI, background: sel ? (o.k === "income" ? T.greenDim : T.redDim) : T.fill1, color: sel ? (o.k === "income" ? T.green : T.red) : T.ink3 }}>
+                                      {o.l}
+                                    </button>
+                                  );
+                                })}
+                              </div>
                               <FormRow label="Name" value={t.label} placeholder="What was it?"
                                 onChange={function(e) { patchRow(t.id, { label: e.target.value }); }} />
                               <FormRow label={t.type === "income" ? "Amount in" : "Amount"} value={amtDraft} inputMode="decimal"

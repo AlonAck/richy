@@ -163,8 +163,6 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  // Hard cap so a tampered client can't request unbounded output on our bill.
-  var maxTokens = Math.min(Math.max(parseInt(body.maxTokens, 10) || 800, 1), 2000);
   // Launch routing: Sonnet 5 is the quality tier and Haiku 4.5 handles short,
   // tightly-scoped work. Legacy model names are mapped down here as well, so an
   // older cached client cannot keep invoking the expensive launch models.
@@ -180,6 +178,17 @@ module.exports = async function handler(req, res) {
   };
   var requestedModel = LEGACY_MODEL_MAP[body.model] || body.model;
   var model = (requestedModel && ALLOWED_MODELS[requestedModel]) ? requestedModel : "claude-sonnet-5";
+
+  // Thinking, for the few calls that earn it (the statement-import column
+  // reading asks for "medium"). Sonnet only - Haiku has no effort setting - and
+  // capped below "high" so a tampered client cannot buy the expensive end.
+  var EFFORTS = { low: 1, medium: 1 };
+  var effort = (model === "claude-sonnet-5" && typeof body.effort === "string" && EFFORTS[body.effort]) ? body.effort : "";
+  // Hard cap so a tampered client can't request unbounded output on our bill.
+  // Thinking is billed against max_tokens, so a thinking call gets more room:
+  // 8,000 leaves space to think AND still write the answer, where 2,000 would
+  // cut the answer off after the thinking had spent it.
+  var maxTokens = Math.min(Math.max(parseInt(body.maxTokens, 10) || 800, 1), effort ? 8000 : 2000);
 
   // Deadline cascade, innermost first: this abort (45s) < the client's own
   // timeout in callClaude (55s) < maxDuration in vercel.json (60s). Ordered that
@@ -198,8 +207,17 @@ module.exports = async function handler(req, res) {
   };
   // Sonnet 5 enables adaptive thinking by default. Alfred's existing calls
   // were non-thinking calls, so keep that behavior for predictable latency,
-  // output shape and launch cost. Haiku 4.5 is non-thinking by default.
-  if (model === "claude-sonnet-5") anthropicBody.thinking = { type: "disabled" };
+  // output shape and launch cost - unless the caller asked for an effort.
+  // Haiku 4.5 is non-thinking by default. The thinking blocks come back empty
+  // (display defaults to omitted) and callClaude reads only the text blocks.
+  if (model === "claude-sonnet-5") {
+    if (effort) {
+      anthropicBody.thinking = { type: "adaptive" };
+      anthropicBody.output_config = { effort: effort };
+    } else {
+      anthropicBody.thinking = { type: "disabled" };
+    }
+  }
 
   var result = await callAnthropic(apiKey, anthropicBody, 45000);
   if (result.error) { res.status(result.status).json({ error: result.error }); return; }

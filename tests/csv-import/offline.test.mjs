@@ -4,7 +4,7 @@
 //
 //   npm run test:csv
 //
-// The model leg is tests/csv-import/live-haiku.mjs, which needs a key.
+// The model leg is tests/csv-import/live-model.mjs, which needs a key.
 import { app } from "./extract.mjs";
 import { ALL, toCp1255, toUtf8, ISRACARD } from "./fixtures.mjs";
 import { leumiXlsx, coverThenDataXlsx, buildXlsx, zipBuild, oddLayoutXlsx, oleXls, odsFile, ISRACARD_HTML, MAX_XMLSS } from "./sheet-fixtures.mjs";
@@ -81,13 +81,13 @@ group("Columns, with no model involved (the offline fallback)");
   eq("Isracard: date", I.map.date, 0);
   eq("Isracard: shop", I.map.desc, 1);
   eq("Isracard: the CHARGED amount wins over the transaction amount", I.map.amount, 3);
-  ok("Isracard: nothing negative, so every line is money out", I.sign.allExpenses === true, I.sign.reason);
+  ok("Isracard: nothing negative, so every line is money out", I.sign.positiveOut === true && I.sign.sure === true, I.sign.why);
 
   const M = read(ALL.MAX);
   eq("Max: date", M.map.date, 0);
   eq("Max: shop", M.map.desc, 1);
   eq("Max: amount", M.map.amount, 3);
-  ok("Max: a refund means the file is signed, not all-expenses", M.sign.allExpenses === false, M.sign.reason);
+  ok("Max: its charges are the minus lines, so a minus is money out", M.sign.positiveOut === false, M.sign.why);
 
   const E = read(ALL.ENGLISH);
   eq("English: date", E.map.date, 0);
@@ -134,7 +134,8 @@ group("What leaves the device");
 
     const badProfile = sk.profiles.find((p) =>
       !KINDS.includes(p.kind) || !VARIETY.includes(p.variety) ||
-      typeof p.i !== "number" || typeof p.filledPct !== "number" || typeof p.hasNegatives !== "boolean");
+      typeof p.i !== "number" || typeof p.filledPct !== "number" || typeof p.hasNegatives !== "boolean" ||
+      !["no numbers", "none", "a few", "some", "most", "all"].includes(p.negatives));
     ok(name + ": the column profiles are aggregates, not values", !badProfile, JSON.stringify(badProfile));
 
     // And the blunt scan on top, for anything the structure check might miss.
@@ -305,6 +306,121 @@ group("A date is never read as an amount");
     const rr = csvRepairMap(f.rows, f.first, f.map, f.map);
     eq(name + ": a correct reading passes the check untouched", rr.fixed, []);
   }
+}
+
+// ------------------------------------------------------- money in or out --
+// The live bug: a card statement with one refund in it imported every charge
+// as income, because "any minus in the file" meant "a minus is money out".
+group("Money in or money out");
+{
+  const { csvRowMoney, csvRepairMap, setClaude, mapColumnsWithAI } = app;
+  // Read a CSV the way the app does, then sign it with a given model answer.
+  function signOf(text, modelSays, userSays) {
+    const rows = parseCSV(text);
+    const sk = csvSkeleton(rows);
+    const h = sk.head.length ? sk.head.length - 1 : -1;
+    const map = sniffMap(h >= 0 ? rows.slice(h) : rows, h >= 0);
+    const first = h >= 0 ? h + 1 : 0;
+    const sign = csvDetectSign(rows, map, first, modelSays || "", userSays || "");
+    map.flow = sign.flowCol;
+    const types = rows.slice(first).map((r) => {
+      const m = csvRowMoney(r, map, sign.splitAmt, sign.positiveOut);
+      return m ? m.type[0] : "-";
+    }).join("");
+    return { sign, types, map };
+  }
+
+  const CARD_REFUND = [
+    "פירוט עסקאות לכרטיס ישראכרט",
+    "תאריך עסקה,שם בית העסק,סכום חיוב",
+    "01/09/2026,קפה גרג,29.00",
+    "03/09/2026,שופרסל דיל,212.40",
+    "05/09/2026,זיכוי - זארה,-149.90",
+    "07/09/2026,פז יקום,250.00",
+    "11/09/2026,נטפליקס,54.90"
+  ].join("\n");
+  let s = signOf(CARD_REFUND);
+  eq("card statement with a refund: charges are money out, the refund is money in", s.types, "eeiee");
+  ok("  and it is sure of it", s.sign.sure === true, s.sign.why);
+  s = signOf(CARD_REFUND, "negative_is_expense");
+  eq("  even when the model reads it as a bank account", s.types, "eeiee");
+
+  s = signOf(ALL.CAL_REFUND.text);
+  eq("Cal (charge date + one refund): the amount is the charged column, not the charge date", s.map.amount, 4);
+  eq("  and only the refund is money in", s.types, "eeiee");
+
+  const CARD_PLAIN = [
+    "תאריך,בית עסק,סכום",
+    "01/09/2026,ארומה,32.00",
+    "02/09/2026,רב קו,50.00",
+    "04/09/2026,איקאה,640.00"
+  ].join("\n");
+  eq("no minus anywhere and no model hint at all: every line is money out", signOf(CARD_PLAIN).types, "eee");
+
+  const BANK = [
+    "תאריך,תיאור,סכום,יתרה",
+    "01/09/2026,משכורת,12500.00,15200.00",
+    "02/09/2026,שכר דירה,-4800.00,10400.00",
+    "05/09/2026,העברה מאמא,500.00,10900.00",
+    "08/09/2026,חברת חשמל,-310.00,10590.00"
+  ].join("\n");
+  s = signOf(BANK, "positive_is_expense");
+  eq("bank account, even a month with more in than out: a minus is money out", s.types, "ieie");
+  ok("  and the model's wrong card reading does not flip it", s.sign.positiveOut === false, s.sign.why);
+
+  eq("English bank export, mostly minus: salary is money in", read(ALL.ENGLISH).sign.positiveOut, false);
+
+  const DRCR = [
+    "Date,Description,Amount,Type",
+    "2026-09-01,ACME PAYROLL,3000.00,CR",
+    "2026-09-02,TESCO,54.20,DR",
+    "2026-09-03,SHELL,61.00,DR"
+  ].join("\n");
+  s = signOf(DRCR);
+  eq("unsigned amounts with a DR/CR column: the column is found", s.map.flow, 3);
+  eq("  and each line follows its own marker", s.types, "iee");
+
+  const HEB_FLOW = [
+    "תאריך,תיאור,סכום,סוג",
+    "01/09/2026,משכורת,9000,זכות",
+    "02/09/2026,רמי לוי,300,חובה"
+  ].join("\n");
+  eq("the same in Hebrew, חובה/זכות", signOf(HEB_FLOW).types, "ie");
+
+  const UNSIGNED_BANK = [
+    "תאריך,תיאור,סכום,יתרה",
+    "01/09/2026,משכורת,9000,9000",
+    "02/09/2026,רמי לוי,300,8700"
+  ].join("\n");
+  ok("a bank file with every sign stripped is flagged as unsure, not guessed", signOf(UNSIGNED_BANK).sign.sure === false);
+
+  const NAME_ABOVE = [
+    "דוח תנועות - מיכאל כהן",
+    "תאריך,תיאור,סכום",
+    "01/09/2026,רמי לוי,-300",
+    "02/09/2026,ארומה,-32",
+    "03/09/2026,משכורת,9000"
+  ].join("\n");
+  eq("a name like מיכאל in the title is not read as the card company כאל", signOf(NAME_ABOVE).types, "eei");
+
+  eq("the user's own answer for this bank outranks everything", signOf(BANK, "", "positive_out").types, "eiei");
+
+  // Split columns the wrong way round: the titles say which is which.
+  const LEUMI_ROWS = parseCSV(ALL.LEUMI.text);
+  const lh = csvSkeleton(LEUMI_ROWS).head.length - 1;
+  const lfb = sniffMap(LEUMI_ROWS.slice(lh), true);
+  const swapped = { date: lfb.date, desc: lfb.desc, amount: -1, debit: lfb.credit, credit: lfb.debit };
+  const fixedUp = csvRepairMap(LEUMI_ROWS, lh + 1, swapped, lfb);
+  eq("money in and out swapped against their own titles are put back", [fixedUp.map.debit, fixedUp.map.credit], [lfb.debit, lfb.credit]);
+  eq("  and it says so", fixedUp.fixed, ["inout"]);
+
+  // The column reading now goes to Sonnet, thinking at medium effort.
+  let sent = null;
+  setClaude((m, sys, mt, cb, model, to, extra) => { sent = { model, mt, extra }; cb(null, "{}"); });
+  mapColumnsWithAI(csvSkeleton(parseCSV(ALL.LEUMI.text)), () => {});
+  eq("the column reading is asked of Sonnet 5", sent.model, "claude-sonnet-5");
+  eq("  at medium effort", sent.extra, { effort: "medium" });
+  ok("  with room to think before it answers", sent.mt >= 4000, "maxTokens " + sent.mt);
 }
 
 // ------------------------------------------------- reading a model's answer --
