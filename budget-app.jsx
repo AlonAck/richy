@@ -13005,40 +13005,105 @@ function parseCSV(text) {
   if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
   return csvScan(text, csvPickDelim(text), 0);
 }
-// Guess which columns hold the date, amount, and description.
+// Column titles that name something other than money, however numeric their
+// cells look. Each of these could take a money role before:
+//   currency   "מטבע חיוב" sits beside "סכום חיוב" on every Isracard and Max
+//              file, and the חיוב in it read as "money out" - the file split
+//              into a money-out column full of ₪ signs and brought in nothing
+//   reference  אסמכתא / מס' שובר / a confirmation number: all numbers, all
+//              different, never negative - which is what an amount looks like
+//   card       "4 ספרות אחרונות של כרטיס האשראי", four digits on every line
+//   sector     the card company's own label for the kind of shop (Max's
+//              קטגוריה, Cal's ענף). Not money and not the shop, but worth
+//              keeping: it is a second opinion on the category
+//   balance    the running balance (יתרה), which is never the amount
+// csvTitleKind says which, or "" for a title that may hold a role.
+var CSV_TITLE_CURRENCY = /מטבע|currency|^ccy$|^cur\.?$/i;
+var CSV_TITLE_REFERENCE = /אסמכתא|אסמכתה|שובר|מס['׳]? ?(עסקה|פעולה|אישור|כרטיס|שובר|תשלומים)|מספר|ספרות|reference|^ref\b|ref\.? ?(no|number|#)|voucher|confirmation|receipt|(check|cheque) (no|number|#)|card (no|number|#|ending)|last (4|four)/i;
+var CSV_TITLE_BALANCE = /יתרה|יתרת|balance/i;
+var CSV_TITLE_SECTOR = /קטגוריה|ענף|תחום|סוג בית ה?עסק|category|sector|merchant type|\bmcc\b/i;
+function csvTitleKind(h) {
+  h = String(h == null ? "" : h).trim();
+  if (!h) return "";
+  var amt = /סכום|amount|\bsum\b|total/i.test(h);
+  if (CSV_TITLE_BALANCE.test(h)) return "balance";
+  if (CSV_TITLE_CURRENCY.test(h) && !amt) return "currency";
+  if (CSV_TITLE_REFERENCE.test(h) && !amt) return "reference";
+  if (CSV_TITLE_SECTOR.test(h) && !amt && !/סוג ה?עסקה|סוג ה?פעולה|transaction type|^type$/i.test(h)) return "sector";
+  return "";
+}
+// The amount that actually left the account, on a card statement that also
+// prints what the shop charged. For a purchase in ten payments the shop's
+// figure is the whole price and the charge is this month's payment; for a
+// purchase abroad the shop's figure is in dollars. Reading the first counted
+// a 3,000-shekel laptop bought in ten payments as 3,000 spent this month.
+function csvIsChargeTitle(h) {
+  h = String(h == null ? "" : h);
+  if (CSV_TITLE_BALANCE.test(h) || csvTitleKind(h) === "currency") return false;
+  return (/סכום/.test(h) && /חיוב/.test(h))
+    || /(billing|billed|charged?|posted|settlement|debited) amount|amount (charged|billed|debited)/i.test(h);
+}
+// The shop's own figure: the full price of a purchase in payments, or the
+// amount in the currency it was paid in.
+function csvIsDealAmountTitle(h) {
+  h = String(h == null ? "" : h);
+  if (/סכום/.test(h)) return /עסקה|מקור|מט"?ח|מט״ח/.test(h) && !/חיוב/.test(h);
+  return /(transaction|original|foreign|purchase) amount|amount in (original|foreign)|original currency/i.test(h);
+}
+
+// Guess which columns hold the date, amount, and description - and, when the
+// file has one, the card company's own category for each line (map.cat).
 function sniffMap(rows, hasHeader) {
-  var map = { date: -1, amount: -1, desc: -1, debit: -1, credit: -1 };
+  var map = { date: -1, amount: -1, desc: -1, debit: -1, credit: -1, cat: -1 };
   if (!rows.length) return map;
+  var ncol = 0;
+  rows.slice(0, 40).forEach(function(r) { if (r && r.length > ncol) ncol = r.length; });
+  var head = hasHeader ? (rows[0] || []) : [];
+  // Columns no role may take. A running balance is a well-behaved column of
+  // numbers and would otherwise be the first thing the positional pass below
+  // reached for; a reference number is the second.
+  var skip = {};
   if (hasHeader) {
-    // יתרה is the running balance. It is the single most dangerous column in
-    // an Israeli bank export, because it is a number sitting next to the
-    // amount and reading it as the amount makes every figure in the app wrong
-    // in a way that still looks plausible.
-    var HE_BALANCE = /יתרה/;
-    var HE_DATE = /תאריך|ת\. ?ערך|ת\. ?עסקה/;
-    var HE_AMOUNT = /סכום|עלות/;
+    var HE_DATE = /תאריך|ת\. ?ערך|ת\. ?עסקה|יום ערך/;
     var HE_DEBIT = /חובה|משיכה|הוצאה/;
     var HE_CREDIT = /זכות|הפקדה|הכנסה/;
-    var HE_DESC = /בית ?העסק|בית ?עסק|שם ?בית|תיאור|פירוט|פעולה|תנועה|הערות|ספק/;
-
-    // A card statement usually carries BOTH "סכום עסקה" (what the shop
-    // charged, possibly in a foreign currency) and "סכום חיוב" (what the card
-    // actually took, in shekels). The second is the one that happened to this
-    // person's money, and a left-to-right first-match pass would take the
-    // first. So it is claimed up front.
-    rows[0].forEach(function(hRaw, i) {
-      if (map.amount >= 0) return;
-      var h = String(hRaw || "");
-      if (/סכום/.test(h) && /חיוב/.test(h) && !HE_BALANCE.test(h)) map.amount = i;
+    // Two strengths of shop title. A strong one names the shop outright; a
+    // weak one only might - "סוג תנועה" is Mizrahi's description column, but
+    // "Transaction Type" beside a real "Description" is DEB/DD/SO, and taking
+    // it filed every line of a UK statement under the same three "shops".
+    var DESC_STRONG = /בית ?ה?עסק|שם ?בית|תיאור|description|descr|payee|merchant|narrative|narration|details|beneficiary/i;
+    var DESC_WEAK = /פירוט|פעולה|תנועה|הערות|ספק|פרטים|name|memo|transaction|particulars/i;
+    head.forEach(function(hRaw, i) {
+      var kind = csvTitleKind(hRaw);
+      if (!kind) return;
+      skip[i] = kind;
+      if (kind === "sector" && map.cat < 0) map.cat = i;
     });
 
-    rows[0].forEach(function(hRaw, i) {
-      var h = (hRaw || "").toLowerCase();
+    // A card statement usually carries BOTH "סכום עסקה" (what the shop
+    // charged, possibly in a foreign currency, possibly the full price of a
+    // purchase in payments) and "סכום חיוב" (what the card actually took this
+    // month, in shekels). The second is the one that happened to this
+    // person's money, and a left-to-right first-match pass would take the
+    // first. So it is claimed up front - and failing that, an amount titled
+    // in shekels over one in the original currency.
+    head.forEach(function(hRaw, i) {
+      if (map.amount < 0 && !skip[i] && csvIsChargeTitle(hRaw)) map.amount = i;
+    });
+    if (map.amount < 0) head.forEach(function(hRaw, i) {
+      var h = String(hRaw || "");
+      if (map.amount < 0 && !skip[i] && /סכום|amount/i.test(h) && /ש"ח|ש״ח|₪|\bils\b|\bnis\b|שקל/i.test(h)
+        && !csvIsDealAmountTitle(h) && !HE_DATE.test(h) && !/date/i.test(h)) map.amount = i;
+    });
+
+    var weak = [];
+    head.forEach(function(hRaw, i) {
+      var h = String(hRaw || "").toLowerCase();
       // Each header cell can only fill ONE role - stop at the first match.
       // Without the early returns, a column literally named "Value Date"
       // matched BOTH the date pattern (via "date") and the amount pattern
       // (via "value"), so the date column got read as the price too.
-      if (i === map.amount) return;
+      if (i === map.amount || skip[i]) return;
       var isDateTitle = /date|time|posted/.test(h) || HE_DATE.test(h);
       if (map.date < 0 && isDateTitle) { map.date = i; return; }
       // A SECOND date column is still a date column, and it fills no role.
@@ -13052,34 +13117,41 @@ function sniffMap(rows, hasHeader) {
       // as a debit column would split one amount across two roles.
       var heDebit = HE_DEBIT.test(h) || (/חיוב/.test(h) && !/סכום/.test(h));
       var heCredit = HE_CREDIT.test(h) || (/זיכוי/.test(h) && !/סכום/.test(h));
-      if (map.debit < 0 && ((/(debit|withdraw|paid out|money out|spent|outflow)/.test(h) && !/credit|deposit/.test(h)) || (heDebit && !heCredit))) { map.debit = i; return; }
-      if (map.credit < 0 && ((/(credit|deposit|paid in|money in|received|inflow)/.test(h) && !/debit|withdraw/.test(h)) || (heCredit && !heDebit))) { map.credit = i; return; }
+      var enDebit = /(debit|withdraw|paid out|money out|spent|outflow)/.test(h);
+      var enCredit = /(credit|deposit|paid in|money in|received|inflow)/.test(h);
+      // One column that names both - Discount's "₪ זכות/חובה", a "Debit/Credit"
+      // - is a single signed amount, not half of a pair.
+      if ((heDebit && heCredit) || (enDebit && enCredit)) { if (map.amount < 0) map.amount = i; return; }
+      if (map.debit < 0 && (enDebit || heDebit)) { map.debit = i; return; }
+      if (map.credit < 0 && (enCredit || heCredit)) { map.credit = i; return; }
       // Single signed-amount column - only if it isn't a debit/credit column,
       // and not a SECOND date-ish column (a statement with both "Transaction
       // Date" and "Value Date" must not let the latter's "value" steal the
       // amount role from the real Amount column that comes after it).
-      if (map.amount < 0
-        && ((/(amount|value|sum|total|paid)/.test(h) && !/(debit|credit|deposit|withdraw)/.test(h) && !/date|time|posted/.test(h))
-          || (HE_AMOUNT.test(h) && !HE_BALANCE.test(h) && !HE_DATE.test(h)))) { map.amount = i; return; }
-      if (map.desc < 0 && (/desc|payee|name|memo|detail|narration|merchant|reference|transaction/.test(h) || HE_DESC.test(h))) { map.desc = i; return; }
+      if (/(amount|value|sum|total|paid)/.test(h) || /סכום|עלות/.test(h)) { if (map.amount < 0) map.amount = i; return; }
+      if (DESC_STRONG.test(h)) { if (map.desc < 0) map.desc = i; return; }
+      if (DESC_WEAK.test(h)) weak.push(i);
     });
+    // Of the weak titles, the one whose lines differ the most: a shop column
+    // is nearly all different, a type column is a handful of codes.
+    if (map.desc < 0 && weak.length) {
+      var bestN = -1;
+      weak.forEach(function(i) {
+        var seen = {}, n = 0;
+        rows.slice(1, 80).forEach(function(r) {
+          var v = String((r || [])[i] || "").trim();
+          if (v && csvCellKind(v) === "text" && !seen[v]) { seen[v] = 1; n++; }
+        });
+        if (n > bestN) { bestN = n; map.desc = i; }
+      });
+    }
   }
   var hasSplit = map.debit >= 0 || map.credit >= 0;
   var sample = rows.slice(hasHeader ? 1 : 0).slice(0, 6);
-  var ncol = rows[0].length;
-  // Columns the positional pass below must not touch. A running balance is a
-  // well-behaved column of numbers and would otherwise be the first thing it
-  // reached for.
-  var banned = {};
-  if (hasHeader) {
-    rows[0].forEach(function(hRaw, i) {
-      if (/יתרה|balance/i.test(String(hRaw || ""))) banned[i] = 1;
-    });
-  }
   for (var c = 0; c < ncol; c++) {
-    if (banned[c]) continue;
-    if (c === map.date || c === map.amount || c === map.desc || c === map.debit || c === map.credit) continue;
-    var vals = sample.map(function(r) { return r[c] || ""; });
+    if (skip[c]) continue;
+    if (c === map.date || c === map.amount || c === map.desc || c === map.debit || c === map.credit || c === map.cat) continue;
+    var vals = sample.map(function(r) { return (r && r[c]) || ""; });
     var nonEmpty = vals.filter(function(v) { return v !== ""; });
     if (!nonEmpty.length) continue;
     // Date.parse alone reads "5" as a date, so a bare number only counts when
@@ -13089,18 +13161,24 @@ function sniffMap(rows, hasHeader) {
     // pass this test and become the amount.
     var numHits = nonEmpty.filter(function(v) { return /\d/.test(v) && !csvIsDateCell(v) && !isNaN(parseImportAmount(v)); }).length;
     if (map.date < 0 && dateHits >= Math.ceil(nonEmpty.length / 2)) { map.date = c; continue; }
+    // A column with no titles to go by can still say it is not money: long
+    // whole numbers on every line are a reference, and the same four digits
+    // on every line are a card number.
+    var refLike = nonEmpty.every(function(v) { return /^\d{5,}$/.test(String(v).trim()); });
+    var cardLike = nonEmpty.length >= 3 && nonEmpty.every(function(v) { return /^\d{4}$/.test(String(v).trim()) && String(v).trim() === String(nonEmpty[0]).trim(); });
+    if (refLike || cardLike) continue;
     if (!hasSplit && map.amount < 0 && numHits >= Math.ceil(nonEmpty.length / 2)) { map.amount = c; continue; }
   }
   if (map.desc < 0) {
     var bestLen = 0, bestCol = -1;
     for (var c2 = 0; c2 < ncol; c2++) {
-      if (c2 === map.date || c2 === map.amount || c2 === map.debit || c2 === map.credit) continue;
+      if (c2 === map.date || c2 === map.amount || c2 === map.debit || c2 === map.credit || c2 === map.cat) continue;
       // Longest cell wins, but a date ("2026-09-23" is ten characters) is
       // longer than most shop names - only a column of words can be the shop.
-      var cells = sample.map(function(r) { return r[c2] || ""; }).filter(function(v) { return v !== ""; });
+      var cells = sample.map(function(r) { return (r && r[c2]) || ""; }).filter(function(v) { return v !== ""; });
       var words = cells.filter(function(v) { return csvCellKind(v) === "text"; }).length;
       if (!cells.length || words * 2 < cells.length) continue;
-      var avg = sample.reduce(function(s, r) { return s + ((r[c2] || "").length); }, 0) / (sample.length || 1);
+      var avg = sample.reduce(function(s, r) { return s + (((r && r[c2]) || "").length); }, 0) / (sample.length || 1);
       if (avg > bestLen) { bestLen = avg; bestCol = c2; }
     }
     map.desc = bestCol;
@@ -13688,18 +13766,75 @@ function xlsxRead(bytes, cb) {
         if (e2) { cb(e2); return; }
         var shared = xlsxSharedStrings(side[sharedPath] || "");
         var styles = xlsxDateStyles(side[stylesPath] || "");
+        // Every sheet with rows, then the ones that belong together - see
+        // sheetMergeTables. A sheet that fails to read after one already has
+        // is left out rather than taking the good one down with it.
+        var found = [];
+        function finish() {
+          if (!found.length) { cb(new Error("There are no rows in that Excel file. Check you exported your transactions and not an empty sheet.")); return; }
+          var merged = sheetMergeTables(found);
+          cb(null, { kind: "xlsx", rows: merged.rows, sheet: merged.names[0], sheets: merged.names });
+        }
         (function step(i) {
-          if (i >= sheets.length) { cb(new Error("There are no rows in that Excel file. Check you exported your transactions and not an empty sheet.")); return; }
+          if (i >= sheets.length || i >= SHEET_MAX_SHEETS) { finish(); return; }
           zipReadText(bytes, entries, [sheets[i].path], budget, function(e3, one) {
-            if (e3) { cb(e3); return; }
+            if (e3) { if (found.length) finish(); else cb(e3); return; }
             var rows = xlsxSheetRows(one[sheets[i].path] || "", shared, styles, date1904);
-            if (sheetHasRows(rows)) { cb(null, { kind: "xlsx", rows: rows, sheet: sheets[i].name }); return; }
+            if (sheetHasRows(rows)) found.push({ name: sheets[i].name, rows: rows });
             step(i + 1);
           });
         })(0);
       });
     });
   });
+}
+
+// A workbook's sheets, as one statement. Max puts a month's shekel charges on
+// one sheet and its purchases abroad on another ('עסקאות חו"ל ומט"ח'), and
+// reading only the first sheet lost every purchase abroad without a word. But
+// a workbook can also hold a cover page, a summary by category, or the same
+// lines again in another view - and reading one of those as more purchases
+// would count the month twice. So a later sheet joins the first statement
+// sheet only when
+//   - its column titles read as a statement (a date, an amount, a shop), and
+//   - it is not the lines already read over again (half or more of its
+//     dated lines already in is a view, not more statement).
+// Its rows follow the first sheet's, titles and all, and csvReadRows reads
+// them as the next section by their own titles.
+var SHEET_MAX_SHEETS = 12;
+function sheetMergeTables(tables) {
+  var first = -1;
+  for (var t = 0; t < tables.length && first < 0; t++) if (sheetStatementTitles(tables[t].rows)) first = t;
+  if (first < 0) return { rows: tables[0].rows, names: [tables[0].name] };
+  var out = tables[first].rows.slice(), names = [tables[first].name];
+  var seen = {};
+  function mark(rows) { rows.forEach(function(r) { seen[csvCellsKey(r)] = 1; }); }
+  mark(out);
+  for (var k = first + 1; k < tables.length; k++) {
+    var rows = tables[k].rows;
+    if (!sheetStatementTitles(rows)) continue;
+    var dated = 0, again = 0;
+    rows.forEach(function(r) {
+      if (!csvRowIsData(csvRowKinds(r, (r || []).length))) return;
+      dated++;
+      if (seen[csvCellsKey(r)]) again++;
+    });
+    if (!dated || again * 2 >= dated) continue;
+    mark(rows);
+    out = out.concat(rows);
+    names.push(tables[k].name);
+  }
+  return { rows: out, names: names };
+}
+// Whether a sheet has a line of column titles that reads as a statement.
+function sheetStatementTitles(rows) {
+  var lim = Math.min((rows || []).length, 30);
+  for (var i = 0; i < lim; i++) {
+    if (!csvTitleRow(rows[i])) continue;
+    var m = sniffMap(rows.slice(i, i + 12), true);
+    if (m.date >= 0 && m.desc >= 0 && (m.amount >= 0 || m.debit >= 0 || m.credit >= 0)) return true;
+  }
+  return false;
 }
 
 // --- the .xls files that are really HTML -------------------------------------
@@ -13933,8 +14068,10 @@ function sheetReadFile(file, cb) {
 function sheetReadNote(file, out) {
   var n = ((out && out.rows) || []).length;
   var name = (file && file.name) || "";
+  var names = (out && out.sheets) || [];
   var what = out && out.kind === "xlsx"
-    ? (out.sheet ? "the sheet “" + out.sheet + "”" : "your Excel file")
+    ? (names.length > 1 ? "the sheets " + names.map(function(x) { return "“" + x + "”"; }).join(" and ")
+      : out.sheet ? "the sheet “" + out.sheet + "”" : "your Excel file")
     : "the table in it";
   return (name ? name + " — " : "") + n + (n === 1 ? " line" : " lines") + " read from " + what + ".";
 }
@@ -13978,6 +14115,10 @@ function csvIsNumberCell(s) {
   s = String(s == null ? "" : s).trim();
   if (!s || csvIsDateCell(s)) return false;
   if (!/\d/.test(s)) return false;
+  // A currency written as a word beside the figure - "1,234.50 ש"ח", "ILS
+  // 45.00" - is still a number. Read as text, a whole statement written that
+  // way had no "data" lines in it, and the titles could not be found.
+  s = s.replace(/(^|\s)(ש["״]?ח|ils|nis|usd|eur|gbp)(?=\s|$)/gi, " ");
   var rest = s.replace(/[\d\s.,()+\-‎‏⁦-⁩₪$€£]/g, "");
   if (rest !== "") return false;
   return !isNaN(parseImportAmount(s));
@@ -14006,8 +14147,22 @@ function csvRowIsData(kinds) {
 // 1,234" has a date AND a number and would fool a single-row test, so the test
 // is that TWO rows in a row are data-shaped AND carry a date in the SAME
 // column - metadata lines do not repeat their shape, data rows always do.
+//
+// A line of column titles with a dated line under it settles it first - the
+// data starts right under the titles. A card statement can open with a
+// section of ONE purchase and its total (the first card in a file of two),
+// and a Leumi export puts its closing balance between the titles and the
+// first purchase; the two-rows test walked past both and took a purchase, or
+// the balance line, for the column titles.
 function csvFirstDataRow(rows, ncol) {
   var lim = Math.min(rows.length, 14);
+  for (var t = 0; t + 1 < lim; t++) {
+    if (!csvTitleRow(rows[t])) continue;
+    for (var d = t + 1; d < Math.min(rows.length, t + 5); d++) {
+      if (csvTitleRow(rows[d])) break;
+      if (csvRowIsData(csvRowKinds(rows[d], ncol))) return t + 1;
+    }
+  }
   var sigs = [];
   for (var i = 0; i < lim; i++) sigs.push(csvRowKinds(rows[i], ncol));
   for (var a = 0; a + 1 < lim; a++) {
@@ -14024,8 +14179,24 @@ function csvMaskCell(s) {
   t = t.replace(/\d{3,}/g, "###");
   return t.length > CSV_CELL_MAX ? t.slice(0, CSV_CELL_MAX) + "..." : t;
 }
+// The rows of the FIRST section: from `first` up to the next line of column
+// titles. A card statement can carry a second section with its own titles in
+// another order - Isracard's abroad lines put the charge date where the shop
+// name was - and judging a column by rows that belong to another layout read
+// the domestic shop column as "mostly dates" and threw it away: every shop in
+// the file became "Imported", in Other. What a column holds, which way money
+// points, which way dates are written - all are asked of this section only.
+function csvSectionRows(rows, first, cap) {
+  var out = [];
+  rows = rows || [];
+  for (var i = first; i < rows.length && (!cap || out.length < cap); i++) {
+    if (i > first && csvTitleRow(rows[i])) break;
+    out.push(rows[i]);
+  }
+  return out;
+}
 function csvColumnProfiles(rows, ncol, firstDataRow) {
-  var data = rows.slice(firstDataRow);
+  var data = csvSectionRows(rows, firstDataRow);
   var out = [];
   for (var c = 0; c < ncol; c++) {
     var kinds = { empty: 0, date: 0, number: 0, text: 0 };
@@ -14061,11 +14232,16 @@ function csvColumnProfiles(rows, ncol, firstDataRow) {
   }
   return out;
 }
+// head holds the lines just ABOVE the data - the column titles are the last
+// of them - and headFrom says where head starts in the file. It used to be the
+// file's first eight lines, which on a file with more lines than that above
+// its purchases left the titles out of what the model was shown altogether.
 function csvSkeleton(rows) {
   var ncol = 0;
   (rows || []).forEach(function(r) { if (r && r.length > ncol) ncol = r.length; });
   var firstDataRow = csvFirstDataRow(rows || [], ncol);
-  var head = (rows || []).slice(0, Math.min(firstDataRow, CSV_HEAD_MAX)).map(function(r) {
+  var headFrom = Math.max(0, firstDataRow - CSV_HEAD_MAX);
+  var head = (rows || []).slice(headFrom, firstDataRow).map(function(r) {
     var o = []; for (var i = 0; i < ncol; i++) o.push(csvMaskCell((r || [])[i])); return o;
   });
   var shape = (rows || []).slice(firstDataRow, firstDataRow + CSV_SHAPE_MAX).map(function(r) {
@@ -14074,6 +14250,7 @@ function csvSkeleton(rows) {
   return {
     columns: ncol,
     rowsAboveData: firstDataRow,
+    headFrom: headFrom,
     head: head,
     shape: shape,
     profiles: csvColumnProfiles(rows || [], ncol, firstDataRow)
@@ -14112,7 +14289,7 @@ function csvFingerprint(sk) {
 function csvDetectDateFormat(rows, col, firstDataRow) {
   if (col == null || col < 0) return { preferDMY: true, sure: false, reason: "no date column" };
   var dmy = 0, mdy = 0, iso = 0;
-  var data = rows.slice(firstDataRow);
+  var data = csvSectionRows(rows, firstDataRow);
   for (var i = 0; i < data.length; i++) {
     var s = String(((data[i] || [])[col]) || "").trim();
     if (/^\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}/.test(s)) { iso++; continue; }
@@ -14144,12 +14321,20 @@ function csvFlowWord(s) {
 }
 // The direction column, if the file has one: a column that is not already the
 // date, shop or money, and nearly every cell of which is a direction word.
+//
+// It has to mark nearly EVERY line. A notes column that says "זיכוי" on the
+// two refund lines and nothing on the other forty is not a direction column -
+// Max writes exactly that - and taking it for one threw away the card rule:
+// every unmarked charge in the month was read as money coming in.
 function csvFindFlowColumn(rows, first, map) {
-  var data = (rows || []).slice(first, first + 400);
-  var ncol = 0;
-  data.forEach(function(r) { if (r && r.length > ncol) ncol = r.length; });
+  var data = csvSectionRows(rows, first, 400);
+  var ncol = 0, lines = 0;
+  data.forEach(function(r) {
+    if (r && r.length > ncol) ncol = r.length;
+    if (map.amount >= 0 && !isNaN(parseImportAmount((r || [])[map.amount]))) lines++;
+  });
   for (var c = 0; c < ncol; c++) {
-    if (c === map.date || c === map.amount || c === map.desc || c === map.debit || c === map.credit) continue;
+    if (c === map.date || c === map.amount || c === map.desc || c === map.debit || c === map.credit || c === map.cat) continue;
     var filled = 0, words = 0;
     for (var i = 0; i < data.length; i++) {
       var v = String(((data[i] || [])[c]) || "").trim();
@@ -14157,7 +14342,7 @@ function csvFindFlowColumn(rows, first, map) {
       filled++;
       if (csvFlowWord(v)) words++;
     }
-    if (filled >= 2 && words >= filled * 0.8) return c;
+    if (filled >= 2 && words >= filled * 0.8 && words >= lines * 0.8) return c;
   }
   return -1;
 }
@@ -14194,7 +14379,7 @@ function csvDetectSign(rows, map, firstDataRow, modelSays, userSays) {
     return { splitAmt: false, positiveOut: userSays === "positive_out", flowCol: -1, sure: true, why: "you set this for this bank last time" };
   }
 
-  var data = rows.slice(firstDataRow);
+  var data = csvSectionRows(rows, firstDataRow);
   var neg = 0, pos = 0, inPos = 0, inNeg = 0;
   // Not bare "שכר" (שכר דירה is rent) and not "החזר" (החזר הלוואה is a loan
   // repayment) - both are money OUT, and a wrong word here flips the file.
@@ -14203,6 +14388,9 @@ function csvDetectSign(rows, map, firstDataRow, modelSays, userSays) {
     var r = data[i] || [];
     var n = parseImportAmount(r[map.amount] || "");
     if (isNaN(n) || n === 0) continue;
+    // A total is the lines above it said again, and on a card statement with
+    // refunds it can be either sign - it is not a line of its own to count.
+    if (csvSummaryRow(r, map)) continue;
     if (n < 0) neg++; else pos++;
     if (map.desc >= 0 && SAYS_IN.test(String(r[map.desc] || ""))) { if (n < 0) inNeg++; else inPos++; }
   }
@@ -14282,7 +14470,7 @@ var CSV_TRANSFER_WORDS = {
   // ordinary debit-card purchase.
   cardBill: ["ישראכרט", "isracard", "מקס איט", "max it", "לאומי קארד", "leumi card", "כאל", "visa cal", "כרטיסי אשראי", "כרטיס אשראי", "חיוב כרטיס", "אמריקן אקספרס", "american express", "amex", "דיינרס", "diners", "credit card payment"],
   cardPaid: ["payment thank you", "payment received", "autopay payment", "online payment", "תשלום התקבל", "תשלום לכרטיס"],
-  own: ["פיקדון", "פקדון", "פיקדונות", "חיסכון", "חסכון", "תוכנית חיסכון", "קרן השתלמות", "קופת גמל", "גמל להשקעה", "העברה עצמית", "בין חשבונות", "פדיון", "תיק השקעות", "ני\"ע", "ניירות ערך",
+  own: ["פיקדון", "פקדון", "פיקדונות", "פק\"מ", "פקמ", "פח\"ק", "חיסכון", "חסכון", "תוכנית חיסכון", "קרן השתלמות", "קופת גמל", "גמל להשקעה", "העברה עצמית", "בין חשבונות", "פדיון", "תיק השקעות", "ני\"ע", "ניירות ערך",
     "savings", "own account", "internal transfer", "between accounts", "brokerage", "interactive brokers"],
   p2p: ["ביט", "bit", "פייבוקס", "paybox", "pepper pay", "העברה", "העברת כספים", "העברה בנקאית", "zelle", "venmo", "cash app", "transfer to", "transfer from", "wire transfer", "revolut"],
   cash: ["משיכת מזומן", "משיכה מכספומט", "כספומט", "מזומן", "atm", "cash withdrawal"]
@@ -14328,7 +14516,7 @@ function csvIncomeKind(desc) {
 // this line is remembered under - money in is kept apart ("in:") so an
 // employer's name can never teach a purchase, and transfers ("tr:") teach
 // nothing.
-function csvRowCategory(desc, type, positiveOut, ctx) {
+function csvRowCategory(desc, type, positiveOut, ctx, fileCat) {
   ctx = ctx || {};
   var cats = ctx.cats || [];
   var sk = shopKey(desc);
@@ -14357,21 +14545,66 @@ function csvRowCategory(desc, type, positiveOut, ctx) {
     // A payer seen before: however the user filed them last time.
     var h = csvHistoryCat(ctx.incomeHist, sk, cats);
     if (h) return res(h, false, true);
+    // Money in from a SHOP is money back, whatever the line calls it. A
+    // debit-card refund on a bank account arrives as the shop's plain name
+    // ("+89.90 קסטרו"), and it used to be filed as Salary. A shop this same
+    // file buys from settles it; a name only the keyword map knows is shown
+    // as a guess.
+    var bought = (ctx.shops || {})[sk];
+    var boughtCat = bought ? catByName(cats, bought.category) : null;
+    if (boughtCat && boughtCat.id !== other.id && boughtCat !== salary && boughtCat !== inv) return res(boughtCat, false, true);
+    var kwName = keywordCatName(desc);
+    var kwCat = kwName && kwName !== "Salary" && kwName !== "Investments" ? catByName(cats, kwName) : null;
+    if (kwCat) return res(kwCat, true, false);
     // An unknown payer is most often an employer, but that is a guess - and
     // it is shown as one, instead of silently becoming "Salary".
     return res(salary || other, true, false);
   }
   // A purchase, or money back from a shop: the shop map (the user's
-  // correction, their history, or Alfred), then their history by name, then
-  // the keyword map.
+  // correction, their history, or Alfred), then the card company's own label
+  // for the shop, then their history by name, then the keyword map.
+  //
+  // "Other" from the shop map is not an answer: it is what Alfred says when he
+  // cannot place a name, and it used to end the search - so a shop the card
+  // company had labelled "מזון וצריכה" on the very same line, or a chain the
+  // keyword map knows by name, was filed under Other anyway.
   var mapped = (ctx.shops || {})[sk];
   var fromShop = mapped ? catByName(cats, mapped.category) : null;
-  var learned = fromShop ? fromShop.id : suggestCatId(desc, ctx.tx, cats);
+  if (fromShop && fromShop.id !== other.id) return res(fromShop, false, true);
+  var sector = fileCat ? csvSectorCat(fileCat, cats) : null;
+  if (sector) return res(sector, false, true);
+  var learned = suggestCatId(desc, ctx.tx, cats);
   var c = catById(cats, learned || guessImportCatId(desc, cats)) || other;
   // Whether that is a real read or the Other fallback. The duplicate scorer
   // needs the difference: an unknown category is no signal, while two
   // known-but-different categories are a real one.
-  return res(c, false, !!learned || !!keywordCatName(desc));
+  return res(c, false, !!learned || !!keywordCatName(desc) || !!fromShop);
+}
+
+// The card company's own label for the kind of shop - Max's קטגוריה, Cal's
+// ענף, the Category column of an American card - read into Richy's default
+// categories by word, because the labels drift between issuers and years.
+// A label that could be two things ("דלק, חשמל וגז" is fuel for the car or
+// electricity for the flat; "ביטוח ופיננסים"; "שונות") maps to nothing, and
+// the shop is left to Alfred and the keyword map. First rule that matches.
+var CSV_SECTOR_RULES = [
+  [/דלק.{0,6}חשמל|חשמל.{0,6}דלק|ביטוח|פיננס|שונות|כללי|אחר|העבר|משיכ|מזומן|תשלומים|\bmisc|\bother\b|general|fees?\b|adjustment|personal|professional|gifts?\b|donation|education|business|services$/i, null],
+  [/מסעד|קפה|ברים|מזון|מכול|מרכול|סופרמרקט|אוכל|מאפ|משקאות|groceri|grocery|food|restaurant|dining|drink|supermarket|bakery|coffee|fast food/i, "Food"],
+  [/חשמל ו?מחשב|מחשב|אלקטרו|ביגוד|הלבשה|הנעלה|אופנה|עיצוב הבית|ריהוט|כלי בית|לבית|קוסמטיק|טיפוח|ספרים|דפוס|צעצוע|מתנות|תכשיט|ספורט ו?הנעלה|חיות|shopping|merchandise|clothing|apparel|electronic|department|home improvement|^home$|furnish|retail|books?\b|toys?\b|jewel/i, "Shopping"],
+  [/דלק|תחבור|רכב|חני|מוסך|כביש|תחנות|fuel|\bgas\b|gasoline|automotive|transport|parking|taxi|tolls?\b|transit/i, "Transport"],
+  [/תקשורת|טלפון|סלולר|אינטרנט|עירי|ממשל|ארנונה|(^|[^א-ת])(מים|גז)($|[^א-ת])|חשמל|דיור|שכר דירה|bills|utilit|telecom|phone|internet|cable|rent\b|mortgage|housing/i, "Housing"],
+  [/רפוא|מרקח|פארם|בריאות|קופ.? חולים|אופטיק|שיניים|health|pharmac|medical|doctor|dental|wellness|drugstore/i, "Health"],
+  [/טיס(ה|ות)|תעופ|תייר|נופש|מלונ|חופש|travel|airline|hotel|lodging|vacation|flights?\b/i, "Travel"],
+  [/פנאי|בידור|תרבות|קולנוע|הופע|ספורט|כושר|מנוי|entertainment|leisure|recreation|movies?\b|cinema|music|streaming|sports?\b|gym|fitness/i, "Entertainment"]
+];
+function csvSectorCat(label, cats) {
+  var t = String(label == null ? "" : label).trim();
+  if (!t || csvCellKind(t) !== "text") return null;
+  for (var i = 0; i < CSV_SECTOR_RULES.length; i++) {
+    if (!CSV_SECTOR_RULES[i][0].test(t)) continue;
+    return CSV_SECTOR_RULES[i][1] ? catByName(cats || [], CSV_SECTOR_RULES[i][1]) : null;
+  }
+  return null;
 }
 
 // One row's money: how much, and which way. The single place the sign rules
@@ -14392,6 +14625,285 @@ function csvRowMoney(r, map, splitAmt, positiveOut) {
   return { amount: round2(Math.abs(amt)), type: out ? "expense" : "income" };
 }
 
+// ===== CSV IMPORT: WHICH LINES ARE PURCHASES =================================
+// A statement is not only purchases. Every Israeli card export closes its
+// sections with totals - Isracard's "סך חיוב בש"ח:", Max's "סך הכל", Cal's
+// "סה"כ" - and a bank closes the page with its balances. Those lines carry an
+// amount, so csvRowMoney read them as money like any other line; they carry
+// no date, so the import stamped them with TODAY; they carry no shop, so they
+// landed in Other as "Imported". A card month that came to 4,900 imported as
+// nearly 10,000, half of it in Other: the total, counted again as a purchase
+// of its own.
+//
+// Now every line of the file is read here, once, for all of the import's
+// readers - the first-rows check, the shop sorting and the rows that are
+// built - and each line is one of:
+//   a purchase  (or a refund, money in, a transfer) - kept
+//   a total     a line that says it is a total or a balance, or a line with no
+//               date whose amount is exactly what the lines above it add up
+//               to. Left out - and kept, to check the import against
+//   titles      the column titles again. Where a second section starts with
+//               its own titles, the lines under it are read by THEM:
+//               Isracard's abroad section puts its columns in another order
+//   no date     an amount with no date and no shop. Left out, and said so
+// A line with a shop and an amount under an empty date cell is kept with the
+// date of the line above it - a total never names a shop, and dropping a real
+// purchase silently is the worse mistake.
+var CSV_SUM_HE = /(^|[^א-ת])(סה["״'׳]{0,2}כ|סך)(?![א-ת])/;
+var CSV_SUM_HE_START = /^(סיכום|יתרת|יתרה)(?![א-ת])/;
+var CSV_SUM_EN = /^((grand|sub|sub-) ?)?totals?( (for|of|charges?|amounts?|spent|spend|debits?|credits?|payments?|purchases?|due|balance|transactions?|billed|to pay|in|out|this|new|ils|nis|usd)\b.*)?$|^(opening|closing|previous|new|statement|current|available|ending|beginning|starting|final|minimum) balance\b|^balance( (brought|carried) forward| b\/?f| c\/?f)?$|(brought|carried) forward/;
+// "total" | "balance" | "" for one cell's text. A shop is never called "סה"כ",
+// but one IS called "TOTAL ENERGIES" - so the English side only counts a cell
+// that is a total label from start to end, not one that starts with the word.
+function csvSummaryText(s) {
+  var t = String(s == null ? "" : s).replace(/\s+/g, " ").trim();
+  if (!t) return "";
+  if (CSV_SUM_HE_START.test(t)) return /^סיכום/.test(t) ? "total" : "balance";
+  if (CSV_SUM_HE.test(t)) return "total";
+  var e = t.toLowerCase().replace(/^[\s*#:.\-–—]+/, "").replace(/[\s*:：.\-–—]+$/, "");
+  if (!CSV_SUM_EN.test(e)) return "";
+  return /balance|forward/.test(e) && !/total/.test(e) ? "balance" : "total";
+}
+// Whether a line is a total or a balance, by what it SAYS. Only three cells
+// are asked - the date cell, the shop cell and the first cell with anything
+// in it - because that is where a total puts its label, and a notes column
+// ("סה"כ 3 תשלומים" beside a real purchase) must not take a purchase out.
+function csvSummaryRow(r, map) {
+  r = r || [];
+  var at = [map && map.date, map && map.desc];
+  for (var f = 0; f < r.length; f++) { if (String(r[f] == null ? "" : r[f]).trim()) { at.push(f); break; } }
+  for (var i = 0; i < at.length; i++) {
+    var c = at[i];
+    if (c == null || c < 0) continue;
+    var v = r[c];
+    if (csvCellKind(v) !== "text") continue;
+    var k = csvSummaryText(v);
+    if (k) return k;
+  }
+  return "";
+}
+// A line of column titles: two or more cells that are titles, and not one
+// date or number among them - a purchase always has both.
+var CSV_TITLE_WORD = /תאריך|בית ה?עסק|סכום|תיאור|פירוט|מטבע|אסמכתא|יתרה|חובה|זכות|קטגוריה|ענף|הערות|שובר|פעולה|^date$| date$|^posted|description|amount|merchant|payee|balance|debit|credit|category|currency|reference|memo|paid (in|out)/i;
+function csvTitleRow(r) {
+  var hits = 0;
+  for (var i = 0; i < (r || []).length; i++) {
+    var k = csvCellKind(r[i]);
+    if (k === "date" || k === "number") return false;
+    if (k === "text" && CSV_TITLE_WORD.test(String(r[i]))) hits++;
+  }
+  return hits >= 2;
+}
+function csvCellsKey(r) {
+  return (r || []).map(function(c) { return String(c == null ? "" : c).replace(/\s+/g, " ").trim().toLowerCase(); }).join("|").replace(/\|+$/, "");
+}
+
+// dataRows: the rows under the column titles. head: that title row, or null.
+// today: the date a line gets when the file has no date column at all (the
+// user went on without one). Returns
+//   items   [{ i, r, money, desc, date, dateGuess, fileCat }] - every line
+//           that is a purchase, a refund, money in or a transfer. i indexes
+//           dataRows.
+//   totals  [{ i, amount, label, why: "total"|"balance", matched }] - lines
+//           left out as the file's own totals and balances; matched says the
+//           figure is what the lines above it add up to
+//   left    [{ i, amount, label, why: "nodate" }] - any other line left out
+//   check   null, or { printed, counted, ok } - the file's own total against
+//           what was read, for the preview to say out loud
+function csvReadRows(dataRows, head, map, splitAmt, positiveOut, preferDMY, today) {
+  dataRows = dataRows || [];
+  var items = [], totals = [], left = [];
+  var headKey = head ? csvCellsKey(head) : "";
+  var cur = map, curSplit = !!splitAmt;
+  var sec = { out: 0, inn: 0, n: 0 }, all = { out: 0, inn: 0, n: 0 }, printed = 0;
+  var lastDate = "";
+  // Whether an amount is what the lines above it add up to: this section's
+  // money out or in (or out net of refunds, which is what a card totals),
+  // the whole file's, or the totals printed so far (a grand total).
+  function sums() {
+    return [sec.out, sec.inn, sec.out - sec.inn, sec.inn - sec.out, all.out, all.inn, all.out - all.inn, all.inn - all.out, printed];
+  }
+  function isSum(a) {
+    return sums().some(function(v) { return v > 0.005 && Math.abs(round2(v) - a) < 0.015; });
+  }
+  function labelOf(r) {
+    var d = cur.desc >= 0 ? String(r[cur.desc] || "").trim() : "";
+    if (d) return d;
+    for (var f = 0; f < r.length; f++) {
+      var v = String(r[f] == null ? "" : r[f]).trim();
+      if (v && csvCellKind(v) === "text") return v;
+    }
+    return "";
+  }
+  dataRows.forEach(function(r, i) {
+    r = r || [];
+    if (!cur) {
+      if (!csvTitleRow(r)) return;
+      cur = map; curSplit = !!splitAmt;
+    }
+    var money = csvRowMoney(r, cur, curSplit, positiveOut);
+    if (!money) {
+      if (!csvTitleRow(r)) return;
+      // A new section. Its lines are summed afresh, and read by its own
+      // titles when they are not the ones at the top of the file.
+      sec = { out: 0, inn: 0, n: 0 };
+      if (csvCellsKey(r) === headKey) { cur = map; curSplit = !!splitAmt; return; }
+      var m2 = sniffMap([r].concat(dataRows.slice(i + 1, i + 12)), true);
+      var split2 = m2.debit >= 0 || m2.credit >= 0;
+      if (m2.date >= 0 && (split2 || m2.amount >= 0)) {
+        m2.flow = split2 ? -1 : csvFindFlowColumn(dataRows, i + 1, m2);
+        cur = m2; curSplit = split2;
+      } else {
+        // Titles that do not say where the date and the money are: the
+        // lines under them are not read by some other section's columns.
+        cur = null;
+      }
+      return;
+    }
+    var said = csvSummaryRow(r, cur);
+    var desc = cur.desc >= 0 ? String(r[cur.desc] == null ? "" : r[cur.desc]).trim() : "";
+    var dcell = cur.date >= 0 ? String(r[cur.date] == null ? "" : r[cur.date]).trim() : "";
+    var date = cur.date >= 0 ? parseImportDate(dcell, preferDMY) : (today || "");
+    var matched = isSum(money.amount);
+    var why = said, guess = false;
+    if (!why && !date) {
+      if (matched && (sec.n || all.n)) why = "total";
+      else if (!dcell && desc && lastDate) { date = lastDate; guess = true; }
+      else why = "nodate";
+    } else if (!why && !desc && matched && (sec.n >= 2 || all.n >= 2)) {
+      // A dated line with no shop whose figure is the sum of the lines above
+      // it: the total, printed on the charge date.
+      why = "total";
+    }
+    if (why) {
+      var e = { i: i, amount: money.amount, type: money.type, label: labelOf(r), why: why, matched: matched };
+      if (why === "nodate") left.push(e);
+      else {
+        totals.push(e);
+        if (why === "total") { printed = round2(printed + money.amount); sec = { out: 0, inn: 0, n: 0 }; }
+      }
+      return;
+    }
+    lastDate = date;
+    if (money.type === "expense") { sec.out = round2(sec.out + money.amount); all.out = round2(all.out + money.amount); }
+    else { sec.inn = round2(sec.inn + money.amount); all.inn = round2(all.inn + money.amount); }
+    sec.n++; all.n++;
+    items.push({ i: i, r: r, money: money, desc: desc, date: date, dateGuess: guess,
+      fileCat: cur.cat >= 0 ? String(r[cur.cat] == null ? "" : r[cur.cat]).trim() : "" });
+  });
+  // The file's own arithmetic, said back to it. Only a line that calls itself
+  // a total counts - a running balance is not a sum of the lines.
+  var check = null;
+  var said = totals.filter(function(t) { return t.why === "total"; });
+  if (said.length && items.length) {
+    var hit = said.filter(function(t) { return t.matched; });
+    var biggest = function(list) { return list.reduce(function(a, t) { return t.amount > a ? t.amount : a; }, 0); };
+    check = hit.length
+      ? { printed: biggest(hit), counted: biggest(hit), ok: true }
+      : { printed: biggest(said), counted: round2(Math.abs(all.out - all.inn)), ok: false };
+  }
+  return { items: items, totals: totals, left: left, check: check };
+}
+
+// ===== CSV IMPORT: THE STEPS, OUTSIDE THE SCREEN =============================
+// The import screen used to hold these inside itself, where nothing but a
+// person tapping through it could run them. They are the whole of what the
+// screen does with a file - so the random-statement suite can put a thousand
+// files through exactly what the user's file goes through.
+
+// The local reading: sniffMap, given the rows from the header down so its
+// rows[0] is the title row it expects. The fallback for an offline import and
+// for a file with no titles at all, and the second opinion csvRepairMap
+// checks every other reading against.
+function csvLocalReading(parsed, hRow) {
+  return sniffMap(hRow >= 0 ? parsed.slice(hRow) : parsed, hRow >= 0);
+}
+// The model's reading, with its holes filled from the local one. Only the
+// holes: a model that chose ONE amount column must not be handed a money-out
+// column as well - the local reading's split pair would outrank its amount
+// and read the file by the wrong columns - and a model that chose a split
+// pair must not be handed a single amount either.
+function csvMergeModelMap(r, fb) {
+  fb = fb || {};
+  var m = { date: r.date, amount: r.amount, desc: r.desc, debit: r.debit, credit: r.credit, cat: r.cat >= 0 ? r.cat : -1 };
+  var split = m.debit >= 0 || m.credit >= 0;
+  if (split) m.amount = -1;
+  if (!(m.date >= 0) && fb.date >= 0) m.date = fb.date;
+  if (!(m.desc >= 0) && fb.desc >= 0) m.desc = fb.desc;
+  if (!(m.cat >= 0) && fb.cat >= 0) m.cat = fb.cat;
+  if (!split && !(m.amount >= 0)) {
+    if (fb.amount >= 0) m.amount = fb.amount;
+    else { m.debit = fb.debit; m.credit = fb.credit; }
+  }
+  return m;
+}
+// Everything that has to happen once the columns are known, whoever worked
+// them out: check them against the rows, settle the date format and which way
+// money points from the rows themselves, and say whether the settings should
+// open. Returns { map, fmt, sign, conf, repaired, ok, lowConf, first }.
+function csvSettleReading(parsed, hRow, m, signSays, conf, savedDMY, userSign) {
+  var first = hRow >= 0 ? hRow + 1 : 0;
+  // Checked against the rows before anything is built from it - see
+  // csvRepairMap. This is also what heals a bad layout saved for this bank.
+  var repair = csvRepairMap(parsed, first, m, csvLocalReading(parsed, hRow), hRow >= 0 ? parsed[hRow] : null);
+  m = repair.map;
+  if (repair.fixed.length) {
+    // Marked low so the settings open by themselves on the corrected reading.
+    var was = conf || {};
+    conf = { header: was.header, date: was.date, desc: was.desc, amount: "low" };
+  }
+  var fmt = csvDetectDateFormat(parsed, m.date, first);
+  // The rows win when they actually settle it; the user's last answer for
+  // this same bank wins when they don't.
+  if (!fmt.sure && typeof savedDMY === "boolean" && savedDMY !== fmt.preferDMY) {
+    fmt = { preferDMY: savedDMY, sure: false, reason: "kept the day-first setting you chose for this bank" };
+  }
+  var sign = csvDetectSign(parsed, m, first, signSays, userSign);
+  // A column that marks each line in or out rides on the map, so every
+  // reader of a row - preview, import - follows it the same way.
+  m.flow = sign.flowCol;
+  var gotAmount = sign.splitAmt ? (m.debit >= 0 || m.credit >= 0) : m.amount >= 0;
+  var ok = gotAmount && m.date >= 0 && m.desc >= 0;
+  var lowConf = !!(conf && (conf.date === "low" || conf.amount === "low" || conf.desc === "low"));
+  return { map: m, fmt: fmt, sign: sign, conf: conf || null, repaired: repair.fixed, ok: ok, lowConf: lowConf, first: first };
+}
+// Every line csvReadRows kept, turned into a candidate transaction. No
+// deduping here - that is classifyImportRows' job, and keeping the two apart
+// is what lets a look-alike be questioned instead of silently dropped.
+// ctx: see csvRowCategory. base: the id of the first row.
+function csvBuildCandidates(items, positiveOut, ctx, base) {
+  return (items || []).map(function(it) {
+    var desc = it.desc || "Imported";
+    var cat = csvRowCategory(desc, it.money.type, positiveOut, ctx, it.fileCat);
+    var tx = { type: it.money.type, amount: it.money.amount, label: desc.slice(0, 60), catId: cat.catId, category: cat.category, date: it.date, id: base + it.i, repeat: "none", pending: false, catSure: cat.catSure, shopK: cat.shopK };
+    if (cat.transfer) tx.transfer = true;
+    if (cat.guess) tx.flowGuess = true;
+    if (it.dateGuess) tx.dateGuess = true;
+    return tx;
+  });
+}
+// Every distinct shop among the lines, in file order, with the card
+// company's most common label for it (hint). Only lines that will use a shop
+// category: a salary's "shop" is an employer - sorting it was a wasted
+// question and sent the employer's name out for nothing - and a transfer,
+// cash or a Bit to a person has no shop, and a person's name has no business
+// leaving the device.
+function csvShopOrder(items, positiveOut) {
+  var order = [], at = {};
+  (items || []).forEach(function(it) {
+    var desc = it.desc;
+    if (!desc) return;
+    if (it.money.type === "income" && !csvIsRefund(desc, positiveOut)) return;
+    if (csvTransferKind(desc, it.money.type, positiveOut)) return;
+    var k = shopKey(desc);
+    if (!k) return;
+    var o = at[k];
+    if (!o) { o = at[k] = { key: k, label: desc.slice(0, 60), hint: "", seen: {} }; order.push(o); }
+    if (it.fileCat) o.seen[it.fileCat] = (o.seen[it.fileCat] || 0) + 1;
+  });
+  return order.map(function(o) { return { key: o.key, label: o.label, hint: topKey(o.seen) }; });
+}
+
 // ===== CSV IMPORT: CHECKING THE COLUMNS AGAINST THE ROWS =====================
 // The model names the columns from their titles and a summary; it never sees a
 // value. So it can - and did - name a date column as the amount: "תאריך חיוב"
@@ -14407,7 +14919,7 @@ function csvRowMoney(r, map, splitAmt, positiveOut) {
 function csvColumnKinds(rows, col, first) {
   var k = { date: 0, number: 0, text: 0, filled: 0 };
   if (col == null || col < 0) return k;
-  var data = (rows || []).slice(first, first + 400);
+  var data = csvSectionRows(rows, first, 400);
   for (var i = 0; i < data.length; i++) {
     var kind = csvCellKind((data[i] || [])[col]);
     if (kind === "empty") continue;
@@ -14416,17 +14928,27 @@ function csvColumnKinds(rows, col, first) {
   return k;
 }
 // { map, fixed }: fixed lists the roles that had to change, empty when the
-// reading was sound.
-function csvRepairMap(rows, first, m, fallback) {
-  var out = { date: m.date, amount: m.amount, desc: m.desc, debit: m.debit, credit: m.credit };
+// reading was sound. head is the column-title row, when the file has one: it
+// is what says a column is a currency or a reference, and which of two
+// amounts is the one the card actually charged.
+function csvRepairMap(rows, first, m, fallback, head) {
+  var out = { date: m.date, amount: m.amount, desc: m.desc, debit: m.debit, credit: m.credit, cat: m.cat >= 0 ? m.cat : -1 };
   var fb = fallback || {};
   var fixed = [];
   var seen = {};
   function kinds(c) { if (!seen[c]) seen[c] = csvColumnKinds(rows, c, first); return seen[c]; }
   function holdsDates(c) { var k = kinds(c); return k.date > 0 && k.date >= k.number; }
-  function moneyOk(c) { return c >= 0 && c !== out.date && !holdsDates(c); }
+  // Words where the numbers should be - a column of ₪ signs, of shop names -
+  // is not money. An EMPTY column is not wrong, only unused: a card file's
+  // money-in column is empty in a month with no refund.
+  function holdsWords(c) { var k = kinds(c); return k.text > 0 && k.text > k.number; }
+  function titled(c) { return head ? csvTitleKind(head[c]) : ""; }
+  function moneyOk(c) {
+    var t = titled(c);
+    return c >= 0 && c !== out.date && !holdsDates(c) && !holdsWords(c) && t !== "currency" && t !== "reference" && t !== "balance" && t !== "sector";
+  }
   function free(c, role) {
-    return ["date", "amount", "desc", "debit", "credit"].every(function(r) { return r === role || out[r] !== c; });
+    return ["date", "amount", "desc", "debit", "credit", "cat"].every(function(r) { return r === role || out[r] !== c; });
   }
 
   // The date column first, since the money check below leans on it.
@@ -14446,6 +14968,25 @@ function csvRepairMap(rows, first, m, fallback) {
       if (moneyOk(fb.credit) && free(fb.credit, "credit")) out.credit = fb.credit;
     }
   }
+  // Half of a pair lost to the check above, and the other half left alone,
+  // is not a split file any more - it is one column of money. Only when the
+  // local reading agrees there is a single amount.
+  if (moneyDropped && out.amount < 0 && (out.debit < 0) !== (out.credit < 0) && fb.amount >= 0 && fb.debit < 0 && fb.credit < 0
+    && moneyOk(fb.amount) && free(fb.amount, "amount")) {
+    out.amount = fb.amount; out.debit = -1; out.credit = -1;
+  }
+
+  // Two amounts, and the wrong one read: the shop's figure (the whole price
+  // of a purchase in payments, or the dollars of one abroad) where the card's
+  // charge is right beside it. The titles settle it.
+  if (head && out.amount >= 0 && !csvIsChargeTitle(head[out.amount])) {
+    for (var ci = 0; ci < head.length; ci++) {
+      if (ci === out.amount || !csvIsChargeTitle(head[ci]) || !moneyOk(ci) || !free(ci, "amount")) continue;
+      if (!kinds(ci).number) continue;
+      fixed.push("charge"); out.amount = ci;
+      break;
+    }
+  }
 
   // Money in and money out the wrong way round. When the titles name the pair
   // outright - חובה/זכות, debit/credit - the local reading took them from
@@ -14457,11 +14998,34 @@ function csvRepairMap(rows, first, m, fallback) {
     out.debit = fb.debit; out.credit = fb.credit;
   }
 
-  if (out.desc >= 0 && (out.desc === out.date || holdsDates(out.desc))) {
+  if (out.desc >= 0 && (out.desc === out.date || holdsDates(out.desc) || out.desc === out.amount || out.desc === out.debit || out.desc === out.credit)) {
     fixed.push("desc");
     out.desc = (fb.desc >= 0 && fb.desc !== out.date && !holdsDates(fb.desc) && free(fb.desc, "desc")) ? fb.desc : -1;
   }
+  // A "shop" column that is really a handful of codes - a transaction type
+  // (DEB / DD / SO, רגילה / תשלומים) - while another column has a different
+  // name on nearly every line. Every shop in the file became one of three
+  // "shops", none of which Alfred could sort.
+  if (out.desc >= 0 && fb.desc >= 0 && fb.desc !== out.desc && free(fb.desc, "desc") && !holdsDates(fb.desc)) {
+    var nd = csvDistinctText(rows, out.desc, first), nf = csvDistinctText(rows, fb.desc, first);
+    if (nd.lines >= 6 && nd.distinct <= 5 && nf.distinct >= nd.distinct * 2) { fixed.push("desc"); out.desc = fb.desc; }
+  }
+  // The card company's category column, which never holds a role of its own.
+  if (!(out.cat >= 0) && fb.cat >= 0 && free(fb.cat, "cat")) out.cat = fb.cat;
+  if (out.cat >= 0 && !free(out.cat, "cat")) out.cat = -1;
   return { map: out, fixed: fixed };
+}
+// { lines, distinct } - how many filled text cells a column has under the
+// titles, and how many of them differ.
+function csvDistinctText(rows, col, first) {
+  var seen = {}, lines = 0, distinct = 0;
+  csvSectionRows(rows, first, 400).forEach(function(r) {
+    var v = String(((r || [])[col]) == null ? "" : (r || [])[col]).trim().toLowerCase();
+    if (!v || csvCellKind(v) !== "text") return;
+    lines++;
+    if (!seen[v]) { seen[v] = 1; distinct++; }
+  });
+  return { lines: lines, distinct: distinct };
 }
 
 // ===== CSV IMPORT: THE MAPPING CALL (Sonnet, thinking at medium effort) ======
@@ -14488,7 +15052,7 @@ var CSV_MAP_SYSTEM = "You map the columns of a bank or credit-card statement exp
   + "\n- profiles: one entry per column, measured over the whole file - its dominant kind, how full it is, how much its values vary, and how many of its numbers are negative (none, a few, some, most, all)."
   + "\n\nIsraeli exports (Leumi, Hapoalim, Isracard, Max, Cal) are the common case. Their titles are usually Hebrew: תאריך or תאריך עסקה is the date, שם בית העסק or תיאור or פירוט is the shop, סכום or סכום חיוב or סכום העסקה is the amount, חובה and זכות (on a bank export) or חיוב and זיכוי are a money-out / money-in pair, יתרה is the running balance, which is NEVER the amount, and אסמכתא is a reference number, which is never the amount either however numeric it looks."
   + "\n\nAnswer with JSON only, exactly this shape:"
-  + "\n{\"header_row_index\":<int|null>,\"date_column\":<int|null>,\"shop_column\":<int|null>,\"amount_column\":<int|null>,\"debit_column\":<int|null>,\"credit_column\":<int|null>,\"date_format\":\"dd/mm/yyyy\"|\"mm/dd/yyyy\"|\"yyyy-mm-dd\"|\"unknown\",\"amount_sign_convention\":\"negative_is_expense\"|\"positive_is_expense\"|\"split_columns\"|\"unknown\",\"confidence\":{\"header_row_index\":\"high\"|\"medium\"|\"low\",\"date_column\":\"high\"|\"medium\"|\"low\",\"shop_column\":\"high\"|\"medium\"|\"low\",\"amount_column\":\"high\"|\"medium\"|\"low\"}}"
+  + "\n{\"header_row_index\":<int|null>,\"date_column\":<int|null>,\"shop_column\":<int|null>,\"amount_column\":<int|null>,\"debit_column\":<int|null>,\"credit_column\":<int|null>,\"category_column\":<int|null>,\"date_format\":\"dd/mm/yyyy\"|\"mm/dd/yyyy\"|\"yyyy-mm-dd\"|\"unknown\",\"amount_sign_convention\":\"negative_is_expense\"|\"positive_is_expense\"|\"split_columns\"|\"unknown\",\"confidence\":{\"header_row_index\":\"high\"|\"medium\"|\"low\",\"date_column\":\"high\"|\"medium\"|\"low\",\"shop_column\":\"high\"|\"medium\"|\"low\",\"amount_column\":\"high\"|\"medium\"|\"low\"}}"
   + "\n\nRules:"
   + "\n- Column numbers are 0-based over the whole row. Use null when the file has no such column."
   + "\n- header_row_index is the 0-based index INTO head of the column-title row, or null when the file has no titles."
@@ -14496,6 +15060,9 @@ var CSV_MAP_SYSTEM = "You map the columns of a bank or credit-card statement exp
   + "\n- Never choose a running-balance column as the amount."
   + "\n- A column whose kind is \"date\" is NEVER the amount, debit or credit column. A charge date (תאריך חיוב) or value date (תאריך ערך) is a date column even though its title shares a word with the amount titles; the amount is the column whose kind is \"number\"."
   + "\n- Set amount_column when one column carries the whole amount. Set debit_column and credit_column instead when money out and money in are split, and leave amount_column null."
+  + "\n- A card statement often has TWO amounts: what the shop charged (סכום עסקה, סכום העסקה, סכום עסקה מקורי, transaction or original amount) and what the card charged this month (סכום חיוב, סכום החיוב, billing or charged amount). The amount is ALWAYS the charged one: a purchase in installments shows its full price in the first and only this month's payment in the second, and a purchase abroad shows dollars in the first and shekels in the second."
+  + "\n- A currency column (מטבע, מטבע חיוב, מטבע עסקה, currency) holds a currency sign or code, never an amount, even when its title contains חיוב. A card-number column (4 ספרות אחרונות, card number) is never the amount either."
+  + "\n- category_column is the column where the card company labels the KIND of shop (קטגוריה, ענף, category), or null. It is never the shop column. A transaction type (סוג עסקה: רגילה, תשלומים, הוראת קבע; Type: Sale, Return) is not a category."
   + "\n- The shop column varies from row to row. A column whose variety is \"one value\" or \"a few values\" is a card name, a branch or a transaction type, not the shop."
   + "\n- A reference, confirmation or voucher number is a column of numbers that is nearly all different and has no negatives. It is never the amount, whatever its position."
   + "\n- amount_sign_convention says which way money OUT points in the single amount column. A bank account (it usually has a running balance, יתרה) shows money out as negative and salary or transfers in as positive: negative_is_expense. A credit-card statement (Isracard, Max, Cal, Amex, Diners; an amount titled סכום חיוב) shows every charge as a plain positive number and only refunds (זיכוי) as negative: positive_is_expense. The amount column's negatives profile is the strongest hint - \"none\" or \"a few\" points to a card, \"most\" to a bank account. Use split_columns when money out and money in are separate columns, and unknown when you cannot tell."
@@ -14530,12 +15097,14 @@ function mapColumnsWithAI(sk, cb) {
     if (!v || typeof v !== "object") { cb(alfredErr("shape", "The column reading could not be understood."), null); return; }
     var conf = v.confidence || {};
     cb(null, {
-      headerRowIndex: (typeof v.header_row_index === "number" && v.header_row_index >= 0 && v.header_row_index < sk.head.length) ? v.header_row_index : -1,
+      // An index INTO head, turned into a line of the file.
+      headerRowIndex: (typeof v.header_row_index === "number" && v.header_row_index >= 0 && v.header_row_index < sk.head.length) ? (sk.headFrom || 0) + v.header_row_index : -1,
       date: csvCol(v.date_column, sk.columns),
       desc: csvCol(v.shop_column, sk.columns),
       amount: csvCol(v.amount_column, sk.columns),
       debit: csvCol(v.debit_column, sk.columns),
       credit: csvCol(v.credit_column, sk.columns),
+      cat: csvCol(v.category_column, sk.columns),
       dateFormat: String(v.date_format || "unknown"),
       sign: String(v.amount_sign_convention || "unknown"),
       confidence: {
@@ -14560,72 +15129,152 @@ function mapColumnsWithAI(sk, cb) {
 //
 // api/chat.js caps output at 2,000 tokens, so the list is sent in chunks that
 // comfortably fit rather than one call that would be cut off mid-array.
-var CSV_SHOPS_PER_CALL = 50;
+//
+// The answer names each shop by its NUMBER in the list, not by its name. It
+// used to be keyed by the name "copied exactly as given", and a name is the
+// one thing a model will not reliably copy: בע"מ comes back as בע״מ, a double
+// space as one, a trailing branch number dropped. Every shop whose name came
+// back even slightly different lost its answer and fell to the keyword map -
+// which on an Israeli statement means Other. Echoing fifty Hebrew names also
+// spent most of the 1,800-token answer, and an answer cut off before its
+// closing bracket was thrown away whole: fifty shops to Other in one go.
+// Now the answer is short, a cut-off answer keeps every entry that did
+// arrive, and the shops still unanswered are asked once more.
+var CSV_SHOPS_PER_CALL = 40;
 var CSV_SHOPS_MAX = 200;
 var CSV_SHOP_EXAMPLES = 12;
 
 var CSV_SHOPS_SYSTEM = "You sort shop names from a bank or credit-card statement into budget categories."
-  + "\n\nYou are given a list of shop names and the closed set of categories you may use."
-  + "\nAnswer with JSON only: an array of {\"shop\":<the name, copied exactly as given>,\"category\":<one of the categories>,\"confidence\":\"high\"|\"medium\"|\"low\"}."
-  + "\n\n- Use ONLY the category names given to you. Never invent one, never translate one."
-  + "\n- Return one entry for every shop you were given, in the same order."
+  + "\n\nYou are given a numbered list of shops and the closed set of categories you may use. A shop may carry card_category: the card company's own label for that kind of merchant, often in Hebrew (מזון וצריכה, מסעדות, תחבורה ורכבים...). It is a strong hint about what the shop sells."
+  + "\nAnswer with JSON only: an array of {\"i\":<the shop's number>,\"category\":<one of the categories>,\"confidence\":\"high\"|\"medium\"|\"low\"}. Do not repeat the shop's name."
+  + "\n\n- Use ONLY the category names given to you, spelled exactly as given. Never invent one, never translate one."
+  + "\n- Return one entry for every shop you were given, with the number it was given."
   + "\n- The names are messy on purpose: mixed Hebrew and English, branch numbers, chain abbreviations, and payment processors standing in for the real merchant. Read past the noise."
   + "\n- A payment processor or a bank reference you cannot resolve to a real merchant gets \"low\" confidence. Low is an honest answer; the user is shown it and can correct it."
   + "\n- When the examples show how this person already sorts a similar shop, follow their habit rather than your own instinct."
   + "\n- Sort by what the shop SELLS, not by a word in its name. A city, a branch, a mall or a word like סופר / שיווק / בע\"מ says nothing about it: סופר פארם is a pharmacy, רמי לוי תקשורת is a phone company, מחסני חשמל is an electronics store."
   + "\n- A payment processor in front of a name - \"PAYPAL *NETFLIX\", \"SQ *CAFE\", \"UBER *EATS\" - is the shop AFTER the star. UBER *TRIP is a ride; UBER *EATS is food."
+  + "\n- A real shop is never Other just because its name is Hebrew or unfamiliar: a name that reads like a restaurant, a store or a service gets the category it most likely is, with \"medium\" or \"low\" confidence. Other is for what fits none of the categories, not for what you are unsure of."
   + "\n- A transfer to a person through ביט / Bit / PayBox / פייבוקס, or a bare processor name with nothing after it, cannot be sorted from its name: give it Other if that category exists, with \"low\" confidence."
   + "\n- When the categories include these usual names, this is what they hold. Housing: rent, mortgage, arnona (ארנונה), electricity, water, gas for the home, internet, TV and phone bills, building committee (ועד בית), home insurance. Food: supermarkets, groceries, restaurants, cafes, bakeries, food delivery (Wolt, תן ביס, סיבוס). Transport: fuel (פז, דלק, סונול, דור אלון), public transport (רב קו, רכבת, אגד), taxis, ride apps, parking (פנגו, סלופארק), tolls (כביש 6), car repairs. Health: pharmacies, health funds (מכבי, כללית, מאוחדת, לאומית), doctors, dentists, opticians, gyms. Entertainment: streaming, music, games, cinema, theatre, shows, events. Shopping: clothes, shoes, electronics, home goods, furniture, books, toys, online stores (AliExpress, Amazon, Shein). Travel: flights, hotels, holiday bookings. Investments and Savings: money moved to an investment or savings account. Other: anything that fits none of them. Categories with other names mean what their names say."
   + "\nNo prose, no markdown fence.";
 
-// shops: array of display names. cats: the app's category list. examples:
-// [{ shop, category }] the user has already confirmed.
-// cb(err, { <shop>: { category, confidence } }, meta)
+// Every flat {...} in a reply, each parsed on its own. What is left of an
+// answer that was cut off mid-array: every entry before the cut is whole.
+function csvParseJsonObjects(reply) {
+  var s = String(reply || ""), out = [], re = /\{[^{}]*\}/g, m;
+  while ((m = re.exec(s))) { try { out.push(JSON.parse(m[0])); } catch (e) {} }
+  return out;
+}
+// { <index>: { category, confidence } } from one reply about `list` (the
+// names asked, in order). The category is matched to the closed set without
+// regard to case - "food" is Food - and anything else is dropped, not
+// coerced. An entry that names the shop instead of its number is still used
+// when the name matches one asked, with the quote marks, spaces and case a
+// model changes when it copies a name set aside.
+function csvLooseName(s) {
+  return String(s == null ? "" : s).replace(/[״”“„'׳`]/g, "\"").replace(/\s+/g, " ").trim().toLowerCase();
+}
+function csvShopAnswers(reply, list, names) {
+  var arr = csvParseJsonBlock(reply, "[", "]");
+  if (!Array.isArray(arr)) arr = csvParseJsonObjects(reply);
+  var canon = {}, byName = {};
+  (names || []).forEach(function(n) { canon[String(n).trim().toLowerCase()] = n; });
+  (list || []).forEach(function(n, i) { var k = csvLooseName(n); if (!(k in byName)) byName[k] = i; });
+  var out = {};
+  arr.forEach(function(row) {
+    if (!row || typeof row !== "object") return;
+    var cat = canon[String(row.category == null ? "" : row.category).trim().toLowerCase()];
+    if (!cat) return;
+    var i = typeof row.i === "number" ? row.i : parseInt(row.i, 10);
+    if (!(i >= 0 && i < list.length) || i !== Math.floor(i)) {
+      i = typeof row.shop === "string" ? byName[csvLooseName(row.shop)] : undefined;
+      if (i == null) return;
+    }
+    if (!out[i]) out[i] = { category: cat, confidence: csvConf(row.confidence) };
+  });
+  return out;
+}
+
+// shops: array of display names, or of { name, hint } where hint is the card
+// company's own label for the shop. cats: the app's category list.
+// examples: [{ shop, category }] the user has already confirmed.
+// cb(err, { <shop name>: { category, confidence } }, meta)
 function categorizeShopsWithAI(shops, cats, examples, cb) {
   var names = (cats || []).map(function(c) { return c.name; }).filter(Boolean);
-  var list = (shops || []).slice(0, CSV_SHOPS_MAX);
-  var overflow = Math.max(0, (shops || []).length - list.length);
-  if (!list.length || !names.length) { cb(null, {}, { overflow: overflow, calls: 0 }); return; }
+  var all = (shops || []).map(function(x) { return typeof x === "string" ? { name: x, hint: "" } : { name: String((x && x.name) || ""), hint: String((x && x.hint) || "") }; })
+    .filter(function(x) { return x.name; });
+  var list = all.slice(0, CSV_SHOPS_MAX);
+  var overflow = Math.max(0, all.length - list.length);
+  if (!list.length || !names.length) { cb(null, {}, { overflow: overflow, calls: 0, failed: 0, missing: 0 }); return; }
 
-  var chunks = [];
-  for (var i = 0; i < list.length; i += CSV_SHOPS_PER_CALL) chunks.push(list.slice(i, i + CSV_SHOPS_PER_CALL));
-
-  var out = {}, calls = 0, failed = 0;
+  var out = {}, calls = 0, failed = 0, answered = 0;
+  // Set when a call says Alfred will not answer the next one either: it timed
+  // out (asking again waits out another forty seconds), or the proxy refused
+  // it - rate limited or signed out. The rest fall through at once. A quick
+  // network failure does not set it; the next chunk may well get through.
+  var down = false;
   var exBlock = (examples || []).slice(0, CSV_SHOP_EXAMPLES);
-
+  function chunksOf(idx) {
+    var cs = [];
+    for (var i = 0; i < idx.length; i += CSV_SHOPS_PER_CALL) cs.push(idx.slice(i, i + CSV_SHOPS_PER_CALL));
+    return cs;
+  }
+  function missing() {
+    var m = [];
+    list.forEach(function(x, i) { if (!out[x.name]) m.push(i); });
+    return m;
+  }
   // Sequential, not parallel: the proxy rate-limits per user (30 per 5
   // minutes) and four simultaneous calls from one import is how an import of a
   // big year-end export would spend that budget on itself.
-  function step(n) {
-    if (n >= chunks.length) {
-      // Every chunk failing is a failure; some succeeding is a partial answer
-      // worth keeping - the shops that came back are categorised and the rest
-      // fall through to the keyword map, visibly, in the preview.
-      if (failed === chunks.length) { cb(alfredErr("network", "Alfred could not be reached to sort the shops."), out, { overflow: overflow, calls: calls, failed: failed }); return; }
-      cb(null, out, { overflow: overflow, calls: calls, failed: failed });
-      return;
-    }
-    var body = { categories: names, shops: chunks[n] };
+  function run(chunks, n, done) {
+    if (n >= chunks.length || down) { done(); return; }
+    var idx = chunks[n];
+    var body = { categories: names, shops: idx.map(function(li, k) {
+      var e = { i: k, name: list[li].name };
+      if (list[li].hint) e.card_category = list[li].hint;
+      return e;
+    }) };
     if (exBlock.length) body.how_this_person_already_sorts = exBlock;
     callClaude([{ role: "user", content: JSON.stringify(body) }], CSV_SHOPS_SYSTEM, 1800, function(err, reply) {
       calls++;
-      if (err) { failed++; step(n + 1); return; }
-      var arr = csvParseJsonBlock(reply, "[", "]");
-      if (!Array.isArray(arr)) { failed++; step(n + 1); return; }
-      arr.forEach(function(row) {
-        if (!row || typeof row.shop !== "string") return;
-        var cat = String(row.category || "");
-        // A category outside the closed set is dropped, not coerced. The shop
-        // then falls through to the keyword map and shows up in the preview
-        // for the user to set - which is the honest outcome for an answer we
-        // could not use.
-        if (names.indexOf(cat) === -1) return;
-        out[row.shop] = { category: cat, confidence: csvConf(row.confidence) };
-      });
-      step(n + 1);
+      if (err) {
+        failed++;
+        if (err.kind === "timeout" || (err.kind === "api" && (err.status === 429 || err.status === 401 || err.status === 403))) down = true;
+        run(chunks, n + 1, done);
+        return;
+      }
+      var got = csvShopAnswers(reply, idx.map(function(li) { return list[li].name; }), names);
+      var any = false;
+      for (var k in got) {
+        var li = idx[k];
+        if (li == null || out[list[li].name]) continue;
+        out[list[li].name] = got[k]; answered++; any = true;
+      }
+      if (!any) failed++;
+      run(chunks, n + 1, done);
     }, AI_MODEL_CSV_SHOPS, 40000);
   }
-  step(0);
+  var first = [];
+  for (var i = 0; i < list.length; i++) first.push(i);
+  run(chunksOf(first), 0, function() {
+    // Once more for whatever did not come back - a chunk that failed, or the
+    // tail of an answer that was cut off. Once: a shop Alfred still cannot
+    // answer falls through to the card's own label and the keyword map, and
+    // says so in the preview.
+    var again = missing();
+    var retry = again.length && !down ? chunksOf(again) : [];
+    run(retry, 0, function() {
+      var left = missing().length;
+      var meta = { overflow: overflow, calls: calls, failed: failed, missing: left };
+      // Nothing answered at all is a failure; some answered is a partial
+      // answer worth keeping - the shops that came back are sorted and the
+      // rest fall through, visibly, in the preview.
+      if (!answered) { cb(alfredErr("network", "Alfred could not be reached to sort the shops."), out, meta); return; }
+      cb(null, out, meta);
+    });
+  });
 }
 
 // ===== CSV IMPORT: WHO DECIDES A SHOP'S CATEGORY =============================
@@ -14651,10 +15300,15 @@ function categorizeShopsWithAI(shops, cats, examples, cb) {
 // shopKey -> { catId: count } over the user's own spending - or, with income
 // set, over what they were paid, by payer. The two are kept apart: a salary
 // line's "shop" is an employer, not a shop.
-function csvShopHistory(txList, income) {
+// A line filed under Other is not evidence of anything - it is where a shop
+// lands when nothing knew it. Counting it taught every later import that the
+// shop belongs in Other: one bad import, and the shop never left.
+function csvShopHistory(txList, income, cats) {
   var out = {};
+  var other = catByName(cats || [], "Other");
   (txList || []).forEach(function(t) {
     if (!t || !t.catId || (t.type === "income") !== !!income || t.opening || t.transfer || t.catId === "savings-transfer") return;
+    if ((other && t.catId === other.id) || t.category === "Other") return;
     var k = shopKey(t.label || "");
     if (!k) return;
     var row = out[k] || (out[k] = {});
@@ -14685,7 +15339,9 @@ function csvPlanShops(order, saved, history, cats) {
     }
     var own = csvHistoryCat(history, s.key, cats);
     if (own) { out[s.key] = { category: own.name, confidence: "high", source: "history", label: s.label }; return; }
-    if (wasCat) { out[s.key] = { category: wasCat.name, confidence: "high", source: "saved", label: s.label }; return; }
+    // An Other that Alfred gave last time is a shrug, not a category: the
+    // shop is asked about again rather than kept there for good.
+    if (wasCat && wasCat.name !== "Other") { out[s.key] = { category: wasCat.name, confidence: "high", source: "saved", label: s.label }; return; }
     ask.push(s);
   });
   return { out: out, ask: ask };
@@ -14843,9 +15499,13 @@ function suggestCatId(label, txList, cats) {
   // אביב" was filed wherever "סופר פארם תל אביב" had been. Those words don't
   // count as evidence.
   var qWords = catMatchText(q).trim().split(" ").filter(function(w) { return w.length >= 3 && !catIsNoise(w); });
+  // A line filed under Other says nothing about what a label is - suggesting
+  // Other back is no suggestion, and on an import it kept a shop in Other.
+  var otherCat = catByName(cats || [], "Other");
   for (var i = 0; i < list.length; i++) {
     var t = list[i];
     if (!t || !t.catId || t.opening || t.transfer) continue;
+    if (otherCat && t.catId === otherCat.id) continue;
     var tl = (t.label || "").trim().toLowerCase();
     if (!tl) continue;
     if (tl === q) { exact[t.catId] = (exact[t.catId] || 0) + 1; continue; }
@@ -14984,12 +15644,19 @@ function dupScore(cand, prev) {
   return score;
 }
 
-// Highest-scoring existing transaction for one candidate.
+// Highest-scoring existing transaction for one candidate. On a tie the
+// closer amount wins: 327.28 and 327.49 both score as "the same amount" (a
+// tenth of a percent apart), and without this the 327.28 claimed the 327.49
+// sitting first in the list - so re-importing a statement asked about both
+// lines instead of recognising each.
 function bestDupMatch(cand, list) {
-  var best = null, bestScore = 0;
+  var best = null, bestScore = 0, bestGap = Infinity;
+  var amt = Math.abs(Number(cand && cand.amount) || 0);
   for (var i = 0; i < (list || []).length; i++) {
     var s = dupScore(cand, list[i]);
-    if (s > bestScore) { bestScore = s; best = list[i]; }
+    if (s <= 0) continue;
+    var gap = Math.abs(amt - Math.abs(Number(list[i].amount) || 0));
+    if (s > bestScore || (s === bestScore && gap < bestGap)) { bestScore = s; best = list[i]; bestGap = gap; }
   }
   return { score: bestScore, match: best };
 }
@@ -15018,9 +15685,14 @@ function classifyImportRows(cands, existing) {
     if (r.score >= DUP_CERTAIN) { dupes.push({ tx: c, match: r.match, score: r.score }); return; }
     if (r.score >= DUP_MAYBE) { maybes.push({ tx: c, match: r.match, score: r.score }); return; }
     if (twin) { twins++; fresh.push(c); accepted.push(c); return; }
+    // Against the file's own lines, a look-alike is never skipped without a
+    // word. A statement does not list one charge twice: two ATM withdrawals of
+    // 400 on consecutive days, the same bus fare on Sunday and Monday, are two
+    // of each - and the second used to vanish as a "duplicate", taking real
+    // money out of the month. Only a same-day look-alike under another
+    // spelling is still worth a question; on different days it is simply new.
     var r2 = bestDupMatch(c, accepted);
-    if (r2.score >= DUP_CERTAIN) { dupes.push({ tx: c, match: r2.match, score: r2.score, inFile: true }); return; }
-    if (r2.score >= DUP_MAYBE) { maybes.push({ tx: c, match: r2.match, score: r2.score, inFile: true }); return; }
+    if (r2.score >= DUP_MAYBE && r2.match && r2.match.date === c.date) { maybes.push({ tx: c, match: r2.match, score: r2.score, inFile: true }); return; }
     fresh.push(c);
     accepted.push(c);
   });
@@ -17572,7 +18244,7 @@ function ImportSheet(props) {
   // re-confirmed, a shop Alfred guessed is.
   var _shops = useState({}); var shopCats = _shops[0]; var setShopCats = _shops[1];
   var _shopMeta = useState(null); var shopMeta = _shopMeta[0]; var setShopMeta = _shopMeta[1];
-  var _map = useState({ date: -1, amount: -1, desc: -1, debit: -1, credit: -1 }); var map = _map[0]; var setMap = _map[1];
+  var _map = useState({ date: -1, amount: -1, desc: -1, debit: -1, credit: -1, cat: -1 }); var map = _map[0]; var setMap = _map[1];
   var _split = useState(false); var splitAmt = _split[0]; var setSplitAmt = _split[1];
   var _dmy = useState(true); var preferDMY = _dmy[0]; var setPreferDMY = _dmy[1];
   // Which way money out points in a single amount column: false = a minus is
@@ -17606,11 +18278,15 @@ function ImportSheet(props) {
   // The coverage report, folded away. It is worth reading once, and open by
   // default it was most of what turned this screen into a wall of text.
   var _det = useState(false); var showDetails = _det[0]; var setShowDetails = _det[1];
+  // What the file said about itself on the way in: the total and balance
+  // lines left out, any line with no date, and whether the lines add up to
+  // the total the statement prints. See csvReadRows.
+  var _rinfo = useState(null); var readInfo = _rinfo[0]; var setReadInfo = _rinfo[1];
 
   function reset() {
     setRaw(""); setStep("paste"); setRows([]); setHeaderRow(0); setSheetRows(null); setSheetNote("");
     setEncoding(""); setReading(null); setFingerprint(""); setShopCats({}); setShopMeta(null);
-    setMap({ date: -1, amount: -1, desc: -1, debit: -1, credit: -1 }); setSplitAmt(false); setPreferDMY(true); setPositiveOut(false); setSignByHand(false); setBuilt([]); setDupes(0); setErr("");
+    setMap({ date: -1, amount: -1, desc: -1, debit: -1, credit: -1, cat: -1 }); setReadInfo(null); setSplitAmt(false); setPreferDMY(true); setPositiveOut(false); setSignByHand(false); setBuilt([]); setDupes(0); setErr("");
     setPlan(null); setDecisions({}); setQueue([]); setQIdx(0); setAiRes({ settled: 0, failed: false }); setReport(null);
     setShowAdv(false); setDropped({}); setOpenRow(null); setAmtDraft(""); setShowDetails(false);
     // askAi is deliberately NOT reset. Someone who just turned the Alfred
@@ -17645,54 +18321,28 @@ function ImportSheet(props) {
     });
   }
 
-  // The local guess: sniffMap, given the rows from the header down so its
-  // rows[0] is the title row it expects. Kept as the fallback for an offline
-  // import and for a file with no titles at all, where there is nothing for a
-  // model to read.
-  function localReading(parsed, hRow) {
-    var from = hRow >= 0 ? parsed.slice(hRow) : parsed;
-    return sniffMap(from, hRow >= 0);
-  }
+  function localReading(parsed, hRow) { return csvLocalReading(parsed, hRow); }
 
   // Everything that has to happen once the columns are known, whoever worked
-  // them out: settle the date format and the sign convention from the rows
-  // themselves, and decide whether to open the controls.
+  // them out - csvSettleReading - and then the screen: the state, the log, and
+  // whether to open the controls.
   function applyReading(parsed, hRow, m, signSays, source, conf, savedDMY, userSign) {
-    var first = hRow >= 0 ? hRow + 1 : 0;
-    // Checked against the rows before anything is built from it - see
-    // csvRepairMap. This is also what heals a bad layout saved for this bank.
-    var repair = csvRepairMap(parsed, first, m, localReading(parsed, hRow));
-    m = repair.map;
-    if (repair.fixed.length) {
-      // Marked low so the settings open by themselves on the corrected reading.
-      var was = conf || {};
-      conf = { header: was.header, date: was.date, desc: was.desc, amount: "low" };
-      csvLog("mapping-repaired", { source: source, fingerprint: csvFingerprint(csvSkeleton(parsed)), fixed: repair.fixed.slice(),
+    var st = csvSettleReading(parsed, hRow, m, signSays, conf, savedDMY, userSign);
+    m = st.map;
+    if (st.repaired.length) {
+      csvLog("mapping-repaired", { source: source, fingerprint: csvFingerprint(csvSkeleton(parsed)), fixed: st.repaired.slice(),
         date: m.date, shop: m.desc, amount: m.amount, debit: m.debit, credit: m.credit });
     }
-    var fmt = csvDetectDateFormat(parsed, m.date, first);
-    // The rows win when they actually settle it; the user's last answer for
-    // this same bank wins when they don't.
-    if (!fmt.sure && typeof savedDMY === "boolean" && savedDMY !== fmt.preferDMY) {
-      fmt = { preferDMY: savedDMY, sure: false, reason: "kept the day-first setting you chose for this bank" };
-    }
-    var sign = csvDetectSign(parsed, m, first, signSays, userSign);
-    // A column that marks each line in or out rides on the map, so every
-    // reader of a row - preview, import - follows it the same way.
-    m.flow = sign.flowCol;
-    var gotAmount = sign.splitAmt ? (m.debit >= 0 || m.credit >= 0) : m.amount >= 0;
-    var ok = gotAmount && m.date >= 0 && m.desc >= 0;
-    var lowConf = conf && (conf.date === "low" || conf.amount === "low" || conf.desc === "low");
     setRows(parsed); setHeaderRow(hRow); setMap(m);
-    setSplitAmt(sign.splitAmt); setPositiveOut(sign.positiveOut); setSignByHand(!!userSign); setPreferDMY(fmt.preferDMY);
-    setReading({ source: source, confidence: conf || null, dateFormat: fmt, sign: sign, repaired: repair.fixed });
+    setSplitAmt(st.sign.splitAmt); setPositiveOut(st.sign.positiveOut); setSignByHand(!!userSign); setPreferDMY(st.fmt.preferDMY);
+    setReading({ source: source, confidence: st.conf, dateFormat: st.fmt, sign: st.sign, repaired: st.repaired });
     // The controls open by themselves when the reading left a hole OR when the
     // model said it was unsure OR when in-versus-out was a close call. A "low"
     // that opens nothing is a confident wrong guess wearing a hedge.
-    setShowAdv(!ok || !!lowConf || !!fmt.conflict || !sign.sure);
-    if (lowConf || !ok) {
+    setShowAdv(!st.ok || st.lowConf || !!st.fmt.conflict || !st.sign.sure);
+    if (st.lowConf || !st.ok) {
       csvLog("mapping-uncertain", { source: source, fingerprint: csvFingerprint(csvSkeleton(parsed)),
-        date: m.date, shop: m.desc, amount: m.amount, confidence: conf || null, complete: ok });
+        date: m.date, shop: m.desc, amount: m.amount, confidence: st.conf, complete: st.ok });
     }
     setStep("map");
   }
@@ -17756,47 +18406,35 @@ function ImportSheet(props) {
         // back to the local rules, says so on the screen, and opens the
         // controls if those left a hole - exactly what would have happened
         // before any of this existed.
-        var hRow = sk.head.length ? sk.head.length - 1 : -1;
+        var hRow = sk.head.length ? sk.rowsAboveData - 1 : -1;
         applyReading(parsed, hRow, localReading(parsed, hRow), "", "local-fallback", null);
         return;
       }
-      var hRow = r.headerRowIndex >= 0 ? r.headerRowIndex : (sk.head.length ? sk.head.length - 1 : -1);
-      var m = { date: r.date, amount: r.amount, desc: r.desc, debit: r.debit, credit: r.credit };
-      // A split file must not also carry a single amount column, or buildTxs
-      // reads the same money twice.
-      if (m.debit >= 0 || m.credit >= 0) m.amount = -1;
-      // Anything the model left blank is filled from the local rules rather
-      // than left as a hole for the user to close by hand.
-      var fallback = localReading(parsed, hRow);
-      ["date", "amount", "desc", "debit", "credit"].forEach(function(k) {
-        if (m[k] < 0 && fallback[k] >= 0 && !(k === "amount" && (m.debit >= 0 || m.credit >= 0))) m[k] = fallback[k];
-      });
-      applyReading(parsed, hRow, m, r.sign, "alfred", r.confidence);
+      var hRow = r.headerRowIndex >= 0 ? r.headerRowIndex : (sk.head.length ? sk.rowsAboveData - 1 : -1);
+      // A split file must not also carry a single amount column, or the rows
+      // read the same money twice; anything the model left blank is filled
+      // from the local rules rather than left as a hole for the user to close
+      // by hand. See csvMergeModelMap.
+      applyReading(parsed, hRow, csvMergeModelMap(r, localReading(parsed, hRow)), r.sign, "alfred", r.confidence);
     });
   }
 
-  // Every readable row, turned into a candidate transaction. No deduping here -
-  // that is classifyImportRows' job, and keeping the two apart is what lets a
-  // look-alike be questioned instead of silently dropped.
-  function buildTxs(resolved) {
+  // The file, line by line: which lines are purchases and which are the
+  // statement's own totals, read by the columns as they are set right now.
+  // One reading for the first-rows check, the shop sorting and the rows.
+  function readFile() {
+    return csvReadRows(rows.slice(headerRow >= 0 ? headerRow + 1 : 0), headerRow >= 0 ? rows[headerRow] : null,
+      map, splitAmt, positiveOut, preferDMY, new Date().toISOString().slice(0, 10));
+  }
+
+  // Every line the file holds, turned into a candidate transaction - see
+  // csvBuildCandidates. The totals and anything else left out travel beside
+  // them for the preview to account for.
+  function buildTxs(resolved, read) {
     var shops = resolved || shopCats || {};
-    var dataRows = rows.slice(headerRow >= 0 ? headerRow + 1 : 0);
-    var out = [];
-    var base = Date.now();
-    var today = new Date().toISOString().slice(0, 10);
-    var ctx = { cats: cats, shops: shops, saved: props.shopCats || {}, tx: props.tx, incomeHist: csvShopHistory(props.tx, true) };
-    dataRows.forEach(function(r, i) {
-      var money = csvRowMoney(r, map, splitAmt, positiveOut);
-      if (!money) return;
-      var desc = (map.desc >= 0 ? r[map.desc] : "") || "Imported";
-      var dateStr = parseImportDate(map.date >= 0 ? r[map.date] : "", preferDMY) || today;
-      var cat = csvRowCategory(desc, money.type, positiveOut, ctx);
-      var tx = { type: money.type, amount: money.amount, label: desc.slice(0, 60), catId: cat.catId, category: cat.category, date: dateStr, id: base + i, repeat: "none", pending: false, catSure: cat.catSure, shopK: cat.shopK };
-      if (cat.transfer) tx.transfer = true;
-      if (cat.guess) tx.flowGuess = true;
-      out.push(tx);
-    });
-    return out;
+    read = read || readFile();
+    var ctx = { cats: cats, shops: shops, saved: props.shopCats || {}, tx: props.tx, incomeHist: csvShopHistory(props.tx, true, cats) };
+    return csvBuildCandidates(read.items, positiveOut, ctx, Date.now());
   }
 
   // The rows that will actually be written: everything the scorer called new,
@@ -17857,34 +18495,17 @@ function ImportSheet(props) {
   // model is asked about the leftovers ONLY - a shop the user has settled
   // before, or one their own history already answers, never goes out and never
   // gets re-confirmed in the preview.
-  function resolveShops(cb) {
-    var dataRows = rows.slice(headerRow >= 0 ? headerRow + 1 : 0);
+  function resolveShops(read, cb) {
     var saved = props.shopCats || {};
-    var order = [], seen = {};
-    dataRows.forEach(function(r) {
-      var desc = String((map.desc >= 0 ? r[map.desc] : "") || "").trim();
-      if (!desc) return;
-      // Only lines that will actually use a shop category. A salary's "shop"
-      // is an employer: sorting it was a wasted question, and it sent the
-      // employer's name out for nothing.
-      var money = csvRowMoney(r, map, splitAmt, positiveOut);
-      if (!money || (money.type === "income" && !csvIsRefund(desc, positiveOut))) return;
-      // Nor transfers, cash or a Bit to a person: none has a shop to sort,
-      // and a person's name has no business leaving the device.
-      if (csvTransferKind(desc, money.type, positiveOut)) return;
-      var k = shopKey(desc);
-      if (!k || seen[k]) return;
-      seen[k] = 1;
-      order.push({ key: k, label: desc.slice(0, 60) });
-    });
-    var plan = csvPlanShops(order, saved, csvShopHistory(props.tx), cats);
+    var order = csvShopOrder(read.items, positiveOut);
+    var plan = csvPlanShops(order, saved, csvShopHistory(props.tx, false, cats), cats);
     var out = plan.out, ask = plan.ask;
-    if (!ask.length) { cb(out, { asked: 0, skipped: 0, calls: 0, failed: 0, overflow: 0, err: false }); return; }
+    if (!ask.length) { cb(out, { asked: 0, skipped: 0, calls: 0, failed: 0, overflow: 0, missing: 0, err: false }); return; }
     // The user asked to do this themselves. The unrecognised shops fall
     // through to the keyword map in buildTxs, and the count travels so the
     // preview can say how many were matched that way rather than leaving it
     // to be discovered in Activity a week later.
-    if (!askAi) { cb(out, { asked: 0, skipped: ask.length, calls: 0, failed: 0, overflow: 0, err: false }); return; }
+    if (!askAi) { cb(out, { asked: 0, skipped: ask.length, calls: 0, failed: 0, overflow: 0, missing: 0, err: false }); return; }
     // A handful of the user's own corrections travel as examples, so Alfred
     // matches this person's habits rather than his own instinct.
     var examples = [];
@@ -17894,12 +18515,14 @@ function ImportSheet(props) {
       if (v && v.source === "user" && v.label && v.category) examples.push({ shop: v.label, category: v.category });
     });
     setStep("sorting");
-    categorizeShopsWithAI(ask.map(function(s) { return s.label; }), cats, examples, function(sErr, got, meta) {
+    // The card company's own label for each shop travels with it, when the
+    // file has one: it is a strong hint, and it is not the user's data.
+    categorizeShopsWithAI(ask.map(function(s) { return { name: s.label, hint: s.hint }; }), cats, examples, function(sErr, got, meta) {
       ask.forEach(function(s) {
         var g = got[s.label];
         if (g) out[s.key] = { category: g.category, confidence: g.confidence, source: "alfred", label: s.label };
       });
-      cb(out, { asked: ask.length, skipped: 0, calls: meta.calls, failed: meta.failed, overflow: meta.overflow, err: !!sErr });
+      cb(out, { asked: ask.length, skipped: 0, calls: meta.calls, failed: meta.failed, overflow: meta.overflow, missing: meta.missing || 0, err: !!sErr });
     });
   }
 
@@ -17911,9 +18534,11 @@ function ImportSheet(props) {
       setErr("Pick which column holds the amount.");
       return;
     }
-    resolveShops(function(resolved, meta) {
+    var read = readFile();
+    setReadInfo({ totals: read.totals, left: read.left, check: read.check });
+    resolveShops(read, function(resolved, meta) {
       setShopCats(resolved); setShopMeta(meta);
-      var cands = buildTxs(resolved);
+      var cands = buildTxs(resolved, read);
       if (!cands.length) { setErr("No valid transactions found. Check your column choices."); setStep("map"); return; }
       var res = classifyImportRows(cands, props.tx || []);
       setPlan(res); setDecisions({}); setAiRes({ settled: 0, failed: false });
@@ -18078,7 +18703,7 @@ function ImportSheet(props) {
     var learned = {
       fingerprint: fingerprint,
       profile: fingerprint ? {
-        map: { date: map.date, amount: map.amount, desc: map.desc, debit: map.debit, credit: map.credit },
+        map: { date: map.date, amount: map.amount, desc: map.desc, debit: map.debit, credit: map.credit, cat: map.cat >= 0 ? map.cat : -1 },
         headerRow: headerRow, splitAmt: splitAmt, positiveOut: positiveOut, signByHand: signByHand, preferDMY: preferDMY,
         at: new Date().toISOString().slice(0, 10)
       } : null,
@@ -18087,7 +18712,7 @@ function ImportSheet(props) {
     // Only the ticked lines, and only what the user left standing: a line
     // renamed to nothing keeps the placeholder rather than arriving blank.
     var rowsOut = keptRows(built, dropped).map(function(t) {
-      var clean = {}; for (var k in t) { if (k !== "shopK" && k !== "flowGuess") clean[k] = t[k]; }
+      var clean = {}; for (var k in t) { if (k !== "shopK" && k !== "flowGuess" && k !== "dateGuess") clean[k] = t[k]; }
       clean.label = String(t.label || "").trim() || "Imported";
       return clean;
     });
@@ -18145,26 +18770,18 @@ function ImportSheet(props) {
   // so this stays cheap enough to recompute on every keystroke of the settings.
   var mapPreview = (function() {
     if (!rows.length) return [];
-    var dataRows = rows.slice(headerRow >= 0 ? headerRow + 1 : 0);
-    var today = new Date().toISOString().slice(0, 10);
+    var items = readFile().items;
     var out = [], other = null;
-    function line(r, money) {
-      return {
-        date: parseImportDate(map.date >= 0 ? r[map.date] : "", preferDMY) || today,
-        label: ((map.desc >= 0 ? r[map.desc] : "") || "Imported").slice(0, 40),
-        amount: money.amount,
-        income: money.type === "income"
-      };
+    function line(it) {
+      return { date: it.date, label: (it.desc || "Imported").slice(0, 40), amount: it.money.amount, income: it.money.type === "income" };
     }
-    for (var i = 0; i < dataRows.length; i++) {
-      var money = csvRowMoney(dataRows[i], map, splitAmt, positiveOut);
-      if (!money) continue;
-      if (out.length < 3) { out.push(line(dataRows[i], money)); continue; }
+    for (var i = 0; i < items.length; i++) {
+      if (out.length < 3) { out.push(line(items[i])); continue; }
       // Three lines that all go the same way cannot show whether in and out
       // are the right way round. When the file has a line going the other
       // way, it takes the third slot - one glance then checks the whole file.
       if (out[0].income !== out[1].income || out[1].income !== out[2].income) break;
-      if ((money.type === "income") !== out[0].income) { other = line(dataRows[i], money); break; }
+      if ((items[i].money.type === "income") !== out[0].income) { other = line(items[i]); break; }
     }
     if (other) out[2] = other;
     return out;
@@ -18263,6 +18880,8 @@ function ImportSheet(props) {
                 <div style={{ fontSize: 11.5, color: T.gold, lineHeight: 1.5 }}>
                   {reading.repaired.indexOf("inout") !== -1 && reading.repaired.length === 1
                     ? "Money in and money out were the wrong way round - the column titles say otherwise - so Richy switched them. Check the first rows above."
+                    : reading.repaired.indexOf("charge") !== -1 && reading.repaired.length === 1
+                    ? "Your file has two amounts. Richy is using the one your card actually charged this month, not the full price of a purchase in payments or its amount abroad. Check the first rows above."
                     : "The column first read as "
                       + (/amount|debit|credit/.test(reading.repaired.join(" ")) ? "the amount" : reading.repaired.indexOf("date") !== -1 ? "the date" : "the shop")
                       + " didn't match what's in it, so Richy switched it. Check the first rows above."}
@@ -18543,6 +19162,16 @@ function ImportSheet(props) {
         var cardBills = kept.filter(function(t) { return t.transfer && t.category === "Card bill"; }).length;
         if (cardBills > 0) notes.push((cardBills === 1 ? "A credit-card bill is" : cardBills + " credit-card bills are") + " marked as a transfer, not spending - otherwise every purchase on the card would count twice. Import the card's own statement to see what the money went on.");
         if (shopMeta && !shopMeta.err && shopMeta.overflow > 0) notes.push("This file has more new shops than Alfred sorts in one go, so " + shopMeta.overflow + " were matched on keywords instead.");
+        if (shopMeta && !shopMeta.err && shopMeta.missing > 0) notes.push("Alfred didn't answer for " + shopMeta.missing + " " + (shopMeta.missing === 1 ? "shop" : "shops") + ", so " + (shopMeta.missing === 1 ? "it was" : "they were") + " sorted by the card's own label or on keywords. Worth a look up there.");
+        // The lines the file holds that are not purchases, accounted for -
+        // said here rather than silently dropped, and never counted.
+        var totalsOut = readInfo ? readInfo.totals.filter(function(t) { return t.why === "total"; }) : [];
+        var balancesOut = readInfo ? readInfo.totals.filter(function(t) { return t.why === "balance"; }) : [];
+        var undated = readInfo ? readInfo.left : [];
+        if (totalsOut.length) notes.push("Left out " + (totalsOut.length === 1 ? "1 line that is" : totalsOut.length + " lines that are") + " the statement's own " + (totalsOut.length === 1 ? "total" : "totals") + " (" + totalsOut.map(function(t) { return dollars(t.amount); }).join(", ") + "). Counting " + (totalsOut.length === 1 ? "it" : "them") + " would count your spending twice.");
+        if (balancesOut.length) notes.push("Left out " + (balancesOut.length === 1 ? "1 balance line" : balancesOut.length + " balance lines") + " - a balance is what's in the account, not money moving.");
+        if (undated.length) notes.push("Left out " + (undated.length === 1 ? "1 line" : undated.length + " lines") + " with no date and no shop: " + undated.slice(0, 3).map(function(t) { return (t.label ? t.label + " " : "") + dollars(t.amount); }).join(", ") + (undated.length > 3 ? "..." : "") + ". If one of them was a real purchase, add it by hand.");
+        var check = readInfo && readInfo.check;
         var detailN = (report ? report.tips.length : 0) + notes.length;
         // Untick-all stays the offer until there is nothing left ticked. A
         // half-ticked list flipping the label to "Tick all" would take away
@@ -18557,6 +19186,19 @@ function ImportSheet(props) {
                 </div>
                 {money.length > 0 && (
                   <div style={{ fontSize: 12, color: T.ink3, marginTop: 3, lineHeight: 1.5 }}>{money.join("  ·  ")}</div>
+                )}
+                {/* The file's own arithmetic, said back to it. When the
+                    statement prints a total, the lines read out of it either
+                    add up to it or they don't - and a user who spent 4,900 is
+                    told so before anything is saved, not after a month of
+                    wrong numbers. */}
+                {check && (
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 5, fontSize: 12, marginTop: 4, lineHeight: 1.45, color: check.ok ? T.green : T.gold }}>
+                    <span style={{ display: "flex", flexShrink: 0, marginTop: 2 }}><SVGIcon id={check.ok ? "check" : "search"} size={11} color={check.ok ? T.green : T.gold} /></span>
+                    <span>{check.ok
+                      ? "Adds up to your statement's own total of " + dollars(check.printed) + "."
+                      : "Your statement prints a total of " + dollars(check.printed) + ", but these lines come to " + dollars(check.counted) + ". Check the column settings before bringing them in."}</span>
+                  </div>
                 )}
               </div>
               <button onClick={function() { setAllRows(!anyOn); }}

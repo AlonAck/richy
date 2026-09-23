@@ -298,7 +298,7 @@ group("A date is never read as an amount");
   r = csvRepairMap(card, 1, { date: 0, desc: 1, amount: 3, debit: -1, credit: -1 }, { date: 0, desc: 1, amount: -1, debit: -1, credit: -1 });
   eq("with nothing better to offer, the amount is left for the user to pick", r.map.amount, -1);
   r = csvRepairMap(card, 1, { date: 0, desc: 1, amount: 4, debit: -1, credit: -1 }, fallback);
-  eq("a sound reading is left exactly as it was", [r.map, r.fixed], [{ date: 0, amount: 4, desc: 1, debit: -1, credit: -1 }, []]);
+  eq("a sound reading is left exactly as it was", [r.map, r.fixed], [{ date: 0, amount: 4, desc: 1, debit: -1, credit: -1, cat: -1 }, []]);
 
   // Every real fixture: the checker must not touch a correct reading.
   for (const name of Object.keys(ALL)) {
@@ -550,6 +550,167 @@ group("Transfers");
   eq("a purchase history never files income", Object.keys(csvShopHistory([{ label: "ACME LTD", catId: "c8", type: "income" }])).length, 0);
 }
 
+// -------------------------------------------- the statement's own totals --
+// Reported 2026-09-23: "I have spent more than 4,900. Somehow, it added more
+// than 10,000", and most of it in Other. Every Israeli card export ends its
+// sections with a total line; the import read it as one more purchase, dated
+// it today (it has no date) and filed it under Other (it has no shop). These
+// are that file and its relatives, read through the shipping steps.
+group("Totals, balances and sections are not purchases");
+{
+  const { csvSummaryText, csvReadRows, csvSettleReading, csvLocalReading, csvFirstDataRow, csvTitleRow, classifyImportRows, csvMergeModelMap } = app;
+  eq("סה\"כ is a total", csvSummaryText("סה\"כ לחיוב"), "total");
+  eq("סה״כ with gershayim too", csvSummaryText("סה״כ"), "total");
+  eq("סך חיוב בש\"ח: is a total", csvSummaryText("סך חיוב בש\"ח:"), "total");
+  eq("סך הכל is a total", csvSummaryText("סך הכל"), "total");
+  eq("יתרת סגירה is a balance", csvSummaryText("יתרת סגירה"), "balance");
+  eq("TOTAL is a total", csvSummaryText("TOTAL:"), "total");
+  eq("Total for 10/2026 is a total", csvSummaryText("Total for 10/2026"), "total");
+  eq("Opening balance is a balance", csvSummaryText("Opening Balance"), "balance");
+  eq("TOTAL ENERGIES is a petrol station, not a total", csvSummaryText("TOTAL ENERGIES HERZLIYA"), "");
+  eq("interest on a balance is money in, not a balance line", csvSummaryText("ריבית על יתרה"), "");
+  eq("a shop is not a total", csvSummaryText("שופרסל דיל"), "");
+
+  // The user's month: 4,912.40 of purchases on a card, and the card's own
+  // total line under them.
+  const month = [
+    "פירוט עסקאות", "כרטיס אמריקן אקספרס המסתיים ב-1234", "עסקאות למועד חיוב 02/10/2026",
+    "תאריך רכישה,שם בית עסק,סכום עסקה,מטבע עסקה,סכום חיוב,מטבע חיוב,מס' שובר,פירוט נוסף",
+    "01/09/2026,שופרסל דיל,1245.30,₪,1245.30,₪,123456,",
+    "03/09/2026,ארומה תל אביב,32.00,₪,32.00,₪,123457,",
+    "05/09/2026,KSP,3000.00,₪,300.00,₪,123458,תשלום 1 מתוך 10",
+    "09/09/2026,פז יקום,310.10,₪,310.10,₪,123459,",
+    "14/09/2026,סופר פארם,425.00,₪,425.00,₪,123460,",
+    "20/09/2026,זארה,2600.00,₪,2600.00,₪,123461,",
+    "סך חיוב בש\"ח:,,,,4912.40,₪,,"
+  ].join("\n");
+  const rows = parseCSV(month);
+  const sk = csvSkeleton(rows);
+  const hRow = sk.rowsAboveData - 1;
+  const st = csvSettleReading(rows, hRow, csvLocalReading(rows, hRow), "", null);
+  eq("the amount is the charge, not the currency column after it", [st.map.amount, st.map.debit, st.sign.splitAmt], [4, -1, false]);
+  ok("a card: plain amounts are money spent", st.sign.positiveOut === true);
+  const read = csvReadRows(rows.slice(hRow + 1), rows[hRow], st.map, st.sign.splitAmt, st.sign.positiveOut, st.fmt.preferDMY, "2031-01-01");
+  const spent = read.items.reduce((s, it) => s + it.money.amount, 0);
+  eq("the month comes to 4,912.40 - not 9,824.80", spent.toFixed(2), "4912.40");
+  eq("six purchases, and the total is not a seventh", read.items.length, 6);
+  eq("the total line is kept aside as the statement's total", read.totals.map((x) => [x.amount, x.why, x.matched]), [[4912.4, "total", true]]);
+  ok("and the preview can say the lines add up to it", !!read.check && read.check.ok && read.check.printed === 4912.4);
+  ok("nothing is dated today", read.items.every((it) => it.date !== "2031-01-01"));
+  ok("the laptop in ten payments counts this month's 300, not 3,000", read.items.some((it) => it.desc === "KSP" && it.money.amount === 300));
+
+  // A model that read the columns right must not be handed a money-out column
+  // by the local reading: the old merge filled every hole, so a single-amount
+  // reading picked up a debit column and the file split into nothing.
+  const merged = csvMergeModelMap({ date: 0, desc: 1, amount: 4, debit: -1, credit: -1, cat: -1 }, { date: 0, desc: 1, amount: 4, debit: 5, credit: -1, cat: -1 });
+  eq("a single-amount reading gets no money-out column filled in", [merged.amount, merged.debit, merged.credit], [4, -1, -1]);
+
+  // A total with no words: a dated line with no shop whose figure is the sum.
+  const quiet = parseCSV(["Date,Description,Amount", "01/09/2026,Cafe,10.00", "02/09/2026,Books,20.50", "03/09/2026,Cinema,30.00", "30/09/2026,,60.50"].join("\n"));
+  const qr = csvReadRows(quiet.slice(1), quiet[0], { date: 0, desc: 1, amount: 2, debit: -1, credit: -1, cat: -1, flow: -1 }, false, true, true, "2031-01-01");
+  eq("a nameless line equal to the lines above is a total", [qr.items.length, qr.totals.length], [3, 1]);
+
+  // An empty date cell under a dated line, WITH a shop and not a sum, is the
+  // same day's next purchase - not a total, and not today.
+  const cont = parseCSV(["Date,Description,Amount", "01/09/2026,Cafe,10.00", ",Bakery,7.00", "02/09/2026,Books,20.50"].join("\n"));
+  const cr = csvReadRows(cont.slice(1), cont[0], { date: 0, desc: 1, amount: 2, debit: -1, credit: -1, cat: -1, flow: -1 }, false, true, true, "2031-01-01");
+  eq("a shop under an empty date takes the date above it", cr.items.map((it) => [it.desc, it.date, it.dateGuess]), [["Cafe", "2026-09-01", false], ["Bakery", "2026-09-01", true], ["Books", "2026-09-02", false]]);
+  const orphan = parseCSV(["Date,Description,Amount", ",,99.00", "01/09/2026,Cafe,10.00"].join("\n"));
+  const or = csvReadRows(orphan.slice(1), orphan[0], { date: 0, desc: 1, amount: 2, debit: -1, credit: -1, cat: -1, flow: -1 }, false, true, true, "2031-01-01");
+  eq("an amount with no date and no shop is left out and said so", [or.items.length, or.left.length, or.left[0] && or.left[0].why], [1, 1, "nodate"]);
+
+  // Isracard's abroad section: its own titles, in another order.
+  const two = parseCSV([
+    "תאריך רכישה,שם בית עסק,סכום עסקה,מטבע עסקה,סכום חיוב,מטבע חיוב",
+    "01/09/2026,שופרסל דיל,100.00,₪,100.00,₪",
+    "02/09/2026,ארומה,20.00,₪,20.00,₪",
+    "סך חיוב בש\"ח:,,,,120.00,₪",
+    "עסקאות בחו\"ל",
+    "תאריך רכישה,תאריך חיוב,שם בית עסק,מטבע מקור,סכום מקורי,סכום חיוב",
+    "05/09/2026,02/10/2026,NETFLIX.COM,USD,15.49,57.30",
+    "06/09/2026,02/10/2026,BOOKING.COM,EUR,200.00,812.40",
+    "TOTAL FOR DATE 02/10/2026,,,,,869.70"
+  ].join("\n"));
+  const tst = csvSettleReading(two, 0, csvLocalReading(two, 0), "", null);
+  const tr2 = csvReadRows(two.slice(1), two[0], tst.map, tst.sign.splitAmt, tst.sign.positiveOut, tst.fmt.preferDMY, "2031-01-01");
+  eq("the abroad lines are read by THEIR titles: the shop, and the shekel charge", tr2.items.slice(2).map((it) => [it.desc, it.money.amount, it.date]), [["NETFLIX.COM", 57.3, "2026-09-05"], ["BOOKING.COM", 812.4, "2026-09-06"]]);
+  eq("both totals are left out, and both add up", tr2.totals.map((x) => [x.amount, x.matched]), [[120, true], [869.7, true]]);
+  const shopCol = csvSettleReading(two, 0, { date: 0, desc: 1, amount: 4, debit: -1, credit: -1, cat: -1 }, "", null);
+  eq("the domestic shop column is kept although the abroad section has dates in it", shopCol.map.desc, 1);
+
+  // The first card in a file of two can have ONE purchase: data starts right
+  // under the titles, not two sections further down.
+  const oneLine = parseCSV([
+    "לחיוב בתאריך 10/02/2026", "אמריקן אקספרס 3263",
+    "תאריך רכישה,שם בית עסק,סכום עסקה,מטבע עסקה,סכום חיוב,מטבע חיוב",
+    "26/01/2026,סינמה סיטי,131.91,₪,131.91,₪",
+    "סה\"כ,,,,131.91,₪",
+    "תאריך רכישה,שם בית עסק,סכום עסקה,מטבע עסקה,סכום חיוב,מטבע חיוב",
+    "10/01/2026,KSP,4391.00,₪,731.83,₪",
+    "16/01/2026,ישראייר,121.75,₪,121.75,₪"
+  ].join("\n"));
+  eq("a one-purchase first section still starts the data", csvSkeleton(oneLine).rowsAboveData, 3);
+  const leumiBal = parseCSV(["תנועות בחשבון", "תאריך,תאריך ערך,תיאור,בחובה,בזכות,יתרה", ",,יתרת סגירה,,,8530.64", "31/03/2025,31/03/2025,יס פלאנט,114.96,,7990.28", "30/03/2025,30/03/2025,SPOTIFY,25.52,,8105.24"].join("\n"));
+  eq("a balance line between the titles and the first purchase is not the titles", csvSkeleton(leumiBal).rowsAboveData, 2);
+  ok("a line of column titles is recognised", csvTitleRow(["תאריך", "תיאור", "סכום"]) && !csvTitleRow(["01/09/2026", "תאריך", "5.00"]));
+
+  // A notes column that says "זיכוי" on the refunds only is not a column that
+  // marks money in and out - taking it for one turned every charge into income.
+  const maxNotes = parseCSV([
+    "תאריך עסקה,שם בית העסק,סכום חיוב,הערות",
+    "01/09/2026,רמי לוי,312.40,", "02/09/2026,פז,250.00,", "03/09/2026,זארה,-149.90,זיכוי",
+    "04/09/2026,קפה גרג,28.00,", "05/09/2026,איקאה,1240.00,", "06/09/2026,KSP,-99.00,זיכוי"
+  ].join("\n"));
+  const ms = csvSettleReading(maxNotes, 0, csvLocalReading(maxNotes, 0), "", null);
+  ok("a sparse זיכוי note is not a direction column", ms.sign.flowCol === -1 && ms.sign.positiveOut === true, JSON.stringify(ms.sign));
+
+  // Two ATM withdrawals of 400 on consecutive days are two withdrawals.
+  const atm = (d) => ({ type: "expense", amount: 400, label: "משיכת מזומן כספומט", date: d, catId: "c11", catSure: false });
+  const cls = classifyImportRows([atm("2026-09-03"), atm("2026-09-04")], []);
+  eq("the same charge on the next day is not dropped as a duplicate", [cls.fresh.length, cls.dupes.length], [2, 0]);
+  const again = classifyImportRows([atm("2026-09-03"), atm("2026-09-04")], [atm("2026-09-03"), atm("2026-09-04")]);
+  eq("but importing the same two again adds neither", [again.fresh.length, again.dupes.length], [0, 2]);
+}
+
+group("Shops Alfred can't place are not simply Other");
+{
+  const { csvRowCategory, csvSectorCat, csvShopHistory, csvPlanShops, suggestCatId, sniffMap } = app;
+  const cats = [{ id: "c1", name: "Housing" }, { id: "c2", name: "Food" }, { id: "c3", name: "Transport" }, { id: "c4", name: "Health" },
+    { id: "c5", name: "Entertainment" }, { id: "c6", name: "Shopping" }, { id: "c8", name: "Salary" }, { id: "c9", name: "Investments" }, { id: "c11", name: "Other" }];
+  const sector = (x) => { const c = csvSectorCat(x, cats); return c ? c.name : null; };
+  eq("Max's sectors", ["מזון וצריכה", "מסעדות, קפה וברים", "תחבורה ורכבים", "שירותי תקשורת", "רפואה ובתי מרקחת", "אופנה", "חשמל ומחשבים", "עיצוב הבית", "פנאי, בידור וספורט", "עירייה וממשלה"].map(sector),
+    ["Food", "Food", "Transport", "Housing", "Health", "Shopping", "Shopping", "Shopping", "Entertainment", "Housing"]);
+  eq("a label that could be two things maps to nothing", ["דלק, חשמל וגז", "ביטוח ופיננסים", "שונות", "העברת כספים"].map(sector), [null, null, null, null]);
+  eq("English card categories", ["Groceries", "Food & Drink", "Gas", "Health & Wellness", "Bills & Utilities", "Shopping", "Personal"].map(sector),
+    ["Food", "Food", "Transport", "Health", "Housing", "Shopping", null]);
+  eq("tickets are not flights", sector("כרטיסים והופעות"), "Entertainment");
+
+  const { shopKey } = app;
+  const ctx = (name, cat) => ({ cats, shops: { [shopKey(name)]: { category: cat, source: "alfred" } }, saved: {}, tx: [], incomeHist: {} });
+  eq("Alfred's Other does not beat the card's own label", csvRowCategory("ג'פניקה", "expense", true, ctx("ג'פניקה", "Other"), "מסעדות, קפה וברים").category, "Food");
+  eq("nor the keyword map", csvRowCategory("שופרסל דיל", "expense", true, ctx("שופרסל דיל", "Other"), "").category, "Food");
+  eq("Alfred's real answer still comes first", csvRowCategory("ג'פניקה", "expense", true, ctx("ג'פניקה", "Shopping"), "מסעדות, קפה וברים").category, "Shopping");
+
+  // One bad import used to teach every later one: the shop sat in Other in the
+  // history, and the history answered "Other" before Alfred was asked.
+  const hist = [{ label: "ג'פניקה", catId: "c11", category: "Other", type: "expense" }, { label: "ג'פניקה", catId: "c11", category: "Other", type: "expense" }];
+  ok("Other in the history is not evidence", Object.keys(csvShopHistory(hist, false, cats)).length === 0);
+  const jk = shopKey("ג'פניקה");
+  const plan = csvPlanShops([{ key: jk, label: "ג'פניקה" }], { [jk]: { category: "Other", source: "ai" } }, csvShopHistory(hist, false, cats), cats);
+  eq("a shop Alfred shrugged at last time is asked again", plan.ask.length, 1);
+  eq("and a suggestion is never Other", suggestCatId("ג'פניקה", hist, cats), "");
+
+  // A column called "Transaction Type" is not the shop.
+  const uk = sniffMap([["Date", "Transaction Type", "Description", "Paid out", "Paid in", "Balance"], ["01/09/2026", "DEB", "TESCO STORES 3297", "12.50", "", "900.00"]], true);
+  eq("the Description beats a Transaction Type column", uk.desc, 2);
+  const mz = sniffMap([["תאריך", "סוג תנועה", "זכות", "חובה", "יתרה", "אסמכתא"], ["01/09/2026", "שופרסל דיל", "", "120.00", "5000.00", "12345678"]], true);
+  eq("Mizrahi's description lives in סוג תנועה, and זכות comes first", [mz.desc, mz.credit, mz.debit, mz.amount], [1, 2, 3, -1]);
+  const disc = sniffMap([["תאריך", "יום ערך", "תיאור התנועה", "₪ זכות/חובה", "₪ יתרה", "אסמכתא", "עמלה"], ["01/09/2026", "01/09/2026", "שופרסל", "-120.00", "5000.00", "12345678", ""]], true);
+  eq("Discount's one signed column is the amount, not half a pair", [disc.amount, disc.debit, disc.credit], [3, -1, -1]);
+  const maxHead = sniffMap([["תאריך עסקה", "שם בית העסק", "קטגוריה", "4 ספרות אחרונות של כרטיס האשראי", "סוג עסקה", "סכום חיוב", "מטבע חיוב", "סכום עסקה מקורי", "מטבע עסקה מקורי", "תאריך חיוב"], ["01/09/2026", "רמי לוי", "מזון וצריכה", "1234", "רגילה", "312.40", "₪", "312.40", "₪", "02/10/2026"]], true);
+  eq("Max: the charge, the shop, and the card company's category column", [maxHead.amount, maxHead.desc, maxHead.cat, maxHead.debit], [5, 1, 2, -1]);
+}
+
 // ------------------------------------------------- reading a model's answer --
 // The real mapColumnsWithAI and categorizeShopsWithAI, with the network
 // stubbed. judgeLookalikes measured this same model fencing its JSON in 7 of 9
@@ -596,40 +757,77 @@ group("Reading what the model sends back");
   ok("a failed call is an error, never a guess", !!err && got === null);
 
   // --- phase 2 ---
+  // The answer names each shop by its number. The old answer was keyed by the
+  // name "copied exactly", and a name that came back one quote mark different
+  // lost its category - every one of those shops fell to Other.
   const cats = [{ name: "Food" }, { name: "Transport" }, { name: "Other" }];
-  let out, meta;
-  reply(JSON.stringify([
-    { shop: "שופרסל דיל", category: "Food", confidence: "high" },
-    { shop: "פנגו חניה", category: "Transport", confidence: "medium" },
-    { shop: "מקס איט", category: "Groceries", confidence: "high" }
-  ]));
-  categorizeShopsWithAI(["שופרסל דיל", "פנגו חניה", "מקס איט"], cats, [], (e, o, m) => { out = o; meta = m; });
-  eq("a shop is sorted", out["שופרסל דיל"].category, "Food");
-  ok("a category outside the closed set is dropped, not coerced", out["מקס איט"] === undefined,
-    JSON.stringify(out["מקס איט"]));
-  eq("one call for a small list", meta.calls, 1);
+  let out, meta, sent;
+  const said = { "שופרסל דיל בע\"מ": "Food", "פנגו חניה": "transport", "מקס איט": "Groceries" };
+  setClaude((m, s, mt, cb) => {
+    const body = JSON.parse(m[0].content);
+    if (!sent) sent = body;
+    cb(null, JSON.stringify(body.shops.map((x) => ({ i: x.i, category: said[x.name], confidence: "high" }))));
+  });
+  categorizeShopsWithAI(["שופרסל דיל בע\"מ", "פנגו חניה", "מקס איט"], cats, [], (e, o, m) => { out = o; meta = m; });
+  eq("shops go out numbered", sent.shops.map((x) => x.i), [0, 1, 2]);
+  eq("a shop is sorted by its number, whatever its name", out["שופרסל דיל בע\"מ"] && out["שופרסל דיל בע\"מ"].category, "Food");
+  eq("a category in the wrong case is still that category", out["פנגו חניה"] && out["פנגו חניה"].category, "Transport");
+  ok("a category outside the closed set is dropped, not coerced", out["מקס איט"] === undefined, JSON.stringify(out["מקס איט"]));
+  eq("the one left unanswered is asked once more, and only once", meta.calls, 2);
+  eq("and it is counted as missing", meta.missing, 1);
+
+  // The card's own label goes out with the shop.
+  setClaude((m, s, mt, cb) => { sent = JSON.parse(m[0].content); cb(null, "[]"); });
+  sent = null;
+  categorizeShopsWithAI([{ name: "רמי לוי", hint: "מזון וצריכה" }], cats, [], () => {});
+  eq("the card company's label travels as a hint", sent.shops[0].card_category, "מזון וצריכה");
+
+  // An old-style answer that names the shop instead of its number still counts.
+  reply(JSON.stringify([{ shop: "פנגו חניה", category: "Transport", confidence: "high" }]));
+  categorizeShopsWithAI(["פנגו חניה"], cats, [], (e, o) => { out = o; });
+  eq("an answer that echoes the name is still read", out["פנגו חניה"] && out["פנגו חניה"].category, "Transport");
+
+  // Cut off mid-array: the entries that arrived are kept, and only the tail is
+  // asked again. The old parser threw the whole chunk away.
+  const forty = Array.from({ length: 30 }, (_, i) => "חנות " + i);
+  let round = 0;
+  setClaude((m, s, mt, cb) => {
+    round++;
+    const shops = JSON.parse(m[0].content).shops;
+    const all = JSON.stringify(shops.map((x) => ({ i: x.i, category: "Food", confidence: "high" })));
+    cb(null, round === 1 ? "```json\n" + all.slice(0, Math.floor(all.length * 0.6)) : all);
+  });
+  categorizeShopsWithAI(forty, cats, [], (e, o, m) => { out = o; meta = m; });
+  ok("a cut-off answer keeps every entry that arrived, and the rest are asked again",
+    Object.keys(out).length === 30 && meta.calls === 2 && meta.missing === 0, Object.keys(out).length + " kept, " + meta.calls + " calls");
 
   // Over the per-call size, so it chunks - and one chunk failing must not lose
-  // the other.
+  // the other: it is asked again at the end.
   const many = Array.from({ length: 60 }, (_, i) => "shop " + i);
   let nth = 0;
   setClaude((m, s, mt, cb) => {
     nth++;
     if (nth === 1) { cb(new Error("network"), null); return; }
-    const sent = JSON.parse(m[0].content).shops;
-    cb(null, JSON.stringify(sent.map((x) => ({ shop: x, category: "Food", confidence: "high" }))));
+    const shops = JSON.parse(m[0].content).shops;
+    cb(null, JSON.stringify(shops.map((x) => ({ i: x.i, category: "Food", confidence: "high" }))));
   });
-  nth = 0;
   let partialErr = "unset";
   categorizeShopsWithAI(many, cats, [], (e, o, m) => { partialErr = e; out = o; meta = m; });
-  eq("a long list is split across calls", meta.calls, 2);
-  eq("one chunk failing loses only that chunk", meta.failed, 1);
-  ok("the surviving chunk is kept", Object.keys(out).length === 10, Object.keys(out).length + " kept");
+  eq("a long list is split across calls, and the failed chunk asked again", meta.calls, 3);
+  eq("one chunk failing is counted", meta.failed, 1);
+  ok("every shop is sorted in the end", Object.keys(out).length === 60, Object.keys(out).length + " kept");
   ok("a partial answer is not reported as a failure", partialErr === null, "err was " + partialErr);
+
+  // A timeout means the next call would wait out the same forty seconds: the
+  // rest fall straight through to the keyword map instead.
+  nth = 0;
+  setClaude((m, s, mt, cb) => { nth++; const e = new Error("timeout"); e.kind = "timeout"; cb(e, null); });
+  categorizeShopsWithAI(many, cats, [], (e, o, m) => { sErr = e; meta = m; });
+  eq("after a timeout nothing more is asked", nth, 1);
 
   nth = 0;
   setClaude((m, s, mt, cb) => cb(new Error("network"), null));
-  let sErr;
+  var sErr;
   categorizeShopsWithAI(["a", "b"], cats, [], (e, o, m) => { sErr = e; out = o; });
   ok("every chunk failing IS an error", !!sErr && Object.keys(out).length === 0);
 
@@ -720,6 +918,27 @@ group("Excel files, read on the device");
   const cover = await read(coverThenDataXlsx(), "workbook.xlsx");
   eq("a cover sheet is skipped for the tab that actually holds the table", cover.sheet, "תנועות");
   eq("even when that tab is hidden", cover.rows.length, 9);
+
+  // Max puts purchases abroad on a sheet of their own. Reading only the first
+  // sheet lost every one of them; reading EVERY sheet would count a summary
+  // or a second view of the same lines as more spending. Only a sheet that is
+  // more of the same statement joins it.
+  const MAXH = ["תאריך עסקה", "שם בית העסק", "קטגוריה", "סכום חיוב", "מטבע חיוב"];
+  const home = [["עסקאות במועד החיוב"], MAXH,
+    [{ date: "2026-09-02" }, "רמי לוי", "מזון וצריכה", { n: 312.4 }, "₪"],
+    [{ date: "2026-09-06" }, "פז יקום", "תחבורה ורכבים", { n: 250 }, "₪"],
+    ["סך הכל", null, null, { n: 562.4 }, null]];
+  const abroad = [["עסקאות חו\"ל ומט\"ח"], MAXH,
+    [{ date: "2026-09-05" }, "NETFLIX.COM", "פנאי, בידור וספורט", { n: 57.3 }, "₪"],
+    ["סך הכל", null, null, { n: 57.3 }, null]];
+  const summary = [["סיכום לפי קטגוריה"], ["קטגוריה", "סכום"], ["מזון וצריכה", { n: 312.4 }], ["תחבורה ורכבים", { n: 250 }]];
+  const both = await read(buildXlsx([{ name: "עסקאות במועד החיוב", rows: home }, { name: "עסקאות חו\"ל ומט\"ח", rows: abroad }, { name: "סיכום", rows: summary }]), "max.xlsx");
+  ok("a second sheet of purchases (abroad) is read with the first", both.rows.some((r) => r[1] === "NETFLIX.COM") && both.rows.some((r) => r[1] === "רמי לוי"),
+    both.err || JSON.stringify(both.sheets));
+  ok("a summary sheet is not read as purchases", !both.rows.some((r) => r[0] === "מזון וצריכה"));
+  eq("the note names both sheets", sheetReadNote({ name: "max.xlsx" }, both), "max.xlsx — " + both.rows.length + " lines read from the sheets “עסקאות במועד החיוב” and “עסקאות חו\"ל ומט\"ח”.");
+  const view = await read(buildXlsx([{ name: "כרטיס 1234", rows: home }, { name: "כל הכרטיסים", rows: home }]), "max.xlsx");
+  eq("a sheet repeating the same lines is a view, not more purchases", view.rows.length, home.length);
 
   const inline = buildXlsx([{ name: "Sheet1", rows: [
     [{ inline: "Date" }, { inline: "Shop" }, { inline: "Amount" }],
