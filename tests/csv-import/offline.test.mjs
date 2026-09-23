@@ -676,6 +676,10 @@ group("Totals, balances and sections are not purchases");
   eq("the same charge on the next day is not dropped as a duplicate", [cls.fresh.length, cls.dupes.length], [2, 0]);
   const again = classifyImportRows([atm("2026-09-03"), atm("2026-09-04")], [atm("2026-09-03"), atm("2026-09-04")]);
   eq("but importing the same two again adds neither", [again.fresh.length, again.dupes.length], [0, 2]);
+  const atmAt = (where) => ({ type: "expense", amount: 290, label: "BKOFAMERICA ATM 05/08 #00000" + where + " WITHDRWL", date: "2025-05-08", catId: "c11", catSure: false });
+  const twoAtm = [atmAt("1753 MAIN ST"), atmAt("5040 5TH AVE")];
+  const reAtm = classifyImportRows(twoAtm, twoAtm);
+  eq("two same-day withdrawals from two machines, imported again, are each matched to their own row", [reAtm.fresh.length, reAtm.dupes.length, reAtm.maybes.length], [0, 2, 0]);
 }
 
 group("The check line, and totals in words Richy doesn't know");
@@ -690,6 +694,11 @@ group("The check line, and totals in words Richy doesn't know");
   eq("an undated total in unknown words is left out, and the lines add up to it", [odd.items.length, odd.totals.length, odd.check && odd.check.ok, odd.check && odd.check.printed], [3, 1, true, 1587.4]);
   const oddDated = readIt(["Date,Description,Amount", "01/09/2026,Tesco,45.20", "03/09/2026,Boots,12.80", "09/09/2026,Shell,60.00", "30/09/2026,Your monthly amount,118.00"]);
   eq("a DATED total in unknown words closing its lines is left out too", [oddDated.items.length, oddDated.totals.length, oddDated.check && oddDated.check.ok], [3, 1, true]);
+
+  // A purchase that happens to come within a cent of a refund above it, on
+  // the last line before the total, is still a purchase.
+  const near = readIt(["תאריך,בית עסק,סכום", "31/05/2025,WOLT,136.26", "31/05/2025,WOLT,-36.91", "29/05/2025,פז יקום,134.41", "01/05/2025,SPOTIFY,36.92", ",סה\"כ חיוב,270.68"]);
+  eq("a dated line is a total only when it is the lines' exact sum", [near.items.length, near.totals.length, near.check && near.check.ok], [4, 1, true]);
 
   // A line missing: the statement's figure and the lines' disagree, and the
   // preview says so in those numbers.

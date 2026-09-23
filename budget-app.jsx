@@ -15024,6 +15024,11 @@ function csvReadRows(dataRows, head, map, splitAmt, positiveOut, preferDMY, toda
   function figs(x) { return [x.out, x.inn, x.out - x.inn, x.inn - x.out]; }
   function eqAny(a, list) { return list.some(function(v) { return v > 0.005 && Math.abs(round2(v) - a) < 0.015; }); }
   function closesLines(a) { return eqAny(a, figs(run).concat(figs(sec), figs(all))); }
+  // Stricter, for a line that has a date and so could be a purchase: the
+  // spending of the section or the file, net or not, exactly.
+  function closesSpending(a) {
+    return [sec.out, sec.out - sec.inn, all.out, all.out - all.inn].some(function(v) { return v > 0.005 && Math.abs(round2(v) - a) < 0.005; });
+  }
   // How many of the last totals this one adds up - on their own, or with
   // the lines since them that no total covered (a per-card total over the
   // card's domestic total and its unsummed abroad lines) - or 0.
@@ -15148,10 +15153,12 @@ function csvReadRows(dataRows, head, map, splitAmt, positiveOut, preferDMY, toda
         date = lastDate || nextDate(i);
         if (date) guess = true; else why = "nodate";
       }
-    } else if (!why && matched && endsSection(i) && (!desc ? sec.n >= 2 : (!known && sec.n >= 3))) {
+    } else if (!why && endsSection(i) && (!desc ? sec.n >= 2 : (!known && sec.n >= 3)) && closesSpending(money.amount)) {
       // A dated line closing its section with the section's sum: the total,
       // printed on the charge date - with no name, or with a label Richy does
-      // not know under the shop column.
+      // not know under the shop column. To the cent, and a sum of the
+      // spending: a purchase that merely came within a cent of a refund above
+      // it (36.92 under a -36.91) was dropped as a "total".
       why = "total";
     }
     if (why) {
@@ -15505,7 +15512,7 @@ function csvRepairMap(rows, first, m, fallback, head) {
 }
 // A cell that names a KIND of line rather than who it was with: a card's
 // transaction type, a British bank's code, an American bank's ACH type.
-var CSV_TYPE_CELL = /^(deb|dd|d\/d|so|s\/o|fpi|fpo|bgc|bac|otr|int|chg|chq|tfr|atm|pos|vis|bp|cr|dr|dep|c\/l|cpt|dpc|purchase|online purchase|card purchase|pos purchase|contactless|recurring|sale|return|refund|card refund|payment|credit card payment|card payment|bill payment|credit|debit|debit card|fee|bank fee|charge|interest|adjustment|transfer|transfer in|transfer out|direct debit|standing order|faster payment|bank giro credit|salary|cash|atm withdrawal|cash withdrawal|withdrawal|deposit|debit_card|ach_debit|ach_credit|acct_xfer|quickpay_debit|quickpay_credit|loan_pmt|misc_debit|misc_credit|check|רגילה|עסקה רגילה|תשלומים|קרדיט|הוראת קבע|חיוב חודשי|דחוי|חיוב מיידי|זיכוי|רכישה|קנייה|ביטול|מזומן|מיידי|הו"ק|תשלום)$/i;
+var CSV_TYPE_CELL = /^(deb|dd|d\/d|so|s\/o|fpi|fpo|bgc|bac|otr|int|chg|chq|tfr|atm|pos|vis|bp|cr|dr|dep|c\/l|cpt|dpc|purchase|online purchase|card purchase|pos purchase|foreign purchase|contactless|recurring|regular|installments?|instalments?|cash advance|sale|return|refund|card refund|payment|credit card payment|card payment|bill payment|credit|debit|debit card|fee|bank fee|charge|interest|adjustment|transfer|transfer in|transfer out|direct debit|standing order|faster payment|bank giro credit|salary|cash|atm withdrawal|cash withdrawal|withdrawal|deposit|debit_card|ach_debit|ach_credit|acct_xfer|quickpay_debit|quickpay_credit|loan_pmt|misc_debit|misc_credit|check|רגילה|עסקה רגילה|תשלומים|קרדיט|הוראת קבע|חיוב חודשי|דחוי|חיוב מיידי|זיכוי|רכישה|קנייה|ביטול|מזומן|מיידי|הו"ק|תשלום)$/i;
 // The share of a column's filled cells, in the first section, that are such.
 function csvTypeShare(rows, first, col) {
   if (!(col >= 0)) return 0;
@@ -16224,13 +16231,19 @@ function dupScore(cand, prev) {
 // sitting first in the list - so re-importing a statement asked about both
 // lines instead of recognising each.
 function bestDupMatch(cand, list) {
-  var best = null, bestScore = 0, bestGap = Infinity;
+  var best = null, bestScore = 0, bestGap = Infinity, bestSame = false;
   var amt = Math.abs(Number(cand && cand.amount) || 0);
+  var own = cand ? dupKey(cand.type, cand.date, cand.amount, cand.label) : "";
   for (var i = 0; i < (list || []).length; i++) {
     var s = dupScore(cand, list[i]);
     if (s <= 0) continue;
     var gap = Math.abs(amt - Math.abs(Number(list[i].amount) || 0));
-    if (s > bestScore || (s === bestScore && gap < bestGap)) { bestScore = s; best = list[i]; bestGap = gap; }
+    // On a tie, the row with the very same label wins, then the closer
+    // amount. Two withdrawals of 290 on one day from two cash machines score
+    // the same against each other's rows, and both used to claim the first -
+    // so re-importing the statement asked about both.
+    var same = dupKey(list[i].type, list[i].date, list[i].amount, list[i].label) === own;
+    if (s > bestScore || (s === bestScore && ((same && !bestSame) || (same === bestSame && gap < bestGap)))) { bestScore = s; best = list[i]; bestGap = gap; bestSame = same; }
   }
   return { score: bestScore, match: best };
 }
