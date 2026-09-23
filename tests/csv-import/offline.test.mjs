@@ -664,6 +664,12 @@ group("Totals, balances and sections are not purchases");
   const ms = csvSettleReading(maxNotes, 0, csvLocalReading(maxNotes, 0), "", null);
   ok("a sparse זיכוי note is not a direction column", ms.sign.flowCol === -1 && ms.sign.positiveOut === true, JSON.stringify(ms.sign));
 
+  // A tab-separated bank file whose balance column carries a thousands comma
+  // on every line: the comma must not win the separator vote.
+  const tabs = ["תאריך\tתיאור\tזכות/חובה\tיתרה\tאסמכתא", "28/02/2025\tשופרסל\t515.32-\t13,459.99\t1234", "27/02/2025\tפז\t241.08-\t13,975.31\t1235",
+    "26/02/2025\tמשכורת\t14,081.73\t14,216.39\t1236", "25/02/2025\tוולט\t47.21-\t134.66\t1237"].join("\n");
+  eq("a tab file with thousands commas is read by its tabs", parseCSV(tabs).map((r) => r.length), [5, 5, 5, 5, 5]);
+
   // Two ATM withdrawals of 400 on consecutive days are two withdrawals.
   const atm = (d) => ({ type: "expense", amount: 400, label: "משיכת מזומן כספומט", date: d, catId: "c11", catSure: false });
   const cls = classifyImportRows([atm("2026-09-03"), atm("2026-09-04")], []);
@@ -678,12 +684,17 @@ group("Shops Alfred can't place are not simply Other");
   const cats = [{ id: "c1", name: "Housing" }, { id: "c2", name: "Food" }, { id: "c3", name: "Transport" }, { id: "c4", name: "Health" },
     { id: "c5", name: "Entertainment" }, { id: "c6", name: "Shopping" }, { id: "c8", name: "Salary" }, { id: "c9", name: "Investments" }, { id: "c11", name: "Other" }];
   const sector = (x) => { const c = csvSectorCat(x, cats); return c ? c.name : null; };
-  eq("Max's sectors", ["מזון וצריכה", "מסעדות, קפה וברים", "תחבורה ורכבים", "שירותי תקשורת", "רפואה ובתי מרקחת", "אופנה", "חשמל ומחשבים", "עיצוב הבית", "פנאי, בידור וספורט", "עירייה וממשלה"].map(sector),
-    ["Food", "Food", "Transport", "Housing", "Health", "Shopping", "Shopping", "Shopping", "Entertainment", "Housing"]);
-  eq("a label that could be two things maps to nothing", ["דלק, חשמל וגז", "ביטוח ופיננסים", "שונות", "העברת כספים"].map(sector), [null, null, null, null]);
+  eq("Max's sectors", ["מזון וצריכה", "מסעדות, קפה וברים", "תחבורה ורכבים", "שירותי תקשורת", "רפואה ובתי מרקחת", "אופנה", "חשמל ומחשבים", "עיצוב הבית", "פנאי, בידור וספורט"].map(sector),
+    ["Food", "Food", "Transport", "Housing", "Health", "Shopping", "Shopping", "Shopping", "Entertainment"]);
+  eq("Cal's and Isracard's", ["מזון ומשקאות", "דלק", "ביגוד", "פארמה", "מכולת/סופר", "ריהוט", "קניות כללי"].map(sector), ["Food", "Transport", "Shopping", "Health", "Food", "Shopping", "Shopping"]);
+  eq("a label that could be two things maps to nothing", ["דלק, חשמל וגז", "ביטוח ופיננסים", "שונות", "העברת כספים", "עירייה וממשלה", "מנויים", "Travel/ Entertainment"].map(sector), [null, null, null, null, null, null, null]);
+  eq("the order matters: electronics before electricity, transport before sport", ["מוצרי חשמל", "Transportation-Fuel", "Sporting Goods", "Gas & Electric"].map(sector), ["Shopping", "Transport", "Shopping", "Housing"]);
   eq("English card categories", ["Groceries", "Food & Drink", "Gas", "Health & Wellness", "Bills & Utilities", "Shopping", "Personal"].map(sector),
     ["Food", "Food", "Transport", "Health", "Housing", "Shopping", null]);
   eq("tickets are not flights", sector("כרטיסים והופעות"), "Entertainment");
+  const { keywordCatName } = app;
+  eq("a real maqaf, geresh or gershayim no longer glues a name shut", ["סופר־פארם", "ג׳ירף", "חצי חינם"].map(keywordCatName), ["Health", "Food", "Food"]);
+  eq("Diesel is a clothing store, and Delta Galil is not an airline", [keywordCatName("DIESEL"), keywordCatName("DELTA GALIL")], ["", "Shopping"]);
 
   const { shopKey } = app;
   const ctx = (name, cat) => ({ cats, shops: { [shopKey(name)]: { category: cat, source: "alfred" } }, saved: {}, tx: [], incomeHist: {} });
@@ -698,7 +709,8 @@ group("Shops Alfred can't place are not simply Other");
   const jk = shopKey("ג'פניקה");
   const plan = csvPlanShops([{ key: jk, label: "ג'פניקה" }], { [jk]: { category: "Other", source: "ai" } }, csvShopHistory(hist, false, cats), cats);
   eq("a shop Alfred shrugged at last time is asked again", plan.ask.length, 1);
-  eq("and a suggestion is never Other", suggestCatId("ג'פניקה", hist, cats), "");
+  const barber = [{ label: "מספרת שרון", catId: "c11", category: "Other", type: "expense" }];
+  eq("and a suggestion is never Other", suggestCatId("מספרת שרון", barber, cats), "");
 
   // A column called "Transaction Type" is not the shop.
   const uk = sniffMap([["Date", "Transaction Type", "Description", "Paid out", "Paid in", "Balance"], ["01/09/2026", "DEB", "TESCO STORES 3297", "12.50", "", "900.00"]], true);

@@ -138,7 +138,8 @@ export async function runImport(file, opts) {
   const { hRow, st } = readColumns(parsed, opts.mapMode || "local", opts.profile);
   const map = st.map;
   const head = hRow >= 0 ? parsed[hRow] : null;
-  const read = csvReadRows(parsed.slice(hRow >= 0 ? hRow + 1 : 0), head, map, st.sign.splitAmt, st.sign.positiveOut, st.fmt.preferDMY, TODAY);
+  const read = csvReadRows(parsed.slice(hRow >= 0 ? hRow + 1 : 0), head, map, st.sign.splitAmt, st.sign.positiveOut, st.fmt.preferDMY, TODAY,
+    hRow > 0 ? parsed.slice(0, hRow) : null);
 
   const existing = opts.existing || [];
   const saved = opts.saved || {};
@@ -157,7 +158,7 @@ export async function runImport(file, opts) {
     });
     setClaude(null);
   }
-  const ctx = { cats: CATS, shops, saved, tx: existing, incomeHist: csvShopHistory(existing, true, CATS) };
+  const ctx = { cats: CATS, shops, saved, tx: existing, incomeHist: csvShopHistory(existing, true, CATS), spendHist: csvShopHistory(existing, false, CATS) };
   const cands = csvBuildCandidates(read.items, st.sign.positiveOut, ctx, 1000);
   const classified = classifyImportRows(cands, existing);
   // What doImport would write, with every look-alike question answered "two

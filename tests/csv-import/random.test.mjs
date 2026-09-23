@@ -166,10 +166,12 @@ for (const g of gens) {
       try { inst = g.make(makeRng(seed)); }
       catch (e) { failures.push({ gen: g.id, seed, mapMode, shopMode, name: "(generator threw)", probs: [String(e && e.stack || e)] }); failed++; runs++; continue; }
       (inst.traps || []).forEach((t) => { byGen[g.id].traps[t] = (byGen[g.id].traps[t] || 0) + 1; });
+      // What a model that knows every shop would answer. Richy sends a long
+      // descriptor cut to its first 60 characters, so the name asked is a
+      // prefix of the line in the file, not always the whole of it.
       const know = (() => {
-        const m = new Map();
-        inst.truth.forEach((t) => { if (t.cat) m.set(norm(t.shop).slice(0, 60), t.cat === "Travel" && !catNames.has("Travel") ? "Other" : t.cat); });
-        return (name) => m.get(norm(name).slice(0, 60)) || "";
+        const list = inst.truth.filter((t) => t.cat).map((t) => [norm(t.shop), t.cat === "Travel" && !catNames.has("Travel") ? "Other" : t.cat]);
+        return (name) => { const n = norm(name); const hit = list.find((x) => x[0] === n) || list.find((x) => n && x[0].startsWith(n)); return hit ? hit[1] : ""; };
       })();
       let res, probs;
       try {
