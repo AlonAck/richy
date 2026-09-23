@@ -14223,6 +14223,12 @@ function csvDetectSign(rows, map, firstDataRow, modelSays, userSays) {
     why: positiveOut ? cardWhy : bankWhy };
 }
 
+// Whether a money-in line is money BACK from a shop. On a card statement every
+// money-in line is; anywhere else, only one that says so.
+function csvIsRefund(desc, positiveOut) {
+  return !!positiveOut || /זיכוי|refund|reversal|chargeback/i.test(String(desc || ""));
+}
+
 // One row's money: how much, and which way. The single place the sign rules
 // are applied, so the preview, the import and the tests cannot disagree.
 function csvRowMoney(r, map, splitAmt, positiveOut) {
@@ -14421,6 +14427,10 @@ var CSV_SHOPS_SYSTEM = "You sort shop names from a bank or credit-card statement
   + "\n- The names are messy on purpose: mixed Hebrew and English, branch numbers, chain abbreviations, and payment processors standing in for the real merchant. Read past the noise."
   + "\n- A payment processor or a bank reference you cannot resolve to a real merchant gets \"low\" confidence. Low is an honest answer; the user is shown it and can correct it."
   + "\n- When the examples show how this person already sorts a similar shop, follow their habit rather than your own instinct."
+  + "\n- Sort by what the shop SELLS, not by a word in its name. A city, a branch, a mall or a word like סופר / שיווק / בע\"מ says nothing about it: סופר פארם is a pharmacy, רמי לוי תקשורת is a phone company, מחסני חשמל is an electronics store."
+  + "\n- A payment processor in front of a name - \"PAYPAL *NETFLIX\", \"SQ *CAFE\", \"UBER *EATS\" - is the shop AFTER the star. UBER *TRIP is a ride; UBER *EATS is food."
+  + "\n- A transfer to a person through ביט / Bit / PayBox / פייבוקס, or a bare processor name with nothing after it, cannot be sorted from its name: give it Other if that category exists, with \"low\" confidence."
+  + "\n- When the categories include these usual names, this is what they hold. Housing: rent, mortgage, arnona (ארנונה), electricity, water, gas for the home, internet, TV and phone bills, building committee (ועד בית), home insurance. Food: supermarkets, groceries, restaurants, cafes, bakeries, food delivery (Wolt, תן ביס, סיבוס). Transport: fuel (פז, דלק, סונול, דור אלון), public transport (רב קו, רכבת, אגד), taxis, ride apps, parking (פנגו, סלופארק), tolls (כביש 6), car repairs. Health: pharmacies, health funds (מכבי, כללית, מאוחדת, לאומית), doctors, dentists, opticians, gyms. Entertainment: streaming, music, games, cinema, theatre, shows, events. Shopping: clothes, shoes, electronics, home goods, furniture, books, toys, online stores (AliExpress, Amazon, Shein). Travel: flights, hotels, holiday bookings. Investments and Savings: money moved to an investment or savings account. Other: anything that fits none of them. Categories with other names mean what their names say."
   + "\nNo prose, no markdown fence.";
 
 // shops: array of display names. cats: the app's category list. examples:
@@ -14473,6 +14483,68 @@ function categorizeShopsWithAI(shops, cats, examples, cb) {
   step(0);
 }
 
+// ===== CSV IMPORT: WHO DECIDES A SHOP'S CATEGORY =============================
+// Every shop in a file, in order of whose word is worth most:
+//
+//   1. the user corrected it          pinned; never asked, never re-shown
+//   2. the user's own transactions    the SAME shop (same shopKey), and a clear
+//      at this same shop              majority of its lines in one category -
+//                                     which includes any fix made in Activity
+//   3. Alfred sorted it on an         kept, below 2, so a fix the user made
+//      earlier import                 later in Activity is what wins
+//   4. everything else                goes to Alfred (Sonnet), and comes back
+//                                     marked as his guess in the preview
+//   5. Alfred off or unreachable      the keyword map, then Other (buildTxs)
+//
+// Before this, step 2 was "any earlier label sharing a single word", and a
+// match there was treated as CERTAIN: the shop was never sent to Alfred and
+// never shown as a guess. One shared word was often a city - "ארומה תל אביב"
+// took the category of "סופר פארם תל אביב" - and the keyword map sat in the
+// same slot, trusted just as much. That was most of the wrong categories, and
+// the user had no sign that any of them was a guess.
+
+// shopKey -> { catId: count } over the user's own spending. Income is left
+// out: a salary line's "shop" is an employer, not a shop.
+function csvShopHistory(txList) {
+  var out = {};
+  (txList || []).forEach(function(t) {
+    if (!t || !t.catId || t.type === "income" || t.opening || t.transfer) return;
+    var k = shopKey(t.label || "");
+    if (!k) return;
+    var row = out[k] || (out[k] = {});
+    row[t.catId] = (row[t.catId] || 0) + 1;
+  });
+  return out;
+}
+// The category the user's own history gives this shop, or null when it does
+// not give a clear one (a shop they file two ways is a question, not a fact).
+function csvHistoryCat(history, key, cats) {
+  var row = (history || {})[key];
+  if (!row) return null;
+  var total = 0, best = "", bestN = 0;
+  for (var id in row) { total += row[id]; if (row[id] > bestN) { bestN = row[id]; best = id; } }
+  if (!best || bestN * 2 <= total) return null;
+  return catById(cats, best) || null;
+}
+// order: [{ key, label }]. saved: the stored shop map. Returns { out, ask }:
+// out holds every shop settled without Alfred, ask the ones he is asked.
+function csvPlanShops(order, saved, history, cats) {
+  var out = {}, ask = [];
+  (order || []).forEach(function(s) {
+    var was = (saved || {})[s.key];
+    var wasCat = was && was.category ? catByName(cats, was.category) : null;
+    if (wasCat && was.source === "user") {
+      out[s.key] = { category: wasCat.name, confidence: "high", source: "user", label: s.label };
+      return;
+    }
+    var own = csvHistoryCat(history, s.key, cats);
+    if (own) { out[s.key] = { category: own.name, confidence: "high", source: "history", label: s.label }; return; }
+    if (wasCat) { out[s.key] = { category: wasCat.name, confidence: "high", source: "saved", label: s.label }; return; }
+    ask.push(s);
+  });
+  return { out: out, ask: ask };
+}
+
 // ===== CSV IMPORT: THE LOG ===================================================
 // What tells us later whether the fast model is actually good enough for the
 // mapping, or whether a particular bank deserves a hardcoded parser instead of
@@ -14497,30 +14569,81 @@ function csvImportLog() {
   try { return JSON.parse(localStorage.getItem("cb_csv_log") || "[]"); } catch (e) { return []; }
 }
 
+// The built-in keyword map: the fallback when Alfred is off or unreachable,
+// and the add sheet's suggestion for a label the user has never typed before.
+// It is NOT consulted ahead of Alfred on an import any more - a word list is
+// the weakest judge in the building and was being trusted as a certain one.
+//
+// A keyword matches a WHOLE word (a trailing s is allowed), never a piece of
+// one. It used to be a plain substring, which filed "STEAM GAMES" under Food
+// (via "tea"), Coca-Cola under Transport ("ola"), a parent-teacher fee under
+// Housing ("rent") and a gym's training plan under Transport ("train"). A
+// keyword ending in * is a stem and matches the start of a word
+// ("grocer*" - grocery, groceries).
+//
+// The Israeli chains are the point of the Hebrew half: an Israeli statement is
+// almost all Hebrew shop names, and the list had none. Where two keywords both
+// match, the LONGER one wins - "רמי לוי תקשורת" is a phone bill, not a
+// supermarket, and "uber eats" is dinner, not a ride.
 var IMPORT_CAT_KEYWORDS = {
-  Food: ["grocer", "restaurant", "cafe", "coffee", "tea", "lunch", "dinner", "breakfast", "brunch", "snack", "starbuck", "mcdonald", "uber eats", "doordash", "grubhub", "food", "pizza", "burger", "supermarket", "deli", "bakery", "kfc", "subway", "chipotle"],
-  Transport: ["uber", "lyft", "bolt", "grab", "ola", "cab", "gas ", "fuel", "shell", "chevron", "exxon", "transit", "metro", "train", "parking", "taxi", " bus", "toll", "petrol", "diesel"],
-  Housing: ["rent", "mortgage", "landlord", "hoa", "property", "electric", "water bill", "internet", "comcast", "verizon", "utility", "power co", "heating", "gas bill"],
-  Health: ["pharmacy", "cvs", "walgreen", "doctor", "clinic", "hospital", "dental", "gym", "fitness", "medical", "chemist", "drug"],
-  Entertainment: ["netflix", "spotify", "hulu", "disney", "cinema", "movie", "steam", "game", "concert", "theater", "hbo", "youtube", "playstation", "xbox", "prime video"],
-  Shopping: ["amazon", "walmart", "target", "store", "mall", "clothing", "nike", "apple.com", "ikea", "ebay", "etsy", "best buy", "aliexpress", "shein", "zara", "h&m"],
-  Travel: ["airline", "flight", "hotel", "airbnb", "booking", "expedia", "delta", "marriott", "hilton"],
-  Investments: ["vanguard", "fidelity", "schwab", "robinhood", "coinbase", "brokerage", "invest"],
-  Salary: ["payroll", "salary", "direct deposit", "paycheck", "wages"]
+  Food: ["grocer*", "restaurant*", "cafe", "coffee", "tea", "lunch", "dinner", "breakfast", "brunch", "snack*", "starbuck*", "mcdonald*", "uber eats", "doordash", "grubhub", "food", "pizza*", "burger*", "supermarket*", "deli", "bakery", "bakeries", "kfc", "subway", "chipotle", "wolt", "10bis", "cibus",
+    "carrefour", "shufersal", "rami levy", "victory", "osher ad", "aroma",
+    "שופרסל", "רמי לוי", "יוחננוף", "ויקטורי", "אושר עד", "טיב טעם", "חצי חינם", "יינות ביתן", "קרפור", "מגה בעיר", "סופר יודה", "פרשמרקט", "מחסני השוק", "קשת טעמים", "am pm",
+    "ארומה", "קפה", "גרג", "לנדוור", "רולדין", "מקדונלדס", "בורגר קינג", "בורגראנץ", "דומינוס", "פיצה", "וולט", "תן ביס", "סיבוס", "מסעדה", "מסעדת", "מאפיה", "מאפיית", "קונדיטוריה", "פלאפל", "שווארמה", "סושי"],
+  Transport: ["uber", "lyft", "bolt", "grab", "ola", "cab", "gas", "gas station", "fuel", "shell", "chevron", "exxon", "transit", "metro", "train", "parking", "taxi", "bus", "toll", "petrol", "diesel", "gett", "yango", "moovit", "pango", "cellopark",
+    "פז", "דלק", "סונול", "דור אלון", "תחנת דלק", "רב קו", "רכבת", "רכבת ישראל", "אגד", "מטרופולין", "קווים", "אפיקים", "סופרבוס", "פנגו", "סלופארק", "חניון", "חניה", "חנייה", "גט טקסי", "מונית", "כביש 6", "דרך ארץ", "מוביט", "מוסך"],
+  Housing: ["rent", "mortgage", "landlord", "hoa", "property", "electric*", "water bill", "internet", "comcast", "verizon", "utility", "utilities", "power co", "heating", "gas bill",
+    "חברת החשמל", "חברת חשמל", "חשמל", "ארנונה", "עיריית", "עירייה", "תאגיד מים", "מי אביבים", "מי שבע", "הגיחון", "מיתב", "מים", "בזק", "הוט", "סלקום", "פרטנר", "פלאפון", "גולן טלקום", "רמי לוי תקשורת", "שכר דירה", "ועד בית", "סופרגז", "אמישראגז", "פזגז", "משכנתא", "ביטוח דירה"],
+  Health: ["pharmac*", "cvs", "walgreen*", "doctor", "clinic", "hospital", "dental", "gym", "fitness", "medical", "chemist", "drug", "drugstore",
+    "super pharm", "holmes place",
+    "סופר פארם", "גוד פארם", "ניו פארם", "בית מרקחת", "מכבי", "כללית", "מאוחדת", "לאומית", "הולמס פלייס", "גו אקטיב", "קאנטרי", "רופא", "מרפאה", "מרפאת", "אופטיקה", "שיניים"],
+  Entertainment: ["netflix", "spotify", "hulu", "disney", "cinema*", "movie*", "steam", "game", "concert*", "theater", "theatre", "hbo", "youtube", "playstation", "xbox", "prime video", "cinema city", "yes planet", "eventim",
+    "נטפליקס", "ספוטיפיי", "סינמה סיטי", "יס פלאנט", "רב חן", "תיאטרון", "הבימה", "הקאמרי", "זאפה", "דיסני"],
+  Shopping: ["amazon", "walmart", "target", "mall", "clothing", "nike", "adidas", "apple com", "ikea", "ebay", "etsy", "best buy", "aliexpress", "shein", "temu", "asos", "zara", "h&m", "mango", "ksp", "ivory", "terminal x",
+    "זארה", "קסטרו", "פוקס", "תמנון", "רנואר", "גולף", "איקאה", "עלי אקספרס", "אמזון", "באג", "אייבורי", "מחסני חשמל", "טרמינל איקס", "הום סנטר", "טויס אר אס", "סטימצקי", "צומת ספרים", "שילב", "אדידס", "נייקי", "מנגו"],
+  Travel: ["airline*", "flight*", "hotel*", "airbnb", "booking", "expedia", "delta", "marriott", "hilton", "agoda", "el al", "issta",
+    "אל על", "ישראייר", "ארקיע", "מלון", "מלונות", "בוקינג", "איסתא"],
+  Investments: ["vanguard", "fidelity", "schwab", "robinhood", "coinbase", "brokerage", "invest*"],
+  Salary: ["payroll", "salary", "direct deposit", "paycheck", "wages", "משכורת"]
 };
+
+// Lower case, and every run of punctuation becomes one space - so "סופר-פארם",
+// "APPLE.COM/BILL" and "קפה ג'ו" line up with the words in the map.
+function catMatchText(s) {
+  return " " + String(s || "").toLowerCase().replace(/[^a-z0-9&֐-׿]+/g, " ").trim() + " ";
+}
+function catWordChar(ch) { return /[a-z0-9&֐-׿]/.test(ch || ""); }
+// Does `text` (already catMatchText'd) contain keyword `kw` as a whole word?
+function catHasKeyword(text, kw) {
+  var stem = kw.charAt(kw.length - 1) === "*";
+  var w = catMatchText(stem ? kw.slice(0, -1) : kw).trim();
+  if (!w) return false;
+  var from = 0;
+  while (true) {
+    var at = text.indexOf(w, from);
+    if (at < 0) return false;
+    from = at + 1;
+    if (catWordChar(text.charAt(at - 1))) continue;
+    if (stem) return true;
+    var next = text.charAt(at + w.length);
+    if (!catWordChar(next)) return true;
+    if (next === "s" && !catWordChar(text.charAt(at + w.length + 1))) return true;
+  }
+}
 
 // Match a label/description against the built-in keyword map. Returns the
 // category NAME (e.g. "Food") or "" when nothing fits - no "Other" fallback,
 // so callers can decide whether an empty result is worth showing.
 function keywordCatName(desc) {
-  var d = (desc || "").toLowerCase();
+  var d = catMatchText(desc);
+  var best = "", bestLen = 0;
   for (var name in IMPORT_CAT_KEYWORDS) {
     var kws = IMPORT_CAT_KEYWORDS[name];
     for (var i = 0; i < kws.length; i++) {
-      if (d.indexOf(kws[i]) !== -1) return name;
+      if (kws[i].length > bestLen && catHasKeyword(d, kws[i])) { best = name; bestLen = kws[i].length; }
     }
   }
-  return "";
+  return best;
 }
 
 function guessImportCatId(desc, cats) {
@@ -14528,6 +14651,21 @@ function guessImportCatId(desc, cats) {
   if (name) { var c = catByName(cats, name); if (c) return c.id; }
   var other = catByName(cats, "Other") || cats[0];
   return other ? other.id : "";
+}
+
+// Words that turn up in shop names without saying anything about the shop:
+// cities, legal suffixes, "branch", "online", and the payment apps and
+// processors that stand in front of the real merchant.
+function catIsNoise(w) {
+  if (!catIsNoise.set) {
+    var o = {};
+    ("אביב ירושלים חיפה רמת ראשון לציון פתח תקווה תקוה הרצליה נתניה באר שבע חולון ים רעננה כפר סבא מודיעין אשדוד אשקלון רחובות גבעתיים השרון הוד נס ציונה יבנה לוד רמלה עפולה טבריה אילת קריית קרית ישראל "
+    + "סניף בעמ שיווק מרכז קניון רשת חברת בית תשלום תשלומים העברה הוראת קבע חיוב זיכוי אונליין סופר מסחר ובניו יבוא אחזקות "
+    + "ביט פייבוקס פייפאל "
+    + "tel aviv jerusalem haifa israel ltd inc llc com www online store shop branch the and payment payments paypal google apple bit paybox transfer pos purchase card").split(" ").forEach(function(x) { if (x) o[x] = 1; });
+    catIsNoise.set = o;
+  }
+  return !!catIsNoise.set[w];
 }
 
 // Return the highest-count key from a {key: count} tally, or "".
@@ -14546,7 +14684,11 @@ function suggestCatId(label, txList, cats) {
   if (q.length < 2) return "";
   var list = txList || [];
   var exact = {}, partial = {};
-  var qWords = q.split(/\s+/).filter(function(w) { return w.length >= 3; });
+  // A shared CITY or a shared filler word says nothing about what a shop
+  // sells, and one shared word was all a partial match needed - so "ארומה תל
+  // אביב" was filed wherever "סופר פארם תל אביב" had been. Those words don't
+  // count as evidence.
+  var qWords = catMatchText(q).trim().split(" ").filter(function(w) { return w.length >= 3 && !catIsNoise(w); });
   for (var i = 0; i < list.length; i++) {
     var t = list[i];
     if (!t || !t.catId || t.opening || t.transfer) continue;
@@ -14556,7 +14698,7 @@ function suggestCatId(label, txList, cats) {
     // A multi-word query found inside a label is strong evidence on its own; a
     // single word has to land on a word boundary. Without that, "fee" matched
     // "coffee" and a gym membership was learned as Food.
-    var hit = q.indexOf(" ") !== -1 ? tl.indexOf(q) !== -1 : labelHasWord(tl, q);
+    var hit = q.indexOf(" ") !== -1 ? tl.indexOf(q) !== -1 : (!catIsNoise(q) && labelHasWord(tl, q));
     if (!hit) {
       for (var w = 0; w < qWords.length; w++) { if (labelHasWord(tl, qWords[w])) { hit = true; break; } }
     }
@@ -14635,7 +14777,9 @@ function labelHasWord(label, word) {
   while (i <= label.length - word.length) {
     var at = label.indexOf(word, i);
     if (at < 0) return false;
-    if (at === 0 || !/[a-z0-9]/i.test(label.charAt(at - 1))) return true;
+    // Hebrew letters count as part of a word too. Without them, "גרג" was
+    // "found" inside "מגרגר" and every Hebrew label matched mid-word.
+    if (at === 0 || !/[a-z0-9֐-׿]/i.test(label.charAt(at - 1))) return true;
     i = at + 1;
   }
   return false;
@@ -14988,7 +15132,16 @@ var SUBSCRIPTION_HINTS = ["netflix", "spotify", "hulu", "disney", "hbo", "youtub
 // and "NETFLIX" group together.
 function normalizeMerchant(label) {
   var s = (label || "").toLowerCase();
-  s = s.replace(/[#*].*$/, " ");                 // drop store/ref after # or *
+  // A star is two different things. "PAYPAL *NETFLIX", "SQ *BLUE BOTTLE",
+  // "UBER *EATS": a payment processor in front, the REAL shop after it.
+  // "AMAZON.COM*MK1RT5": a reference code after it. Dropping everything after
+  // the star made every PayPal purchase one shop called "paypal" - one
+  // category for Netflix and AliExpress alike, and two same-priced PayPal
+  // charges on one day looked like a duplicate. So a star followed by a real
+  // word (three letters, no digits in it) keeps that word; anything else after
+  // it is a reference and goes.
+  s = s.replace(/\s*\*\s*/g, "*").replace(/\*(?![a-z֐-׿]{3,}(?:[^a-z0-9֐-׿]|$))/, "#").replace(/\*/g, " ");
+  s = s.replace(/#.*$/, " ");                    // drop store/ref after #
   s = s.replace(/\d{2,}/g, " ");                 // drop long digit runs (ids/dates)
   // Hebrew and Arabic letters are KEPT. This was /[^a-z0-9&]+/, which in a
   // Hebrew-language app erased the merchant outright: "מקס איט" and "סינמה
@@ -17488,7 +17641,7 @@ function ImportSheet(props) {
       // Money back from a shop is not a salary. On a card statement every
       // money-in line is a refund, and anywhere a line that says זיכוי/refund
       // is one - it belongs with the shop's category, not in Salary.
-      var refund = type === "income" && (positiveOut || /זיכוי|refund|reversal|chargeback/i.test(desc));
+      var refund = type === "income" && csvIsRefund(desc, positiveOut);
       // Category, in order of how much it is worth: the shop map (which the
       // user has confirmed, or Alfred has just sorted), then the user's own
       // history, then the keyword map. Income skips the shop map - a salary
@@ -17575,25 +17728,18 @@ function ImportSheet(props) {
     dataRows.forEach(function(r) {
       var desc = String((map.desc >= 0 ? r[map.desc] : "") || "").trim();
       if (!desc) return;
+      // Only lines that will actually use a shop category. A salary's "shop"
+      // is an employer: sorting it was a wasted question, and it sent the
+      // employer's name out for nothing.
+      var money = csvRowMoney(r, map, splitAmt, positiveOut);
+      if (!money || (money.type === "income" && !csvIsRefund(desc, positiveOut))) return;
       var k = shopKey(desc);
       if (!k || seen[k]) return;
       seen[k] = 1;
       order.push({ key: k, label: desc.slice(0, 60) });
     });
-    var out = {}, ask = [];
-    order.forEach(function(s) {
-      var was = saved[s.key];
-      // A category the USER corrected is pinned: it is never re-asked of the
-      // model and never re-confirmed on screen.
-      if (was && was.category && catByName(cats, was.category)) {
-        out[s.key] = { category: was.category, confidence: "high", source: was.source === "user" ? "user" : "saved", label: s.label };
-        return;
-      }
-      var own = suggestCatId(s.label, props.tx, cats);
-      var ownCat = own ? catById(cats, own) : null;
-      if (ownCat) { out[s.key] = { category: ownCat.name, confidence: "high", source: "history", label: s.label }; return; }
-      ask.push(s);
-    });
+    var plan = csvPlanShops(order, saved, csvShopHistory(props.tx), cats);
+    var out = plan.out, ask = plan.ask;
     if (!ask.length) { cb(out, { asked: 0, skipped: 0, calls: 0, failed: 0, overflow: 0, err: false }); return; }
     // The user asked to do this themselves. The unrecognised shops fall
     // through to the keyword map in buildTxs, and the count travels so the
@@ -17719,7 +17865,12 @@ function ImportSheet(props) {
     if (was.source === "alfred" && was.category && was.category !== c.name) {
       csvLog("category-corrected", { shop: was.label || t.shopK, from: was.category, to: c.name, confidence: was.confidence || "", scope: all ? "shop" : "row" });
     }
-    if (all && t.shopK && t.type === "expense") {
+    // A fix to a shop's ONLY line in the file is a fix to the shop, and is
+    // remembered like one. It used to be forgotten - the "all lines" offer
+    // only appears when there are other lines - so a shop that shows up once
+    // a month came back wrong every month however often it was put right.
+    var onlyLine = !built.some(function(r) { return r.id !== t.id && r.shopK === t.shopK && r.type === t.type; });
+    if ((all || onlyLine) && t.shopK && (t.type === "expense" || csvIsRefund(t.label, positiveOut))) {
       var next = {}; for (var k in shopCats) next[k] = shopCats[k];
       next[t.shopK] = { category: c.name, confidence: "high", source: "user", label: was.label || t.label };
       setShopCats(next);

@@ -423,6 +423,80 @@ group("Money in or money out");
   ok("  with room to think before it answers", sent.mt >= 4000, "maxTokens " + sent.mt);
 }
 
+// ---------------------------------------------------------- shop categories --
+group("Shop categories");
+{
+  const { keywordCatName, suggestCatId, csvShopHistory, csvPlanShops } = app;
+  const CATS = [["c1", "Housing"], ["c2", "Food"], ["c3", "Transport"], ["c4", "Health"], ["c5", "Entertainment"],
+    ["c6", "Shopping"], ["c8", "Salary"], ["c9", "Investments"], ["c10", "Savings"], ["c11", "Other"]].map(([id, name]) => ({ id, name }));
+  const catName = (id) => (CATS.find((c) => c.id === id) || {}).name || "";
+
+  // The keyword map matched pieces of words.
+  eq("STEAM GAMES is not Food (\"tea\" inside \"steam\")", keywordCatName("STEAM GAMES"), "Entertainment");
+  ok("Coca-Cola is not Transport (\"ola\")", keywordCatName("COCA COLA ISRAEL") !== "Transport", keywordCatName("COCA COLA ISRAEL"));
+  ok("a parent-teacher fee is not Housing (\"rent\")", keywordCatName("PARENT TEACHER ASSOC") !== "Housing");
+  ok("a training plan is not Transport (\"train\")", keywordCatName("PERSONAL TRAINING") !== "Transport");
+  ok("Microsoft Teams is not Food (\"tea\")", keywordCatName("MICROSOFT TEAMS") !== "Food");
+  eq("a whole word still matches, plural too", keywordCatName("WHOLE FOODS MARKET"), "Food");
+  eq("a stem matches its forms", keywordCatName("CITY GROCERIES"), "Food");
+  eq("the longer keyword wins: uber eats is food", keywordCatName("UBER EATS"), "Food");
+  eq("  and a plain uber is a ride", keywordCatName("UBER TRIP"), "Transport");
+  // Israeli chains, which the map did not have at all.
+  eq("שופרסל is Food", keywordCatName("שופרסל דיל תל אביב"), "Food");
+  eq("סופר-פארם is Health, hyphen and all", keywordCatName("סופר-פארם רמת אביב"), "Health");
+  eq("פז is fuel", keywordCatName("פז יקום"), "Transport");
+  eq("רמי לוי תקשורת is a phone bill, not the supermarket", keywordCatName("רמי לוי תקשורת"), "Housing");
+  eq("מחסני חשמל is a store, not the electricity bill", keywordCatName("מחסני חשמל חולון"), "Shopping");
+  eq("חברת החשמל is the electricity bill", keywordCatName("חברת החשמל לישראל"), "Housing");
+  eq("a Hebrew keyword is not found inside another word (פז / פזגז)", keywordCatName("פזגז"), "Housing");
+
+  // The user's history: a shared city was enough to borrow a category.
+  const HIST = [
+    { label: "סופר פארם תל אביב", catId: "c4", type: "expense" },
+    { label: "סופר פארם תל אביב", catId: "c4", type: "expense" }
+  ];
+  eq("a shared city is not evidence: ארומה תל אביב is not Health", catName(suggestCatId("ארומה תל אביב", HIST, CATS)), "Food");
+
+  // Who decides. A partial match or a keyword used to settle a shop for
+  // certain, so it never reached the model and never showed as a guess.
+  const history = csvShopHistory([
+    { label: "ארומה רמת החייל", catId: "c2", type: "expense" },
+    { label: "ארומה רמת החייל", catId: "c2", type: "expense" },
+    { label: "ארומה רמת החייל", catId: "c5", type: "expense" },
+    { label: "סופר פארם תל אביב", catId: "c4", type: "expense" },
+    { label: "Acme Ltd", catId: "c8", type: "income" },
+    { label: "שופרסל", catId: "c2", type: "expense" },
+    { label: "שופרסל", catId: "c6", type: "expense" }
+  ]);
+  const order = [
+    { key: "ארומה רמת החייל", label: "ארומה רמת החייל" },   // own history: 2 of 3 Food
+    { key: "ארומה תל אביב", label: "ארומה תל אביב" },       // only a partial match -> Alfred
+    { key: "zara", label: "ZARA" },                         // saved guess from last time
+    { key: "netflix", label: "NETFLIX" },                   // user corrected it
+    { key: "שופרסל", label: "שופרסל" },                     // history split 1-1 -> Alfred
+    { key: "acme", label: "Acme Ltd" }                      // only income history -> Alfred
+  ];
+  const saved = {
+    zara: { category: "Shopping", source: "ai" },
+    netflix: { category: "Entertainment", source: "user" },
+    "ארומה רמת החייל": { category: "Health", source: "ai" }  // an old wrong guess
+  };
+  const plan = csvPlanShops(order, saved, history, CATS);
+  eq("the user's own history for the same shop beats an old saved guess", [plan.out["ארומה רמת החייל"].category, plan.out["ארומה רמת החייל"].source], ["Food", "history"]);
+  eq("a correction the user made is pinned", [plan.out.netflix.category, plan.out.netflix.source], ["Entertainment", "user"]);
+  eq("a saved guess still answers when there's nothing better", plan.out.zara.source, "saved");
+  eq("a partial match, a split history and income history all go to Alfred", plan.ask.map((s) => s.key), ["ארומה תל אביב", "שופרסל", "acme"]);
+
+  // A star in front of the real merchant.
+  const { normalizeMerchant: nm } = app;
+  ok("PAYPAL *NETFLIX and PAYPAL *ALIEXPRESS are two shops, not one \"paypal\"", nm("PAYPAL *NETFLIX") !== nm("PAYPAL *ALIEXPRESS"), nm("PAYPAL *NETFLIX"));
+  eq("  and the real merchant is kept", nm("PAYPAL *NETFLIX"), "paypal netflix");
+  ok("UBER *TRIP and UBER *EATS are two shops", nm("UBER *TRIP") !== nm("UBER *EATS"));
+  eq("a reference code after a star is still dropped", nm("AMZN Mktp US*2K4LL1234"), "amzn mktp us");
+  eq("  and so is one glued to the name", nm("AMAZON.COM*MK1RT5"), "amazon");
+  eq("a store number after # is still dropped", nm("STARBUCKS #1123 SEATTLE"), "starbucks");
+}
+
 // ------------------------------------------------- reading a model's answer --
 // The real mapColumnsWithAI and categorizeShopsWithAI, with the network
 // stubbed. judgeLookalikes measured this same model fencing its JSON in 7 of 9
