@@ -13813,38 +13813,101 @@ function xlsxRead(bytes, cb) {
 // one sheet and its purchases abroad on another ('עסקאות חו"ל ומט"ח'), and
 // reading only the first sheet lost every purchase abroad without a word. But
 // a workbook can also hold a cover page, a summary by category, or the same
-// lines again in another view - and reading one of those as more purchases
-// would count the month twice. So a later sheet joins the first statement
-// sheet only when
-//   - its column titles read as a statement (a date, an amount, a shop), and
-//   - it is not the lines already read over again (half or more of its
-//     dated lines already in is a view, not more statement).
-// Its rows follow the first sheet's, titles and all, and csvReadRows reads
+// lines again in another view - one card's lines and then every card's, or
+// the month again with the columns in another order - and reading one of
+// those as more purchases would count the month twice. So:
+//   - a later sheet joins only when its column titles read as a statement
+//     (a date, an amount, a shop);
+//   - its lines are compared with the ones already in by what they SAY -
+//     date, amount and shop, each sheet read by its own titles - not by how
+//     the cells are written, which is the one thing a second view changes;
+//   - a sheet that holds every line of one already in, and more, replaces it
+//     (the per-card sheet gives way to the all-cards one, total and all);
+//   - otherwise only its new lines join, and its own total lines stay out,
+//     because they count lines that are not being added.
+// Joined rows follow the first sheet's, titles and all, and csvReadRows reads
 // them as the next section by their own titles.
+//
+// A first sheet that has lines but no titles is kept as it is, alone: that is
+// the statement, and a later sheet with titles (future installments, say) is
+// not a reason to throw it away.
 var SHEET_MAX_SHEETS = 12;
 function sheetMergeTables(tables) {
   var first = -1;
   for (var t = 0; t < tables.length && first < 0; t++) if (sheetStatementTitles(tables[t].rows)) first = t;
   if (first < 0) return { rows: tables[0].rows, names: [tables[0].name] };
-  var out = tables[first].rows.slice(), names = [tables[first].name];
-  var seen = {};
-  function mark(rows) { rows.forEach(function(r) { seen[csvCellsKey(r)] = 1; }); }
-  mark(out);
-  for (var k = first + 1; k < tables.length; k++) {
+  if (first > 0 && sheetUntitledLines(tables[0].rows)) return { rows: tables[0].rows, names: [tables[0].name] };
+  var parts = [];
+  for (var k = first; k < tables.length; k++) {
     var rows = tables[k].rows;
-    if (!sheetStatementTitles(rows)) continue;
-    var dated = 0, again = 0;
-    rows.forEach(function(r) {
-      if (!csvRowIsData(csvRowKinds(r, (r || []).length))) return;
-      dated++;
-      if (seen[csvCellsKey(r)]) again++;
+    if (k > first && !sheetStatementTitles(rows)) continue;
+    var lines = sheetLineKeys(rows);
+    if (!lines.n) { if (k === first) parts.push({ name: tables[k].name, rows: rows, lines: lines }); continue; }
+    // A part this sheet holds all of - and more - gives way to it.
+    parts = parts.filter(function(p) { return !(p.lines.n && p.lines.n < lines.n && sheetHoldsAll(lines.count, p.lines.count)); });
+    // What is left to add: the lines not already in, one for one.
+    var had = {};
+    parts.forEach(function(p) { for (var key in p.lines.count) had[key] = (had[key] || 0) + p.lines.count[key]; });
+    var dup = {}, fresh = 0;
+    lines.byRow.forEach(function(key, i) {
+      if (key && had[key] > 0) { had[key]--; dup[i] = 1; }
+      else if (key) fresh++;
     });
-    if (!dated || again * 2 >= dated) continue;
-    mark(rows);
-    out = out.concat(rows);
-    names.push(tables[k].name);
+    if (!fresh) continue;
+    var kept = rows;
+    if (Object.keys(dup).length) {
+      // Only its titles and its new lines: a total left in would count the
+      // repeated lines too, and flag the statement as not adding up.
+      kept = rows.filter(function(r, i) { return !dup[i] && (lines.byRow[i] || csvTitleRow(r)); });
+      var c = {}; lines.byRow.forEach(function(key, i) { if (key && !dup[i]) c[key] = (c[key] || 0) + 1; });
+      lines = { n: fresh, count: c, byRow: [] };
+    }
+    parts.push({ name: tables[k].name, rows: kept, lines: lines });
   }
+  if (!parts.length) return { rows: tables[first].rows, names: [tables[first].name] };
+  var out = [], names = [];
+  parts.forEach(function(p) { out = out.concat(p.rows); names.push(p.name); });
   return { rows: out, names: names };
+}
+// Whether one tally of lines holds every line of another.
+function sheetHoldsAll(big, small) {
+  for (var key in small) if (!((big[key] || 0) >= small[key])) return false;
+  return true;
+}
+// A sheet of purchases with no line of titles: three or more lines, each a
+// date, a shop and an amount in the same columns. A cover page's few figures,
+// or a total by month (a date and a sum, no shop), is not one.
+function sheetUntitledLines(rows) {
+  rows = rows || [];
+  var n = 0, ncol = 0;
+  rows.forEach(function(r) { if (csvRowIsData(csvRowKinds(r, (r || []).length))) n++; if (r && r.length > ncol) ncol = r.length; });
+  if (n < 3) return false;
+  var from = csvFirstDataRow(rows, ncol);
+  if (from < 0) return false;
+  var m = sniffMap(rows.slice(from), false);
+  return m.date >= 0 && m.desc >= 0 && (m.amount >= 0 || m.debit >= 0 || m.credit >= 0);
+}
+// Every line of a sheet as date|amount|shop, read by the sheet's own column
+// titles (a new line of titles starts a new reading). byRow[i] is row i's
+// key, or "" for a row that is not a line; count tallies them; n is how many.
+function sheetLineKeys(rows) {
+  var byRow = [], count = {}, n = 0, map = null;
+  (rows || []).forEach(function(r, i) {
+    byRow.push("");
+    if (csvTitleRow(r)) {
+      var m = sniffMap((rows || []).slice(i, i + 40), true);
+      if (m.date >= 0 && (m.amount >= 0 || m.debit >= 0 || m.credit >= 0)) map = m;
+      return;
+    }
+    if (!map || !csvRowIsData(csvRowKinds(r, (r || []).length))) return;
+    var date = parseImportDate((r || [])[map.date], true);
+    var cell = map.amount >= 0 ? r[map.amount] : (String(r[map.debit] == null ? "" : r[map.debit]).trim() ? r[map.debit] : r[map.credit]);
+    var amt = Math.abs(parseImportAmount(cell));
+    if (!date || !(amt > 0)) return;
+    var key = date + "|" + amt.toFixed(2) + "|" + (map.desc >= 0 ? shopKey(String(r[map.desc] == null ? "" : r[map.desc])) : "");
+    byRow[i] = key; count[key] = (count[key] || 0) + 1; n++;
+  });
+  return { byRow: byRow, count: count, n: n };
 }
 // Whether a sheet has a line of column titles that reads as a statement.
 function sheetStatementTitles(rows) {
@@ -14090,7 +14153,7 @@ function sheetReadNote(file, out) {
   var name = (file && file.name) || "";
   var names = (out && out.sheets) || [];
   var what = out && out.kind === "xlsx"
-    ? (names.length > 1 ? "the sheets " + names.map(function(x) { return "“" + x + "”"; }).join(" and ")
+    ? (names.length > 1 ? "the sheets " + names.slice(0, -1).map(function(x) { return "“" + x + "”"; }).join(", ") + " and “" + names[names.length - 1] + "”"
       : out.sheet ? "the sheet “" + out.sheet + "”" : "your Excel file")
     : "the table in it";
   return (name ? name + " — " : "") + n + (n === 1 ? " line" : " lines") + " read from " + what + ".";
@@ -14149,7 +14212,9 @@ function csvIsDateCell(s) {
 // brackets, bidi marks and a currency symbol. The date test runs first because
 // parseImportAmount happily reads "01/09/2026" as 1092026.
 function csvIsNumberCell(s) {
-  s = String(s == null ? "" : s).trim();
+  // Every invisible direction mark csvStripMarks knows, not just a few:
+  // Excel and the banks' web pages scatter them through figures.
+  s = csvStripMarks(s);
   if (!s || csvIsDateCell(s)) return false;
   if (!/\d/.test(s)) return false;
   // A currency written as a word beside the figure - "1,234.50 ש"ח", "ILS
@@ -14355,6 +14420,29 @@ function csvDetectDateFormat(rows, col, firstDataRow) {
     else if (b > 12 && a <= 12) mdy++;
   }
   if (iso && !dmy && !mdy) return { preferDMY: true, sure: true, reason: "yyyy-mm-dd" };
+  // Every line of the first section could be read either way - the first
+  // week of March is 03/01 to 03/07 whichever way round. The rest of the
+  // file often settles it: a later card's 03/30, or the period printed in the
+  // title lines ("Period: 03/01/2025 - 03/31/2025"). Read one of those the
+  // wrong way and a whole section moved to January.
+  if (!dmy && !mdy) {
+    var re = /(^|[^\d])(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4}|\d{2})(?!\d)/g;
+    for (var r = 0; r < (rows || []).length; r++) {
+      var row = rows[r] || [];
+      for (var c = 0; c < row.length; c++) {
+        var cell = String(row[c] == null ? "" : row[c]), hit;
+        re.lastIndex = 0;
+        while ((hit = re.exec(cell))) {
+          var x = parseInt(hit[2], 10), y = parseInt(hit[3], 10);
+          if (x > 12 && x <= 31 && y >= 1 && y <= 12) dmy++;
+          else if (y > 12 && y <= 31 && x >= 1 && x <= 12) mdy++;
+        }
+      }
+    }
+    if (dmy && !mdy) return { preferDMY: true, sure: true, reason: "a date elsewhere in the file has a day over 12" };
+    if (mdy && !dmy) return { preferDMY: false, sure: true, reason: "a date elsewhere in the file has a month over 12" };
+    if (dmy || mdy) return { preferDMY: dmy >= mdy, sure: false, conflict: true, reason: "the file has dates that disagree" };
+  }
   if (dmy && !mdy) return { preferDMY: true, sure: true, reason: dmy + " rows have a day over 12" };
   if (mdy && !dmy) return { preferDMY: false, sure: true, reason: mdy + " rows have a month over 12" };
   // Both shapes present: the file is inconsistent, or one reading is wrong.
@@ -14509,6 +14597,19 @@ function csvDetectSign(rows, map, firstDataRow, modelSays, userSays) {
   if (modelSays === "positive_is_expense" || modelSays === "all_rows_are_charges") toCard(1, "Alfred read it as a card statement");
   else if (modelSays === "negative_is_expense") toBank(1, "Alfred read it as a bank account");
 
+  // The running balance is arithmetic, not a hint: each line moves it by its
+  // own amount, up for money in and down for money out. When it moves the
+  // same way as the signs on (nearly) every line, that settles the file -
+  // three salaries in a row, all plain numbers, are money in, and the
+  // balance going up by each of them says so.
+  var bv = csvBalanceVotes(data, map, headRow);
+  // Except when the amounts carry no sign at all and the balance goes BOTH
+  // ways: then some lines are money in and some out under the same plus,
+  // and no one reading of the sign is right - said below, not settled here.
+  if (!neg && bv.inn && bv.out) bv = { inn: 0, out: 0 };
+  if (bv.inn >= 2 && bv.inn >= 3 * bv.out) return { splitAmt: false, positiveOut: false, flowCol: -1, sure: true, why: "the running balance goes up by the plain amounts" };
+  if (bv.out >= 2 && bv.out >= 3 * bv.inn) return { splitAmt: false, positiveOut: true, flowCol: -1, sure: true, why: "the running balance goes down by the plain amounts" };
+
   // Nothing negative at all: whatever the file is, a plus has to be money out,
   // or the user is shown a month of invented earnings. The only doubt is a
   // bank account that simply dropped its signs - then in and out can't be told
@@ -14523,6 +14624,42 @@ function csvDetectSign(rows, map, firstDataRow, modelSays, userSays) {
   var positiveOut = card > bank || (card === bank && pos > neg);
   return { splitAmt: false, positiveOut: positiveOut, flowCol: -1, sure: Math.abs(card - bank) >= 2,
     why: positiveOut ? cardWhy : bankWhy };
+}
+
+// How the running balance moves against the amounts, oldest line first or
+// newest first: inn counts lines where a plain amount RAISED the balance by
+// exactly itself, out lines where it lowered it. A file with no balance
+// column, or whose balance does not follow its lines, gives neither.
+function csvBalanceVotes(data, map, headRow) {
+  var bc = -1;
+  (headRow || []).forEach(function(h, c) { if (bc < 0 && c !== map.amount && CSV_TITLE_BALANCE.test(String(h || ""))) bc = c; });
+  if (bc < 0) return { inn: 0, out: 0 };
+  var pts = [];
+  (data || []).forEach(function(r) {
+    r = r || [];
+    if (csvSummaryRow(r, map)) return;
+    var a = parseImportAmount(r[map.amount] || ""), b = parseImportAmount(r[bc] || "");
+    if (isNaN(a) || a === 0 || isNaN(b) || String(r[bc] == null ? "" : r[bc]).trim() === "") return;
+    pts.push({ a: a, b: b });
+  });
+  function near(x, y) { return Math.abs(x - y) < 0.015; }
+  // Each order read on its own, and the one the balance follows more often
+  // taken: mixing them, two equal salaries in a row read newest first looked
+  // like money out.
+  var old = { inn: 0, out: 0 }, neu = { inn: 0, out: 0 };
+  for (var i = 1; i < pts.length; i++) {
+    // Oldest first: this line moved the balance from the one before it.
+    var up = pts[i].b - pts[i - 1].b;
+    if (near(up, pts[i].a)) old.inn++; else if (near(up, -pts[i].a)) old.out++;
+    // Newest first: the line before moved it from this one.
+    var down = pts[i - 1].b - pts[i].b;
+    if (near(down, pts[i - 1].a)) neu.inn++; else if (near(down, -pts[i - 1].a)) neu.out++;
+  }
+  var o = old.inn + old.out, n = neu.inn + neu.out;
+  // Equally good and saying different things - equal amounts in a row do
+  // that - is no evidence either way.
+  if (o === n && (old.inn !== neu.inn || old.out !== neu.out)) return { inn: 0, out: 0 };
+  return o >= n ? old : neu;
 }
 
 // Whether a money-in line is money BACK from a shop. On a card statement every
@@ -14616,7 +14753,7 @@ function csvIncomeKind(desc) {
 // this line is remembered under - money in is kept apart ("in:") so an
 // employer's name can never teach a purchase, and transfers ("tr:") teach
 // nothing.
-function csvRowCategory(desc, type, positiveOut, ctx, fileCat) {
+function csvRowCategory(desc, type, positiveOut, ctx, fileCat, amount) {
   ctx = ctx || {};
   var cats = ctx.cats || [];
   var sk = shopKey(desc);
@@ -14625,14 +14762,24 @@ function csvRowCategory(desc, type, positiveOut, ctx, fileCat) {
     return { transfer: true, catId: "savings-transfer", category: kind === "card-bill" ? "Card bill" : "Account transfer",
       guess: false, catSure: true, shopK: "tr:" + sk };
   }
-  var other = catByName(cats, "Other") || cats[0] || { id: "", name: "Other" };
+  // The category literally named Other, when the user still has one. Only an
+  // answer in THAT category is a shrug: a user who renamed Other has no
+  // shrug category, and Alfred's answer for their first category (Housing,
+  // where the fallback below would land) is a real answer.
+  var realOther = catByName(cats, "Other");
+  var other = realOther || cats[0] || { id: "", name: "Other" };
   var refund = type === "income" && csvIsRefund(desc, positiveOut);
   var key = (type === "income" && !refund) ? "in:" + sk : sk;
   // The user's own answer for this exact payee or shop outranks everything.
-  var said = (ctx.shops || {})[key];
-  if (!(said && said.source === "user")) said = (ctx.saved || {})[key];
-  var pinned = said && said.source === "user" ? catByName(cats, said.category) : null;
-  function res(c, guess, sure) { return { transfer: false, catId: c.id, category: c.name, guess: !!guess, catSure: !!sure, shopK: key }; }
+  function userSaid(k) {
+    var said = (ctx.shops || {})[k];
+    if (!(said && said.source === "user")) said = (ctx.saved || {})[k];
+    return said && said.source === "user" ? catByName(cats, said.category) : null;
+  }
+  // guessed: money in read as a refund on the evidence of the file alone.
+  var guessed = false;
+  function res(c, guess, sure) { return { transfer: false, catId: c.id, category: c.name, guess: !!guess || guessed, catSure: !!sure, shopK: key }; }
+  var pinned = userSaid(key);
   if (pinned) return res(pinned, false, true);
   if (kind === "p2p") return res(other, true, false);
   if (kind === "cash") return res(other, false, false);
@@ -14645,36 +14792,45 @@ function csvRowCategory(desc, type, positiveOut, ctx, fileCat) {
     // A payer seen before: however the user filed them last time.
     var h = csvHistoryCat(ctx.incomeHist, sk, cats);
     if (h) return res(h, false, true);
-    // Money in from a SHOP is money back, whatever the line calls it. A
-    // debit-card refund on a bank account arrives as the shop's plain name
-    // ("+89.90 קסטרו"), and it used to be filed as Salary. A shop this same
-    // file buys from settles it; a name only the keyword map knows is shown
-    // as a guess.
-    var bought = (ctx.shops || {})[sk];
-    var boughtCat = bought ? catByName(cats, bought.category) : null;
-    if (boughtCat && boughtCat.id !== other.id && boughtCat !== salary && boughtCat !== inv) return res(boughtCat, false, true);
-    var fileSector = fileCat ? csvSectorCat(fileCat, cats) : null;
-    if (fileSector && fileSector !== salary && fileSector !== inv) return res(fileSector, false, true);
-    var kwName = keywordCatName(desc);
-    var kwCat = kwName && kwName !== "Salary" && kwName !== "Investments" ? catByName(cats, kwName) : null;
-    if (kwCat) return res(kwCat, true, false);
-    // An unknown payer is most often an employer, but that is a guess - and
-    // it is shown as one, instead of silently becoming "Salary".
-    return res(salary || other, true, false);
+    // Money in under a SHOP's plain name can be money back: a debit-card
+    // refund on a bank account arrives as "+89.90 קסטרו", and it used to be
+    // filed as Salary. But the same name is just as often an employer - the
+    // health funds, the city, the railway and the big chains employ half the
+    // country, and their staff shop there too. So it is read as a refund only
+    // when this file buys from that exact shop at least as much as comes
+    // back, and even then it is shown as a guess. A name the keyword map
+    // merely knows is no evidence at all: it made "יוסי פז" a fuel refund.
+    var spent = (ctx.bought || {})[sk] || 0;
+    if (sk && spent > 0 && !(amount > spent + 0.005)) {
+      guessed = true;
+      key = sk;
+      pinned = userSaid(sk);
+      if (pinned) return res(pinned, false, true);
+    } else {
+      // A card statement's own label on a line of money in: a card pays no
+      // salary, so this is a refund from that kind of shop.
+      var fileSector = fileCat ? csvSectorCat(fileCat, cats) : null;
+      if (fileSector && fileSector !== salary && fileSector !== inv) return res(fileSector, false, true);
+      // An unknown payer is most often an employer, but that is a guess - and
+      // it is shown as one, instead of silently becoming "Salary".
+      return res(salary || other, true, false);
+    }
   }
   // A purchase, or money back from a shop: the shop map (the user's
-  // correction, their history, or Alfred), then the card company's own label
-  // for the shop, then their history by name, then the keyword map.
+  // correction, their history, or Alfred), then their history by name, then
+  // the keyword map, then the card company's own label for the shop.
   //
   // "Other" from the shop map is not an answer: it is what Alfred says when he
   // cannot place a name, and it used to end the search - so a shop the card
   // company had labelled "מזון וצריכה" on the very same line, or a chain the
   // keyword map knows by name, was filed under Other anyway.
+  //
+  // Except an Other the user chose: their history (source "history" - only
+  // lines they filed there themselves count, see csvShopHistory) is an answer.
   var mapped = (ctx.shops || {})[sk];
   var fromShop = mapped ? catByName(cats, mapped.category) : null;
-  if (fromShop && fromShop.id !== other.id) return res(fromShop, false, true);
-  var sector = fileCat ? csvSectorCat(fileCat, cats) : null;
-  if (sector) return res(sector, false, true);
+  var shrug = !!(fromShop && realOther && fromShop.id === realOther.id && mapped.source !== "history");
+  if (fromShop && !shrug) return res(fromShop, false, true);
   // The user's history for this SAME shop - never a label that merely shares
   // a word with it. suggestCatId's word match is for the add sheet, where a
   // half-typed "starb" should find Starbucks; on an import it filed "DIRECT
@@ -14683,12 +14839,20 @@ function csvRowCategory(desc, type, positiveOut, ctx, fileCat) {
   // had gone.
   if (!ctx.spendHist) ctx.spendHist = csvShopHistory(ctx.tx, false, cats);
   var own = csvHistoryCat(ctx.spendHist, sk, cats);
-  var learned = own ? own.id : "";
-  var c = catById(cats, learned || guessImportCatId(desc, cats)) || other;
-  // Whether that is a real read or the Other fallback. The duplicate scorer
-  // needs the difference: an unknown category is no signal, while two
+  if (own) return res(own, false, true);
+  // A chain the keyword map knows by name, then the card company's label.
+  // The name first: the label is a whole aisle ("פנאי, בידור וספורט",
+  // "Merchandise & Supplies"), and it filed Holmes Place under Entertainment
+  // and Walgreens under Shopping.
+  var kwName = keywordCatName(desc);
+  var kwCat = kwName ? catByName(cats, kwName) : null;
+  if (kwCat) return res(kwCat, false, true);
+  var sector = fileCat ? csvSectorCat(fileCat, cats) : null;
+  if (sector) return res(sector, false, true);
+  // Nothing placed it. The duplicate scorer needs the difference between this
+  // and a real read: an unknown category is no signal, while two
   // known-but-different categories are a real one.
-  return res(c, false, !!learned || !!keywordCatName(desc) || !!fromShop);
+  return res(other, false, false);
 }
 
 // The card company's own label for the kind of shop - Max's קטגוריה, Cal's
@@ -14706,7 +14870,7 @@ var CSV_SECTOR_RULES = [
   [/(חשמל|דלק)[ ,]*ו?(גז|חשמל)|אנרגי|ביטוח|פיננס|ממשל|רשויות|רשות|מוסדות|תקשורת ו?מחשב|מקצועות|מנוי|העבר|משיכ|מזומן|שונות|^אחר$|travel ?[\/&] ?entertainment|other travel|wholesale|warehouse|insurance/i, null],
   [/car rental|rental car|rent[ -]a[ -]car/i, "Travel"],
   [/מזון|מסעד|קפה|ברים|מכול|סופרמרקט|מעדני|מאפי|אוכל|משקאות|groceri|grocery|supermarket|restaurant|dining|food|drink|coffee|caf[eé]|bakery|\bbars?\b|eating/i, "Food"],
-  [/רפוא|מרקחת|פארם|פארמ|בריאות|אופטיק|שיניים|health|medical|pharmac|drug ?store|dental|doctor|hospital/i, "Health"],
+  [/רפוא|מרקחת|פארם|פארמ|בריאות|אופטיק|שיניים|כושר|health|medical|pharmac|drug ?store|dental|doctor|hospital|fitness|\bgyms?\b/i, "Health"],
   [/חשמל ו?מחשב|מוצרי חשמל|מחשב|אלקטרו|merchandise|electronic|computer/i, "Shopping"],
   [/דיור|שכר דירה|שכירות|משכנת|ועד בית|ארנונה|עירי|חשמל|(^|[^א-ת])(גז|מים)($|[^א-ת])|תקשורת|טלפון|סלולר|אינטרנט|כבלים|utilit|bills|phone|internet|cable|telecom|\brent\b|mortgage|housing|\belectric(ity)?\b|water/i, "Housing"],
   [/דלק|תדלוק|תחבור|רכב|חני|מוסך|מוסכ|כביש|fuel|\bgas\b|automotive|auto service|parking|toll|taxi|limousine|transit|transport|rideshare/i, "Transport"],
@@ -15052,6 +15216,50 @@ function csvTotalsCheck(totals, all, above, rollup) {
   return { printed: topSum, counted: topSum, ok: true, partial: true, lines: lines };
 }
 
+// Money out and money in of a list of lines, transfers included: the
+// statement's totals count them, whatever Richy files them as.
+function csvInOut(list) {
+  var o = { out: 0, inn: 0 };
+  (list || []).forEach(function(t) { if (t.type === "income") o.inn += t.amount || 0; else o.out += t.amount || 0; });
+  return { out: round2(o.out), inn: round2(o.inn) };
+}
+// The check line on the preview, for the lines as they stand NOW. check is
+// csvTotalsCheck's verdict on the file as read; base is money out and in
+// (out, inn) of the preview's lines when it opened, now the same for what is
+// still ticked, as edited. Lines already in Richy are skipped before base is
+// taken and stay skipped, so the difference is the user's own edits: a line
+// unticked, an amount changed, money in turned to money out. Returns
+// { tone: "ok" | "warn" | "changed", text } or null. fmt writes a sum
+// (dollars, on the screen).
+function csvLiveCheck(check, base, now, fmt) {
+  if (!check) return null;
+  var money = fmt || dollars;
+  var d = { out: round2(now.out - base.out), inn: round2(now.inn - base.inn) };
+  var same = Math.abs(d.out) < 0.005 && Math.abs(d.inn) < 0.005;
+  function figs(l) { return { net: round2(Math.abs(l.out - l.inn)), out: round2(l.out), inn: round2(l.inn) }; }
+  // Which of the lines' figures the statement's total is: what they come to
+  // net, or money out alone, or money in alone.
+  function measureOf(v, l) {
+    var f = figs(l);
+    return Math.abs(f.net - v) < 0.015 ? "net" : Math.abs(f.out - v) < 0.015 ? "out" : Math.abs(f.inn - v) < 0.015 ? "inn" : "net";
+  }
+  var X = money(check.printed);
+  if (check.ok && check.partial) {
+    if (same) return { tone: "ok", text: "Each total your statement prints matches the lines under it." };
+    return { tone: "changed", text: "Each total your statement prints matched its lines as read. You've unticked or changed some since." };
+  }
+  var lines = check.lines || { out: 0, inn: 0 };
+  var k = measureOf(check.ok ? check.printed : check.counted, lines);
+  var was = { out: lines.out, inn: lines.inn };
+  var is = { out: lines.out + d.out, inn: lines.inn + d.inn };
+  var comes = round2(check.counted + figs(is)[k] - figs(was)[k]);
+  if (Math.abs(comes - check.printed) < 0.015) {
+    return { tone: "ok", text: (check.ok ? "Adds up" : "Now adds up") + " to your statement's own total of " + X + "." };
+  }
+  if (check.ok) return { tone: "changed", text: "Your statement's own total is " + X + ". With your changes, these lines come to " + money(comes) + "." };
+  return { tone: "warn", text: "Your statement prints a total of " + X + ", but these lines come to " + money(comes) + ". Check the column settings before bringing them in." };
+}
+
 // ===== CSV IMPORT: THE STEPS, OUTSIDE THE SCREEN =============================
 // The import screen used to hold these inside itself, where nothing but a
 // person tapping through it could run them. They are the whole of what the
@@ -15124,10 +15332,23 @@ function csvSettleReading(parsed, hRow, m, signSays, conf, savedDMY, userSign) {
 // deduping here - that is classifyImportRows' job, and keeping the two apart
 // is what lets a look-alike be questioned instead of silently dropped.
 // ctx: see csvRowCategory. base: the id of the first row.
+// What this file spends at each shop - the ceiling on what can come back from
+// it as a refund (csvRowCategory).
+function csvBoughtByShop(items) {
+  var out = {};
+  (items || []).forEach(function(it) {
+    if (!it.desc || it.money.type !== "expense") return;
+    var k = shopKey(it.desc);
+    if (k) out[k] = (out[k] || 0) + it.money.amount;
+  });
+  return out;
+}
 function csvBuildCandidates(items, positiveOut, ctx, base) {
+  ctx = ctx || {};
+  if (!ctx.bought) ctx.bought = csvBoughtByShop(items);
   return (items || []).map(function(it) {
     var desc = it.desc || "Imported";
-    var cat = csvRowCategory(desc, it.money.type, positiveOut, ctx, it.fileCat);
+    var cat = csvRowCategory(desc, it.money.type, positiveOut, ctx, it.fileCat, it.money.amount);
     var tx = { type: it.money.type, amount: it.money.amount, label: desc.slice(0, 60), catId: cat.catId, category: cat.category, date: it.date, id: base + it.i, repeat: "none", pending: false, catSure: cat.catSure, shopK: cat.shopK };
     if (cat.transfer) tx.transfer = true;
     if (cat.guess) tx.flowGuess = true;
@@ -15271,11 +15492,32 @@ function csvRepairMap(rows, first, m, fallback, head) {
     // differs on every line.
     var fv = csvTextVariety(csvSectionRows(rows, first, 400), fb.desc);
     if (nd.lines >= 6 && nd.distinct <= 5 && nf.distinct >= nd.distinct * 2 && fv.wordy * 2 >= fv.lines) { fixed.push("desc"); out.desc = fb.desc; }
+    // However short the file: a column whose every cell is a word that names
+    // a KIND of line ("Purchase", "DD", "רגילה", "הוראת קבע") is that, not the
+    // shop - three lines are too few for the count above, and three lines
+    // filed as "Purchase" hid every shop name from Alfred and the keywords.
+    else if (fixed.indexOf("desc") < 0 && csvTypeShare(rows, first, out.desc) >= 0.8 && csvTypeShare(rows, first, fb.desc) < 0.5 && fv.lines && fv.ids * 2 < fv.lines) { fixed.push("desc"); out.desc = fb.desc; }
   }
   // The card company's category column, which never holds a role of its own.
   if (!(out.cat >= 0) && fb.cat >= 0 && free(fb.cat, "cat")) out.cat = fb.cat;
   if (out.cat >= 0 && !free(out.cat, "cat")) out.cat = -1;
   return { map: out, fixed: fixed };
+}
+// A cell that names a KIND of line rather than who it was with: a card's
+// transaction type, a British bank's code, an American bank's ACH type.
+var CSV_TYPE_CELL = /^(deb|dd|d\/d|so|s\/o|fpi|fpo|bgc|bac|otr|int|chg|chq|tfr|atm|pos|vis|bp|cr|dr|dep|c\/l|cpt|dpc|purchase|online purchase|card purchase|pos purchase|contactless|recurring|sale|return|refund|card refund|payment|credit card payment|card payment|bill payment|credit|debit|debit card|fee|bank fee|charge|interest|adjustment|transfer|transfer in|transfer out|direct debit|standing order|faster payment|bank giro credit|salary|cash|atm withdrawal|cash withdrawal|withdrawal|deposit|debit_card|ach_debit|ach_credit|acct_xfer|quickpay_debit|quickpay_credit|loan_pmt|misc_debit|misc_credit|check|רגילה|עסקה רגילה|תשלומים|קרדיט|הוראת קבע|חיוב חודשי|דחוי|חיוב מיידי|זיכוי|רכישה|קנייה|ביטול|מזומן|מיידי|הו"ק|תשלום)$/i;
+// The share of a column's filled cells, in the first section, that are such.
+function csvTypeShare(rows, first, col) {
+  if (!(col >= 0)) return 0;
+  var n = 0, hit = 0;
+  csvSectionRows(rows, first, 400).forEach(function(r) {
+    var v = String(((r || [])[col]) == null ? "" : r[col]).replace(/\s+/g, " ").trim();
+    // Lines only: not the statement's "TOTAL:" under the same column.
+    if (!v || csvSummaryText(v) || !csvRowIsData(csvRowKinds(r, (r || []).length))) return;
+    n++;
+    if (CSV_TYPE_CELL.test(v)) hit++;
+  });
+  return n ? hit / n : 0;
 }
 // { lines, distinct, ids, wordy } over some rows of one column: filled text
 // cells, how many differ, how many are a single token of letters AND digits
@@ -15465,11 +15707,13 @@ function csvShopAnswers(reply, list, names) {
     if (!row || typeof row !== "object") return;
     var cat = canon[String(row.category == null ? "" : row.category).trim().toLowerCase()];
     if (!cat) return;
+    // An entry that names a shop on the list is that shop's, whatever number
+    // it carries: an answer numbered from 1 instead of 0 put every category
+    // on the next shop down. The number decides only when there is no name.
     var i = typeof row.i === "number" ? row.i : parseInt(row.i, 10);
-    if (!(i >= 0 && i < list.length) || i !== Math.floor(i)) {
-      i = typeof row.shop === "string" ? byName[csvLooseName(row.shop)] : undefined;
-      if (i == null) return;
-    }
+    var named = typeof row.shop === "string" ? byName[csvLooseName(row.shop)] : undefined;
+    if (named != null) i = named;
+    else if (!(i >= 0 && i < list.length) || i !== Math.floor(i)) return;
     if (!out[i]) out[i] = { category: cat, confidence: csvConf(row.confidence) };
   });
   return out;
@@ -15487,7 +15731,7 @@ function categorizeShopsWithAI(shops, cats, examples, cb) {
   var overflow = Math.max(0, all.length - list.length);
   if (!list.length || !names.length) { cb(null, {}, { overflow: overflow, calls: 0, failed: 0, missing: 0 }); return; }
 
-  var out = {}, calls = 0, failed = 0, answered = 0;
+  var out = {}, calls = 0, failed = 0, answered = 0, unreadable = 0;
   // Set when a call says Alfred will not answer the next one either: it timed
   // out (asking again waits out another forty seconds), or the proxy refused
   // it - rate limited or signed out. The rest fall through at once. A quick
@@ -15520,7 +15764,9 @@ function categorizeShopsWithAI(shops, cats, examples, cb) {
       calls++;
       if (err) {
         failed++;
-        if (err.kind === "timeout" || (err.kind === "api" && (err.status === 429 || err.status === 401 || err.status === 403))) down = true;
+        // A server error too: an overloaded or failing proxy answers the
+        // next chunk the same way, and each call spends the user's budget.
+        if (err.kind === "timeout" || (err.kind === "api" && (err.status === 429 || err.status === 401 || err.status === 403 || err.status >= 500))) down = true;
         run(chunks, n + 1, done);
         return;
       }
@@ -15531,7 +15777,7 @@ function categorizeShopsWithAI(shops, cats, examples, cb) {
         if (li == null || out[list[li].name]) continue;
         out[list[li].name] = got[k]; answered++; any = true;
       }
-      if (!any) failed++;
+      if (!any) { failed++; unreadable++; }
       run(chunks, n + 1, done);
     }, AI_MODEL_CSV_SHOPS, 40000);
   }
@@ -15539,18 +15785,25 @@ function categorizeShopsWithAI(shops, cats, examples, cb) {
   for (var i = 0; i < list.length; i++) first.push(i);
   run(chunksOf(first), 0, function() {
     // Once more for whatever did not come back - a chunk that failed, or the
-    // tail of an answer that was cut off. Once: a shop Alfred still cannot
+    // tail of an answer that was cut off. Once, and only after a pass that
+    // got SOME answers: a pass that got none will not do better a second
+    // time, it only spends the user's calls. A shop Alfred still cannot
     // answer falls through to the card's own label and the keyword map, and
     // says so in the preview.
     var again = missing();
-    var retry = again.length && !down ? chunksOf(again) : [];
+    var retry = again.length && !down && answered ? chunksOf(again) : [];
     run(retry, 0, function() {
       var left = missing().length;
-      var meta = { overflow: overflow, calls: calls, failed: failed, missing: left };
+      var meta = { overflow: overflow, calls: calls, failed: failed, missing: left, unreadable: unreadable };
       // Nothing answered at all is a failure; some answered is a partial
       // answer worth keeping - the shops that came back are sorted and the
-      // rest fall through, visibly, in the preview.
-      if (!answered) { cb(alfredErr("network", "Alfred could not be reached to sort the shops."), out, meta); return; }
+      // rest fall through, visibly, in the preview. An answer that came back
+      // but could not be read is not "could not be reached".
+      if (!answered) {
+        cb(unreadable && unreadable === calls ? alfredErr("shape", "Alfred's answer about the shops could not be read.")
+          : alfredErr("network", "Alfred could not be reached to sort the shops."), out, meta);
+        return;
+      }
       cb(null, out, meta);
     });
   });
@@ -15582,12 +15835,16 @@ function categorizeShopsWithAI(shops, cats, examples, cb) {
 // A line filed under Other is not evidence of anything - it is where a shop
 // lands when nothing knew it. Counting it taught every later import that the
 // shop belongs in Other: one bad import, and the shop never left.
+// A line in Other counts only when the user put it there (catUser: an edit in
+// Activity, or a pick on the import preview). Other is also where an import
+// drops a shop nobody could place, and a month of those is no answer: counted,
+// it would keep every one of those shops in Other for good.
 function csvShopHistory(txList, income, cats) {
   var out = {};
   var other = catByName(cats || [], "Other");
   (txList || []).forEach(function(t) {
     if (!t || !t.catId || (t.type === "income") !== !!income || t.opening || t.transfer || t.catId === "savings-transfer") return;
-    if ((other && t.catId === other.id) || t.category === "Other") return;
+    if (((other && t.catId === other.id) || t.category === "Other") && !t.catUser) return;
     var k = shopKey(t.label || "");
     if (!k) return;
     var row = out[k] || (out[k] = {});
@@ -15700,7 +15957,7 @@ var IMPORT_CAT_KEYWORDS = {
     "superpharm", "pharm", "maccabi health*", "clalit", "meuhedet", "leumit", "assuta", "optic*", "go active", "pilates", "yoga", "סופרפארם", "ניופארם", "גודפארם",
     "פארם", "מכבידנט", "קופת חולים", "בית חולים", "מרכז רפואי", "המרכז הרפואי", "אסותא", "איכילוב", "שערי צדק", "שיבא", "מגן דוד אדום", "אופטיקנה", "ארוקה", "פילאטיס",
     "יוגה", "פיזיותרפיה", "פסיכולוג*"],
-  Entertainment: ["netflix", "spotify", "hulu", "disney", "cinema*", "movie*", "steam", "game", "concert*", "theater", "theatre", "hbo", "youtube", "playstation", "xbox", "prime video", "cinema city", "yes planet", "eventim",
+  Entertainment: ["netflix", "spotify", "hulu", "disney", "cinema*", "movie*", "steam", "steamgames", "steampowered", "game", "concert*", "theater", "theatre", "hbo", "youtube", "playstation", "xbox", "prime video", "cinema city", "yes planet", "eventim",
     "נטפליקס", "ספוטיפיי", "סינמה סיטי", "יס פלאנט", "רב חן", "תיאטרון", "הבימה", "הקאמרי", "זאפה", "דיסני",
     "globus max", "storytel", "nintendo", "google play", "leaan", "zappa", "tickchak", "smarticket", "zoo", "bowling", "escape room", "maccabi tel aviv", "סינמה", "סינמטק",
     "גלובוס מקס", "קופת תל אביב", "בית ליסין", "אופרה", "היכל התרבות", "פילהרמונית", "מוזיאון", "ספארי", "לונה פארק", "סופרלנד", "גן החיות", "מימדיון", "באולינג", "חדר בריחה",
@@ -15815,16 +16072,17 @@ function suggestCatId(label, txList, cats) {
   // אביב" was filed wherever "סופר פארם תל אביב" had been. Those words don't
   // count as evidence.
   var qWords = catMatchText(q).trim().split(" ").filter(function(w) { return w.length >= 3 && !catIsNoise(w); });
-  // A line filed under Other says nothing about what a label is - suggesting
-  // Other back is no suggestion, and on an import it kept a shop in Other.
+  // A line filed under Other says nothing about what a DIFFERENT label is:
+  // one shared word with it is no reason to suggest Other. The same label
+  // filed there is another matter - that is where the user keeps it.
   var otherCat = catByName(cats || [], "Other");
   for (var i = 0; i < list.length; i++) {
     var t = list[i];
     if (!t || !t.catId || t.opening || t.transfer) continue;
-    if (otherCat && t.catId === otherCat.id) continue;
     var tl = (t.label || "").trim().toLowerCase();
     if (!tl) continue;
     if (tl === q) { exact[t.catId] = (exact[t.catId] || 0) + 1; continue; }
+    if (otherCat && t.catId === otherCat.id) continue;
     // A multi-word query found inside a label is strong evidence on its own; a
     // single word has to land on a word boundary. Without that, "fee" matched
     // "coffee" and a gym membership was learned as Food.
@@ -18598,11 +18856,14 @@ function ImportSheet(props) {
   // lines left out, any line with no date, and whether the lines add up to
   // the total the statement prints. See csvReadRows.
   var _rinfo = useState(null); var readInfo = _rinfo[0]; var setReadInfo = _rinfo[1];
+  // Money out and in of the preview's lines as it opened - what the check
+  // line measures the user's later edits against (csvLiveCheck).
+  var _base = useState(null); var baseSum = _base[0]; var setBaseSum = _base[1];
 
   function reset() {
     setRaw(""); setStep("paste"); setRows([]); setHeaderRow(0); setSheetRows(null); setSheetNote("");
     setEncoding(""); setReading(null); setFingerprint(""); setShopCats({}); setShopMeta(null);
-    setMap({ date: -1, amount: -1, desc: -1, debit: -1, credit: -1, cat: -1 }); setReadInfo(null); setSplitAmt(false); setPreferDMY(true); setPositiveOut(false); setSignByHand(false); setBuilt([]); setDupes(0); setErr("");
+    setMap({ date: -1, amount: -1, desc: -1, debit: -1, credit: -1, cat: -1 }); setReadInfo(null); setBaseSum(null); setSplitAmt(false); setPreferDMY(true); setPositiveOut(false); setSignByHand(false); setBuilt([]); setDupes(0); setErr("");
     setPlan(null); setDecisions({}); setQueue([]); setQIdx(0); setAiRes({ settled: 0, failed: false }); setReport(null);
     setShowAdv(false); setDropped({}); setOpenRow(null); setAmtDraft(""); setShowDetails(false);
     // askAi is deliberately NOT reset. Someone who just turned the Alfred
@@ -18777,7 +19038,7 @@ function ImportSheet(props) {
       setStep("map");
       return;
     }
-    setBuilt(txs); setDupes(skipped);
+    setBuilt(txs); setDupes(skipped); setBaseSum(csvInOut(txs));
     setDropped({}); setOpenRow(null); setShowDetails(false);
     setReport(importGapReport(txs, props.tx || [], cats, res.twins));
     setStep("preview");
@@ -18838,7 +19099,8 @@ function ImportSheet(props) {
         var g = got[s.label];
         if (g) out[s.key] = { category: g.category, confidence: g.confidence, source: "alfred", label: s.label };
       });
-      cb(out, { asked: ask.length, skipped: 0, calls: meta.calls, failed: meta.failed, overflow: meta.overflow, missing: meta.missing || 0, err: !!sErr });
+      cb(out, { asked: ask.length, skipped: 0, calls: meta.calls, failed: meta.failed, overflow: meta.overflow, missing: meta.missing || 0, err: !!sErr,
+        unreadable: !!(sErr && sErr.kind === "shape") });
     });
   }
 
@@ -18941,6 +19203,18 @@ function ImportSheet(props) {
   function setRowCategory(t, catId, all) {
     var c = catById(cats, catId);
     if (!c) return;
+    // Money in that Richy only GUESSED was a refund from a shop the file buys
+    // from (csvRowCategory) is taught under the payer's own money-in key: a
+    // user who says "that's my salary" is talking about this payer's money
+    // in, and saved under the shop it would have filed every purchase there
+    // as Salary from then on.
+    var list = built;
+    var inKey = t.type === "income" && t.flowGuess && t.shopK && t.shopK.indexOf("in:") !== 0 && t.shopK.indexOf("tr:") !== 0 ? "in:" + t.shopK : "";
+    if (inKey) {
+      var from = t.shopK;
+      t = Object.assign({}, t, { shopK: inKey });
+      list = built.map(function(r) { return r.type === "income" && r.shopK === from && r.flowGuess ? Object.assign({}, r, { shopK: inKey }) : r; });
+    }
     var was = (t.shopK && shopCats[t.shopK]) || {};
     if (was.source === "alfred" && was.category && was.category !== c.name) {
       csvLog("category-corrected", { shop: was.label || t.shopK, from: was.category, to: c.name, confidence: was.confidence || "", scope: all ? "shop" : "row" });
@@ -18952,18 +19226,20 @@ function ImportSheet(props) {
     // Except a nameless Bit or bank transfer: one fix to "העברה בביט" says
     // what THAT transfer was, not what every future one will be. Those are
     // taught only when the user explicitly fixes all the lines.
-    var onlyLine = !built.some(function(r) { return r.id !== t.id && r.shopK === t.shopK && r.type === t.type; })
+    var onlyLine = !list.some(function(r) { return r.id !== t.id && r.shopK === t.shopK && r.type === t.type; })
       && csvTransferKind(t.label, t.type, positiveOut) !== "p2p";
     if ((all || onlyLine) && t.shopK && t.shopK.indexOf("tr:") !== 0 && !t.transfer) {
       var next = {}; for (var k in shopCats) next[k] = shopCats[k];
       next[t.shopK] = { category: c.name, confidence: "high", source: "user", label: was.label || t.label };
       setShopCats(next);
     }
-    var nb = built.map(function(r) {
+    var nb = list.map(function(r) {
       var hit = (all && t.shopK) ? (r.shopK === t.shopK && r.type === t.type) : (r.id === t.id);
       if (!hit) return r;
       var n = {}; for (var kk in r) n[kk] = r[kk];
-      n.catId = c.id; n.category = c.name; n.flowGuess = false;
+      // catUser: the user's own pick, which the shop history counts even
+      // when it is Other (csvShopHistory).
+      n.catId = c.id; n.category = c.name; n.flowGuess = false; n.catUser = true;
       return n;
     });
     setBuilt(nb);
@@ -19007,6 +19283,9 @@ function ImportSheet(props) {
     // A Bit to a person, or money in from a payer Richy has never seen: no
     // category could be read off the line, so it is the user's to confirm.
     if (t.flowGuess) return { unsure: true };
+    // A line with no date of its own, given its neighbour's: the date is
+    // Richy's, not the statement's.
+    if (t.dateGuess) return { unsure: true };
     var s = (t.shopK && shopCats[t.shopK]) || null;
     if (!s || s.source !== "alfred") return null;
     return { unsure: s.confidence === "low" };
@@ -19476,7 +19755,7 @@ function ImportSheet(props) {
         var notes = [];
         if (aiRes.failed) notes.push("Alfred couldn't be reached to check the look-alikes, so you were asked about each one instead.");
         if (dupes > 0 && aiRes.settled > 0) notes.push("Alfred settled " + aiRes.settled + " of the close calls. The rest were yours.");
-        if (shopMeta && shopMeta.err && shopMeta.asked > 0) notes.push("Alfred couldn't be reached to sort " + shopMeta.asked + " new " + (shopMeta.asked === 1 ? "shop" : "shops") + ", so they were matched on keywords. Their categories are a guess - worth a look up there.");
+        if (shopMeta && shopMeta.err && shopMeta.asked > 0) notes.push((shopMeta.unreadable ? "Alfred's answer about " + shopMeta.asked + " new " + (shopMeta.asked === 1 ? "shop" : "shops") + " couldn't be read" : "Alfred couldn't be reached to sort " + shopMeta.asked + " new " + (shopMeta.asked === 1 ? "shop" : "shops")) + ", so they were matched on keywords. Their categories are a guess - worth a look up there.");
         if (shopMeta && shopMeta.skipped > 0) notes.push(shopMeta.skipped + " " + (shopMeta.skipped === 1 ? "shop Richy didn't recognise was" : "shops Richy didn't recognise were") + " matched on keywords, because you asked to sort those yourself. Their categories are a guess.");
         var cardBills = kept.filter(function(t) { return t.transfer && t.category === "Card bill"; }).length;
         if (cardBills > 0) notes.push((cardBills === 1 ? "A credit-card bill is" : cardBills + " credit-card bills are") + " marked as a transfer, not spending - otherwise every purchase on the card would count twice. Import the card's own statement to see what the money went on.");
@@ -19489,8 +19768,13 @@ function ImportSheet(props) {
         var undated = readInfo ? readInfo.left : [];
         if (totalsOut.length) notes.push("Left out " + (totalsOut.length === 1 ? "1 line that is" : totalsOut.length + " lines that are") + " the statement's own " + (totalsOut.length === 1 ? "total" : "totals") + " (" + totalsOut.map(function(t) { return dollars(t.amount); }).join(", ") + "). Counting " + (totalsOut.length === 1 ? "it" : "them") + " would count your spending twice.");
         if (balancesOut.length) notes.push("Left out " + (balancesOut.length === 1 ? "1 balance line" : balancesOut.length + " balance lines") + " - a balance is what's in the account, not money moving.");
-        if (undated.length) notes.push("Left out " + (undated.length === 1 ? "1 line" : undated.length + " lines") + " with no date and no shop: " + undated.slice(0, 3).map(function(t) { return (t.label ? t.label + " " : "") + dollars(t.amount); }).join(", ") + (undated.length > 3 ? "..." : "") + ". If one of them was a real purchase, add it by hand.");
-        var check = readInfo && readInfo.check;
+        if (undated.length) {
+          var named = undated.some(function(t) { return t.label; });
+          notes.push("Left out " + (undated.length === 1 ? "1 line" : undated.length + " lines") + " with no date" + (named ? "" : " and no shop") + ": " + undated.slice(0, 3).map(function(t) { return (t.label ? t.label + " " : "") + dollars(t.amount); }).join(", ") + (undated.length > 3 ? "..." : "") + ". " + (undated.length === 1 ? "If it was" : "If one of them was") + " a real purchase, add it by hand.");
+        }
+        var dated = kept.filter(function(t) { return t.dateGuess; });
+        if (dated.length) notes.push((dated.length === 1 ? "1 line has" : dated.length + " lines have") + " no date of " + (dated.length === 1 ? "its" : "their") + " own in the file, so " + (dated.length === 1 ? "it was" : "they were") + " given the date of the line beside " + (dated.length === 1 ? "it" : "them") + ": " + dated.slice(0, 3).map(function(t) { return t.label + " " + dollars(t.amount); }).join(", ") + (dated.length > 3 ? "..." : "") + ". If a date is wrong, fix it in Activity once they're in.");
+        var check = readInfo && baseSum ? csvLiveCheck(readInfo.check, baseSum, csvInOut(kept)) : null;
         var detailN = (report ? report.tips.length : 0) + notes.length;
         // Untick-all stays the offer until there is nothing left ticked. A
         // half-ticked list flipping the label to "Tick all" would take away
@@ -19511,14 +19795,17 @@ function ImportSheet(props) {
                     add up to it or they don't - and a user who spent 4,900 is
                     told so before anything is saved, not after a month of
                     wrong numbers. */}
-                {check && (
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 5, fontSize: 12, marginTop: 4, lineHeight: 1.45, color: check.ok ? T.green : T.gold }}>
-                    <span style={{ display: "flex", flexShrink: 0, marginTop: 2 }}><SVGIcon id={check.ok ? "check" : "search"} size={11} color={check.ok ? T.green : T.gold} /></span>
-                    <span>{check.ok
-                      ? "Adds up to your statement's own total of " + dollars(check.printed) + "."
-                      : "Your statement prints a total of " + dollars(check.printed) + ", but these lines come to " + dollars(check.counted) + ". Check the column settings before bringing them in."}</span>
-                  </div>
-                )}
+                {check && (function() {
+                  // Green when it adds up, gold when the file itself does not,
+                  // plain when the user's own edits are the difference.
+                  var tone = check.tone === "ok" ? T.green : check.tone === "warn" ? T.gold : T.ink3;
+                  return (
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 5, fontSize: 12, marginTop: 4, lineHeight: 1.45, color: tone }}>
+                      <span style={{ display: "flex", flexShrink: 0, marginTop: 2 }}><SVGIcon id={check.tone === "ok" ? "check" : "search"} size={11} color={tone} /></span>
+                      <span>{check.text}</span>
+                    </div>
+                  );
+                })()}
               </div>
               <button onClick={function() { setAllRows(!anyOn); }}
                 style={{ flexShrink: 0, minHeight: 44, padding: "0 2px", background: "none", border: "none", color: T.orange, fontSize: 12.5, fontWeight: 700, fontFamily: UI, cursor: "pointer" }}>
@@ -19928,6 +20215,9 @@ function Activity(props) {
       // flags this form never shows (opening, trip, catchUp, transfer,
       // bizExpense, syncSource), and a from-scratch object silently drops them.
       var nt = Object.assign({}, t, { type: editForm.type, amount: mainAmount, label: editForm.label, catId: c.id, category: c.name, date: editForm.date, repeat: editForm.repeat, pending: editForm.pending, shared: editForm.shared || false, owner: editForm.owner || t.owner || props.accountKey });
+      // A category the user picked by hand - the import's shop history counts
+      // it even when it is Other, where an import's own shrugs are not.
+      if (c.id !== t.catId) nt.catUser = true;
       if (foreign) { nt.origAmount = entered; nt.origCur = editForm.cur; nt.rate = rate; }
       else { delete nt.origAmount; delete nt.origCur; delete nt.rate; }
       return nt;

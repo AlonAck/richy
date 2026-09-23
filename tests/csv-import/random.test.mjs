@@ -53,13 +53,15 @@ function expectedCat(t) {
   if (t.transfer || t.cat == null) return null;
   return catNames.has(t.cat) ? t.cat : null;
 }
-// Whether Richy can know this shop's category WITHOUT Alfred: the card's own
-// label maps to it, or the keyword map knows the name.
+// Whether Richy claims to know this shop's category WITHOUT Alfred: the
+// keyword map knows the name, or the card's own label maps to a category.
+// A claim is checked whatever it says - a keyword or a label rule that files
+// the shop in the WRONG place is a line in the wrong category, not a line the
+// suite looks away from.
 function knowableOffline(t) {
-  const want = expectedCat(t);
-  if (!want) return false;
-  if (t.issuer) { const c = csvSectorCat(t.issuer, CATS); if (c) return c.name === want; }
-  return keywordCatName(t.shop) === want;
+  if (!expectedCat(t)) return false;
+  if (keywordCatName(t.shop)) return true;
+  return !!(t.issuer && csvSectorCat(t.issuer, CATS));
 }
 
 function checkOne(inst, res, mapMode, shopMode) {
@@ -120,18 +122,23 @@ function checkOne(inst, res, mapMode, shopMode) {
 
   // --- categories ----------------------------------------------------------
   const alfredRight = shopMode === "oracle" || shopMode === "echo" || shopMode === "cutoff";
-  // A refund on a BANK account is money in under the shop's plain name. Alfred
-  // is only asked about it when the file also buys from that shop; otherwise
-  // Richy knows it only as well as the keyword map does.
-  const bought = new Set(truth.filter((t) => t.type === "expense").map((t) => norm(t.shop)));
+  // A refund on a BANK account is money in under the shop's plain name - the
+  // same as a salary from that name. It is read as a refund only when the
+  // file buys from that shop at least as much as comes back (and Alfred has
+  // placed the shop); otherwise it is a guess of Salary, and the suite does
+  // not hold it to more.
+  const bought = new Map();
+  truth.filter((t) => t.type === "expense").forEach((t) => bought.set(norm(t.shop), (bought.get(norm(t.shop)) || 0) + t.amount));
   let wrong = 0, other = 0, knowable = 0;
   const wrongEx = [];
   pairs.forEach(([t, c]) => {
     const want = expectedCat(t);
     if (!want) return;
     const shopLine = !(t.type === "income" && !t.refund);
-    const bankRefund = inst.kind === "bank" && t.type === "income" && t.refund;
-    const mustKnow = !shopLine || (bankRefund ? (alfredRight && bought.has(norm(t.shop))) || knowableOffline(t) : (alfredRight || knowableOffline(t)));
+    // Read like a bank's: no refund word, purchases a minus - the line looks
+    // exactly like money in from an employer of that name.
+    const bankRefund = t.type === "income" && t.refund && !res.st.sign.positiveOut && !/זיכוי|refund|reversal|chargeback/i.test(t.shop);
+    const mustKnow = !shopLine || ((!bankRefund || (bought.get(norm(t.shop)) || 0) + 0.005 >= t.amount) && (alfredRight || knowableOffline(t)));
     if (!mustKnow) { if (c.category === "Other") other++; return; }
     knowable++;
     if (c.category !== want) { wrong++; if (wrongEx.length < 4) wrongEx.push(t.shop + " -> " + c.category + " (should be " + want + (t.issuer ? ", card says " + t.issuer : "") + ")"); }

@@ -10,7 +10,7 @@ import { buildXlsx } from "./sheet-fixtures.mjs";
 const {
   sheetReadBytes, parseCSV, csvSkeleton, csvLocalReading, csvMergeModelMap, csvSettleReading,
   csvReadRows, csvShopOrder, csvPlanShops, csvShopHistory, categorizeShopsWithAI, csvBuildCandidates,
-  classifyImportRows, csvTitleKind, csvIsDealAmountTitle, csvIsChargeTitle, setClaude
+  classifyImportRows, csvTitleKind, csvIsDealAmountTitle, csvIsChargeTitle, setClaude, mapColumnsWithAI
 } = app;
 
 // The categories a new account starts with - the real list, read out of the
@@ -55,16 +55,23 @@ export function readFile(file) {
 // "model-deal"      Alfred picks the SHOP's amount (סכום עסקה) over the charge
 // "model-currency"  Alfred takes the currency column (מטבע חיוב) as money out
 // "model-blank"     Alfred answers with nothing but the header row
+// "model-desc-type" Alfred names the transaction-type column (DEB/DD/SO,
+//                   רגילה/תשלומים) as the shop
+// "model-swap"      Alfred swaps money in and money out on a split file
 // Each wrong reading is one a model has actually been seen to give; the
 // pipeline is expected to put every one of them right against the rows.
-export const MAP_MODES = ["local", "model", "model-deal", "model-currency", "model-blank"];
+// Every model mode goes through the real mapColumnsWithAI - Alfred's answer is
+// written as the JSON he sends, header row counted from the start of the
+// lines he was shown - so the reply parsing and the header arithmetic are the
+// shipping ones too.
+export const MAP_MODES = ["local", "model", "model-deal", "model-currency", "model-blank", "model-desc-type", "model-swap"];
 
-function modelReading(parsed, sk, mode) {
-  const hRow = sk.head.length ? sk.rowsAboveData - 1 : -1;
+function modelAnswer(parsed, sk, mode) {
+  const hRow = sk.titleRow;
   const local = csvLocalReading(parsed, hRow);
-  const head = hRow >= 0 ? parsed[hRow] : [];
-  const r = { headerRowIndex: hRow, date: local.date, desc: local.desc, amount: local.amount, debit: local.debit, credit: local.credit, cat: local.cat,
-    sign: "unknown", confidence: { header: "high", date: "high", desc: "high", amount: "high" } };
+  const head = parsed[hRow] || [];
+  const r = { date: local.date, desc: local.desc, amount: local.amount, debit: local.debit, credit: local.credit, cat: local.cat };
+  let conf = "high";
   if (mode === "model-deal") {
     const deal = head.findIndex((h) => csvIsDealAmountTitle(h) && !csvIsChargeTitle(h));
     if (deal >= 0 && r.amount >= 0) r.amount = deal;
@@ -73,14 +80,26 @@ function modelReading(parsed, sk, mode) {
     if (cur >= 0) { r.debit = cur; r.amount = -1; }
   } else if (mode === "model-blank") {
     r.date = r.desc = r.amount = r.debit = r.credit = r.cat = -1;
-    r.confidence = { header: "high", date: "low", desc: "low", amount: "low" };
+    conf = "low";
+  } else if (mode === "model-desc-type") {
+    const ty = head.findIndex((h) => /סוג ה?עסקה|סוג ה?פעולה|סוג תנועה|transaction type|^type$/i.test(String(h || "").trim()));
+    if (ty >= 0 && ty !== r.desc) r.desc = ty;
+  } else if (mode === "model-swap") {
+    if (r.debit >= 0 && r.credit >= 0) { const d = r.debit; r.debit = r.credit; r.credit = d; }
   }
-  return r;
+  const col = (c) => (c >= 0 ? c : null);
+  return {
+    header_row_index: hRow - (sk.headFrom || 0),
+    date_column: col(r.date), shop_column: col(r.desc), amount_column: col(r.amount),
+    debit_column: col(r.debit), credit_column: col(r.credit), category_column: col(r.cat),
+    date_format: "unknown", amount_sign_convention: "unknown",
+    confidence: { header_row_index: "high", date_column: conf, shop_column: conf, amount_column: conf }
+  };
 }
 
 // "saved" is the next month: the layout the user confirmed last time for this
 // bank (profile, as doImport stores it) read straight back, no call made -
-// goMap's saved branch.
+// goMap's saved branch. The rest is goMap step for step.
 export function readColumns(parsed, mode, profile) {
   const sk = csvSkeleton(parsed);
   if (mode === "saved" && profile) {
@@ -93,11 +112,19 @@ export function readColumns(parsed, mode, profile) {
     return { hRow: -1, st: csvSettleReading(parsed, -1, csvLocalReading(parsed, -1), "", null) };
   }
   if (mode === "local") {
-    const hRow = sk.rowsAboveData - 1;
+    const hRow = sk.titleRow;
     return { hRow, st: csvSettleReading(parsed, hRow, csvLocalReading(parsed, hRow), "", null) };
   }
-  const r = modelReading(parsed, sk, mode);
-  const hRow = r.headerRowIndex >= 0 ? r.headerRowIndex : sk.rowsAboveData - 1;
+  const answer = modelAnswer(parsed, sk, mode);
+  let r = null, err = null;
+  setClaude((messages, system, maxTokens, cb) => cb(null, JSON.stringify(answer)));
+  mapColumnsWithAI(sk, (e, got) => { err = e; r = got; });
+  setClaude(null);
+  if (err || !r) {
+    const hRow = sk.titleRow;
+    return { hRow, st: csvSettleReading(parsed, hRow, csvLocalReading(parsed, hRow), "", null) };
+  }
+  const hRow = r.headerRowIndex >= 0 ? r.headerRowIndex : sk.titleRow;
   const m = csvMergeModelMap(r, csvLocalReading(parsed, hRow));
   return { hRow, st: csvSettleReading(parsed, hRow, m, r.sign, r.confidence) };
 }
@@ -105,8 +132,8 @@ export function readColumns(parsed, mode, profile) {
 // ---- Alfred sorting the shops ---------------------------------------------------
 // "oracle"    answers every shop right (from `know`: name -> category), by number
 // "echo"      the OLD answer shape - keyed by the name, with the name not quite
-//             copied (a gershayim for the quote, a space dropped) - which is
-//             what lost shops to Other before
+//             copied (a gershayim for the quote, the spacing changed) - which
+//             is what lost shops to Other before
 // "cutoff"    the right answers, but a long one cut off two thirds of the way
 //             through - what the output cap does to an answer that runs long
 // "down"      unreachable
@@ -119,7 +146,7 @@ function shopStub(mode, know) {
     const body = JSON.parse(messages[0].content);
     const ans = body.shops.map((s) => {
       const cat = mode === "shrug" ? "Other" : (know(s.name) || "Other");
-      if (mode === "echo") return { shop: s.name.replace(/"/g, "״").replace(/\s+/, " "), category: cat, confidence: "high" };
+      if (mode === "echo") return { shop: s.name.replace(/"/g, "״").replace(/ (?=\S)/, "  "), category: cat, confidence: "high" };
       return { i: s.i, category: cat, confidence: "high" };
     });
     let text = JSON.stringify(ans);

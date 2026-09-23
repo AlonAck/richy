@@ -59,9 +59,9 @@ const FNS = ["pad2", "csvStripMarks", "csvMonthDate", "csvTitleKind", "csvIsChar
   "normalizeMerchant", "shopKey", "labelSimilarity", "dayGap", "dupScore",
   "csvDecodeBytes", "csvIsDateCell", "csvIsNumberCell", "csvCellKind", "csvRowKinds",
   "csvRowIsData", "csvFirstDataRow", "csvMaskCell", "csvSectionRows", "csvColumnProfiles", "csvSkeleton",
-  "csvHash", "csvFingerprint", "csvDetectDateFormat", "csvDetectSign", "csvColumnKinds", "csvRepairMap", "csvTextVariety", "csvDistinctText", "csvFlowWord", "csvFindFlowColumn", "csvRowMoney", "csvIsRefund", "csvHasAny", "csvTransferKind", "csvIncomeKind", "csvRowCategory", "csvSectorCat", "guessImportCatId", "round2",
+  "csvHash", "csvFingerprint", "csvDetectDateFormat", "csvDetectSign", "csvBalanceVotes", "csvColumnKinds", "csvRepairMap", "csvTextVariety", "csvTypeShare", "csvDistinctText", "csvFlowWord", "csvFindFlowColumn", "csvRowMoney", "csvIsRefund", "csvHasAny", "csvTransferKind", "csvIncomeKind", "csvRowCategory", "csvSectorCat", "csvBoughtByShop", "guessImportCatId", "round2",
   // Which lines are purchases, and the import's steps outside the screen.
-  "csvSummaryText", "csvSummaryRow", "csvTitleRow", "csvCellsKey", "csvReadRows", "csvTotalsCheck",
+  "csvSummaryText", "csvSummaryRow", "csvTitleRow", "csvCellsKey", "csvReadRows", "csvTotalsCheck", "csvLiveCheck", "csvInOut",
   "csvLocalReading", "csvMergeModelMap", "csvSettleReading", "csvBuildCandidates", "csvShopOrder",
   // The duplicate check the screen runs on the built rows.
   "dupKey", "bestDupMatch", "classifyImportRows",
@@ -77,7 +77,7 @@ const FNS = ["pad2", "csvStripMarks", "csvMonthDate", "csvTitleKind", "csvIsChar
   "sheetU16", "sheetU32", "zipEntries", "zipEntryBytes", "sheetInflate",
   "zipEntryText", "zipReadText", "xlsxSharedStrings", "sheetFmtIsDate",
   "xlsxDateStyles", "sheetColFromRef", "sheetSerialToDate", "xlsxSheetRows",
-  "xlsxSheetList", "xlsxRelPath", "xlsxRelMap", "sheetMergeTables", "sheetStatementTitles", "xlsxRead",
+  "xlsxSheetList", "xlsxRelPath", "xlsxRelMap", "sheetMergeTables", "sheetStatementTitles", "sheetHoldsAll", "sheetUntitledLines", "sheetLineKeys", "xlsxRead",
   "htmlText", "htmlTableRegions", "htmlRowCells",
   "htmlRegionRows", "sheetTableScore", "htmlSheetRows", "xmlssRows",
   "sheetIsZip", "sheetIsOle", "sheetMagicRefusal", "sheetLooksBinary", "sheetMarkupKind", "sheetReadBytes", "sheetReadNote",
@@ -91,7 +91,7 @@ const FNS = ["pad2", "csvStripMarks", "csvMonthDate", "csvTitleKind", "csvIsChar
 // regular expressions, whose quote marks would confuse grabVar's string walk.
 const PROMPTS = ["CSV_MAP_SYSTEM", "CSV_SHOPS_SYSTEM", "IMPORT_CAT_KEYWORDS", "CSV_TRANSFER_WORDS",
   "CSV_TITLE_CURRENCY", "CSV_TITLE_REFERENCE", "CSV_TITLE_BALANCE", "CSV_TITLE_SECTOR",
-  "CSV_SUM_HE", "CSV_SUM_HE_BALANCE", "CSV_SUM_EN", "CSV_SUM_EN_BALANCE", "CSV_TITLE_WORD", "CSV_SECTOR_RULES",
+  "CSV_SUM_HE", "CSV_TYPE_CELL", "CSV_SUM_HE_BALANCE", "CSV_SUM_EN", "CSV_SUM_EN_BALANCE", "CSV_TITLE_WORD", "CSV_SECTOR_RULES",
   "DEFAULT_CATEGORIES"];
 
 const body = [

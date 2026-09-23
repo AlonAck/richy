@@ -31,7 +31,7 @@ function read(fx) {
   const dec = csvDecodeBytes(fx.bytes().buffer);
   const rows = parseCSV(dec.text);
   const sk = csvSkeleton(rows);
-  const headerRow = sk.head.length ? sk.head.length - 1 : -1;
+  const headerRow = sk.head.length ? sk.titleRow : -1;
   const map = sniffMap(headerRow >= 0 ? rows.slice(headerRow) : rows, headerRow >= 0);
   const first = headerRow >= 0 ? headerRow + 1 : 0;
   return {
@@ -230,7 +230,7 @@ group("Randomised column order (50 shuffles of the Isracard file)");
     for (let i = perm.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [perm[i], perm[j]] = [perm[j], perm[i]]; }
     const rows = base.map((r, ri) => (ri < 3 ? r : perm.map((p) => r[p])));
     const sk = csvSkeleton(rows);
-    const hRow = sk.head.length ? sk.head.length - 1 : -1;
+    const hRow = sk.head.length ? sk.titleRow : -1;
     const map = sniffMap(rows.slice(hRow), true);
     const want = {
       date: perm.indexOf(0), desc: perm.indexOf(1), amount: perm.indexOf(3)
@@ -318,7 +318,7 @@ group("Money in or money out");
   function signOf(text, modelSays, userSays) {
     const rows = parseCSV(text);
     const sk = csvSkeleton(rows);
-    const h = sk.head.length ? sk.head.length - 1 : -1;
+    const h = sk.head.length ? sk.titleRow : -1;
     const map = sniffMap(h >= 0 ? rows.slice(h) : rows, h >= 0);
     const first = h >= 0 ? h + 1 : 0;
     const sign = csvDetectSign(rows, map, first, modelSays || "", userSays || "");
@@ -678,9 +678,91 @@ group("Totals, balances and sections are not purchases");
   eq("but importing the same two again adds neither", [again.fresh.length, again.dupes.length], [0, 2]);
 }
 
+group("The check line, and totals in words Richy doesn't know");
+{
+  const { csvReadRows, csvLiveCheck, csvInOut, csvSettleReading, csvLocalReading, csvDetectDateFormat, csvBalanceVotes, csvDetectSign, setClaude, mapColumnsWithAI } = app;
+  const M = { date: 0, desc: 1, amount: 2, debit: -1, credit: -1, cat: -1, flow: -1 };
+  const readIt = (lines) => { const r = parseCSV(lines.join("\n")); return csvReadRows(r.slice(1), r[0], M, false, true, true, "2031-01-01"); };
+
+  // A total in words no rule knows - the user's 4,900 becoming 9,800 all over
+  // again if it were counted.
+  const odd = readIt(["תאריך,בית עסק,סכום", "01/09/2026,שופרסל,1245.30", "03/09/2026,ארומה,32.00", "09/09/2026,פז,310.10", ",לתשלום החודש,1587.40"]);
+  eq("an undated total in unknown words is left out, and the lines add up to it", [odd.items.length, odd.totals.length, odd.check && odd.check.ok, odd.check && odd.check.printed], [3, 1, true, 1587.4]);
+  const oddDated = readIt(["Date,Description,Amount", "01/09/2026,Tesco,45.20", "03/09/2026,Boots,12.80", "09/09/2026,Shell,60.00", "30/09/2026,Your monthly amount,118.00"]);
+  eq("a DATED total in unknown words closing its lines is left out too", [oddDated.items.length, oddDated.totals.length, oddDated.check && oddDated.check.ok], [3, 1, true]);
+
+  // A line missing: the statement's figure and the lines' disagree, and the
+  // preview says so in those numbers.
+  const short = readIt(["תאריך,בית עסק,סכום", "01/09/2026,שופרסל,250.00", "03/09/2026,איקאה,120.00", "09/09/2026,פז,345.00", ",סה\"כ לחיוב,835.00"]);
+  eq("a total the lines don't reach is flagged, with both figures", [short.check.ok, short.check.printed, short.check.counted], [false, 835, 715]);
+  const f = (n) => n.toFixed(2);
+  const base = { out: 715, inn: 0 };
+  eq("the warning names the two figures", csvLiveCheck(short.check, base, base, f).text, "Your statement prints a total of 835.00, but these lines come to 715.00. Check the column settings before bringing them in.");
+  eq("and once the short line is put right on the preview, it adds up", csvLiveCheck(short.check, base, { out: 835, inn: 0 }, f), { tone: "ok", text: "Now adds up to your statement's own total of 835.00." });
+
+  // The check follows the preview: untick a line or change an amount and it
+  // stops claiming the lines add up.
+  const good = readIt(["תאריך,בית עסק,סכום", "01/09/2026,שופרסל,250.00", "03/09/2026,איקאה,120.00", "09/09/2026,פז,300.00", "10/09/2026,קפה,45.00", ",סה\"כ לחיוב,715.00"]);
+  const all = { out: 715, inn: 0 };
+  eq("as read, it adds up", csvLiveCheck(good.check, all, all, f), { tone: "ok", text: "Adds up to your statement's own total of 715.00." });
+  eq("with a line unticked it says what the lines come to now", csvLiveCheck(good.check, all, { out: 415, inn: 0 }, f),
+    { tone: "changed", text: "Your statement's own total is 715.00. With your changes, these lines come to 415.00." });
+  eq("money in and out are summed from the lines as they stand", csvInOut([{ type: "expense", amount: 300 }, { type: "income", amount: 20 }, { type: "expense", amount: 1200, transfer: true }]), { out: 1500, inn: 20 });
+  // Each section's total matched, but one section prints none: no file total
+  // is claimed.
+  const partial = { printed: 120, counted: 120, ok: true, partial: true, lines: { out: 989.7, inn: 0 } };
+  eq("a statement where each printed total matches, but not every line has one, says just that", csvLiveCheck(partial, { out: 989.7, inn: 0 }, { out: 989.7, inn: 0 }, f).text, "Each total your statement prints matches the lines under it.");
+
+  // The first card's lines are all early in the month - 03/01 to 03/07 read
+  // either way - but the second card's 03/30, and the period in the title,
+  // settle it.
+  const us = parseCSV(["Period: 03/01/2025 - 03/31/2025", "Date,Description,Amount", "03/01/2025,DELTA AIR LINES,672.28", "03/07/2025,AMAZON MKTPLACE,213.35", "Card ending 5204", "Date,Description,Amount", "03/30/2025,TOTAL WINE,117.44"].join("\n"));
+  eq("dates a section can't settle are settled by the rest of the file", csvDetectDateFormat(us, 0, 2).preferDMY, false);
+
+  // Three salaries, all plain numbers, on a bank account with a running
+  // balance: the balance goes up by each, so they are money in.
+  const pay = parseCSV(["תאריך,תיאור,סכום,יתרה", "01/07/2025,משכורת,18831.21,29782.98", "01/06/2025,משכורת,19370.21,10951.77", "31/05/2025,ריבית על פיקדון,119.98,-8418.44"].join("\n"));
+  eq("the balance's arithmetic is read newest first too", csvBalanceVotes(pay.slice(1), { date: 0, desc: 1, amount: 2 }, pay[0]), { inn: 2, out: 0 });
+  eq("so a month of nothing but money in is money in", csvDetectSign(pay, { date: 0, desc: 1, amount: 2, debit: -1, credit: -1 }, 1, "", "").positiveOut, false);
+  const unsignedBank = parseCSV(["תאריך,תיאור,סכום,יתרה", "01/09/2026,שופרסל,120.00,4880.00", "02/09/2026,ארומה,32.00,4848.00", "03/09/2026,משכורת,9000.00,13848.00", "04/09/2026,פז,250.00,13598.00", "05/09/2026,זארה,300.00,13298.00"].join("\n"));
+  eq("amounts with no sign that move the balance both ways stay a question", csvDetectSign(unsignedBank, { date: 0, desc: 1, amount: 2, debit: -1, credit: -1 }, 1, "", "").sure, false);
+  const twins = [["01/07/2025", "משכורת", "15000", "30000"], ["01/06/2025", "משכורת", "15000", "15000"]];
+  eq("two equal amounts in a row prove nothing either way", csvBalanceVotes(twins, { date: 0, desc: 1, amount: 2 }, ["תאריך", "תיאור", "סכום", "יתרה"]), { inn: 0, out: 0 });
+
+  // Next month, from the same bank: every date is early in the month, so only
+  // the choice saved last time says which way round they go.
+  const early = parseCSV(["Date,Description,Amount", "01/02/2026,Cafe,10.00", "03/02/2026,Books,20.50", "05/02/2026,Cinema,30.00"].join("\n"));
+  const dmyNext = csvSettleReading(early, 0, csvLocalReading(early, 0), "", null, true, "");
+  const mdyNext = csvSettleReading(early, 0, csvLocalReading(early, 0), "", null, false, "");
+  const firstDate = (st) => csvReadRows(early.slice(1), early[0], st.map, st.sign.splitAmt, st.sign.positiveOut, st.fmt.preferDMY, "2031-01-01").items[0].date;
+  eq("the saved day-first choice reads next month day-first", firstDate(dmyNext), "2026-02-01");
+  eq("and a saved month-first choice month-first", firstDate(mdyNext), "2026-01-02");
+
+  // A "shop" column that is really the transaction type (DEB/DD/SO) is put
+  // right against the rows, whoever named it.
+  const uk = parseCSV(["Date,Type,Description,Paid out,Paid in,Balance", "01/09/2026,DEB,TESCO STORES 3297,12.50,,900.00", "02/09/2026,DD,BRITISH GAS,60.00,,840.00",
+    "03/09/2026,SO,RENT MR SMITH,700.00,,140.00", "04/09/2026,DEB,COSTA COFFEE,3.20,,136.80", "05/09/2026,BGC,ACME LTD SALARY,,2100.00,2236.80",
+    "06/09/2026,DEB,SAINSBURYS 0412,41.70,,2195.10", "07/09/2026,DD,THAMES WATER,32.00,,2163.10", "08/09/2026,DEB,PRET A MANGER,6.40,,2156.70", "09/09/2026,DEB,WHSMITH,9.99,,2146.71"].join("\n"));
+  const typeRead = csvSettleReading(uk, 0, { date: 0, desc: 1, amount: -1, debit: 3, credit: 4, cat: -1 }, "", null);
+  eq("the type-code column is not the shop", typeRead.map.desc, 2);
+  const shortType = parseCSV(["Transaction Type,Description,Date,Amount", "Purchase,MCDONALDS,09.09.2025,₪ 30.31", "Recurring,SPOTIFY,15.09.2025,₪ 35.36", "Online Purchase,STEAM GAMES,24.09.2025,₪ 108.05", "TOTAL:,,,₪ 173.72"].join("\n"));
+  eq("nor in a file of three lines", csvSettleReading(shortType, 0, { date: 2, desc: 0, amount: 3, debit: -1, credit: -1, cat: -1 }, "", null).map.desc, 1);
+
+  // Alfred counts the header row within the lines he was shown; with more
+  // than eight lines above the titles, those start partway down the file.
+  const tall = parseCSV(["דוח תנועות", "שם: ישראל ישראלי", "חשבון 12-345-678", "סניף 123", "מטבע: ש\"ח", "הופק 22/07/2025", "תקופה: יולי", "עמוד 1", "הערות: אין", "---",
+    "תאריך,תיאור,סכום", "01/07/2025,שופרסל,-120.00", "02/07/2025,ארומה,-32.00", "03/07/2025,פז,-250.00"].join("\n"));
+  const tsk = csvSkeleton(tall);
+  let tgot = null;
+  setClaude((m, sys, mt, cb) => cb(null, JSON.stringify({ header_row_index: tsk.titleRow - (tsk.headFrom || 0), date_column: 0, shop_column: 1, amount_column: 2, confidence: {} })));
+  mapColumnsWithAI(tsk, (e, r) => { tgot = r; });
+  setClaude(null);
+  eq("the header row Alfred names is found in the file, however far down", [tsk.titleRow, tgot && tgot.headerRowIndex], [10, 10]);
+}
+
 group("Shops Alfred can't place are not simply Other");
 {
-  const { csvRowCategory, csvSectorCat, csvShopHistory, csvPlanShops, suggestCatId, sniffMap } = app;
+  const { csvRowCategory, csvSectorCat, csvShopHistory, csvHistoryCat, csvPlanShops, suggestCatId, sniffMap, catById } = app;
   const cats = [{ id: "c1", name: "Housing" }, { id: "c2", name: "Food" }, { id: "c3", name: "Transport" }, { id: "c4", name: "Health" },
     { id: "c5", name: "Entertainment" }, { id: "c6", name: "Shopping" }, { id: "c8", name: "Salary" }, { id: "c9", name: "Investments" }, { id: "c11", name: "Other" }];
   const sector = (x) => { const c = csvSectorCat(x, cats); return c ? c.name : null; };
@@ -710,7 +792,40 @@ group("Shops Alfred can't place are not simply Other");
   const plan = csvPlanShops([{ key: jk, label: "ג'פניקה" }], { [jk]: { category: "Other", source: "ai" } }, csvShopHistory(hist, false, cats), cats);
   eq("a shop Alfred shrugged at last time is asked again", plan.ask.length, 1);
   const barber = [{ label: "מספרת שרון", catId: "c11", category: "Other", type: "expense" }];
-  eq("and a suggestion is never Other", suggestCatId("מספרת שרון", barber, cats), "");
+  eq("one shared word with a line in Other suggests nothing", suggestCatId("שרון", barber, cats), "");
+  const redX = [1, 2, 3].map(() => ({ label: "Red Cross", catId: "c11", category: "Other", type: "expense" })).concat([{ label: "Red Lobster", catId: "c1", category: "Food", type: "expense" }]);
+  eq("but the same name the user keeps in Other is suggested Other", catById(cats, suggestCatId("red cross", redX, cats)).name, "Other");
+
+  // Other the USER chose is an answer (catUser: set by an edit in Activity or
+  // a pick on the preview). Only the import's own shrugs are not.
+  const gift = shopKey("חנות המתנות של דנה");
+  const moved = [1, 2, 3].map(() => ({ label: "חנות המתנות של דנה", catId: "c11", category: "Other", type: "expense", catUser: true }));
+  const plan2 = csvPlanShops([{ key: gift, label: "חנות המתנות של דנה" }], { [gift]: { category: "Shopping", source: "ai" } }, csvShopHistory(moved, false, cats), cats);
+  eq("a shop the user moved to Other stays there next month", [plan2.ask.length, plan2.out[gift] && plan2.out[gift].category], [0, "Other"]);
+  eq("and the line comes out in Other", csvRowCategory("חנות המתנות של דנה", "expense", true, { cats, shops: plan2.out, saved: {}, tx: moved }, "").category, "Other");
+  const mixed = moved.concat(moved).concat([{ label: "חנות המתנות של דנה", catId: "c1", category: "Food", type: "expense" }]);
+  eq("one stray line does not outvote six the user filed", csvHistoryCat(csvShopHistory(mixed, false, cats), gift, cats).name, "Other");
+
+  // Money in under a name the file also pays is salary until shown otherwise.
+  const bankCtx = (items) => ({ cats, shops: { [shopKey("עיריית תל אביב יפו")]: { category: "Housing", source: "alfred" } }, saved: {}, tx: [], incomeHist: {},
+    bought: { [shopKey("עיריית תל אביב יפו")]: 620 } });
+  const sal = csvRowCategory("עיריית תל אביב יפו", "income", false, bankCtx(), "", 11500);
+  eq("a salary from the city the file also pays arnona to is Salary, not an arnona refund", [sal.category, sal.guess], ["Salary", true]);
+  const back = csvRowCategory("עיריית תל אביב יפו", "income", false, bankCtx(), "", 120);
+  eq("while money back under what was paid there is a refund - shown as a guess", [back.category, back.guess], ["Housing", true]);
+  eq("a person whose name holds a chain's name is not a refund from it", ["יוסי פז", "דני פוקס", "JOHN BOLT"].map((n) => csvRowCategory(n, "income", false, { cats, shops: {}, saved: {}, tx: [], incomeHist: {} }, "", 250).category), ["Salary", "Salary", "Salary"]);
+
+  // The chain's own name beats the card's aisle label.
+  const none = { cats, shops: {}, saved: {}, tx: [], incomeHist: {} };
+  eq("a gym and pharmacies are Health whatever aisle the card puts them in",
+    [["הולמס פלייס", "פנאי, בידור וספורט"], ["CVS/PHARMACY", "Merchandise & Supplies"], ["WALGREENS", "Merchandise & Supplies-Pharmacies"], ["PLANET FITNESS", "Fitness"]].map(([n, l]) => csvRowCategory(n, "expense", true, none, l).category),
+    ["Health", "Health", "Health", "Health"]);
+
+  // A user who renamed Other has no shrug category: Alfred's answer for the
+  // first category is a real one.
+  const renamed = cats.map((c) => c.name === "Other" ? Object.assign({}, c, { name: "Misc" }) : c);
+  const gasKey = shopKey("דור אלון גז לבית");
+  eq("with Other renamed, Alfred's Housing is still Housing", csvRowCategory("דור אלון גז לבית", "expense", true, { cats: renamed, shops: { [gasKey]: { category: "Housing", source: "alfred" } }, saved: {}, tx: [], incomeHist: {} }, "").category, "Housing");
 
   // A column called "Transaction Type" is not the shop.
   const uk = sniffMap([["Date", "Transaction Type", "Description", "Paid out", "Paid in", "Balance"], ["01/09/2026", "DEB", "TESCO STORES 3297", "12.50", "", "900.00"]], true);
@@ -838,10 +953,30 @@ group("Reading what the model sends back");
   eq("after a timeout nothing more is asked", nth, 1);
 
   nth = 0;
-  setClaude((m, s, mt, cb) => cb(new Error("network"), null));
+  setClaude((m, s, mt, cb) => { nth++; cb(new Error("network"), null); });
   var sErr;
   categorizeShopsWithAI(["a", "b"], cats, [], (e, o, m) => { sErr = e; out = o; });
   ok("every chunk failing IS an error", !!sErr && Object.keys(out).length === 0);
+  eq("and a pass that got nothing back is not run a second time", nth, 1);
+
+  // An overloaded server answers the next chunk the same way.
+  nth = 0;
+  setClaude((m, s, mt, cb) => { nth++; const e = new Error("overloaded"); e.kind = "api"; e.status = 529; cb(e, null); });
+  categorizeShopsWithAI(many, cats, [], (e) => { sErr = e; });
+  eq("after a server error nothing more is asked", nth, 1);
+
+  // An answer that came back but reads as nothing is not "could not be reached".
+  setClaude((m, s, mt, cb) => cb(null, JSON.stringify([{ i: 0, category: "Groceries & Stuff" }])));
+  categorizeShopsWithAI(["a"], cats, [], (e) => { sErr = e; });
+  eq("an unreadable answer says so", sErr && sErr.kind, "shape");
+
+  // Numbered from 1 instead of 0, but each entry naming its shop: the name
+  // decides, so no category lands on the next shop down.
+  const three = ["שופרסל דיל", "פנגו חניה", "סופר פארם"];
+  const right = { "שופרסל דיל": "Food", "פנגו חניה": "Transport", "סופר פארם": "Other" };
+  setClaude((m, s, mt, cb) => cb(null, JSON.stringify(JSON.parse(m[0].content).shops.map((x) => ({ i: x.i + 1, shop: x.name, category: right[x.name] })))));
+  categorizeShopsWithAI(three, cats, [], (e, o) => { out = o; });
+  eq("an off-by-one answer that names each shop is read by the names", three.map((n) => out[n] && out[n].category), ["Food", "Transport", "Other"]);
 
   setClaude(null);
 }
@@ -863,7 +998,7 @@ group("Excel files, read on the device");
   const bytesOf = (text) => toUtf8(text);
   const mapOf = (rows) => {
     const sk = csvSkeleton(rows);
-    const headerRow = sk.head.length ? sk.head.length - 1 : -1;
+    const headerRow = sk.head.length ? sk.titleRow : -1;
     return { headerRow, map: sniffMap(headerRow >= 0 ? rows.slice(headerRow) : rows, headerRow >= 0) };
   };
 
@@ -951,6 +1086,33 @@ group("Excel files, read on the device");
   eq("the note names both sheets", sheetReadNote({ name: "max.xlsx" }, both), "max.xlsx — " + both.rows.length + " lines read from the sheets “עסקאות במועד החיוב” and “עסקאות חו\"ל ומט\"ח”.");
   const view = await read(buildXlsx([{ name: "כרטיס 1234", rows: home }, { name: "כל הכרטיסים", rows: home }]), "max.xlsx");
   eq("a sheet repeating the same lines is a view, not more purchases", view.rows.length, home.length);
+  // The same lines written differently - text dates, amounts as "₪ 312.40",
+  // the columns in another order - are still the same lines.
+  const retyped = [["עסקאות במועד החיוב"], ["סכום חיוב", "שם בית העסק", "תאריך עסקה"],
+    ["₪ 312.40", "רמי לוי", "02/09/2026"], ["₪ 250.00", "פז יקום", "06/09/2026"], [{ n: 562.4 }, "סך הכל", null]];
+  const copy2 = await read(buildXlsx([{ name: "עסקאות", rows: home }, { name: "עותק", rows: retyped }]), "max.xlsx");
+  eq("a copy formatted differently is still a copy", [copy2.rows.length, copy2.sheets.length], [home.length, 1]);
+  // One card's lines, then every card's: the whole replaces the part, and its
+  // own total comes with it.
+  const card1 = [MAXH, [{ date: "2026-09-02" }, "רמי לוי", "מזון וצריכה", { n: 312.4 }, "₪"], [{ date: "2026-09-06" }, "פז יקום", "תחבורה ורכבים", { n: 250 }, "₪"]];
+  const allCards = [MAXH, [{ date: "2026-09-02" }, "רמי לוי", "מזון וצריכה", { n: 312.4 }, "₪"], [{ date: "2026-09-04" }, "זארה", "אופנה", { n: 199 }, "₪"],
+    [{ date: "2026-09-06" }, "פז יקום", "תחבורה ורכבים", { n: 250 }, "₪"], ["סך הכל", null, null, { n: 761.4 }, null]];
+  const whole = await read(buildXlsx([{ name: "כרטיס 4471", rows: card1 }, { name: "כל הכרטיסים", rows: allCards }]), "max.xlsx");
+  eq("the all-cards sheet replaces the one-card sheet it holds", [whole.sheets, whole.rows.length], [["כל הכרטיסים"], allCards.length]);
+  // A later sheet that repeats SOME lines: only the new ones join, and its
+  // total - which counts the repeated lines too - stays out.
+  const pending = [MAXH, [{ date: "2026-09-06" }, "פז יקום", "תחבורה ורכבים", { n: 250 }, "₪"], [{ date: "2026-09-09" }, "ארומה", "מזון וצריכה", { n: 32 }, "₪"],
+    ["סך הכל", null, null, { n: 282 }, null]];
+  const part = await read(buildXlsx([{ name: "חיובים", rows: home }, { name: "ממתינות", rows: pending }]), "max.xlsx");
+  const partLines = part.rows.filter((r) => /^\d{4}-/.test(String(r[0])));
+  eq("only the new line of a half-repeated sheet joins", partLines.map((r) => r[1]), ["רמי לוי", "פז יקום", "ארומה"]);
+  ok("and its total does not come with it", !part.rows.some((r) => r[3] === 282 || r[3] === "282"));
+  // A statement with no titles on sheet 1 is the statement.
+  const bare = [[{ date: "2026-09-01" }, "שופרסל", { n: 120 }], [{ date: "2026-09-02" }, "ארומה", { n: 32 }], [{ date: "2026-09-03" }, "פז", { n: 250 }], [{ date: "2026-09-04" }, "זארה", { n: 381.65 }]];
+  const future = [["תאריך חיוב", "שם בית העסק", "סכום"], [{ date: "2026-10-10" }, "איקאה", { n: 216.5 }], [{ date: "2026-11-10" }, "איקאה", { n: 216.5 }]];
+  const untitled = await read(buildXlsx([{ name: "Sheet1", rows: bare }, { name: "תשלומים עתידיים", rows: future }]), "x.xlsx");
+  eq("a first sheet of lines with no titles is kept, not swapped for a titled one", [untitled.sheets, untitled.rows.length], [["Sheet1"], 4]);
+  eq("three sheets are listed as A, B and C", sheetReadNote({ name: "m.xlsx" }, { kind: "xlsx", rows: [[1]], sheets: ["א", "ב", "ג"] }), "m.xlsx — 1 line read from the sheets “א”, “ב” and “ג”.");
 
   const inline = buildXlsx([{ name: "Sheet1", rows: [
     [{ inline: "Date" }, { inline: "Shop" }, { inline: "Amount" }],

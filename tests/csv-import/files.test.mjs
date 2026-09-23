@@ -58,7 +58,7 @@ function mapped(out) {
   let widest = 0;
   for (const r of rows) if (r.length > widest) widest = r.length;
   const sk = csvSkeleton(rows);
-  const headerRow = sk.head.length ? sk.head.length - 1 : -1;
+  const headerRow = sk.head.length ? sk.titleRow : -1;
   const map = sniffMap(headerRow >= 0 ? rows.slice(headerRow) : rows, headerRow >= 0);
   const sign = csvDetectSign(rows, map, headerRow + 1, "");
   const amount = sign.splitAmt ? (map.debit >= 0 || map.credit >= 0) : map.amount >= 0;
