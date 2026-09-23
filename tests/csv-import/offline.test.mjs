@@ -244,6 +244,69 @@ group("Randomised column order (50 shuffles of the Isracard file)");
     bad + "/50 shuffles misread. First: " + JSON.stringify(firstBad));
 }
 
+// ------------------------------------------------- a date is never money --
+// The live bug: a 29-shekel coffee imported as 20,260,923, because a date
+// column was taken for the amount. Three ways in, each closed separately, and
+// the last check (csvRepairMap) catches whatever picked the column.
+group("A date is never read as an amount");
+{
+  const { csvRepairMap } = app;
+  ok("an ISO date is not an amount", isNaN(parseImportAmount("2026-09-23")), String(parseImportAmount("2026-09-23")));
+  ok("a day-first date is not an amount", isNaN(parseImportAmount("23/09/2026")));
+  ok("a dotted date is not an amount", isNaN(parseImportAmount("23.09.26")));
+  eq("an ordinary amount still reads", parseImportAmount("29.00"), 29);
+  eq("a thousands amount still reads", parseImportAmount("1,234.50"), 1234.5);
+  eq("a European amount still reads", parseImportAmount("1.234,56"), 1234.56);
+  eq("a minus amount still reads", parseImportAmount("-29.00"), -29);
+
+  // Isracard/Max: the charge date sits between the two amounts.
+  const card = [
+    ["תאריך עסקה", "שם בית העסק", "סכום עסקה", "תאריך חיוב", "סכום חיוב"],
+    ["2026-09-20", "קפה גרג", "29.00", "2026-10-02", "29.00"],
+    ["2026-09-21", "שופרסל דיל", "112.40", "2026-10-02", "112.40"],
+    ["2026-09-22", "פז יקום", "250.00", "2026-10-02", "250.00"]
+  ];
+  const cm = sniffMap(card, true);
+  eq("the charge date (תאריך חיוב) is not a money-out column", cm.debit, -1);
+  eq("the charged amount (סכום חיוב) is the amount", cm.amount, 4);
+  eq("the purchase date is the date", cm.date, 0);
+
+  // No titles, two date columns: the second one used to become the amount.
+  const bare = [
+    ["2026-09-20", "קפה גרג", "2026-09-23", "29.00"],
+    ["2026-09-21", "שופרסל דיל", "2026-09-23", "112.40"],
+    ["2026-09-22", "פז יקום", "2026-09-24", "250.00"]
+  ];
+  const bm = sniffMap(bare, false);
+  eq("no titles: the second date column is not the amount", bm.amount, 3);
+  eq("no titles: the shop is the words, not the longer dates", bm.desc, 1);
+
+  // Whatever named the columns - the model, a saved layout - the rows win.
+  const fallback = sniffMap(card, true);
+  let r = csvRepairMap(card, 1, { date: 0, desc: 1, amount: 3, debit: -1, credit: -1 }, fallback);
+  eq("a model that names the charge date as the amount is overruled", r.map.amount, 4);
+  eq("  and says which role it changed", r.fixed, ["amount"]);
+  r = csvRepairMap(card, 1, { date: 0, desc: 1, amount: -1, debit: 3, credit: -1 }, fallback);
+  eq("a saved layout with the date as money out is healed", [r.map.amount, r.map.debit], [4, -1]);
+  r = csvRepairMap(card, 1, { date: 0, desc: 1, amount: 0, debit: -1, credit: -1 }, fallback);
+  eq("the date column cannot also be the amount", r.map.amount, 4);
+  r = csvRepairMap(card, 1, { date: 2, desc: 1, amount: 0, debit: -1, credit: -1 }, fallback);
+  eq("date and amount swapped both come back", [r.map.date, r.map.amount], [0, 4]);
+  r = csvRepairMap(card, 1, { date: 0, desc: 3, amount: 4, debit: -1, credit: -1 }, fallback);
+  eq("a shop column that is really dates is replaced", r.map.desc, 1);
+  r = csvRepairMap(card, 1, { date: 0, desc: 1, amount: 3, debit: -1, credit: -1 }, { date: 0, desc: 1, amount: -1, debit: -1, credit: -1 });
+  eq("with nothing better to offer, the amount is left for the user to pick", r.map.amount, -1);
+  r = csvRepairMap(card, 1, { date: 0, desc: 1, amount: 4, debit: -1, credit: -1 }, fallback);
+  eq("a sound reading is left exactly as it was", [r.map, r.fixed], [{ date: 0, amount: 4, desc: 1, debit: -1, credit: -1 }, []]);
+
+  // Every real fixture: the checker must not touch a correct reading.
+  for (const name of Object.keys(ALL)) {
+    const f = read(ALL[name]);
+    const rr = csvRepairMap(f.rows, f.first, f.map, f.map);
+    eq(name + ": a correct reading passes the check untouched", rr.fixed, []);
+  }
+}
+
 // ------------------------------------------------- reading a model's answer --
 // The real mapColumnsWithAI and categorizeShopsWithAI, with the network
 // stubbed. judgeLookalikes measured this same model fencing its JSON in 7 of 9

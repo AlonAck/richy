@@ -13009,7 +13009,13 @@ function sniffMap(rows, hasHeader) {
       // matched BOTH the date pattern (via "date") and the amount pattern
       // (via "value"), so the date column got read as the price too.
       if (i === map.amount) return;
-      if (map.date < 0 && (/date|time|posted/.test(h) || HE_DATE.test(h))) { map.date = i; return; }
+      var isDateTitle = /date|time|posted/.test(h) || HE_DATE.test(h);
+      if (map.date < 0 && isDateTitle) { map.date = i; return; }
+      // A SECOND date column is still a date column, and it fills no role.
+      // Isracard and Max carry "תאריך חיוב" (the charge date) beside the
+      // purchase date, and the חיוב in it used to claim the money-out role -
+      // which read every row's amount out of a date.
+      if (isDateTitle) return;
       // Separate money-out / money-in columns (common in real bank exports).
       // On the Hebrew side חיוב/זיכוי are only a split PAIR when they stand
       // alone; inside "סכום חיוב" the word means "charged", and treating that
@@ -13046,15 +13052,24 @@ function sniffMap(rows, hasHeader) {
     var vals = sample.map(function(r) { return r[c] || ""; });
     var nonEmpty = vals.filter(function(v) { return v !== ""; });
     if (!nonEmpty.length) continue;
-    var dateHits = nonEmpty.filter(function(v) { return !isNaN(Date.parse(v)) || /\d{1,4}[\/\-.]\d{1,2}[\/\-.]\d{1,4}/.test(v); }).length;
-    var numHits = nonEmpty.filter(function(v) { return !isNaN(parseFloat(v.replace(/[^0-9.\-]/g, ""))) && /\d/.test(v); }).length;
+    // Date.parse alone reads "5" as a date, so a bare number only counts when
+    // it is shaped like one or carries a month name ("Sep 23, 2026").
+    var dateHits = nonEmpty.filter(function(v) { return csvIsDateCell(v) || (/[a-z]{3}/i.test(v) && /\d/.test(v) && !isNaN(Date.parse(v))); }).length;
+    // And a date is not a number here either - a second date column used to
+    // pass this test and become the amount.
+    var numHits = nonEmpty.filter(function(v) { return /\d/.test(v) && !csvIsDateCell(v) && !isNaN(parseImportAmount(v)); }).length;
     if (map.date < 0 && dateHits >= Math.ceil(nonEmpty.length / 2)) { map.date = c; continue; }
     if (!hasSplit && map.amount < 0 && numHits >= Math.ceil(nonEmpty.length / 2)) { map.amount = c; continue; }
   }
   if (map.desc < 0) {
     var bestLen = 0, bestCol = -1;
     for (var c2 = 0; c2 < ncol; c2++) {
-      if (c2 === map.date || c2 === map.amount) continue;
+      if (c2 === map.date || c2 === map.amount || c2 === map.debit || c2 === map.credit) continue;
+      // Longest cell wins, but a date ("2026-09-23" is ten characters) is
+      // longer than most shop names - only a column of words can be the shop.
+      var cells = sample.map(function(r) { return r[c2] || ""; }).filter(function(v) { return v !== ""; });
+      var words = cells.filter(function(v) { return csvCellKind(v) === "text"; }).length;
+      if (!cells.length || words * 2 < cells.length) continue;
       var avg = sample.reduce(function(s, r) { return s + ((r[c2] || "").length); }, 0) / (sample.length || 1);
       if (avg > bestLen) { bestLen = avg; bestCol = c2; }
     }
@@ -13090,6 +13105,11 @@ function parseImportDate(s, preferDMY) {
 function parseImportAmount(s) {
   s = (s || "").trim();
   if (!s) return NaN;
+  // A date is never an amount. Stripped to its digits "2026-09-23" reads as
+  // -20,260,923 (the dashes even make it a minus), and that is exactly what a
+  // 29-shekel coffee turned into whenever a date column was mistaken for the
+  // money - so whatever picked the column, this cell is refused, not read.
+  if (csvIsDateCell(s)) return NaN;
   var neg = /^\(.*\)$/.test(s) || s.indexOf("-") !== -1;
   var cleaned = s.replace(/[^0-9.,]/g, "");
   var lastComma = cleaned.lastIndexOf(",");
@@ -14097,6 +14117,68 @@ function csvDetectSign(rows, map, firstDataRow, modelSays) {
   return { splitAmt: false, allExpenses: false, reason: "" };
 }
 
+// ===== CSV IMPORT: CHECKING THE COLUMNS AGAINST THE ROWS =====================
+// The model names the columns from their titles and a summary; it never sees a
+// value. So it can - and did - name a date column as the amount: "תאריך חיוב"
+// sits right beside "סכום חיוב", and a charge date read as money turns a
+// 29-shekel coffee into 20,260,923. A saved layout from a bad import repeats
+// the mistake every month, and the local rules had their own way into it.
+//
+// Whoever named the columns, the rows get the last word. A money column that
+// holds dates is not a money column, full stop; it is dropped and replaced
+// with the local reading's choice if that one holds numbers, or left empty so
+// the screen asks. The same goes for a date column with no dates in it and a
+// shop column that is really dates.
+function csvColumnKinds(rows, col, first) {
+  var k = { date: 0, number: 0, text: 0, filled: 0 };
+  if (col == null || col < 0) return k;
+  var data = (rows || []).slice(first, first + 400);
+  for (var i = 0; i < data.length; i++) {
+    var kind = csvCellKind((data[i] || [])[col]);
+    if (kind === "empty") continue;
+    k.filled++; k[kind]++;
+  }
+  return k;
+}
+// { map, fixed }: fixed lists the roles that had to change, empty when the
+// reading was sound.
+function csvRepairMap(rows, first, m, fallback) {
+  var out = { date: m.date, amount: m.amount, desc: m.desc, debit: m.debit, credit: m.credit };
+  var fb = fallback || {};
+  var fixed = [];
+  var seen = {};
+  function kinds(c) { if (!seen[c]) seen[c] = csvColumnKinds(rows, c, first); return seen[c]; }
+  function holdsDates(c) { var k = kinds(c); return k.date > 0 && k.date >= k.number; }
+  function moneyOk(c) { return c >= 0 && c !== out.date && !holdsDates(c); }
+  function free(c, role) {
+    return ["date", "amount", "desc", "debit", "credit"].every(function(r) { return r === role || out[r] !== c; });
+  }
+
+  // The date column first, since the money check below leans on it.
+  if (out.date >= 0 && !holdsDates(out.date) && fb.date >= 0 && fb.date !== out.date && holdsDates(fb.date)) {
+    fixed.push("date"); out.date = fb.date;
+  }
+
+  var moneyDropped = false;
+  ["amount", "debit", "credit"].forEach(function(r) {
+    if (out[r] < 0 || moneyOk(out[r])) return;
+    fixed.push(r); out[r] = -1; moneyDropped = true;
+  });
+  if (moneyDropped && out.amount < 0 && out.debit < 0 && out.credit < 0) {
+    if (moneyOk(fb.amount) && free(fb.amount, "amount")) out.amount = fb.amount;
+    else {
+      if (moneyOk(fb.debit) && free(fb.debit, "debit")) out.debit = fb.debit;
+      if (moneyOk(fb.credit) && free(fb.credit, "credit")) out.credit = fb.credit;
+    }
+  }
+
+  if (out.desc >= 0 && (out.desc === out.date || holdsDates(out.desc))) {
+    fixed.push("desc");
+    out.desc = (fb.desc >= 0 && fb.desc !== out.date && !holdsDates(fb.desc) && free(fb.desc, "desc")) ? fb.desc : -1;
+  }
+  return { map: out, fixed: fixed };
+}
+
 // ===== CSV IMPORT: THE MAPPING CALL (Haiku) ==================================
 var AI_MODEL_CSV_MAP = "claude-haiku-4-5-20251001";
 var AI_MODEL_CSV_SHOPS = "claude-sonnet-5";
@@ -14114,6 +14196,7 @@ var CSV_MAP_SYSTEM = "You map the columns of a bank or credit-card statement exp
   + "\n- header_row_index is the 0-based index INTO head of the column-title row, or null when the file has no titles."
   + "\n- Prefer a transaction date over a value or posting date when both exist."
   + "\n- Never choose a running-balance column as the amount."
+  + "\n- A column whose kind is \"date\" is NEVER the amount, debit or credit column. A charge date (תאריך חיוב) or value date (תאריך ערך) is a date column even though its title shares a word with the amount titles; the amount is the column whose kind is \"number\"."
   + "\n- Set amount_column when one column carries the whole amount. Set debit_column and credit_column instead when money out and money in are split, and leave amount_column null."
   + "\n- The shop column varies from row to row. A column whose variety is \"one value\" or \"a few values\" is a card name, a branch or a transaction type, not the shop."
   + "\n- A reference, confirmation or voucher number is a column of numbers that is nearly all different and has no negatives. It is never the amount, whatever its position."
@@ -17113,6 +17196,17 @@ function ImportSheet(props) {
   // themselves, and decide whether to open the controls.
   function applyReading(parsed, hRow, m, signSays, source, conf, savedDMY) {
     var first = hRow >= 0 ? hRow + 1 : 0;
+    // Checked against the rows before anything is built from it - see
+    // csvRepairMap. This is also what heals a bad layout saved for this bank.
+    var repair = csvRepairMap(parsed, first, m, localReading(parsed, hRow));
+    m = repair.map;
+    if (repair.fixed.length) {
+      // Marked low so the settings open by themselves on the corrected reading.
+      var was = conf || {};
+      conf = { header: was.header, date: was.date, desc: was.desc, amount: "low" };
+      csvLog("mapping-repaired", { source: source, fingerprint: csvFingerprint(csvSkeleton(parsed)), fixed: repair.fixed.slice(),
+        date: m.date, shop: m.desc, amount: m.amount, debit: m.debit, credit: m.credit });
+    }
     var fmt = csvDetectDateFormat(parsed, m.date, first);
     // The rows win when they actually settle it; the user's last answer for
     // this same bank wins when they don't.
@@ -17125,7 +17219,7 @@ function ImportSheet(props) {
     var lowConf = conf && (conf.date === "low" || conf.amount === "low" || conf.desc === "low");
     setRows(parsed); setHeaderRow(hRow); setMap(m);
     setSplitAmt(sign.splitAmt); setAllExpenses(sign.allExpenses); setPreferDMY(fmt.preferDMY);
-    setReading({ source: source, confidence: conf || null, dateFormat: fmt, sign: sign });
+    setReading({ source: source, confidence: conf || null, dateFormat: fmt, sign: sign, repaired: repair.fixed });
     // The controls open by themselves when the reading left a hole OR when the
     // model said it was unsure. A "low" that opens nothing is a confident
     // wrong guess wearing a hedge.
@@ -17689,6 +17783,13 @@ function ImportSheet(props) {
                   : reading.source === "local-fallback" ? "Alfred couldn't be reached, so Richy worked the columns out on its own. Worth a look."
                   : "Richy worked the columns out from the file itself."}
               </div>
+              {reading.repaired && reading.repaired.length > 0 && (
+                <div style={{ fontSize: 11.5, color: T.gold, lineHeight: 1.5 }}>
+                  {"The column first read as "
+                    + (/amount|debit|credit/.test(reading.repaired.join(" ")) ? "the amount" : reading.repaired.indexOf("date") !== -1 ? "the date" : "the shop")
+                    + " didn't match what's in it, so Richy switched it. Check the first rows above."}
+                </div>
+              )}
               {reading.dateFormat && reading.dateFormat.conflict && (
                 <div style={{ fontSize: 11.5, color: T.gold, lineHeight: 1.5 }}>
                   {"The dates in this file don't agree with each other, so I had to pick. Check the day-first setting below."}

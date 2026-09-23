@@ -59,7 +59,7 @@ const FNS = ["pad2", "parseCSV", "csvScan", "csvPickDelim", "sniffMap", "parseIm
   "normalizeMerchant", "shopKey", "labelSimilarity", "dayGap", "dupScore",
   "csvDecodeBytes", "csvIsDateCell", "csvIsNumberCell", "csvCellKind", "csvRowKinds",
   "csvRowIsData", "csvFirstDataRow", "csvMaskCell", "csvColumnProfiles", "csvSkeleton",
-  "csvHash", "csvFingerprint", "csvDetectDateFormat", "csvDetectSign",
+  "csvHash", "csvFingerprint", "csvDetectDateFormat", "csvDetectSign", "csvColumnKinds", "csvRepairMap",
   "csvParseJsonBlock", "csvCol", "csvConf", "alfredErr",
   // The spreadsheet reader. Everything from the zip directory up to "what kind
   // of file is this" is pulled in, because a .xlsx is read byte by byte and
