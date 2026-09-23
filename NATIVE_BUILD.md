@@ -153,7 +153,8 @@ the only blank to fill is the demo account's email and password.
 "Data Used to Track You": **none**. No third-party advertising or analytics SDKs.
 
 **Account deletion (guideline 5.1.1(v))**: in the review notes, point the
-reviewer at Profile → Privacy & Data → Danger zone → "Delete account & data".
+reviewer at Profile → "Delete account & data" (directly under "Sign out"; also
+under Privacy & Data → Danger zone).
 This deletes the database record, bank keys, and the sign-in account itself.
 
 **Guideline 2.5.2 (no downloaded code)**: the app ships a fully precompiled

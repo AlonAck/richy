@@ -142,11 +142,13 @@ requires users to be 16 or older; the sign-up form validates the date of birth
 you enter.
 
 ACCOUNT DELETION (Guideline 5.1.1(v))
-Profile tab -> "Privacy & Data" -> "Danger zone" -> "Delete account & data".
+Profile tab -> scroll to the bottom -> "Delete account & data", directly under
+"Sign out". (Also reachable from Profile -> "Privacy & Data" -> "Danger zone".)
 Type DELETE to confirm. This permanently erases the account: all financial
 records, any bank-sync keys, any bank connection tokens, household membership,
-and the sign-in account itself. There is also "Export my data" in the same
-section, which downloads a complete copy as a JSON file.
+and the sign-in account itself. The deletion screen links to "export your
+data" first, and "Privacy & Data" has "Export my data", which downloads a
+complete copy as a JSON file.
 
 "CONNECT BANK LEUMI (DEMO)" IS A SIMULATION
 Profile -> Bank Sync includes a feature labeled "Connect Bank Leumi (Demo)".

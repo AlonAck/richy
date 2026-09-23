@@ -1723,7 +1723,7 @@ var T1_STRINGS = {
   en: {
     // screen titles
     debts:"Debts", instructions:"Alfred's Instructions", investing:"Investing", stock:"Stock", scout:"Stock Scout",
-    privacy:"Privacy & Data", password:"Password", editEmail:"Email", editDob:"Date of Birth",
+    privacy:"Privacy & Data", deleteAccount:"Delete account", password:"Password", editEmail:"Email", editDob:"Date of Birth",
     editFinancial:"Financial Profile", business:"Business", collab:"Collab", entryMethod:"Adding transactions",
     periodMode:"Date Range", bankSync:"Bank Sync", editOpeningBalance:"Opening balance",
     logMonth:"Log this month", tripHistory:"Trip History", badges:"Badges", settings:"Settings",
@@ -1767,7 +1767,13 @@ var T1_STRINGS = {
     importCsv:"Import a statement",
     dbNoDebts:"No debts tracked", dbNoDebtsSub:"Add a card, loan, or overdraft with its balance and interest rate, and I'll show you the fastest way out.", dbAddFirst:"Add your first debt", dbTotalOwed:"Total owed",
     obTypeItInstead:"type it instead",
-    pfBadges:"Badges", pfManage:"Manage", pfYourData:"Your data", pfRecentActivity:"Recent activity", pfGreenMonth:"Green month", pfBudgetRuns:"Budget runs", pfNoRuns:"No runs going yet", pfSharedBudgets:"Shared budgets", pfNotSharing:"Not sharing with anyone", pfBudgetBooks:"Budget books", pfTripHistory:"Trip history", pfYourPlan:"Your plan", pfYourPlanSub:"Alfred's read on your money", pfBankSync:"Bank sync", pfPrivacy:"Privacy and data", pfPrivacySub:"Export, sharing, delete", pfNothingTracked:"Nothing tracked", pfNoBadgesYet:"Nothing earned yet. Log a transaction, set a budget, confirm a week - they start arriving quickly.", pfConfirm:"Confirm", pfNOfM:"{n} of {m}", pfSettings:"Settings", pfNMembers:"{n} members", pfOneMember:"1 member", pfNEnded:"{n} ended", pfNTotal:"{n} total", pfNOf12:"{n} of 12 this year",
+    pfBadges:"Badges", pfManage:"Manage", pfYourData:"Your data", pfRecentActivity:"Recent activity", pfGreenMonth:"Green month", pfBudgetRuns:"Budget runs", pfNoRuns:"No runs going yet", pfSharedBudgets:"Shared budgets", pfNotSharing:"Not sharing with anyone", pfBudgetBooks:"Budget books", pfTripHistory:"Trip history", pfYourPlan:"Your plan", pfYourPlanSub:"Alfred's read on your money", pfBankSync:"Bank sync", pfPrivacy:"Privacy and data", pfPrivacySub:"Export, sharing, delete", pfDeleteAccount:"Delete account & data",
+    daWarn:"This cannot be undone", daBody:"This permanently erases your entire account: every transaction, budget, goal, note, savings and business record, your bank-sync keys, and your sign-in itself.",
+    daExport:"Consider {link} first.", daExportLink:"exporting your data", daType:"Type {word} to confirm:", daWord:"DELETE",
+    daConfirm:"Delete everything", daDeleting:"Deleting...", daCancel:"Cancel",
+    daErrSession:"Your session expired. Sign out and back in, then try again.",
+    daErrFailed:"Deletion didn't go through. Try again, or email richysupport@gmail.com.",
+    daErrPartial:"Some data could not be removed automatically. Email richysupport@gmail.com and we'll finish it manually.", pfNothingTracked:"Nothing tracked", pfNoBadgesYet:"Nothing earned yet. Log a transaction, set a budget, confirm a week - they start arriving quickly.", pfConfirm:"Confirm", pfNOfM:"{n} of {m}", pfSettings:"Settings", pfNMembers:"{n} members", pfOneMember:"1 member", pfNEnded:"{n} ended", pfNTotal:"{n} total", pfNOf12:"{n} of 12 this year",
     setAiAlfred:"AI & Alfred", setVisual:"Visual", setYourPlan:"Your plan", setInstructions:"Alfred's instructions", setOpeningBalance:"Opening balance", setLogMonth:"Log this month", setEntryMethod:"Adding transactions", setDateRange:"Date range", setBankSync:"Bank Sync", setAppearance:"Appearance", setYourName:"Your name", setCollab:"Collab", setDebts:"Debts", setPrivacy:"Privacy & data", valCustom:"Custom", valDefault:"Default", valOn:"On", valOff:"Off", valCsvImport:"File import", valManual:"Manual", valPastMonth:"Past month", valThisMonth:"This month", valTrackedN:"{n} tracked", valInviteN:"{n} invites", valInvite1:"1 invite", dashTipDebtTitle:"Crush your debt", dashTipDebtSub:"Payoff plan and a debt-free date", dashTipCollabTitle:"Add your partner", dashTipCollabSub:"Share budgets and goals", dashTipSyncTitle:"Set up Bank Sync", dashTipSyncSub:"Log expenses from your phone's payment notifications", dashTipTripTitle:"Plan a trip", dashTipTripSub:"Let Alfred split your travel budget", setLanguageSub:"App language", setCurrencySub:"How money is shown", openAnAccount:"Open an account", totalSetAside:"Total set aside", businessLabel:"Business", investingLabel:"Investing",
     dscBigDecision:"Alfred is an AI, not a licensed financial advisor - always do your own research before a decision this size.",
     dscInvestRisk:"Alfred is an AI assistant, not a licensed financial advisor. Investing involves risk, including the possible loss of your money, and past performance doesn't guarantee future results.",
@@ -1780,7 +1786,7 @@ var T1_STRINGS = {
   },
   he: {
     debts:"חובות", instructions:"ההוראות לריצ'רד", investing:"השקעות", stock:"מניה", scout:"סורק המניות",
-    privacy:"פרטיות ונתונים", password:"סיסמה", editEmail:"אימייל", editDob:"תאריך לידה",
+    privacy:"פרטיות ונתונים", deleteAccount:"מחיקת חשבון", password:"סיסמה", editEmail:"אימייל", editDob:"תאריך לידה",
     editFinancial:"פרופיל פיננסי", business:"עסק", collab:"שיתוף", entryMethod:"הוספת עסקאות",
     periodMode:"טווח תאריכים", bankSync:"סנכרון בנק", editOpeningBalance:"יתרת פתיחה",
     logMonth:"תיעוד החודש", tripHistory:"היסטוריית טיולים", badges:"תגים", settings:"הגדרות",
@@ -1819,7 +1825,13 @@ var T1_STRINGS = {
     importCsv:"ייבוא דף חשבון",
     dbNoDebts:"אין חובות במעקב", dbNoDebtsSub:"הוסיפו כרטיס, הלוואה או מסגרת עם היתרה והריבית, ואראה לכם את הדרך המהירה ביותר לצאת מזה.", dbAddFirst:"הוספת החוב הראשון", dbTotalOwed:"סך החוב",
     obTypeItInstead:"אפשר להקליד במקום",
-    pfBadges:"תגים", pfManage:"ניהול", pfYourData:"הנתונים שלך", pfRecentActivity:"פעילות אחרונה", pfGreenMonth:"חודש ירוק", pfBudgetRuns:"רצפי תקציב", pfNoRuns:"אין רצף פעיל עדיין", pfSharedBudgets:"תקציבים משותפים", pfNotSharing:"לא משתפים עם אף אחד", pfBudgetBooks:"ספרי תקציב", pfTripHistory:"היסטוריית טיולים", pfYourPlan:"התוכנית שלך", pfYourPlanSub:"מה שריצ'רד רואה בכסף שלך", pfBankSync:"סנכרון בנק", pfPrivacy:"פרטיות ונתונים", pfPrivacySub:"ייצוא, שיתוף, מחיקה", pfNothingTracked:"אין מעקב", pfNoBadgesYet:"עוד לא הרווחתם תגים. רשמו עסקה, הגדירו תקציב, אשרו שבוע - הם מגיעים מהר.", pfConfirm:"אישור", pfNOfM:"{n} מתוך {m}", pfSettings:"הגדרות", pfNMembers:"{n} חברים", pfOneMember:"חבר אחד", pfNEnded:"{n} הסתיימו", pfNTotal:"{n} בסך הכל", pfNOf12:"{n} מתוך 12 השנה",
+    pfBadges:"תגים", pfManage:"ניהול", pfYourData:"הנתונים שלך", pfRecentActivity:"פעילות אחרונה", pfGreenMonth:"חודש ירוק", pfBudgetRuns:"רצפי תקציב", pfNoRuns:"אין רצף פעיל עדיין", pfSharedBudgets:"תקציבים משותפים", pfNotSharing:"לא משתפים עם אף אחד", pfBudgetBooks:"ספרי תקציב", pfTripHistory:"היסטוריית טיולים", pfYourPlan:"התוכנית שלך", pfYourPlanSub:"מה שריצ'רד רואה בכסף שלך", pfBankSync:"סנכרון בנק", pfPrivacy:"פרטיות ונתונים", pfPrivacySub:"ייצוא, שיתוף, מחיקה", pfDeleteAccount:"מחיקת החשבון והנתונים",
+    daWarn:"אי אפשר לבטל את זה", daBody:"הפעולה מוחקת לצמיתות את כל החשבון שלכם: כל עסקה, תקציב, יעד, הערה, רשומת חיסכון ועסק, את מפתחות סנכרון הבנק ואת פרטי ההתחברות עצמם.",
+    daExport:"כדאי {link} קודם.", daExportLink:"לייצא את הנתונים שלכם", daType:"הקלידו {word} לאישור:", daWord:"מחק",
+    daConfirm:"מחק הכול", daDeleting:"מוחק...", daCancel:"ביטול",
+    daErrSession:"פג תוקף ההתחברות. התנתקו והתחברו מחדש, ואז נסו שוב.",
+    daErrFailed:"המחיקה לא הצליחה. נסו שוב, או כתבו ל-richysupport@gmail.com.",
+    daErrPartial:"חלק מהנתונים לא נמחקו אוטומטית. כתבו ל-richysupport@gmail.com ונסיים את המחיקה ידנית.", pfNothingTracked:"אין מעקב", pfNoBadgesYet:"עוד לא הרווחתם תגים. רשמו עסקה, הגדירו תקציב, אשרו שבוע - הם מגיעים מהר.", pfConfirm:"אישור", pfNOfM:"{n} מתוך {m}", pfSettings:"הגדרות", pfNMembers:"{n} חברים", pfOneMember:"חבר אחד", pfNEnded:"{n} הסתיימו", pfNTotal:"{n} בסך הכל", pfNOf12:"{n} מתוך 12 השנה",
     setAiAlfred:"ריצ'רד ו-AI", setVisual:"תצוגה", setYourPlan:"התוכנית שלך", setInstructions:"ההוראות לריצ'רד", setOpeningBalance:"יתרת פתיחה", setLogMonth:"תיעוד החודש", setEntryMethod:"הוספת עסקאות", setDateRange:"טווח תאריכים", setBankSync:"סנכרון בנק", setAppearance:"מראה", setYourName:"השם שלך", setCollab:"שיתוף", setDebts:"חובות", setPrivacy:"פרטיות ונתונים", valCustom:"מותאם", valDefault:"ברירת מחדל", valOn:"פעיל", valOff:"כבוי", valCsvImport:"ייבוא קובץ", valManual:"ידני", valPastMonth:"החודש האחרון", valThisMonth:"החודש הנוכחי", valTrackedN:"{n} במעקב", valInviteN:"{n} הזמנות", valInvite1:"הזמנה אחת", dashTipDebtTitle:"לסגור את החובות", dashTipDebtSub:"תוכנית סגירה ותאריך שבו נגמר החוב", dashTipCollabTitle:"לצרף את בן/בת הזוג", dashTipCollabSub:"שיתוף תקציבים ויעדים", dashTipSyncTitle:"להפעיל סנכרון בנק", dashTipSyncSub:"רישום הוצאות מהתראות התשלום בטלפון", dashTipTripTitle:"לתכנן טיול", dashTipTripSub:"ריצ'רד יחלק את תקציב הנסיעה", setLanguageSub:"שפת האפליקציה", setCurrencySub:"איך הכסף מוצג", openAnAccount:"פתיחת חשבון", totalSetAside:"סך הכל בצד", businessLabel:"עסק", investingLabel:"השקעות",
     dscBigDecision:"ריצ'רד הוא AI ולא יועץ פיננסי מורשה - תמיד ערכו בדיקה עצמאית לפני החלטה בסדר גודל כזה.",
     dscInvestRisk:"ריצ'רד הוא עוזר AI ולא יועץ פיננסי מורשה. השקעה כרוכה בסיכון, כולל אפשרות לאובדן הכסף, ותשואות עבר אינן מבטיחות תשואות עתידיות.",
@@ -1832,7 +1844,7 @@ var T1_STRINGS = {
   },
   ar: {
     debts:"الديون", instructions:"تعليمات ريتشارد", investing:"الاستثمار", stock:"سهم", scout:"كشّاف الأسهم",
-    privacy:"الخصوصية والبيانات", password:"كلمة المرور", editEmail:"البريد الإلكتروني", editDob:"تاريخ الميلاد",
+    privacy:"الخصوصية والبيانات", deleteAccount:"حذف الحساب", password:"كلمة المرور", editEmail:"البريد الإلكتروني", editDob:"تاريخ الميلاد",
     editFinancial:"الملف المالي", business:"الأعمال", collab:"المشاركة", entryMethod:"إضافة المعاملات",
     periodMode:"النطاق الزمني", bankSync:"مزامنة البنك", editOpeningBalance:"الرصيد الافتتاحي",
     logMonth:"تسجيل هذا الشهر", tripHistory:"سجل الرحلات", badges:"الشارات", settings:"الإعدادات",
@@ -1871,7 +1883,13 @@ var T1_STRINGS = {
     importCsv:"استيراد كشف حساب",
     dbNoDebts:"لا ديون متتبَّعة", dbNoDebtsSub:"أضف بطاقة أو قرضاً أو سحباً على المكشوف مع الرصيد ونسبة الفائدة، وسأريك أسرع طريق للخروج.", dbAddFirst:"أضف أول دين", dbTotalOwed:"إجمالي المستحق",
     obTypeItInstead:"اكتبه بدلاً من ذلك",
-    pfBadges:"الشارات", pfManage:"إدارة", pfYourData:"بياناتك", pfRecentActivity:"النشاط الأخير", pfGreenMonth:"شهر أخضر", pfBudgetRuns:"سلاسل الميزانية", pfNoRuns:"لا توجد سلسلة بعد", pfSharedBudgets:"ميزانيات مشتركة", pfNotSharing:"لا تشارك مع أحد", pfBudgetBooks:"دفاتر الميزانية", pfTripHistory:"سجل الرحلات", pfYourPlan:"خطتك", pfYourPlanSub:"قراءة ريتشارد لأموالك", pfBankSync:"مزامنة البنك", pfPrivacy:"الخصوصية والبيانات", pfPrivacySub:"تصدير، مشاركة، حذف", pfNothingTracked:"لا شيء متتبَّع", pfNoBadgesYet:"لم تكسب شيئاً بعد. سجّل معاملة، حدّد ميزانية، أكّد أسبوعاً - وستبدأ بالوصول سريعاً.", pfConfirm:"تأكيد", pfNOfM:"{n} من {m}", pfSettings:"الإعدادات", pfNMembers:"{n} أعضاء", pfOneMember:"عضو واحد", pfNEnded:"{n} منتهية", pfNTotal:"{n} إجمالاً", pfNOf12:"{n} من 12 هذا العام",
+    pfBadges:"الشارات", pfManage:"إدارة", pfYourData:"بياناتك", pfRecentActivity:"النشاط الأخير", pfGreenMonth:"شهر أخضر", pfBudgetRuns:"سلاسل الميزانية", pfNoRuns:"لا توجد سلسلة بعد", pfSharedBudgets:"ميزانيات مشتركة", pfNotSharing:"لا تشارك مع أحد", pfBudgetBooks:"دفاتر الميزانية", pfTripHistory:"سجل الرحلات", pfYourPlan:"خطتك", pfYourPlanSub:"قراءة ريتشارد لأموالك", pfBankSync:"مزامنة البنك", pfPrivacy:"الخصوصية والبيانات", pfPrivacySub:"تصدير، مشاركة، حذف", pfDeleteAccount:"حذف الحساب والبيانات",
+    daWarn:"لا يمكن التراجع عن هذا", daBody:"يؤدي هذا إلى محو حسابك بالكامل نهائيًا: كل معاملة وميزانية وهدف وملاحظة وسجل ادخار وأعمال، ومفاتيح مزامنة البنك، وتسجيل دخولك نفسه.",
+    daExport:"ننصحك {link} أولًا.", daExportLink:"بتصدير بياناتك", daType:"اكتب {word} للتأكيد:", daWord:"حذف",
+    daConfirm:"احذف كل شيء", daDeleting:"جارٍ الحذف...", daCancel:"إلغاء",
+    daErrSession:"انتهت صلاحية جلستك. سجّل الخروج ثم الدخول مجددًا، وحاول مرة أخرى.",
+    daErrFailed:"لم يكتمل الحذف. حاول مرة أخرى، أو راسلنا على richysupport@gmail.com.",
+    daErrPartial:"تعذّر حذف بعض البيانات تلقائيًا. راسلنا على richysupport@gmail.com وسنكمل الحذف يدويًا.", pfNothingTracked:"لا شيء متتبَّع", pfNoBadgesYet:"لم تكسب شيئاً بعد. سجّل معاملة، حدّد ميزانية، أكّد أسبوعاً - وستبدأ بالوصول سريعاً.", pfConfirm:"تأكيد", pfNOfM:"{n} من {m}", pfSettings:"الإعدادات", pfNMembers:"{n} أعضاء", pfOneMember:"عضو واحد", pfNEnded:"{n} منتهية", pfNTotal:"{n} إجمالاً", pfNOf12:"{n} من 12 هذا العام",
     setAiAlfred:"ريتشارد والذكاء الاصطناعي", setVisual:"المظهر", setYourPlan:"خطتك", setInstructions:"تعليمات ريتشارد", setOpeningBalance:"الرصيد الافتتاحي", setLogMonth:"تسجيل هذا الشهر", setEntryMethod:"إضافة المعاملات", setDateRange:"النطاق الزمني", setBankSync:"مزامنة البنك", setAppearance:"الشكل", setYourName:"اسمك", setCollab:"المشاركة", setDebts:"الديون", setPrivacy:"الخصوصية والبيانات", valCustom:"مخصص", valDefault:"افتراضي", valOn:"مفعّل", valOff:"معطّل", valCsvImport:"استيراد ملف", valManual:"يدوي", valPastMonth:"الشهر الماضي", valThisMonth:"هذا الشهر", valTrackedN:"{n} متتبَّع", valInviteN:"{n} دعوات", valInvite1:"دعوة واحدة", dashTipDebtTitle:"تخلّص من ديونك", dashTipDebtSub:"خطة سداد وتاريخ للتحرر من الدين", dashTipCollabTitle:"أضف شريكك", dashTipCollabSub:"شارك الميزانيات والأهداف", dashTipSyncTitle:"فعّل مزامنة البنك", dashTipSyncSub:"سجّل المصروفات من إشعارات الدفع على هاتفك", dashTipTripTitle:"خطّط رحلة", dashTipTripSub:"دع ريتشارد يوزّع ميزانية سفرك", setLanguageSub:"لغة التطبيق", setCurrencySub:"كيف تُعرض الأموال", openAnAccount:"فتح حساب", totalSetAside:"إجمالي المخصص", businessLabel:"أعمال", investingLabel:"استثمار",
     dscBigDecision:"ريتشارد ذكاء اصطناعي وليس مستشاراً مالياً مرخصاً - تحقق بنفسك قبل قرار بهذا الحجم.",
     dscInvestRisk:"ريتشارد مساعد ذكاء اصطناعي وليس مستشاراً مالياً مرخصاً. الاستثمار ينطوي على مخاطر، بما في ذلك احتمال خسارة أموالك، والأداء السابق لا يضمن النتائج المستقبلية.",
@@ -1884,7 +1902,7 @@ var T1_STRINGS = {
   },
   ru: {
     debts:"Долги", instructions:"Инструкции Ричарду", investing:"Инвестиции", stock:"Акция", scout:"Поиск акций",
-    privacy:"Приватность и данные", password:"Пароль", editEmail:"Эл. почта", editDob:"Дата рождения",
+    privacy:"Приватность и данные", deleteAccount:"Удаление аккаунта", password:"Пароль", editEmail:"Эл. почта", editDob:"Дата рождения",
     editFinancial:"Финансовый профиль", business:"Бизнес", collab:"Совместно", entryMethod:"Добавление операций",
     periodMode:"Период", bankSync:"Синхронизация с банком", editOpeningBalance:"Начальный баланс",
     logMonth:"Записать месяц", tripHistory:"История поездок", badges:"Значки", settings:"Настройки",
@@ -1923,7 +1941,13 @@ var T1_STRINGS = {
     importCsv:"Импорт выписки",
     dbNoDebts:"Долги не отслеживаются", dbNoDebtsSub:"Добавьте карту, кредит или овердрафт с остатком и ставкой, и я покажу самый быстрый выход.", dbAddFirst:"Добавить первый долг", dbTotalOwed:"Всего долга",
     obTypeItInstead:"ввести вручную",
-    pfBadges:"Значки", pfManage:"Управление", pfYourData:"Ваши данные", pfRecentActivity:"Последние события", pfGreenMonth:"Зелёный месяц", pfBudgetRuns:"Серии бюджета", pfNoRuns:"Серий пока нет", pfSharedBudgets:"Общие бюджеты", pfNotSharing:"Ни с кем не делитесь", pfBudgetBooks:"Книги бюджета", pfTripHistory:"История поездок", pfYourPlan:"Ваш план", pfYourPlanSub:"Как Ричард видит ваши деньги", pfBankSync:"Синхронизация с банком", pfPrivacy:"Приватность и данные", pfPrivacySub:"Экспорт, доступ, удаление", pfNothingTracked:"Ничего не отслеживается", pfNoBadgesYet:"Пока ничего не заработано. Запишите операцию, задайте бюджет, подтвердите неделю - они начнут приходить быстро.", pfConfirm:"Подтвердить", pfNOfM:"{n} из {m}", pfSettings:"Настройки", pfNMembers:"{n} участников", pfOneMember:"1 участник", pfNEnded:"{n} завершено", pfNTotal:"{n} всего", pfNOf12:"{n} из 12 в этом году",
+    pfBadges:"Значки", pfManage:"Управление", pfYourData:"Ваши данные", pfRecentActivity:"Последние события", pfGreenMonth:"Зелёный месяц", pfBudgetRuns:"Серии бюджета", pfNoRuns:"Серий пока нет", pfSharedBudgets:"Общие бюджеты", pfNotSharing:"Ни с кем не делитесь", pfBudgetBooks:"Книги бюджета", pfTripHistory:"История поездок", pfYourPlan:"Ваш план", pfYourPlanSub:"Как Ричард видит ваши деньги", pfBankSync:"Синхронизация с банком", pfPrivacy:"Приватность и данные", pfPrivacySub:"Экспорт, доступ, удаление", pfDeleteAccount:"Удалить аккаунт и данные",
+    daWarn:"Это нельзя отменить", daBody:"Это навсегда удалит весь ваш аккаунт: все транзакции, бюджеты, цели, заметки, записи о сбережениях и бизнесе, ключи синхронизации с банком и сам вход в аккаунт.",
+    daExport:"Рекомендуем сначала {link}.", daExportLink:"экспортировать данные", daType:"Введите {word} для подтверждения:", daWord:"УДАЛИТЬ",
+    daConfirm:"Удалить всё", daDeleting:"Удаление...", daCancel:"Отмена",
+    daErrSession:"Сессия истекла. Выйдите и войдите снова, затем повторите попытку.",
+    daErrFailed:"Удаление не удалось. Попробуйте ещё раз или напишите на richysupport@gmail.com.",
+    daErrPartial:"Часть данных не удалось удалить автоматически. Напишите на richysupport@gmail.com, и мы завершим удаление вручную.", pfNothingTracked:"Ничего не отслеживается", pfNoBadgesYet:"Пока ничего не заработано. Запишите операцию, задайте бюджет, подтвердите неделю - они начнут приходить быстро.", pfConfirm:"Подтвердить", pfNOfM:"{n} из {m}", pfSettings:"Настройки", pfNMembers:"{n} участников", pfOneMember:"1 участник", pfNEnded:"{n} завершено", pfNTotal:"{n} всего", pfNOf12:"{n} из 12 в этом году",
     setAiAlfred:"Ричард и ИИ", setVisual:"Оформление", setYourPlan:"Ваш план", setInstructions:"Инструкции Ричарду", setOpeningBalance:"Начальный баланс", setLogMonth:"Записать месяц", setEntryMethod:"Добавление операций", setDateRange:"Период", setBankSync:"Синхронизация с банком", setAppearance:"Тема", setYourName:"Ваше имя", setCollab:"Совместно", setDebts:"Долги", setPrivacy:"Приватность и данные", valCustom:"Своё", valDefault:"По умолчанию", valOn:"Вкл", valOff:"Выкл", valCsvImport:"Импорт файла", valManual:"Вручную", valPastMonth:"Прошлый месяц", valThisMonth:"Текущий месяц", valTrackedN:"{n} в учёте", valInviteN:"{n} приглашений", valInvite1:"1 приглашение", dashTipDebtTitle:"Закрыть долги", dashTipDebtSub:"План погашения и дата свободы от долга", dashTipCollabTitle:"Добавить партнёра", dashTipCollabSub:"Общие бюджеты и цели", dashTipSyncTitle:"Настроить синхронизацию", dashTipSyncSub:"Записывать траты из уведомлений об оплате", dashTipTripTitle:"Спланировать поездку", dashTipTripSub:"Ричард распределит бюджет поездки", setLanguageSub:"Язык приложения", setCurrencySub:"Как показываются деньги", openAnAccount:"Открыть счёт", totalSetAside:"Всего отложено", businessLabel:"Бизнес", investingLabel:"Инвестиции",
     dscBigDecision:"Ричард - это ИИ, а не лицензированный финансовый советник. Перед решением такого масштаба проверьте всё сами.",
     dscInvestRisk:"Ричард - ИИ-помощник, а не лицензированный финансовый советник. Инвестирование связано с риском, включая возможную потерю денег, а прошлая доходность не гарантирует будущую.",
@@ -37670,37 +37694,44 @@ function InfoRow(props) {
   return <div style={rowStyle}>{label}{right}</div>;
 }
 
-function PrivacyView(props) {
+// GDPR/App-Store data portability: hand the user their entire blob as a file.
+// Shared by Privacy & Data and the Delete account screen's "export first" link.
+function downloadRichyExport(blob) {
+  try {
+    var payload = JSON.stringify(blob || {}, null, 2);
+    var url = URL.createObjectURL(new Blob([payload], { type: "application/json" }));
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "richy-export-" + new Date().toISOString().slice(0, 10) + ".json";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 4000);
+  } catch (e) { window.alert("Export failed: " + ((e && e.message) || "unknown error")); }
+}
+
+// Its own screen, reached from Profile (right under Sign out) and from Privacy
+// & Data's Danger zone, so nobody has to scroll to the bottom of a long settings
+// page to find it. Opens straight on the confirmation.
+function DeleteAccountView(props) {
   var blob = props.blob || {};
-  var oData = blob.onboardingData || {};
-  var email = blob.email || "";
-  var _dc = useState(false); var delOpen = _dc[0]; var setDelOpen = _dc[1];
   var _dt = useState("");    var delText = _dt[0]; var setDelText = _dt[1];
   var _db = useState(false); var delBusy = _db[0]; var setDelBusy = _db[1];
   var _de = useState("");    var delErr = _de[0]; var setDelErr = _de[1];
-
-  // GDPR/App-Store data portability: hand the user their entire blob as a file.
-  function exportData() {
-    try {
-      var payload = JSON.stringify(blob, null, 2);
-      var url = URL.createObjectURL(new Blob([payload], { type: "application/json" }));
-      var a = document.createElement("a");
-      a.href = url;
-      a.download = "richy-export-" + new Date().toISOString().slice(0, 10) + ".json";
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      setTimeout(function() { URL.revokeObjectURL(url); }, 4000);
-    } catch (e) { window.alert("Export failed: " + ((e && e.message) || "unknown error")); }
-  }
+  // The typed word is localised (a Hebrew keyboard shouldn't have to switch to
+  // type DELETE), but DELETE itself is always accepted too.
+  var typed = delText.trim().toUpperCase();
+  var confirmed = typed === "DELETE" || typed === tr("daWord").toUpperCase();
+  var exportParts = tr("daExport").split("{link}");
+  var typeParts = tr("daType").split("{word}");
 
   // Permanent account deletion - server erases Firestore + bank keys + the
   // Firebase Auth account itself (api/delete-account.js), then we sign out.
   function deleteAccount() {
-    if (delBusy) return;
+    if (delBusy || !confirmed) return;
     setDelErr(""); setDelBusy(true);
     var apiUrl = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "data:" || location.protocol === "file:") ? "https://richy-mgkl.vercel.app/api/delete-account" : "/api/delete-account";
     CLOUD.getIdToken()
       .then(function(token) {
-        if (!token) throw new Error("Your session expired. Sign out and back in, then try again.");
+        if (!token) throw new Error(tr("daErrSession"));
         return fetch(apiUrl, { method: "POST", headers: { Authorization: "Bearer " + token } });
       })
       .then(function(r) { return r.json().catch(function() { return {}; }).then(function(j) { return { status: r.status, body: j }; }); })
@@ -37710,17 +37741,48 @@ function PrivacyView(props) {
         if (res.body && res.body.partial) {
           // Most of the data is gone but a step failed - tell the user, then
           // still sign them out (their account blob no longer exists).
-          window.alert(res.body.message || "Some data could not be removed automatically. Email richysupport@gmail.com and we'll finish it manually.");
+          window.alert(res.body.message || tr("daErrPartial"));
           props.onAccountDeleted();
           return;
         }
-        setDelErr((res.body && res.body.error && res.body.error.message) || "Deletion didn't go through. Try again, or email richysupport@gmail.com.");
+        setDelErr((res.body && res.body.error && res.body.error.message) || tr("daErrFailed"));
       })
       .catch(function(e) {
         setDelBusy(false);
-        setDelErr((e && e.message) || "Deletion didn't go through. Try again, or email richysupport@gmail.com.");
+        setDelErr((e && e.message) || tr("daErrFailed"));
       });
   }
+
+  return (
+    <div>
+      <SubViewBack onBack={props.onBack} label={props.backLabel || tr("profile")} />
+      <Card style={{ padding: "18px 20px", margin: "14px 0 16px", border: "1px solid rgba(224,48,48,0.25)" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.red, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>{"⚠ " + tr("daWarn")}</div>
+        <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.55, marginBottom: 12 }}>
+          {tr("daBody") + " " + exportParts[0]}<button onClick={function() { downloadRichyExport(blob); }} style={{ background: "none", border: "none", padding: 0, color: T.orange, fontWeight: 700, fontSize: 13, fontFamily: UI, cursor: "pointer" }}>{tr("daExportLink")}</button>{exportParts[1] || ""}
+        </div>
+        <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 8 }}>{typeParts[0]}<strong style={{ color: T.red }}>{tr("daWord")}</strong>{typeParts[1] || ""}</div>
+        <input value={delText} onChange={function(e) { setDelText(e.target.value); }} placeholder={tr("daWord")} aria-label={tr("daType").replace("{word}", tr("daWord"))}
+          style={{ width: "100%", background: T.bg, border: "1px solid " + T.sep, borderRadius: 10, padding: "10px 12px", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", marginBottom: 10 }} />
+        {delErr && <div style={{ fontSize: 12.5, color: T.red, lineHeight: 1.5, marginBottom: 10 }}>{delErr}</div>}
+        <div style={{ display: "flex", gap: 8 }}>
+          <LiquidButton onClick={deleteAccount} disabled={!confirmed || delBusy}
+            variant="red" flex={1}>
+            {delBusy ? tr("daDeleting") : tr("daConfirm")}</LiquidButton>
+          <LiquidButton onClick={props.onBack} disabled={delBusy}
+            variant="neutral" flex={1}>{tr("daCancel")}</LiquidButton>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function PrivacyView(props) {
+  var blob = props.blob || {};
+  var oData = blob.onboardingData || {};
+  var email = blob.email || "";
+  function exportData() { downloadRichyExport(blob); }
+
   var langLabel = (LANGUAGE_OPTIONS.filter(function(o) { return o.code === (blob.lang || "en"); })[0] || {}).label || "English";
   var curLabel = (CURRENCY_OPTIONS.filter(function(o) { return o.sym === (blob.currency || "$"); })[0] || {}).label || (blob.currency || "$");
   var themeLabel = themeLabelOf(blob.theme);
@@ -37771,29 +37833,9 @@ function PrivacyView(props) {
       </div>
 
       <div style={secLabel}>Danger zone</div>
-      {!delOpen ? (
-        <Card style={{ overflow: "hidden", marginBottom: 16 }}>
-          <ProfileRow icon="trash" label="Delete account & data" iconBg="rgba(224,48,48,0.12)" iconColor={T.red} onClick={function() { setDelText(""); setDelErr(""); setDelOpen(true); }} last={true} />
-        </Card>
-      ) : (
-        <Card style={{ padding: "18px 20px", marginBottom: 16, border: "1px solid rgba(224,48,48,0.25)" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: T.red, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>⚠ This cannot be undone</div>
-          <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.55, marginBottom: 12 }}>
-            This permanently erases your entire account: every transaction, budget, goal, note, savings and business record, your bank-sync keys, and your sign-in itself. Consider <button onClick={exportData} style={{ background: "none", border: "none", padding: 0, color: T.orange, fontWeight: 700, fontSize: 13, fontFamily: UI, cursor: "pointer" }}>exporting your data</button> first.
-          </div>
-          <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 8 }}>Type <strong style={{ color: T.red }}>DELETE</strong> to confirm:</div>
-          <input value={delText} onChange={function(e) { setDelText(e.target.value); }} placeholder="DELETE"
-            style={{ width: "100%", background: T.bg, border: "1px solid " + T.sep, borderRadius: 10, padding: "10px 12px", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", marginBottom: 10 }} />
-          {delErr && <div style={{ fontSize: 12.5, color: T.red, lineHeight: 1.5, marginBottom: 10 }}>{delErr}</div>}
-          <div style={{ display: "flex", gap: 8 }}>
-            <LiquidButton onClick={deleteAccount} disabled={delText.trim() !== "DELETE" || delBusy}
-              variant="red" flex={1}>
-              {delBusy ? "Deleting..." : "Delete everything"}</LiquidButton>
-            <LiquidButton onClick={function() { setDelOpen(false); }} disabled={delBusy}
-              variant="neutral" flex={1}>Cancel</LiquidButton>
-          </div>
-        </Card>
-      )}
+      <Card style={{ overflow: "hidden", marginBottom: 16 }}>
+        <ProfileRow icon="trash" label="Delete account & data" iconBg="rgba(224,48,48,0.12)" iconColor={T.red} onClick={props.onDeleteAccount} last={true} />
+      </Card>
     </div>
   );
 }
@@ -39279,7 +39321,14 @@ function Profile(props) {
         style={{ marginTop: 24 }}>
         <SVGIcon id="logout" size={17} color={T.red} />Sign out
       </LiquidButton>
-      <div style={{ textAlign: "center", fontSize: 12, color: T.ink3, marginTop: 14, fontFamily: UI }}>
+      {/* Account deletion sits next to Sign out - where people look for it, and
+          where the iOS app has it (App Store 5.1.1(v): easy to find). A quiet
+          text link, not a second big button: findable, but never a mis-tap. */}
+      <button onClick={props.onDeleteAccount}
+        style={{ display: "block", margin: "12px auto 0", background: "none", border: "none", padding: "8px 14px", color: T.red, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
+        {tr("pfDeleteAccount")}
+      </button>
+      <div style={{ textAlign: "center", fontSize: 12, color: T.ink3, marginTop: 6, fontFamily: UI }}>
         {props.email ? "Signed in as " + props.email : ""}
       </div>
     </div>
@@ -42021,14 +42070,15 @@ export default function App() {
         {currentTab === "trips" && <Trips trips={trips} tx={tx} categories={categories} openTripId={openTrip} alfredInstructions={alfredCtx} onSaveTrips={onSaveTrips} onTripReserve={onTripReserve} onBack={function() { setTab(prevTabRef.current === "tripHistory" || prevTabRef.current === "overview" ? prevTabRef.current : "goals"); }} sheetOpen={sheet} setSheetOpen={setSheet} />}
         {currentTab === "tripHistory" && <TripHistoryView trips={trips} onOpenTrip={function(id) { prevTabRef.current = "tripHistory"; setOpenTrip(id); setTab("trips"); }} onBack={function() { setTab("profile"); }} />}
         {currentTab === "categories" && <Categories tx={tx} categories={categories} folders={folders} budgets={budgets} businesses={businesses} investing={investing} savings={savings} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveBudgets={onSaveBudgets} sheetOpen={sheet} setSheetOpen={setSheet} />}
-        {currentTab === "profile" && motivSnap && <Profile user={user} email={blobRef.current.email || ""} snap={motivSnap} feed={motivFeed(motivSnap)} onLogout={handleLogout} tx={tx} goals={goals} savings={savings} businesses={businesses} investing={investing} trips={trips} bankSync={bankSync} household={household} inviteCount={invites.length} debtCount={debts.length} pendingCount={motivSnap.clean.pending ? tx.filter(function(t) { return t.date >= motivSnap.clean.pending.key && t.date < weekAdd(motivSnap.clean.pending.key, 1) && !isOpening(t); }).length : 0} onConfirmWeek={onConfirmWeek} myUid={accountKey} categories={categories} following={social.following} requestCount={social.requests.length} onViewSocial={function() { prevTabRef.current = "profile"; setTab("social"); }} onOpenPerson={function(uid) { prevTabRef.current = "profile"; setOpenPerson(uid); setTab("person"); }} onViewSettings={function() { prevTabRef.current = "profile"; setTab("settings"); }} onViewBadges={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewStreaks={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewGoals={function() { setTab("goals"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewPlan={function() { setTab("plan"); }} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "profile"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} onViewTripHistory={function() { setTab("tripHistory"); }} />}
+        {currentTab === "profile" && motivSnap && <Profile user={user} email={blobRef.current.email || ""} snap={motivSnap} feed={motivFeed(motivSnap)} onLogout={handleLogout} tx={tx} goals={goals} savings={savings} businesses={businesses} investing={investing} trips={trips} bankSync={bankSync} household={household} inviteCount={invites.length} debtCount={debts.length} pendingCount={motivSnap.clean.pending ? tx.filter(function(t) { return t.date >= motivSnap.clean.pending.key && t.date < weekAdd(motivSnap.clean.pending.key, 1) && !isOpening(t); }).length : 0} onConfirmWeek={onConfirmWeek} myUid={accountKey} categories={categories} following={social.following} requestCount={social.requests.length} onViewSocial={function() { prevTabRef.current = "profile"; setTab("social"); }} onOpenPerson={function(uid) { prevTabRef.current = "profile"; setOpenPerson(uid); setTab("person"); }} onViewSettings={function() { prevTabRef.current = "profile"; setTab("settings"); }} onViewBadges={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewStreaks={function() { prevTabRef.current = "profile"; setTab("badges"); }} onViewGoals={function() { setTab("goals"); }} onViewNickname={function() { prevTabRef.current = "profile"; setTab("nickname"); }} onViewPlan={function() { setTab("plan"); }} onViewBankSync={function() { prevTabRef.current = "profile"; setTab("bankSync"); }} onViewCollab={function() { prevTabRef.current = "profile"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "profile"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} onViewTripHistory={function() { setTab("tripHistory"); }} onDeleteAccount={function() { prevTabRef.current = "profile"; setTab("deleteAccount"); }} />}
         {currentTab === "badges" && motivSnap && <BadgesView snap={motivSnap} onOpen={function() {}} onBack={function() { setTab("profile"); }} />}
         {currentTab === "person" && <FriendView uid={openPerson} person={social.following.concat(social.followers).filter(function(p) { return p.uid === openPerson; })[0] || null} stats={(social.following.filter(function(p) { return p.uid === openPerson; })[0] || {}).stats || null} household={household} myUid={accountKey} tx={tx} categories={categories} onBack={function() { setTab(prevTabRef.current === "social" ? "social" : "profile"); }} />}
         {currentTab === "social" && <SocialView social={social} onOpen={function(uid) { prevTabRef.current = "social"; setOpenPerson(uid); setTab("person"); }} onFind={function() { prevTabRef.current = "social"; setTab("findPeople"); }} onAccept={onAcceptFollow} onDecline={onDeclineFollow} onRemoveFollower={onRemoveFollower} onBack={function() { setTab("profile"); }} />}
         {currentTab === "findPeople" && <FindPeopleView myHandle={social.handle} myUid={accountKey} followingUids={social.following.map(function(p) { return p.uid; })} onClaimHandle={onClaimHandle} onFind={CLOUD.findByHandle} onRequest={onRequestFollow} onCopy={copyText} onBack={function() { setTab("social"); }} />}
         {currentTab === "settings" && <SettingsView user={user} currency={currency} lang={lang} theme={theme} entryMethod={entryMethod} periodMode={periodMode} alfredInstructions={alfredInstructions} bankSync={bankSync} householdName={household ? household.name : null} inviteCount={invites.length} debtCount={debts.length} onBack={function() { setTab("profile"); }} onViewPlan={function() { setTab("plan"); }} onViewInstructions={function() { prevTabRef.current = "settings"; setTab("instructions"); }} onViewCurrency={function() { prevTabRef.current = "settings"; setTab("currency"); }} onViewLanguage={function() { prevTabRef.current = "settings"; setTab("language"); }} onViewNickname={function() { prevTabRef.current = "settings"; setTab("nickname"); }} onViewAppearance={function() { prevTabRef.current = "settings"; setTab("appearance"); }} onViewEntryMethod={function() { prevTabRef.current = "settings"; setTab("entryMethod"); }} onViewPeriodMode={function() { prevTabRef.current = "settings"; setTab("periodMode"); }} onViewBankSync={function() { prevTabRef.current = "settings"; setTab("bankSync"); }} onViewLogMonth={function() { prevTabRef.current = "settings"; setTab("logMonth"); }} onViewEditOpeningBalance={function() { prevTabRef.current = "settings"; setTab("editOpeningBalance"); }} onViewCollab={function() { prevTabRef.current = "settings"; setTab("collab"); }} onViewDebts={function() { prevTabRef.current = "settings"; setTab("debts"); }} onViewPrivacy={function() { setTab("privacy"); }} />}
         {currentTab === "analysis" && <FullAnalysisView tx={tx} categories={categories} folders={folders} splitPlan={splitPlan} budgets={budgets} goals={goals} savings={savings} businesses={businesses} investing={investing} username={user} analysis={freshAnalysis ? freshAnalysis.data : null} lang={lang} alfredInstructions={alfredCtx} onBack={function() { setTab("advisor"); }} />}
-        {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} onAccountDeleted={handleLogout} />}
+        {currentTab === "privacy" && <PrivacyView blob={blobRef.current} hasPw={hasPw} onBack={function() { setTab("profile"); }} onViewPassword={function() { setTab("password"); }} onEditEmail={function() { setTab("editEmail"); }} onEditName={function() { prevTabRef.current = "privacy"; setTab("nickname"); }} onEditDob={function() { setTab("editDob"); }} onEditLanguage={function() { prevTabRef.current = "privacy"; setTab("language"); }} onEditCurrency={function() { prevTabRef.current = "privacy"; setTab("currency"); }} onEditTheme={function() { prevTabRef.current = "privacy"; setTab("appearance"); }} onEditFinancial={function() { setTab("editFinancial"); }} onDeleteAccount={function() { prevTabRef.current = "privacy"; setTab("deleteAccount"); }} />}
+        {currentTab === "deleteAccount" && <DeleteAccountView blob={blobRef.current} backLabel={prevTabRef.current === "privacy" ? tr("privacy") : tr("profile")} onBack={function() { setTab(prevTabRef.current === "privacy" ? "privacy" : "profile"); }} onAccountDeleted={handleLogout} />}
         {currentTab === "password" && <PasswordView email={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onDone={function(wasAdded) { if (wasAdded) setHasPw(true); setTab("privacy"); }} />}
         {currentTab === "editEmail" && <EditEmailView currentEmail={blobRef.current.email || ""} hasPw={hasPw} onBack={function() { setTab("privacy"); }} onSave={function(email) { onSaveEmail(email); setTab("privacy"); }} />}
         {currentTab === "editDob" && <EditDobView currentDob={userDob} onBack={function() { setTab("privacy"); }} onSave={function(dob) { onSaveDob(dob); setTab("privacy"); }} />}
