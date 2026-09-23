@@ -59,7 +59,7 @@ const FNS = ["pad2", "parseCSV", "csvScan", "csvPickDelim", "sniffMap", "parseIm
   "normalizeMerchant", "shopKey", "labelSimilarity", "dayGap", "dupScore",
   "csvDecodeBytes", "csvIsDateCell", "csvIsNumberCell", "csvCellKind", "csvRowKinds",
   "csvRowIsData", "csvFirstDataRow", "csvMaskCell", "csvColumnProfiles", "csvSkeleton",
-  "csvHash", "csvFingerprint", "csvDetectDateFormat", "csvDetectSign", "csvColumnKinds", "csvRepairMap", "csvFlowWord", "csvFindFlowColumn", "csvRowMoney", "csvIsRefund", "round2",
+  "csvHash", "csvFingerprint", "csvDetectDateFormat", "csvDetectSign", "csvColumnKinds", "csvRepairMap", "csvFlowWord", "csvFindFlowColumn", "csvRowMoney", "csvIsRefund", "csvHasAny", "csvTransferKind", "csvIncomeKind", "csvRowCategory", "guessImportCatId", "round2",
   // Who decides a shop's category, and the fallbacks under it.
   "catById", "catByName", "catMatchText", "catWordChar", "catHasKeyword", "keywordCatName", "catIsNoise",
   "topKey", "labelHasWord", "suggestCatId", "csvShopHistory", "csvHistoryCat", "csvPlanShops",
@@ -83,7 +83,7 @@ const FNS = ["pad2", "parseCSV", "csvScan", "csvPickDelim", "sniffMap", "parseIm
   "mapColumnsWithAI", "categorizeShopsWithAI"];
 
 // Multi-line constants: the two system prompts and the keyword map.
-const PROMPTS = ["CSV_MAP_SYSTEM", "CSV_SHOPS_SYSTEM", "IMPORT_CAT_KEYWORDS"];
+const PROMPTS = ["CSV_MAP_SYSTEM", "CSV_SHOPS_SYSTEM", "IMPORT_CAT_KEYWORDS", "CSV_TRANSFER_WORDS"];
 
 const body = [
   "var DUP_CERTAIN = 0.86, DUP_MAYBE = 0.55;",

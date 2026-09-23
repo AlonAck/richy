@@ -12929,7 +12929,13 @@ function csvScan(text, delim, maxRows) {
       inQ = false;
       continue;
     }
-    if (ch === "\"") { inQ = true; continue; }
+    // A quote opens a quoted field only where a field STARTS. In the middle of
+    // one it is a character: Hebrew writes its abbreviations with it - בע"מ,
+    // עו"ש, ת"א, ני"ע - and Israeli banks write those straight into the file
+    // unescaped. Read as an opening quote, `שופרסל בע"מ` swallowed every line
+    // after it up to the next quote mark: rows merged, amounts lost, and the
+    // shop and transfer names that survived were glued to their neighbours.
+    if (ch === "\"" && cur.trim() === "") { inQ = true; continue; }
     if (ch === delim) { cells.push(cur); cur = ""; continue; }
     if (ch === "\n") {
       endRow();
@@ -14229,6 +14235,121 @@ function csvIsRefund(desc, positiveOut) {
   return !!positiveOut || /זיכוי|refund|reversal|chargeback/i.test(String(desc || ""));
 }
 
+// ===== CSV IMPORT: TRANSFERS =================================================
+// A statement is not only shops. Four kinds of line are money MOVING, and
+// every one of them used to be sorted as if it were a purchase - a card bill
+// became "Shopping", a savings deposit "Other", a Bit to a friend whatever
+// the word list guessed, and ANY money in that wasn't a refund was "Salary",
+// so a friend paying back for pizza was filed as wages.
+//
+//   card-bill  the card company taking its monthly bill from the bank account.
+//              The spending is the card's own lines; counting the bill too
+//              counts every purchase twice. -> a transfer, not spending.
+//   own        savings, deposits, pension funds, a brokerage, or "between my
+//              accounts". The money is still the user's. -> a transfer.
+//   p2p        Bit / PayBox / a bank transfer to or from a PERSON. Could be
+//              rent, a shared dinner, a gift - the line cannot say, so no
+//              category is invented: Other, marked unsure, and the user's
+//              own answer for that person is remembered.
+//   cash       an ATM. Other, and never sent to Alfred as a "shop".
+// Checked in that order, so "העברה לחשבון חיסכון" is savings, not a person.
+var CSV_TRANSFER_WORDS = {
+  // Not "card payment": a UK bank writes "CARD PAYMENT TO TESCO" on every
+  // ordinary debit-card purchase.
+  cardBill: ["ישראכרט", "isracard", "מקס איט", "max it", "לאומי קארד", "leumi card", "כאל", "visa cal", "כרטיסי אשראי", "כרטיס אשראי", "חיוב כרטיס", "אמריקן אקספרס", "american express", "amex", "דיינרס", "diners", "credit card payment"],
+  cardPaid: ["payment thank you", "payment received", "autopay payment", "online payment", "תשלום התקבל", "תשלום לכרטיס"],
+  own: ["פיקדון", "פקדון", "פיקדונות", "חיסכון", "חסכון", "תוכנית חיסכון", "קרן השתלמות", "קופת גמל", "גמל להשקעה", "העברה עצמית", "בין חשבונות", "פדיון", "תיק השקעות", "ני\"ע", "ניירות ערך",
+    "savings", "own account", "internal transfer", "between accounts", "brokerage", "interactive brokers"],
+  p2p: ["ביט", "bit", "פייבוקס", "paybox", "pepper pay", "העברה", "העברת כספים", "העברה בנקאית", "zelle", "venmo", "cash app", "transfer to", "transfer from", "wire transfer", "revolut"],
+  cash: ["משיכת מזומן", "משיכה מכספומט", "כספומט", "מזומן", "atm", "cash withdrawal"]
+};
+function csvHasAny(text, list) {
+  for (var i = 0; i < list.length; i++) if (catHasKeyword(text, list[i])) return true;
+  return false;
+}
+// "card-bill" | "own" | "p2p" | "cash" | "" for one line. positiveOut says
+// whether this is a card statement - on one, a charge is never the card's own
+// bill, and a money-in "payment received" line is the bill being paid.
+function csvTransferKind(desc, type, positiveOut) {
+  var d = catMatchText(desc);
+  if (positiveOut) {
+    if (type === "income" && csvHasAny(d, CSV_TRANSFER_WORDS.cardPaid)) return "card-bill";
+  } else if (type === "expense" && csvHasAny(d, CSV_TRANSFER_WORDS.cardBill)) {
+    return "card-bill";
+  }
+  // Money in that names itself - "העברת משכורת", "ריבית על פיקדון" - is that
+  // income, not a transfer, whatever other word rides along with it.
+  if (type === "income" && csvIncomeKind(desc)) return "";
+  if (csvHasAny(d, CSV_TRANSFER_WORDS.own)) return "own";
+  if (csvHasAny(d, CSV_TRANSFER_WORDS.p2p)) return "p2p";
+  if (type === "expense" && csvHasAny(d, CSV_TRANSFER_WORDS.cash)) return "cash";
+  return "";
+}
+// What a money-in line that is not a transfer or a refund most likely is.
+// "salary" | "interest" | "benefit" | "" (unknown - the user's history for the
+// same payer decides, and failing that it is a guess, shown as one).
+function csvIncomeKind(desc) {
+  var d = catMatchText(desc);
+  if (csvHasAny(d, ["משכורת", "שכר עבודה", "salary", "payroll", "wages", "paycheck", "direct deposit"])) return "salary";
+  if (csvHasAny(d, ["ריבית", "דיבידנד", "interest", "dividend*"])) return "interest";
+  if (csvHasAny(d, ["ביטוח לאומי", "קצבה", "קצבת", "מענק", "החזר מס", "רשות המסים", "מס הכנסה", "tax refund"])) return "benefit";
+  return "";
+}
+
+// One line's category - or that it is a transfer and has none. ctx: { cats,
+// shops (this import's resolved shop map), saved (the stored shop map), tx
+// (the user's transactions), incomeHist (csvShopHistory(tx, true)) }.
+// Returns { transfer, catId, category, guess, catSure, shopK }: guess marks a
+// line the preview should flag as unsure; shopK is the key a correction to
+// this line is remembered under - money in is kept apart ("in:") so an
+// employer's name can never teach a purchase, and transfers ("tr:") teach
+// nothing.
+function csvRowCategory(desc, type, positiveOut, ctx) {
+  ctx = ctx || {};
+  var cats = ctx.cats || [];
+  var sk = shopKey(desc);
+  var kind = csvTransferKind(desc, type, positiveOut);
+  if (kind === "card-bill" || kind === "own") {
+    return { transfer: true, catId: "savings-transfer", category: kind === "card-bill" ? "Card bill" : "Account transfer",
+      guess: false, catSure: true, shopK: "tr:" + sk };
+  }
+  var other = catByName(cats, "Other") || cats[0] || { id: "", name: "Other" };
+  var refund = type === "income" && csvIsRefund(desc, positiveOut);
+  var key = (type === "income" && !refund) ? "in:" + sk : sk;
+  // The user's own answer for this exact payee or shop outranks everything.
+  var said = (ctx.shops || {})[key];
+  if (!(said && said.source === "user")) said = (ctx.saved || {})[key];
+  var pinned = said && said.source === "user" ? catByName(cats, said.category) : null;
+  function res(c, guess, sure) { return { transfer: false, catId: c.id, category: c.name, guess: !!guess, catSure: !!sure, shopK: key }; }
+  if (pinned) return res(pinned, false, true);
+  if (kind === "p2p") return res(other, true, false);
+  if (kind === "cash") return res(other, false, false);
+  if (type === "income" && !refund) {
+    var salary = catByName(cats, "Salary"), inv = catByName(cats, "Investments");
+    var ik = csvIncomeKind(desc);
+    if (ik === "salary") return res(salary || other, !salary, true);
+    if (ik === "interest") return res(inv || other, false, true);
+    if (ik === "benefit") return res(other, false, true);
+    // A payer seen before: however the user filed them last time.
+    var h = csvHistoryCat(ctx.incomeHist, sk, cats);
+    if (h) return res(h, false, true);
+    // An unknown payer is most often an employer, but that is a guess - and
+    // it is shown as one, instead of silently becoming "Salary".
+    return res(salary || other, true, false);
+  }
+  // A purchase, or money back from a shop: the shop map (the user's
+  // correction, their history, or Alfred), then their history by name, then
+  // the keyword map.
+  var mapped = (ctx.shops || {})[sk];
+  var fromShop = mapped ? catByName(cats, mapped.category) : null;
+  var learned = fromShop ? fromShop.id : suggestCatId(desc, ctx.tx, cats);
+  var c = catById(cats, learned || guessImportCatId(desc, cats)) || other;
+  // Whether that is a real read or the Other fallback. The duplicate scorer
+  // needs the difference: an unknown category is no signal, while two
+  // known-but-different categories are a real one.
+  return res(c, false, !!learned || !!keywordCatName(desc));
+}
+
 // One row's money: how much, and which way. The single place the sign rules
 // are applied, so the preview, the import and the tests cannot disagree.
 function csvRowMoney(r, map, splitAmt, positiveOut) {
@@ -14503,12 +14624,13 @@ function categorizeShopsWithAI(shops, cats, examples, cb) {
 // same slot, trusted just as much. That was most of the wrong categories, and
 // the user had no sign that any of them was a guess.
 
-// shopKey -> { catId: count } over the user's own spending. Income is left
-// out: a salary line's "shop" is an employer, not a shop.
-function csvShopHistory(txList) {
+// shopKey -> { catId: count } over the user's own spending - or, with income
+// set, over what they were paid, by payer. The two are kept apart: a salary
+// line's "shop" is an employer, not a shop.
+function csvShopHistory(txList, income) {
   var out = {};
   (txList || []).forEach(function(t) {
-    if (!t || !t.catId || t.type === "income" || t.opening || t.transfer) return;
+    if (!t || !t.catId || (t.type === "income") !== !!income || t.opening || t.transfer || t.catId === "savings-transfer") return;
     var k = shopKey(t.label || "");
     if (!k) return;
     var row = out[k] || (out[k] = {});
@@ -14623,7 +14745,15 @@ function catHasKeyword(text, kw) {
     var at = text.indexOf(w, from);
     if (at < 0) return false;
     from = at + 1;
-    if (catWordChar(text.charAt(at - 1))) continue;
+    if (catWordChar(text.charAt(at - 1))) {
+      // Hebrew glues its small words onto the next one: "לפיקדון" is "to the
+      // deposit", "בשופרסל" is "at Shufersal". One or two of ו ה ב כ ל מ ש in
+      // front of a Hebrew keyword, starting a word, still make it that word.
+      // Not for a keyword under four letters: "שביט" is a surname, not ש+ביט.
+      var p = at - 1;
+      while (p >= 0 && at - p <= 2 && "והבכלמש".indexOf(text.charAt(p)) !== -1) p--;
+      if (w.length < 4 || p === at - 1 || catWordChar(text.charAt(p)) || !/[֐-׿]/.test(w.charAt(0))) continue;
+    }
     if (stem) return true;
     var next = text.charAt(at + w.length);
     if (!catWordChar(next)) return true;
@@ -17630,35 +17760,17 @@ function ImportSheet(props) {
     var out = [];
     var base = Date.now();
     var today = new Date().toISOString().slice(0, 10);
+    var ctx = { cats: cats, shops: shops, saved: props.shopCats || {}, tx: props.tx, incomeHist: csvShopHistory(props.tx, true) };
     dataRows.forEach(function(r, i) {
       var money = csvRowMoney(r, map, splitAmt, positiveOut);
       if (!money) return;
       var desc = (map.desc >= 0 ? r[map.desc] : "") || "Imported";
       var dateStr = parseImportDate(map.date >= 0 ? r[map.date] : "", preferDMY) || today;
-      var type = money.type;
-      var label = desc.slice(0, 60);
-      var amount = money.amount;
-      // Money back from a shop is not a salary. On a card statement every
-      // money-in line is a refund, and anywhere a line that says זיכוי/refund
-      // is one - it belongs with the shop's category, not in Salary.
-      var refund = type === "income" && csvIsRefund(desc, positiveOut);
-      // Category, in order of how much it is worth: the shop map (which the
-      // user has confirmed, or Alfred has just sorted), then the user's own
-      // history, then the keyword map. Income skips the shop map - a salary
-      // line's "shop" is an employer, and sorting it as a purchase is wrong.
-      var sk = shopKey(desc);
-      var mapped = (type === "income" && !refund) ? null : shops[sk];
-      var fromShop = mapped ? ((catByName(cats, mapped.category) || {}).id || "") : "";
-      var learned = fromShop || (type === "income" && !refund
-        ? ((catByName(cats, "Salary") || {}).id || suggestCatId(desc, props.tx, cats))
-        : suggestCatId(desc, props.tx, cats));
-      var catId = learned || guessImportCatId(desc, cats);
-      var c = catById(cats, catId) || { id: "", name: "Other" };
-      // Whether that category is a real read or the Other fallback. The
-      // duplicate scorer needs the difference: an unknown category is no
-      // signal, while two known-but-different categories are a real one.
-      var catSure = !!learned || !!keywordCatName(desc);
-      out.push({ type: type, amount: amount, label: label, catId: c.id, category: c.name, date: dateStr, id: base + i, repeat: "none", pending: false, catSure: catSure, shopK: sk });
+      var cat = csvRowCategory(desc, money.type, positiveOut, ctx);
+      var tx = { type: money.type, amount: money.amount, label: desc.slice(0, 60), catId: cat.catId, category: cat.category, date: dateStr, id: base + i, repeat: "none", pending: false, catSure: cat.catSure, shopK: cat.shopK };
+      if (cat.transfer) tx.transfer = true;
+      if (cat.guess) tx.flowGuess = true;
+      out.push(tx);
     });
     return out;
   }
@@ -17733,6 +17845,9 @@ function ImportSheet(props) {
       // employer's name out for nothing.
       var money = csvRowMoney(r, map, splitAmt, positiveOut);
       if (!money || (money.type === "income" && !csvIsRefund(desc, positiveOut))) return;
+      // Nor transfers, cash or a Bit to a person: none has a shop to sort,
+      // and a person's name has no business leaving the device.
+      if (csvTransferKind(desc, money.type, positiveOut)) return;
       var k = shopKey(desc);
       if (!k || seen[k]) return;
       seen[k] = 1;
@@ -17855,9 +17970,9 @@ function ImportSheet(props) {
   // lines offers to fix them all at once, and when it does the answer is
   // remembered so Richy never guesses that shop again. Overruling Alfred is
   // recorded either way - it is the only honest measure of whether he was any
-  // good. Income is never taught to the shop map: a salary line's "shop" is an
-  // employer, and pinning that name to a category would mis-sort a purchase
-  // from a shop of the same name later.
+  // good. Money in is remembered too, under its own "in:" key (csvRowCategory),
+  // so an employer's name can never teach a purchase from a shop of the same
+  // name; transfers ("tr:") teach nothing.
   function setRowCategory(t, catId, all) {
     var c = catById(cats, catId);
     if (!c) return;
@@ -17869,8 +17984,12 @@ function ImportSheet(props) {
     // remembered like one. It used to be forgotten - the "all lines" offer
     // only appears when there are other lines - so a shop that shows up once
     // a month came back wrong every month however often it was put right.
-    var onlyLine = !built.some(function(r) { return r.id !== t.id && r.shopK === t.shopK && r.type === t.type; });
-    if ((all || onlyLine) && t.shopK && (t.type === "expense" || csvIsRefund(t.label, positiveOut))) {
+    // Except a nameless Bit or bank transfer: one fix to "העברה בביט" says
+    // what THAT transfer was, not what every future one will be. Those are
+    // taught only when the user explicitly fixes all the lines.
+    var onlyLine = !built.some(function(r) { return r.id !== t.id && r.shopK === t.shopK && r.type === t.type; })
+      && csvTransferKind(t.label, t.type, positiveOut) !== "p2p";
+    if ((all || onlyLine) && t.shopK && t.shopK.indexOf("tr:") !== 0 && !t.transfer) {
       var next = {}; for (var k in shopCats) next[k] = shopCats[k];
       next[t.shopK] = { category: c.name, confidence: "high", source: "user", label: was.label || t.label };
       setShopCats(next);
@@ -17879,9 +17998,28 @@ function ImportSheet(props) {
       var hit = (all && t.shopK) ? (r.shopK === t.shopK && r.type === t.type) : (r.id === t.id);
       if (!hit) return r;
       var n = {}; for (var kk in r) n[kk] = r[kk];
-      n.catId = c.id; n.category = c.name;
+      n.catId = c.id; n.category = c.name; n.flowGuess = false;
       return n;
     });
+    setBuilt(nb);
+    refreshReport(nb, dropped);
+  }
+
+  // A line is money moving between the user's own accounts, or it is not.
+  // Turned on, it stops counting as spending or income (isTransfer); turned
+  // off, it lands in Other for the user to place. Either way it is their call
+  // and the line stops being flagged.
+  function setRowTransfer(t, on) {
+    var other = catByName(cats, "Other") || cats[0] || { id: "", name: "Other" };
+    var nb = built.map(function(r) {
+      if (r.id !== t.id) return r;
+      var n = {}; for (var k in r) n[k] = r[k];
+      n.transfer = !!on; n.flowGuess = false;
+      if (on) { n.catId = "savings-transfer"; n.category = "Account transfer"; }
+      else { n.catId = other.id; n.category = other.name; delete n.transfer; }
+      return n;
+    });
+    csvLog("row-transfer", { on: !!on });
     setBuilt(nb);
     refreshReport(nb, dropped);
   }
@@ -17901,6 +18039,9 @@ function ImportSheet(props) {
   // what the row marks, instead of the separate block of shop dropdowns that
   // used to sit under the list repeating every name a second time.
   function rowGuess(t) {
+    // A Bit to a person, or money in from a payer Richy has never seen: no
+    // category could be read off the line, so it is the user's to confirm.
+    if (t.flowGuess) return { unsure: true };
     var s = (t.shopK && shopCats[t.shopK]) || null;
     if (!s || s.source !== "alfred") return null;
     return { unsure: s.confidence === "low" };
@@ -17922,7 +18063,7 @@ function ImportSheet(props) {
     // Only the ticked lines, and only what the user left standing: a line
     // renamed to nothing keeps the placeholder rather than arriving blank.
     var rowsOut = keptRows(built, dropped).map(function(t) {
-      var clean = {}; for (var k in t) { if (k !== "shopK") clean[k] = t[k]; }
+      var clean = {}; for (var k in t) { if (k !== "shopK" && k !== "flowGuess") clean[k] = t[k]; }
       clean.label = String(t.label || "").trim() || "Imported";
       return clean;
     });
@@ -18350,13 +18491,15 @@ function ImportSheet(props) {
           the place they belong. */}
       {step === "preview" && (function() {
         var kept = keptRows(built, dropped);
-        var inSum = 0, outSum = 0;
-        kept.forEach(function(t) { if (t.type === "income") inSum += t.amount; else outSum += t.amount; });
+        var inSum = 0, outSum = 0, moves = 0;
+        // A transfer is neither: it is the user's own money changing account.
+        kept.forEach(function(t) { if (t.transfer) moves++; else if (t.type === "income") inSum += t.amount; else outSum += t.amount; });
         // The one line of arithmetic this screen needs. Anything that is zero
         // is left unsaid rather than printed as a zero.
         var money = [];
         if (outSum > 0) money.push(dollars(outSum) + " out");
         if (inSum > 0) money.push(dollars(inSum) + " in");
+        if (moves > 0) money.push(moves + (moves === 1 ? " transfer" : " transfers") + " between your accounts");
         if (dupes > 0) money.push(dupes + " already in Richy");
         // One heading per day, said once, the way Activity stacks them. The
         // alternative is the same date repeated down forty rows.
@@ -18373,6 +18516,8 @@ function ImportSheet(props) {
         if (dupes > 0 && aiRes.settled > 0) notes.push("Alfred settled " + aiRes.settled + " of the close calls. The rest were yours.");
         if (shopMeta && shopMeta.err && shopMeta.asked > 0) notes.push("Alfred couldn't be reached to sort " + shopMeta.asked + " new " + (shopMeta.asked === 1 ? "shop" : "shops") + ", so they were matched on keywords. Their categories are a guess - worth a look up there.");
         if (shopMeta && shopMeta.skipped > 0) notes.push(shopMeta.skipped + " " + (shopMeta.skipped === 1 ? "shop Richy didn't recognise was" : "shops Richy didn't recognise were") + " matched on keywords, because you asked to sort those yourself. Their categories are a guess.");
+        var cardBills = kept.filter(function(t) { return t.transfer && t.category === "Card bill"; }).length;
+        if (cardBills > 0) notes.push((cardBills === 1 ? "A credit-card bill is" : cardBills + " credit-card bills are") + " marked as a transfer, not spending - otherwise every purchase on the card would count twice. Import the card's own statement to see what the money went on.");
         if (shopMeta && !shopMeta.err && shopMeta.overflow > 0) notes.push("This file has more new shops than Alfred sorts in one go, so " + shopMeta.overflow + " were matched on keywords instead.");
         var detailN = (report ? report.tips.length : 0) + notes.length;
         // Untick-all stays the offer until there is nothing left ticked. A
@@ -18424,7 +18569,7 @@ function ImportSheet(props) {
                             </button>
                             <button type="button" onClick={function() { openEditor(t); }} aria-expanded={isOpen}
                               style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 11, padding: "9px 0", background: "none", border: "none", font: "inherit", fontFamily: UI, textAlign: "start", cursor: "pointer", opacity: on ? 1 : 0.42 }}>
-                              <CatBadge icon={t.type === "income" ? "up" : c.icon} color={t.type === "income" ? T.green : c.color} size={34} soft={!on} />
+                              <CatBadge icon={t.transfer ? (t.category === "Card bill" ? "credit" : "refresh") : t.type === "income" ? "up" : c.icon} color={t.transfer ? T.ink3 : t.type === "income" ? T.green : c.color} size={34} soft={!on} />
                               <span style={{ flex: 1, minWidth: 0 }}>
                                 {/* Two lines, not Activity's one. A bank
                                     descriptor is long and the difference
@@ -18434,8 +18579,11 @@ function ImportSheet(props) {
                                 <span style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", fontSize: 15, color: T.ink, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", lineHeight: 1.2, overflow: "hidden", overflowWrap: "anywhere" }}>{t.label}</span>
                                 <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: T.ink3, marginTop: 2 }}>
                                   <span style={{ display: "inline-flex", alignItems: "center", gap: 4, minWidth: 0 }}>
-                                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: t.type === "income" ? T.green : c.color, flexShrink: 0 }} />
-                                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.type === "income" ? tr("income") : catDisplay(c)}</span>
+                                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: t.transfer ? T.ink3 : t.type === "income" ? T.green : c.color, flexShrink: 0 }} />
+                                    {/* Money in shows WHAT it was filed as, not just "income" -
+                                        a friend's payback wrongly filed as Salary has to be
+                                        visible here to be caught. */}
+                                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.transfer ? (t.category === "Card bill" ? "Card bill - not spending" : "Between your accounts") : t.type === "income" ? tr("income") + " · " + catDisplay(c) : catDisplay(c)}</span>
                                   </span>
                                   {/* The one marker worth carrying on a row:
                                       Alfred guessed this category and said he
@@ -18446,7 +18594,7 @@ function ImportSheet(props) {
                                   )}
                                 </span>
                               </span>
-                              <span style={{ flexShrink: 0, fontSize: 15, fontWeight: 700, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: t.type === "income" ? T.green : T.red, textDecoration: on ? "none" : "line-through" }}>
+                              <span style={{ flexShrink: 0, fontSize: 15, fontWeight: 700, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: t.transfer ? T.ink3 : t.type === "income" ? T.green : T.red, textDecoration: on ? "none" : "line-through" }}>
                                 {dollarsDelta(t.type === "income" ? t.amount : -t.amount)}
                               </span>
                             </button>
@@ -18483,9 +18631,23 @@ function ImportSheet(props) {
                                   var n = parseFloat(String(v).replace(",", "."));
                                   if (isFinite(n) && n > 0) patchRow(t.id, { amount: round2(n) });
                                 }} />
-                              <CatPicker label="Category" categories={cats} value={t.catId}
-                                onChange={function(id) { setRowCategory(t, id, false); }} />
-                              {left > 0 && (
+                              {/* Money moving between the user's own accounts is not a
+                                  category of spending. One switch, both ways: a card bill or
+                                  savings deposit Richy spotted can be turned back into a normal
+                                  line, and a transfer it missed can be marked. */}
+                              <button onClick={function() { setRowTransfer(t, !t.transfer); }}
+                                style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 9, minHeight: 44, padding: "8px 12px", borderRadius: 11, border: "none", cursor: "pointer", marginBottom: 8, background: t.transfer ? T.orangeDim : T.fill1, fontFamily: UI }}>
+                                <span style={{ fontSize: 12.5, fontWeight: 600, color: t.transfer ? T.orange : T.ink2, textAlign: "start", lineHeight: 1.4 }}>
+                                  {"Between my own accounts"}<br />
+                                  <span style={{ fontSize: 11, fontWeight: 400, color: T.ink3 }}>{t.category === "Card bill" && t.transfer ? "The card's own lines are the spending - this is just the bill" : "Savings, a card bill, my other account - not spending or income"}</span>
+                                </span>
+                                <span style={{ width: 18, height: 18, borderRadius: 6, flexShrink: 0, border: "2px solid " + (t.transfer ? T.orange : T.ink3), background: t.transfer ? T.orange : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                  {t.transfer && <SVGIcon id="check" size={10} color="#fff" />}
+                                </span>
+                              </button>
+                              {!t.transfer && <CatPicker label="Category" categories={cats} value={t.catId}
+                                onChange={function(id) { setRowCategory(t, id, false); }} />}
+                              {!t.transfer && left > 0 && (
                                 <button onClick={function() { setRowCategory(t, t.catId, true); }}
                                   style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "9px 12px", borderRadius: 11, border: "1.5px dashed " + c.color, background: c.color + "12", cursor: "pointer", fontFamily: UI, marginBottom: 7 }}>
                                   <CatBadge icon={c.icon} color={c.color} size={22} soft={true} />

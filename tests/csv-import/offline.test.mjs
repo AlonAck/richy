@@ -497,6 +497,59 @@ group("Shop categories");
   eq("a store number after # is still dropped", nm("STARBUCKS #1123 SEATTLE"), "starbucks");
 }
 
+// ---------------------------------------------------------------- transfers --
+group("Transfers");
+{
+  // Found on the way: a Hebrew abbreviation's quote mark opened a quoted field
+  // and swallowed the lines after it.
+  const q = parseCSV('תנועות בחשבון עו"ש\nתאריך,תיאור,סכום\n01/09/2026,שופרסל בע"מ,-3\n02/09/2026,ארומה,-4');
+  eq("a quote inside עו\"ש / בע\"מ is a character, not the start of a quoted field", q.length, 4);
+  eq("  and the shop keeps its name", q[2][1], 'שופרסל בע"מ');
+  eq("a real quoted field still carries its line break and doubled quote", parseCSV('01/09/2026,"PAYPAL\n*SPOTIFY",-5\n02/09/2026,"Joe""s",-6').map((r) => r[1]), ["PAYPAL *SPOTIFY", 'Joe"s']);
+
+  const { csvRowCategory, csvShopHistory } = app;
+  const CATS = [["c1", "Housing"], ["c2", "Food"], ["c3", "Transport"], ["c4", "Health"], ["c5", "Entertainment"],
+    ["c6", "Shopping"], ["c8", "Salary"], ["c9", "Investments"], ["c10", "Savings"], ["c11", "Other"]].map(([id, name]) => ({ id, name }));
+  const ctx = (extra) => Object.assign({ cats: CATS, shops: {}, saved: {}, tx: [], incomeHist: {} }, extra || {});
+  // [description, type, positiveOut] -> what it should become
+  const on = (d, type, card, x) => csvRowCategory(d, type, !!card, ctx(x));
+  const what = (r) => r.transfer ? "transfer:" + r.category : r.category + (r.guess ? "?" : "");
+
+  // A bank account (positiveOut false).
+  eq("the card bill on the bank account is a transfer, not spending", what(on("ישראכרט - חיוב חודשי", "expense")), "transfer:Card bill");
+  eq("  Max's too", what(on("מקס איט פיננסים", "expense")), "transfer:Card bill");
+  eq("  and Cal's (but not a man named מיכאל)", [what(on("כאל", "expense")), on("מיכאל כהן", "expense").transfer], ["transfer:Card bill", false]);
+  eq("Max Stock the shop is not a card bill", on("מקס סטוק", "expense").transfer, false);
+  eq("a UK \"CARD PAYMENT TO\" purchase is not a card bill", on("CARD PAYMENT TO TESCO", "expense").transfer, false);
+  eq("a savings deposit is a transfer, Hebrew prefix and all (לפיקדון)", what(on("הפקדה לפיקדון", "expense")), "transfer:Account transfer");
+  eq("a shop called שביט is not a Bit transfer", on("שביט אופטיקה", "expense").transfer || on("שביט אופטיקה", "expense").guess, false);
+  eq("a prefixed chain name still matches (בשופרסל)", app.keywordCatName("קנייה בשופרסל"), "Food");
+  eq("  so is money moved to savings by name", what(on("העברה לחשבון חיסכון", "expense")), "transfer:Account transfer");
+  eq("  and a pension-fund top-up", what(on("קרן השתלמות", "expense")), "transfer:Account transfer");
+  eq("  and the deposit coming back", what(on("פדיון פיקדון", "income")), "transfer:Account transfer");
+  eq("a Bit to a person gets no invented category - Other, unsure", what(on("ביט העברה לדני", "expense")), "Other?");
+  eq("a PayBox the same", what(on("PAYBOX", "expense")), "Other?");
+  eq("a friend paying back is not Salary", what(on("העברה מיוסי לוי", "income")), "Other?");
+  eq("a Bit coming in is not Salary", what(on("ביט מדנה", "income")), "Other?");
+  eq("a salary is Salary", what(on("משכורת חודש אוגוסט", "income")), "Salary");
+  eq("  even when the bank calls it a transfer", what(on("העברת משכורת", "income")), "Salary");
+  eq("interest is Investments, even on a deposit", what(on("ריבית על פיקדון", "income")), "Investments");
+  eq("a benefit is Other, not Salary", what(on("ביטוח לאומי קצבת ילדים", "income")), "Other");
+  eq("an unknown payer is shown as a guess, not a certain Salary", what(on("ACME LTD", "income")), "Salary?");
+  eq("an ATM withdrawal is Other and is not a shop", what(on("משיכת מזומן כספומט", "expense")), "Other");
+
+  // A card statement (positiveOut true).
+  eq("on a card statement a charge from the card company is not its own bill", on("דמי כרטיס ישראכרט", "expense", true).transfer, false);
+  eq("a \"payment received\" line on a card statement is the bill being paid", what(on("PAYMENT THANK YOU", "income", true)), "transfer:Card bill");
+
+  // What the user said wins, and money in is remembered apart from shops.
+  const hist = csvShopHistory([{ label: "ACME LTD", catId: "c8", type: "income" }, { label: "ACME LTD", catId: "c8", type: "income" }], true);
+  eq("a payer seen before keeps the user's category", what(on("ACME LTD", "income", false, { incomeHist: hist })), "Salary");
+  eq("the user's answer for a person is remembered", what(on("ביט העברה לדני", "expense", false, { saved: { "ביט העברה לדני": { category: "Food", source: "user" } } })), "Food");
+  eq("  and money in is remembered under its own key", on("העברה מיוסי לוי", "income").shopK, "in:העברה מיוסי לוי");
+  eq("a purchase history never files income", Object.keys(csvShopHistory([{ label: "ACME LTD", catId: "c8", type: "income" }])).length, 0);
+}
+
 // ------------------------------------------------- reading a model's answer --
 // The real mapColumnsWithAI and categorizeShopsWithAI, with the network
 // stubbed. judgeLookalikes measured this same model fencing its JSON in 7 of 9
