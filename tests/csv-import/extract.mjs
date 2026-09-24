@@ -48,7 +48,7 @@ function grabPrompt(name) {
   return SRC.slice(at, end + 1);
 }
 
-const VARS = ["SHEET_NS", "CSV_DELIMS", "CSV_SNIFF_BYTES", "CSV_SNIFF_ROWS", "SHEET_MAX_ROWS", "SHEET_MAX_COLS", "SHEET_MAX_TABLES", "XLSX_DATE_FMT_IDS",
+const VARS = ["SHEET_NS", "SHEET_MAX_SHEETS", "CSV_MONTHS", "CSV_DELIMS", "CSV_SNIFF_BYTES", "CSV_SNIFF_ROWS", "SHEET_MAX_ROWS", "SHEET_MAX_COLS", "SHEET_MAX_TABLES", "XLSX_DATE_FMT_IDS",
   "SHEET_MAX_BYTES", "SHEET_MAX_INFLATE", "SHEET_MAX_ENTRIES", "SHEET_MAX_STRINGS", "SHEET_DAMAGED", "SHEET_TOO_BIG",
   "CSV_HEAD_MAX", "CSV_SHAPE_MAX", "CSV_CELL_MAX", "CSV_NUL",
   "CSV_SEP_CELL", "CSV_SEP_ROW", "CSV_SEP_PART",
@@ -57,15 +57,20 @@ const VARS = ["SHEET_NS", "CSV_DELIMS", "CSV_SNIFF_BYTES", "CSV_SNIFF_ROWS", "SH
   "AI_MODEL_CSV_READ", "AI_CSV_LAYOUT_EFFORT", "AI_CSV_LAYOUT_TOKENS", "CSV_READ_ROWS_PER_CALL", "CSV_READ_TOKENS",
   "CSV_READ_MAX_ROWS", "CSV_READ_PARALLEL", "CSV_READ_LAYOUT_ROWS", "CSV_READ_CELL_MAX", "CSV_READ_KINDS"];
 
-const FNS = ["pad2", "parseCSV", "csvScan", "csvPickDelim", "sniffMap", "parseImportDate", "parseImportAmount",
-  "normalizeMerchant", "shopKey", "labelSimilarity", "dayGap", "dupScore", "dupKey", "bestDupMatch", "classifyImportRows",
+const FNS = ["pad2", "csvStripMarks", "csvMonthDate", "csvTitleKind", "csvIsChargeTitle", "csvIsDealAmountTitle", "parseCSV", "csvScan", "csvPickDelim", "sniffMap", "parseImportDate", "parseImportAmount",
+  "normalizeMerchant", "shopKey", "labelSimilarity", "dayGap", "dupScore",
   "csvDecodeBytes", "csvIsDateCell", "csvIsNumberCell", "csvCellKind", "csvRowKinds",
-  "csvRowIsData", "csvFirstDataRow", "csvMaskCell", "csvColumnProfiles", "csvSkeleton",
-  "csvHash", "csvFingerprint", "csvDetectDateFormat", "csvDetectSign", "csvColumnKinds", "csvRepairMap", "csvFlowWord", "csvFindFlowColumn", "csvRowMoney", "csvIsRefund", "csvHasAny", "csvTransferKind", "csvIncomeKind", "csvRowCategory", "guessImportCatId", "round2",
+  "csvRowIsData", "csvFirstDataRow", "csvMaskCell", "csvSectionRows", "csvColumnProfiles", "csvSkeleton",
+  "csvHash", "csvFingerprint", "csvDetectDateFormat", "csvDetectSign", "csvBalanceVotes", "csvColumnKinds", "csvRepairMap", "csvTextVariety", "csvTypeShare", "csvDistinctText", "csvFlowWord", "csvFindFlowColumn", "csvRowMoney", "csvIsRefund", "csvHasAny", "csvTransferKind", "csvIncomeKind", "csvRowCategory", "csvSectorCat", "csvBoughtByShop", "guessImportCatId", "round2",
+  // Which lines are purchases, and the import's steps outside the screen.
+  "csvSummaryText", "csvSummaryRow", "csvTitleRow", "csvCellsKey", "csvReadRows", "csvTotalsCheck", "csvLiveCheck", "csvInOut",
+  "csvLocalReading", "csvMergeModelMap", "csvSettleReading", "csvBuildCandidates", "csvShopOrder",
+  // The duplicate check the screen runs on the built rows.
+  "dupKey", "bestDupMatch", "classifyImportRows",
   // Who decides a shop's category, and the fallbacks under it.
   "catById", "catByName", "catMatchText", "catWordChar", "catHasKeyword", "keywordCatName", "catIsNoise",
   "topKey", "labelHasWord", "suggestCatId", "csvShopHistory", "csvHistoryCat", "csvPlanShops",
-  "csvParseJsonBlock", "csvCol", "csvConf", "alfredErr",
+  "csvParseJsonBlock", "csvParseJsonObjects", "csvLooseName", "csvShopAnswers", "csvCol", "csvConf", "alfredErr",
   // The spreadsheet reader. Everything from the zip directory up to "what kind
   // of file is this" is pulled in, because a .xlsx is read byte by byte and
   // the tests build real ones to feed it.
@@ -74,7 +79,7 @@ const FNS = ["pad2", "parseCSV", "csvScan", "csvPickDelim", "sniffMap", "parseIm
   "sheetU16", "sheetU32", "zipEntries", "zipEntryBytes", "sheetInflate",
   "zipEntryText", "zipReadText", "xlsxSharedStrings", "sheetFmtIsDate",
   "xlsxDateStyles", "sheetColFromRef", "sheetSerialToDate", "xlsxSheetRows",
-  "xlsxSheetList", "xlsxRelPath", "xlsxRelMap", "xlsxRead",
+  "xlsxSheetList", "xlsxRelPath", "xlsxRelMap", "sheetMergeTables", "sheetStatementTitles", "sheetHoldsAll", "sheetUntitledLines", "sheetLineKeys", "xlsxRead",
   "htmlText", "htmlTableRegions", "htmlRowCells",
   "htmlRegionRows", "sheetTableScore", "htmlSheetRows", "xmlssRows",
   "sheetIsZip", "sheetIsOle", "sheetMagicRefusal", "sheetLooksBinary", "sheetMarkupKind", "sheetReadBytes", "sheetReadNote",
@@ -89,8 +94,12 @@ const FNS = ["pad2", "parseCSV", "csvScan", "csvPickDelim", "sniffMap", "parseIm
   "csvReadVerify", "csvReadEnforceColumns", "csvReadCheckBalance", "csvReadCheckTotals", "csvReadLooksReal",
   "csvReadDeriveMap", "csvReadToTx", "csvReadByRules", "readStatementWithAI"];
 
-// Multi-line constants: the two system prompts and the keyword map.
-const PROMPTS = ["CSV_MAP_SYSTEM", "CSV_SHOPS_SYSTEM", "IMPORT_CAT_KEYWORDS", "CSV_TRANSFER_WORDS", "CSV_LAYOUT_SYSTEM", "CSV_ROWS_SYSTEM"];
+// Multi-line constants: the system prompts and the keyword map - and the
+// regular expressions, whose quote marks would confuse grabVar's string walk.
+const PROMPTS = ["CSV_MAP_SYSTEM", "CSV_SHOPS_SYSTEM", "IMPORT_CAT_KEYWORDS", "CSV_TRANSFER_WORDS", "CSV_LAYOUT_SYSTEM", "CSV_ROWS_SYSTEM",
+  "CSV_TITLE_CURRENCY", "CSV_TITLE_REFERENCE", "CSV_TITLE_BALANCE", "CSV_TITLE_SECTOR",
+  "CSV_SUM_HE", "CSV_TYPE_CELL", "CSV_SUM_HE_BALANCE", "CSV_SUM_EN", "CSV_SUM_EN_BALANCE", "CSV_TITLE_WORD", "CSV_SECTOR_RULES",
+  "DEFAULT_CATEGORIES"];
 
 const body = [
   "var DUP_CERTAIN = 0.86, DUP_MAYBE = 0.55;",
