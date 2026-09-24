@@ -10,7 +10,9 @@
     "test:csv:live": "node tests/csv-import/live-model.mjs",
     "test:files": "node tests/csv-import/files.test.mjs",
     "test:random": "node tests/csv-import/random.test.mjs",
-    "test": "node tests/csv-import/offline.test.mjs && node tests/csv-import/files.test.mjs && node tests/csv-import/random.test.mjs"
+    "test:reader": "node tests/csv-import/reader.test.mjs",
+    "test:reader:live": "node tests/csv-import/live-reader.mjs",
+    "test": "node tests/csv-import/offline.test.mjs && node tests/csv-import/files.test.mjs && node tests/csv-import/reader.test.mjs && node tests/csv-import/random.test.mjs"
   },
   "dependencies": {
     "firebase": "10.12.2",
