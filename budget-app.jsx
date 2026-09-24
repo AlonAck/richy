@@ -19473,20 +19473,21 @@ function ImportSheet(props) {
               </div>
             )}
             {err && <div style={{ fontSize: 13, color: T.red, marginBottom: 10 }}>{err}</div>}
+            {kept.length === 0 && (
+              <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, margin: "10px 2px 0" }}>{"Nothing is ticked, so there is nothing to bring in. Tick a line, or go back."}</div>
+            )}
             {/* The one action on this screen floats over the list the way
-                Alfred's composer floats over his chat: a card of its own, 14px
-                in from the edges, the rows scrolling past behind it. Sticky,
-                not fixed - it rides the sheet's own scroll from the first line
-                to the last and settles into place at the end, so it never
-                covers the final row. bottom is -14px because the sticky
-                edge is measured inside the sheet's bottom padding (28px, see
-                Overlay): -14 lands the card 14px above the sheet's edge. */}
-            <div style={{ position: "sticky", bottom: -14, zIndex: 5, margin: "14px -6px 0", pointerEvents: "none" }}>
-              <div style={{ pointerEvents: "auto", background: T.card, border: "0.5px solid " + (T.isDark ? "rgba(255,255,255,0.14)" : T.hairline), borderRadius: 28,
-                boxShadow: T.isDark ? "0 12px 34px rgba(0,0,0,0.38)" : "0 12px 34px rgba(43,34,25,0.12)", padding: "12px 12px 12px", boxSizing: "border-box" }}>
-                {kept.length === 0 && (
-                  <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, margin: "0 6px 8px" }}>{"Nothing is ticked, so there is nothing to bring in. Tick a line, or go back."}</div>
-                )}
+                Alfred's composer floats over his chat: the Liquid Glass button
+                on its own, no card behind it, the rows scrolling past beneath
+                its glass. Sticky, not fixed - it rides the sheet's own scroll
+                from the first line to the last and settles into place at the
+                end, so it never covers the final row. bottom is -14px because
+                the sticky edge is measured inside the sheet's bottom padding
+                (28px, see Overlay): -14 lands it 14px above the sheet's edge.
+                The wrapper passes touches through, so only the button itself
+                blocks the list. */}
+            <div style={{ position: "sticky", bottom: -14, zIndex: 5, marginTop: 14, pointerEvents: "none" }}>
+              <div style={{ pointerEvents: "auto" }}>
                 <BigBtn label={kept.length === 0 ? "Nothing to bring in" : kept.length === 1 ? "Bring in 1 line" : "Bring in " + kept.length + " lines"} onPress={doImport} disabled={kept.length === 0} style={{ marginTop: 0 }} />
               </div>
             </div>
