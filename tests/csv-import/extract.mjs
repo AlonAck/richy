@@ -58,7 +58,7 @@ const VARS = ["SHEET_NS", "CSV_DELIMS", "CSV_SNIFF_BYTES", "CSV_SNIFF_ROWS", "SH
   "CSV_READ_MAX_ROWS", "CSV_READ_PARALLEL", "CSV_READ_LAYOUT_ROWS", "CSV_READ_CELL_MAX", "CSV_READ_KINDS"];
 
 const FNS = ["pad2", "parseCSV", "csvScan", "csvPickDelim", "sniffMap", "parseImportDate", "parseImportAmount",
-  "normalizeMerchant", "shopKey", "labelSimilarity", "dayGap", "dupScore",
+  "normalizeMerchant", "shopKey", "labelSimilarity", "dayGap", "dupScore", "dupKey", "bestDupMatch", "classifyImportRows",
   "csvDecodeBytes", "csvIsDateCell", "csvIsNumberCell", "csvCellKind", "csvRowKinds",
   "csvRowIsData", "csvFirstDataRow", "csvMaskCell", "csvColumnProfiles", "csvSkeleton",
   "csvHash", "csvFingerprint", "csvDetectDateFormat", "csvDetectSign", "csvColumnKinds", "csvRepairMap", "csvFlowWord", "csvFindFlowColumn", "csvRowMoney", "csvIsRefund", "csvHasAny", "csvTransferKind", "csvIncomeKind", "csvRowCategory", "guessImportCatId", "round2",
