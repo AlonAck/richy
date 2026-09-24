@@ -8125,7 +8125,11 @@ function CatPicker(props) {
   var cats = props.categories || [];
   var sel = null;
   cats.forEach(function(c) { if (c.id === props.value) sel = c; });
-  if (!sel) sel = cats[0] || null;
+  // A placeholder means "no choice yet" is a real answer (bulk edit's "keep
+  // each one's own"), so the picker must not quietly show the first category
+  // as if it were already picked.
+  var placeholder = !sel && props.placeholder && cats.length ? props.placeholder : "";
+  if (!sel && !placeholder) sel = cats[0] || null;
   return (
     <div style={{ background: T.fill1, borderRadius: 13, padding: "9px 14px", marginBottom: props.last ? 0 : 7 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
@@ -8138,13 +8142,13 @@ function CatPicker(props) {
           </button>
         )}
       </div>
-      {!sel ? (
+      {!sel && !placeholder ? (
         <div style={{ fontSize: 13, color: T.ink3, fontFamily: UI, padding: "4px 0" }}>No categories</div>
       ) : !open ? (
         <button onClick={function() { setOpen(true); }}
           style={{ width: "100%", display: "flex", alignItems: "center", gap: 11, background: "none", border: "none", cursor: "pointer", padding: "2px 0", fontFamily: UI }}>
-          <CatBadge icon={sel.icon} color={sel.color} size={30} soft={true} />
-          <span style={{ flex: 1, minWidth: 0, textAlign: "left", fontSize: 15, fontWeight: 600, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sel.name}</span>
+          {sel ? <CatBadge icon={sel.icon} color={sel.color} size={30} soft={true} /> : <CatBadge icon="tag" color={T.ink3} size={30} soft={true} />}
+          <span style={{ flex: 1, minWidth: 0, textAlign: "left", fontSize: 15, fontWeight: sel ? 600 : 500, color: sel ? T.ink : T.ink3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sel ? sel.name : placeholder}</span>
           <span style={{ flexShrink: 0, transform: "rotate(90deg)", display: "flex", color: T.ink3 }}>
             <SVGIcon id="chevron" size={14} color={T.ink3} />
           </span>
@@ -19543,6 +19547,83 @@ function Activity(props) {
     pt: { title: "Filtrar atividade", all: "Todas as transações" }
   })[_lang.code] || { title: "Filter activity", all: "All transactions" };
 
+  // Select mode: the import checklist's tick-a-row pattern, brought to the
+  // ledger, so a batch of wrong lines is fixed or cleared in one go instead of
+  // opening each one. picked is keyed by tx id, like the import's dropped.
+  var _sm = useState(false); var selMode = _sm[0]; var setSelMode = _sm[1];
+  var _pk = useState({}); var picked = _pk[0]; var setPicked = _pk[1];
+  var _bdc = useState(false); var bulkDelConfirm = _bdc[0]; var setBulkDelConfirm = _bdc[1];
+  var _beo = useState(false); var bulkEditOpen = _beo[0]; var setBulkEditOpen = _beo[1];
+  var blankBulk = { catId: "", type: "", date: "" };
+  var _bf = useState(blankBulk); var bulkForm = _bf[0]; var setBulkForm = _bf[1];
+  var selCopy = ({
+    en: { select: "Select", done: "Done", all: "Select all", none: "Clear", hint: "Tap transactions to select them", picked: function(n) { return n + " selected"; }, edit: "Edit", del: "Delete", ask: function(n) { return n === 1 ? "Delete this transaction? This can't be undone." : "Delete " + n + " transactions? This can't be undone."; }, yes: "Yes, delete", cancel: "Cancel", editTitle: function(n) { return n === 1 ? "Edit 1 transaction" : "Edit " + n + " transactions"; }, editSub: "Only what you change is applied - everything else stays as it is on each one.", keepCat: "Keep each one's category", flow: "Money in or out", keep: "Keep", date: "Move to date", keepDate: "Leave empty to keep each date", apply: function(n) { return n === 1 ? "Apply to 1 transaction" : "Apply to " + n + " transactions"; } },
+    he: { select: "בחירה", done: "סיום", all: "בחר הכל", none: "נקה", hint: "הקישו על עסקאות כדי לבחור אותן", picked: function(n) { return n + " נבחרו"; }, edit: "עריכה", del: "מחיקה", ask: function(n) { return n === 1 ? "למחוק את העסקה? אי אפשר לבטל." : "למחוק " + n + " עסקאות? אי אפשר לבטל."; }, yes: "כן, למחוק", cancel: "ביטול", editTitle: function(n) { return n === 1 ? "עריכת עסקה אחת" : "עריכת " + n + " עסקאות"; }, editSub: "רק מה שתשנו יוחל - כל השאר נשאר כמו שהוא בכל עסקה.", keepCat: "להשאיר את הקטגוריה של כל אחת", flow: "הכנסה או הוצאה", keep: "להשאיר", date: "העברה לתאריך", keepDate: "השאירו ריק כדי לשמור על כל תאריך", apply: function(n) { return n === 1 ? "החלה על עסקה אחת" : "החלה על " + n + " עסקאות"; } },
+    ar: { select: "تحديد", done: "تم", all: "تحديد الكل", none: "مسح", hint: "اضغط على المعاملات لتحديدها", picked: function(n) { return n + " محددة"; }, edit: "تعديل", del: "حذف", ask: function(n) { return n === 1 ? "حذف هذه المعاملة؟ لا يمكن التراجع." : "حذف " + n + " معاملات؟ لا يمكن التراجع."; }, yes: "نعم، احذف", cancel: "إلغاء", editTitle: function(n) { return n === 1 ? "تعديل معاملة واحدة" : "تعديل " + n + " معاملات"; }, editSub: "يُطبَّق ما تغيّره فقط - ويبقى الباقي كما هو في كل معاملة.", keepCat: "إبقاء فئة كل معاملة", flow: "دخل أو مصروف", keep: "إبقاء", date: "نقل إلى تاريخ", keepDate: "اتركه فارغًا لإبقاء كل تاريخ", apply: function(n) { return n === 1 ? "تطبيق على معاملة واحدة" : "تطبيق على " + n + " معاملات"; } },
+    es: { select: "Seleccionar", done: "Listo", all: "Seleccionar todo", none: "Borrar", hint: "Toca transacciones para seleccionarlas", picked: function(n) { return n + " seleccionadas"; }, edit: "Editar", del: "Eliminar", ask: function(n) { return n === 1 ? "¿Eliminar esta transacción? No se puede deshacer." : "¿Eliminar " + n + " transacciones? No se puede deshacer."; }, yes: "Sí, eliminar", cancel: "Cancelar", editTitle: function(n) { return n === 1 ? "Editar 1 transacción" : "Editar " + n + " transacciones"; }, editSub: "Solo se aplica lo que cambies - el resto queda igual en cada una.", keepCat: "Mantener la categoría de cada una", flow: "Ingreso o gasto", keep: "Mantener", date: "Mover a la fecha", keepDate: "Déjalo vacío para mantener cada fecha", apply: function(n) { return n === 1 ? "Aplicar a 1 transacción" : "Aplicar a " + n + " transacciones"; } },
+    fr: { select: "Sélectionner", done: "OK", all: "Tout sélectionner", none: "Effacer", hint: "Touchez des transactions pour les sélectionner", picked: function(n) { return n + " sélectionnée" + (n === 1 ? "" : "s"); }, edit: "Modifier", del: "Supprimer", ask: function(n) { return n === 1 ? "Supprimer cette transaction ? Action irréversible." : "Supprimer " + n + " transactions ? Action irréversible."; }, yes: "Oui, supprimer", cancel: "Annuler", editTitle: function(n) { return n === 1 ? "Modifier 1 transaction" : "Modifier " + n + " transactions"; }, editSub: "Seul ce que vous changez est appliqué - le reste ne bouge pas.", keepCat: "Garder la catégorie de chacune", flow: "Revenu ou dépense", keep: "Garder", date: "Déplacer à la date", keepDate: "Laissez vide pour garder chaque date", apply: function(n) { return n === 1 ? "Appliquer à 1 transaction" : "Appliquer à " + n + " transactions"; } },
+    ru: { select: "Выбрать", done: "Готово", all: "Выбрать все", none: "Сбросить", hint: "Нажимайте на операции, чтобы выбрать их", picked: function(n) { return "Выбрано: " + n; }, edit: "Изменить", del: "Удалить", ask: function(n) { return n === 1 ? "Удалить эту операцию? Это нельзя отменить." : "Удалить операции (" + n + ")? Это нельзя отменить."; }, yes: "Да, удалить", cancel: "Отмена", editTitle: function(n) { return "Изменить операции: " + n; }, editSub: "Применится только то, что вы измените, - остальное останется как есть.", keepCat: "Оставить категорию каждой", flow: "Доход или расход", keep: "Оставить", date: "Перенести на дату", keepDate: "Оставьте пустым, чтобы сохранить даты", apply: function(n) { return "Применить к " + n; } },
+    de: { select: "Auswählen", done: "Fertig", all: "Alle auswählen", none: "Leeren", hint: "Tippe Transaktionen an, um sie auszuwählen", picked: function(n) { return n + " ausgewählt"; }, edit: "Bearbeiten", del: "Löschen", ask: function(n) { return n === 1 ? "Diese Transaktion löschen? Das lässt sich nicht rückgängig machen." : n + " Transaktionen löschen? Das lässt sich nicht rückgängig machen."; }, yes: "Ja, löschen", cancel: "Abbrechen", editTitle: function(n) { return n === 1 ? "1 Transaktion bearbeiten" : n + " Transaktionen bearbeiten"; }, editSub: "Nur was du änderst, wird übernommen - alles andere bleibt, wie es ist.", keepCat: "Kategorie jeweils behalten", flow: "Einnahme oder Ausgabe", keep: "Behalten", date: "Auf Datum verschieben", keepDate: "Leer lassen, um jedes Datum zu behalten", apply: function(n) { return n === 1 ? "Auf 1 Transaktion anwenden" : "Auf " + n + " Transaktionen anwenden"; } },
+    pt: { select: "Selecionar", done: "Concluir", all: "Selecionar tudo", none: "Limpar", hint: "Toque nas transações para selecioná-las", picked: function(n) { return n + " selecionada" + (n === 1 ? "" : "s"); }, edit: "Editar", del: "Excluir", ask: function(n) { return n === 1 ? "Excluir esta transação? Não dá para desfazer." : "Excluir " + n + " transações? Não dá para desfazer."; }, yes: "Sim, excluir", cancel: "Cancelar", editTitle: function(n) { return n === 1 ? "Editar 1 transação" : "Editar " + n + " transações"; }, editSub: "Só o que você mudar é aplicado - o resto fica como está em cada uma.", keepCat: "Manter a categoria de cada uma", flow: "Entrada ou saída", keep: "Manter", date: "Mover para a data", keepDate: "Deixe vazio para manter cada data", apply: function(n) { return n === 1 ? "Aplicar a 1 transação" : "Aplicar a " + n + " transações"; } }
+  })[_lang.code];
+  if (!selCopy) selCopy = { select: "Select", done: "Done", all: "Select all", none: "Clear", hint: "Tap transactions to select them", picked: function(n) { return n + " selected"; }, edit: "Edit", del: "Delete", ask: function(n) { return n === 1 ? "Delete this transaction? This can't be undone." : "Delete " + n + " transactions? This can't be undone."; }, yes: "Yes, delete", cancel: "Cancel", editTitle: function(n) { return n === 1 ? "Edit 1 transaction" : "Edit " + n + " transactions"; }, editSub: "Only what you change is applied - everything else stays as it is on each one.", keepCat: "Keep each one's category", flow: "Money in or out", keep: "Keep", date: "Move to date", keepDate: "Leave empty to keep each date", apply: function(n) { return n === 1 ? "Apply to 1 transaction" : "Apply to " + n + " transactions"; } };
+
+  function exitSelMode() {
+    setSelMode(false); setPicked({}); setBulkDelConfirm(false); setBulkEditOpen(false);
+  }
+  function togglePick(id) {
+    var next = {}; for (var k in picked) next[k] = picked[k];
+    if (next[id]) delete next[id]; else next[id] = true;
+    setPicked(next); setBulkDelConfirm(false);
+  }
+  // Tick or untick a whole group (a day, or everything on screen): if every
+  // row in it is already ticked the tap clears them, otherwise it ticks all.
+  function pickMany(rows) {
+    var allOn = rows.length > 0 && rows.every(function(t) { return picked[t.id]; });
+    var next = {}; for (var k in picked) next[k] = picked[k];
+    rows.forEach(function(t) { if (allOn) delete next[t.id]; else next[t.id] = true; });
+    setPicked(next); setBulkDelConfirm(false);
+  }
+  // Only rows still on screen count. Switching the category filter mid-way
+  // leaves earlier ticks in picked, and an irreversible delete must never
+  // reach a line the user can no longer see.
+  function pickedSet() {
+    var set = {};
+    sorted.forEach(function(t) { if (picked[t.id]) set[t.id] = true; });
+    return set;
+  }
+  function bulkDelete() {
+    var set = pickedSet();
+    props.onSaveTx(props.tx.filter(function(t) { return !set[t.id]; }));
+    exitSelMode();
+  }
+  function setBulkField(key, val) {
+    setBulkForm(function(prev) {
+      var next = {}; for (var k in prev) next[k] = prev[k];
+      next[key] = val;
+      return next;
+    });
+  }
+  function openBulkEdit() { setBulkForm(blankBulk); setBulkDelConfirm(false); setBulkEditOpen(true); }
+  function bulkApply() {
+    var c = bulkForm.catId ? catById(cats, bulkForm.catId) : null;
+    var set = pickedSet();
+    props.onSaveTx(props.tx.map(function(t) {
+      if (!set[t.id]) return t;
+      // Merge, like saveEdit, so flags this sheet never shows survive. The
+      // opening balance and trip lump-sums carry structural catIds and a fixed
+      // direction, so a bulk category or in/out change passes them by - only
+      // the date can move.
+      var structural = isOpening(t) || isTrip(t);
+      var patch = {};
+      if (c && !structural) { patch.catId = c.id; patch.category = c.name; }
+      if (bulkForm.type && !structural) patch.type = bulkForm.type;
+      if (bulkForm.date) patch.date = bulkForm.date;
+      return Object.assign({}, t, patch);
+    }));
+    exitSelMode();
+  }
+
   function setField(key, val) {
     setForm(function(prev) {
       var next = {};
@@ -19642,6 +19723,7 @@ function Activity(props) {
       cur: hasForeign ? t.origCur : mainSym, rate: hasForeign ? (t.rate || fxStaticRate(t.origCur, mainSym)) : 1, rateLoading: false, rateFallback: false, shared: t.shared || false, owner: t.owner || props.accountKey });
   }
   function startLongPress(t) {
+    if (selMode) return;
     pressTimer.current = setTimeout(function() {
       longPressFired.current = true;
       openEditTx(t);
@@ -19656,6 +19738,7 @@ function Activity(props) {
   function rowActivate(t) {
     if (longPressFired.current) { longPressFired.current = false; return; }
     cancelLongPress();
+    if (selMode) { togglePick(t.id); return; }
     openEditTx(t);
   }
 
@@ -19784,6 +19867,12 @@ function Activity(props) {
   var totalIn  = sorted.filter(function(t){return t.type==="income";}).reduce(function(s,t){return s+t.amount;},0);
   var totalOut = sorted.filter(function(t){return t.type==="expense";}).reduce(function(s,t){return s+t.amount;},0);
 
+  var pickedRows = sorted.filter(function(t) { return picked[t.id]; });
+  var pickedCount = pickedRows.length;
+  var pickedNet = pickedRows.reduce(function(s, t) { return t.type === "income" ? s + t.amount : s - t.amount; }, 0);
+  var allPicked = sorted.length > 0 && pickedCount === sorted.length;
+  var bulkChanged = !!(bulkForm.catId || bulkForm.type || bulkForm.date);
+
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "flex-start", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
@@ -19803,7 +19892,29 @@ function Activity(props) {
             <SVGIcon id="filter" size={18} color={filterCat ? T.orange : T.ink2} />
           </LiquidButton>
         )}
+        {unfiltered.length > 0 && (
+          <LiquidButton type="button" variant={selMode ? "primary" : "neutral"} soft size="icon" iconSize={42}
+            onClick={function() { if (selMode) exitSelMode(); else setSelMode(true); }}
+            aria-pressed={selMode} aria-label={selMode ? selCopy.done : selCopy.select} title={selMode ? selCopy.done : selCopy.select}>
+            <SVGIcon id={selMode ? "close" : "check"} size={18} color={selMode ? T.orange : T.ink2} />
+          </LiquidButton>
+        )}
       </div>
+
+      {/* Select mode's header: what is ticked, and one tap for everything on
+          screen - the same "Tick all / Untick all" the import checklist has. */}
+      {selMode && sorted.length > 0 && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 12, padding: "0 4px" }}>
+          <div style={{ minWidth: 0 }} aria-live="polite">
+            <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>{pickedCount ? selCopy.picked(pickedCount) : selCopy.hint}</div>
+            {pickedCount > 0 && <div style={{ fontSize: 12, color: T.ink3, marginTop: 1, fontVariantNumeric: "tabular-nums" }}>{dollarsDelta(pickedNet)}</div>}
+          </div>
+          <button type="button" onClick={function() { pickMany(sorted); }}
+            style={{ flexShrink: 0, minHeight: 44, padding: "0 2px", background: "none", border: "none", color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI, cursor: "pointer" }}>
+            {allPicked ? selCopy.none : selCopy.all}
+          </button>
+        </div>
+      )}
       <ImportSheet open={importOpen} onClose={function() { setImportOpen(false); }} categories={cats} tx={props.tx}
         shopCats={props.shopCats} csvMaps={props.csvMaps}
         onImport={function(txs, report, learned) {
@@ -20106,10 +20217,22 @@ function Activity(props) {
       {dates.map(function(date) {
         var dayItems = groups[date];
         var dayNet = dayItems.reduce(function(s,t){ if (t.accountMove) return s; return t.type === "income" ? s + t.amount : s - t.amount; }, 0);
+        var dayPickable = dayItems.filter(function(t) { return !t.accountMove; });
+        var dayAllOn = dayPickable.length > 0 && dayPickable.every(function(t) { return picked[t.id]; });
         return (
           <div key={date} style={{ marginBottom: 20 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 4px 8px" }}>
-              <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dateLabel(date)}</span>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: selMode ? "center" : "baseline", padding: "0 4px 8px" }}>
+              {selMode && dayPickable.length > 0 ? (
+                <button type="button" role="checkbox" aria-checked={dayAllOn} onClick={function() { pickMany(dayPickable); }}
+                  style={{ display: "flex", alignItems: "center", gap: 10, minHeight: 32, margin: "-6px 0", padding: 0, background: "none", border: "none", cursor: "pointer", fontFamily: UI }}>
+                  <span aria-hidden="true" style={{ width: 19, height: 19, borderRadius: 7, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid " + (dayAllOn ? T.orange : T.ink3), background: dayAllOn ? T.orange : "transparent" }}>
+                      {dayAllOn && <SVGIcon id="check" size={12} color="#fff" />}
+                    </span>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dateLabel(date)}</span>
+                </button>
+              ) : (
+                <span style={{ fontSize: 15, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{dateLabel(date)}</span>
+              )}
               <span style={{ fontSize: 12, fontWeight: 600, color: dayNet >= 0 ? T.green : T.ink2 }}>{dollarsDelta(dayNet)}</span>
             </div>
             <Card style={{ overflow: "hidden" }}>
@@ -20118,8 +20241,8 @@ function Activity(props) {
                 if (t.accountMove) {
                   var dep = t.moveKind === "deposit";
                   return (
-                    <div key={t.id} onClick={t.openAccount}
-                      style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 16px", borderBottom: notLast ? "0.5px solid " + T.sep : "none", cursor: "pointer", userSelect: "none", WebkitUserSelect: "none", overflow: "hidden", animation: freshRows[t.id] ? ROW_IN : "none" }}>
+                    <div key={t.id} onClick={selMode ? undefined : t.openAccount}
+                      style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 16px", borderBottom: notLast ? "0.5px solid " + T.sep : "none", cursor: selMode ? "default" : "pointer", opacity: selMode ? 0.4 : 1, userSelect: "none", WebkitUserSelect: "none", overflow: "hidden", animation: freshRows[t.id] ? ROW_IN : "none" }}>
                       <CatBadge icon={t.accountIcon} color={t.accountColor} size={40} soft={true} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 16, color: T.ink, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", lineHeight: 1.1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
@@ -20139,9 +20262,12 @@ function Activity(props) {
                   );
                 }
                 var c = resolveCat(cats, t);
+                var on = selMode && !!picked[t.id];
                 return (
                   <button key={t.id} type="button"
                     onClick={function() { rowActivate(t); }}
+                    role={selMode ? "checkbox" : undefined}
+                    aria-checked={selMode ? on : undefined}
                     aria-label={txRowLabel(t, c)}
                     onMouseDown={function() { startLongPress(t); }}
                     onMouseUp={cancelLongPress}
@@ -20150,7 +20276,10 @@ function Activity(props) {
                     onTouchEnd={cancelLongPress}
                     onTouchMove={cancelLongPress}
                     onContextMenu={function(e) { e.preventDefault(); }}
-                    style={{ width: "100%", textAlign: "start", background: "transparent", border: "none", font: "inherit", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, padding: "13px 16px", borderBottom: i < dayItems.length - 1 ? "0.5px solid " + T.sep : "none", opacity: t.pending ? 0.62 : 1, cursor: "pointer", userSelect: "none", WebkitUserSelect: "none", overflow: "hidden", animation: freshRows[t.id] ? ROW_IN : "none" }}>
+                    style={{ width: "100%", textAlign: "start", border: "none", font: "inherit", fontFamily: UI, display: "flex", alignItems: "center", gap: 13, padding: "13px 16px", borderBottom: i < dayItems.length - 1 ? "0.5px solid " + T.sep : "none", opacity: t.pending ? 0.62 : 1, cursor: "pointer", userSelect: "none", WebkitUserSelect: "none", overflow: "hidden", animation: freshRows[t.id] ? ROW_IN : "none", background: on ? T.orangeDim : "transparent" }}>
+                    {selMode && <span aria-hidden="true" style={{ width: 21, height: 21, borderRadius: 7, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid " + (on ? T.orange : T.ink3), background: on ? T.orange : "transparent" }}>
+                        {on && <SVGIcon id="check" size={12} color="#fff" />}
+                      </span>}
                     <CatBadge icon={t.type === "income" ? "up" : c.icon} color={t.type === "income" ? T.green : c.color} size={40} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 16, color: T.ink, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", lineHeight: 1.1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
@@ -20180,6 +20309,64 @@ function Activity(props) {
           </div>
         );
       })}
+
+      {/* The batch's actions, pinned above the nav pill the way the household
+          merge screen pins its commit - sticky, so it never covers the last
+          row. Delete confirms in place, like the single-row delete does. */}
+      {selMode && sorted.length > 0 && (
+        <div style={{
+          position: "sticky", bottom: "calc(110px + env(safe-area-inset-bottom, 0px))", zIndex: 20,
+          marginTop: 4, padding: "12px 14px", borderRadius: 20,
+          background: T.sheetGlass,
+          backdropFilter: "blur(30px) saturate(180%)", WebkitBackdropFilter: "blur(30px) saturate(180%)",
+          border: "0.5px solid " + T.glassBorder,
+          boxShadow: T.glassLiftUp + ", inset 0 1px 0 " + T.navRimTop,
+        }}>
+          {bulkDelConfirm ? (
+            <div>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: T.ink, textAlign: "center", marginBottom: 10, lineHeight: 1.4 }}>{selCopy.ask(pickedCount)}</div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <LiquidButton variant="neutral" size="lg" full onClick={function() { setBulkDelConfirm(false); }}>{selCopy.cancel}</LiquidButton>
+                <LiquidButton variant="primary" size="lg" full color={T.red} onClick={bulkDelete}>{selCopy.yes}</LiquidButton>
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: "flex", gap: 8 }}>
+              <LiquidButton variant="neutral" size="lg" full disabled={!pickedCount} onClick={openBulkEdit}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}><SVGIcon id="edit" size={16} color={pickedCount ? T.ink : T.ink3} />{selCopy.edit}</span>
+              </LiquidButton>
+              <LiquidButton variant="neutral" size="lg" full disabled={!pickedCount} onClick={function() { setBulkDelConfirm(true); }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 7, color: pickedCount ? T.red : T.ink3 }}><SVGIcon id="trash" size={16} color={pickedCount ? T.red : T.ink3} />{selCopy.del}</span>
+              </LiquidButton>
+            </div>
+          )}
+        </div>
+      )}
+
+      <Overlay open={bulkEditOpen} onClose={function() { setBulkEditOpen(false); }} title={selCopy.editTitle(pickedCount)}>
+        <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginBottom: 12 }}>{selCopy.editSub}</div>
+        <CatPicker label={tr("category")} categories={cats} value={bulkForm.catId} placeholder={selCopy.keepCat}
+          onChange={function(id) { setBulkField("catId", id); }} onManage={props.onManageCategories} />
+        <div style={{ marginBottom: 7 }}>
+          <div style={{ fontSize: 10.5, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 5 }}>{selCopy.flow}</div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {[{ k: "", l: selCopy.keep }, { k: "expense", l: tr("expense") }, { k: "income", l: tr("income") }].map(function(o) {
+              var sel = bulkForm.type === o.k;
+              return (
+                <button key={o.k || "keep"} type="button" onClick={function() { setBulkField("type", o.k); }}
+                  style={{ flex: 1, minHeight: 40, borderRadius: 9, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: 600, fontFamily: UI,
+                    background: sel ? (o.k === "income" ? T.greenDim : T.orangeDim) : T.fill1,
+                    color: sel ? (o.k === "income" ? T.green : T.orange) : T.ink3 }}>
+                  {o.l}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <FormRow label={selCopy.date} value={bulkForm.date} type="date" onChange={function(e) { setBulkField("date", e.target.value); }} />
+        {!bulkForm.date && <div style={{ fontSize: 11.5, color: T.ink3, marginTop: -2, marginBottom: 6, padding: "0 4px" }}>{selCopy.keepDate}</div>}
+        <BigBtn label={selCopy.apply(pickedCount)} onPress={bulkApply} disabled={!bulkChanged || !pickedCount} />
+      </Overlay>
     </div>
   );
 }
