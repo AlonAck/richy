@@ -53,7 +53,9 @@ const VARS = ["SHEET_NS", "CSV_DELIMS", "CSV_SNIFF_BYTES", "CSV_SNIFF_ROWS", "SH
   "CSV_HEAD_MAX", "CSV_SHAPE_MAX", "CSV_CELL_MAX", "CSV_NUL",
   "CSV_SEP_CELL", "CSV_SEP_ROW", "CSV_SEP_PART",
   "CSV_SHOPS_PER_CALL", "CSV_SHOPS_MAX", "CSV_SHOP_EXAMPLES",
-  "AI_MODEL_CSV_MAP", "AI_CSV_MAP_EFFORT", "AI_CSV_MAP_TOKENS", "AI_MODEL_CSV_SHOPS"];
+  "AI_MODEL_CSV_MAP", "AI_CSV_MAP_EFFORT", "AI_CSV_MAP_TOKENS", "AI_MODEL_CSV_SHOPS",
+  "AI_MODEL_CSV_READ", "AI_CSV_LAYOUT_EFFORT", "AI_CSV_LAYOUT_TOKENS", "CSV_READ_ROWS_PER_CALL", "CSV_READ_TOKENS",
+  "CSV_READ_MAX_ROWS", "CSV_READ_PARALLEL", "CSV_READ_LAYOUT_ROWS", "CSV_READ_CELL_MAX", "CSV_READ_KINDS"];
 
 const FNS = ["pad2", "parseCSV", "csvScan", "csvPickDelim", "sniffMap", "parseImportDate", "parseImportAmount",
   "normalizeMerchant", "shopKey", "labelSimilarity", "dayGap", "dupScore",
@@ -80,10 +82,15 @@ const FNS = ["pad2", "parseCSV", "csvScan", "csvPickDelim", "sniffMap", "parseIm
   // code that reads a real model's answer - the fence stripping, the
   // out-of-range clamping, the per-chunk failure handling - is the code under
   // test, not a paraphrase of it. callClaude is stubbed via setClaude below.
-  "mapColumnsWithAI", "categorizeShopsWithAI"];
+  "mapColumnsWithAI", "categorizeShopsWithAI",
+  // Alfred reading the statement line by line, and every check the file puts
+  // his answer through.
+  "csvReadMaskCell", "csvReadRowText", "csvReadParseObjects", "csvReadInt", "csvReadParseLayout", "csvReadDmyFor",
+  "csvReadVerify", "csvReadEnforceColumns", "csvReadCheckBalance", "csvReadCheckTotals", "csvReadLooksReal",
+  "csvReadDeriveMap", "csvReadToTx", "csvReadByRules", "readStatementWithAI"];
 
 // Multi-line constants: the two system prompts and the keyword map.
-const PROMPTS = ["CSV_MAP_SYSTEM", "CSV_SHOPS_SYSTEM", "IMPORT_CAT_KEYWORDS", "CSV_TRANSFER_WORDS"];
+const PROMPTS = ["CSV_MAP_SYSTEM", "CSV_SHOPS_SYSTEM", "IMPORT_CAT_KEYWORDS", "CSV_TRANSFER_WORDS", "CSV_LAYOUT_SYSTEM", "CSV_ROWS_SYSTEM"];
 
 const body = [
   "var DUP_CERTAIN = 0.86, DUP_MAYBE = 0.55;",

@@ -30,13 +30,22 @@ function corsOrigin(req) {
 // the common single-instance case. 30 requests per 5 minutes per user.
 var RATE_MAX = 30;
 var RATE_WINDOW_MS = 5 * 60 * 1000;
+// Reading a statement is one call for its layout and one per 25 lines, so a
+// three-month export alone would spend the chat's whole budget - and then
+// Alfred could not answer a question about it. Statement reads count in a
+// bucket of their own, still bounded: 60 calls is ~1,400 lines in 5 minutes.
+// The model and the output cap below are the same as any other call, so a
+// client claiming this purpose buys room, not a bigger bill per call.
+var RATE_MAX_STATEMENT = 60;
 var hits = {};
-function rateLimited(uid) {
+function rateLimited(uid, bucket) {
+  var key = bucket ? uid + ":" + bucket : uid;
+  var max = bucket === "statement" ? RATE_MAX_STATEMENT : RATE_MAX;
   var now = Date.now();
-  var arr = (hits[uid] || []).filter(function (t) { return now - t < RATE_WINDOW_MS; });
+  var arr = (hits[key] || []).filter(function (t) { return now - t < RATE_WINDOW_MS; });
   arr.push(now);
-  hits[uid] = arr;
-  return arr.length > RATE_MAX;
+  hits[key] = arr;
+  return arr.length > max;
 }
 
 module.exports = async function handler(req, res) {
@@ -76,7 +85,7 @@ module.exports = async function handler(req, res) {
     res.status(401).json({ error: { type: "unauthenticated", message: "Your session expired. Sign in again." } });
     return;
   }
-  if (rateLimited(uid)) {
+  if (rateLimited(uid, (req.body || {}).purpose === "statement" ? "statement" : "")) {
     res.status(429).json({ error: { type: "rate_limited", message: "Alfred needs a short breather - try again in a few minutes." } });
     return;
   }
