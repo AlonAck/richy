@@ -126,6 +126,11 @@ group("THE FILE'S OWN TOTALS PROVE NOTHING WAS DROPPED");
   const dropped = readings.map((x) => (x.row === 7 ? { row: 7, skip: true } : x));
   const t2 = csvReadCheckTotals(rows, dropped, -1);
   ok("drop one purchase and the totals say so", t2.matched < t2.found, JSON.stringify(t2));
+  // Isracard's own wording for the month's total - the line that used to be
+  // imported as a second copy of the month - is a total here too.
+  const isra = parseCSV(["תאריך רכישה,שם בית עסק,סכום עסקה,מטבע עסקה,סכום חיוב,מטבע חיוב", "01/09/2026,שופרסל דיל,1245.30,₪,1245.30,₪", "03/09/2026,ארומה,32.00,₪,32.00,₪", "סך חיוב בש\"ח:,,,,1277.30,₪"].join("\n"));
+  const ti = csvReadCheckTotals(isra, [{ row: 0, skip: true }, { row: 1, amount: 1245.3, io: "out", skip: false }, { row: 2, amount: 32, io: "out", skip: false }, { row: 3, skip: true }], -1);
+  eq("סך חיוב בש\"ח is checked as the statement's total", [ti.found, ti.matched], [1, 1]);
 }
 
 // --------------------------------------------------- a reading made a line --

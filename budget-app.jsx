@@ -16152,8 +16152,10 @@ function csvReadCheckTotals(rows, readings, balCol) {
     }
     var r = rows[x.row] || [];
     // Only a line that says it is a total is judged, so a heading with a year
-    // in it is not counted as a total that failed to match.
-    if (!/סה"?כ|סך הכל|total|subtotal/i.test(r.join(" "))) return;
+    // in it is not counted as a total that failed to match. Every wording the
+    // rules know counts - Isracard's "סך חיוב בש"ח" included, the very line
+    // that used to be imported as a second copy of the month.
+    if (!/סה"?כ|סך הכל|total|subtotal/i.test(r.join(" ")) && !r.some(function(cell) { return csvSummaryText(cell) === "total"; })) return;
     var nums = [];
     r.forEach(function(cell, c) {
       if (c === balCol) return;
