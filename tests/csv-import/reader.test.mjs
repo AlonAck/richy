@@ -277,6 +277,27 @@ const gotOf = (out) => out.txs.map((t) => t.date + " " + t.amount.toFixed(2) + "
   ok("a total line never looks like a purchase to the left-out check", !csvReadLooksReal(rows.find((r) => r.join(" ").includes("סה\"כ לחיוב"))));
 }
 
+// ------------------------------------------- duplicates: only against Richy --
+group("DUPLICATES ARE LOOKED FOR IN RICHY, NEVER INSIDE THE FILE");
+{
+  const { classifyImportRows } = app;
+  const bus = (id) => ({ id, type: "expense", date: "2026-09-03", amount: 5.9, label: "רב קו", catId: "c3" });
+  const twoFares = classifyImportRows([bus(1), bus(2)], []);
+  eq("two identical lines in one file both come in", twoFares.fresh.length, 2);
+  eq("and nobody is asked about them", twoFares.maybes.length + twoFares.dupes.length, 0);
+  const alike = classifyImportRows([
+    { id: 1, type: "expense", date: "2026-09-03", amount: 32, label: "AROMA TLV", catId: "c1" },
+    { id: 2, type: "expense", date: "2026-09-03", amount: 32, label: "ארומה תל אביב", catId: "c1" }
+  ], []);
+  eq("two look-alike lines in one file are not questioned against each other", [alike.fresh.length, alike.maybes.length], [2, 0]);
+  const have = [{ id: 9, type: "expense", date: "2026-09-03", amount: 5.9, label: "רב קו", catId: "c3" }];
+  const again = classifyImportRows([bus(1)], have);
+  eq("a line that is already in Richy is still caught", again.dupes.length, 1);
+  const hand = [{ id: 9, type: "expense", date: "2026-09-03", amount: 32, label: "Coffee", catId: "c1" }];
+  const maybe = classifyImportRows([{ id: 1, type: "expense", date: "2026-09-03", amount: 32, label: "ARОMA TLV", catId: "c1" }], hand);
+  eq("and one that only looks like something typed by hand is asked about", maybe.maybes.length, 1);
+}
+
 console.log("\n" + "-".repeat(64));
 if (fail) {
   console.log(fail + " FAILED, " + pass + " passed\n");

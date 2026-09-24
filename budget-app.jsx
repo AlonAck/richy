@@ -15614,35 +15614,22 @@ function bestDupMatch(cand, list) {
   return { score: bestScore, match: best };
 }
 
-// Sort every candidate into fresh / duplicate / look-alike, in two passes:
-// first against what the app already holds, then against the rows of this same
-// file already accepted - so one charge exported under two spellings collapses
-// instead of landing twice.
-//
-// One deliberate exception: a row that is an EXACT twin of an earlier row in
-// the same file is KEPT. Two identical bus fares in one day are real, a bank
-// export rarely repeats a line, and the old behaviour lost the second one
-// silently. `twins` counts them so the summary can say so out loud. Note the
-// order: the app check runs first, so a file that lists a charge twice and the
-// app already has it still skips both.
+// Sort every candidate into fresh / duplicate / look-alike against what the
+// app ALREADY holds - and only that. The file is never compared with itself:
+// a bank statement is the bank's own record, one line per movement, so two
+// lines that look alike in it are two real purchases (two bus fares, two
+// coffees on one day). Checking the file against itself used to ask the user
+// "did you buy it twice?" about exactly those, and a "same one" answer lost a
+// real purchase. The only question worth asking is whether a line is already
+// in Richy - typed by hand, synced, or brought in by an earlier import.
 function classifyImportRows(cands, existing) {
   var base = existing || [];
-  var accepted = [];
-  var fresh = [], dupes = [], maybes = [], twins = 0;
-  var seenInFile = {};
+  var fresh = [], dupes = [], maybes = [];
   (cands || []).forEach(function(c) {
-    var key = dupKey(c.type, c.date, c.amount, c.label);
-    var twin = !!seenInFile[key];
-    seenInFile[key] = true;
     var r = bestDupMatch(c, base);
     if (r.score >= DUP_CERTAIN) { dupes.push({ tx: c, match: r.match, score: r.score }); return; }
     if (r.score >= DUP_MAYBE) { maybes.push({ tx: c, match: r.match, score: r.score }); return; }
-    if (twin) { twins++; fresh.push(c); accepted.push(c); return; }
-    var r2 = bestDupMatch(c, accepted);
-    if (r2.score >= DUP_CERTAIN) { dupes.push({ tx: c, match: r2.match, score: r2.score, inFile: true }); return; }
-    if (r2.score >= DUP_MAYBE) { maybes.push({ tx: c, match: r2.match, score: r2.score, inFile: true }); return; }
     fresh.push(c);
-    accepted.push(c);
   });
 
   // ---- contention ----------------------------------------------------------
@@ -15669,12 +15656,12 @@ function classifyImportRows(cands, existing) {
   function claimKey(t) { return t ? dupKey(t.type, t.date, t.amount, t.label) : ""; }
   base.forEach(function(t) { var k = claimKey(t); supply[k] = (supply[k] || 0) + 1; });
   dupes.concat(maybes).forEach(function(e) {
-    if (e.inFile || !e.match) return;
+    if (!e.match) return;
     var k = claimKey(e.match);
     claims[k] = (claims[k] || 0) + 1;
   });
   function overClaimed(e) {
-    if (e.inFile || !e.match) return false;
+    if (!e.match) return false;
     var k = claimKey(e.match);
     return (claims[k] || 0) > (supply[k] || 1);
   }
@@ -15688,7 +15675,7 @@ function classifyImportRows(cands, existing) {
   maybes.forEach(function(e) { if (overClaimed(e)) e.contended = true; });
   maybes = maybes.concat(contendedDupes);
 
-  return { fresh: fresh, dupes: dupes, maybes: maybes, twins: twins };
+  return { fresh: fresh, dupes: dupes, maybes: maybes };
 }
 
 // ---- Alfred settles the look-alikes ----------------------------------------
@@ -15747,9 +15734,9 @@ function judgeLookalikes(pairs, cb) {
 // history sits inside the same window that the bank file never mentioned
 // (cash, another card, a second account).
 // Returns { from, to, gaps[], noIncome, uncategorized, staleDays, handOnly, tips[] }.
-function importGapReport(built, existingTx, cats, twins) {
+function importGapReport(built, existingTx, cats) {
   var rows = (built || []).filter(function(t) { return t && t.date; });
-  var out = { from: "", to: "", gapDays: 0, noIncome: false, uncategorized: 0, staleDays: 0, handOnly: 0, twins: twins || 0, tips: [] };
+  var out = { from: "", to: "", gapDays: 0, noIncome: false, uncategorized: 0, staleDays: 0, handOnly: 0, tips: [] };
   if (!rows.length) return out;
   var dates = rows.map(function(t) { return t.date; }).sort();
   out.from = dates[0];
@@ -15784,7 +15771,6 @@ function importGapReport(built, existingTx, cats, twins) {
   if (out.uncategorized > 0) out.tips.push(out.uncategorized + " " + (out.uncategorized === 1 ? "row" : "rows") + " landed in Other because the shop name was new. Open them in Activity and set the category once - Richy remembers the name next time.");
   if (out.staleDays >= 4) out.tips.push("The file stops " + out.staleDays + " days ago. Export again at the end of the month, or turn on Bank Sync so new purchases file themselves.");
   if (out.handOnly > 0) out.tips.push(out.handOnly + " " + (out.handOnly === 1 ? "transaction you" : "transactions you") + " logged by hand in that same window " + (out.handOnly === 1 ? "isn't" : "aren't") + " in the bank file. That's normal for cash or another card - worth a look in Activity in case one was a guess.");
-  if (out.twins > 0) out.tips.push("Your file listed " + out.twins + " " + (out.twins === 1 ? "line" : "lines") + " twice. Both copies were kept, because two identical charges on one day are usually two real purchases - delete one in Activity if it wasn't.");
   return out;
 }
 
@@ -18506,7 +18492,7 @@ function ImportSheet(props) {
     extras.forEach(function(t) { drop[t.id] = true; });
     setBuilt(txs.concat(extras).sort(function(a, b) { return (a.date || "").localeCompare(b.date || ""); })); setDupes(skipped);
     setDropped(drop); setOpenRow(null); setShowDetails(false);
-    setReport(importGapReport(txs, props.tx || [], cats, res.twins));
+    setReport(importGapReport(txs, props.tx || [], cats));
     setStep("preview");
   }
 
@@ -18646,7 +18632,7 @@ function ImportSheet(props) {
   // renamed row cannot, a dropped or recategorised one can.
   function refreshReport(rowsIn, dropIn) {
     var keep = keptRows(rowsIn, dropIn);
-    setReport(keep.length ? importGapReport(keep, props.tx || [], cats, plan ? plan.twins : 0) : null);
+    setReport(keep.length ? importGapReport(keep, props.tx || [], cats) : null);
   }
 
   function toggleRow(id) {
@@ -18785,7 +18771,7 @@ function ImportSheet(props) {
     if (!rowsOut.length) return;
     // Measured against what is actually being written, so the report can never
     // describe rows the user took out on the way past.
-    props.onImport(rowsOut, importGapReport(rowsOut, props.tx || [], cats, plan ? plan.twins : 0), learned);
+    props.onImport(rowsOut, importGapReport(rowsOut, props.tx || [], cats), learned);
     close();
   }
 
@@ -19193,12 +19179,12 @@ function ImportSheet(props) {
             <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginBottom: 14 }}>
               {m.contended
                 ? "More than one line in your file looks like this one thing you logged, and only one of them can be it. That makes this a question only you can answer."
-                : closeness + (m.inFile ? " Your file lists both - did you buy it twice?" : " Only you know whether you already logged this one by hand.")}
+                : closeness + " Only you know whether you already logged this one by hand."}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {pairRow("In your file", m.tx, T.orangeDim)}
               <div style={{ textAlign: "center", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.ink3 }}>vs</div>
-              {pairRow(m.inFile ? "Also in your file" : "Already in Richy", m.match, T.fill1)}
+              {pairRow("Already in Richy", m.match, T.fill1)}
             </div>
             <BigBtn label="Two purchases - add it" onPress={function() { answerMaybe("add"); }} style={{ marginTop: 0 }} />
             <div style={{ marginTop: 8 }}>
@@ -19487,10 +19473,23 @@ function ImportSheet(props) {
               </div>
             )}
             {err && <div style={{ fontSize: 13, color: T.red, marginBottom: 10 }}>{err}</div>}
-            {kept.length === 0 && (
-              <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, marginBottom: 2 }}>{"Nothing is ticked, so there is nothing to bring in. Tick a line, or go back."}</div>
-            )}
-            <BigBtn label={kept.length === 0 ? "Nothing to bring in" : kept.length === 1 ? "Bring in 1 line" : "Bring in " + kept.length + " lines"} onPress={doImport} disabled={kept.length === 0} />
+            {/* The one action on this screen floats over the list the way
+                Alfred's composer floats over his chat: a card of its own, 14px
+                in from the edges, the rows scrolling past behind it. Sticky,
+                not fixed - it rides the sheet's own scroll from the first line
+                to the last and settles into place at the end, so it never
+                covers the final row. bottom is -14px because the sticky
+                edge is measured inside the sheet's bottom padding (28px, see
+                Overlay): -14 lands the card 14px above the sheet's edge. */}
+            <div style={{ position: "sticky", bottom: -14, zIndex: 5, margin: "14px -6px 0", pointerEvents: "none" }}>
+              <div style={{ pointerEvents: "auto", background: T.card, border: "0.5px solid " + (T.isDark ? "rgba(255,255,255,0.14)" : T.hairline), borderRadius: 28,
+                boxShadow: T.isDark ? "0 12px 34px rgba(0,0,0,0.38)" : "0 12px 34px rgba(43,34,25,0.12)", padding: "12px 12px 12px", boxSizing: "border-box" }}>
+                {kept.length === 0 && (
+                  <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.5, margin: "0 6px 8px" }}>{"Nothing is ticked, so there is nothing to bring in. Tick a line, or go back."}</div>
+                )}
+                <BigBtn label={kept.length === 0 ? "Nothing to bring in" : kept.length === 1 ? "Bring in 1 line" : "Bring in " + kept.length + " lines"} onPress={doImport} disabled={kept.length === 0} style={{ marginTop: 0 }} />
+              </div>
+            </div>
             <button onClick={function() { setStep("map"); }} style={{ width: "100%", background: "none", border: "none", color: T.ink3, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer", marginTop: 8, padding: "5px 0" }}>Back</button>
           </div>
         );
