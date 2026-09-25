@@ -2094,7 +2094,33 @@ var IMPORT_STRINGS = {
     impEmptySub: "Choose the file your bank or card company gives you, and Alfred fills in your transactions. Or add them by hand.",
     impEmptyAdd: "Add your first transaction",
     impEmptyManual: "or add one by hand",
-    impEmptyImport: "or import from your bank"
+    impEmptyImport: "or import from your bank",
+    impDirection: "Money in or out",
+    impDirOthersIn: "Money in for the other {n} from {shop} too",
+    impDirOthersIn1: "Money in for the other line from {shop} too",
+    impDirOthersOut: "Money out for the other {n} from {shop} too",
+    impDirOthersOut1: "Money out for the other line from {shop} too",
+    impFlipFile: "Money in and money out look swapped in {file}.",
+    impFlipFileGo: "Flip the other {n} lines",
+    impFlipFileNo: "Just this one",
+    impFlipFileDone: "Flipped. This bank's next file will come in the right way round.",
+    impFlipFileDoneOnly: "Flipped.",
+    impFileAdd: "Add a file",
+    impFileReading: "Reading {file}",
+    impFileRemove: "Remove {file}",
+    impFilesN: "{n} files",
+    impImagesN: "{n} screenshots",
+    impPastedName: "Pasted lines",
+    impFilesRead: "{n} of {of} files read",
+    impStepOpenMany: "Opening the files",
+    impNoteFailed: "{file} wasn't added: {why}",
+    impDupesAll: "{n} left out so nothing counts twice",
+    impDupesAll1: "1 left out so nothing counts twice",
+    impTwinOf: "Also in {file}",
+    impCardBillWhy: "The card's own purchases are what count",
+    impNoteCardBill: "Your {n} card bills aren't added: Richy counts what the card bought, not the bill. Add the card's own file to bring those purchases in.",
+    impNoteCardBill1: "Your card bill isn't added: Richy counts what the card bought, not the bill. Add the card's own file to bring those purchases in.",
+    impAddWait: "Reading the new file…"
   },
   he: {
     impTitle: "ייבוא מהבנק",
@@ -2219,7 +2245,33 @@ var IMPORT_STRINGS = {
     impEmptySub: "בחרו את הקובץ שהבנק או חברת האשראי נותנים לכם, ואלפרד ימלא את התנועות. או הוסיפו אותן ידנית.",
     impEmptyAdd: "הוספת התנועה הראשונה",
     impEmptyManual: "או הוספה ידנית",
-    impEmptyImport: "או ייבוא מהבנק"
+    impEmptyImport: "או ייבוא מהבנק",
+    impDirection: "כסף נכנס או יוצא",
+    impDirOthersIn: "כסף נכנס גם ל-{n} השורות האחרות של {shop}",
+    impDirOthersIn1: "כסף נכנס גם לשורה השנייה של {shop}",
+    impDirOthersOut: "כסף יוצא גם ל-{n} השורות האחרות של {shop}",
+    impDirOthersOut1: "כסף יוצא גם לשורה השנייה של {shop}",
+    impFlipFile: "נראה שכסף נכנס וכסף יוצא התהפכו ב-{file}.",
+    impFlipFileGo: "להפוך את {n} השורות האחרות",
+    impFlipFileNo: "רק את זו",
+    impFlipFileDone: "הפכנו. הקובץ הבא מהבנק הזה ייכנס בכיוון הנכון.",
+    impFlipFileDoneOnly: "הפכנו.",
+    impFileAdd: "הוספת קובץ",
+    impFileReading: "קורא את {file}",
+    impFileRemove: "הסרת {file}",
+    impFilesN: "{n} קבצים",
+    impImagesN: "{n} צילומי מסך",
+    impPastedName: "שורות שהודבקו",
+    impFilesRead: "{n} מתוך {of} קבצים נקראו",
+    impStepOpenMany: "פותח את הקבצים",
+    impNoteFailed: "{file} לא נוסף: {why}",
+    impDupesAll: "{n} לא נוספו, כדי ששום דבר לא ייספר פעמיים",
+    impDupesAll1: "אחת לא נוספה, כדי ששום דבר לא ייספר פעמיים",
+    impTwinOf: "מופיעה גם ב-{file}",
+    impCardBillWhy: "נספרות הקניות של הכרטיס עצמו",
+    impNoteCardBill: "{n} חיובי הכרטיס לא נוספו: ריצ'י סופר את מה שנקנה בכרטיס, לא את החיוב. הוסיפו את הקובץ של הכרטיס כדי להכניס את הקניות.",
+    impNoteCardBill1: "חיוב הכרטיס לא נוסף: ריצ'י סופר את מה שנקנה בכרטיס, לא את החיוב. הוסיפו את הקובץ של הכרטיס כדי להכניס את הקניות.",
+    impAddWait: "קורא את הקובץ החדש…"
   },
   ar: {
     impTitle: "الاستيراد من البنك",
@@ -2344,7 +2396,33 @@ var IMPORT_STRINGS = {
     impEmptySub: "اختر الملف الذي يعطيك إياه البنك أو شركة البطاقة، وسيملأ ألفريد حركاتك. أو أضفها يدويًا.",
     impEmptyAdd: "أضف أول حركة",
     impEmptyManual: "أو أضف واحدة يدويًا",
-    impEmptyImport: "أو استورد من البنك"
+    impEmptyImport: "أو استورد من البنك",
+    impDirection: "مال داخل أو خارج",
+    impDirOthersIn: "مال داخل للأسطر الأخرى ({n}) من {shop} أيضًا",
+    impDirOthersIn1: "مال داخل للسطر الآخر من {shop} أيضًا",
+    impDirOthersOut: "مال خارج للأسطر الأخرى ({n}) من {shop} أيضًا",
+    impDirOthersOut1: "مال خارج للسطر الآخر من {shop} أيضًا",
+    impFlipFile: "يبدو أن المال الداخل والخارج مقلوبان في {file}.",
+    impFlipFileGo: "اقلب الأسطر الأخرى ({n})",
+    impFlipFileNo: "هذا السطر فقط",
+    impFlipFileDone: "تم القلب. سيصل الملف التالي من هذا البنك بالاتجاه الصحيح.",
+    impFlipFileDoneOnly: "تم القلب.",
+    impFileAdd: "إضافة ملف",
+    impFileReading: "جارٍ قراءة {file}",
+    impFileRemove: "إزالة {file}",
+    impFilesN: "{n} ملفات",
+    impImagesN: "{n} لقطات شاشة",
+    impPastedName: "أسطر ملصقة",
+    impFilesRead: "تمت قراءة {n} من {of} ملفات",
+    impStepOpenMany: "فتح الملفات",
+    impNoteFailed: "لم تتم إضافة {file}: {why}",
+    impDupesAll: "لم تُضف {n} أسطر حتى لا يُحسب شيء مرتين",
+    impDupesAll1: "لم يُضف سطر واحد حتى لا يُحسب شيء مرتين",
+    impTwinOf: "موجود أيضًا في {file}",
+    impCardBillWhy: "مشتريات البطاقة نفسها هي ما يُحسب",
+    impNoteCardBill: "لم تُضف فواتير البطاقة ({n}): يحسب ريتشي ما اشتُري بالبطاقة، لا الفاتورة. أضف ملف البطاقة لإدخال تلك المشتريات.",
+    impNoteCardBill1: "لم تُضف فاتورة البطاقة: يحسب ريتشي ما اشتُري بالبطاقة، لا الفاتورة. أضف ملف البطاقة لإدخال تلك المشتريات.",
+    impAddWait: "جارٍ قراءة الملف الجديد…"
   },
   ru: {
     impTitle: "Импорт из банка",
@@ -2469,7 +2547,33 @@ var IMPORT_STRINGS = {
     impEmptySub: "Выберите файл, который выдаёт банк или компания карты, и Альфред заполнит ваши операции. Или добавьте их вручную.",
     impEmptyAdd: "Добавить первую операцию",
     impEmptyManual: "или добавить вручную",
-    impEmptyImport: "или импорт из банка"
+    impEmptyImport: "или импорт из банка",
+    impDirection: "Доход или расход",
+    impDirOthersIn: "Доход и для остальных строк от {shop} ({n})",
+    impDirOthersIn1: "Доход и для второй строки от {shop}",
+    impDirOthersOut: "Расход и для остальных строк от {shop} ({n})",
+    impDirOthersOut1: "Расход и для второй строки от {shop}",
+    impFlipFile: "Похоже, доход и расход перепутаны в {file}.",
+    impFlipFileGo: "Перевернуть остальные строки ({n})",
+    impFlipFileNo: "Только эту",
+    impFlipFileDone: "Готово. Следующий файл этого банка придёт правильно.",
+    impFlipFileDoneOnly: "Готово.",
+    impFileAdd: "Добавить файл",
+    impFileReading: "Читаю {file}",
+    impFileRemove: "Убрать {file}",
+    impFilesN: "Файлов: {n}",
+    impImagesN: "Скриншотов: {n}",
+    impPastedName: "Вставленные строки",
+    impFilesRead: "Прочитано файлов: {n} из {of}",
+    impStepOpenMany: "Открываю файлы",
+    impNoteFailed: "{file} не добавлен: {why}",
+    impDupesAll: "Не добавлено, чтобы ничего не считалось дважды: {n}",
+    impDupesAll1: "1 строка не добавлена, чтобы ничего не считалось дважды",
+    impTwinOf: "Есть и в {file}",
+    impCardBillWhy: "Считаются сами покупки по карте",
+    impNoteCardBill: "Счета по карте не добавлены ({n}): Richy считает покупки по карте, а не счёт. Добавьте файл карты, чтобы внести эти покупки.",
+    impNoteCardBill1: "Счёт по карте не добавлен: Richy считает покупки по карте, а не счёт. Добавьте файл карты, чтобы внести эти покупки.",
+    impAddWait: "Читаю новый файл…"
   }
 };
 for (var _ipc in IMPORT_STRINGS) {
@@ -14666,6 +14770,10 @@ function impApply(sheets, rec) {
         mine.forEach(function(l, k) {
           var d = by.dirs[k];
           if (!d) return;
+          // A balance that climbs as money goes out - what a card owes - read
+          // the other way round, once the person has turned this bank's file
+          // the right way round by hand (impFlipLayout).
+          if (t.balanceFlip) d = d === "in" ? "out" : "in";
           settled++;
           if (d !== l.dir && !l.dirGuess) st.flipped++;
           l.dir = d;
@@ -14847,7 +14955,7 @@ function impLayoutFrom(rec, sheets) {
     var key = t.sheet + "|" + sig;
     if (seen[key]) return;
     seen[key] = true;
-    tables.push({ sheet: t.sheet, sig: sig, firstRow: sig ? -1 : t.firstRow, date: t.date, dateOrder: t.dateOrder, description: t.description, details: t.details, amount: t.amount, balanceColumn: t.balanceColumn, foreign: t.foreign });
+    tables.push({ sheet: t.sheet, sig: sig, firstRow: sig ? -1 : t.firstRow, date: t.date, dateOrder: t.dateOrder, description: t.description, details: t.details, amount: t.amount, balanceColumn: t.balanceColumn, balanceFlip: !!t.balanceFlip, foreign: t.foreign });
   });
   return { v: 2, statement: rec.statement, currency: rec.currency, tables: tables, at: new Date().toISOString().slice(0, 10) };
 }
@@ -14858,12 +14966,12 @@ function impRecipeFromLayout(layout, sheets) {
     var sh = sheets[lt.sheet];
     if (!sh) return;
     if (!lt.sig) {
-      rec.tables.push({ sheet: lt.sheet, headerRow: -1, firstRow: Math.max(0, lt.firstRow), lastRow: -1, date: lt.date, dateOrder: lt.dateOrder, description: lt.description, details: lt.details || [], amount: lt.amount, balanceColumn: lt.balanceColumn == null ? -1 : lt.balanceColumn, foreign: lt.foreign });
+      rec.tables.push({ sheet: lt.sheet, headerRow: -1, firstRow: Math.max(0, lt.firstRow), lastRow: -1, date: lt.date, dateOrder: lt.dateOrder, description: lt.description, details: lt.details || [], amount: lt.amount, balanceColumn: lt.balanceColumn == null ? -1 : lt.balanceColumn, balanceFlip: !!lt.balanceFlip, foreign: lt.foreign });
       return;
     }
     for (var r = 0; r < sh.rows.length; r++) {
       if (impRowSig(sh.rows[r]) !== lt.sig) continue;
-      rec.tables.push({ sheet: lt.sheet, headerRow: r, firstRow: r + 1, lastRow: -1, date: lt.date, dateOrder: lt.dateOrder, description: lt.description, details: lt.details || [], amount: lt.amount, balanceColumn: lt.balanceColumn == null ? -1 : lt.balanceColumn, foreign: lt.foreign });
+      rec.tables.push({ sheet: lt.sheet, headerRow: r, firstRow: r + 1, lastRow: -1, date: lt.date, dateOrder: lt.dateOrder, description: lt.description, details: lt.details || [], amount: lt.amount, balanceColumn: lt.balanceColumn == null ? -1 : lt.balanceColumn, balanceFlip: !!lt.balanceFlip, foreign: lt.foreign });
       break;
     }
   });
@@ -15268,26 +15376,62 @@ function impSortLines(lines, meta, ctx) {
 // inputs: [{ file }] and/or [{ text, name }]. ctx: { tx, categories, shopCats,
 // layouts, today, server(kind, body) -> Promise, reread, feedback }.
 // progress({ phase: "open"|"read"|"sort"|"check", ... }) as it goes.
+//
+// Several files are read side by side, and a file that cannot be read does
+// not sink the others: it comes back as a note naming it and why. Only when
+// nothing at all could be read does the import fail, with the error most
+// worth showing - one a retry can fix, when there is one. Screenshots chosen
+// together are one statement photographed in parts, so they are one job.
 function impRun(inputs, ctx, progress) {
   progress = progress || function() {};
   var cats = ctx.categories || [];
+  var failed = [];
+  function fail(name, err) {
+    failed.push({ name: name || "", code: (err && err.impCode) || "unreadable", err: err });
+    return null;
+  }
   progress({ phase: "open" });
-  return Promise.all(inputs.map(function(inp) {
-    return inp.text != null ? impReadText(inp.text, inp.name) : impReadFile(inp.file);
+  return Promise.all(inputs.map(function(inp, idx) {
+    var name = inp.text != null ? (inp.name || "") : ((inp.file && inp.file.name) || "");
+    var open = inp.text != null ? impReadText(inp.text, inp.name) : impReadFile(inp.file);
+    return open.then(function(r) { r.inputs = [idx]; return r; }, function(err) { return fail(name, err); });
   })).then(function(reads) {
-    var images = [], jobs = [];
+    var shots = [], jobs = [];
     reads.forEach(function(r) {
-      if (r.kind === "doc" && r.images) images = images.concat(r.images);
+      if (!r) return;
+      if (r.kind === "doc" && r.images) shots.push(r);
       else jobs.push(r);
     });
-    if (images.length) jobs.push({ kind: "doc", images: images.slice(0, IMP_MAX_IMAGES), name: images.length > 1 ? images.length + " images" : (reads[0] && reads[0].name) || "" });
-    progress({ phase: "read", doc: jobs.some(function(j) { return j.kind === "doc"; }), sheets: jobs.reduce(function(s, j) { return s + (j.sheets ? j.sheets.length : 0); }, 0) });
-    return impSeq(jobs, 1, function(job) { return job.kind === "doc" ? impReadDoc(job, ctx) : impReadSheets(job, ctx, progress); });
+    if (shots.length) {
+      var images = [], used = [];
+      shots.forEach(function(s) { images = images.concat(s.images); used = used.concat(s.inputs); });
+      images = images.slice(0, IMP_MAX_IMAGES);
+      jobs.push({ kind: "doc", images: images, inputs: used, name: images.length > 1 ? images.length + " images" : shots[0].name || "" });
+    }
+    var total = jobs.length, finished = 0;
+    progress({ phase: "read", doc: jobs.some(function(j) { return j.kind === "doc"; }), filesDone: 0, filesTotal: total });
+    // With one file its own progress (a layout known from last time, how
+    // many lines) is worth showing; with several, only how many are done.
+    var each = total > 1 ? function(p) { if (!p || p.phase !== "read") progress(p); } : progress;
+    return impSeq(jobs, 3, function(job) {
+      var reading = job.kind === "doc" ? impReadDoc(job, ctx) : impReadSheets(job, ctx, each);
+      return reading.then(function(r) { r.job = job; return r; }, function(err) { return fail(job.name, err); }).then(function(r) {
+        finished++;
+        if (total > 1) progress({ phase: "read", filesDone: finished, filesTotal: total });
+        return r;
+      });
+    });
   }).then(function(results) {
-    var lines = [], notes = [], layouts = {}, sources = {};
+    var ok = results.filter(Boolean);
+    if (!ok.length) {
+      var worst = failed.filter(function(f) { return IMP_RETRYABLE[f.code]; })[0] || failed[0];
+      throw (worst && worst.err && worst.err.impCode) ? worst.err : impError((worst && worst.code) || "not-statement");
+    }
+    var lines = [], notes = [], layouts = {}, sources = {}, files = [];
     var statement = "", currency = "";
-    results.forEach(function(r, fi) {
+    ok.forEach(function(r, fi) {
       r.lines.forEach(function(l) { l.file = fi; lines.push(l); });
+      files.push({ name: r.job.name || "", images: r.job.images ? r.job.images.length : 0, inputs: r.job.inputs || [], fingerprint: r.fingerprint || "", layout: !!r.layout, count: r.lines.length, statement: r.statement || "" });
       (r.notes || []).forEach(function(n) { notes.push(n); });
       if (r.fingerprint && r.layout) layouts[r.fingerprint] = r.layout;
       sources[r.source] = true;
@@ -15295,6 +15439,7 @@ function impRun(inputs, ctx, progress) {
       if (!statement) statement = r.statement || "";
       if (!currency) currency = r.currency || "";
     });
+    failed.forEach(function(f) { notes.push({ key: "file-failed", name: f.name, code: f.code }); });
     if (!lines.length) throw impError("not-statement");
     var dates = lines.map(function(l) { return l.date; }).sort();
     progress({ phase: "sort", found: lines.length, from: dates[0], to: dates[dates.length - 1] });
@@ -15311,7 +15456,10 @@ function impRun(inputs, ctx, progress) {
         var info = impFixKind(g.info, l.dir, cats);
         if (info.kind === "not_transaction") { skipped++; return; }
         var tx = impMakeTx(l, info, cats, base + i);
-        items.push({ id: tx.id, tx: tx, group: l.group, kind: info.kind, unsure: !info.sure, source: info.source, file: l.file });
+        // dirRead is the direction as read, kept while the person turns lines
+        // around: it is what the file said, which is what twins across files
+        // and a file read upside down are judged by.
+        items.push({ id: tx.id, tx: tx, group: l.group, kind: info.kind, unsure: !info.sure, source: info.source, file: l.file, dirRead: l.dir });
       });
       if (skipped) notes.push({ key: "summary-rows", n: skipped });
       var dups = impDedupe(items.map(function(it) { return it.tx; }), ctx.tx);
@@ -15328,10 +15476,101 @@ function impRun(inputs, ctx, progress) {
       return {
         items: items, notes: notes, statement: statement, currency: currency,
         source: sources.offline ? "offline" : sources.doc ? "doc" : sources.alfred ? "alfred" : "cached",
-        learned: { layouts: layouts, shops: shops }
+        learned: { layouts: layouts, shops: shops },
+        // One entry per file that was read, in the order of item.file.
+        files: files
       };
     });
   });
+}
+
+// Lines that two of the person's files both hold: overlapping months from one
+// bank, or the same file chosen twice. Inside one file identical lines are
+// two real purchases - a statement lists every movement once - so only a line
+// in a LATER file can be the twin of one in an earlier file: same day, same
+// amount to the cent, same direction as read, and the same wording. Each line
+// stands in for one twin only. order: the file ids, first file first.
+// Returns { itemId: the file id of the line it repeats }.
+function impTwins(items, order) {
+  var rank = {};
+  (order || []).forEach(function(f, i) { rank[f] = i; });
+  var sorted = items.slice().sort(function(a, b) { return (rank[a.file] || 0) - (rank[b.file] || 0); });
+  var byKey = {}, out = {};
+  sorted.forEach(function(it) {
+    var t = it.tx;
+    var key = t.date + "|" + (it.dirRead || (t.type === "income" ? "in" : "out")) + "|" + Math.round(t.amount * 100);
+    var seen = byKey[key] || (byKey[key] = []);
+    for (var i = 0; i < seen.length; i++) {
+      var c = seen[i];
+      if (c.used || c.file === it.file) continue;
+      if (impTextClose(c.label, t.label) || impLabelSim(c.label, t.label) >= 0.5) {
+        c.used = true;
+        out[it.id] = c.file;
+        return;
+      }
+    }
+    seen.push({ file: it.file, label: t.label, used: false });
+  });
+  return out;
+}
+
+// What the review sets aside so nothing counts twice, and why:
+//   "richy"  Richy already holds it (impDedupe).
+//   "twin"   two of the files chosen now both hold it (impTwins).
+//   "card"   a credit-card bill in a bank file, or the payment line in the
+//            card's own file. The card's purchases are what Richy counts, and
+//            the balance takes every line - so a bill counted as well took the
+//            same money off the balance twice once the card's file came in
+//            (a bank file and a card file read -3,000 where the truth was
+//            +3,000). Left out, it can never do that, whichever file comes
+//            first, and the review says why.
+// The person can still add any of them. order: the file ids, first first.
+// Returns { itemId: { why, file } }.
+function impSetAside(items, order) {
+  var twins = impTwins(items, order), out = {};
+  items.forEach(function(it) {
+    if (it.dup) out[it.id] = { why: "richy" };
+    else if (twins[it.id] != null) out[it.id] = { why: "twin", file: twins[it.id] };
+    else if (it.kind === "card_bill") out[it.id] = { why: "card" };
+  });
+  return out;
+}
+
+// A line the person turned into money in or money out. The category follows
+// the money: money out is never a salary, and money back from a shop keeps
+// that shop's category - a refund lowers what was spent there. A move between
+// the person's own accounts stays one. Works on a copy the caller made.
+function impSetDir(n, dir, cats) {
+  var t = n.tx;
+  if ((t.type === "income") === (dir === "in")) return false;
+  t.type = dir === "in" ? "income" : "expense";
+  if (!isTransfer(t)) {
+    if (dir === "out" && IMP_INCOME_CATS[t.category]) {
+      var o = catByName(cats, impOtherName(cats)) || cats[0] || null;
+      t.catId = o ? o.id : "";
+      t.category = o ? o.name : "Other";
+    }
+    n.kind = dir === "in" ? impDefaultKind("in", t.category) : "purchase";
+  }
+  n.unsure = false;
+  n.flipped = !n.flipped;
+  return true;
+}
+
+// A saved reading turned the other way round, for a bank whose file the
+// person flipped by hand, so its next file comes in right. Both halves flip
+// together: the sign or columns that give most lines their direction, and the
+// running balance where one settles it.
+function impFlipLayout(layout) {
+  var out = JSON.parse(JSON.stringify(layout || {}));
+  (out.tables || []).forEach(function(t) {
+    var a = t.amount || {};
+    if (a.mode === "split") { var c = a.outColumn; a.outColumn = a.inColumn; a.inColumn = c; }
+    else if (a.mode === "marked") { var w = a.outMarks; a.outMarks = a.inMarks; a.inMarks = w; }
+    else if (a.mode !== "unsigned") a.negativeIs = a.negativeIs === "in" ? "out" : "in";
+    if (t.balanceColumn != null && t.balanceColumn >= 0) t.balanceFlip = !t.balanceFlip;
+  });
+  return out;
 }
 
 // The summary the review screen leads with, re-measured whenever a line is
@@ -17921,9 +18160,10 @@ function ImpNudgeToast(props) {
 }
 
 // One line of the review list, in the shape Activity draws a transaction, so
-// what is checked here is what will be seen there. Tapping it opens the three
-// things worth changing: the category, whether it is a move between the
-// user's own accounts, and whether it goes in at all.
+// what is checked here is what will be seen there. Tapping it opens the
+// things worth changing: whether the money went out or came in, the category,
+// whether it is a move between the user's own accounts, and whether it goes
+// in at all.
 function ImpRow(props) {
   var it = props.item, tx = it.tx, cats = props.cats;
   var c = isTransfer(tx) ? null : resolveCat(cats, tx);
@@ -17948,7 +18188,7 @@ function ImpRow(props) {
             {left && <span style={{ fontSize: 11, fontWeight: 700, color: T.ink2, background: T.fill2, borderRadius: 5, padding: "1px 6px" }}>{tr("impLeftOut")}</span>}
             {!left && it.unsure && <span style={{ fontSize: 11, fontWeight: 700, color: T.gold, background: T.goldDim, borderRadius: 5, padding: "1px 6px" }}>{tr("impUnsure")}</span>}
             {tx.origCur && <span style={{ fontSize: 11, fontWeight: 700, color: T.ink2, background: T.fill2, borderRadius: 5, padding: "1px 6px" }}>{fmtCur(tx.origCur, tx.origAmount)}</span>}
-            {props.dupOf && <span style={{ fontSize: 11.5, color: T.ink3 }}>{"= " + props.dupOf.label}</span>}
+            {props.why && <span dir="auto" style={{ fontSize: 11.5, color: T.ink3 }}>{props.why}</span>}
           </div>
         </div>
         <span style={{ fontSize: 15.5, fontWeight: 700, color: amountColor, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>
@@ -17964,6 +18204,42 @@ function ImpRow(props) {
       )}
       {props.open && !props.dupMode && (
         <div className="rc-imp-step" style={{ padding: "4px 14px 14px", display: "flex", flexDirection: "column", gap: 12 }}>
+          {!left && (
+            <div role="radiogroup" aria-label={tr("impDirection")} style={{ display: "inline-flex", alignSelf: "flex-start", background: T.fill1, borderRadius: 999, padding: 3, gap: 2 }}>
+              {["out", "in"].map(function(d) {
+                var on = (tx.type === "income") === (d === "in");
+                return (
+                  <button key={d} type="button" role="radio" aria-checked={on} onClick={function() { if (!on) props.onDirection(d); }}
+                    style={{ minHeight: 36, display: "inline-flex", alignItems: "center", gap: 7, padding: "0 14px", borderRadius: 999, border: "none", background: on ? T.card : "transparent", boxShadow: on ? "0 1px 4px rgba(0,0,0,0.12)" : "none", color: on ? T.ink : T.ink2, fontSize: 13, fontWeight: 700, fontFamily: UI, cursor: on ? "default" : "pointer" }}>
+                    <span aria-hidden="true" style={{ fontSize: 16, lineHeight: 1, fontWeight: 800, color: on ? (d === "in" ? T.green : T.red) : T.ink3 }}>{d === "in" ? "+" : "−"}</span>
+                    {d === "in" ? tr("moneyIn") : tr("moneyOut")}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {!left && (props.fileFlip || props.fileFlipDone) && (
+            <div className="rc-imp-step" role="status" style={{ background: T.goldDim, borderRadius: 12, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
+              <div dir="auto" style={{ fontSize: 13.5, color: T.ink, lineHeight: 1.45 }}>
+                {props.fileFlipDone ? props.fileFlipDone : impT("impFlipFile", { file: props.fileFlip.name })}
+              </div>
+              {props.fileFlip && (
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                  <LiquidButton variant="neutral" size="sm" onClick={props.onFileFlip}>{impT("impFlipFileGo", { n: props.fileFlip.n })}</LiquidButton>
+                  <button type="button" onClick={props.onFileFlipNo}
+                    style={{ minHeight: 36, padding: "0 10px", background: "none", border: "none", color: T.ink2, fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: "pointer" }}>
+                    {tr("impFlipFileNo")}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          {!left && props.dirOthers > 0 && (
+            <button type="button" onClick={props.onDirOthers}
+              style={{ alignSelf: "flex-start", minHeight: 36, padding: "0 12px", borderRadius: 999, border: "1px solid " + T.orange, background: T.orangeDim, color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI, cursor: "pointer", textAlign: "start" }}>
+              {impT((tx.type === "income" ? "impDirOthersIn" : "impDirOthersOut") + (props.dirOthers === 1 ? "1" : ""), { n: props.dirOthers, shop: props.shop })}
+            </button>
+          )}
           {!left && !moving && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }} role="radiogroup" aria-label={tr("category")}>
               {cats.map(function(cat) {
@@ -18049,38 +18325,64 @@ function StatementImport(props) {
   var _text = useState(""); var pasteText = _text[0]; var setPasteText = _text[1];
   var _drag = useState(false); var dragOver = _drag[0]; var setDragOver = _drag[1];
   var _done = useState(null); var done = _done[0]; var setDone = _done[1];
+  var _files = useState([]); var files = _files[0]; var setFiles = _files[1];
+  var _more = useState(null); var loadingMore = _more[0]; var setLoadingMore = _more[1];
+  var _flipped = useState({}); var flippedFiles = _flipped[0]; var setFlippedFiles = _flipped[1];
+  var _noFlip = useState({}); var noFlip = _noFlip[0]; var setNoFlip = _noFlip[1];
+  var _flipDone = useState(null); var flipDone = _flipDone[0]; var setFlipDone = _flipDone[1];
   var runRef = useRef(0);
   var inputsRef = useRef(null);
   var fileRef = useRef(null);
+  var moreRef = useRef(null);
+  var fileSeq = useRef(0);
   useEffect(function() { ensureImpCss(); }, []);
 
   function reset() {
     setStep("pick"); setProg({}); setRes(null); setItems([]); setLeftOut({}); setKept({}); setOpenId(null);
     setOnlyCheck(false); setShowDups(false); setShowAll(false); setTaught({}); setErr(null);
     setPasteOpen(false); setPasteText(""); setDragOver(false); setDone(null);
+    setFiles([]); setLoadingMore(null); setFlippedFiles({}); setNoFlip({}); setFlipDone(null);
   }
   function close() { runRef.current++; reset(); props.onClose(); }
+
+  function ctxFor(extra) {
+    var ctx = {
+      tx: props.tx || [], categories: cats, shopCats: props.shopCats || {}, layouts: props.layouts || {},
+      today: new Date().toISOString().slice(0, 10),
+      server: function(kind, body) { return impServer(kind, body, kind === "importDoc" ? 59000 : 58000); },
+      reread: false, feedback: ""
+    };
+    for (var k in extra) ctx[k] = extra[k];
+    return ctx;
+  }
+  // The files of a run as the review keeps them: an id of their own, and the
+  // inputs they came from, so one can be dropped or read again later.
+  function keepFiles(r, inputs) {
+    var fs = (r.files || []).map(function(f) {
+      return { id: ++fileSeq.current, name: f.name, images: f.images, count: f.count, fingerprint: f.fingerprint, layout: f.layout, statement: f.statement,
+        inputs: (f.inputs || []).map(function(i) { return inputs[i]; }).filter(Boolean) };
+    });
+    r.items.forEach(function(it) { it.file = fs[it.file] ? fs[it.file].id : 0; });
+    return fs;
+  }
 
   function start(inputs, opts) {
     if (!inputs || !inputs.length) return;
     var run = ++runRef.current;
     inputsRef.current = inputs;
-    setErr(null); setOpenId(null);
-    setProg({ phase: "open", files: inputs.length, name: inputs[0].file ? inputs[0].file.name : "" });
+    setErr(null); setOpenId(null); setLoadingMore(null);
+    setProg({ phase: "open", files: inputs.length, name: inputs[0].file ? inputs[0].file.name : (inputs[0].name || "") });
     setStep("working");
-    var ctx = {
-      tx: props.tx || [], categories: cats, shopCats: props.shopCats || {}, layouts: props.layouts || {},
-      today: new Date().toISOString().slice(0, 10),
-      server: function(kind, body) { return impServer(kind, body, kind === "importDoc" ? 59000 : 58000); },
-      reread: !!(opts && opts.reread), feedback: (opts && opts.feedback) || ""
-    };
+    var ctx = ctxFor({ reread: !!(opts && opts.reread), feedback: (opts && opts.feedback) || "" });
     impRun(inputs, ctx, function(p) {
       if (run !== runRef.current) return;
       setProg(function(prev) { var n = {}; for (var k in prev) n[k] = prev[k]; for (var k2 in p) n[k2] = p[k2]; return n; });
     }).then(function(r) {
       if (run !== runRef.current) return;
+      setFiles(keepFiles(r, inputs));
       setRes(r); setItems(r.items); setLeftOut({}); setKept({}); setTaught({});
       setOnlyCheck(false); setShowDups(false); setShowAll(false);
+      setFlippedFiles({}); setNoFlip({}); setFlipDone(null);
       setStep("review");
       nativeHaptic("LIGHT");
     }, function(e) {
@@ -18090,17 +18392,87 @@ function StatementImport(props) {
     });
   }
   function onFiles(list) {
-    var files = Array.prototype.slice.call(list || []).slice(0, IMP_MAX_IMAGES);
+    var picked = Array.prototype.slice.call(list || []).slice(0, IMP_MAX_IMAGES);
     if (fileRef.current) fileRef.current.value = "";
-    start(files.map(function(f) { return { file: f }; }));
+    start(picked.map(function(f) { return { file: f }; }));
+  }
+  // More files into the list being checked - next month from the same bank,
+  // the credit card beside the bank account - without losing what was fixed.
+  // What this review already knows goes along: layouts read a minute ago, and
+  // the categories the person just chose.
+  function addMore(list) {
+    var picked = Array.prototype.slice.call(list || []).slice(0, IMP_MAX_IMAGES);
+    if (moreRef.current) moreRef.current.value = "";
+    if (!picked.length || loadingMore) return;
+    var run = runRef.current;
+    var inputs = picked.map(function(f) { return { file: f }; });
+    var label = picked.length > 1 ? impT("impFilesN", { n: picked.length }) : picked[0].name;
+    setLoadingMore({ name: label });
+    var shops = {}, sc = props.shopCats || {};
+    for (var k in sc) shops[k] = sc[k];
+    for (var g in taught) shops[g] = { category: taught[g].category, kind: taught[g].kind, source: "user", v: 2, label: taught[g].label };
+    var layouts = {}, pl = props.layouts || {}, ll = (res && res.learned && res.learned.layouts) || {};
+    for (var a in pl) layouts[a] = pl[a];
+    for (var b in ll) layouts[b] = ll[b];
+    impRun(inputs, ctxFor({ shopCats: shops, layouts: layouts }), null).then(function(r) {
+      if (run !== runRef.current) return;
+      var fs = keepFiles(r, inputs);
+      setFiles(function(prev) { return prev.concat(fs); });
+      setItems(function(prev) { return prev.concat(r.items).sort(function(x, y) { return (y.tx.date || "").localeCompare(x.tx.date || "") || x.id - y.id; }); });
+      setRes(function(prev) {
+        var p = prev || { notes: [], learned: { layouts: {}, shops: {} } };
+        var n = {}; for (var k2 in p) n[k2] = p[k2];
+        n.notes = (p.notes || []).concat(r.notes || []);
+        n.learned = { layouts: Object.assign({}, p.learned.layouts, r.learned.layouts), shops: Object.assign({}, p.learned.shops, r.learned.shops) };
+        if (!n.statement) n.statement = r.statement;
+        if (!n.currency) n.currency = r.currency;
+        return n;
+      });
+      setLoadingMore(null);
+      nativeHaptic("LIGHT");
+    }, function(e) {
+      if (run !== runRef.current) return;
+      setLoadingMore(null);
+      setRes(function(prev) {
+        var n = {}; for (var k3 in prev) n[k3] = prev[k3];
+        n.notes = ((prev && prev.notes) || []).concat([{ key: "file-failed", name: label, code: (e && e.impCode) || "server" }]);
+        return n;
+      });
+    });
+  }
+  // A file taken back out before anything is added. Its reading is not
+  // learned either: the person said this file was not one to bring in.
+  function removeFile(f) {
+    var rest = files.filter(function(x) { return x.id !== f.id; });
+    if (!rest.length) { runRef.current++; reset(); return; }
+    setFiles(rest);
+    setItems(items.filter(function(it) { return it.file !== f.id; }));
+    setOpenId(null);
+    var lay = res && res.learned && res.learned.layouts;
+    if (f.fingerprint && lay && lay[f.fingerprint] && !rest.some(function(x) { return x.fingerprint === f.fingerprint; })) {
+      var n = {}; for (var k in res) n[k] = res[k];
+      var keep = {}; for (var fp in lay) if (fp !== f.fingerprint) keep[fp] = lay[fp];
+      n.learned = { layouts: keep, shops: res.learned.shops };
+      setRes(n);
+    }
   }
   function readAgain() {
-    start(inputsRef.current, { reread: true, feedback: "The person who imported this file says the result looked wrong. Look again at which rows are transactions, which column is the date, which is the money, and which way the money moves." });
+    var all = [];
+    files.forEach(function(f) { all = all.concat(f.inputs); });
+    start(all.length ? all : inputsRef.current, { reread: true, feedback: "The person who imported this file says the result looked wrong. Look again at which rows are transactions, which column is the date, which is the money, and which way the money moves." });
   }
 
   // ---- review state ----
-  var fresh = items.filter(function(it) { return !it.dup || kept[it.id]; });
-  var dupItems = items.filter(function(it) { return it.dup; });
+  var fileById = {};
+  files.forEach(function(f) { fileById[f.id] = f; });
+  function fileLabel(f) { return !f ? "" : f.images > 1 ? impT("impImagesN", { n: f.images }) : f.name; }
+  // Set aside so nothing counts twice: already in Richy, in two of the files
+  // chosen now, or a card bill (impSetAside). None goes in unless the person
+  // says so.
+  var aside = impSetAside(items, files.map(function(f) { return f.id; }));
+  function isDup(it) { return !!aside[it.id]; }
+  var fresh = items.filter(function(it) { return !isDup(it) || kept[it.id]; });
+  var dupItems = items.filter(isDup);
   var adding = fresh.filter(function(it) { return !leftOut[it.id]; });
   var toCheck = adding.filter(function(it) { return it.unsure; }).length;
   var totals = impTotals(adding.map(function(it) { return it.tx; }));
@@ -18166,6 +18538,55 @@ function StatementImport(props) {
     return items.filter(function(x) { return x.group === it.group && x.id !== it.id && !isTransfer(x.tx) && x.tx.category !== it.tx.category; }).length;
   }
 
+  // ---- money in or money out ----
+  function setDirection(it, d) {
+    patch(function(x) { return x.id === it.id; }, function(n) { impSetDir(n, d, cats); });
+    setFlipDone(null);
+    nativeHaptic("LIGHT");
+  }
+  // Lines of the same shop in the same file still going the other way. Only
+  // the same file: one bank's reading says nothing about another's.
+  function dirOthersOf(it) {
+    var inNow = it.tx.type === "income";
+    return items.filter(function(x) { return x.group === it.group && x.file === it.file && x.id !== it.id && !leftOut[x.id] && (x.tx.type === "income") !== inNow; });
+  }
+  function applyDirOthers(it) {
+    var d = it.tx.type === "income" ? "in" : "out", ids = {};
+    dirOthersOf(it).forEach(function(x) { ids[x.id] = true; });
+    patch(function(x) { return !!ids[x.id]; }, function(n) { impSetDir(n, d, cats); });
+    nativeHaptic("LIGHT");
+  }
+  // A file read upside down: most of its lines came in as money in, which no
+  // real statement does, and the person has just turned one of them into
+  // money out. Only then is flipping the rest offered - never done unasked.
+  function fileFlipFor(it) {
+    if (!it.flipped || it.dirRead !== "in" || it.tx.type !== "expense") return null;
+    if (flippedFiles[it.file] || noFlip[it.file]) return null;
+    var mine = items.filter(function(x) { return x.file === it.file; });
+    if (mine.length < 4) return null;
+    var readIn = mine.filter(function(x) { return x.dirRead === "in"; }).length;
+    var rest = mine.filter(function(x) { return !x.flipped; }).length;
+    if (readIn < mine.length * 0.6 || rest < 3) return null;
+    return { n: rest, name: fileLabel(fileById[it.file]) };
+  }
+  // Every line of the file the person has not already turned by hand is
+  // turned now, and the file's reading is flipped when the import is saved,
+  // so the same bank's next file comes in right (impFlipLayout).
+  function flipFile(it) {
+    var fid = it.file;
+    patch(function(x) { return x.file === fid && !x.flipped; }, function(n) { impSetDir(n, n.tx.type === "income" ? "out" : "in", cats); });
+    var nf = {}; for (var k in flippedFiles) nf[k] = flippedFiles[k];
+    nf[fid] = true;
+    setFlippedFiles(nf);
+    setFlipDone(it.id);
+    nativeHaptic("MEDIUM");
+  }
+  function keepFileAsIs(it) {
+    var nn = {}; for (var k in noFlip) nn[k] = noFlip[k];
+    nn[it.file] = true;
+    setNoFlip(nn);
+  }
+
   function doImport() {
     var list = adding.map(function(it) { return it.tx; });
     if (!list.length) { close(); return; }
@@ -18175,8 +18596,13 @@ function StatementImport(props) {
     var learned = (res && res.learned) || { layouts: {}, shops: {} };
     for (var k in learned.shops) shops[k] = learned.shops[k];
     for (var g in taught) shops[g] = { category: taught[g].category, kind: taught[g].kind, source: "user", v: 2, label: taught[g].label };
+    var layouts = {};
+    for (var fp in learned.layouts) layouts[fp] = learned.layouts[fp];
+    files.forEach(function(f) {
+      if (flippedFiles[f.id] && f.fingerprint && layouts[f.fingerprint]) layouts[f.fingerprint] = impFlipLayout(layouts[f.fingerprint]);
+    });
     var t = impTotals(list);
-    props.onImport(list, { from: t.from, to: t.to, count: t.count }, { layouts: learned.layouts, shops: shops });
+    props.onImport(list, { from: t.from, to: t.to, count: t.count }, { layouts: layouts, shops: shops });
     setDone(t);
     setStep("done");
     nativeHaptic("MEDIUM");
@@ -18217,7 +18643,7 @@ function StatementImport(props) {
               <div style={{ fontSize: 13, color: T.ink2, marginBottom: 6 }}>{tr("impPasteHint")}</div>
               <textarea value={pasteText} onChange={function(e) { setPasteText(e.target.value); }} rows={5} dir="auto"
                 style={{ width: "100%", boxSizing: "border-box", borderRadius: 12, border: "1px solid " + T.hairline2, background: T.inputBg, color: T.ink, padding: "10px 12px", fontSize: 13, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", resize: "vertical", outline: "none" }} />
-              <LiquidButton variant="neutral" size="md" disabled={!pasteText.trim()} onClick={function() { start([{ text: pasteText, name: "pasted" }]); }} style={{ marginTop: 8 }}>
+              <LiquidButton variant="neutral" size="md" disabled={!pasteText.trim()} onClick={function() { start([{ text: pasteText, name: tr("impPastedName") }]); }} style={{ marginTop: 8 }}>
                 {tr("impPasteGo")}
               </LiquidButton>
             </div>
@@ -18232,10 +18658,12 @@ function StatementImport(props) {
   } else if (step === "working") {
     var order = ["open", "read", "sort", "check"];
     var at = order.indexOf(prog.phase || "open");
+    var many = prog.files > 1;
+    var found = prog.found ? (prog.found === 1 ? impT("impFound1", { from: impDay(prog.from) }) : impT("impFound", { n: prog.found, from: impDay(prog.from), to: impDay(prog.to) })) : "";
     var steps = [
-      { label: tr("impStepOpen"), detail: prog.name || "" },
+      { label: many ? tr("impStepOpenMany") : tr("impStepOpen"), detail: many ? "" : prog.name || "" },
       { label: prog.doc ? tr("impStepReadDoc") : tr("impStepRead"),
-        detail: prog.cached ? tr("impKnown") : prog.found ? (prog.found === 1 ? impT("impFound1", { from: impDay(prog.from) }) : impT("impFound", { n: prog.found, from: impDay(prog.from), to: impDay(prog.to) })) : "" },
+        detail: prog.cached && !many ? tr("impKnown") : found ? found : prog.filesTotal > 1 ? impT("impFilesRead", { n: prog.filesDone || 0, of: prog.filesTotal }) : "" },
       { label: tr("impStepSort"), detail: "" },
       { label: tr("impStepCheck"), detail: "" }
     ];
@@ -18278,14 +18706,29 @@ function StatementImport(props) {
       if (n.key === "summary-rows") return impTN("impNoteSummary", n.n);
       if (n.key === "shots-missed") return impT("impNoteShots", { n: n.n });
       if (n.key === "doc-part") return tr("impNoteDocPart");
+      if (n.key === "file-failed") return impT("impNoteFailed", { file: n.name, why: tr("impErr_" + impErrKey(n.code)) });
       return "";
     }).filter(function(s, i, all) { return s && all.indexOf(s) === i; });
+    // A card bill left out while the card's own file is not in this import:
+    // say where those purchases will come from.
+    var billsOut = dupItems.filter(function(it) { return aside[it.id].why === "card" && !kept[it.id]; }).length;
+    if (billsOut && !files.some(function(f) { return f.statement === "card"; })) notes.push(impTN("impNoteCardBill", billsOut));
     var row = function(it, last, dupMode) {
+      // What only the open row needs is worked out for the open row only.
+      var open = openId === it.id && !dupMode;
+      var f = fileById[it.file];
+      var a = dupMode ? aside[it.id] : null;
+      var why = !a ? "" : a.why === "richy" ? "= " + it.dup.label : a.why === "twin" ? impT("impTwinOf", { file: fileLabel(fileById[a.file]) }) : tr("impCardBillWhy");
       return (
         <ImpRow key={it.id} item={it} cats={cats} last={last} open={openId === it.id}
           onToggle={function() { setOpenId(openId === it.id ? null : it.id); }}
-          left={!!leftOut[it.id]} dupMode={dupMode} kept={!!kept[it.id]} dupOf={dupMode ? it.dup : null}
-          others={dupMode ? 0 : straggle(it)} shop={it.tx.label.split(" · ")[0].slice(0, 28)}
+          left={!!leftOut[it.id]} dupMode={dupMode} kept={!!kept[it.id]} why={why}
+          others={open ? straggle(it) : 0} shop={it.tx.label.split(" · ")[0].slice(0, 28)}
+          dirOthers={open ? dirOthersOf(it).length : 0}
+          fileFlip={open ? fileFlipFor(it) : null}
+          fileFlipDone={open && flipDone === it.id ? (f && f.layout ? tr("impFlipFileDone") : tr("impFlipFileDoneOnly")) : null}
+          onDirection={function(d) { setDirection(it, d); }} onDirOthers={function() { applyDirOthers(it); }}
+          onFileFlip={function() { flipFile(it); }} onFileFlipNo={function() { keepFileAsIs(it); }}
           onCategory={function(name) { setCategory(it, name); }} onAlsoOthers={function() { alsoOthers(it); }}
           onTransfer={function(on) { setTransfer(it, on); }} onLeave={function() { toggleLeave(it); }}
           onKeep={function() { toggleKeep(it); }} />
@@ -18304,6 +18747,40 @@ function StatementImport(props) {
             </div>
           )}
           {totals.moves > 0 && <div style={{ fontSize: 13, color: T.ink3, marginTop: 4, lineHeight: 1.45 }}>{impTN("impMoves", totals.moves)}</div>}
+        </div>
+        {/* The files in this import, and room for one more: next month from
+            the same bank, or the credit card beside the bank account. With
+            more than one, each can be taken back out before anything is
+            added. */}
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6, marginTop: 12 }}>
+          {files.map(function(f) {
+            return (
+              <span key={f.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 36, maxWidth: "100%", boxSizing: "border-box", paddingInlineStart: 12, paddingInlineEnd: files.length > 1 ? 2 : 12, borderRadius: 999, background: T.fill1 }}>
+                <SVGIcon id="attach" size={13} color={T.ink3} />
+                <span dir="auto" style={{ fontSize: 13, fontWeight: 600, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0, maxWidth: 170 }}>{fileLabel(f)}</span>
+                <span style={{ fontSize: 12.5, color: T.ink3, fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{f.count}</span>
+                {files.length > 1 && (
+                  <button type="button" onClick={function() { removeFile(f); }} aria-label={impT("impFileRemove", { file: fileLabel(f) })}
+                    style={{ width: 32, height: 32, flexShrink: 0, borderRadius: "50%", border: "none", background: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                    <SVGIcon id="close" size={11} color={T.ink3} />
+                  </button>
+                )}
+              </span>
+            );
+          })}
+          {loadingMore ? (
+            <span role="status" style={{ display: "inline-flex", alignItems: "center", gap: 8, minHeight: 36, maxWidth: "100%", boxSizing: "border-box", padding: "0 12px", borderRadius: 999, border: "1px dashed " + T.hairline2, color: T.ink2, fontSize: 13, fontWeight: 600 }}>
+              <ThinkingDots size={3} color={T.orangeHi} />
+              <span dir="auto" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0, maxWidth: 190 }}>{impT("impFileReading", { file: loadingMore.name })}</span>
+            </span>
+          ) : (
+            <button type="button" onClick={function() { if (moreRef.current) moreRef.current.click(); }}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 36, padding: "0 12px", borderRadius: 999, border: "1px dashed " + T.orange, background: "transparent", color: T.orange, fontSize: 13, fontWeight: 700, fontFamily: UI, cursor: "pointer" }}>
+              <SVGIcon id="plus" size={12} color={T.orange} />
+              {tr("impFileAdd")}
+            </button>
+          )}
+          <input ref={moreRef} type="file" multiple accept={IMP_ACCEPT} style={{ display: "none" }} onChange={function(e) { addMore(e.target.files); }} />
         </div>
         {notes.length > 0 && (
           <div style={{ marginTop: 14, background: T.goldDim, borderRadius: 14, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 4 }}>
@@ -18335,7 +18812,7 @@ function StatementImport(props) {
           <div style={{ marginBottom: 12 }}>
             <button type="button" onClick={function() { setShowDups(!showDups); }} aria-expanded={showDups}
               style={{ width: "100%", minHeight: 44, display: "flex", alignItems: "center", gap: 8, padding: "6px 4px", background: "none", border: "none", cursor: "pointer", fontFamily: UI, textAlign: "start" }}>
-              <span style={{ flex: 1, fontSize: 13.5, color: T.ink2, fontWeight: 600 }}>{impTN("impDupes", dupItems.filter(function(it) { return !kept[it.id]; }).length)}</span>
+              <span style={{ flex: 1, fontSize: 13.5, color: T.ink2, fontWeight: 600 }}>{impTN(dupItems.every(function(it) { return aside[it.id].why === "richy"; }) ? "impDupes" : "impDupesAll", dupItems.filter(function(it) { return !kept[it.id]; }).length)}</span>
               <span style={{ fontSize: 13, fontWeight: 700, color: T.ink2 }}>{showDups ? tr("impHide") : tr("impShow")}</span>
             </button>
             {showDups && <ImpDayList items={dupItems} renderRow={function(it, last) { return row(it, last, true); }} />}
@@ -18352,8 +18829,8 @@ function StatementImport(props) {
             list. The negative bottom margin cancels the sheet's own bottom
             padding, so the button does not jump up at the end. */}
         <div style={{ position: "sticky", bottom: 0, marginBottom: "calc(-28px - env(safe-area-inset-bottom, 0px))", padding: "10px 0 calc(16px + env(safe-area-inset-bottom, 0px))", pointerEvents: "none", zIndex: 2 }}>
-          <LiquidButton variant="primary" size="lg" full onClick={doImport} style={{ pointerEvents: "auto" }}>
-            {adding.length ? impTN("impAdd", adding.length) : tr("impDone")}
+          <LiquidButton variant="primary" size="lg" full onClick={doImport} disabled={!!loadingMore} style={{ pointerEvents: "auto" }}>
+            {loadingMore ? tr("impAddWait") : adding.length ? impTN("impAdd", adding.length) : tr("impDone")}
           </LiquidButton>
         </div>
       </div>

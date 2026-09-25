@@ -356,6 +356,10 @@ fetchSource(1).then(function(src){
     //   __impDrop("bank")   a Hebrew bank export against mockTx
     //   __impDrop("card")   a card statement with a refund and a foreign line
     //   __impDrop("pdf")    a (fake) PDF - the stand-in answers like Alfred would
+    //   __impDrop("bank2")  the same account's next weeks, overlapping "bank"
+    //   __impDrop("upside") a card statement the stand-in reads upside down
+    //   __impDrop("bank+card") several files at once; on the review screen the
+    //                      same call adds them through "Add a file"
     // ?delay=ms slows each answer so the reading screen can be seen (0 = instant).
     var delay = qs.get("delay") != null ? +qs.get("delay") : 900;
     function later(v) { return new Promise(function(res){ setTimeout(function(){ res(v); }, delay); }); }
@@ -379,7 +383,12 @@ fetchSource(1).then(function(src){
         var sheets = sampleRows(body.sample);
         var res = impLocalRecipe(sheets, new Date().toISOString().slice(0, 10));
         if (!res) return later({ statement: "other", currency: "", tables: [], skipRows: [], examples: [], problem: "This doesn't look like a list of transactions." });
-        var ex = res.lines.slice(0, 3).map(function(l) { return { sheet: l.sheet, row: l.row, date: l.date, amount: l.dir === "out" ? -l.amount : l.amount, description: l.desc }; });
+        // The "upside" seed is answered the wrong way round on purpose, the
+        // way a real misreading would reach the review screen: no proof lines
+        // to catch it with, every sign backwards.
+        var upside = /UPSIDE/.test(body.sample);
+        if (upside) res.recipe.tables.forEach(function(t) { t.amount.negativeIs = t.amount.negativeIs === "in" ? "out" : "in"; });
+        var ex = upside ? [] : res.lines.slice(0, 3).map(function(l) { return { sheet: l.sheet, row: l.row, date: l.date, amount: l.dir === "out" ? -l.amount : l.amount, description: l.desc }; });
         return later({ statement: res.recipe.statement, currency: "ILS", tables: res.recipe.tables, skipRows: [], examples: ex, problem: "" });
       }
       if (kind === "importSort") {
@@ -416,17 +425,30 @@ fetchSource(1).then(function(src){
         iso(1) + ",נטפליקס,11012,54.90,,8880.95"].map(function(r) { return r.replace(/^(\d{4})-(\d{2})-(\d{2})/, "$3/$2/$1"); }).join("\n"),
       card: ["פירוט עסקאות לכרטיס 4471", "תאריך עסקה,שם בית העסק,סכום עסקה,סכום חיוב",
         iso(9) + ",וולט,64.00,64.00", iso(7) + ",פז יקום,250.00,250.00", iso(5) + ",זיכוי זארה,-149.90,-149.90",
-        iso(3) + ",סינמה סיטי גלילות,94.00,94.00", iso(1) + ",איקאה נתניה,1200.00,400.00"].map(function(r) { return r.replace(/^(\d{4})-(\d{2})-(\d{2})/, "$3/$2/$1"); }).join("\n")
+        iso(3) + ",סינמה סיטי גלילות,94.00,94.00", iso(1) + ",איקאה נתניה,1200.00,400.00"].map(function(r) { return r.replace(/^(\d{4})-(\d{2})-(\d{2})/, "$3/$2/$1"); }).join("\n"),
+      // The same account's next statement: its first two lines are the last
+      // two of "bank", so they must be counted once.
+      bank2: ["בנק לאומי - תנועות בחשבון", "תאריך,תיאור,אסמכתא,חובה,זכות,יתרה",
+        iso(2) + ",ארומה תל אביב,11011,36.00,,8935.85",
+        iso(1) + ",נטפליקס,11012,54.90,,8880.95",
+        iso(0) + ",רמי לוי שיווק השקמה,11013,289.40,,8591.55"].map(function(r) { return r.replace(/^(\d{4})-(\d{2})-(\d{2})/, "$3/$2/$1"); }).join("\n"),
+      upside: ["UPSIDE - פירוט עסקאות לכרטיס 9921", "תאריך עסקה,שם בית העסק,סכום עסקה,סכום חיוב",
+        iso(8) + ",שופרסל דיל,212.40,212.40", iso(7) + ",וולט,64.00,64.00", iso(6) + ",פז יקום,250.00,250.00",
+        iso(4) + ",זיכוי קסטרו,-89.90,-89.90", iso(3) + ",ארומה,34.00,34.00", iso(2) + ",סופר פארם,88.90,88.90"].map(function(r) { return r.replace(/^(\d{4})-(\d{2})-(\d{2})/, "$3/$2/$1"); }).join("\n")
     };
     window.__impDrop = function(which) {
-      var file = which === "pdf" ? new File([new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x34, 0x0a])], "statement.pdf", { type: "application/pdf" })
-        : new File([seeds[which] || seeds.bank], (which || "bank") + ".csv", { type: "text/csv" });
-      var dt = new DataTransfer(); dt.items.add(file);
+      var dt = new DataTransfer(), names = [];
+      String(which || "bank").split("+").forEach(function(w) {
+        var file = w === "pdf" ? new File([new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x34, 0x0a])], "statement.pdf", { type: "application/pdf" })
+          : new File([seeds[w] || seeds.bank], w + ".csv", { type: "text/csv" });
+        dt.items.add(file);
+        names.push(file.name);
+      });
       var input = document.querySelector("input[type=file]");
       if (!input) return "no file input on screen";
       Object.defineProperty(input, "files", { value: dt.files, configurable: true });
       input.dispatchEvent(new Event("change", { bubbles: true }));
-      return "dropped " + file.name;
+      return "dropped " + names.join(", ");
     };
     function ImportHarness() {
       var _tx = React.useState(mockTx); var itx = _tx[0]; var setItx = _tx[1];

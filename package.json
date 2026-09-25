@@ -6,7 +6,7 @@
   },
   "scripts": {
     "build": "node build.mjs",
-    "test": "node tests/statement-import/files.test.mjs && node tests/statement-import/reading.test.mjs && node tests/statement-import/pipeline.test.mjs && node tests/statement-import/server.test.mjs",
+    "test": "node tests/statement-import/files.test.mjs && node tests/statement-import/reading.test.mjs && node tests/statement-import/pipeline.test.mjs && node tests/statement-import/review.test.mjs && node tests/statement-import/server.test.mjs",
     "test:import:live": "node tests/statement-import/live.mjs --sort --hard"
   },
   "dependencies": {
