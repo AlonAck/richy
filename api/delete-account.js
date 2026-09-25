@@ -8,7 +8,8 @@
 //   3. syncKeys where uid == caller   (bank-sync key mapping - revokes the phone key)
 //   4. leumiFinteka/{uid}             (bank connection tokens, best-effort revoke first)
 //   5. households: removes the caller from memberUids/members of any household
-//      they belong to (the household itself survives for the other member)
+//      they belong to, and their shared transactions with them - see that step
+//      (the household itself survives for the other member)
 //   6. The social graph            (profiles, profileStats, handles, follows,
 //      followRequests) - see the note on that step; the handle in particular
 //      MUST be released here because firestore.rules denies handle deletes to
@@ -127,19 +128,52 @@ module.exports = async function handler(req, res) {
     }
   } catch (e) { failed.push("leumiFinteka"); }
 
-  // 5. Household membership: strip the caller out of any household they're in.
+  // 5. Households: strip the caller out of any household they're in.
+  //
+  //    Leaving the membership lists was not enough. The household document
+  //    keeps the shared transactions as one array, each stamped with `owner` -
+  //    the uid of whoever paid - so every purchase the caller shared stayed
+  //    readable by the other member after "delete everything". Those rows go
+  //    with them. A row they logged for their partner (owner = partner) is the
+  //    partner's own spending and stays; so do rows with no owner at all, which
+  //    cannot be attributed to anyone. Shared budgets, goals and categories are
+  //    the joint plan the remaining member still runs on, and stay too.
+  //
+  //    Each member's client also writes the shared rows it holds into its own
+  //    users/{uid}/tx (the app never reads them back from there while in a
+  //    household), so the caller's rows are removed from those copies as well.
+  //
+  //    A transaction per household, so a member saving the household at the
+  //    same moment cannot write the removed rows straight back over this.
   try {
-    var FV = admin.firestore.FieldValue;
     var hhs = await db.collection("households").where("memberUids", "array-contains", uid).get();
     for (var i = 0; i < hhs.docs.length; i++) {
-      var hh = hhs.docs[i];
-      var data = hh.data();
-      var members = (data.members || []).filter(function (mm) { return mm && mm.uid !== uid; });
-      var memberUids = (data.memberUids || []).filter(function (u) { return u !== uid; });
-      if (memberUids.length === 0) {
-        await hh.ref.delete(); // last member out closes the household
-      } else {
-        await hh.ref.update({ memberUids: memberUids, members: members, pendingEmails: data.pendingEmails || [] });
+      var left = await db.runTransaction(async function (t) {
+        var snap = await t.get(hhs.docs[i].ref);
+        if (!snap.exists) return [];
+        var data = snap.data() || {};
+        var members = (data.members || []).filter(function (mm) { return mm && mm.uid !== uid; });
+        var memberUids = (data.memberUids || []).filter(function (u) { return u !== uid; });
+        if (memberUids.length === 0) {
+          t.delete(snap.ref); // last member out closes the household
+          return [];
+        }
+        var patch = { memberUids: memberUids, members: members, pendingEmails: data.pendingEmails || [] };
+        if (Array.isArray(data.tx)) patch.tx = data.tx.filter(function (x) { return !(x && x.owner === uid); });
+        // createdBy only draws the "owner" badge; hand it on rather than leave
+        // the household pointing at an account that no longer exists.
+        if (data.createdBy === uid) patch.createdBy = memberUids[0];
+        t.update(snap.ref, patch);
+        return memberUids;
+      });
+      for (var j = 0; j < left.length; j++) {
+        var copies = await db.collection("users").doc(left[j]).collection("tx").where("owner", "==", uid).get();
+        var mine = copies.docs.filter(function (d) { return (d.data() || {}).shared === true; });
+        for (var k = 0; k < mine.length; k += 400) {
+          var cb = db.batch();
+          mine.slice(k, k + 400).forEach(function (d) { cb.delete(d.ref); });
+          await cb.commit();
+        }
       }
     }
   } catch (e) { failed.push("households"); }
