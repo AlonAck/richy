@@ -12923,7 +12923,7 @@ function Overview(props) {
                 </div>
                 {showNet ? (
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 9 }}>
-                    <span style={{ fontSize: 12, color: HFNT }}>{dollars(balance) + " " + tr("balance").toLowerCase() + " + " + dollars(savTotal) + " " + tr("savings").toLowerCase()}</span>
+                    <span style={{ fontSize: 12, color: HFNT }}>{dollarsSigned(balance) + " " + tr("balance").toLowerCase() + " + " + dollars(savTotal) + " " + tr("savings").toLowerCase()}</span>
                   </div>
                 ) : (
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 9 }}>
@@ -12995,11 +12995,11 @@ function Overview(props) {
                     ? tr("stsCapped").replace("{cash}", dollars(heroCashRoom))
                     : heroUpcomingWeek > 0
                       ? tr(heroUpcomingWeekRows.length === 1 ? "stsCharges1" : "stsChargesN")
-                          .replace("{bal}", dollars(balance))
+                          .replace("{bal}", dollarsSigned(balance))
                           .replace("{held}", dollars(heroUpcomingWeek))
                           .replace("{n}", String(heroUpcomingWeekRows.length))
                           .replace("{top}", stsTopCharge ? stsTopCharge.merchant + " " + dollars(stsTopCharge.amount) : "")
-                      : tr("stsClear").replace("{bal}", dollars(balance))}
+                      : tr("stsClear").replace("{bal}", dollarsSigned(balance))}
                 </div>
               </div>
               <div style={{ display: "flex", gap: 14, borderTop: "0.5px solid " + HSEP, paddingTop: 13 }}>
@@ -25877,7 +25877,7 @@ function Advisor(props) {
               <div style={{ fontSize: 11.5, color: HFNT, marginTop: 7 }}>{goalGap > 0 ? (goalMonths > 0 ? (dollars(goalGap) + " to go - about " + goalMonths + " month" + (goalMonths === 1 ? "" : "s") + " at this pace.") : (dollars(goalGap) + " to go.")) : "Funded. Time for the next goal."}</div>
             </div>
           ) : (
-            <div style={{ borderTop: "0.5px solid " + HSEP, paddingTop: 14, fontSize: 12.5, color: HMUT }}>{"Net worth today: " + dollars(netWorth)}</div>
+            <div style={{ borderTop: "0.5px solid " + HSEP, paddingTop: 14, fontSize: 12.5, color: HMUT }}>{"Net worth today: " + dollarsSigned(netWorth)}</div>
           )}
         </div>
       );
@@ -27247,7 +27247,7 @@ function FullAnalysisView(props) {
     // Grounded in the very figures on screen, so an answer can never quietly
     // disagree with the card the user is looking at while they read it.
     var snapshot = "This month (" + monthLabel + "): income " + dollars(income) + ", spent " + dollars(expense)
-      + ", kept " + dollars(net) + " (savings rate " + savRate + "%), net worth " + dollars(netWorth)
+      + ", kept " + dollarsSigned(net) + " (savings rate " + savRate + "%), net worth " + dollarsSigned(netWorth)
       + ", buffer " + bufferTxt + " months of expenses, " + reviewed + " transactions reviewed"
       + (totalLimit > 0 ? ", budgets " + budgetPct + "% used (" + dollars(expense) + " of " + dollars(totalLimit) + ")" : ", no budgets set")
       + (typeof a.score === "number" ? ", Alfred's health score " + a.score + "/100" : "")
