@@ -15,9 +15,10 @@ const {
   impRun, impTwins, impSetAside, impSetDir, impFlipLayout, impParseDelimited, impRecipeFrom, impReadWithRecipe,
   impLayoutFrom, impRecipeFromLayout, impTotals, DEFAULT_CATEGORIES
 } = app;
-// The dashboard's balance: every settled line in, minus every line out -
-// transfers included (Overview's allIncome - allExpense).
-const balance = (txs) => Math.round(txs.reduce((s, t) => s + (t.type === "income" ? t.amount : -t.amount), 0) * 100) / 100;
+// The dashboard's balance with nothing pinning it: every settled line in, minus
+// every line out, transfers included. (A bank file that prints its balance
+// pins it - balance.test.mjs.)
+const balance = (txs) => app.mainSpendBalance(txs);
 const CATS = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
 const TODAY = "2026-09-24";
 const catId = (name) => CATS.find((c) => c.name === name).id;

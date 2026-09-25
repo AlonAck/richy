@@ -63,7 +63,8 @@ enum FirestoreCodec {
                            transfer: bool(data["transfer"]),
                            trip: bool(data["trip"]),
                            catchUp: bool(data["catchUp"]),
-                           synced: bool(data["synced"]))
+                           synced: bool(data["synced"]),
+                           asOf: data["asOf"] as? String)
     }
 
     /// The document the web app would write for the same record: the same
@@ -87,6 +88,7 @@ enum FirestoreCodec {
         if transaction.trip { out["trip"] = true }
         if transaction.catchUp { out["catchUp"] = true }
         if transaction.synced { out["synced"] = true }
+        if let asOf = transaction.asOf, !asOf.isEmpty { out["asOf"] = asOf }
         return out
     }
 

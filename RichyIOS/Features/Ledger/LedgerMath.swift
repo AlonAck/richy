@@ -45,17 +45,25 @@ struct BudgetProgress: Identifiable, Equatable, Sendable {
 /// dashboard so both clients show the same numbers for the same records.
 /// Pure functions over plain values; nothing here touches a service.
 enum LedgerMath {
-    /// The web app's `balance`: settled income minus settled expenses, with
-    /// catch-up entries left out. Settled means not pending and not dated in
-    /// the future.
+    /// The web app's `balanceAt` for today: settled income minus settled
+    /// expenses, with catch-up entries left out. Settled means not pending and
+    /// not dated in the future. Once a bank statement has pinned the balance
+    /// (the opening's `asOf`), the opening holds what the bank printed for the
+    /// end of that day, so a record dated on or before it is already inside
+    /// it and only later records move the balance.
     static func balance(_ transactions: [Transaction], today: String = RichyDate.today()) -> Double {
-        var income = 0.0
-        var expenses = 0.0
-        for record in transactions where !record.catchUp && record.isSettled(today: today) {
-            if record.isIncome { income += record.amount }
-            if record.isExpense { expenses += record.amount }
+        let asOf = transactions.first(where: { $0.isOpening })?.asOf ?? ""
+        var total = 0.0
+        for record in transactions where !record.catchUp && !record.pending && !record.date.isEmpty {
+            guard record.isIncome || record.isExpense else { continue }
+            if !asOf.isEmpty && record.isOpening {
+                total += record.signedAmount
+                continue
+            }
+            if record.date <= today { total += record.signedAmount }
+            if !asOf.isEmpty && record.date <= asOf { total -= record.signedAmount }
         }
-        return round2(income - expenses)
+        return round2(total)
     }
 
     /// Income and spending dated in `month`. Trip spending stays inside its

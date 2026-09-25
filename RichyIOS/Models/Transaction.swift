@@ -37,6 +37,11 @@ struct Transaction: Codable, Identifiable, Equatable, Sendable {
     let catchUp: Bool
     /// Arrived through Bank Sync rather than by hand.
     let synced: Bool
+    /// On the opening balance only: the day a bank statement pinned the balance
+    /// to (the web's `impAnchorBalance`). The opening's amount is what the
+    /// account held at the end of that day, so every record dated on or before
+    /// it is already inside that number. See `LedgerMath.balance`.
+    let asOf: String?
 
     var isExpense: Bool { type == .expense }
     var isIncome: Bool { type == .income }
@@ -62,7 +67,7 @@ struct Transaction: Codable, Identifiable, Equatable, Sendable {
     enum CodingKeys: String, CodingKey {
         case id, type, amount, label, catId, category, date
         case repeatRule = "repeat"
-        case pending, shared, owner, opening, transfer, trip, catchUp, synced
+        case pending, shared, owner, opening, transfer, trip, catchUp, synced, asOf
     }
 
     init(id: Int,
@@ -80,7 +85,8 @@ struct Transaction: Codable, Identifiable, Equatable, Sendable {
          transfer: Bool = false,
          trip: Bool = false,
          catchUp: Bool = false,
-         synced: Bool = false) {
+         synced: Bool = false,
+         asOf: String? = nil) {
         self.id = id
         self.type = type
         self.amount = amount
@@ -97,6 +103,7 @@ struct Transaction: Codable, Identifiable, Equatable, Sendable {
         self.trip = trip
         self.catchUp = catchUp
         self.synced = synced
+        self.asOf = asOf
     }
 
     init(from decoder: Decoder) throws {
@@ -121,6 +128,7 @@ struct Transaction: Codable, Identifiable, Equatable, Sendable {
         trip = try container.decodeIfPresent(Bool.self, forKey: .trip) ?? false
         catchUp = try container.decodeIfPresent(Bool.self, forKey: .catchUp) ?? false
         synced = try container.decodeIfPresent(Bool.self, forKey: .synced) ?? false
+        asOf = try container.decodeIfPresent(String.self, forKey: .asOf)
     }
 
     /// The same record with the fields a person can edit replaced.
@@ -139,6 +147,6 @@ struct Transaction: Codable, Identifiable, Equatable, Sendable {
         let becomesOrdinary = isStatementTransfer && catId != self.catId
         return Transaction(id: id, type: type, amount: amount, label: label, catId: catId, category: category, date: date,
                            repeatRule: repeatRule, pending: pending, shared: shared, owner: owner, opening: opening,
-                           transfer: transfer && !becomesOrdinary, trip: trip, catchUp: catchUp, synced: synced)
+                           transfer: transfer && !becomesOrdinary, trip: trip, catchUp: catchUp, synced: synced, asOf: asOf)
     }
 }

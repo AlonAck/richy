@@ -450,16 +450,33 @@ fetchSource(1).then(function(src){
       input.dispatchEvent(new Event("change", { bubbles: true }));
       return "dropped " + names.join(", ");
     };
+    // ?fresh=1 starts from an empty ledger instead of mockTx; ?opening=3000
+    // adds a balance typed in at sign-up today. The harness saves an import the
+    // way App's onStatementImport does - the balance pinned by impAnchorBalance -
+    // and prints the balance under the button.
     function ImportHarness() {
-      var _tx = React.useState(mockTx); var itx = _tx[0]; var setItx = _tx[1];
+      var startTx = qs.get("fresh") ? [] : mockTx;
+      if (qs.get("opening") != null) startTx = [{ id: 900001, type: "income", amount: +qs.get("opening"), label: "Opening balance", catId: "opening", category: "Opening balance", opening: true, date: iso(0), repeat: "none", pending: false }].concat(startTx);
+      var _tx = React.useState(startTx); var itx = _tx[0]; var setItx = _tx[1];
       var _open = React.useState(true); var open = _open[0]; var setOpen = _open[1];
       window.__impTx = function(){ return itx; };
       return React.createElement("div", null,
         React.createElement(StatementImport, {
           open: open, onClose: function(){ setOpen(false); }, categories: mockCats, tx: itx, shopCats: {}, layouts: window.__impLayouts || {},
-          onImport: function(txs, report, learned){ setItx(itx.concat(txs)); window.__impImported = txs; window.__impReport = report; window.__impLearned = learned; }
+          onImport: function(txs, report, learned){
+            var plan = impBalancePlan(itx, txs, report && report.bank);
+            var next = impAnchorBalance(itx, txs, report && report.bank);
+            setItx(next); window.__impImported = txs; window.__impReport = report; window.__impLearned = learned;
+            return { kind: plan.kind, date: plan.date || "", balance: mainSpendBalance(next), was: mainSpendBalance(itx) };
+          },
+          onSetBalance: function(amount) {
+            var next = impAnchorBalance(itx, [], { amount: amount, date: new Date().toISOString().slice(0, 10) });
+            setItx(next);
+            return { kind: "mine", balance: mainSpendBalance(next), was: mainSpendBalance(itx) };
+          }
         }),
-        React.createElement("button", { onClick: function(){ setOpen(true); }, style: { padding: "10px 14px" } }, "Open importer")
+        React.createElement("button", { onClick: function(){ setOpen(true); }, style: { padding: "10px 14px" } }, "Open importer"),
+        React.createElement("div", { id: "imp-balance", style: { padding: "10px 14px", fontSize: 15 } }, "Balance: " + dollarsSigned(mainSpendBalance(itx)))
       );
     }
     el = React.createElement(ImportHarness, {});
@@ -894,12 +911,20 @@ fetchSource(1).then(function(src){
     // ?fresh=1 renders a brand-new account (no tx) so the "Get the most from
     // Richy" suggestions show in their up-top position; ?used=1 marks debts +
     // household + sync as already in use so they retire themselves.
+    // ?pin=3000&pinDay=12 puts a balance pinned by a bank statement under the
+    // ledger: 3,000 at the end of the day 12 days ago (impAnchorBalance).
+    var ovTx = qs.get("fresh") ? [] : mockTx;
+    if (qs.get("pin") != null) {
+      var pinDay = iso(+(qs.get("pinDay") || 12));
+      ovTx = [{ id: 900002, type: "income", amount: +qs.get("pin"), label: "Opening balance", catId: "opening", category: "Opening balance", opening: true, date: pinDay, asOf: pinDay, repeat: "none", pending: false }].concat(ovTx);
+    }
+    window.__ovTx = ovTx;
     function OverviewHarness() {
       var _dt = React.useState([]); var dismissedTips = _dt[0]; var setDt = _dt[1];
       var used = !!qs.get("used");
       window.__dismissedTips = function(){ return dismissedTips; };
       return React.createElement(Overview, {
-        tx: qs.get("fresh") ? [] : mockTx, goals: mockGoals, budgets: [], categories: mockCats, businesses: ovBiz, trips: mockTrips, username: "Alon", plan: "",
+        tx: ovTx, goals: mockGoals, budgets: [], categories: mockCats, businesses: ovBiz, trips: mockTrips, username: "Alon", plan: "",
         periodMode: qs.get("pm") || "calendar",
         periodCustomStart: qs.get("pcs") || "",
         periodCustomEnd: qs.get("pce") || "",

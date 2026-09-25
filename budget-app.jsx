@@ -2118,9 +2118,18 @@ var IMPORT_STRINGS = {
     impDupesAll1: "1 left out so nothing counts twice",
     impTwinOf: "Also in {file}",
     impCardBillWhy: "The card's own purchases are what count",
-    impNoteCardBill: "Your {n} card bills aren't added: Richy counts what the card bought, not the bill. Add the card's own file to bring those purchases in.",
-    impNoteCardBill1: "Your card bill isn't added: Richy counts what the card bought, not the bill. Add the card's own file to bring those purchases in.",
-    impAddWait: "Reading the new file…"
+    impNoteCardBill: "Your {n} card bills aren't added: Richy counts what the card bought, not the bill. If the card's purchases aren't in Richy yet, add the card's own file.",
+    impNoteCardBill1: "Your card bill isn't added: Richy counts what the card bought, not the bill. If the card's purchases aren't in Richy yet, add the card's own file.",
+    impAddWait: "Reading the new file…",
+    impBankBal: "Your bank shows {amt} on {day}. Your balance in Richy will match it.",
+    impBalTitle: "Your balance",
+    impBalBank: "Matches your bank on {day}",
+    impBalWas: "It was {amt}",
+    impBalAsk: "What's in your bank account today?",
+    impBalAskSub: "Richy counts from that, so your balance matches your bank. What you just imported is already part of it.",
+    impBalMine: "Counting from what you entered for today",
+    impOpenAsOf: "Matched to your bank on {day}. Only what happens after that day moves your balance.",
+    impBalFix: "Not what your bank shows? Enter today's balance"
   },
   he: {
     impTitle: "ייבוא מהבנק",
@@ -2269,9 +2278,18 @@ var IMPORT_STRINGS = {
     impDupesAll1: "אחת לא נוספה, כדי ששום דבר לא ייספר פעמיים",
     impTwinOf: "מופיעה גם ב-{file}",
     impCardBillWhy: "נספרות הקניות של הכרטיס עצמו",
-    impNoteCardBill: "{n} חיובי הכרטיס לא נוספו: ריצ'י סופר את מה שנקנה בכרטיס, לא את החיוב. הוסיפו את הקובץ של הכרטיס כדי להכניס את הקניות.",
-    impNoteCardBill1: "חיוב הכרטיס לא נוסף: ריצ'י סופר את מה שנקנה בכרטיס, לא את החיוב. הוסיפו את הקובץ של הכרטיס כדי להכניס את הקניות.",
-    impAddWait: "קורא את הקובץ החדש…"
+    impNoteCardBill: "{n} חיובי הכרטיס לא נוספו: ריצ'י סופר את מה שנקנה בכרטיס, לא את החיוב. אם הקניות בכרטיס עוד לא בריצ'י, הוסיפו את הקובץ של הכרטיס.",
+    impNoteCardBill1: "חיוב הכרטיס לא נוסף: ריצ'י סופר את מה שנקנה בכרטיס, לא את החיוב. אם הקניות בכרטיס עוד לא בריצ'י, הוסיפו את הקובץ של הכרטיס.",
+    impAddWait: "קורא את הקובץ החדש…",
+    impBankBal: "לפי הבנק, ב-{day} היו בחשבון {amt}. היתרה בריצ'י תתאים לזה.",
+    impBalTitle: "היתרה שלכם",
+    impBalBank: "תואמת לבנק ב-{day}",
+    impBalWas: "לפני כן: {amt}",
+    impBalAsk: "כמה יש היום בחשבון הבנק?",
+    impBalAskSub: "ריצ'י יספור מהסכום הזה, כך שהיתרה תתאים לבנק. מה שייבאתם עכשיו כבר כלול בו.",
+    impBalMine: "נספר מהסכום שהזנתם להיום",
+    impOpenAsOf: "תואם לבנק ב-{day}. רק מה שקורה אחרי היום הזה משנה את היתרה.",
+    impBalFix: "לא מה שמופיע בבנק? הזינו את היתרה של היום"
   },
   ar: {
     impTitle: "الاستيراد من البنك",
@@ -2420,9 +2438,18 @@ var IMPORT_STRINGS = {
     impDupesAll1: "لم يُضف سطر واحد حتى لا يُحسب شيء مرتين",
     impTwinOf: "موجود أيضًا في {file}",
     impCardBillWhy: "مشتريات البطاقة نفسها هي ما يُحسب",
-    impNoteCardBill: "لم تُضف فواتير البطاقة ({n}): يحسب ريتشي ما اشتُري بالبطاقة، لا الفاتورة. أضف ملف البطاقة لإدخال تلك المشتريات.",
-    impNoteCardBill1: "لم تُضف فاتورة البطاقة: يحسب ريتشي ما اشتُري بالبطاقة، لا الفاتورة. أضف ملف البطاقة لإدخال تلك المشتريات.",
-    impAddWait: "جارٍ قراءة الملف الجديد…"
+    impNoteCardBill: "لم تُضف فواتير البطاقة ({n}): يحسب ريتشي ما اشتُري بالبطاقة، لا الفاتورة. إن لم تكن مشتريات البطاقة في ريتشي بعد، أضف ملف البطاقة.",
+    impNoteCardBill1: "لم تُضف فاتورة البطاقة: يحسب ريتشي ما اشتُري بالبطاقة، لا الفاتورة. إن لم تكن مشتريات البطاقة في ريتشي بعد، أضف ملف البطاقة.",
+    impAddWait: "جارٍ قراءة الملف الجديد…",
+    impBankBal: "يُظهر البنك {amt} في {day}. سيطابقه رصيدك في ريتشي.",
+    impBalTitle: "رصيدك",
+    impBalBank: "يطابق البنك في {day}",
+    impBalWas: "كان {amt}",
+    impBalAsk: "كم في حسابك البنكي اليوم؟",
+    impBalAskSub: "يبدأ ريتشي العدّ من هذا المبلغ، فيطابق رصيدك البنك. ما استوردته للتو داخل فيه بالفعل.",
+    impBalMine: "العدّ من المبلغ الذي أدخلته لليوم",
+    impOpenAsOf: "مطابق للبنك في {day}. ما يحدث بعد ذلك اليوم فقط يغيّر رصيدك.",
+    impBalFix: "ليس ما يظهره البنك؟ أدخل رصيد اليوم"
   },
   ru: {
     impTitle: "Импорт из банка",
@@ -2571,9 +2598,18 @@ var IMPORT_STRINGS = {
     impDupesAll1: "1 строка не добавлена, чтобы ничего не считалось дважды",
     impTwinOf: "Есть и в {file}",
     impCardBillWhy: "Считаются сами покупки по карте",
-    impNoteCardBill: "Счета по карте не добавлены ({n}): Richy считает покупки по карте, а не счёт. Добавьте файл карты, чтобы внести эти покупки.",
-    impNoteCardBill1: "Счёт по карте не добавлен: Richy считает покупки по карте, а не счёт. Добавьте файл карты, чтобы внести эти покупки.",
-    impAddWait: "Читаю новый файл…"
+    impNoteCardBill: "Счета по карте не добавлены ({n}): Richy считает покупки по карте, а не счёт. Если этих покупок ещё нет в Richy, добавьте файл карты.",
+    impNoteCardBill1: "Счёт по карте не добавлен: Richy считает покупки по карте, а не счёт. Если этих покупок ещё нет в Richy, добавьте файл карты.",
+    impAddWait: "Читаю новый файл…",
+    impBankBal: "Банк показывает {amt} на {day}. Баланс в Richy будет таким же.",
+    impBalTitle: "Ваш баланс",
+    impBalBank: "Совпадает с банком на {day}",
+    impBalWas: "Было {amt}",
+    impBalAsk: "Сколько сегодня на банковском счёте?",
+    impBalAskSub: "Richy будет считать от этой суммы, и баланс совпадёт с банком. Всё, что вы только что загрузили, уже в ней учтено.",
+    impBalMine: "Считаем от суммы, которую вы ввели на сегодня",
+    impOpenAsOf: "Сверено с банком на {day}. Баланс меняет только то, что было после этого дня.",
+    impBalFix: "Не совпадает с банком? Введите сегодняшний баланс"
   }
 };
 for (var _ipc in IMPORT_STRINGS) {
@@ -3415,14 +3451,42 @@ function investingTotal(list) {
   if (!list || !list.length) return 0;
   return round2(list.reduce(function(s, a) { return s + investingWorth(a); }, 0));
 }
-// Settled main spending balance (income minus expense), mirroring the Overview's
-// own balance math - excludes pending / future / catch-up rows.
-function mainSpendBalance(tx) {
-  var today = new Date().toISOString().slice(0, 10);
-  return (tx || []).filter(function(t) {
-    return !t.pending && !t.catchUp && t.date <= today;
-  }).reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0);
+// === THE MAIN BALANCE ===
+// The opening balance plus every settled row - unless a statement import has
+// pinned it. A bank file prints what the account held after each line, and the
+// import makes the opening balance that figure after the file's newest line,
+// with opening.asOf naming the day (impAnchorBalance). Every row on or before
+// asOf is then already inside that number - the file's own lines, a card bill
+// an older import left behind, a purchase typed in by hand - so importing,
+// editing or deleting one cannot move it; only later rows do. Before this,
+// a few months of history landed on top of whatever the person had typed in at
+// sign-up, and a bank file and a card file read -3,000 where the bank said
+// +3,000. Unpinned, the opening is just the money the person started with and
+// every row adds to it, as it always has.
+function balanceAsOf(tx) {
+  var list = tx || [];
+  for (var i = 0; i < list.length; i++) if (isOpening(list[i])) return list[i].asOf || "";
+  return "";
 }
+// The main balance at the end of a day - today when none is given. Days before
+// a pin are walked back from it, so a chart reaching into the past arrives at
+// exactly today's number. Pending, future and catch-up rows never count
+// (catch-up rows are onboarding's recap of money the balance already holds).
+function balanceAt(tx, day) {
+  var today = new Date().toISOString().slice(0, 10);
+  var upTo = day && day < today ? day : today;
+  var asOf = balanceAsOf(tx), sum = 0;
+  (tx || []).forEach(function(t) {
+    if (!t || !t.date || t.pending || t.catchUp) return;
+    var v = (Number(t.amount) || 0) * (t.type === "income" ? 1 : -1);
+    if (asOf && isOpening(t)) { sum += v; return; }
+    if (t.date <= upTo) sum += v;
+    if (asOf && t.date <= asOf) sum -= v;
+  });
+  return round2(sum);
+}
+// Settled main spending balance - the one number every screen shows for it.
+function mainSpendBalance(tx) { return balanceAt(tx); }
 // === NET WORTH - THE SINGLE SOURCE OF TRUTH ===
 // Every screen that says "net worth" calls this one function. It exists because
 // there used to be four formulas giving three answers: Profile filtered internal
@@ -11477,14 +11541,7 @@ function widgetValueAt(w, wc, back) {
   if (metric === "txCount") return flows.filter(inWin).length;
   // Running balances answer "where did this stand at the END of the window", so
   // a trend of one reads as a level over time rather than a period's flow.
-  if (metric === "balance") {
-    var today = new Date().toISOString().slice(0, 10);
-    var upTo = (wc.tx || []).filter(function(t) {
-      return !t.pending && !t.catchUp && (t.date || "") <= today && (!win || (t.date || "") <= win.to);
-    });
-    return round2(widgetSum(upTo.filter(function(t) { return t.type === "income"; }))
-      - widgetSum(upTo.filter(function(t) { return t.type === "expense"; })));
-  }
+  if (metric === "balance") return balanceAt(wc.tx || [], win ? win.to : "");
   if (metric === "savingsPot") {
     var pot = (wc.savings || []).filter(function(s) { return s.name === w.target; })[0];
     if (!pot) return 0;
@@ -12147,15 +12204,14 @@ function Overview(props) {
   // regardless (see below), since a net worth reset every "week" would be nonsense.
   var timeframe = props.timeframe || "month";
   var tfLabel = timeframe === "week" ? "this week" : timeframe === "year" ? "this year" : timeframe === "all" ? "all time" : "this month";
-  // Net Balance is net worth: ALL income (incl. opening balance) minus ALL
-  // expense, all-time. It must carry over month to month, so it is NOT scoped.
+  // Net Balance: the opening balance plus every settled row, all-time - or,
+  // once a bank statement pinned it, what the bank printed plus every row
+  // since (balanceAt). It must carry over month to month, so it is NOT scoped.
   // Transactions with a future date or marked pending haven't happened yet —
   // exclude them from all balance and cash-flow calculations.
   var today = new Date().toISOString().slice(0, 10);
   function isSettled(t) { return !t.pending && t.date <= today; }
-  var allIncome  = tx.filter(function(t) { return t.type === "income" && !t.catchUp && isSettled(t); }).reduce(function(s,t) { return s+t.amount; }, 0);
-  var allExpense = tx.filter(function(t) { return t.type === "expense" && !t.catchUp && isSettled(t); }).reduce(function(s,t) { return s+t.amount; }, 0);
-  var balance = allIncome - allExpense;
+  var balance = mainSpendBalance(tx);
   // Savings pots sit outside the main balance. Net worth = main balance + pots +
   // business-account cash (also walled off, but still the user's net worth).
   var savAccts = props.savings || [];
@@ -12568,12 +12624,15 @@ function Overview(props) {
 
   // Daily running-balance series across the window - one true point per day, no
   // sampling gaps and no smoothing overshoot, so the line reflects real balances.
-  var startBal = tx.filter(function(t) { return t.date < winStart; }).reduce(function(s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0);
+  // It starts from balanceAt the evening before the window and moves by each
+  // day's settled rows, so it lands on the headline balance - pinned to a bank
+  // statement or not. A pinned opening is the level itself, not a day's move.
+  var balPin = balanceAsOf(tx);
+  var startBal = balanceAt(tx, addDaysISO(winStart, -1));
   var dayDelta = {};
   tx.forEach(function(t) {
-    if (inWin(t.date)) {
-      dayDelta[t.date] = (dayDelta[t.date] || 0) + (t.type === "income" ? t.amount : -t.amount);
-    }
+    if (!inWin(t.date) || t.pending || t.catchUp || (balPin && isOpening(t))) return;
+    dayDelta[t.date] = (dayDelta[t.date] || 0) + (t.type === "income" ? t.amount : -t.amount);
   });
   // Net-worth series: the main balance plus every pot (savings + business +
   // investing cash) reconstructed per day from their dated entries, so the line
@@ -14800,6 +14859,13 @@ function impApply(sheets, rec) {
         // arithmetic cannot reach either (the first of the file, with no
         // balance before it). Those are left to what the line is.
         if (settled && st.flipped > settled * 0.3) mine.forEach(function(l) { if (l.dirFrom !== "balance") l.dirGuess = true; });
+        // What the account held once its newest line had gone through: the
+        // balance an oldest-first file ends on, a newest-first one starts on.
+        // It is the figure the person's bank app shows, and Richy's balance is
+        // pinned to it (impBankBalance). A balance that runs the other way
+        // round (balanceFlip) is what a card owes, not money the person has.
+        var newest = by.order === "old" ? mine.length - 1 : 0;
+        if (!t.balanceFlip && bals[newest] != null) st.closing = { date: mine[newest].date, balance: bals[newest] };
       }
     }
     // A line the balance cannot settle (the first one it has nothing before)
@@ -14948,15 +15014,25 @@ function impReadWithRecipe(sheets, rec, today) {
   var resolved = impResolveTables(sheets, rec);
   var applied = impApply(sheets, resolved);
   var chk = impCheck(sheets, resolved, applied, today);
-  if (chk.ok) return { ok: true, recipe: resolved, lines: applied.lines };
+  if (chk.ok) return { ok: true, recipe: resolved, lines: applied.lines, closing: impClosing(applied.stats) };
   var fixed = impRepair(sheets, resolved, chk.diffs);
   if (fixed) {
     var again = impResolveTables(sheets, fixed);
     var applied2 = impApply(sheets, again);
     var chk2 = impCheck(sheets, again, applied2, today);
-    if (chk2.ok) return { ok: true, recipe: again, lines: applied2.lines, repaired: fixed.repaired };
+    if (chk2.ok) return { ok: true, recipe: again, lines: applied2.lines, repaired: fixed.repaired, closing: impClosing(applied2.stats) };
   }
   return { ok: false, feedback: chk.problems.slice(0, 8).join("\n") };
+}
+// A file's closing balance: of its tables that keep a running balance, the
+// one whose newest line is latest. { date, balance } or null.
+function impClosing(stats) {
+  var best = null;
+  (stats || []).forEach(function(st) {
+    var c = st && st.closing;
+    if (c && c.date && typeof c.balance === "number" && (!best || c.date > best.date)) best = c;
+  });
+  return best;
 }
 
 // What is kept of a reading for next month: the column roles and the title
@@ -15278,7 +15354,8 @@ function impReadSheets(job, ctx, progress) {
   function finish(res, source, why) {
     return {
       lines: res.lines, statement: res.recipe.statement, currency: res.recipe.currency, source: source, why: why || "",
-      fingerprint: fp, layout: source === "offline" ? null : impLayoutFrom(res.recipe, sheets), repaired: res.repaired || null
+      fingerprint: fp, layout: source === "offline" ? null : impLayoutFrom(res.recipe, sheets), repaired: res.repaired || null,
+      closing: res.closing || null
     };
   }
   var saved = !ctx.reread && fp && ctx.layouts ? ctx.layouts[fp] : null;
@@ -15446,7 +15523,7 @@ function impRun(inputs, ctx, progress) {
     var statement = "", currency = "";
     ok.forEach(function(r, fi) {
       r.lines.forEach(function(l) { l.file = fi; lines.push(l); });
-      files.push({ name: r.job.name || "", images: r.job.images ? r.job.images.length : 0, inputs: r.job.inputs || [], fingerprint: r.fingerprint || "", layout: !!r.layout, count: r.lines.length, statement: r.statement || "" });
+      files.push({ name: r.job.name || "", images: r.job.images ? r.job.images.length : 0, inputs: r.job.inputs || [], fingerprint: r.fingerprint || "", layout: !!r.layout, count: r.lines.length, statement: r.statement || "", closing: r.closing || null });
       (r.notes || []).forEach(function(n) { notes.push(n); });
       if (r.fingerprint && r.layout) layouts[r.fingerprint] = r.layout;
       sources[r.source] = true;
@@ -15586,6 +15663,88 @@ function impFlipLayout(layout) {
     if (t.balanceColumn != null && t.balanceColumn >= 0) t.balanceFlip = !t.balanceFlip;
   });
   return out;
+}
+
+// ---- the balance ---------------------------------------------------------------------------
+
+// What the person's bank says they have, from the files being brought in: the
+// balance printed after the newest line of each bank file that keeps one
+// (impApply). Files of one format are one account over different months, and
+// the newest balance is the one that holds; files of different formats are
+// different accounts, and what they hold adds up. A card's file never counts -
+// its balance is what the card owes. Returns { amount, date } or null.
+function impBankBalance(files) {
+  var acct = {};
+  (files || []).forEach(function(f) {
+    var c = f && f.closing;
+    if (!c || !c.date || typeof c.balance !== "number" || !isFinite(c.balance) || f.statement === "card") return;
+    var k = f.fingerprint || f.name || "";
+    if (!acct[k] || c.date > acct[k].date) acct[k] = c;
+  });
+  var keys = Object.keys(acct);
+  if (!keys.length) return null;
+  var amount = 0, date = "";
+  keys.forEach(function(k) { amount += acct[k].balance; if (acct[k].date > date) date = acct[k].date; });
+  return { amount: Math.round(amount * 100) / 100, date: date };
+}
+
+// Which figure Richy's balance counts from once `rows` join `before` (see
+// balanceAt). Three can be known, and the newest wins:
+//   "bank"   what the bank printed after the newest line of its file;
+//   "kept"   a pin an earlier import set;
+//   "typed"  the opening balance typed in at sign-up - what the person had as
+//            the day they started began. Only when nothing already on file is
+//            older than it: an opening with older rows under it was set later
+//            and means "what I had before all of this", and pinning it would
+//            drop every row since.
+// The bank's own figure wins a tie. A day that has not ended cannot be pinned,
+// since what is typed in later today must still count: a figure for today pins
+// yesterday, less what today has already moved. Returns { kind, pin, amount },
+// kind "none" when nothing pins it.
+function impBalancePlan(before, rows, bank, todayISO) {
+  var today = todayISO || new Date().toISOString().slice(0, 10);
+  var all = (before || []).concat(rows || []);
+  var cur = null;
+  all.forEach(function(t) { if (t && isOpening(t) && !cur) cur = t; });
+  var best = null;
+  if (bank && bank.date && typeof bank.amount === "number" && isFinite(bank.amount)) {
+    var pin = bank.date < today ? bank.date : impDayShift(today, -1), amount = bank.amount;
+    all.forEach(function(t) {
+      if (!t || isOpening(t) || t.pending || t.catchUp || !t.date) return;
+      if (t.date > pin && t.date <= bank.date) amount -= (Number(t.amount) || 0) * (t.type === "income" ? 1 : -1);
+    });
+    best = { kind: "bank", pin: pin, amount: Math.round(amount * 100) / 100, date: bank.date };
+  }
+  if (cur && cur.asOf) {
+    if (!best || cur.asOf > best.pin) best = { kind: "kept", pin: cur.asOf, amount: cur.amount };
+  } else if (cur && cur.date) {
+    var older = (before || []).some(function(t) { return t && !isOpening(t) && t.date && t.date < cur.date; });
+    var typed = impDayShift(cur.date, -1);
+    if (!older && (!best || typed > best.pin)) best = { kind: "typed", pin: typed, amount: cur.amount };
+  }
+  return best || { kind: "none" };
+}
+
+// The ledger after an import, with the balance pinned by impBalancePlan: the
+// opening balance takes the bank's figure and day, or keeps the typed one and
+// gains its day. Nothing else is touched. Returns a new list.
+function impAnchorBalance(before, rows, bank, todayISO) {
+  var all = (before || []).concat(rows || []);
+  var plan = impBalancePlan(before, rows, bank, todayISO);
+  if (plan.kind === "none" || plan.kind === "kept") return all;
+  var cur = null, maxId = 0;
+  all.forEach(function(t) {
+    if (!t) return;
+    if (typeof t.id === "number" && t.id > maxId) maxId = t.id;
+    if (isOpening(t) && !cur) cur = t;
+  });
+  var row = plan.kind === "typed" ? Object.assign({}, cur, { asOf: plan.pin })
+    : Object.assign({}, cur || {}, {
+      id: cur ? cur.id : Math.max(Date.now(), maxId + 1), type: "income", amount: plan.amount,
+      label: "Opening balance", catId: "opening", category: "Opening balance", opening: true,
+      date: plan.pin, asOf: plan.pin, repeat: "none", pending: false
+    });
+  return [row].concat(all.filter(function(t) { return !isOpening(t); }));
 }
 
 // The summary the review screen leads with, re-measured whenever a line is
@@ -18346,6 +18505,8 @@ function StatementImport(props) {
   var _flipped = useState({}); var flippedFiles = _flipped[0]; var setFlippedFiles = _flipped[1];
   var _noFlip = useState({}); var noFlip = _noFlip[0]; var setNoFlip = _noFlip[1];
   var _flipDone = useState(null); var flipDone = _flipDone[0]; var setFlipDone = _flipDone[1];
+  var _balText = useState(""); var balText = _balText[0]; var setBalText = _balText[1];
+  var _balFix = useState(false); var balFix = _balFix[0]; var setBalFix = _balFix[1];
   var runRef = useRef(0);
   var inputsRef = useRef(null);
   var fileRef = useRef(null);
@@ -18357,7 +18518,7 @@ function StatementImport(props) {
     setStep("pick"); setProg({}); setRes(null); setItems([]); setLeftOut({}); setKept({}); setOpenId(null);
     setOnlyCheck(false); setShowDups(false); setShowAll(false); setTaught({}); setErr(null);
     setPasteOpen(false); setPasteText(""); setDragOver(false); setDone(null);
-    setFiles([]); setLoadingMore(null); setFlippedFiles({}); setNoFlip({}); setFlipDone(null);
+    setFiles([]); setLoadingMore(null); setFlippedFiles({}); setNoFlip({}); setFlipDone(null); setBalText(""); setBalFix(false);
   }
   function close() { runRef.current++; reset(); props.onClose(); }
 
@@ -18375,7 +18536,7 @@ function StatementImport(props) {
   // inputs they came from, so one can be dropped or read again later.
   function keepFiles(r, inputs) {
     var fs = (r.files || []).map(function(f) {
-      return { id: ++fileSeq.current, name: f.name, images: f.images, count: f.count, fingerprint: f.fingerprint, layout: f.layout, statement: f.statement,
+      return { id: ++fileSeq.current, name: f.name, images: f.images, count: f.count, fingerprint: f.fingerprint, layout: f.layout, statement: f.statement, closing: f.closing || null,
         inputs: (f.inputs || []).map(function(i) { return inputs[i]; }).filter(Boolean) };
     });
     r.items.forEach(function(it) { it.file = fs[it.file] ? fs[it.file].id : 0; });
@@ -18492,6 +18653,14 @@ function StatementImport(props) {
   var adding = fresh.filter(function(it) { return !leftOut[it.id]; });
   var toCheck = adding.filter(function(it) { return it.unsure; }).length;
   var totals = impTotals(adding.map(function(it) { return it.tx; }));
+  // What the bank says the person has, which Richy's balance is pinned to at
+  // the confirm (impAnchorBalance). A file the person turned upside down is
+  // left out: its balance column runs the other way, like a card's.
+  var bank = impBankBalance(files.filter(function(f) { return !flippedFiles[f.id]; }));
+  // Promised on the list only when it is the figure that will be used - a
+  // balance the person typed in later than the file's last day, or pinned by
+  // a newer file, stays (impBalancePlan).
+  var bankWins = !!bank && impBalancePlan(props.tx || [], adding.map(function(it) { return it.tx; }), bank).kind === "bank";
   var groupSize = {};
   items.forEach(function(it) { groupSize[it.group] = (groupSize[it.group] || 0) + 1; });
 
@@ -18605,7 +18774,10 @@ function StatementImport(props) {
 
   function doImport() {
     var list = adding.map(function(it) { return it.tx; });
-    if (!list.length) { close(); return; }
+    // With nothing new to add, the bank's balance is still worth taking: the
+    // same file brought in again is exactly how a balance an older import got
+    // wrong is put right.
+    if (!list.length && !bank) { close(); return; }
     // Only now, at the one confirm, is anything remembered: the reading for
     // this bank's format, Alfred's answer per shop, and every fix the user made.
     var shops = {};
@@ -18618,10 +18790,22 @@ function StatementImport(props) {
       if (flippedFiles[f.id] && f.fingerprint && layouts[f.fingerprint]) layouts[f.fingerprint] = impFlipLayout(layouts[f.fingerprint]);
     });
     var t = impTotals(list);
-    props.onImport(list, { from: t.from, to: t.to, count: t.count }, { layouts: layouts, shops: shops });
+    // The App answers with where the balance now stands, for the last screen.
+    t.bal = props.onImport(list, { from: t.from, to: t.to, count: t.count, bank: bank }, { layouts: layouts, shops: shops }) || null;
     setDone(t);
+    setBalText(""); setBalFix(false);
     setStep("done");
     nativeHaptic("MEDIUM");
+  }
+  // The balance typed on the last screen, when no file said what the bank
+  // holds: Richy counts from it from today on.
+  function saveBalance() {
+    var v = impParseMoney(balText);
+    if (v == null || !isFinite(v) || !props.onSetBalance) return;
+    var out = props.onSetBalance(Math.round(v * 100) / 100);
+    if (out) setDone(function(prev) { return Object.assign({}, prev, { bal: out }); });
+    setBalText(""); setBalFix(false);
+    nativeHaptic("LIGHT");
   }
 
   // ---- screens ----
@@ -18763,6 +18947,12 @@ function StatementImport(props) {
             </div>
           )}
           {totals.moves > 0 && <div style={{ fontSize: 13, color: T.ink3, marginTop: 4, lineHeight: 1.45 }}>{impTN("impMoves", totals.moves)}</div>}
+          {bankWins && (
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginTop: 10, fontSize: 13.5, color: T.ink, lineHeight: 1.45 }}>
+              <span style={{ marginTop: 2, flexShrink: 0, display: "flex" }}><SVGIcon id="check" size={13} color={T.green} /></span>
+              <span>{impT("impBankBal", { amt: dollarsSigned(bank.amount), day: impDay(bank.date) })}</span>
+            </div>
+          )}
         </div>
         {/* The files in this import, and room for one more: next month from
             the same bank, or the credit card beside the bank account. With
@@ -18852,19 +19042,64 @@ function StatementImport(props) {
       </div>
     );
   } else if (step === "done") {
+    // Where the balance stands now, as the App worked it out: pinned to the
+    // bank's own figure, counted on from one already known, or - when no file
+    // said what the account holds - asked for, once, so it can be.
+    var bal = done && done.bal;
+    var balWas = bal && bal.kind !== "none" && typeof bal.was === "number" && bal.was !== 0 && Math.abs(bal.was - bal.balance) >= 0.01 ? bal.was : null;
+    var balCard = { margin: "18px 0 0", background: T.fill1, borderRadius: 16, padding: "14px 16px", textAlign: "start" };
+    // Today's balance, typed in: asked for when nothing said it, and one tap
+    // away under any figure the person knows to be wrong.
+    var balRow = props.onSetBalance ? (
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
+        <div dir="ltr" style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 4, minHeight: 44, boxSizing: "border-box", borderRadius: 12, border: "1px solid " + T.hairline2, background: T.inputBg, padding: "0 12px" }}>
+          <span style={{ fontSize: 16, color: T.ink3, fontWeight: 600 }}>{_currency.sym}</span>
+          <input value={balText} onChange={function(e) { setBalText(e.target.value); }} onKeyDown={function(e) { if (e.key === "Enter") saveBalance(); }}
+            inputMode="decimal" placeholder="0" aria-label={tr("impBalAsk")} autoFocus={balFix}
+            style={{ flex: 1, minWidth: 0, border: "none", background: "none", outline: "none", fontSize: 16, fontFamily: UI, color: T.ink, fontWeight: 600, padding: 0 }} />
+        </div>
+        <LiquidButton variant="neutral" size="md" disabled={impParseMoney(balText) == null} onClick={saveBalance}>{tr("save")}</LiquidButton>
+      </div>
+    ) : null;
     body = (
       <div style={Object.assign({ textAlign: "center", paddingTop: 8 }, pad)}>
         <span className="rc-imp-pop" style={{ width: 64, height: 64, borderRadius: 21, background: T.greenDim, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
           <SVGIcon id="check" size={30} color={T.green} />
         </span>
         <h2 style={{ margin: "16px 0 0", fontSize: 28, lineHeight: 1.15, fontWeight: DISP_WEIGHT, fontFamily: DISP, color: T.ink, letterSpacing: "-0.015em", textWrap: "balance" }}>
-          {done ? impTN("impDoneTitle", done.count) : ""}
+          {!done ? "" : done.count ? impTN("impDoneTitle", done.count) : tr("impNothingNew")}
         </h2>
-        {done && (
+        {done && done.count > 0 && (
           <p style={{ margin: "8px auto 0", fontSize: 15, color: T.ink2, lineHeight: 1.5 }}>
             {done.from === done.to ? impT("impDoneBody1", { from: impDay(done.from) }) : impT("impDoneBody", { from: impDay(done.from), to: impDay(done.to) })}
             {" "}{impT("impDoneMoney", { out: dollars(done.out), "in": dollars(done.inn) })}
           </p>
+        )}
+        {bal && bal.kind !== "none" && (
+          <div className="rc-imp-step" style={balCard}>
+            <div style={{ fontSize: 11.5, fontWeight: 700, color: T.ink3, textTransform: "uppercase", letterSpacing: "0.08em" }}>{tr("impBalTitle")}</div>
+            <div style={{ fontSize: 28, fontWeight: 750, color: bal.balance < 0 ? T.red : T.ink, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", marginTop: 4, lineHeight: 1.1 }}>{dollarsSigned(bal.balance)}</div>
+            {(bal.kind === "bank" || bal.kind === "mine") && (
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: T.ink2, marginTop: 6 }}>
+                <SVGIcon id="check" size={12} color={T.green} />
+                <span>{bal.kind === "bank" ? impT("impBalBank", { day: impDay(bal.date) }) : tr("impBalMine")}</span>
+              </div>
+            )}
+            {balWas != null && <div style={{ fontSize: 12.5, color: T.ink3, marginTop: 3 }}>{impT("impBalWas", { amt: dollarsSigned(balWas) })}</div>}
+            {balRow && (balFix ? balRow : (
+              <button type="button" onClick={function() { setBalFix(true); }}
+                style={{ display: "block", minHeight: 44, marginTop: 4, marginBottom: -8, padding: 0, background: "none", border: "none", color: T.orange, fontSize: 13.5, fontWeight: 600, fontFamily: UI, cursor: "pointer", textAlign: "start" }}>
+                {tr("impBalFix")}
+              </button>
+            ))}
+          </div>
+        )}
+        {bal && bal.kind === "none" && balRow && (
+          <div className="rc-imp-step" style={balCard}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>{tr("impBalAsk")}</div>
+            <div style={{ fontSize: 13, color: T.ink2, marginTop: 4, lineHeight: 1.45 }}>{tr("impBalAskSub")}</div>
+            {balRow}
+          </div>
         )}
         <LiquidButton variant="primary" size="lg" full onClick={close} style={{ marginTop: 24 }}>{tr("impDone")}</LiquidButton>
         <button type="button" onClick={reset}
@@ -19329,9 +19564,11 @@ function Activity(props) {
       <StatementImport open={importOpen} onClose={function() { setImportOpen(false); }} categories={cats} tx={props.tx}
         shopCats={props.shopCats} layouts={props.importLayouts}
         onImport={function(txs, report, learned) {
-          if (props.onStatementImport) props.onStatementImport(txs, report, learned);
-          else props.onSaveTx(props.tx.concat(txs));
-        }} />
+          if (props.onStatementImport) return props.onStatementImport(txs, report, learned);
+          props.onSaveTx(props.tx.concat(txs));
+          return null;
+        }}
+        onSetBalance={props.onImportBalance} />
       <Overlay open={filterOpen} onClose={function() { setFilterOpen(false); }} title={filterCopy.title}>
         <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
           <button type="button" onClick={function() { setFilterCat(""); setFilterOpen(false); }}
@@ -21249,14 +21486,7 @@ function Goals(props) {
     if (g.linkType === "investing") return (props.investing || []).filter(function(x) { return String(x.id) === String(g.linkId); })[0] || null;
     return null;
   }
-  function mainBalanceCalc() {
-    var txs = props.tx || [];
-    var today = new Date().toISOString().slice(0, 10);
-    var settled = function(t) { return !t.pending && !t.catchUp && t.date <= today; };
-    var income = txs.filter(function(t) { return t.type === "income" && settled(t); }).reduce(function(s, t) { return s + t.amount; }, 0);
-    var expense = txs.filter(function(t) { return t.type === "expense" && settled(t); }).reduce(function(s, t) { return s + t.amount; }, 0);
-    return income - expense;
-  }
+  function mainBalanceCalc() { return mainSpendBalance(props.tx || []); }
   function netWorthCalc() { return netWorthOf(props); }
   function linkedBalanceOf(g) {
     if (g.linkType === "balance") return mainBalanceCalc();
@@ -27905,12 +28135,18 @@ function EditOpeningBalanceView(props) {
   var val = _v[0]; var setVal = _v[1];
   var sym = _currency.sym;
 
+  // Matched to a bank statement (balanceAt): the figure is what the account held
+  // at the end of that day, and it can be below zero - an overdraft is money
+  // owed, and a balance pinned to one has to be able to say so.
+  var asOf = openingTx && openingTx.asOf ? openingTx.asOf : "";
   function save() {
     var newAmount = parseFloat(val);
-    if (isNaN(newAmount) || newAmount < 0) return;
+    if (isNaN(newAmount) || (newAmount < 0 && !asOf)) return;
     var updated = allTx.map(function(t) {
       if (!isOpening(t)) return t;
-      return { id: t.id, type: "income", amount: round2(newAmount), label: "Opening balance", catId: "opening", category: "Opening balance", date: t.date, opening: true, repeat: "none", pending: false };
+      var row = { id: t.id, type: "income", amount: round2(newAmount), label: "Opening balance", catId: "opening", category: "Opening balance", date: t.date, opening: true, repeat: "none", pending: false };
+      if (t.asOf) row.asOf = t.asOf;
+      return row;
     });
     // If no opening tx exists, create one
     if (!openingTx && newAmount > 0) {
@@ -27935,7 +28171,8 @@ function EditOpeningBalanceView(props) {
           <input value={val} onChange={function(e) { setVal(e.target.value); }} type="number" inputMode="decimal" placeholder="0"
             style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 28, fontFamily: UI, color: T.ink, fontWeight: 700 }} />
         </div>
-        {openingTx && <div style={{ fontSize: 12, color: T.ink3, marginTop: 8 }}>Current: {fmtCur(sym, current)}</div>}
+        {openingTx && <div style={{ fontSize: 12, color: T.ink3, marginTop: 8 }}>Current: {dollarsSigned(current)}</div>}
+        {asOf && <div style={{ fontSize: 12.5, color: T.ink2, marginTop: 6, lineHeight: 1.45 }}>{impT("impOpenAsOf", { day: impDay(asOf) })}</div>}
       </Card>
 
       <BigBtn label="Save" onPress={save} />
@@ -32218,8 +32455,7 @@ function StockView(props) {
     if (!pxKnown) return; // wait for the first quote
     takeGenRef.current = key;
     setTakeBusy(true);
-    var bal = 0;
-    (props.tx || []).forEach(function(t) { if (t.pending || t.catchUp || (t.date && t.date > today)) return; bal += t.type === "income" ? t.amount : -t.amount; });
+    var bal = mainSpendBalance(props.tx || []);
     var worthNow = investingWorth(acct) || 1;
     var posNow = allPos[symbol];
     var holdVal = posNow && posNow.shares > 0 ? invConvert(posNow.shares * pxKnown, cur) : 0;
@@ -41278,8 +41514,15 @@ export default function App() {
   // missing right after one landed (or survive a write that only half-succeeded).
   function onStatementImport(txs, report, learned) {
     var rows = txs || [];
-    if (!rows.length) return;
-    var nextTx = tx.concat(rows);
+    var bank = (report && report.bank) || null;
+    if (!rows.length && !bank) return null;
+    // The balance pinned to what the bank printed after its file's newest line,
+    // or counted on from the figure Richy already had (impBalancePlan) - never
+    // a statement's history piled on top of a balance that already holds it.
+    // Handed back so the import's last screen can say where it now stands.
+    var plan = impBalancePlan(tx, rows, bank);
+    var nextTx = impAnchorBalance(tx, rows, bank);
+    var balOut = { kind: plan.kind, date: plan.date || "", balance: mainSpendBalance(nextTx), was: mainSpendBalance(tx) };
     var was = csvImport || {};
     var from = (report && report.from) || "", to = (report && report.to) || "";
     // The span the imports cover, so an older file brought in after a newer
@@ -41324,6 +41567,16 @@ export default function App() {
     if (patchOut.importLayouts) setImportLayouts(nextLayouts);
     if (patchOut.shopCats) setShopCats(nextShops);
     save(patchOut);
+    return balOut;
+  }
+  // The balance typed on the import's last screen, when no file said what the
+  // account holds: Richy counts from it from today on (impAnchorBalance).
+  function onImportBalance(amount) {
+    var nextTx = impAnchorBalance(tx, [], { amount: amount, date: new Date().toISOString().slice(0, 10) });
+    var out = { kind: "mine", balance: mainSpendBalance(nextTx), was: mainSpendBalance(tx) };
+    setTx(nextTx);
+    save({ tx: nextTx });
+    return out;
   }
   // "It's all in there" - the dashboard card goes quiet for a month.
   function onCsvNudgeOff() {
@@ -42237,7 +42490,7 @@ export default function App() {
   // neighbour that peeks in during a drag come from one place.
   function mainTabEl(id) {
     if (id === "overview") return <Overview tx={tx} goals={goals} budgets={budgets} categories={categories} folders={folders} savings={savings} businesses={businesses} investing={investing} trips={trips} debts={debts} householdId={householdId} bankSync={bankSync} widgets={widgets} onRemoveWidget={onRemoveWidget} onAddWidget={onAddWidget} dismissedTips={dismissedTips} onDismissTip={onDismissTip} csvImport={csvImport} csvNudge={csvNudge} onImportCsv={openCsvImport} onCsvNudgeOff={onCsvNudgeOff} username={user} plan={planJustCreated ? richPlan : ""} foundMoney={foundMoney} onSaveFoundMoney={onSaveFoundMoney} alfredInstructions={alfredCtx} lang={lang} timeframe={timeframe} periodMode={periodMode} periodCustomStart={periodCustomStart} periodCustomEnd={periodCustomEnd} onNavigate={function(t) { setTab(t); setSheet(false); }} onCategories={function() { setTab("categories"); setSheet(false); }} onOpenSavings={function() { prevTabRef.current = "overview"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "overview"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "overview"; setOpenTrip(id); setTab("trips"); setSheet(false); }} onOpenDebts={function() { prevTabRef.current = "overview"; setTab("debts"); setSheet(false); }} onOpenCollab={function() { prevTabRef.current = "overview"; setTab("collab"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "overview"; setTab("bankSync"); setSheet(false); }} onPlanTrip={function() { prevTabRef.current = "overview"; setOpenTrip(null); setTab("trips"); setSheet(false); }} />;
-    if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} onStatementImport={onStatementImport} shopCats={shopCats} importLayouts={importLayouts} importOpen={importCsvOpen} setImportOpen={setImportCsvOpen} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
+    if (id === "activity") return <Activity tx={tx} categories={categories} onSaveTx={onSaveTx} onStatementImport={onStatementImport} onImportBalance={onImportBalance} shopCats={shopCats} importLayouts={importLayouts} importOpen={importCsvOpen} setImportOpen={setImportCsvOpen} entryMethod={entryMethod} sheetOpen={sheet} setSheetOpen={setSheet} accountKey={accountKey} householdId={householdId} household={household} onManageCategories={function() { setTab("categories"); setSheet(false); }} onOpenNotes={function() { setTab("notes"); setSheet(false); }} savings={savings} businesses={businesses} investing={investing} onSavingsMove={onSavingsMove} onOpenSavings={function() { prevTabRef.current = "activity"; setTab("savings"); setSheet(false); }} onOpenBusiness={!LAUNCH.businessHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenBiz(id || null); setTab("business"); setSheet(false); }} onOpenInvesting={!LAUNCH.investingHub ? undefined : function(id) { prevTabRef.current = "activity"; setOpenInv(id || null); setInvestingHubTab("portfolio"); setTab("investing"); setSheet(false); }} onSetupSync={function() { prevTabRef.current = "activity"; setTab("bankSync"); setSheet(false); }} onSetupCollab={function() { prevTabRef.current = "activity"; setTab("collab"); setSheet(false); }} />;
     if (id === "budgets") return <Budgets tx={tx} budgets={budgets} categories={categories} folders={folders} businesses={businesses} investing={investing} savings={savings} splitPlan={splitPlan} onSaveSplitPlan={onSaveSplitPlan} onSaveBudgets={onSaveBudgets} onSaveFolders={onSaveFolders} sheetOpen={sheet} setSheetOpen={setSheet} onManageCategories={function() { setTab("categories"); setSheet(false); }} />;
     if (id === "goals") return <Goals goals={goals} trips={trips} tx={tx} savings={savings} businesses={businesses} investing={investing} onSaveGoals={onSaveGoals} sheetOpen={sheet} setSheetOpen={setSheet} onPlanTrip={function() { prevTabRef.current = "goals"; setOpenTrip(null); setTab("trips"); setSheet(false); }} onOpenTrip={function(id) { prevTabRef.current = "goals"; setOpenTrip(id); setTab("trips"); setSheet(false); }} />;
     if (id === "advisor") return <Advisor isActive={id === currentTab} tx={tx} budgets={budgets} goals={goals} categories={categories} folders={folders} splitPlan={splitPlan} notes={notes} savings={savings} businesses={businesses} investing={investing} username={user} plan={richPlan} lang={lang} alfredInstructions={alfredCtx} rawInstructions={alfredInstructions} onSaveInstructions={onSaveInstructions} alfredVoice={alfredVoice} onSaveVoice={onSaveVoice} onboardingData={onboardingData} onSaveBudgets={onSaveBudgets} onSaveGoals={onSaveGoals} onSaveTx={onSaveTx} onSaveCategories={onSaveCategories} onSaveFolders={onSaveFolders} onSaveSavings={onSaveSavings} onSavingsMove={onSavingsMove} onSaveNotes={onSaveNotes} onSettleNote={onSettleNote} customBanners={customBanners} onSaveBanners={onSaveBanners} widgets={widgets} onSaveWidgets={onSaveWidgets} decisions={decisions} onSaveDecisions={onSaveDecisions} chats={alfredChats} onSaveChats={onSaveChats} cachedAnalysis={freshAnalysis ? freshAnalysis.data : null} analysisStale={!!(freshAnalysis && freshAnalysis.sig !== txSignature())} onSaveAnalysis={onSaveAnalysis} csvImport={csvImport} csvNudge={csvNudge} onImportCsv={openCsvImport} onCsvNudgeShown={onCsvNudgeShown} onOpenFullAnalysis={function() { prevTabRef.current = "advisor"; setTab("analysis"); setSheet(false); }} onBackToOverview={function() { setTab("overview"); }} onOpenInstructions={function() { prevTabRef.current = "advisor"; setTab("instructions"); setSheet(false); }} onOpenProfile={function() { prevTabRef.current = "advisor"; setTab("profile"); setSheet(false); }} />;

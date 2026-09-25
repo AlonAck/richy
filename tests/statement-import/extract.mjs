@@ -71,7 +71,7 @@ const IMP_VARS = [...new Set([...SRC.matchAll(/^var (IMP_[A-Z0-9_]+) = /gm)].map
 
 // The app helpers it uses. Pulled from the same file, so a change to how the
 // app normalises a shop name is a change these tests see.
-const APP_FNS = ["normalizeMerchant", "shopKey", "catById", "catByName", "isOpening", "isTransfer", "dayGap",
+const APP_FNS = ["normalizeMerchant", "shopKey", "catById", "catByName", "isOpening", "isTransfer", "dayGap", "round2", "balanceAsOf", "balanceAt", "mainSpendBalance",
   "keywordCatName", "catMatchText", "catWordChar", "catHasKeyword"];
 const APP_VARS = ["IMPORT_CAT_KEYWORDS", "CURRENCY_OPTIONS", "DEFAULT_CATEGORIES"];
 
