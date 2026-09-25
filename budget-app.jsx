@@ -1769,7 +1769,7 @@ var T1_STRINGS = {
     obTypeItInstead:"type it instead",
     pfBadges:"Badges", pfManage:"Manage", pfYourData:"Your data", pfRecentActivity:"Recent activity", pfGreenMonth:"Green month", pfBudgetRuns:"Budget runs", pfNoRuns:"No runs going yet", pfSharedBudgets:"Shared budgets", pfNotSharing:"Not sharing with anyone", pfBudgetBooks:"Budget books", pfTripHistory:"Trip history", pfYourPlan:"Your plan", pfYourPlanSub:"Alfred's read on your money", pfBankSync:"Bank sync", pfPrivacy:"Privacy and data", pfPrivacySub:"Export, sharing, delete", pfDeleteAccount:"Delete account & data",
     daWarn:"This cannot be undone", daBody:"This permanently erases your entire account: every transaction, budget, goal, note, savings and business record, your bank-sync keys, and your sign-in itself.",
-    daExport:"Consider {link} first.", daExportLink:"exporting your data", daType:"Type {word} to confirm:", daWord:"DELETE",
+    daExport:"Consider {link} first.", daExportLink:"exporting your data",
     daConfirm:"Delete everything", daDeleting:"Deleting...", daCancel:"Cancel",
     daErrSession:"Your session expired. Sign out and back in, then try again.",
     daErrFailed:"Deletion didn't go through. Try again, or email richysupport@gmail.com.",
@@ -1827,7 +1827,7 @@ var T1_STRINGS = {
     obTypeItInstead:"אפשר להקליד במקום",
     pfBadges:"תגים", pfManage:"ניהול", pfYourData:"הנתונים שלך", pfRecentActivity:"פעילות אחרונה", pfGreenMonth:"חודש ירוק", pfBudgetRuns:"רצפי תקציב", pfNoRuns:"אין רצף פעיל עדיין", pfSharedBudgets:"תקציבים משותפים", pfNotSharing:"לא משתפים עם אף אחד", pfBudgetBooks:"ספרי תקציב", pfTripHistory:"היסטוריית טיולים", pfYourPlan:"התוכנית שלך", pfYourPlanSub:"מה שריצ'רד רואה בכסף שלך", pfBankSync:"סנכרון בנק", pfPrivacy:"פרטיות ונתונים", pfPrivacySub:"ייצוא, שיתוף, מחיקה", pfDeleteAccount:"מחיקת החשבון והנתונים",
     daWarn:"אי אפשר לבטל את זה", daBody:"הפעולה מוחקת לצמיתות את כל החשבון שלכם: כל עסקה, תקציב, יעד, הערה, רשומת חיסכון ועסק, את מפתחות סנכרון הבנק ואת פרטי ההתחברות עצמם.",
-    daExport:"כדאי {link} קודם.", daExportLink:"לייצא את הנתונים שלכם", daType:"הקלידו {word} לאישור:", daWord:"מחק",
+    daExport:"כדאי {link} קודם.", daExportLink:"לייצא את הנתונים שלכם",
     daConfirm:"מחק הכול", daDeleting:"מוחק...", daCancel:"ביטול",
     daErrSession:"פג תוקף ההתחברות. התנתקו והתחברו מחדש, ואז נסו שוב.",
     daErrFailed:"המחיקה לא הצליחה. נסו שוב, או כתבו ל-richysupport@gmail.com.",
@@ -1885,7 +1885,7 @@ var T1_STRINGS = {
     obTypeItInstead:"اكتبه بدلاً من ذلك",
     pfBadges:"الشارات", pfManage:"إدارة", pfYourData:"بياناتك", pfRecentActivity:"النشاط الأخير", pfGreenMonth:"شهر أخضر", pfBudgetRuns:"سلاسل الميزانية", pfNoRuns:"لا توجد سلسلة بعد", pfSharedBudgets:"ميزانيات مشتركة", pfNotSharing:"لا تشارك مع أحد", pfBudgetBooks:"دفاتر الميزانية", pfTripHistory:"سجل الرحلات", pfYourPlan:"خطتك", pfYourPlanSub:"قراءة ريتشارد لأموالك", pfBankSync:"مزامنة البنك", pfPrivacy:"الخصوصية والبيانات", pfPrivacySub:"تصدير، مشاركة، حذف", pfDeleteAccount:"حذف الحساب والبيانات",
     daWarn:"لا يمكن التراجع عن هذا", daBody:"يؤدي هذا إلى محو حسابك بالكامل نهائيًا: كل معاملة وميزانية وهدف وملاحظة وسجل ادخار وأعمال، ومفاتيح مزامنة البنك، وتسجيل دخولك نفسه.",
-    daExport:"ننصحك {link} أولًا.", daExportLink:"بتصدير بياناتك", daType:"اكتب {word} للتأكيد:", daWord:"حذف",
+    daExport:"ننصحك {link} أولًا.", daExportLink:"بتصدير بياناتك",
     daConfirm:"احذف كل شيء", daDeleting:"جارٍ الحذف...", daCancel:"إلغاء",
     daErrSession:"انتهت صلاحية جلستك. سجّل الخروج ثم الدخول مجددًا، وحاول مرة أخرى.",
     daErrFailed:"لم يكتمل الحذف. حاول مرة أخرى، أو راسلنا على richysupport@gmail.com.",
@@ -1943,7 +1943,7 @@ var T1_STRINGS = {
     obTypeItInstead:"ввести вручную",
     pfBadges:"Значки", pfManage:"Управление", pfYourData:"Ваши данные", pfRecentActivity:"Последние события", pfGreenMonth:"Зелёный месяц", pfBudgetRuns:"Серии бюджета", pfNoRuns:"Серий пока нет", pfSharedBudgets:"Общие бюджеты", pfNotSharing:"Ни с кем не делитесь", pfBudgetBooks:"Книги бюджета", pfTripHistory:"История поездок", pfYourPlan:"Ваш план", pfYourPlanSub:"Как Ричард видит ваши деньги", pfBankSync:"Синхронизация с банком", pfPrivacy:"Приватность и данные", pfPrivacySub:"Экспорт, доступ, удаление", pfDeleteAccount:"Удалить аккаунт и данные",
     daWarn:"Это нельзя отменить", daBody:"Это навсегда удалит весь ваш аккаунт: все транзакции, бюджеты, цели, заметки, записи о сбережениях и бизнесе, ключи синхронизации с банком и сам вход в аккаунт.",
-    daExport:"Рекомендуем сначала {link}.", daExportLink:"экспортировать данные", daType:"Введите {word} для подтверждения:", daWord:"УДАЛИТЬ",
+    daExport:"Рекомендуем сначала {link}.", daExportLink:"экспортировать данные",
     daConfirm:"Удалить всё", daDeleting:"Удаление...", daCancel:"Отмена",
     daErrSession:"Сессия истекла. Выйдите и войдите снова, затем повторите попытку.",
     daErrFailed:"Удаление не удалось. Попробуйте ещё раз или напишите на richysupport@gmail.com.",
@@ -2643,7 +2643,7 @@ var SCREEN_TITLE_KEY = { plan:"yourPlan", nickname:"name", householdMerge:"hmTit
 // its child controls. This is the sentence a person actually needs: what, how
 // much, which category, and that activating it edits.
 function txRowLabel(t, cat) {
-  var kind = t.type === "income" ? tr("income") : catDisplay((cat && cat.name) || t.category);
+  var kind = isStatementTransfer(t) ? statementTransferLook(t).name : t.type === "income" ? tr("income") : catDisplay((cat && cat.name) || t.category);
   return stripBidi([
     t.label || kind,
     (t.type === "income" ? "+" : "-") + dollars(t.amount),
@@ -2886,6 +2886,21 @@ function businessSpent(biz) {
 // exactly like the opening balance.
 function isTransfer(t) {
   return !!(t && (t.transfer === true || t.catId === "savings-transfer"));
+}
+// A transfer read off an imported statement: a card bill, or money moved
+// between the user's own accounts - the only two names the import gives one.
+// The Savings, Business and Investing screens' transfers each have an account
+// entry that Activity lists in their place; these have none, so Activity must
+// list them itself. Hidden, a statement transfer could never be seen, fixed or
+// deleted, and it kept moving the balance after "Select all" cleared the rest.
+function isStatementTransfer(t) {
+  return isTransfer(t) && (t.category === "Card bill" || t.category === "Account transfer");
+}
+// How one is shown, in the import review and in Activity alike, so the card
+// bill checked at import is recognisably the row listed afterwards.
+function statementTransferLook(t) {
+  var bill = t.category === "Card bill";
+  return { name: tr(bill ? "impCardBill" : "impTransfer"), icon: bill ? "credit" : "refresh" };
 }
 // Trip spend is already tracked and budgeted inside its own trip ledger (see
 // "Plan a Trip" below). The single lump-sum tx created when the user hits
@@ -18169,9 +18184,10 @@ function ImpRow(props) {
   var c = isTransfer(tx) ? null : resolveCat(cats, tx);
   var left = !!props.left;
   var moving = isTransfer(tx);
+  var look = moving ? statementTransferLook(tx) : null;
   var color = moving ? T.ink3 : tx.type === "income" ? T.green : c.color;
-  var icon = moving ? (tx.category === "Card bill" ? "credit" : "refresh") : tx.type === "income" ? "up" : c.icon;
-  var what = moving ? (tx.category === "Card bill" ? tr("impCardBill") : tr("impTransfer")) : tx.type === "income" && IMP_INCOME_CATS[c.name] ? tr("income") : catDisplay(c);
+  var icon = moving ? look.icon : tx.type === "income" ? "up" : c.icon;
+  var what = moving ? look.name : tx.type === "income" && IMP_INCOME_CATS[c.name] ? tr("income") : catDisplay(c);
   var amountColor = left ? T.ink3 : moving ? T.ink2 : tx.type === "income" ? T.green : T.red;
   return (
     <div style={{ borderBottom: props.last ? "none" : "0.5px solid " + T.sep }}>
@@ -18997,7 +19013,11 @@ function Activity(props) {
       // the date can move.
       var structural = isOpening(t) || isTrip(t);
       var patch = {};
-      if (c && !structural) { patch.catId = c.id; patch.category = c.name; }
+      // A card bill or an account transfer keeps being one through a bulk
+      // category change: swept into "Food" with nineteen other rows, a card
+      // bill would count every purchase on the card a second time. Turning one
+      // into spending is a single-row edit, where it is plainly deliberate.
+      if (c && !structural && !isTransfer(t)) { patch.catId = c.id; patch.category = c.name; }
       if (bulkForm.type && !structural) patch.type = bulkForm.type;
       if (bulkForm.date) patch.date = bulkForm.date;
       return Object.assign({}, t, patch);
@@ -19174,6 +19194,11 @@ function Activity(props) {
       // flags this form never shows (opening, trip, catchUp, transfer,
       // bizExpense, syncSource), and a from-scratch object silently drops them.
       var nt = Object.assign({}, t, { type: editForm.type, amount: mainAmount, label: editForm.label, catId: c.id, category: c.name, date: editForm.date, repeat: editForm.repeat, pending: editForm.pending, shared: editForm.shared || false, owner: editForm.owner || t.owner || props.accountKey });
+      // Giving a card bill or an account transfer a real category makes it an
+      // ordinary purchase or income, as the import review does. Left carrying
+      // its transfer flag it would drop out of the ledger (isStatementTransfer
+      // reads the category) and out of reach again.
+      if (isStatementTransfer(t) && catById(cats, editForm.catId)) delete nt.transfer;
       if (foreign) { nt.origAmount = entered; nt.origCur = editForm.cur; nt.rate = rate; }
       else { delete nt.origAmount; delete nt.origCur; delete nt.rate; }
       return nt;
@@ -19183,7 +19208,10 @@ function Activity(props) {
 
   // Internal savings transfers are managed in the Savings screen, not here - keep
   // them out of the ledger so they can't be edited into a desync with their pot.
-  var unfiltered = props.tx.filter(function(t) { return !isTransfer(t); });
+  // Each already appears below as its account's own row. A transfer from an
+  // imported statement has no account row, so it is listed like any other line
+  // (see isStatementTransfer) - otherwise "Select all" could never reach it.
+  var unfiltered = props.tx.filter(function(t) { return !isTransfer(t) || isStatementTransfer(t); });
   var usedCatIds = {};
   unfiltered.forEach(function(t) { if (t.catId) usedCatIds[t.catId] = true; });
   var filterOpts = cats.filter(function(c) { return usedCatIds[c.id]; });
@@ -19241,12 +19269,14 @@ function Activity(props) {
   var freshRows = useArrivals(combined, function(t) { return t.id; }, 1800);
   var hasFreshSpend = false;
   for (var fi = 0; fi < combined.length; fi++) {
-    if (freshRows[combined[fi].id] && combined[fi].type === "expense") { hasFreshSpend = true; break; }
+    if (freshRows[combined[fi].id] && combined[fi].type === "expense" && !isTransfer(combined[fi])) { hasFreshSpend = true; break; }
   }
   var ROW_IN = "rcRowIn var(--m-value) var(--m-ease) both, rcFlash 1.4s var(--m-ease) both";
 
-  var totalIn  = sorted.filter(function(t){return t.type==="income";}).reduce(function(s,t){return s+t.amount;},0);
-  var totalOut = sorted.filter(function(t){return t.type==="expense";}).reduce(function(s,t){return s+t.amount;},0);
+  // A transfer is the user's own money changing account, so it is neither money
+  // in nor money out - the same line Home's income and spending draw.
+  var totalIn  = sorted.filter(function(t){return t.type==="income" && !isTransfer(t);}).reduce(function(s,t){return s+t.amount;},0);
+  var totalOut = sorted.filter(function(t){return t.type==="expense" && !isTransfer(t);}).reduce(function(s,t){return s+t.amount;},0);
 
   var pickedRows = sorted.filter(function(t) { return picked[t.id]; });
   var pickedCount = pickedRows.length;
@@ -19481,7 +19511,9 @@ function Activity(props) {
         </div>
         <AmountField value={editForm.amount} onAmount={function(e) { setEditField("amount", e.target.value); }} cur={editForm.cur} onCur={pickEditCur} mainSym={mainSym} rate={editForm.rate} rateLoading={editForm.rateLoading} rateFallback={editForm.rateFallback} />
         <FormRow label={tr("txLabel")} value={editForm.label} onChange={function(e) { setEditField("label", e.target.value); }} placeholder={editForm.type === "income" ? "Salary, freelance, gift..." : "Groceries, rent, coffee..."} />
-        <CatPicker label={tr("category")} categories={cats} value={editForm.catId} onChange={function(id) { setEditField("catId", id); }} onManage={props.onManageCategories} />
+        {/* A statement transfer has no category of its own; the picker names
+            what it is instead of showing the first category as if picked. */}
+        <CatPicker label={tr("category")} categories={cats} value={editForm.catId} placeholder={editTx && isStatementTransfer(editTx) ? statementTransferLook(editTx).name : ""} onChange={function(id) { setEditField("catId", id); }} onManage={props.onManageCategories} />
         <FormRow label={tr("date")} value={editForm.date} onChange={function(e) { setEditField("date", e.target.value); }} type="date" />
         <div style={{ marginBottom: 7 }}>
           <div style={{ fontSize: 10.5, color: T.ink3, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 5 }}>{tr("repeat")}</div>
@@ -19644,6 +19676,10 @@ function Activity(props) {
                 }
                 var c = resolveCat(cats, t);
                 var on = selMode && !!picked[t.id];
+                // A card bill or a move between the user's own accounts: shown
+                // as the import review showed it, in neutral ink - it moves the
+                // balance but is neither income nor spending.
+                var mv = isStatementTransfer(t) ? statementTransferLook(t) : null;
                 return (
                   <button key={t.id} type="button"
                     onClick={function() { rowActivate(t); }}
@@ -19661,13 +19697,13 @@ function Activity(props) {
                     {selMode && <span aria-hidden="true" style={{ width: 21, height: 21, borderRadius: 7, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid " + (on ? T.orange : T.ink3), background: on ? T.orange : "transparent" }}>
                         {on && <SVGIcon id="check" size={12} color="#fff" />}
                       </span>}
-                    <CatBadge icon={t.type === "income" ? "up" : c.icon} color={t.type === "income" ? T.green : c.color} size={40} />
+                    <CatBadge icon={mv ? mv.icon : t.type === "income" ? "up" : c.icon} color={mv ? T.ink3 : t.type === "income" ? T.green : c.color} size={40} soft={!!mv} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 16, color: T.ink, fontWeight: DISP_WEIGHT, fontFamily: DISP, fontStyle: "italic", lineHeight: 1.1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
                       <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, display: "flex", alignItems: "center", gap: 6 }}>
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                          <span style={{ width: 6, height: 6, borderRadius: "50%", background: t.type === "income" ? T.green : c.color, display: "inline-block" }} />
-                          {t.type === "income" ? tr("income") : catDisplay(c)}
+                          <span style={{ width: 6, height: 6, borderRadius: "50%", background: mv ? T.ink3 : t.type === "income" ? T.green : c.color, display: "inline-block" }} />
+                          {mv ? mv.name : t.type === "income" ? tr("income") : catDisplay(c)}
                         </span>
                         {t.origCur && t.origCur !== _currency.sym && <span style={{ fontSize: 10, fontWeight: 700, color: T.gold, background: T.goldDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.02em" }}>{fmtCur(t.origCur, t.origAmount)}</span>}
                         {t.pending && <span style={{ fontSize: 10, fontWeight: 700, color: T.gold, background: T.goldDim, borderRadius: 5, padding: "1px 6px", letterSpacing: "0.04em" }}>PENDING</span>}
@@ -19680,7 +19716,7 @@ function Activity(props) {
                         {t.repeat && t.repeat !== "none" && <span style={{ fontSize: 10, fontWeight: 600, color: T.ink2, background: T.orangeDim, borderRadius: 5, padding: "1px 6px" }}>{t.repeat === "weekly" ? tr("weekly") : tr("monthly")}</span>}
                       </div>
                     </div>
-                    <span style={{ fontSize: 15.5, fontWeight: 700, color: t.type === "income" ? T.green : T.red, letterSpacing: "-0.02em" }}>
+                    <span style={{ fontSize: 15.5, fontWeight: 700, color: mv ? T.ink2 : t.type === "income" ? T.green : T.red, letterSpacing: "-0.02em" }}>
                       {dollarsDelta(t.type === "income" ? t.amount : -t.amount)}
                     </span>
                   </button>
@@ -38021,23 +38057,19 @@ function downloadRichyExport(blob) {
 
 // Its own screen, reached from Profile (right under Sign out) and from Privacy
 // & Data's Danger zone, so nobody has to scroll to the bottom of a long settings
-// page to find it. Opens straight on the confirmation.
+// page to find it. Opens straight on the confirmation: the screen itself is
+// the "are you sure" step - reaching it takes a deliberate tap on a red link,
+// and it says plainly what is erased - so there is no word to type as well.
 function DeleteAccountView(props) {
   var blob = props.blob || {};
-  var _dt = useState("");    var delText = _dt[0]; var setDelText = _dt[1];
   var _db = useState(false); var delBusy = _db[0]; var setDelBusy = _db[1];
   var _de = useState("");    var delErr = _de[0]; var setDelErr = _de[1];
-  // The typed word is localised (a Hebrew keyboard shouldn't have to switch to
-  // type DELETE), but DELETE itself is always accepted too.
-  var typed = delText.trim().toUpperCase();
-  var confirmed = typed === "DELETE" || typed === tr("daWord").toUpperCase();
   var exportParts = tr("daExport").split("{link}");
-  var typeParts = tr("daType").split("{word}");
 
   // Permanent account deletion - server erases Firestore + bank keys + the
   // Firebase Auth account itself (api/delete-account.js), then we sign out.
   function deleteAccount() {
-    if (delBusy || !confirmed) return;
+    if (delBusy) return;
     setDelErr(""); setDelBusy(true);
     var apiUrl = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "data:" || location.protocol === "file:") ? "https://richy-mgkl.vercel.app/api/delete-account" : "/api/delete-account";
     CLOUD.getIdToken()
@@ -38072,12 +38104,9 @@ function DeleteAccountView(props) {
         <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.55, marginBottom: 12 }}>
           {tr("daBody") + " " + exportParts[0]}<button onClick={function() { downloadRichyExport(blob); }} style={{ background: "none", border: "none", padding: 0, color: T.orange, fontWeight: 700, fontSize: 13, fontFamily: UI, cursor: "pointer" }}>{tr("daExportLink")}</button>{exportParts[1] || ""}
         </div>
-        <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 8 }}>{typeParts[0]}<strong style={{ color: T.red }}>{tr("daWord")}</strong>{typeParts[1] || ""}</div>
-        <input value={delText} onChange={function(e) { setDelText(e.target.value); }} placeholder={tr("daWord")} aria-label={tr("daType").replace("{word}", tr("daWord"))}
-          style={{ width: "100%", background: T.bg, border: "1px solid " + T.sep, borderRadius: 10, padding: "10px 12px", fontSize: 14, fontFamily: UI, color: T.ink, outline: "none", boxSizing: "border-box", marginBottom: 10 }} />
         {delErr && <div style={{ fontSize: 12.5, color: T.red, lineHeight: 1.5, marginBottom: 10 }}>{delErr}</div>}
         <div style={{ display: "flex", gap: 8 }}>
-          <LiquidButton onClick={deleteAccount} disabled={!confirmed || delBusy}
+          <LiquidButton onClick={deleteAccount} disabled={delBusy}
             variant="red" flex={1}>
             {delBusy ? tr("daDeleting") : tr("daConfirm")}</LiquidButton>
           <LiquidButton onClick={props.onBack} disabled={delBusy}
