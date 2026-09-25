@@ -46,6 +46,15 @@ struct Transaction: Codable, Identifiable, Equatable, Sendable {
     var isOpening: Bool { opening || catId == "opening" || category == "Opening balance" }
     /// The web app's `isTransfer(t)`.
     var isTransfer: Bool { transfer || catId == "savings-transfer" }
+    /// The web app's `isStatementTransfer(t)`: a card bill, or money moved
+    /// between the user's own accounts, read off an imported statement. The
+    /// import names every one it makes one of these two.
+    var isStatementTransfer: Bool { isTransfer && (category == "Card bill" || category == "Account transfer") }
+    /// The main-balance half of a move into or out of a savings pot, business
+    /// or investing account. The account keeps its own entry for the same
+    /// money, so this row must not be edited or deleted on its own - the web
+    /// app shows the account's entry instead and never offers either.
+    var isAccountTransfer: Bool { isTransfer && !isStatementTransfer }
 
     /// The web app's `isSettled(t)`: not pending and not dated in the future.
     func isSettled(today: String) -> Bool { !pending && date <= today }
@@ -115,6 +124,11 @@ struct Transaction: Codable, Identifiable, Equatable, Sendable {
     }
 
     /// The same record with the fields a person can edit replaced.
+    ///
+    /// Giving a statement transfer a real category makes it an ordinary
+    /// purchase or income, as the web app does: kept flagged as a transfer
+    /// under a category name, the web would no longer recognise it as a
+    /// statement transfer and would hide it where nothing can reach it.
     func edited(type: TransactionType,
                 amount: Double,
                 label: String,
@@ -122,8 +136,9 @@ struct Transaction: Codable, Identifiable, Equatable, Sendable {
                 category: String?,
                 date: String,
                 pending: Bool) -> Transaction {
-        Transaction(id: id, type: type, amount: amount, label: label, catId: catId, category: category, date: date,
-                    repeatRule: repeatRule, pending: pending, shared: shared, owner: owner, opening: opening,
-                    transfer: transfer, trip: trip, catchUp: catchUp, synced: synced)
+        let becomesOrdinary = isStatementTransfer && catId != self.catId
+        return Transaction(id: id, type: type, amount: amount, label: label, catId: catId, category: category, date: date,
+                           repeatRule: repeatRule, pending: pending, shared: shared, owner: owner, opening: opening,
+                           transfer: transfer && !becomesOrdinary, trip: trip, catchUp: catchUp, synced: synced)
     }
 }

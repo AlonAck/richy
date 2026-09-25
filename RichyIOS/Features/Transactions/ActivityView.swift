@@ -65,12 +65,20 @@ struct ActivityView: View {
                                        category: LedgerMath.category(for: record, in: store.categories),
                                        currency: store.currency)
                             .contentShape(Rectangle())
-                            .onTapGesture { editing = record }
+                            // A savings, business or investing transfer is read
+                            // only: its account holds the other half of the
+                            // move, and changing one side alone would leave the
+                            // account's balance wrong. Card bills and transfers
+                            // from an imported statement edit and delete like
+                            // any other row.
+                            .onTapGesture { if !record.isAccountTransfer { editing = record } }
                             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                Button(role: .destructive) {
-                                    Task { await store.delete(record) }
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
+                                if !record.isAccountTransfer {
+                                    Button(role: .destructive) {
+                                        Task { await store.delete(record) }
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
                                 }
                             }
                     }

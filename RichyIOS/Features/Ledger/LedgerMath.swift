@@ -59,13 +59,14 @@ enum LedgerMath {
     }
 
     /// Income and spending dated in `month`. Trip spending stays inside its
-    /// own trip ledger on the web and is left out here too; transfers between
-    /// the user's own pots are not spending.
+    /// own trip ledger on the web and is left out here too. A transfer - to or
+    /// from a pot, or between the user's own bank accounts - is the user's own
+    /// money changing place: neither spending nor income.
     static func monthSummary(_ transactions: [Transaction], month: String = RichyDate.currentMonth()) -> MonthSummary {
         var income = 0.0
         var expenses = 0.0
         for record in transactions where RichyDate.monthKey(of: record.date) == month && !record.pending && !record.catchUp {
-            if record.isIncome { income += record.amount }
+            if record.isIncome && !record.isTransfer { income += record.amount }
             if record.isExpense && !record.trip && !record.isTransfer { expenses += record.amount }
         }
         return MonthSummary(month: month, income: round2(income), expenses: round2(expenses))

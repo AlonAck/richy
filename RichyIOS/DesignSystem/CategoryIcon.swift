@@ -32,6 +32,9 @@ enum CategoryIcon {
         case "baby": return "figure.and.child.holdinghands"
         case "wallet": return "wallet.pass.fill"
         case "bank": return "building.columns.fill"
+        case "credit": return "creditcard.fill"
+        case "refresh": return "arrow.left.arrow.right"
+        case "shield": return "shield.fill"
         case "opening": return "flag.fill"
         default: return "tag.fill"
         }
@@ -56,9 +59,12 @@ struct CategoryTile: View {
     let icon: String?
     let colorHex: String?
     var size: CGFloat = 36
+    /// Overrides `colorHex` - for rows that are not a category at all, such as
+    /// a transfer, which the web draws in neutral ink.
+    var tint: Color? = nil
 
     var body: some View {
-        let tint = CategoryIcon.color(colorHex)
+        let tint = self.tint ?? CategoryIcon.color(colorHex)
         ZStack {
             RoundedRectangle(cornerRadius: size * 0.3, style: .continuous)
                 .fill(tint.opacity(0.16))

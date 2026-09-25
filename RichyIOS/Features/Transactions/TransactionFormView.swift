@@ -63,8 +63,22 @@ struct TransactionFormView: View {
         store.categories.first { $0.id == catId }
     }
 
+    /// The card bill or account transfer being edited, if that is what it is.
+    /// It has no category of its own, so the picker offers "leave it a
+    /// transfer" as its current choice instead of demanding a category.
+    private var statementTransfer: Transaction? {
+        if case .edit(let record) = mode, record.isStatementTransfer { return record }
+        return nil
+    }
+
+    /// Still a transfer: the picker has not been moved off it.
+    private var keepsTransfer: Bool {
+        guard let record = statementTransfer else { return false }
+        return catId == record.catId
+    }
+
     private var canSave: Bool {
-        amount != nil && selectedCategory != nil && !isSaving
+        amount != nil && (selectedCategory != nil || keepsTransfer) && !isSaving
     }
 
     var body: some View {
@@ -80,7 +94,15 @@ struct TransactionFormView: View {
                     TextField("What was it?", text: $label)
                         .textInputAutocapitalization(.sentences)
                     Picker("Category", selection: $catId) {
-                        if selectedCategory == nil {
+                        if let record = statementTransfer {
+                            Label {
+                                Text(TransferLook.name(record))
+                            } icon: {
+                                Image(systemName: CategoryIcon.symbol(for: TransferLook.icon(record)))
+                                    .foregroundStyle(RichyColor.ink3)
+                            }
+                            .tag(record.catId)
+                        } else if selectedCategory == nil {
                             Text("Choose").tag("")
                         }
                         ForEach(store.categories) { category in
@@ -212,7 +234,9 @@ struct TransactionFormView: View {
     }
 
     private func save() async {
-        guard let amount, let category = selectedCategory else { return }
+        guard let amount else { return }
+        let category = selectedCategory
+        guard category != nil || keepsTransfer else { return }
         isSaving = true
         errorMessage = nil
         defer { isSaving = false }
@@ -221,6 +245,7 @@ struct TransactionFormView: View {
         let ok: Bool
         switch mode {
         case .add:
+            guard let category else { return }
             var draft = TransactionDraft()
             draft.type = type
             draft.amount = amount
@@ -231,8 +256,12 @@ struct TransactionFormView: View {
             draft.pending = pending
             ok = await store.add(draft)
         case .edit(let record):
-            let edited = record.edited(type: type, amount: amount, label: trimmedLabel, catId: category.id,
-                                       category: category.name, date: isoDate, pending: pending)
+            // No category picked means the transfer stays a transfer, under
+            // its own catId and name.
+            let edited = record.edited(type: type, amount: amount, label: trimmedLabel,
+                                       catId: category?.id ?? record.catId,
+                                       category: category?.name ?? record.category,
+                                       date: isoDate, pending: pending)
             ok = await store.update(edited)
         }
         if ok {
